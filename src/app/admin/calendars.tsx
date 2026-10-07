@@ -14,9 +14,11 @@ type CalendarRow = {
   name: string;
   url: string;
   team_id: string | null;
+  committee_only: boolean;
 };
 
 const CLUB = 'club';
+const COMMITTEE = 'committee';
 
 export default function CalendarsScreen() {
   const theme = useTheme();
@@ -32,7 +34,7 @@ export default function CalendarsScreen() {
     () =>
       supabase
         .from('calendars')
-        .select('id, name, url, team_id')
+        .select('id, name, url, team_id, committee_only')
         .order('created_at')
         .then(({ data }) => setCalendars(data ?? [])),
     [],
@@ -49,12 +51,16 @@ export default function CalendarsScreen() {
       return;
     }
     const team = teams.find((t) => t.id === scope);
+    const committeeOnly = scope === COMMITTEE;
     setSaving(true);
     setError(null);
     const { error: insertError } = await supabase.from('calendars').insert({
-      name: name.trim() || (team ? `${team.name} calendar` : 'Club calendar'),
+      name:
+        name.trim() ||
+        (team ? `${team.name} calendar` : committeeOnly ? 'Committee calendar' : 'Club calendar'),
       url: trimmedUrl,
       team_id: team?.id ?? null,
+      committee_only: committeeOnly,
     });
     setSaving(false);
     if (insertError) {
@@ -80,8 +86,12 @@ export default function CalendarsScreen() {
     ]);
   }
 
-  const scopeLabel = (teamId: string | null) =>
-    teamId ? (teams.find((t) => t.id === teamId)?.name ?? 'Team') : 'Everyone in the club';
+  const scopeLabel = (calendar: CalendarRow) =>
+    calendar.team_id
+      ? (teams.find((t) => t.id === calendar.team_id)?.name ?? 'Team')
+      : calendar.committee_only
+        ? 'the committee'
+        : 'Everyone in the club';
 
   return (
     <Screen>
@@ -96,7 +106,7 @@ export default function CalendarsScreen() {
             <Card key={calendar.id}>
               <ThemedText type="smallBold">{calendar.name}</ThemedText>
               <ThemedText type="small" themeColor="textSecondary">
-                Shown to {scopeLabel(calendar.team_id)}
+                Shown to {scopeLabel(calendar)}
               </ThemedText>
               <Pressable accessibilityRole="button" onPress={() => remove(calendar)}>
                 <ThemedText type="small" style={{ color: theme.tint }}>
@@ -127,6 +137,7 @@ export default function CalendarsScreen() {
           label="Show to"
           options={[
             { value: CLUB, label: 'Everyone' },
+            { value: COMMITTEE, label: 'Committee' },
             ...teams.map((t) => ({ value: t.id, label: t.name })),
           ]}
           selected={[scope]}
