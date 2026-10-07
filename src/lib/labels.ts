@@ -1,4 +1,4 @@
-import type { AppRole, CoachTitle, MemberStatus, TeamRole } from '@/lib/types';
+import type { AppRole, CoachTitle, MemberStatus, TeamRole, TeamSelection } from '@/lib/types';
 
 export const roleLabels: Record<AppRole, string> = {
   admin: 'Admin',
@@ -28,6 +28,11 @@ export const coachTitleLabels: Record<CoachTitle, string> = {
   assistant_coach: 'Assistant Coach',
 };
 
+export const selectionLabels: Record<TeamSelection, string> = {
+  touring: 'Touring athlete',
+  training_partner: 'Training partner',
+};
+
 /** Roles a member can ask for when joining. Admin is granted, never requested. */
 export const requestableRoles: AppRole[] = [
   'athlete',
@@ -46,6 +51,12 @@ export function isTeamRole(role: AppRole): role is TeamRole {
   return (teamRoles as AppRole[]).includes(role);
 }
 
-export function teamPositionLabel(teamRole: TeamRole, coachTitle: CoachTitle | null) {
-  return coachTitle ? coachTitleLabels[coachTitle] : teamRoleLabels[teamRole];
+export function teamPositionLabel(
+  teamRole: TeamRole,
+  coachTitle: CoachTitle | null,
+  selection: TeamSelection | null = null,
+) {
+  if (coachTitle) return coachTitleLabels[coachTitle];
+  if (selection) return selectionLabels[selection];
+  return teamRoleLabels[teamRole];
 }

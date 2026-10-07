@@ -8,11 +8,11 @@ import { useAuth } from '@/lib/auth';
 import { isTeamRole, requestableRoles, roleLabels } from '@/lib/labels';
 import { supabase } from '@/lib/supabase';
 import type { AppRole } from '@/lib/types';
-import { useTeams } from '@/lib/use-teams';
+import { squadsOf, useTeams } from '@/lib/use-teams';
 
 export default function JoinScreen() {
   const { session, profile, refresh } = useAuth();
-  const teams = useTeams();
+  const squads = squadsOf(useTeams());
   const [fullName, setFullName] = useState(profile?.full_name ?? '');
   const [playhqEmail, setPlayhqEmail] = useState(profile?.playhq_email ?? '');
   const [role, setRole] = useState<AppRole | null>(profile?.requested_role ?? null);
@@ -82,8 +82,8 @@ export default function JoinScreen() {
 
       {showTeams ? (
         <ChipGroup
-          label="Team or squad"
-          options={teams.map((t) => ({ value: t.id, label: t.name }))}
+          label="Squad"
+          options={squads.map((t) => ({ value: t.id, label: t.name }))}
           selected={teamId ? [teamId] : []}
           onToggle={(id) => setTeamId(id === teamId ? null : id)}
         />

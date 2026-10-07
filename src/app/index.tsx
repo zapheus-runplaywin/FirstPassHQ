@@ -12,6 +12,7 @@ import { useTheme } from '@/hooks/use-theme';
 import { useAuth } from '@/lib/auth';
 import { roleLabels, teamPositionLabel } from '@/lib/labels';
 import { supabase } from '@/lib/supabase';
+import type { TeamMembership } from '@/lib/types';
 import { useEvents } from '@/lib/use-events';
 
 /** Three rows of two tiles. */
@@ -80,6 +81,15 @@ export default function HomeScreen() {
       ) : null}
 
       {isAdmin ? (
+        <PressableCard onPress={() => router.push('/admin/squads')}>
+          <ThemedText type="smallBold">Squads and teams</ThemedText>
+          <ThemedText type="small" themeColor="textSecondary">
+            Add squads and name teams at selections
+          </ThemedText>
+        </PressableCard>
+      ) : null}
+
+      {isAdmin ? (
         <PressableCard onPress={() => router.push('/admin/calendars')}>
           <ThemedText type="smallBold">Calendars</ThemedText>
           <ThemedText type="small" themeColor="textSecondary">
@@ -110,19 +120,20 @@ export default function HomeScreen() {
 
       {approved ? (
         <View style={styles.section}>
-          <ThemedText type="smallBold">My teams</ThemedText>
+          <ThemedText type="smallBold">My squads and teams</ThemedText>
           {memberships.length === 0 ? (
             <ThemedText type="small" themeColor="textSecondary">
-              You are not in a team yet.
+              You are not in a squad yet.
             </ThemedText>
           ) : (
-            memberships.map((m) => (
+            sortMemberships(memberships).map((m) => (
               <PressableCard
                 key={m.team.id}
                 onPress={() => router.push({ pathname: '/team/[id]', params: { id: m.team.id } })}>
                 <ThemedText type="smallBold">{m.team.name}</ThemedText>
                 <ThemedText type="small" themeColor="textSecondary">
-                  {teamPositionLabel(m.team_role, m.coach_title)}
+                  {m.team.kind === 'squad' ? 'Squad' : 'Team'} ·{' '}
+                  {teamPositionLabel(m.team_role, m.coach_title, m.selection)}
                 </ThemedText>
               </PressableCard>
             ))
@@ -136,6 +147,16 @@ export default function HomeScreen() {
         </ThemedText>
       </Pressable>
     </Screen>
+  );
+}
+
+/** Named teams first, then squads, in club order. */
+function sortMemberships(memberships: TeamMembership[]) {
+  return [...memberships].sort(
+    (a, b) =>
+      (a.team.kind === 'team' ? 0 : 1) - (b.team.kind === 'team' ? 0 : 1) ||
+      a.team.sort_order - b.team.sort_order ||
+      a.team.name.localeCompare(b.team.name),
   );
 }
 
