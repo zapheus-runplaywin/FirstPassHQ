@@ -8,6 +8,7 @@ import { ThemedText } from '@/components/themed-text';
 import { Button, ErrorText, TextField } from '@/components/ui';
 import { Spacing } from '@/constants/theme';
 import { useTheme } from '@/hooks/use-theme';
+import { isMinor } from '@/lib/age';
 import { useAuth } from '@/lib/auth';
 import { CHECK_IN_COLUMNS, checkInQuestions, today } from '@/lib/check-ins';
 import { toDateString } from '@/lib/injuries';
@@ -22,7 +23,7 @@ type Answers = { [K in keyof CheckInScores]: number | null };
 const unanswered: Answers = { sleep: null, soreness: null, stress: null, mood: null };
 
 export default function CheckInScreen() {
-  const { session } = useAuth();
+  const { session, profile } = useAuth();
   const userId = session?.user.id;
   const [history, setHistory] = useState<CheckIn[] | null>(null);
   const [edited, setEdited] = useState<Answers | null>(null);
@@ -106,6 +107,11 @@ export default function CheckInScreen() {
         maxLength={500}
         multiline
       />
+      <ThemedText type="small" themeColor="textSecondary">
+        {profile && isMinor(profile.date_of_birth, profile.under_17)
+          ? 'Your coaches and your parents or guardians can read this note.'
+          : 'Your coaches can read this note.'}
+      </ThemedText>
 
       <ErrorText>{error}</ErrorText>
       <Button title={saved ? 'Update check-in' : 'Save check-in'} onPress={save} busy={saving} />
