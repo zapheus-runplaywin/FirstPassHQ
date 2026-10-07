@@ -1,26 +1,9 @@
-import * as AppleAuthentication from 'expo-apple-authentication';
-import Constants, { ExecutionEnvironment } from 'expo-constants';
-import * as Crypto from 'expo-crypto';
 import * as Linking from 'expo-linking';
 import * as WebBrowser from 'expo-web-browser';
-import { Platform } from 'react-native';
 
 import { supabase } from '@/lib/supabase';
 
 WebBrowser.maybeCompleteAuthSession();
-
-export type Provider = 'google' | 'apple';
-
-/**
- * Native Sign in with Apple is only offered in iOS builds of this app. Expo Go
- * doesn't include the native module, so it and other platforms use the
- * browser flow instead.
- */
-export function usesNativeApple() {
-  return (
-    Platform.OS === 'ios' && Constants.executionEnvironment !== ExecutionEnvironment.StoreClient
-  );
-}
 
 /**
  * Where the sign-in browser returns to. Supabase only honours it when it is
@@ -32,17 +15,11 @@ export function authRedirectUrl() {
   return Linking.createURL('auth-callback');
 }
 
-export async function signIn(provider: Provider) {
-  if (provider === 'apple' && usesNativeApple()) {
-    return signInWithAppleNative();
-  }
-  return signInWithBrowser(provider);
-}
-
-async function signInWithBrowser(provider: Provider) {
+/** Members sign in with their Google account, in the browser. */
+export async function signInWithGoogle() {
   const redirectTo = authRedirectUrl();
   const { data, error } = await supabase.auth.signInWithOAuth({
-    provider,
+    provider: 'google',
     options: { redirectTo, skipBrowserRedirect: true },
   });
   if (error) throw error;
@@ -59,44 +36,6 @@ async function signInWithBrowser(provider: Provider) {
   }
   const { error: exchangeError } = await supabase.auth.exchangeCodeForSession(params.code);
   if (exchangeError) throw exchangeError;
-}
-
-async function signInWithAppleNative() {
-  // Apple receives a hash of the nonce; Supabase checks the raw value against it.
-  const rawNonce = Crypto.randomUUID();
-  const hashedNonce = await Crypto.digestStringAsync(Crypto.CryptoDigestAlgorithm.SHA256, rawNonce);
-
-  let credential: AppleAuthentication.AppleAuthenticationCredential;
-  try {
-    credential = await AppleAuthentication.signInAsync({
-      requestedScopes: [
-        AppleAuthentication.AppleAuthenticationScope.FULL_NAME,
-        AppleAuthentication.AppleAuthenticationScope.EMAIL,
-      ],
-      nonce: hashedNonce,
-    });
-  } catch (e) {
-    if ((e as { code?: string }).code === 'ERR_REQUEST_CANCELED') return;
-    throw e;
-  }
-  if (!credential.identityToken) {
-    throw new Error('Apple did not return an identity token.');
-  }
-
-  const { data, error } = await supabase.auth.signInWithIdToken({
-    provider: 'apple',
-    token: credential.identityToken,
-    nonce: rawNonce,
-  });
-  if (error) throw error;
-
-  // Apple only shares the user's name on their very first sign-in.
-  const fullName = credential.fullName
-    ? AppleAuthentication.formatFullName(credential.fullName).trim()
-    : '';
-  if (fullName && data.user) {
-    await supabase.from('profiles').update({ full_name: fullName }).eq('id', data.user.id);
-  }
 }
 
 function readUrlParams(url: string): Record<string, string> {
