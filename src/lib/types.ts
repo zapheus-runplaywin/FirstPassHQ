@@ -29,10 +29,20 @@ export type Profile = {
   playhq_email: string | null;
   role: AppRole;
   status: MemberStatus;
+  requested_role: AppRole | null;
+  requested_team_id: string | null;
+  join_requested_at: string | null;
 };
 
 export type TeamMembership = {
   team_role: TeamRole;
   coach_title: CoachTitle | null;
   team: Team;
+};
+
+export type RosterEntry = {
+  profile_id: string;
+  full_name: string | null;
+  team_role: TeamRole;
+  coach_title: CoachTitle | null;
 };

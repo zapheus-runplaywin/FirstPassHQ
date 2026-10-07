@@ -22,7 +22,7 @@ export const Colors = {
     backgroundElement: '#212225',
     backgroundSelected: '#2E3135',
     textSecondary: '#B0B4BA',
-    tint: '#60A5FA',
+    tint: '#2563EB',
   },
 } as const;
 

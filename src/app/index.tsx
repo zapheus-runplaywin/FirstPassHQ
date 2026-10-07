@@ -1,126 +1,154 @@
-import { useEffect, useState } from 'react';
-import { Pressable, RefreshControl, ScrollView, StyleSheet, View } from 'react-native';
-import { SafeAreaView } from 'react-native-safe-area-context';
+import { router, useFocusEffect } from 'expo-router';
+import { useCallback, useState } from 'react';
+import { Pressable, StyleSheet, View } from 'react-native';
 
+import { Screen } from '@/components/screen';
 import { ThemedText } from '@/components/themed-text';
-import { ThemedView } from '@/components/themed-view';
-import { MaxContentWidth, Spacing } from '@/constants/theme';
+import { Button, Card, PressableCard } from '@/components/ui';
+import { Spacing } from '@/constants/theme';
 import { useTheme } from '@/hooks/use-theme';
 import { useAuth } from '@/lib/auth';
+import { roleLabels, teamPositionLabel } from '@/lib/labels';
 import { supabase } from '@/lib/supabase';
-import type { CoachTitle, Team, TeamRole } from '@/lib/types';
-
-const teamRoleLabels: Record<TeamRole, string> = {
-  coach: 'Coach',
-  manager: 'Manager',
-  athlete: 'Athlete',
-};
-
-const coachTitleLabels: Record<CoachTitle, string> = {
-  head_coach: 'Head Coach',
-  assistant_coach: 'Assistant Coach',
-};
 
 export default function HomeScreen() {
   const theme = useTheme();
-  const { session, profile, memberships, refresh, signOut } = useAuth();
-  const [teams, setTeams] = useState<Team[]>([]);
+  const { session, profile, memberships, isAdmin, refresh, signOut } = useAuth();
   const [refreshing, setRefreshing] = useState(false);
+  const [pendingCount, setPendingCount] = useState(0);
 
-  useEffect(() => {
-    supabase
-      .from('teams')
-      .select('id, name, sort_order')
-      .order('sort_order')
-      .then(({ data }) => setTeams(data ?? []));
-  }, []);
+  const loadPendingCount = useCallback(async () => {
+    if (!isAdmin) return;
+    const { count } = await supabase
+      .from('profiles')
+      .select('id', { count: 'exact', head: true })
+      .eq('status', 'pending')
+      .not('join_requested_at', 'is', null);
+    setPendingCount(count ?? 0);
+  }, [isAdmin]);
+
+  useFocusEffect(
+    useCallback(() => {
+      loadPendingCount();
+    }, [loadPendingCount]),
+  );
 
   async function onRefresh() {
     setRefreshing(true);
-    await refresh();
+    await Promise.all([refresh(), loadPendingCount()]);
     setRefreshing(false);
   }
 
   const name = profile?.full_name || session?.user.email || 'there';
+  const approved = profile?.status === 'approved';
 
   return (
-    <ThemedView style={styles.container}>
-      <SafeAreaView style={styles.safeArea}>
-        <ScrollView
-          contentContainerStyle={styles.content}
-          refreshControl={<RefreshControl refreshing={refreshing} onRefresh={onRefresh} />}>
-          <ThemedText type="subtitle">Hi {name}</ThemedText>
+    <Screen withTopInset refreshing={refreshing} onRefresh={onRefresh}>
+      <View style={styles.header}>
+        <ThemedText type="subtitle">Hi {name}</ThemedText>
+        {approved && profile ? (
+          <ThemedText themeColor="textSecondary">{roleLabels[profile.role]}</ThemedText>
+        ) : null}
+      </View>
 
-          {profile?.status !== 'approved' ? (
-            <View style={[styles.card, { backgroundColor: theme.backgroundElement }]}>
-              <ThemedText type="smallBold">Waiting for approval</ThemedText>
-              <ThemedText type="small" themeColor="textSecondary">
-                {profile?.status === 'rejected'
-                  ? 'Your request to join was not approved. Contact the club if you think this is a mistake.'
-                  : 'A club admin needs to approve your account and add you to your team. Pull down to check again.'}
-              </ThemedText>
-            </View>
-          ) : null}
+      {!approved ? <JoinStatus /> : null}
 
-          <View style={styles.section}>
-            <ThemedText type="smallBold">My teams</ThemedText>
-            {memberships.length === 0 ? (
-              <ThemedText type="small" themeColor="textSecondary">
-                You are not in a team yet.
-              </ThemedText>
-            ) : (
-              memberships.map((m) => (
-                <View
-                  key={m.team.id}
-                  style={[styles.card, { backgroundColor: theme.backgroundElement }]}>
-                  <ThemedText type="smallBold">{m.team.name}</ThemedText>
-                  <ThemedText type="small" themeColor="textSecondary">
-                    {m.coach_title ? coachTitleLabels[m.coach_title] : teamRoleLabels[m.team_role]}
-                  </ThemedText>
-                </View>
-              ))
-            )}
-          </View>
+      {isAdmin ? (
+        <PressableCard onPress={() => router.push('/admin')}>
+          <ThemedText type="smallBold">Members</ThemedText>
+          <ThemedText type="small" themeColor="textSecondary">
+            {pendingCount === 0
+              ? 'No requests waiting'
+              : `${pendingCount} ${pendingCount === 1 ? 'request' : 'requests'} waiting for approval`}
+          </ThemedText>
+        </PressableCard>
+      ) : null}
 
-          <View style={styles.section}>
-            <ThemedText type="smallBold">Club teams</ThemedText>
+      {approved ? (
+        <View style={styles.section}>
+          <ThemedText type="smallBold">My teams</ThemedText>
+          {memberships.length === 0 ? (
             <ThemedText type="small" themeColor="textSecondary">
-              {teams.map((t) => t.name).join(' · ')}
+              You are not in a team yet.
             </ThemedText>
-          </View>
+          ) : (
+            memberships.map((m) => (
+              <PressableCard
+                key={m.team.id}
+                onPress={() => router.push({ pathname: '/team/[id]', params: { id: m.team.id } })}>
+                <ThemedText type="smallBold">{m.team.name}</ThemedText>
+                <ThemedText type="small" themeColor="textSecondary">
+                  {teamPositionLabel(m.team_role, m.coach_title)}
+                </ThemedText>
+              </PressableCard>
+            ))
+          )}
+        </View>
+      ) : null}
 
-          <Pressable accessibilityRole="button" onPress={signOut} style={styles.signOut}>
-            <ThemedText type="small" style={{ color: theme.tint }}>
-              Sign out
-            </ThemedText>
-          </Pressable>
-        </ScrollView>
-      </SafeAreaView>
-    </ThemedView>
+      <Pressable accessibilityRole="button" onPress={signOut} style={styles.signOut}>
+        <ThemedText type="small" style={{ color: theme.tint }}>
+          Sign out
+        </ThemedText>
+      </Pressable>
+    </Screen>
+  );
+}
+
+function JoinStatus() {
+  const { profile } = useAuth();
+
+  if (profile?.status === 'rejected') {
+    return (
+      <Card>
+        <ThemedText type="smallBold">Request not approved</ThemedText>
+        <ThemedText type="small" themeColor="textSecondary">
+          Your request to join was not approved. Check your details and try again, or contact the
+          club.
+        </ThemedText>
+        <View style={styles.cardAction}>
+          <Button title="Request again" onPress={() => router.push('/join')} />
+        </View>
+      </Card>
+    );
+  }
+
+  if (!profile?.join_requested_at) {
+    return (
+      <Card>
+        <ThemedText type="smallBold">Request to join the club</ThemedText>
+        <ThemedText type="small" themeColor="textSecondary">
+          Tell us who you are so an admin can add you to your team.
+        </ThemedText>
+        <View style={styles.cardAction}>
+          <Button title="Request to join" onPress={() => router.push('/join')} />
+        </View>
+      </Card>
+    );
+  }
+
+  return (
+    <Card>
+      <ThemedText type="smallBold">Waiting for approval</ThemedText>
+      <ThemedText type="small" themeColor="textSecondary">
+        A club admin will approve your request and add you to your team. Pull down to check again.
+      </ThemedText>
+      <View style={styles.cardAction}>
+        <Button title="Edit request" variant="secondary" onPress={() => router.push('/join')} />
+      </View>
+    </Card>
   );
 }
 
 const styles = StyleSheet.create({
-  container: {
-    flex: 1,
-    alignItems: 'center',
-  },
-  safeArea: {
-    flex: 1,
-    width: '100%',
-    maxWidth: MaxContentWidth,
-  },
-  content: {
-    padding: Spacing.four,
-    gap: Spacing.four,
+  header: {
+    gap: Spacing.one,
   },
   section: {
     gap: Spacing.two,
   },
-  card: {
-    padding: Spacing.three,
-    borderRadius: 12,
-    gap: Spacing.one,
+  cardAction: {
+    marginTop: Spacing.two,
   },
   signOut: {
     alignSelf: 'flex-start',

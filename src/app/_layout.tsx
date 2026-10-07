@@ -19,7 +19,7 @@ export default function RootLayout() {
 }
 
 function RootStack() {
-  const { loading, session } = useAuth();
+  const { loading, session, isAdmin } = useAuth();
 
   useEffect(() => {
     if (!loading) SplashScreen.hideAsync();
@@ -28,14 +28,20 @@ function RootStack() {
   if (loading) return null;
 
   return (
-    <Stack screenOptions={{ headerShown: false }}>
+    <Stack screenOptions={{ headerBackButtonDisplayMode: 'minimal' }}>
       <Stack.Protected guard={!!session}>
-        <Stack.Screen name="index" />
+        <Stack.Screen name="index" options={{ headerShown: false }} />
+        <Stack.Screen name="join" options={{ title: 'Request to join' }} />
+        <Stack.Screen name="team/[id]" options={{ title: 'Team' }} />
+        <Stack.Protected guard={isAdmin}>
+          <Stack.Screen name="admin/index" options={{ title: 'Members' }} />
+          <Stack.Screen name="admin/[id]" options={{ title: 'Member' }} />
+        </Stack.Protected>
       </Stack.Protected>
       <Stack.Protected guard={!session}>
-        <Stack.Screen name="sign-in" />
+        <Stack.Screen name="sign-in" options={{ headerShown: false }} />
       </Stack.Protected>
-      <Stack.Screen name="auth-callback" />
+      <Stack.Screen name="auth-callback" options={{ headerShown: false }} />
     </Stack>
   );
 }
