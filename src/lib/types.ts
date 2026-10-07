@@ -242,3 +242,33 @@ export type CheckInSummary = {
   checked_in_count: number;
   flagged_count: number;
 };
+
+/**
+ * A squad (until its selections are complete) or team in the committee's
+ * check-in overview. Scores and the flagged count are null until at least 3
+ * athletes have checked in, so they can't point at one athlete.
+ */
+export type CheckInOverviewRow = {
+  team_id: string;
+  team_name: string;
+  team_kind: GroupKind;
+  season: number;
+  athlete_count: number;
+  checked_in_count: number;
+  flagged_count: number | null;
+  avg_sleep: number | null;
+  avg_soreness: number | null;
+  avg_stress: number | null;
+  avg_mood: number | null;
+};
+
+/** One day of a group's check-in averages. Scores are null below 3 check-ins. */
+export type CheckInTrendDay = {
+  day: string;
+  checked_in_count: number;
+  flagged_count: number | null;
+  avg_sleep: number | null;
+  avg_soreness: number | null;
+  avg_stress: number | null;
+  avg_mood: number | null;
+};

@@ -13,10 +13,14 @@ import { useTheme } from '@/hooks/use-theme';
 import { useAuth } from '@/lib/auth';
 import { useCanTakeAttendance, useCanViewAttendance } from '@/lib/attendance';
 import {
+  checkInOverviewLabel,
   checkInSummaryLabel,
   checkInTotals,
+  today,
   useCanSeeCheckIns,
+  useCheckInOverview,
   useCheckInSummary,
+  useIsCheckInCoach,
   useMyCheckIn,
 } from '@/lib/check-ins';
 import { injuriesSummary, useCanSeeInjuries, useOpenInjuries } from '@/lib/injuries';
@@ -47,6 +51,8 @@ export default function HomeScreen() {
   const { myCheckIn, reloadMyCheckIn } = useMyCheckIn();
   const canSeeCheckIns = useCanSeeCheckIns();
   const { checkInSummary, reloadCheckInSummary } = useCheckInSummary();
+  const isCheckInCoach = useIsCheckInCoach();
+  const { checkInOverview, reloadCheckInOverview } = useCheckInOverview(today());
   const todos = buildTodos({
     userId: session?.user.id,
     injuries: openInjuries,
@@ -85,6 +91,7 @@ export default function HomeScreen() {
       reloadInjuries(),
       reloadMyCheckIn(),
       reloadCheckInSummary(),
+      reloadCheckInOverview(),
     ]);
     setRefreshing(false);
   }
@@ -146,7 +153,9 @@ export default function HomeScreen() {
         <PressableCard onPress={() => router.push('/check-ins')}>
           <ThemedText type="smallBold">Check-ins</ThemedText>
           <ThemedText type="small" themeColor="textSecondary">
-            {checkInSummaryLabel(checkInSummary)}
+            {isCheckInCoach && checkInSummary.length > 0
+              ? checkInSummaryLabel(checkInSummary)
+              : checkInOverviewLabel(checkInOverview)}
           </ThemedText>
         </PressableCard>
       ) : null}

@@ -4,7 +4,7 @@ import { useCallback, useState } from 'react';
 import { useAuth } from '@/lib/auth';
 import { toDateString } from '@/lib/injuries';
 import { supabase } from '@/lib/supabase';
-import type { CheckIn, CheckInScores, CheckInSummary } from '@/lib/types';
+import type { CheckIn, CheckInOverviewRow, CheckInScores, CheckInSummary } from '@/lib/types';
 
 export const CHECK_IN_COLUMNS = 'id, athlete_id, day, sleep, soreness, stress, mood, note, updated_at';
 
@@ -67,11 +67,24 @@ export function useIsCheckInAthlete() {
   return profile?.status === 'approved' && profile.role === 'athlete';
 }
 
-/** Coaches see their squads' check-ins, and admins can see any squad's. */
-export function useCanSeeCheckIns() {
-  const { profile, memberships, isAdmin } = useAuth();
+/** Coaches see their own athletes' check-ins. */
+export function useIsCheckInCoach() {
+  const { profile, memberships } = useAuth();
   if (profile?.status !== 'approved') return false;
-  return isAdmin || memberships.some((m) => m.team_role === 'coach');
+  return memberships.some((m) => m.team_role === 'coach');
+}
+
+/** The committee and admins see squad and team averages, never individuals. */
+export function useCanSeeCheckInOverview() {
+  const { profile } = useAuth();
+  return profile?.status === 'approved' && ['committee', 'admin'].includes(profile.role);
+}
+
+/** Coaches, the committee and admins have a check-ins screen. */
+export function useCanSeeCheckIns() {
+  const isCoach = useIsCheckInCoach();
+  const canSeeOverview = useCanSeeCheckInOverview();
+  return isCoach || canSeeOverview;
 }
 
 /** The athlete's own check-in for today, or null if they haven't done it. */
@@ -104,7 +117,7 @@ export function useMyCheckIn() {
 
 /** Today's check-in counts for each squad or team the member coaches. */
 export function useCheckInSummary() {
-  const canSee = useCanSeeCheckIns();
+  const canSee = useIsCheckInCoach();
   const [summary, setSummary] = useState<CheckInSummary[]>([]);
 
   const load = useCallback(async () => {
@@ -143,4 +156,34 @@ export function checkInSummaryLabel(summary: CheckInSummary[]) {
   const parts = [`${checkedIn} of ${athletes} checked in today`];
   if (flagged > 0) parts.push(`${flagged} flagged`);
   return parts.join(' · ');
+}
+
+/** The committee's overview of every current squad or team for a day. */
+export function useCheckInOverview(day: string) {
+  const canSee = useCanSeeCheckInOverview();
+  const [overview, setOverview] = useState<CheckInOverviewRow[] | null>(null);
+
+  const load = useCallback(async () => {
+    if (!canSee) return;
+    const { data } = await supabase.rpc('check_in_overview', { p_day: day });
+    setOverview((data as CheckInOverviewRow[] | null) ?? []);
+  }, [canSee, day]);
+
+  useFocusEffect(
+    useCallback(() => {
+      load();
+    }, [load]),
+  );
+
+  return { checkInOverview: canSee ? overview : null, reloadCheckInOverview: load };
+}
+
+/** A summary for the committee's home card, such as "42 of 60 athletes checked in today". */
+export function checkInOverviewLabel(overview: CheckInOverviewRow[] | null) {
+  if (!overview || overview.length === 0) return 'See how squads and teams are feeling';
+  // Squads still in selections plus the teams of squads that are done, so an
+  // athlete is usually counted once (twice only if they are in two teams).
+  const athletes = overview.reduce((n, g) => n + g.athlete_count, 0);
+  const checkedIn = overview.reduce((n, g) => n + g.checked_in_count, 0);
+  return `${checkedIn} of ${athletes} athletes checked in today`;
 }
