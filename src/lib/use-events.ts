@@ -9,6 +9,9 @@ import { supabase } from '@/lib/supabase';
 const DAYS_AHEAD = 90;
 const CACHE_PREFIX = 'ics-cache:';
 
+/** The most recently loaded events, so the details screen opens instantly. */
+const loadedEvents = new Map<string, CalendarEvent>();
+
 type CalendarRow = {
   id: string;
   name: string;
@@ -41,6 +44,26 @@ export function useEvents() {
   }, [load]);
 
   return { events, failed, reload: load };
+}
+
+/**
+ * One event by id. Usually already loaded by the list it was tapped in; if the
+ * screen was opened another way, the calendars are fetched again.
+ */
+export function useEvent(id: string | undefined) {
+  const { profile } = useAuth();
+  const [event, setEvent] = useState<CalendarEvent | null | undefined>(() =>
+    id ? loadedEvents.get(id) : undefined,
+  );
+
+  const approved = profile?.status === 'approved';
+
+  useEffect(() => {
+    if (!id || loadedEvents.has(id)) return;
+    fetchEvents(approved).then(() => setEvent(loadedEvents.get(id) ?? null));
+  }, [id, approved]);
+
+  return event;
 }
 
 async function fetchEvents(
@@ -76,6 +99,8 @@ async function fetchEvents(
   );
 
   const events = dedupe(perCalendar.flat()).sort((a, b) => a.start.getTime() - b.start.getTime());
+  loadedEvents.clear();
+  for (const event of events) loadedEvents.set(event.id, event);
   return { events, failed };
 }
 

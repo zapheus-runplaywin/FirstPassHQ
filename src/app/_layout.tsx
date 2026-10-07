@@ -34,6 +34,7 @@ function RootStack() {
         <Stack.Screen name="join" options={{ title: 'Request to join' }} />
         <Stack.Screen name="team/[id]" options={{ title: 'Team' }} />
         <Stack.Screen name="calendar" options={{ title: 'Calendar' }} />
+        <Stack.Screen name="event/[id]" options={{ title: 'Event' }} />
         <Stack.Protected guard={isAdmin}>
           <Stack.Screen name="admin/index" options={{ title: 'Members' }} />
           <Stack.Screen name="admin/[id]" options={{ title: 'Member' }} />
