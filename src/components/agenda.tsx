@@ -98,7 +98,7 @@ export function AgendaRow({
         <View
           style={[
             styles.stripe,
-            { backgroundColor: event.clubWide ? Colors.accent : Colors.textSecondary },
+            { backgroundColor: event.color },
           ]}
         />
         <View style={styles.cardText}>

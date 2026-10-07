@@ -1,13 +1,13 @@
 import { Pressable, StyleSheet, View } from 'react-native';
 
 import { ThemedText } from '@/components/themed-text';
-import { Arrow } from '@/components/week-strip';
+import { Arrow, DayDots } from '@/components/week-strip';
 import { Colors, Spacing } from '@/constants/theme';
 import { addDays, dayKey, formatMonth, isToday, startOfWeek } from '@/lib/format';
 
 const WEEKDAYS = ['M', 'T', 'W', 'T', 'F', 'S', 'S'];
 
-/** A classic month calendar with a dot under days that have events. */
+/** A classic month calendar with coloured dots under days that have events. */
 export function MonthGrid({
   month,
   eventDays,
@@ -17,7 +17,8 @@ export function MonthGrid({
 }: {
   /** Any date in the month to show. */
   month: Date;
-  eventDays: Set<string>;
+  /** Calendar colours with events on each day, by dayKey. */
+  eventDays: Map<string, string[]>;
   selectedDay: string | null;
   onSelect: (date: Date) => void;
   onChangeMonth: (month: Date) => void;
@@ -79,18 +80,7 @@ export function MonthGrid({
                   style={[!inMonth && styles.outside, selected && styles.onAccent]}>
                   {date.getDate()}
                 </ThemedText>
-                <View
-                  style={[
-                    styles.dot,
-                    {
-                      backgroundColor: eventDays.has(key)
-                        ? selected
-                          ? Colors.onAccent
-                          : Colors.accent
-                        : 'transparent',
-                    },
-                  ]}
-                />
+                <DayDots colors={eventDays.get(key)} selected={selected} />
               </Pressable>
             );
           })}
@@ -142,10 +132,5 @@ const styles = StyleSheet.create({
   },
   onAccent: {
     color: Colors.onAccent,
-  },
-  dot: {
-    width: 5,
-    height: 5,
-    borderRadius: 3,
   },
 });
