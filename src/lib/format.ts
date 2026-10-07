@@ -5,6 +5,11 @@ const dayFormat = new Intl.DateTimeFormat(undefined, {
   day: 'numeric',
   month: 'long',
 });
+const shortDayFormat = new Intl.DateTimeFormat(undefined, {
+  weekday: 'short',
+  day: 'numeric',
+  month: 'short',
+});
 const timeFormat = new Intl.DateTimeFormat(undefined, { hour: 'numeric', minute: '2-digit' });
 
 export function dayKey(date: Date) {
@@ -17,6 +22,12 @@ export function formatDay(date: Date) {
   if (dayKey(date) === dayKey(today)) return 'Today';
   if (dayKey(date) === dayKey(tomorrow)) return 'Tomorrow';
   return dayFormat.format(date);
+}
+
+/** "Today", "Tomorrow", or a short date such as "Sat 11 Oct". */
+export function formatShortDay(date: Date) {
+  const label = formatDay(date);
+  return label === 'Today' || label === 'Tomorrow' ? label : shortDayFormat.format(date);
 }
 
 export function formatEventTime(event: CalendarEvent) {
