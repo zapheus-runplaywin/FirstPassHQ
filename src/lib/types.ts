@@ -65,3 +65,38 @@ export type RosterEntry = {
   coach_title: CoachTitle | null;
   selection: TeamSelection | null;
 };
+
+/** Who a group message went to: everyone, one role, or a squad or team. */
+export type MessageAudience = 'club' | 'role' | 'group';
+
+export type Message = {
+  id: string;
+  sender_id: string | null;
+  sender_name: string | null;
+  body: string;
+  audience: MessageAudience;
+  audience_role: AppRole | null;
+  audience_label: string | null;
+  created_at: string;
+};
+
+/** A message in the member's inbox. */
+export type InboxMessage = {
+  read_at: string | null;
+  message: Message;
+};
+
+/** A message the member sent, with how many people have read it. */
+export type SentMessage = Pick<
+  Message,
+  'id' | 'body' | 'audience' | 'audience_role' | 'audience_label' | 'created_at'
+> & {
+  recipient_count: number;
+  read_count: number;
+};
+
+export type MessageReceipt = {
+  profile_id: string;
+  full_name: string | null;
+  read_at: string | null;
+};

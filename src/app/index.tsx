@@ -10,6 +10,7 @@ import { Button, Card, PressableCard } from '@/components/ui';
 import { Colors, Spacing } from '@/constants/theme';
 import { useTheme } from '@/hooks/use-theme';
 import { useAuth } from '@/lib/auth';
+import { useUnreadCount } from '@/lib/messages';
 import { rejectionReasonMessages, roleLabels, teamPositionLabel } from '@/lib/labels';
 import { supabase } from '@/lib/supabase';
 import type { TeamMembership } from '@/lib/types';
@@ -25,6 +26,7 @@ export default function HomeScreen() {
   const [pendingCount, setPendingCount] = useState(0);
   const [athletes, setAthletes] = useState<string[]>([]);
   const { events, reload: reloadEvents } = useEvents();
+  const { unreadCount, reloadUnread } = useUnreadCount();
 
   const loadPendingCount = useCallback(async () => {
     if (!isAdmin) return;
@@ -58,7 +60,13 @@ export default function HomeScreen() {
 
   async function onRefresh() {
     setRefreshing(true);
-    await Promise.all([refresh(), loadPendingCount(), loadAthletes(), reloadEvents()]);
+    await Promise.all([
+      refresh(),
+      loadPendingCount(),
+      loadAthletes(),
+      reloadEvents(),
+      reloadUnread(),
+    ]);
     setRefreshing(false);
   }
 
@@ -83,6 +91,26 @@ export default function HomeScreen() {
       </View>
 
       {!approved ? <JoinStatus /> : null}
+
+      {approved ? (
+        <PressableCard onPress={() => router.push('/messages')}>
+          <View style={styles.cardTitleRow}>
+            <ThemedText type="smallBold">Messages</ThemedText>
+            {unreadCount > 0 ? (
+              <View style={[styles.badge, { backgroundColor: theme.accent }]}>
+                <ThemedText type="smallBold" style={{ color: theme.onAccent }}>
+                  {unreadCount}
+                </ThemedText>
+              </View>
+            ) : null}
+          </View>
+          <ThemedText type="small" themeColor="textSecondary">
+            {unreadCount === 0
+              ? 'No new messages'
+              : `${unreadCount} new ${unreadCount === 1 ? 'message' : 'messages'}`}
+          </ThemedText>
+        </PressableCard>
+      ) : null}
 
       {isAdmin ? (
         <PressableCard onPress={() => router.push('/admin')}>
@@ -307,6 +335,19 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
     justifyContent: 'space-between',
     alignItems: 'center',
+  },
+  cardTitleRow: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'space-between',
+  },
+  badge: {
+    minWidth: 24,
+    height: 24,
+    borderRadius: 12,
+    paddingHorizontal: Spacing.two,
+    alignItems: 'center',
+    justifyContent: 'center',
   },
   cardAction: {
     marginTop: Spacing.two,

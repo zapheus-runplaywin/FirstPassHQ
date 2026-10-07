@@ -18,6 +18,18 @@ export const roleLabels: Record<AppRole, string> = {
   guest: 'Guest',
 };
 
+/** A role as a group of people, such as "Guardians". */
+export const pluralRoleLabels: Record<AppRole, string> = {
+  admin: 'Admins',
+  coach: 'Coaches',
+  manager: 'Managers',
+  athlete: 'Athletes',
+  committee: 'Committee',
+  partner: 'Partners',
+  guardian: 'Guardians',
+  guest: 'Guests',
+};
+
 export const statusLabels: Record<MemberStatus, string> = {
   pending: 'Pending',
   approved: 'Approved',
