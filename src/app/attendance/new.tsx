@@ -15,7 +15,7 @@ import { useMessageGroups } from '@/lib/messages';
 import { supabase } from '@/lib/supabase';
 import type { AttendanceMark, Team } from '@/lib/types';
 import { useEvents } from '@/lib/use-events';
-import { useTeams } from '@/lib/use-teams';
+import { teamLabel, useTeams } from '@/lib/use-teams';
 
 type NearbySession = { id: string; name: string; held_at: string; taken_by_name: string | null };
 
@@ -146,7 +146,7 @@ export default function TakeAttendanceScreen() {
       <ChipGroup
         label={ledGroups.length > 0 ? 'Your squads and teams' : 'Who is it for?'}
         options={[
-          ...ledGroups.map((t) => ({ value: t.id, label: t.name })),
+          ...ledGroups.map((t) => ({ value: t.id, label: teamLabel(t, teams) })),
           { value: CLUB, label: 'Whole club' },
         ]}
         selected={selected ? [selected] : []}
@@ -155,7 +155,7 @@ export default function TakeAttendanceScreen() {
       {otherSquads.length > 0 ? (
         <ChipGroup
           label="Whole squad"
-          options={otherSquads.map((t) => ({ value: t.id, label: t.name }))}
+          options={otherSquads.map((t) => ({ value: t.id, label: teamLabel(t, teams) }))}
           selected={selected ? [selected] : []}
           onToggle={choose}
         />

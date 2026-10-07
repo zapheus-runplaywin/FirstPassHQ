@@ -41,3 +41,24 @@ export function squadsOf(teams: Team[]) {
 export function teamsIn(teams: Team[], squadId: string) {
   return teams.filter((t) => t.squad_id === squadId);
 }
+
+/** The club year runs May to May, so season 2026 is shown as 2026–27. */
+export function seasonLabel(season: number) {
+  return `${season}–${String((season + 1) % 100).padStart(2, '0')}`;
+}
+
+/**
+ * A squad or team's name, with its season when another current group has the
+ * same name (while last season runs alongside the new one).
+ */
+export function teamLabel(team: Team, teams: Team[]) {
+  const repeated = teams.some((t) => t.id !== team.id && t.name === team.name);
+  return repeated ? `${team.name} (${seasonLabel(team.season)})` : team.name;
+}
+
+/** The newest season's squads, which new members join. */
+export function newestSquads(teams: Team[]) {
+  const squads = squadsOf(teams);
+  const newest = Math.max(...squads.map((s) => s.season));
+  return squads.filter((s) => s.season === newest);
+}

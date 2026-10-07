@@ -10,7 +10,14 @@ import { useTheme } from '@/hooks/use-theme';
 import { formatDay } from '@/lib/format';
 import { supabase } from '@/lib/supabase';
 import type { GroupKind, Team } from '@/lib/types';
-import { squadsOf, teamsIn, useTeamList } from '@/lib/use-teams';
+import {
+  newestSquads,
+  seasonLabel,
+  squadsOf,
+  teamLabel,
+  teamsIn,
+  useTeamList,
+} from '@/lib/use-teams';
 
 export default function SquadsScreen() {
   const { teams, reload } = useTeamList();
@@ -36,8 +43,10 @@ export default function SquadsScreen() {
     const { error: insertError } = await supabase.from('teams').insert({
       name: name.trim(),
       kind,
-      // A team belongs to the same season as its squad.
-      ...(squad ? { squad_id: squad.id, season: squad.season } : {}),
+      // A team belongs to the same season as its squad; a new squad to the newest season.
+      ...(squad
+        ? { squad_id: squad.id, season: squad.season }
+        : { season: newestSquads(teams)[0]?.season }),
       sort_order: kind === 'team' ? teamsIn(teams, squad!.id).length + 1 : squads.length + 1,
     });
     setSaving(false);
@@ -68,7 +77,7 @@ export default function SquadsScreen() {
             onPress={() => router.push({ pathname: '/team/[id]', params: { id: squad.id } })}>
             <ThemedText type="smallBold">{squad.name}</ThemedText>
             <ThemedText type="small" themeColor="textSecondary">
-              {squad.season} squad · see everyone in it
+              {seasonLabel(squad.season)} squad · see everyone in it
             </ThemedText>
           </PressableCard>
           {teamsIn(teams, squad.id).map((team) => (
@@ -113,7 +122,7 @@ export default function SquadsScreen() {
         {kind === 'team' ? (
           <ChipGroup
             label="Named from squad"
-            options={squads.map((s) => ({ value: s.id, label: s.name }))}
+            options={squads.map((s) => ({ value: s.id, label: teamLabel(s, teams) }))}
             selected={squadId ? [squadId] : []}
             onToggle={setSquadId}
           />

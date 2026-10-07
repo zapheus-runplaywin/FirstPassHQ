@@ -12,7 +12,7 @@ import { flaggedAreas, scoresLine, today, useCheckInSummary } from '@/lib/check-
 import { toDateString } from '@/lib/injuries';
 import { supabase } from '@/lib/supabase';
 import type { CheckInBoardRow, CheckInScores } from '@/lib/types';
-import { useTeams } from '@/lib/use-teams';
+import { teamLabel, useTeams } from '@/lib/use-teams';
 
 const days = [
   { value: 'today', label: 'Today' },
@@ -35,7 +35,7 @@ export default function CheckInsScreen() {
   const others = isAdmin
     ? teams
         .filter((t) => !checkInSummary.some((s) => s.team_id === t.id))
-        .map((t) => ({ value: t.id, label: t.name }))
+        .map((t) => ({ value: t.id, label: teamLabel(t, teams) }))
     : [];
   const [choice, setChoice] = useState<string | null>(null);
   const [day, setDay] = useState('today');

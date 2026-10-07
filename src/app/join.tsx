@@ -8,11 +8,11 @@ import { useAuth } from '@/lib/auth';
 import { isTeamRole, requestableRoles, roleLabels } from '@/lib/labels';
 import { supabase } from '@/lib/supabase';
 import type { AppRole } from '@/lib/types';
-import { squadsOf, useTeams } from '@/lib/use-teams';
+import { newestSquads, useTeams } from '@/lib/use-teams';
 
 export default function JoinScreen() {
   const { session, profile, refresh } = useAuth();
-  const squads = squadsOf(useTeams());
+  const squads = newestSquads(useTeams());
   const [fullName, setFullName] = useState(profile?.full_name ?? '');
   const [playhqEmail, setPlayhqEmail] = useState(profile?.playhq_email ?? '');
   const [role, setRole] = useState<AppRole | null>(profile?.requested_role ?? null);

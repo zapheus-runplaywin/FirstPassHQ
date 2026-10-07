@@ -37,8 +37,10 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       supabase.from('profiles').select(PROFILE_COLUMNS).eq('id', userId).single(),
       supabase
         .from('team_members')
-        .select(`team_role, coach_title, selection, team:teams (${TEAM_COLUMNS})`)
-        .eq('profile_id', userId),
+        .select(`team_role, coach_title, selection, team:teams!inner (${TEAM_COLUMNS})`)
+        .eq('profile_id', userId)
+        // Past seasons are archived and left out.
+        .eq('team.archived', false),
     ]);
     setProfile((profileResult.data as Profile | null) ?? null);
     setMemberships((membershipResult.data as unknown as TeamMembership[] | null) ?? []);

@@ -15,7 +15,7 @@ import { Colors, Spacing } from '@/constants/theme';
 import { useTheme } from '@/hooks/use-theme';
 import { supabase } from '@/lib/supabase';
 import type { Team } from '@/lib/types';
-import { useTeams } from '@/lib/use-teams';
+import { teamLabel, useTeams } from '@/lib/use-teams';
 
 type CalendarRow = {
   id: string;
@@ -147,7 +147,7 @@ export default function CalendarsScreen() {
           options={[
             { value: CLUB, label: 'Everyone' },
             { value: COMMITTEE, label: 'Committee' },
-            ...teams.map((t) => ({ value: t.id, label: t.name })),
+            ...teams.map((t) => ({ value: t.id, label: teamLabel(t, teams) })),
           ]}
           selected={[scope]}
           onToggle={setScope}
