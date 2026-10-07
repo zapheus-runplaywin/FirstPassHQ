@@ -98,6 +98,15 @@ export default function HomeScreen() {
         </PressableCard>
       ) : null}
 
+      {isAdmin ? (
+        <PressableCard onPress={() => router.push('/admin/club-password')}>
+          <ThemedText type="smallBold">Club password</ThemedText>
+          <ThemedText type="small" themeColor="textSecondary">
+            New members need it to ask to join
+          </ThemedText>
+        </PressableCard>
+      ) : null}
+
       {approved ? (
         <View style={styles.section}>
           <View style={styles.sectionHeader}>

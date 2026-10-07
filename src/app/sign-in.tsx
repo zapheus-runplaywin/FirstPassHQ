@@ -36,8 +36,8 @@ export default function SignInScreen() {
             contentFit="contain"
             accessibilityLabel="West Coast Thunder"
           />
-          <ThemedText themeColor="textSecondary">
-            Sign in with the Google account you use for the club.
+          <ThemedText type="subtitle" style={styles.title}>
+            Sign in / Register
           </ThemedText>
         </View>
 
@@ -91,6 +91,9 @@ const styles = StyleSheet.create({
   },
   header: {
     gap: Spacing.two,
+  },
+  title: {
+    textAlign: 'center',
   },
   logo: {
     width: 200,

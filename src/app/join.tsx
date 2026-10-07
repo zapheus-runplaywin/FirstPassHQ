@@ -1,5 +1,5 @@
 import { router } from 'expo-router';
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
 
 import { Screen } from '@/components/screen';
 import { ThemedText } from '@/components/themed-text';
@@ -17,10 +17,16 @@ export default function JoinScreen() {
   const [playhqEmail, setPlayhqEmail] = useState(profile?.playhq_email ?? '');
   const [role, setRole] = useState<AppRole | null>(profile?.requested_role ?? null);
   const [teamId, setTeamId] = useState<string | null>(profile?.requested_team_id ?? null);
+  const [password, setPassword] = useState('');
+  const [needsPassword, setNeedsPassword] = useState(false);
   const [saving, setSaving] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
   const showTeams = role !== null && isTeamRole(role);
+
+  useEffect(() => {
+    supabase.rpc('join_password_required').then(({ data }) => setNeedsPassword(data === true));
+  }, []);
 
   async function submit() {
     if (!fullName.trim()) {
@@ -31,6 +37,10 @@ export default function JoinScreen() {
       setError('Please choose what best describes you.');
       return;
     }
+    if (needsPassword && !password.trim()) {
+      setError('Please enter the club password. A club admin can give it to you.');
+      return;
+    }
     setSaving(true);
     setError(null);
     const { error: rpcError } = await supabase.rpc('submit_join_request', {
@@ -38,6 +48,7 @@ export default function JoinScreen() {
       p_playhq_email: playhqEmail,
       p_requested_role: role,
       p_requested_team_id: showTeams ? teamId : null,
+      p_join_password: needsPassword ? password : null,
     });
     setSaving(false);
     if (rpcError) {
@@ -86,6 +97,18 @@ export default function JoinScreen() {
           options={squads.map((t) => ({ value: t.id, label: t.name }))}
           selected={teamId ? [teamId] : []}
           onToggle={(id) => setTeamId(id === teamId ? null : id)}
+        />
+      ) : null}
+
+      {needsPassword ? (
+        <TextField
+          label="Club password"
+          value={password}
+          onChangeText={setPassword}
+          placeholder="Ask a club admin for it"
+          autoCapitalize="none"
+          autoCorrect={false}
+          secureTextEntry
         />
       ) : null}
 
