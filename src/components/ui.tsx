@@ -56,14 +56,14 @@ export function Button({
       style={({ pressed }) => [
         styles.button,
         {
-          backgroundColor: primary ? theme.tint : theme.backgroundElement,
+          backgroundColor: primary ? theme.accent : theme.backgroundElement,
           opacity: disabled ? 0.5 : pressed ? 0.7 : 1,
         },
       ]}>
       {busy ? (
-        <ActivityIndicator color={primary ? '#ffffff' : theme.text} />
+        <ActivityIndicator color={primary ? theme.onAccent : theme.text} />
       ) : (
-        <ThemedText type="smallBold" style={primary ? styles.primaryText : undefined}>
+        <ThemedText type="smallBold" style={primary ? { color: theme.onAccent } : undefined}>
           {title}
         </ThemedText>
       )}
@@ -112,10 +112,10 @@ export function ChipGroup<T extends string>({
               style={[
                 styles.chip,
                 {
-                  backgroundColor: isSelected ? theme.tint : theme.backgroundElement,
+                  backgroundColor: isSelected ? theme.accent : theme.backgroundElement,
                 },
               ]}>
-              <ThemedText type="small" style={isSelected ? styles.primaryText : undefined}>
+              <ThemedText type="small" style={isSelected ? { color: theme.onAccent } : undefined}>
                 {option.label}
               </ThemedText>
             </Pressable>
@@ -147,9 +147,6 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     justifyContent: 'center',
     paddingHorizontal: Spacing.three,
-  },
-  primaryText: {
-    color: '#ffffff',
   },
   field: {
     gap: Spacing.two,
