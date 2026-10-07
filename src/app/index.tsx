@@ -11,6 +11,7 @@ import { Colors, Spacing } from '@/constants/theme';
 import { useTheme } from '@/hooks/use-theme';
 import { useAuth } from '@/lib/auth';
 import { useUnreadCount } from '@/lib/messages';
+import { pendingRequestsLabel, usePendingRequests } from '@/lib/use-pending-requests';
 import { rejectionReasonMessages, roleLabels, teamPositionLabel } from '@/lib/labels';
 import { supabase } from '@/lib/supabase';
 import type { TeamMembership } from '@/lib/types';
@@ -23,20 +24,10 @@ export default function HomeScreen() {
   const theme = useTheme();
   const { session, profile, memberships, isAdmin, refresh, signOut } = useAuth();
   const [refreshing, setRefreshing] = useState(false);
-  const [pendingCount, setPendingCount] = useState(0);
   const [athletes, setAthletes] = useState<string[]>([]);
   const { events, reload: reloadEvents } = useEvents();
   const { unreadCount, reloadUnread } = useUnreadCount();
-
-  const loadPendingCount = useCallback(async () => {
-    if (!isAdmin) return;
-    const { count } = await supabase
-      .from('profiles')
-      .select('id', { count: 'exact', head: true })
-      .eq('status', 'pending')
-      .not('join_requested_at', 'is', null);
-    setPendingCount(count ?? 0);
-  }, [isAdmin]);
+  const { pendingCount, reloadPending } = usePendingRequests();
 
   const isGuardian = profile?.status === 'approved' && profile.role === 'guardian';
 
@@ -53,20 +44,13 @@ export default function HomeScreen() {
 
   useFocusEffect(
     useCallback(() => {
-      loadPendingCount();
       loadAthletes();
-    }, [loadPendingCount, loadAthletes]),
+    }, [loadAthletes]),
   );
 
   async function onRefresh() {
     setRefreshing(true);
-    await Promise.all([
-      refresh(),
-      loadPendingCount(),
-      loadAthletes(),
-      reloadEvents(),
-      reloadUnread(),
-    ]);
+    await Promise.all([refresh(), reloadPending(), loadAthletes(), reloadEvents(), reloadUnread()]);
     setRefreshing(false);
   }
 
@@ -113,39 +97,10 @@ export default function HomeScreen() {
       ) : null}
 
       {isAdmin ? (
-        <PressableCard onPress={() => router.push('/admin')}>
-          <ThemedText type="smallBold">Members</ThemedText>
+        <PressableCard onPress={() => router.push('/administration')}>
+          <ThemedText type="smallBold">Administration</ThemedText>
           <ThemedText type="small" themeColor="textSecondary">
-            {pendingCount === 0
-              ? 'No requests waiting'
-              : `${pendingCount} ${pendingCount === 1 ? 'request' : 'requests'} waiting for approval`}
-          </ThemedText>
-        </PressableCard>
-      ) : null}
-
-      {isAdmin ? (
-        <PressableCard onPress={() => router.push('/admin/squads')}>
-          <ThemedText type="smallBold">Squads and teams</ThemedText>
-          <ThemedText type="small" themeColor="textSecondary">
-            Add squads and name teams at selections
-          </ThemedText>
-        </PressableCard>
-      ) : null}
-
-      {isAdmin ? (
-        <PressableCard onPress={() => router.push('/admin/calendars')}>
-          <ThemedText type="smallBold">Calendars</ThemedText>
-          <ThemedText type="small" themeColor="textSecondary">
-            Add the club calendar and team calendars
-          </ThemedText>
-        </PressableCard>
-      ) : null}
-
-      {isAdmin ? (
-        <PressableCard onPress={() => router.push('/admin/club-password')}>
-          <ThemedText type="smallBold">Club password</ThemedText>
-          <ThemedText type="small" themeColor="textSecondary">
-            New members need it to ask to join
+            {pendingRequestsLabel(pendingCount)}
           </ThemedText>
         </PressableCard>
       ) : null}
