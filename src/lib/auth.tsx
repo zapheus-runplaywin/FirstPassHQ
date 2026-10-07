@@ -1,6 +1,7 @@
 import type { Session } from '@supabase/supabase-js';
 import { createContext, use, useCallback, useEffect, useState, type ReactNode } from 'react';
 
+import { unregisterForPush } from '@/lib/push';
 import { supabase } from '@/lib/supabase';
 import type { Profile, TeamMembership } from '@/lib/types';
 import { TEAM_COLUMNS } from '@/lib/use-teams';
@@ -61,6 +62,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   const refresh = useCallback(() => loadMember(session?.user.id), [loadMember, session]);
 
   const signOut = useCallback(async () => {
+    await unregisterForPush().catch(() => {});
     await supabase.auth.signOut();
   }, []);
 
