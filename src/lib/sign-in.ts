@@ -15,6 +15,16 @@ export function usesNativeApple() {
   return Platform.OS === 'ios';
 }
 
+/**
+ * Where the sign-in browser returns to. Supabase only honours it when it is
+ * listed under Authentication > URL Configuration > Redirect URLs; otherwise
+ * it falls back to the Site URL. In Expo Go this is an exp:// address that
+ * includes your computer's IP.
+ */
+export function authRedirectUrl() {
+  return Linking.createURL('auth-callback');
+}
+
 export async function signIn(provider: Provider) {
   if (provider === 'apple' && usesNativeApple()) {
     return signInWithAppleNative();
@@ -23,7 +33,7 @@ export async function signIn(provider: Provider) {
 }
 
 async function signInWithBrowser(provider: Provider) {
-  const redirectTo = Linking.createURL('auth-callback');
+  const redirectTo = authRedirectUrl();
   const { data, error } = await supabase.auth.signInWithOAuth({
     provider,
     options: { redirectTo, skipBrowserRedirect: true },
