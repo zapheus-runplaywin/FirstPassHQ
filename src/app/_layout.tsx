@@ -65,6 +65,8 @@ function RootStack() {
           <Stack.Screen name="check-in" options={{ title: 'Daily check-in' }} />
           <Stack.Screen name="check-ins/index" options={{ title: 'Check-ins' }} />
           <Stack.Screen name="check-ins/athlete/[id]" options={{ title: 'Check-ins' }} />
+          <Stack.Screen name="awards/index" options={{ title: 'Awards' }} />
+          <Stack.Screen name="awards/vote" options={{ title: 'Vote' }} />
           <Stack.Screen name="delete-account" options={{ title: 'Delete account' }} />
           <Stack.Protected guard={isAdmin}>
             <Stack.Screen name="administration" options={{ title: 'Administration' }} />
@@ -77,6 +79,10 @@ function RootStack() {
             <Stack.Screen name="admin/team/[id]" options={{ title: 'Name team' }} />
             <Stack.Screen name="admin/seasons" options={{ title: 'Seasons' }} />
             <Stack.Screen name="admin/place/[id]" options={{ title: 'Place members' }} />
+            <Stack.Screen name="admin/awards/index" options={{ title: 'Awards' }} />
+            <Stack.Screen name="admin/awards/edit" options={{ title: 'Award' }} />
+            <Stack.Screen name="admin/awards/[id]" options={{ title: 'Award' }} />
+            <Stack.Screen name="admin/fixtures" options={{ title: 'Fixtures' }} />
           </Stack.Protected>
         </Stack.Protected>
         <Stack.Protected guard={!session}>

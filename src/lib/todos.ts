@@ -1,7 +1,8 @@
 import type { Href } from 'expo-router';
 
 import { formatDateString, toDateString } from '@/lib/injuries';
-import type { Injury } from '@/lib/types';
+import { slotTitle } from '@/lib/awards';
+import type { AwardSlot, Injury } from '@/lib/types';
 
 /** Something the member still has to do, shown at the top of the home screen. */
 export type Todo = {
@@ -21,6 +22,7 @@ export function buildTodos({
   pendingCount,
   needsCheckIn,
   flaggedAthletes,
+  awardSlots = [],
   today = new Date(),
 }: {
   userId: string | undefined;
@@ -30,6 +32,8 @@ export function buildTodos({
   needsCheckIn: boolean;
   /** Athletes the member coaches who flagged a low score today. */
   flaggedAthletes: number;
+  /** Award votes open to the member. */
+  awardSlots?: AwardSlot[];
   today?: Date;
 }): Todo[] {
   const todos: Todo[] = [];
@@ -89,6 +93,33 @@ export function buildTodos({
       title: `Update ${whose} ${injury.body_area.toLowerCase()} injury`,
       detail: `Expected back ${formatDateString(injury.expected_return)}. Ask for clearance or change the date.`,
       href: { pathname: '/injuries/[id]', params: { id: injury.id } },
+    });
+  }
+
+  // Match votes close a couple of days after the game, so they come before join requests.
+  const toVote = awardSlots.filter((s) => !s.voted);
+  if (toVote.length === 1) {
+    const slot = toVote[0];
+    todos.push({
+      key: 'award-vote',
+      title: `Vote for ${slot.award_name}`,
+      detail: slotTitle(slot) || 'Voting is open',
+      href: {
+        pathname: '/awards/vote',
+        params: {
+          award: slot.award_id,
+          team: slot.team_id ?? '',
+          fixture: slot.fixture_id ?? '',
+          preseason: slot.preseason ? '1' : '',
+        },
+      },
+    });
+  } else if (toVote.length > 1) {
+    todos.push({
+      key: 'award-vote',
+      title: `Vote in ${toVote.length} awards`,
+      detail: 'Voting is open',
+      href: '/awards',
     });
   }
 
