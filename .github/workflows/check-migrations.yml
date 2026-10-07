@@ -1,0 +1,41 @@
+name: Check migrations
+
+# Runs on pull requests that add migrations: merged migrations stay unchanged,
+# nothing loses data without the data-loss-approved label, and every
+# migration applies cleanly to a fresh Supabase database.
+on:
+  pull_request:
+    types: [opened, synchronize, reopened, labeled, unlabeled]
+    paths: ['supabase/migrations/**', 'scripts/*migrations*']
+
+jobs:
+  check:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+      - name: Merged migrations are not edited
+        env:
+          BASE: origin/${{ github.base_ref }}
+        run: |
+          changed=$(git diff --name-status --diff-filter=MDR "$BASE"...HEAD -- supabase/migrations)
+          if [ -n "$changed" ]; then
+            echo "$changed"
+            echo "::error::Merged migrations must not change. Add a new migration instead."
+            exit 1
+          fi
+      - name: Nothing loses data without permission
+        if: ${{ !contains(github.event.pull_request.labels.*.name, 'data-loss-approved') }}
+        env:
+          BASE: origin/${{ github.base_ref }}
+        run: |
+          files=$(git diff --name-only --diff-filter=A "$BASE"...HEAD -- 'supabase/migrations/*.sql')
+          if [ -n "$files" ]; then python3 scripts/check-migrations.py $files; fi
+      - uses: supabase/setup-cli@v3
+        with:
+          version: latest
+      - name: Migrations apply to a fresh database
+        run: |
+          supabase init
+          supabase db start
