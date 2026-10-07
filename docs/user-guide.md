@@ -1,0 +1,587 @@
+# West Coast Thunder app: user guide
+
+This guide explains what the Thunder club app does and how to use it, role by role. Every screen
+shown is from the app itself, filled with made-up sample people.
+
+**Printing:** open this file in any Markdown viewer (GitHub, VS Code, Typora) and print to PDF.
+Each role starts on a new page when the viewer supports page breaks.
+
+<!-- Maintainers: this guide must match the app. See "Keeping this guide up to date" at the end. -->
+
+## Contents
+
+1. [Roles at a glance](#1-roles-at-a-glance)
+2. [Getting started](#2-getting-started)
+3. [Things everyone can do](#3-things-everyone-can-do)
+4. [Athletes](#4-athletes)
+5. [Parents and guardians](#5-parents-and-guardians)
+6. [Coaches](#6-coaches)
+7. [Managers](#7-managers)
+8. [Committee](#8-committee)
+9. [Partners and guests](#9-partners-and-guests)
+10. [Admins](#10-admins)
+11. [Who can see what](#11-who-can-see-what)
+12. [Keeping this guide up to date](#12-keeping-this-guide-up-to-date)
+
+## 1. Roles at a glance
+
+Everyone in the app has one **club role**. Coaches, managers, athletes and guardians also belong to
+one or more **squads** or **teams** for the current season.
+
+| Role          | Who it's for                                                                                         |
+| ------------- | ---------------------------------------------------------------------------------------------------- |
+| **Athlete**   | Registered players.                                                                                  |
+| **Guardian**  | Parents and guardians of athletes under 17.                                                          |
+| **Coach**     | Head coaches and assistant coaches. Both have the same permissions; the title only shows who is who. |
+| **Manager**   | Squad and team managers.                                                                             |
+| **Committee** | Club committee members.                                                                              |
+| **Partner**   | Club partners and sponsors.                                                                          |
+| **Guest**     | Anyone else the club lets in.                                                                        |
+| **Admin**     | The people who run the app. Admin is granted by another admin, never requested.                      |
+
+**Squads and teams.** Each season, members join a **squad** (Mixed Open Squad, Open Squad,
+20 & Under Squad, 17 & Under Squad, Lightning Academy). At selections, admins name **teams** from a
+squad and pick each team's touring athletes and training partners. People selected for a team stay
+in their squad as well.
+
+What each role sees on its home screen:
+
+| Feature                                | Athlete |    Guardian     |    Coach     |  Manager   |   Committee   | Partner / Guest |     Admin     |
+| -------------------------------------- | :-----: | :-------------: | :----------: | :--------: | :-----------: | :-------------: | :-----------: |
+| To-do list, calendar, squads and teams |    ✓    |        ✓        |      ✓       |     ✓      |       ✓       |        ✓        |       ✓       |
+| Read messages                          |    ✓    |        ✓        |      ✓       |     ✓      |       ✓       |        ✓        |       ✓       |
+| Send messages                          |         |                 |  Own groups  | Own groups |               |                 |    Anyone     |
+| Daily check-in                         |    ✓    |                 |              |            |               |                 |               |
+| Check-ins of others                    |         |                 | Own athletes |            | Averages only |                 | Averages only |
+| Report an injury                       |   Own   | Their athlete's |              |            |               |                 |               |
+| See injuries                           |   Own   | Their athlete's | Own athletes |            |      All      |                 |      All      |
+| Sign off injury clearances             |         |                 |   Endorse    |            |    Accept     |                 |    Accept     |
+| Take attendance                        |         |                 |      ✓       |     ✓      |       ✓       |                 |       ✓       |
+| See athletes' attendance history       |         |                 |      ✓       |            |       ✓       |                 |       ✓       |
+| Administration                         |         |                 |              |            |               |                 |       ✓       |
+
+"Own groups" and "own athletes" mean the squads and teams you're listed in as a coach or manager.
+
+<div style="page-break-before: always"></div>
+
+## 2. Getting started
+
+### Install the app
+
+The club sends a link to install the app on iPhone (TestFlight) or Android. When the app opens,
+the West Coast Thunder logo plays briefly and then the sign-in screen appears.
+
+### Sign in with Google
+
+Tap **Continue with Google** and choose your Google account. There are no passwords to remember:
+Google sign-in is the only way in. The same button is used whether you're new or coming back.
+
+<img src="user-guide/sign-in.png" width="210" alt="Sign-in screen">
+
+### Ask to join the club
+
+The first time you sign in, the home screen asks you to request to join. Tap **Request to join**
+and fill in:
+
+- **Your name.**
+- **PlayHQ email**: only if you registered with PlayHQ using a different email to the Google account
+  you signed in with. Parents and guardians must enter the email they used to register their
+  athlete, so the club can confirm who they are.
+- **I am a**: the role that best describes you.
+- **Squad**: athletes, coaches, managers and guardians pick their squad (guardians pick their
+  athlete's squad).
+- **Club password**: if the club has set one, ask a club admin for it.
+
+Tap **Send request**.
+
+<img src="user-guide/new-member-home.png" width="210" alt="Home screen before asking to join">
+<img src="user-guide/join.png" width="210" alt="Request to join form">
+<img src="user-guide/join-guardian.png" width="210" alt="Request to join as a guardian">
+
+### Wait for approval
+
+An admin checks your request against the club's PlayHQ registrations, sets your role and adds you
+to your squad. Pull down on the home screen to check again.
+
+If the admin can't match you to a registration, they may ask you for the **6-digit code** shown on
+your home screen. Only read it to a club admin in person or over a channel you already trust, and
+never share it with anyone else.
+
+If your request isn't approved, the home screen says why and you can tap **Request again** after
+fixing your details.
+
+<img src="user-guide/waiting-for-approval.png" width="210" alt="Waiting for approval with a verification code">
+<img src="user-guide/not-approved.png" width="210" alt="Request not approved, with the reason">
+
+<div style="page-break-before: always"></div>
+
+## 3. Things everyone can do
+
+### The home screen
+
+Once you're approved, the home screen is where everything starts. From the top:
+
+- **To do**: things you need to do, such as your daily check-in or an injury clearance to sign off.
+  Tap an item to go straight to it. Each item disappears once it's done. When there's nothing,
+  it says "You're all caught up."
+- **Cards** for the features your role uses: Messages, Daily check-in, Check-ins, Injuries,
+  Attendance and Administration. A yellow number means something new or waiting for you.
+- **Coming up**: the next six events from your calendars. Tap **Full calendar** to see them all.
+- **My squads and teams**: tap one to see who's in it.
+- **Sign out** and **Delete account** at the bottom.
+
+Pull down on any screen to refresh it.
+
+<img src="user-guide/home-athlete.png" width="210" alt="Athlete home screen">
+
+### Messages
+
+Messages from your coaches, managers and the club arrive in **Messages**. Unread messages have a
+yellow dot, and the home card shows how many are new. Opening a message marks it as read, and the
+sender can see that you've read it.
+
+Who a message went to is shown under the sender's name, for example "To Mixed Open Squad" or
+"To Everyone in the club".
+
+<img src="user-guide/inbox.png" width="210" alt="Messages inbox">
+
+### Calendar
+
+The calendar shows events from the club's Outlook calendars. You see the club calendar, plus the
+calendars of the squads and teams you belong to. Committee members and admins also see the
+committee calendar.
+
+- **List** shows a week strip and the events after it, grouped by day. Use the arrows to move
+  between weeks, and **Load more** at the bottom to see further ahead.
+- **Month** shows a month grid. Dots under a day are events, coloured by calendar. Tap a day to see
+  its events.
+- The chips (**All**, **Club**, your squads and teams) filter which calendars are shown.
+
+Tap an event to see when and where it is. Tap the location to open it in maps, or **Copy** to copy
+the address.
+
+<img src="user-guide/calendar.png" width="210" alt="Calendar list view">
+<img src="user-guide/calendar-month.png" width="210" alt="Calendar month view">
+<img src="user-guide/event.png" width="210" alt="Event details">
+
+### Squads and teams
+
+Tap a squad or team under **My squads and teams** to see everyone in it, with their position:
+Head Coach, Assistant Coach, Manager, Athlete, Touring athlete or Training partner.
+
+<img src="user-guide/team-roster.png" width="210" alt="Team roster">
+
+### Deleting your account
+
+**Delete account** at the bottom of the home screen permanently deletes your app account: your
+profile, your squad and team places, guardian links and your messages inbox. Messages you sent to
+a group stay with the people who received them.
+
+The club keeps your injury records and clearance documents for 12 months after you leave, where
+only the committee and admins can see them, and then deletes them. Deleting your account doesn't
+change your PlayHQ registration or club membership.
+
+<img src="user-guide/delete-account.png" width="210" alt="Delete account screen">
+
+<div style="page-break-before: always"></div>
+
+## 4. Athletes
+
+Athletes see Messages, Daily check-in and Injuries on their home screen, plus their calendar and
+squads.
+
+<img src="user-guide/todo-athlete.png" width="210" alt="Athlete home screen with to-do items">
+
+### Daily check-in
+
+Once a day, answer four questions on a scale of 1 (bad) to 5 (good):
+
+- How did you sleep?
+- How does your body feel?
+- How stressed are you?
+- How's your mood?
+
+You can add a note for your coach, such as "tight calves after Sunday's game". Tap
+**Save check-in**. It takes about thirty seconds. You can change today's answers until the end of
+the day with **Update check-in**.
+
+Your coaches see your answers so they can adjust training. A score of 2 or less on any question
+flags you so a coach knows to check in with you. Below the form you can see your last two weeks,
+with low scores marked.
+
+Until you've checked in, "Do your daily check-in" stays in your to-do list.
+
+<img src="user-guide/check-in.png" width="210" alt="Daily check-in form and history">
+
+### Reporting an injury
+
+1. Tap **Injuries**, then **Report an injury**.
+2. Say where the injury is, what happened and when.
+3. Add any restrictions (for example "no jumping") and when you expect to be back, if you know.
+4. Tap **Report injury**.
+
+Your coaches and the committee can see it straight away.
+
+<img src="user-guide/injury-report-new.png" width="210" alt="Report an injury form">
+
+### Updating an injury
+
+Open the injury to see its details and history. While you're injured:
+
+- **Add physio update** records what the physio said, any change to restrictions or your expected
+  return date, and optionally a physio report (PDF or photo, up to 10 MB).
+- If your expected return date passes, your to-do list reminds you to ask for clearance or change
+  the date.
+
+<img src="user-guide/injury-athlete.png" width="210" alt="An athlete's injury with its history">
+
+### Getting cleared to play
+
+When you're ready to return, tap **Ask for clearance** and attach **proof of clearance**, such as a
+letter from your physio or doctor. Proof is required.
+
+Two people then sign off, in order:
+
+1. **One of your coaches endorses it** (status "Waiting for a coach").
+2. **A committee member accepts it** (status "Waiting for the committee"). It must be someone other
+   than the coach who endorsed it.
+
+When it's accepted, the injury shows **Cleared to play**. If either of them sends it back, you'll
+see their note in the history; fix what they ask and ask for clearance again.
+
+Documents can't be removed once they're sent, so the record can't be altered later.
+
+<img src="user-guide/ask-for-clearance.png" width="210" alt="Ask for clearance with proof attached">
+
+<div style="page-break-before: always"></div>
+
+## 5. Parents and guardians
+
+Parents and guardians of athletes under 17 sign in with their own Google account and ask to join
+as **Guardian**, entering the email they used to register their athlete with PlayHQ. An admin then
+links them to their athlete. A guardian can be linked to more than one athlete, and an athlete can
+have more than one guardian.
+
+The home screen shows who you're the guardian of. Until an admin links you, it says so.
+
+As a guardian you:
+
+- **Receive the messages** sent to your athlete's squad, once an admin adds you to it.
+- **See the calendars** for your athlete's squad.
+- **Report and update injuries** for your athlete, and ask for clearance, exactly as an athlete
+  does (see [Athletes](#4-athletes)). If you look after more than one athlete, choose which one
+  when reporting.
+
+<img src="user-guide/guardian-home.png" width="210" alt="Guardian home screen">
+
+<div style="page-break-before: always"></div>
+
+## 6. Coaches
+
+Head coaches and assistant coaches have the same permissions. Everything below applies to the
+squads and teams you're listed in as a coach.
+
+After an admin marks a squad's **Selections Phase 2** complete, coaches look after only the
+athletes in their named teams. Before that, they look after everyone in the squad.
+
+<img src="user-guide/coach-home.png" width="210" alt="Coach home screen with a clearance to review">
+
+### Sending messages
+
+1. Open **Messages** and tap **New message**.
+2. Choose the squad or team (if you coach just one, it's already chosen).
+3. Write the message and tap **Send**.
+
+Everyone in that squad or team gets it, including the parents and guardians listed in it. Open
+**Sent** to see how many people have read each message, and open a message to see exactly who has
+and hasn't read it. Club admins can read every message.
+
+<img src="user-guide/new-message-coach.png" width="210" alt="New message">
+<img src="user-guide/messages-sent.png" width="210" alt="Sent messages with read counts">
+<img src="user-guide/read-receipts.png" width="210" alt="Read receipts for one message">
+
+### Athletes' check-ins
+
+The **Check-ins** card shows how many of your athletes have checked in today and how many are
+flagged. If any are flagged, your to-do list says "Check in with N athletes".
+
+- **Day by day** lists today's (or yesterday's) check-ins for a squad or team: athletes to check
+  in with first, with what scored low and any note, then those feeling good, then who hasn't
+  checked in.
+- **Trends** graphs the group's average sleep, soreness, stress and mood over 2 weeks, 4 weeks or
+  3 months, with the number who checked in each day. The red line is 2, the score that flags an
+  athlete.
+- Tap an athlete to see their last four weeks.
+
+<img src="user-guide/check-ins-coach.png" width="210" alt="Coach's day-by-day check-ins">
+<img src="user-guide/check-ins-trends.png" width="210" alt="Check-in trends">
+<img src="user-guide/check-ins-athlete-history.png" width="210" alt="One athlete's check-in history">
+
+### Injuries and clearances
+
+**Injuries** lists your athletes' current injuries with their restrictions and expected return
+date. Choose **Including cleared** to see past injuries too.
+
+When one of your athletes asks for clearance, it appears under **Waiting for your sign-off** and in
+your to-do list. Open it, check the proof in the history (tap **View or share**), then:
+
+- **Endorse clearance** to pass it to the committee, with an optional note such as "trained fully
+  on Tuesday", or
+- **Send back** with a note saying what's missing.
+
+If an athlete has no coach, an admin endorses instead.
+
+<img src="user-guide/injuries-coach.png" width="210" alt="Coach's injuries list">
+<img src="user-guide/endorse-clearance.png" width="210" alt="Endorse or send back a clearance">
+
+### Taking attendance
+
+1. Tap **Attendance**, then **Take attendance**.
+2. Choose the squad or team. You can also choose **Whole squad** for any current squad, or
+   **Whole club** for club events, where every approved athlete is on the register.
+3. Name the session. If a calendar event is on now (from an hour before it starts to 30 minutes
+   after it ends), its name is filled in for you; other events from today are offered as chips.
+4. Mark each athlete **Present** or **Absent**, or tap **Mark the rest present**.
+5. Tap **Save attendance**.
+
+If attendance was already taken for the same group in the last 3 hours, a warning shows who took
+it, in case it's a duplicate. You can open that record, or carry on if it really is a different
+session.
+
+<img src="user-guide/take-attendance.png" width="210" alt="Taking attendance">
+
+### Attendance records
+
+- **Sessions** lists past sessions. Open one to see who was there, and **Change attendance** to
+  correct it.
+- **Athletes** shows each athlete's attendance over 4 weeks, 3 months or 12 months, with the last
+  time they were there. Tap an athlete to see every session.
+
+<img src="user-guide/attendance-sessions.png" width="210" alt="Attendance sessions">
+<img src="user-guide/attendance-session.png" width="210" alt="One attendance session">
+<img src="user-guide/attendance-athletes.png" width="210" alt="Athletes' attendance percentages">
+<img src="user-guide/attendance-athlete.png" width="210" alt="One athlete's attendance">
+
+<div style="page-break-before: always"></div>
+
+## 7. Managers
+
+Managers look after the logistics of their squads and teams. As a manager you can:
+
+- **Send messages** to the squads and teams you manage, and see read receipts, the same way as
+  coaches (see [Sending messages](#sending-messages)).
+- **Take attendance** for your groups, a whole squad or the whole club, and see and correct your
+  own groups' sessions (see [Taking attendance](#taking-attendance)).
+
+Managers don't see athletes' attendance histories, check-ins or injuries.
+
+<img src="user-guide/manager-home.png" width="210" alt="Manager home screen">
+<img src="user-guide/attendance-warning.png" width="210" alt="Warning that attendance may already have been taken">
+
+<div style="page-break-before: always"></div>
+
+## 8. Committee
+
+Committee members oversee the club's athletes without seeing anyone's private check-in answers.
+
+<img src="user-guide/committee-home.png" width="210" alt="Committee home screen">
+
+### Check-in averages
+
+**Check-ins** shows average scores for each squad, and for each team once its squad's Selections
+Phase 2 is complete, plus how many checked in and how many are flagged. **Trends** graphs the
+averages for one group or the whole club. Scores only show once at least 3 athletes in a group
+have checked in, so they can't point to one person. Individual answers are only for the athlete,
+their guardians and their coaches.
+
+<img src="user-guide/check-ins-overview.png" width="210" alt="Committee check-in overview">
+<img src="user-guide/check-ins-club-trends.png" width="210" alt="Whole-club check-in trends">
+
+### Accepting clearances
+
+The committee sees every athlete's injuries. When a coach endorses a clearance, it appears under
+**Waiting for your sign-off** and in the to-do list of every committee member except the coach who
+endorsed it. Open it, check the proof, then:
+
+- **Accept clearance** clears the athlete to train and play, or
+- **Send back** with a note.
+
+The committee can also send back a request that no coach has looked at yet. Tap **View or share**
+on a document to save it to OneDrive or attach it to an email.
+
+<img src="user-guide/injuries-committee.png" width="210" alt="Committee injuries list">
+<img src="user-guide/accept-clearance.png" width="210" alt="Accept or send back a clearance">
+
+### Attendance
+
+Committee members can take attendance for any whole squad or the whole club, and see every
+session and every athlete's attendance (see [Taking attendance](#taking-attendance)).
+
+<img src="user-guide/attendance-whole-club.png" width="210" alt="Taking whole-club attendance">
+
+### Committee calendar
+
+Calendars an admin shares with the **Committee** appear only for committee members and admins.
+
+<div style="page-break-before: always"></div>
+
+## 9. Partners and guests
+
+Partners and guests see the club calendar and receive messages sent to everyone in the club.
+Partners also receive messages an admin sends to all partners.
+
+<img src="user-guide/partner-home.png" width="210" alt="Partner home screen">
+
+<div style="page-break-before: always"></div>
+
+## 10. Admins
+
+Admins can do everything above, plus run the club's set-up from **Administration** on the home
+screen. Admins' to-do lists include join requests waiting for approval and clearances waiting for
+sign-off. On an installed app, admins also get a push notification for each new join request.
+
+<img src="user-guide/admin-home.png" width="210" alt="Admin home screen">
+<img src="user-guide/administration.png" width="210" alt="Administration menu">
+
+### Approving members
+
+**Members** lists everyone, grouped into **Waiting for approval**, **Members**, **Signed in, no
+request yet** and **Not approved**. Search by name or email.
+
+Open a request to see the person's sign-in email, PlayHQ email and what they asked for. Check them
+against PlayHQ, then:
+
+1. Choose their **Role**.
+2. Choose their **Squads** and, once teams are named, **Teams**. For coaches, choose **Head Coach**
+   or **Assistant Coach** for each group. For athletes in a team, choose **Touring athlete** or
+   **Training partner**.
+3. For athletes, set **Age** to Under 17 or 17 or over. Under-17 athletes get a **Parents and
+   guardians** section: search for an approved guardian and tap to link them (tap ✕ to unlink).
+4. Tap **Approve**.
+
+If you can't match someone to PlayHQ, ask them to read you the 6-digit code from their home screen
+in person or over a channel you already trust. Enter it under **Verify in person** and tap
+**Check code**. The member then shows as "Verified in person".
+
+To turn someone down, choose a reason (**PlayHQ email doesn't match**, **Not registered with the
+club** or **Other**) and tap **Don't approve**. They see the reason and can request again.
+
+<img src="user-guide/members.png" width="210" alt="Members list">
+<img src="user-guide/member-approve.png" width="210" alt="Approving a guardian's request">
+<img src="user-guide/member-new.png" width="210" alt="Approving an athlete's request">
+
+<img src="user-guide/member-under-17.png" width="210" alt="Under-17 athlete with guardians linked">
+<img src="user-guide/member-guardian.png" width="210" alt="Guardian showing their athlete">
+
+### Changing or removing members
+
+Open any member to change their role, squads, teams or titles, then tap **Save changes**.
+
+- **Remove access** stops someone using the app but keeps their account. Choose a reason first.
+- **Delete member** permanently deletes their account, squad and team places, guardian links and
+  message receipts. Messages they sent stay, and their injury records are kept for 12 months.
+
+<img src="user-guide/delete-member.png" width="210" alt="Delete member confirmation">
+
+### Squads, teams and selections
+
+**Squads and teams** lists the current season's squads with the teams named from each.
+
+- **Add a squad or team**: choose Team or Squad, give it a name, and for a team pick the squad it's
+  named from.
+- **Name a team** (tap it): for each person in the squad, choose **Touring**, **Training partner**
+  or **Not selected** for athletes, and **In this team** or **Not in this team** for coaches and
+  managers. People not selected stay in the squad.
+- **Rename** or **Remove** a squad or team. Removing it takes it off this season's lists, home
+  screens and coaches' to-dos; its attendance and other records are kept and you can **Bring
+  back** it later.
+- **Mark Selections Phase 2 complete** when a squad's teams are named. From then on, coaches only
+  look after their own team's athletes, and clearances for athletes left only in the squad fall to
+  admins. You can **Undo** it.
+
+<img src="user-guide/squads-and-teams.png" width="210" alt="Squads and teams">
+<img src="user-guide/name-team.png" width="210" alt="Naming a team from a squad">
+<img src="user-guide/selections-complete.png" width="210" alt="Marking Selections Phase 2 complete">
+<img src="user-guide/remove-squad.png" width="210" alt="Removing a squad from this season">
+
+### Seasons
+
+The club year runs May to May. **Seasons** handles the change-over:
+
+1. **In May, start the next season.** This creates empty squads with the same names, and their
+   squad calendars, for the new season (for example 2027–28). Nobody is moved, and last season
+   keeps running alongside.
+2. **Place returning members.** Open each new squad and pick who's coming back from last season's
+   squads. They keep their club role, and coaches keep their title. New people still send a join
+   request and join the newest season's squads.
+3. **About 4–6 weeks after Easter, archive the old season.** Its squads and teams leave everyone's
+   home screen, calendars, messages and to-dos. Attendance, injuries and check-ins are kept, and
+   you can bring the season back.
+
+Nothing is deleted when a season is archived.
+
+<img src="user-guide/seasons.png" width="210" alt="Seasons, with the new season's squads">
+<img src="user-guide/season-start.png" width="210" alt="Starting a new season">
+<img src="user-guide/place-members.png" width="210" alt="Placing returning members">
+<img src="user-guide/season-archive.png" width="210" alt="Archiving last season">
+
+### Calendars
+
+**Calendars** connects the club's Outlook calendars. In Outlook, publish the calendar and copy its
+ICS link, then paste it under **Add a calendar**, give it a name and choose who it's shown to:
+**Everyone**, the **Committee**, or one squad or team. Each calendar has a colour, used for its
+events in the app. **Edit name or link** and **Delete** change or remove one.
+
+<img src="user-guide/admin-calendars.png" width="210" alt="Calendars admin">
+
+### Messages to the club or a role
+
+Admins can send a message to **Everyone**, to **A role** (such as all guardians or all coaches), or
+to **A squad or team**. Admins can read every message and its read receipts.
+
+<img src="user-guide/message-to-role.png" width="210" alt="Sending a message to a role">
+
+### Injury report
+
+**Injury report** lists injuries reported or cleared in the last few months (3 by default), plus
+every injury not yet cleared, with totals. **Export CSV** opens the share sheet so you can save it
+to OneDrive or attach it to an email.
+
+<img src="user-guide/injury-report.png" width="210" alt="Injury report">
+
+### Club password
+
+**Club password** sets a password new members must enter to ask to join. It stops strangers who
+find the app from sending requests. Approved members never need it. For security it can't be shown
+once saved, only replaced or removed.
+
+<img src="user-guide/club-password.png" width="210" alt="Club password">
+
+<div style="page-break-before: always"></div>
+
+## 11. Who can see what
+
+| Information             | Who can see it                                                                                                              |
+| ----------------------- | --------------------------------------------------------------------------------------------------------------------------- |
+| Your profile and squads | You, the people in your squads and teams (names and positions only), and admins.                                            |
+| Messages                | The people they were sent to, the sender, and admins. Guardians get their athlete's squad messages.                         |
+| Read receipts           | The sender and admins.                                                                                                      |
+| Daily check-in answers  | The athlete, their guardians and their coaches. The committee and admins see only group averages, hidden below 3 check-ins. |
+| Injuries and documents  | The athlete, their guardians, their coaches, the committee and admins. Managers don't see injuries.                         |
+| Attendance records      | Coaches, the committee and admins. Managers see their own groups' sessions. Athletes and guardians don't see attendance.    |
+| Committee calendar      | Committee members and admins.                                                                                               |
+
+When someone leaves, injury records and proof documents are kept for 12 months, visible only to the
+committee and admins, then deleted automatically.
+
+## 12. Keeping this guide up to date
+
+This guide lives in the app's repository at `docs/user-guide.md`, with its screenshots in
+`docs/user-guide/`. Any change that adds, removes or changes something a member can see or do must
+update the matching section, the tables in sections 1 and 11, and any screenshot that no longer
+matches, in the same pull request.
+
+Screenshots are taken from the web build with sample data (no real club data), at a 390 × 844
+phone screen at 2× scale. The tooling (`shoot.mjs`, `serve.py` and the fixtures, including
+`user-guide.mjs` for screens only this guide uses) is kept in the project's shared files under
+`thunder/screenshots/`.
