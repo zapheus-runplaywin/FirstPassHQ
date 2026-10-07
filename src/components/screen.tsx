@@ -15,6 +15,7 @@ import {
   StyleSheet,
   TextInput,
 } from 'react-native';
+import { useFocusEffect, useIsFocused } from 'expo-router';
 import { SafeAreaView } from 'react-native-safe-area-context';
 
 import { ThemedView } from '@/components/themed-view';
@@ -55,6 +56,15 @@ export function Screen({
   stickyHeaderIndices?: number[];
 }) {
   const scrollRef = useRef<ScrollView>(null);
+  // Screens stay mounted underneath the one on top, and keyboard events reach
+  // every one of them. Only the screen being looked at reacts, or a hidden
+  // screen can be scrolled out of place by typing on another one.
+  const isFocused = useIsFocused();
+  // Where the screen is scrolled to and how much there is to scroll, so a
+  // screen that comes back scrolled past its content can be put right.
+  const scrollY = useRef(0);
+  const contentHeight = useRef(0);
+  const viewportHeight = useRef(0);
   // Android draws behind the keyboard (edge to edge), so the content needs room
   // to scroll above it. iOS adjusts the scroll insets itself.
   const [androidKeyboardHeight, setAndroidKeyboardHeight] = useState(0);
@@ -74,6 +84,7 @@ export function Screen({
   }, []);
 
   useEffect(() => {
+    if (!isFocused) return;
     const shown = Keyboard.addListener('keyboardDidShow', (event) => {
       if (Platform.OS === 'android') setAndroidKeyboardHeight(event.endCoordinates.height);
       // Wait a frame for the extra room to be laid out.
@@ -83,8 +94,18 @@ export function Screen({
     return () => {
       shown.remove();
       hidden.remove();
+      setAndroidKeyboardHeight(0);
     };
-  }, [revealFocusedInput]);
+  }, [isFocused, revealFocusedInput]);
+
+  // Coming back to a screen that is scrolled past the end of its content
+  // (it shrank while away) scrolls it back to the end.
+  useFocusEffect(
+    useCallback(() => {
+      const maxY = Math.max(0, contentHeight.current - viewportHeight.current);
+      if (scrollY.current > maxY) scrollRef.current?.scrollTo({ y: maxY, animated: false });
+    }, []),
+  );
 
   const scrollToY = useCallback(
     (y: number) => scrollRef.current?.scrollTo({ y: Math.max(0, y), animated: true }),
@@ -110,7 +131,17 @@ export function Screen({
               stickyHeaderIndices={stickyHeaderIndices}
               keyboardShouldPersistTaps="handled"
               keyboardDismissMode="interactive"
-              automaticallyAdjustKeyboardInsets
+              automaticallyAdjustKeyboardInsets={isFocused}
+              scrollEventThrottle={100}
+              onScroll={(event) => {
+                scrollY.current = event.nativeEvent.contentOffset.y;
+              }}
+              onContentSizeChange={(_width, height) => {
+                contentHeight.current = height;
+              }}
+              onLayout={(event) => {
+                viewportHeight.current = event.nativeEvent.layout.height;
+              }}
               refreshControl={
                 onRefresh ? (
                   <RefreshControl refreshing={refreshing ?? false} onRefresh={onRefresh} />
