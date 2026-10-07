@@ -10,6 +10,7 @@ import { Button, Card, PressableCard } from '@/components/ui';
 import { Colors, Spacing } from '@/constants/theme';
 import { useTheme } from '@/hooks/use-theme';
 import { useAuth } from '@/lib/auth';
+import { injuriesSummary, useCanSeeInjuries, useOpenInjuries } from '@/lib/injuries';
 import { useUnreadCount } from '@/lib/messages';
 import { pendingRequestsLabel, usePendingRequests } from '@/lib/use-pending-requests';
 import { rejectionReasonMessages, roleLabels, teamPositionLabel } from '@/lib/labels';
@@ -28,6 +29,9 @@ export default function HomeScreen() {
   const { events, reload: reloadEvents } = useEvents();
   const { unreadCount, reloadUnread } = useUnreadCount();
   const { pendingCount, reloadPending } = usePendingRequests();
+  const canSeeInjuries = useCanSeeInjuries();
+  const { openInjuries, reloadInjuries } = useOpenInjuries();
+  const injuriesWaiting = openInjuries.filter((i) => i.waiting_for_me).length;
 
   const isGuardian = profile?.status === 'approved' && profile.role === 'guardian';
 
@@ -50,7 +54,14 @@ export default function HomeScreen() {
 
   async function onRefresh() {
     setRefreshing(true);
-    await Promise.all([refresh(), reloadPending(), loadAthletes(), reloadEvents(), reloadUnread()]);
+    await Promise.all([
+      refresh(),
+      reloadPending(),
+      loadAthletes(),
+      reloadEvents(),
+      reloadUnread(),
+      reloadInjuries(),
+    ]);
     setRefreshing(false);
   }
 
@@ -92,6 +103,24 @@ export default function HomeScreen() {
             {unreadCount === 0
               ? 'No new messages'
               : `${unreadCount} new ${unreadCount === 1 ? 'message' : 'messages'}`}
+          </ThemedText>
+        </PressableCard>
+      ) : null}
+
+      {canSeeInjuries ? (
+        <PressableCard onPress={() => router.push('/injuries')}>
+          <View style={styles.cardTitleRow}>
+            <ThemedText type="smallBold">Injuries</ThemedText>
+            {injuriesWaiting > 0 ? (
+              <View style={[styles.badge, { backgroundColor: theme.accent }]}>
+                <ThemedText type="smallBold" style={{ color: theme.onAccent }}>
+                  {injuriesWaiting}
+                </ThemedText>
+              </View>
+            ) : null}
+          </View>
+          <ThemedText type="small" themeColor="textSecondary">
+            {injuriesSummary(openInjuries)}
           </ThemedText>
         </PressableCard>
       ) : null}

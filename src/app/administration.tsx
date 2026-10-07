@@ -39,6 +39,13 @@ export default function AdministrationScreen() {
         </ThemedText>
       </PressableCard>
 
+      <PressableCard onPress={() => router.push('/admin/injuries')}>
+        <ThemedText type="smallBold">Injury report</ThemedText>
+        <ThemedText type="small" themeColor="textSecondary">
+          Injuries and their status, with a CSV export
+        </ThemedText>
+      </PressableCard>
+
       <PressableCard onPress={() => router.push('/admin/club-password')}>
         <ThemedText type="smallBold">Club password</ThemedText>
         <ThemedText type="small" themeColor="textSecondary">
