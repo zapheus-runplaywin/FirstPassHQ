@@ -25,19 +25,25 @@ permissions:
   contents: read
 
 jobs:
-  # A run with "Allow data loss" ticked waits here until it is approved. Add
-  # Matt as the required reviewer of the data-loss environment in GitHub >
-  # Settings > Environments so only he can approve it.
+  # A run with "Allow data loss" ticked only goes ahead when Matt started it.
+  # (Required reviewers on environments need a paid GitHub plan for private
+  # repositories, so this checks who started the run instead.)
   approve-data-loss:
     if: ${{ inputs.allow_data_loss == true }}
     runs-on: ubuntu-latest
-    environment: data-loss
     steps:
-      - run: echo "Data loss approved for this run."
+      - name: Only Matt can allow data loss
+        env:
+          ACTOR: ${{ github.triggering_actor }}
+        run: |
+          if [ "$ACTOR" != "zapheus-runplaywin" ]; then
+            echo "::error::Only Matt can run this with Allow data loss ticked. This run was started by $ACTOR."
+            exit 1
+          fi
 
   deploy:
     needs: approve-data-loss
-    # Runs when no approval was needed (skipped) or it was given.
+    # Runs when data loss wasn't allowed (skipped) or Matt allowed it.
     if: ${{ !cancelled() && (needs.approve-data-loss.result == 'success' || needs.approve-data-loss.result == 'skipped') }}
     runs-on: ubuntu-latest
     environment: production
