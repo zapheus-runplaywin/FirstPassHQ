@@ -2,7 +2,7 @@ import { router, useFocusEffect } from 'expo-router';
 import { useCallback, useState } from 'react';
 import { Pressable, StyleSheet, View } from 'react-native';
 
-import { EventCard } from '@/components/event-card';
+import { EventGrid } from '@/components/event-card';
 import { Screen } from '@/components/screen';
 import { ThemedText } from '@/components/themed-text';
 import { Button, Card, PressableCard } from '@/components/ui';
@@ -10,11 +10,11 @@ import { Spacing } from '@/constants/theme';
 import { useTheme } from '@/hooks/use-theme';
 import { useAuth } from '@/lib/auth';
 import { roleLabels, teamPositionLabel } from '@/lib/labels';
-import { formatDay } from '@/lib/format';
 import { supabase } from '@/lib/supabase';
 import { useEvents } from '@/lib/use-events';
 
-const UPCOMING_COUNT = 5;
+/** Three rows of two tiles. */
+const UPCOMING_COUNT = 6;
 
 export default function HomeScreen() {
   const theme = useTheme();
@@ -94,14 +94,7 @@ export default function HomeScreen() {
               Nothing on the calendar yet.
             </ThemedText>
           ) : (
-            events.slice(0, UPCOMING_COUNT).map((event) => (
-              <View key={event.id} style={styles.upcoming}>
-                <ThemedText type="small" themeColor="textSecondary">
-                  {formatDay(event.start)}
-                </ThemedText>
-                <EventCard event={event} />
-              </View>
-            ))
+            <EventGrid events={events.slice(0, UPCOMING_COUNT)} showDay />
           )}
         </View>
       ) : null}
@@ -193,9 +186,6 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
     justifyContent: 'space-between',
     alignItems: 'center',
-  },
-  upcoming: {
-    gap: Spacing.one,
   },
   cardAction: {
     marginTop: Spacing.two,
