@@ -24,10 +24,16 @@ import { MaxContentWidth, Spacing } from '@/constants/theme';
 const FOCUS_MARGIN = 96;
 
 const RevealFocusedInput = createContext<() => void>(() => {});
+const ScrollToY = createContext<(y: number) => void>(() => {});
 
 /** Scrolls the screen so the field being typed in sits above the keyboard. */
 export function useRevealFocusedInput() {
   return use(RevealFocusedInput);
+}
+
+/** Scrolls the screen to a position within its content. */
+export function useScrollToY() {
+  return use(ScrollToY);
 }
 
 export function Screen({
@@ -35,12 +41,18 @@ export function Screen({
   refreshing,
   onRefresh,
   withTopInset = false,
+  gap = Spacing.four,
+  stickyHeaderIndices,
 }: {
   children: ReactNode;
   refreshing?: boolean;
   onRefresh?: () => void;
   /** Set on screens without a navigation header. */
   withTopInset?: boolean;
+  /** Space between the screen's children. */
+  gap?: number;
+  /** Children (by position) that stay pinned to the top while scrolling past them. */
+  stickyHeaderIndices?: number[];
 }) {
   const scrollRef = useRef<ScrollView>(null);
   // Android draws behind the keyboard (edge to edge), so the content needs room
@@ -74,31 +86,42 @@ export function Screen({
     };
   }, [revealFocusedInput]);
 
+  const scrollToY = useCallback(
+    (y: number) => scrollRef.current?.scrollTo({ y: Math.max(0, y), animated: true }),
+    [],
+  );
+
   return (
-    <RevealFocusedInput value={revealFocusedInput}>
-      <ThemedView style={styles.container}>
-        <SafeAreaView
-          style={styles.safeArea}
-          edges={withTopInset ? undefined : ['bottom', 'left', 'right']}>
-          <ScrollView
-            ref={scrollRef}
-            contentContainerStyle={[
-              styles.content,
-              androidKeyboardHeight > 0 && { paddingBottom: androidKeyboardHeight + Spacing.four },
-            ]}
-            keyboardShouldPersistTaps="handled"
-            keyboardDismissMode="interactive"
-            automaticallyAdjustKeyboardInsets
-            refreshControl={
-              onRefresh ? (
-                <RefreshControl refreshing={refreshing ?? false} onRefresh={onRefresh} />
-              ) : undefined
-            }>
-            {children}
-          </ScrollView>
-        </SafeAreaView>
-      </ThemedView>
-    </RevealFocusedInput>
+    <ScrollToY value={scrollToY}>
+      <RevealFocusedInput value={revealFocusedInput}>
+        <ThemedView style={styles.container}>
+          <SafeAreaView
+            style={styles.safeArea}
+            edges={withTopInset ? undefined : ['bottom', 'left', 'right']}>
+            <ScrollView
+              ref={scrollRef}
+              contentContainerStyle={[
+                styles.content,
+                { gap },
+                androidKeyboardHeight > 0 && {
+                  paddingBottom: androidKeyboardHeight + Spacing.four,
+                },
+              ]}
+              stickyHeaderIndices={stickyHeaderIndices}
+              keyboardShouldPersistTaps="handled"
+              keyboardDismissMode="interactive"
+              automaticallyAdjustKeyboardInsets
+              refreshControl={
+                onRefresh ? (
+                  <RefreshControl refreshing={refreshing ?? false} onRefresh={onRefresh} />
+                ) : undefined
+              }>
+              {children}
+            </ScrollView>
+          </SafeAreaView>
+        </ThemedView>
+      </RevealFocusedInput>
+    </ScrollToY>
   );
 }
 
@@ -114,6 +137,5 @@ const styles = StyleSheet.create({
   },
   content: {
     padding: Spacing.four,
-    gap: Spacing.four,
   },
 });

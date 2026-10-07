@@ -11,6 +11,8 @@ export type CalendarEvent = {
   description: string | null;
   calendarId: string;
   calendarName: string;
+  /** True for the club-wide calendar, false for a squad or team calendar. */
+  clubWide: boolean;
 };
 
 /** Stops a runaway rule (e.g. an endless daily event) from freezing the app. */
@@ -22,7 +24,7 @@ const MAX_OCCURRENCES_PER_EVENT = 500;
  */
 export function parseIcs(
   icsText: string,
-  calendar: { id: string; name: string },
+  calendar: { id: string; name: string; clubWide: boolean },
   rangeStart: Date,
   rangeEnd: Date,
 ): CalendarEvent[] {
@@ -72,6 +74,7 @@ export function parseIcs(
       description: item.description || null,
       calendarId: calendar.id,
       calendarName: calendar.name,
+      clubWide: calendar.clubWide,
     });
   };
 

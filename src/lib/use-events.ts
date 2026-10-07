@@ -16,6 +16,7 @@ type CalendarRow = {
   id: string;
   name: string;
   url: string;
+  clubWide: boolean;
 };
 
 /**
@@ -76,7 +77,7 @@ async function fetchEvents(
     .order('created_at');
   const calendars: CalendarRow[] = (data ?? []).map((row) => {
     const team = row.team as unknown as { name: string } | null;
-    return { id: row.id, url: row.url, name: team?.name ?? row.name };
+    return { id: row.id, url: row.url, name: team?.name ?? row.name, clubWide: !team };
   });
 
   const rangeStart = startOfToday();
