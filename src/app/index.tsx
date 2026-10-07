@@ -1,16 +1,16 @@
 import { Image } from 'expo-image';
 import { router, useFocusEffect } from 'expo-router';
-import { useCallback, useState } from 'react';
+import { useCallback, useEffect, useState } from 'react';
 import { Pressable, StyleSheet, View } from 'react-native';
 
 import { EventGrid } from '@/components/event-card';
 import { Screen } from '@/components/screen';
 import { ThemedText } from '@/components/themed-text';
 import { Button, Card, PressableCard } from '@/components/ui';
-import { Spacing } from '@/constants/theme';
+import { Colors, Spacing } from '@/constants/theme';
 import { useTheme } from '@/hooks/use-theme';
 import { useAuth } from '@/lib/auth';
-import { roleLabels, teamPositionLabel } from '@/lib/labels';
+import { rejectionReasonMessages, roleLabels, teamPositionLabel } from '@/lib/labels';
 import { supabase } from '@/lib/supabase';
 import type { TeamMembership } from '@/lib/types';
 import { useEvents } from '@/lib/use-events';
@@ -203,9 +203,11 @@ function JoinStatus() {
       <Card>
         <ThemedText type="smallBold">Request not approved</ThemedText>
         <ThemedText type="small" themeColor="textSecondary">
-          Your request to join was not approved. Check your details and try again, or contact the
-          club.
+          {profile.rejection_reason
+            ? rejectionReasonMessages[profile.rejection_reason]
+            : 'Your request to join was not approved. Check your details and try again, or show a club admin the code below.'}
         </ThemedText>
+        <VerificationCode />
         <View style={styles.cardAction}>
           <Button title="Request again" onPress={() => router.push('/join')} />
         </View>
@@ -233,6 +235,19 @@ function JoinStatus() {
       <ThemedText type="small" themeColor="textSecondary">
         A club admin will approve your request and add you to your team. Pull down to check again.
       </ThemedText>
+      {profile.verified_at ? (
+        <ThemedText type="small" themeColor="textSecondary">
+          ✓ A club admin has confirmed who you are.
+        </ThemedText>
+      ) : (
+        <>
+          <ThemedText type="small" themeColor="textSecondary">
+            If an admin can’t match you to your PlayHQ registration, they may ask for this code in
+            person or over a channel they already trust. Never share it with anyone else.
+          </ThemedText>
+          <VerificationCode />
+        </>
+      )}
       <View style={styles.cardAction}>
         <Button title="Edit request" variant="secondary" onPress={() => router.push('/join')} />
       </View>
@@ -240,7 +255,38 @@ function JoinStatus() {
   );
 }
 
+/** The member's 6-digit code, which an admin enters to confirm who they are. */
+function VerificationCode() {
+  const [code, setCode] = useState<string | null>(null);
+
+  useEffect(() => {
+    supabase.rpc('my_verification_code').then(({ data }) => setCode(data as string | null));
+  }, []);
+
+  if (!code) return null;
+  return (
+    <View style={styles.code} accessibilityLabel={`Your code is ${code.split('').join(' ')}`}>
+      <ThemedText type="small" themeColor="textSecondary">
+        Your code
+      </ThemedText>
+      <ThemedText type="title" style={styles.codeDigits} selectable>
+        {code.slice(0, 3)} {code.slice(3)}
+      </ThemedText>
+    </View>
+  );
+}
+
 const styles = StyleSheet.create({
+  code: {
+    alignItems: 'center',
+    gap: Spacing.one,
+    paddingVertical: Spacing.two,
+  },
+  codeDigits: {
+    color: Colors.accent,
+    letterSpacing: 4,
+    fontVariant: ['tabular-nums'],
+  },
   headerRow: {
     flexDirection: 'row',
     alignItems: 'center',

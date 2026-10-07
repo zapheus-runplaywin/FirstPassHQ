@@ -1,4 +1,11 @@
-import type { AppRole, CoachTitle, MemberStatus, TeamRole, TeamSelection } from '@/lib/types';
+import type {
+  AppRole,
+  CoachTitle,
+  MemberStatus,
+  RejectionReason,
+  TeamRole,
+  TeamSelection,
+} from '@/lib/types';
 
 export const roleLabels: Record<AppRole, string> = {
   admin: 'Admin',
@@ -15,6 +22,22 @@ export const statusLabels: Record<MemberStatus, string> = {
   pending: 'Pending',
   approved: 'Approved',
   rejected: 'Rejected',
+};
+
+/** Why a request wasn't approved, as admins choose it. */
+export const rejectionReasonLabels: Record<RejectionReason, string> = {
+  playhq_email_mismatch: "PlayHQ email doesn't match",
+  not_registered: 'Not registered with the club',
+  other: 'Other',
+};
+
+/** Why a request wasn't approved, as the member reads it. */
+export const rejectionReasonMessages: Record<RejectionReason, string> = {
+  playhq_email_mismatch:
+    "Your PlayHQ email didn't match our registrations. Check it and request again, or show a club admin the code below.",
+  not_registered:
+    "We couldn't find you in our club registrations. If you think that's wrong, show a club admin the code below.",
+  other: 'Contact the club, or show a club admin the code below to confirm who you are.',
 };
 
 export const teamRoleLabels: Record<TeamRole, string> = {

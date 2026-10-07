@@ -10,17 +10,26 @@ import { PROFILE_COLUMNS, useAuth } from '@/lib/auth';
 import {
   coachTitleLabels,
   isTeamRole,
+  rejectionReasonLabels,
   roleLabels,
   selectionLabels,
   statusLabels,
 } from '@/lib/labels';
 import { supabase } from '@/lib/supabase';
-import type { AppRole, CoachTitle, MemberStatus, Profile, TeamSelection } from '@/lib/types';
+import type {
+  AppRole,
+  CoachTitle,
+  MemberStatus,
+  Profile,
+  RejectionReason,
+  TeamSelection,
+} from '@/lib/types';
 import { squadsOf, useTeams } from '@/lib/use-teams';
 
 const allRoles = Object.keys(roleLabels) as AppRole[];
 const coachTitles = Object.keys(coachTitleLabels) as CoachTitle[];
 const selections = Object.keys(selectionLabels) as TeamSelection[];
+const rejectionReasons = Object.keys(rejectionReasonLabels) as RejectionReason[];
 
 /** A squad or team the member is in: their coach title, or how an athlete was selected. */
 type Placement = { coach_title: CoachTitle | null; selection: TeamSelection | null };
@@ -45,6 +54,10 @@ export default function MemberScreen() {
   const [guardianOf, setGuardianOf] = useState<string[]>([]);
   const [people, setPeople] = useState<Person[]>([]);
   const [guardianSearch, setGuardianSearch] = useState('');
+  const [reason, setReason] = useState<RejectionReason | null>(null);
+  const [code, setCode] = useState('');
+  const [verifying, setVerifying] = useState(false);
+  const [verifyError, setVerifyError] = useState<string | null>(null);
   const [saving, setSaving] = useState<MemberStatus | null>(null);
   const [error, setError] = useState<string | null>(null);
 
@@ -73,6 +86,7 @@ export default function MemberScreen() {
       }
       setMember(profile);
       setUnder17(profile.under_17);
+      setReason(profile.rejection_reason);
       const links = linksResult.data ?? [];
       setGuardianIds(links.filter((l) => l.athlete_id === id).map((l) => l.guardian_id));
       setGuardianOf(links.filter((l) => l.guardian_id === id).map((l) => l.athlete_id));
@@ -148,6 +162,22 @@ export default function MemberScreen() {
     );
   }
 
+  async function verify() {
+    setVerifying(true);
+    setVerifyError(null);
+    const { error: rpcError } = await supabase.rpc('admin_verify_member', {
+      p_profile_id: id,
+      p_code: code,
+    });
+    setVerifying(false);
+    if (rpcError) {
+      setVerifyError(rpcError.message);
+      return;
+    }
+    setCode('');
+    setMember((current) => current && { ...current, verified_at: new Date().toISOString() });
+  }
+
   async function save(status: MemberStatus) {
     setSaving(status);
     setError(null);
@@ -158,6 +188,7 @@ export default function MemberScreen() {
       p_teams: inTeams
         ? Object.entries(selection).map(([team_id, placement]) => ({ team_id, ...placement }))
         : [],
+      p_rejection_reason: status === 'rejected' ? reason : null,
       p_under_17: hasGuardians,
       p_guardian_ids: hasGuardians ? guardianIds : [],
     });
@@ -207,6 +238,14 @@ export default function MemberScreen() {
         <Detail label="Status" value={statusLabels[member.status]} />
         <Detail label="Sign-in email" value={member.email} />
         <Detail label="PlayHQ email" value={member.playhq_email} />
+        <Detail
+          label="Verified in person"
+          value={
+            member.verified_at
+              ? `Yes, ${new Date(member.verified_at).toLocaleDateString()}`
+              : 'Not yet'
+          }
+        />
         {member.status !== 'approved' ? (
           <>
             <Detail
@@ -294,7 +333,7 @@ export default function MemberScreen() {
       ) : null}
 
       {hasGuardians ? (
-        <View style={styles.guardians}>
+        <View style={styles.group}>
           <ThemedText type="smallBold">Parents and guardians</ThemedText>
           {guardianIds.length > 0 ? (
             <ChipGroup
@@ -345,6 +384,37 @@ export default function MemberScreen() {
         </Card>
       ) : null}
 
+      {member.status !== 'approved' && !member.verified_at ? (
+        <View style={styles.group}>
+          <ThemedText type="smallBold">Verify in person</ThemedText>
+          <ThemedText type="small" themeColor="textSecondary">
+            If you can’t match them to PlayHQ, ask them to open the app and read you their 6-digit
+            code, in person or over a channel you already trust.
+          </ThemedText>
+          <TextField
+            label="Their code"
+            value={code}
+            onChangeText={setCode}
+            placeholder="123 456"
+            keyboardType="number-pad"
+            maxLength={7}
+          />
+          <ErrorText>{verifyError}</ErrorText>
+          <Button title="Check code" variant="secondary" onPress={verify} busy={verifying} />
+        </View>
+      ) : null}
+
+      {!isSelf ? (
+        <ChipGroup
+          label={
+            member.status === 'approved' ? 'Reason if removing access' : 'Reason if not approving'
+          }
+          options={rejectionReasons.map((r) => ({ value: r, label: rejectionReasonLabels[r] }))}
+          selected={reason ? [reason] : []}
+          onToggle={(r) => setReason(r === reason ? null : r)}
+        />
+      ) : null}
+
       <ErrorText>{error}</ErrorText>
 
       <View style={styles.actions}>
@@ -367,9 +437,9 @@ export default function MemberScreen() {
         ) : (
           <>
             <Button title="Approve" onPress={() => save('approved')} busy={saving === 'approved'} />
-            {member.status === 'pending' ? (
+            {member.status === 'pending' || member.status === 'rejected' ? (
               <Button
-                title="Don't approve"
+                title={member.status === 'pending' ? "Don't approve" : 'Save reason'}
                 variant="secondary"
                 onPress={() => save('rejected')}
                 busy={saving === 'rejected'}
@@ -397,7 +467,7 @@ const styles = StyleSheet.create({
   actions: {
     gap: Spacing.three,
   },
-  guardians: {
+  group: {
     gap: Spacing.two,
   },
   detail: {
