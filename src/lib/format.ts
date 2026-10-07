@@ -10,6 +10,8 @@ const shortDayFormat = new Intl.DateTimeFormat(undefined, {
   day: 'numeric',
   month: 'short',
 });
+const monthFormat = new Intl.DateTimeFormat(undefined, { month: 'long', year: 'numeric' });
+const weekdayFormat = new Intl.DateTimeFormat(undefined, { weekday: 'short' });
 const timeFormat = new Intl.DateTimeFormat(undefined, { hour: 'numeric', minute: '2-digit' });
 
 export function dayKey(date: Date) {
@@ -50,4 +52,35 @@ export function groupByDay(events: CalendarEvent[]) {
     }
   }
   return groups;
+}
+
+export function monthKey(date: Date) {
+  return `${date.getFullYear()}-${date.getMonth()}`;
+}
+
+/** "October 2026". */
+export function formatMonth(date: Date) {
+  return monthFormat.format(date);
+}
+
+/** "Sat". */
+export function formatWeekday(date: Date) {
+  return weekdayFormat.format(date);
+}
+
+export function isToday(date: Date) {
+  return dayKey(date) === dayKey(new Date());
+}
+
+export function startOfDay(date: Date) {
+  return new Date(date.getFullYear(), date.getMonth(), date.getDate());
+}
+
+export function addDays(date: Date, days: number) {
+  return new Date(date.getFullYear(), date.getMonth(), date.getDate() + days);
+}
+
+/** The Monday on or before a date. Weeks start on Monday in Australia. */
+export function startOfWeek(date: Date) {
+  return addDays(date, -((date.getDay() + 6) % 7));
 }
