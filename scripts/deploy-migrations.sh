@@ -14,8 +14,17 @@ if [ -n "${ALREADY_APPLIED:-}" ]; then
   supabase migration repair --status applied $ALREADY_APPLIED "$@"
 fi
 
-supabase db push --dry-run "$@" | tee dry-run.txt
-pending=$(grep -oE '[0-9]{14}_[A-Za-z0-9_]+\.sql' dry-run.txt | sort -u || true)
+# JSON, because the plain-text list goes to stderr and its format changes
+# between environments (in GitHub Actions stdout only said "Finished").
+supabase db push --dry-run --output-format json "$@" > dry-run.json
+cat dry-run.json
+pending=$(python3 -c '
+import json, sys
+result = json.load(open("dry-run.json"))
+if not isinstance(result.get("migrations"), list):
+    sys.exit("The dry run did not list its migrations.")
+print("\n".join(sorted(result["migrations"])))
+')
 
 if [ -z "$pending" ]; then
   echo "The database is up to date."
