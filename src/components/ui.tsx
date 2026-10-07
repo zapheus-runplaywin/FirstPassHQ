@@ -1,6 +1,7 @@
 import type { ReactNode } from 'react';
 import {
   ActivityIndicator,
+  Keyboard,
   Pressable,
   StyleSheet,
   TextInput,
@@ -9,6 +10,7 @@ import {
   type ViewProps,
 } from 'react-native';
 
+import { useRevealFocusedInput } from '@/components/screen';
 import { ThemedText } from '@/components/themed-text';
 import { Spacing } from '@/constants/theme';
 import { useTheme } from '@/hooks/use-theme';
@@ -71,14 +73,21 @@ export function Button({
   );
 }
 
-export function TextField({ label, ...rest }: TextInputProps & { label: string }) {
+export function TextField({ label, onFocus, ...rest }: TextInputProps & { label: string }) {
   const theme = useTheme();
+  const revealFocusedInput = useRevealFocusedInput();
   return (
     <View style={styles.field}>
       <ThemedText type="smallBold">{label}</ThemedText>
       <TextInput
         placeholderTextColor={theme.textSecondary}
         style={[styles.input, { backgroundColor: theme.backgroundElement, color: theme.text }]}
+        onFocus={(event) => {
+          onFocus?.(event);
+          // When moving between fields the keyboard is already up, so it won't
+          // announce itself again.
+          if (Keyboard.isVisible()) revealFocusedInput();
+        }}
         {...rest}
       />
     </View>
