@@ -9,8 +9,7 @@
     "userInterfaceStyle": "dark",
     "ios": {
       "icon": "./assets/expo.icon",
-      "bundleIdentifier": "au.com.wcmmna.thunder",
-      "usesAppleSignIn": true
+      "bundleIdentifier": "au.com.wcmmna.thunder"
     },
     "android": {
       "adaptiveIcon": {
@@ -35,8 +34,7 @@
           "image": "./assets/images/logo.png",
           "imageWidth": 240
         }
-      ],
-      "expo-apple-authentication"
+      ]
     ],
     "experiments": {
       "typedRoutes": true,

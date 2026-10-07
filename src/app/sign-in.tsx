@@ -1,4 +1,3 @@
-import * as AppleAuthentication from 'expo-apple-authentication';
 import { Image } from 'expo-image';
 import { useState } from 'react';
 import { ActivityIndicator, Pressable, StyleSheet, View } from 'react-native';
@@ -8,22 +7,22 @@ import { ThemedText } from '@/components/themed-text';
 import { ThemedView } from '@/components/themed-view';
 import { MaxContentWidth, Spacing } from '@/constants/theme';
 import { useTheme } from '@/hooks/use-theme';
-import { authRedirectUrl, signIn, usesNativeApple, type Provider } from '@/lib/sign-in';
+import { authRedirectUrl, signInWithGoogle } from '@/lib/sign-in';
 
 export default function SignInScreen() {
   const theme = useTheme();
-  const [busy, setBusy] = useState<Provider | null>(null);
+  const [busy, setBusy] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
-  async function handle(provider: Provider) {
-    setBusy(provider);
+  async function handleGoogle() {
+    setBusy(true);
     setError(null);
     try {
-      await signIn(provider);
+      await signInWithGoogle();
     } catch (e) {
       setError(e instanceof Error ? e.message : 'Sign-in failed. Please try again.');
     } finally {
-      setBusy(null);
+      setBusy(false);
     }
   }
 
@@ -38,50 +37,26 @@ export default function SignInScreen() {
             accessibilityLabel="West Coast Thunder"
           />
           <ThemedText themeColor="textSecondary">
-            Sign in with the Google or Apple account you use for the club.
+            Sign in with the Google account you use for the club.
           </ThemedText>
         </View>
 
         <View style={styles.buttons}>
           <Pressable
             accessibilityRole="button"
-            disabled={busy !== null}
-            onPress={() => handle('google')}
+            disabled={busy}
+            onPress={handleGoogle}
             style={({ pressed }) => [
               styles.button,
               { backgroundColor: theme.backgroundElement, opacity: pressed ? 0.7 : 1 },
             ]}>
-            {busy === 'google' ? (
+            {busy ? (
               <ActivityIndicator />
             ) : (
               <ThemedText type="smallBold">Continue with Google</ThemedText>
             )}
           </Pressable>
 
-          {usesNativeApple() ? (
-            <AppleAuthentication.AppleAuthenticationButton
-              buttonType={AppleAuthentication.AppleAuthenticationButtonType.CONTINUE}
-              buttonStyle={AppleAuthentication.AppleAuthenticationButtonStyle.WHITE}
-              cornerRadius={12}
-              style={styles.button}
-              onPress={() => handle('apple')}
-            />
-          ) : (
-            <Pressable
-              accessibilityRole="button"
-              disabled={busy !== null}
-              onPress={() => handle('apple')}
-              style={({ pressed }) => [
-                styles.button,
-                { backgroundColor: theme.backgroundElement, opacity: pressed ? 0.7 : 1 },
-              ]}>
-              {busy === 'apple' ? (
-                <ActivityIndicator />
-              ) : (
-                <ThemedText type="smallBold">Continue with Apple</ThemedText>
-              )}
-            </Pressable>
-          )}
 
           {error ? (
             <ThemedText type="small" style={styles.error}>

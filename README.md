@@ -1,6 +1,6 @@
 # Thunder
 
-The club app for iOS and Android. Members sign in with Google or Apple, an admin approves them
+The club app for iOS and Android. Members sign in with Google, an admin approves them
 and adds them to a team, and the home screen shows their team.
 
 Built with [Expo](https://expo.dev) (React Native) and [Supabase](https://supabase.com) on the
@@ -45,25 +45,13 @@ phone. While testing in Expo Go, set it to the address shown under the sign-in b
 2. Add `https://<your-project-ref>.supabase.co/auth/v1/callback` as an authorised redirect URI.
 3. In Supabase **Authentication > Providers > Google**, enable it and paste the client ID and secret.
 
-### 4. Turn on Apple sign-in
-
-Needs an Apple Developer account.
-
-1. In [Certificates, Identifiers & Profiles](https://developer.apple.com/account/resources),
-   enable **Sign in with Apple** on the App ID `au.com.wcmmna.thunder`.
-2. Create a **Services ID** (used by Android and the browser flow) with the return URL
-   `https://<your-project-ref>.supabase.co/auth/v1/callback`.
-3. Create a **Sign in with Apple** key and download the `.p8` file.
-4. In Supabase **Authentication > Providers > Apple**, enable it. Under client IDs add both the
-   Services ID and `au.com.wcmmna.thunder`, and fill in the secret from the key.
-
-### 5. Make yourself an admin
+### 4. Make yourself an admin
 
 The first admin has to be set by hand. Sign in to the app once, then run this in the SQL Editor
 with your sign-in email. After that you can approve everyone else, including other admins, from
 **Members** on the home screen.
 
-### 6. Add the club calendar
+### 5. Add the club calendar
 
 In Outlook, publish the club calendar (Settings > Calendar > Shared calendars > Publish a
 calendar) and copy the ICS link. In the app, open **Calendars** from the home screen, paste it
