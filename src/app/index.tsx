@@ -10,6 +10,7 @@ import { Button, Card, PressableCard } from '@/components/ui';
 import { Colors, Spacing } from '@/constants/theme';
 import { useTheme } from '@/hooks/use-theme';
 import { useAuth } from '@/lib/auth';
+import { useCanTakeAttendance, useCanViewAttendance } from '@/lib/attendance';
 import { injuriesSummary, useCanSeeInjuries, useOpenInjuries } from '@/lib/injuries';
 import { useUnreadCount } from '@/lib/messages';
 import { pendingRequestsLabel, usePendingRequests } from '@/lib/use-pending-requests';
@@ -30,6 +31,8 @@ export default function HomeScreen() {
   const { unreadCount, reloadUnread } = useUnreadCount();
   const { pendingCount, reloadPending } = usePendingRequests();
   const canSeeInjuries = useCanSeeInjuries();
+  const canTakeAttendance = useCanTakeAttendance();
+  const canViewAttendance = useCanViewAttendance();
   const { openInjuries, reloadInjuries } = useOpenInjuries();
   const injuriesWaiting = openInjuries.filter((i) => i.waiting_for_me).length;
 
@@ -121,6 +124,17 @@ export default function HomeScreen() {
           </View>
           <ThemedText type="small" themeColor="textSecondary">
             {injuriesSummary(openInjuries)}
+          </ThemedText>
+        </PressableCard>
+      ) : null}
+
+      {canTakeAttendance || canViewAttendance ? (
+        <PressableCard onPress={() => router.push('/attendance')}>
+          <ThemedText type="smallBold">Attendance</ThemedText>
+          <ThemedText type="small" themeColor="textSecondary">
+            {canTakeAttendance
+              ? 'Take attendance and see past sessions'
+              : 'See athletes’ attendance'}
           </ThemedText>
         </PressableCard>
       ) : null}

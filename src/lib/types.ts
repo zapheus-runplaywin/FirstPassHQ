@@ -162,3 +162,42 @@ export type InjuryReportRow = {
   update_count: number;
   document_count: number;
 };
+
+/** A session's attendance record, from `attendance_sessions_list`. */
+export type AttendanceSession = {
+  id: string;
+  /** A club event, with every athlete in the club on the register. */
+  club_wide: boolean;
+  team_id: string | null;
+  team_name: string;
+  name: string;
+  held_at: string;
+  taken_by_name: string | null;
+  present_count: number;
+  marked_count: number;
+  /** The member coaches or manages the group, so can correct it. */
+  can_edit: boolean;
+};
+
+/** One athlete on a register. `present` is null until they're marked. */
+export type AttendanceMark = {
+  profile_id: string;
+  full_name: string | null;
+  present: boolean | null;
+};
+
+export type AthleteAttendanceSummary = {
+  profile_id: string;
+  full_name: string | null;
+  session_count: number;
+  present_count: number;
+  last_present_at: string | null;
+};
+
+export type AthleteAttendance = {
+  session_id: string;
+  team_name: string;
+  name: string;
+  held_at: string;
+  present: boolean;
+};
