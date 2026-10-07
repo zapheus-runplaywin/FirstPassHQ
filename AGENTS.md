@@ -39,3 +39,15 @@ Docs: https://docs.expo.dev/eas/index.md
 - If `ios/` and `android/` directories do not exist, they are generated (Continuous Native Generation). Never create or edit them by hand — configure native behavior in `app.json` and config plugins.
 - Expo Go only includes its bundled native modules. After adding a library with native code, the app needs a development build: `npx expo run:ios|android` locally, or `eas build --profile development`.
 - Prefer recommended Expo modules over third-party libraries, and check your available skills before adding dependencies. Docs: https://docs.expo.dev/versions/latest/index.md
+
+## Database migrations (Supabase)
+
+RULE: migrations must be safe to run on the production database and must never throw away data without Matt's explicit permission.
+
+- Migrations are additive by default: new tables, new nullable columns or columns with defaults, new functions, new policies.
+- Never write any of these without Matt saying yes to that specific change first: `drop table`, `drop column`, `drop schema`, `truncate`, a `delete` or `update` that removes or overwrites existing rows, or a column type change that can lose values.
+- When a change needs one of those, move or copy the data first, say in the PR exactly what would be lost, and wait for permission before merging.
+- Never edit a migration that has already been merged. Fix things with a new migration.
+- Write migrations so they can be re-run or fail cleanly: run them in one transaction, and use `if not exists` / `create or replace` where it fits.
+- Test every migration against a local Postgres loaded with realistic data before opening the PR, and confirm row counts are unchanged.
+- Each PR with a migration lists the files Matt needs to run in Supabase, in order.
