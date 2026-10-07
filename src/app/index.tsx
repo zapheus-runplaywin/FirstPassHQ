@@ -12,6 +12,7 @@ import { Colors, Spacing } from '@/constants/theme';
 import { useTheme } from '@/hooks/use-theme';
 import { useAuth } from '@/lib/auth';
 import { useCanTakeAttendance, useCanViewAttendance } from '@/lib/attendance';
+import { useAwardSlots } from '@/lib/awards';
 import {
   checkInOverviewLabel,
   checkInSummaryLabel,
@@ -58,12 +59,14 @@ export default function HomeScreen() {
   const { checkInSummary, reloadCheckInSummary } = useCheckInSummary();
   const isCheckInCoach = useIsCheckInCoach();
   const { checkInOverview, reloadCheckInOverview } = useCheckInOverview(today());
+  const { awardSlots, reloadAwardSlots } = useAwardSlots();
   const todos = buildTodos({
     userId: session?.user.id,
     injuries: openInjuries,
     pendingCount,
     needsCheckIn: myCheckIn === null,
     flaggedAthletes: checkInTotals(checkInSummary).flagged,
+    awardSlots,
     safety: safetyTodos,
   });
 
@@ -99,6 +102,7 @@ export default function HomeScreen() {
       reloadMyCheckIn(),
       reloadCheckInSummary(),
       reloadCheckInOverview(),
+      reloadAwardSlots(),
     ]);
     setRefreshing(false);
   }
@@ -196,6 +200,15 @@ export default function HomeScreen() {
         </PressableCard>
       ) : null}
 
+      {approved && (awardSlots.length > 0 || isAdmin) ? (
+        <PressableCard onPress={() => router.push('/awards')}>
+          <ThemedText type="smallBold">Awards</ThemedText>
+          <ThemedText type="small" themeColor="textSecondary">
+            {awardsLabel(awardSlots.length, awardSlots.filter((s) => !s.voted).length)}
+          </ThemedText>
+        </PressableCard>
+      ) : null}
+
       {isAdmin ? (
         <PressableCard onPress={() => router.push('/administration')}>
           <ThemedText type="smallBold">Administration</ThemedText>
@@ -276,6 +289,13 @@ export default function HomeScreen() {
       </View>
     </Screen>
   );
+}
+
+function awardsLabel(open: number, toVote: number) {
+  if (open === 0) return 'No votes open';
+  if (toVote === 0)
+    return `✓ You’ve voted in all ${open === 1 ? 'open award' : `${open} open awards`}`;
+  return `${toVote} ${toVote === 1 ? 'vote' : 'votes'} waiting for you`;
 }
 
 /** Named teams first, then squads, in club order. */

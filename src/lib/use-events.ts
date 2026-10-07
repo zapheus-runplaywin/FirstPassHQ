@@ -139,9 +139,51 @@ async function fetchEvents(
     }),
   );
 
-  const events = dedupe(perCalendar.flat()).sort((a, b) => a.start.getTime() - b.start.getTime());
+  const fixtures = await fetchFixtures(rangeStart, rangeEnd);
+
+  const events = dedupe([...perCalendar.flat(), ...fixtures]).sort(
+    (a, b) => a.start.getTime() - b.start.getTime(),
+  );
   for (const event of events) loadedEvents.set(event.id, event);
   return { events, failed };
+}
+
+/** How long a match is shown for in the calendar. */
+const MATCH_MINUTES = 60;
+
+/**
+ * Matches imported from PlayHQ for the squads and teams the member can see,
+ * shown in that team's calendar.
+ */
+async function fetchFixtures(rangeStart: Date, rangeEnd: Date): Promise<CalendarEvent[]> {
+  const { data } = await supabase
+    .from('fixtures')
+    .select(
+      'id, team_id, team_name, opponent, round_name, grade_name, starts_at, time_tbc, venue, court, is_home, team:teams (kind)',
+    )
+    .gte('starts_at', rangeStart.toISOString())
+    .lt('starts_at', rangeEnd.toISOString())
+    .order('starts_at');
+  return (data ?? []).map((f) => {
+    const team = f.team as unknown as { kind: GroupKind } | null;
+    const start = new Date(f.starts_at);
+    return {
+      id: `fixture:${f.id}`,
+      title: f.opponent ? `${f.team_name} v ${f.opponent}` : `${f.team_name} · Bye`,
+      start,
+      end: new Date(start.getTime() + MATCH_MINUTES * 60 * 1000),
+      allDay: f.time_tbc,
+      location: [f.venue, f.court].filter(Boolean).join(', ') || null,
+      description:
+        [f.round_name, f.grade_name, f.is_home === null ? null : f.is_home ? 'Home' : 'Away']
+          .filter(Boolean)
+          .join(' · ') || null,
+      calendarId: `fixtures:${f.team_id ?? 'none'}`,
+      calendarName: f.team_name,
+      clubWide: false,
+      color: calendarColorHex(null, team?.kind ?? 'team'),
+    };
+  });
 }
 
 async function fetchIcs(url: string): Promise<string | null> {

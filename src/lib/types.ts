@@ -280,3 +280,102 @@ export type CheckInTrendDay = {
   avg_stress: number | null;
   avg_mood: number | null;
 };
+
+/** Who can be voted for in an award. */
+export type AwardNominees = 'athletes' | 'coaches' | 'members' | 'listed';
+
+/** Roles that can vote in an award; `member` is everyone. */
+export type AwardVoterRole =
+  | 'athlete'
+  | 'coach'
+  | 'manager'
+  | 'guardian'
+  | 'committee'
+  | 'admin'
+  | 'partner'
+  | 'member';
+
+export type Award = {
+  id: string;
+  season: number;
+  name: string;
+  description: string;
+  closes_at: string;
+  club_wide: boolean;
+  per_group: boolean;
+  voter_roles: AwardVoterRole[];
+  nominees: AwardNominees;
+  points: number[];
+  by_match: boolean;
+  match_vote_hours: number;
+  preseason_weight: number;
+  preseason_closes_at: string | null;
+  annual: boolean;
+  copied_from: string | null;
+  award_groups: { team_id: string }[];
+  award_candidates: { id: string; name: string }[];
+};
+
+/** A vote open to the member: an award, in one group, for one match or the preseason. */
+export type AwardSlot = {
+  award_id: string;
+  award_name: string;
+  description: string;
+  points: number[];
+  nominees: AwardNominees;
+  team_id: string | null;
+  team_name: string | null;
+  fixture_id: string | null;
+  fixture_label: string | null;
+  preseason: boolean;
+  closes_at: string;
+  voted: boolean;
+};
+
+export type AwardNominee = { id: string; is_candidate: boolean; name: string };
+
+export type AwardResult = {
+  team_id: string | null;
+  team_name: string | null;
+  nominee_name: string;
+  preseason_points: number;
+  match_points: number;
+  votes: number;
+  score: number;
+};
+
+export type AwardTurnout = {
+  team_id: string | null;
+  team_name: string | null;
+  fixture_id: string | null;
+  fixture_label: string | null;
+  starts_at: string | null;
+  preseason: boolean;
+  ballots: number;
+  voters: number;
+};
+
+export type Fixture = {
+  id: string;
+  team_id: string | null;
+  team_name: string;
+  opponent: string | null;
+  round_name: string | null;
+  grade_name: string | null;
+  starts_at: string;
+  time_tbc: boolean;
+  venue: string | null;
+  court: string | null;
+  is_home: boolean | null;
+  status: string | null;
+};
+
+/** A PlayHQ competition season the club imports fixtures from. */
+export type PlayhqSeason = {
+  playhq_season_id: string;
+  name: string;
+  url: string;
+  season: number;
+  imported_at: string | null;
+  playhq_teams: { playhq_team_id: string; playhq_name: string; team_id: string | null }[];
+};

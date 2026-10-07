@@ -39,6 +39,20 @@ export default function AdministrationScreen() {
         </ThemedText>
       </PressableCard>
 
+      <PressableCard onPress={() => router.push('/admin/awards')}>
+        <ThemedText type="smallBold">Awards</ThemedText>
+        <ThemedText type="small" themeColor="textSecondary">
+          Create award votes, see results and copy annual awards
+        </ThemedText>
+      </PressableCard>
+
+      <PressableCard onPress={() => router.push('/admin/fixtures')}>
+        <ThemedText type="smallBold">Fixtures</ThemedText>
+        <ThemedText type="small" themeColor="textSecondary">
+          Import match fixtures from PlayHQ
+        </ThemedText>
+      </PressableCard>
+
       <PressableCard onPress={() => router.push('/admin/calendars')}>
         <ThemedText type="smallBold">Calendars</ThemedText>
         <ThemedText type="small" themeColor="textSecondary">
