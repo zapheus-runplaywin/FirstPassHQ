@@ -5,6 +5,7 @@ import { Pressable, StyleSheet, View } from 'react-native';
 
 import { EventGrid } from '@/components/event-card';
 import { Screen } from '@/components/screen';
+import { TodoList } from '@/components/todo-list';
 import { ThemedText } from '@/components/themed-text';
 import { Button, Card, PressableCard } from '@/components/ui';
 import { Colors, Spacing } from '@/constants/theme';
@@ -16,6 +17,7 @@ import { useUnreadCount } from '@/lib/messages';
 import { pendingRequestsLabel, usePendingRequests } from '@/lib/use-pending-requests';
 import { rejectionReasonMessages, roleLabels, teamPositionLabel } from '@/lib/labels';
 import { supabase } from '@/lib/supabase';
+import { buildTodos } from '@/lib/todos';
 import type { TeamMembership } from '@/lib/types';
 import { useEvents } from '@/lib/use-events';
 
@@ -35,6 +37,12 @@ export default function HomeScreen() {
   const canViewAttendance = useCanViewAttendance();
   const { openInjuries, reloadInjuries } = useOpenInjuries();
   const injuriesWaiting = openInjuries.filter((i) => i.waiting_for_me).length;
+  const todos = buildTodos({
+    userId: session?.user.id,
+    unreadCount,
+    injuries: openInjuries,
+    pendingCount,
+  });
 
   const isGuardian = profile?.status === 'approved' && profile.role === 'guardian';
 
@@ -89,6 +97,8 @@ export default function HomeScreen() {
       </View>
 
       {!approved ? <JoinStatus /> : null}
+
+      {approved ? <TodoList todos={todos} /> : null}
 
       {approved ? (
         <PressableCard onPress={() => router.push('/messages')}>
