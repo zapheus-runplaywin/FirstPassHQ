@@ -1,0 +1,49 @@
+name: Purge expired injury records
+
+# Injury records and their documents are kept for 12 months after an athlete
+# leaves the club, then removed by the purge-expired-injuries function.
+# This deploys the function when it changes and runs it every day.
+#
+# GitHub pauses scheduled workflows in a repository with no activity for 60
+# days. If that happens, re-enable it under Actions.
+on:
+  push:
+    branches: [main]
+    paths: ['supabase/functions/purge-expired-injuries/**', '.github/workflows/purge-expired-injuries.yml']
+  schedule:
+    - cron: '17 16 * * *' # 2:17 am in Perth
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  deploy:
+    if: ${{ github.event_name != 'schedule' }}
+    runs-on: ubuntu-latest
+    environment: production
+    steps:
+      - uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262 # v4.4.0
+      - uses: supabase/setup-cli@45a513f8c64c0bc8e0e3dfe572b5c95be85f6359 # v3.0.1
+        with:
+          version: 2.120.0
+      # No JWT check: the function only removes records already past their
+      # 12 months, so anyone calling it early changes nothing.
+      - run: >
+          supabase functions deploy purge-expired-injuries
+          --project-ref "$SUPABASE_PROJECT_ID" --no-verify-jwt --use-api
+        env:
+          SUPABASE_ACCESS_TOKEN: ${{ secrets.SUPABASE_ACCESS_TOKEN }}
+          SUPABASE_PROJECT_ID: ${{ secrets.SUPABASE_PROJECT_ID }}
+
+  purge:
+    needs: deploy
+    if: ${{ !cancelled() && needs.deploy.result != 'failure' && github.event_name != 'push' }}
+    runs-on: ubuntu-latest
+    environment: production
+    steps:
+      - run: >
+          curl --fail-with-body --silent --show-error --max-time 120 -X POST
+          "https://$SUPABASE_PROJECT_ID.supabase.co/functions/v1/purge-expired-injuries"
+        env:
+          SUPABASE_PROJECT_ID: ${{ secrets.SUPABASE_PROJECT_ID }}
