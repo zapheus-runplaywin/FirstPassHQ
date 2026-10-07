@@ -17,7 +17,9 @@ import { useTheme } from '@/hooks/use-theme';
 
 export function Card({ style, ...rest }: ViewProps) {
   const theme = useTheme();
-  return <View style={[styles.card, { backgroundColor: theme.backgroundElement }, style]} {...rest} />;
+  return (
+    <View style={[styles.card, { backgroundColor: theme.backgroundElement }, style]} {...rest} />
+  );
 }
 
 export function PressableCard({ onPress, children }: { onPress: () => void; children: ReactNode }) {
@@ -81,7 +83,11 @@ export function TextField({ label, onFocus, ...rest }: TextInputProps & { label:
       <ThemedText type="smallBold">{label}</ThemedText>
       <TextInput
         placeholderTextColor={theme.textSecondary}
-        style={[styles.input, { backgroundColor: theme.backgroundElement, color: theme.text }]}
+        style={[
+          styles.input,
+          rest.multiline && styles.multiline,
+          { backgroundColor: theme.backgroundElement, color: theme.text },
+        ]}
         onFocus={(event) => {
           onFocus?.(event);
           // When moving between fields the keyboard is already up, so it won't
@@ -165,6 +171,13 @@ const styles = StyleSheet.create({
     borderRadius: 12,
     paddingHorizontal: Spacing.three,
     fontSize: 16,
+  },
+  multiline: {
+    height: undefined,
+    minHeight: 144,
+    paddingTop: Spacing.three,
+    paddingBottom: Spacing.three,
+    textAlignVertical: 'top',
   },
   chips: {
     flexDirection: 'row',
