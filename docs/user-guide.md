@@ -31,9 +31,9 @@ one or more **squads** or **teams** for the current season.
 | Role          | Who it's for                                                                                         |
 | ------------- | ---------------------------------------------------------------------------------------------------- |
 | **Athlete**   | Registered players.                                                                                  |
-| **Guardian**  | Parents and guardians of athletes under 17.                                                          |
-| **Coach**     | Head coaches and assistant coaches. Both have the same permissions; the title only shows who is who. |
-| **Manager**   | Squad and team managers.                                                                             |
+| **Guardian**  | Parents and guardians of athletes under 18.                                                          |
+| **Coach**     | Head coaches and assistant coaches. Both have the same permissions; the title only shows who is who. Need a current Working With Children Check. |
+| **Manager**   | Squad and team managers. Need a current Working With Children Check.                                 |
 | **Committee** | Club committee members.                                                                              |
 | **Partner**   | Club partners and sponsors.                                                                          |
 | **Guest**     | Anyone else the club lets in.                                                                        |
@@ -86,7 +86,8 @@ and fill in:
 - **Your name.**
 - **PlayHQ email**: only if you registered with PlayHQ using a different email to the Google account
   you signed in with. Parents and guardians must enter the email they used to register their
-  athlete, so the club can confirm who they are.
+  athlete, so the club can confirm who they are. An admin must verify a guardian before linking
+  them to a child.
 - **I am a**: the role that best describes you.
 - **Squad**: athletes, coaches, managers and guardians pick their squad (guardians pick their
   athlete's squad).
@@ -201,7 +202,8 @@ Once a day, answer four questions on a scale of 1 (bad) to 5 (good):
 - How stressed are you?
 - How's your mood?
 
-You can add a note for your coach, such as "tight calves after Sunday's game". Tap
+You can add a note for your coach, such as "tight calves after Sunday's game". The line under the
+note says who can read it: your coaches, and also your parents or guardians if you're under 18. Tap
 **Save check-in**. It takes about thirty seconds. You can change today's answers until the end of
 the day with **Update check-in**.
 
@@ -212,6 +214,7 @@ with low scores marked.
 Until you've checked in, "Do your daily check-in" stays in your to-do list.
 
 <img src="user-guide/check-in.png" width="210" alt="Daily check-in form and history">
+<img src="user-guide/check-in-note.png" width="210" alt="Check-in note, saying coaches and parents or guardians can read it">
 
 ### Reporting an injury
 
@@ -257,16 +260,22 @@ Documents can't be removed once they're sent, so the record can't be altered lat
 
 ## 5. Parents and guardians
 
-Parents and guardians of athletes under 17 sign in with their own Google account and ask to join
-as **Guardian**, entering the email they used to register their athlete with PlayHQ. An admin then
-links them to their athlete. A guardian can be linked to more than one athlete, and an athlete can
+Parents and guardians of athletes under 18 sign in with their own Google account and ask to join
+as **Guardian**, entering the email they used to register their athlete with PlayHQ. An admin
+verifies who you are (against PlayHQ, or with the 6-digit code on your home screen) and then links
+you to your athlete. Every athlete under 18 must have at least one verified guardian before they're
+approved. A guardian can be linked to more than one athlete, and an athlete can
 have more than one guardian.
 
 The home screen shows who you're the guardian of. Until an admin links you, it says so.
 
 As a guardian you:
 
-- **Receive the messages** sent to your athlete's squad, once an admin adds you to it.
+- **Receive a copy of every message** sent to your athlete, whether it went to their squad, their
+  team, all athletes or the whole club. You get each message once, even if you're also in the
+  squad.
+- **See your athlete's daily check-ins**, including any note they write. Your athlete is told that
+  you can read their notes.
 - **See the calendars** for your athlete's squad.
 - **Report and update injuries** for your athlete, and ask for clearance, exactly as an athlete
   does (see [Athletes](#4-athletes)). If you look after more than one athlete, choose which one
@@ -281,6 +290,9 @@ As a guardian you:
 Head coaches and assistant coaches have the same permissions. Everything below applies to the
 squads and teams you're listed in as a coach.
 
+Coaches and managers need a current Working With Children Check, recorded by an admin, before
+they're approved.
+
 After an admin marks a squad's **Selections Phase 2** complete, coaches look after only the
 athletes in their named teams. Before that, they look after everyone in the squad.
 
@@ -292,7 +304,8 @@ athletes in their named teams. Before that, they look after everyone in the squa
 2. Choose the squad or team (if you coach just one, it's already chosen).
 3. Write the message and tap **Send**.
 
-Everyone in that squad or team gets it, including the parents and guardians listed in it. Open
+Everyone in that squad or team gets it, including the parents and guardians listed in it. Parents
+and guardians of athletes under 18 always get a copy, even if they aren't in the squad. Open
 **Sent** to see how many people have read each message, and open a message to see exactly who has
 and hasn't read it. Club admins can read every message.
 
@@ -438,10 +451,13 @@ Partners also receive messages an admin sends to all partners.
 
 Admins can do everything above, plus run the club's set-up from **Administration** on the home
 screen. Admins' to-do lists include join requests waiting for approval and clearances waiting for
-sign-off. On an installed app, admins also get a push notification for each new join request.
+sign-off, plus child-safety follow-ups: athletes under 18 with no guardian linked, Working With
+Children Checks that are missing, expired or expire within 30 days, and athletes turning 18 within
+30 days. On an installed app, admins also get a push notification for each new join request.
 
 <img src="user-guide/admin-home.png" width="210" alt="Admin home screen">
 <img src="user-guide/administration.png" width="210" alt="Administration menu">
+<img src="user-guide/admin-safety-todos.png" width="210" alt="Admin to-dos for guardians, Working With Children Checks and athletes turning 18">
 
 ### Approving members
 
@@ -455,13 +471,25 @@ against PlayHQ, then:
 2. Choose their **Squads** and, once teams are named, **Teams**. For coaches, choose **Head Coach**
    or **Assistant Coach** for each group. For athletes in a team, choose **Touring athlete** or
    **Training partner**.
-3. For athletes, set **Age** to Under 17 or 17 or over. Under-17 athletes get a **Parents and
-   guardians** section: search for an approved guardian and tap to link them (tap ✕ to unlink).
-4. Tap **Approve**.
+3. For athletes, enter their **Date of birth** (DD/MM/YYYY). Anyone under 18 gets a **Parents and
+   guardians** section: search for a guardian and tap to link them (tap ✕ to unlink). Only
+   verified guardians can be linked; unverified ones show "(not verified)". Until you have a date of
+   birth, choose **Under 18** or **18 or over** instead.
+4. For coaches and managers, enter their **Working With Children Check** card number and expiry
+   date.
+5. Tap **Approve**.
 
-If you can't match someone to PlayHQ, ask them to read you the 6-digit code from their home screen
-in person or over a channel you already trust. Enter it under **Verify in person** and tap
-**Check code**. The member then shows as "Verified in person".
+The app won't approve or save:
+
+- an athlete under 18 without at least one verified guardian;
+- a coach or manager without a current Working With Children Check.
+
+**Verifying someone.** Guardians must be verified before they can be linked to a child. If their
+PlayHQ email matches the registration, tap **Checked against PlayHQ**. Otherwise ask them to read
+you the 6-digit code from their home screen in person or over a channel you already trust, enter it
+under **Their code** and tap **Check code**. The member then shows as "Verified".
+
+When an athlete turns 18, the next time you save them their guardian links are removed.
 
 To turn someone down, choose a reason (**PlayHQ email doesn't match**, **Not registered with the
 club** or **Other**) and tap **Don't approve**. They see the reason and can request again.
@@ -470,8 +498,9 @@ club** or **Other**) and tap **Don't approve**. They see the reason and can requ
 <img src="user-guide/member-approve.png" width="210" alt="Approving a guardian's request">
 <img src="user-guide/member-new.png" width="210" alt="Approving an athlete's request">
 
-<img src="user-guide/member-under-17.png" width="210" alt="Under-17 athlete with guardians linked">
-<img src="user-guide/member-guardian.png" width="210" alt="Guardian showing their athlete">
+<img src="user-guide/member-under-18.png" width="210" alt="Athlete under 18 with date of birth and guardians linked">
+<img src="user-guide/member-guardian.png" width="210" alt="Guardian showing their athlete, waiting to be verified">
+<img src="user-guide/member-wwcc.png" width="210" alt="Coach with Working With Children Check fields">
 
 ### Changing or removing members
 
@@ -564,9 +593,10 @@ once saved, only replaced or removed.
 | Information             | Who can see it                                                                                                              |
 | ----------------------- | --------------------------------------------------------------------------------------------------------------------------- |
 | Your profile and squads | You, the people in your squads and teams (names and positions only), and admins.                                            |
-| Messages                | The people they were sent to, the sender, and admins. Guardians get their athlete's squad messages.                         |
+| Date of birth and Working With Children Check | You and admins.                                                                                       |
+| Messages                | The people they were sent to, the sender, and admins. Guardians of athletes under 18 get a copy of every message sent to their athlete. |
 | Read receipts           | The sender and admins.                                                                                                      |
-| Daily check-in answers  | The athlete, their guardians and their coaches. The committee and admins see only group averages, hidden below 3 check-ins. |
+| Daily check-in answers and notes | The athlete, their guardians and their coaches. The committee and admins see only group averages, hidden below 3 check-ins. |
 | Injuries and documents  | The athlete, their guardians, their coaches, the committee and admins. Managers don't see injuries.                         |
 | Attendance records      | Coaches, the committee and admins. Managers see their own groups' sessions. Athletes and guardians don't see attendance.    |
 | Committee calendar      | Committee members and admins.                                                                                               |
