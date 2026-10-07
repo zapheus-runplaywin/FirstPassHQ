@@ -203,3 +203,40 @@ export type AthleteAttendance = {
   held_at: string;
   present: boolean;
 };
+
+/** A daily check-in. Each score is 1 (bad) to 5 (good). */
+export type CheckIn = {
+  id: string;
+  athlete_id: string;
+  day: string;
+  sleep: number;
+  soreness: number;
+  stress: number;
+  mood: number;
+  note: string | null;
+  updated_at: string;
+};
+
+export type CheckInScores = Pick<CheckIn, 'sleep' | 'soreness' | 'stress' | 'mood'>;
+
+/** One athlete on a coach's board. Scores are null until they check in. */
+export type CheckInBoardRow = {
+  athlete_id: string;
+  full_name: string | null;
+  sleep: number | null;
+  soreness: number | null;
+  stress: number | null;
+  mood: number | null;
+  note: string | null;
+  checked_in_at: string | null;
+};
+
+/** A squad or team the member coaches, with today's check-in counts. */
+export type CheckInSummary = {
+  team_id: string;
+  team_name: string;
+  team_kind: GroupKind;
+  athlete_count: number;
+  checked_in_count: number;
+  flagged_count: number;
+};

@@ -62,6 +62,9 @@ function RootStack() {
           <Stack.Screen name="attendance/new" options={{ title: 'Take attendance' }} />
           <Stack.Screen name="attendance/[id]" options={{ title: 'Attendance' }} />
           <Stack.Screen name="attendance/athlete/[id]" options={{ title: 'Athlete attendance' }} />
+          <Stack.Screen name="check-in" options={{ title: 'Daily check-in' }} />
+          <Stack.Screen name="check-ins/index" options={{ title: 'Check-ins' }} />
+          <Stack.Screen name="check-ins/athlete/[id]" options={{ title: 'Check-ins' }} />
           <Stack.Screen name="delete-account" options={{ title: 'Delete account' }} />
           <Stack.Protected guard={isAdmin}>
             <Stack.Screen name="administration" options={{ title: 'Administration' }} />

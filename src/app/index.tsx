@@ -5,17 +5,26 @@ import { Pressable, StyleSheet, View } from 'react-native';
 
 import { EventGrid } from '@/components/event-card';
 import { Screen } from '@/components/screen';
+import { TodoList } from '@/components/todo-list';
 import { ThemedText } from '@/components/themed-text';
 import { Button, Card, PressableCard } from '@/components/ui';
 import { Colors, Spacing } from '@/constants/theme';
 import { useTheme } from '@/hooks/use-theme';
 import { useAuth } from '@/lib/auth';
 import { useCanTakeAttendance, useCanViewAttendance } from '@/lib/attendance';
+import {
+  checkInSummaryLabel,
+  checkInTotals,
+  useCanSeeCheckIns,
+  useCheckInSummary,
+  useMyCheckIn,
+} from '@/lib/check-ins';
 import { injuriesSummary, useCanSeeInjuries, useOpenInjuries } from '@/lib/injuries';
 import { useUnreadCount } from '@/lib/messages';
 import { pendingRequestsLabel, usePendingRequests } from '@/lib/use-pending-requests';
 import { rejectionReasonMessages, roleLabels, teamPositionLabel } from '@/lib/labels';
 import { supabase } from '@/lib/supabase';
+import { buildTodos } from '@/lib/todos';
 import type { TeamMembership } from '@/lib/types';
 import { useEvents } from '@/lib/use-events';
 
@@ -35,6 +44,16 @@ export default function HomeScreen() {
   const canViewAttendance = useCanViewAttendance();
   const { openInjuries, reloadInjuries } = useOpenInjuries();
   const injuriesWaiting = openInjuries.filter((i) => i.waiting_for_me).length;
+  const { myCheckIn, reloadMyCheckIn } = useMyCheckIn();
+  const canSeeCheckIns = useCanSeeCheckIns();
+  const { checkInSummary, reloadCheckInSummary } = useCheckInSummary();
+  const todos = buildTodos({
+    userId: session?.user.id,
+    injuries: openInjuries,
+    pendingCount,
+    needsCheckIn: myCheckIn === null,
+    flaggedAthletes: checkInTotals(checkInSummary).flagged,
+  });
 
   const isGuardian = profile?.status === 'approved' && profile.role === 'guardian';
 
@@ -64,6 +83,8 @@ export default function HomeScreen() {
       reloadEvents(),
       reloadUnread(),
       reloadInjuries(),
+      reloadMyCheckIn(),
+      reloadCheckInSummary(),
     ]);
     setRefreshing(false);
   }
@@ -90,6 +111,8 @@ export default function HomeScreen() {
 
       {!approved ? <JoinStatus /> : null}
 
+      {approved ? <TodoList todos={todos} /> : null}
+
       {approved ? (
         <PressableCard onPress={() => router.push('/messages')}>
           <View style={styles.cardTitleRow}>
@@ -106,6 +129,24 @@ export default function HomeScreen() {
             {unreadCount === 0
               ? 'No new messages'
               : `${unreadCount} new ${unreadCount === 1 ? 'message' : 'messages'}`}
+          </ThemedText>
+        </PressableCard>
+      ) : null}
+
+      {myCheckIn !== undefined ? (
+        <PressableCard onPress={() => router.push('/check-in')}>
+          <ThemedText type="smallBold">Daily check-in</ThemedText>
+          <ThemedText type="small" themeColor="textSecondary">
+            {myCheckIn ? '✓ Done for today' : 'Not done yet today'}
+          </ThemedText>
+        </PressableCard>
+      ) : null}
+
+      {canSeeCheckIns ? (
+        <PressableCard onPress={() => router.push('/check-ins')}>
+          <ThemedText type="smallBold">Check-ins</ThemedText>
+          <ThemedText type="small" themeColor="textSecondary">
+            {checkInSummaryLabel(checkInSummary)}
           </ThemedText>
         </PressableCard>
       ) : null}

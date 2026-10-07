@@ -1,0 +1,146 @@
+import { useFocusEffect } from 'expo-router';
+import { useCallback, useState } from 'react';
+
+import { useAuth } from '@/lib/auth';
+import { toDateString } from '@/lib/injuries';
+import { supabase } from '@/lib/supabase';
+import type { CheckIn, CheckInScores, CheckInSummary } from '@/lib/types';
+
+export const CHECK_IN_COLUMNS = 'id, athlete_id, day, sleep, soreness, stress, mood, note, updated_at';
+
+/** A score this low or lower flags the athlete for their coaches. */
+export const FLAG_AT = 2;
+
+/** The four questions, each scored 1 (bad) to 5 (good). */
+export const checkInQuestions: {
+  key: keyof CheckInScores;
+  label: string;
+  question: string;
+  answers: [string, string, string, string, string];
+}[] = [
+  {
+    key: 'sleep',
+    label: 'Sleep',
+    question: 'How did you sleep?',
+    answers: ['Very poorly', 'Poorly', 'OK', 'Well', 'Really well'],
+  },
+  {
+    key: 'soreness',
+    label: 'Soreness',
+    question: 'How does your body feel?',
+    answers: ['Very sore', 'Sore', 'A little sore', 'Fine', 'Fresh'],
+  },
+  {
+    key: 'stress',
+    label: 'Stress',
+    question: 'How stressed are you?',
+    answers: ['Very stressed', 'Stressed', 'Normal', 'Relaxed', 'Very relaxed'],
+  },
+  {
+    key: 'mood',
+    label: 'Mood',
+    question: 'How’s your mood?',
+    answers: ['Very low', 'Low', 'OK', 'Good', 'Great'],
+  },
+];
+
+/** The questions scored low enough to flag, such as ["Sleep", "Soreness"]. */
+export function flaggedAreas(scores: { [K in keyof CheckInScores]: number | null }) {
+  return checkInQuestions
+    .filter((q) => scores[q.key] !== null && (scores[q.key] as number) <= FLAG_AT)
+    .map((q) => q.label);
+}
+
+/** Such as "Sleep 4 · Soreness 2 · Stress 3 · Mood 4". */
+export function scoresLine(scores: CheckInScores) {
+  return checkInQuestions.map((q) => `${q.label} ${scores[q.key]}`).join(' · ');
+}
+
+/** Today in the member's own time zone, such as "2026-10-07". */
+export function today() {
+  return toDateString(new Date());
+}
+
+/** Athletes do the daily check-in. */
+export function useIsCheckInAthlete() {
+  const { profile } = useAuth();
+  return profile?.status === 'approved' && profile.role === 'athlete';
+}
+
+/** Coaches see their squads' check-ins, and admins can see any squad's. */
+export function useCanSeeCheckIns() {
+  const { profile, memberships, isAdmin } = useAuth();
+  if (profile?.status !== 'approved') return false;
+  return isAdmin || memberships.some((m) => m.team_role === 'coach');
+}
+
+/** The athlete's own check-in for today, or null if they haven't done it. */
+export function useMyCheckIn() {
+  const { session } = useAuth();
+  const isAthlete = useIsCheckInAthlete();
+  const userId = session?.user.id;
+  // undefined while loading, so the to-do list doesn't flash an item.
+  const [checkIn, setCheckIn] = useState<CheckIn | null | undefined>(undefined);
+
+  const load = useCallback(async () => {
+    if (!isAthlete || !userId) return;
+    const { data } = await supabase
+      .from('check_ins')
+      .select(CHECK_IN_COLUMNS)
+      .eq('athlete_id', userId)
+      .eq('day', today())
+      .maybeSingle();
+    setCheckIn((data as CheckIn | null) ?? null);
+  }, [isAthlete, userId]);
+
+  useFocusEffect(
+    useCallback(() => {
+      load();
+    }, [load]),
+  );
+
+  return { myCheckIn: isAthlete ? checkIn : undefined, reloadMyCheckIn: load };
+}
+
+/** Today's check-in counts for each squad or team the member coaches. */
+export function useCheckInSummary() {
+  const canSee = useCanSeeCheckIns();
+  const [summary, setSummary] = useState<CheckInSummary[]>([]);
+
+  const load = useCallback(async () => {
+    if (!canSee) return;
+    const { data } = await supabase.rpc('check_in_summary', { p_day: today() });
+    setSummary((data as CheckInSummary[] | null) ?? []);
+  }, [canSee]);
+
+  useFocusEffect(
+    useCallback(() => {
+      load();
+    }, [load]),
+  );
+
+  return { checkInSummary: summary, reloadCheckInSummary: load };
+}
+
+/**
+ * Totals across the member's groups. A team's athletes are also in its squad,
+ * so only squads are counted when the member coaches one.
+ */
+export function checkInTotals(summary: CheckInSummary[]) {
+  const squads = summary.filter((s) => s.team_kind === 'squad');
+  const groups = squads.length > 0 ? squads : summary;
+  return {
+    athletes: groups.reduce((n, s) => n + s.athlete_count, 0),
+    checkedIn: groups.reduce((n, s) => n + s.checked_in_count, 0),
+    flagged: groups.reduce((n, s) => n + s.flagged_count, 0),
+  };
+}
+
+/** A summary for the home card, such as "9 of 14 checked in today · 2 flagged". */
+export function checkInSummaryLabel(summary: CheckInSummary[]) {
+  if (summary.length === 0) return 'See how your athletes are feeling';
+  const { athletes, checkedIn, flagged } = checkInTotals(summary);
+  const parts = [`${checkedIn} of ${athletes} checked in today`];
+  if (flagged > 0) parts.push(`${flagged} flagged`);
+  return parts.join(' · ');
+}
