@@ -1,5 +1,5 @@
-import { Image } from "expo-image";
-import { StyleSheet } from "react-native";
+import { Image } from 'expo-image';
+import { StyleSheet } from 'react-native';
 import Animated, {
   Easing,
   ReduceMotion,
@@ -10,11 +10,11 @@ import Animated, {
   withSequence,
   withSpring,
   withTiming,
-} from "react-native-reanimated";
-import { scheduleOnRN } from "react-native-worklets";
-import { useEffect } from "react";
+} from 'react-native-reanimated';
+import { scheduleOnRN } from 'react-native-worklets';
+import { useEffect } from 'react';
 
-import { useTheme } from "@/hooks/use-theme";
+import { useTheme } from '@/hooks/use-theme';
 
 /** Matches `imageWidth` for the splash screen in app.json, so the hand-off is seamless. */
 export const LOGO_SIZE = 240;
@@ -31,7 +31,7 @@ export function BrandIntro({ onDone }: { onDone: () => void }) {
 
   useEffect(() => {
     const finish = (finished?: boolean) => {
-      "worklet";
+      'worklet';
       if (finished) scheduleOnRN(onDone);
     };
     if (reduceMotion) {
@@ -45,10 +45,7 @@ export function BrandIntro({ onDone }: { onDone: () => void }) {
         stiffness: 180,
         reduceMotion: ReduceMotion.Never,
       }),
-      withDelay(
-        250,
-        withTiming(1.35, { duration: 380, easing: Easing.in(Easing.cubic) }),
-      ),
+      withDelay(250, withTiming(1.35, { duration: 380, easing: Easing.in(Easing.cubic) })),
     );
     opacity.value = withDelay(
       950,
@@ -64,15 +61,11 @@ export function BrandIntro({ onDone }: { onDone: () => void }) {
   return (
     <Animated.View
       pointerEvents="none"
-      style={[
-        styles.overlay,
-        { backgroundColor: theme.background },
-        overlayStyle,
-      ]}
+      style={[styles.overlay, { backgroundColor: theme.background }, overlayStyle]}
     >
       <Animated.View style={logoStyle}>
         <Image
-          source={require("@/assets/images/logo.png")}
+          source={require('@/assets/images/logo.png')}
           style={styles.logo}
           contentFit="contain"
           accessibilityLabel="West Coast Thunder"
@@ -85,8 +78,8 @@ export function BrandIntro({ onDone }: { onDone: () => void }) {
 const styles = StyleSheet.create({
   overlay: {
     ...StyleSheet.absoluteFill,
-    alignItems: "center",
-    justifyContent: "center",
+    alignItems: 'center',
+    justifyContent: 'center',
   },
   logo: {
     width: LOGO_SIZE,
