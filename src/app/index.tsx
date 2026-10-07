@@ -39,7 +39,6 @@ export default function HomeScreen() {
   const injuriesWaiting = openInjuries.filter((i) => i.waiting_for_me).length;
   const todos = buildTodos({
     userId: session?.user.id,
-    unreadCount,
     injuries: openInjuries,
     pendingCount,
   });

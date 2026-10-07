@@ -17,13 +17,11 @@ export type Todo = {
  */
 export function buildTodos({
   userId,
-  unreadCount,
   injuries,
   pendingCount,
   today = new Date(),
 }: {
   userId: string | undefined;
-  unreadCount: number;
   injuries: Injury[];
   pendingCount: number;
   today?: Date;
@@ -76,15 +74,6 @@ export function buildTodos({
       title: `Approve ${pendingCount} join ${pendingCount === 1 ? 'request' : 'requests'}`,
       detail: 'New members are waiting to be added to a squad',
       href: '/admin',
-    });
-  }
-
-  if (unreadCount > 0) {
-    todos.push({
-      key: 'messages',
-      title: `Read ${unreadCount} new ${unreadCount === 1 ? 'message' : 'messages'}`,
-      detail: 'Your coaches and the club can see when you’ve read them',
-      href: '/messages',
     });
   }
 
