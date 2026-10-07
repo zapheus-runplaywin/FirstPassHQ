@@ -12,23 +12,47 @@ export type Todo = {
 };
 
 /**
- * Everything the member owes, most urgent first, built from what the home
+ * Everything the member owes, daily items first, built from what the home
  * screen has already loaded. Each item disappears once it's done.
  */
 export function buildTodos({
   userId,
   injuries,
   pendingCount,
+  needsCheckIn,
+  flaggedAthletes,
   today = new Date(),
 }: {
   userId: string | undefined;
   injuries: Injury[];
   pendingCount: number;
+  /** An athlete who hasn't done today's check-in. */
+  needsCheckIn: boolean;
+  /** Athletes the member coaches who flagged a low score today. */
+  flaggedAthletes: number;
   today?: Date;
 }): Todo[] {
   const todos: Todo[] = [];
 
-  // Return-to-play sign-offs hold an athlete out of training, so they come first.
+  if (needsCheckIn) {
+    todos.push({
+      key: 'check-in',
+      title: 'Do your daily check-in',
+      detail: 'Sleep, soreness, stress and mood. It takes 30 seconds.',
+      href: '/check-in',
+    });
+  }
+
+  if (flaggedAthletes > 0) {
+    todos.push({
+      key: 'check-in-flags',
+      title: `Check in with ${flaggedAthletes} ${flaggedAthletes === 1 ? 'athlete' : 'athletes'}`,
+      detail: 'They scored low on today’s check-in',
+      href: '/check-ins',
+    });
+  }
+
+  // Return-to-play sign-offs hold an athlete out of training until they are done.
   const toSignOff = injuries.filter((i) => i.waiting_for_me);
   if (toSignOff.length === 1) {
     const injury = toSignOff[0];
