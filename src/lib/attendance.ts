@@ -1,11 +1,17 @@
 import { useAuth } from '@/lib/auth';
 import type { AttendanceMark } from '@/lib/types';
 
-/** Coaches and managers take attendance for their squads and teams; admins can too. */
+/**
+ * Coaches and managers take attendance for their squads and teams. Any coach,
+ * manager, committee member or admin can take it for a whole squad or the club.
+ */
 export function useCanTakeAttendance() {
-  const { memberships, isAdmin, profile } = useAuth();
+  const { memberships, profile } = useAuth();
   if (profile?.status !== 'approved') return false;
-  return isAdmin || memberships.some((m) => m.team_role === 'coach' || m.team_role === 'manager');
+  return (
+    ['coach', 'manager', 'committee', 'admin'].includes(profile.role) ||
+    memberships.some((m) => m.team_role === 'coach' || m.team_role === 'manager')
+  );
 }
 
 /** Coaches, the committee and admins can see athletes' attendance records. */

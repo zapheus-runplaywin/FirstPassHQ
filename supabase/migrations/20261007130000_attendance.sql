@@ -2,14 +2,18 @@
 --
 -- Coaches and managers take attendance for a squad or team they lead: they
 -- name the session (often from the calendar) and mark each athlete present or
--- absent. Admins can too. Coaches, the committee and admins can see athletes'
--- attendance records; managers see the sessions for the squads and teams they
--- manage, so they can check and correct them.
+-- absent. For whole-squad and club events, any coach, manager, committee
+-- member or admin can take attendance for any current squad or the whole club. Coaches, the committee and
+-- admins can see athletes' attendance records; managers see the sessions for
+-- the squads and teams they manage, and anyone sees the sessions they took,
+-- so they can check and correct them.
 --
 -- Additive only: two new tables and new functions.
 
 create table public.attendance_sessions (
   id uuid primary key default gen_random_uuid(),
+  -- A club event, with every athlete in the club on the register.
+  club_wide boolean not null default false,
   -- Kept if the squad or team is removed, with its name as it was.
   team_id uuid references public.teams (id) on delete set null,
   team_name text not null,
@@ -20,7 +24,8 @@ create table public.attendance_sessions (
   taken_by uuid references public.profiles (id) on delete set null,
   taken_by_name text,
   created_at timestamptz not null default now(),
-  updated_at timestamptz not null default now()
+  updated_at timestamptz not null default now(),
+  constraint club_sessions_have_no_team check (not club_wide or team_id is null)
 );
 
 create index attendance_sessions_team_idx on public.attendance_sessions (team_id, held_at desc);
@@ -49,7 +54,77 @@ alter table public.attendance_marks enable row level security;
 -- Who can see and do what
 -- ---------------------------------------------------------------------------
 
--- The signed-in member coaches or manages this squad or team, or is an admin.
+-- The signed-in member coaches or manages this squad or team this season.
+create function public.leads_group(p_team_id uuid)
+returns boolean
+language sql
+stable
+security definer
+set search_path = ''
+as $$
+  select public.is_approved() and exists (
+    select 1
+    from public.team_members tm
+    join public.teams t on t.id = tm.team_id
+    where tm.team_id = p_team_id
+      and tm.profile_id = auth.uid()
+      and tm.team_role in ('coach', 'manager')
+      and not t.archived
+  );
+$$;
+
+-- Coaches, managers, the committee and admins, who can take whole-squad
+-- attendance for any current squad.
+create function public.is_attendance_taker()
+returns boolean
+language sql
+stable
+security definer
+set search_path = ''
+as $$
+  select public.is_committee() or (
+    public.is_approved() and (
+      exists (
+        select 1 from public.profiles
+        where id = auth.uid() and role in ('coach', 'manager')
+      )
+      or exists (
+        select 1 from public.team_members
+        where profile_id = auth.uid() and team_role in ('coach', 'manager')
+      )
+    )
+  );
+$$;
+
+-- An approved athlete in the club: their role is athlete, or they are an
+-- athlete in a current squad or team. They are on club event registers.
+create function public.is_club_athlete(p_profile_id uuid)
+returns boolean
+language sql
+stable
+security definer
+set search_path = ''
+as $$
+  select exists (
+    select 1 from public.profiles p
+    where p.id = p_profile_id
+      and p.status = 'approved'
+      and (
+        p.role = 'athlete'
+        or exists (
+          select 1 from public.team_members tm
+          join public.teams t on t.id = tm.team_id
+          where tm.profile_id = p.id and tm.team_role = 'athlete' and not t.archived
+        )
+      )
+  );
+$$;
+
+revoke execute on function public.is_club_athlete(uuid) from public, anon, authenticated;
+
+-- Attendance can be taken for the squads and teams the member leads, for any
+-- current squad by coaches, managers and the committee, and for anything
+-- current by admins.
 create function public.can_take_attendance(p_team_id uuid)
 returns boolean
 language sql
@@ -57,17 +132,13 @@ stable
 security definer
 set search_path = ''
 as $$
-  select public.is_admin() or (
-    public.is_approved() and exists (
-      select 1
-      from public.team_members tm
-      join public.teams t on t.id = tm.team_id
-      where tm.team_id = p_team_id
-        and tm.profile_id = auth.uid()
-        and tm.team_role in ('coach', 'manager')
+  select public.leads_group(p_team_id)
+    or exists (
+      select 1 from public.teams t
+      where t.id = p_team_id
         and not t.archived
-    )
-  );
+        and (public.is_admin() or (t.kind = 'squad' and public.is_attendance_taker()))
+    );
 $$;
 
 -- The signed-in member coaches this squad or team (any season), or is on the
@@ -87,7 +158,8 @@ as $$
   );
 $$;
 
--- Sessions are visible to whoever can take or view attendance for the group.
+-- A session can be seen by the committee, the group's coaches and managers,
+-- and whoever took it.
 create function public.can_see_attendance_session(p_session_id uuid)
 returns boolean
 language sql
@@ -100,12 +172,41 @@ as $$
     where s.id = p_session_id
       and (
         public.is_committee()
+        or s.taken_by = auth.uid()
+        or (s.club_wide and public.is_attendance_taker())
         or (s.team_id is not null
-          and (public.can_view_team_attendance(s.team_id) or public.can_take_attendance(s.team_id)))
+          and (public.can_view_team_attendance(s.team_id) or public.leads_group(s.team_id)))
       )
   );
 $$;
 
+-- A session can be corrected by whoever took it, the group's coaches and
+-- managers, and admins. The committee can also correct club events.
+create function public.can_edit_attendance_session(p_session_id uuid)
+returns boolean
+language sql
+stable
+security definer
+set search_path = ''
+as $$
+  select exists (
+    select 1 from public.attendance_sessions s
+    where s.id = p_session_id
+      and (
+        public.is_admin()
+        or (s.taken_by = auth.uid() and public.is_attendance_taker())
+        or (s.team_id is not null and public.leads_group(s.team_id))
+        or (s.club_wide and public.is_committee())
+      )
+  );
+$$;
+
+revoke execute on function public.leads_group(uuid) from public, anon;
+revoke execute on function public.is_attendance_taker() from public, anon;
+revoke execute on function public.can_edit_attendance_session(uuid) from public, anon;
+grant execute on function public.leads_group(uuid) to authenticated;
+grant execute on function public.is_attendance_taker() to authenticated;
+grant execute on function public.can_edit_attendance_session(uuid) to authenticated;
 revoke execute on function public.can_take_attendance(uuid) from public, anon;
 revoke execute on function public.can_view_team_attendance(uuid) from public, anon;
 revoke execute on function public.can_see_attendance_session(uuid) from public, anon;
@@ -125,8 +226,9 @@ create policy "Coaches, managers and the committee see attendance marks"
 -- Taking attendance
 -- ---------------------------------------------------------------------------
 
--- Sessions for the same squad or team within 3 hours of a time, so the app can
--- warn before a second record is started for what is probably one session.
+-- Sessions for the same squad or team (or club events, when p_team_id is null)
+-- within 3 hours of a time, so the app can warn before a second record is
+-- started for what is probably one session.
 create function public.nearby_attendance_sessions(
   p_team_id uuid,
   p_held_at timestamptz,
@@ -140,10 +242,11 @@ set search_path = ''
 as $$
   select s.id, s.name, s.held_at, s.taken_by_name
   from public.attendance_sessions s
-  where s.team_id = p_team_id
+  where (case when p_team_id is null then s.club_wide else s.team_id = p_team_id end)
     and s.held_at between p_held_at - interval '3 hours' and p_held_at + interval '3 hours'
     and s.id is distinct from p_exclude_session_id
-    and (public.can_take_attendance(p_team_id) or public.can_view_team_attendance(p_team_id))
+    and (case when p_team_id is null then public.is_attendance_taker()
+      else public.can_take_attendance(p_team_id) or public.can_view_team_attendance(p_team_id) end)
   order by abs(extract(epoch from s.held_at - p_held_at));
 $$;
 
@@ -153,8 +256,9 @@ grant execute on function public.nearby_attendance_sessions(uuid, timestamptz, u
   to authenticated;
 
 -- Creates a session (p_session_id null) or updates one, with its marks.
--- p_marks is [{"profile_id": "...", "present": true}, ...]. Only athletes in
--- the squad or team, or already on the record, can be marked.
+-- A new session with p_team_id null is a club event. p_marks is
+-- [{"profile_id": "...", "present": true}, ...]. Only athletes in the squad or
+-- team (or the club, for club events), or already on the record, can be marked.
 create function public.save_attendance(
   p_session_id uuid,
   p_team_id uuid,
@@ -170,21 +274,29 @@ as $$
 declare
   v_session public.attendance_sessions;
   v_team_id uuid;
+  v_club boolean;
   v_id uuid;
   v_bad int;
 begin
   if p_session_id is null then
     v_team_id := p_team_id;
+    v_club := p_team_id is null;
   else
     select * into v_session from public.attendance_sessions where id = p_session_id for update;
     if v_session.id is null then
       raise exception 'Attendance record not found';
     end if;
     v_team_id := v_session.team_id;
+    v_club := v_session.club_wide;
   end if;
 
-  if v_team_id is null or not public.can_take_attendance(v_team_id) then
-    raise exception 'Only coaches and managers of this squad or team can take attendance';
+  if p_session_id is null then
+    if not (case when v_club then public.is_attendance_taker()
+      else public.can_take_attendance(v_team_id) end) then
+      raise exception 'You can’t take attendance for this squad or team';
+    end if;
+  elsif not public.can_edit_attendance_session(p_session_id) then
+    raise exception 'Only whoever took this attendance, or the group’s coaches and managers, can change it';
   end if;
   if coalesce(trim(p_name), '') = '' then
     raise exception 'Name the session, for example Tuesday training';
@@ -200,7 +312,8 @@ begin
   from jsonb_array_elements(p_marks) m
   where jsonb_typeof(m -> 'present') <> 'boolean'
     or not (
-      exists (
+      (v_club and public.is_club_athlete((m ->> 'profile_id')::uuid))
+      or exists (
         select 1 from public.team_members tm
         where tm.team_id = v_team_id
           and tm.team_role = 'athlete'
@@ -212,15 +325,23 @@ begin
       )
     );
   if v_bad > 0 then
-    raise exception 'Only athletes in this squad or team can be marked';
+    raise exception 'Only athletes in this squad, team or club can be marked';
   end if;
 
   if p_session_id is null then
-    insert into public.attendance_sessions (team_id, team_name, name, held_at, taken_by, taken_by_name)
-    select t.id, t.name, trim(p_name), p_held_at, auth.uid(),
+    insert into public.attendance_sessions (
+      club_wide, team_id, team_name, name, held_at, taken_by, taken_by_name
+    )
+    values (
+      v_club,
+      v_team_id,
+      case when v_club then 'Whole club'
+        else (select name from public.teams where id = v_team_id) end,
+      trim(p_name),
+      p_held_at,
+      auth.uid(),
       (select coalesce(nullif(full_name, ''), email) from public.profiles where id = auth.uid())
-    from public.teams t
-    where t.id = v_team_id
+    )
     returning id into v_id;
   else
     v_id := p_session_id;
@@ -251,10 +372,38 @@ grant execute on function public.save_attendance(uuid, uuid, text, timestamptz, 
 -- Reading attendance
 -- ---------------------------------------------------------------------------
 
+-- The athletes to mark for a new session: those in a squad or team, or every
+-- athlete in the club when p_team_id is null. Only for people who can take
+-- attendance for it, who may not be members of that squad.
+create function public.attendance_roster(p_team_id uuid)
+returns table (profile_id uuid, full_name text)
+language sql
+stable
+security definer
+set search_path = ''
+as $$
+  select p.id, coalesce(nullif(p.full_name, ''), p.email)
+  from public.profiles p
+  where (
+      (p_team_id is null and public.is_attendance_taker() and public.is_club_athlete(p.id))
+      or (p_team_id is not null and public.can_take_attendance(p_team_id)
+        and p.status = 'approved'
+        and exists (
+          select 1 from public.team_members tm
+          where tm.team_id = p_team_id and tm.profile_id = p.id and tm.team_role = 'athlete'
+        ))
+    )
+  order by p.full_name;
+$$;
+
+revoke execute on function public.attendance_roster(uuid) from public, anon;
+grant execute on function public.attendance_roster(uuid) to authenticated;
+
 -- Recent sessions the member can see, with counts. Optionally for one group.
 create function public.attendance_sessions_list(p_team_id uuid default null)
 returns table (
   id uuid,
+  club_wide boolean,
   team_id uuid,
   team_name text,
   name text,
@@ -270,10 +419,10 @@ security definer
 set search_path = ''
 as $$
   select
-    s.id, s.team_id, s.team_name, s.name, s.held_at, s.taken_by_name,
+    s.id, s.club_wide, s.team_id, s.team_name, s.name, s.held_at, s.taken_by_name,
     (select count(*)::int from public.attendance_marks m where m.session_id = s.id and m.present),
     (select count(*)::int from public.attendance_marks m where m.session_id = s.id),
-    s.team_id is not null and public.can_take_attendance(s.team_id)
+    public.can_edit_attendance_session(s.id)
   from public.attendance_sessions s
   where public.can_see_attendance_session(s.id)
     and (p_team_id is null or s.team_id = p_team_id)
@@ -285,7 +434,7 @@ revoke execute on function public.attendance_sessions_list(uuid) from public, an
 grant execute on function public.attendance_sessions_list(uuid) to authenticated;
 
 -- Everyone on a session's register: the marks saved, plus athletes now in the
--- squad or team who weren't marked (present is null for them).
+-- squad or team (or club) who weren't marked (present is null for them).
 create function public.attendance_register(p_session_id uuid)
 returns table (profile_id uuid, full_name text, present boolean)
 language sql
@@ -310,6 +459,15 @@ as $$
       and not exists (
         select 1 from public.attendance_marks m
         where m.session_id = (select id from s) and m.profile_id = tm.profile_id
+      )
+    union
+    select p.id, null::boolean
+    from public.profiles p
+    where (select club_wide from s)
+      and public.is_club_athlete(p.id)
+      and not exists (
+        select 1 from public.attendance_marks m
+        where m.session_id = (select id from s) and m.profile_id = p.id
       )
   )
   select people.profile_id, coalesce(nullif(p.full_name, ''), p.email), people.present
@@ -348,7 +506,12 @@ as $$
   join public.profiles p on p.id = m.profile_id
   where s.held_at >= p_since
     and (p_team_id is null or s.team_id = p_team_id)
-    and (public.is_committee() or (s.team_id is not null and public.can_view_team_attendance(s.team_id)))
+    and (
+      public.is_committee()
+      or (s.team_id is not null and public.can_view_team_attendance(s.team_id))
+      -- Coaches see club events for the athletes they coach.
+      or (s.club_wide and public.coaches_athlete(m.profile_id))
+    )
   group by m.profile_id, p.full_name, p.email
   order by p.full_name;
 $$;
@@ -375,7 +538,12 @@ as $$
   join public.attendance_sessions s on s.id = m.session_id
   where m.profile_id = p_profile_id
     and s.held_at >= p_since
-    and (public.is_committee() or (s.team_id is not null and public.can_view_team_attendance(s.team_id)))
+    and (
+      public.is_committee()
+      or (s.team_id is not null and public.can_view_team_attendance(s.team_id))
+      -- Coaches see club events for the athletes they coach.
+      or (s.club_wide and public.coaches_athlete(m.profile_id))
+    )
   order by s.held_at desc;
 $$;
 

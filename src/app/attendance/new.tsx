@@ -8,63 +8,98 @@ import { ThemedText } from '@/components/themed-text';
 import { Button, Card, ChipGroup, ErrorText, TextField } from '@/components/ui';
 import { Spacing } from '@/constants/theme';
 import { useTheme } from '@/hooks/use-theme';
+import type { CalendarEvent } from '@/lib/calendar';
 import { marksToSave } from '@/lib/attendance';
 import { formatSentAt } from '@/lib/format';
 import { useMessageGroups } from '@/lib/messages';
 import { supabase } from '@/lib/supabase';
-import type { AttendanceMark, RosterEntry, Team } from '@/lib/types';
+import type { AttendanceMark, Team } from '@/lib/types';
 import { useEvents } from '@/lib/use-events';
 import { useTeams } from '@/lib/use-teams';
 
 type NearbySession = { id: string; name: string; held_at: string; taken_by_name: string | null };
 
+/** The chosen group: a squad or team id, or the whole club. */
+const CLUB = 'club';
+
+/** An event counts as happening now from an hour before it starts until 30 minutes after it ends. */
+const BEFORE_START_MS = 60 * 60 * 1000;
+const AFTER_END_MS = 30 * 60 * 1000;
+
 export default function TakeAttendanceScreen() {
   const teams = useTeams();
   // The squads and teams the member coaches or manages; every one for admins.
-  const groups = useMessageGroups(teams);
-  const [teamId, setTeamId] = useState<string | null>(null);
-  const [name, setName] = useState('');
-  const [heldAt, setHeldAt] = useState(() => new Date().toISOString());
+  const ledGroups = useMessageGroups(teams);
+  const ledIds = new Set(ledGroups.map((t) => t.id));
+  // Any current squad can be chosen for whole-squad events.
+  const otherSquads = teams.filter((t) => t.kind === 'squad' && !ledIds.has(t.id));
+  const [choice, setChoice] = useState<string | null>(null);
+  const [editedName, setEditedName] = useState<string | null>(null);
+  const [chosenEvent, setChosenEvent] = useState<CalendarEvent | null>(null);
+  const [takenAt] = useState(() => new Date());
   const [register, setRegister] = useState<AttendanceMark[] | null>(null);
   const [nearby, setNearby] = useState<NearbySession[]>([]);
   const [saving, setSaving] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
-  // Coaches and managers who lead one group don't need to pick it.
-  const selectedTeamId = teamId ?? (groups.length === 1 ? groups[0].id : null);
-  const team = groups.find((t) => t.id === selectedTeamId) ?? null;
-  const suggestions = useSessionSuggestions(team);
+  // Coaches and managers who lead one group start with it chosen.
+  const selected = choice ?? (ledGroups.length === 1 ? ledGroups[0].id : null);
+  const team =
+    selected && selected !== CLUB ? (teams.find((t) => t.id === selected) ?? null) : null;
+  const { today, now: eventNow } = useCalendarEvents(
+    selected ? { club: selected === CLUB, team } : null,
+  );
 
-  // The athletes in the chosen squad or team, all unmarked.
+  // The event on now is suggested as the session until something else is chosen.
+  const event = chosenEvent ?? eventNow;
+  const name = editedName ?? event?.title ?? '';
+  const heldAt = (event?.start ?? takenAt).toISOString();
+  const teamId = selected === CLUB ? null : selected;
+
+  // The athletes in the chosen squad, team or club, all unmarked.
   useEffect(() => {
-    if (!selectedTeamId) return;
+    if (!selected) return;
     let current = true;
-    supabase.rpc('team_roster', { p_team_id: selectedTeamId }).then(({ data }) => {
-      if (!current) return;
-      setRegister(
-        ((data as RosterEntry[] | null) ?? [])
-          .filter((r) => r.team_role === 'athlete')
-          .map((r) => ({ profile_id: r.profile_id, full_name: r.full_name, present: null })),
-      );
-    });
+    supabase
+      .rpc('attendance_roster', { p_team_id: selected === CLUB ? null : selected })
+      .then(({ data }) => {
+        if (!current) return;
+        setRegister(
+          ((data as { profile_id: string; full_name: string | null }[] | null) ?? []).map((r) => ({
+            ...r,
+            present: null,
+          })),
+        );
+      });
     return () => {
       current = false;
     };
-  }, [selectedTeamId]);
+  }, [selected]);
 
   // Attendance already taken for this group within 3 hours.
   useEffect(() => {
-    if (!selectedTeamId) return;
+    if (!selected) return;
     let current = true;
     supabase
-      .rpc('nearby_attendance_sessions', { p_team_id: selectedTeamId, p_held_at: heldAt })
+      .rpc('nearby_attendance_sessions', {
+        p_team_id: selected === CLUB ? null : selected,
+        p_held_at: heldAt,
+      })
       .then(({ data }) => {
         if (current) setNearby((data as NearbySession[] | null) ?? []);
       });
     return () => {
       current = false;
     };
-  }, [selectedTeamId, heldAt]);
+  }, [selected, heldAt]);
+
+  function choose(value: string) {
+    setChoice(value);
+    setChosenEvent(null);
+    setRegister(null);
+    setNearby([]);
+    setError(null);
+  }
 
   function mark(profileId: string, present: boolean) {
     setRegister((r) => r?.map((m) => (m.profile_id === profileId ? { ...m, present } : m)) ?? r);
@@ -75,8 +110,8 @@ export default function TakeAttendanceScreen() {
   }
 
   async function save() {
-    if (!selectedTeamId || !register) {
-      setError('Choose a squad or team.');
+    if (!selected || !register) {
+      setError('Choose who the attendance is for.');
       return;
     }
     if (!name.trim()) {
@@ -91,7 +126,7 @@ export default function TakeAttendanceScreen() {
     setError(null);
     const { data, error: saveError } = await supabase.rpc('save_attendance', {
       p_session_id: null,
-      p_team_id: selectedTeamId,
+      p_team_id: teamId,
       p_name: name,
       p_held_at: heldAt,
       p_marks: marksToSave(register),
@@ -108,45 +143,49 @@ export default function TakeAttendanceScreen() {
 
   return (
     <Screen>
-      {groups.length === 0 ? (
-        <ThemedText type="small" themeColor="textSecondary">
-          You can take attendance for the squads and teams you coach or manage once an admin adds
-          you to one.
-        </ThemedText>
-      ) : groups.length > 1 ? (
+      <ChipGroup
+        label={ledGroups.length > 0 ? 'Your squads and teams' : 'Who is it for?'}
+        options={[
+          ...ledGroups.map((t) => ({ value: t.id, label: t.name })),
+          { value: CLUB, label: 'Whole club' },
+        ]}
+        selected={selected ? [selected] : []}
+        onToggle={choose}
+      />
+      {otherSquads.length > 0 ? (
         <ChipGroup
-          label="Squad or team"
-          options={groups.map((t) => ({ value: t.id, label: t.name }))}
-          selected={selectedTeamId ? [selectedTeamId] : []}
-          onToggle={(value) => {
-            setTeamId(value);
-            setRegister(null);
-            setNearby([]);
-          }}
+          label="Whole squad"
+          options={otherSquads.map((t) => ({ value: t.id, label: t.name }))}
+          selected={selected ? [selected] : []}
+          onToggle={choose}
         />
-      ) : (
-        <ThemedText type="smallBold">{groups[0].name}</ThemedText>
-      )}
+      ) : null}
 
-      {team ? (
+      {selected ? (
         <>
           <TextField
             label="Session"
             value={name}
-            onChangeText={setName}
+            onChangeText={setEditedName}
             placeholder="For example, Tuesday training"
             maxLength={100}
           />
-          {suggestions.length > 0 ? (
+          {event && !chosenEvent && editedName === null ? (
+            <ThemedText type="small" themeColor="textSecondary">
+              Suggested from the calendar: it’s on now, from {formatSentAt(event.start)}.
+            </ThemedText>
+          ) : null}
+          {today.length > 0 ? (
             <ChipGroup
               label="From today’s calendar"
-              options={suggestions.map((s) => ({ value: s.key, label: s.label }))}
-              selected={suggestions.filter((s) => s.title === name).map((s) => s.key)}
-              onToggle={(key) => {
-                const suggestion = suggestions.find((s) => s.key === key);
-                if (!suggestion) return;
-                setName(suggestion.title);
-                setHeldAt(suggestion.start.toISOString());
+              options={today.map((e) => ({
+                value: e.id,
+                label: `${e.title} · ${formatSentAt(e.start)}`,
+              }))}
+              selected={event && editedName === null ? [event.id] : []}
+              onToggle={(id) => {
+                setChosenEvent(today.find((e) => e.id === id) ?? null);
+                setEditedName(null);
               }}
             />
           ) : null}
@@ -206,23 +245,29 @@ function NearbyWarning({ sessions }: { sessions: NearbySession[] }) {
   );
 }
 
-/** Today's calendar events for the squad or team, or the club, as session names. */
-function useSessionSuggestions(team: Team | null) {
+/**
+ * Today's timed calendar events for the chosen group: club events, plus the
+ * squad or team's own calendar. `now` is the one happening at the moment.
+ */
+function useCalendarEvents(group: { club: boolean; team: Team | null } | null) {
   const { events } = useEvents();
-  if (!team || !events) return [];
+  if (!group || !events) return { today: [], now: null };
   const now = new Date();
   const endOfToday = new Date(now.getFullYear(), now.getMonth(), now.getDate() + 1);
-  return events
-    .filter(
-      (e) => !e.allDay && e.start < endOfToday && (e.clubWide || e.calendarName === team.name),
-    )
-    .slice(0, 6)
-    .map((e) => ({
-      key: e.id,
-      title: e.title,
-      start: e.start,
-      label: `${e.title} · ${formatSentAt(e.start)}`,
-    }));
+  const today = events.filter(
+    (e) =>
+      !e.allDay &&
+      e.start < endOfToday &&
+      (e.clubWide || (!group.club && e.calendarName === group.team?.name)),
+  );
+  const happening = today.filter(
+    (e) =>
+      e.start.getTime() - BEFORE_START_MS <= now.getTime() &&
+      now.getTime() <= e.end.getTime() + AFTER_END_MS,
+  );
+  // Prefer the group's own event over a club one.
+  const current = happening.find((e) => !e.clubWide) ?? happening[0] ?? null;
+  return { today: today.slice(0, 6), now: current };
 }
 
 const styles = StyleSheet.create({

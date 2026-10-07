@@ -166,6 +166,8 @@ export type InjuryReportRow = {
 /** A session's attendance record, from `attendance_sessions_list`. */
 export type AttendanceSession = {
   id: string;
+  /** A club event, with every athlete in the club on the register. */
+  club_wide: boolean;
   team_id: string | null;
   team_name: string;
   name: string;
