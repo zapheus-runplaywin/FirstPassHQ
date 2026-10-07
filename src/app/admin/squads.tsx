@@ -1,13 +1,15 @@
 import { router } from 'expo-router';
 import { useState } from 'react';
-import { StyleSheet, View } from 'react-native';
+import { Pressable, StyleSheet, View } from 'react-native';
 
 import { Screen } from '@/components/screen';
 import { ThemedText } from '@/components/themed-text';
-import { Button, ChipGroup, ErrorText, PressableCard, TextField } from '@/components/ui';
+import { Button, Card, ChipGroup, ErrorText, PressableCard, TextField } from '@/components/ui';
 import { Spacing } from '@/constants/theme';
+import { useTheme } from '@/hooks/use-theme';
+import { formatDay } from '@/lib/format';
 import { supabase } from '@/lib/supabase';
-import type { GroupKind } from '@/lib/types';
+import type { GroupKind, Team } from '@/lib/types';
 import { squadsOf, teamsIn, useTeamList } from '@/lib/use-teams';
 
 export default function SquadsScreen() {
@@ -55,7 +57,9 @@ export default function SquadsScreen() {
     <Screen>
       <ThemedText type="small" themeColor="textSecondary">
         New members are added to a squad. At selections, name the teams here and pick touring
-        athletes and training partners from the squad. Everyone stays in their squad.
+        athletes and training partners from the squad. Everyone stays in their squad. Once the teams
+        are named, mark the squad’s Selections Phase 2 complete so coaches only look after their
+        team’s athletes.
       </ThemedText>
 
       {squads.map((squad) => (
@@ -80,6 +84,11 @@ export default function SquadsScreen() {
               </PressableCard>
             </View>
           ))}
+          <SelectionsPhase
+            squad={squad}
+            hasTeams={teamsIn(teams, squad.id).length > 0}
+            onChange={reload}
+          />
         </View>
       ))}
 
@@ -97,7 +106,9 @@ export default function SquadsScreen() {
           label="Name"
           value={name}
           onChangeText={setName}
-          placeholder={kind === 'team' ? 'For example, Mixed Open' : 'For example, Mixed Open Squad'}
+          placeholder={
+            kind === 'team' ? 'For example, Mixed Open' : 'For example, Mixed Open Squad'
+          }
         />
         {kind === 'team' ? (
           <ChipGroup
@@ -114,12 +125,100 @@ export default function SquadsScreen() {
   );
 }
 
+/**
+ * Selections Phase 2 for one squad. Once it's complete, the squad no longer
+ * gives its coaches to-dos: they look after the athletes in their teams.
+ */
+function SelectionsPhase({
+  squad,
+  hasTeams,
+  onChange,
+}: {
+  squad: Team;
+  hasTeams: boolean;
+  onChange: () => void;
+}) {
+  const theme = useTheme();
+  const [confirming, setConfirming] = useState(false);
+  const [saving, setSaving] = useState(false);
+  const [error, setError] = useState<string | null>(null);
+  const completedAt = squad.selections_completed_at;
+
+  async function save(complete: boolean) {
+    setSaving(true);
+    setError(null);
+    const { error: saveError } = await supabase.rpc('set_selections_complete', {
+      p_squad_id: squad.id,
+      p_complete: complete,
+    });
+    setSaving(false);
+    if (saveError) {
+      setError(saveError.message);
+      return;
+    }
+    setConfirming(false);
+    onChange();
+  }
+
+  if (confirming) {
+    return (
+      <Card style={styles.team}>
+        <ThemedText type="smallBold">Complete Selections Phase 2 for {squad.name}?</ThemedText>
+        <ThemedText type="small">
+          Coaches will only look after the touring athletes and training partners in their teams.
+          Athletes left in the squad but not in a team won’t appear on coaches’ to-dos or check-in
+          boards. Nobody is removed from the squad, and you can undo this.
+        </ThemedText>
+        <ErrorText>{error}</ErrorText>
+        <Button title="Mark complete" onPress={() => save(true)} busy={saving} />
+        <Pressable accessibilityRole="button" onPress={() => setConfirming(false)}>
+          <ThemedText type="smallBold" style={[styles.link, { color: theme.tint }]}>
+            Cancel
+          </ThemedText>
+        </Pressable>
+      </Card>
+    );
+  }
+
+  return (
+    <View style={[styles.team, styles.phase]}>
+      <ThemedText type="small" themeColor="textSecondary">
+        {completedAt
+          ? `Selections Phase 2 complete since ${formatDay(new Date(completedAt))}. Coaches look after their team’s athletes.`
+          : hasTeams
+            ? 'Selections Phase 2 in progress. Coaches look after everyone in the squad.'
+            : 'Name the teams from this squad to finish Selections Phase 2.'}
+      </ThemedText>
+      <ErrorText>{error}</ErrorText>
+      {completedAt ? (
+        <Pressable accessibilityRole="button" onPress={() => save(false)} disabled={saving}>
+          <ThemedText type="smallBold" style={[styles.link, { color: theme.tint }]}>
+            Undo
+          </ThemedText>
+        </Pressable>
+      ) : hasTeams ? (
+        <Pressable accessibilityRole="button" onPress={() => setConfirming(true)}>
+          <ThemedText type="smallBold" style={[styles.link, { color: theme.tint }]}>
+            Mark Selections Phase 2 complete
+          </ThemedText>
+        </Pressable>
+      ) : null}
+    </View>
+  );
+}
+
 const styles = StyleSheet.create({
   squad: {
     gap: Spacing.two,
   },
   team: {
-    paddingLeft: Spacing.four,
+    marginLeft: Spacing.four,
+  },
+  phase: {
+    gap: Spacing.one,
+  },
+  link: {
+    paddingVertical: Spacing.one,
   },
   form: {
     gap: Spacing.three,
