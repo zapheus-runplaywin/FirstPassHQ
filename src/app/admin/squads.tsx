@@ -1,7 +1,8 @@
 import { router } from 'expo-router';
-import { useState } from 'react';
+import { useCallback, useEffect, useState } from 'react';
 import { Pressable, StyleSheet, View } from 'react-native';
 
+import { GroupActions, RemovedGroups } from '@/components/group-actions';
 import { Screen } from '@/components/screen';
 import { ThemedText } from '@/components/themed-text';
 import { Button, Card, ChipGroup, ErrorText, PressableCard, TextField } from '@/components/ui';
@@ -14,6 +15,7 @@ import {
   newestSquads,
   seasonLabel,
   squadsOf,
+  TEAM_COLUMNS,
   teamLabel,
   teamsIn,
   useTeamList,
@@ -27,6 +29,29 @@ export default function SquadsScreen() {
   const [squadId, setSquadId] = useState<string | null>(null);
   const [saving, setSaving] = useState(false);
   const [error, setError] = useState<string | null>(null);
+  const [removed, setRemoved] = useState<Team[]>([]);
+
+  // Squads and teams removed from a season that is still running.
+  const seasons = [...new Set(teams.map((t) => t.season))].join(',');
+  const loadRemoved = useCallback(() => {
+    if (!seasons) return;
+    supabase
+      .from('teams')
+      .select(TEAM_COLUMNS)
+      .eq('archived', true)
+      .in('season', seasons.split(',').map(Number))
+      .order('sort_order')
+      .then(({ data }) => setRemoved((data as Team[] | null) ?? []));
+  }, [seasons]);
+
+  useEffect(() => {
+    loadRemoved();
+  }, [loadRemoved]);
+
+  const changed = useCallback(() => {
+    reload();
+    loadRemoved();
+  }, [reload, loadRemoved]);
 
   async function add() {
     if (!name.trim()) {
@@ -80,6 +105,7 @@ export default function SquadsScreen() {
               {seasonLabel(squad.season)} squad · see everyone in it
             </ThemedText>
           </PressableCard>
+          <GroupActions key={squad.name} group={squad} onChange={changed} />
           {teamsIn(teams, squad.id).map((team) => (
             <View key={team.id} style={styles.team}>
               <PressableCard
@@ -91,6 +117,7 @@ export default function SquadsScreen() {
                   Team · choose who is selected
                 </ThemedText>
               </PressableCard>
+              <GroupActions key={team.name} group={team} onChange={changed} />
             </View>
           ))}
           <SelectionsPhase
@@ -100,6 +127,8 @@ export default function SquadsScreen() {
           />
         </View>
       ))}
+
+      <RemovedGroups groups={removed} onChange={changed} />
 
       <View style={styles.form}>
         <ThemedText type="smallBold">Add a squad or team</ThemedText>
@@ -222,6 +251,7 @@ const styles = StyleSheet.create({
   },
   team: {
     marginLeft: Spacing.four,
+    gap: Spacing.two,
   },
   phase: {
     gap: Spacing.one,
