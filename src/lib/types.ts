@@ -12,6 +12,8 @@ export type AppRole =
 
 export type MemberStatus = 'pending' | 'approved' | 'rejected';
 
+export type RejectionReason = 'playhq_email_mismatch' | 'not_registered' | 'other';
+
 export type TeamRole = 'coach' | 'manager' | 'athlete' | 'guardian';
 
 export type CoachTitle = 'head_coach' | 'assistant_coach';
@@ -43,6 +45,10 @@ export type Profile = {
   join_requested_at: string | null;
   /** Athletes under 17 have parents or guardians linked to them. */
   under_17: boolean;
+  /** Why an admin didn't approve them, shown to the member. */
+  rejection_reason: RejectionReason | null;
+  /** When an admin confirmed who they are with their in-app code. */
+  verified_at: string | null;
 };
 
 export type TeamMembership = {

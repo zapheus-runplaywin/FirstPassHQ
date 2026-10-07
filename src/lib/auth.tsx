@@ -16,7 +16,7 @@ type AuthState = {
 };
 
 export const PROFILE_COLUMNS =
-  'id, email, full_name, playhq_email, role, status, requested_role, requested_team_id, join_requested_at, under_17';
+  'id, email, full_name, playhq_email, role, status, requested_role, requested_team_id, join_requested_at, under_17, rejection_reason, verified_at';
 
 const AuthContext = createContext<AuthState | null>(null);
 

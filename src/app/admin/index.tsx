@@ -7,7 +7,7 @@ import { ThemedText } from '@/components/themed-text';
 import { PressableCard, TextField } from '@/components/ui';
 import { Spacing } from '@/constants/theme';
 import { PROFILE_COLUMNS } from '@/lib/auth';
-import { roleLabels } from '@/lib/labels';
+import { rejectionReasonLabels, roleLabels } from '@/lib/labels';
 import { supabase } from '@/lib/supabase';
 import type { Profile } from '@/lib/types';
 
@@ -62,7 +62,9 @@ export default function MembersScreen() {
         title="Waiting for approval"
         empty="No requests waiting."
         members={waiting}
-        describe={(m) => `Asked to join as ${m.requested_role ? roleLabels[m.requested_role] : 'a member'}`}
+        describe={(m) =>
+          `Asked to join as ${m.requested_role ? roleLabels[m.requested_role] : 'a member'}${m.verified_at ? ' · Verified in person' : ''}`
+        }
       />
       <Section
         title="Members"
@@ -75,7 +77,13 @@ export default function MembersScreen() {
         members={notRequested}
         describe={(m) => m.email ?? ''}
       />
-      <Section title="Not approved" members={rejected} describe={(m) => m.email ?? ''} />
+      <Section
+        title="Not approved"
+        members={rejected}
+        describe={(m) =>
+          m.rejection_reason ? rejectionReasonLabels[m.rejection_reason] : (m.email ?? '')
+        }
+      />
     </Screen>
   );
 }
