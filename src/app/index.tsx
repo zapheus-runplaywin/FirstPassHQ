@@ -204,11 +204,21 @@ export default function HomeScreen() {
         </View>
       ) : null}
 
-      <Pressable accessibilityRole="button" onPress={signOut} style={styles.signOut}>
-        <ThemedText type="small" style={{ color: theme.tint }}>
-          Sign out
-        </ThemedText>
-      </Pressable>
+      <View style={styles.footer}>
+        <Pressable accessibilityRole="button" onPress={signOut} style={styles.footerLink}>
+          <ThemedText type="small" style={{ color: theme.tint }}>
+            Sign out
+          </ThemedText>
+        </Pressable>
+        <Pressable
+          accessibilityRole="button"
+          onPress={() => router.push('/delete-account')}
+          style={styles.footerLink}>
+          <ThemedText type="small" themeColor="textSecondary">
+            Delete account
+          </ThemedText>
+        </Pressable>
+      </View>
     </Screen>
   );
 }
@@ -352,8 +362,11 @@ const styles = StyleSheet.create({
   cardAction: {
     marginTop: Spacing.two,
   },
-  signOut: {
-    alignSelf: 'flex-start',
+  footer: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+  },
+  footerLink: {
     paddingVertical: Spacing.two,
   },
 });

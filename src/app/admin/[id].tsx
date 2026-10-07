@@ -4,7 +4,7 @@ import { StyleSheet, View } from 'react-native';
 
 import { Screen } from '@/components/screen';
 import { ThemedText } from '@/components/themed-text';
-import { Button, Card, ChipGroup, ErrorText, TextField } from '@/components/ui';
+import { Button, Card, ChipGroup, ConfirmDelete, ErrorText, TextField } from '@/components/ui';
 import { Spacing } from '@/constants/theme';
 import { PROFILE_COLUMNS, useAuth } from '@/lib/auth';
 import {
@@ -59,6 +59,7 @@ export default function MemberScreen() {
   const [verifying, setVerifying] = useState(false);
   const [verifyError, setVerifyError] = useState<string | null>(null);
   const [saving, setSaving] = useState<MemberStatus | null>(null);
+  const [deleting, setDeleting] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
   useEffect(() => {
@@ -198,6 +199,18 @@ export default function MemberScreen() {
       return;
     }
     if (isSelf) await refresh();
+    router.back();
+  }
+
+  async function deleteMember() {
+    setDeleting(true);
+    setError(null);
+    const { error: rpcError } = await supabase.rpc('admin_delete_member', { p_profile_id: id });
+    setDeleting(false);
+    if (rpcError) {
+      setError(rpcError.message);
+      return;
+    }
     router.back();
   }
 
@@ -448,6 +461,16 @@ export default function MemberScreen() {
           </>
         )}
       </View>
+
+      {!isSelf ? (
+        <ConfirmDelete
+          title="Delete member"
+          warning={`This permanently deletes ${member.full_name || member.email || 'this member'}: their account, squad and team places, guardian links and message receipts. Messages they sent stay. It can’t be undone.${member.status === 'approved' ? ' To only stop them using the app, use Remove access instead.' : ''}`}
+          confirmTitle="Delete permanently"
+          onConfirm={deleteMember}
+          busy={deleting}
+        />
+      ) : null}
     </Screen>
   );
 }

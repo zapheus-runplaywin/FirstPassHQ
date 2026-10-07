@@ -1,4 +1,4 @@
-import type { ReactNode } from 'react';
+import { useState, type ReactNode } from 'react';
 import {
   ActivityIndicator,
   Keyboard,
@@ -14,6 +14,9 @@ import { useRevealFocusedInput } from '@/components/screen';
 import { ThemedText } from '@/components/themed-text';
 import { Spacing } from '@/constants/theme';
 import { useTheme } from '@/hooks/use-theme';
+
+/** Red, for actions that can't be undone. */
+const DANGER = '#FF5A5A';
 
 export function Card({ style, ...rest }: ViewProps) {
   const theme = useTheme();
@@ -48,10 +51,11 @@ export function Button({
   onPress: () => void;
   busy?: boolean;
   disabled?: boolean;
-  variant?: 'primary' | 'secondary';
+  variant?: 'primary' | 'secondary' | 'danger';
 }) {
   const theme = useTheme();
   const primary = variant === 'primary';
+  const filled = primary || variant === 'danger';
   return (
     <Pressable
       accessibilityRole="button"
@@ -60,14 +64,18 @@ export function Button({
       style={({ pressed }) => [
         styles.button,
         {
-          backgroundColor: primary ? theme.accent : theme.backgroundElement,
+          backgroundColor: primary
+            ? theme.accent
+            : variant === 'danger'
+              ? DANGER
+              : theme.backgroundElement,
           opacity: disabled ? 0.5 : pressed ? 0.7 : 1,
         },
       ]}>
       {busy ? (
-        <ActivityIndicator color={primary ? theme.onAccent : theme.text} />
+        <ActivityIndicator color={filled ? theme.onAccent : theme.text} />
       ) : (
-        <ThemedText type="smallBold" style={primary ? { color: theme.onAccent } : undefined}>
+        <ThemedText type="smallBold" style={filled ? { color: theme.onAccent } : undefined}>
           {title}
         </ThemedText>
       )}
@@ -141,6 +149,36 @@ export function ChipGroup<T extends string>({
   );
 }
 
+/**
+ * A delete button that asks once more before doing anything, explaining what
+ * will be lost.
+ */
+export function ConfirmDelete({
+  title,
+  warning,
+  confirmTitle,
+  onConfirm,
+  busy = false,
+}: {
+  title: string;
+  warning: string;
+  confirmTitle: string;
+  onConfirm: () => void;
+  busy?: boolean;
+}) {
+  const [confirming, setConfirming] = useState(false);
+  if (!confirming) {
+    return <Button title={title} variant="secondary" onPress={() => setConfirming(true)} />;
+  }
+  return (
+    <Card style={styles.confirm}>
+      <ThemedText type="small">{warning}</ThemedText>
+      <Button title={confirmTitle} variant="danger" onPress={onConfirm} busy={busy} />
+      <Button title="Cancel" variant="secondary" onPress={() => setConfirming(false)} />
+    </Card>
+  );
+}
+
 export function ErrorText({ children }: { children: ReactNode }) {
   if (!children) return null;
   return (
@@ -188,6 +226,11 @@ const styles = StyleSheet.create({
     paddingHorizontal: Spacing.three,
     paddingVertical: Spacing.two,
     borderRadius: 999,
+  },
+  confirm: {
+    gap: Spacing.three,
+    borderWidth: 1,
+    borderColor: DANGER,
   },
   error: {
     color: '#DC2626',
