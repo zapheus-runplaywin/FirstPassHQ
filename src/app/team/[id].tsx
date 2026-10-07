@@ -39,14 +39,14 @@ export default function TeamScreen() {
       <Stack.Screen options={{ title: team?.name ?? 'Team' }} />
       {roster === null ? null : roster.length === 0 ? (
         <ThemedText type="small" themeColor="textSecondary">
-          No one has been added to this team yet.
+          No one has been added yet.
         </ThemedText>
       ) : (
         roster.map((member) => (
           <Card key={member.profile_id}>
             <ThemedText type="smallBold">{member.full_name ?? 'Unnamed member'}</ThemedText>
             <ThemedText type="small" themeColor="textSecondary">
-              {teamPositionLabel(member.team_role, member.coach_title)}
+              {teamPositionLabel(member.team_role, member.coach_title, member.selection)}
             </ThemedText>
           </Card>
         ))

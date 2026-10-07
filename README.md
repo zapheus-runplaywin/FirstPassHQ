@@ -12,7 +12,7 @@ free tier.
 | --- | --- |
 | `src/app/` | Screens (Expo Router): sign-in, home, join request, team roster, and `admin/` for approving members. |
 | `src/lib/` | Supabase client, sign-in, and the signed-in member's profile and teams. |
-| `supabase/migrations/` | Database schema: roles, profiles, the six teams, team membership, join requests, security rules. Run them in filename order. |
+| `supabase/migrations/` | Database schema: roles, profiles, squads and the teams named from them each season, membership, join requests, calendars, security rules. Run them in filename order. |
 
 ## One-time setup
 

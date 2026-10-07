@@ -3,6 +3,7 @@ import { createContext, use, useCallback, useEffect, useState, type ReactNode } 
 
 import { supabase } from '@/lib/supabase';
 import type { Profile, TeamMembership } from '@/lib/types';
+import { TEAM_COLUMNS } from '@/lib/use-teams';
 
 type AuthState = {
   loading: boolean;
@@ -39,7 +40,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
         .single(),
       supabase
         .from('team_members')
-        .select('team_role, coach_title, team:teams (id, name, sort_order)')
+        .select(`team_role, coach_title, selection, team:teams (${TEAM_COLUMNS})`)
         .eq('profile_id', userId),
     ]);
     setProfile((profileResult.data as Profile | null) ?? null);

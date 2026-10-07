@@ -16,10 +16,19 @@ export type TeamRole = 'coach' | 'manager' | 'athlete';
 
 export type CoachTitle = 'head_coach' | 'assistant_coach';
 
+/** Members join a squad first; teams are named from a squad at selections. */
+export type GroupKind = 'squad' | 'team';
+
+export type TeamSelection = 'touring' | 'training_partner';
+
+/** A squad or a team. Both live in the `teams` table. */
 export type Team = {
   id: string;
   name: string;
   sort_order: number;
+  kind: GroupKind;
+  season: number;
+  squad_id: string | null;
 };
 
 export type Profile = {
@@ -37,6 +46,7 @@ export type Profile = {
 export type TeamMembership = {
   team_role: TeamRole;
   coach_title: CoachTitle | null;
+  selection: TeamSelection | null;
   team: Team;
 };
 
@@ -45,4 +55,5 @@ export type RosterEntry = {
   full_name: string | null;
   team_role: TeamRole;
   coach_title: CoachTitle | null;
+  selection: TeamSelection | null;
 };
