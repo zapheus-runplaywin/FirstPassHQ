@@ -100,3 +100,65 @@ export type MessageReceipt = {
   full_name: string | null;
   read_at: string | null;
 };
+
+/** Where an injury is in its return-to-play sign-off. */
+export type InjuryStatus = 'injured' | 'clearance_requested' | 'coach_endorsed' | 'cleared';
+
+export type InjuryUpdateKind =
+  | 'reported'
+  | 'physio_update'
+  | 'clearance_requested'
+  | 'coach_endorsed'
+  | 'sent_back'
+  | 'cleared';
+
+/** An injury the member can see, from `visible_injuries`. */
+export type Injury = {
+  id: string;
+  athlete_id: string;
+  athlete_name: string | null;
+  body_area: string;
+  description: string;
+  injured_on: string;
+  restrictions: string | null;
+  expected_return: string | null;
+  status: InjuryStatus;
+  coach_endorsed_by: string | null;
+  cleared_at: string | null;
+  created_at: string;
+  last_update_at: string | null;
+  /** The member is the athlete or their guardian, so can add updates. */
+  can_report: boolean;
+  /** The member needs to endorse or accept it. */
+  waiting_for_me: boolean;
+};
+
+export type InjuryUpdate = {
+  id: string;
+  author_name: string | null;
+  kind: InjuryUpdateKind;
+  notes: string | null;
+  restrictions: string | null;
+  expected_return: string | null;
+  document_path: string | null;
+  document_name: string | null;
+  created_at: string;
+};
+
+/** A row in the admin injury report. */
+export type InjuryReportRow = {
+  id: string;
+  athlete_name: string | null;
+  athlete_email: string | null;
+  body_area: string;
+  injured_on: string;
+  reported_at: string;
+  status: InjuryStatus;
+  restrictions: string | null;
+  expected_return: string | null;
+  coach_endorsed_by_name: string | null;
+  cleared_by_name: string | null;
+  cleared_at: string | null;
+  update_count: number;
+  document_count: number;
+};

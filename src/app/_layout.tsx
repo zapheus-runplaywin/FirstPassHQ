@@ -55,6 +55,9 @@ function RootStack() {
           <Stack.Screen name="messages/index" options={{ title: 'Messages' }} />
           <Stack.Screen name="messages/new" options={{ title: 'New message' }} />
           <Stack.Screen name="messages/[id]" options={{ title: 'Message' }} />
+          <Stack.Screen name="injuries/index" options={{ title: 'Injuries' }} />
+          <Stack.Screen name="injuries/new" options={{ title: 'Report an injury' }} />
+          <Stack.Screen name="injuries/[id]" options={{ title: 'Injury' }} />
           <Stack.Screen name="delete-account" options={{ title: 'Delete account' }} />
           <Stack.Protected guard={isAdmin}>
             <Stack.Screen name="administration" options={{ title: 'Administration' }} />
@@ -62,6 +65,7 @@ function RootStack() {
             <Stack.Screen name="admin/[id]" options={{ title: 'Member' }} />
             <Stack.Screen name="admin/calendars" options={{ title: 'Calendars' }} />
             <Stack.Screen name="admin/club-password" options={{ title: 'Club password' }} />
+            <Stack.Screen name="admin/injuries" options={{ title: 'Injury report' }} />
             <Stack.Screen name="admin/squads" options={{ title: 'Squads and teams' }} />
             <Stack.Screen name="admin/team/[id]" options={{ title: 'Name team' }} />
           </Stack.Protected>

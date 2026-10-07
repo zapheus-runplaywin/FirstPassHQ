@@ -42,7 +42,8 @@
           "color": "#FFCD00",
           "defaultChannel": "join-requests"
         }
-      ]
+      ],
+      "expo-sharing"
     ],
     "experiments": {
       "typedRoutes": true,
