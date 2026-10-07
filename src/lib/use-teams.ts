@@ -3,7 +3,7 @@ import { useCallback, useEffect, useState } from 'react';
 import { supabase } from '@/lib/supabase';
 import type { Team } from '@/lib/types';
 
-export const TEAM_COLUMNS = 'id, name, sort_order, kind, season, squad_id';
+export const TEAM_COLUMNS = 'id, name, sort_order, kind, season, squad_id, selections_completed_at';
 
 /** This season's squads and teams (archived seasons are left out). */
 export function useTeams() {
