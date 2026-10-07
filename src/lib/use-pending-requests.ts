@@ -33,3 +33,31 @@ export function pendingRequestsLabel(count: number) {
     ? 'No requests waiting'
     : `${count} ${count === 1 ? 'request' : 'requests'} waiting for approval`;
 }
+
+/** Child-safety follow-ups for admins, from `admin_safety_todos`. */
+export type SafetyTodos = {
+  wwcc_missing: number;
+  wwcc_expiring: number;
+  minors_without_guardian: number;
+  turning_18: number;
+};
+
+/** Child-safety follow-ups for admins, refreshed when the screen is shown. */
+export function useSafetyTodos() {
+  const { isAdmin } = useAuth();
+  const [safety, setSafety] = useState<SafetyTodos | null>(null);
+
+  const load = useCallback(async () => {
+    if (!isAdmin) return;
+    const { data } = await supabase.rpc('admin_safety_todos').maybeSingle();
+    setSafety((data as SafetyTodos | null) ?? null);
+  }, [isAdmin]);
+
+  useFocusEffect(
+    useCallback(() => {
+      load();
+    }, [load]),
+  );
+
+  return { safetyTodos: isAdmin ? safety : null, reloadSafetyTodos: load };
+}

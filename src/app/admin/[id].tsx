@@ -6,6 +6,7 @@ import { Screen } from '@/components/screen';
 import { ThemedText } from '@/components/themed-text';
 import { Button, Card, ChipGroup, ConfirmDelete, ErrorText, TextField } from '@/components/ui';
 import { Spacing } from '@/constants/theme';
+import { formatDate, isMinor, parseDate } from '@/lib/age';
 import { PROFILE_COLUMNS, useAuth } from '@/lib/auth';
 import {
   coachTitleLabels,
@@ -37,7 +38,16 @@ type Placement = { coach_title: CoachTitle | null; selection: TeamSelection | nu
 /** Squads and teams the member is in, keyed by id. */
 type Placements = Record<string, Placement>;
 
-type Person = { id: string; full_name: string | null; email: string | null; role: AppRole };
+type Person = {
+  id: string;
+  full_name: string | null;
+  email: string | null;
+  role: AppRole;
+  verified_at: string | null;
+};
+
+/** Roles that work with children, so need a Working With Children Check. */
+const wwccRoles: AppRole[] = ['coach', 'manager'];
 
 /** How many guardians to offer while searching. */
 const GUARDIAN_MATCHES = 6;
@@ -49,7 +59,10 @@ export default function MemberScreen() {
   const [member, setMember] = useState<Profile | null>(null);
   const [role, setRole] = useState<AppRole>('guest');
   const [selection, setSelection] = useState<Placements>({});
-  const [under17, setUnder17] = useState(false);
+  const [under18, setUnder18] = useState(false);
+  const [dateOfBirth, setDateOfBirth] = useState('');
+  const [wwccNumber, setWwccNumber] = useState('');
+  const [wwccExpires, setWwccExpires] = useState('');
   const [guardianIds, setGuardianIds] = useState<string[]>([]);
   const [guardianOf, setGuardianOf] = useState<string[]>([]);
   const [people, setPeople] = useState<Person[]>([]);
@@ -78,7 +91,7 @@ export default function MemberScreen() {
           .or(`guardian_id.eq.${id},athlete_id.eq.${id}`),
         supabase
           .from('profiles')
-          .select('id, full_name, email, role')
+          .select('id, full_name, email, role, verified_at')
           .eq('status', 'approved')
           .order('full_name'),
       ]);
@@ -88,7 +101,10 @@ export default function MemberScreen() {
         return;
       }
       setMember(profile);
-      setUnder17(profile.under_17);
+      setUnder18(profile.under_17);
+      setDateOfBirth(formatDate(profile.date_of_birth));
+      setWwccNumber(profile.wwcc_number ?? '');
+      setWwccExpires(formatDate(profile.wwcc_expires_on));
       setReason(profile.rejection_reason);
       const links = linksResult.data ?? [];
       setGuardianIds(links.filter((l) => l.athlete_id === id).map((l) => l.guardian_id));
@@ -123,7 +139,10 @@ export default function MemberScreen() {
   }, [id]);
 
   const inTeams = isTeamRole(role);
-  const hasGuardians = role === 'athlete' && under17;
+  const dob = parseDate(dateOfBirth);
+  const minor = isMinor(dob, under18);
+  const hasGuardians = role === 'athlete' && minor;
+  const needsWwcc = wwccRoles.includes(role);
   const isSelf = id === session?.user.id;
 
   function toggleTeam(teamId: string) {
@@ -181,9 +200,42 @@ export default function MemberScreen() {
     setMember((current) => current && { ...current, verified_at: new Date().toISOString() });
   }
 
+  async function markVerified() {
+    setVerifying(true);
+    setVerifyError(null);
+    const { error: rpcError } = await supabase.rpc('admin_mark_verified', { p_profile_id: id });
+    setVerifying(false);
+    if (rpcError) {
+      setVerifyError(rpcError.message);
+      return;
+    }
+    setMember((current) => current && { ...current, verified_at: new Date().toISOString() });
+  }
+
   async function save(status: MemberStatus) {
+    const expires = parseDate(wwccExpires);
+    if (dob === undefined) {
+      setError('Enter the date of birth as DD/MM/YYYY.');
+      return;
+    }
+    if (expires === undefined) {
+      setError('Enter the check expiry date as DD/MM/YYYY.');
+      return;
+    }
     setSaving(status);
     setError(null);
+    // Saved first, because the member rules below depend on them.
+    const { error: detailsError } = await supabase.rpc('admin_set_member_details', {
+      p_profile_id: id,
+      p_date_of_birth: dob,
+      p_wwcc_number: wwccNumber,
+      p_wwcc_expires_on: expires,
+    });
+    if (detailsError) {
+      setSaving(null);
+      setError(detailsError.message);
+      return;
+    }
     const { error: rpcError } = await supabase.rpc('admin_save_member', {
       p_profile_id: id,
       p_role: role,
@@ -230,6 +282,7 @@ export default function MemberScreen() {
     return person?.full_name || person?.email || 'Unnamed member';
   };
   const search = guardianSearch.trim().toLowerCase();
+  const isVerified = (personId: string) => !!people.find((p) => p.id === personId)?.verified_at;
   const guardianMatches = people
     .filter(
       (p) =>
@@ -254,7 +307,7 @@ export default function MemberScreen() {
         <Detail label="Sign-in email" value={member.email} />
         <Detail label="PlayHQ email" value={member.playhq_email} />
         <Detail
-          label="Verified in person"
+          label="Verified"
           value={
             member.verified_at
               ? `Yes, ${new Date(member.verified_at).toLocaleDateString()}`
@@ -336,15 +389,55 @@ export default function MemberScreen() {
         : null}
 
       {role === 'athlete' ? (
-        <ChipGroup
-          label="Age"
-          options={[
-            { value: 'under', label: 'Under 17' },
-            { value: 'over', label: '17 or over' },
-          ]}
-          selected={[under17 ? 'under' : 'over']}
-          onToggle={(age) => setUnder17(age === 'under')}
-        />
+        <View style={styles.group}>
+          <TextField
+            label="Date of birth"
+            value={dateOfBirth}
+            onChangeText={setDateOfBirth}
+            placeholder="DD/MM/YYYY"
+            keyboardType="numbers-and-punctuation"
+            maxLength={10}
+          />
+          {dob ? (
+            <ThemedText type="small" themeColor="textSecondary">
+              {minor ? 'Under 18, so needs a parent or guardian.' : '18 or over.'}
+            </ThemedText>
+          ) : dob === null ? (
+            <ChipGroup
+              label="Age, until you add their date of birth"
+              options={[
+                { value: 'under', label: 'Under 18' },
+                { value: 'over', label: '18 or over' },
+              ]}
+              selected={[under18 ? 'under' : 'over']}
+              onToggle={(age) => setUnder18(age === 'under')}
+            />
+          ) : null}
+        </View>
+      ) : null}
+
+      {needsWwcc ? (
+        <View style={styles.group}>
+          <ThemedText type="smallBold">Working With Children Check</ThemedText>
+          <ThemedText type="small" themeColor="textSecondary">
+            Coaches and managers need a current check before you can approve them.
+          </ThemedText>
+          <TextField
+            label="Card number"
+            value={wwccNumber}
+            onChangeText={setWwccNumber}
+            autoCapitalize="characters"
+            maxLength={30}
+          />
+          <TextField
+            label="Expires"
+            value={wwccExpires}
+            onChangeText={setWwccExpires}
+            placeholder="DD/MM/YYYY"
+            keyboardType="numbers-and-punctuation"
+            maxLength={10}
+          />
+        </View>
       ) : null}
 
       {hasGuardians ? (
@@ -371,9 +464,19 @@ export default function MemberScreen() {
                 autoCapitalize="none"
               />
               <ChipGroup
-                options={guardianMatches.map((p) => ({ value: p.id, label: nameOf(p.id) }))}
+                options={guardianMatches.map((p) => ({
+                  value: p.id,
+                  label: p.verified_at ? nameOf(p.id) : `${nameOf(p.id)} (not verified)`,
+                }))}
                 selected={[]}
                 onToggle={(g) => {
+                  if (!isVerified(g)) {
+                    setError(
+                      `Verify ${nameOf(g)} first, with their code in person or against PlayHQ, from their own page.`,
+                    );
+                    return;
+                  }
+                  setError(null);
                   setGuardianIds((current) => [...current, g]);
                   setGuardianSearch('');
                 }}
@@ -399,13 +502,23 @@ export default function MemberScreen() {
         </Card>
       ) : null}
 
-      {member.status !== 'approved' && !member.verified_at ? (
+      {(member.status !== 'approved' || role === 'guardian') && !member.verified_at ? (
         <View style={styles.group}>
-          <ThemedText type="smallBold">Verify in person</ThemedText>
+          <ThemedText type="smallBold">Verify who they are</ThemedText>
           <ThemedText type="small" themeColor="textSecondary">
-            If you can’t match them to PlayHQ, ask them to open the app and read you their 6-digit
-            code, in person or over a channel you already trust.
+            {role === 'guardian'
+              ? 'Guardians must be verified before you link them to a child. '
+              : ''}
+            If their PlayHQ email matches the parent or member on the PlayHQ registration, mark
+            them as checked. Otherwise ask them to open the app and read you their 6-digit code, in
+            person or over a channel you already trust.
           </ThemedText>
+          <Button
+            title="Checked against PlayHQ"
+            variant="secondary"
+            onPress={markVerified}
+            busy={verifying}
+          />
           <TextField
             label="Their code"
             value={code}
