@@ -57,6 +57,7 @@ function RootStack() {
           <Stack.Screen name="messages/[id]" options={{ title: 'Message' }} />
           <Stack.Screen name="delete-account" options={{ title: 'Delete account' }} />
           <Stack.Protected guard={isAdmin}>
+            <Stack.Screen name="administration" options={{ title: 'Administration' }} />
             <Stack.Screen name="admin/index" options={{ title: 'Members' }} />
             <Stack.Screen name="admin/[id]" options={{ title: 'Member' }} />
             <Stack.Screen name="admin/calendars" options={{ title: 'Calendars' }} />
