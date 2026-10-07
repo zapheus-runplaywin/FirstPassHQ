@@ -1,3 +1,4 @@
+import { Image } from 'expo-image';
 import { router, useFocusEffect } from 'expo-router';
 import { useCallback, useState } from 'react';
 import { Pressable, StyleSheet, View } from 'react-native';
@@ -50,11 +51,19 @@ export default function HomeScreen() {
 
   return (
     <Screen withTopInset refreshing={refreshing} onRefresh={onRefresh}>
-      <View style={styles.header}>
-        <ThemedText type="subtitle">Hi {name}</ThemedText>
-        {approved && profile ? (
-          <ThemedText themeColor="textSecondary">{roleLabels[profile.role]}</ThemedText>
-        ) : null}
+      <View style={styles.headerRow}>
+        <View style={styles.header}>
+          <ThemedText type="subtitle">Hi {name}</ThemedText>
+          {approved && profile ? (
+            <ThemedText themeColor="textSecondary">{roleLabels[profile.role]}</ThemedText>
+          ) : null}
+        </View>
+        <Image
+          source={require('@/assets/images/logo.png')}
+          style={styles.headerLogo}
+          contentFit="contain"
+          accessibilityLabel="West Coast Thunder"
+        />
       </View>
 
       {!approved ? <JoinStatus /> : null}
@@ -176,8 +185,18 @@ function JoinStatus() {
 }
 
 const styles = StyleSheet.create({
+  headerRow: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: Spacing.three,
+  },
   header: {
+    flex: 1,
     gap: Spacing.one,
+  },
+  headerLogo: {
+    width: 64,
+    height: 64,
   },
   section: {
     gap: Spacing.two,

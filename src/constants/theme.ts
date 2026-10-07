@@ -7,26 +7,24 @@ import '@/global.css';
 
 import { Platform } from 'react-native';
 
+// Club colours from the West Coast Thunder logo: yellow on black, with grey and
+// white. The app is dark only, because that is the club's look.
+const ThunderYellow = '#FFCD00';
+
 export const Colors = {
-  light: {
-    text: '#000000',
-    background: '#ffffff',
-    backgroundElement: '#F0F0F3',
-    backgroundSelected: '#E0E1E6',
-    textSecondary: '#60646C',
-    tint: '#1D4ED8',
-  },
-  dark: {
-    text: '#ffffff',
-    background: '#000000',
-    backgroundElement: '#212225',
-    backgroundSelected: '#2E3135',
-    textSecondary: '#B0B4BA',
-    tint: '#2563EB',
-  },
+  text: '#FFFFFF',
+  background: '#000000',
+  backgroundElement: '#1C1C1C',
+  backgroundSelected: '#2E2E2E',
+  textSecondary: '#B6B6B6',
+  /** Links, back buttons and other coloured text. */
+  tint: ThunderYellow,
+  /** Filled buttons and selected chips. */
+  accent: ThunderYellow,
+  onAccent: '#000000',
 } as const;
 
-export type ThemeColor = keyof typeof Colors.light & keyof typeof Colors.dark;
+export type ThemeColor = keyof typeof Colors;
 
 export const Fonts = Platform.select({
   ios: {
