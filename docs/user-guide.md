@@ -58,9 +58,14 @@ What each role sees on its home screen:
 | Sign off injury clearances             |         |                 |   Endorse    |            |    Accept     |                 |    Accept     |
 | Take attendance                        |         |                 |      ✓       |     ✓      |       ✓       |                 |       ✓       |
 | See athletes' attendance history       |         |                 |      ✓       |            |       ✓       |                 |       ✓       |
+| Vote in club awards                    |    ✓    |        ✓        |      ✓       |     ✓      |       ✓       |        ✓        |       ✓       |
+| Set up awards and see results          |         |                 |              |            |               |                 |       ✓       |
+| Import fixtures from PlayHQ            |         |                 |              |            |               |                 |       ✓       |
 | Administration                         |         |                 |              |            |               |                 |       ✓       |
 
 "Own groups" and "own athletes" mean the squads and teams you're listed in as a coach or manager.
+Club awards are voted on by the roles, squads and teams each award names, so not every award is
+open to everyone.
 
 <div style="page-break-before: always"></div>
 
@@ -121,11 +126,12 @@ fixing your details.
 
 Once you're approved, the home screen is where everything starts. From the top:
 
-- **To do**: things you need to do, such as your daily check-in or an injury clearance to sign off.
+- **To do**: things you need to do, such as your daily check-in, an award vote or an injury
+  clearance to sign off.
   Tap an item to go straight to it. Each item disappears once it's done. When there's nothing,
   it says "You're all caught up."
 - **Cards** for the features your role uses: Messages, Daily check-in, Check-ins, Injuries,
-  Attendance and Administration. A yellow number means something new or waiting for you.
+  Attendance, Awards and Administration. The Awards card shows while an award vote is open to you. A yellow number means something new or waiting for you.
 - **Coming up**: the next six events from your calendars. Tap **Full calendar** to see them all.
 - **My squads and teams**: tap one to see who's in it.
 - **Sign out** and **Delete account** at the bottom.
@@ -157,12 +163,17 @@ committee calendar.
   its events.
 - The chips (**All**, **Club**, your squads and teams) filter which calendars are shown.
 
+Your teams' matches from PlayHQ appear in the calendar too, for example "Mixed Open A v Rockets"
+with the venue and court. A bye shows as an all-day event. Match times follow PlayHQ, so a changed
+time shows once an admin refreshes the fixtures.
+
 Tap an event to see when and where it is. Tap the location to open it in maps, or **Copy** to copy
 the address.
 
 <img src="user-guide/calendar.png" width="210" alt="Calendar list view">
 <img src="user-guide/calendar-month.png" width="210" alt="Calendar month view">
 <img src="user-guide/event.png" width="210" alt="Event details">
+<img src="user-guide/calendar-fixtures.png" width="210" alt="Matches from PlayHQ in the calendar">
 
 ### Squads and teams
 
@@ -170,6 +181,27 @@ Tap a squad or team under **My squads and teams** to see everyone in it, with th
 Head Coach, Assistant Coach, Manager, Athlete, Touring athlete or Training partner.
 
 <img src="user-guide/team-roster.png" width="210" alt="Team roster">
+
+### Club awards
+
+When the club runs an award vote that includes you, it appears in your to-do list and on the
+**Awards** card. Who can vote depends on the award: for example, every member votes for Volunteer
+of the year, and athletes vote for their own team's Players' player.
+
+1. Tap the vote. It shows the award, what to think about, and when voting closes.
+2. Tap who you're voting for. For a 3-2-1 vote, tap three people in order: first place gets 3
+   votes, second 2 and third 1. Tap someone again to take them off.
+3. Tap **Vote**.
+
+You can't vote for yourself. You can change your vote until it closes: open it again, change your
+picks and tap **Change my vote**. Votes are secret. Nobody, admins included, can see who you voted
+for, and only admins see the results.
+
+Match awards, such as a coach's MVP, open for voting when each match starts and stay open for a
+day or two after it.
+
+<img src="user-guide/awards.png" width="210" alt="Award votes open to you">
+<img src="user-guide/award-vote.png" width="210" alt="A 3-2-1 vote">
 
 ### Deleting your account
 
@@ -316,6 +348,15 @@ flagged. If any are flagged, your to-do list says "Check in with N athletes".
 <img src="user-guide/check-ins-coach.png" width="210" alt="Coach's day-by-day check-ins">
 <img src="user-guide/check-ins-trends.png" width="210" alt="Check-in trends">
 <img src="user-guide/check-ins-athlete-history.png" width="210" alt="One athlete's check-in history">
+
+### Match awards
+
+Awards such as the coach's MVP can be voted on by coaches after every match. Each match your team
+plays opens its own vote when it starts, in your to-do list and under **Awards**, for example
+"Coach's MVP · Mixed Open A · Round 3 v Rockets". Some awards also have one **Preseason** vote,
+which counts for a set share of the result.
+
+<img src="user-guide/awards-coach.png" width="210" alt="A coach's match and preseason votes">
 
 ### Injuries and clearances
 
@@ -525,6 +566,59 @@ Nothing is deleted when a season is archived.
 <img src="user-guide/place-members.png" width="210" alt="Placing returning members">
 <img src="user-guide/season-archive.png" width="210" alt="Archiving last season">
 
+### Awards
+
+**Awards** lists the club's awards by season. Tap **New award** and set:
+
+- **Name**, **Description** (what voters should think about) and when **Voting closes**.
+- **Who votes**: **The whole club**, or **Chosen squads and teams**. For chosen groups, pick
+  **One winner** or **A winner for each** squad or team. With a winner for each, members vote only
+  in their own group.
+- **Roles that vote**. Athletes, coaches, managers and guardians vote in the squads and teams
+  they're in. Committee, admins and partners vote wherever they are. **Every member** opens it to
+  everyone.
+- **Who can be voted for**: **Athletes** or **Coaches** in the voting groups, **Any member**, or
+  **Names I list**, one per line, for people who aren't in the app, such as umpires.
+- **Ballot**: **One vote**, **3-2-1 votes** or **5-4-3-2-1 votes**.
+- **When people vote** (awards with a winner for each group): **Once, before it closes**, or
+  **After every match**, using the PlayHQ fixtures. Match votes stay open for a set time after
+  each match starts.
+- **Preseason share of the result** (match awards): voters also get one preseason ballot. With
+  25%, the result is 25% each nominee's share of the preseason points and 75% their share of the
+  match points.
+- **Repeats**: **Every year** or **This year only**.
+
+Open an award to see its standings for each squad or team, and how many people have voted in each
+match or ballot. Once anyone has voted, only the name, description, closing dates, match voting
+window and listed names can change, and the award can't be removed.
+
+**Copy annual awards into** the next season copies every **Every year** award with the same
+settings, closing a year later, for the squads and teams with the same names. Teams are usually
+named after the season starts, so the copy says when a team had no match yet: edit the award and
+add it once the team is named. **Copy into** on one award copies just that one.
+
+<img src="user-guide/admin-awards.png" width="210" alt="Awards admin">
+<img src="user-guide/new-award.png" width="210" alt="Creating an award">
+<img src="user-guide/award-results.png" width="210" alt="Award standings and who has voted">
+
+### Fixtures
+
+**Fixtures** brings in match fixtures from PlayHQ:
+
+1. On playhq.com, open the competition and copy its link, for example
+   `https://www.playhq.com/netball-australia/org/…/australian-championships-summer-202526/ec69e46d`.
+2. Paste it under **Add a PlayHQ competition** and tap **Look up**.
+3. Teams with "Thunder" in their name are listed. To find another, type part of its name under
+   **Find a team**. Tap each of our teams and choose the squad or team it is.
+4. Tap **Import games**.
+
+The games then show in each team's calendar and open match award votes. PlayHQ changes times and
+courts as a competition goes on, so tap **Refresh from PlayHQ** to pick up changes, or
+**Change teams** to link more teams. **Coming up** lists the next matches.
+
+<img src="user-guide/fixtures.png" width="210" alt="Fixtures from PlayHQ">
+<img src="user-guide/playhq-lookup.png" width="210" alt="Linking a PlayHQ team to a club team">
+
 ### Calendars
 
 **Calendars** connects the club's Outlook calendars. In Outlook, publish the calendar and copy its
@@ -570,6 +664,9 @@ once saved, only replaced or removed.
 | Injuries and documents  | The athlete, their guardians, their coaches, the committee and admins. Managers don't see injuries.                         |
 | Attendance records      | Coaches, the committee and admins. Managers see their own groups' sessions. Athletes and guardians don't see attendance.    |
 | Committee calendar      | Committee members and admins.                                                                                               |
+| Award votes             | Only the voter sees their own ballot. Nobody, admins included, can see who someone voted for.                               |
+| Award results           | Admins only: standings and how many people have voted.                                                                      |
+| Match fixtures          | The members of each squad or team, and admins.                                                                              |
 
 When someone leaves, injury records and proof documents are kept for 12 months, visible only to the
 committee and admins, then deleted automatically.
