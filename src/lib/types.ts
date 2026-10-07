@@ -45,8 +45,16 @@ export type Profile = {
   requested_role: AppRole | null;
   requested_team_id: string | null;
   join_requested_at: string | null;
-  /** Athletes under 17 have parents or guardians linked to them. */
+  /**
+   * The admin's choice that an athlete is under 18, used when no date of birth
+   * is recorded. Athletes under 18 have parents or guardians linked to them.
+   */
   under_17: boolean;
+  /** Recorded by an admin. Decides whether an athlete is under 18. */
+  date_of_birth: string | null;
+  /** Working With Children Check, recorded by an admin for coaches and managers. */
+  wwcc_number: string | null;
+  wwcc_expires_on: string | null;
   /** Why an admin didn't approve them, shown to the member. */
   rejection_reason: RejectionReason | null;
   /** When an admin confirmed who they are with their in-app code. */

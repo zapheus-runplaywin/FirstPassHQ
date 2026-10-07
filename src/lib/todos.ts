@@ -1,8 +1,9 @@
 import type { Href } from 'expo-router';
 
-import { formatDateString, toDateString } from '@/lib/injuries';
 import { slotTitle } from '@/lib/awards';
+import { formatDateString, toDateString } from '@/lib/injuries';
 import type { AwardSlot, Injury } from '@/lib/types';
+import type { SafetyTodos } from '@/lib/use-pending-requests';
 
 /** Something the member still has to do, shown at the top of the home screen. */
 export type Todo = {
@@ -23,6 +24,7 @@ export function buildTodos({
   needsCheckIn,
   flaggedAthletes,
   awardSlots = [],
+  safety = null,
   today = new Date(),
 }: {
   userId: string | undefined;
@@ -34,6 +36,8 @@ export function buildTodos({
   flaggedAthletes: number;
   /** Award votes open to the member. */
   awardSlots?: AwardSlot[];
+  /** Child-safety follow-ups, for admins. */
+  safety?: SafetyTodos | null;
   today?: Date;
 }): Todo[] {
   const todos: Todo[] = [];
@@ -130,6 +134,38 @@ export function buildTodos({
       detail: 'New members are waiting to be added to a squad',
       href: '/admin',
     });
+  }
+
+  if (safety) {
+    const plural = (n: number, one: string, many: string) => `${n} ${n === 1 ? one : many}`;
+    if (safety.minors_without_guardian > 0) {
+      todos.push({
+        key: 'minors-without-guardian',
+        title: `Link guardians for ${plural(safety.minors_without_guardian, 'athlete', 'athletes')} under 18`,
+        detail: 'Every athlete under 18 needs a verified guardian',
+        href: '/admin',
+      });
+    }
+    const wwcc = safety.wwcc_missing + safety.wwcc_expiring;
+    if (wwcc > 0) {
+      todos.push({
+        key: 'wwcc',
+        title: `Check ${plural(wwcc, 'Working With Children Check', 'Working With Children Checks')}`,
+        detail:
+          safety.wwcc_missing > 0
+            ? `${plural(safety.wwcc_missing, 'coach or manager has', 'coaches and managers have')} none recorded or it has expired`
+            : 'Expiring in the next 30 days',
+        href: '/admin',
+      });
+    }
+    if (safety.turning_18 > 0) {
+      todos.push({
+        key: 'turning-18',
+        title: `${plural(safety.turning_18, 'athlete turns', 'athletes turn')} 18 this month`,
+        detail: 'Their guardian links end when you next save them',
+        href: '/admin',
+      });
+    }
   }
 
   return todos;

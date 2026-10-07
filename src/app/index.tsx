@@ -26,7 +26,11 @@ import {
 } from '@/lib/check-ins';
 import { injuriesSummary, useCanSeeInjuries, useOpenInjuries } from '@/lib/injuries';
 import { useUnreadCount } from '@/lib/messages';
-import { pendingRequestsLabel, usePendingRequests } from '@/lib/use-pending-requests';
+import {
+  pendingRequestsLabel,
+  usePendingRequests,
+  useSafetyTodos,
+} from '@/lib/use-pending-requests';
 import { rejectionReasonMessages, roleLabels, teamPositionLabel } from '@/lib/labels';
 import { supabase } from '@/lib/supabase';
 import { buildTodos } from '@/lib/todos';
@@ -44,6 +48,7 @@ export default function HomeScreen() {
   const { events, reload: reloadEvents } = useEvents();
   const { unreadCount, reloadUnread } = useUnreadCount();
   const { pendingCount, reloadPending } = usePendingRequests();
+  const { safetyTodos, reloadSafetyTodos } = useSafetyTodos();
   const canSeeInjuries = useCanSeeInjuries();
   const canTakeAttendance = useCanTakeAttendance();
   const canViewAttendance = useCanViewAttendance();
@@ -62,6 +67,7 @@ export default function HomeScreen() {
     needsCheckIn: myCheckIn === null,
     flaggedAthletes: checkInTotals(checkInSummary).flagged,
     awardSlots,
+    safety: safetyTodos,
   });
 
   const isGuardian = profile?.status === 'approved' && profile.role === 'guardian';
@@ -88,6 +94,7 @@ export default function HomeScreen() {
     await Promise.all([
       refresh(),
       reloadPending(),
+      reloadSafetyTodos(),
       loadAthletes(),
       reloadEvents(),
       reloadUnread(),
