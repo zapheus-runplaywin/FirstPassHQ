@@ -7,7 +7,7 @@ import { ThemedText } from '@/components/themed-text';
 import { ThemedView } from '@/components/themed-view';
 import { MaxContentWidth, Spacing } from '@/constants/theme';
 import { useTheme } from '@/hooks/use-theme';
-import { authRedirectUrl, signInWithGoogle } from '@/lib/sign-in';
+import { signInWithGoogle } from '@/lib/sign-in';
 
 export default function SignInScreen() {
   const theme = useTheme();
@@ -57,17 +57,9 @@ export default function SignInScreen() {
             )}
           </Pressable>
 
-
           {error ? (
             <ThemedText type="small" style={styles.error}>
               {error}
-            </ThemedText>
-          ) : null}
-
-          {__DEV__ ? (
-            <ThemedText type="small" themeColor="textSecondary" selectable>
-              Development only. Add this to Supabase Redirect URLs if sign-in returns to
-              localhost: {authRedirectUrl()}
             </ThemedText>
           ) : null}
         </View>
