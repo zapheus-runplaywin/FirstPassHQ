@@ -5,6 +5,7 @@ import { useCallback, useEffect, useState } from 'react';
 import { BrandIntro } from '@/components/brand-intro';
 import { Colors } from '@/constants/theme';
 import { AuthProvider, useAuth } from '@/lib/auth';
+import { useAdminPushNotifications } from '@/lib/push';
 
 SplashScreen.preventAutoHideAsync();
 
@@ -34,6 +35,7 @@ function RootStack() {
   const { loading, session, isAdmin } = useAuth();
   const [introDone, setIntroDone] = useState(false);
   const finishIntro = useCallback(() => setIntroDone(true), []);
+  useAdminPushNotifications(isAdmin);
 
   useEffect(() => {
     if (!loading) SplashScreen.hideAsync();
@@ -55,8 +57,8 @@ function RootStack() {
             <Stack.Screen name="admin/[id]" options={{ title: 'Member' }} />
             <Stack.Screen name="admin/calendars" options={{ title: 'Calendars' }} />
             <Stack.Screen name="admin/club-password" options={{ title: 'Club password' }} />
-          <Stack.Screen name="admin/squads" options={{ title: 'Squads and teams' }} />
-          <Stack.Screen name="admin/team/[id]" options={{ title: 'Name team' }} />
+            <Stack.Screen name="admin/squads" options={{ title: 'Squads and teams' }} />
+            <Stack.Screen name="admin/team/[id]" options={{ title: 'Name team' }} />
           </Stack.Protected>
         </Stack.Protected>
         <Stack.Protected guard={!session}>
