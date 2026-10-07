@@ -38,6 +38,13 @@ if grep -qx "$first" <<<"$pending"; then
   exit 1
 fi
 
+# Security problems always stop the deploy; there is no setting to skip this.
+# shellcheck disable=SC2046
+if ! python3 scripts/check-migration-security.py $(sed 's|^|supabase/migrations/|' <<<"$pending"); then
+  echo "::error::Nothing was applied. Fix the migration in a new pull request."
+  exit 1
+fi
+
 if [ "${ALLOW_DATA_LOSS:-false}" != "true" ]; then
   # shellcheck disable=SC2046
   if ! python3 scripts/check-migrations.py $(sed 's|^|supabase/migrations/|' <<<"$pending"); then

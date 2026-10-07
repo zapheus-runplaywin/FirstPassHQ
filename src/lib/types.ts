@@ -150,6 +150,8 @@ export type InjuryReportRow = {
   id: string;
   athlete_name: string | null;
   athlete_email: string | null;
+  /** When the athlete's account was deleted; their record is kept for 12 months. */
+  athlete_left_at: string | null;
   body_area: string;
   injured_on: string;
   reported_at: string;

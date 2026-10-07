@@ -60,6 +60,7 @@ export default function InjuryReportScreen() {
         [
           'Athlete',
           'Email',
+          'Left club',
           'Injury',
           'Injured on',
           'Reported',
@@ -75,6 +76,7 @@ export default function InjuryReportScreen() {
         ...rows.map((r) => [
           r.athlete_name,
           r.athlete_email,
+          r.athlete_left_at?.slice(0, 10) ?? null,
           r.body_area,
           r.injured_on,
           r.reported_at.slice(0, 10),

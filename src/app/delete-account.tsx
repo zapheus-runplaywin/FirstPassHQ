@@ -29,8 +29,12 @@ export default function DeleteAccountScreen() {
       <ThemedText type="smallBold">Delete your account</ThemedText>
       <ThemedText type="small" themeColor="textSecondary">
         This permanently deletes your West Coast Thunder app account: your profile, your squad and
-        team places, guardian links, injury records and your messages inbox. Messages you sent to a
-        group stay with the people who received them.
+        team places, guardian links and your messages inbox. Messages you sent to a group stay with
+        the people who received them.
+      </ThemedText>
+      <ThemedText type="small" themeColor="textSecondary">
+        The club keeps your injury records and clearance documents for 12 months after you leave,
+        where only the committee and admins can see them, and then deletes them.
       </ThemedText>
       <ThemedText type="small" themeColor="textSecondary">
         It doesn’t change your PlayHQ registration or club membership. If you sign in again later,

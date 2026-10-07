@@ -465,7 +465,7 @@ export default function MemberScreen() {
       {!isSelf ? (
         <ConfirmDelete
           title="Delete member"
-          warning={`This permanently deletes ${member.full_name || member.email || 'this member'}: their account, squad and team places, guardian links and message receipts. Messages they sent stay. It can’t be undone.${member.status === 'approved' ? ' To only stop them using the app, use Remove access instead.' : ''}`}
+          warning={`This permanently deletes ${member.full_name || member.email || 'this member'}: their account, squad and team places, guardian links and message receipts. Messages they sent stay, and their injury records are kept for 12 months. It can’t be undone.${member.status === 'approved' ? ' To only stop them using the app, use Remove access instead.' : ''}`}
           confirmTitle="Delete permanently"
           onConfirm={deleteMember}
           busy={deleting}

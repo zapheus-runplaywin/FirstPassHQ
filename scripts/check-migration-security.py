@@ -1,0 +1,129 @@
+#!/usr/bin/env python3
+"""Flags migration statements that could expose data to the wrong people.
+
+Usage: check-migration-security.py FILE...
+
+Checks each new migration for:
+- a new table in public without row level security turned on in the same file
+- row level security being turned off
+- tables, functions or policies opened to anon or public (signed-out visitors)
+- a security definer function without `set search_path`
+- a new function that isn't revoked from public and anon in the same file
+  (Supabase lets signed-out visitors call new functions otherwise)
+
+There is no label to skip this check: anything it finds should be fixed.
+Exits with status 1 when anything is found.
+"""
+
+import re
+import sys
+from pathlib import Path
+
+sys.path.insert(0, str(Path(__file__).parent))
+check_migrations = __import__('check-migrations')
+strip = check_migrations.strip
+
+MIGRATIONS = Path(__file__).parent.parent / 'supabase' / 'migrations'
+
+NAME = r'(?:"?\w+"?\.)?"?(\w+)"?'
+
+RULES = [
+    (r'\bdisable\s+row\s+level\s+security\b', 'turns off row level security'),
+    (
+        r'\bgrant\b[^;]*\bto\b[^;]*\b(anon|public)\b(?!\.)',
+        'grants access to signed-out visitors',
+    ),
+    (
+        r'\bcreate\s+policy\b[^;]*\bto\s+[^;]*\b(anon|public)\b(?!\.)',
+        'a policy for signed-out visitors',
+    ),
+]
+
+
+def line_of(sql: str, pos: int) -> int:
+    return sql.count('\n', 0, pos) + 1
+
+
+def revokes_from_public_and_anon(statement: str) -> bool:
+    grantees = re.split(r'\bfrom\b', statement)[-1]
+    return bool(re.search(r'\bpublic\b', grantees)) and bool(re.search(r'\banon\b', grantees))
+
+
+def earlier_functions(path: Path) -> set[str]:
+    """Functions created by migrations that sort before this one."""
+    names: set[str] = set()
+    for other in sorted(MIGRATIONS.glob('*.sql')):
+        if other.name >= path.name:
+            break
+        sql = strip(other.read_text(encoding='utf-8')).lower()
+        names.update(
+            m.group(2)
+            for m in re.finditer(r'\bcreate\s+(or\s+replace\s+)?function\s+' + NAME, sql)
+        )
+    return names
+
+
+def check(path: Path) -> list[tuple[int, str]]:
+    original = path.read_text(encoding='utf-8')
+    sql = strip(original).lower()
+    found = []
+
+    for pattern, why in RULES:
+        for match in re.finditer(pattern, sql):
+            found.append((line_of(sql, match.start()), why))
+
+    for match in re.finditer(r'\bcreate\s+table\s+(if\s+not\s+exists\s+)?' + NAME, sql):
+        table = match.group(2)
+        statement_start = sql.rfind(';', 0, match.start()) + 1
+        if not re.match(r'\s*create\s+table\s+(if\s+not\s+exists\s+)?(public\.|"public"\.)', sql[statement_start:]):
+            continue
+        enabled = re.search(
+            r'\balter\s+table\s+(if\s+exists\s+)?(only\s+)?(public\.|"public"\.)"?'
+            + re.escape(table)
+            + r'"?\s+enable\s+row\s+level\s+security\b',
+            sql,
+        )
+        if not enabled:
+            found.append((line_of(sql, match.start()), f'{table} has no row level security'))
+
+    existing = earlier_functions(path)
+    for match in re.finditer(r'\bcreate\s+(or\s+replace\s+)?function\s+' + NAME, sql):
+        name = match.group(2)
+        end = sql.find(';', match.end())
+        header = sql[match.start():end if end != -1 else len(sql)]
+        line = line_of(sql, match.start())
+        if 'security definer' in header and not re.search(r'\bset\s+search_path\b', header):
+            found.append((line, f'{name} is security definer without set search_path'))
+        if re.search(r'\breturns\s+trigger\b', header) or name in existing:
+            continue
+        revokes = [
+            m.group(0)
+            for m in re.finditer(
+                r'\brevoke\s+(execute|all)\b[^;]*\bfunction\s+(public\.)?"?' + re.escape(name)
+                + r'\b[^;]*;',
+                sql,
+            )
+        ]
+        if not any(revokes_from_public_and_anon(r) for r in revokes):
+            found.append((line, f'{name} is not revoked from public and anon'))
+
+    return sorted(found)
+
+
+def main(paths: list[str]) -> int:
+    count = 0
+    for name in paths:
+        path = Path(name)
+        lines = path.read_text(encoding='utf-8').splitlines()
+        for line, why in check(path):
+            print(f'{path}:{line}: {why}: {lines[line - 1].strip()}')
+            count += 1
+    if count:
+        print(f'\n{count} statement(s) above could expose data. Fix them before merging.')
+        return 1
+    print('No security problems found.')
+    return 0
+
+
+if __name__ == '__main__':
+    sys.exit(main(sys.argv[1:]))
