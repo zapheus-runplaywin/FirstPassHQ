@@ -1,4 +1,5 @@
 import * as AppleAuthentication from 'expo-apple-authentication';
+import Constants, { ExecutionEnvironment } from 'expo-constants';
 import * as Crypto from 'expo-crypto';
 import * as Linking from 'expo-linking';
 import * as WebBrowser from 'expo-web-browser';
@@ -10,9 +11,15 @@ WebBrowser.maybeCompleteAuthSession();
 
 export type Provider = 'google' | 'apple';
 
-/** Native Sign in with Apple is only offered on iOS; other platforms use the browser flow. */
+/**
+ * Native Sign in with Apple is only offered in iOS builds of this app. Expo Go
+ * doesn't include the native module, so it and other platforms use the
+ * browser flow instead.
+ */
 export function usesNativeApple() {
-  return Platform.OS === 'ios';
+  return (
+    Platform.OS === 'ios' && Constants.executionEnvironment !== ExecutionEnvironment.StoreClient
+  );
 }
 
 /**

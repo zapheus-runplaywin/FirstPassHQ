@@ -33,6 +33,11 @@ In **Authentication > URL Configuration**, add these to **Redirect URLs**:
 - `thunderapp://auth-callback` (the installed app)
 - `exp://**` (testing in Expo Go)
 
+Also set **Site URL** to `thunderapp://auth-callback`. When Supabase doesn't accept an app's
+redirect, it sends people to the Site URL instead, and the default (`localhost`) doesn't work on a
+phone. While testing in Expo Go, set it to the address shown under the sign-in buttons (for example
+`exp://192.168.4.144:8081/--/auth-callback`) and change it back before building the app.
+
 ### 3. Turn on Google sign-in
 
 1. In [Google Cloud Console](https://console.cloud.google.com/apis/credentials), create an OAuth
