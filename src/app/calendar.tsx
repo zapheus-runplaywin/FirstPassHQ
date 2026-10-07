@@ -1,5 +1,5 @@
 import { useState } from 'react';
-import { StyleSheet, View } from 'react-native';
+import { Platform, StyleSheet, View } from 'react-native';
 
 import { EventCard } from '@/components/event-card';
 import { Screen } from '@/components/screen';
@@ -22,7 +22,11 @@ export default function CalendarScreen() {
   return (
     <Screen refreshing={refreshing} onRefresh={onRefresh}>
       {failed.length > 0 ? (
-        <ErrorText>Couldn&apos;t load {failed.join(', ')}. Pull down to try again.</ErrorText>
+        <ErrorText>
+          {Platform.OS === 'web'
+            ? 'Outlook calendars only load in the phone app, because web browsers block them. Open the app in Expo Go to see events.'
+            : `Couldn't load ${failed.join(', ')}. Pull down to try again.`}
+        </ErrorText>
       ) : null}
       {events === null ? null : events.length === 0 ? (
         <ThemedText type="small" themeColor="textSecondary">
