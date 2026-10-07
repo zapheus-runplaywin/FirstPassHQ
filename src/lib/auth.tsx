@@ -9,9 +9,13 @@ type AuthState = {
   session: Session | null;
   profile: Profile | null;
   memberships: TeamMembership[];
+  isAdmin: boolean;
   refresh: () => Promise<void>;
   signOut: () => Promise<void>;
 };
+
+export const PROFILE_COLUMNS =
+  'id, email, full_name, playhq_email, role, status, requested_role, requested_team_id, join_requested_at';
 
 const AuthContext = createContext<AuthState | null>(null);
 
@@ -30,7 +34,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     const [profileResult, membershipResult] = await Promise.all([
       supabase
         .from('profiles')
-        .select('id, email, full_name, playhq_email, role, status')
+        .select(PROFILE_COLUMNS)
         .eq('id', userId)
         .single(),
       supabase
@@ -63,8 +67,10 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     await supabase.auth.signOut();
   }, []);
 
+  const isAdmin = profile?.role === 'admin' && profile.status === 'approved';
+
   return (
-    <AuthContext value={{ loading, session, profile, memberships, refresh, signOut }}>
+    <AuthContext value={{ loading, session, profile, memberships, isAdmin, refresh, signOut }}>
       {children}
     </AuthContext>
   );

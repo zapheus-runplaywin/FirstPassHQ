@@ -10,16 +10,17 @@ free tier.
 
 | Path | What it is |
 | --- | --- |
-| `src/app/` | Screens (Expo Router). `sign-in.tsx` and `index.tsx` (home). |
+| `src/app/` | Screens (Expo Router): sign-in, home, join request, team roster, and `admin/` for approving members. |
 | `src/lib/` | Supabase client, sign-in, and the signed-in member's profile and teams. |
-| `supabase/migrations/` | Database schema: roles, profiles, the six teams, team membership, security rules. |
+| `supabase/migrations/` | Database schema: roles, profiles, the six teams, team membership, join requests, security rules. Run them in filename order. |
 
 ## One-time setup
 
 ### 1. Create the Supabase project
 
 1. Create a free project at [supabase.com](https://supabase.com). Pick the Sydney region.
-2. Open **SQL Editor**, paste in `supabase/migrations/20261007000000_init.sql` and run it.
+2. Open **SQL Editor** and run each file in `supabase/migrations/` in filename order. When a
+   new migration is added later, run just that file.
 3. Under **Project Settings > API**, copy the project URL and the `anon` public key.
 4. Copy `.env.example` to `.env` and paste both values in. Never commit `.env`.
 
@@ -53,7 +54,15 @@ Needs an Apple Developer account.
 
 ### 5. Make yourself an admin
 
-Sign in to the app once, then run this in the SQL Editor with your sign-in email:
+The first admin has to be set by hand. Sign in to the app once, then run this in the SQL Editor
+with your sign-in email. After that you can approve everyone else, including other admins, from
+**Members** on the home screen.
+
+### 6. Add the club calendar
+
+In Outlook, publish the club calendar (Settings > Calendar > Shared calendars > Publish a
+calendar) and copy the ICS link. In the app, open **Calendars** from the home screen, paste it
+in and choose **Everyone**. Team calendars work the same way: pick the team instead.
 
 ```sql
 update public.profiles set role = 'admin', status = 'approved'
