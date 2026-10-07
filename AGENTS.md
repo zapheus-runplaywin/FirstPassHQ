@@ -52,3 +52,12 @@ RULE: migrations must be safe to run on the production database and must never t
 - Test every migration against a local Postgres loaded with realistic data before opening the PR, and confirm row counts are unchanged.
 - Migrations deploy automatically: `.github/workflows/deploy-migrations.yml` runs `supabase db push` after a merge to main. It and the pull request check run `scripts/check-migrations.py`, which stops anything that can lose data.
 - Only Matt gives permission for data loss: he adds the `data-loss-approved` label to the PR, then runs "Deploy migrations" by hand with "Allow data loss" ticked. Never add that label, tick that box, or weaken the check yourself.
+
+## User guide
+
+RULE: `docs/user-guide.md` is the club's user guide, organised by role, with screenshots in `docs/user-guide/`. It must always match the app.
+
+- Any pull request that adds, removes or changes something a member can see or do updates the matching guide sections, the role tables in sections 1 and 11, and any screenshot that no longer matches, in the same pull request.
+- Make screenshots with the tooling in the project's shared files (`thunder/screenshots/`: `shoot.mjs`, `serve.py`, fixtures; `fixtures/user-guide.mjs` covers screens only the guide uses). Use sample people only, never real club data.
+- Keep images as relative paths and `<img width="210">` tags so the guide prints to PDF cleanly. Crop screenshots to at most 1400 px tall.
+- Describe what is merged, not what is planned.
