@@ -6,6 +6,8 @@ and adds them to a team, and the home screen shows their team.
 Built with [Expo](https://expo.dev) (React Native) and [Supabase](https://supabase.com) on the
 free tier.
 
+For how to use the app, role by role, see the [user guide](docs/user-guide.md).
+
 ## What's here
 
 | Path | What it is |
