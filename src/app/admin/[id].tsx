@@ -4,10 +4,16 @@ import { StyleSheet, View } from 'react-native';
 
 import { Screen } from '@/components/screen';
 import { ThemedText } from '@/components/themed-text';
-import { Button, Card, ChipGroup, ErrorText } from '@/components/ui';
+import { Button, Card, ChipGroup, ErrorText, TextField } from '@/components/ui';
 import { Spacing } from '@/constants/theme';
 import { PROFILE_COLUMNS, useAuth } from '@/lib/auth';
-import { coachTitleLabels, isTeamRole, roleLabels, selectionLabels, statusLabels } from '@/lib/labels';
+import {
+  coachTitleLabels,
+  isTeamRole,
+  roleLabels,
+  selectionLabels,
+  statusLabels,
+} from '@/lib/labels';
 import { supabase } from '@/lib/supabase';
 import type { AppRole, CoachTitle, MemberStatus, Profile, TeamSelection } from '@/lib/types';
 import { squadsOf, useTeams } from '@/lib/use-teams';
@@ -22,6 +28,11 @@ type Placement = { coach_title: CoachTitle | null; selection: TeamSelection | nu
 /** Squads and teams the member is in, keyed by id. */
 type Placements = Record<string, Placement>;
 
+type Person = { id: string; full_name: string | null; email: string | null; role: AppRole };
+
+/** How many guardians to offer while searching. */
+const GUARDIAN_MATCHES = 6;
+
 export default function MemberScreen() {
   const { id } = useLocalSearchParams<{ id: string }>();
   const { session, refresh } = useAuth();
@@ -29,14 +40,31 @@ export default function MemberScreen() {
   const [member, setMember] = useState<Profile | null>(null);
   const [role, setRole] = useState<AppRole>('guest');
   const [selection, setSelection] = useState<Placements>({});
+  const [under17, setUnder17] = useState(false);
+  const [guardianIds, setGuardianIds] = useState<string[]>([]);
+  const [guardianOf, setGuardianOf] = useState<string[]>([]);
+  const [people, setPeople] = useState<Person[]>([]);
+  const [guardianSearch, setGuardianSearch] = useState('');
   const [saving, setSaving] = useState<MemberStatus | null>(null);
   const [error, setError] = useState<string | null>(null);
 
   useEffect(() => {
     (async () => {
-      const [profileResult, teamsResult] = await Promise.all([
+      const [profileResult, teamsResult, linksResult, peopleResult] = await Promise.all([
         supabase.from('profiles').select(PROFILE_COLUMNS).eq('id', id).single(),
-        supabase.from('team_members').select('team_id, coach_title, selection').eq('profile_id', id),
+        supabase
+          .from('team_members')
+          .select('team_id, coach_title, selection')
+          .eq('profile_id', id),
+        supabase
+          .from('guardianships')
+          .select('guardian_id, athlete_id')
+          .or(`guardian_id.eq.${id},athlete_id.eq.${id}`),
+        supabase
+          .from('profiles')
+          .select('id, full_name, email, role')
+          .eq('status', 'approved')
+          .order('full_name'),
       ]);
       const profile = profileResult.data as Profile | null;
       if (!profile) {
@@ -44,13 +72,21 @@ export default function MemberScreen() {
         return;
       }
       setMember(profile);
+      setUnder17(profile.under_17);
+      const links = linksResult.data ?? [];
+      setGuardianIds(links.filter((l) => l.athlete_id === id).map((l) => l.guardian_id));
+      setGuardianOf(links.filter((l) => l.guardian_id === id).map((l) => l.athlete_id));
+      setPeople((peopleResult.data as Person[] | null) ?? []);
 
       const existing = teamsResult.data ?? [];
       if (profile.status === 'approved' || existing.length > 0) {
         setRole(profile.role);
         setSelection(
           Object.fromEntries(
-            existing.map((t) => [t.team_id, { coach_title: t.coach_title, selection: t.selection }]),
+            existing.map((t) => [
+              t.team_id,
+              { coach_title: t.coach_title, selection: t.selection },
+            ]),
           ),
         );
       } else {
@@ -70,6 +106,7 @@ export default function MemberScreen() {
   }, [id]);
 
   const inTeams = isTeamRole(role);
+  const hasGuardians = role === 'athlete' && under17;
   const isSelf = id === session?.user.id;
 
   function toggleTeam(teamId: string) {
@@ -121,6 +158,8 @@ export default function MemberScreen() {
       p_teams: inTeams
         ? Object.entries(selection).map(([team_id, placement]) => ({ team_id, ...placement }))
         : [],
+      p_under_17: hasGuardians,
+      p_guardian_ids: hasGuardians ? guardianIds : [],
     });
     setSaving(null);
     if (rpcError) {
@@ -140,6 +179,21 @@ export default function MemberScreen() {
   }
 
   const requestedTeam = teams.find((t) => t.id === member.requested_team_id);
+  const nameOf = (personId: string) => {
+    const person = people.find((p) => p.id === personId);
+    return person?.full_name || person?.email || 'Unnamed member';
+  };
+  const search = guardianSearch.trim().toLowerCase();
+  const guardianMatches = people
+    .filter(
+      (p) =>
+        p.role === 'guardian' &&
+        p.id !== id &&
+        !guardianIds.includes(p.id) &&
+        [p.full_name, p.email].some((v) => v?.toLowerCase().includes(search)),
+    )
+    .slice(0, GUARDIAN_MATCHES);
+  const anyGuardians = people.some((p) => p.role === 'guardian' && p.id !== id);
   const selectedIds = Object.keys(selection);
   const squads = squadsOf(teams);
   // Teams are named from a squad, so only offer teams in squads they are in.
@@ -227,12 +281,80 @@ export default function MemberScreen() {
             ))
         : null}
 
+      {role === 'athlete' ? (
+        <ChipGroup
+          label="Age"
+          options={[
+            { value: 'under', label: 'Under 17' },
+            { value: 'over', label: '17 or over' },
+          ]}
+          selected={[under17 ? 'under' : 'over']}
+          onToggle={(age) => setUnder17(age === 'under')}
+        />
+      ) : null}
+
+      {hasGuardians ? (
+        <View style={styles.guardians}>
+          <ThemedText type="smallBold">Parents and guardians</ThemedText>
+          {guardianIds.length > 0 ? (
+            <ChipGroup
+              options={guardianIds.map((g) => ({ value: g, label: `${nameOf(g)}  ✕` }))}
+              selected={guardianIds}
+              onToggle={(g) => setGuardianIds((current) => current.filter((x) => x !== g))}
+            />
+          ) : (
+            <ThemedText type="small" themeColor="textSecondary">
+              No guardians linked yet.
+            </ThemedText>
+          )}
+          {anyGuardians ? (
+            <>
+              <TextField
+                label="Add a guardian"
+                value={guardianSearch}
+                onChangeText={setGuardianSearch}
+                placeholder="Search by name or email"
+                autoCapitalize="none"
+              />
+              <ChipGroup
+                options={guardianMatches.map((p) => ({ value: p.id, label: nameOf(p.id) }))}
+                selected={[]}
+                onToggle={(g) => {
+                  setGuardianIds((current) => [...current, g]);
+                  setGuardianSearch('');
+                }}
+              />
+            </>
+          ) : (
+            <ThemedText type="small" themeColor="textSecondary">
+              No approved guardians yet. Parents and guardians register in the app first, then you
+              approve them with the Guardian role.
+            </ThemedText>
+          )}
+        </View>
+      ) : null}
+
+      {role === 'guardian' && member.status === 'approved' ? (
+        <Card>
+          <ThemedText type="smallBold">Guardian of</ThemedText>
+          <ThemedText type="small" themeColor="textSecondary">
+            {guardianOf.length > 0
+              ? guardianOf.map(nameOf).join(', ')
+              : "No athletes yet. Link them from the athlete's page."}
+          </ThemedText>
+        </Card>
+      ) : null}
+
       <ErrorText>{error}</ErrorText>
 
       <View style={styles.actions}>
         {member.status === 'approved' ? (
           <>
-            <Button title="Save changes" onPress={() => save('approved')} busy={saving === 'approved'} />
+            <Button
+              title="Save changes"
+              onPress={() => save('approved')}
+              busy={saving === 'approved'}
+            />
             {!isSelf ? (
               <Button
                 title="Remove access"
@@ -274,6 +396,9 @@ function Detail({ label, value }: { label: string; value: string | null | undefi
 const styles = StyleSheet.create({
   actions: {
     gap: Spacing.three,
+  },
+  guardians: {
+    gap: Spacing.two,
   },
   detail: {
     flexDirection: 'row',

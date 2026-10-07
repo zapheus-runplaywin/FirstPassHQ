@@ -37,6 +37,10 @@ export default function JoinScreen() {
       setError('Please choose what best describes you.');
       return;
     }
+    if (role === 'guardian' && !playhqEmail.trim()) {
+      setError('Please enter the email you used to register with PlayHQ.');
+      return;
+    }
     if (needsPassword && !password.trim()) {
       setError('Please enter the club password. A club admin can give it to you.');
       return;
@@ -73,15 +77,20 @@ export default function JoinScreen() {
         label="PlayHQ email"
         value={playhqEmail}
         onChangeText={setPlayhqEmail}
-        placeholder={session?.user.email ?? 'Only if different to your sign-in email'}
+        placeholder={
+          role === 'guardian'
+            ? 'Email used to register with PlayHQ'
+            : (session?.user.email ?? 'Only if different to your sign-in email')
+        }
         autoCapitalize="none"
         autoComplete="email"
         keyboardType="email-address"
         textContentType="emailAddress"
       />
       <ThemedText type="small" themeColor="textSecondary">
-        Only needed if you registered with PlayHQ using a different email to the one you signed in
-        with.
+        {role === 'guardian'
+          ? 'Parents and guardians: enter the email you used to register your athlete with PlayHQ, so we can confirm who you are.'
+          : 'Only needed if you registered with PlayHQ using a different email to the one you signed in with.'}
       </ThemedText>
 
       <ChipGroup
@@ -93,7 +102,7 @@ export default function JoinScreen() {
 
       {showTeams ? (
         <ChipGroup
-          label="Squad"
+          label={role === 'guardian' ? "Your athlete's squad" : 'Squad'}
           options={squads.map((t) => ({ value: t.id, label: t.name }))}
           selected={teamId ? [teamId] : []}
           onToggle={(id) => setTeamId(id === teamId ? null : id)}

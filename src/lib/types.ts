@@ -12,7 +12,7 @@ export type AppRole =
 
 export type MemberStatus = 'pending' | 'approved' | 'rejected';
 
-export type TeamRole = 'coach' | 'manager' | 'athlete';
+export type TeamRole = 'coach' | 'manager' | 'athlete' | 'guardian';
 
 export type CoachTitle = 'head_coach' | 'assistant_coach';
 
@@ -41,6 +41,8 @@ export type Profile = {
   requested_role: AppRole | null;
   requested_team_id: string | null;
   join_requested_at: string | null;
+  /** Athletes under 17 have parents or guardians linked to them. */
+  under_17: boolean;
 };
 
 export type TeamMembership = {

@@ -23,6 +23,7 @@ export default function HomeScreen() {
   const { session, profile, memberships, isAdmin, refresh, signOut } = useAuth();
   const [refreshing, setRefreshing] = useState(false);
   const [pendingCount, setPendingCount] = useState(0);
+  const [athletes, setAthletes] = useState<string[]>([]);
   const { events, reload: reloadEvents } = useEvents();
 
   const loadPendingCount = useCallback(async () => {
@@ -35,15 +36,29 @@ export default function HomeScreen() {
     setPendingCount(count ?? 0);
   }, [isAdmin]);
 
+  const isGuardian = profile?.status === 'approved' && profile.role === 'guardian';
+
+  // The athletes a parent or guardian looks after.
+  const loadAthletes = useCallback(async () => {
+    if (!isGuardian) return;
+    const { data } = await supabase.rpc('my_athletes');
+    setAthletes(
+      ((data as { full_name: string | null }[] | null) ?? []).map(
+        (a) => a.full_name ?? 'Unnamed athlete',
+      ),
+    );
+  }, [isGuardian]);
+
   useFocusEffect(
     useCallback(() => {
       loadPendingCount();
-    }, [loadPendingCount]),
+      loadAthletes();
+    }, [loadPendingCount, loadAthletes]),
   );
 
   async function onRefresh() {
     setRefreshing(true);
-    await Promise.all([refresh(), loadPendingCount(), reloadEvents()]);
+    await Promise.all([refresh(), loadPendingCount(), loadAthletes(), reloadEvents()]);
     setRefreshing(false);
   }
 
@@ -125,6 +140,17 @@ export default function HomeScreen() {
             <EventGrid events={events.slice(0, UPCOMING_COUNT)} showDay />
           )}
         </View>
+      ) : null}
+
+      {isGuardian ? (
+        <Card>
+          <ThemedText type="smallBold">Guardian of</ThemedText>
+          <ThemedText type="small" themeColor="textSecondary">
+            {athletes.length > 0
+              ? athletes.join(', ')
+              : 'A club admin will link you to your athlete once they have checked your PlayHQ registration.'}
+          </ThemedText>
+        </Card>
       ) : null}
 
       {approved ? (
