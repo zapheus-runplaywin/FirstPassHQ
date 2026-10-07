@@ -7,8 +7,10 @@ import { parseIcs, type CalendarEvent } from '@/lib/calendar';
 import { supabase } from '@/lib/supabase';
 import type { GroupKind } from '@/lib/types';
 
-/** How far ahead the app shows events. */
-const DAYS_AHEAD = 90;
+/** How many months ahead the app shows events at first. */
+export const DEFAULT_MONTHS_AHEAD = 3;
+/** How far ahead members can load events. */
+export const MAX_MONTHS_AHEAD = 12;
 const CACHE_PREFIX = 'ics-cache:';
 
 /** The most recently loaded events, so the details screen opens instantly. */
@@ -31,23 +33,47 @@ export function useEvents() {
   const { profile } = useAuth();
   const [events, setEvents] = useState<CalendarEvent[] | null>(null);
   const [failed, setFailed] = useState<string[]>([]);
+  const [monthsAhead, setMonthsAhead] = useState(DEFAULT_MONTHS_AHEAD);
+  const [loadingMore, setLoadingMore] = useState(false);
 
   const approved = profile?.status === 'approved';
 
   const load = useCallback(
     () =>
-      fetchEvents(approved).then((result) => {
+      fetchEvents(approved, monthsAhead).then((result) => {
         setEvents(result.events);
         setFailed(result.failed);
+        setLoadingMore(false);
       }),
-    [approved],
+    [approved, monthsAhead],
   );
 
   useEffect(() => {
     load();
   }, [load]);
 
-  return { events, failed, reload: load };
+  /** Shows events up to at least `months` ahead, up to the maximum. */
+  const showMonthsAhead = useCallback(
+    (months: number) => {
+      const next = Math.min(MAX_MONTHS_AHEAD, Math.max(months, monthsAhead));
+      if (next === monthsAhead) return;
+      setLoadingMore(true);
+      setMonthsAhead(next);
+    },
+    [monthsAhead],
+  );
+
+  return {
+    events,
+    failed,
+    reload: load,
+    /** The last day events are loaded for. */
+    loadedUntil: monthsFromToday(monthsAhead),
+    monthsAhead,
+    canLoadMore: monthsAhead < MAX_MONTHS_AHEAD,
+    loadingMore,
+    showMonthsAhead,
+  };
 }
 
 /**
@@ -64,7 +90,7 @@ export function useEvent(id: string | undefined) {
 
   useEffect(() => {
     if (!id || loadedEvents.has(id)) return;
-    fetchEvents(approved).then(() => setEvent(loadedEvents.get(id) ?? null));
+    fetchEvents(approved, MAX_MONTHS_AHEAD).then(() => setEvent(loadedEvents.get(id) ?? null));
   }, [id, approved]);
 
   return event;
@@ -72,6 +98,7 @@ export function useEvent(id: string | undefined) {
 
 async function fetchEvents(
   approved: boolean,
+  monthsAhead: number,
 ): Promise<{ events: CalendarEvent[]; failed: string[] }> {
   if (!approved) return { events: [], failed: [] };
   const { data } = await supabase
@@ -94,7 +121,7 @@ async function fetchEvents(
   });
 
   const rangeStart = startOfToday();
-  const rangeEnd = new Date(rangeStart.getTime() + DAYS_AHEAD * 24 * 60 * 60 * 1000);
+  const rangeEnd = monthsFromToday(monthsAhead);
   const failed: string[] = [];
 
   const perCalendar = await Promise.all(
@@ -113,7 +140,6 @@ async function fetchEvents(
   );
 
   const events = dedupe(perCalendar.flat()).sort((a, b) => a.start.getTime() - b.start.getTime());
-  loadedEvents.clear();
   for (const event of events) loadedEvents.set(event.id, event);
   return { events, failed };
 }
@@ -140,6 +166,11 @@ function dedupe(events: CalendarEvent[]) {
     seen.add(event.id);
     return true;
   });
+}
+
+function monthsFromToday(months: number) {
+  const today = startOfToday();
+  return new Date(today.getFullYear(), today.getMonth() + months, today.getDate());
 }
 
 function startOfToday() {
