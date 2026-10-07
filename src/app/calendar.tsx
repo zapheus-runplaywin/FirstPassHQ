@@ -1,7 +1,7 @@
 import { useState } from 'react';
 import { Platform, StyleSheet, View } from 'react-native';
 
-import { EventCard } from '@/components/event-card';
+import { EventGrid } from '@/components/event-card';
 import { Screen } from '@/components/screen';
 import { ThemedText } from '@/components/themed-text';
 import { ErrorText } from '@/components/ui';
@@ -36,9 +36,7 @@ export default function CalendarScreen() {
         groupByDay(events).map((day) => (
           <View key={day.key} style={styles.day}>
             <ThemedText type="smallBold">{formatDay(day.date)}</ThemedText>
-            {day.events.map((event) => (
-              <EventCard key={event.id} event={event} />
-            ))}
+            <EventGrid events={day.events} />
           </View>
         ))
       )}

@@ -1,7 +1,8 @@
+import * as Clipboard from 'expo-clipboard';
 import * as Linking from 'expo-linking';
 import { useLocalSearchParams } from 'expo-router';
-import type { ReactNode } from 'react';
-import { Platform, StyleSheet, View } from 'react-native';
+import { useEffect, useState, type ReactNode } from 'react';
+import { Platform, Pressable, StyleSheet, View } from 'react-native';
 
 import { Screen } from '@/components/screen';
 import { ThemedText } from '@/components/themed-text';
@@ -45,15 +46,20 @@ export default function EventScreen() {
           {formatDay(event.start)}, {formatEventTime(event)}
         </Detail>
         {event.location ? (
-          <Detail label="Where">
-            <ThemedText
-              type="small"
-              style={{ color: theme.tint }}
-              accessibilityRole="link"
-              onPress={() => Linking.openURL(mapsUrl(event.location!))}>
-              {event.location}
-            </ThemedText>
-          </Detail>
+          <View style={styles.whereRow}>
+            <View style={styles.whereText}>
+              <Detail label="Where">
+                <ThemedText
+                  type="small"
+                  style={{ color: theme.tint }}
+                  accessibilityRole="link"
+                  onPress={() => Linking.openURL(mapsUrl(event.location!))}>
+                  {event.location}
+                </ThemedText>
+              </Detail>
+            </View>
+            <CopyButton text={event.location} />
+          </View>
         ) : null}
       </Card>
 
@@ -78,6 +84,33 @@ export default function EventScreen() {
         </Card>
       ) : null}
     </Screen>
+  );
+}
+
+function CopyButton({ text }: { text: string }) {
+  const theme = useTheme();
+  const [copied, setCopied] = useState(false);
+
+  useEffect(() => {
+    if (!copied) return;
+    const timer = setTimeout(() => setCopied(false), 2000);
+    return () => clearTimeout(timer);
+  }, [copied]);
+
+  return (
+    <Pressable
+      accessibilityRole="button"
+      accessibilityLabel="Copy address"
+      hitSlop={8}
+      onPress={() => Clipboard.setStringAsync(text).then(() => setCopied(true))}
+      style={({ pressed }) => [
+        styles.copyButton,
+        { backgroundColor: pressed ? theme.backgroundSelected : theme.background },
+      ]}>
+      <ThemedText type="small" style={{ color: theme.tint }}>
+        {copied ? 'Copied' : 'Copy'}
+      </ThemedText>
+    </Pressable>
   );
 }
 
@@ -121,5 +154,18 @@ const styles = StyleSheet.create({
   },
   detail: {
     gap: Spacing.half,
+  },
+  whereRow: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: Spacing.three,
+  },
+  whereText: {
+    flex: 1,
+  },
+  copyButton: {
+    paddingHorizontal: 12,
+    paddingVertical: Spacing.one,
+    borderRadius: 8,
   },
 });
