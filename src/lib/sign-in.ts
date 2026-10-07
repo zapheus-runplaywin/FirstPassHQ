@@ -11,7 +11,7 @@ WebBrowser.maybeCompleteAuthSession();
  * it falls back to the Site URL. In Expo Go this is an exp:// address that
  * includes your computer's IP.
  */
-export function authRedirectUrl() {
+function authRedirectUrl() {
   return Linking.createURL('auth-callback');
 }
 
