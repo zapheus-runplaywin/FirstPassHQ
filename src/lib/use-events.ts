@@ -1,9 +1,11 @@
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import { useCallback, useEffect, useState } from 'react';
 
+import { calendarColorHex } from '@/constants/calendar-colors';
 import { useAuth } from '@/lib/auth';
 import { parseIcs, type CalendarEvent } from '@/lib/calendar';
 import { supabase } from '@/lib/supabase';
+import type { GroupKind } from '@/lib/types';
 
 /** How far ahead the app shows events. */
 const DAYS_AHEAD = 90;
@@ -17,6 +19,7 @@ type CalendarRow = {
   name: string;
   url: string;
   clubWide: boolean;
+  color: string;
 };
 
 /**
@@ -73,16 +76,20 @@ async function fetchEvents(
   if (!approved) return { events: [], failed: [] };
   const { data } = await supabase
     .from('calendars')
-    .select('id, name, url, committee_only, team:teams (name)')
+    .select('id, name, url, committee_only, color, team:teams (name, kind)')
     .order('created_at');
   const calendars: CalendarRow[] = (data ?? []).map((row) => {
-    const team = row.team as unknown as { name: string } | null;
+    const team = row.team as unknown as { name: string; kind: GroupKind } | null;
     return {
       id: row.id,
       url: row.url,
       name: team?.name ?? row.name,
       // Committee calendars get their own colour and filter, like a squad's.
       clubWide: !team && !row.committee_only,
+      color: calendarColorHex(
+        row.color,
+        team ? team.kind : row.committee_only ? 'committee' : 'club',
+      ),
     };
   });
 

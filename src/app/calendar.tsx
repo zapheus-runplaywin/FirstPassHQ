@@ -54,7 +54,16 @@ export default function CalendarScreen() {
     [events, filter],
   );
 
-  const eventDays = useMemo(() => new Set(filtered.map((e) => dayKey(e.start))), [filtered]);
+  // The calendar colours with something on, for each day.
+  const eventDays = useMemo(() => {
+    const days = new Map<string, string[]>();
+    for (const event of filtered) {
+      const colors = days.get(dayKey(event.start)) ?? [];
+      if (!colors.includes(event.color)) colors.push(event.color);
+      days.set(dayKey(event.start), colors);
+    }
+    return days;
+  }, [filtered]);
 
   const top = [
     failed.length > 0 ? (
@@ -156,7 +165,7 @@ function WeekJump({
   onSelect,
 }: {
   events: CalendarEvent[];
-  eventDays: Set<string>;
+  eventDays: Map<string, string[]>;
   dayY: Map<string, number>;
   weekStart: Date;
   onChangeWeek: (weekStart: Date) => void;

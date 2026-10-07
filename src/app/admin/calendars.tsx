@@ -1,12 +1,20 @@
 import { useCallback, useEffect, useState } from 'react';
-import { Alert, Pressable, StyleSheet, View } from 'react-native';
+import { Pressable, StyleSheet, View } from 'react-native';
 
 import { Screen } from '@/components/screen';
 import { ThemedText } from '@/components/themed-text';
 import { Button, Card, ChipGroup, ErrorText, TextField } from '@/components/ui';
-import { Spacing } from '@/constants/theme';
+import {
+  calendarColorKey,
+  calendarColorKeys,
+  CalendarColors,
+  type CalendarAudience,
+  type CalendarColor,
+} from '@/constants/calendar-colors';
+import { Colors, Spacing } from '@/constants/theme';
 import { useTheme } from '@/hooks/use-theme';
 import { supabase } from '@/lib/supabase';
+import type { Team } from '@/lib/types';
 import { useTeams } from '@/lib/use-teams';
 
 type CalendarRow = {
@@ -15,18 +23,33 @@ type CalendarRow = {
   url: string;
   team_id: string | null;
   committee_only: boolean;
+  color: CalendarColor | null;
 };
 
 const CLUB = 'club';
 const COMMITTEE = 'committee';
 
+/** Outlook's published links start with https:// (or webcal://). */
+function isCalendarUrl(url: string) {
+  return /^(https|webcal):\/\//i.test(url);
+}
+
+function audienceOf(
+  teamId: string | null,
+  committeeOnly: boolean,
+  teams: Team[],
+): CalendarAudience {
+  if (teamId) return teams.find((t) => t.id === teamId)?.kind ?? 'squad';
+  return committeeOnly ? 'committee' : 'club';
+}
+
 export default function CalendarsScreen() {
-  const theme = useTheme();
   const teams = useTeams();
   const [calendars, setCalendars] = useState<CalendarRow[]>([]);
   const [name, setName] = useState('');
   const [url, setUrl] = useState('');
   const [scope, setScope] = useState<string>(CLUB);
+  const [color, setColor] = useState<CalendarColor | null>(null);
   const [saving, setSaving] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
@@ -34,9 +57,9 @@ export default function CalendarsScreen() {
     () =>
       supabase
         .from('calendars')
-        .select('id, name, url, team_id, committee_only')
+        .select('id, name, url, team_id, committee_only, color')
         .order('created_at')
-        .then(({ data }) => setCalendars(data ?? [])),
+        .then(({ data }) => setCalendars((data as CalendarRow[] | null) ?? [])),
     [],
   );
 
@@ -44,14 +67,16 @@ export default function CalendarsScreen() {
     load();
   }, [load]);
 
+  const team = teams.find((t) => t.id === scope);
+  const committeeOnly = scope === COMMITTEE;
+  const newAudience = audienceOf(team?.id ?? null, committeeOnly, teams);
+
   async function add() {
     const trimmedUrl = url.trim();
-    if (!/^(https|webcal):\/\//i.test(trimmedUrl)) {
+    if (!isCalendarUrl(trimmedUrl)) {
       setError('Paste the ICS link from Outlook. It starts with https://');
       return;
     }
-    const team = teams.find((t) => t.id === scope);
-    const committeeOnly = scope === COMMITTEE;
     setSaving(true);
     setError(null);
     const { error: insertError } = await supabase.from('calendars').insert({
@@ -61,6 +86,7 @@ export default function CalendarsScreen() {
       url: trimmedUrl,
       team_id: team?.id ?? null,
       committee_only: committeeOnly,
+      color,
     });
     setSaving(false);
     if (insertError) {
@@ -69,21 +95,8 @@ export default function CalendarsScreen() {
     }
     setName('');
     setUrl('');
+    setColor(null);
     await load();
-  }
-
-  function remove(calendar: CalendarRow) {
-    Alert.alert('Remove calendar?', `Members will stop seeing events from ${calendar.name}.`, [
-      { text: 'Cancel', style: 'cancel' },
-      {
-        text: 'Remove',
-        style: 'destructive',
-        onPress: async () => {
-          await supabase.from('calendars').delete().eq('id', calendar.id);
-          await load();
-        },
-      },
-    ]);
   }
 
   const scopeLabel = (calendar: CalendarRow) =>
@@ -103,17 +116,13 @@ export default function CalendarsScreen() {
           </ThemedText>
         ) : (
           calendars.map((calendar) => (
-            <Card key={calendar.id}>
-              <ThemedText type="smallBold">{calendar.name}</ThemedText>
-              <ThemedText type="small" themeColor="textSecondary">
-                Shown to {scopeLabel(calendar)}
-              </ThemedText>
-              <Pressable accessibilityRole="button" onPress={() => remove(calendar)}>
-                <ThemedText type="small" style={{ color: theme.tint }}>
-                  Remove
-                </ThemedText>
-              </Pressable>
-            </Card>
+            <CalendarCard
+              key={calendar.id}
+              calendar={calendar}
+              shownTo={scopeLabel(calendar)}
+              audience={audienceOf(calendar.team_id, calendar.committee_only, teams)}
+              onChanged={load}
+            />
           ))
         )}
       </View>
@@ -143,6 +152,7 @@ export default function CalendarsScreen() {
           selected={[scope]}
           onToggle={setScope}
         />
+        <ColorPicker selected={calendarColorKey(color, newAudience)} onSelect={setColor} />
         <ErrorText>{error}</ErrorText>
         <Button title="Add calendar" onPress={add} busy={saving} />
       </View>
@@ -150,8 +160,209 @@ export default function CalendarsScreen() {
   );
 }
 
+function CalendarCard({
+  calendar,
+  shownTo,
+  audience,
+  onChanged,
+}: {
+  calendar: CalendarRow;
+  shownTo: string;
+  audience: CalendarAudience;
+  onChanged: () => PromiseLike<unknown>;
+}) {
+  const theme = useTheme();
+  const [editing, setEditing] = useState(false);
+  const [name, setName] = useState(calendar.name);
+  const [url, setUrl] = useState(calendar.url);
+  const [confirmingDelete, setConfirmingDelete] = useState(false);
+  const [busy, setBusy] = useState(false);
+  const [error, setError] = useState<string | null>(null);
+  const colorKey = calendarColorKey(calendar.color, audience);
+
+  async function update(changes: Partial<CalendarRow>) {
+    setBusy(true);
+    setError(null);
+    const { error: updateError } = await supabase
+      .from('calendars')
+      .update(changes)
+      .eq('id', calendar.id);
+    setBusy(false);
+    if (updateError) {
+      setError(updateError.message);
+      return false;
+    }
+    await onChanged();
+    return true;
+  }
+
+  async function saveEdit() {
+    const trimmedUrl = url.trim();
+    if (!isCalendarUrl(trimmedUrl)) {
+      setError('Paste the ICS link from Outlook. It starts with https://');
+      return;
+    }
+    if (await update({ name: name.trim() || calendar.name, url: trimmedUrl })) setEditing(false);
+  }
+
+  async function remove() {
+    if (!confirmingDelete) {
+      setConfirmingDelete(true);
+      return;
+    }
+    setBusy(true);
+    const { error: deleteError } = await supabase.from('calendars').delete().eq('id', calendar.id);
+    setBusy(false);
+    if (deleteError) {
+      setError(deleteError.message);
+      return;
+    }
+    await onChanged();
+  }
+
+  return (
+    <Card>
+      <View style={styles.cardTitle}>
+        <View style={[styles.swatchSmall, { backgroundColor: CalendarColors[colorKey].hex }]} />
+        <ThemedText type="smallBold" style={styles.flex}>
+          {calendar.name}
+        </ThemedText>
+      </View>
+      <ThemedText type="small" themeColor="textSecondary">
+        Shown to {shownTo}
+      </ThemedText>
+
+      {editing ? (
+        <>
+          <TextField label="Name" value={name} onChangeText={setName} />
+          <TextField
+            label="ICS link"
+            value={url}
+            onChangeText={setUrl}
+            autoCapitalize="none"
+            autoCorrect={false}
+            keyboardType="url"
+          />
+          <ErrorText>{error}</ErrorText>
+          <Button title="Save" onPress={saveEdit} busy={busy} />
+          <Button
+            title="Cancel"
+            variant="secondary"
+            onPress={() => {
+              setName(calendar.name);
+              setUrl(calendar.url);
+              setError(null);
+              setEditing(false);
+            }}
+          />
+        </>
+      ) : (
+        <>
+          <ThemedText type="small" themeColor="textSecondary" numberOfLines={1} selectable>
+            {calendar.url}
+          </ThemedText>
+          <ColorPicker selected={colorKey} onSelect={(key) => update({ color: key })} compact />
+          <ErrorText>{error}</ErrorText>
+          <View style={styles.cardActions}>
+            <Pressable accessibilityRole="button" onPress={() => setEditing(true)}>
+              <ThemedText type="small" style={{ color: theme.tint }}>
+                Edit name or link
+              </ThemedText>
+            </Pressable>
+            <Pressable accessibilityRole="button" onPress={remove} disabled={busy}>
+              <ThemedText type="small" style={{ color: confirmingDelete ? '#FF5A5A' : theme.tint }}>
+                {confirmingDelete ? 'Tap again to delete' : 'Delete'}
+              </ThemedText>
+            </Pressable>
+            {confirmingDelete ? (
+              <Pressable accessibilityRole="button" onPress={() => setConfirmingDelete(false)}>
+                <ThemedText type="small" themeColor="textSecondary">
+                  Keep it
+                </ThemedText>
+              </Pressable>
+            ) : null}
+          </View>
+        </>
+      )}
+    </Card>
+  );
+}
+
+/** A row of colour swatches; the selected one is ringed in white. */
+function ColorPicker({
+  selected,
+  onSelect,
+  compact = false,
+}: {
+  selected: CalendarColor;
+  onSelect: (color: CalendarColor) => void;
+  compact?: boolean;
+}) {
+  return (
+    <View style={styles.pickerField}>
+      {compact ? null : <ThemedText type="smallBold">Colour</ThemedText>}
+      <View style={styles.swatches}>
+        {calendarColorKeys.map((key) => (
+          <Pressable
+            key={key}
+            accessibilityRole="button"
+            accessibilityLabel={CalendarColors[key].label}
+            accessibilityState={{ selected: key === selected }}
+            onPress={() => onSelect(key)}
+            style={[styles.swatchRing, key === selected && styles.swatchRingSelected]}>
+            <View style={[styles.swatch, { backgroundColor: CalendarColors[key].hex }]} />
+          </Pressable>
+        ))}
+      </View>
+    </View>
+  );
+}
+
 const styles = StyleSheet.create({
   section: {
     gap: Spacing.three,
+  },
+  flex: {
+    flex: 1,
+  },
+  cardTitle: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: Spacing.two,
+  },
+  cardActions: {
+    flexDirection: 'row',
+    flexWrap: 'wrap',
+    gap: Spacing.four,
+  },
+  pickerField: {
+    gap: Spacing.two,
+  },
+  swatches: {
+    flexDirection: 'row',
+    flexWrap: 'wrap',
+    gap: Spacing.two,
+  },
+  swatchRing: {
+    width: 34,
+    height: 34,
+    borderRadius: 17,
+    borderWidth: 2,
+    borderColor: 'transparent',
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
+  swatchRingSelected: {
+    borderColor: Colors.text,
+  },
+  swatch: {
+    width: 24,
+    height: 24,
+    borderRadius: 12,
+  },
+  swatchSmall: {
+    width: 12,
+    height: 12,
+    borderRadius: 6,
   },
 });

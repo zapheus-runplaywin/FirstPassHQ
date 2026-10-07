@@ -5,7 +5,8 @@ import { Colors, Spacing } from '@/constants/theme';
 import { addDays, dayKey, formatWeekday, isToday } from '@/lib/format';
 
 /**
- * One week, Monday to Sunday, with a dot under days that have events.
+ * One week, Monday to Sunday, with a dot in each calendar's colour under days
+ * that have events.
  * Tapping a day selects it.
  */
 export function WeekStrip({
@@ -16,8 +17,8 @@ export function WeekStrip({
   onChangeWeek,
 }: {
   weekStart: Date;
-  /** dayKey of every day with at least one event. */
-  eventDays: Set<string>;
+  /** Calendar colours with events on each day, by dayKey. */
+  eventDays: Map<string, string[]>;
   selectedDay: string | null;
   onSelect: (date: Date) => void;
   onChangeWeek: (weekStart: Date) => void;
@@ -55,22 +56,31 @@ export function WeekStrip({
             <ThemedText type="smallBold" style={selected && styles.onAccent}>
               {date.getDate()}
             </ThemedText>
-            <View
-              style={[
-                styles.dot,
-                {
-                  backgroundColor: eventDays.has(key)
-                    ? selected
-                      ? Colors.onAccent
-                      : Colors.accent
-                    : 'transparent',
-                },
-              ]}
-            />
+            <DayDots colors={eventDays.get(key)} selected={selected} />
           </Pressable>
         );
       })}
       <Arrow label="Next week" symbol="›" onPress={() => onChangeWeek(addDays(weekStart, 7))} />
+    </View>
+  );
+}
+
+/** Up to three dots, one per calendar colour with events that day. */
+export function DayDots({ colors = [], selected }: { colors?: string[]; selected: boolean }) {
+  return (
+    <View style={styles.dots}>
+      {colors.length === 0 ? (
+        <View style={styles.dot} />
+      ) : (
+        colors
+          .slice(0, 3)
+          .map((color) => (
+            <View
+              key={color}
+              style={[styles.dot, { backgroundColor: selected ? Colors.onAccent : color }]}
+            />
+          ))
+      )}
     </View>
   );
 }
@@ -122,6 +132,10 @@ const styles = StyleSheet.create({
   },
   onAccent: {
     color: Colors.onAccent,
+  },
+  dots: {
+    flexDirection: 'row',
+    gap: 2,
   },
   dot: {
     width: 5,

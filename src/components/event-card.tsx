@@ -8,7 +8,13 @@ import type { CalendarEvent } from '@/lib/calendar';
 import { formatEventTime, formatShortDay } from '@/lib/format';
 
 /** Events as compact tiles, two to a row. */
-export function EventGrid({ events, showDay = false }: { events: CalendarEvent[]; showDay?: boolean }) {
+export function EventGrid({
+  events,
+  showDay = false,
+}: {
+  events: CalendarEvent[];
+  showDay?: boolean;
+}) {
   const rows: CalendarEvent[][] = [];
   for (let i = 0; i < events.length; i += 2) rows.push(events.slice(i, i + 2));
   return (
@@ -37,7 +43,10 @@ function EventTile({ event, showDay }: { event: CalendarEvent; showDay: boolean 
       onPress={() => router.push({ pathname: '/event/[id]', params: { id: event.id } })}
       style={({ pressed }) => [
         styles.tile,
-        { backgroundColor: pressed ? theme.backgroundSelected : theme.backgroundElement },
+        {
+          backgroundColor: pressed ? theme.backgroundSelected : theme.backgroundElement,
+          borderLeftColor: event.color,
+        },
       ]}>
       <ThemedText type="small" themeColor="textSecondary" numberOfLines={1}>
         {when}
@@ -67,6 +76,7 @@ const styles = StyleSheet.create({
     minHeight: 96,
     padding: 12,
     borderRadius: 12,
+    borderLeftWidth: 4,
     gap: Spacing.half,
   },
   tileSpace: {

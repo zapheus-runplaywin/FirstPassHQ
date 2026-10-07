@@ -36,7 +36,7 @@ export default function EventScreen() {
         <ThemedText type="subtitle" selectable>
           {event.title}
         </ThemedText>
-        <ThemedText type="small" themeColor="textSecondary">
+        <ThemedText type="smallBold" style={{ color: event.color }}>
           {event.calendarName}
         </ThemedText>
       </View>
