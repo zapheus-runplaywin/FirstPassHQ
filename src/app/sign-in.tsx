@@ -1,4 +1,5 @@
 import * as AppleAuthentication from 'expo-apple-authentication';
+import { Image } from 'expo-image';
 import { useState } from 'react';
 import { ActivityIndicator, Pressable, StyleSheet, useColorScheme, View } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
@@ -31,7 +32,12 @@ export default function SignInScreen() {
     <ThemedView style={styles.container}>
       <SafeAreaView style={styles.safeArea}>
         <View style={styles.header}>
-          <ThemedText type="subtitle">Thunder</ThemedText>
+          <Image
+            source={require('@/assets/images/logo.png')}
+            style={styles.logo}
+            contentFit="contain"
+            accessibilityLabel="West Coast Thunder"
+          />
           <ThemedText themeColor="textSecondary">
             Sign in with the Google or Apple account you use for the club.
           </ThemedText>
@@ -115,6 +121,11 @@ const styles = StyleSheet.create({
   },
   header: {
     gap: Spacing.two,
+  },
+  logo: {
+    width: 200,
+    height: 200,
+    alignSelf: 'center',
   },
   buttons: {
     gap: Spacing.three,

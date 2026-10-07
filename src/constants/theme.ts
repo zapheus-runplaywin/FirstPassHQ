@@ -7,22 +7,31 @@ import '@/global.css';
 
 import { Platform } from 'react-native';
 
+// Club colours from the West Coast Thunder logo: yellow, black, grey and white.
+const ThunderYellow = '#FFCD00';
+
 export const Colors = {
   light: {
-    text: '#000000',
-    background: '#ffffff',
-    backgroundElement: '#F0F0F3',
-    backgroundSelected: '#E0E1E6',
-    textSecondary: '#60646C',
-    tint: '#1D4ED8',
+    text: '#111111',
+    background: '#FFFFFF',
+    backgroundElement: '#F2F2F2',
+    backgroundSelected: '#E2E2E2',
+    textSecondary: '#5C5C5C',
+    /** Links and other coloured text; darker than the brand yellow so it reads on white. */
+    tint: '#8A6600',
+    /** Filled buttons and selected chips. */
+    accent: ThunderYellow,
+    onAccent: '#000000',
   },
   dark: {
-    text: '#ffffff',
+    text: '#FFFFFF',
     background: '#000000',
-    backgroundElement: '#212225',
-    backgroundSelected: '#2E3135',
-    textSecondary: '#B0B4BA',
-    tint: '#2563EB',
+    backgroundElement: '#1C1C1C',
+    backgroundSelected: '#2E2E2E',
+    textSecondary: '#B6B6B6',
+    tint: ThunderYellow,
+    accent: ThunderYellow,
+    onAccent: '#000000',
   },
 } as const;
 
