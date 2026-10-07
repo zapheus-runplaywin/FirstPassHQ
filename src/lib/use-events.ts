@@ -73,11 +73,17 @@ async function fetchEvents(
   if (!approved) return { events: [], failed: [] };
   const { data } = await supabase
     .from('calendars')
-    .select('id, name, url, team:teams (name)')
+    .select('id, name, url, committee_only, team:teams (name)')
     .order('created_at');
   const calendars: CalendarRow[] = (data ?? []).map((row) => {
     const team = row.team as unknown as { name: string } | null;
-    return { id: row.id, url: row.url, name: team?.name ?? row.name, clubWide: !team };
+    return {
+      id: row.id,
+      url: row.url,
+      name: team?.name ?? row.name,
+      // Committee calendars get their own colour and filter, like a squad's.
+      clubWide: !team && !row.committee_only,
+    };
   });
 
   const rangeStart = startOfToday();
