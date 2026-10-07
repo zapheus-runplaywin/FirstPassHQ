@@ -16,7 +16,7 @@ type AuthState = {
 };
 
 export const PROFILE_COLUMNS =
-  'id, email, full_name, playhq_email, role, status, requested_role, requested_team_id, join_requested_at';
+  'id, email, full_name, playhq_email, role, status, requested_role, requested_team_id, join_requested_at, under_17';
 
 const AuthContext = createContext<AuthState | null>(null);
 
@@ -33,11 +33,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       return;
     }
     const [profileResult, membershipResult] = await Promise.all([
-      supabase
-        .from('profiles')
-        .select(PROFILE_COLUMNS)
-        .eq('id', userId)
-        .single(),
+      supabase.from('profiles').select(PROFILE_COLUMNS).eq('id', userId).single(),
       supabase
         .from('team_members')
         .select(`team_role, coach_title, selection, team:teams (${TEAM_COLUMNS})`)

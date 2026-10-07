@@ -21,6 +21,7 @@ export const teamRoleLabels: Record<TeamRole, string> = {
   coach: 'Coach',
   manager: 'Manager',
   athlete: 'Athlete',
+  guardian: 'Guardian',
 };
 
 export const coachTitleLabels: Record<CoachTitle, string> = {
@@ -45,7 +46,7 @@ export const requestableRoles: AppRole[] = [
 ];
 
 /** Roles that belong to a team or squad. */
-export const teamRoles: TeamRole[] = ['coach', 'manager', 'athlete'];
+export const teamRoles: TeamRole[] = ['coach', 'manager', 'athlete', 'guardian'];
 
 export function isTeamRole(role: AppRole): role is TeamRole {
   return (teamRoles as AppRole[]).includes(role);
