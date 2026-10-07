@@ -1,7 +1,8 @@
 import { router } from 'expo-router';
-import { useState } from 'react';
+import { useCallback, useEffect, useState } from 'react';
 import { Pressable, StyleSheet, View } from 'react-native';
 
+import { GroupActions, RemovedGroups } from '@/components/group-actions';
 import { Screen } from '@/components/screen';
 import { ThemedText } from '@/components/themed-text';
 import { Button, Card, ChipGroup, ErrorText, PressableCard, TextField } from '@/components/ui';
@@ -10,7 +11,15 @@ import { useTheme } from '@/hooks/use-theme';
 import { formatDay } from '@/lib/format';
 import { supabase } from '@/lib/supabase';
 import type { GroupKind, Team } from '@/lib/types';
-import { squadsOf, teamsIn, useTeamList } from '@/lib/use-teams';
+import {
+  newestSquads,
+  seasonLabel,
+  squadsOf,
+  TEAM_COLUMNS,
+  teamLabel,
+  teamsIn,
+  useTeamList,
+} from '@/lib/use-teams';
 
 export default function SquadsScreen() {
   const { teams, reload } = useTeamList();
@@ -20,6 +29,29 @@ export default function SquadsScreen() {
   const [squadId, setSquadId] = useState<string | null>(null);
   const [saving, setSaving] = useState(false);
   const [error, setError] = useState<string | null>(null);
+  const [removed, setRemoved] = useState<Team[]>([]);
+
+  // Squads and teams removed from a season that is still running.
+  const seasons = [...new Set(teams.map((t) => t.season))].join(',');
+  const loadRemoved = useCallback(() => {
+    if (!seasons) return;
+    supabase
+      .from('teams')
+      .select(TEAM_COLUMNS)
+      .eq('archived', true)
+      .in('season', seasons.split(',').map(Number))
+      .order('sort_order')
+      .then(({ data }) => setRemoved((data as Team[] | null) ?? []));
+  }, [seasons]);
+
+  useEffect(() => {
+    loadRemoved();
+  }, [loadRemoved]);
+
+  const changed = useCallback(() => {
+    reload();
+    loadRemoved();
+  }, [reload, loadRemoved]);
 
   async function add() {
     if (!name.trim()) {
@@ -36,8 +68,10 @@ export default function SquadsScreen() {
     const { error: insertError } = await supabase.from('teams').insert({
       name: name.trim(),
       kind,
-      // A team belongs to the same season as its squad.
-      ...(squad ? { squad_id: squad.id, season: squad.season } : {}),
+      // A team belongs to the same season as its squad; a new squad to the newest season.
+      ...(squad
+        ? { squad_id: squad.id, season: squad.season }
+        : { season: newestSquads(teams)[0]?.season }),
       sort_order: kind === 'team' ? teamsIn(teams, squad!.id).length + 1 : squads.length + 1,
     });
     setSaving(false);
@@ -68,9 +102,10 @@ export default function SquadsScreen() {
             onPress={() => router.push({ pathname: '/team/[id]', params: { id: squad.id } })}>
             <ThemedText type="smallBold">{squad.name}</ThemedText>
             <ThemedText type="small" themeColor="textSecondary">
-              {squad.season} squad · see everyone in it
+              {seasonLabel(squad.season)} squad · see everyone in it
             </ThemedText>
           </PressableCard>
+          <GroupActions key={squad.name} group={squad} onChange={changed} />
           {teamsIn(teams, squad.id).map((team) => (
             <View key={team.id} style={styles.team}>
               <PressableCard
@@ -82,6 +117,7 @@ export default function SquadsScreen() {
                   Team · choose who is selected
                 </ThemedText>
               </PressableCard>
+              <GroupActions key={team.name} group={team} onChange={changed} />
             </View>
           ))}
           <SelectionsPhase
@@ -91,6 +127,8 @@ export default function SquadsScreen() {
           />
         </View>
       ))}
+
+      <RemovedGroups groups={removed} onChange={changed} />
 
       <View style={styles.form}>
         <ThemedText type="smallBold">Add a squad or team</ThemedText>
@@ -113,7 +151,7 @@ export default function SquadsScreen() {
         {kind === 'team' ? (
           <ChipGroup
             label="Named from squad"
-            options={squads.map((s) => ({ value: s.id, label: s.name }))}
+            options={squads.map((s) => ({ value: s.id, label: teamLabel(s, teams) }))}
             selected={squadId ? [squadId] : []}
             onToggle={setSquadId}
           />
@@ -213,6 +251,7 @@ const styles = StyleSheet.create({
   },
   team: {
     marginLeft: Spacing.four,
+    gap: Spacing.two,
   },
   phase: {
     gap: Spacing.one,

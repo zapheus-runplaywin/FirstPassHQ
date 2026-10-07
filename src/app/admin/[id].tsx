@@ -24,7 +24,7 @@ import type {
   RejectionReason,
   TeamSelection,
 } from '@/lib/types';
-import { squadsOf, useTeams } from '@/lib/use-teams';
+import { squadsOf, teamLabel, useTeams } from '@/lib/use-teams';
 
 const allRoles = Object.keys(roleLabels) as AppRole[];
 const coachTitles = Object.keys(coachTitleLabels) as CoachTitle[];
@@ -68,8 +68,10 @@ export default function MemberScreen() {
         supabase.from('profiles').select(PROFILE_COLUMNS).eq('id', id).single(),
         supabase
           .from('team_members')
-          .select('team_id, coach_title, selection')
-          .eq('profile_id', id),
+          .select('team_id, coach_title, selection, team:teams!inner (archived)')
+          .eq('profile_id', id)
+          // Past seasons are history; only this season's groups are edited here.
+          .eq('team.archived', false),
         supabase
           .from('guardianships')
           .select('guardian_id, athlete_id')
@@ -280,7 +282,7 @@ export default function MemberScreen() {
       {inTeams ? (
         <ChipGroup
           label="Squads"
-          options={squads.map((t) => ({ value: t.id, label: t.name }))}
+          options={squads.map((t) => ({ value: t.id, label: teamLabel(t, teams) }))}
           selected={selectedIds}
           onToggle={toggleTeam}
         />
@@ -289,7 +291,7 @@ export default function MemberScreen() {
       {inTeams && availableTeams.length > 0 ? (
         <ChipGroup
           label="Teams"
-          options={availableTeams.map((t) => ({ value: t.id, label: t.name }))}
+          options={availableTeams.map((t) => ({ value: t.id, label: teamLabel(t, teams) }))}
           selected={selectedIds}
           onToggle={toggleTeam}
         />
@@ -301,7 +303,7 @@ export default function MemberScreen() {
             .map((t) => (
               <ChipGroup
                 key={t.id}
-                label={`Title for ${t.name}`}
+                label={`Title for ${teamLabel(t, teams)}`}
                 options={coachTitles.map((c) => ({ value: c, label: coachTitleLabels[c] }))}
                 selected={selection[t.id].coach_title ? [selection[t.id].coach_title!] : []}
                 onToggle={(title) =>
@@ -320,7 +322,7 @@ export default function MemberScreen() {
             .map((t) => (
               <ChipGroup
                 key={t.id}
-                label={`Selected in ${t.name} as`}
+                label={`Selected in ${teamLabel(t, teams)} as`}
                 options={selections.map((s) => ({ value: s, label: selectionLabels[s] }))}
                 selected={selection[t.id].selection ? [selection[t.id].selection!] : []}
                 onToggle={(choice) =>

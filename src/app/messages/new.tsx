@@ -11,7 +11,7 @@ import { pluralRoleLabels } from '@/lib/labels';
 import { useMessageGroups } from '@/lib/messages';
 import { supabase } from '@/lib/supabase';
 import type { AppRole, MessageAudience } from '@/lib/types';
-import { useTeams } from '@/lib/use-teams';
+import { teamLabel, useTeams } from '@/lib/use-teams';
 
 const MAX_LENGTH = 4000;
 
@@ -104,7 +104,7 @@ export default function NewMessageScreen() {
         ) : (
           <ChipGroup
             label={isAdmin ? 'Squad or team' : 'Send to'}
-            options={groups.map((t) => ({ value: t.id, label: t.name }))}
+            options={groups.map((t) => ({ value: t.id, label: teamLabel(t, teams) }))}
             selected={selectedTeamId ? [selectedTeamId] : []}
             onToggle={setTeamId}
           />

@@ -75,6 +75,8 @@ function RootStack() {
             <Stack.Screen name="admin/injuries" options={{ title: 'Injury report' }} />
             <Stack.Screen name="admin/squads" options={{ title: 'Squads and teams' }} />
             <Stack.Screen name="admin/team/[id]" options={{ title: 'Name team' }} />
+            <Stack.Screen name="admin/seasons" options={{ title: 'Seasons' }} />
+            <Stack.Screen name="admin/place/[id]" options={{ title: 'Place members' }} />
           </Stack.Protected>
         </Stack.Protected>
         <Stack.Protected guard={!session}>

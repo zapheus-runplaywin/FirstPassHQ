@@ -32,6 +32,13 @@ export default function AdministrationScreen() {
         </ThemedText>
       </PressableCard>
 
+      <PressableCard onPress={() => router.push('/admin/seasons')}>
+        <ThemedText type="smallBold">Seasons</ThemedText>
+        <ThemedText type="small" themeColor="textSecondary">
+          Start next season in May and archive the last one after Easter
+        </ThemedText>
+      </PressableCard>
+
       <PressableCard onPress={() => router.push('/admin/calendars')}>
         <ThemedText type="smallBold">Calendars</ThemedText>
         <ThemedText type="small" themeColor="textSecondary">
