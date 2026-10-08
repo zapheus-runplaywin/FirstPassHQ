@@ -38,8 +38,8 @@ In **Authentication > URL Configuration**, add these to **Redirect URLs**:
 
 Also set **Site URL** to `thunderapp://auth-callback`. When Supabase doesn't accept an app's
 redirect, it sends people to the Site URL instead, and the default (`localhost`) doesn't work on a
-phone. While testing in Expo Go, set it to the address shown under the sign-in buttons (for example
-`exp://192.168.4.144:8081/--/auth-callback`) and change it back before building the app.
+phone. Expo Go uses a separate test project whose Site URL is your computer's `exp://` address: see
+[Test and live](docs/environments.md).
 
 ### 3. Turn on Google sign-in
 
@@ -72,7 +72,9 @@ npm install
 npx expo start
 ```
 
-Scan the QR code with the Expo Go app on your phone.
+Scan the QR code with the Expo Go app on your phone. Your `.env` should point at the test
+Supabase project, so you're working with sample people, not members. See
+[Test and live](docs/environments.md).
 
 Before committing, run:
 
@@ -88,3 +90,7 @@ npx tsc --noEmit
 ```bash
 npx eas-cli@latest build --profile preview --platform all
 ```
+
+Builds use the live Supabase project, from the EAS environment named after the profile. Publish
+over-the-air fixes with `scripts/publish-update.sh`, not `eas update` directly, so they can't pick
+up your `.env` test settings.
