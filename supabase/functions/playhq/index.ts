@@ -19,6 +19,12 @@ const CORS = {
   'Access-Control-Allow-Methods': 'POST, OPTIONS',
 };
 
+// One JSON line per event in the function's logs (Supabase dashboard, Edge
+// Functions, playhq, Logs). No tokens or people: ids, counts and timings only.
+function log(level: 'info' | 'warn' | 'error', message: string, data: Record<string, unknown> = {}) {
+  console[level](JSON.stringify({ level, message, ...data }));
+}
+
 const SEASON_QUERY = `
   query season($id: String!) {
     discoverSeason(seasonID: $id) {
@@ -85,6 +91,8 @@ type Round = {
 };
 
 async function query<T>(tenant: string, text: string, variables: Record<string, unknown>) {
+  const started = Date.now();
+  const name = text.match(/query (\w+)/)?.[1] ?? 'query';
   const response = await fetch(API, {
     method: 'POST',
     headers: {
@@ -96,10 +104,34 @@ async function query<T>(tenant: string, text: string, variables: Record<string, 
     },
     body: JSON.stringify({ query: text, variables }),
   });
-  if (!response.ok) throw new Error(`PlayHQ answered ${response.status}`);
+  const ms = Date.now() - started;
+  if (!response.ok) {
+    log('error', 'PlayHQ request failed', {
+      query: name,
+      variables,
+      status: response.status,
+      // CloudFront blocks show up here rather than as GraphQL errors.
+      server: response.headers.get('server'),
+      cache: response.headers.get('x-cache'),
+      ms,
+    });
+    throw new Error(`PlayHQ answered ${response.status}`);
+  }
   const body = (await response.json()) as { data?: T; errors?: { message: string }[] };
+  if (body.errors?.length) {
+    log(body.data ? 'warn' : 'error', 'PlayHQ returned errors', {
+      query: name,
+      variables,
+      errors: body.errors.slice(0, 3).map((e) => e.message),
+      ms,
+    });
+  }
   if (body.errors?.length && !body.data) throw new Error(`PlayHQ: ${body.errors[0].message}`);
-  if (!body.data) throw new Error('PlayHQ sent nothing back');
+  if (!body.data) {
+    log('error', 'PlayHQ sent nothing back', { query: name, variables, ms });
+    throw new Error('PlayHQ sent nothing back');
+  }
+  log('info', 'PlayHQ request', { query: name, variables, ms });
   return body.data;
 }
 
@@ -123,8 +155,12 @@ Deno.serve(async (request) => {
     global: { headers: { Authorization: request.headers.get('Authorization') ?? '' } },
     auth: { persistSession: false, autoRefreshToken: false },
   });
-  const { data: isAdmin } = await supabase.rpc('is_admin');
-  if (!isAdmin) return json({ error: 'Only admins can read PlayHQ fixtures' }, 403);
+  const started = Date.now();
+  const { data: isAdmin, error: adminError } = await supabase.rpc('is_admin');
+  if (!isAdmin) {
+    log('warn', 'Refused: not an admin', { check_failed: adminError?.message ?? null });
+    return json({ error: 'Only admins can read PlayHQ fixtures' }, 403);
+  }
 
   const { tenant, seasonCode } = (await request.json().catch(() => ({}))) as {
     tenant?: string;
@@ -136,6 +172,7 @@ Deno.serve(async (request) => {
     !seasonCode ||
     !/^[0-9a-f]{6,}$/i.test(seasonCode)
   ) {
+    log('warn', 'Refused: bad competition link', { tenant: tenant ?? null, seasonCode: seasonCode ?? null });
     return json({ error: 'That isn’t a PlayHQ competition link' }, 400);
   }
 
@@ -148,7 +185,16 @@ Deno.serve(async (request) => {
         grades?: { id: string; name: string }[];
       } | null;
     }>(tenant, SEASON_QUERY, { id: seasonCode });
-    if (!season) return json({ error: 'PlayHQ has no competition at that link' }, 404);
+    if (!season) {
+      log('warn', 'No competition at that link', { tenant, seasonCode });
+      return json({ error: 'PlayHQ has no competition at that link' }, 404);
+    }
+    log('info', 'Competition found', {
+      tenant,
+      seasonCode,
+      season_id: season.id,
+      grade_count: season.grades?.length ?? 0,
+    });
 
     const grades = await Promise.all(
       (season.grades ?? []).map(async (grade) => ({
@@ -217,6 +263,24 @@ Deno.serve(async (request) => {
       }
     }
 
+    log('info', 'Competition read', {
+      tenant,
+      seasonCode,
+      season_id: season.id,
+      grades: grades.map(({ grade, rounds }) => ({
+        grade_id: grade.id,
+        rounds: rounds.length,
+        games: rounds.reduce((n, r) => n + (r.games?.length ?? 0), 0),
+      })),
+      team_count: teams.size,
+      game_count: games.length,
+      undated_count: grades.reduce(
+        (n, { rounds }) =>
+          n + rounds.reduce((m, r) => m + (r.games ?? []).filter((g) => !g.date).length, 0),
+        0,
+      ),
+      ms: Date.now() - started,
+    });
     return json({
       id: season.id,
       name: [season.competition?.name, season.name].filter(Boolean).join(' · '),
@@ -224,6 +288,12 @@ Deno.serve(async (request) => {
       games,
     });
   } catch (e) {
+    log('error', 'Lookup failed', {
+      tenant,
+      seasonCode,
+      reason: e instanceof Error ? e.message : String(e),
+      ms: Date.now() - started,
+    });
     return json({ error: e instanceof Error ? e.message : 'Couldn’t reach PlayHQ' }, 502);
   }
 });

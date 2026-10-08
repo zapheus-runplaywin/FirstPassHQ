@@ -15,6 +15,8 @@ export function MonthGrid({
   selectedDay,
   onSelect,
   onChangeMonth,
+  earliest,
+  latest,
 }: {
   /** Any date in the month to show. */
   month: Date;
@@ -23,9 +25,15 @@ export function MonthGrid({
   selectedDay: string | null;
   onSelect: (date: Date) => void;
   onChangeMonth: (month: Date) => void;
+  /** The first day the grid may reach; earlier months are out of bounds. */
+  earliest?: Date;
+  /** Days on or after this are out of bounds. */
+  latest?: Date;
 }) {
   const styles = useThemedStyles(makeStyles);
   const first = new Date(month.getFullYear(), month.getMonth(), 1);
+  const previous = new Date(first.getFullYear(), first.getMonth() - 1, 1);
+  const next = new Date(first.getFullYear(), first.getMonth() + 1, 1);
   const gridStart = startOfWeek(first);
   const weeks: Date[][] = [];
   for (let start = gridStart; weeks.length < 6; start = addDays(start, 7)) {
@@ -39,7 +47,8 @@ export function MonthGrid({
         <Arrow
           label="Previous month"
           symbol="‹"
-          onPress={() => onChangeMonth(new Date(first.getFullYear(), first.getMonth() - 1, 1))}
+          disabled={earliest !== undefined && first <= earliest}
+          onPress={() => onChangeMonth(previous)}
         />
         <ThemedText type="smallBold" style={styles.monthName}>
           {formatMonth(first)}
@@ -47,7 +56,8 @@ export function MonthGrid({
         <Arrow
           label="Next month"
           symbol="›"
-          onPress={() => onChangeMonth(new Date(first.getFullYear(), first.getMonth() + 1, 1))}
+          disabled={latest !== undefined && next >= latest}
+          onPress={() => onChangeMonth(next)}
         />
       </View>
       <View style={styles.week}>

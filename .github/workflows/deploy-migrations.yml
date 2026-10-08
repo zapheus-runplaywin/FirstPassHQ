@@ -1,7 +1,8 @@
 name: Deploy migrations
 
-# Applies new files in supabase/migrations to the production database after
-# they merge to main. Stops before anything that can lose data.
+# Applies new files in supabase/migrations after they merge to main: first to
+# the test project, then to the live one only if that worked. Stops before
+# anything that can lose data. See docs/environments.md.
 on:
   push:
     branches: [main]
@@ -41,10 +42,62 @@ jobs:
             exit 1
           fi
 
-  deploy:
+  # The test project goes first, so a migration that fails there never reaches
+  # the live database. Until the test project's secrets are added this only
+  # warns, and the live deploy goes ahead as before.
+  deploy-test:
     needs: approve-data-loss
     # Runs when data loss wasn't allowed (skipped) or Matt allowed it.
     if: ${{ !cancelled() && (needs.approve-data-loss.result == 'success' || needs.approve-data-loss.result == 'skipped') }}
+    runs-on: ubuntu-24.04
+    steps:
+      - name: Check the test project is set up
+        id: test
+        env:
+          TEST_PROJECT_ID: ${{ secrets.SUPABASE_TEST_PROJECT_ID }}
+          LIVE_PROJECT_ID: ${{ secrets.SUPABASE_PROJECT_ID }}
+        run: |
+          if [ -z "$TEST_PROJECT_ID" ]; then
+            echo "::warning::There is no test project yet (SUPABASE_TEST_PROJECT_ID), so only the live database is updated. See docs/environments.md."
+            echo "ready=false" >> "$GITHUB_OUTPUT"
+            exit 0
+          fi
+          if [ "$TEST_PROJECT_ID" = "$LIVE_PROJECT_ID" ]; then
+            echo "::error::SUPABASE_TEST_PROJECT_ID is the live project. It must be the test project's id."
+            exit 1
+          fi
+          echo "ready=true" >> "$GITHUB_OUTPUT"
+      - if: steps.test.outputs.ready == 'true'
+        uses: actions/checkout@d23441a48e516b6c34aea4fa41551a30e30af803 # v6.1.0
+      - if: steps.test.outputs.ready == 'true'
+        uses: supabase/setup-cli@45a513f8c64c0bc8e0e3dfe572b5c95be85f6359 # v3.0.1
+        with:
+          version: 2.120.0
+      - if: steps.test.outputs.ready == 'true'
+        name: Link the test project
+        run: |
+          if ! supabase link --project-ref "$SUPABASE_PROJECT_ID"; then
+            echo "::error::Couldn't reach the test project. If it's paused, restore it in the Supabase dashboard and re-run this workflow. Nothing was applied to the live database."
+            exit 1
+          fi
+        env:
+          SUPABASE_ACCESS_TOKEN: ${{ secrets.SUPABASE_TEST_ACCESS_TOKEN || secrets.SUPABASE_ACCESS_TOKEN }}
+          SUPABASE_DB_PASSWORD: ${{ secrets.SUPABASE_TEST_DB_PASSWORD }}
+          SUPABASE_PROJECT_ID: ${{ secrets.SUPABASE_TEST_PROJECT_ID }}
+      - if: steps.test.outputs.ready == 'true'
+        run: scripts/deploy-migrations.sh
+        env:
+          SUPABASE_ACCESS_TOKEN: ${{ secrets.SUPABASE_TEST_ACCESS_TOKEN || secrets.SUPABASE_ACCESS_TOKEN }}
+          SUPABASE_DB_PASSWORD: ${{ secrets.SUPABASE_TEST_DB_PASSWORD }}
+          # A new test project has no migrations yet, so it gets all of them.
+          FIRST_RUN_OK: 'true'
+          ALLOW_DATA_LOSS: ${{ inputs.allow_data_loss == true }}
+
+  deploy:
+    needs: [approve-data-loss, deploy-test]
+    # Runs when data loss wasn't allowed (skipped) or Matt allowed it, and the
+    # test project took the migrations.
+    if: ${{ !cancelled() && (needs.approve-data-loss.result == 'success' || needs.approve-data-loss.result == 'skipped') && needs.deploy-test.result == 'success' }}
     runs-on: ubuntu-24.04
     environment: production
     steps:

@@ -1,5 +1,5 @@
 import * as DocumentPicker from 'expo-document-picker';
-import { useFocusEffect, useLocalSearchParams } from 'expo-router';
+import { router, useFocusEffect, useLocalSearchParams } from 'expo-router';
 import { useCallback, useState } from 'react';
 import { Pressable, StyleSheet, View } from 'react-native';
 
@@ -116,11 +116,12 @@ export default function InjuryScreen() {
       <View style={styles.section}>
         <ThemedText type="smallBold">History</ThemedText>
         {updates.map((update) => (
-          <UpdateCard key={update.id} update={update} />
+          <UpdateCard key={update.id} update={update} canShare={isCommittee} />
         ))}
         {isCommittee && updates.some((u) => u.document_path) ? (
           <ThemedText type="small" themeColor="textSecondary">
-            Use Share on a document to save it to OneDrive or attach it to an email.
+            Use Share on a document to save it to OneDrive or attach it to an email. Everyone
+            else can only view documents in the app.
           </ThemedText>
         ) : null}
       </View>
@@ -389,10 +390,19 @@ function ActionForm({
   );
 }
 
-function UpdateCard({ update }: { update: InjuryUpdate }) {
+/** Committee members and admins can also share documents, to keep them in OneDrive. */
+function UpdateCard({ update, canShare }: { update: InjuryUpdate; canShare: boolean }) {
   const theme = useTheme();
   const [error, setError] = useState<string | null>(null);
   const [opening, setOpening] = useState(false);
+
+  function view() {
+    if (!update.document_path) return;
+    router.push({
+      pathname: '/injuries/document',
+      params: { path: update.document_path, name: update.document_name ?? 'Document' },
+    });
+  }
 
   async function share() {
     if (!update.document_path) return;
@@ -438,15 +448,24 @@ function UpdateCard({ update }: { update: InjuryUpdate }) {
           <ThemedText type="small" numberOfLines={1}>
             📎 {update.document_name ?? 'Document'}
           </ThemedText>
-          <Pressable
-            accessibilityRole="button"
-            onPress={share}
-            disabled={opening}
-            style={styles.link}>
-            <ThemedText type="smallBold" style={{ color: theme.tint }}>
-              {opening ? 'Opening…' : 'View or share'}
-            </ThemedText>
-          </Pressable>
+          <View style={styles.links}>
+            <Pressable accessibilityRole="button" onPress={view} style={styles.link}>
+              <ThemedText type="smallBold" style={{ color: theme.tint }}>
+                View
+              </ThemedText>
+            </Pressable>
+            {canShare ? (
+              <Pressable
+                accessibilityRole="button"
+                onPress={share}
+                disabled={opening}
+                style={styles.link}>
+                <ThemedText type="smallBold" style={{ color: theme.tint }}>
+                  {opening ? 'Opening…' : 'Share'}
+                </ThemedText>
+              </Pressable>
+            ) : null}
+          </View>
           <ErrorText>{error}</ErrorText>
         </View>
       ) : null}
@@ -485,6 +504,10 @@ const styles = StyleSheet.create({
   },
   section: {
     gap: Spacing.two,
+  },
+  links: {
+    flexDirection: 'row',
+    gap: Spacing.four,
   },
   link: {
     paddingVertical: Spacing.one,

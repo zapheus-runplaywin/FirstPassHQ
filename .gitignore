@@ -45,3 +45,8 @@ example
 # Supabase keys
 .env
 __pycache__/
+
+# application logs (the app writes app.log, app.1.log … in a logs folder)
+logs/
+*.log
+*.log.[0-9]*

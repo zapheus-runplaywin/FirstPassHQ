@@ -16,6 +16,8 @@ export function WeekStrip({
   selectedDay,
   onSelect,
   onChangeWeek,
+  earliest,
+  latest,
 }: {
   weekStart: Date;
   /** Calendar colours with events on each day, by dayKey. */
@@ -23,15 +25,22 @@ export function WeekStrip({
   selectedDay: string | null;
   onSelect: (date: Date) => void;
   onChangeWeek: (weekStart: Date) => void;
+  /** The first day the strip may reach; earlier weeks are out of bounds. */
+  earliest?: Date;
+  /** Days on or after this are out of bounds. */
+  latest?: Date;
 }) {
   const styles = useThemedStyles(makeStyles);
+  const previous = addDays(weekStart, -7);
+  const next = addDays(weekStart, 7);
   const days = Array.from({ length: 7 }, (_, i) => addDays(weekStart, i));
   return (
     <View style={styles.strip}>
       <Arrow
         label="Previous week"
         symbol="‹"
-        onPress={() => onChangeWeek(addDays(weekStart, -7))}
+        disabled={earliest !== undefined && weekStart <= earliest}
+        onPress={() => onChangeWeek(previous)}
       />
       {days.map((date) => {
         const key = dayKey(date);
@@ -62,7 +71,12 @@ export function WeekStrip({
           </Pressable>
         );
       })}
-      <Arrow label="Next week" symbol="›" onPress={() => onChangeWeek(addDays(weekStart, 7))} />
+      <Arrow
+        label="Next week"
+        symbol="›"
+        disabled={latest !== undefined && next >= latest}
+        onPress={() => onChangeWeek(next)}
+      />
     </View>
   );
 }
@@ -93,19 +107,23 @@ export function Arrow({
   label,
   symbol,
   onPress,
+  disabled = false,
 }: {
   label: string;
   symbol: string;
   onPress: () => void;
+  disabled?: boolean;
 }) {
   const styles = useThemedStyles(makeStyles);
   return (
     <Pressable
       accessibilityRole="button"
       accessibilityLabel={label}
+      accessibilityState={{ disabled }}
+      disabled={disabled}
       hitSlop={8}
       onPress={onPress}
-      style={styles.arrow}>
+      style={[styles.arrow, disabled && styles.arrowDisabled]}>
       <ThemedText style={styles.arrowText}>{symbol}</ThemedText>
     </Pressable>
   );
@@ -150,6 +168,9 @@ const makeStyles = (colors: Palette) =>
   },
   arrow: {
     paddingHorizontal: Spacing.one,
+  },
+  arrowDisabled: {
+    opacity: 0.25,
   },
   arrowText: {
     color: colors.tint,

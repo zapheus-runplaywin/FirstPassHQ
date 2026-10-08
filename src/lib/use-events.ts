@@ -11,6 +11,8 @@ import type { GroupKind } from '@/lib/types';
 export const DEFAULT_MONTHS_AHEAD = 3;
 /** How far ahead members can load events. */
 export const MAX_MONTHS_AHEAD = 12;
+/** How far back members can look, counted in whole months. */
+export const MAX_MONTHS_BACK = 12;
 const CACHE_PREFIX = 'ics-cache:';
 
 /** The most recently loaded events, so the details screen opens instantly. */
@@ -34,18 +36,20 @@ export function useEvents() {
   const [events, setEvents] = useState<CalendarEvent[] | null>(null);
   const [failed, setFailed] = useState<string[]>([]);
   const [monthsAhead, setMonthsAhead] = useState(DEFAULT_MONTHS_AHEAD);
+  // Past events load only when a member steps back in the calendar.
+  const [withPast, setWithPast] = useState(false);
   const [loadingMore, setLoadingMore] = useState(false);
 
   const approved = profile?.status === 'approved';
 
   const load = useCallback(
     () =>
-      fetchEvents(approved, monthsAhead).then((result) => {
+      fetchEvents(approved, withPast ? MAX_MONTHS_BACK : 0, monthsAhead).then((result) => {
         setEvents(result.events);
         setFailed(result.failed);
         setLoadingMore(false);
       }),
-    [approved, monthsAhead],
+    [approved, withPast, monthsAhead],
   );
 
   useEffect(() => {
@@ -63,6 +67,9 @@ export function useEvents() {
     [monthsAhead],
   );
 
+  /** Loads the past 12 months too, all at once so each step back is instant. */
+  const showPast = useCallback(() => setWithPast(true), []);
+
   return {
     events,
     failed,
@@ -73,6 +80,7 @@ export function useEvents() {
     canLoadMore: monthsAhead < MAX_MONTHS_AHEAD,
     loadingMore,
     showMonthsAhead,
+    showPast,
   };
 }
 
@@ -90,7 +98,9 @@ export function useEvent(id: string | undefined) {
 
   useEffect(() => {
     if (!id || loadedEvents.has(id)) return;
-    fetchEvents(approved, MAX_MONTHS_AHEAD).then(() => setEvent(loadedEvents.get(id) ?? null));
+    fetchEvents(approved, MAX_MONTHS_BACK, MAX_MONTHS_AHEAD).then(() =>
+      setEvent(loadedEvents.get(id) ?? null),
+    );
   }, [id, approved]);
 
   return event;
@@ -98,6 +108,7 @@ export function useEvent(id: string | undefined) {
 
 async function fetchEvents(
   approved: boolean,
+  monthsBack: number,
   monthsAhead: number,
 ): Promise<{ events: CalendarEvent[]; failed: string[] }> {
   if (!approved) return { events: [], failed: [] };
@@ -120,7 +131,7 @@ async function fetchEvents(
     };
   });
 
-  const rangeStart = startOfToday();
+  const rangeStart = monthsBack > 0 ? earliestDay(monthsBack) : startOfToday();
   const rangeEnd = monthsFromToday(monthsAhead);
   const failed: string[] = [];
 
@@ -208,6 +219,20 @@ function dedupe(events: CalendarEvent[]) {
     seen.add(event.id);
     return true;
   });
+}
+
+/**
+ * The first day of the month `months` back, so the earliest month the calendar
+ * reaches is shown whole.
+ */
+export function earliestDay(months = MAX_MONTHS_BACK) {
+  const today = startOfToday();
+  return new Date(today.getFullYear(), today.getMonth() - months, 1);
+}
+
+/** The last day members can load events for. */
+export function latestDay() {
+  return monthsFromToday(MAX_MONTHS_AHEAD);
 }
 
 function monthsFromToday(months: number) {
