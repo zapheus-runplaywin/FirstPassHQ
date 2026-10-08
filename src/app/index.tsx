@@ -26,7 +26,7 @@ import {
   useMyCheckIn,
 } from '@/lib/check-ins';
 import { injuriesSummary, useCanSeeInjuries, useOpenInjuries } from '@/lib/injuries';
-import { useUnreadCount } from '@/lib/messages';
+import { useGetsMessages, useUnreadCount } from '@/lib/messages';
 import {
   pendingRequestsLabel,
   usePendingRequests,
@@ -113,6 +113,7 @@ export default function HomeScreen() {
 
   const name = profile?.full_name || session?.user.email || 'there';
   const approved = profile?.status === 'approved';
+  const getsMessages = useGetsMessages();
 
   return (
     <Screen withTopInset refreshing={refreshing} onRefresh={onRefresh}>
@@ -135,7 +136,7 @@ export default function HomeScreen() {
 
       {approved ? <TodoList todos={todos} /> : null}
 
-      {approved && features.messages ? (
+      {getsMessages && features.messages ? (
         <PressableCard onPress={() => router.push('/messages')}>
           <View style={styles.cardTitleRow}>
             <ThemedText type="smallBold">Messages</ThemedText>

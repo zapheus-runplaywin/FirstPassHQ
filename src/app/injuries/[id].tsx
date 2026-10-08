@@ -183,13 +183,13 @@ function Actions({
   if (isCommittee && injury.status === 'clearance_requested') {
     return (
       <View style={styles.actions}>
-        <Waiting text="Waiting for one of the athlete’s coaches to endorse it." />
+        <Waiting text="Waiting for one of the athlete’s coaches or a physio to endorse it." />
         <Button title="Send back" variant="secondary" onPress={() => onChoose('send_back')} />
       </View>
     );
   }
   if (injury.status === 'clearance_requested') {
-    return <Waiting text="Waiting for one of the athlete’s coaches to endorse it." />;
+    return <Waiting text="Waiting for one of the athlete’s coaches or a physio to endorse it." />;
   }
   if (injury.status === 'coach_endorsed') {
     return (

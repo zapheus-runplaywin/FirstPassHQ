@@ -17,7 +17,6 @@ export const voterRoleOptions: { value: AwardVoterRole; label: string }[] = [
   { value: 'guardian', label: 'Guardians' },
   { value: 'committee', label: 'Committee' },
   { value: 'admin', label: 'Admins' },
-  { value: 'partner', label: 'Partners' },
   { value: 'member', label: 'Every member' },
 ];
 

@@ -24,7 +24,7 @@ export const MAX_DOCUMENT_BYTES = 10 * 1024 * 1024;
 
 export const injuryStatusLabels: Record<InjuryStatus, string> = {
   injured: 'Injured',
-  clearance_requested: 'Waiting for a coach',
+  clearance_requested: 'Waiting for a coach or physio',
   coach_endorsed: 'Waiting for the committee',
   cleared: 'Cleared to play',
 };
@@ -33,7 +33,7 @@ export const injuryUpdateLabels: Record<InjuryUpdateKind, string> = {
   reported: 'Reported the injury',
   physio_update: 'Physio update',
   clearance_requested: 'Asked for clearance',
-  coach_endorsed: 'Coach endorsed',
+  coach_endorsed: 'Endorsed',
   sent_back: 'Sent back',
   cleared: 'Cleared to play',
 };
@@ -46,7 +46,7 @@ export function useCanSeeInjuries() {
   const { profile, memberships } = useAuth();
   if (profile?.status !== 'approved') return false;
   return (
-    ['athlete', 'guardian', 'committee', 'admin'].includes(profile.role) ||
+    ['athlete', 'guardian', 'committee', 'physio', 'admin'].includes(profile.role) ||
     memberships.some((m) => m.team_role === 'coach')
   );
 }
