@@ -25,15 +25,7 @@ import {
   useIsCheckInCoach,
   useMyCheckIn,
 } from '@/lib/check-ins';
-import { formatShortDay } from '@/lib/format';
-import {
-  gameTitle,
-  reflectionsToAnswer,
-  useCoachTeamGames,
-  useGoalBoard,
-  useIsGoalGuardian,
-  useMyGoals,
-} from '@/lib/goals';
+import { reflectionsToAnswer, useCoachTeamGames, useGoalBoard, useMyGoals } from '@/lib/goals';
 import { injuriesSummary, useCanSeeInjuries, useOpenInjuries } from '@/lib/injuries';
 import { useGetsMessages, useUnreadCount } from '@/lib/messages';
 import {
@@ -56,7 +48,7 @@ export default function HomeScreen() {
   const club = useClub();
   const { features } = club;
   const [refreshing, setRefreshing] = useState(false);
-  const [athletes, setAthletes] = useState<string[]>([]);
+  const [athletes, setAthletes] = useState<{ id: string; name: string }[]>([]);
   const { events, reload: reloadEvents } = useEvents();
   const { unreadCount, reloadUnread } = useUnreadCount();
   const { pendingCount, reloadPending } = usePendingRequests();
@@ -76,13 +68,8 @@ export default function HomeScreen() {
   const { goalBoard, reloadGoalBoard } = useGoalBoard();
   const { teamGames, reloadTeamGames } = useCoachTeamGames();
   const goalComments = reflectionsToAnswer(goalBoard);
-  const isGoalGuardian = useIsGoalGuardian();
-  // The Game goals card shows once there's a game to set goals for or look back on.
-  const hasOwnGames = !!(myGoals?.next || myGoals?.last);
-  const coachHasGames =
-    goalComments > 0 ||
-    !!goalBoard?.some((row) => row.next_fixture_id !== null) ||
-    !!teamGames?.length;
+  // Game goals live on each squad or team's page; the to-do list links straight there.
+  const goalCommentsTeamId = goalBoard?.find((row) => row.reflections_to_answer > 0)?.team_id;
   // Turned-off features add nothing to the to-do list.
   const todos = buildTodos({
     userId: session?.user.id,
@@ -94,6 +81,7 @@ export default function HomeScreen() {
     safety: safetyTodos,
     goals: myGoals ?? null,
     goalReflectionsToAnswer: goalComments,
+    goalCommentsTeamId,
     teamGames: teamGames ?? [],
   });
 
@@ -104,9 +92,10 @@ export default function HomeScreen() {
     if (!isGuardian) return;
     const { data } = await supabase.rpc('my_athletes');
     setAthletes(
-      ((data as { full_name: string | null }[] | null) ?? []).map(
-        (a) => a.full_name ?? 'Unnamed athlete',
-      ),
+      ((data as { profile_id: string; full_name: string | null }[] | null) ?? []).map((a) => ({
+        id: a.profile_id,
+        name: a.full_name ?? 'Unnamed athlete',
+      })),
     );
   }, [isGuardian]);
 
@@ -202,15 +191,6 @@ export default function HomeScreen() {
         </PressableCard>
       ) : null}
 
-      {features.goals && (hasOwnGames || coachHasGames || isGoalGuardian) ? (
-        <PressableCard onPress={() => router.push('/goals')}>
-          <ThemedText type="smallBold">Game goals</ThemedText>
-          <ThemedText type="small" themeColor="textSecondary">
-            {goalsCardLabel(myGoals, goalComments)}
-          </ThemedText>
-        </PressableCard>
-      ) : null}
-
       {features.injuries && canSeeInjuries ? (
         <PressableCard onPress={() => router.push('/injuries')}>
           <View style={styles.cardTitleRow}>
@@ -278,12 +258,29 @@ export default function HomeScreen() {
         </View>
       ) : null}
 
-      {isGuardian ? (
+      {isGuardian && features.goals && athletes.length > 0 ? (
+        // Guardians aren't in a squad, so their athletes' game goals open from here.
+        <View style={styles.section}>
+          <ThemedText type="smallBold">Guardian of</ThemedText>
+          {athletes.map((a) => (
+            <PressableCard
+              key={a.id}
+              onPress={() =>
+                router.push({ pathname: '/goals/athlete/[id]', params: { id: a.id, name: a.name } })
+              }>
+              <ThemedText type="smallBold">{a.name}</ThemedText>
+              <ThemedText type="small" themeColor="textSecondary">
+                Game goals and reflections
+              </ThemedText>
+            </PressableCard>
+          ))}
+        </View>
+      ) : isGuardian ? (
         <Card>
           <ThemedText type="smallBold">Guardian of</ThemedText>
           <ThemedText type="small" themeColor="textSecondary">
             {athletes.length > 0
-              ? athletes.join(', ')
+              ? athletes.map((a) => a.name).join(', ')
               : 'A club admin will link you to your athlete once they have checked your PlayHQ registration.'}
           </ThemedText>
         </Card>
@@ -335,22 +332,6 @@ function awardsLabel(open: number, toVote: number) {
   if (toVote === 0)
     return `✓ You’ve voted in all ${open === 1 ? 'open award' : `${open} open awards`}`;
   return `${toVote} ${toVote === 1 ? 'vote' : 'votes'} waiting for you`;
-}
-
-function goalsCardLabel(
-  mine: ReturnType<typeof useMyGoals>['myGoals'],
-  toComment: number,
-) {
-  if (toComment > 0) {
-    return `${toComment} ${toComment === 1 ? 'reflection' : 'reflections'} waiting for your comment`;
-  }
-  if (mine === undefined) return 'Goals for your athletes’ next games';
-  const next = mine.next;
-  if (!next) return 'No game in the next 7 days';
-  const when = formatShortDay(new Date(next.starts_at));
-  return next.goal_count === 0
-    ? `Set goals for ${gameTitle(next)} · ${when}`
-    : `${next.goal_count} ${next.goal_count === 1 ? 'goal' : 'goals'} for ${gameTitle(next)} · ${when}`;
 }
 
 /** Named teams first, then squads, in club order. */

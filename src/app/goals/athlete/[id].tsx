@@ -6,11 +6,12 @@ import { Screen } from '@/components/screen';
 import { ThemedText } from '@/components/themed-text';
 import { useIsGoalGuardian } from '@/lib/goals';
 
-/** One athlete's games, for their coaches and their parents or guardians. */
+/** One athlete's games, for their coaches (from a team's page) and their parents or guardians. */
 export default function AthleteGoalsScreen() {
-  const { id, name } = useLocalSearchParams<{ id: string; name?: string }>();
+  const { id, name, team } = useLocalSearchParams<{ id: string; name?: string; team?: string }>();
   const isGuardian = useIsGoalGuardian();
-  const games = useGoalGames(id);
+  // Opened from a squad or team's page, only that group's games.
+  const games = useGoalGames(id, team || undefined);
   const [refreshing, setRefreshing] = useState(false);
 
   async function onRefresh() {

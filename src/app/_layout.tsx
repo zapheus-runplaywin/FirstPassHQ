@@ -112,7 +112,6 @@ function RootStack() {
             <Stack.Screen name="awards/vote" options={{ title: 'Vote' }} />
           </Stack.Protected>
           <Stack.Protected guard={features.goals}>
-            <Stack.Screen name="goals/index" options={{ title: 'Game goals' }} />
             <Stack.Screen name="goals/athlete/[id]" options={{ title: 'Game goals' }} />
             <Stack.Screen name="goals/game" options={{ title: 'Game goals' }} />
             <Stack.Screen name="goals/team" options={{ title: 'Team goals' }} />

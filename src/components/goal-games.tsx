@@ -16,8 +16,11 @@ import {
 } from '@/lib/goals';
 import type { GoalGame } from '@/lib/types';
 
-/** Loads an athlete's next game and played games, a page at a time. */
-export function useGoalGames(athleteId: string | undefined) {
+/**
+ * Loads an athlete's next game and played games, a page at a time. With a
+ * squad or team, only that group's games.
+ */
+export function useGoalGames(athleteId: string | undefined, teamId?: string) {
   // undefined while loading.
   const [next, setNext] = useState<GoalGame | null>();
   const [past, setPast] = useState<GoalGame[] | null>(null);
@@ -31,15 +34,16 @@ export function useGoalGames(athleteId: string | undefined) {
     try {
       const [nextGame, firstPage] = await Promise.all([
         fetchNextGame(athleteId),
-        fetchPastGames(athleteId, 0),
+        fetchPastGames(athleteId, 0, teamId),
       ]);
-      setNext(nextGame);
+      // The athlete's one open game may be another group's.
+      setNext(nextGame && teamId && nextGame.team_id !== teamId ? null : nextGame);
       setPast(firstPage.games);
       setMore(firstPage.more);
     } catch (e) {
       setError(e instanceof Error ? e.message : 'Couldn’t load games');
     }
-  }, [athleteId]);
+  }, [athleteId, teamId]);
 
   useFocusEffect(
     useCallback(() => {
@@ -51,14 +55,14 @@ export function useGoalGames(athleteId: string | undefined) {
     if (!athleteId) return;
     setLoadingMore(true);
     try {
-      const page = await fetchPastGames(athleteId, past?.length ?? 0);
+      const page = await fetchPastGames(athleteId, past?.length ?? 0, teamId);
       setPast([...(past ?? []), ...page.games]);
       setMore(page.more);
     } catch (e) {
       setError(e instanceof Error ? e.message : 'Couldn’t load games');
     }
     setLoadingMore(false);
-  }, [athleteId, past]);
+  }, [athleteId, past, teamId]);
 
   return { next, past, more, loadingMore, error, reload, loadMore };
 }
