@@ -682,7 +682,9 @@ Nothing is deleted when a season is archived.
 - **Ballot**: **One vote**, **3-2-1 votes** or **5-4-3-2-1 votes**.
 - **When people vote** (awards with a winner for each group): **Once, before it closes**, or
   **After every match**, using the PlayHQ fixtures. Match votes stay open for a set time after
-  each match starts.
+  each match starts. Match votes only open for the squads and teams the PlayHQ games are linked
+  to under **Fixtures**, so the form shows how many games each chosen squad or team has, and warns
+  you when it has none. The award's page shows each one's next match.
 - **Preseason share of the result** (match awards): voters also get one preseason ballot. With
   25%, the result is 25% each nominee's share of the preseason points and 75% their share of the
   match points.

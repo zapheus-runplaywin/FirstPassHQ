@@ -76,9 +76,26 @@ export default function EditAwardScreen() {
   // No longer offered in the form; kept as it was on older awards.
   const [annual, setAnnual] = useState(false);
   const [candidates, setCandidates] = useState('');
+  // PlayHQ games linked to each squad or team, for match awards.
+  const [games, setGames] = useState<Record<string, number>>({});
   const [saving, setSaving] = useState(false);
   const [deleting, setDeleting] = useState(false);
   const [error, setError] = useState<string | null>(null);
+
+  useEffect(() => {
+    (async () => {
+      const { data } = await supabase
+        .from('fixtures')
+        .select('team_id')
+        .not('team_id', 'is', null)
+        .not('opponent', 'is', null);
+      const counts: Record<string, number> = {};
+      for (const f of (data as { team_id: string }[] | null) ?? []) {
+        counts[f.team_id] = (counts[f.team_id] ?? 0) + 1;
+      }
+      setGames(counts);
+    })();
+  }, []);
 
   // Past awards to start a new one from.
   useEffect(() => {
@@ -385,8 +402,21 @@ export default function EditAwardScreen() {
             onToggle={setHours}
           />
           <ThemedText type="small" themeColor="textSecondary">
-            Votes open when the match starts. Matches come from the PlayHQ fixtures.
+            Votes open when the match starts. Matches come from the PlayHQ fixtures linked to each
+            squad or team under Fixtures.
           </ThemedText>
+          {seasonGroups
+            .filter((t) => groupIds.includes(t.id))
+            .map((t) => (
+              <ThemedText
+                key={t.id}
+                type="small"
+                themeColor={games[t.id] ? 'textSecondary' : 'accent'}>
+                {games[t.id]
+                  ? `${teamLabel(t, teams)}: ${games[t.id]} ${games[t.id] === 1 ? 'game' : 'games'} from PlayHQ.`
+                  : `${teamLabel(t, teams)}: no PlayHQ games are linked, so no match votes will open. Link it under Fixtures, or choose the ${t.kind === 'squad' ? 'team' : 'squad'} its games are linked to.`}
+              </ThemedText>
+            ))}
           {!locked ? (
             <ChipGroup
               label="Preseason share of the result"
