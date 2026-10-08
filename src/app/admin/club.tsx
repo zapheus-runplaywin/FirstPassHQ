@@ -330,8 +330,8 @@ export default function ClubSettingsScreen() {
           <View style={styles.featureText}>
             <ThemedText type="smallBold">Physios get club messages</ThemedText>
             <ThemedText type="small" themeColor="textSecondary">
-              Messages sent to everyone in the club also go to physios. They never get messages
-              sent to a role, squad or team.
+              Physios always get messages sent to Physios. Turn this on to also send them
+              messages sent to everyone in the club.
             </ThemedText>
           </View>
           <Switch

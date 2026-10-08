@@ -43,25 +43,13 @@ export function useMessageGroups(teams: Team[]) {
 }
 
 /**
- * Guests never get messages. Physios get messages to the whole club only when
- * an admin turns that on. The database applies the same rules.
+ * Guests never get messages. Physios always get messages sent to the Physio
+ * role, and messages to the whole club when an admin turns that on. The
+ * database applies the same rules.
  */
 export function useGetsMessages() {
   const { profile } = useAuth();
-  const [physiosGetClubMessages, setPhysiosGetClubMessages] = useState(false);
-  const isPhysio = profile?.status === 'approved' && profile.role === 'physio';
-
-  useFocusEffect(
-    useCallback(() => {
-      if (!isPhysio) return;
-      supabase
-        .rpc('physios_get_club_messages')
-        .then(({ data }) => setPhysiosGetClubMessages(data === true));
-    }, [isPhysio]),
-  );
-
-  if (profile?.status !== 'approved' || profile.role === 'guest') return false;
-  return !isPhysio || physiosGetClubMessages;
+  return profile?.status === 'approved' && profile.role !== 'guest';
 }
 
 /** Admins, the committee, coaches and managers can send messages. */
