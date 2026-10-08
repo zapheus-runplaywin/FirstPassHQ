@@ -22,7 +22,6 @@ const messageableRoles: AppRole[] = [
   'coach',
   'manager',
   'committee',
-  'partner',
   'admin',
 ];
 

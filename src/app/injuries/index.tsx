@@ -70,8 +70,8 @@ export default function InjuriesScreen() {
       <Section title="Injured athletes" injuries={others} showAthlete />
 
       <ThemedText type="small" themeColor="textSecondary">
-        Injury records are private. Only the athlete, their guardians, their coaches and the
-        committee can see them.
+        Injury records are private. Only the athlete, their guardians, their coaches, physios
+        and the committee can see them.
       </ThemedText>
     </Screen>
   );

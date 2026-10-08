@@ -16,7 +16,17 @@ fi
 
 # JSON, because the plain-text list goes to stderr and its format changes
 # between environments (in GitHub Actions stdout only said "Finished").
-supabase db push --dry-run --output-format json "$@" > dry-run.json
+#
+# --include-all: two pull requests can merge in the opposite order to their
+# migration versions (PR #44's 20261008020000 merged after PR #43's
+# 20261008030000). Without it the CLI refuses to apply the older one, and the
+# deploy stops with no message.
+if ! supabase db push --dry-run --include-all --output-format json "$@" > dry-run.json; then
+  # The CLI writes its error into the JSON output, so show it.
+  cat dry-run.json
+  echo "::error::The dry run failed. Nothing was applied."
+  exit 1
+fi
 cat dry-run.json
 pending=$(python3 -c '
 import json, sys
@@ -53,4 +63,4 @@ if [ "${ALLOW_DATA_LOSS:-false}" != "true" ]; then
   fi
 fi
 
-supabase db push --yes "$@"
+supabase db push --include-all --yes "$@"

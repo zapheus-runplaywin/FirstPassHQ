@@ -12,11 +12,16 @@ export const MESSAGE_COLUMNS =
 /** Who a message went to, such as "Everyone in the club" or "Open Squad". */
 export function audienceLabel(
   audience: MessageAudience,
-  role: AppRole | null,
+  role: AppRole | 'partner' | null,
   label: string | null,
 ) {
   if (audience === 'club') return 'Everyone in the club';
-  if (audience === 'role') return role ? `All ${pluralRoleLabels[role].toLowerCase()}` : 'A role';
+  if (audience === 'role') {
+    if (!role) return 'A role';
+    // Sent before the Partner role was removed.
+    if (role === 'partner') return 'All partners';
+    return `All ${pluralRoleLabels[role].toLowerCase()}`;
+  }
   return label ?? 'A squad or team';
 }
 
@@ -35,6 +40,28 @@ export function useMessageGroups(teams: Team[]) {
   );
   // `teams` leaves out past seasons, which can't be messaged.
   return teams.filter((t) => ledIds.has(t.id));
+}
+
+/**
+ * Guests never get messages. Physios get messages to the whole club only when
+ * an admin turns that on. The database applies the same rules.
+ */
+export function useGetsMessages() {
+  const { profile } = useAuth();
+  const [physiosGetClubMessages, setPhysiosGetClubMessages] = useState(false);
+  const isPhysio = profile?.status === 'approved' && profile.role === 'physio';
+
+  useFocusEffect(
+    useCallback(() => {
+      if (!isPhysio) return;
+      supabase
+        .rpc('physios_get_club_messages')
+        .then(({ data }) => setPhysiosGetClubMessages(data === true));
+    }, [isPhysio]),
+  );
+
+  if (profile?.status !== 'approved' || profile.role === 'guest') return false;
+  return !isPhysio || physiosGetClubMessages;
 }
 
 /** Admins, the committee, coaches and managers can send messages. */

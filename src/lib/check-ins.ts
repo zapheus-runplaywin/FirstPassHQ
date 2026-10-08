@@ -74,13 +74,13 @@ export function useIsCheckInCoach() {
   return memberships.some((m) => m.team_role === 'coach');
 }
 
-/** The committee and admins see squad and team averages, never individuals. */
+/** The committee, physios and admins see squad and team averages, never individuals. */
 export function useCanSeeCheckInOverview() {
   const { profile } = useAuth();
-  return profile?.status === 'approved' && ['committee', 'admin'].includes(profile.role);
+  return profile?.status === 'approved' && ['committee', 'physio', 'admin'].includes(profile.role);
 }
 
-/** Coaches, the committee and admins have a check-ins screen. */
+/** Coaches, the committee, physios and admins have a check-ins screen. */
 export function useCanSeeCheckIns() {
   const isCoach = useIsCheckInCoach();
   const canSeeOverview = useCanSeeCheckInOverview();

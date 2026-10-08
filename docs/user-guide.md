@@ -18,7 +18,7 @@ Each role starts on a new page when the viewer supports page breaks.
 6. [Coaches](#6-coaches)
 7. [Managers](#7-managers)
 8. [Committee](#8-committee)
-9. [Partners and guests](#9-partners-and-guests)
+9. [Physios and guests](#9-physios-and-guests)
 10. [Admins](#10-admins)
 11. [Who can see what](#11-who-can-see-what)
 12. [Keeping this guide up to date](#12-keeping-this-guide-up-to-date)
@@ -35,8 +35,8 @@ one or more **squads** or **teams** for the current season.
 | **Coach**     | Head coaches and assistant coaches. Both have the same permissions; the title only shows who is who. Need a current Working With Children Check. |
 | **Manager**   | Squad and team managers. Need a current Working With Children Check.                                 |
 | **Committee** | Club committee members.                                                                              |
-| **Partner**   | Club partners and sponsors.                                                                          |
-| **Guest**     | Anyone else the club lets in.                                                                        |
+| **Physio**    | The club's physiotherapists. Need a current Working With Children Check.                             |
+| **Guest**     | Anyone else the club lets in, such as partners and sponsors. Guests can only look.                   |
 | **Admin**     | The people who run the app. Admin is granted by another admin, never requested.                      |
 
 **Squads and teams.** Each season, members join a **squad** (Mixed Open Squad, Open Squad,
@@ -46,22 +46,22 @@ in their squad as well.
 
 What each role sees on its home screen:
 
-| Feature                                | Athlete |    Guardian     |    Coach     |  Manager   |   Committee   | Partner / Guest |     Admin     |
-| -------------------------------------- | :-----: | :-------------: | :----------: | :--------: | :-----------: | :-------------: | :-----------: |
-| To-do list, calendar, squads and teams |    ✓    |        ✓        |      ✓       |     ✓      |       ✓       |        ✓        |       ✓       |
-| Read messages                          |    ✓    |        ✓        |      ✓       |     ✓      |       ✓       |        ✓        |       ✓       |
-| Send messages                          |         |                 |  Own groups  | Own groups |  Whole club   |                 |    Anyone     |
-| Daily check-in                         |    ✓    |                 |              |            |               |                 |               |
-| Check-ins of others                    |         |                 | Own athletes |            | Averages only |                 | Averages only |
-| Report an injury                       |   Own   | Their athlete's |              |            |               |                 |               |
-| See injuries                           |   Own   | Their athlete's | Own athletes |            |      All      |                 |      All      |
-| Sign off injury clearances             |         |                 |   Endorse    |            |    Accept     |                 |    Accept     |
-| Take attendance                        |         |                 |      ✓       |     ✓      |       ✓       |                 |       ✓       |
-| See athletes' attendance history       |         |                 |      ✓       |            |       ✓       |                 |       ✓       |
-| Vote in club awards                    |    ✓    |        ✓        |      ✓       |     ✓      |       ✓       |        ✓        |       ✓       |
-| Set up awards and see results          |         |                 |              |            |               |                 |       ✓       |
-| Import fixtures from PlayHQ            |         |                 |              |            |               |                 |       ✓       |
-| Administration                         |         |                 |              |            |               |                 |       ✓       |
+| Feature                                | Athlete |     Guardian    |    Coach     |  Manager   |   Committee   |     Physio    |  Guest  |     Admin     |
+| -------------------------------------- | :-----: | :-------------: | :----------: | :--------: | :-----------: | :-----------: | :-----: | :-----------: |
+| To-do list, calendar, squads and teams |    ✓    |        ✓        |      ✓       |     ✓      |       ✓       |       ✓       |    ✓    |       ✓       |
+| Read messages                          |    ✓    |        ✓        |      ✓       |     ✓      |       ✓       |               |         |       ✓       |
+| Send messages                          |         |                 |  Own groups  | Own groups |   Whole club  |               |         |     Anyone    |
+| Daily check-in                         |    ✓    |                 |              |            |               |               |         |               |
+| Check-ins of others                    |         |                 | Own athletes |            | Averages only | Averages only |         | Averages only |
+| Report an injury                       |   Own   | Their athlete's |              |            |               |               |         |               |
+| See injuries                           |   Own   | Their athlete's | Own athletes |            |      All      |      All      |         |      All      |
+| Sign off injury clearances             |         |                 |   Endorse    |            |     Accept    |    Endorse    |         |     Accept    |
+| Take attendance                        |         |                 |      ✓       |     ✓      |       ✓       |               |         |       ✓       |
+| See athletes' attendance history       |         |                 |      ✓       |            |       ✓       |               |         |       ✓       |
+| Vote in club awards                    |    ✓    |        ✓        |      ✓       |     ✓      |       ✓       |               |         |       ✓       |
+| Set up awards and see results          |         |                 |              |            |               |               |         |       ✓       |
+| Import fixtures from PlayHQ            |         |                 |              |            |               |               |         |       ✓       |
+| Administration                         |         |                 |              |            |               |               |         |       ✓       |
 
 "Own groups" and "own athletes" mean the squads and teams you're listed in as a coach or manager.
 Club awards are voted on by the roles, squads and teams each award names, so not every award is
@@ -151,6 +151,8 @@ sender can see that you've read it.
 Who a message went to is shown under the sender's name, for example "To Mixed Open Squad" or
 "To Everyone in the club".
 
+Physios and guests don't get messages.
+
 <img src="user-guide/inbox.png" width="210" alt="Messages inbox">
 
 ### Calendar
@@ -188,7 +190,7 @@ Head Coach, Assistant Coach, Manager, Athlete, Touring athlete or Training partn
 
 When the club runs an award vote that includes you, it appears in your to-do list and on the
 **Awards** card. Who can vote depends on the award: for example, every member votes for Volunteer
-of the year, and athletes vote for their own team's Players' player.
+of the year, and athletes vote for their own team's Players' player. Physios and guests don't vote.
 
 1. Tap the vote. It shows the award, what to think about, and when voting closes.
 2. Tap who you're voting for. For a 3-2-1 vote, tap three people in order: first place gets 3
@@ -278,9 +280,9 @@ letter from your physio or doctor. Proof is required.
 
 Two people then sign off, in order:
 
-1. **One of your coaches endorses it** (status "Waiting for a coach").
+1. **One of your coaches or a club physio endorses it** (status "Waiting for a coach or physio").
 2. **A committee member accepts it** (status "Waiting for the committee"). It must be someone other
-   than the coach who endorsed it.
+   than the person who endorsed it.
 
 When it's accepted, the injury shows **Cleared to play**. If either of them sends it back, you'll
 see their note in the history; fix what they ask and ask for clearance again.
@@ -463,14 +465,14 @@ their guardians and their coaches.
 
 ### Accepting clearances
 
-The committee sees every athlete's injuries. When a coach endorses a clearance, it appears under
-**Waiting for your sign-off** and in the to-do list of every committee member except the coach who
-endorsed it. Open it, check the proof, then:
+The committee sees every athlete's injuries. When a coach or physio endorses a clearance, it
+appears under **Waiting for your sign-off** and in the to-do list of every committee member except
+the person who endorsed it. Open it, check the proof, then:
 
 - **Accept clearance** clears the athlete to train and play, or
 - **Send back** with a note.
 
-The committee can also send back a request that no coach has looked at yet. Tap **View or share**
+The committee can also send back a request that no coach or physio has looked at yet. Tap **View or share**
 on a document to save it to OneDrive or attach it to an email.
 
 <img src="user-guide/injuries-committee.png" width="210" alt="Committee injuries list">
@@ -489,12 +491,30 @@ Calendars an admin shares with the **Committee** appear only for committee membe
 
 <div style="page-break-before: always"></div>
 
-## 9. Partners and guests
+## 9. Physios and guests
 
-Partners and guests see the club calendar and receive messages sent to everyone in the club.
-Partners also receive messages an admin sends to all partners.
+Physios and guests see the squads and teams and the club calendar. They don't get messages or vote
+in club awards, so their home screen has no **Messages** or **Awards** card.
 
-<img src="user-guide/partner-home.png" width="210" alt="Partner home screen">
+### Physios
+
+Physios need a current Working With Children Check, recorded by an admin, before they're approved.
+
+- **Check-ins** shows the same squad, team and club averages the committee sees (see
+  [Check-in averages](#check-in-averages)). Physios never see an individual athlete's answers.
+- **Injuries** lists every current athlete's injuries, restrictions and proof documents. When an
+  athlete asks for clearance, it appears under **Waiting for your sign-off** and in the physio's
+  to-do list. Open it, check the proof, then **Endorse clearance** to pass it to the committee, or
+  **Send back** with a note. A committee member other than the physio then accepts it.
+
+<img src="user-guide/physio-home.png" width="210" alt="Physio home screen">
+
+### Guests
+
+Guests, such as the club's partners and sponsors, can only look: squads and teams, and the club
+calendar.
+
+<img src="user-guide/guest-home.png" width="210" alt="Guest home screen">
 
 <div style="page-break-before: always"></div>
 
@@ -526,14 +546,14 @@ against PlayHQ, then:
    guardians** section: search for a guardian and tap to link them (tap ✕ to unlink). Only
    verified guardians can be linked; unverified ones show "(not verified)". Until you have a date of
    birth, choose **Under 18** or **18 or over** instead.
-4. For coaches and managers, enter their **Working With Children Check** card number and expiry
-   date.
+4. For coaches, managers and physios, enter their **Working With Children Check** card number and
+   expiry date.
 5. Tap **Approve**.
 
 The app won't approve or save:
 
 - an athlete under 18 without at least one verified guardian;
-- a coach or manager without a current Working With Children Check.
+- a coach, manager or physio without a current Working With Children Check.
 
 **Verifying someone.** Guardians must be verified before they can be linked to a child. If their
 PlayHQ email matches the registration, tap **Checked against PlayHQ**. Otherwise get the 6-digit code
@@ -615,8 +635,8 @@ Nothing is deleted when a season is archived.
   **One winner** or **A winner for each** squad or team. With a winner for each, members vote only
   in their own group.
 - **Roles that vote**. Athletes, coaches, managers and guardians vote in the squads and teams
-  they're in. Committee, admins and partners vote wherever they are. **Every member** opens it to
-  everyone.
+  they're in. Committee and admins vote wherever they are. **Every member** opens it to everyone
+  except physios and guests, who don't vote.
 - **Who can be voted for**: **Athletes** or **Coaches** in the voting groups, **Any member**, or
   **Names I list**, one per line, for people who aren't in the app, such as umpires.
 - **Ballot**: **One vote**, **3-2-1 votes** or **5-4-3-2-1 votes**.
@@ -700,10 +720,10 @@ once saved, only replaced or removed.
 | ----------------------- | --------------------------------------------------------------------------------------------------------------------------- |
 | Your profile and squads | You, the people in your squads and teams (names and positions only), and admins.                                            |
 | Date of birth and Working With Children Check | You and admins.                                                                                       |
-| Messages                | The people they were sent to, the sender, and admins. Guardians of athletes under 18 get a copy of every message sent to their athlete. |
+| Messages                | The people they were sent to, the sender, and admins. Guardians of athletes under 18 get a copy of every message sent to their athlete. Physios and guests don't get messages. |
 | Read receipts           | The sender and admins.                                                                                                      |
-| Daily check-in answers and notes | The athlete, their guardians and their coaches. The committee and admins see only group averages, hidden below 3 check-ins. |
-| Injuries and documents  | The athlete, their guardians, their coaches, the committee and admins. Managers don't see injuries.                         |
+| Daily check-in answers and notes | The athlete, their guardians and their coaches. The committee, physios and admins see only group averages, hidden below 3 check-ins. |
+| Injuries and documents  | The athlete, their guardians, their coaches, physios, the committee and admins. Managers don't see injuries.                |
 | Attendance records      | Coaches, the committee and admins. Managers see their own groups' sessions. Athletes and guardians don't see attendance.    |
 | Committee calendar      | Committee members and admins.                                                                                               |
 | Award votes             | Only the voter sees their own ballot. Nobody, admins included, can see who someone voted for.                               |

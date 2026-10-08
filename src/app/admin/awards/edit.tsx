@@ -85,7 +85,8 @@ export default function EditAwardScreen() {
         setClubWide(award.club_wide);
         setPerGroup(award.per_group);
         setGroupIds(award.award_groups.map((g) => g.team_id));
-        setRoles(award.voter_roles);
+        // Older awards can list partners, a role that no longer exists.
+        setRoles(award.voter_roles.filter((r) => voterRoleOptions.some((o) => o.value === r)));
         setNominees(award.nominees);
         setPoints(award.points.join(','));
         setByMatch(award.by_match);
@@ -262,7 +263,7 @@ export default function EditAwardScreen() {
           />
           <ThemedText type="small" themeColor="textSecondary">
             Athletes, coaches, managers and guardians vote in the squads and teams they’re in.
-            Committee, admins and partners vote wherever they are.
+            Committee and admins vote wherever they are.
           </ThemedText>
 
           <ChipGroup
