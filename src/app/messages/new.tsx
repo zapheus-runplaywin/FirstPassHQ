@@ -27,10 +27,14 @@ const messageableRoles: AppRole[] = [
 ];
 
 export default function NewMessageScreen() {
-  const { isAdmin } = useAuth();
+  const { isAdmin, profile } = useAuth();
   const teams = useTeams();
   const groups = useMessageGroups(teams);
-  const [audience, setAudience] = useState<MessageAudience>(isAdmin ? 'club' : 'group');
+  // The committee can message the whole club, and any groups they coach or manage.
+  const isCommittee = !isAdmin && profile?.role === 'committee';
+  const [audience, setAudience] = useState<MessageAudience>(
+    isAdmin || isCommittee ? 'club' : 'group',
+  );
   const [role, setRole] = useState<AppRole | null>(null);
   const [teamId, setTeamId] = useState<string | null>(null);
   const [body, setBody] = useState('');
@@ -85,6 +89,23 @@ export default function NewMessageScreen() {
             setError(null);
           }}
         />
+      ) : isCommittee && groups.length > 0 ? (
+        <ChipGroup
+          label="Send to"
+          options={[
+            { value: 'club', label: 'Everyone' },
+            { value: 'group', label: 'A squad or team' },
+          ]}
+          selected={[audience]}
+          onToggle={(value) => {
+            setAudience(value);
+            setError(null);
+          }}
+        />
+      ) : isCommittee ? (
+        <ThemedText type="small" themeColor="textSecondary">
+          This goes to everyone in the club.
+        </ThemedText>
       ) : null}
 
       {audience === 'role' ? (
