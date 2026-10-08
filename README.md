@@ -6,7 +6,8 @@ and adds them to a team, and the home screen shows their team.
 Built with [Expo](https://expo.dev) (React Native) and [Supabase](https://supabase.com) on the
 free tier.
 
-For how to use the app, role by role, see the [user guide](docs/user-guide.md).
+For how to use the app, role by role, see the [user guide](docs/user-guide.md). To run the app
+for another club, see [Setting the app up for another club](docs/new-club-setup.md).
 
 ## What's here
 
@@ -53,16 +54,16 @@ The first admin has to be set by hand. Sign in to the app once, then run this in
 with your sign-in email. After that you can approve everyone else, including other admins, from
 **Members** on the home screen.
 
+```sql
+update public.profiles set role = 'admin', status = 'approved'
+where email = 'you@example.com';
+```
+
 ### 5. Add the club calendar
 
 In Outlook, publish the club calendar (Settings > Calendar > Shared calendars > Publish a
 calendar) and copy the ICS link. In the app, open **Calendars** from the home screen, paste it
 in and choose **Everyone**. Team calendars work the same way: pick the team instead.
-
-```sql
-update public.profiles set role = 'admin', status = 'approved'
-where email = 'you@example.com';
-```
 
 ## Run it
 

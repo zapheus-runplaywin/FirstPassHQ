@@ -15,6 +15,7 @@ import { scheduleOnRN } from 'react-native-worklets';
 import { useEffect } from 'react';
 
 import { useTheme } from '@/hooks/use-theme';
+import { useClub } from '@/lib/club';
 
 /** Matches `imageWidth` for the splash screen in app.json, so the hand-off is seamless. */
 export const LOGO_SIZE = 240;
@@ -25,6 +26,7 @@ export const LOGO_SIZE = 240;
  */
 export function BrandIntro({ onDone }: { onDone: () => void }) {
   const theme = useTheme();
+  const club = useClub();
   const reduceMotion = useReducedMotion();
   const scale = useSharedValue(1);
   const opacity = useSharedValue(1);
@@ -65,10 +67,10 @@ export function BrandIntro({ onDone }: { onDone: () => void }) {
     >
       <Animated.View style={logoStyle}>
         <Image
-          source={require('@/assets/images/logo.png')}
+          source={club.logo}
           style={styles.logo}
           contentFit="contain"
-          accessibilityLabel="West Coast Thunder"
+          accessibilityLabel={club.name}
         />
       </Animated.View>
     </Animated.View>

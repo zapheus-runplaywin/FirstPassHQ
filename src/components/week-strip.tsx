@@ -1,7 +1,8 @@
 import { Pressable, StyleSheet, View } from 'react-native';
 
 import { ThemedText } from '@/components/themed-text';
-import { Colors, Spacing } from '@/constants/theme';
+import { Spacing, type Palette } from '@/constants/theme';
+import { useTheme, useThemedStyles } from '@/hooks/use-theme';
 import { addDays, dayKey, formatWeekday, isToday } from '@/lib/format';
 
 /**
@@ -23,6 +24,7 @@ export function WeekStrip({
   onSelect: (date: Date) => void;
   onChangeWeek: (weekStart: Date) => void;
 }) {
+  const styles = useThemedStyles(makeStyles);
   const days = Array.from({ length: 7 }, (_, i) => addDays(weekStart, i));
   return (
     <View style={styles.strip}>
@@ -67,6 +69,8 @@ export function WeekStrip({
 
 /** Up to three dots, one per calendar colour with events that day. */
 export function DayDots({ colors = [], selected }: { colors?: string[]; selected: boolean }) {
+  const styles = useThemedStyles(makeStyles);
+  const theme = useTheme();
   return (
     <View style={styles.dots}>
       {colors.length === 0 ? (
@@ -77,7 +81,7 @@ export function DayDots({ colors = [], selected }: { colors?: string[]; selected
           .map((color) => (
             <View
               key={color}
-              style={[styles.dot, { backgroundColor: selected ? Colors.onAccent : color }]}
+              style={[styles.dot, { backgroundColor: selected ? theme.onAccent : color }]}
             />
           ))
       )}
@@ -94,6 +98,7 @@ export function Arrow({
   symbol: string;
   onPress: () => void;
 }) {
+  const styles = useThemedStyles(makeStyles);
   return (
     <Pressable
       accessibilityRole="button"
@@ -106,7 +111,8 @@ export function Arrow({
   );
 }
 
-const styles = StyleSheet.create({
+const makeStyles = (colors: Palette) =>
+  StyleSheet.create({
   strip: {
     flexDirection: 'row',
     alignItems: 'center',
@@ -120,18 +126,18 @@ const styles = StyleSheet.create({
     gap: Spacing.half,
   },
   daySelected: {
-    backgroundColor: Colors.accent,
+    backgroundColor: colors.accent,
   },
   dayToday: {
     borderWidth: 1,
-    borderColor: Colors.accent,
+    borderColor: colors.accent,
   },
   weekday: {
     fontSize: 12,
     textTransform: 'uppercase',
   },
   onAccent: {
-    color: Colors.onAccent,
+    color: colors.onAccent,
   },
   dots: {
     flexDirection: 'row',
@@ -146,7 +152,7 @@ const styles = StyleSheet.create({
     paddingHorizontal: Spacing.one,
   },
   arrowText: {
-    color: Colors.tint,
+    color: colors.tint,
     fontSize: 28,
     lineHeight: 32,
   },

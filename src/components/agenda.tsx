@@ -3,7 +3,8 @@ import type { ReactElement } from 'react';
 import { Pressable, StyleSheet, View, type LayoutChangeEvent } from 'react-native';
 
 import { ThemedText } from '@/components/themed-text';
-import { Colors, Spacing } from '@/constants/theme';
+import { Spacing, type Palette } from '@/constants/theme';
+import { useThemedStyles } from '@/hooks/use-theme';
 import type { CalendarEvent } from '@/lib/calendar';
 import {
   dayKey,
@@ -52,6 +53,7 @@ export function agendaRows(
 }
 
 function MonthHeading({ date }: { date: Date }) {
+  const styles = useThemedStyles(makeStyles);
   return (
     <View style={styles.monthHeading}>
       <ThemedText type="smallBold" style={styles.monthText}>
@@ -70,6 +72,7 @@ export function AgendaRow({
   showDate: boolean;
   onLayout?: (event: LayoutChangeEvent) => void;
 }) {
+  const styles = useThemedStyles(makeStyles);
   const today = isToday(event.start);
   const details = [formatEventTime(event), event.location].filter(Boolean).join(' · ');
   return (
@@ -119,13 +122,14 @@ export function AgendaRow({
   );
 }
 
-const styles = StyleSheet.create({
+const makeStyles = (colors: Palette) =>
+  StyleSheet.create({
   monthHeading: {
-    backgroundColor: Colors.background,
+    backgroundColor: colors.background,
     paddingVertical: Spacing.two,
   },
   monthText: {
-    color: Colors.tint,
+    color: colors.tint,
     fontSize: 16,
     textTransform: 'uppercase',
     letterSpacing: 1,
@@ -145,27 +149,27 @@ const styles = StyleSheet.create({
     paddingVertical: Spacing.one,
   },
   dateToday: {
-    backgroundColor: Colors.accent,
+    backgroundColor: colors.accent,
   },
   weekday: {
     textTransform: 'uppercase',
     fontSize: 12,
   },
   dayNumber: {
-    color: Colors.tint,
+    color: colors.tint,
     fontSize: 26,
     lineHeight: 30,
     fontWeight: 700,
   },
   onAccent: {
-    color: Colors.onAccent,
+    color: colors.onAccent,
   },
   card: {
     flex: 1,
     flexDirection: 'row',
     borderRadius: 12,
     overflow: 'hidden',
-    backgroundColor: Colors.backgroundElement,
+    backgroundColor: colors.backgroundElement,
   },
   stripe: {
     width: 4,

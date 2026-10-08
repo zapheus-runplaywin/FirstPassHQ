@@ -4,10 +4,12 @@ import { useState } from 'react';
 import { Screen } from '@/components/screen';
 import { ThemedText } from '@/components/themed-text';
 import { PressableCard } from '@/components/ui';
+import { useClub } from '@/lib/club';
 import { pendingRequestsLabel, usePendingRequests } from '@/lib/use-pending-requests';
 
 export default function AdministrationScreen() {
   const { pendingCount, reloadPending } = usePendingRequests();
+  const { features } = useClub();
   const [refreshing, setRefreshing] = useState(false);
 
   async function onRefresh() {
@@ -25,6 +27,13 @@ export default function AdministrationScreen() {
         </ThemedText>
       </PressableCard>
 
+      <PressableCard onPress={() => router.push('/admin/club')}>
+        <ThemedText type="smallBold">Club settings</ThemedText>
+        <ThemedText type="small" themeColor="textSecondary">
+          Club name, colours, logo and which features are on
+        </ThemedText>
+      </PressableCard>
+
       <PressableCard onPress={() => router.push('/admin/squads')}>
         <ThemedText type="smallBold">Squads and teams</ThemedText>
         <ThemedText type="small" themeColor="textSecondary">
@@ -39,33 +48,41 @@ export default function AdministrationScreen() {
         </ThemedText>
       </PressableCard>
 
-      <PressableCard onPress={() => router.push('/admin/awards')}>
-        <ThemedText type="smallBold">Awards</ThemedText>
-        <ThemedText type="small" themeColor="textSecondary">
-          Create award votes, see results and copy annual awards
-        </ThemedText>
-      </PressableCard>
+      {features.awards ? (
+        <PressableCard onPress={() => router.push('/admin/awards')}>
+          <ThemedText type="smallBold">Awards</ThemedText>
+          <ThemedText type="small" themeColor="textSecondary">
+            Create award votes, see results and copy annual awards
+          </ThemedText>
+        </PressableCard>
+      ) : null}
 
-      <PressableCard onPress={() => router.push('/admin/fixtures')}>
-        <ThemedText type="smallBold">Fixtures</ThemedText>
-        <ThemedText type="small" themeColor="textSecondary">
-          Import match fixtures from PlayHQ
-        </ThemedText>
-      </PressableCard>
+      {features.calendar || features.awards ? (
+        <PressableCard onPress={() => router.push('/admin/fixtures')}>
+          <ThemedText type="smallBold">Fixtures</ThemedText>
+          <ThemedText type="small" themeColor="textSecondary">
+            Import match fixtures from PlayHQ
+          </ThemedText>
+        </PressableCard>
+      ) : null}
 
-      <PressableCard onPress={() => router.push('/admin/calendars')}>
-        <ThemedText type="smallBold">Calendars</ThemedText>
-        <ThemedText type="small" themeColor="textSecondary">
-          Add the club calendar and team calendars
-        </ThemedText>
-      </PressableCard>
+      {features.calendar ? (
+        <PressableCard onPress={() => router.push('/admin/calendars')}>
+          <ThemedText type="smallBold">Calendars</ThemedText>
+          <ThemedText type="small" themeColor="textSecondary">
+            Add the club calendar and team calendars
+          </ThemedText>
+        </PressableCard>
+      ) : null}
 
-      <PressableCard onPress={() => router.push('/admin/injuries')}>
-        <ThemedText type="smallBold">Injury report</ThemedText>
-        <ThemedText type="small" themeColor="textSecondary">
-          Injuries and their status, with a CSV export
-        </ThemedText>
-      </PressableCard>
+      {features.injuries ? (
+        <PressableCard onPress={() => router.push('/admin/injuries')}>
+          <ThemedText type="smallBold">Injury report</ThemedText>
+          <ThemedText type="small" themeColor="textSecondary">
+            Injuries and their status, with a CSV export
+          </ThemedText>
+        </PressableCard>
+      ) : null}
 
       <PressableCard onPress={() => router.push('/admin/club-password')}>
         <ThemedText type="smallBold">Club password</ThemedText>

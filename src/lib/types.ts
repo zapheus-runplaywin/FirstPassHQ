@@ -31,7 +31,7 @@ export type Team = {
   kind: GroupKind;
   season: number;
   squad_id: string | null;
-  /** Squads only: when admins marked Selections Phase 2 complete. */
+  /** Squads only: when admins marked the squad phase complete. */
   selections_completed_at: string | null;
 };
 

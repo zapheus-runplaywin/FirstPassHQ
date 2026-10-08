@@ -61,11 +61,15 @@ What each role sees on its home screen:
 | Vote in club awards                    |    ✓    |        ✓        |      ✓       |     ✓      |       ✓       |        ✓        |       ✓       |
 | Set up awards and see results          |         |                 |              |            |               |                 |       ✓       |
 | Import fixtures from PlayHQ            |         |                 |              |            |               |                 |       ✓       |
+| Club name, colours, logo and features  |         |                 |              |            |               |                 |       ✓       |
 | Administration                         |         |                 |              |            |               |                 |       ✓       |
 
 "Own groups" and "own athletes" mean the squads and teams you're listed in as a coach or manager.
 Club awards are voted on by the roles, squads and teams each award names, so not every award is
 open to everyone.
+
+Admins can turn off Messages, Calendar, Daily check-ins, Injuries, Attendance and Awards for the
+whole club in **Club settings**. A feature that's off disappears for every role.
 
 <div style="page-break-before: always"></div>
 
@@ -326,7 +330,7 @@ squads and teams you're listed in as a coach.
 Coaches and managers need a current Working With Children Check, recorded by an admin, before
 they're approved.
 
-After an admin marks a squad's **Selections Phase 2** complete, coaches look after only the
+After an admin marks a squad's **squad phase complete**, coaches look after only the
 athletes in their named teams. Before that, they look after everyone in the squad.
 
 <img src="user-guide/coach-home.png" width="210" alt="Coach home screen with a clearance to review">
@@ -452,8 +456,8 @@ also coaches or manages a squad or team can choose **A squad or team** to messag
 
 ### Check-in averages
 
-**Check-ins** shows average scores for each squad, and for each team once its squad's Selections
-Phase 2 is complete, plus how many checked in and how many are flagged. **Trends** graphs the
+**Check-ins** shows average scores for each squad, and for each team once its squad phase is
+complete, plus how many checked in and how many are flagged. **Trends** graphs the
 averages for one group or the whole club. Scores only show once at least 3 athletes in a group
 have checked in, so they can't point to one person. Individual answers are only for the athlete,
 their guardians and their coaches.
@@ -575,13 +579,13 @@ Open any member to change their role, squads, teams or titles, then tap **Save c
 - **Rename** or **Remove** a squad or team. Removing it takes it off this season's lists, home
   screens and coaches' to-dos; its attendance and other records are kept and you can **Bring
   back** it later.
-- **Mark Selections Phase 2 complete** when a squad's teams are named. From then on, coaches only
+- **Mark squad phase complete** when a squad's teams are named. From then on, coaches only
   look after their own team's athletes, and clearances for athletes left only in the squad fall to
   admins. You can **Undo** it.
 
 <img src="user-guide/squads-and-teams.png" width="210" alt="Squads and teams">
 <img src="user-guide/name-team.png" width="210" alt="Naming a team from a squad">
-<img src="user-guide/selections-complete.png" width="210" alt="Marking Selections Phase 2 complete">
+<img src="user-guide/selections-complete.png" width="210" alt="Marking the squad phase complete">
 <img src="user-guide/remove-squad.png" width="210" alt="Removing a squad from this season">
 
 ### Seasons
@@ -682,6 +686,31 @@ to OneDrive or attach it to an email.
 
 <img src="user-guide/injury-report.png" width="210" alt="Injury report">
 
+### Club settings
+
+**Club settings** sets up the app for the club. Anything left empty uses the app's built-in
+defaults (West Coast Thunder's name, logo and yellow-on-black colours).
+
+- **Club name** is used in the app's wording and read out by screen readers for the logo. The **short name** (for example
+  "Thunder") finds the club's teams when importing PlayHQ fixtures and names exported files.
+- **Logo**: **Choose logo** to upload a square PNG or JPEG up to 2 MB. It shows on the home screen
+  and when the app opens. **Use the built-in logo** goes back to the original.
+- **Colours**: type a colour code such as `#FFCD00` for the **background**, **text** and **hero
+  colour** (buttons, links and highlights). Panels and softer text are worked out from these. The
+  preview shows how they look together and warns when text or buttons would be hard to read.
+  **Use the built-in colours** goes back to black, white and yellow.
+- **Features**: switch off any of Messages, Calendar, Daily check-ins, Injuries, Attendance and
+  Awards. A switched-off feature disappears from every member's home screen, to-do list and menus,
+  and its Administration pages are hidden. Nothing is deleted, so switching it back on brings
+  everything back.
+
+Tap **Save club settings**. Members see the changes the next time they open the app. The app's
+icon, its name under the icon and the splash screen are part of the app build and don't change
+here.
+
+<img src="user-guide/club-settings.png" width="210" alt="Club settings: name, logo and colours">
+<img src="user-guide/club-settings-features.png" width="210" alt="Club settings: turning features on and off">
+
 ### Club password
 
 **Club password** sets a password new members must enter to ask to join. It stops strangers who
@@ -707,6 +736,7 @@ once saved, only replaced or removed.
 | Award votes             | Only the voter sees their own ballot. Nobody, admins included, can see who someone voted for.                               |
 | Award results           | Admins only: standings and how many people have voted.                                                                      |
 | Match fixtures          | The members of each squad or team, and admins.                                                                              |
+| Club name, colours and logo | Every signed-in member. The logo file is public so it can show before sign-in. Only admins can change them.            |
 
 When someone leaves, injury records and proof documents are kept for 12 months, visible only to the
 committee and admins, then deleted automatically.

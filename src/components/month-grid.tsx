@@ -2,7 +2,8 @@ import { Pressable, StyleSheet, View } from 'react-native';
 
 import { ThemedText } from '@/components/themed-text';
 import { Arrow, DayDots } from '@/components/week-strip';
-import { Colors, Spacing } from '@/constants/theme';
+import { Spacing, type Palette } from '@/constants/theme';
+import { useThemedStyles } from '@/hooks/use-theme';
 import { addDays, dayKey, formatMonth, isToday, startOfWeek } from '@/lib/format';
 
 const WEEKDAYS = ['M', 'T', 'W', 'T', 'F', 'S', 'S'];
@@ -23,6 +24,7 @@ export function MonthGrid({
   onSelect: (date: Date) => void;
   onChangeMonth: (month: Date) => void;
 }) {
+  const styles = useThemedStyles(makeStyles);
   const first = new Date(month.getFullYear(), month.getMonth(), 1);
   const gridStart = startOfWeek(first);
   const weeks: Date[][] = [];
@@ -90,7 +92,8 @@ export function MonthGrid({
   );
 }
 
-const styles = StyleSheet.create({
+const makeStyles = (colors: Palette) =>
+  StyleSheet.create({
   grid: {
     gap: Spacing.one,
   },
@@ -121,16 +124,16 @@ const styles = StyleSheet.create({
     gap: Spacing.half,
   },
   cellSelected: {
-    backgroundColor: Colors.accent,
+    backgroundColor: colors.accent,
   },
   cellToday: {
     borderWidth: 1,
-    borderColor: Colors.accent,
+    borderColor: colors.accent,
   },
   outside: {
     opacity: 0.4,
   },
   onAccent: {
-    color: Colors.onAccent,
+    color: colors.onAccent,
   },
 });

@@ -15,12 +15,10 @@ import {
   type PlayhqCompetition,
   type PlayhqLink,
 } from '@/lib/playhq';
+import { useClub } from '@/lib/club';
 import { supabase } from '@/lib/supabase';
 import type { Fixture, PlayhqSeason } from '@/lib/types';
 import { seasonLabel, teamLabel, useTeams } from '@/lib/use-teams';
-
-/** Our teams usually have the club's name in them. */
-const CLUB_NAME = /thunder/i;
 
 /**
  * Admins add a PlayHQ competition by its link, say which of its teams are the
@@ -28,6 +26,8 @@ const CLUB_NAME = /thunder/i;
  */
 export default function FixturesScreen() {
   const theme = useTheme();
+  // Our teams usually have the club's short name in them.
+  const { shortName } = useClub();
   const teams = useTeams();
   const seasons = [...new Set(teams.map((t) => t.season))].sort((a, b) => b - a);
   const [saved, setSaved] = useState<PlayhqSeason[] | null>(null);
@@ -169,7 +169,7 @@ export default function FixturesScreen() {
     ? competition.teams.filter((t) =>
         search.trim()
           ? t.name.toLowerCase().includes(search.trim().toLowerCase())
-          : CLUB_NAME.test(t.name) || links[t.id],
+          : t.name.toLowerCase().includes(shortName.toLowerCase()) || links[t.id],
       )
     : [];
   const linkedCount = Object.values(links).filter(Boolean).length;
@@ -242,7 +242,7 @@ export default function FixturesScreen() {
             <ThemedText type="small" themeColor="textSecondary">
               {search.trim()
                 ? 'No teams match.'
-                : 'No team names have “Thunder” in them. Find our teams by name.'}
+                : `No team names have “${shortName}” in them. Find our teams by name.`}
             </ThemedText>
           ) : null}
           {shownTeams.map((t) => {

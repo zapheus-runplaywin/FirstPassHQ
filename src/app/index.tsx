@@ -8,11 +8,12 @@ import { Screen } from '@/components/screen';
 import { TodoList } from '@/components/todo-list';
 import { ThemedText } from '@/components/themed-text';
 import { Button, Card, PressableCard } from '@/components/ui';
-import { Colors, Spacing } from '@/constants/theme';
+import { Spacing } from '@/constants/theme';
 import { useTheme } from '@/hooks/use-theme';
 import { useAuth } from '@/lib/auth';
 import { useCanTakeAttendance, useCanViewAttendance } from '@/lib/attendance';
 import { useAwardSlots } from '@/lib/awards';
+import { useClub } from '@/lib/club';
 import {
   checkInOverviewLabel,
   checkInSummaryLabel,
@@ -43,6 +44,8 @@ const UPCOMING_COUNT = 6;
 export default function HomeScreen() {
   const theme = useTheme();
   const { session, profile, memberships, isAdmin, refresh, signOut } = useAuth();
+  const club = useClub();
+  const { features } = club;
   const [refreshing, setRefreshing] = useState(false);
   const [athletes, setAthletes] = useState<string[]>([]);
   const { events, reload: reloadEvents } = useEvents();
@@ -60,13 +63,14 @@ export default function HomeScreen() {
   const isCheckInCoach = useIsCheckInCoach();
   const { checkInOverview, reloadCheckInOverview } = useCheckInOverview(today());
   const { awardSlots, reloadAwardSlots } = useAwardSlots();
+  // Turned-off features add nothing to the to-do list.
   const todos = buildTodos({
     userId: session?.user.id,
-    injuries: openInjuries,
+    injuries: features.injuries ? openInjuries : [],
     pendingCount,
-    needsCheckIn: myCheckIn === null,
-    flaggedAthletes: checkInTotals(checkInSummary).flagged,
-    awardSlots,
+    needsCheckIn: features.checkIns && myCheckIn === null,
+    flaggedAthletes: features.checkIns ? checkInTotals(checkInSummary).flagged : 0,
+    awardSlots: features.awards ? awardSlots : [],
     safety: safetyTodos,
   });
 
@@ -120,10 +124,10 @@ export default function HomeScreen() {
           ) : null}
         </View>
         <Image
-          source={require('@/assets/images/logo.png')}
+          source={club.logo}
           style={styles.headerLogo}
           contentFit="contain"
-          accessibilityLabel="West Coast Thunder"
+          accessibilityLabel={club.name}
         />
       </View>
 
@@ -131,7 +135,7 @@ export default function HomeScreen() {
 
       {approved ? <TodoList todos={todos} /> : null}
 
-      {approved ? (
+      {approved && features.messages ? (
         <PressableCard onPress={() => router.push('/messages')}>
           <View style={styles.cardTitleRow}>
             <ThemedText type="smallBold">Messages</ThemedText>
@@ -151,7 +155,7 @@ export default function HomeScreen() {
         </PressableCard>
       ) : null}
 
-      {myCheckIn !== undefined ? (
+      {features.checkIns && myCheckIn !== undefined ? (
         <PressableCard onPress={() => router.push('/check-in')}>
           <ThemedText type="smallBold">Daily check-in</ThemedText>
           <ThemedText type="small" themeColor="textSecondary">
@@ -160,7 +164,7 @@ export default function HomeScreen() {
         </PressableCard>
       ) : null}
 
-      {canSeeCheckIns ? (
+      {features.checkIns && canSeeCheckIns ? (
         <PressableCard onPress={() => router.push('/check-ins')}>
           <ThemedText type="smallBold">Check-ins</ThemedText>
           <ThemedText type="small" themeColor="textSecondary">
@@ -171,7 +175,7 @@ export default function HomeScreen() {
         </PressableCard>
       ) : null}
 
-      {canSeeInjuries ? (
+      {features.injuries && canSeeInjuries ? (
         <PressableCard onPress={() => router.push('/injuries')}>
           <View style={styles.cardTitleRow}>
             <ThemedText type="smallBold">Injuries</ThemedText>
@@ -189,7 +193,7 @@ export default function HomeScreen() {
         </PressableCard>
       ) : null}
 
-      {canTakeAttendance || canViewAttendance ? (
+      {features.attendance && (canTakeAttendance || canViewAttendance) ? (
         <PressableCard onPress={() => router.push('/attendance')}>
           <ThemedText type="smallBold">Attendance</ThemedText>
           <ThemedText type="small" themeColor="textSecondary">
@@ -200,7 +204,7 @@ export default function HomeScreen() {
         </PressableCard>
       ) : null}
 
-      {approved && awardSlots.length > 0 ? (
+      {features.awards && approved && awardSlots.length > 0 ? (
         <PressableCard onPress={() => router.push('/awards')}>
           <ThemedText type="smallBold">Awards</ThemedText>
           <ThemedText type="small" themeColor="textSecondary">
@@ -218,7 +222,7 @@ export default function HomeScreen() {
         </PressableCard>
       ) : null}
 
-      {approved ? (
+      {approved && features.calendar ? (
         <View style={styles.section}>
           <View style={styles.sectionHeader}>
             <ThemedText type="smallBold">Coming up</ThemedText>
@@ -369,6 +373,7 @@ function JoinStatus() {
 
 /** The member's 6-digit code, which an admin enters to confirm who they are. */
 function VerificationCode() {
+  const theme = useTheme();
   const [code, setCode] = useState<string | null>(null);
 
   useEffect(() => {
@@ -381,7 +386,7 @@ function VerificationCode() {
       <ThemedText type="small" themeColor="textSecondary">
         Your code
       </ThemedText>
-      <ThemedText type="title" style={styles.codeDigits} selectable>
+      <ThemedText type="title" style={[styles.codeDigits, { color: theme.accent }]} selectable>
         {code.slice(0, 3)} {code.slice(3)}
       </ThemedText>
     </View>
@@ -395,7 +400,6 @@ const styles = StyleSheet.create({
     paddingVertical: Spacing.two,
   },
   codeDigits: {
-    color: Colors.accent,
     letterSpacing: 4,
     fontVariant: ['tabular-nums'],
   },

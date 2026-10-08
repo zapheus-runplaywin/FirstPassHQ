@@ -92,8 +92,7 @@ export default function SquadsScreen() {
       <ThemedText type="small" themeColor="textSecondary">
         New members are added to a squad. At selections, name the teams here and pick touring
         athletes and training partners from the squad. Everyone stays in their squad. Once the teams
-        are named, mark the squad’s Selections Phase 2 complete so coaches only look after their
-        team’s athletes.
+        are named, mark the squad phase complete so coaches only look after their team’s athletes.
       </ThemedText>
 
       {squads.map((squad) => (
@@ -164,7 +163,7 @@ export default function SquadsScreen() {
 }
 
 /**
- * Selections Phase 2 for one squad. Once it's complete, the squad no longer
+ * The squad phase for one squad. Once it's complete, the squad no longer
  * gives its coaches to-dos: they look after the athletes in their teams.
  */
 function SelectionsPhase({
@@ -201,7 +200,7 @@ function SelectionsPhase({
   if (confirming) {
     return (
       <Card style={styles.team}>
-        <ThemedText type="smallBold">Complete Selections Phase 2 for {squad.name}?</ThemedText>
+        <ThemedText type="smallBold">Mark the squad phase complete for {squad.name}?</ThemedText>
         <ThemedText type="small">
           Coaches will only look after the touring athletes and training partners in their teams.
           Athletes left in the squad but not in a team won’t appear on coaches’ to-dos or check-in
@@ -222,10 +221,10 @@ function SelectionsPhase({
     <View style={[styles.team, styles.phase]}>
       <ThemedText type="small" themeColor="textSecondary">
         {completedAt
-          ? `Selections Phase 2 complete since ${formatDay(new Date(completedAt))}. Coaches look after their team’s athletes.`
+          ? `Squad phase complete since ${formatDay(new Date(completedAt))}. Coaches look after their team’s athletes.`
           : hasTeams
-            ? 'Selections Phase 2 in progress. Coaches look after everyone in the squad.'
-            : 'Name the teams from this squad to finish Selections Phase 2.'}
+            ? 'Squad phase in progress. Coaches look after everyone in the squad.'
+            : 'Name the teams from this squad to finish the squad phase.'}
       </ThemedText>
       <ErrorText>{error}</ErrorText>
       {completedAt ? (
@@ -237,7 +236,7 @@ function SelectionsPhase({
       ) : hasTeams ? (
         <Pressable accessibilityRole="button" onPress={() => setConfirming(true)}>
           <ThemedText type="smallBold" style={[styles.link, { color: theme.tint }]}>
-            Mark Selections Phase 2 complete
+            Mark squad phase complete
           </ThemedText>
         </Pressable>
       ) : null}
