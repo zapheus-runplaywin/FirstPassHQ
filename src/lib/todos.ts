@@ -1,8 +1,10 @@
 import type { Href } from 'expo-router';
 
 import { slotTitle } from '@/lib/awards';
+import { formatShortDay } from '@/lib/format';
+import { gamePhase, gameTitle } from '@/lib/goals';
 import { formatDateString, toDateString } from '@/lib/injuries';
-import type { AwardSlot, Injury } from '@/lib/types';
+import type { AwardSlot, GoalGame, Injury } from '@/lib/types';
 import type { SafetyTodos } from '@/lib/use-pending-requests';
 
 /** Something the member still has to do, shown at the top of the home screen. */
@@ -25,6 +27,8 @@ export function buildTodos({
   flaggedAthletes,
   awardSlots = [],
   safety = null,
+  goals = null,
+  goalReflectionsToAnswer = 0,
   today = new Date(),
 }: {
   userId: string | undefined;
@@ -38,6 +42,10 @@ export function buildTodos({
   awardSlots?: AwardSlot[];
   /** Child-safety follow-ups, for admins. */
   safety?: SafetyTodos | null;
+  /** The athlete's next game and last played game, for game goals. */
+  goals?: { next: GoalGame | null; last: GoalGame | null } | null;
+  /** Reflections from athletes the member coaches that no coach has answered. */
+  goalReflectionsToAnswer?: number;
   today?: Date;
 }): Todo[] {
   const todos: Todo[] = [];
@@ -97,6 +105,41 @@ export function buildTodos({
       title: `Update ${whose} ${injury.body_area.toLowerCase()} injury`,
       detail: `Expected back ${formatDateString(injury.expected_return)}. Ask for clearance or change the date.`,
       href: { pathname: '/injuries/[id]', params: { id: injury.id } },
+    });
+  }
+
+  // Goals close when the game starts, so they come before anything that can wait.
+  const next = goals?.next;
+  if (next && next.goal_count === 0 && gamePhase(next, today) === 'open') {
+    todos.push({
+      key: 'game-goals',
+      title: `Set your goals for ${gameTitle(next)}`,
+      detail: `${formatShortDay(new Date(next.starts_at))} · goals close when the game starts`,
+      href: goalHref(next, userId),
+    });
+  }
+
+  // A game played in the last week whose goals the athlete hasn't reflected on.
+  const last = goals?.last;
+  if (
+    last &&
+    last.reflected_count < last.goal_count &&
+    today.getTime() - new Date(last.played_at).getTime() < REFLECT_WITHIN_MS
+  ) {
+    todos.push({
+      key: 'game-reflection',
+      title: `Reflect on ${gameTitle(last)}`,
+      detail: 'How did your goals go?',
+      href: goalHref(last, userId),
+    });
+  }
+
+  if (goalReflectionsToAnswer > 0) {
+    todos.push({
+      key: 'goal-comments',
+      title: `Comment on ${goalReflectionsToAnswer} goal ${goalReflectionsToAnswer === 1 ? 'reflection' : 'reflections'}`,
+      detail: 'Your athletes have said how their game went',
+      href: '/goals',
     });
   }
 
@@ -169,4 +212,11 @@ export function buildTodos({
   }
 
   return todos;
+}
+
+/** Reflection reminders stop a week after the game. */
+const REFLECT_WITHIN_MS = 7 * 24 * 60 * 60 * 1000;
+
+function goalHref(game: GoalGame, athleteId: string | undefined): Href {
+  return { pathname: '/goals/game', params: { athlete: athleteId ?? '', fixture: game.fixture_id } };
 }

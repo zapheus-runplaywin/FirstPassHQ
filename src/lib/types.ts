@@ -380,3 +380,64 @@ export type PlayhqSeason = {
   imported_at: string | null;
   playhq_teams: { playhq_team_id: string; playhq_name: string; team_id: string | null }[];
 };
+
+/** How a game goal went, in the athlete's own view. */
+export type GoalOutcome = 'achieved' | 'partly' | 'not_yet';
+
+/** A PlayHQ game an athlete can set goals for, with their goal counts. */
+export type GoalGame = {
+  fixture_id: string;
+  team_name: string;
+  round_name: string | null;
+  opponent: string | null;
+  starts_at: string;
+  time_tbc: boolean;
+  venue: string | null;
+  court: string | null;
+  is_home: boolean | null;
+  /** Goals can be added and changed until then (the game's start). */
+  goals_close_at: string;
+  /** The game counts as played, and reflections open. */
+  played_at: string;
+  goal_count: number;
+  reflected_count: number;
+  comment_count: number;
+};
+
+export type GameGoal = {
+  id: string;
+  athlete_id: string;
+  fixture_id: string;
+  body: string;
+  set_by: string | null;
+  set_by_name: string;
+  set_by_coach: boolean;
+  outcome: GoalOutcome | null;
+  reflection: string | null;
+  reflected_at: string | null;
+  created_at: string;
+};
+
+/** A coach's comment on a goal after the game. */
+export type GameGoalComment = {
+  id: string;
+  goal_id: string;
+  author_id: string | null;
+  author_name: string;
+  body: string;
+  created_at: string;
+};
+
+/** One athlete in a squad or team the member coaches, for the coach's goals list. */
+export type GoalBoardRow = {
+  team_id: string;
+  team_name: string;
+  team_kind: GroupKind;
+  athlete_id: string;
+  athlete_name: string;
+  next_fixture_id: string | null;
+  next_label: string | null;
+  next_starts_at: string | null;
+  next_goal_count: number;
+  reflections_to_answer: number;
+};
