@@ -9,7 +9,15 @@ import { Button, ChipGroup, ErrorText } from '@/components/ui';
 import { WeekStrip } from '@/components/week-strip';
 import { Spacing } from '@/constants/theme';
 import type { CalendarEvent } from '@/lib/calendar';
-import { addDays, dayKey, formatDay, startOfDay, startOfWeek } from '@/lib/format';
+import {
+  addDays,
+  dayKey,
+  formatDay,
+  formatMonth,
+  monthKey,
+  startOfDay,
+  startOfWeek,
+} from '@/lib/format';
 import { earliestDay, latestDay, useEvents } from '@/lib/use-events';
 
 type CalendarView = 'list' | 'month';
@@ -42,8 +50,13 @@ export default function CalendarScreen() {
   const [view, setView] = useState<CalendarView>('list');
   const [filter, setFilter] = useState(ALL);
   const [weekStart, setWeekStart] = useState(() => startOfWeek(new Date()));
+  // Where the list starts when it isn't today: the week the strip moved to, or
+  // the month that was open in month view.
+  const [listStart, setListStart] = useState<Date | null>(null);
   const [month, setMonth] = useState(() => new Date());
   const [selectedDay, setSelectedDay] = useState<string | null>(() => dayKey(new Date()));
+  // The day tapped in month view, or null to show the whole month.
+  const [monthDay, setMonthDay] = useState<string | null>(null);
   // Where each day starts in the list, reported as rows are laid out.
   const [dayY] = useState(() => new Map<string, number>());
 
@@ -65,6 +78,22 @@ export default function CalendarScreen() {
       onPress={() => showMonthsAhead(monthsAhead + LOAD_MORE_MONTHS)}
     />
   );
+
+  /** Changes view, keeping the month or week being looked at. */
+  function switchView(next: CalendarView) {
+    if (next === view) return;
+    if (next === 'list') {
+      const first = new Date(month.getFullYear(), month.getMonth(), 1);
+      const thisMonth = monthKey(month) === monthKey(new Date());
+      setWeekStart(startOfWeek(thisMonth ? new Date() : first));
+      setListStart(thisMonth ? null : first);
+      setSelectedDay(dayKey(thisMonth ? new Date() : first));
+    } else {
+      setMonth(listStart ?? new Date());
+      setMonthDay(null);
+    }
+    setView(next);
+  }
 
   async function onRefresh() {
     setRefreshing(true);
@@ -115,7 +144,7 @@ export default function CalendarScreen() {
         { value: 'month', label: 'Month' },
       ]}
       selected={[view]}
-      onToggle={(v: CalendarView) => setView(v)}
+      onToggle={switchView}
     />,
     calendars.length > 0 ? (
       <ChipGroup
@@ -140,35 +169,53 @@ export default function CalendarScreen() {
   }
 
   if (view === 'month') {
-    const dayEvents = filtered.filter((e) => dayKey(e.start) === selectedDay);
+    // Only this month's events: the whole month, or the day tapped.
+    const monthEvents = filtered.filter((e) => monthKey(e.start) === monthKey(month));
+    const shown = monthDay
+      ? monthEvents.filter((e) => dayKey(e.start) === monthDay)
+      : monthEvents;
     return (
       <Screen refreshing={refreshing} onRefresh={onRefresh} gap={Spacing.three}>
         {top}
         <MonthGrid
           month={month}
           eventDays={eventDays}
-          selectedDay={selectedDay}
-          onSelect={(date) => setSelectedDay(dayKey(date))}
+          selectedDay={monthDay}
+          onSelect={(date) => setMonthDay(monthDay === dayKey(date) ? null : dayKey(date))}
           earliest={earliest}
           latest={latest}
           onChangeMonth={(next) => {
             setMonth(next);
+            setMonthDay(null);
             loadThrough(next);
           }}
         />
-        {dayEvents.length > 0 ? (
-          dayEvents.map((event, i) => <AgendaRow key={event.id} event={event} showDate={i === 0} />)
+        {shown.length > 0 ? (
+          shown.map((event, i) => (
+            <AgendaRow
+              key={event.id}
+              event={event}
+              showDate={i === 0 || dayKey(event.start) !== dayKey(shown[i - 1].start)}
+            />
+          ))
         ) : (
           <ThemedText type="small" themeColor="textSecondary">
-            Nothing on this day.
+            {monthDay ? 'Nothing on this day.' : `Nothing on in ${formatMonth(month)}.`}
           </ThemedText>
         )}
+        {monthDay ? (
+          <Button
+            title={`Show all of ${formatMonth(month)}`}
+            variant="secondary"
+            onPress={() => setMonthDay(null)}
+          />
+        ) : null}
       </Screen>
     );
   }
 
-  // The list starts today, or earlier once the week strip steps back a week.
-  const listFrom = weekStart < startOfWeek(new Date()) ? weekStart : startOfDay(new Date());
+  // The list starts today, or at the week or month being looked at.
+  const listFrom = listStart ?? startOfDay(new Date());
   const listed = filtered.filter((event) => event.end > listFrom || event.start >= listFrom);
   const listTop = [
     ...top,
@@ -182,6 +229,7 @@ export default function CalendarScreen() {
       latest={latest}
       onChangeWeek={(next) => {
         setWeekStart(next);
+        setListStart(dayKey(next) === dayKey(startOfWeek(new Date())) ? null : next);
         // Stepping back needs the week's first day, stepping ahead its last.
         loadThrough(next < weekStart ? next : addDays(next, 6));
       }}

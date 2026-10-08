@@ -172,10 +172,13 @@ calendars of the squads and teams you belong to. Committee members and admins al
 committee calendar.
 
 - **List** shows a week strip and the events after it, grouped by day. Use the arrows to move
-  between weeks, and **Load more** at the bottom to see further ahead. Step back a week to see past
-  events from that week on.
-- **Month** shows a month grid. Dots under a day are events, coloured by calendar. Tap a day to see
-  its events.
+  between weeks, and **Load more** at the bottom to see further ahead. The list starts today, or at
+  the week you move to.
+- **Month** shows a month grid with that month's events below it. Dots under a day are events,
+  coloured by calendar. Tap a day to see only its events, and tap it again (or **Show all of** the
+  month) to see the whole month. Days from the months either side are greyed out.
+- Switching from **Month** to **List** keeps the month you were looking at: the list starts at the
+  1st of that month (or today, for this month).
 - You can look back 12 months (to the start of that month) and ahead 12 months. The arrow fades
   out when you reach either end.
 - The chips (**All**, **Club**, your squads and teams) filter which calendars are shown.
