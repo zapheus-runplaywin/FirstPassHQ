@@ -666,6 +666,9 @@ Nothing is deleted when a season is archived.
 
 **Awards** lists the club's awards by season. Tap **New award** and set:
 
+- **Start from a past award** (optional): tap one of the club's past awards to fill in its
+  settings, then choose the new closing date.
+
 - **Name**, **Description** (what voters should think about) and when **Voting closes**. Pick the
   day on the calendar, using the arrows to move to later months.
 - **Who votes**: **The whole club**, or **Chosen squads and teams**. For chosen groups, pick
@@ -683,21 +686,21 @@ Nothing is deleted when a season is archived.
 - **Preseason share of the result** (match awards): voters also get one preseason ballot. With
   25%, the result is 25% each nominee's share of the preseason points and 75% their share of the
   match points.
-- **Repeats**: **Every year** or **This year only**.
 
 Open an award to see its standings for each squad or team, and how many people have voted in each
 match or ballot. Once anyone has voted, only the name, description, closing dates, match voting
 window and listed names can change, and the award can't be removed.
 
-**Copy annual awards into** the next season copies every **Every year** award with the same
-settings, closing a year later, for the squads and teams with the same names. Teams are usually
-named after the season starts, so the copy says when a team had no match yet: edit the award and
-add it once the team is named. **Copy into** on one award copies just that one.
+**Duplicate** on an award opens a new award with the same settings, ready for this season, so
+you can run it again. Pick when voting closes, check the rest and tap **Save award**. It picks the
+squads and teams with the same names in the chosen season. Teams are usually named after the
+season starts, so it says when a team has no match yet: add it once the team is named.
 
 <img src="user-guide/admin-awards.png" width="210" alt="Awards admin">
 <img src="user-guide/award-close-date.png" width="210" alt="Choosing when voting closes">
 <img src="user-guide/new-award.png" width="210" alt="Creating an award">
 <img src="user-guide/award-results.png" width="210" alt="Award standings and who has voted">
+<img src="user-guide/award-duplicate.png" width="210" alt="A new award duplicated from a past one">
 
 ### Fixtures
 

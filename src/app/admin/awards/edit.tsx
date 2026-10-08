@@ -17,7 +17,7 @@ import {
 } from '@/lib/awards';
 import { toDateString } from '@/lib/injuries';
 import { supabase } from '@/lib/supabase';
-import type { Award, AwardNominees, AwardTurnout, AwardVoterRole } from '@/lib/types';
+import type { Award, AwardNominees, AwardTurnout, AwardVoterRole, Team } from '@/lib/types';
 import { seasonLabel, teamLabel, useTeams } from '@/lib/use-teams';
 
 const weightOptions = ['0', '10', '20', '25', '30', '40', '50'].map((w) => ({
@@ -32,13 +32,24 @@ const hourOptions = [
   { value: '168', label: 'A week' },
 ];
 
-/** Creates an award, or changes one when opened with an id. */
+type PastAward = { id: string; name: string; season: number };
+type GroupName = { name: string; kind: Team['kind'] };
+
+/**
+ * Creates an award, or changes one when opened with an id. Opened with `from`,
+ * it starts as a copy of that award with no closing date.
+ */
 export default function EditAwardScreen() {
-  const { id } = useLocalSearchParams<{ id?: string }>();
+  const { id, from } = useLocalSearchParams<{ id?: string; from?: string }>();
   const teams = useTeams();
   const seasons = [...new Set(teams.map((t) => t.season))].sort((a, b) => b - a);
 
-  const [loaded, setLoaded] = useState(!id);
+  const [loaded, setLoaded] = useState(!id && !from);
+  const [pastAwards, setPastAwards] = useState<PastAward[]>([]);
+  const [copiedFrom, setCopiedFrom] = useState<PastAward | null>(null);
+  // The copied award's squads and teams, matched by name in the chosen season.
+  const [copyGroups, setCopyGroups] = useState<GroupName[] | null>(null);
+  const [appliedCopy, setAppliedCopy] = useState('');
   const [voted, setVoted] = useState(false);
   const [name, setName] = useState('');
   const [description, setDescription] = useState('');
@@ -62,29 +73,43 @@ export default function EditAwardScreen() {
     date.setDate(date.getDate() + 14);
     return toDateString(date);
   });
-  const [annual, setAnnual] = useState(true);
+  // No longer offered in the form; kept as it was on older awards.
+  const [annual, setAnnual] = useState(false);
   const [candidates, setCandidates] = useState('');
   const [saving, setSaving] = useState(false);
   const [deleting, setDeleting] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
+  // Past awards to start a new one from.
   useEffect(() => {
-    if (!id) return;
+    if (id) return;
+    (async () => {
+      const { data } = await supabase
+        .from('awards')
+        .select('id, name, season')
+        .order('season', { ascending: false })
+        .order('name');
+      const rows = (data as PastAward[] | null) ?? [];
+      // The newest award of each name.
+      setPastAwards(rows.filter((a, i) => rows.findIndex((b) => b.name === a.name) === i));
+    })();
+  }, [id]);
+
+  useEffect(() => {
+    const source = id ?? from;
+    if (!source) return;
     (async () => {
       const [{ data }, turnout] = await Promise.all([
-        supabase.from('awards').select(AWARD_COLUMNS).eq('id', id).single(),
+        supabase.from('awards').select(AWARD_COLUMNS).eq('id', source).single(),
         // Only some settings can change once anyone has voted.
-        supabase.rpc('award_turnout', { p_award_id: id }),
+        id ? supabase.rpc('award_turnout', { p_award_id: id }) : Promise.resolve({ data: [] }),
       ]);
       const award = data as Award | null;
       if (award) {
         setName(award.name);
         setDescription(award.description);
-        setSeason(award.season);
-        setClosesOn(dayOf(award.closes_at));
         setClubWide(award.club_wide);
         setPerGroup(award.per_group);
-        setGroupIds(award.award_groups.map((g) => g.team_id));
         // Older awards can list partners, a role that no longer exists.
         setRoles(award.voter_roles.filter((r) => voterRoleOptions.some((o) => o.value === r)));
         setNominees(award.nominees);
@@ -92,18 +117,46 @@ export default function EditAwardScreen() {
         setByMatch(award.by_match);
         setHours(String(award.match_vote_hours));
         setWeight(String(award.preseason_weight));
-        if (award.preseason_closes_at) setPreseasonOn(dayOf(award.preseason_closes_at));
-        setAnnual(award.annual);
         setCandidates(award.award_candidates.map((c) => c.name).join('\n'));
+        if (id) {
+          setSeason(award.season);
+          setClosesOn(dayOf(award.closes_at));
+          setGroupIds(award.award_groups.map((g) => g.team_id));
+          if (award.preseason_closes_at) setPreseasonOn(dayOf(award.preseason_closes_at));
+          setAnnual(award.annual);
+        } else {
+          // A copy gets new dates, and squads and teams with the same names.
+          setCopiedFrom({ id: award.id, name: award.name, season: award.season });
+          setClosesOn(null);
+          setPreseasonOn(null);
+          setGroupIds([]);
+          const teamIds = award.award_groups.map((g) => g.team_id);
+          const { data: groups } =
+            teamIds.length > 0
+              ? await supabase.from('teams').select('name, kind').in('id', teamIds)
+              : { data: [] };
+          setCopyGroups((groups as GroupName[] | null) ?? []);
+        }
       }
       setVoted(((turnout.data as AwardTurnout[] | null) ?? []).some((r) => r.ballots > 0));
       setLoaded(true);
     })();
-  }, [id]);
+  }, [id, from]);
 
   const season = seasonChoice ?? seasons[0] ?? new Date().getFullYear();
   const seasonGroups = teams.filter((t) => t.season === season);
   const locked = voted;
+  const copyMatches = seasonGroups.filter((t) =>
+    copyGroups?.some((g) => g.name === t.name && g.kind === t.kind),
+  );
+  const missingGroups = (copyGroups?.length ?? 0) - copyMatches.length;
+
+  // Pick the copied award's squads and teams in whichever season is chosen.
+  const copyKey = copyGroups ? `${copiedFrom?.id}:${copyMatches.map((t) => t.id).join(',')}` : '';
+  if (copyKey !== appliedCopy) {
+    setAppliedCopy(copyKey);
+    if (copyGroups) setGroupIds(copyMatches.map((t) => t.id));
+  }
 
   function toggleRole(role: AwardVoterRole) {
     if (role === 'member') {
@@ -180,6 +233,23 @@ export default function EditAwardScreen() {
   return (
     <Screen>
       <Stack.Screen options={{ title: id ? 'Edit award' : 'New award' }} />
+      {!id && pastAwards.length > 0 ? (
+        <ChipGroup
+          label="Start from a past award"
+          options={pastAwards.map((a) => ({ value: a.id, label: a.name }))}
+          selected={copiedFrom ? [copiedFrom.id] : []}
+          onToggle={(value) => router.setParams({ from: value })}
+        />
+      ) : null}
+      {copiedFrom ? (
+        <ThemedText type="small" themeColor="textSecondary">
+          Copied from {copiedFrom.name} ({seasonLabel(copiedFrom.season)}). Choose when voting
+          closes, and check the rest before saving.
+          {missingGroups > 0
+            ? ` ${missingGroups} ${missingGroups === 1 ? 'squad or team has' : 'squads or teams have'} no match by name in ${seasonLabel(season)}.`
+            : ''}
+        </ThemedText>
+      ) : null}
       {locked ? (
         <ThemedText type="small" themeColor="textSecondary">
           People have voted, so only the name, description, closing dates, match voting window and
@@ -340,16 +410,6 @@ export default function EditAwardScreen() {
           ) : null}
         </>
       ) : null}
-
-      <ChipGroup
-        label="Repeats"
-        options={[
-          { value: 'annual', label: 'Every year' },
-          { value: 'once', label: 'This year only' },
-        ]}
-        selected={[annual ? 'annual' : 'once']}
-        onToggle={(value) => setAnnual(value === 'annual')}
-      />
 
       <ErrorText>{error}</ErrorText>
       <View style={styles.actions}>
