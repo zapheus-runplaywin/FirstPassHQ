@@ -45,6 +45,8 @@ export default function ClubSettingsScreen() {
   const [textTone, setTextTone] = useState<TextTone | null>(null);
   const [logoPath, setLogoPath] = useState<string | null>(null);
   const [features, setFeatures] = useState<Record<FeatureKey, boolean>>(club.features);
+  /** Whether physios get messages sent to the whole club. Off unless an admin turns it on. */
+  const [physioMessages, setPhysioMessages] = useState(false);
   const [loaded, setLoaded] = useState(false);
   const [uploading, setUploading] = useState(false);
   const [saving, setSaving] = useState(false);
@@ -54,6 +56,9 @@ export default function ClubSettingsScreen() {
   // Fill the form once, from the latest saved settings.
   useEffect(() => {
     club.reload().finally(() => setLoaded(true));
+    supabase
+      .rpc('physios_get_club_messages')
+      .then(({ data }) => setPhysioMessages(data === true));
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
   const [filledFrom, setFilledFrom] = useState<typeof saved | undefined>(undefined);
@@ -145,6 +150,14 @@ export default function ClubSettingsScreen() {
     if (saveError) {
       setSaving(false);
       setError(saveError.message);
+      return;
+    }
+    const { error: physioError } = await supabase.rpc('admin_set_physios_get_club_messages', {
+      p_on: physioMessages,
+    });
+    if (physioError) {
+      setSaving(false);
+      setError(physioError.message);
       return;
     }
     await club.reload();
@@ -309,6 +322,27 @@ export default function ClubSettingsScreen() {
             />
           </Card>
         ))}
+      </View>
+
+      <View style={styles.section}>
+        <ThemedText type="smallBold">Physios</ThemedText>
+        <Card style={styles.featureRow}>
+          <View style={styles.featureText}>
+            <ThemedText type="smallBold">Physios get club messages</ThemedText>
+            <ThemedText type="small" themeColor="textSecondary">
+              Physios always get messages sent to Physios. Turn this on to also send them
+              messages sent to everyone in the club.
+            </ThemedText>
+          </View>
+          <Switch
+            accessibilityLabel="Physios get club messages"
+            value={physioMessages}
+            onValueChange={setPhysioMessages}
+            trackColor={{ true: theme.accent, false: theme.backgroundSelected }}
+            thumbColor={theme.text}
+            {...(Platform.OS === 'web' ? { activeThumbColor: theme.onAccent } : {})}
+          />
+        </Card>
       </View>
 
       <ErrorText>{error}</ErrorText>
