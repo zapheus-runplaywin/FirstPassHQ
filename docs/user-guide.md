@@ -684,6 +684,11 @@ Nothing is deleted when a season is archived.
   except physios and guests, who don't vote.
 - **Who can be voted for**: **Athletes** or **Coaches** in the voting groups, **Any member**, or
   **Names I list**, one per line, for people who aren't in the app, such as umpires.
+- **Nominee age** (not for listed names): **Any age**, or **Under an age** for awards such as
+  Rising Star. Enter the age (for example 21, so nominees must be 20 or younger) and when it is
+  measured: **The day voting closes**, or **A day I choose** such as 1 January. Only people with a
+  date of birth can be voted for, so the award's page says in colour how many possible nominees
+  have none: add it on their page in **Members**. The age limit can't change once anyone has voted.
 - **Ballot**: **One vote**, **3-2-1 votes** or **5-4-3-2-1 votes**.
 - **When people vote** (awards with a winner for each group): **Once, before it closes**, or
   **After every match**, using the PlayHQ fixtures. Match votes stay open for a set time after
@@ -715,6 +720,8 @@ season starts, so it says when a team has no match yet: add it once the team is 
 <img src="user-guide/new-award.png" width="210" alt="Creating an award">
 <img src="user-guide/award-results.png" width="210" alt="Award standings and who has voted">
 <img src="user-guide/award-duplicate.png" width="210" alt="A new award duplicated from a past one">
+<img src="user-guide/award-age-limit.png" width="210" alt="Setting a nominee age limit">
+<img src="user-guide/award-rising-star.png" width="210" alt="An award with an age limit and missing dates of birth">
 
 ### Fixtures
 
@@ -816,7 +823,7 @@ once saved, only replaced or removed.
 | Information             | Who can see it                                                                                                              |
 | ----------------------- | --------------------------------------------------------------------------------------------------------------------------- |
 | Your profile and squads | You, the people in your squads and teams (names and positions only), and admins.                                            |
-| Date of birth and Working With Children Check | You and admins.                                                                                       |
+| Date of birth and Working With Children Check | You and admins. Awards with an age limit use it to decide who can be voted for, without showing it.   |
 | Messages                | The people they were sent to, the sender, and admins. Guardians of athletes under 18 get a copy of every message sent to their athlete. Guests don't get messages; physios get messages sent to the Physio role, and whole-club messages only if an admin turns that on. |
 | Read receipts           | The sender and admins.                                                                                                      |
 | Daily check-in answers and notes | The athlete, their guardians and their coaches. The committee, physios and admins see only group averages, hidden below 3 check-ins. |

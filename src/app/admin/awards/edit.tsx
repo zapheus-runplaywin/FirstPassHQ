@@ -15,7 +15,7 @@ import {
   nomineeOptions,
   voterRoleOptions,
 } from '@/lib/awards';
-import { toDateString } from '@/lib/injuries';
+import { formatDateString, toDateString } from '@/lib/injuries';
 import { supabase } from '@/lib/supabase';
 import type { Award, AwardNominees, AwardTurnout, AwardVoterRole, Team } from '@/lib/types';
 import { seasonLabel, teamLabel, useTeams } from '@/lib/use-teams';
@@ -76,6 +76,12 @@ export default function EditAwardScreen() {
   // No longer offered in the form; kept as it was on older awards.
   const [annual, setAnnual] = useState(false);
   const [candidates, setCandidates] = useState('');
+  // Nominees under an age, such as a Rising Star award. Empty for any age.
+  const [maxAge, setMaxAge] = useState('');
+  const [ageLimited, setAgeLimited] = useState(false);
+  // The age is measured on a chosen day, or the day voting closes.
+  const [ageOnDay, setAgeOnDay] = useState(false);
+  const [ageOn, setAgeOn] = useState<string | null>(null);
   // PlayHQ games linked to each squad or team, for match awards.
   const [games, setGames] = useState<Record<string, number>>({});
   const [saving, setSaving] = useState(false);
@@ -135,7 +141,11 @@ export default function EditAwardScreen() {
         setHours(String(award.match_vote_hours));
         setWeight(String(award.preseason_weight));
         setCandidates(award.award_candidates.map((c) => c.name).join('\n'));
+        setAgeLimited(award.nominee_max_age !== null);
+        setMaxAge(award.nominee_max_age ? String(award.nominee_max_age) : '');
+        setAgeOnDay(award.nominee_age_on !== null);
         if (id) {
+          setAgeOn(award.nominee_age_on);
           setSeason(award.season);
           setClosesOn(dayOf(award.closes_at));
           setGroupIds(award.award_groups.map((g) => g.team_id));
@@ -146,6 +156,7 @@ export default function EditAwardScreen() {
           setCopiedFrom({ id: award.id, name: award.name, season: award.season });
           setClosesOn(null);
           setPreseasonOn(null);
+          setAgeOn(null);
           setGroupIds([]);
           const teamIds = award.award_groups.map((g) => g.team_id);
           const { data: groups } =
@@ -216,11 +227,25 @@ export default function EditAwardScreen() {
               .filter(Boolean)
           : [],
     });
-    setSaving(false);
     if (saveError) {
+      setSaving(false);
       setError(saveError.message);
       return;
     }
+    if (!locked) {
+      const limited = ageLimited && nominees !== 'listed';
+      const { error: ageError } = await supabase.rpc('admin_set_award_age_limit', {
+        p_award_id: data as string,
+        p_max_age: limited ? Number(maxAge) : null,
+        p_age_on: limited && ageOnDay ? ageOn : null,
+      });
+      if (ageError) {
+        setSaving(false);
+        setError(ageError.message);
+        return;
+      }
+    }
+    setSaving(false);
     router.replace({ pathname: '/admin/awards/[id]', params: { id: data as string } });
   }
 
@@ -245,7 +270,13 @@ export default function EditAwardScreen() {
     roles.length > 0 &&
     (clubWide || groupIds.length > 0) &&
     (nominees !== 'listed' || candidates.trim().length > 0) &&
-    !needsPreseasonDate;
+    !needsPreseasonDate &&
+    (!ageLimited ||
+      nominees === 'listed' ||
+      (/^\d+$/.test(maxAge) &&
+        Number(maxAge) >= 1 &&
+        Number(maxAge) <= 99 &&
+        (!ageOnDay || !!ageOn)));
 
   return (
     <Screen>
@@ -370,6 +401,54 @@ export default function EditAwardScreen() {
           placeholder={'Jo Smith\nSam Lee'}
           multiline
         />
+      ) : null}
+
+      {nominees !== 'listed' && !locked ? (
+        <>
+          <ChipGroup
+            label="Nominee age"
+            options={[
+              { value: 'any', label: 'Any age' },
+              { value: 'under', label: 'Under an age' },
+            ]}
+            selected={[ageLimited ? 'under' : 'any']}
+            onToggle={(value) => setAgeLimited(value === 'under')}
+          />
+          {ageLimited ? (
+            <>
+              <TextField
+                label="Nominees must be under"
+                value={maxAge}
+                onChangeText={(text) => setMaxAge(text.replace(/\D/g, ''))}
+                placeholder="21"
+                keyboardType="number-pad"
+                maxLength={2}
+              />
+              <ChipGroup
+                label="Age on"
+                options={[
+                  { value: 'close', label: 'The day voting closes' },
+                  { value: 'day', label: 'A day I choose' },
+                ]}
+                selected={[ageOnDay ? 'day' : 'close']}
+                onToggle={(value) => setAgeOnDay(value === 'day')}
+              />
+              {ageOnDay ? (
+                <MonthDateField label="Age measured on" value={ageOn} onChange={setAgeOn} />
+              ) : null}
+              <ThemedText type="small" themeColor="textSecondary">
+                Only people with a date of birth can be voted for. The award’s page shows how many
+                don’t have one yet.
+              </ThemedText>
+            </>
+          ) : null}
+        </>
+      ) : null}
+      {locked && ageLimited && nominees !== 'listed' ? (
+        <ThemedText type="small" themeColor="textSecondary">
+          Nominees must be under {maxAge} on{' '}
+          {ageOnDay && ageOn ? formatDateString(ageOn) : 'the day voting closes'}.
+        </ThemedText>
       ) : null}
 
       {!locked ? (
