@@ -12,11 +12,16 @@ export const MESSAGE_COLUMNS =
 /** Who a message went to, such as "Everyone in the club" or "Open Squad". */
 export function audienceLabel(
   audience: MessageAudience,
-  role: AppRole | null,
+  role: AppRole | 'partner' | null,
   label: string | null,
 ) {
   if (audience === 'club') return 'Everyone in the club';
-  if (audience === 'role') return role ? `All ${pluralRoleLabels[role].toLowerCase()}` : 'A role';
+  if (audience === 'role') {
+    if (!role) return 'A role';
+    // Sent before the Partner role was removed.
+    if (role === 'partner') return 'All partners';
+    return `All ${pluralRoleLabels[role].toLowerCase()}`;
+  }
   return label ?? 'A squad or team';
 }
 

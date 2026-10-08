@@ -6,7 +6,6 @@ export type AppRole =
   | 'manager'
   | 'athlete'
   | 'committee'
-  | 'partner'
   | 'guardian'
   | 'guest';
 
@@ -85,7 +84,8 @@ export type Message = {
   sender_name: string | null;
   body: string;
   audience: MessageAudience;
-  audience_role: AppRole | null;
+  /** Messages sent before the Partner role was removed can say 'partner'. */
+  audience_role: AppRole | 'partner' | null;
   audience_label: string | null;
   created_at: string;
 };
@@ -292,7 +292,6 @@ export type AwardVoterRole =
   | 'guardian'
   | 'committee'
   | 'admin'
-  | 'partner'
   | 'member';
 
 export type Award = {

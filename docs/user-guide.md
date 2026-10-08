@@ -18,7 +18,7 @@ Each role starts on a new page when the viewer supports page breaks.
 6. [Coaches](#6-coaches)
 7. [Managers](#7-managers)
 8. [Committee](#8-committee)
-9. [Partners and guests](#9-partners-and-guests)
+9. [Guests](#9-guests)
 10. [Admins](#10-admins)
 11. [Who can see what](#11-who-can-see-what)
 12. [Keeping this guide up to date](#12-keeping-this-guide-up-to-date)
@@ -35,8 +35,7 @@ one or more **squads** or **teams** for the current season.
 | **Coach**     | Head coaches and assistant coaches. Both have the same permissions; the title only shows who is who. Need a current Working With Children Check. |
 | **Manager**   | Squad and team managers. Need a current Working With Children Check.                                 |
 | **Committee** | Club committee members.                                                                              |
-| **Partner**   | Club partners and sponsors.                                                                          |
-| **Guest**     | Anyone else the club lets in.                                                                        |
+| **Guest**     | Anyone else the club lets in, such as partners and sponsors.                                         |
 | **Admin**     | The people who run the app. Admin is granted by another admin, never requested.                      |
 
 **Squads and teams.** Each season, members join a **squad** (Mixed Open Squad, Open Squad,
@@ -46,7 +45,7 @@ in their squad as well.
 
 What each role sees on its home screen:
 
-| Feature                                | Athlete |    Guardian     |    Coach     |  Manager   |   Committee   | Partner / Guest |     Admin     |
+| Feature                                | Athlete |    Guardian     |    Coach     |  Manager   |   Committee   |      Guest      |     Admin     |
 | -------------------------------------- | :-----: | :-------------: | :----------: | :--------: | :-----------: | :-------------: | :-----------: |
 | To-do list, calendar, squads and teams |    ✓    |        ✓        |      ✓       |     ✓      |       ✓       |        ✓        |       ✓       |
 | Read messages                          |    ✓    |        ✓        |      ✓       |     ✓      |       ✓       |        ✓        |       ✓       |
@@ -489,12 +488,12 @@ Calendars an admin shares with the **Committee** appear only for committee membe
 
 <div style="page-break-before: always"></div>
 
-## 9. Partners and guests
+## 9. Guests
 
-Partners and guests see the club calendar and receive messages sent to everyone in the club.
-Partners also receive messages an admin sends to all partners.
+Guests, such as the club's partners and sponsors, see the club calendar and receive messages sent
+to everyone in the club.
 
-<img src="user-guide/partner-home.png" width="210" alt="Partner home screen">
+<img src="user-guide/guest-home.png" width="210" alt="Guest home screen">
 
 <div style="page-break-before: always"></div>
 
@@ -614,8 +613,7 @@ Nothing is deleted when a season is archived.
   **One winner** or **A winner for each** squad or team. With a winner for each, members vote only
   in their own group.
 - **Roles that vote**. Athletes, coaches, managers and guardians vote in the squads and teams
-  they're in. Committee, admins and partners vote wherever they are. **Every member** opens it to
-  everyone.
+  they're in. Committee and admins vote wherever they are. **Every member** opens it to everyone.
 - **Who can be voted for**: **Athletes** or **Coaches** in the voting groups, **Any member**, or
   **Names I list**, one per line, for people who aren't in the app, such as umpires.
 - **Ballot**: **One vote**, **3-2-1 votes** or **5-4-3-2-1 votes**.
