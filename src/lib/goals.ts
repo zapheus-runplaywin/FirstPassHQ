@@ -25,7 +25,7 @@ export const TEAM_GOAL_COLUMNS =
 export const PAST_PAGE_SIZE = 10;
 
 /** A game holds up to this many goals (the database says the same). */
-export const MAX_GOALS = 10;
+export const MAX_GOALS = 5;
 
 export const outcomeOptions: { value: GoalOutcome; label: string }[] = [
   { value: 'achieved', label: 'Achieved' },

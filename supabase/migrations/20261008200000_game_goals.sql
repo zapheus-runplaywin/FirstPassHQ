@@ -414,8 +414,8 @@ begin
       raise exception 'Goals can only be set for the next game';
     end if;
     if (select count(*) from public.game_goals
-        where athlete_id = p_athlete_id and fixture_id = p_fixture_id) >= 10 then
-      raise exception 'A game can have up to 10 goals';
+        where athlete_id = p_athlete_id and fixture_id = p_fixture_id) >= 5 then
+      raise exception 'A game can have up to 5 goals';
     end if;
     -- A coach who is also the athlete's guardian adds goals as the guardian.
     v_is_coach := v_is_coach and not public.acts_for_athlete(p_athlete_id);
@@ -731,8 +731,8 @@ begin
   end if;
 
   if v_goal.id is null then
-    if (select count(*) from public.team_game_goals where fixture_id = p_fixture_id) >= 10 then
-      raise exception 'A game can have up to 10 team goals';
+    if (select count(*) from public.team_game_goals where fixture_id = p_fixture_id) >= 5 then
+      raise exception 'A game can have up to 5 team goals';
     end if;
     insert into public.team_game_goals (fixture_id, body, set_by, set_by_name)
     values (p_fixture_id, btrim(p_body), auth.uid(), public.my_display_name())

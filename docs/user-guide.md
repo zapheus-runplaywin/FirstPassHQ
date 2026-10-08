@@ -275,7 +275,7 @@ Until you've checked in, "Do your daily check-in" stays in your to-do list.
 shows on your home screen once you have a game to set goals for or look back on.
 
 - **Before a game:** in the 7 days before your next game, open it under **Next game** and add
-  your goals, up to 10, such as "win 3 centre pass receives each quarter". Only your next game is
+  your goals, up to 5, such as "win 3 centre pass receives each quarter". Only your next game is
   open for goals. You can change or remove your goals until the game starts. Your coaches can add
   goals for you too; those show "set by Coach …" and only a coach can change them. Until you've set
   a goal, "Set your goals for …" stays in your to-do list.
@@ -437,7 +437,7 @@ athletes has a game coming up or a reflection waiting.
 At the top of **Game goals**, **Team goals** lists each squad and team you coach with its next game
 (within 7 days) and its last played game.
 
-- Open the next game and add goals for the whole team under **Add a team goal**, up to 10, such as
+- Open the next game and add goals for the whole team under **Add a team goal**, up to 5, such as
   "win the third quarter". You can change or remove them until the game starts. Any coach of the
   squad or team can. Until a team goal is set, "Set team goals for …" stays in your to-do list.
 - The squad or team's athletes and their parents or guardians see the team goals above each
