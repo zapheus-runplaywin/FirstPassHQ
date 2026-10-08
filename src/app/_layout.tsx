@@ -114,6 +114,7 @@ function RootStack() {
             <Stack.Screen name="goals/index" options={{ title: 'Game goals' }} />
             <Stack.Screen name="goals/athlete/[id]" options={{ title: 'Game goals' }} />
             <Stack.Screen name="goals/game" options={{ title: 'Game goals' }} />
+            <Stack.Screen name="goals/team" options={{ title: 'Team goals' }} />
           </Stack.Protected>
           <Stack.Screen name="delete-account" options={{ title: 'Delete account' }} />
           <Stack.Protected guard={isAdmin}>

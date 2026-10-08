@@ -53,6 +53,7 @@ What each role sees on its home screen:
 | Send messages                          |         |                 |  Own groups  | Own groups |   Whole club  |               |         |     Anyone    |
 | Daily check-in                         |    ✓    |                 |              |            |               |               |         |               |
 | Game goals and reflections             |   Own   | Their athlete's | Own athletes |            |               |               |         |               |
+| Team goals for a game                  |   See   |       See       | Set, review  |            |               |               |         |               |
 | Check-ins of others                    |         |                 | Own athletes |            | Averages only | Averages only |         | Averages only |
 | Report an injury                       |   Own   | Their athlete's |              |            |               |               |         |               |
 | See injuries                           |   Own   | Their athlete's | Own athletes |            |      All      |      All      |         |      All      |
@@ -289,6 +290,9 @@ shows on your home screen once you have a game to set goals for or look back on.
 Your coaches can see your goals and reflections. If you're under 18, your parents or guardians can
 too, and they can set goals and reflect for you. Bye rounds are left out.
 
+**Team goals** that your coaches set for the whole squad or team show at the top of the game,
+above your own goals. After the game you'll see how the coaches think the team went on each one.
+
 <img src="user-guide/goals-athlete.png" width="210" alt="Game goals: the next game and played games">
 <img src="user-guide/goals-set.png" width="210" alt="Adding a goal for the next game">
 <img src="user-guide/goals-reflect.png" width="210" alt="Reflecting on goals after a game, with a coach's comment">
@@ -425,8 +429,24 @@ athletes has a game coming up or a reflection waiting.
 - A number next to an athlete counts reflections no coach has commented on yet, and your to-do list
   says "Comment on N goal reflections".
 
-<img src="user-guide/goals-coach.png" width="210" alt="A coach's athletes with their next game and goals">
+<img src="user-guide/goals-coach.png" width="210" alt="A coach's team games and athletes with their next game and goals">
 <img src="user-guide/goals-coach-comment.png" width="210" alt="A coach reading reflections and commenting">
+
+#### Team goals
+
+At the top of **Game goals**, **Team goals** lists each squad and team you coach with its next game
+(within 7 days) and its last played game.
+
+- Open the next game and add goals for the whole team under **Add a team goal**, up to 10, such as
+  "win the third quarter". You can change or remove them until the game starts. Any coach of the
+  squad or team can. Until a team goal is set, "Set team goals for …" stays in your to-do list.
+- The squad or team's athletes and their parents or guardians see the team goals above each
+  athlete's own goals.
+- After the game, open the last game, pick **Achieved**, **Partly** or **Not yet** for each team
+  goal, add a few words for the team and tap **Save review**. Athletes see your review.
+
+<img src="user-guide/goals-team.png" width="210" alt="Setting team goals before a game">
+<img src="user-guide/goals-team-review.png" width="210" alt="Reviewing team goals after a game">
 
 ### Match awards
 
@@ -869,6 +889,7 @@ once saved, only replaced or removed.
 | Daily check-in answers and notes | The athlete, their guardians and their coaches. The committee, physios and admins see only group averages, hidden below 3 check-ins. |
 | Injuries and documents  | The athlete, their guardians, their coaches, physios, the committee and admins. Managers don't see injuries. Only the committee and admins can save or share documents; everyone else views them in the app. |
 | Game goals and reflections | The athlete, their guardians and their coaches. The committee, physios and admins don't see them. |
+| Team goals              | The squad or team's athletes, their guardians and its coaches. Only its coaches set and review them. |
 | Attendance records      | Coaches, the committee and admins. Managers see their own groups' sessions. Athletes and guardians don't see attendance.    |
 | Committee calendar      | Committee members and admins.                                                                                               |
 | Award votes             | Only the voter sees their own ballot. Nobody, admins included, can see who someone voted for.                               |

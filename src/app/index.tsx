@@ -29,6 +29,7 @@ import { formatShortDay } from '@/lib/format';
 import {
   gameTitle,
   reflectionsToAnswer,
+  useCoachTeamGames,
   useGoalBoard,
   useIsGoalGuardian,
   useMyGoals,
@@ -73,12 +74,15 @@ export default function HomeScreen() {
   const { awardSlots, reloadAwardSlots } = useAwardSlots();
   const { myGoals, reloadMyGoals } = useMyGoals();
   const { goalBoard, reloadGoalBoard } = useGoalBoard();
+  const { teamGames, reloadTeamGames } = useCoachTeamGames();
   const goalComments = reflectionsToAnswer(goalBoard);
   const isGoalGuardian = useIsGoalGuardian();
   // The Game goals card shows once there's a game to set goals for or look back on.
   const hasOwnGames = !!(myGoals?.next || myGoals?.last);
   const coachHasGames =
-    goalComments > 0 || !!goalBoard?.some((row) => row.next_fixture_id !== null);
+    goalComments > 0 ||
+    !!goalBoard?.some((row) => row.next_fixture_id !== null) ||
+    !!teamGames?.length;
   // Turned-off features add nothing to the to-do list.
   const todos = buildTodos({
     userId: session?.user.id,
@@ -90,6 +94,7 @@ export default function HomeScreen() {
     safety: safetyTodos,
     goals: myGoals ?? null,
     goalReflectionsToAnswer: goalComments,
+    teamGames: teamGames ?? [],
   });
 
   const isGuardian = profile?.status === 'approved' && profile.role === 'guardian';
@@ -127,6 +132,7 @@ export default function HomeScreen() {
       reloadAwardSlots(),
       reloadMyGoals(),
       reloadGoalBoard(),
+      reloadTeamGames(),
     ]);
     setRefreshing(false);
   }

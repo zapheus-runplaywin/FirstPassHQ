@@ -7,7 +7,14 @@
 --     so you can use every screen;
 --   - adds sample people (all @example.com, so nobody real is emailed) in the
 --     current season's squads, with a team named from the Open Squad, an
---     under-18 athlete with a guardian, and someone waiting for approval.
+--     under-18 athlete with a guardian, and someone waiting for approval;
+--   - adds the admins as assistant coaches of the Open Squad, and sample
+--     PlayHQ games for it (the next one in 3 days, 12 played, a bye) with
+--     athletes' goals, reflections, coach comments and team goals.
+--
+-- To try game goals as an athlete, sign in with a second Google account,
+-- ask to join as an athlete, and approve them into the Open Squad. Accounts
+-- that are already approved keep their role when you run this again.
 --
 -- The sample people can't sign in; they fill the lists and rosters. Running
 -- it again changes nothing.
@@ -31,9 +38,12 @@ begin
     raise exception 'This database has % real accounts, so it looks like the live club. Run this on the test project only.', v_real;
   end if;
 
+  -- Real accounts become admins, except ones an admin has already approved
+  -- with another role (such as a second account for testing as an athlete).
   update public.profiles
   set role = 'admin', status = 'approved'
-  where coalesce(email, '') not like '%@example.com';
+  where coalesce(email, '') not like '%@example.com'
+    and not (status = 'approved' and role <> 'admin');
 
   insert into auth.users (id, instance_id, aud, role, email, raw_user_meta_data)
   select
@@ -156,6 +166,86 @@ begin
     'charlie.wade@example.com', 'dana.lowe@example.com'
   )
   on conflict (team_id, profile_id) do nothing;
+
+  -- Admins coach the Open Squad too, so they can try the coach screens.
+  insert into public.team_members (team_id, profile_id, team_role, coach_title)
+  select v_open, p.id, 'coach', 'assistant_coach'
+  from public.profiles p
+  where coalesce(p.email, '') not like '%@example.com' and p.role = 'admin' and p.status = 'approved'
+  on conflict (team_id, profile_id) do nothing;
+
+  -- Sample PlayHQ games for the Open Squad, at 10am Perth time: the next one
+  -- in 3 days, a bye, and 12 played ones, a week apart. Running this again
+  -- moves them so there's always a game coming up.
+  insert into public.fixtures as f (
+    playhq_game_id, playhq_team_id, team_id, team_name, opponent, round_name, grade_name,
+    starts_at, venue, court, is_home
+  )
+  select
+    'test-game-' || g.n, 'test-open-squad', v_open, 'Open Squad',
+    case when g.n = 1 then null else (array['Swan Districts', 'Hawks', 'Kalamunda', 'Rockingham',
+      'Fremantle', 'Joondalup', 'Perth', 'Mandurah', 'Bunbury', 'Midland', 'Armadale', 'Wanneroo',
+      'Cockburn'])[greatest(g.n, 1)] end,
+    case when g.n = 0 then 'Round 13' when g.n = 1 then 'Round 14' else 'Round ' || (14 - g.n) end,
+    'Test competition',
+    ((current_date + g.days) + time '10:00') at time zone 'Australia/Perth',
+    'Matthews Netball Centre', 'Court ' || (g.n % 6 + 1), g.n % 2 = 0
+  from (
+    select 0 as n, 3 as days
+    union all select 1, 10
+    union all select n, -4 - (n - 2) * 7 from generate_series(2, 13) n
+  ) g
+  on conflict (playhq_game_id, playhq_team_id) do update set
+    team_id = excluded.team_id, opponent = excluded.opponent, round_name = excluded.round_name,
+    starts_at = excluded.starts_at;
+
+  -- Goals, once the game goals migration is in.
+  if to_regclass('public.game_goals') is not null then
+    -- Next game: two athletes have set goals, and the coach a team goal.
+    insert into public.game_goals (id, athlete_id, fixture_id, body, set_by, set_by_name, set_by_coach)
+    select v.id::uuid, a.id, f.id, v.body, s.id, s.full_name, v.coach
+    from (values
+      ('6a000000-0000-4000-8000-000000000001', 'alex.rivers@example.com', 'test-game-0', 'Win at least 3 centre pass receives each quarter', 'alex.rivers@example.com', false),
+      ('6a000000-0000-4000-8000-000000000002', 'alex.rivers@example.com', 'test-game-0', 'Call early and hold space at the top of the circle', 'casey.coach@example.com', true),
+      ('6a000000-0000-4000-8000-000000000003', 'billie.stone@example.com', 'test-game-0', 'Three intercepts', 'billie.stone@example.com', false),
+      -- Last game: Alex reflected and a coach commented; Billie's reflection waits for a comment.
+      ('6a000000-0000-4000-8000-000000000011', 'alex.rivers@example.com', 'test-game-2', 'No contact penalties in defence', 'alex.rivers@example.com', false),
+      ('6a000000-0000-4000-8000-000000000012', 'alex.rivers@example.com', 'test-game-2', 'Shoot at 80% or better', 'alex.rivers@example.com', false),
+      ('6a000000-0000-4000-8000-000000000013', 'billie.stone@example.com', 'test-game-2', 'Talk to the circle defenders before every centre pass', 'casey.coach@example.com', true),
+      ('6a000000-0000-4000-8000-000000000014', 'billie.stone@example.com', 'test-game-2', 'Win the first centre pass of each quarter', 'billie.stone@example.com', false)
+    ) as v (id, athlete, game, body, setter, coach)
+    join public.profiles a on a.email = v.athlete
+    join public.profiles s on s.email = v.setter
+    join public.fixtures f on f.playhq_game_id = v.game and f.playhq_team_id = 'test-open-squad'
+    on conflict (id) do nothing;
+
+    update public.game_goals g
+    set outcome = v.outcome, reflection = v.reflection, reflected_at = coalesce(g.reflected_at, now())
+    from (values
+      ('6a000000-0000-4000-8000-000000000011', 'achieved', 'Only one contact all game, in the first quarter.'),
+      ('6a000000-0000-4000-8000-000000000012', 'partly', 'Started 9 from 10 but rushed the last quarter, 14 from 20.'),
+      ('6a000000-0000-4000-8000-000000000013', 'partly', 'Remembered most of the time, forgot in the last quarter.')
+    ) as v (id, outcome, reflection)
+    where g.id = v.id::uuid and g.reflected_at is null;
+
+    insert into public.game_goal_comments (id, goal_id, author_id, author_name, body)
+    select '6a000000-0000-4000-8000-000000000021', '6a000000-0000-4000-8000-000000000011', c.id, c.full_name,
+      'Great discipline. You stayed patient and let the turnovers come.'
+    from public.profiles c where c.email = 'casey.coach@example.com'
+    on conflict (id) do nothing;
+
+    insert into public.team_game_goals (id, fixture_id, body, set_by, set_by_name, outcome, review, reviewed_by_name, reviewed_at)
+    select v.id::uuid, f.id, v.body, c.id, c.full_name, v.outcome, v.review,
+      case when v.outcome is not null then c.full_name end, case when v.outcome is not null then now() end
+    from (values
+      ('6a000000-0000-4000-8000-000000000031', 'test-game-0', 'Win the third quarter', null, null),
+      ('6a000000-0000-4000-8000-000000000032', 'test-game-2', 'Keep them under 40 goals', 'achieved', 'Held them to 38. Great pressure through the mid-court.'),
+      ('6a000000-0000-4000-8000-000000000033', 'test-game-2', 'Fewer than 10 turnovers', 'not_yet', '14 turnovers, mostly from long passes. Work on short options at training.')
+    ) as v (id, game, body, outcome, review)
+    join public.fixtures f on f.playhq_game_id = v.game and f.playhq_team_id = 'test-open-squad'
+    cross join (select id, full_name from public.profiles where email = 'casey.coach@example.com') c
+    on conflict (id) do nothing;
+  end if;
 end;
 $$;
 

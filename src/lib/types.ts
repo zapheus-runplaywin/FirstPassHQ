@@ -441,3 +441,33 @@ export type GoalBoardRow = {
   next_goal_count: number;
   reflections_to_answer: number;
 };
+
+/** A goal a coach sets for the whole squad or team in a game. */
+export type TeamGameGoal = {
+  id: string;
+  fixture_id: string;
+  body: string;
+  set_by_name: string;
+  outcome: GoalOutcome | null;
+  review: string | null;
+  reviewed_by_name: string | null;
+  created_at: string;
+};
+
+/** A squad or team the member coaches, with its next or last game, for team goals. */
+export type CoachTeamGame = {
+  team_id: string;
+  team_name: string;
+  team_kind: GroupKind;
+  fixture_id: string;
+  /** The next game in the coming 7 days; otherwise the last one played. */
+  is_next: boolean;
+  round_name: string | null;
+  opponent: string | null;
+  starts_at: string;
+  time_tbc: boolean;
+  goals_close_at: string;
+  played_at: string;
+  goal_count: number;
+  reviewed_count: number;
+};

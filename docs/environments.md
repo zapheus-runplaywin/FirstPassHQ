@@ -89,3 +89,22 @@ Until these secrets exist the workflows only warn and carry on updating the live
 Free projects pause after a week with nobody using them. If the test project is paused, the
 migration deploy stops before the live project and says so: restore the test project in the Supabase
 dashboard and run **Deploy migrations** again.
+
+## Trying a feature as another role
+
+`supabase/test-data.sql` makes your own accounts admins and fills the squads with sample people
+who can't sign in. To see a screen as an athlete, coach or guardian:
+
+1. Run `supabase/test-data.sql` in the test project's **SQL Editor** (again, if you ran it before).
+   Your admin account becomes an assistant coach of the **Open Squad**, and the Open Squad gets
+   sample PlayHQ games: one in 3 days, a bye, and 12 played games with sample goals, reflections,
+   coach comments and team goals. Running it again moves the games so one is always coming up.
+2. In Expo Go, sign out and sign in with a second Google account. Ask to join as an **Athlete**.
+3. Sign back in as yourself, approve the request in **Administration > Members** and put the new
+   athlete in the **Open Squad** (current season).
+4. Sign in as the athlete to set goals for the next game. Sign in as yourself to see the coach side:
+   **Game goals** lists the Open Squad's team goals and every athlete's goals.
+
+Accounts you have approved with a role other than admin keep it when you run the script again.
+Sample games and goals need the game goals migration, so they appear once its pull request has
+merged and the migration has reached the test project.

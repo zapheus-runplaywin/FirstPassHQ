@@ -17,6 +17,10 @@
 -- - Who sees goals: the athlete, their guardians and their coaches, as for
 --   check-ins. Guardians can do everything the athlete can. Committee, admins
 --   and physios don't see individual goals.
+-- - Team goals (Matt, 2026-10-08: "Also allow the coach to set Team goals
+--   prior to the game"): the squad or team's coaches set them in the same
+--   window and say how each went after the game. Everyone who sees the
+--   fixture sees them, plus the guardians of its athletes.
 --
 -- Additive only: new tables, functions and policies. No rows change.
 
@@ -549,5 +553,266 @@ grant execute on function public.save_game_goal(uuid, uuid, uuid, text) to authe
 grant execute on function public.delete_game_goal(uuid) to authenticated;
 grant execute on function public.reflect_on_game_goal(uuid, text, text) to authenticated;
 grant execute on function public.add_game_goal_comment(uuid, text) to authenticated;
+
+-- ---------------------------------------------------------------------------
+-- Team goals
+-- ---------------------------------------------------------------------------
+
+create table if not exists public.team_game_goals (
+  id uuid primary key default gen_random_uuid(),
+  fixture_id uuid not null references public.fixtures (id),
+  body text not null check (length(btrim(body)) between 1 and 300),
+  set_by uuid references public.profiles (id) on delete set null,
+  set_by_name text not null,
+  -- After the game: how it went, in the coaches' words.
+  outcome text check (outcome in ('achieved', 'partly', 'not_yet')),
+  review text check (length(review) <= 1000),
+  reviewed_by_name text,
+  reviewed_at timestamptz,
+  created_at timestamptz not null default now(),
+  updated_at timestamptz not null default now()
+);
+
+create index if not exists team_game_goals_fixture_idx on public.team_game_goals (fixture_id);
+
+drop trigger if exists team_game_goals_touch_updated_at on public.team_game_goals;
+create trigger team_game_goals_touch_updated_at
+  before update on public.team_game_goals
+  for each row execute function public.touch_updated_at();
+
+alter table public.team_game_goals enable row level security;
+
+-- The signed-in member coaches the current squad or team a game is for.
+create or replace function public.coaches_fixture_team(p_fixture_id uuid)
+returns boolean
+language sql
+stable
+security definer
+set search_path = ''
+as $$
+  select public.is_approved() and exists (
+    select 1
+    from public.fixtures f
+    join public.teams t on t.id = f.team_id
+    join public.team_members coach
+      on coach.team_id = t.id and coach.profile_id = auth.uid() and coach.team_role = 'coach'
+    where f.id = p_fixture_id
+      and not t.archived
+      and t.selections_completed_at is null
+  );
+$$;
+
+-- Everyone who sees the game, plus the guardians of its squad or team's athletes.
+create or replace function public.can_view_team_goals(p_fixture_id uuid)
+returns boolean
+language sql
+stable
+security definer
+set search_path = ''
+as $$
+  select public.is_approved() and exists (
+    select 1 from public.fixtures f
+    where f.id = p_fixture_id
+      and f.team_id is not null
+      and (
+        public.is_admin()
+        or public.is_team_member(f.team_id)
+        or exists (
+          select 1 from public.team_members a
+          where a.team_id = f.team_id and a.team_role = 'athlete'
+            and public.is_guardian_of(a.profile_id)
+        )
+      )
+  );
+$$;
+
+revoke execute on function public.coaches_fixture_team(uuid) from public, anon;
+revoke execute on function public.can_view_team_goals(uuid) from public, anon;
+grant execute on function public.coaches_fixture_team(uuid) to authenticated;
+grant execute on function public.can_view_team_goals(uuid) to authenticated;
+
+drop policy if exists "Members of the team see its goals" on public.team_game_goals;
+create policy "Members of the team see its goals"
+  on public.team_game_goals for select to authenticated
+  using (public.can_view_team_goals(fixture_id));
+
+-- For coaches: each current squad and team they coach, with its next game in
+-- the coming 7 days and its last played game, and their team goal counts.
+create or replace function public.coach_team_games()
+returns table (
+  team_id uuid,
+  team_name text,
+  team_kind text,
+  fixture_id uuid,
+  is_next boolean,
+  round_name text,
+  opponent text,
+  starts_at timestamptz,
+  time_tbc boolean,
+  goals_close_at timestamptz,
+  played_at timestamptz,
+  goal_count int,
+  reviewed_count int
+)
+language sql
+stable
+security definer
+set search_path = ''
+as $$
+  select
+    t.id, t.name, t.kind::text, g.id, g.is_next, g.round_name, g.opponent, g.starts_at,
+    g.time_tbc, public.fixture_goals_close_at(g.f), public.fixture_played_at(g.f),
+    (select count(*)::int from public.team_game_goals x where x.fixture_id = g.id),
+    (select count(*)::int from public.team_game_goals x
+      where x.fixture_id = g.id and (x.outcome is not null or x.review is not null))
+  from public.team_members coach
+  join public.teams t on t.id = coach.team_id
+  cross join lateral (
+    (select f, f.id, true as is_next, f.round_name, f.opponent, f.starts_at, f.time_tbc
+     from public.fixtures f
+     where f.team_id = t.id and f.opponent is not null
+       and public.fixture_played_at(f) > now() and f.starts_at <= now() + interval '7 days'
+     order by f.starts_at limit 1)
+    union all
+    (select f, f.id, false, f.round_name, f.opponent, f.starts_at, f.time_tbc
+     from public.fixtures f
+     where f.team_id = t.id and f.opponent is not null and public.fixture_played_at(f) <= now()
+     order by f.starts_at desc limit 1)
+  ) g
+  where coach.profile_id = auth.uid()
+    and coach.team_role = 'coach'
+    and not t.archived
+    and t.selections_completed_at is null
+    and public.is_approved()
+  order by t.kind, t.sort_order, t.name, g.is_next desc;
+$$;
+
+revoke execute on function public.coach_team_games() from public, anon;
+grant execute on function public.coach_team_games() to authenticated;
+
+-- A coach adds a team goal (p_goal_id null) or changes one, in the 7 days
+-- before the game until it starts.
+create or replace function public.save_team_game_goal(p_goal_id uuid, p_fixture_id uuid, p_body text)
+returns uuid
+language plpgsql
+security definer
+set search_path = ''
+as $$
+declare
+  v_goal public.team_game_goals;
+  v_fixture public.fixtures;
+  v_id uuid;
+begin
+  if coalesce(btrim(p_body), '') = '' then
+    raise exception 'Write the goal first';
+  end if;
+  if length(btrim(p_body)) > 300 then
+    raise exception 'Keep a goal under 300 characters';
+  end if;
+  if p_goal_id is not null then
+    select * into v_goal from public.team_game_goals where id = p_goal_id for update;
+    if v_goal.id is null then
+      raise exception 'That goal has been removed';
+    end if;
+    p_fixture_id := v_goal.fixture_id;
+  end if;
+  if not public.coaches_fixture_team(p_fixture_id) then
+    raise exception 'Only the team’s coaches can set team goals';
+  end if;
+  select * into v_fixture from public.fixtures where id = p_fixture_id;
+  if v_fixture.opponent is null then
+    raise exception 'There’s no game to set goals for';
+  end if;
+  if now() >= public.fixture_goals_close_at(v_fixture) then
+    raise exception 'Goals close when the game starts';
+  end if;
+  if v_fixture.starts_at > now() + interval '7 days' then
+    raise exception 'Goals open 7 days before the game';
+  end if;
+
+  if v_goal.id is null then
+    if (select count(*) from public.team_game_goals where fixture_id = p_fixture_id) >= 10 then
+      raise exception 'A game can have up to 10 team goals';
+    end if;
+    insert into public.team_game_goals (fixture_id, body, set_by, set_by_name)
+    values (p_fixture_id, btrim(p_body), auth.uid(), public.my_display_name())
+    returning id into v_id;
+    return v_id;
+  end if;
+
+  update public.team_game_goals set body = btrim(p_body) where id = v_goal.id;
+  return v_goal.id;
+end;
+$$;
+
+create or replace function public.delete_team_game_goal(p_goal_id uuid)
+returns void
+language plpgsql
+security definer
+set search_path = ''
+as $$
+declare
+  v_goal public.team_game_goals;
+  v_fixture public.fixtures;
+begin
+  select * into v_goal from public.team_game_goals where id = p_goal_id for update;
+  if v_goal.id is null then
+    return;
+  end if;
+  if not public.coaches_fixture_team(v_goal.fixture_id) then
+    raise exception 'Only the team’s coaches can remove team goals';
+  end if;
+  select * into v_fixture from public.fixtures where id = v_goal.fixture_id;
+  if now() >= public.fixture_goals_close_at(v_fixture) then
+    raise exception 'Goals can’t be removed once the game starts';
+  end if;
+  delete from public.team_game_goals where id = v_goal.id;
+end;
+$$;
+
+-- A coach says how a team goal went, after the game.
+create or replace function public.review_team_game_goal(p_goal_id uuid, p_outcome text, p_review text)
+returns void
+language plpgsql
+security definer
+set search_path = ''
+as $$
+declare
+  v_goal public.team_game_goals;
+  v_fixture public.fixtures;
+begin
+  select * into v_goal from public.team_game_goals where id = p_goal_id for update;
+  if v_goal.id is null or not public.coaches_fixture_team(v_goal.fixture_id) then
+    raise exception 'Only the team’s coaches can review team goals';
+  end if;
+  select * into v_fixture from public.fixtures where id = v_goal.fixture_id;
+  if now() < public.fixture_played_at(v_fixture) then
+    raise exception 'Reviews open after the game';
+  end if;
+  if p_outcome is not null and p_outcome not in ('achieved', 'partly', 'not_yet') then
+    raise exception 'Pick how the goal went';
+  end if;
+  if length(coalesce(p_review, '')) > 1000 then
+    raise exception 'Keep a review under 1000 characters';
+  end if;
+  if p_outcome is null and coalesce(btrim(p_review), '') = '' then
+    raise exception 'Pick how it went or write a few words';
+  end if;
+
+  update public.team_game_goals
+  set outcome = p_outcome,
+      review = nullif(btrim(p_review), ''),
+      reviewed_by_name = public.my_display_name(),
+      reviewed_at = now()
+  where id = v_goal.id;
+end;
+$$;
+
+revoke execute on function public.save_team_game_goal(uuid, uuid, text) from public, anon;
+revoke execute on function public.delete_team_game_goal(uuid) from public, anon;
+revoke execute on function public.review_team_game_goal(uuid, text, text) from public, anon;
+grant execute on function public.save_team_game_goal(uuid, uuid, text) to authenticated;
+grant execute on function public.delete_team_game_goal(uuid) to authenticated;
+grant execute on function public.review_team_game_goal(uuid, text, text) to authenticated;
 
 commit;

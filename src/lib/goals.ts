@@ -5,11 +5,21 @@ import { useAuth } from '@/lib/auth';
 import { useClub } from '@/lib/club';
 import { formatShortDay } from '@/lib/format';
 import { supabase } from '@/lib/supabase';
-import type { GameGoal, GameGoalComment, GoalBoardRow, GoalGame, GoalOutcome } from '@/lib/types';
+import type {
+  CoachTeamGame,
+  GameGoal,
+  GameGoalComment,
+  GoalBoardRow,
+  GoalGame,
+  GoalOutcome,
+  TeamGameGoal,
+} from '@/lib/types';
 
 export const GOAL_COLUMNS =
   'id, athlete_id, fixture_id, body, set_by, set_by_name, set_by_coach, outcome, reflection, reflected_at, created_at';
 export const GOAL_COMMENT_COLUMNS = 'id, goal_id, author_id, author_name, body, created_at';
+export const TEAM_GOAL_COLUMNS =
+  'id, fixture_id, body, set_by_name, outcome, review, reviewed_by_name, created_at';
 
 /** Played games shown at a time. */
 export const PAST_PAGE_SIZE = 10;
@@ -141,6 +151,16 @@ export async function fetchGoals(athleteId: string, fixtureId: string) {
   return { goals: list, comments: (comments as GameGoalComment[] | null) ?? [] };
 }
 
+/** The coaches' goals for the whole squad or team in a game. */
+export async function fetchTeamGoals(fixtureId: string) {
+  const { data } = await supabase
+    .from('team_game_goals')
+    .select(TEAM_GOAL_COLUMNS)
+    .eq('fixture_id', fixtureId)
+    .order('created_at');
+  return (data as TeamGameGoal[] | null) ?? [];
+}
+
 /**
  * For the home screen: the athlete's next game and their last played one,
  * for the Goals card and to-do list.
@@ -192,6 +212,28 @@ export function useGoalBoard() {
   );
 
   return { goalBoard: on ? board : null, reloadGoalBoard: load };
+}
+
+/** For coaches: each group's next game (or last played one), for team goals. */
+export function useCoachTeamGames() {
+  const { features } = useClub();
+  const isCoach = useIsGoalCoach();
+  const on = features.goals && isCoach;
+  const [games, setGames] = useState<CoachTeamGame[] | null>(null);
+
+  const load = useCallback(async () => {
+    if (!on) return;
+    const { data } = await supabase.rpc('coach_team_games');
+    setGames((data as CoachTeamGame[] | null) ?? []);
+  }, [on]);
+
+  useFocusEffect(
+    useCallback(() => {
+      load();
+    }, [load]),
+  );
+
+  return { teamGames: on ? games : null, reloadTeamGames: load };
 }
 
 /** Reflections across the coach's athletes that no coach has commented on. An athlete in a squad and its team is counted once. */

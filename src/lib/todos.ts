@@ -4,7 +4,7 @@ import { slotTitle } from '@/lib/awards';
 import { formatShortDay } from '@/lib/format';
 import { gamePhase, gameTitle } from '@/lib/goals';
 import { formatDateString, toDateString } from '@/lib/injuries';
-import type { AwardSlot, GoalGame, Injury } from '@/lib/types';
+import type { AwardSlot, CoachTeamGame, GoalGame, Injury } from '@/lib/types';
 import type { SafetyTodos } from '@/lib/use-pending-requests';
 
 /** Something the member still has to do, shown at the top of the home screen. */
@@ -29,6 +29,7 @@ export function buildTodos({
   safety = null,
   goals = null,
   goalReflectionsToAnswer = 0,
+  teamGames = [],
   today = new Date(),
 }: {
   userId: string | undefined;
@@ -46,6 +47,8 @@ export function buildTodos({
   goals?: { next: GoalGame | null; last: GoalGame | null } | null;
   /** Reflections from athletes the member coaches that no coach has answered. */
   goalReflectionsToAnswer?: number;
+  /** Next and last games of the groups the member coaches, for team goals. */
+  teamGames?: CoachTeamGame[];
   today?: Date;
 }): Todo[] {
   const todos: Todo[] = [];
@@ -131,6 +134,16 @@ export function buildTodos({
       title: `Reflect on ${gameTitle(last)}`,
       detail: 'How did your goals go?',
       href: goalHref(last, userId),
+    });
+  }
+
+  for (const game of teamGames) {
+    if (!game.is_next || game.goal_count > 0 || gamePhase(game, today) !== 'open') continue;
+    todos.push({
+      key: `team-goals-${game.fixture_id}`,
+      title: `Set team goals for ${game.team_name}`,
+      detail: `${gameTitle(game)} · ${formatShortDay(new Date(game.starts_at))}`,
+      href: { pathname: '/goals/team', params: { fixture: game.fixture_id } },
     });
   }
 

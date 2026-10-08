@@ -14,13 +14,15 @@ import { formatShortDay } from '@/lib/format';
 import {
   fetchNextGame,
   gameTitle,
+  gamePhase,
+  useCoachTeamGames,
   useGoalBoard,
   useIsGoalAthlete,
   useIsGoalCoach,
   useIsGoalGuardian,
 } from '@/lib/goals';
 import { supabase } from '@/lib/supabase';
-import type { GoalBoardRow, GoalGame } from '@/lib/types';
+import type { CoachTeamGame, GoalBoardRow, GoalGame } from '@/lib/types';
 
 export default function GoalsScreen() {
   const { session, profile } = useAuth();
@@ -29,13 +31,19 @@ export default function GoalsScreen() {
   const isGuardian = useIsGoalGuardian();
   const isCoach = useIsGoalCoach();
   const { goalBoard, reloadGoalBoard } = useGoalBoard();
+  const { teamGames, reloadTeamGames } = useCoachTeamGames();
   const myGames = useGoalGames(isAthlete ? userId : undefined);
   const guardian = useGuardianAthletes(isGuardian);
   const [refreshing, setRefreshing] = useState(false);
 
   async function onRefresh() {
     setRefreshing(true);
-    await Promise.all([myGames.reload(), guardian.reload(), reloadGoalBoard()]);
+    await Promise.all([
+      myGames.reload(),
+      guardian.reload(),
+      reloadGoalBoard(),
+      reloadTeamGames(),
+    ]);
     setRefreshing(false);
   }
 
@@ -55,6 +63,8 @@ export default function GoalsScreen() {
       ) : null}
 
       {isGuardian ? <GuardianAthletes athletes={guardian.athletes} /> : null}
+
+      {isCoach ? <CoachTeamGames games={teamGames} /> : null}
 
       {isCoach ? <CoachBoard board={goalBoard} /> : null}
     </Screen>
@@ -119,6 +129,44 @@ function GuardianAthletes({ athletes }: { athletes: GuardianAthlete[] | null }) 
       })}
     </View>
   );
+}
+
+/** Team goals: each group the member coaches, with its next game and last played one. */
+function CoachTeamGames({ games }: { games: CoachTeamGame[] | null }) {
+  if (!games || games.length === 0) return null;
+  return (
+    <View style={styles.section}>
+      <ThemedText type="smallBold">Team goals</ThemedText>
+      <ThemedText type="small" themeColor="textSecondary">
+        Set goals for the whole team before its next game, and say how the team went afterwards.
+      </ThemedText>
+      {games.map((game) => (
+        <PressableCard
+          key={game.fixture_id}
+          onPress={() =>
+            router.push({ pathname: '/goals/team', params: { fixture: game.fixture_id } })
+          }>
+          <ThemedText type="smallBold">
+            {game.team_name} · {gameTitle(game)}
+          </ThemedText>
+          <ThemedText type="small" themeColor="textSecondary">
+            {game.is_next ? 'Next game' : 'Last game'} · {formatShortDay(new Date(game.starts_at))}
+          </ThemedText>
+          <ThemedText type="small">{teamGoalsLine(game)}</ThemedText>
+        </PressableCard>
+      ))}
+    </View>
+  );
+}
+
+function teamGoalsLine(game: CoachTeamGame) {
+  const phase = gamePhase(game);
+  const n = game.goal_count;
+  const goals = `${n} team ${n === 1 ? 'goal' : 'goals'}`;
+  if (phase === 'open') return n === 0 ? 'No team goals yet' : `${goals} set`;
+  if (phase === 'playing') return `${goals} · game on`;
+  if (n === 0) return 'No team goals were set';
+  return game.reviewed_count === n ? `${goals} · ✓ Reviewed` : `${goals} · ${game.reviewed_count} of ${n} reviewed`;
 }
 
 /** Each squad and team the member coaches, with every athlete's next game. */
