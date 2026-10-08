@@ -166,9 +166,12 @@ calendars of the squads and teams you belong to. Committee members and admins al
 committee calendar.
 
 - **List** shows a week strip and the events after it, grouped by day. Use the arrows to move
-  between weeks, and **Load more** at the bottom to see further ahead.
+  between weeks, and **Load more** at the bottom to see further ahead. Step back a week to see past
+  events from that week on.
 - **Month** shows a month grid. Dots under a day are events, coloured by calendar. Tap a day to see
   its events.
+- You can look back 12 months (to the start of that month) and ahead 12 months. The arrow fades
+  out when you reach either end.
 - The chips (**All**, **Club**, your squads and teams) filter which calendars are shown.
 
 Your teams' matches from PlayHQ appear in the calendar too, for example "Mixed Open A v Rockets"

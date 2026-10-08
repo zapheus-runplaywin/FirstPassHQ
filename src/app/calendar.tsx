@@ -9,8 +9,8 @@ import { Button, ChipGroup, ErrorText } from '@/components/ui';
 import { WeekStrip } from '@/components/week-strip';
 import { Spacing } from '@/constants/theme';
 import type { CalendarEvent } from '@/lib/calendar';
-import { addDays, dayKey, formatDay, startOfWeek } from '@/lib/format';
-import { useEvents } from '@/lib/use-events';
+import { addDays, dayKey, formatDay, startOfDay, startOfWeek } from '@/lib/format';
+import { earliestDay, latestDay, useEvents } from '@/lib/use-events';
 
 type CalendarView = 'list' | 'month';
 
@@ -33,7 +33,11 @@ export default function CalendarScreen() {
     canLoadMore,
     loadingMore,
     showMonthsAhead,
+    showPast,
   } = useEvents();
+  // Members can look back 12 months and ahead 12 months.
+  const [earliest] = useState(() => earliestDay());
+  const [latest] = useState(() => latestDay());
   const [refreshing, setRefreshing] = useState(false);
   const [view, setView] = useState<CalendarView>('list');
   const [filter, setFilter] = useState(ALL);
@@ -43,12 +47,13 @@ export default function CalendarScreen() {
   // Where each day starts in the list, reported as rows are laid out.
   const [dayY] = useState(() => new Map<string, number>());
 
-  /** Loads far enough ahead to include a date, up to the limit. */
+  /** Loads far enough back or ahead to include a date, up to the limits. */
   function loadThrough(date: Date) {
     const today = new Date();
-    showMonthsAhead(
-      (date.getFullYear() - today.getFullYear()) * 12 + date.getMonth() - today.getMonth() + 1,
-    );
+    const months =
+      (date.getFullYear() - today.getFullYear()) * 12 + date.getMonth() - today.getMonth();
+    if (months < 0) showPast();
+    else showMonthsAhead(months + 1);
   }
 
   const loadMore = (
@@ -144,6 +149,8 @@ export default function CalendarScreen() {
           eventDays={eventDays}
           selectedDay={selectedDay}
           onSelect={(date) => setSelectedDay(dayKey(date))}
+          earliest={earliest}
+          latest={latest}
           onChangeMonth={(next) => {
             setMonth(next);
             loadThrough(next);
@@ -160,23 +167,29 @@ export default function CalendarScreen() {
     );
   }
 
+  // The list starts today, or earlier once the week strip steps back a week.
+  const listFrom = weekStart < startOfWeek(new Date()) ? weekStart : startOfDay(new Date());
+  const listed = filtered.filter((event) => event.end > listFrom || event.start >= listFrom);
   const listTop = [
     ...top,
     <WeekJump
       key="week"
-      events={filtered}
+      events={listed}
       eventDays={eventDays}
       dayY={dayY}
       weekStart={weekStart}
+      earliest={earliest}
+      latest={latest}
       onChangeWeek={(next) => {
         setWeekStart(next);
-        loadThrough(addDays(next, 6));
+        // Stepping back needs the week's first day, stepping ahead its last.
+        loadThrough(next < weekStart ? next : addDays(next, 6));
       }}
       selectedDay={selectedDay}
       onSelect={setSelectedDay}
     />,
   ];
-  const { rows, headingIndexes } = agendaRows(filtered, (key, y) => {
+  const { rows, headingIndexes } = agendaRows(listed, (key, y) => {
     dayY.set(key, y);
   });
 
@@ -197,6 +210,8 @@ function WeekJump({
   eventDays,
   dayY,
   weekStart,
+  earliest,
+  latest,
   onChangeWeek,
   selectedDay,
   onSelect,
@@ -205,6 +220,8 @@ function WeekJump({
   eventDays: Map<string, string[]>;
   dayY: Map<string, number>;
   weekStart: Date;
+  earliest: Date;
+  latest: Date;
   onChangeWeek: (weekStart: Date) => void;
   selectedDay: string | null;
   onSelect: (key: string) => void;
@@ -213,6 +230,8 @@ function WeekJump({
   return (
     <WeekStrip
       weekStart={weekStart}
+      earliest={earliest}
+      latest={latest}
       eventDays={eventDays}
       selectedDay={selectedDay}
       onChangeWeek={onChangeWeek}
