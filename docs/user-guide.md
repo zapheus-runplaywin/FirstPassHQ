@@ -599,7 +599,8 @@ Nothing is deleted when a season is archived.
 
 **Awards** lists the club's awards by season. Tap **New award** and set:
 
-- **Name**, **Description** (what voters should think about) and when **Voting closes**.
+- **Name**, **Description** (what voters should think about) and when **Voting closes**. Pick the
+  day on the calendar, using the arrows to move to later months.
 - **Who votes**: **The whole club**, or **Chosen squads and teams**. For chosen groups, pick
   **One winner** or **A winner for each** squad or team. With a winner for each, members vote only
   in their own group.
@@ -627,6 +628,7 @@ named after the season starts, so the copy says when a team had no match yet: ed
 add it once the team is named. **Copy into** on one award copies just that one.
 
 <img src="user-guide/admin-awards.png" width="210" alt="Awards admin">
+<img src="user-guide/award-close-date.png" width="210" alt="Choosing when voting closes">
 <img src="user-guide/new-award.png" width="210" alt="Creating an award">
 <img src="user-guide/award-results.png" width="210" alt="Award standings and who has voted">
 

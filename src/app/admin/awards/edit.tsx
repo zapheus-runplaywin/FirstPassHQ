@@ -2,7 +2,7 @@ import { router, Stack, useLocalSearchParams } from 'expo-router';
 import { useEffect, useState } from 'react';
 import { StyleSheet, View } from 'react-native';
 
-import { DateField } from '@/components/date-field';
+import { MonthDateField } from '@/components/month-date-field';
 import { Screen } from '@/components/screen';
 import { ThemedText } from '@/components/themed-text';
 import { Button, ChipGroup, ConfirmDelete, ErrorText, TextField } from '@/components/ui';
@@ -19,17 +19,6 @@ import { toDateString } from '@/lib/injuries';
 import { supabase } from '@/lib/supabase';
 import type { Award, AwardNominees, AwardTurnout, AwardVoterRole } from '@/lib/types';
 import { seasonLabel, teamLabel, useTeams } from '@/lib/use-teams';
-
-const closeQuickPicks = [
-  { label: 'In a week', days: 7 },
-  { label: 'In a month', days: 30 },
-  { label: 'In 3 months', days: 91 },
-];
-
-const preseasonQuickPicks = [
-  { label: 'In 2 weeks', days: 14 },
-  { label: 'In a month', days: 30 },
-];
 
 const weightOptions = ['0', '10', '20', '25', '30', '40', '50'].map((w) => ({
   value: w,
@@ -225,12 +214,7 @@ export default function EditAwardScreen() {
         />
       ) : null}
 
-      <DateField
-        label="Voting closes"
-        value={closesOn}
-        onChange={setClosesOn}
-        quickPicks={closeQuickPicks}
-      />
+      <MonthDateField label="Voting closes" value={closesOn} onChange={setClosesOn} />
 
       {!locked ? (
         <>
@@ -346,11 +330,10 @@ export default function EditAwardScreen() {
                 Voters get one preseason ballot. The result is {weight}% the share of preseason
                 points and {100 - Number(weight)}% the share of match points.
               </ThemedText>
-              <DateField
+              <MonthDateField
                 label="Preseason vote closes"
                 value={preseasonOn}
                 onChange={setPreseasonOn}
-                quickPicks={preseasonQuickPicks}
               />
             </>
           ) : null}
