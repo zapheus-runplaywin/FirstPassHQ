@@ -8,12 +8,14 @@
 --   - adds sample people (all @example.com, so nobody real is emailed) in the
 --     current season's squads, with a team named from the Open Squad, an
 --     under-18 athlete with a guardian, and someone waiting for approval;
---   - adds the admins as assistant coaches of the Open Squad, and sample
---     PlayHQ games for it (the next one in 3 days, 12 played, a bye) with
---     athletes' goals, reflections, coach comments and team goals.
+--   - adds the admins as assistant coaches of the Open Squad and its Open A
+--     team, and sample PlayHQ games for Open A (the next one in 3 days, 12
+--     played, a bye) with athletes' goals, reflections, coach comments and
+--     team goals. PlayHQ games belong to teams, not squads.
 --
 -- To try game goals as an athlete, sign in with a second Google account,
--- ask to join as an athlete, and approve them into the Open Squad. Accounts
+-- ask to join as an athlete, and approve them into the Open Squad and the
+-- Open A team. Accounts
 -- that are already approved keep their role when you run this again.
 --
 -- The sample people can't sign in; they fill the lists and rosters. Running
@@ -167,22 +169,24 @@ begin
   )
   on conflict (team_id, profile_id) do nothing;
 
-  -- Admins coach the Open Squad too, so they can try the coach screens.
+  -- Admins coach the Open Squad and Open A too, so they can try the coach screens.
   insert into public.team_members (team_id, profile_id, team_role, coach_title)
-  select v_open, p.id, 'coach', 'assistant_coach'
+  select g.id, p.id, 'coach', 'assistant_coach'
   from public.profiles p
+  cross join (values (v_open), (v_team)) as g (id)
   where coalesce(p.email, '') not like '%@example.com' and p.role = 'admin' and p.status = 'approved'
   on conflict (team_id, profile_id) do nothing;
 
-  -- Sample PlayHQ games for the Open Squad, at 10am Perth time: the next one
-  -- in 3 days, a bye, and 12 played ones, a week apart. Running this again
-  -- moves them so there's always a game coming up.
+  -- Sample PlayHQ games for Open A, at 10am Perth time: the next one in 3
+  -- days, a bye, and 12 played ones, a week apart. Running this again moves
+  -- them so there's always a game coming up, and moves games an earlier run
+  -- put on the Open Squad (PlayHQ games belong to teams).
   insert into public.fixtures as f (
     playhq_game_id, playhq_team_id, team_id, team_name, opponent, round_name, grade_name,
     starts_at, venue, court, is_home
   )
   select
-    'test-game-' || g.n, 'test-open-squad', v_open, 'Open Squad',
+    'test-game-' || g.n, 'test-open-squad', v_team, 'Open A',
     case when g.n = 1 then null else (array['Swan Districts', 'Hawks', 'Kalamunda', 'Rockingham',
       'Fremantle', 'Joondalup', 'Perth', 'Mandurah', 'Bunbury', 'Midland', 'Armadale', 'Wanneroo',
       'Cockburn'])[greatest(g.n, 1)] end,
@@ -196,7 +200,7 @@ begin
     union all select n, -4 - (n - 2) * 7 from generate_series(2, 13) n
   ) g
   on conflict (playhq_game_id, playhq_team_id) do update set
-    team_id = excluded.team_id, opponent = excluded.opponent, round_name = excluded.round_name,
+    team_id = excluded.team_id, team_name = excluded.team_name, opponent = excluded.opponent, round_name = excluded.round_name,
     starts_at = excluded.starts_at;
 
   -- Goals, once the game goals migration is in.

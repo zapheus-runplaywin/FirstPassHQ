@@ -399,6 +399,8 @@ export type GoalOutcome = 'achieved' | 'partly' | 'not_yet';
 /** A PlayHQ game an athlete can set goals for, with their goal counts. */
 export type GoalGame = {
   fixture_id: string;
+  /** The squad or team the game is for. */
+  team_id: string | null;
   team_name: string;
   round_name: string | null;
   opponent: string | null;

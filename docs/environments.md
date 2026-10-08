@@ -96,14 +96,16 @@ dashboard and run **Deploy migrations** again.
 who can't sign in. To see a screen as an athlete, coach or guardian:
 
 1. Run `supabase/test-data.sql` in the test project's **SQL Editor** (again, if you ran it before).
-   Your admin account becomes an assistant coach of the **Open Squad**, and the Open Squad gets
-   sample PlayHQ games: one in 3 days, a bye, and 12 played games with sample goals, reflections,
+   Your admin account becomes an assistant coach of the **Open Squad** and its **Open A** team, and
+   Open A gets sample PlayHQ games (PlayHQ games belong to teams, not squads): one in 3 days, a bye, and 12 played games with sample goals, reflections,
    coach comments and team goals. Running it again moves the games so one is always coming up.
 2. In Expo Go, sign out and sign in with a second Google account. Ask to join as an **Athlete**.
-3. Sign back in as yourself, approve the request in **Administration > Members** and put the new
-   athlete in the **Open Squad** (current season).
-4. Sign in as the athlete to set goals for the next game. Sign in as yourself to see the coach side:
-   **Game goals** lists the Open Squad's team goals and every athlete's goals.
+3. Sign back in as yourself, approve the request in **Administration > Members**, put the new
+   athlete in the **Open Squad** (current season) and, under **Teams**, in **Open A** as a final
+   team athlete.
+4. Sign in as the athlete and tap **Open A** under **My squads and teams** to set goals for the next
+   game. Sign in as yourself and open **Open A** to see the coach side: its team goals at the top
+   and every athlete's goals under **People**.
 
 Accounts you have approved with a role other than admin keep it when you run the script again.
 Sample games and goals need the game goals migration, so they appear once its pull request has

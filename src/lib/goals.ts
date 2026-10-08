@@ -111,12 +111,13 @@ export async function fetchNextGame(athleteId: string) {
   return ((data as GoalGame[] | null) ?? [])[0] ?? null;
 }
 
-/** A page of played games, and whether there are more after it. */
-export async function fetchPastGames(athleteId: string, offset: number) {
+/** A page of played games (of one squad or team, if given), and whether there are more. */
+export async function fetchPastGames(athleteId: string, offset: number, teamId?: string) {
   const { data, error } = await supabase.rpc('goal_past_games', {
     p_athlete_id: athleteId,
     p_limit: PAST_PAGE_SIZE + 1,
     p_offset: offset,
+    p_team_id: teamId ?? null,
   });
   if (error) throw error;
   const rows = (data as GoalGame[] | null) ?? [];

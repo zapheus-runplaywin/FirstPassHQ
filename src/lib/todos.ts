@@ -29,6 +29,7 @@ export function buildTodos({
   safety = null,
   goals = null,
   goalReflectionsToAnswer = 0,
+  goalCommentsTeamId,
   teamGames = [],
   today = new Date(),
 }: {
@@ -47,6 +48,8 @@ export function buildTodos({
   goals?: { next: GoalGame | null; last: GoalGame | null } | null;
   /** Reflections from athletes the member coaches that no coach has answered. */
   goalReflectionsToAnswer?: number;
+  /** A squad or team with reflections waiting, whose page the to-do opens. */
+  goalCommentsTeamId?: string;
   /** Next and last games of the groups the member coaches, for team goals. */
   teamGames?: CoachTeamGame[];
   today?: Date;
@@ -147,12 +150,12 @@ export function buildTodos({
     });
   }
 
-  if (goalReflectionsToAnswer > 0) {
+  if (goalReflectionsToAnswer > 0 && goalCommentsTeamId) {
     todos.push({
       key: 'goal-comments',
       title: `Comment on ${goalReflectionsToAnswer} goal ${goalReflectionsToAnswer === 1 ? 'reflection' : 'reflections'}`,
       detail: 'Your athletes have said how their game went',
-      href: '/goals',
+      href: { pathname: '/team/[id]', params: { id: goalCommentsTeamId } },
     });
   }
 
@@ -231,5 +234,8 @@ export function buildTodos({
 const REFLECT_WITHIN_MS = 7 * 24 * 60 * 60 * 1000;
 
 function goalHref(game: GoalGame, athleteId: string | undefined): Href {
-  return { pathname: '/goals/game', params: { athlete: athleteId ?? '', fixture: game.fixture_id } };
+  return {
+    pathname: '/goals/game',
+    params: { athlete: athleteId ?? '', fixture: game.fixture_id },
+  };
 }
