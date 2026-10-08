@@ -90,6 +90,7 @@ function RootStack() {
             <Stack.Screen name="injuries/index" options={{ title: 'Injuries' }} />
             <Stack.Screen name="injuries/new" options={{ title: 'Report an injury' }} />
             <Stack.Screen name="injuries/[id]" options={{ title: 'Injury' }} />
+            <Stack.Screen name="injuries/document" options={{ title: 'Document' }} />
           </Stack.Protected>
           <Stack.Protected guard={features.attendance}>
             <Stack.Screen name="attendance/index" options={{ title: 'Attendance' }} />
