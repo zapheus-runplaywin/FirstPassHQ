@@ -553,7 +553,9 @@ committee), plus run the club's set-up from **Administration** on the home
 screen. Admins' to-do lists include join requests waiting for approval and clearances waiting for
 sign-off, plus child-safety follow-ups: athletes under 18 with no guardian linked, Working With
 Children Checks that are missing, expired or expire within 30 days, and athletes turning 18 within
-30 days. On an installed app, admins also get a push notification for each new join request.
+30 days. Tapping a child-safety to-do opens **Members**, where the people behind it are listed
+first under **Needs checking**. On an installed app, admins also get a push notification for each
+new join request.
 
 <img src="user-guide/admin-home.png" width="210" alt="Admin home screen">
 <img src="user-guide/administration.png" width="210" alt="Administration menu">
@@ -563,6 +565,12 @@ Children Checks that are missing, expired or expire within 30 days, and athletes
 
 **Members** lists everyone, grouped into **Waiting for approval**, **Members**, **Signed in, no
 request yet** and **Not approved**. Search by name or email.
+
+**Needs checking**, at the top, lists the members behind the child-safety to-dos on your home
+screen, with the reason under each name: no Working With Children Check recorded, one that has
+expired or expires within 30 days, an athlete under 18 with no guardian linked, or an athlete about
+to turn 18. They also show "Needs checking" in the main list. Open someone to fix it; once saved,
+they drop off the list.
 
 Open a request to see the person's sign-in email, PlayHQ email and what they asked for. Check them
 against PlayHQ, then:
@@ -594,7 +602,7 @@ When an athlete turns 18, the next time you save them their guardian links are r
 To turn someone down, choose a reason (**PlayHQ email doesn't match**, **Not registered with the
 club** or **Other**) and tap **Don't approve**. They see the reason and can request again.
 
-<img src="user-guide/members.png" width="210" alt="Members list">
+<img src="user-guide/members.png" width="210" alt="Members list with Needs checking at the top">
 <img src="user-guide/member-approve.png" width="210" alt="Approving a guardian's request">
 <img src="user-guide/member-new.png" width="210" alt="Approving an athlete's request">
 
