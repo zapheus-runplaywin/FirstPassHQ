@@ -49,7 +49,7 @@ What each role sees on its home screen:
 | Feature                                | Athlete |     Guardian    |    Coach     |  Manager   |   Committee   |     Physio    |  Guest  |     Admin     |
 | -------------------------------------- | :-----: | :-------------: | :----------: | :--------: | :-----------: | :-----------: | :-----: | :-----------: |
 | To-do list, calendar, squads and teams |    ✓    |        ✓        |      ✓       |     ✓      |       ✓       |       ✓       |    ✓    |       ✓       |
-| Read messages                          |    ✓    |        ✓        |      ✓       |     ✓      |       ✓       |               |         |       ✓       |
+| Read messages                          |    ✓    |        ✓        |      ✓       |     ✓      |       ✓       |   Club only*  |         |       ✓       |
 | Send messages                          |         |                 |  Own groups  | Own groups |   Whole club  |               |         |     Anyone    |
 | Daily check-in                         |    ✓    |                 |              |            |               |               |         |               |
 | Check-ins of others                    |         |                 | Own athletes |            | Averages only | Averages only |         | Averages only |
@@ -63,6 +63,8 @@ What each role sees on its home screen:
 | Import fixtures from PlayHQ            |         |                 |              |            |               |               |         |       ✓       |
 | Club name, colours, logo and features  |         |                 |              |            |               |               |         |       ✓       |
 | Administration                         |         |                 |              |            |               |               |         |       ✓       |
+
+\* Only when an admin turns on **Physios get club messages** in Club settings.
 
 "Own groups" and "own athletes" mean the squads and teams you're listed in as a coach or manager.
 Club awards are voted on by the roles, squads and teams each award names, so not every award is
@@ -155,7 +157,8 @@ sender can see that you've read it.
 Who a message went to is shown under the sender's name, for example "To Mixed Open Squad" or
 "To Everyone in the club".
 
-Physios and guests don't get messages.
+Guests don't get messages. Physios get messages sent to everyone in the club only when an admin
+turns that on.
 
 <img src="user-guide/inbox.png" width="210" alt="Messages inbox">
 
@@ -497,8 +500,10 @@ Calendars an admin shares with the **Committee** appear only for committee membe
 
 ## 9. Physios and guests
 
-Physios and guests see the squads and teams and the club calendar. They don't get messages or vote
-in club awards, so their home screen has no **Messages** or **Awards** card.
+Physios and guests see the squads and teams and the club calendar. They don't vote in club awards,
+so their home screen has no **Awards** card. Guests don't get messages. Physios get messages sent to
+everyone in the club only when an admin turns on **Physios get club messages** in
+[Club settings](#club-settings); then their home screen shows a **Messages** card.
 
 ### Physios
 
@@ -726,6 +731,8 @@ defaults (West Coast Thunder's name, logo and yellow-on-black colours).
   Awards. A switched-off feature disappears from every member's home screen, to-do list and menus,
   and its Administration pages are hidden. Nothing is deleted, so switching it back on brings
   everything back.
+- **Physios get club messages**: when on, messages sent to everyone in the club also go to
+  physios. They never get messages sent to a role, squad or team. It starts off.
 
 Tap **Save club settings**. Members see the changes the next time they open the app. The app's
 icon, its name under the icon and the splash screen are part of the app build and don't change
@@ -733,6 +740,7 @@ here.
 
 <img src="user-guide/club-settings.png" width="210" alt="Club settings: name, logo and colours">
 <img src="user-guide/club-settings-features.png" width="210" alt="Club settings: turning features on and off">
+<img src="user-guide/club-settings-physios.png" width="210" alt="Club settings: physios get club messages">
 
 ### Club password
 
@@ -750,7 +758,7 @@ once saved, only replaced or removed.
 | ----------------------- | --------------------------------------------------------------------------------------------------------------------------- |
 | Your profile and squads | You, the people in your squads and teams (names and positions only), and admins.                                            |
 | Date of birth and Working With Children Check | You and admins.                                                                                       |
-| Messages                | The people they were sent to, the sender, and admins. Guardians of athletes under 18 get a copy of every message sent to their athlete. Physios and guests don't get messages. |
+| Messages                | The people they were sent to, the sender, and admins. Guardians of athletes under 18 get a copy of every message sent to their athlete. Guests don't get messages; physios get whole-club messages only if an admin turns that on. |
 | Read receipts           | The sender and admins.                                                                                                      |
 | Daily check-in answers and notes | The athlete, their guardians and their coaches. The committee, physios and admins see only group averages, hidden below 3 check-ins. |
 | Injuries and documents  | The athlete, their guardians, their coaches, physios, the committee and admins. Managers don't see injuries.                |
