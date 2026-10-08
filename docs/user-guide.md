@@ -52,6 +52,8 @@ What each role sees on its home screen:
 | Read messages                          |    ✓    |        ✓        |      ✓       |     ✓      |       ✓       |       ✓*      |         |       ✓       |
 | Send messages                          |         |                 |  Own groups  | Own groups |   Whole club  |               |         |     Anyone    |
 | Daily check-in                         |    ✓    |                 |              |            |               |               |         |               |
+| Game goals and reflections             |   Own   | Their athlete's | Own athletes |            |               |               |         |               |
+| Team goals for a game                  |   See   |       See       | Set, review  |            |               |               |         |               |
 | Check-ins of others                    |         |                 | Own athletes |            | Averages only | Averages only |         | Averages only |
 | Report an injury                       |   Own   | Their athlete's |              |            |               |               |         |               |
 | See injuries                           |   Own   | Their athlete's | Own athletes |            |      All      |      All      |         |      All      |
@@ -141,8 +143,8 @@ Once you're approved, the home screen is where everything starts. From the top:
   clearance to sign off.
   Tap an item to go straight to it. Each item disappears once it's done. When there's nothing,
   it says "You're all caught up."
-- **Cards** for the features your role uses: Messages, Daily check-in, Check-ins, Injuries,
-  Attendance, Awards and Administration. The Awards card shows while an award vote is open to you. A yellow number means something new or waiting for you.
+- **Cards** for the features your role uses: Messages, Daily check-in, Check-ins, Game goals,
+  Injuries, Attendance, Awards and Administration. The Awards card shows while an award vote is open to you. A yellow number means something new or waiting for you.
 - **Coming up**: the next six events from your calendars. Tap **Full calendar** to see them all.
 - **My squads and teams**: tap one to see who's in it.
 - **Sign out** and **Delete account** at the bottom.
@@ -239,7 +241,7 @@ change your PlayHQ registration or club membership.
 
 ## 4. Athletes
 
-Athletes see Messages, Daily check-in and Injuries on their home screen, plus their calendar and
+Athletes see Messages, Daily check-in, Game goals and Injuries on their home screen, plus their calendar and
 squads.
 
 <img src="user-guide/todo-athlete.png" width="210" alt="Athlete home screen with to-do items">
@@ -266,6 +268,34 @@ Until you've checked in, "Do your daily check-in" stays in your to-do list.
 
 <img src="user-guide/check-in.png" width="210" alt="Daily check-in form and history">
 <img src="user-guide/check-in-note.png" width="210" alt="Check-in note, saying coaches and parents or guardians can read it">
+
+### Game goals
+
+**Game goals** uses the club's PlayHQ fixtures for your squads and teams. The **Game goals** card
+shows on your home screen once you have a game to set goals for or look back on.
+
+- **Before a game:** in the 7 days before your next game, open it under **Next game** and add
+  your goals, up to 5, such as "win 3 centre pass receives each quarter". Only your next game is
+  open for goals. You can change or remove your goals until the game starts. Your coaches can add
+  goals for you too; those show "set by Coach …" and only a coach can change them. Until you've set
+  a goal, "Set your goals for …" stays in your to-do list.
+- **After the game:** about 90 minutes after the start (the next day if PlayHQ had no start time),
+  the game moves to **Played games**. For each goal, pick **Achieved**, **Partly** or **Not yet**,
+  write a few words about how it went and tap **Save reflection**. You can update it later. For a
+  week after the game, "Reflect on …" stays in your to-do list until every goal has a reflection.
+  Your coaches' comments show under each goal.
+- **Played games** lists this season's games, newest first, 10 at a time; tap **Load more** for
+  older ones. Games drop off the list when an admin archives the season.
+
+Your coaches can see your goals and reflections. If you're under 18, your parents or guardians can
+too, and they can set goals and reflect for you. Bye rounds are left out.
+
+**Team goals** that your coaches set for the whole squad or team show at the top of the game,
+above your own goals. After the game you'll see how the coaches think the team went on each one.
+
+<img src="user-guide/goals-athlete.png" width="210" alt="Game goals: the next game and played games">
+<img src="user-guide/goals-set.png" width="210" alt="Adding a goal for the next game">
+<img src="user-guide/goals-reflect.png" width="210" alt="Reflecting on goals after a game, with a coach's comment">
 
 ### Reporting an injury
 
@@ -329,11 +359,14 @@ As a guardian you:
 - **See your athlete's daily check-ins**, including any note they write. Your athlete is told that
   you can read their notes.
 - **See the calendars** for your athlete's squad.
+- **Set game goals and reflect** for your athlete, exactly as an athlete does (see
+  [Game goals](#game-goals)). Open **Game goals** on the home screen and tap your athlete.
 - **Report and update injuries** for your athlete, and ask for clearance, exactly as an athlete
   does (see [Athletes](#4-athletes)). If you look after more than one athlete, choose which one
   when reporting.
 
 <img src="user-guide/guardian-home.png" width="210" alt="Guardian home screen">
+<img src="user-guide/goals-guardian.png" width="210" alt="A guardian's athletes with their next game">
 
 <div style="page-break-before: always"></div>
 
@@ -381,6 +414,39 @@ flagged. If any are flagged, your to-do list says "Check in with N athletes".
 <img src="user-guide/check-ins-coach.png" width="210" alt="Coach's day-by-day check-ins">
 <img src="user-guide/check-ins-trends.png" width="210" alt="Check-in trends">
 <img src="user-guide/check-ins-athlete-history.png" width="210" alt="One athlete's check-in history">
+
+### Game goals
+
+**Game goals** lists the athletes in each squad and team you coach, with their next game (within
+7 days) and how many goals they've set. The card shows on your home screen once one of your
+athletes has a game coming up or a reflection waiting.
+
+- Tap an athlete, then their next game, and type under **Add a goal for the athlete**. Their goals
+  and yours show together; you can change or remove goals set by a coach until the game starts,
+  but not the athlete's own.
+- After the game, open it from **Played games** to read how the athlete thinks each goal went, and
+  tap **Comment on this goal** to reply. Any of the athlete's coaches can comment.
+- A number next to an athlete counts reflections no coach has commented on yet, and your to-do list
+  says "Comment on N goal reflections".
+
+<img src="user-guide/goals-coach.png" width="210" alt="A coach's team games and athletes with their next game and goals">
+<img src="user-guide/goals-coach-comment.png" width="210" alt="A coach reading reflections and commenting">
+
+#### Team goals
+
+At the top of **Game goals**, **Team goals** lists each squad and team you coach with its next game
+(within 7 days) and its last played game.
+
+- Open the next game and add goals for the whole team under **Add a team goal**, up to 5, such as
+  "win the third quarter". You can change or remove them until the game starts. Any coach of the
+  squad or team can. Until a team goal is set, "Set team goals for …" stays in your to-do list.
+- The squad or team's athletes and their parents or guardians see the team goals above each
+  athlete's own goals.
+- After the game, open the last game, pick **Achieved**, **Partly** or **Not yet** for each team
+  goal, add a few words for the team and tap **Save review**. Athletes see your review.
+
+<img src="user-guide/goals-team.png" width="210" alt="Setting team goals before a game">
+<img src="user-guide/goals-team-review.png" width="210" alt="Reviewing team goals after a game">
 
 ### Match awards
 
@@ -740,7 +806,8 @@ season starts, so it says when a team has no match yet: add it once the team is 
    squad or team (see **How match awards find their games** under **Awards**).
 4. Tap **Import games**.
 
-The games then show in each team's calendar and open match award votes. PlayHQ changes times and
+The games then show in each team's calendar, open match award votes and let athletes set game
+goals. PlayHQ changes times and
 courts as a competition goes on, so tap **Refresh from PlayHQ** to pick up changes, or
 **Change teams** to link more teams. A refresh shows the PlayHQ check on that competition again, so
 it is also the way to confirm PlayHQ is still working. **Coming up** lists the next matches.
@@ -792,8 +859,8 @@ Thunder's name, logo and yellow-on-black colours are saved here, so leave them f
   background. Panels and the softer text for details are worked out from these. The preview shows
   how they look together and warns when text or buttons would be hard to read. **Use the built-in
   colours** goes back to black, white and blue.
-- **Features**: switch off any of Messages, Calendar, Daily check-ins, Injuries, Attendance and
-  Awards. A switched-off feature disappears from every member's home screen, to-do list and menus,
+- **Features**: switch off any of Messages, Calendar, Daily check-ins, Injuries, Attendance,
+  Awards and Game goals. A switched-off feature disappears from every member's home screen, to-do list and menus,
   and its Administration pages are hidden. Nothing is deleted, so switching it back on brings
   everything back.
 - **Physios get club messages**: when on, messages sent to everyone in the club also go to
@@ -828,6 +895,8 @@ once saved, only replaced or removed.
 | Read receipts           | The sender and admins.                                                                                                      |
 | Daily check-in answers and notes | The athlete, their guardians and their coaches. The committee, physios and admins see only group averages, hidden below 3 check-ins. |
 | Injuries and documents  | The athlete, their guardians, their coaches, physios, the committee and admins. Managers don't see injuries. Only the committee and admins can save or share documents; everyone else views them in the app. |
+| Game goals and reflections | The athlete, their guardians and their coaches. The committee, physios and admins don't see them. |
+| Team goals              | The squad or team's athletes, their guardians and its coaches. Only its coaches set and review them. |
 | Attendance records      | Coaches, the committee and admins. Managers see their own groups' sessions. Athletes and guardians don't see attendance.    |
 | Committee calendar      | Committee members and admins.                                                                                               |
 | Award votes             | Only the voter sees their own ballot. Nobody, admins included, can see who someone voted for.                               |

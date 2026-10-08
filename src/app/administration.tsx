@@ -57,7 +57,7 @@ export default function AdministrationScreen() {
         </PressableCard>
       ) : null}
 
-      {features.calendar || features.awards ? (
+      {features.calendar || features.awards || features.goals ? (
         <PressableCard onPress={() => router.push('/admin/fixtures')}>
           <ThemedText type="smallBold">Fixtures</ThemedText>
           <ThemedText type="small" themeColor="textSecondary">

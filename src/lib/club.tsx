@@ -14,6 +14,7 @@ export const FEATURES = [
   { key: 'injuries', label: 'Injuries', detail: 'Injury reports, medical documents and clearances' },
   { key: 'attendance', label: 'Attendance', detail: 'Coaches take attendance at sessions' },
   { key: 'awards', label: 'Awards', detail: 'Award votes and results' },
+  { key: 'goals', label: 'Game goals', detail: 'Athletes’ goals and reflections for PlayHQ games' },
 ] as const;
 
 export type FeatureKey = (typeof FEATURES)[number]['key'];

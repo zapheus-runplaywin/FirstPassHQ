@@ -25,6 +25,15 @@ import {
   useIsCheckInCoach,
   useMyCheckIn,
 } from '@/lib/check-ins';
+import { formatShortDay } from '@/lib/format';
+import {
+  gameTitle,
+  reflectionsToAnswer,
+  useCoachTeamGames,
+  useGoalBoard,
+  useIsGoalGuardian,
+  useMyGoals,
+} from '@/lib/goals';
 import { injuriesSummary, useCanSeeInjuries, useOpenInjuries } from '@/lib/injuries';
 import { useGetsMessages, useUnreadCount } from '@/lib/messages';
 import {
@@ -63,6 +72,17 @@ export default function HomeScreen() {
   const isCheckInCoach = useIsCheckInCoach();
   const { checkInOverview, reloadCheckInOverview } = useCheckInOverview(today());
   const { awardSlots, reloadAwardSlots } = useAwardSlots();
+  const { myGoals, reloadMyGoals } = useMyGoals();
+  const { goalBoard, reloadGoalBoard } = useGoalBoard();
+  const { teamGames, reloadTeamGames } = useCoachTeamGames();
+  const goalComments = reflectionsToAnswer(goalBoard);
+  const isGoalGuardian = useIsGoalGuardian();
+  // The Game goals card shows once there's a game to set goals for or look back on.
+  const hasOwnGames = !!(myGoals?.next || myGoals?.last);
+  const coachHasGames =
+    goalComments > 0 ||
+    !!goalBoard?.some((row) => row.next_fixture_id !== null) ||
+    !!teamGames?.length;
   // Turned-off features add nothing to the to-do list.
   const todos = buildTodos({
     userId: session?.user.id,
@@ -72,6 +92,9 @@ export default function HomeScreen() {
     flaggedAthletes: features.checkIns ? checkInTotals(checkInSummary).flagged : 0,
     awardSlots: features.awards ? awardSlots : [],
     safety: safetyTodos,
+    goals: myGoals ?? null,
+    goalReflectionsToAnswer: goalComments,
+    teamGames: teamGames ?? [],
   });
 
   const isGuardian = profile?.status === 'approved' && profile.role === 'guardian';
@@ -107,6 +130,9 @@ export default function HomeScreen() {
       reloadCheckInSummary(),
       reloadCheckInOverview(),
       reloadAwardSlots(),
+      reloadMyGoals(),
+      reloadGoalBoard(),
+      reloadTeamGames(),
     ]);
     setRefreshing(false);
   }
@@ -172,6 +198,15 @@ export default function HomeScreen() {
             {isCheckInCoach && checkInSummary.length > 0
               ? checkInSummaryLabel(checkInSummary)
               : checkInOverviewLabel(checkInOverview)}
+          </ThemedText>
+        </PressableCard>
+      ) : null}
+
+      {features.goals && (hasOwnGames || coachHasGames || isGoalGuardian) ? (
+        <PressableCard onPress={() => router.push('/goals')}>
+          <ThemedText type="smallBold">Game goals</ThemedText>
+          <ThemedText type="small" themeColor="textSecondary">
+            {goalsCardLabel(myGoals, goalComments)}
           </ThemedText>
         </PressableCard>
       ) : null}
@@ -300,6 +335,22 @@ function awardsLabel(open: number, toVote: number) {
   if (toVote === 0)
     return `✓ You’ve voted in all ${open === 1 ? 'open award' : `${open} open awards`}`;
   return `${toVote} ${toVote === 1 ? 'vote' : 'votes'} waiting for you`;
+}
+
+function goalsCardLabel(
+  mine: ReturnType<typeof useMyGoals>['myGoals'],
+  toComment: number,
+) {
+  if (toComment > 0) {
+    return `${toComment} ${toComment === 1 ? 'reflection' : 'reflections'} waiting for your comment`;
+  }
+  if (mine === undefined) return 'Goals for your athletes’ next games';
+  const next = mine.next;
+  if (!next) return 'No game in the next 7 days';
+  const when = formatShortDay(new Date(next.starts_at));
+  return next.goal_count === 0
+    ? `Set goals for ${gameTitle(next)} · ${when}`
+    : `${next.goal_count} ${next.goal_count === 1 ? 'goal' : 'goals'} for ${gameTitle(next)} · ${when}`;
 }
 
 /** Named teams first, then squads, in club order. */

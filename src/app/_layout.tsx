@@ -110,6 +110,12 @@ function RootStack() {
             <Stack.Screen name="awards/index" options={{ title: 'Awards' }} />
             <Stack.Screen name="awards/vote" options={{ title: 'Vote' }} />
           </Stack.Protected>
+          <Stack.Protected guard={features.goals}>
+            <Stack.Screen name="goals/index" options={{ title: 'Game goals' }} />
+            <Stack.Screen name="goals/athlete/[id]" options={{ title: 'Game goals' }} />
+            <Stack.Screen name="goals/game" options={{ title: 'Game goals' }} />
+            <Stack.Screen name="goals/team" options={{ title: 'Team goals' }} />
+          </Stack.Protected>
           <Stack.Screen name="delete-account" options={{ title: 'Delete account' }} />
           <Stack.Protected guard={isAdmin}>
             <Stack.Screen name="administration" options={{ title: 'Administration' }} />
@@ -132,7 +138,7 @@ function RootStack() {
               <Stack.Screen name="admin/awards/edit" options={{ title: 'Award' }} />
               <Stack.Screen name="admin/awards/[id]" options={{ title: 'Award' }} />
             </Stack.Protected>
-            <Stack.Protected guard={features.calendar || features.awards}>
+            <Stack.Protected guard={features.calendar || features.awards || features.goals}>
               <Stack.Screen name="admin/fixtures" options={{ title: 'Fixtures' }} />
             </Stack.Protected>
           </Stack.Protected>
