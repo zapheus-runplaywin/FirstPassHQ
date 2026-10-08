@@ -129,7 +129,7 @@ export default function ClubSettingsScreen() {
 
   async function save() {
     if (badColour) {
-      setError(`${badColour.label} must be a colour code like #FFCD00.`);
+      setError(`${badColour.label} must be a colour code like ${ClubDefaults.hero}.`);
       return;
     }
     setSaving(true);
