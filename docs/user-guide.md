@@ -30,7 +30,7 @@ one or more **squads** or **teams** for the current season.
 
 | Role          | Who it's for                                                                                         |
 | ------------- | ---------------------------------------------------------------------------------------------------- |
-| **Athlete**   | Registered players.                                                                                  |
+| **Athlete**   | Registered players. Some are club captains, or captains or vice captains of a squad or team.        |
 | **Guardian**  | Parents and guardians of athletes under 18.                                                          |
 | **Coach**     | Head coaches and assistant coaches. Both have the same permissions; the title only shows who is who. Need a current Working With Children Check. |
 | **Manager**   | Squad and team managers. Need a current Working With Children Check.                                 |
@@ -44,13 +44,18 @@ one or more **squads** or **teams** for the current season.
 squad and pick each team's final team athletes and training partners. People selected for a team stay
 in their squad as well.
 
+**Captains.** Admins choose **club captains** from the season's athletes, and admins or a squad or
+team's coaches choose its **captain** and **vice captains**. Captains stay athletes; captaincy only
+adds the right to send messages. Club captains can message the whole club, and captains and vice
+captains can message their own squad or team. Captaincy ends when the season is archived.
+
 What each role sees on its home screen:
 
 | Feature                                | Athlete |     Guardian    |    Coach     |  Manager   |   Committee   |     Physio    |  Guest  |     Admin     |
 | -------------------------------------- | :-----: | :-------------: | :----------: | :--------: | :-----------: | :-----------: | :-----: | :-----------: |
 | To-do list, calendar, squads and teams |    ✓    |        ✓        |      ✓       |     ✓      |       ✓       |       ✓       |    ✓    |       ✓       |
 | Read messages                          |    ✓    |        ✓        |      ✓       |     ✓      |       ✓       |       ✓*      |         |       ✓       |
-| Send messages                          |         |                 |  Own groups  | Own groups |   Whole club  |               |         |     Anyone    |
+| Send messages                          | Captains† |                 |  Own groups  | Own groups |   Whole club  |               |         |     Anyone    |
 | Daily check-in                         |    ✓    |                 |              |            |               |               |         |               |
 | Game goals and reflections             |   Own   | Their athlete's | Own athletes |            |               |               |         |               |
 | Team goals for a game                  |   See   |       See       | Set, review  |            |               |               |         |               |
@@ -65,6 +70,10 @@ What each role sees on its home screen:
 | Import fixtures from PlayHQ            |         |                 |              |            |               |               |         |       ✓       |
 | Club name, colours, logo and features  |         |                 |              |            |               |               |         |       ✓       |
 | Administration                         |         |                 |              |            |               |               |         |       ✓       |
+
+† Athletes who are captains: club captains can message the whole club, and squad and team
+captains and vice captains their own squad or team. Messages from captains under 18 are copied to
+their parents or guardians.
 
 \* Physios get messages sent to the Physio role. They get messages sent to everyone in the club only
 when an admin turns on **Physios get club messages** in Club settings.
@@ -155,7 +164,7 @@ Pull down on any screen to refresh it.
 
 ### Messages
 
-Messages from your coaches, managers and the club arrive in **Messages**. Unread messages have a
+Messages from your coaches, managers, captains and the club arrive in **Messages**. Unread messages have a
 yellow dot, and the home card shows how many are new. Opening a message marks it as read, and the
 sender can see that you've read it.
 
@@ -200,7 +209,8 @@ the address.
 ### Squads and teams
 
 Tap a squad or team under **My squads and teams** to see everyone in it, with their position:
-Head Coach, Assistant Coach, Manager, Athlete, Final team athlete or Training partner.
+Head Coach, Assistant Coach, Manager, Athlete, Final team athlete or Training partner. Captains,
+vice captains and club captains are marked next to their position.
 
 <img src="user-guide/team-roster.png" width="210" alt="Team roster">
 
@@ -338,6 +348,20 @@ Documents can't be removed once they're sent, so the record can't be altered lat
 
 <img src="user-guide/ask-for-clearance.png" width="210" alt="Ask for clearance with proof attached">
 
+### Captains
+
+If you're a **club captain**, a squad or team **captain** or a **vice captain**, you can send
+messages:
+
+- **Club captains** can send to **Everyone** in the club.
+- **Captains and vice captains** can send to their own squad or team, like its coaches.
+
+Open **Messages**, tap **New message**, choose who it goes to, write it and tap **Send**. You'll
+see who has read it in **Sent**. Club admins can read every message. If you're under 18, your
+parents or guardians get a copy of every message you send.
+
+<img src="user-guide/captain-new-message.png" width="210" alt="A captain writing a message to their squad">
+
 <div style="page-break-before: always"></div>
 
 ## 5. Parents and guardians
@@ -356,6 +380,8 @@ As a guardian you:
 - **Receive a copy of every message** sent to your athlete, whether it went to their squad, their
   team, all athletes or the whole club. You get each message once, even if you're also in the
   squad.
+- **Receive a copy of every message your athlete sends** if they're a captain, so you see what
+  they send to their squad, team or the club.
 - **See your athlete's daily check-ins**, including any note they write. Your athlete is told that
   you can read their notes.
 - **See the calendars** for your athlete's squad.
@@ -397,6 +423,21 @@ and hasn't read it. Club admins can read every message.
 <img src="user-guide/new-message-coach.png" width="210" alt="New message">
 <img src="user-guide/messages-sent.png" width="210" alt="Sent messages with read counts">
 <img src="user-guide/read-receipts.png" width="210" alt="Read receipts for one message">
+
+### Choosing captains
+
+Coaches choose the captain and vice captains of the squads and teams they coach (admins can too).
+Open the squad or team from **My squads and teams** and tap **Choose captains** at the bottom. For
+each athlete choose **Captain**, **Vice captain** or **Neither**, then tap **Save captains**. A
+group has one captain and any number of vice captains; picking a new captain makes the old one
+**Neither**.
+
+Captains and vice captains can then message everyone in that squad or team, like you. They must be
+athletes in it, and they stop being able to message it if they leave it or the season is archived.
+Messages from captains under 18 are copied to their parents or guardians.
+
+<img src="user-guide/captains-team-roster.png" width="210" alt="Team roster with Choose captains">
+<img src="user-guide/captains-choose.png" width="210" alt="Choosing a team's captain and vice captains">
 
 ### Athletes' check-ins
 
@@ -829,6 +870,19 @@ events in the app. **Edit name or link** and **Delete** change or remove one.
 
 <img src="user-guide/admin-calendars.png" width="210" alt="Calendars admin">
 
+### Club captains
+
+**Club captains** in Administration lists the athletes in the current season's squads and teams.
+Tap the athletes who are club captains (yellow means chosen) and tap **Save club captains**. Club
+captains can message everyone in the club until that season is archived; choose new ones each
+season. If last season is still running alongside the new one, pick the season first. Athletes
+under 18 are marked, and their parents or guardians get a copy of everything they send.
+
+Admins can also choose any squad or team's captain and vice captains, the same way coaches do (see
+[Choosing captains](#choosing-captains)).
+
+<img src="user-guide/club-captains.png" width="210" alt="Choosing the club captains">
+
 ### Messages to the club or a role
 
 Admins can send a message to **Everyone**, to **A role** (such as all guardians or all coaches), or
@@ -890,8 +944,9 @@ once saved, only replaced or removed.
 | Information             | Who can see it                                                                                                              |
 | ----------------------- | --------------------------------------------------------------------------------------------------------------------------- |
 | Your profile and squads | You, the people in your squads and teams (names and positions only), and admins.                                            |
+| Captains                | Club captains: every member. A squad or team's captains: the people in it, and admins.                                     |
 | Date of birth and Working With Children Check | You and admins. Awards with an age limit use it to decide who can be voted for, without showing it.   |
-| Messages                | The people they were sent to, the sender, and admins. Guardians of athletes under 18 get a copy of every message sent to their athlete. Guests don't get messages; physios get messages sent to the Physio role, and whole-club messages only if an admin turns that on. |
+| Messages                | The people they were sent to, the sender, and admins. Guardians of athletes under 18 get a copy of every message sent to their athlete, and of every message their athlete sends as a captain. Guests don't get messages; physios get messages sent to the Physio role, and whole-club messages only if an admin turns that on. |
 | Read receipts           | The sender and admins.                                                                                                      |
 | Daily check-in answers and notes | The athlete, their guardians and their coaches. The committee, physios and admins see only group averages, hidden below 3 check-ins. |
 | Injuries and documents  | The athlete, their guardians, their coaches, physios, the committee and admins. Managers don't see injuries. Only the committee and admins can save or share documents; everyone else views them in the app. |

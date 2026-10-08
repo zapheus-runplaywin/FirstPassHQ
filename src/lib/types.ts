@@ -24,6 +24,15 @@ export type GroupKind = 'squad' | 'team';
 /** 'touring' is shown as "Final team" (Matt, 2026-10-08). */
 export type TeamSelection = 'touring' | 'training_partner';
 
+/** A squad or team's captain, or one of its vice captains. */
+export type CaptainRole = 'captain' | 'vice_captain';
+
+export type GroupCaptain = {
+  team_id: string;
+  profile_id: string;
+  captain_role: CaptainRole;
+};
+
 /** A squad or a team. Both live in the `teams` table. */
 export type Team = {
   id: string;

@@ -8,7 +8,8 @@ import { Button, ChipGroup, ErrorText, TextField } from '@/components/ui';
 import { Spacing } from '@/constants/theme';
 import { useAuth } from '@/lib/auth';
 import { pluralRoleLabels } from '@/lib/labels';
-import { useMessageGroups } from '@/lib/messages';
+import { isMinor } from '@/lib/age';
+import { useCanMessageClub, useMessageGroups } from '@/lib/messages';
 import { supabase } from '@/lib/supabase';
 import type { AppRole, MessageAudience } from '@/lib/types';
 import { teamLabel, useTeams } from '@/lib/use-teams';
@@ -30,11 +31,14 @@ export default function NewMessageScreen() {
   const { isAdmin, profile } = useAuth();
   const teams = useTeams();
   const groups = useMessageGroups(teams);
-  // The committee can message the whole club, and any groups they coach or manage.
-  const isCommittee = !isAdmin && profile?.role === 'committee';
-  const [audience, setAudience] = useState<MessageAudience>(
-    isAdmin || isCommittee ? 'club' : 'group',
-  );
+  // The committee and club captains can message the whole club, and any
+  // groups they coach, manage or captain.
+  const canMessageClub = useCanMessageClub();
+  const messagesClubOnly = !isAdmin && canMessageClub;
+  // Captains can be under 18; their parents or guardians get a copy.
+  const copiesGuardians =
+    profile?.role === 'athlete' && isMinor(profile.date_of_birth, profile.under_17);
+  const [audience, setAudience] = useState<MessageAudience>(canMessageClub ? 'club' : 'group');
   const [role, setRole] = useState<AppRole | null>(null);
   const [teamId, setTeamId] = useState<string | null>(null);
   const [body, setBody] = useState('');
@@ -89,7 +93,7 @@ export default function NewMessageScreen() {
             setError(null);
           }}
         />
-      ) : isCommittee && groups.length > 0 ? (
+      ) : messagesClubOnly && groups.length > 0 ? (
         <ChipGroup
           label="Send to"
           options={[
@@ -102,7 +106,7 @@ export default function NewMessageScreen() {
             setError(null);
           }}
         />
-      ) : isCommittee ? (
+      ) : messagesClubOnly ? (
         <ThemedText type="small" themeColor="textSecondary">
           This goes to everyone in the club.
         </ThemedText>
@@ -120,11 +124,11 @@ export default function NewMessageScreen() {
       {audience === 'group' ? (
         groups.length === 0 ? (
           <ThemedText type="small" themeColor="textSecondary">
-            You can message the squads and teams you coach or manage once an admin adds you to one.
+            You can message the squads and teams you coach, manage or captain once an admin adds you to one.
           </ThemedText>
         ) : (
           <ChipGroup
-            label={isAdmin ? 'Squad or team' : 'Send to'}
+            label={isAdmin || messagesClubOnly ? 'Squad or team' : 'Send to'}
             options={groups.map((t) => ({ value: t.id, label: teamLabel(t, teams) }))}
             selected={selectedTeamId ? [selectedTeamId] : []}
             onToggle={setTeamId}
@@ -150,6 +154,7 @@ export default function NewMessageScreen() {
 
       <ThemedText type="small" themeColor="textSecondary">
         You’ll see who has read it. Club admins can read every message.
+        {copiesGuardians ? ' Your parents or guardians get a copy too.' : ''}
       </ThemedText>
 
       <ErrorText>{error}</ErrorText>

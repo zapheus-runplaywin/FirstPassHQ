@@ -80,6 +80,7 @@ function RootStack() {
           <Stack.Screen name="index" options={{ headerShown: false }} />
           <Stack.Screen name="join" options={{ title: 'Request to join' }} />
           <Stack.Screen name="team/[id]" options={{ title: 'Team' }} />
+          <Stack.Screen name="team/captains/[id]" options={{ title: 'Captains' }} />
           <Stack.Protected guard={features.calendar}>
             <Stack.Screen name="calendar" options={{ title: 'Calendar' }} />
             <Stack.Screen name="event/[id]" options={{ title: 'Event' }} />
@@ -127,6 +128,7 @@ function RootStack() {
             <Stack.Screen name="admin/team/[id]" options={{ title: 'Name team' }} />
             <Stack.Screen name="admin/seasons" options={{ title: 'Seasons' }} />
             <Stack.Screen name="admin/place/[id]" options={{ title: 'Place members' }} />
+            <Stack.Screen name="admin/captains" options={{ title: 'Club captains' }} />
             <Stack.Protected guard={features.calendar}>
               <Stack.Screen name="admin/calendars" options={{ title: 'Calendars' }} />
             </Stack.Protected>

@@ -11,7 +11,7 @@ import { useTheme } from '@/hooks/use-theme';
 import type { CalendarEvent } from '@/lib/calendar';
 import { marksToSave } from '@/lib/attendance';
 import { formatSentAt } from '@/lib/format';
-import { useMessageGroups } from '@/lib/messages';
+import { useLedGroups } from '@/lib/messages';
 import { supabase } from '@/lib/supabase';
 import type { AttendanceMark, Team } from '@/lib/types';
 import { useEvents } from '@/lib/use-events';
@@ -29,7 +29,7 @@ const AFTER_END_MS = 30 * 60 * 1000;
 export default function TakeAttendanceScreen() {
   const teams = useTeams();
   // The squads and teams the member coaches or manages; every one for admins.
-  const ledGroups = useMessageGroups(teams);
+  const ledGroups = useLedGroups(teams);
   const ledIds = new Set(ledGroups.map((t) => t.id));
   // Any current squad can be chosen for whole-squad events.
   const otherSquads = teams.filter((t) => t.kind === 'squad' && !ledIds.has(t.id));
