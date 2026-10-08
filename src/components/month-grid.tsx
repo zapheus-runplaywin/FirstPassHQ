@@ -8,7 +8,11 @@ import { addDays, dayKey, formatMonth, isToday, startOfWeek } from '@/lib/format
 
 const WEEKDAYS = ['M', 'T', 'W', 'T', 'F', 'S', 'S'];
 
-/** A classic month calendar with coloured dots under days that have events. */
+/**
+ * A classic month calendar with coloured dots under days that have events.
+ * Days from the months either side are greyed out, with no dots, and can't be
+ * tapped, so only the month being viewed shows events.
+ */
 export function MonthGrid({
   month,
   eventDays,
@@ -78,8 +82,9 @@ export function MonthGrid({
               <Pressable
                 key={key}
                 accessibilityRole="button"
-                accessibilityState={{ selected }}
+                accessibilityState={{ selected, disabled: !inMonth }}
                 accessibilityLabel={date.toDateString()}
+                disabled={!inMonth}
                 onPress={() => onSelect(date)}
                 style={[
                   styles.cell,
@@ -92,7 +97,7 @@ export function MonthGrid({
                   style={[!inMonth && styles.outside, selected && styles.onAccent]}>
                   {date.getDate()}
                 </ThemedText>
-                <DayDots colors={eventDays.get(key)} selected={selected} />
+                <DayDots colors={inMonth ? eventDays.get(key) : undefined} selected={selected} />
               </Pressable>
             );
           })}
