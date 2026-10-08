@@ -3,7 +3,7 @@ import { createContext, use, useCallback, useEffect, useState, type ReactNode } 
 
 import { unregisterForPush } from '@/lib/push';
 import { supabase } from '@/lib/supabase';
-import type { Profile, TeamMembership } from '@/lib/types';
+import type { GroupCaptain, Profile, TeamMembership } from '@/lib/types';
 import { TEAM_COLUMNS } from '@/lib/use-teams';
 
 type AuthState = {
@@ -11,6 +11,10 @@ type AuthState = {
   session: Session | null;
   profile: Profile | null;
   memberships: TeamMembership[];
+  /** Squads and teams the member captains or vice captains, from any season. */
+  captaincies: GroupCaptain[];
+  /** A club captain for a current season. */
+  isClubCaptain: boolean;
   isAdmin: boolean;
   refresh: () => Promise<void>;
   signOut: () => Promise<void>;
@@ -26,14 +30,18 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   const [session, setSession] = useState<Session | null>(null);
   const [profile, setProfile] = useState<Profile | null>(null);
   const [memberships, setMemberships] = useState<TeamMembership[]>([]);
+  const [captaincies, setCaptaincies] = useState<GroupCaptain[]>([]);
+  const [isClubCaptain, setIsClubCaptain] = useState(false);
 
   const loadMember = useCallback(async (userId: string | undefined) => {
     if (!userId) {
       setProfile(null);
       setMemberships([]);
+      setCaptaincies([]);
+      setIsClubCaptain(false);
       return;
     }
-    const [profileResult, membershipResult] = await Promise.all([
+    const [profileResult, membershipResult, captainResult, clubCaptainResult] = await Promise.all([
       supabase.from('profiles').select(PROFILE_COLUMNS).eq('id', userId).single(),
       supabase
         .from('team_members')
@@ -41,9 +49,13 @@ export function AuthProvider({ children }: { children: ReactNode }) {
         .eq('profile_id', userId)
         // Past seasons are archived and left out.
         .eq('team.archived', false),
+      supabase.from('team_captains').select('team_id, profile_id, captain_role').eq('profile_id', userId),
+      supabase.rpc('is_club_captain'),
     ]);
     setProfile((profileResult.data as Profile | null) ?? null);
     setMemberships((membershipResult.data as unknown as TeamMembership[] | null) ?? []);
+    setCaptaincies((captainResult.data as GroupCaptain[] | null) ?? []);
+    setIsClubCaptain(clubCaptainResult.data === true);
   }, []);
 
   useEffect(() => {
@@ -71,7 +83,18 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   const isAdmin = profile?.role === 'admin' && profile.status === 'approved';
 
   return (
-    <AuthContext value={{ loading, session, profile, memberships, isAdmin, refresh, signOut }}>
+    <AuthContext
+      value={{
+        loading,
+        session,
+        profile,
+        memberships,
+        captaincies,
+        isClubCaptain,
+        isAdmin,
+        refresh,
+        signOut,
+      }}>
       {children}
     </AuthContext>
   );

@@ -1,5 +1,6 @@
 import type {
   AppRole,
+  CaptainRole,
   CoachTitle,
   MemberStatus,
   RejectionReason,
@@ -62,6 +63,11 @@ export const teamRoleLabels: Record<TeamRole, string> = {
 export const coachTitleLabels: Record<CoachTitle, string> = {
   head_coach: 'Head Coach',
   assistant_coach: 'Assistant Coach',
+};
+
+export const captainRoleLabels: Record<CaptainRole, string> = {
+  captain: 'Captain',
+  vice_captain: 'Vice captain',
 };
 
 export const selectionLabels: Record<TeamSelection, string> = {
