@@ -12,8 +12,11 @@ import {
   fetchPlayhqCompetition,
   gamesFor,
   parsePlayhqLink,
+  summarisePlayhqGames,
   type PlayhqCompetition,
   type PlayhqLink,
+  type PlayhqLookup,
+  type PlayhqSummary,
 } from '@/lib/playhq';
 import { useClub } from '@/lib/club';
 import { logger } from '@/lib/log';
@@ -53,6 +56,56 @@ async function saveTeamGames(found: PlayhqCompetition, playhqTeamId: string, tea
   return saved;
 }
 
+const plural = (n: number, word: string) => `${n} ${n === 1 ? word : `${word}s`}`;
+
+/** Games either side of today, for the teams PlayHQ ids given. */
+function linkedSummary(found: PlayhqCompetition, playhqTeamIds: string[]) {
+  return summarisePlayhqGames(playhqTeamIds.flatMap((id) => gamesFor(found, id)));
+}
+
+/**
+ * What PlayHQ sent back, so an admin can see the link works: how fast it
+ * answered and how many games it has in the last and next 12 months.
+ */
+function PlayhqCheck({
+  found,
+  linked,
+  inCard = false,
+}: {
+  found: PlayhqLookup;
+  linked: PlayhqSummary | null;
+  /** Under a saved competition, set apart from the lines above it. */
+  inCard?: boolean;
+}) {
+  const { summary } = found;
+  const empty = summary.pastCount + summary.upcomingCount === 0;
+  return (
+    <View style={[styles.check, inCard && styles.checkInCard]}>
+      <ThemedText type="smallBold">PlayHQ check</ThemedText>
+      <ThemedText type="small" themeColor="textSecondary">
+        PlayHQ answered in{' '}
+        {found.ms < 1000 ? `${found.ms} ms` : `${(found.ms / 1000).toFixed(1)} s`} with{' '}
+        {plural(found.teams.length, 'team')}.
+      </ThemedText>
+      <ThemedText type="small">
+        {plural(summary.pastCount, 'game')} in the last 12 months, {summary.upcomingCount} scheduled
+        in the next 12 months.
+      </ThemedText>
+      {linked ? (
+        <ThemedText type="small">
+          Our teams: {plural(linked.pastCount, 'game')} in the last 12 months,{' '}
+          {linked.upcomingCount} in the next 12 months.
+        </ThemedText>
+      ) : null}
+      {empty ? (
+        <ErrorText>
+          PlayHQ has no games within 12 months of today. Check the link is for the right season.
+        </ErrorText>
+      ) : null}
+    </View>
+  );
+}
+
 /**
  * Admins add a PlayHQ competition by its link, say which of its teams are the
  * club's, and import their games. Refreshing picks up PlayHQ's changes.
@@ -67,7 +120,11 @@ export default function FixturesScreen() {
   const [upcoming, setUpcoming] = useState<Fixture[]>([]);
   const [linkText, setLinkText] = useState('');
   const [link, setLink] = useState<PlayhqLink | null>(null);
-  const [competition, setCompetition] = useState<PlayhqCompetition | null>(null);
+  const [competition, setCompetition] = useState<PlayhqLookup | null>(null);
+  // The last refresh of each saved competition, by its PlayHQ id.
+  const [checks, setChecks] = useState<
+    Record<string, { found: PlayhqLookup; linked: PlayhqSummary }>
+  >({});
   const [links, setLinks] = useState<Record<string, string | null>>({});
   const [season, setSeason] = useState<number | null>(null);
   const [search, setSearch] = useState('');
@@ -160,7 +217,11 @@ export default function FixturesScreen() {
       p_season: forSeason,
       p_teams: found.teams
         .filter((t) => t.id in links)
-        .map((t) => ({ playhq_team_id: t.id, playhq_name: t.name, team_id: links[t.id] ?? '' })),
+        .map((t) => ({
+          playhq_team_id: t.id,
+          playhq_name: t.name,
+          team_id: links[t.id] ?? '',
+        })),
     });
     if (saveError) {
       log.error('Saving competition failed', {
@@ -175,7 +236,11 @@ export default function FixturesScreen() {
       if (!ours) continue;
       count += await saveTeamGames(found, teamId, ours);
     }
-    log.info('Imported games', { competition_id: found.id, linked_count: linked, game_count: count });
+    log.info('Imported games', {
+      competition_id: found.id,
+      linked_count: linked,
+      game_count: count,
+    });
     return count;
   }
 
@@ -185,7 +250,15 @@ export default function FixturesScreen() {
     setError(null);
     try {
       const count = await importGames(competition, link.url, season ?? seasons[0]);
-      setNotice(`Saved ${count} ${count === 1 ? 'game' : 'games'} from ${competition.name}.`);
+      const linked = linkedSummary(
+        competition,
+        Object.keys(links).filter((id) => links[id]),
+      );
+      setChecks((current) => ({
+        ...current,
+        [competition.id]: { found: competition, linked },
+      }));
+      setNotice(`Saved ${plural(count, 'game')} from ${competition.name}.`);
       setCompetition(null);
       setLinkText('');
       load();
@@ -199,7 +272,9 @@ export default function FixturesScreen() {
   async function refresh(s: PlayhqSeason) {
     const parsed = parsePlayhqLink(s.url);
     if (!parsed) {
-      log.error('Saved competition has an unreadable link', { competition_id: s.playhq_season_id });
+      log.error('Saved competition has an unreadable link', {
+        competition_id: s.playhq_season_id,
+      });
       return;
     }
     setBusy(s.playhq_season_id);
@@ -222,11 +297,27 @@ export default function FixturesScreen() {
         if (!t.team_id) continue;
         count += await saveTeamGames(found, t.playhq_team_id, t.team_id);
       }
-      log.info('Refreshed games', { competition_id: s.playhq_season_id, game_count: count });
-      setNotice(`Updated ${count} ${count === 1 ? 'game' : 'games'} from ${s.name}.`);
+      const linked = linkedSummary(
+        found,
+        s.playhq_teams.filter((t) => t.team_id).map((t) => t.playhq_team_id),
+      );
+      log.info('Refreshed games', {
+        competition_id: s.playhq_season_id,
+        game_count: count,
+        past_12_months_count: linked.pastCount,
+        next_12_months_count: linked.upcomingCount,
+      });
+      setChecks((current) => ({
+        ...current,
+        [s.playhq_season_id]: { found, linked },
+      }));
+      setNotice(`Updated ${plural(count, 'game')} from ${s.name}.`);
       load();
     } catch (e) {
-      log.error('Refresh failed', { competition_id: s.playhq_season_id, error: e });
+      log.error('Refresh failed', {
+        competition_id: s.playhq_season_id,
+        error: e,
+      });
       setError(e instanceof Error ? e.message : 'Couldn’t reach PlayHQ');
     }
     setBusy(null);
@@ -264,6 +355,13 @@ export default function FixturesScreen() {
           <ThemedText type="small" themeColor="textSecondary">
             {s.imported_at ? `Updated ${formatDateTime(new Date(s.imported_at))}` : 'Not imported'}
           </ThemedText>
+          {checks[s.playhq_season_id] ? (
+            <PlayhqCheck
+              found={checks[s.playhq_season_id].found}
+              linked={checks[s.playhq_season_id].linked}
+              inCard
+            />
+          ) : null}
           <View style={styles.cardButtons}>
             <Button
               title="Refresh from PlayHQ"
@@ -289,14 +387,29 @@ export default function FixturesScreen() {
           {seasons.length > 1 ? (
             <ChipGroup
               label="Club season"
-              options={seasons.map((s) => ({ value: String(s), label: seasonLabel(s) }))}
+              options={seasons.map((s) => ({
+                value: String(s),
+                label: seasonLabel(s),
+              }))}
               selected={[String(season ?? seasons[0])]}
               onToggle={(value) => setSeason(Number(value))}
             />
           ) : null}
+          <Card>
+            <PlayhqCheck
+              found={competition}
+              linked={
+                linkedCount > 0
+                  ? linkedSummary(
+                      competition,
+                      Object.keys(links).filter((id) => links[id]),
+                    )
+                  : null
+              }
+            />
+          </Card>
           <ThemedText type="small" themeColor="textSecondary">
-            Tap each of our teams and choose the squad or team it is. {competition.games.length}{' '}
-            games in {competition.teams.length} teams.
+            Tap each of our teams and choose the squad or team it is.
           </ThemedText>
           <TextField
             label="Find a team"
@@ -335,11 +448,17 @@ export default function FixturesScreen() {
                       { value: '', label: 'Not one of ours' },
                       ...teams
                         .filter((g) => g.season === (season ?? seasons[0]))
-                        .map((g) => ({ value: g.id, label: teamLabel(g, teams) })),
+                        .map((g) => ({
+                          value: g.id,
+                          label: teamLabel(g, teams),
+                        })),
                     ]}
                     selected={[ours ?? '']}
                     onToggle={(value) => {
-                      setLinks((current) => ({ ...current, [t.id]: value || null }));
+                      setLinks((current) => ({
+                        ...current,
+                        [t.id]: value || null,
+                      }));
                       setOpen(null);
                     }}
                   />
@@ -408,6 +527,12 @@ export default function FixturesScreen() {
 const styles = StyleSheet.create({
   section: {
     gap: Spacing.two,
+  },
+  check: {
+    gap: Spacing.one,
+  },
+  checkInCard: {
+    marginTop: Spacing.two,
   },
   cardButtons: {
     gap: Spacing.two,
