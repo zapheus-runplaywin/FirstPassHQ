@@ -1,8 +1,10 @@
 import { DarkTheme, Stack, ThemeProvider } from 'expo-router';
 import * as SplashScreen from 'expo-splash-screen';
+import { StatusBar } from 'expo-status-bar';
 import { useCallback, useEffect, useMemo, useState, type ReactNode } from 'react';
 
 import { BrandIntro } from '@/components/brand-intro';
+import { contrastRatio } from '@/constants/theme';
 import { useTheme } from '@/hooks/use-theme';
 import { AuthProvider, useAuth } from '@/lib/auth';
 import { ClubProvider, useClub } from '@/lib/club';
@@ -33,6 +35,7 @@ function ClubTheme({ children }: { children: ReactNode }) {
   const navTheme = useMemo(
     () => ({
       ...DarkTheme,
+      dark: contrastRatio(colors.text, '#000000') >= contrastRatio(colors.text, '#FFFFFF'),
       colors: {
         ...DarkTheme.colors,
         primary: colors.tint,
@@ -43,7 +46,14 @@ function ClubTheme({ children }: { children: ReactNode }) {
     }),
     [colors],
   );
-  return <ThemeProvider value={navTheme}>{children}</ThemeProvider>;
+  // Dark status bar icons when the club picked dark text on a light background.
+  const darkText = contrastRatio(colors.text, '#000000') < contrastRatio(colors.text, '#FFFFFF');
+  return (
+    <ThemeProvider value={navTheme}>
+      <StatusBar style={darkText ? 'dark' : 'light'} />
+      {children}
+    </ThemeProvider>
+  );
 }
 
 function RootStack() {

@@ -15,7 +15,7 @@ import { TEAM_COLUMNS } from '@/lib/use-teams';
 type Pick = TeamSelection | 'in' | 'out';
 
 const athleteOptions: { value: Pick; label: string }[] = [
-  { value: 'touring', label: 'Touring' },
+  { value: 'touring', label: 'Final team' },
   { value: 'training_partner', label: 'Training partner' },
   { value: 'out', label: 'Not selected' },
 ];
@@ -105,7 +105,7 @@ export default function NameTeamScreen() {
 
       <Card>
         <ThemedText type="smallBold">
-          {count('touring')} touring · {count('training_partner')} training partners
+          {count('touring')} final team · {count('training_partner')} training partners
         </ThemedText>
         <ThemedText type="small" themeColor="textSecondary">
           Choosing from the {squad?.name ?? 'squad'}. People not selected stay in the squad.

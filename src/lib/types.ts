@@ -21,6 +21,7 @@ export type CoachTitle = 'head_coach' | 'assistant_coach';
 /** Members join a squad first; teams are named from a squad at selections. */
 export type GroupKind = 'squad' | 'team';
 
+/** 'touring' is shown as "Final team" (Matt, 2026-10-08). */
 export type TeamSelection = 'touring' | 'training_partner';
 
 /** A squad or a team. Both live in the `teams` table. */

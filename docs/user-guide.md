@@ -41,7 +41,7 @@ one or more **squads** or **teams** for the current season.
 
 **Squads and teams.** Each season, members join a **squad** (Mixed Open Squad, Open Squad,
 20 & Under Squad, 17 & Under Squad, Lightning Academy). At selections, admins name **teams** from a
-squad and pick each team's touring athletes and training partners. People selected for a team stay
+squad and pick each team's final team athletes and training partners. People selected for a team stay
 in their squad as well.
 
 What each role sees on its home screen:
@@ -184,7 +184,7 @@ the address.
 ### Squads and teams
 
 Tap a squad or team under **My squads and teams** to see everyone in it, with their position:
-Head Coach, Assistant Coach, Manager, Athlete, Touring athlete or Training partner.
+Head Coach, Assistant Coach, Manager, Athlete, Final team athlete or Training partner.
 
 <img src="user-guide/team-roster.png" width="210" alt="Team roster">
 
@@ -524,7 +524,7 @@ against PlayHQ, then:
 
 1. Choose their **Role**.
 2. Choose their **Squads** and, once teams are named, **Teams**. For coaches, choose **Head Coach**
-   or **Assistant Coach** for each group. For athletes in a team, choose **Touring athlete** or
+   or **Assistant Coach** for each group. For athletes in a team, choose **Final team athlete** or
    **Training partner**.
 3. For athletes, enter their **Date of birth** (DD/MM/YYYY). Anyone under 18 gets a **Parents and
    guardians** section: search for a guardian and tap to link them (tap ✕ to unlink). Only
@@ -573,7 +573,7 @@ Open any member to change their role, squads, teams or titles, then tap **Save c
 
 - **Add a squad or team**: choose Team or Squad, give it a name, and for a team pick the squad it's
   named from.
-- **Name a team** (tap it): for each person in the squad, choose **Touring**, **Training partner**
+- **Name a team** (tap it): for each person in the squad, choose **Final team**, **Training partner**
   or **Not selected** for athletes, and **In this team** or **Not in this team** for coaches and
   managers. People not selected stay in the squad.
 - **Rename** or **Remove** a squad or team. Removing it takes it off this season's lists, home
@@ -695,10 +695,11 @@ defaults (West Coast Thunder's name, logo and yellow-on-black colours).
   "Thunder") finds the club's teams when importing PlayHQ fixtures and names exported files.
 - **Logo**: **Choose logo** to upload a square PNG or JPEG up to 2 MB. It shows on the home screen
   and when the app opens. **Use the built-in logo** goes back to the original.
-- **Colours**: type a colour code such as `#FFCD00` for the **background**, **text** and **hero
-  colour** (buttons, links and highlights). Panels and softer text are worked out from these. The
-  preview shows how they look together and warns when text or buttons would be hard to read.
-  **Use the built-in colours** goes back to black, white and yellow.
+- **Colours**: type a colour code such as `#FFCD00` for the **background** and the **hero
+  colour** (buttons, links and highlights), and choose **Light text** or **Dark text** to suit the
+  background. Panels and the softer text for details are worked out from these. The preview shows
+  how they look together and warns when text or buttons would be hard to read. **Use the built-in
+  colours** goes back to black, white and yellow.
 - **Features**: switch off any of Messages, Calendar, Daily check-ins, Injuries, Attendance and
   Awards. A switched-off feature disappears from every member's home screen, to-do list and menus,
   and its Administration pages are hidden. Nothing is deleted, so switching it back on brings

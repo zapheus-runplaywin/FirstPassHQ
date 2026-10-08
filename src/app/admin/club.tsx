@@ -6,7 +6,7 @@ import { Platform, Pressable, StyleSheet, Switch, View } from 'react-native';
 
 import { Screen } from '@/components/screen';
 import { ThemedText } from '@/components/themed-text';
-import { Button, Card, ErrorText, TextField } from '@/components/ui';
+import { Button, Card, ChipGroup, ErrorText, TextField } from '@/components/ui';
 import { ClubDefaults, DefaultLogo } from '@/constants/club';
 import { contrastRatio, isHexColour, makeColors, Spacing } from '@/constants/theme';
 import { useTheme } from '@/hooks/use-theme';
@@ -16,13 +16,18 @@ import { supabase } from '@/lib/supabase';
 const LOGO_TYPES = ['image/png', 'image/jpeg'];
 const MAX_LOGO_BYTES = 2 * 1024 * 1024;
 
-type ColourKey = 'background' | 'text' | 'hero';
+type ColourKey = 'background' | 'hero';
 
 const COLOURS: { key: ColourKey; label: string; detail: string }[] = [
   { key: 'background', label: 'Background', detail: 'Behind every screen' },
-  { key: 'text', label: 'Text', detail: 'Writing, with a softer shade for details' },
   { key: 'hero', label: 'Hero colour', detail: 'Buttons, links and highlights' },
 ];
+
+/** Text is white or black, with a softer shade of it for details. */
+type TextTone = 'light' | 'dark';
+const TONE_COLOURS: Record<TextTone, string> = { light: '#FFFFFF', dark: '#000000' };
+const toneOf = (hex: string | null | undefined): TextTone | null =>
+  hex ? (hex.toUpperCase() === TONE_COLOURS.dark ? 'dark' : 'light') : null;
 
 /**
  * The club's name, colours, logo and features. Everything starts on the
@@ -35,11 +40,9 @@ export default function ClubSettingsScreen() {
 
   const [name, setName] = useState('');
   const [shortName, setShortName] = useState('');
-  const [colours, setColours] = useState<Record<ColourKey, string>>({
-    background: '',
-    text: '',
-    hero: '',
-  });
+  const [colours, setColours] = useState<Record<ColourKey, string>>({ background: '', hero: '' });
+  /** Empty means the build's default. */
+  const [textTone, setTextTone] = useState<TextTone | null>(null);
   const [logoPath, setLogoPath] = useState<string | null>(null);
   const [features, setFeatures] = useState<Record<FeatureKey, boolean>>(club.features);
   const [loaded, setLoaded] = useState(false);
@@ -60,25 +63,25 @@ export default function ClubSettingsScreen() {
     setShortName(saved?.short_name ?? '');
     setColours({
       background: saved?.background_colour ?? '',
-      text: saved?.text_colour ?? '',
       hero: saved?.hero_colour ?? '',
     });
+    setTextTone(toneOf(saved?.text_colour));
     setLogoPath(saved?.logo_path ?? null);
     setFeatures(club.features);
   }
 
   const defaults: Record<ColourKey, string> = {
     background: ClubDefaults.background,
-    text: ClubDefaults.text,
     hero: ClubDefaults.hero,
   };
+  const tone = textTone ?? toneOf(ClubDefaults.text) ?? 'light';
   const shown = (key: ColourKey) => {
     const value = colours[key].trim();
     return isHexColour(value) ? value.toUpperCase() : defaults[key];
   };
   const preview = makeColors({
     background: shown('background'),
-    text: shown('text'),
+    text: TONE_COLOURS[tone],
     hero: shown('hero'),
   });
   const badColour = COLOURS.find((c) => colours[c.key].trim() && !isHexColour(colours[c.key]));
@@ -131,7 +134,7 @@ export default function ClubSettingsScreen() {
       p_club_name: name,
       p_short_name: shortName,
       p_background_colour: colours.background,
-      p_text_colour: colours.text,
+      p_text_colour: textTone ? TONE_COLOURS[textTone] : '',
       p_hero_colour: colours.hero,
       p_logo_path: logoPath ?? '',
       // Only switched-off features are stored, so new features start on.
@@ -226,6 +229,18 @@ export default function ClubSettingsScreen() {
             </View>
           </View>
         ))}
+        <ChipGroup
+          label="Text"
+          options={[
+            { value: 'light', label: 'Light text' },
+            { value: 'dark', label: 'Dark text' },
+          ]}
+          selected={[tone]}
+          onToggle={(value) => setTextTone(value)}
+        />
+        <ThemedText type="small" themeColor="textSecondary">
+          Light text suits a dark background, dark text a light one. Details use a softer shade.
+        </ThemedText>
 
         <View style={[styles.preview, { backgroundColor: preview.background }]}>
           <ThemedText type="smallBold" style={{ color: preview.text }}>
@@ -250,7 +265,7 @@ export default function ClubSettingsScreen() {
         </View>
         {textContrast < 4.5 ? (
           <ThemedText type="small" themeColor="textSecondary">
-            ⚠ The text and background are close in colour, so writing may be hard to read.
+            ⚠ The text and background are close in colour, so writing may be hard to read. Try the other text option.
           </ThemedText>
         ) : null}
         {heroContrast < 3 ? (
@@ -260,7 +275,10 @@ export default function ClubSettingsScreen() {
         ) : null}
         <Pressable
           accessibilityRole="button"
-          onPress={() => setColours({ background: '', text: '', hero: '' })}>
+          onPress={() => {
+            setColours({ background: '', hero: '' });
+            setTextTone(null);
+          }}>
           <ThemedText type="smallBold" style={[styles.link, { color: theme.tint }]}>
             Use the built-in colours
           </ThemedText>

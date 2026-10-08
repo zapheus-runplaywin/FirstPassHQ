@@ -90,7 +90,7 @@ export default function SquadsScreen() {
   return (
     <Screen>
       <ThemedText type="small" themeColor="textSecondary">
-        New members are added to a squad. At selections, name the teams here and pick touring
+        New members are added to a squad. At selections, name the teams here and pick final team
         athletes and training partners from the squad. Everyone stays in their squad. Once the teams
         are named, mark the squad phase complete so coaches only look after their team’s athletes.
       </ThemedText>
@@ -202,7 +202,7 @@ function SelectionsPhase({
       <Card style={styles.team}>
         <ThemedText type="smallBold">Mark the squad phase complete for {squad.name}?</ThemedText>
         <ThemedText type="small">
-          Coaches will only look after the touring athletes and training partners in their teams.
+          Coaches will only look after the final team athletes and training partners in their teams.
           Athletes left in the squad but not in a team won’t appear on coaches’ to-dos or check-in
           boards. Nobody is removed from the squad, and you can undo this.
         </ThemedText>

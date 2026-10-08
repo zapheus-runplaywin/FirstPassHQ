@@ -81,8 +81,8 @@ The admin opens **Administration > Club settings** and sets:
 - **Club name** and **short name**. The short name finds the club's teams in PlayHQ fixtures and
   names exported files.
 - **Logo**: a square PNG with a see-through background.
-- **Colours**: background, text and hero colour (buttons, links and highlights). The preview
-  shows how they look together and warns when they're hard to read.
+- **Colours**: background, hero colour (buttons, links and highlights) and light or dark text.
+  The preview shows how they look together and warns when they're hard to read.
 - **Features**: turn off anything the club doesn't use. Messages, Calendar, Daily check-ins,
   Injuries, Attendance and Awards can each be switched off. Nothing is deleted when a feature is
   off.

@@ -11,6 +11,7 @@ export const ClubDefaults = {
   /** Used to find the club's teams in PlayHQ fixtures and to name exported files. */
   shortName: 'Thunder',
   background: '#000000',
+  /** Light text is #FFFFFF, dark text #000000. */
   text: '#FFFFFF',
   /** Buttons, links, selected chips and other highlights. */
   hero: '#FFCD00',
