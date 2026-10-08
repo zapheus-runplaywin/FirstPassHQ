@@ -42,9 +42,26 @@ export function useMessageGroups(teams: Team[]) {
   return teams.filter((t) => ledIds.has(t.id));
 }
 
-/** Guests and physios don't get messages. The database hides them too. */
-export function getsMessages(role: AppRole) {
-  return role !== 'guest' && role !== 'physio';
+/**
+ * Guests never get messages. Physios get messages to the whole club only when
+ * an admin turns that on. The database applies the same rules.
+ */
+export function useGetsMessages() {
+  const { profile } = useAuth();
+  const [physiosGetClubMessages, setPhysiosGetClubMessages] = useState(false);
+  const isPhysio = profile?.status === 'approved' && profile.role === 'physio';
+
+  useFocusEffect(
+    useCallback(() => {
+      if (!isPhysio) return;
+      supabase
+        .rpc('physios_get_club_messages')
+        .then(({ data }) => setPhysiosGetClubMessages(data === true));
+    }, [isPhysio]),
+  );
+
+  if (profile?.status !== 'approved' || profile.role === 'guest') return false;
+  return !isPhysio || physiosGetClubMessages;
 }
 
 /** Admins, the committee, coaches and managers can send messages. */

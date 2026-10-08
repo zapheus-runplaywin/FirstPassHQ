@@ -13,8 +13,11 @@
 --   and it must be someone other than the endorser.
 -- - Physios need a current Working With Children Check, like coaches and
 --   managers, since they see injuries of athletes under 18.
+-- - Matt (2026-10-08): admins can choose to send physios messages to the
+--   whole club. It starts off.
 --
--- Additive only: one new function and replaced functions. No rows change.
+-- Additive only: one new column (default off), new functions and replaced
+-- functions. No rows change.
 
 begin;
 
@@ -47,6 +50,40 @@ $$;
 
 revoke execute on function public.is_view_only_role(public.app_role) from public, anon;
 grant execute on function public.is_view_only_role(public.app_role) to authenticated;
+
+-- Whether physios get messages sent to the whole club. Admins choose.
+alter table public.club_settings
+  add column if not exists physios_get_club_messages boolean not null default false;
+
+create or replace function public.physios_get_club_messages()
+returns boolean
+language sql
+stable
+security definer
+set search_path = ''
+as $$
+  select coalesce((select physios_get_club_messages from public.club_settings), false);
+$$;
+
+revoke execute on function public.physios_get_club_messages() from public, anon;
+grant execute on function public.physios_get_club_messages() to authenticated;
+
+create or replace function public.admin_set_physios_get_club_messages(p_on boolean)
+returns void
+language plpgsql
+security definer
+set search_path = ''
+as $$
+begin
+  if not public.is_admin() then
+    raise exception 'Only admins can change club settings';
+  end if;
+  update public.club_settings set physios_get_club_messages = coalesce(p_on, false);
+end;
+$$;
+
+revoke execute on function public.admin_set_physios_get_club_messages(boolean) from public, anon;
+grant execute on function public.admin_set_physios_get_club_messages(boolean) to authenticated;
 
 -- Same as before, plus physios.
 create or replace function public.can_view_athlete_injuries(p_athlete_id uuid)
@@ -368,7 +405,8 @@ $$;
 
 revoke execute on function public.award_voters(uuid, uuid) from public, anon, authenticated;
 
--- Same as before, leaving out guests and physios.
+-- Same as before, leaving out guests, and physios unless admins send them
+-- messages to the whole club.
 create or replace function public.send_group_message(
   p_body text,
   p_audience public.message_audience,
@@ -441,7 +479,8 @@ begin
     select p.id, p.role, p.date_of_birth, p.under_17
     from public.profiles p
     where p.status = 'approved'
-      and not public.is_view_only_role(p.role)
+      and (not public.is_view_only_role(p.role)
+        or (p.role = 'physio' and p_audience = 'club' and public.physios_get_club_messages()))
       and case p_audience
         when 'club' then true
         when 'role' then p.role = p_role
@@ -480,7 +519,8 @@ revoke execute on function public.send_group_message(text, public.message_audien
 grant execute on function public.send_group_message(text, public.message_audience, public.app_role, uuid)
   to authenticated;
 
--- Same as before, hiding messages from guests and physios.
+-- Same as before, hiding messages from guests, and from physios unless they
+-- get messages to the whole club.
 create or replace function public.is_message_recipient(p_message_id uuid)
 returns boolean
 language sql
@@ -492,9 +532,11 @@ as $$
     select 1 from public.message_recipients
     where message_id = p_message_id and profile_id = auth.uid()
   ) and not exists (
-    -- Guests and physios don't see messages, including ones from before.
+    -- Guests never see messages, including ones from before. Physios see
+    -- them only while admins send them messages to the whole club.
     select 1 from public.profiles
-    where id = auth.uid() and public.is_view_only_role(role)
+    where id = auth.uid()
+      and (role = 'guest' or (role = 'physio' and not public.physios_get_club_messages()))
   );
 $$;
 
