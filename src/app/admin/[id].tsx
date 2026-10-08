@@ -16,6 +16,7 @@ import {
   selectionLabels,
   statusLabels,
 } from '@/lib/labels';
+import { wwccRoles } from '@/lib/safety';
 import { supabase } from '@/lib/supabase';
 import type {
   AppRole,
@@ -45,9 +46,6 @@ type Person = {
   role: AppRole;
   verified_at: string | null;
 };
-
-/** Roles that work with children, so need a Working With Children Check. */
-const wwccRoles: AppRole[] = ['coach', 'manager', 'physio'];
 
 /** How many guardians to offer while searching. */
 const GUARDIAN_MATCHES = 6;

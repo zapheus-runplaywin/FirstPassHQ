@@ -8,20 +8,27 @@ import { PressableCard, TextField } from '@/components/ui';
 import { Spacing } from '@/constants/theme';
 import { PROFILE_COLUMNS } from '@/lib/auth';
 import { rejectionReasonLabels, roleLabels } from '@/lib/labels';
+import { safetyIssues } from '@/lib/safety';
 import { supabase } from '@/lib/supabase';
 import type { Profile } from '@/lib/types';
 
 export default function MembersScreen() {
   const [members, setMembers] = useState<Profile[]>([]);
+  const [withGuardian, setWithGuardian] = useState<Set<string>>(new Set());
   const [search, setSearch] = useState('');
   const [refreshing, setRefreshing] = useState(false);
 
   const load = useCallback(async () => {
-    const { data } = await supabase
-      .from('profiles')
-      .select(PROFILE_COLUMNS)
-      .order('full_name', { nullsFirst: false });
-    setMembers((data as Profile[] | null) ?? []);
+    const [profilesResult, guardiansResult] = await Promise.all([
+      supabase.from('profiles').select(PROFILE_COLUMNS).order('full_name', { nullsFirst: false }),
+      supabase.from('guardianships').select('athlete_id'),
+    ]);
+    setMembers((profilesResult.data as Profile[] | null) ?? []);
+    setWithGuardian(
+      new Set(
+        ((guardiansResult.data as { athlete_id: string }[] | null) ?? []).map((g) => g.athlete_id),
+      ),
+    );
   }, []);
 
   useFocusEffect(
@@ -46,6 +53,9 @@ export default function MembersScreen() {
     .filter((m) => m.status === 'pending' && m.join_requested_at)
     .sort((a, b) => (a.join_requested_at ?? '').localeCompare(b.join_requested_at ?? ''));
   const approved = matching.filter((m) => m.status === 'approved');
+  // The people behind the child-safety to-dos on the home screen, with why.
+  const issues = new Map(approved.map((m) => [m.id, safetyIssues(m, withGuardian.has(m.id))]));
+  const needsChecking = approved.filter((m) => issues.get(m.id)?.length);
   const notRequested = matching.filter((m) => m.status === 'pending' && !m.join_requested_at);
   const rejected = matching.filter((m) => m.status === 'rejected');
 
@@ -59,6 +69,12 @@ export default function MembersScreen() {
         autoCapitalize="none"
       />
       <Section
+        title="Needs checking"
+        members={needsChecking}
+        describe={(m) => `${roleLabels[m.role]} · ${issues.get(m.id)?.join(' · ')}`}
+        warn
+      />
+      <Section
         title="Waiting for approval"
         empty="No requests waiting."
         members={waiting}
@@ -70,7 +86,9 @@ export default function MembersScreen() {
         title="Members"
         empty="No approved members yet."
         members={approved}
-        describe={(m) => roleLabels[m.role]}
+        describe={(m) =>
+          issues.get(m.id)?.length ? `${roleLabels[m.role]} · Needs checking` : roleLabels[m.role]
+        }
       />
       <Section
         title="Signed in, no request yet"
@@ -93,11 +111,14 @@ function Section({
   empty,
   members,
   describe,
+  warn,
 }: {
   title: string;
   empty?: string;
   members: Profile[];
   describe: (member: Profile) => string;
+  /** Show the description in the club's highlight colour. */
+  warn?: boolean;
 }) {
   if (members.length === 0 && !empty) return null;
   return (
@@ -113,7 +134,7 @@ function Section({
             key={m.id}
             onPress={() => router.push({ pathname: '/admin/[id]', params: { id: m.id } })}>
             <ThemedText type="smallBold">{m.full_name || m.email || 'Unnamed member'}</ThemedText>
-            <ThemedText type="small" themeColor="textSecondary">
+            <ThemedText type="small" themeColor={warn ? 'tint' : 'textSecondary'}>
               {describe(m)}
             </ThemedText>
           </PressableCard>
