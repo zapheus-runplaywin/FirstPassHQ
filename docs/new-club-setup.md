@@ -38,7 +38,8 @@ project, allow the sign-in redirects (using the club's `scheme` from step 1 inst
 To have database changes deploy automatically, add these repository secrets in GitHub
 (**Settings > Secrets and variables > Actions**): `SUPABASE_ACCESS_TOKEN`, `SUPABASE_DB_PASSWORD`
 and `SUPABASE_PROJECT_ID`. Then run the **Deploy migrations** workflow once by hand. It applies
-every file in `supabase/migrations/` and later ones as they merge.
+every file in `supabase/migrations/` and later ones as they merge. A second, test project for
+trying changes with sample people is optional: see [Test and live](environments.md).
 
 The first migration adds West Coast Thunder's squads (Lightning Academy, 17 & Under and so on).
 The admin renames or removes them in **Squads and teams** in step 5; nothing else depends on them.
