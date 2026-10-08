@@ -110,8 +110,9 @@ An admin checks your request against the club's PlayHQ registrations, sets your 
 to your squad. Pull down on the home screen to check again.
 
 If the admin can't match you to a registration, they may ask you for the **6-digit code** shown on
-your home screen. Only read it to a club admin in person or over a channel you already trust, and
-never share it with anyone else.
+your home screen. The code proves who you are, so the admin needs to get it from you in person or
+over a channel they already trust. Only ever give it to a club admin, and never share it with
+anyone else.
 
 If your request isn't approved, the home screen says why and you can tap **Request again** after
 fixing your details.
@@ -526,8 +527,8 @@ The app won't approve or save:
 - a coach or manager without a current Working With Children Check.
 
 **Verifying someone.** Guardians must be verified before they can be linked to a child. If their
-PlayHQ email matches the registration, tap **Checked against PlayHQ**. Otherwise ask them to read
-you the 6-digit code from their home screen in person or over a channel you already trust, enter it
+PlayHQ email matches the registration, tap **Checked against PlayHQ**. Otherwise get the 6-digit code
+from their home screen yourself, in person or over a channel you already trust, enter it
 under **Their code** and tap **Check code**. The member then shows as "Verified".
 
 When an athlete turns 18, the next time you save them their guardian links are removed.
