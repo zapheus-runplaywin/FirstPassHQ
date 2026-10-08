@@ -1,3 +1,4 @@
+import Constants from 'expo-constants';
 import { DarkTheme, Stack, ThemeProvider } from 'expo-router';
 import * as SplashScreen from 'expo-splash-screen';
 import { StatusBar } from 'expo-status-bar';
@@ -8,9 +9,11 @@ import { contrastRatio } from '@/constants/theme';
 import { useTheme } from '@/hooks/use-theme';
 import { AuthProvider, useAuth } from '@/lib/auth';
 import { ClubProvider, useClub } from '@/lib/club';
+import { startAppLog } from '@/lib/log';
 import { useAdminPushNotifications } from '@/lib/push';
 
 SplashScreen.preventAutoHideAsync();
+startAppLog({ version: Constants.expoConfig?.version ?? null });
 
 export default function RootLayout() {
   return (
