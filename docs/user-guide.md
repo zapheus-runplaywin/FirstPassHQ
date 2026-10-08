@@ -50,7 +50,7 @@ What each role sees on its home screen:
 | -------------------------------------- | :-----: | :-------------: | :----------: | :--------: | :-----------: | :-------------: | :-----------: |
 | To-do list, calendar, squads and teams |    ✓    |        ✓        |      ✓       |     ✓      |       ✓       |        ✓        |       ✓       |
 | Read messages                          |    ✓    |        ✓        |      ✓       |     ✓      |       ✓       |        ✓        |       ✓       |
-| Send messages                          |         |                 |  Own groups  | Own groups |               |                 |    Anyone     |
+| Send messages                          |         |                 |  Own groups  | Own groups |  Whole club   |                 |    Anyone     |
 | Daily check-in                         |    ✓    |                 |              |            |               |                 |               |
 | Check-ins of others                    |         |                 | Own athletes |            | Averages only |                 | Averages only |
 | Report an injury                       |   Own   | Their athlete's |              |            |               |                 |               |
@@ -439,6 +439,15 @@ Managers don't see athletes' attendance histories, check-ins or injuries.
 Committee members oversee the club's athletes without seeing anyone's private check-in answers.
 
 <img src="user-guide/committee-home.png" width="210" alt="Committee home screen">
+
+### Messages to the club
+
+Committee members can send a message to everyone in the club. Open **Messages**, tap **New
+message**, write it and tap **Send**. Guardians of athletes under 18 get a copy, and **Sent** shows
+who has read it. Only admins can message a single role, such as all coaches. A committee member who
+also coaches or manages a squad or team can choose **A squad or team** to message it instead.
+
+<img src="user-guide/new-message-committee.png" width="210" alt="New message from a committee member">
 
 ### Check-in averages
 

@@ -37,11 +37,15 @@ export function useMessageGroups(teams: Team[]) {
   return teams.filter((t) => ledIds.has(t.id));
 }
 
-/** Admins, coaches and managers can send messages. */
+/** Admins, the committee, coaches and managers can send messages. */
 export function useCanSendMessages() {
   const { memberships, isAdmin, profile } = useAuth();
   if (profile?.status !== 'approved') return false;
-  return isAdmin || memberships.some((m) => m.team_role === 'coach' || m.team_role === 'manager');
+  return (
+    isAdmin ||
+    profile.role === 'committee' ||
+    memberships.some((m) => m.team_role === 'coach' || m.team_role === 'manager')
+  );
 }
 
 /** How many messages the member hasn't opened yet, refreshed when the screen is shown. */
