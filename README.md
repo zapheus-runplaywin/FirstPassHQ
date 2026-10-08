@@ -91,6 +91,9 @@ npx tsc --noEmit
 npx eas-cli@latest build --profile preview --platform all
 ```
 
+To start builds from GitHub instead (Android APK, and iOS to TestFlight), see
+[Beta builds from GitHub](docs/beta-builds.md).
+
 Builds use the live Supabase project, from the EAS environment named after the profile. Publish
 over-the-air fixes with `scripts/publish-update.sh`, not `eas update` directly, so they can't pick
 up your `.env` test settings.
