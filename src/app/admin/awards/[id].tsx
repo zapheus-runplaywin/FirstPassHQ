@@ -44,7 +44,7 @@ export default function AdminAwardScreen() {
     setResults((r.data as AwardResult[] | null) ?? []);
     setTurnout((t.data as AwardTurnout[] | null) ?? []);
     const loaded = a.data as Award | null;
-    if (loaded?.nominee_max_age && loaded.nominees !== 'listed') {
+    if ((loaded?.nominee_max_age || loaded?.nominee_min_age) && loaded.nominees !== 'listed') {
       const { data } = await supabase.rpc('admin_award_missing_birthdays', {
         p_award_id: loaded.id,
       });

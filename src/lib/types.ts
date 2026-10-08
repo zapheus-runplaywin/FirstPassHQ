@@ -313,7 +313,9 @@ export type Award = {
   preseason_closes_at: string | null;
   annual: boolean;
   copied_from: string | null;
-  // Nominees must be under this age on nominee_age_on (or the closing day).
+  // Nominees must be at least nominee_min_age and under nominee_max_age on
+  // nominee_age_on (or the closing day).
+  nominee_min_age: number | null;
   nominee_max_age: number | null;
   nominee_age_on: string | null;
   award_groups: { team_id: string }[];
