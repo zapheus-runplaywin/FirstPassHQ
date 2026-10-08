@@ -39,10 +39,13 @@ In GitHub, **Settings > Secrets and variables > Actions**, add two repository se
 - `SUPABASE_TEST_PROJECT_ID`: the test project's reference (the part before `.supabase.co`).
 - `SUPABASE_TEST_DB_PASSWORD`: its database password.
 
-The existing `SUPABASE_ACCESS_TOKEN` works for both projects. Then open **Actions**, and run
-**Deploy migrations**, **Deploy PlayHQ function** and **Purge expired injury records** once each
-with **Run workflow** (leave the boxes empty). The first run gives the empty test project every
-migration.
+If the test project is in the same Supabase organisation as the live one, the existing
+`SUPABASE_ACCESS_TOKEN` works for both. If it's in another organisation or account (the deploy fails
+with "does not have the necessary privileges"), sign in to Supabase as the test project's owner,
+create a token under **Account > Access Tokens**, and add it as a third secret,
+`SUPABASE_TEST_ACCESS_TOKEN`. Then open **Actions**, and run **Deploy migrations**, **Deploy PlayHQ
+function** and **Purge expired injury records** once each with **Run workflow** (leave the boxes
+empty). The first run gives the empty test project every migration.
 
 Until these secrets exist the workflows only warn and carry on updating the live project.
 
