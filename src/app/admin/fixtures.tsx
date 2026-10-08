@@ -16,9 +16,42 @@ import {
   type PlayhqLink,
 } from '@/lib/playhq';
 import { useClub } from '@/lib/club';
+import { logger } from '@/lib/log';
 import { supabase } from '@/lib/supabase';
 import type { Fixture, PlayhqSeason } from '@/lib/types';
 import { seasonLabel, teamLabel, useTeams } from '@/lib/use-teams';
+
+const log = logger('fixtures');
+
+/** Saves one PlayHQ team's games against our team; returns how many. */
+async function saveTeamGames(found: PlayhqCompetition, playhqTeamId: string, teamId: string) {
+  const games = gamesFor(found, playhqTeamId);
+  const started = Date.now();
+  const { data, error } = await supabase.rpc('save_playhq_fixtures', {
+    p_playhq_team_id: playhqTeamId,
+    p_games: games,
+  });
+  if (error) {
+    log.error('Saving a team’s games failed', {
+      playhq_team_id: playhqTeamId,
+      team_id: teamId,
+      sent_count: games.length,
+      code: error.code,
+      reason: error.message,
+    });
+    throw new Error(error.message);
+  }
+  const saved = (data as number | null) ?? 0;
+  log.info('Saved a team’s games', {
+    playhq_team_id: playhqTeamId,
+    team_id: teamId,
+    sent_count: games.length,
+    bye_count: games.filter((g) => g.status === 'BYE').length,
+    saved_count: saved,
+    ms: Date.now() - started,
+  });
+  return saved;
+}
 
 /**
  * Admins add a PlayHQ competition by its link, say which of its teams are the
@@ -60,6 +93,12 @@ export default function FixturesScreen() {
         .order('starts_at')
         .limit(10),
     ]);
+    if (s.error || f.error) {
+      log.warn('Couldn’t load saved fixtures', {
+        seasons_error: s.error?.message ?? null,
+        fixtures_error: f.error?.message ?? null,
+      });
+    }
     setSaved((s.data as PlayhqSeason[] | null) ?? []);
     setUpcoming((f.data as Fixture[] | null) ?? []);
   }, []);
@@ -75,6 +114,8 @@ export default function FixturesScreen() {
     setNotice(null);
     const parsed = parsePlayhqLink(text);
     if (!parsed) {
+      // Not the text itself: it could be anything pasted.
+      log.warn('Not a PlayHQ competition link', { length: text.trim().length });
       setError(
         'Paste the link to the competition on playhq.com, such as playhq.com/netball-australia/org/…/ec69e46d.',
       );
@@ -84,6 +125,10 @@ export default function FixturesScreen() {
     try {
       const found = await fetchPlayhqCompetition(parsed);
       const existing = saved?.find((s) => s.playhq_season_id === found.id);
+      log.info(existing ? 'Changing teams for a saved competition' : 'New competition', {
+        competition_id: found.id,
+        linked_count: existing?.playhq_teams.filter((t) => t.team_id).length ?? 0,
+      });
       setLink(parsed);
       setCompetition(found);
       setSeason(existing?.season ?? null);
@@ -93,6 +138,7 @@ export default function FixturesScreen() {
         ),
       );
     } catch (e) {
+      // fetchPlayhqCompetition has logged the details.
       setError(e instanceof Error ? e.message : 'Couldn’t reach PlayHQ');
     }
     setBusy(null);
@@ -100,6 +146,13 @@ export default function FixturesScreen() {
 
   /** Saves the team links, then every linked team's games. */
   async function importGames(found: PlayhqCompetition, url: string, forSeason: number) {
+    const linked = Object.values(links).filter(Boolean).length;
+    log.info('Saving competition', {
+      competition_id: found.id,
+      season: forSeason,
+      team_count: Object.keys(links).length,
+      linked_count: linked,
+    });
     const { error: saveError } = await supabase.rpc('admin_save_playhq_season', {
       p_season_id: found.id,
       p_name: found.name,
@@ -109,17 +162,20 @@ export default function FixturesScreen() {
         .filter((t) => t.id in links)
         .map((t) => ({ playhq_team_id: t.id, playhq_name: t.name, team_id: links[t.id] ?? '' })),
     });
-    if (saveError) throw new Error(saveError.message);
+    if (saveError) {
+      log.error('Saving competition failed', {
+        competition_id: found.id,
+        code: saveError.code,
+        reason: saveError.message,
+      });
+      throw new Error(saveError.message);
+    }
     let count = 0;
     for (const [teamId, ours] of Object.entries(links)) {
       if (!ours) continue;
-      const { data, error: importError } = await supabase.rpc('save_playhq_fixtures', {
-        p_playhq_team_id: teamId,
-        p_games: gamesFor(found, teamId),
-      });
-      if (importError) throw new Error(importError.message);
-      count += (data as number | null) ?? 0;
+      count += await saveTeamGames(found, teamId, ours);
     }
+    log.info('Imported games', { competition_id: found.id, linked_count: linked, game_count: count });
     return count;
   }
 
@@ -134,6 +190,7 @@ export default function FixturesScreen() {
       setLinkText('');
       load();
     } catch (e) {
+      log.error('Import failed', { competition_id: competition.id, error: e });
       setError(e instanceof Error ? e.message : 'Couldn’t save the fixtures');
     }
     setBusy(null);
@@ -141,25 +198,35 @@ export default function FixturesScreen() {
 
   async function refresh(s: PlayhqSeason) {
     const parsed = parsePlayhqLink(s.url);
-    if (!parsed) return;
+    if (!parsed) {
+      log.error('Saved competition has an unreadable link', { competition_id: s.playhq_season_id });
+      return;
+    }
     setBusy(s.playhq_season_id);
     setError(null);
     setNotice(null);
     try {
+      log.info('Refreshing competition', {
+        competition_id: s.playhq_season_id,
+        linked_count: s.playhq_teams.filter((t) => t.team_id).length,
+      });
       const found = await fetchPlayhqCompetition(parsed);
+      if (found.id !== s.playhq_season_id) {
+        log.warn('PlayHQ returned a different competition', {
+          competition_id: s.playhq_season_id,
+          returned_id: found.id,
+        });
+      }
       let count = 0;
       for (const t of s.playhq_teams) {
         if (!t.team_id) continue;
-        const { data, error: importError } = await supabase.rpc('save_playhq_fixtures', {
-          p_playhq_team_id: t.playhq_team_id,
-          p_games: gamesFor(found, t.playhq_team_id),
-        });
-        if (importError) throw new Error(importError.message);
-        count += (data as number | null) ?? 0;
+        count += await saveTeamGames(found, t.playhq_team_id, t.team_id);
       }
+      log.info('Refreshed games', { competition_id: s.playhq_season_id, game_count: count });
       setNotice(`Updated ${count} ${count === 1 ? 'game' : 'games'} from ${s.name}.`);
       load();
     } catch (e) {
+      log.error('Refresh failed', { competition_id: s.playhq_season_id, error: e });
       setError(e instanceof Error ? e.message : 'Couldn’t reach PlayHQ');
     }
     setBusy(null);

@@ -1,4 +1,7 @@
+import { logger } from '@/lib/log';
 import { supabase } from '@/lib/supabase';
+
+const log = logger('fixtures');
 
 /**
  * PlayHQ competitions are read by the playhq function
@@ -61,15 +64,37 @@ export function parsePlayhqLink(text: string): PlayhqLink | null {
 
 /** Every grade's teams and games in a PlayHQ competition season. */
 export async function fetchPlayhqCompetition(link: PlayhqLink): Promise<PlayhqCompetition> {
+  const started = Date.now();
+  log.info('Looking up PlayHQ competition', { tenant: link.tenant, season_id: link.seasonCode });
   const { data, error } = await supabase.functions.invoke('playhq', {
     body: { tenant: link.tenant, seasonCode: link.seasonCode },
   });
+  const ms = Date.now() - started;
   if (error) {
     // The function's own message says what went wrong.
-    const body = await (error as { context?: Response }).context?.json?.().catch(() => null);
+    const response = (error as { context?: Response }).context;
+    const body = await response?.json?.().catch(() => null);
+    log.error('PlayHQ lookup failed', {
+      tenant: link.tenant,
+      season_id: link.seasonCode,
+      status: response?.status ?? null,
+      kind: error.name,
+      reason: body?.error ?? error.message,
+      ms,
+    });
     throw new Error(body?.error ?? 'Couldn’t reach PlayHQ');
   }
-  return data as PlayhqCompetition;
+  const competition = data as PlayhqCompetition;
+  log.info('PlayHQ competition found', {
+    season_id: link.seasonCode,
+    competition_id: competition.id,
+    competition: competition.name,
+    team_count: competition.teams?.length ?? 0,
+    game_count: competition.games?.length ?? 0,
+    undated_count: competition.games?.filter((g) => !g.time).length ?? 0,
+    ms,
+  });
+  return competition;
 }
 
 /** One team's games, as save_playhq_fixtures takes them. */
