@@ -6,6 +6,7 @@ export type AppRole =
   | 'manager'
   | 'athlete'
   | 'committee'
+  | 'physio'
   | 'guardian'
   | 'guest';
 

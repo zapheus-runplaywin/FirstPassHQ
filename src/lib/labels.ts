@@ -13,6 +13,7 @@ export const roleLabels: Record<AppRole, string> = {
   manager: 'Manager',
   athlete: 'Athlete',
   committee: 'Committee',
+  physio: 'Physio',
   guardian: 'Guardian',
   guest: 'Guest',
 };
@@ -24,6 +25,7 @@ export const pluralRoleLabels: Record<AppRole, string> = {
   manager: 'Managers',
   athlete: 'Athletes',
   committee: 'Committee',
+  physio: 'Physios',
   guardian: 'Guardians',
   guest: 'Guests',
 };
@@ -74,6 +76,7 @@ export const requestableRoles: AppRole[] = [
   'coach',
   'manager',
   'committee',
+  'physio',
   'guest',
 ];
 

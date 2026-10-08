@@ -42,6 +42,11 @@ export function useMessageGroups(teams: Team[]) {
   return teams.filter((t) => ledIds.has(t.id));
 }
 
+/** Guests and physios don't get messages. The database hides them too. */
+export function getsMessages(role: AppRole) {
+  return role !== 'guest' && role !== 'physio';
+}
+
 /** Admins, the committee, coaches and managers can send messages. */
 export function useCanSendMessages() {
   const { memberships, isAdmin, profile } = useAuth();

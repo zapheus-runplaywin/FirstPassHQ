@@ -153,7 +153,7 @@ export function buildTodos({
         title: `Check ${plural(wwcc, 'Working With Children Check', 'Working With Children Checks')}`,
         detail:
           safety.wwcc_missing > 0
-            ? `${plural(safety.wwcc_missing, 'coach or manager has', 'coaches and managers have')} none recorded or it has expired`
+            ? `${plural(safety.wwcc_missing, 'coach, manager or physio has', 'coaches, managers and physios have')} none recorded or it has expired`
             : 'Expiring in the next 30 days',
         href: '/admin',
       });

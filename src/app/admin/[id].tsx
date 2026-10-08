@@ -47,7 +47,7 @@ type Person = {
 };
 
 /** Roles that work with children, so need a Working With Children Check. */
-const wwccRoles: AppRole[] = ['coach', 'manager'];
+const wwccRoles: AppRole[] = ['coach', 'manager', 'physio'];
 
 /** How many guardians to offer while searching. */
 const GUARDIAN_MATCHES = 6;
@@ -420,7 +420,7 @@ export default function MemberScreen() {
         <View style={styles.group}>
           <ThemedText type="smallBold">Working With Children Check</ThemedText>
           <ThemedText type="small" themeColor="textSecondary">
-            Coaches and managers need a current check before you can approve them.
+            Coaches, managers and physios need a current check before you can approve them.
           </ThemedText>
           <TextField
             label="Card number"

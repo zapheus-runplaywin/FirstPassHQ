@@ -25,7 +25,7 @@ import {
   useMyCheckIn,
 } from '@/lib/check-ins';
 import { injuriesSummary, useCanSeeInjuries, useOpenInjuries } from '@/lib/injuries';
-import { useUnreadCount } from '@/lib/messages';
+import { getsMessages, useUnreadCount } from '@/lib/messages';
 import {
   pendingRequestsLabel,
   usePendingRequests,
@@ -131,7 +131,7 @@ export default function HomeScreen() {
 
       {approved ? <TodoList todos={todos} /> : null}
 
-      {approved ? (
+      {approved && getsMessages(profile.role) ? (
         <PressableCard onPress={() => router.push('/messages')}>
           <View style={styles.cardTitleRow}>
             <ThemedText type="smallBold">Messages</ThemedText>
