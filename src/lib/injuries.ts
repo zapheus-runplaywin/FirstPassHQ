@@ -144,9 +144,26 @@ export async function uploadInjuryDocument(
   return path;
 }
 
+/** Photos open in the zoomable image viewer; everything else is a PDF. */
+export function isImageDocument(path: string) {
+  return /\.(jpe?g|png|heic|heif)$/i.test(path);
+}
+
+/**
+ * A link to show a document inside the app. It stops working after two
+ * minutes, so it's no use if copied out of the app.
+ */
+export async function viewInjuryDocumentUrl(path: string) {
+  const { data, error } = await supabase.storage.from(INJURY_BUCKET).createSignedUrl(path, 120);
+  if (error || !data) throw new Error('That document couldn’t be opened. Try again.');
+  return data.signedUrl;
+}
+
 /**
  * Opens the share sheet for a proof document, so it can be saved to OneDrive,
- * Files or email. On the web it opens in a new tab instead.
+ * Files or email. On the web it opens in a new tab instead. Only the
+ * committee and admins are offered this; everyone else views documents in the
+ * app without saving them.
  */
 export async function shareInjuryDocument(path: string, name: string | null) {
   const { data, error } = await supabase.storage.from(INJURY_BUCKET).createSignedUrl(path, 60);

@@ -283,7 +283,8 @@ Open the injury to see its details and history. While you're injured:
 ### Getting cleared to play
 
 When you're ready to return, tap **Ask for clearance** and attach **proof of clearance**, such as a
-letter from your physio or doctor. Proof is required.
+letter from your physio or doctor. Proof is required. The people who sign it off view it inside the
+app, where they can zoom in to read it.
 
 Two people then sign off, in order:
 
@@ -387,16 +388,27 @@ which counts for a set share of the result.
 date. Choose **Including cleared** to see past injuries too.
 
 When one of your athletes asks for clearance, it appears under **Waiting for your sign-off** and in
-your to-do list. Open it, check the proof in the history (tap **View or share**), then:
+your to-do list. Open it, check the proof in the history (tap **View**), then:
 
 - **Endorse clearance** to pass it to the committee, with an optional note such as "trained fully
   on Tuesday", or
 - **Send back** with a note saying what's missing.
 
-If an athlete has no coach, an admin endorses instead.
+If an athlete has no coach, a club physio endorses instead. Admins can't endorse a clearance; they
+accept it like the committee.
 
 <img src="user-guide/injuries-coach.png" width="210" alt="Coach's injuries list">
 <img src="user-guide/endorse-clearance.png" width="210" alt="Endorse or send back a clearance">
+
+#### Viewing proof documents
+
+**View** opens a document inside the app. A photo fills the screen: pinch to zoom in on the
+details, drag to move around, and double-tap to zoom in or back out. A PDF shows its pages one
+under the next, and you can pinch to zoom there too. There's no save or share button, and the
+document isn't kept on your phone.
+
+<img src="user-guide/document-photo.png" width="210" alt="A photo of a clearance letter, zoomed in">
+<img src="user-guide/document-pdf.png" width="210" alt="A PDF clearance letter in the viewer">
 
 ### Taking attendance
 
@@ -479,8 +491,10 @@ the person who endorsed it. Open it, check the proof, then:
 - **Accept clearance** clears the athlete to train and play, or
 - **Send back** with a note.
 
-The committee can also send back a request that no coach or physio has looked at yet. Tap **View or share**
-on a document to save it to OneDrive or attach it to an email.
+The committee can also send back a request that no coach or physio has looked at yet. Tap **View**
+on a document to read it in the app (see [Viewing proof documents](#viewing-proof-documents)).
+Committee members and admins also get **Share**, to save a document to OneDrive or attach it to an
+email; nobody else can save or share documents.
 
 <img src="user-guide/injuries-committee.png" width="210" alt="Committee injuries list">
 <img src="user-guide/accept-clearance.png" width="210" alt="Accept or send back a clearance">
@@ -512,7 +526,8 @@ Physios need a current Working With Children Check, recorded by an admin, before
 - **Injuries** lists every current athlete's injuries, restrictions and proof documents. When an
   athlete asks for clearance, it appears under **Waiting for your sign-off** and in the physio's
   to-do list. Open it, check the proof, then **Endorse clearance** to pass it to the committee, or
-  **Send back** with a note. A committee member other than the physio then accepts it.
+  **Send back** with a note. A committee member other than the physio then accepts it. Physios
+  also endorse clearances for athletes who have no coach.
 
 <img src="user-guide/physio-home.png" width="210" alt="Physio home screen">
 
@@ -527,7 +542,8 @@ calendar.
 
 ## 10. Admins
 
-Admins can do everything above, plus run the club's set-up from **Administration** on the home
+Admins can do everything above except endorse injury clearances (they accept them, like the
+committee), plus run the club's set-up from **Administration** on the home
 screen. Admins' to-do lists include join requests waiting for approval and clearances waiting for
 sign-off, plus child-safety follow-ups: athletes under 18 with no guardian linked, Working With
 Children Checks that are missing, expired or expire within 30 days, and athletes turning 18 within
@@ -756,7 +772,7 @@ once saved, only replaced or removed.
 | Messages                | The people they were sent to, the sender, and admins. Guardians of athletes under 18 get a copy of every message sent to their athlete. Physios and guests don't get messages. |
 | Read receipts           | The sender and admins.                                                                                                      |
 | Daily check-in answers and notes | The athlete, their guardians and their coaches. The committee, physios and admins see only group averages, hidden below 3 check-ins. |
-| Injuries and documents  | The athlete, their guardians, their coaches, physios, the committee and admins. Managers don't see injuries.                |
+| Injuries and documents  | The athlete, their guardians, their coaches, physios, the committee and admins. Managers don't see injuries. Only the committee and admins can save or share documents; everyone else views them in the app. |
 | Attendance records      | Coaches, the committee and admins. Managers see their own groups' sessions. Athletes and guardians don't see attendance.    |
 | Committee calendar      | Committee members and admins.                                                                                               |
 | Award votes             | Only the voter sees their own ballot. Nobody, admins included, can see who someone voted for.                               |
