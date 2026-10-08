@@ -61,13 +61,17 @@ export function Screen({
   // screen can be scrolled out of place by typing on another one.
   const isFocused = useIsFocused();
   // Where the screen is scrolled to and how much there is to scroll, so a
-  // screen that comes back scrolled past its content can be put right.
+  // screen left scrolled past the end of its content can be put right.
   const scrollY = useRef(0);
   const contentHeight = useRef(0);
   const viewportHeight = useRef(0);
-  // Android draws behind the keyboard (edge to edge), so the content needs room
-  // to scroll above it. iOS adjusts the scroll insets itself.
-  const [androidKeyboardHeight, setAndroidKeyboardHeight] = useState(0);
+  const dragging = useRef(false);
+  // Room under the content for the keyboard to cover. This is added as padding
+  // on both platforms rather than letting iOS adjust the scroll insets itself:
+  // those insets are native state that could be left behind when a screen lost
+  // focus with the keyboard up, so content could be scrolled away into empty
+  // space. Padding is part of the layout, so it always comes off again.
+  const [keyboardHeight, setKeyboardHeight] = useState(0);
 
   const revealFocusedInput = useCallback(() => {
     const input = TextInput.State.currentlyFocusedInput();
@@ -83,29 +87,40 @@ export function Screen({
     });
   }, []);
 
+  // When the content is shorter than where the screen is scrolled to (it shrank,
+  // or the keyboard room came off), iOS leaves the screen showing empty space.
+  // Scroll back so the end of the content is in view.
+  const keepContentInView = useCallback(() => {
+    if (dragging.current) return;
+    const maxY = Math.max(0, contentHeight.current - viewportHeight.current);
+    if (scrollY.current > maxY + 1) {
+      scrollY.current = maxY;
+      scrollRef.current?.scrollTo({ y: maxY, animated: false });
+    }
+  }, []);
+
   useEffect(() => {
     if (!isFocused) return;
-    const shown = Keyboard.addListener('keyboardDidShow', (event) => {
-      if (Platform.OS === 'android') setAndroidKeyboardHeight(event.endCoordinates.height);
+    // iOS announces the keyboard before it moves, so the room is ready as it
+    // slides up. Android only says once it is up.
+    const ios = Platform.OS === 'ios';
+    const shown = Keyboard.addListener(ios ? 'keyboardWillShow' : 'keyboardDidShow', (event) => {
+      setKeyboardHeight(event.endCoordinates.height);
       // Wait a frame for the extra room to be laid out.
       requestAnimationFrame(revealFocusedInput);
     });
-    const hidden = Keyboard.addListener('keyboardDidHide', () => setAndroidKeyboardHeight(0));
+    const hidden = Keyboard.addListener(ios ? 'keyboardWillHide' : 'keyboardDidHide', () =>
+      setKeyboardHeight(0),
+    );
     return () => {
       shown.remove();
       hidden.remove();
-      setAndroidKeyboardHeight(0);
+      setKeyboardHeight(0);
     };
   }, [isFocused, revealFocusedInput]);
 
-  // Coming back to a screen that is scrolled past the end of its content
-  // (it shrank while away) scrolls it back to the end.
-  useFocusEffect(
-    useCallback(() => {
-      const maxY = Math.max(0, contentHeight.current - viewportHeight.current);
-      if (scrollY.current > maxY) scrollRef.current?.scrollTo({ y: maxY, animated: false });
-    }, []),
-  );
+  // Coming back to a screen that shrank while away puts its content back in view.
+  useFocusEffect(keepContentInView);
 
   const scrollToY = useCallback(
     (y: number) => scrollRef.current?.scrollTo({ y: Math.max(0, y), animated: true }),
@@ -124,23 +139,29 @@ export function Screen({
               contentContainerStyle={[
                 styles.content,
                 { gap },
-                androidKeyboardHeight > 0 && {
-                  paddingBottom: androidKeyboardHeight + Spacing.four,
-                },
+                keyboardHeight > 0 && { paddingBottom: keyboardHeight + Spacing.four },
               ]}
               stickyHeaderIndices={stickyHeaderIndices}
               keyboardShouldPersistTaps="handled"
               keyboardDismissMode="interactive"
-              automaticallyAdjustKeyboardInsets={isFocused}
-              scrollEventThrottle={100}
+              scrollEventThrottle={16}
               onScroll={(event) => {
                 scrollY.current = event.nativeEvent.contentOffset.y;
               }}
+              onScrollBeginDrag={() => {
+                dragging.current = true;
+              }}
+              onScrollEndDrag={() => {
+                dragging.current = false;
+              }}
+              onMomentumScrollEnd={keepContentInView}
               onContentSizeChange={(_width, height) => {
                 contentHeight.current = height;
+                keepContentInView();
               }}
               onLayout={(event) => {
                 viewportHeight.current = event.nativeEvent.layout.height;
+                keepContentInView();
               }}
               refreshControl={
                 onRefresh ? (
