@@ -120,8 +120,8 @@ export default function CheckInsScreen() {
             <View style={styles.section}>
               <ThemedText type="smallBold">Club overview</ThemedText>
               <ThemedText type="small" themeColor="textSecondary">
-                Average scores out of 5 for each squad, then for each team once the squad’s
-                selections are complete. Scores show once 3 athletes have checked in, so they can’t
+                Average scores out of 5 for each squad, then for each team once the squad
+                phase is complete. Scores show once 3 athletes have checked in, so they can’t
                 point to one person.
               </ThemedText>
               {checkInOverview?.map((g) => {
@@ -197,8 +197,7 @@ export default function CheckInsScreen() {
               </>
             ) : (
               <ThemedText type="small" themeColor="textSecondary">
-                You don’t coach a squad or team that’s still in selections, or a team named from
-                one.
+                You don’t coach a squad that’s still in its squad phase, or a team named from one.
               </ThemedText>
             )
           ) : null}

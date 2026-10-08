@@ -65,7 +65,7 @@ export const coachTitleLabels: Record<CoachTitle, string> = {
 };
 
 export const selectionLabels: Record<TeamSelection, string> = {
-  touring: 'Touring athlete',
+  touring: 'Final team athlete',
   training_partner: 'Training partner',
 };
 

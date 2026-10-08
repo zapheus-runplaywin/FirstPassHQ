@@ -7,10 +7,12 @@ import { ThemedText } from '@/components/themed-text';
 import { ThemedView } from '@/components/themed-view';
 import { MaxContentWidth, Spacing } from '@/constants/theme';
 import { useTheme } from '@/hooks/use-theme';
+import { useClub } from '@/lib/club';
 import { signInWithGoogle } from '@/lib/sign-in';
 
 export default function SignInScreen() {
   const theme = useTheme();
+  const club = useClub();
   const [busy, setBusy] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
@@ -31,10 +33,10 @@ export default function SignInScreen() {
       <SafeAreaView style={styles.safeArea}>
         <View style={styles.header}>
           <Image
-            source={require('@/assets/images/logo.png')}
+            source={club.logo}
             style={styles.logo}
             contentFit="contain"
-            accessibilityLabel="West Coast Thunder"
+            accessibilityLabel={club.name}
           />
           <ThemedText type="subtitle" style={styles.title}>
             Sign in / Register

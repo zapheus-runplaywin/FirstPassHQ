@@ -14,12 +14,14 @@ import {
   toCsv,
   toDateString,
 } from '@/lib/injuries';
+import { useClub } from '@/lib/club';
 import { supabase } from '@/lib/supabase';
 import type { InjuryReportRow } from '@/lib/types';
 
 const DEFAULT_MONTHS = 3;
 
 export default function InjuryReportScreen() {
+  const club = useClub();
   const [monthsText, setMonthsText] = useState(String(DEFAULT_MONTHS));
   const [rows, setRows] = useState<InjuryReportRow[] | null>(null);
   const [refreshing, setRefreshing] = useState(false);
@@ -90,7 +92,7 @@ export default function InjuryReportScreen() {
           r.document_count,
         ]),
       ]);
-      await shareCsv(`thunder-injuries-${toDateString(new Date())}.csv`, csv);
+      await shareCsv(`${fileSlug(club.shortName)}-injuries-${toDateString(new Date())}.csv`, csv);
     } catch (e) {
       setError(e instanceof Error ? e.message : 'The export didn’t work. Try again.');
     } finally {
@@ -173,3 +175,8 @@ const styles = StyleSheet.create({
     gap: Spacing.two,
   },
 });
+
+/** "Thunder" -> "thunder", for file names. */
+function fileSlug(name: string) {
+  return name.toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/^-|-$/g, '') || 'club';
+}

@@ -11,8 +11,8 @@ import {
   type CalendarAudience,
   type CalendarColor,
 } from '@/constants/calendar-colors';
-import { Colors, Spacing } from '@/constants/theme';
-import { useTheme } from '@/hooks/use-theme';
+import { Spacing, type Palette } from '@/constants/theme';
+import { useTheme, useThemedStyles } from '@/hooks/use-theme';
 import { supabase } from '@/lib/supabase';
 import type { Team } from '@/lib/types';
 import { teamLabel, useTeams } from '@/lib/use-teams';
@@ -44,6 +44,7 @@ function audienceOf(
 }
 
 export default function CalendarsScreen() {
+  const styles = useThemedStyles(makeStyles);
   const teams = useTeams();
   const [calendars, setCalendars] = useState<CalendarRow[]>([]);
   const [name, setName] = useState('');
@@ -171,6 +172,7 @@ function CalendarCard({
   audience: CalendarAudience;
   onChanged: () => PromiseLike<unknown>;
 }) {
+  const styles = useThemedStyles(makeStyles);
   const theme = useTheme();
   const [editing, setEditing] = useState(false);
   const [name, setName] = useState(calendar.name);
@@ -298,6 +300,7 @@ function ColorPicker({
   onSelect: (color: CalendarColor) => void;
   compact?: boolean;
 }) {
+  const styles = useThemedStyles(makeStyles);
   return (
     <View style={styles.pickerField}>
       {compact ? null : <ThemedText type="smallBold">Colour</ThemedText>}
@@ -318,7 +321,8 @@ function ColorPicker({
   );
 }
 
-const styles = StyleSheet.create({
+const makeStyles = (colors: Palette) =>
+  StyleSheet.create({
   section: {
     gap: Spacing.three,
   },
@@ -353,7 +357,7 @@ const styles = StyleSheet.create({
     justifyContent: 'center',
   },
   swatchRingSelected: {
-    borderColor: Colors.text,
+    borderColor: colors.text,
   },
   swatch: {
     width: 24,

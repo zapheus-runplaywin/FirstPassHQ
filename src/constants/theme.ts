@@ -1,30 +1,75 @@
-/**
- * Below are the colors that are used in the app. The colors are defined in the light and dark mode.
- * There are many other ways to style your app. For example, [Nativewind](https://www.nativewind.dev/), [Tamagui](https://tamagui.dev/), [unistyles](https://reactnativeunistyles.vercel.app), etc.
- */
-
 import '@/global.css';
 
 import { Platform } from 'react-native';
 
-// Club colours from the West Coast Thunder logo: yellow on black, with grey and
-// white. The app is dark only, because that is the club's look.
-const ThunderYellow = '#FFCD00';
+import { ClubDefaults } from '@/constants/club';
 
-export const Colors = {
-  text: '#FFFFFF',
-  background: '#000000',
-  backgroundElement: '#1C1C1C',
-  backgroundSelected: '#2E2E2E',
-  textSecondary: '#B6B6B6',
-  /** Links, back buttons and other coloured text. */
-  tint: ThunderYellow,
-  /** Filled buttons and selected chips. */
-  accent: ThunderYellow,
-  onAccent: '#000000',
-} as const;
+export type ClubColours = { background: string; text: string; hero: string };
 
-export type ThemeColor = keyof typeof Colors;
+/**
+ * The app's palette, worked out from the club's three colours. The app has
+ * one theme: the club's. Panels and secondary text are blends of the
+ * background and text colours, so any pair stays readable.
+ */
+export function makeColors({ background, text, hero }: ClubColours) {
+  return {
+    text,
+    background,
+    backgroundElement: mix(background, text, 0.11),
+    backgroundSelected: mix(background, text, 0.18),
+    textSecondary: mix(text, background, 0.286),
+    /** Links, back buttons and other coloured text. */
+    tint: hero,
+    /** Filled buttons and selected chips. */
+    accent: hero,
+    /** Text on a filled button: black or white, whichever reads better. */
+    onAccent: contrastRatio(hero, '#000000') >= contrastRatio(hero, '#FFFFFF') ? '#000000' : '#FFFFFF',
+  };
+}
+
+export type Palette = ReturnType<typeof makeColors>;
+
+/** The palette built into the app, before any club settings load. */
+export const Colors: Palette = makeColors(ClubDefaults);
+
+export function isHexColour(value: string) {
+  return /^#[0-9A-Fa-f]{6}$/.test(value.trim());
+}
+
+/** WCAG contrast ratio between two #RRGGBB colours, from 1 to 21. */
+export function contrastRatio(a: string, b: string) {
+  const [la, lb] = [luminance(a), luminance(b)];
+  return (Math.max(la, lb) + 0.05) / (Math.min(la, lb) + 0.05);
+}
+
+function channels(hex: string) {
+  const n = parseInt(hex.slice(1), 16);
+  return [(n >> 16) & 255, (n >> 8) & 255, n & 255];
+}
+
+function luminance(hex: string) {
+  const [r, g, b] = channels(hex).map((c) => {
+    const v = c / 255;
+    return v <= 0.03928 ? v / 12.92 : ((v + 0.055) / 1.055) ** 2.4;
+  });
+  return 0.2126 * r + 0.7152 * g + 0.0722 * b;
+}
+
+/** `from` moved `amount` (0 to 1) of the way towards `to`. */
+function mix(from: string, to: string, amount: number) {
+  const a = channels(from);
+  const b = channels(to);
+  return (
+    '#' +
+    a
+      .map((c, i) => Math.round(c + (b[i] - c) * amount))
+      .map((c) => c.toString(16).padStart(2, '0'))
+      .join('')
+      .toUpperCase()
+  );
+}
+
+export type ThemeColor = keyof Palette;
 
 export const Fonts = Platform.select({
   ios: {

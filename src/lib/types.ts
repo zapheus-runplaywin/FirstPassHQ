@@ -21,6 +21,7 @@ export type CoachTitle = 'head_coach' | 'assistant_coach';
 /** Members join a squad first; teams are named from a squad at selections. */
 export type GroupKind = 'squad' | 'team';
 
+/** 'touring' is shown as "Final team" (Matt, 2026-10-08). */
 export type TeamSelection = 'touring' | 'training_partner';
 
 /** A squad or a team. Both live in the `teams` table. */
@@ -31,7 +32,7 @@ export type Team = {
   kind: GroupKind;
   season: number;
   squad_id: string | null;
-  /** Squads only: when admins marked Selections Phase 2 complete. */
+  /** Squads only: when admins marked the squad phase complete. */
   selections_completed_at: string | null;
 };
 
