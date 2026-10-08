@@ -3,12 +3,12 @@ import { useCallback, useState } from 'react';
 
 import { useAuth } from '@/lib/auth';
 import { formatDateTime } from '@/lib/format';
-import { parseDateString, toDateString } from '@/lib/injuries';
+import { formatDateString, parseDateString, toDateString } from '@/lib/injuries';
 import { supabase } from '@/lib/supabase';
 import type { Award, AwardNominees, AwardSlot, AwardVoterRole } from '@/lib/types';
 
 export const AWARD_COLUMNS =
-  'id, season, name, description, closes_at, club_wide, per_group, voter_roles, nominees, points, by_match, match_vote_hours, preseason_weight, preseason_closes_at, annual, copied_from, award_groups (team_id), award_candidates (id, name)';
+  'id, season, name, description, closes_at, club_wide, per_group, voter_roles, nominees, points, by_match, match_vote_hours, preseason_weight, preseason_closes_at, annual, copied_from, nominee_max_age, nominee_age_on, award_groups (team_id), award_candidates (id, name)';
 
 export const voterRoleOptions: { value: AwardVoterRole; label: string }[] = [
   { value: 'athlete', label: 'Athletes' },
@@ -55,10 +55,18 @@ export function awardSummary(award: Award, groupNames: string[]) {
     listed: 'listed names',
   }[award.nominees];
   const parts = [`${voters} ${where} vote for ${nominees}`, ballotLabel(award.points)];
+  if (award.nominee_max_age && award.nominees !== 'listed') parts.push(ageLimitLabel(award));
   if (award.per_group) parts.push('a winner for each');
   if (award.by_match) parts.push('after every match');
   if (award.preseason_weight > 0) parts.push(`preseason ${award.preseason_weight}%`);
   return parts.join(' · ');
+}
+
+/** "under 21 on Fri, 1 Jan 2027", or on the day voting closes. */
+export function ageLimitLabel(award: Pick<Award, 'nominee_max_age' | 'nominee_age_on'>) {
+  return `nominees under ${award.nominee_max_age} on ${
+    award.nominee_age_on ? formatDateString(award.nominee_age_on) : 'the day voting closes'
+  }`;
 }
 
 /** What a vote is for: "Coach MVP · Open A · Round 3 v Rockets". */

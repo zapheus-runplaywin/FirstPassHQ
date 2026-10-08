@@ -30,6 +30,8 @@ export default function AdminAwardScreen() {
   const [turnout, setTurnout] = useState<AwardTurnout[]>([]);
   // Each group's linked PlayHQ games still to come, soonest first.
   const [upcoming, setUpcoming] = useState<UpcomingGame[]>([]);
+  // Possible nominees with no date of birth, for an award with an age limit.
+  const [missingBirthdays, setMissingBirthdays] = useState(0);
   const [refreshing, setRefreshing] = useState(false);
 
   const load = useCallback(async () => {
@@ -42,6 +44,14 @@ export default function AdminAwardScreen() {
     setResults((r.data as AwardResult[] | null) ?? []);
     setTurnout((t.data as AwardTurnout[] | null) ?? []);
     const loaded = a.data as Award | null;
+    if (loaded?.nominee_max_age && loaded.nominees !== 'listed') {
+      const { data } = await supabase.rpc('admin_award_missing_birthdays', {
+        p_award_id: loaded.id,
+      });
+      setMissingBirthdays((data as number | null) ?? 0);
+    } else {
+      setMissingBirthdays(0);
+    }
     if (loaded?.by_match) {
       const { data } = await supabase
         .from('fixtures')
@@ -98,6 +108,12 @@ export default function AdminAwardScreen() {
         {award.nominees === 'listed' ? (
           <ThemedText type="small" themeColor="textSecondary">
             Nominees: {award.award_candidates.map((c) => c.name).join(', ')}
+          </ThemedText>
+        ) : null}
+        {missingBirthdays > 0 ? (
+          <ThemedText type="small" themeColor="accent">
+            {missingBirthdays} possible {missingBirthdays === 1 ? 'nominee has' : 'nominees have'}{' '}
+            no date of birth, so they can’t be voted for. Add it on their page in Members.
           </ThemedText>
         ) : null}
       </Card>
