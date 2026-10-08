@@ -682,9 +682,7 @@ Nothing is deleted when a season is archived.
 - **Ballot**: **One vote**, **3-2-1 votes** or **5-4-3-2-1 votes**.
 - **When people vote** (awards with a winner for each group): **Once, before it closes**, or
   **After every match**, using the PlayHQ fixtures. Match votes stay open for a set time after
-  each match starts. Match votes only open for the squads and teams the PlayHQ games are linked
-  to under **Fixtures**, so the form shows how many games each chosen squad or team has, and warns
-  you when it has none. The award's page shows each one's next match.
+  each match starts. See **How match awards find their games** below.
 - **Preseason share of the result** (match awards): voters also get one preseason ballot. With
   25%, the result is 25% each nominee's share of the preseason points and 75% their share of the
   match points.
@@ -692,6 +690,15 @@ Nothing is deleted when a season is archived.
 Open an award to see its standings for each squad or team, and how many people have voted in each
 match or ballot. Once anyone has voted, only the name, description, closing dates, match voting
 window and listed names can change, and the award can't be removed.
+
+**How match awards find their games.** When you import fixtures, each PlayHQ team is linked to
+one squad or team in the app (step 3 under **Fixtures**). A match award only opens votes for the
+games linked to the exact squads and teams it names. For example, if "West Coast Thunder Mixed" is
+linked to **Mixed Open A**, an award for **Mixed Open Squad** gets no match votes for those games:
+choose **Mixed Open A** in the award, or change the link under **Fixtures**. A team's games don't
+count for its squad, or the other way round. The award form shows how many PlayHQ games each
+chosen squad or team has, and warns in yellow when it has none. Each award's page shows the next
+match for each squad or team, or says that none are linked.
 
 **Duplicate** on an award opens a new award with the same settings, ready for this season, so
 you can run it again. Pick when voting closes, check the rest and tap **Save award**. It picks the
@@ -716,7 +723,9 @@ season starts, so it says when a team has no match yet: add it once the team is 
    for our teams. A red note means PlayHQ has no games within 12 months of today, so check the link
    is for the right season.
 3. Teams with "Thunder" in their name are listed. To find another, type part of its name under
-   **Find a team**. Tap each of our teams and choose the squad or team it is.
+   **Find a team**. Tap each of our teams and choose the squad or team it is. Choose the same
+   squad or team your match awards name: match votes only open for games linked to exactly that
+   squad or team (see **How match awards find their games** under **Awards**).
 4. Tap **Import games**.
 
 The games then show in each team's calendar and open match award votes. PlayHQ changes times and
