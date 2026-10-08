@@ -697,17 +697,27 @@ add it once the team is named. **Copy into** on one award copies just that one.
 
 1. On playhq.com, open the competition and copy its link, for example
    `https://www.playhq.com/netball-australia/org/…/australian-championships-summer-202526/ec69e46d`.
-2. Paste it under **Add a PlayHQ competition** and tap **Look up**.
+2. Paste it under **Add a PlayHQ competition** and tap **Look up**. A **PlayHQ check** shows how
+   quickly PlayHQ answered, how many teams it found, and how many games the competition has in the
+   last 12 months and scheduled in the next 12 months. Once you link teams it adds the same counts
+   for our teams. A red note means PlayHQ has no games within 12 months of today, so check the link
+   is for the right season.
 3. Teams with "Thunder" in their name are listed. To find another, type part of its name under
    **Find a team**. Tap each of our teams and choose the squad or team it is.
 4. Tap **Import games**.
 
 The games then show in each team's calendar and open match award votes. PlayHQ changes times and
 courts as a competition goes on, so tap **Refresh from PlayHQ** to pick up changes, or
-**Change teams** to link more teams. **Coming up** lists the next matches.
+**Change teams** to link more teams. A refresh shows the PlayHQ check on that competition again, so
+it is also the way to confirm PlayHQ is still working. **Coming up** lists the next matches.
+
+If a look-up or refresh fails, the message says which part failed: PlayHQ itself, your connection,
+an expired sign-in, or the club's PlayHQ service not being set up on the server. The details also
+go to the app's log on your phone.
 
 <img src="user-guide/fixtures.png" width="210" alt="Fixtures from PlayHQ">
 <img src="user-guide/playhq-lookup.png" width="210" alt="Linking a PlayHQ team to a club team">
+<img src="user-guide/playhq-check.png" width="210" alt="The PlayHQ check after a refresh">
 
 ### Calendars
 

@@ -42,6 +42,50 @@ export type PlayhqCompetition = {
   games: PlayhqGame[];
 };
 
+/** How many games PlayHQ has either side of today, to show the link works. */
+export type PlayhqSummary = {
+  /** Games (not byes) dated in the 12 months before today. */
+  pastCount: number;
+  /** Games (not byes) dated from today to 12 months ahead. */
+  upcomingCount: number;
+  byeCount: number;
+};
+
+/** A looked-up competition, with its games counted and how long PlayHQ took. */
+export type PlayhqLookup = PlayhqCompetition & {
+  summary: PlayhqSummary;
+  ms: number;
+};
+
+function isoDay(date: Date) {
+  const pad = (n: number) => String(n).padStart(2, '0');
+  return `${date.getFullYear()}-${pad(date.getMonth() + 1)}-${pad(date.getDate())}`;
+}
+
+/**
+ * Counts games in the last 12 months and the next 12 months. PlayHQ dates
+ * are the venue's local day, so they're compared with today's date here.
+ */
+export function summarisePlayhqGames(
+  games: Pick<PlayhqGame, 'date' | 'status'>[],
+  now = new Date(),
+): PlayhqSummary {
+  const today = isoDay(now);
+  const from = isoDay(new Date(now.getFullYear() - 1, now.getMonth(), now.getDate()));
+  const to = isoDay(new Date(now.getFullYear() + 1, now.getMonth(), now.getDate()));
+  const summary: PlayhqSummary = {
+    pastCount: 0,
+    upcomingCount: 0,
+    byeCount: 0,
+  };
+  for (const game of games) {
+    if (game.status === 'BYE') summary.byeCount++;
+    else if (game.date >= from && game.date < today) summary.pastCount++;
+    else if (game.date >= today && game.date <= to) summary.upcomingCount++;
+  }
+  return summary;
+}
+
 /**
  * Reads a link such as
  * https://www.playhq.com/netball-australia/org/<association>/<season-name>/ec69e46d,
@@ -62,29 +106,57 @@ export function parsePlayhqLink(text: string): PlayhqLink | null {
   };
 }
 
+/**
+ * What to tell an admin when the playhq function fails. Its own errors come
+ * back as { error }; anything else means the function didn't run, so say
+ * which part failed rather than blaming PlayHQ.
+ */
+function lookupFailure(
+  kind: string,
+  status: number | null,
+  body: { error?: string; message?: string } | null,
+) {
+  if (body?.error) return body.error;
+  if (status === 404) {
+    return 'The club’s PlayHQ service isn’t set up on this server (404). Run the “Deploy PlayHQ function” workflow.';
+  }
+  if (status === 401) return 'Your sign-in has expired (401). Sign out and in again.';
+  if (kind === 'FunctionsFetchError') {
+    return 'Couldn’t reach the club’s server. Check your connection and try again.';
+  }
+  const detail = [status, body?.message].filter(Boolean).join(': ');
+  return `Couldn’t reach PlayHQ${detail ? ` (${detail})` : ''}`;
+}
+
 /** Every grade's teams and games in a PlayHQ competition season. */
-export async function fetchPlayhqCompetition(link: PlayhqLink): Promise<PlayhqCompetition> {
+export async function fetchPlayhqCompetition(link: PlayhqLink): Promise<PlayhqLookup> {
   const started = Date.now();
-  log.info('Looking up PlayHQ competition', { tenant: link.tenant, season_id: link.seasonCode });
+  log.info('Looking up PlayHQ competition', {
+    tenant: link.tenant,
+    season_id: link.seasonCode,
+  });
   const { data, error } = await supabase.functions.invoke('playhq', {
     body: { tenant: link.tenant, seasonCode: link.seasonCode },
   });
   const ms = Date.now() - started;
   if (error) {
     // The function's own message says what went wrong.
-    const response = (error as { context?: Response }).context;
-    const body = await response?.json?.().catch(() => null);
+    const context = (error as { context?: unknown }).context;
+    const response = context instanceof Response ? context : null;
+    const body = await response?.json().catch(() => null);
+    const status = response?.status ?? null;
     log.error('PlayHQ lookup failed', {
       tenant: link.tenant,
       season_id: link.seasonCode,
-      status: response?.status ?? null,
+      status,
       kind: error.name,
-      reason: body?.error ?? error.message,
+      reason: body?.error ?? body?.message ?? error.message,
       ms,
     });
-    throw new Error(body?.error ?? 'Couldn’t reach PlayHQ');
+    throw new Error(lookupFailure(error.name, status, body));
   }
   const competition = data as PlayhqCompetition;
+  const summary = summarisePlayhqGames(competition.games ?? []);
   log.info('PlayHQ competition found', {
     season_id: link.seasonCode,
     competition_id: competition.id,
@@ -92,9 +164,24 @@ export async function fetchPlayhqCompetition(link: PlayhqLink): Promise<PlayhqCo
     team_count: competition.teams?.length ?? 0,
     game_count: competition.games?.length ?? 0,
     undated_count: competition.games?.filter((g) => !g.time).length ?? 0,
+    past_12_months_count: summary.pastCount,
+    next_12_months_count: summary.upcomingCount,
+    bye_count: summary.byeCount,
     ms,
   });
-  return competition;
+  if (summary.pastCount + summary.upcomingCount === 0) {
+    log.warn('PlayHQ competition has no games within 12 months', {
+      competition_id: competition.id,
+      game_count: competition.games?.length ?? 0,
+    });
+  }
+  return {
+    ...competition,
+    teams: competition.teams ?? [],
+    games: competition.games ?? [],
+    summary,
+    ms,
+  };
 }
 
 /** One team's games, as save_playhq_fixtures takes them. */
