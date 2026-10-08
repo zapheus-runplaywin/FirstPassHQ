@@ -2,6 +2,7 @@ import { router, Stack, useLocalSearchParams } from 'expo-router';
 import { useEffect, useState } from 'react';
 import { StyleSheet, View } from 'react-native';
 
+import { FormSection } from '@/components/form-section';
 import { MonthDateField } from '@/components/month-date-field';
 import { Screen } from '@/components/screen';
 import { ThemedText } from '@/components/themed-text';
@@ -76,9 +77,11 @@ export default function EditAwardScreen() {
   // No longer offered in the form; kept as it was on older awards.
   const [annual, setAnnual] = useState(false);
   const [candidates, setCandidates] = useState('');
-  // Nominees under an age, such as a Rising Star award. Empty for any age.
-  const [maxAge, setMaxAge] = useState('');
+  // Nominees within an age range, such as a Rising Star award: at least
+  // minAge and under maxAge. Either can be empty.
   const [ageLimited, setAgeLimited] = useState(false);
+  const [minAge, setMinAge] = useState('');
+  const [maxAge, setMaxAge] = useState('');
   // The age is measured on a chosen day, or the day voting closes.
   const [ageOnDay, setAgeOnDay] = useState(false);
   const [ageOn, setAgeOn] = useState<string | null>(null);
@@ -141,7 +144,8 @@ export default function EditAwardScreen() {
         setHours(String(award.match_vote_hours));
         setWeight(String(award.preseason_weight));
         setCandidates(award.award_candidates.map((c) => c.name).join('\n'));
-        setAgeLimited(award.nominee_max_age !== null);
+        setAgeLimited(award.nominee_max_age !== null || award.nominee_min_age !== null);
+        setMinAge(award.nominee_min_age ? String(award.nominee_min_age) : '');
         setMaxAge(award.nominee_max_age ? String(award.nominee_max_age) : '');
         setAgeOnDay(award.nominee_age_on !== null);
         if (id) {
@@ -234,9 +238,10 @@ export default function EditAwardScreen() {
     }
     if (!locked) {
       const limited = ageLimited && nominees !== 'listed';
-      const { error: ageError } = await supabase.rpc('admin_set_award_age_limit', {
+      const { error: ageError } = await supabase.rpc('admin_set_award_ages', {
         p_award_id: data as string,
-        p_max_age: limited ? Number(maxAge) : null,
+        p_min_age: limited && minAge ? Number(minAge) : null,
+        p_max_age: limited && maxAge ? Number(maxAge) : null,
         p_age_on: limited && ageOnDay ? ageOn : null,
       });
       if (ageError) {
@@ -264,19 +269,72 @@ export default function EditAwardScreen() {
   if (!loaded) return <Screen>{null}</Screen>;
 
   const needsPreseasonDate = byMatch && weight !== '0' && !preseasonOn;
-  const canSave =
-    name.trim().length > 0 &&
-    !!closesOn &&
-    roles.length > 0 &&
-    (clubWide || groupIds.length > 0) &&
-    (nominees !== 'listed' || candidates.trim().length > 0) &&
-    !needsPreseasonDate &&
-    (!ageLimited ||
-      nominees === 'listed' ||
-      (/^\d+$/.test(maxAge) &&
-        Number(maxAge) >= 1 &&
-        Number(maxAge) <= 99 &&
-        (!ageOnDay || !!ageOn)));
+  const ageOk = (value: string) => value === '' || (Number(value) >= 1 && Number(value) <= 99);
+  const ageRestricted = ageLimited && nominees !== 'listed';
+  const ageProblem = !ageRestricted
+    ? null
+    : !minAge && !maxAge
+      ? 'enter a minimum or maximum age'
+      : !ageOk(minAge) || !ageOk(maxAge)
+        ? 'ages must be 1 to 99'
+        : minAge && maxAge && Number(minAge) >= Number(maxAge)
+          ? 'the minimum age must be below the maximum'
+          : ageOnDay && !ageOn
+            ? 'choose the day ages are measured on'
+            : null;
+  const missing = [
+    !name.trim() && 'a name',
+    !closesOn && 'when voting closes',
+    roles.length === 0 && 'roles that vote',
+    !clubWide && groupIds.length === 0 && 'squads or teams',
+    nominees === 'listed' && !candidates.trim() && 'names to vote for',
+    needsPreseasonDate && 'when the preseason vote closes',
+    ageProblem,
+  ].filter(Boolean) as string[];
+  const canSave = missing.length === 0;
+
+  const chosenGroups = seasonGroups.filter((t) => groupIds.includes(t.id));
+  const groupNames = chosenGroups.map((t) => teamLabel(t, teams));
+  const roleLabel = roles.includes('member')
+    ? 'Every member'
+    : roles.map((r) => voterRoleOptions.find((o) => o.value === r)?.label ?? r).join(', ') ||
+      'No roles yet';
+  const votersSummary = clubWide
+    ? `${roleLabel} across the club`
+    : `${roleLabel} in ${groupNames.join(', ') || 'no squads or teams yet'}${perGroup ? ' · a winner for each' : ''}`;
+  const listed = candidates
+    .split('\n')
+    .map((c) => c.trim())
+    .filter(Boolean);
+  const nomineesSummary =
+    nominees === 'listed'
+      ? listed.length > 0
+        ? `${listed.length} listed ${listed.length === 1 ? 'name' : 'names'}`
+        : 'Names you list: none yet'
+      : (nomineeOptions.find((o) => o.value === nominees)?.label ?? nominees);
+  const ageDay = ageOnDay && ageOn ? formatDateString(ageOn) : 'the day voting closes';
+  const ageSummary = !ageRestricted
+    ? 'Any age'
+    : ageProblem
+      ? `Not finished: ${ageProblem}`
+      : minAge && maxAge
+        ? `Aged ${minAge} to ${Number(maxAge) - 1} on ${ageDay}`
+        : minAge
+          ? `Aged ${minAge} or over on ${ageDay}`
+          : `Under ${maxAge} on ${ageDay}`;
+  const unlinked = byMatch ? chosenGroups.filter((t) => !games[t.id]) : [];
+  const ballotSummary = unlinked.length
+    ? `No PlayHQ games linked to ${unlinked.map((t) => teamLabel(t, teams)).join(', ')}`
+    : [
+        ballotOptions.find((o) => o.value === points)?.label ?? points,
+        byMatch ? 'after every match' : 'once, before it closes',
+        byMatch && weight !== '0' ? `preseason ${weight}%` : null,
+      ]
+        .filter(Boolean)
+        .join(' · ');
+  const datesSummary = `${seasonLabel(season)} · ${
+    closesOn ? `closes ${formatDateString(closesOn)}` : 'closing date not chosen'
+  }`;
 
   return (
     <Screen>
@@ -321,207 +379,254 @@ export default function EditAwardScreen() {
         maxLength={1000}
       />
 
-      {!locked && seasons.length > 1 ? (
-        <ChipGroup
-          label="Season"
-          options={seasons.map((s) => ({ value: String(s), label: seasonLabel(s) }))}
-          selected={[String(season)]}
-          onToggle={(value) => {
-            setSeason(Number(value));
-            setGroupIds([]);
-          }}
-        />
-      ) : null}
-
-      <MonthDateField label="Voting closes" value={closesOn} onChange={setClosesOn} />
-
-      {!locked ? (
-        <>
+      <FormSection
+        key={`dates-${copiedFrom?.id ?? ''}`}
+        title="Season and closing date"
+        summary={datesSummary}
+        attention={!closesOn}
+        initiallyOpen={!closesOn}>
+        {!locked && seasons.length > 1 ? (
           <ChipGroup
-            label="Who votes"
-            options={[
-              { value: 'club', label: 'The whole club' },
-              { value: 'groups', label: 'Chosen squads and teams' },
-            ]}
-            selected={[clubWide ? 'club' : 'groups']}
-            onToggle={(value) => setClubWide(value === 'club')}
+            label="Season"
+            options={seasons.map((s) => ({ value: String(s), label: seasonLabel(s) }))}
+            selected={[String(season)]}
+            onToggle={(value) => {
+              setSeason(Number(value));
+              setGroupIds([]);
+            }}
           />
+        ) : null}
+        <MonthDateField label="Voting closes" value={closesOn} onChange={setClosesOn} />
+      </FormSection>
 
-          {!clubWide ? (
-            <>
-              <ChipGroup
-                label="Squads and teams"
-                options={seasonGroups.map((t) => ({ value: t.id, label: teamLabel(t, teams) }))}
-                selected={groupIds}
-                onToggle={(value) =>
-                  setGroupIds((current) =>
-                    current.includes(value)
-                      ? current.filter((g) => g !== value)
-                      : [...current, value],
-                  )
-                }
-              />
-              <ChipGroup
-                label="Winners"
-                options={[
-                  { value: 'one', label: 'One winner' },
-                  { value: 'each', label: 'A winner for each' },
-                ]}
-                selected={[perGroup ? 'each' : 'one']}
-                onToggle={(value) => setPerGroup(value === 'each')}
-              />
-            </>
-          ) : null}
-
-          <ChipGroup
-            label="Roles that vote"
-            options={voterRoleOptions}
-            selected={roles}
-            onToggle={toggleRole}
-          />
-          <ThemedText type="small" themeColor="textSecondary">
-            Athletes, coaches, managers and guardians vote in the squads and teams they’re in.
-            Committee and admins vote wherever they are.
-          </ThemedText>
-
-          <ChipGroup
-            label="Who can be voted for"
-            options={nomineeOptions}
-            selected={[nominees]}
-            onToggle={setNominees}
-          />
-        </>
-      ) : null}
-
-      {nominees === 'listed' ? (
-        <TextField
-          label="Names, one per line"
-          value={candidates}
-          onChangeText={setCandidates}
-          placeholder={'Jo Smith\nSam Lee'}
-          multiline
-        />
-      ) : null}
-
-      {nominees !== 'listed' && !locked ? (
-        <>
-          <ChipGroup
-            label="Nominee age"
-            options={[
-              { value: 'any', label: 'Any age' },
-              { value: 'under', label: 'Under an age' },
-            ]}
-            selected={[ageLimited ? 'under' : 'any']}
-            onToggle={(value) => setAgeLimited(value === 'under')}
-          />
-          {ageLimited ? (
-            <>
-              <TextField
-                label="Nominees must be under"
-                value={maxAge}
-                onChangeText={(text) => setMaxAge(text.replace(/\D/g, ''))}
-                placeholder="21"
-                keyboardType="number-pad"
-                maxLength={2}
-              />
-              <ChipGroup
-                label="Age on"
-                options={[
-                  { value: 'close', label: 'The day voting closes' },
-                  { value: 'day', label: 'A day I choose' },
-                ]}
-                selected={[ageOnDay ? 'day' : 'close']}
-                onToggle={(value) => setAgeOnDay(value === 'day')}
-              />
-              {ageOnDay ? (
-                <MonthDateField label="Age measured on" value={ageOn} onChange={setAgeOn} />
-              ) : null}
-              <ThemedText type="small" themeColor="textSecondary">
-                Only people with a date of birth can be voted for. The award’s page shows how many
-                don’t have one yet.
-              </ThemedText>
-            </>
-          ) : null}
-        </>
-      ) : null}
-      {locked && ageLimited && nominees !== 'listed' ? (
-        <ThemedText type="small" themeColor="textSecondary">
-          Nominees must be under {maxAge} on{' '}
-          {ageOnDay && ageOn ? formatDateString(ageOn) : 'the day voting closes'}.
-        </ThemedText>
-      ) : null}
-
-      {!locked ? (
-        <ChipGroup
-          label="Ballot"
-          options={ballotOptions}
-          selected={[points]}
-          onToggle={setPoints}
-        />
-      ) : null}
-
-      {!clubWide && perGroup && !locked ? (
-        <ChipGroup
-          label="When people vote"
-          options={[
-            { value: 'once', label: 'Once, before it closes' },
-            { value: 'match', label: 'After every match' },
-          ]}
-          selected={[byMatch ? 'match' : 'once']}
-          onToggle={(value) => setByMatch(value === 'match')}
-        />
-      ) : null}
-
-      {byMatch ? (
-        <>
-          <ChipGroup
-            label="Match votes stay open for"
-            options={hourOptions}
-            selected={[hours]}
-            onToggle={setHours}
-          />
-          <ThemedText type="small" themeColor="textSecondary">
-            Votes open when the match starts. Matches come from the PlayHQ fixtures linked to each
-            squad or team under Fixtures.
-          </ThemedText>
-          {seasonGroups
-            .filter((t) => groupIds.includes(t.id))
-            .map((t) => (
-              <ThemedText
-                key={t.id}
-                type="small"
-                themeColor={games[t.id] ? 'textSecondary' : 'accent'}>
-                {games[t.id]
-                  ? `${teamLabel(t, teams)}: ${games[t.id]} ${games[t.id] === 1 ? 'game' : 'games'} from PlayHQ.`
-                  : `${teamLabel(t, teams)}: no PlayHQ games are linked, so no match votes will open. Link it under Fixtures, or choose the ${t.kind === 'squad' ? 'team' : 'squad'} its games are linked to.`}
-              </ThemedText>
-            ))}
-          {!locked ? (
+      <FormSection title="Voters" summary={votersSummary}>
+        {!locked ? (
+          <>
             <ChipGroup
-              label="Preseason share of the result"
-              options={weightOptions}
-              selected={[weight]}
-              onToggle={setWeight}
+              label="Who votes"
+              options={[
+                { value: 'club', label: 'The whole club' },
+                { value: 'groups', label: 'Chosen squads and teams' },
+              ]}
+              selected={[clubWide ? 'club' : 'groups']}
+              onToggle={(value) => setClubWide(value === 'club')}
             />
-          ) : null}
-          {weight !== '0' ? (
-            <>
-              <ThemedText type="small" themeColor="textSecondary">
-                Voters get one preseason ballot. The result is {weight}% the share of preseason
-                points and {100 - Number(weight)}% the share of match points.
-              </ThemedText>
-              <MonthDateField
-                label="Preseason vote closes"
-                value={preseasonOn}
-                onChange={setPreseasonOn}
+            {!clubWide ? (
+              <>
+                <ChipGroup
+                  label="Squads and teams"
+                  options={seasonGroups.map((t) => ({ value: t.id, label: teamLabel(t, teams) }))}
+                  selected={groupIds}
+                  onToggle={(value) =>
+                    setGroupIds((current) =>
+                      current.includes(value)
+                        ? current.filter((g) => g !== value)
+                        : [...current, value],
+                    )
+                  }
+                />
+                <ChipGroup
+                  label="Winners"
+                  options={[
+                    { value: 'one', label: 'One winner' },
+                    { value: 'each', label: 'A winner for each' },
+                  ]}
+                  selected={[perGroup ? 'each' : 'one']}
+                  onToggle={(value) => setPerGroup(value === 'each')}
+                />
+              </>
+            ) : null}
+            <ChipGroup
+              label="Roles that vote"
+              options={voterRoleOptions}
+              selected={roles}
+              onToggle={toggleRole}
+            />
+            <ThemedText type="small" themeColor="textSecondary">
+              Athletes, coaches, managers and guardians vote in the squads and teams they’re in.
+              Committee and admins vote wherever they are.
+            </ThemedText>
+          </>
+        ) : null}
+      </FormSection>
+
+      <FormSection
+        title="Nominees"
+        summary={nomineesSummary}
+        attention={nominees === 'listed' && listed.length === 0}>
+        {!locked || nominees === 'listed' ? (
+          <>
+            {!locked ? (
+              <ChipGroup
+                label="Who can be voted for"
+                options={nomineeOptions}
+                selected={[nominees]}
+                onToggle={setNominees}
               />
+            ) : null}
+            {nominees === 'listed' ? (
+              <TextField
+                label="Names, one per line"
+                value={candidates}
+                onChangeText={setCandidates}
+                placeholder={'Jo Smith\nSam Lee'}
+                multiline
+              />
+            ) : null}
+          </>
+        ) : null}
+      </FormSection>
+
+      {nominees !== 'listed' ? (
+        <FormSection
+          title="Age restricted"
+          summary={ageSummary}
+          attention={!!ageProblem}
+          initiallyOpen={!!ageProblem}>
+          {!locked ? (
+            <>
+              <ChipGroup
+                label="Nominee age"
+                options={[
+                  { value: 'any', label: 'Any age' },
+                  { value: 'limited', label: 'Set ages' },
+                ]}
+                selected={[ageLimited ? 'limited' : 'any']}
+                onToggle={(value) => setAgeLimited(value === 'limited')}
+              />
+              {ageLimited ? (
+                <>
+                  <View style={styles.row}>
+                    <View style={styles.flex}>
+                      <TextField
+                        label="Minimum age"
+                        value={minAge}
+                        onChangeText={(text) => setMinAge(text.replace(/\D/g, ''))}
+                        placeholder="e.g. 16"
+                        keyboardType="number-pad"
+                        maxLength={2}
+                      />
+                    </View>
+                    <View style={styles.flex}>
+                      <TextField
+                        label="Must be under"
+                        value={maxAge}
+                        onChangeText={(text) => setMaxAge(text.replace(/\D/g, ''))}
+                        placeholder="e.g. 21"
+                        keyboardType="number-pad"
+                        maxLength={2}
+                      />
+                    </View>
+                  </View>
+                  <ThemedText type="small" themeColor="textSecondary">
+                    Set either or both to match the committee’s definition of the award. For
+                    example, minimum 16 and under 21 means aged 16 to 20.
+                  </ThemedText>
+                  <ChipGroup
+                    label="Age on"
+                    options={[
+                      { value: 'close', label: 'The day voting closes' },
+                      { value: 'day', label: 'A day I choose' },
+                    ]}
+                    selected={[ageOnDay ? 'day' : 'close']}
+                    onToggle={(value) => setAgeOnDay(value === 'day')}
+                  />
+                  {ageOnDay ? (
+                    <MonthDateField label="Age measured on" value={ageOn} onChange={setAgeOn} />
+                  ) : null}
+                  <ThemedText type="small" themeColor="textSecondary">
+                    Only people with a date of birth can be voted for. The award’s page shows how
+                    many don’t have one yet.
+                  </ThemedText>
+                </>
+              ) : null}
             </>
           ) : null}
-        </>
+        </FormSection>
       ) : null}
+
+      <FormSection
+        title="Ballot"
+        summary={ballotSummary}
+        attention={unlinked.length > 0 || needsPreseasonDate}
+        initiallyOpen={unlinked.length > 0 || needsPreseasonDate}>
+        {!locked || byMatch ? (
+          <>
+            {!locked ? (
+              <ChipGroup
+                label="Ballot"
+                options={ballotOptions}
+                selected={[points]}
+                onToggle={setPoints}
+              />
+            ) : null}
+            {!clubWide && perGroup && !locked ? (
+              <ChipGroup
+                label="When people vote"
+                options={[
+                  { value: 'once', label: 'Once, before it closes' },
+                  { value: 'match', label: 'After every match' },
+                ]}
+                selected={[byMatch ? 'match' : 'once']}
+                onToggle={(value) => setByMatch(value === 'match')}
+              />
+            ) : null}
+            {byMatch ? (
+              <>
+                <ChipGroup
+                  label="Match votes stay open for"
+                  options={hourOptions}
+                  selected={[hours]}
+                  onToggle={setHours}
+                />
+                <ThemedText type="small" themeColor="textSecondary">
+                  Votes open when the match starts. Matches come from the PlayHQ fixtures linked to
+                  each squad or team under Fixtures.
+                </ThemedText>
+                {chosenGroups.map((t) => (
+                  <ThemedText
+                    key={t.id}
+                    type="small"
+                    themeColor={games[t.id] ? 'textSecondary' : 'accent'}>
+                    {games[t.id]
+                      ? `${teamLabel(t, teams)}: ${games[t.id]} ${games[t.id] === 1 ? 'game' : 'games'} from PlayHQ.`
+                      : `${teamLabel(t, teams)}: no PlayHQ games are linked, so no match votes will open. Link it under Fixtures, or choose the ${t.kind === 'squad' ? 'team' : 'squad'} its games are linked to.`}
+                  </ThemedText>
+                ))}
+                {!locked ? (
+                  <ChipGroup
+                    label="Preseason share of the result"
+                    options={weightOptions}
+                    selected={[weight]}
+                    onToggle={setWeight}
+                  />
+                ) : null}
+                {weight !== '0' ? (
+                  <>
+                    <ThemedText type="small" themeColor="textSecondary">
+                      Voters get one preseason ballot. The result is {weight}% the share of
+                      preseason points and {100 - Number(weight)}% the share of match points.
+                    </ThemedText>
+                    <MonthDateField
+                      label="Preseason vote closes"
+                      value={preseasonOn}
+                      onChange={setPreseasonOn}
+                    />
+                  </>
+                ) : null}
+              </>
+            ) : null}
+          </>
+        ) : null}
+      </FormSection>
 
       <ErrorText>{error}</ErrorText>
       <View style={styles.actions}>
+        {!canSave ? (
+          <ThemedText type="small" themeColor="textSecondary">
+            Still needed: {missing.join(', ')}.
+          </ThemedText>
+        ) : null}
         <Button title="Save award" onPress={save} busy={saving} disabled={!canSave} />
         {id && !voted ? (
           <ConfirmDelete
@@ -540,5 +645,12 @@ export default function EditAwardScreen() {
 const styles = StyleSheet.create({
   actions: {
     gap: Spacing.three,
+  },
+  row: {
+    flexDirection: 'row',
+    gap: Spacing.three,
+  },
+  flex: {
+    flex: 1,
   },
 });

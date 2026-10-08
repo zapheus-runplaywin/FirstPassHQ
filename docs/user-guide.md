@@ -776,33 +776,36 @@ Nothing is deleted when a season is archived.
 
 ### Awards
 
-**Awards** lists the club's awards by season. Tap **New award** and set:
+**Awards** lists the club's awards by season. Tap **New award**. You can tap one of the club's
+past awards under **Start from a past award** to fill in its settings, then enter the **Name** and
+**Description** (what voters should think about).
 
-- **Start from a past award** (optional): tap one of the club's past awards to fill in its
-  settings, then choose the new closing date.
+The rest of the form is in sections. Each one shows a one-line summary of what it is set to; tap
+it to open it and change the settings. A section opens by itself, with its summary in colour,
+when something in it needs a look. If **Save award** is greyed out, the line above it says what's
+still needed.
 
-- **Name**, **Description** (what voters should think about) and when **Voting closes**. Pick the
-  day on the calendar, using the arrows to move to later months.
-- **Who votes**: **The whole club**, or **Chosen squads and teams**. For chosen groups, pick
-  **One winner** or **A winner for each** squad or team. With a winner for each, members vote only
-  in their own group.
-- **Roles that vote**. Athletes, coaches, managers and guardians vote in the squads and teams
-  they're in. Committee and admins vote wherever they are. **Every member** opens it to everyone
-  except physios and guests, who don't vote.
-- **Who can be voted for**: **Athletes** or **Coaches** in the voting groups, **Any member**, or
-  **Names I list**, one per line, for people who aren't in the app, such as umpires.
-- **Nominee age** (not for listed names): **Any age**, or **Under an age** for awards such as
-  Rising Star. Enter the age (for example 21, so nominees must be 20 or younger) and when it is
+- **Season and closing date**: the season, and when **Voting closes**. Pick the day on the
+  calendar, using the arrows to move to later months.
+- **Voters**: **The whole club**, or **Chosen squads and teams**. For chosen groups, pick **One
+  winner** or **A winner for each** squad or team. With a winner for each, members vote only in
+  their own group. Then the **Roles that vote**. Athletes, coaches, managers and guardians vote in
+  the squads and teams they're in. Committee and admins vote wherever they are. **Every member**
+  opens it to everyone except physios and guests, who don't vote.
+- **Nominees**: **Athletes** or **Coaches** in the voting groups, **Any member**, or **Names I
+  list**, one per line, for people who aren't in the app, such as umpires.
+- **Age restricted** (not for listed names): **Any age**, or **Set ages** to match the committee's
+  definition of the award, such as Rising Star. Enter a **Minimum age**, a **Must be under** age,
+  or both: minimum 16 and under 21 means nominees aged 16 to 20. Then choose when ages are
   measured: **The day voting closes**, or **A day I choose** such as 1 January. Only people with a
   date of birth can be voted for, so the award's page says in colour how many possible nominees
-  have none: add it on their page in **Members**. The age limit can't change once anyone has voted.
-- **Ballot**: **One vote**, **3-2-1 votes** or **5-4-3-2-1 votes**.
-- **When people vote** (awards with a winner for each group): **Once, before it closes**, or
-  **After every match**, using the PlayHQ fixtures. Match votes stay open for a set time after
-  each match starts. See **How match awards find their games** below.
-- **Preseason share of the result** (match awards): voters also get one preseason ballot. With
-  25%, the result is 25% each nominee's share of the preseason points and 75% their share of the
-  match points.
+  have none: add it on their page in **Members**. The ages can't change once anyone has voted.
+- **Ballot**: **One vote**, **3-2-1 votes** or **5-4-3-2-1 votes**. For awards with a winner for
+  each group, **When people vote**: **Once, before it closes**, or **After every match**, using
+  the PlayHQ fixtures. Match votes stay open for a set time after each match starts (see **How
+  match awards find their games** below). Match awards can also have a **Preseason share of the
+  result**: voters get one preseason ballot, and with 25% the result is 25% each nominee's share
+  of the preseason points and 75% their share of the match points.
 
 Open an award to see its standings for each squad or team, and how many people have voted in each
 match or ballot. Once anyone has voted, only the name, description, closing dates, match voting
@@ -814,7 +817,7 @@ games linked to the exact squads and teams it names. For example, if "West Coast
 linked to **Mixed Open A**, an award for **Mixed Open Squad** gets no match votes for those games:
 choose **Mixed Open A** in the award, or change the link under **Fixtures**. A team's games don't
 count for its squad, or the other way round. The award form shows how many PlayHQ games each
-chosen squad or team has, and warns in yellow when it has none. Each award's page shows the next
+chosen squad or team has, and warns in colour when it has none. Each award's page shows the next
 match for each squad or team, or says that none are linked.
 
 **Duplicate** on an award opens a new award with the same settings, ready for this season, so
