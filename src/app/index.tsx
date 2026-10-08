@@ -200,7 +200,7 @@ export default function HomeScreen() {
         </PressableCard>
       ) : null}
 
-      {approved && (awardSlots.length > 0 || isAdmin) ? (
+      {approved && awardSlots.length > 0 ? (
         <PressableCard onPress={() => router.push('/awards')}>
           <ThemedText type="smallBold">Awards</ThemedText>
           <ThemedText type="small" themeColor="textSecondary">
@@ -292,7 +292,6 @@ export default function HomeScreen() {
 }
 
 function awardsLabel(open: number, toVote: number) {
-  if (open === 0) return 'No votes open';
   if (toVote === 0)
     return `✓ You’ve voted in all ${open === 1 ? 'open award' : `${open} open awards`}`;
   return `${toVote} ${toVote === 1 ? 'vote' : 'votes'} waiting for you`;
