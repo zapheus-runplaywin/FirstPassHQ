@@ -10,6 +10,8 @@ type ClubChoice = {
   ready: boolean;
   /** The club this device is connected to, or null until someone picks one. */
   club: ClubEntry | null;
+  /** Clubs picked on this device before, most recent first, for one-tap switching. */
+  recent: ClubEntry[];
   /** Connects to the club with this code. False when no club has it. */
   choose: (code: string) => boolean;
   /** Goes back to the club code screen. Every club's sign-in stays saved. */
@@ -17,6 +19,7 @@ type ClubChoice = {
 };
 
 const CHOICE_KEY = 'club-code';
+const RECENT_KEY = 'club-codes-used';
 const ClubChoiceContext = createContext<ClubChoice | null>(null);
 
 // AsyncStorage is unavailable during static web rendering.
@@ -28,20 +31,23 @@ const canStore = Platform.OS !== 'web' || typeof window !== 'undefined';
  */
 export function ClubChoiceProvider({ children }: { children: ReactNode }) {
   const [club, setClub] = useState<ClubEntry | null>(null);
+  const [recent, setRecent] = useState<ClubEntry[]>([]);
   const [ready, setReady] = useState(!canStore);
 
   useEffect(() => {
     if (!canStore) return;
     let cancelled = false;
-    AsyncStorage.getItem(CHOICE_KEY)
-      .catch(() => null)
-      .then((saved) => {
+    AsyncStorage.multiGet([CHOICE_KEY, RECENT_KEY])
+      .catch(() => [] as [string, string | null][])
+      .then((pairs) => {
         if (cancelled) return;
-        const found = findClub(saved);
+        const saved = new Map(pairs);
+        const found = findClub(saved.get(CHOICE_KEY));
         if (found) {
           connectToClub(found);
           setClub(found);
         }
+        setRecent(parseRecent(saved.get(RECENT_KEY)));
         setReady(true);
       });
     return () => {
@@ -54,7 +60,16 @@ export function ClubChoiceProvider({ children }: { children: ReactNode }) {
     if (!found) return false;
     connectToClub(found);
     setClub(found);
-    if (canStore) AsyncStorage.setItem(CHOICE_KEY, found.code).catch(() => {});
+    setRecent((current) => {
+      const next = [found, ...current.filter((c) => c.code !== found.code)];
+      if (canStore) {
+        AsyncStorage.multiSet([
+          [CHOICE_KEY, found.code],
+          [RECENT_KEY, JSON.stringify(next.map((c) => c.code))],
+        ]).catch(() => {});
+      }
+      return next;
+    });
     return true;
   }, []);
 
@@ -64,10 +79,21 @@ export function ClubChoiceProvider({ children }: { children: ReactNode }) {
   }, []);
 
   return (
-    <ClubChoiceContext value={{ ready, club, choose, switchClub }}>
+    <ClubChoiceContext value={{ ready, club, recent, choose, switchClub }}>
       {children}
     </ClubChoiceContext>
   );
+}
+
+/** Saved codes, keeping only clubs the app still knows. */
+function parseRecent(saved: string | null | undefined): ClubEntry[] {
+  try {
+    const codes = JSON.parse(saved ?? '[]') as unknown;
+    if (!Array.isArray(codes)) return [];
+    return codes.map((code) => findClub(String(code))).filter((c): c is ClubEntry => !!c);
+  } catch {
+    return [];
+  }
 }
 
 export function useClubChoice() {

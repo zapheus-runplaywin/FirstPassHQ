@@ -96,7 +96,8 @@ The admin opens **Administration > Club settings** and sets:
   off.
 
 Then, still in **Administration**: set a **Club password**, rename the **Squads and teams**, add
-**Calendars**, and approve members as they ask to join. Members join by entering the club code (or
-opening the club's link), signing in, and asking to join with the club password.
+**Calendars**, and approve members as they ask to join. **Administration > Invite members** shows
+the club's QR code, code and link to share. Members scan it or enter the code, sign in, and ask to
+join with the club password.
 
 The FirstPass HQ logo, app icon, splash screen and app name are the same for every club.
