@@ -4,6 +4,7 @@ import { ActivityIndicator, StyleSheet, View } from 'react-native';
 import { GestureHandlerRootView } from 'react-native-gesture-handler';
 import { SafeAreaView } from 'react-native-safe-area-context';
 
+import { PoweredByFirstPass } from '@/components/firstpass-logo';
 import { PdfView } from '@/components/pdf-view';
 import { ThemedText } from '@/components/themed-text';
 import { ZoomableImage } from '@/components/zoomable-image';
@@ -57,6 +58,7 @@ export default function InjuryDocumentScreen() {
         ) : (
           <PdfView uri={url} />
         )}
+        <PoweredByFirstPass />
       </SafeAreaView>
     </GestureHandlerRootView>
   );

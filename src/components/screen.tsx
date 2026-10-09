@@ -18,6 +18,7 @@ import {
 import { useFocusEffect, useIsFocused } from 'expo-router';
 import { SafeAreaView } from 'react-native-safe-area-context';
 
+import { PoweredByFirstPass } from '@/components/firstpass-logo';
 import { ThemedView } from '@/components/themed-view';
 import { MaxContentWidth, Spacing } from '@/constants/theme';
 
@@ -170,6 +171,8 @@ export function Screen({
               }>
               {children}
             </ScrollView>
+            {/* FirstPass stays at the foot of every screen; it steps aside for the keyboard. */}
+            {keyboardHeight > 0 ? null : <PoweredByFirstPass />}
           </SafeAreaView>
         </ThemedView>
       </RevealFocusedInput>
