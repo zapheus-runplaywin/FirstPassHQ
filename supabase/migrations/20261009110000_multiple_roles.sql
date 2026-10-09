@@ -461,6 +461,57 @@ begin
 end;
 $$;
 
+-- Clearances for your own child don't wait for you.
+create or replace function public.visible_injuries(
+  p_include_cleared boolean default false,
+  p_injury_id uuid default null
+)
+returns table (
+  id uuid,
+  athlete_id uuid,
+  athlete_name text,
+  body_area text,
+  description text,
+  injured_on date,
+  restrictions text,
+  expected_return date,
+  status public.injury_status,
+  coach_endorsed_by uuid,
+  cleared_at timestamptz,
+  created_at timestamptz,
+  last_update_at timestamptz,
+  can_report boolean,
+  waiting_for_me boolean
+)
+language sql
+stable
+security definer
+set search_path = ''
+as $$
+  select
+    i.id, i.athlete_id,
+    coalesce(nullif(p.full_name, ''), p.email, i.athlete_name),
+    i.body_area,
+    i.description, i.injured_on, i.restrictions, i.expected_return, i.status,
+    i.coach_endorsed_by, i.cleared_at, i.created_at,
+    (select max(u.created_at) from public.injury_updates u where u.injury_id = i.id),
+    public.can_report_for(i.athlete_id),
+    i.athlete_left_at is null and i.athlete_id <> auth.uid()
+      and not public.is_guardian_of(i.athlete_id) and (
+      (i.status = 'clearance_requested'
+        and (public.coaches_athlete(i.athlete_id) or public.is_physio()))
+      or (i.status = 'coach_endorsed' and public.is_committee()
+        and i.coach_endorsed_by is distinct from auth.uid())
+    )
+  from public.injuries i
+  left join public.profiles p on p.id = i.athlete_id
+  where public.can_view_athlete_injuries(i.athlete_id)
+    and (p_include_cleared or i.status <> 'cleared' or i.id = p_injury_id)
+    and (p_include_cleared or i.athlete_left_at is null or i.id = p_injury_id)
+    and (p_injury_id is null or i.id = p_injury_id)
+  order by i.status = 'cleared', i.created_at desc;
+$$;
+
 -- ---------------------------------------------------------------------------
 -- Messages
 -- ---------------------------------------------------------------------------
