@@ -29,6 +29,10 @@ the Expo plan's monthly builds, so the workflow only runs when you start it.
      Apple ID when asked. EAS creates the certificates and the app in App Store Connect, and saves
      an App Store Connect API key so later builds can go to TestFlight without you.
 
+   The app's store id is `au.pivt.firstpass.hq` (it was `au.com.wcmmna.thunder` until October
+   2026). Signing keys belong to a store id, so after that change both platforms need this step
+   once more, and testers install the new app alongside the old one and sign in again.
+
    From then on, EAS keeps the keys and GitHub can start builds on its own.
 
 ## Making a build

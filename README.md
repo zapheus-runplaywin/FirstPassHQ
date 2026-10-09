@@ -33,10 +33,10 @@ Free projects pause after a week with no activity. Opening the app, or the dashb
 
 In **Authentication > URL Configuration**, add these to **Redirect URLs**:
 
-- `thunderapp://auth-callback` (the installed app)
+- `firstpasshq://auth-callback` (the installed app)
 - `exp://**` (testing in Expo Go)
 
-Also set **Site URL** to `thunderapp://auth-callback`. When Supabase doesn't accept an app's
+Also set **Site URL** to `firstpasshq://auth-callback`. When Supabase doesn't accept an app's
 redirect, it sends people to the Site URL instead, and the default (`localhost`) doesn't work on a
 phone. Expo Go uses a separate test project whose Site URL is your computer's `exp://` address: see
 [Test and live](docs/environments.md).

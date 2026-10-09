@@ -8,7 +8,7 @@ import { findClub } from '@/constants/clubs';
 import { useClubChoice } from '@/lib/club-choice';
 
 /**
- * A club's join link, such as thunderapp://club/THUNDER: picks the club, then
+ * A club's join link, such as firstpasshq://club/THUNDER: picks the club, then
  * carries on to sign-in (or home, when already signed in to it).
  */
 export default function ClubLinkScreen() {

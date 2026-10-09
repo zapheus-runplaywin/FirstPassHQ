@@ -6,7 +6,7 @@ club at a time, picked by its **club code**:
 
 - While the app knows only one club it never asks; it goes straight to that club's sign-in.
 - Once it knows more than one, the first open shows **Find your club**, where members type their
-  club's code. A link such as `thunderapp://club/HAWKS` fills it in.
+  club's code. A link such as `firstpasshq://club/HAWKS` fills it in.
 - **Change club** on the sign-in screen and **Switch club** at the foot of the home screen go back
   to the code screen. Every club's sign-in stays saved on the device, so people in two clubs
   switch without signing in again.

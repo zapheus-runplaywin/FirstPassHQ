@@ -5,11 +5,11 @@
     "version": "1.0.0",
     "orientation": "portrait",
     "icon": "./assets/images/icon.png",
-    "scheme": "thunderapp",
+    "scheme": "firstpasshq",
     "userInterfaceStyle": "dark",
     "ios": {
       "icon": "./assets/images/icon.png",
-      "bundleIdentifier": "au.com.wcmmna.thunder"
+      "bundleIdentifier": "au.pivt.firstpass.hq"
     },
     "android": {
       "adaptiveIcon": {
@@ -19,7 +19,7 @@
         "monochromeImage": "./assets/images/android-icon-monochrome.png"
       },
       "predictiveBackGestureEnabled": false,
-      "package": "au.com.wcmmna.thunder"
+      "package": "au.pivt.firstpass.hq"
     },
     "web": {
       "output": "static",
