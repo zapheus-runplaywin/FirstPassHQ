@@ -103,8 +103,10 @@ export default function SeasonsScreen() {
               {s.archived ? ' · archived' : s.season === newest ? ' · current' : ' · still running'}
             </ThemedText>
             <ThemedText type="small" themeColor="textSecondary">
-              {s.squad_count} {s.squad_count === 1 ? 'squad' : 'squads'} · {s.team_count}{' '}
-              {s.team_count === 1 ? 'team' : 'teams'}
+              {usesSquads || s.squad_count > 0
+                ? `${s.squad_count} ${s.squad_count === 1 ? 'squad' : 'squads'} · `
+                : ''}
+              {s.team_count} {s.team_count === 1 ? 'team' : 'teams'}
             </ThemedText>
 
             {s.season === newest && seasons.some((o) => o.season === s.season - 1)
