@@ -17,7 +17,7 @@ export function pdfViewerHtml(url: string) {
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1, minimum-scale=1, maximum-scale=6, user-scalable=yes">
 <style>
-  html, body { margin: 0; background: #000; color: #fff; font: 15px -apple-system, system-ui, sans-serif; }
+  html, body { margin: 0; background: #0F172A; color: #fff; font: 15px -apple-system, system-ui, sans-serif; }
   body { -webkit-touch-callout: none; -webkit-user-select: none; user-select: none; }
   #pages { display: flex; flex-direction: column; align-items: center; gap: 12px; padding: 12px 0; }
   canvas { width: calc(100vw - 16px); height: auto; background: #fff; pointer-events: none; }

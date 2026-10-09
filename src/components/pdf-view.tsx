@@ -1,6 +1,7 @@
 import { StyleSheet } from 'react-native';
 import { WebView } from 'react-native-webview';
 
+import { FirstPass } from '@/constants/club';
 import { pdfViewerHtml } from '@/lib/pdf-viewer-html';
 
 /**
@@ -31,6 +32,6 @@ export function PdfView({ uri }: { uri: string }) {
 const styles = StyleSheet.create({
   fill: {
     flex: 1,
-    backgroundColor: '#000',
+    backgroundColor: FirstPass.navy,
   },
 });

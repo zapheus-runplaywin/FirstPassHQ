@@ -19,22 +19,22 @@ Fork or copy this repository for the club. In the copy:
    orange (`#F75C03`) on deep navy (`#0F172A`) in Montserrat, with the FirstPass 1P mark standing in for the club's logo. People see it before they
    sign in for the first time, and wherever Club settings are empty. You can leave it as it is and
    set the club's own look in Club settings (step 5), or change `ClubDefaults` so the sign-in
-   screen shows the club from the first open. Leave `FirstPass` as it is: its logos stay on the
-   opening screen and at the foot of the sign-in and home screens whatever the club sets.
+   screen shows the club from the first open. Leave `FirstPass` as it is: the 1P mark stays on the
+   opening screen and the FirstPass HQ logo on every screen whatever the club sets.
 2. **`app.json`**: `name` (the name under the icon, `FirstPass HQ` by default), `slug`, `scheme`
    (used for sign-in, for example `hawksapp`), `ios.bundleIdentifier` and `android.package` (for
    example `au.com.hawks.app`), and remove `extra.eas` and `updates` so the club gets its own EAS
    project in step 4. The splash screen and notification colours are FirstPass's.
 3. **`assets/images/`**: the app icon (`icon.png`, `favicon.png` and the three
-   `android-icon-*.png` files) and the splash screen (`splash-logo.png`) are FirstPass's. The
-   FirstPass logos (`firstpass-hq-*.png` for the app, `firstpass-*.png` for the company, `firstpass-mark-*.png` for the 1P mark) come in a version for dark
+   `android-icon-*.png` files) and the splash screen (`splash-logo.png`, the 1P mark) are FirstPass's. The
+   FirstPass logos (`firstpass-hq-*.png` for the app, `firstpass-mark-*.png` for the 1P mark) come in a version for dark
    backgrounds and one for light; the app picks whichever reads on the club's background.
 4. **`docs/user-guide.md`**: the guide describes West Coast Thunder's setup. Update the club name
    and squad names, or leave it out.
 
 The app icon, splash screen and app name are part of the build, so they can't change from Club
-settings. Everything inside the app can, apart from the FirstPass logo on the opening, sign-in and
-home screens.
+settings. Everything inside the app can, apart from the FirstPass 1P mark on the opening screen and
+the FirstPass HQ logo on every screen.
 
 ## 2. Create the Supabase project
 
