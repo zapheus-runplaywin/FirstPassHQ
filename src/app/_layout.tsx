@@ -147,6 +147,14 @@ function RootStack() {
             <Stack.Screen name="goals/game" options={{ title: 'Game goals' }} />
             <Stack.Screen name="goals/team" options={{ title: 'Team goals' }} />
           </Stack.Protected>
+          <Stack.Protected guard={features.integrity}>
+            <Stack.Screen name="training/index" options={{ title: 'Integrity training' }} />
+            <Stack.Screen name="training/submit" options={{ title: 'Add a certificate' }} />
+            <Stack.Screen name="training/review" options={{ title: 'Check certificates' }} />
+            <Stack.Screen name="training/progress" options={{ title: 'Training progress' }} />
+            <Stack.Screen name="training/requirement/[id]" options={{ title: 'Training' }} />
+            <Stack.Screen name="training/document" options={{ title: 'Certificate' }} />
+          </Stack.Protected>
           <Stack.Screen name="my-details" options={{ title: 'Your details' }} />
           <Stack.Screen name="delete-account" options={{ title: 'Delete account' }} />
           <Stack.Protected guard={isAdmin}>
@@ -171,6 +179,10 @@ function RootStack() {
               <Stack.Screen name="admin/awards/index" options={{ title: 'Awards' }} />
               <Stack.Screen name="admin/awards/edit" options={{ title: 'Award' }} />
               <Stack.Screen name="admin/awards/[id]" options={{ title: 'Award' }} />
+            </Stack.Protected>
+            <Stack.Protected guard={features.integrity}>
+              <Stack.Screen name="admin/training/index" options={{ title: 'Integrity training' }} />
+              <Stack.Screen name="admin/training/edit" options={{ title: 'Training' }} />
             </Stack.Protected>
             <Stack.Protected guard={features.calendar || features.awards || features.goals}>
               <Stack.Screen name="admin/fixtures" options={{ title: 'Fixtures' }} />

@@ -87,6 +87,9 @@ What each role sees on its home screen:
 | See athletes' attendance history       |         |                 |      ✓       |            |       ✓       |               |         |       ✓       |
 | Vote in club awards                    |    ✓    |        ✓        |      ✓       |     ✓      |       ✓       |               |         |       ✓       |
 | Set up awards and see results          |         |                 |              |            |               |               |         |       ✓       |
+| Complete integrity training            |   Own   | Their athlete's |     Own      |    Own     |      Own      |      Own      |         |      Own      |
+| Check training certificates            |         |                 |              |            |       ✓       |               |         |       ✓       |
+| Set integrity training                 |         |                 |              |            |               |               |         |       ✓       |
 | Import fixtures from PlayHQ            |         |                 |              |            |               |               |         |       ✓       |
 | Preferred name                         |    ✓    |        ✓        |      ✓       |     ✓      |       ✓       |       ✓       |    ✓    |       ✓       |
 | Title, such as President               |         |                 |              |            |       ✓       |               |         |       ✓       |
@@ -105,8 +108,11 @@ when an admin turns on **Physios get club messages** in Club settings.
 Club awards are voted on by the roles, squads and teams each award names, so not every award is
 open to everyone.
 
-Admins can turn off Messages, Calendar, Daily check-ins, Injuries, Attendance and Awards for the
-whole club in **Club settings**. A feature that's off disappears for every role.
+Integrity training applies to the roles, squads and teams an admin chooses for each course, so not
+everyone has training to complete.
+
+Admins can turn off Messages, Calendar, Daily check-ins, Injuries, Attendance, Awards, Game goals
+and Integrity training for the whole club in **Club settings**. A feature that's off disappears for every role.
 
 <div style="page-break-before: always"></div>
 
@@ -201,12 +207,12 @@ fixing your details.
 
 Once you're approved, the home screen is where everything starts. From the top:
 
-- **To do**: things you need to do, such as your daily check-in, an award vote or an injury
-  clearance to sign off.
+- **To do**: things you need to do, such as your daily check-in, an award vote, integrity training
+  due or an injury clearance to sign off.
   Tap an item to go straight to it. Each item disappears once it's done. When there's nothing,
   it says "You're all caught up."
 - **Cards** for the features your role uses: Messages, Daily check-in, Check-ins,
-  Injuries, Attendance, Awards and Administration. The Awards card shows while an award vote is open to you. A yellow number means something new or waiting for you.
+  Injuries, Attendance, Awards, Integrity training and Administration. The Awards card shows while an award vote is open to you. A yellow number means something new or waiting for you.
 - **Coming up**: the next six events from your calendars. Tap **Full calendar** to see them all.
 - **My squads and teams**: tap one to see who's in it. A team's page also has its
   [game goals](#game-goals) for its athletes and coaches.
@@ -302,6 +308,34 @@ day or two after it.
 
 <img src="user-guide/awards.png" width="210" alt="Award votes open to you">
 <img src="user-guide/award-vote.png" width="210" alt="A 3-2-1 vote">
+
+### Integrity training
+
+Each season the club lists the integrity training its members must complete, such as Sports
+Integrity Australia's Safeguarding in Sport or anti-doping courses, with a due date. Training is
+set for roles (for example athletes and coaches), across the whole club or only some squads and
+teams, so junior and senior athletes can have different courses.
+
+Training you still need to complete shows in your **To do** list with its due date, and on the
+**Integrity training** card. To complete it:
+
+1. Tap **Open the course** and do the course on the provider's website. Download or photograph
+   the certificate of completion at the end.
+2. In the app, tap the to-do item or **Add a certificate** on the Integrity training screen.
+3. Under **Certificate achieved**, tick each course the certificate shows you completed. If one
+   PDF holds several certificates or badges, tick them all and attach it once: each ticked course
+   is checked with that file.
+4. Choose the day you completed it, attach the certificate (a PDF or photo, up to 10 MB), add a
+   note if you like and tap **Send for checking**.
+
+The training then shows **Waiting to be checked** until a committee member or admin approves it
+(**✓ Approved**). If they send it back, you'll see their note and the to-do comes back so you can
+upload a new certificate. Certificates can't be removed once they're sent, so the club keeps a
+record. Overdue training says **Overdue since** its due date.
+
+<img src="user-guide/training-athlete-home.png" width="210" alt="Integrity training in an athlete's to-do list">
+<img src="user-guide/training-athlete.png" width="210" alt="An athlete's integrity training">
+<img src="user-guide/training-submit.png" width="210" alt="One certificate ticked for three courses">
 
 ### Deleting your account
 
@@ -464,8 +498,12 @@ As a guardian you:
 - **Report and update injuries** for your athlete, and ask for clearance, exactly as an athlete
   does (see [Athletes](#4-athletes)). If you look after more than one athlete, choose which one
   when reporting.
+- **Complete integrity training** for your athlete: their training shows in your to-do list and
+  on the **Integrity training** screen under their name, and you upload their certificates
+  exactly as they would (see [Integrity training](#integrity-training)).
 
 <img src="user-guide/guardian-home.png" width="210" alt="Guardian home screen">
+<img src="user-guide/training-guardian.png" width="210" alt="A guardian's view of their athlete's training, one sent back">
 <img src="user-guide/goals-guardian.png" width="210" alt="An athlete's games, opened by their guardian">
 
 <div style="page-break-before: always"></div>
@@ -690,6 +728,30 @@ email; nobody else can save or share documents.
 
 <img src="user-guide/injuries-committee.png" width="210" alt="Committee injuries list">
 <img src="user-guide/accept-clearance.png" width="210" alt="Accept or send back a clearance">
+
+### Checking training certificates
+
+When someone uploads an integrity training certificate, every committee member and admin gets a
+**Check training certificates** to-do. Open **Integrity training** › **Check certificates** to see
+each one with the member, the course, the day they completed it and who uploaded it. Tap the
+📎 file to read the certificate in the app, then:
+
+- **Approve** marks that training complete for the member, or
+- **Send back** with a note saying what to fix, such as a cut-off name. The member sees the note
+  and uploads a new certificate.
+
+Nobody checks their own certificate or their own child's; those wait for someone else.
+
+**Everyone's progress** lists each season's training with how many members are approved and how
+many certificates are waiting. Open one to see every member who must complete it, filter to
+**Still to do**, **Waiting** or **Approved**, and **Export CSV** for Sports Integrity Australia or
+the club's records.
+
+<img src="user-guide/training-committee-home.png" width="210" alt="Committee home with certificates to check">
+<img src="user-guide/training-review.png" width="210" alt="Certificates waiting to be checked">
+<img src="user-guide/training-send-back.png" width="210" alt="Sending a certificate back with a note">
+<img src="user-guide/training-progress.png" width="210" alt="Everyone's progress on each course">
+<img src="user-guide/training-requirement.png" width="210" alt="Who has completed Safeguarding in Sport">
 
 ### Attendance
 
@@ -1023,6 +1085,34 @@ to **A squad or team**. Admins can read every message and its read receipts.
 
 <img src="user-guide/message-to-role.png" width="210" alt="Sending a message to a role">
 
+### Integrity training
+
+**Integrity training** in Administration lists the courses members must complete each season, with
+how many are approved. Tap **Add training** and fill in:
+
+- **Course**, such as "Safeguarding in Sport", with optional **Details** and a **Course link**
+  (for example Sports Integrity Australia's e-learning site).
+- **Due by**: the day it must be done.
+- **Who must complete it**: one or more of Athletes, Coaches, Managers, Physios, Committee, Admins
+  and Guardians. Guests can't be asked.
+- **All squads and teams**, or switch it off and choose squads and teams, such as the 17 & Under
+  Squad and Lightning Academy for a junior course. A squad includes the teams named from it, and
+  only members in those groups with a chosen role must complete it. Training for the whole club
+  also reaches committee members and admins, who aren't in a squad or team.
+
+Members see it in their to-do lists straight away. Open a course to see who has done it, and tap
+**Change** to edit it. **Archive** takes it off everyone's to-do list but keeps its certificates;
+**Remove** is only for training added by mistake, before anyone uploads a certificate.
+
+Training is set per season because it must be done every year. When a new season starts, open
+it in Integrity training and tap **Copy 2026–27 training** (last season's): each course is copied
+with its due date a year on, and its squads and teams matched by name in the new season. Check
+each copied course's squads and teams, then archive last season's courses once everyone is done.
+
+<img src="user-guide/training-admin.png" width="210" alt="Administration: integrity training for the season">
+<img src="user-guide/training-edit.png" width="210" alt="Adding a course with its link and due date">
+<img src="user-guide/training-edit-who.png" width="210" alt="Setting who must complete a course">
+
 ### Injury report
 
 **Injury report** lists injuries reported or cleared in the last few months (3 by default), plus
@@ -1051,7 +1141,7 @@ so leave them filled in.
   how they look together and warns when text or buttons would be hard to read. **Use the built-in
   colours** goes back to deep navy, white and blaze orange.
 - **Features**: switch off any of Messages, Calendar, Daily check-ins, Injuries, Attendance,
-  Awards and Game goals. A switched-off feature disappears from every member's home screen, to-do list and menus,
+  Awards, Game goals and Integrity training. A switched-off feature disappears from every member's home screen, to-do list and menus,
   and its Administration pages are hidden. Nothing is deleted, so switching it back on brings
   everything back.
 - **Squads**: **Members join a squad first** is on unless the club switches it off. Switched off,
@@ -1095,6 +1185,7 @@ once saved, only replaced or removed.
 | Injuries and documents  | The athlete, their guardians, their coaches, physios, the committee and admins. Managers don't see injuries. Only the committee and admins can save or share documents; everyone else views them in the app. |
 | Game goals and reflections | The athlete, their guardians and their coaches. The committee, physios and admins don't see them. |
 | Team goals              | The team's athletes, their guardians and its coaches. Only its coaches set and review them. |
+| Integrity training certificates | The member, their parents or guardians, the committee and admins. Coaches don't see them. Certificates can't be changed or removed once sent. |
 | Attendance records      | Coaches, the committee and admins. Managers see their own groups' sessions. Athletes and guardians don't see attendance.    |
 | Committee calendar      | Committee members and admins.                                                                                               |
 | Award votes             | Only the voter sees their own ballot. Nobody, admins included, can see who someone voted for.                               |

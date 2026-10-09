@@ -4,6 +4,7 @@ import { slotTitle } from '@/lib/awards';
 import { formatShortDay } from '@/lib/format';
 import { gamePhase, gameTitle } from '@/lib/goals';
 import { formatDateString, toDateString } from '@/lib/injuries';
+import { dueLabel, isOutstanding, type MyTraining } from '@/lib/training';
 import type { AwardSlot, CoachTeamGame, GoalGame, Injury } from '@/lib/types';
 import type { SafetyTodos } from '@/lib/use-pending-requests';
 
@@ -31,6 +32,8 @@ export function buildTodos({
   goalReflectionsToAnswer = 0,
   goalCommentsTeamId,
   teamGames = [],
+  training = [],
+  certificatesToCheck = 0,
   today = new Date(),
 }: {
   userId: string | undefined;
@@ -52,6 +55,10 @@ export function buildTodos({
   goalCommentsTeamId?: string;
   /** Next and last games of the groups the member coaches, for team goals. */
   teamGames?: CoachTeamGame[];
+  /** Integrity training for the member and the athletes they are a guardian of. */
+  training?: MyTraining[];
+  /** Training certificates waiting for the committee that the member can check. */
+  certificatesToCheck?: number;
   today?: Date;
 }): Todo[] {
   const todos: Todo[] = [];
@@ -183,6 +190,45 @@ export function buildTodos({
       title: `Vote in ${toVote.length} awards`,
       detail: 'Voting is open',
       href: '/awards',
+    });
+  }
+
+  // Integrity training, soonest due first. A long list is one item.
+  const toComplete = training.filter(isOutstanding).sort((a, b) => a.due_on.localeCompare(b.due_on));
+  if (toComplete.length > 2) {
+    todos.push({
+      key: 'training',
+      title: `Complete ${toComplete.length} integrity training courses`,
+      detail: `${dueLabel(toComplete[0].due_on, today)} · upload each certificate when done`,
+      href: '/training',
+    });
+  } else {
+    for (const row of toComplete) {
+      const name = row.profile_name ?? 'your athlete';
+      todos.push({
+        key: `training-${row.requirement_id}-${row.profile_id}`,
+        title:
+          row.status === 'sent_back'
+            ? `Upload ${row.is_me ? 'your' : `${name}’s`} ${row.name} certificate again`
+            : `Complete ${row.name}${row.is_me ? '' : ` for ${name}`}`,
+        detail:
+          row.status === 'sent_back' && row.review_note
+            ? `Sent back: ${row.review_note}`
+            : `${dueLabel(row.due_on, today)} · then upload the certificate`,
+        href: {
+          pathname: '/training/submit',
+          params: { profile: row.profile_id, requirement: row.requirement_id },
+        },
+      });
+    }
+  }
+
+  if (certificatesToCheck > 0) {
+    todos.push({
+      key: 'training-certificates',
+      title: `Check ${certificatesToCheck} training ${certificatesToCheck === 1 ? 'certificate' : 'certificates'}`,
+      detail: 'Approve them, or send them back with a note',
+      href: '/training/review',
     });
   }
 
