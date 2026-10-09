@@ -6,8 +6,8 @@ and adds them to a team, and the home screen shows their team.
 Built with [Expo](https://expo.dev) (React Native) and [Supabase](https://supabase.com) on the
 free tier.
 
-For how to use the app, role by role, see the [user guide](docs/user-guide.md). To run the app
-for another club, see [Setting the app up for another club](docs/new-club-setup.md).
+For how to use the app, role by role, see the [user guide](docs/user-guide.md). To add another
+club, each with its own database, see [Adding another club](docs/new-club-setup.md).
 
 ## What's here
 

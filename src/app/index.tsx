@@ -15,6 +15,7 @@ import { useAuth } from '@/lib/auth';
 import { useCanTakeAttendance, useCanViewAttendance } from '@/lib/attendance';
 import { useAwardSlots } from '@/lib/awards';
 import { useClub } from '@/lib/club';
+import { useClubChoice } from '@/lib/club-choice';
 import {
   checkInOverviewLabel,
   checkInSummaryLabel,
@@ -46,6 +47,7 @@ const UPCOMING_COUNT = 6;
 export default function HomeScreen() {
   const theme = useTheme();
   const { session, profile, memberships, isAdmin, refresh, signOut } = useAuth();
+  const { canSwitch, switchClub } = useClubChoice();
   const club = useClub();
   const { features } = club;
   const [refreshing, setRefreshing] = useState(false);
@@ -316,6 +318,13 @@ export default function HomeScreen() {
             Sign out
           </ThemedText>
         </Pressable>
+        {canSwitch ? (
+          <Pressable accessibilityRole="button" onPress={switchClub} style={styles.footerLink}>
+            <ThemedText type="small" style={{ color: theme.tint }}>
+              Switch club
+            </ThemedText>
+          </Pressable>
+        ) : null}
         <Pressable
           accessibilityRole="button"
           onPress={() => router.push('/delete-account')}

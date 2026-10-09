@@ -13,6 +13,7 @@ import { BrandFonts, contrastRatio } from '@/constants/theme';
 import { useTheme } from '@/hooks/use-theme';
 import { AuthProvider, useAuth } from '@/lib/auth';
 import { ClubProvider, useClub } from '@/lib/club';
+import { ClubChoiceProvider, useClubChoice } from '@/lib/club-choice';
 import { startAppLog } from '@/lib/log';
 import { useAdminPushNotifications } from '@/lib/push';
 
@@ -21,7 +22,19 @@ startAppLog({ version: Constants.expoConfig?.version ?? null });
 
 export default function RootLayout() {
   return (
-    <AuthProvider>
+    <ClubChoiceProvider>
+      <ChosenClub />
+    </ClubChoiceProvider>
+  );
+}
+
+// Everything below is mounted again when the club changes, so no screen, sign-in
+// or saved look from one club carries over to another.
+function ChosenClub() {
+  const { ready, club } = useClubChoice();
+  if (!ready) return null;
+  return (
+    <AuthProvider key={club?.code ?? ''}>
       <Club>
         <ClubTheme>
           <RootStack />
@@ -72,6 +85,7 @@ function ClubTheme({ children }: { children: ReactNode }) {
 function RootStack() {
   const { loading: authLoading, session, isAdmin } = useAuth();
   const { ready, features } = useClub();
+  const { club } = useClubChoice();
   // Montserrat; if it fails to load the app carries on in the system font.
   const [fontsLoaded, fontError] = useFonts({
     Montserrat_400Regular,
@@ -160,9 +174,13 @@ function RootStack() {
             </Stack.Protected>
           </Stack.Protected>
         </Stack.Protected>
-        <Stack.Protected guard={!session}>
+        <Stack.Protected guard={!club}>
+          <Stack.Screen name="choose-club" options={{ headerShown: false }} />
+        </Stack.Protected>
+        <Stack.Protected guard={!session && !!club}>
           <Stack.Screen name="sign-in" options={{ headerShown: false }} />
         </Stack.Protected>
+        <Stack.Screen name="club/[code]" options={{ headerShown: false }} />
         <Stack.Screen name="auth-callback" options={{ headerShown: false }} />
       </Stack>
       {introDone ? null : <BrandIntro onDone={finishIntro} />}
