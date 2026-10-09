@@ -19,7 +19,8 @@ import { useClub } from '@/lib/club';
 
 /** Matches `imageWidth` for the splash screen in app.json, so the hand-off is seamless. */
 export const LOGO_SIZE = 360;
-const CLUB_LOGO_SIZE = 120;
+/** About as wide as the 1P mark (188), so the two logos look the same size. */
+const CLUB_LOGO_SIZE = 180;
 /** Height of the 1P mark itself, which is 600 of the splash image's 1152 pixels wide and 337:512 in shape. */
 const FIRSTPASS_HEIGHT = Math.round((LOGO_SIZE * (600 / 1152) * 337) / 512);
 const GAP = 32;
