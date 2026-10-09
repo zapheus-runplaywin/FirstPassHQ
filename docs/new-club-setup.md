@@ -50,6 +50,7 @@ trying changes with sample people is optional: see [Test and live](environments.
 
 The first migration adds West Coast Thunder's squads (Lightning Academy, 17 & Under and so on).
 The admin renames or removes them in **Squads and teams** in step 5; nothing else depends on them.
+A club without squads switches squads off in Club settings, removes these, and adds its teams.
 
 ## 3. Make the first admin
 
@@ -91,6 +92,9 @@ The admin opens **Administration > Club settings** and sets:
 - **Logo**: a square PNG with a see-through background.
 - **Colours**: background, hero colour (buttons, links and highlights) and light or dark text.
   The preview shows how they look together and warns when they're hard to read.
+- **Squads**: switch off **Members join a squad first** if the club selects straight into teams,
+  with final team athletes and training partners from the start. Squads and teams then becomes
+  **Teams**.
 - **Features**: turn off anything the club doesn't use. Messages, Calendar, Daily check-ins,
   Injuries, Attendance and Awards can each be switched off. Nothing is deleted when a feature is
   off.

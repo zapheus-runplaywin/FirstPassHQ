@@ -45,6 +45,7 @@ export default function ClubSettingsScreen() {
   const [textTone, setTextTone] = useState<TextTone | null>(null);
   const [logoPath, setLogoPath] = useState<string | null>(null);
   const [features, setFeatures] = useState<Record<FeatureKey, boolean>>(club.features);
+  const [squads, setSquads] = useState(club.squads);
   /** Whether physios get messages sent to the whole club. Off unless an admin turns it on. */
   const [physioMessages, setPhysioMessages] = useState(false);
   const [loaded, setLoaded] = useState(false);
@@ -73,6 +74,7 @@ export default function ClubSettingsScreen() {
     setTextTone(toneOf(saved?.text_colour));
     setLogoPath(saved?.logo_path ?? null);
     setFeatures(club.features);
+    setSquads(club.squads);
   }
 
   const defaults: Record<ColourKey, string> = {
@@ -143,9 +145,10 @@ export default function ClubSettingsScreen() {
       p_hero_colour: colours.hero,
       p_logo_path: logoPath ?? '',
       // Only switched-off features are stored, so new features start on.
-      p_features: Object.fromEntries(
-        FEATURES.filter((f) => !features[f.key]).map((f) => [f.key, false]),
-      ),
+      p_features: Object.fromEntries([
+        ...FEATURES.filter((f) => !features[f.key]).map((f) => [f.key, false]),
+        ...(squads ? [] : [['squads', false]]),
+      ]),
     });
     if (saveError) {
       setSaving(false);
@@ -297,6 +300,35 @@ export default function ClubSettingsScreen() {
             Use the built-in colours
           </ThemedText>
         </Pressable>
+      </View>
+
+      <View style={styles.section}>
+        <ThemedText type="smallBold">Squads</ThemedText>
+        <Card style={styles.featureRow}>
+          <View style={styles.featureText}>
+            <ThemedText type="smallBold">Members join a squad first</ThemedText>
+            <ThemedText type="small" themeColor="textSecondary">
+              {squads
+                ? 'New members join a squad. At selections, admins name teams from it with final team athletes and training partners.'
+                : 'Members join a team straight away, as a final team athlete or training partner. There are no squads.'}
+            </ThemedText>
+          </View>
+          <Switch
+            accessibilityLabel="Members join a squad first"
+            value={squads}
+            onValueChange={setSquads}
+            trackColor={{ true: theme.accent, false: theme.backgroundSelected }}
+            thumbColor={theme.text}
+            {...(Platform.OS === 'web' ? { activeThumbColor: theme.onAccent } : {})}
+          />
+        </Card>
+        {squads !== club.squads ? (
+          <ThemedText type="small" themeColor="textSecondary">
+            {squads
+              ? 'From now on, new teams are named from a squad. Teams you already have keep their members.'
+              : 'Squads you already have stay until the season ends, and nobody is moved. From now on you add teams on their own, and the next season starts with this season’s teams.'}
+          </ThemedText>
+        ) : null}
       </View>
 
       <View style={styles.section}>

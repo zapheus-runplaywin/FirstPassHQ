@@ -8,6 +8,7 @@ import { CheckInTrends } from '@/components/trend-chart';
 import { Card, ChipGroup, PressableCard } from '@/components/ui';
 import { Spacing } from '@/constants/theme';
 import { useTheme } from '@/hooks/use-theme';
+import { useSquads } from '@/lib/club';
 import {
   checkInQuestions,
   flaggedAreas,
@@ -56,6 +57,7 @@ function yesterday() {
 export default function CheckInsScreen() {
   const theme = useTheme();
   const teams = useTeams();
+  const usesSquads = useSquads();
   const isCoach = useIsCheckInCoach();
   const canSeeOverview = useCanSeeCheckInOverview();
   const { checkInSummary, reloadCheckInSummary } = useCheckInSummary();
@@ -120,9 +122,10 @@ export default function CheckInsScreen() {
             <View style={styles.section}>
               <ThemedText type="smallBold">Club overview</ThemedText>
               <ThemedText type="small" themeColor="textSecondary">
-                Average scores out of 5 for each squad, then for each team once the squad
-                phase is complete. Scores show once 3 athletes have checked in, so they can’t
-                point to one person.
+                {usesSquads
+                  ? 'Average scores out of 5 for each squad, then for each team once the squad phase is complete.'
+                  : 'Average scores out of 5 for each team.'}{' '}
+                Scores show once 3 athletes have checked in, so they can’t point to one person.
               </ThemedText>
               {checkInOverview?.map((g) => {
                 const team = teams.find((t) => t.id === g.team_id);
@@ -197,7 +200,9 @@ export default function CheckInsScreen() {
               </>
             ) : (
               <ThemedText type="small" themeColor="textSecondary">
-                You don’t coach a squad that’s still in its squad phase, or a team named from one.
+                {usesSquads
+                  ? 'You don’t coach a squad that’s still in its squad phase, or a team named from one.'
+                  : 'You don’t coach a team yet.'}
               </ThemedText>
             )
           ) : null}

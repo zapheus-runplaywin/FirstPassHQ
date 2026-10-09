@@ -10,12 +10,13 @@ import { Spacing } from '@/constants/theme';
 import { useTheme } from '@/hooks/use-theme';
 import type { CalendarEvent } from '@/lib/calendar';
 import { marksToSave } from '@/lib/attendance';
+import { useSquads } from '@/lib/club';
 import { formatSentAt } from '@/lib/format';
 import { useLedGroups } from '@/lib/messages';
 import { supabase } from '@/lib/supabase';
 import type { AttendanceMark, Team } from '@/lib/types';
 import { useEvents } from '@/lib/use-events';
-import { teamLabel, useTeams } from '@/lib/use-teams';
+import { teamLabel, topGroups, useTeams } from '@/lib/use-teams';
 
 type NearbySession = { id: string; name: string; held_at: string; taken_by_name: string | null };
 
@@ -31,8 +32,9 @@ export default function TakeAttendanceScreen() {
   // The squads and teams the member coaches or manages; every one for admins.
   const ledGroups = useLedGroups(teams);
   const ledIds = new Set(ledGroups.map((t) => t.id));
-  // Any current squad can be chosen for whole-squad events.
-  const otherSquads = teams.filter((t) => t.kind === 'squad' && !ledIds.has(t.id));
+  // Any current squad can be chosen for whole-squad events (or team, without squads).
+  const otherSquads = topGroups(teams).filter((t) => !ledIds.has(t.id));
+  const usesSquads = useSquads();
   const [choice, setChoice] = useState<string | null>(null);
   const [editedName, setEditedName] = useState<string | null>(null);
   const [chosenEvent, setChosenEvent] = useState<CalendarEvent | null>(null);
@@ -154,7 +156,7 @@ export default function TakeAttendanceScreen() {
       />
       {otherSquads.length > 0 ? (
         <ChipGroup
-          label="Whole squad"
+          label={usesSquads ? 'Whole squad' : 'Another team'}
           options={otherSquads.map((t) => ({ value: t.id, label: teamLabel(t, teams) }))}
           selected={selected ? [selected] : []}
           onToggle={choose}

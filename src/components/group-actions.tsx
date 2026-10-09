@@ -108,14 +108,16 @@ export function RemovedGroups({ groups, onChange }: { groups: Team[]; onChange: 
 
   async function restore(group: Team) {
     setError(null);
-    // Bringing back a squad brings back its teams; a team needs its squad.
+    // Bringing back a squad brings back its teams; a team needs its squad, if it has one.
     const { error: saveError } = await supabase
       .from('teams')
       .update({ archived: false })
       .or(
         group.kind === 'squad'
           ? `id.eq.${group.id},squad_id.eq.${group.id}`
-          : `id.eq.${group.id},id.eq.${group.squad_id}`,
+          : group.squad_id
+            ? `id.eq.${group.id},id.eq.${group.squad_id}`
+            : `id.eq.${group.id}`,
       );
     if (saveError) {
       setError(saveError.message);
