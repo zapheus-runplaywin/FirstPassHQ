@@ -4,7 +4,7 @@ import { StyleSheet, View } from 'react-native';
 
 import { Screen } from '@/components/screen';
 import { ThemedText } from '@/components/themed-text';
-import { Button, Card, ErrorText, TextField } from '@/components/ui';
+import { Button, Card, ErrorText, PressableCard, TextField } from '@/components/ui';
 import { findClub } from '@/constants/clubs';
 import { Spacing } from '@/constants/theme';
 import { useTheme } from '@/hooks/use-theme';
@@ -18,7 +18,7 @@ import { useClubChoice } from '@/lib/club-choice';
  */
 export default function ChooseClubScreen() {
   const theme = useTheme();
-  const { choose } = useClubChoice();
+  const { choose, recent } = useClubChoice();
   const [code, setCode] = useState('');
   const [error, setError] = useState<string | null>(null);
   const club = findClub(code);
@@ -42,9 +42,26 @@ export default function ChooseClubScreen() {
           Find your club
         </ThemedText>
         <ThemedText type="small" themeColor="textSecondary" style={styles.centred}>
-          Your club gives you its club code, or a link that fills it in.
+          Enter the code your club gave you. A club’s QR code or link fills it in for you.
         </ThemedText>
       </View>
+
+      {recent.length > 0 ? (
+        <View style={styles.recent}>
+          <ThemedText type="smallBold">Your clubs</ThemedText>
+          {recent.map((c) => (
+            <PressableCard key={c.code} onPress={() => choose(c.code)}>
+              <ThemedText type="smallBold">{c.name}</ThemedText>
+              <ThemedText type="small" themeColor="textSecondary">
+                {c.code}
+              </ThemedText>
+            </PressableCard>
+          ))}
+          <ThemedText type="smallBold" style={styles.another}>
+            Another club
+          </ThemedText>
+        </View>
+      ) : null}
 
       <TextField
         label="Club code"
@@ -54,7 +71,7 @@ export default function ChooseClubScreen() {
           setError(null);
         }}
         onSubmitEditing={handleContinue}
-        placeholder="For example THUNDER"
+        accessibilityLabel="Club code"
         autoCapitalize="characters"
         autoCorrect={false}
         autoComplete="off"
@@ -90,6 +107,12 @@ const styles = StyleSheet.create({
     height: 49,
     alignSelf: 'center',
     marginBottom: Spacing.three,
+  },
+  recent: {
+    gap: Spacing.two,
+  },
+  another: {
+    marginTop: Spacing.three,
   },
   centred: {
     textAlign: 'center',

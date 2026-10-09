@@ -71,6 +71,7 @@ What each role sees on its home screen:
 | Set up awards and see results          |         |                 |              |            |               |               |         |       ✓       |
 | Import fixtures from PlayHQ            |         |                 |              |            |               |               |         |       ✓       |
 | Club name, colours, logo and features  |         |                 |              |            |               |               |         |       ✓       |
+| Invite members (QR code and link)      |         |                 |              |            |               |               |         |       ✓       |
 | Administration                         |         |                 |              |            |               |               |         |       ✓       |
 
 † Athletes who are captains: club captains can message the whole club, and squad and team
@@ -108,8 +109,9 @@ small "Powered by FirstPass" sits at the foot of the sign-in and home screens.
 FirstPass HQ is one app for several clubs, and each club keeps its own members and records
 separate from every other club. So the first time it opens, the app asks for your **club code**.
 West Coast Thunder's is `THUNDER`. Type it in, check the club's name that appears, and tap
-**Continue to West Coast Thunder**. If the club sends you a link instead, opening it fills the
-code in for you. The app remembers your club after that.
+**Continue to West Coast Thunder**. If the club gives you a QR code, scan it with your phone's
+camera instead, or open the club's invite link: either one opens the app with the club already
+picked. The app remembers your club after that.
 
 <img src="user-guide/club-code.png" width="210" alt="Find your club: the club code screen">
 
@@ -126,8 +128,11 @@ If you picked the wrong club, tap **Change club** under the button.
 
 If you're in two clubs that both use FirstPass HQ, tap **Switch club** at the foot of the home
 screen and enter the other club's code. You ask to join each club separately, and each club only
-sees what you do in that club. The app stays signed in to both, so switching back doesn't need
-another sign-in.
+sees what you do in that club. After that, **Switch club** lists **Your clubs**: tap one to go
+straight back to it. The app stays signed in to each club, so switching doesn't need another
+sign-in.
+
+<img src="user-guide/your-clubs.png" width="210" alt="Switch club: your clubs and another club's code">
 
 ### Ask to join the club
 
@@ -266,13 +271,14 @@ day or two after it.
 
 ### Deleting your account
 
-**Delete account** at the bottom of the home screen permanently deletes your app account: your
-profile, your squad and team places, guardian links and your messages inbox. Messages you sent to
+**Delete account** at the bottom of the home screen permanently deletes your account at the club
+you're in: your profile, your squad and team places, guardian links and your messages inbox. Messages you sent to
 a group stay with the people who received them.
 
 The club keeps your injury records and clearance documents for 12 months after you leave, where
 only the committee and admins can see them, and then deletes them. Deleting your account doesn't
-change your PlayHQ registration or club membership.
+change your PlayHQ registration or club membership, or your account at any other club in
+FirstPass HQ.
 
 <img src="user-guide/delete-account.png" width="210" alt="Delete account screen">
 
@@ -704,6 +710,17 @@ new join request.
 <img src="user-guide/admin-home.png" width="210" alt="Admin home screen">
 <img src="user-guide/administration.png" width="210" alt="Administration menu">
 <img src="user-guide/admin-safety-todos.png" width="210" alt="Admin to-dos for guardians, Working With Children Checks and athletes turning 18">
+
+### Inviting members
+
+**Administration > Invite members** shows the club's QR code, club code and invite link. Put the
+QR code on a screen or a printed sign at training, or tap **Share invite** to send the link and
+code by message or email (**Copy link** copies just the link). Scanning the code or opening the
+link opens FirstPass HQ with your club picked, ready to sign in. People still ask to join, with the
+[club password](#club-password) if you've set one, and you approve them as below. The password
+isn't part of the invite, so share it separately.
+
+<img src="user-guide/invite.png" width="210" alt="Invite members: QR code, club code and invite link">
 
 ### Approving members
 
