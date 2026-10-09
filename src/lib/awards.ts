@@ -87,6 +87,11 @@ export function closesLabel(closesAt: string) {
   return `${date.getTime() < Date.now() ? 'Closed' : 'Closes'} ${formatDateTime(date)}`;
 }
 
+/** Whether voting has closed, so full results can be shown. */
+export function isClosed(closesAt: string) {
+  return new Date(closesAt).getTime() <= Date.now();
+}
+
 /** The end of a "2026-10-07" day, local time, as an ISO string. */
 export function endOfDay(day: string) {
   const date = parseDateString(day);

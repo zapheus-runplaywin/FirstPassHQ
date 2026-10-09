@@ -90,6 +90,7 @@ What each role sees on its home screen:
 | Complete integrity training            |   Own   | Their athlete's |     Own      |    Own     |      Own      |      Own      |         |      Own      |
 | Check training certificates            |         |                 |              |            |       ✓       |               |         |       ✓       |
 | Set integrity training                 |         |                 |              |            |               |               |         |       ✓       |
+| Governance reports as PDFs             |         |                 |              |            |               |               |         |       ✓       |
 | Import fixtures from PlayHQ            |         |                 |              |            |               |               |         |       ✓       |
 | Preferred name                         |    ✓    |        ✓        |      ✓       |     ✓      |       ✓       |       ✓       |    ✓    |       ✓       |
 | Title, such as President               |         |                 |              |            |       ✓       |               |         |       ✓       |
@@ -1000,7 +1001,8 @@ still needed.
   of the preseason points and 75% their share of the match points.
 
 Open an award to see its standings for each squad or team, and how many people have voted in each
-match or ballot. Once anyone has voted, only the name, description, closing dates, match voting
+match or ballot. Once voting has closed, **Full results report** shows the full voting result as a
+report you can save as a PDF (see [Reports](#reports)). Once anyone has voted, only the name, description, closing dates, match voting
 window and listed names can change, and the award can't be removed.
 
 **How match awards find their games.** When you import fixtures, each PlayHQ team is linked to
@@ -1121,6 +1123,43 @@ to OneDrive or attach it to an email.
 
 <img src="user-guide/injury-report.png" width="210" alt="Injury report">
 
+### Reports
+
+**Reports** in Administration has governance and compliance reports. Each one shows on screen
+with its totals, and **Export PDF** saves the same report as a PDF through the share sheet (on a
+computer it downloads), ready for the committee, an audit or OneDrive. The PDF has the club's
+name, the date it was made and page numbers, and anything that needs attention is in red.
+
+- **Working With Children Checks**: every approved coach, manager and physio with their roles,
+  squads and teams, check number, expiry date and status. Checks that are missing, have no expiry
+  date, have expired or expire within 30 days are listed first under **Needs attention**.
+- **Under 18s and their guardians**: every approved athlete under 18 with their date of birth and
+  age, squad or team, and parents or guardians with their email addresses. Athletes with no parent
+  or guardian linked come first, and guardians who haven't been verified are marked. It prints
+  across the page.
+- **Integrity training** (when Integrity training is on): pick the season. **Still to finish**
+  lists everyone with a course not yet approved, in red if a due date has passed, then each course
+  lists who must complete it, where they're up to, when they completed it and who checked it.
+- **Attendance** (when Attendance is on): pick the **Period** (last 4 weeks, last 3 months, this
+  season, or **Choose dates** for a from and to date) and the **Squads and teams**: **All**,
+  **Whole club events**, or any squads and teams. A squad includes the teams named from it. Each
+  group lists its athletes with sessions present, absent and their attendance rate, followed by
+  every session with who took it.
+- **Award results** (when Awards are on): awards whose voting has closed. Open one for its full
+  result: each squad or team's standings with points and how many 1st, 2nd and 3rd place votes
+  (and so on) each nominee got, how many people voted, and for match awards the points from each
+  match. Ballots stay secret: it never shows who voted for whom.
+
+The PDFs hold members' personal details, such as dates of birth, check numbers and email
+addresses, so keep them somewhere only the committee can reach.
+
+<img src="user-guide/reports.png" width="210" alt="Reports in Administration">
+<img src="user-guide/report-wwcc.png" width="210" alt="Working With Children Checks report">
+<img src="user-guide/report-pdf.png" width="210" alt="The Working With Children Checks report saved as a PDF">
+<img src="user-guide/report-under-18s.png" width="210" alt="Under 18s and their guardians report">
+<img src="user-guide/report-attendance.png" width="210" alt="Attendance report for the 17 &amp; Under Squad over the last 4 weeks">
+<img src="user-guide/report-award-results.png" width="210" alt="Full results of a closed match award">
+
 ### Club settings
 
 **Club settings** sets up the app for the club. Anything left empty uses the app's built-in
@@ -1189,7 +1228,8 @@ once saved, only replaced or removed.
 | Attendance records      | Coaches, the committee and admins. Managers see their own groups' sessions. Athletes and guardians don't see attendance.    |
 | Committee calendar      | Committee members and admins.                                                                                               |
 | Award votes             | Only the voter sees their own ballot. Nobody, admins included, can see who someone voted for.                               |
-| Award results           | Admins only: standings and how many people have voted.                                                                      |
+| Award results           | Admins only: standings and how many people have voted, and once voting closes, how many votes each nominee got at each place. |
+| Reports and their PDFs  | Admins only. A saved PDF is a copy outside the app, so whoever it's shared with can read it.                                |
 | Match fixtures          | The members of each squad or team, and admins.                                                                              |
 | Club name, colours and logo | Every signed-in member. The logo file is public so it can show before sign-in. Only admins can change them.            |
 | Other clubs' members and records | Nobody in this club. Each club's members, messages, injuries and documents are kept in that club's own database, which other clubs can't reach. |

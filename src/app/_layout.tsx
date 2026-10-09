@@ -169,20 +169,35 @@ function RootStack() {
             <Stack.Screen name="admin/seasons" options={{ title: 'Seasons' }} />
             <Stack.Screen name="admin/place/[id]" options={{ title: 'Place members' }} />
             <Stack.Screen name="admin/captains" options={{ title: 'Club captains' }} />
+            <Stack.Screen name="admin/reports/index" options={{ title: 'Reports' }} />
+            <Stack.Screen
+              name="admin/reports/wwcc"
+              options={{ title: 'Working With Children Checks' }}
+            />
+            <Stack.Screen name="admin/reports/under-18s" options={{ title: 'Under 18s' }} />
             <Stack.Protected guard={features.calendar}>
               <Stack.Screen name="admin/calendars" options={{ title: 'Calendars' }} />
             </Stack.Protected>
             <Stack.Protected guard={features.injuries}>
               <Stack.Screen name="admin/injuries" options={{ title: 'Injury report' }} />
             </Stack.Protected>
+            <Stack.Protected guard={features.attendance}>
+              <Stack.Screen name="admin/reports/attendance" options={{ title: 'Attendance report' }} />
+            </Stack.Protected>
             <Stack.Protected guard={features.awards}>
               <Stack.Screen name="admin/awards/index" options={{ title: 'Awards' }} />
               <Stack.Screen name="admin/awards/edit" options={{ title: 'Award' }} />
               <Stack.Screen name="admin/awards/[id]" options={{ title: 'Award' }} />
+              <Stack.Screen name="admin/reports/awards" options={{ title: 'Award results' }} />
+              <Stack.Screen name="admin/reports/award" options={{ title: 'Award results' }} />
             </Stack.Protected>
             <Stack.Protected guard={features.integrity}>
               <Stack.Screen name="admin/training/index" options={{ title: 'Integrity training' }} />
               <Stack.Screen name="admin/training/edit" options={{ title: 'Training' }} />
+              <Stack.Screen
+                name="admin/reports/integrity"
+                options={{ title: 'Integrity training report' }}
+              />
             </Stack.Protected>
             <Stack.Protected guard={features.calendar || features.awards || features.goals}>
               <Stack.Screen name="admin/fixtures" options={{ title: 'Fixtures' }} />
