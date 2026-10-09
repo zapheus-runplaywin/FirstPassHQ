@@ -21,7 +21,7 @@ Fork or copy this repository for the club. In the copy:
    set the club's own look in Club settings (step 5), or change `ClubDefaults` so the sign-in
    screen shows the club from the first open. Leave `FirstPass` as it is: its logo stays on the
    opening screen and at the foot of the sign-in and home screens whatever the club sets.
-2. **`app.json`**: `name` (the name under the icon, `FirstPass` by default), `slug`, `scheme`
+2. **`app.json`**: `name` (the name under the icon, `FirstPass HQ` by default), `slug`, `scheme`
    (used for sign-in, for example `hawksapp`), `ios.bundleIdentifier` and `android.package` (for
    example `au.com.hawks.app`), and remove `extra.eas` and `updates` so the club gets its own EAS
    project in step 4. The splash screen and notification colours are FirstPass's.

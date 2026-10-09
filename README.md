@@ -1,6 +1,6 @@
-# FirstPass
+# FirstPass HQ
 
-FirstPass, the sports club app for iOS and Android, first built for West Coast Thunder. Members sign in with Google, an admin approves them
+FirstPass HQ, FirstPass's sports club app for iOS and Android, first built for West Coast Thunder. Members sign in with Google, an admin approves them
 and adds them to a team, and the home screen shows their team.
 
 Built with [Expo](https://expo.dev) (React Native) and [Supabase](https://supabase.com) on the

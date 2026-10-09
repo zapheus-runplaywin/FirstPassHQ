@@ -1,6 +1,6 @@
 # West Coast Thunder app: user guide
 
-This guide explains what the club's FirstPass app does and how to use it, role by role. Every screen
+This guide explains what the club's FirstPass HQ app does and how to use it, role by role. Every screen
 shown is from the app itself, filled with made-up sample people.
 
 **Printing:** open this file in any Markdown viewer (GitHub, VS Code, Typora) and print to PDF.
@@ -95,7 +95,7 @@ whole club in **Club settings**. A feature that's off disappears for every role.
 
 The club sends a link to install the app on iPhone (TestFlight) or Android. The first time it
 opens, before it knows which club you're in, the app shows the FirstPass logo in orange and navy
-and the sign-in screen. FirstPass is the name of the app; your club runs its own copy. Once you
+and the sign-in screen. The app is called FirstPass HQ, made by FirstPass; your club runs its own copy. Once you
 sign in it switches to West Coast Thunder's logo and colours and remembers them. From then on,
 each time the app opens, the FirstPass logo appears in the middle, then rises to make room for the
 Thunder logo beneath it, and a
@@ -947,7 +947,7 @@ to OneDrive or attach it to an email.
 ### Club settings
 
 **Club settings** sets up the app for the club. Anything left empty uses the app's built-in
-FirstPass look: the name "FirstPass", the FirstPass "1" mark as the logo, and orange (`#FF6414`)
+FirstPass look: the name "FirstPass HQ", the FirstPass "1" mark as the logo, and orange (`#FF6414`)
 on navy (`#12213E`). West Coast Thunder's name, logo and yellow-on-black colours are saved here,
 so leave them filled in.
 
@@ -975,7 +975,7 @@ so leave them filled in.
 
 Tap **Save club settings**. Members see the changes the next time they open the app. Someone
 who has just installed the app sees the FirstPass look on the sign-in screen until they sign in.
-The app's icon (the FirstPass mark), its name under the icon (FirstPass) and the splash screen are
+The app's icon (the FirstPass mark), its name under the icon (FirstPass HQ) and the splash screen are
 part of the app build and don't change here.
 
 <img src="user-guide/club-settings.png" width="210" alt="Club settings: name, logo and colours">
