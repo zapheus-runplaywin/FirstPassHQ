@@ -52,3 +52,33 @@ jobs:
         env:
           SUPABASE_ACCESS_TOKEN: ${{ secrets.SUPABASE_TEST_ACCESS_TOKEN || secrets.SUPABASE_ACCESS_TOKEN }}
           SUPABASE_PROJECT_ID: ${{ secrets.SUPABASE_TEST_PROJECT_ID }}
+
+  # The extra test clubs in the development setup, when they exist (see
+  # docs/environments.md).
+  deploy-test-clubs:
+    if: ${{ github.event_name != 'schedule' }}
+    runs-on: ubuntu-24.04
+    strategy:
+      fail-fast: false
+      matrix:
+        club: [2, 3]
+    name: deploy-test-club-${{ matrix.club }}
+    steps:
+      - name: Check test club ${{ matrix.club }} is set up
+        id: test
+        env:
+          CLUB_PROJECT_ID: ${{ secrets[format('SUPABASE_TEST_{0}_PROJECT_ID', matrix.club)] }}
+        run: echo "ready=$([ -n "$CLUB_PROJECT_ID" ] && echo true || echo false)" >> "$GITHUB_OUTPUT"
+      - if: steps.test.outputs.ready == 'true'
+        uses: actions/checkout@d23441a48e516b6c34aea4fa41551a30e30af803 # v6.1.0
+      - if: steps.test.outputs.ready == 'true'
+        uses: supabase/setup-cli@45a513f8c64c0bc8e0e3dfe572b5c95be85f6359 # v3.0.1
+        with:
+          version: 2.120.0
+      - if: steps.test.outputs.ready == 'true'
+        run: >
+          supabase functions deploy playhq
+          --project-ref "$SUPABASE_PROJECT_ID" --use-api
+        env:
+          SUPABASE_ACCESS_TOKEN: ${{ secrets[format('SUPABASE_TEST_{0}_ACCESS_TOKEN', matrix.club)] }}
+          SUPABASE_PROJECT_ID: ${{ secrets[format('SUPABASE_TEST_{0}_PROJECT_ID', matrix.club)] }}

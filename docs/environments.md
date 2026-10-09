@@ -75,6 +75,54 @@ Until these secrets exist the workflows only warn and carry on updating the live
 
    Or add them on [expo.dev](https://expo.dev) under the project's **Environment variables**.
 
+## More test clubs
+
+To try switching clubs, Expo Go can have up to two more test clubs, each with its own free project.
+They only exist on your computer: installed builds and updates never include them.
+
+### 1. Create the projects
+
+1. A Supabase account has two free projects, so use another account (for example a second email).
+   Create two projects there in the Sydney region, such as `firstpass-test-2` and
+   `firstpass-test-3`. Save each database password.
+2. Set up each one like the test project in [step 1](#1-create-the-test-project): the same **Site
+   URL** and `exp://**` redirect, and Google sign-in with the same client. Add each project's
+   `https://<project-ref>.supabase.co/auth/v1/callback` to the Google client too.
+3. Signed in to that account, create a token under **Account > Access Tokens**.
+
+### 2. Let GitHub deploy to them
+
+Add these repository secrets, with `2` for the first project and `3` for the second:
+
+- `SUPABASE_TEST_2_PROJECT_ID`, `SUPABASE_TEST_2_DB_PASSWORD`, `SUPABASE_TEST_2_ACCESS_TOKEN`
+- `SUPABASE_TEST_3_PROJECT_ID`, `SUPABASE_TEST_3_DB_PASSWORD`, `SUPABASE_TEST_3_ACCESS_TOKEN`
+
+Both access tokens can be the same token. Then run **Deploy migrations**, **Deploy PlayHQ
+function** and **Purge expired injury records** once each with **Run workflow**. Database changes
+reach the test clubs after the test project. The live deploy doesn't wait for them, so a paused
+test club never holds it up; its job fails and says so.
+
+### 3. Add them to your `.env`
+
+```bash
+EXPO_PUBLIC_TEST_CLUB_2_CODE=HAWKS
+EXPO_PUBLIC_TEST_CLUB_2_NAME=Hawks Netball Club
+EXPO_PUBLIC_TEST_CLUB_2_URL=https://<project-ref>.supabase.co
+EXPO_PUBLIC_TEST_CLUB_2_ANON_KEY=<its anon public key>
+
+EXPO_PUBLIC_TEST_CLUB_3_CODE=FALCONS
+EXPO_PUBLIC_TEST_CLUB_3_NAME=Falcons Netball Club
+EXPO_PUBLIC_TEST_CLUB_3_URL=https://<project-ref>.supabase.co
+EXPO_PUBLIC_TEST_CLUB_3_ANON_KEY=<its anon public key>
+```
+
+Restart `npx expo start`, choose **Switch club**, enter `HAWKS`, and sign in with Google. Then run
+`supabase/test-data.sql` in that project's **SQL Editor** to become its admin and add sample
+people. In **Administration > Club settings**, give the club its own name, colours and logo so the
+clubs are easy to tell apart. Do the same for `FALCONS`.
+
+`scripts/publish-update.sh` leaves these clubs out of every update and checks that it did.
+
 ## Day to day
 
 - **Trying a change:** `npx expo start`. You're on test data, so nothing you do reaches members.
