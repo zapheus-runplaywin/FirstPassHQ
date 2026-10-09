@@ -38,6 +38,15 @@ export function squadsOf(teams: Team[]) {
   return teams.filter((t) => t.kind === 'squad');
 }
 
+/**
+ * Squads, and teams that don't belong to one (clubs without squads select
+ * straight into teams). These are what members join and what each new season
+ * copies.
+ */
+export function topGroups(teams: Team[]) {
+  return teams.filter((t) => !t.squad_id);
+}
+
 export function teamsIn(teams: Team[], squadId: string) {
   return teams.filter((t) => t.squad_id === squadId);
 }
@@ -56,9 +65,9 @@ export function teamLabel(team: Team, teams: Team[]) {
   return repeated ? `${team.name} (${seasonLabel(team.season)})` : team.name;
 }
 
-/** The newest season's squads, which new members join. */
-export function newestSquads(teams: Team[]) {
-  const squads = squadsOf(teams);
-  const newest = Math.max(...squads.map((s) => s.season));
-  return squads.filter((s) => s.season === newest);
+/** The newest season's squads (or teams, without squads), which new members join. */
+export function newestGroups(teams: Team[]) {
+  const groups = topGroups(teams);
+  const newest = Math.max(...groups.map((s) => s.season));
+  return groups.filter((s) => s.season === newest);
 }

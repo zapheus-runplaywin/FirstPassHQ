@@ -42,7 +42,9 @@ one or more **squads** or **teams** for the current season.
 **Squads and teams.** Each season, members join a **squad** (Mixed Open Squad, Open Squad,
 20 & Under Squad, 17 & Under Squad, Lightning Academy). At selections, admins name **teams** from a
 squad and pick each team's final team athletes and training partners. People selected for a team stay
-in their squad as well.
+in their squad as well. A club that doesn't use squads can switch them off in
+[Club settings](#club-settings): members then join a **team** straight away, as a final team athlete
+or training partner, and the app talks about teams wherever it would say squad.
 
 **Captains.** Admins choose **club captains** from the season's athletes, and admins or a squad or
 team's coaches choose its **captain** and **vice captains**. Captains stay athletes; captaincy only
@@ -115,7 +117,7 @@ and fill in:
   them to a child.
 - **I am a**: the role that best describes you.
 - **Squad**: athletes, coaches, managers and guardians pick their squad (guardians pick their
-  athlete's squad).
+  athlete's squad). In a club without squads this is **Team**.
 - **Club password**: if the club has set one, ask a club admin for it.
 
 Tap **Send request**.
@@ -212,7 +214,8 @@ the address.
 Tap a squad or team under **My squads and teams** to see everyone in it, with their position:
 Head Coach, Assistant Coach, Manager, Athlete, Final team athlete or Training partner. Captains,
 vice captains and club captains are marked next to their position. When Game goals is switched on,
-a team's page also shows its [game goals](#game-goals) for its athletes and coaches.
+a team's page also shows its [game goals](#game-goals) for its athletes and coaches. In a club
+without squads the list is called **My teams**.
 
 <img src="user-guide/team-roster.png" width="210" alt="Team roster">
 
@@ -740,6 +743,19 @@ Open any member to change their role, squads, teams or titles, then tap **Save c
 ### Squads, teams and selections
 
 **Squads and teams** lists the current season's squads with the teams named from each.
+If the club has switched squads off in [Club settings](#club-settings), it's called **Teams** and
+works more simply:
+
+- **Add a team**: give it a name. There are no squads to choose from.
+- **Choose who is in a team** (tap it): every approved athlete, coach and manager is listed. Pick
+  **Final team**, **Training partner** or **Not selected** for athletes, and **In this team** or
+  **Not in this team** for coaches and managers. Guardians are added from their member page and
+  stay when you save.
+- On a member's page, **Teams** replaces **Squads**, and athletes are picked as a final team athlete
+  or training partner for each team.
+- There is no squad phase to mark complete: coaches look after their team's athletes from the start.
+
+With squads on:
 
 - **Add a squad or team**: choose Team or Squad, give it a name, and for a team pick the squad it's
   named from.
@@ -757,6 +773,8 @@ Open any member to change their role, squads, teams or titles, then tap **Save c
 <img src="user-guide/name-team.png" width="210" alt="Naming a team from a squad">
 <img src="user-guide/selections-complete.png" width="210" alt="Marking the squad phase complete">
 <img src="user-guide/remove-squad.png" width="210" alt="Removing a squad from this season">
+<img src="user-guide/teams-no-squads.png" width="210" alt="Teams, for a club without squads">
+<img src="user-guide/team-no-squad.png" width="210" alt="Choosing who is in a team without a squad">
 
 ### Seasons
 
@@ -773,6 +791,11 @@ The club year runs May to May. **Seasons** handles the change-over:
    you can bring the season back.
 
 Nothing is deleted when a season is archived.
+
+In a club without squads, starting a season copies last season's teams (and their calendars)
+instead, and you place returning members in each team. Athletes keep being a final team athlete or
+training partner, as they were last season. If the club has just switched squads off, the new
+season starts with the teams that were named from last season's squads.
 
 <img src="user-guide/seasons.png" width="210" alt="Seasons, with the new season's squads">
 <img src="user-guide/season-start.png" width="210" alt="Starting a new season">
@@ -925,6 +948,10 @@ Thunder's name, logo and yellow-on-black colours are saved here, so leave them f
   Awards and Game goals. A switched-off feature disappears from every member's home screen, to-do list and menus,
   and its Administration pages are hidden. Nothing is deleted, so switching it back on brings
   everything back.
+- **Squads**: **Members join a squad first** is on unless the club switches it off. Switched off,
+  members join a team straight away, admins add teams without squads and choose their athletes from
+  the whole club, attendance takers can take attendance for any team, and each new season copies
+  the teams. Squads the club already has stay until that season ends, and nobody is moved.
 - **Physios get club messages**: when on, messages sent to everyone in the club also go to
   physios. Physios always get messages sent to the Physio role. It starts off.
 
@@ -934,6 +961,7 @@ The app's icon, its name under the icon and the splash screen are part of the ap
 change here.
 
 <img src="user-guide/club-settings.png" width="210" alt="Club settings: name, logo and colours">
+<img src="user-guide/club-settings-squads.png" width="210" alt="Club settings: switching squads off">
 <img src="user-guide/club-settings-features.png" width="210" alt="Club settings: turning features on and off">
 <img src="user-guide/club-settings-physios.png" width="210" alt="Club settings: physios get club messages">
 

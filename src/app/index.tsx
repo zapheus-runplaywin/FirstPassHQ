@@ -288,10 +288,10 @@ export default function HomeScreen() {
 
       {approved ? (
         <View style={styles.section}>
-          <ThemedText type="smallBold">My squads and teams</ThemedText>
+          <ThemedText type="smallBold">{club.squads ? 'My squads and teams' : 'My teams'}</ThemedText>
           {memberships.length === 0 ? (
             <ThemedText type="small" themeColor="textSecondary">
-              You are not in a squad yet.
+              You are not in a {club.squads ? 'squad' : 'team'} yet.
             </ThemedText>
           ) : (
             sortMemberships(memberships).map((m) => (

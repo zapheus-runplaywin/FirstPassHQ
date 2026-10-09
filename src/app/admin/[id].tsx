@@ -8,6 +8,7 @@ import { Button, Card, ChipGroup, ConfirmDelete, ErrorText, TextField } from '@/
 import { Spacing } from '@/constants/theme';
 import { formatDate, isMinor, parseDate } from '@/lib/age';
 import { PROFILE_COLUMNS, useAuth } from '@/lib/auth';
+import { useSquads } from '@/lib/club';
 import {
   coachTitleLabels,
   isTeamRole,
@@ -26,7 +27,7 @@ import type {
   RejectionReason,
   TeamSelection,
 } from '@/lib/types';
-import { squadsOf, teamLabel, useTeams } from '@/lib/use-teams';
+import { teamLabel, topGroups, useTeams } from '@/lib/use-teams';
 
 const allRoles = Object.keys(roleLabels) as AppRole[];
 const coachTitles = Object.keys(coachTitleLabels) as CoachTitle[];
@@ -54,6 +55,7 @@ export default function MemberScreen() {
   const { id } = useLocalSearchParams<{ id: string }>();
   const { session, refresh } = useAuth();
   const teams = useTeams();
+  const usesSquads = useSquads();
   const [member, setMember] = useState<Profile | null>(null);
   const [role, setRole] = useState<AppRole>('guest');
   const [selection, setSelection] = useState<Placements>({});
@@ -292,7 +294,8 @@ export default function MemberScreen() {
     .slice(0, GUARDIAN_MATCHES);
   const anyGuardians = people.some((p) => p.role === 'guardian' && p.id !== id);
   const selectedIds = Object.keys(selection);
-  const squads = squadsOf(teams);
+  // Squads, and teams without one (every team, for a club without squads).
+  const groups = topGroups(teams);
   // Teams are named from a squad, so only offer teams in squads they are in.
   const availableTeams = teams.filter((t) => t.squad_id && t.squad_id in selection);
 
@@ -318,7 +321,10 @@ export default function MemberScreen() {
               label="Asked to join as"
               value={member.requested_role ? roleLabels[member.requested_role] : null}
             />
-            <Detail label="Asked for squad" value={requestedTeam?.name} />
+            <Detail
+              label={usesSquads ? 'Asked for squad' : 'Asked for team'}
+              value={requestedTeam?.name}
+            />
           </>
         ) : null}
       </Card>
@@ -332,8 +338,8 @@ export default function MemberScreen() {
 
       {inTeams ? (
         <ChipGroup
-          label="Squads"
-          options={squads.map((t) => ({ value: t.id, label: teamLabel(t, teams) }))}
+          label={usesSquads ? 'Squads' : 'Teams'}
+          options={groups.map((t) => ({ value: t.id, label: teamLabel(t, teams) }))}
           selected={selectedIds}
           onToggle={toggleTeam}
         />

@@ -190,7 +190,7 @@ export function buildTodos({
     todos.push({
       key: 'join-requests',
       title: `Approve ${pendingCount} join ${pendingCount === 1 ? 'request' : 'requests'}`,
-      detail: 'New members are waiting to be added to a squad',
+      detail: 'New members are waiting for you to approve them',
       href: '/admin',
     });
   }

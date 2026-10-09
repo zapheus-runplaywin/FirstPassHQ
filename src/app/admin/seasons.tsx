@@ -8,7 +8,8 @@ import { Button, Card, ErrorText, PressableCard } from '@/components/ui';
 import { Spacing } from '@/constants/theme';
 import { useTheme } from '@/hooks/use-theme';
 import { supabase } from '@/lib/supabase';
-import { seasonLabel, squadsOf, useTeamList } from '@/lib/use-teams';
+import { useSquads } from '@/lib/club';
+import { seasonLabel, topGroups, useTeamList } from '@/lib/use-teams';
 
 type Season = { season: number; archived: boolean; squad_count: number; team_count: number };
 
@@ -19,6 +20,8 @@ type Season = { season: number; archived: boolean; squad_count: number; team_cou
  */
 export default function SeasonsScreen() {
   const { teams, reload: reloadTeams } = useTeamList();
+  const usesSquads = useSquads();
+  const word = usesSquads ? 'squad' : 'team';
   const [seasons, setSeasons] = useState<Season[] | null>(null);
   const [confirming, setConfirming] = useState<string | null>(null);
   const [busy, setBusy] = useState(false);
@@ -60,7 +63,7 @@ export default function SeasonsScreen() {
     <Screen>
       <ThemedText type="small" themeColor="textSecondary">
         The club year runs May to May. In May, start the next season and place returning members in
-        its squads. Last season keeps running alongside it. About 4–6 weeks after Easter, archive
+        its {word}s. Last season keeps running alongside it. About 4–6 weeks after Easter, archive
         last season. Nothing is deleted when a season is archived.
       </ThemedText>
 
@@ -70,9 +73,9 @@ export default function SeasonsScreen() {
           <Card style={styles.confirm}>
             <ThemedText type="smallBold">Start the {seasonLabel(next)} season?</ThemedText>
             <ThemedText type="small">
-              This creates empty {seasonLabel(next)} squads with the same names and squad calendars
-              as {seasonLabel(newest!)}. Nobody is moved: place returning members in each squad
-              next.
+              This creates empty {seasonLabel(next)} {word}s with the same names and {word}{' '}
+              calendars as {seasonLabel(newest!)}. Nobody is moved: place returning members in each{' '}
+              {word} next.
             </ThemedText>
             <ErrorText>{error}</ErrorText>
             <Button
@@ -91,7 +94,7 @@ export default function SeasonsScreen() {
       ) : null}
 
       {seasons.map((s) => {
-        const squads = squadsOf(teams).filter((t) => t.season === s.season);
+        const groups = topGroups(teams).filter((t) => t.season === s.season);
         const archiveKey = `archive-${s.season}`;
         return (
           <View key={s.season} style={styles.season}>
@@ -105,13 +108,13 @@ export default function SeasonsScreen() {
             </ThemedText>
 
             {s.season === newest && seasons.some((o) => o.season === s.season - 1)
-              ? squads.map((squad) => (
+              ? groups.map((group) => (
                   <PressableCard
-                    key={squad.id}
+                    key={group.id}
                     onPress={() =>
-                      router.push({ pathname: '/admin/place/[id]', params: { id: squad.id } })
+                      router.push({ pathname: '/admin/place/[id]', params: { id: group.id } })
                     }>
-                    <ThemedText type="smallBold">{squad.name}</ThemedText>
+                    <ThemedText type="smallBold">{group.name}</ThemedText>
                     <ThemedText type="small" themeColor="textSecondary">
                       Place returning members
                     </ThemedText>
@@ -168,7 +171,7 @@ export default function SeasonsScreen() {
 
       {confirming === null ? <ErrorText>{error}</ErrorText> : null}
       <ThemedText type="small" themeColor="textSecondary">
-        New members still send a join request, and join the newest season’s squads.
+        New members still send a join request, and join the newest season’s {word}s.
       </ThemedText>
     </Screen>
   );

@@ -9,7 +9,7 @@ import { pendingRequestsLabel, usePendingRequests } from '@/lib/use-pending-requ
 
 export default function AdministrationScreen() {
   const { pendingCount, reloadPending } = usePendingRequests();
-  const { features } = useClub();
+  const { features, squads } = useClub();
   const [refreshing, setRefreshing] = useState(false);
 
   async function onRefresh() {
@@ -35,9 +35,9 @@ export default function AdministrationScreen() {
       </PressableCard>
 
       <PressableCard onPress={() => router.push('/admin/squads')}>
-        <ThemedText type="smallBold">Squads and teams</ThemedText>
+        <ThemedText type="smallBold">{squads ? 'Squads and teams' : 'Teams'}</ThemedText>
         <ThemedText type="small" themeColor="textSecondary">
-          Add squads and name teams at selections
+          {squads ? 'Add squads and name teams at selections' : 'Add teams and choose who is in each'}
         </ThemedText>
       </PressableCard>
 

@@ -1,4 +1,4 @@
-import { router } from 'expo-router';
+import { router, Stack } from 'expo-router';
 import { useCallback, useEffect, useState } from 'react';
 import { Pressable, StyleSheet, View } from 'react-native';
 
@@ -8,23 +8,29 @@ import { ThemedText } from '@/components/themed-text';
 import { Button, Card, ChipGroup, ErrorText, PressableCard, TextField } from '@/components/ui';
 import { Spacing } from '@/constants/theme';
 import { useTheme } from '@/hooks/use-theme';
+import { useSquads } from '@/lib/club';
 import { formatDay } from '@/lib/format';
 import { supabase } from '@/lib/supabase';
 import type { GroupKind, Team } from '@/lib/types';
 import {
-  newestSquads,
+  newestGroups,
   seasonLabel,
   squadsOf,
   TEAM_COLUMNS,
   teamLabel,
   teamsIn,
+  topGroups,
   useTeamList,
 } from '@/lib/use-teams';
 
 export default function SquadsScreen() {
   const { teams, reload } = useTeamList();
+  const usesSquads = useSquads();
   const squads = squadsOf(teams);
-  const [kind, setKind] = useState<GroupKind>('team');
+  // Teams that don't belong to a squad: every team, for a club without squads.
+  const ownTeams = topGroups(teams).filter((t) => t.kind === 'team');
+  const [chosenKind, setKind] = useState<GroupKind>('team');
+  const kind = usesSquads ? chosenKind : 'team';
   const [name, setName] = useState('');
   const [squadId, setSquadId] = useState<string | null>(null);
   const [saving, setSaving] = useState(false);
@@ -58,8 +64,8 @@ export default function SquadsScreen() {
       setError('Please enter a name.');
       return;
     }
-    const squad = squads.find((s) => s.id === squadId);
-    if (kind === 'team' && !squad) {
+    const squad = usesSquads && kind === 'team' ? squads.find((s) => s.id === squadId) : undefined;
+    if (usesSquads && kind === 'team' && !squad) {
       setError('Choose the squad the team is named from.');
       return;
     }
@@ -68,11 +74,11 @@ export default function SquadsScreen() {
     const { error: insertError } = await supabase.from('teams').insert({
       name: name.trim(),
       kind,
-      // A team belongs to the same season as its squad; a new squad to the newest season.
+      // A team belongs to the same season as its squad; anything else to the newest season.
       ...(squad
         ? { squad_id: squad.id, season: squad.season }
-        : { season: newestSquads(teams)[0]?.season }),
-      sort_order: kind === 'team' ? teamsIn(teams, squad!.id).length + 1 : squads.length + 1,
+        : { season: newestGroups(teams)[0]?.season }),
+      sort_order: squad ? teamsIn(teams, squad.id).length + 1 : topGroups(teams).length + 1,
     });
     setSaving(false);
     if (insertError) {
@@ -89,10 +95,11 @@ export default function SquadsScreen() {
 
   return (
     <Screen>
+      <Stack.Screen options={{ title: usesSquads ? 'Squads and teams' : 'Teams' }} />
       <ThemedText type="small" themeColor="textSecondary">
-        New members are added to a squad. At selections, name the teams here and pick final team
-        athletes and training partners from the squad. Everyone stays in their squad. Once the teams
-        are named, mark the squad phase complete so coaches only look after their team’s athletes.
+        {usesSquads
+          ? 'New members are added to a squad. At selections, name the teams here and pick final team athletes and training partners from the squad. Everyone stays in their squad. Once the teams are named, mark the squad phase complete so coaches only look after their team’s athletes.'
+          : 'Your club doesn’t use squads, so members join a team straight away. Add the teams here and choose who is in each: coaches, managers, and athletes as final team athletes or training partners.'}
       </ThemedText>
 
       {squads.map((squad) => (
@@ -127,18 +134,39 @@ export default function SquadsScreen() {
         </View>
       ))}
 
+      {ownTeams.map((team) => (
+        <View key={team.id} style={styles.squad}>
+          <PressableCard
+            onPress={() => router.push({ pathname: '/admin/team/[id]', params: { id: team.id } })}>
+            <ThemedText type="smallBold">{team.name}</ThemedText>
+            <ThemedText type="small" themeColor="textSecondary">
+              {seasonLabel(team.season)} team · choose who is in it
+            </ThemedText>
+          </PressableCard>
+          <GroupActions key={team.name} group={team} onChange={changed} />
+        </View>
+      ))}
+
+      {!usesSquads && ownTeams.length === 0 ? (
+        <ThemedText type="small" themeColor="textSecondary">
+          No teams yet. Add your first team below.
+        </ThemedText>
+      ) : null}
+
       <RemovedGroups groups={removed} onChange={changed} />
 
       <View style={styles.form}>
-        <ThemedText type="smallBold">Add a squad or team</ThemedText>
-        <ChipGroup
-          options={[
-            { value: 'team' as const, label: 'Team' },
-            { value: 'squad' as const, label: 'Squad' },
-          ]}
-          selected={[kind]}
-          onToggle={setKind}
-        />
+        <ThemedText type="smallBold">{usesSquads ? 'Add a squad or team' : 'Add a team'}</ThemedText>
+        {usesSquads ? (
+          <ChipGroup
+            options={[
+              { value: 'team' as const, label: 'Team' },
+              { value: 'squad' as const, label: 'Squad' },
+            ]}
+            selected={[kind]}
+            onToggle={setKind}
+          />
+        ) : null}
         <TextField
           label="Name"
           value={name}
@@ -147,7 +175,7 @@ export default function SquadsScreen() {
             kind === 'team' ? 'For example, Mixed Open' : 'For example, Mixed Open Squad'
           }
         />
-        {kind === 'team' ? (
+        {usesSquads && kind === 'team' ? (
           <ChipGroup
             label="Named from squad"
             options={squads.map((s) => ({ value: s.id, label: teamLabel(s, teams) }))}

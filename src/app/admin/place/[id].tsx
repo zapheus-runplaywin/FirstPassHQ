@@ -20,7 +20,7 @@ type ReturningMember = {
   last_squad_name: string;
 };
 
-/** Places last season's members in one of the new season's squads. */
+/** Places last season's members in one of the new season's squads (or teams, without squads). */
 export default function PlaceMembersScreen() {
   const theme = useTheme();
   const { id } = useLocalSearchParams<{ id: string }>();
@@ -84,8 +84,10 @@ export default function PlaceMembersScreen() {
       <Stack.Screen options={{ title: squad?.name ?? 'Place members' }} />
       <ThemedText type="small" themeColor="textSecondary">
         {squad ? `Pick who is coming back for ${squad.name} in ${seasonLabel(squad.season)}. ` : ''}
-        They keep their role in the club, and coaches keep their title. Anyone already in a squad
-        this season isn’t listed. New members still send a join request.
+        They keep their role in the club, and coaches keep their title
+        {squad?.kind === 'team' ? '; athletes keep being a final team athlete or training partner' : ''}.
+        Anyone already in a {squad?.kind ?? 'squad'} this season isn’t listed. New members still
+        send a join request.
       </ThemedText>
 
       {members?.length === 0 ? (
@@ -147,7 +149,7 @@ export default function PlaceMembersScreen() {
           title={
             chosen.size === 0
               ? 'Pick who is coming back'
-              : `Add ${chosen.size} to ${squad?.name ?? 'the squad'}`
+              : `Add ${chosen.size} to ${squad?.name ?? `the ${squad?.kind ?? 'squad'}`}`
           }
           onPress={save}
           busy={saving}
