@@ -338,7 +338,15 @@ export default function MemberScreen() {
 
       {inTeams ? (
         <ChipGroup
-          label={usesSquads ? 'Squads' : 'Teams'}
+          label={
+            usesSquads
+              ? groups.some((t) => t.kind === 'team')
+                ? 'Squads and teams'
+                : 'Squads'
+              : groups.some((t) => t.kind === 'squad')
+                ? 'Teams and squads'
+                : 'Teams'
+          }
           options={groups.map((t) => ({ value: t.id, label: teamLabel(t, teams) }))}
           selected={selectedIds}
           onToggle={toggleTeam}

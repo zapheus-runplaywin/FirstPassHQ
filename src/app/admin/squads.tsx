@@ -100,6 +100,9 @@ export default function SquadsScreen() {
         {usesSquads
           ? 'New members are added to a squad. At selections, name the teams here and pick final team athletes and training partners from the squad. Everyone stays in their squad. Once the teams are named, mark the squad phase complete so coaches only look after their team’s athletes.'
           : 'Your club doesn’t use squads, so members join a team straight away. Add the teams here and choose who is in each: coaches, managers, and athletes as final team athletes or training partners.'}
+        {!usesSquads && squads.length > 0
+          ? ' Squads from before squads were switched off keep working until their season ends; the next season starts with teams only.'
+          : ''}
       </ThemedText>
 
       {squads.map((squad) => (
@@ -144,6 +147,14 @@ export default function SquadsScreen() {
             </ThemedText>
           </PressableCard>
           <GroupActions key={team.name} group={team} onChange={changed} />
+          {usesSquads ? (
+            <PutInSquad
+              team={team}
+              squads={squads.filter((s) => s.season === team.season)}
+              teams={teams}
+              onChange={reload}
+            />
+          ) : null}
         </View>
       ))}
 
@@ -187,6 +198,80 @@ export default function SquadsScreen() {
         <Button title={kind === 'team' ? 'Add team' : 'Add squad'} onPress={add} busy={saving} />
       </View>
     </Screen>
+  );
+}
+
+/**
+ * For a club that turned squads on after it had teams: puts a team into a
+ * squad of the same season. Its members join the squad too; nobody is removed.
+ */
+function PutInSquad({
+  team,
+  squads,
+  teams,
+  onChange,
+}: {
+  team: Team;
+  squads: Team[];
+  teams: Team[];
+  onChange: () => void;
+}) {
+  const theme = useTheme();
+  const [open, setOpen] = useState(false);
+  const [squadId, setSquadId] = useState<string | null>(null);
+  const [saving, setSaving] = useState(false);
+  const [error, setError] = useState<string | null>(null);
+  if (squads.length === 0) return null;
+
+  async function save() {
+    if (!squadId) {
+      setError('Choose a squad.');
+      return;
+    }
+    setSaving(true);
+    setError(null);
+    const { error: saveError } = await supabase.rpc('admin_put_team_in_squad', {
+      p_team_id: team.id,
+      p_squad_id: squadId,
+    });
+    setSaving(false);
+    if (saveError) {
+      setError(saveError.message);
+      return;
+    }
+    setOpen(false);
+    onChange();
+  }
+
+  if (!open) {
+    return (
+      <Pressable accessibilityRole="button" onPress={() => setOpen(true)}>
+        <ThemedText type="smallBold" style={[styles.link, { color: theme.tint }]}>
+          Put in a squad
+        </ThemedText>
+      </Pressable>
+    );
+  }
+
+  return (
+    <Card style={styles.phase}>
+      <ChipGroup
+        label={`Put ${team.name} in`}
+        options={squads.map((s) => ({ value: s.id, label: teamLabel(s, teams) }))}
+        selected={squadId ? [squadId] : []}
+        onToggle={setSquadId}
+      />
+      <ThemedText type="small" themeColor="textSecondary">
+        Everyone in {team.name} joins the squad too, and keeps their place in the team.
+      </ThemedText>
+      <ErrorText>{error}</ErrorText>
+      <Button title="Put in squad" onPress={save} busy={saving} />
+      <Pressable accessibilityRole="button" onPress={() => setOpen(false)}>
+        <ThemedText type="smallBold" style={[styles.link, { color: theme.tint }]}>
+          Cancel
+        </ThemedText>
+      </Pressable>
+    </Card>
   );
 }
 

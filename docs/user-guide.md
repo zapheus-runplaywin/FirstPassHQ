@@ -755,6 +755,12 @@ works more simply:
   or training partner for each team.
 - There is no squad phase to mark complete: coaches look after their team's athletes from the start.
 
+Switching squads off part way through a season moves nobody and deletes nothing: the squads you
+already have, and the teams named from them, keep working until that season ends, and the next
+season starts with teams only. Switching squads on when you only have teams works the other way:
+add squads as usual, and **Put in a squad** under a team puts it in a squad of the same season.
+Everyone in the team joins the squad too and keeps their place in the team.
+
 With squads on:
 
 - **Add a squad or team**: choose Team or Squad, give it a name, and for a team pick the squad it's

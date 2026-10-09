@@ -511,4 +511,48 @@ as $$
   order by season desc, squad_order, kind, sort_order, name;
 $$;
 
+-- ---------------------------------------------------------------------------
+-- Putting a team into a squad
+-- ---------------------------------------------------------------------------
+
+-- For a club that turns squads on after it has teams: the team joins a squad
+-- of the same season, and its members are added to the squad too (a member of
+-- a team must be in its squad). Nobody is removed.
+create or replace function public.admin_put_team_in_squad(p_team_id uuid, p_squad_id uuid)
+returns void
+language plpgsql
+security definer
+set search_path = ''
+as $$
+declare
+  v_team public.teams;
+  v_squad public.teams;
+begin
+  if not public.is_admin() then
+    raise exception 'Only admins can change teams';
+  end if;
+  select * into v_team from public.teams
+  where id = p_team_id and kind = 'team' and squad_id is null and not archived;
+  if v_team.id is null then
+    raise exception 'Choose a team that isn''t in a squad yet';
+  end if;
+  select * into v_squad from public.teams
+  where id = p_squad_id and kind = 'squad' and not archived;
+  if v_squad.id is null or v_squad.season <> v_team.season then
+    raise exception 'Choose a squad from the same season';
+  end if;
+
+  insert into public.team_members (team_id, profile_id, team_role, coach_title)
+  select p_squad_id, m.profile_id, m.team_role, m.coach_title
+  from public.team_members m
+  where m.team_id = p_team_id
+  on conflict (team_id, profile_id) do nothing;
+
+  update public.teams set squad_id = p_squad_id where id = p_team_id;
+end;
+$$;
+
+revoke execute on function public.admin_put_team_in_squad(uuid, uuid) from public, anon;
+grant execute on function public.admin_put_team_in_squad(uuid, uuid) to authenticated;
+
 commit;
