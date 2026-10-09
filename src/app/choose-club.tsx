@@ -8,7 +8,7 @@ import { Button, Card, ErrorText, PressableCard, TextField } from '@/components/
 import { findClub } from '@/constants/clubs';
 import { Spacing } from '@/constants/theme';
 import { useTheme } from '@/hooks/use-theme';
-import { firstPassLogo } from '@/lib/club';
+import { defaultLogo } from '@/lib/club';
 import { useClubChoice } from '@/lib/club-choice';
 
 /**
@@ -33,10 +33,10 @@ export default function ChooseClubScreen() {
     <Screen withTopInset>
       <View style={styles.header}>
         <Image
-          source={firstPassLogo(theme.background)}
+          source={defaultLogo(theme.background)}
           style={styles.logo}
           contentFit="contain"
-          accessibilityLabel="FirstPass HQ"
+          accessibilityLabel="FirstPass"
         />
         <ThemedText type="subtitle" style={styles.centred}>
           Find your club
@@ -102,9 +102,10 @@ const styles = StyleSheet.create({
     gap: Spacing.two,
     marginTop: Spacing.five,
   },
+  // The 1P mark is 512 by 337.
   logo: {
-    width: 300,
-    height: 49,
+    width: 160,
+    height: 105,
     alignSelf: 'center',
     marginBottom: Spacing.three,
   },

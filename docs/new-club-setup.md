@@ -100,4 +100,4 @@ Then, still in **Administration**: set a **Club password**, rename the **Squads 
 the club's QR code, code and link to share. Members scan it or enter the code, sign in, and ask to
 join with the club password.
 
-The FirstPass HQ logo, app icon, splash screen and app name are the same for every club.
+The "Powered by" FirstPass HQ logo at the foot of every screen, the app icon, splash screen and app name are the same for every club.
