@@ -8,10 +8,11 @@ import { Button, ChipGroup, ErrorText, TextField } from '@/components/ui';
 import { useAuth } from '@/lib/auth';
 import { returnQuickPicks, toDateString } from '@/lib/injuries';
 import { supabase } from '@/lib/supabase';
+import { hasRole } from '@/lib/roles';
 
 export default function NewInjuryScreen() {
   const { session, profile } = useAuth();
-  const isGuardian = profile?.role === 'guardian';
+  const isGuardian = hasRole(profile, 'guardian');
   const [athletes, setAthletes] = useState<{ profile_id: string; full_name: string | null }[]>([]);
   const [athleteId, setAthleteId] = useState<string | null>(null);
   const [bodyArea, setBodyArea] = useState('');

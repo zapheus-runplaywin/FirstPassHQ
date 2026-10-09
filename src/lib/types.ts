@@ -55,6 +55,8 @@ export type Profile = {
   title: string | null;
   playhq_email: string | null;
   role: AppRole;
+  /** Roles held as well as the main one, such as a coach who is also a guardian. */
+  extra_roles: AppRole[];
   status: MemberStatus;
   requested_role: AppRole | null;
   requested_team_id: string | null;

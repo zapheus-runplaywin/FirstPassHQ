@@ -1,5 +1,6 @@
 import { formatDate, isMinor } from '@/lib/age';
 import type { AppRole, Profile } from '@/lib/types';
+import { hasRole } from '@/lib/roles';
 
 /** Roles that need a current Working With Children Check. */
 export const wwccRoles: AppRole[] = ['coach', 'manager', 'physio'];
@@ -23,7 +24,7 @@ export function safetyIssues(member: Profile, hasGuardian: boolean): string[] {
   const today = isoDay();
   const in30Days = isoDay(30);
 
-  if (wwccRoles.includes(member.role)) {
+  if (hasRole(member, ...wwccRoles)) {
     const number = member.wwcc_number?.trim();
     const expires = member.wwcc_expires_on;
     if (!number) {
@@ -37,7 +38,7 @@ export function safetyIssues(member: Profile, hasGuardian: boolean): string[] {
     }
   }
 
-  if (member.role === 'athlete' && isMinor(member.date_of_birth, member.under_17)) {
+  if (hasRole(member, 'athlete') && isMinor(member.date_of_birth, member.under_17)) {
     if (!hasGuardian) issues.push('Under 18 with no guardian linked');
     if (member.date_of_birth) {
       const [year, month, day] = member.date_of_birth.split('-');

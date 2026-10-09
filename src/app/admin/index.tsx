@@ -7,10 +7,11 @@ import { ThemedText } from '@/components/themed-text';
 import { PressableCard, TextField } from '@/components/ui';
 import { Spacing } from '@/constants/theme';
 import { PROFILE_COLUMNS } from '@/lib/auth';
-import { rejectionReasonLabels, roleLabels, roleWithTitle } from '@/lib/labels';
+import { rejectionReasonLabels, roleLabels, rolesLabel } from '@/lib/labels';
 import { safetyIssues } from '@/lib/safety';
 import { supabase } from '@/lib/supabase';
 import type { Profile } from '@/lib/types';
+import { rolesOf } from '@/lib/roles';
 
 export default function MembersScreen() {
   const [members, setMembers] = useState<Profile[]>([]);
@@ -71,7 +72,7 @@ export default function MembersScreen() {
       <Section
         title="Needs checking"
         members={needsChecking}
-        describe={(m) => `${roleLabels[m.role]} · ${issues.get(m.id)?.join(' · ')}`}
+        describe={(m) => `${rolesLabel(rolesOf(m))} · ${issues.get(m.id)?.join(' · ')}`}
         warn
       />
       <Section
@@ -88,8 +89,8 @@ export default function MembersScreen() {
         members={approved}
         describe={(m) =>
           issues.get(m.id)?.length
-            ? `${roleLabels[m.role]} · Needs checking`
-            : roleWithTitle(m.role, m.title)
+            ? `${rolesLabel(rolesOf(m))} · Needs checking`
+            : rolesLabel(rolesOf(m), m.title)
         }
       />
       <Section

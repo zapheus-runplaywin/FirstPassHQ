@@ -10,13 +10,14 @@ import { Spacing } from '@/constants/theme';
 import { useAuth } from '@/lib/auth';
 import { supabase } from '@/lib/supabase';
 import type { Injury } from '@/lib/types';
+import { hasRole } from '@/lib/roles';
 
 export default function InjuriesScreen() {
   const { profile } = useAuth();
   const [showCleared, setShowCleared] = useState(false);
   const [injuries, setInjuries] = useState<Injury[] | null>(null);
   const [refreshing, setRefreshing] = useState(false);
-  const canReport = profile?.role === 'athlete' || profile?.role === 'guardian';
+  const canReport = hasRole(profile, 'athlete', 'guardian');
 
   const load = useCallback(async () => {
     const { data } = await supabase.rpc('visible_injuries', { p_include_cleared: showCleared });
@@ -38,7 +39,7 @@ export default function InjuriesScreen() {
   const waiting = injuries?.filter((i) => i.waiting_for_me) ?? [];
   const mine = injuries?.filter((i) => i.can_report && !i.waiting_for_me) ?? [];
   const others = injuries?.filter((i) => !i.can_report && !i.waiting_for_me) ?? [];
-  const isGuardian = profile?.role === 'guardian';
+  const isGuardian = hasRole(profile, 'guardian');
 
   return (
     <Screen refreshing={refreshing} onRefresh={onRefresh}>

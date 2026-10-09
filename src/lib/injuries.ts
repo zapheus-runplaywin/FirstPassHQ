@@ -8,6 +8,7 @@ import { Platform } from 'react-native';
 import { useAuth } from '@/lib/auth';
 import { supabase } from '@/lib/supabase';
 import type { Injury, InjuryStatus, InjuryUpdateKind } from '@/lib/types';
+import { hasRole } from '@/lib/roles';
 
 export const INJURY_BUCKET = 'injury-documents';
 
@@ -46,7 +47,7 @@ export function useCanSeeInjuries() {
   const { profile, memberships } = useAuth();
   if (profile?.status !== 'approved') return false;
   return (
-    ['athlete', 'guardian', 'committee', 'physio', 'admin'].includes(profile.role) ||
+    hasRole(profile, 'athlete', 'guardian', 'committee', 'physio', 'admin') ||
     memberships.some((m) => m.team_role === 'coach')
   );
 }

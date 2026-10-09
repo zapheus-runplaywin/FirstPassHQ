@@ -104,11 +104,15 @@ export function teamPositionLabel(
 }
 
 /** Only committee members and admins have a title, such as President. */
-export function canHoldTitle(role: AppRole) {
-  return role === 'committee' || role === 'admin';
+export function canHoldTitle(roles: AppRole[]) {
+  return roles.includes('committee') || roles.includes('admin');
 }
 
-/** A member's role, with their title when they hold one: "Committee · President". */
-export function roleWithTitle(role: AppRole, title: string | null | undefined) {
-  return canHoldTitle(role) && title ? `${roleLabels[role]} · ${title}` : roleLabels[role];
+/**
+ * A member's roles, with their title when they hold one:
+ * "Committee · President", or "Coach, Guardian" for someone with two roles.
+ */
+export function rolesLabel(roles: AppRole[], title?: string | null) {
+  const label = roles.map((r) => roleLabels[r]).join(', ');
+  return canHoldTitle(roles) && title ? `${label} · ${title}` : label;
 }

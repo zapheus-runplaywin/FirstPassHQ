@@ -7,6 +7,7 @@ import { Button, ErrorText, TextField } from '@/components/ui';
 import { useAuth } from '@/lib/auth';
 import { canHoldTitle } from '@/lib/labels';
 import { supabase } from '@/lib/supabase';
+import { rolesOf } from '@/lib/roles';
 
 export default function MyDetailsScreen() {
   const { profile, refresh } = useAuth();
@@ -15,7 +16,7 @@ export default function MyDetailsScreen() {
   const [saving, setSaving] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
-  const hasTitle = profile?.status === 'approved' && canHoldTitle(profile.role);
+  const hasTitle = profile?.status === 'approved' && canHoldTitle(rolesOf(profile));
 
   async function save() {
     setSaving(true);

@@ -5,6 +5,7 @@ import { useAuth } from '@/lib/auth';
 import { toDateString } from '@/lib/injuries';
 import { supabase } from '@/lib/supabase';
 import type { CheckIn, CheckInOverviewRow, CheckInScores, CheckInSummary } from '@/lib/types';
+import { hasRole } from '@/lib/roles';
 
 export const CHECK_IN_COLUMNS = 'id, athlete_id, day, sleep, soreness, stress, mood, note, updated_at';
 
@@ -64,7 +65,7 @@ export function today() {
 /** Athletes do the daily check-in. */
 export function useIsCheckInAthlete() {
   const { profile } = useAuth();
-  return profile?.status === 'approved' && profile.role === 'athlete';
+  return profile?.status === 'approved' && hasRole(profile, 'athlete');
 }
 
 /** Coaches see their own athletes' check-ins. */
@@ -77,7 +78,7 @@ export function useIsCheckInCoach() {
 /** The committee, physios and admins see squad and team averages, never individuals. */
 export function useCanSeeCheckInOverview() {
   const { profile } = useAuth();
-  return profile?.status === 'approved' && ['committee', 'physio', 'admin'].includes(profile.role);
+  return profile?.status === 'approved' && hasRole(profile, 'committee', 'physio', 'admin');
 }
 
 /** Coaches, the committee, physios and admins have a check-ins screen. */

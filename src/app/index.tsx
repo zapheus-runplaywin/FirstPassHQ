@@ -35,11 +35,12 @@ import {
   usePendingRequests,
   useSafetyTodos,
 } from '@/lib/use-pending-requests';
-import { rejectionReasonMessages, roleWithTitle, teamPositionLabel } from '@/lib/labels';
+import { rejectionReasonMessages, rolesLabel, teamPositionLabel } from '@/lib/labels';
 import { supabase } from '@/lib/supabase';
 import { buildTodos } from '@/lib/todos';
 import type { TeamMembership } from '@/lib/types';
 import { useEvents } from '@/lib/use-events';
+import { hasRole, rolesOf } from '@/lib/roles';
 
 /** Three rows of two tiles. */
 const UPCOMING_COUNT = 6;
@@ -88,7 +89,7 @@ export default function HomeScreen() {
     teamGames: teamGames ?? [],
   });
 
-  const isGuardian = profile?.status === 'approved' && profile.role === 'guardian';
+  const isGuardian = profile?.status === 'approved' && hasRole(profile, 'guardian');
 
   // The athletes a parent or guardian looks after.
   const loadAthletes = useCallback(async () => {
@@ -141,7 +142,7 @@ export default function HomeScreen() {
           <ThemedText type="subtitle">Hi {name}</ThemedText>
           {approved && profile ? (
             <ThemedText themeColor="textSecondary">
-              {roleWithTitle(profile.role, profile.title)}
+              {rolesLabel(rolesOf(profile), profile.title)}
             </ThemedText>
           ) : null}
         </View>

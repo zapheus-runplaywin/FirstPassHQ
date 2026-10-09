@@ -6,6 +6,7 @@ import { unregisterForPush } from '@/lib/push';
 import { supabase } from '@/lib/supabase';
 import type { GroupCaptain, Profile, TeamMembership } from '@/lib/types';
 import { TEAM_COLUMNS } from '@/lib/use-teams';
+import { hasRole } from '@/lib/roles';
 
 type AuthState = {
   loading: boolean;
@@ -22,7 +23,7 @@ type AuthState = {
 };
 
 export const PROFILE_COLUMNS =
-  'id, email, full_name, preferred_name, title, playhq_email, role, status, requested_role, requested_team_id, join_requested_at, under_17, rejection_reason, verified_at, date_of_birth, wwcc_number, wwcc_expires_on';
+  'id, email, full_name, preferred_name, title, playhq_email, role, extra_roles, status, requested_role, requested_team_id, join_requested_at, under_17, rejection_reason, verified_at, date_of_birth, wwcc_number, wwcc_expires_on';
 
 const AuthContext = createContext<AuthState | null>(null);
 
@@ -88,7 +89,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     await supabase.auth.signOut();
   }, []);
 
-  const isAdmin = profile?.role === 'admin' && profile.status === 'approved';
+  const isAdmin = hasRole(profile, 'admin') && profile?.status === 'approved';
 
   return (
     <AuthContext
