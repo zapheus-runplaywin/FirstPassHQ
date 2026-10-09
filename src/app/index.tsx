@@ -37,6 +37,13 @@ import {
 import { rejectionReasonMessages, rolesLabel, teamPositionLabel } from '@/lib/labels';
 import { supabase } from '@/lib/supabase';
 import { buildTodos } from '@/lib/todos';
+import {
+  isOutstanding,
+  useClubHasTraining,
+  useMyTraining,
+  useTrainingToReview,
+  type MyTraining,
+} from '@/lib/training';
 import type { TeamMembership } from '@/lib/types';
 import { useEvents } from '@/lib/use-events';
 import { hasRole, rolesOf } from '@/lib/roles';
@@ -70,6 +77,10 @@ export default function HomeScreen() {
   const { myGoals, reloadMyGoals } = useMyGoals();
   const { goalBoard, reloadGoalBoard } = useGoalBoard();
   const { teamGames, reloadTeamGames } = useCoachTeamGames();
+  const { myTraining, reloadMyTraining } = useMyTraining();
+  const { toReview, reloadToReview } = useTrainingToReview();
+  const { clubHasTraining, reloadClubHasTraining } = useClubHasTraining();
+  const certificatesToCheck = (toReview ?? []).filter((c) => c.can_review).length;
   const goalComments = reflectionsToAnswer(goalBoard);
   // Game goals live on each squad or team's page; the to-do list links straight there.
   const goalCommentsTeamId = goalBoard?.find((row) => row.reflections_to_answer > 0)?.team_id;
@@ -86,6 +97,8 @@ export default function HomeScreen() {
     goalReflectionsToAnswer: goalComments,
     goalCommentsTeamId,
     teamGames: teamGames ?? [],
+    training: features.integrity ? (myTraining ?? []) : [],
+    certificatesToCheck: features.integrity ? certificatesToCheck : 0,
   });
 
   const isGuardian = profile?.status === 'approved' && hasRole(profile, 'guardian');
@@ -125,6 +138,9 @@ export default function HomeScreen() {
       reloadMyGoals(),
       reloadGoalBoard(),
       reloadTeamGames(),
+      reloadMyTraining(),
+      reloadToReview(),
+      reloadClubHasTraining(),
     ]);
     setRefreshing(false);
   }
@@ -230,6 +246,24 @@ export default function HomeScreen() {
           <ThemedText type="smallBold">Awards</ThemedText>
           <ThemedText type="small" themeColor="textSecondary">
             {awardsLabel(awardSlots.length, awardSlots.filter((s) => !s.voted).length)}
+          </ThemedText>
+        </PressableCard>
+      ) : null}
+
+      {features.integrity && ((myTraining ?? []).length > 0 || clubHasTraining) ? (
+        <PressableCard onPress={() => router.push('/training')}>
+          <View style={styles.cardTitleRow}>
+            <ThemedText type="smallBold">Integrity training</ThemedText>
+            {certificatesToCheck > 0 ? (
+              <View style={[styles.badge, { backgroundColor: theme.accent }]}>
+                <ThemedText type="smallBold" style={{ color: theme.onAccent }}>
+                  {certificatesToCheck}
+                </ThemedText>
+              </View>
+            ) : null}
+          </View>
+          <ThemedText type="small" themeColor="textSecondary">
+            {trainingLabel(myTraining ?? [], certificatesToCheck)}
           </ThemedText>
         </PressableCard>
       ) : null}
@@ -350,6 +384,16 @@ function awardsLabel(open: number, toVote: number) {
   if (toVote === 0)
     return `✓ You’ve voted in all ${open === 1 ? 'open award' : `${open} open awards`}`;
   return `${toVote} ${toVote === 1 ? 'vote' : 'votes'} waiting for you`;
+}
+
+function trainingLabel(rows: MyTraining[], toCheck: number) {
+  const left = rows.filter(isOutstanding).length;
+  const parts = [];
+  if (rows.length > 0) {
+    parts.push(left === 0 ? '✓ All your training is in' : `${left} still to complete`);
+  }
+  if (toCheck > 0) parts.push(`${toCheck} ${toCheck === 1 ? 'certificate' : 'certificates'} to check`);
+  return parts.join(' · ') || 'Certificates and everyone’s progress';
 }
 
 /** Named teams first, then squads, in club order. */

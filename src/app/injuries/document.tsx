@@ -1,16 +1,7 @@
-import { Stack, useLocalSearchParams } from 'expo-router';
-import { useEffect, useState } from 'react';
-import { ActivityIndicator, StyleSheet, View } from 'react-native';
-import { GestureHandlerRootView } from 'react-native-gesture-handler';
-import { SafeAreaView } from 'react-native-safe-area-context';
+import { useLocalSearchParams } from 'expo-router';
 
-import { PoweredByFirstPass } from '@/components/firstpass-logo';
-import { PdfView } from '@/components/pdf-view';
-import { ThemedText } from '@/components/themed-text';
-import { ZoomableImage } from '@/components/zoomable-image';
-import { FirstPass } from '@/constants/club';
-import { Spacing } from '@/constants/theme';
-import { isImageDocument, viewInjuryDocumentUrl } from '@/lib/injuries';
+import { DocumentViewer } from '@/components/document-viewer';
+import { viewInjuryDocumentUrl } from '@/lib/injuries';
 
 /**
  * Shows an injury document, such as proof of clearance, inside the app.
@@ -18,68 +9,12 @@ import { isImageDocument, viewInjuryDocumentUrl } from '@/lib/injuries';
  */
 export default function InjuryDocumentScreen() {
   const { path, name } = useLocalSearchParams<{ path: string; name?: string }>();
-  const [url, setUrl] = useState<string | null>(null);
-  const [error, setError] = useState<string | null>(null);
-  const image = isImageDocument(path);
-
-  useEffect(() => {
-    let current = true;
-    viewInjuryDocumentUrl(path)
-      .then((signed) => current && setUrl(signed))
-      .catch((e: Error) => current && setError(e.message));
-    return () => {
-      current = false;
-    };
-  }, [path]);
-
   return (
-    <GestureHandlerRootView style={styles.fill}>
-      <Stack.Screen options={{ title: name || 'Document' }} />
-      <SafeAreaView style={styles.fill} edges={['bottom', 'left', 'right']}>
-        {error ? (
-          <ThemedText type="small" themeColor="textSecondary" style={styles.message}>
-            {error}
-          </ThemedText>
-        ) : !url ? (
-          <View style={styles.centre}>
-            <ActivityIndicator color="#fff" />
-          </View>
-        ) : image ? (
-          <>
-            <ZoomableImage
-              uri={url}
-              label={name || 'Injury document'}
-              onError={() => setError('This photo couldn’t be shown. Go back and try again.')}
-            />
-            <ThemedText type="small" themeColor="textSecondary" style={styles.hint}>
-              Pinch to zoom. Double-tap to zoom in or back out.
-            </ThemedText>
-          </>
-        ) : (
-          <PdfView uri={url} />
-        )}
-        <PoweredByFirstPass />
-      </SafeAreaView>
-    </GestureHandlerRootView>
+    <DocumentViewer
+      path={path}
+      name={name}
+      fallbackName="Injury document"
+      signedUrl={viewInjuryDocumentUrl}
+    />
   );
 }
-
-const styles = StyleSheet.create({
-  fill: {
-    flex: 1,
-    backgroundColor: FirstPass.navy,
-  },
-  centre: {
-    flex: 1,
-    alignItems: 'center',
-    justifyContent: 'center',
-  },
-  message: {
-    padding: Spacing.four,
-    textAlign: 'center',
-  },
-  hint: {
-    textAlign: 'center',
-    padding: Spacing.two,
-  },
-});

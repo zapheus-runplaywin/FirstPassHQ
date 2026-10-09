@@ -16,6 +16,11 @@ export const FEATURES = [
   { key: 'attendance', label: 'Attendance', detail: 'Coaches take attendance at sessions' },
   { key: 'awards', label: 'Awards', detail: 'Award votes and results' },
   { key: 'goals', label: 'Game goals', detail: 'Athletes’ goals and reflections for PlayHQ games' },
+  {
+    key: 'integrity',
+    label: 'Integrity training',
+    detail: 'Sports Integrity Australia courses and certificates',
+  },
 ] as const;
 
 export type FeatureKey = (typeof FEATURES)[number]['key'];

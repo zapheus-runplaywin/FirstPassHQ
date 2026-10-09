@@ -71,6 +71,15 @@ export default function AdministrationScreen() {
         </PressableCard>
       ) : null}
 
+      {features.integrity ? (
+        <PressableCard onPress={() => router.push('/admin/training')}>
+          <ThemedText type="smallBold">Integrity training</ThemedText>
+          <ThemedText type="small" themeColor="textSecondary">
+            Sports Integrity Australia courses each role must complete, and who has
+          </ThemedText>
+        </PressableCard>
+      ) : null}
+
       {features.calendar || features.awards || features.goals ? (
         <PressableCard onPress={() => router.push('/admin/fixtures')}>
           <ThemedText type="smallBold">Fixtures</ThemedText>
