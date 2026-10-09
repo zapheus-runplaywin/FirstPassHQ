@@ -95,7 +95,8 @@ The club sends a link to install the app on iPhone (TestFlight) or Android. The 
 opens, before it knows which club you're in, the app shows the FirstPass logo in orange and navy
 and the sign-in screen. FirstPass is the name of the app; your club runs its own copy. Once you
 sign in it switches to West Coast Thunder's logo and colours and remembers them. From then on,
-each time the app opens, the FirstPass logo plays briefly with the Thunder logo beneath it, and a
+each time the app opens, the FirstPass logo appears in the middle, then rises to make room for the
+Thunder logo beneath it, and a
 small "Powered by FirstPass" sits at the foot of the sign-in and home screens.
 
 <img src="user-guide/opening.png" width="210" alt="Opening screen: FirstPass logo with the club logo beneath">

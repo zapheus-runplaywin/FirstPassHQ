@@ -20,11 +20,17 @@ import { useClub } from '@/lib/club';
 /** Matches `imageWidth` for the splash screen in app.json, so the hand-off is seamless. */
 export const LOGO_SIZE = 360;
 const CLUB_LOGO_SIZE = 120;
+/** Height of the FirstPass logo itself, which fills the middle 60% of the splash image's width. */
+const FIRSTPASS_HEIGHT = Math.round((LOGO_SIZE * 0.6) / 2.05);
+const GAP = 32;
+/** How far the FirstPass logo rises so it and the club's logo sit centred together. */
+const SHIFT = (GAP + CLUB_LOGO_SIZE) / 2;
 
 /**
  * Plays over the app when it opens, on the splash screen's FirstPass navy:
- * the FirstPass logo from the splash screen pulses, the club's own logo
- * (once an admin has uploaded one) appears beneath it, then both zoom and
+ * the FirstPass logo from the splash screen pulses and, once an admin has
+ * uploaded the club's own logo, rises to make room for it beneath, so the
+ * pair sits centred on the screen. Then both zoom and
  * fade away to reveal the first screen.
  */
 export function BrandIntro({ onDone }: { onDone: () => void }) {
@@ -33,20 +39,25 @@ export function BrandIntro({ onDone }: { onDone: () => void }) {
   const scale = useSharedValue(1);
   const opacity = useSharedValue(1);
   const clubOpacity = useSharedValue(0);
+  const rise = useSharedValue(0);
   /** Extra time on screen so the club's logo can be seen. */
-  const hold = club.hasLogo ? 500 : 0;
+  const hold = club.hasLogo ? 1000 : 0;
 
   useEffect(() => {
     const finish = (finished?: boolean) => {
       'worklet';
       if (finished) scheduleOnRN(onDone);
     };
+    const shift = club.hasLogo ? -SHIFT : 0;
     if (reduceMotion) {
       clubOpacity.value = 1;
+      rise.value = shift;
       opacity.value = withDelay(400 + hold, withTiming(0, { duration: 250 }, finish));
       return;
     }
-    clubOpacity.value = withDelay(150, withTiming(1, { duration: 300 }));
+    // Centred first, as the splash left it; after the pulse it rises and the club's logo fades in.
+    rise.value = withDelay(600, withTiming(shift, { duration: 450, easing: Easing.inOut(Easing.cubic) }));
+    clubOpacity.value = withDelay(850, withTiming(1, { duration: 350 }));
     scale.value = withSequence(
       withTiming(0.92, { duration: 180, easing: Easing.out(Easing.quad) }),
       withSpring(1.06, {
@@ -60,11 +71,11 @@ export function BrandIntro({ onDone }: { onDone: () => void }) {
       950 + hold,
       withTiming(0, { duration: 330, easing: Easing.in(Easing.quad) }, finish),
     );
-  }, [clubOpacity, hold, onDone, opacity, reduceMotion, scale]);
+  }, [club.hasLogo, clubOpacity, hold, onDone, opacity, reduceMotion, rise, scale]);
 
   const overlayStyle = useAnimatedStyle(() => ({ opacity: opacity.value }));
   const logoStyle = useAnimatedStyle(() => ({
-    transform: [{ scale: scale.value }],
+    transform: [{ translateY: rise.value }, { scale: scale.value }],
   }));
   const clubStyle = useAnimatedStyle(() => ({ opacity: clubOpacity.value }));
 
@@ -73,7 +84,7 @@ export function BrandIntro({ onDone }: { onDone: () => void }) {
       pointerEvents="none"
       style={[styles.overlay, { backgroundColor: FirstPass.navy }, overlayStyle]}
     >
-      <Animated.View style={[styles.logo, logoStyle]}>
+      <Animated.View style={[styles.logo, club.hasLogo && styles.pairOrigin, logoStyle]}>
         <Image
           source={FirstPass.splash}
           style={styles.logo}
@@ -105,10 +116,14 @@ const styles = StyleSheet.create({
     width: LOGO_SIZE,
     height: LOGO_SIZE,
   },
-  /** Below the FirstPass logo, which fills the middle of its square, so it stays where the splash put it. */
+  /** Zoom from the middle of the pair rather than the middle of the FirstPass logo. */
+  pairOrigin: {
+    transformOrigin: [LOGO_SIZE / 2, LOGO_SIZE / 2 + SHIFT, 0],
+  },
+  /** A gap below the FirstPass logo, which fills the middle of its square. */
   clubLogo: {
     position: 'absolute',
-    top: LOGO_SIZE * 0.72,
+    top: (LOGO_SIZE + FIRSTPASS_HEIGHT) / 2 + GAP,
     alignSelf: 'center',
   },
   clubLogoImage: {
