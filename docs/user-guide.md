@@ -101,8 +101,8 @@ Once you pick your club and sign in it switches to West Coast Thunder's logo and
 remembers them. From then on, each time the app opens, the 1P mark appears in the middle, then
 rises to make room for the Thunder logo beneath it.
 
-The FirstPass HQ logo stays on every screen whatever the club's look: at the top right of each
-screen, at the top of the home screen, and on the Find your club and sign-in screens.
+Whatever the club's look, "Powered by" and the FirstPass HQ logo stay at the foot of every
+screen.
 
 <img src="user-guide/opening.png" width="210" alt="Opening screen: FirstPass 1P mark with the club logo beneath">
 
@@ -993,8 +993,8 @@ so leave them filled in.
   "Thunder") finds the club's teams when importing PlayHQ fixtures and names exported files.
 - **Logo**: **Choose logo** to upload a square PNG or JPEG up to 2 MB. It shows on the home screen
   and the sign-in screen, and under the FirstPass 1P mark when the app opens. **Use the FirstPass
-  mark** goes back to the built-in FirstPass 1P mark. The FirstPass HQ logo always stays on every
-  screen, and the 1P mark on the opening screen.
+  mark** goes back to the built-in FirstPass 1P mark. "Powered by" and the FirstPass HQ logo always
+  stay at the foot of every screen, and the 1P mark on the opening screen.
 - **Colours**: type a colour code such as `#FFCD00` for the **background** and the **hero
   colour** (buttons, links and highlights), and choose **Light text** or **Dark text** to suit the
   background. Panels and the softer text for details are worked out from these (on the built-in deep navy
