@@ -555,4 +555,47 @@ $$;
 revoke execute on function public.admin_put_team_in_squad(uuid, uuid) from public, anon;
 grant execute on function public.admin_put_team_in_squad(uuid, uuid) to authenticated;
 
+-- ---------------------------------------------------------------------------
+-- Ending squads straight away
+-- ---------------------------------------------------------------------------
+
+-- Usually a club that switches squads off lets its squads run to the end of
+-- the season. An admin who accepts the consequences can end them now: every
+-- current team leaves its squad, and the squads are removed from the season
+-- (archived, with their members kept, so they can be brought back). The squad
+-- each team came from is remembered in former_squad_id.
+alter table public.teams add column if not exists former_squad_id uuid
+  references public.teams (id) on delete set null;
+
+create or replace function public.admin_end_squads_now()
+returns int
+language plpgsql
+security definer
+set search_path = ''
+as $$
+declare
+  v_count int;
+begin
+  if not public.is_admin() then
+    raise exception 'Only admins can end squads';
+  end if;
+  if public.club_uses_squads() then
+    raise exception 'Switch squads off in Club settings first';
+  end if;
+
+  update public.teams
+  set former_squad_id = squad_id, squad_id = null
+  where squad_id is not null and not archived;
+  get diagnostics v_count = row_count;
+
+  update public.teams set archived = true
+  where kind = 'squad' and not archived;
+
+  return v_count;
+end;
+$$;
+
+revoke execute on function public.admin_end_squads_now() from public, anon;
+grant execute on function public.admin_end_squads_now() to authenticated;
+
 commit;

@@ -129,11 +129,13 @@ export default function SquadsScreen() {
               <GroupActions key={team.name} group={team} onChange={changed} />
             </View>
           ))}
-          <SelectionsPhase
-            squad={squad}
-            hasTeams={teamsIn(teams, squad.id).length > 0}
-            onChange={reload}
-          />
+          {usesSquads ? (
+            <SelectionsPhase
+              squad={squad}
+              hasTeams={teamsIn(teams, squad.id).length > 0}
+              onChange={reload}
+            />
+          ) : null}
         </View>
       ))}
 
@@ -157,6 +159,8 @@ export default function SquadsScreen() {
           ) : null}
         </View>
       ))}
+
+      {!usesSquads && squads.length > 0 ? <EndSquadsNow onChange={changed} /> : null}
 
       {!usesSquads && ownTeams.length === 0 ? (
         <ThemedText type="small" themeColor="textSecondary">
@@ -198,6 +202,60 @@ export default function SquadsScreen() {
         <Button title={kind === 'team' ? 'Add team' : 'Add squad'} onPress={add} busy={saving} />
       </View>
     </Screen>
+  );
+}
+
+/**
+ * For a club that has switched squads off but doesn't want to wait for the
+ * season to end: every team leaves its squad and the squads are removed from
+ * the season. Athletes who are only in a squad drop off coaches' lists.
+ */
+function EndSquadsNow({ onChange }: { onChange: () => void }) {
+  const theme = useTheme();
+  const [confirming, setConfirming] = useState(false);
+  const [saving, setSaving] = useState(false);
+  const [error, setError] = useState<string | null>(null);
+
+  async function end() {
+    setSaving(true);
+    setError(null);
+    const { error: saveError } = await supabase.rpc('admin_end_squads_now');
+    setSaving(false);
+    if (saveError) {
+      setError(saveError.message);
+      return;
+    }
+    setConfirming(false);
+    onChange();
+  }
+
+  if (!confirming) {
+    return (
+      <Pressable accessibilityRole="button" onPress={() => setConfirming(true)}>
+        <ThemedText type="smallBold" style={[styles.link, { color: theme.tint }]}>
+          End squads now instead
+        </ThemedText>
+      </Pressable>
+    );
+  }
+
+  return (
+    <Card style={styles.phase}>
+      <ThemedText type="smallBold">Are you sure you want to end squads now?</ThemedText>
+      <ThemedText type="small">
+        Every team leaves its squad and becomes a team on its own, and the squads are removed from
+        this season. Athletes who are only in a squad, not in a team, drop off coaches’ lists,
+        check-in boards and to-dos, and stop getting squad messages and calendars. Add them to a
+        team from Members to bring them back. Nobody’s records are deleted.
+      </ThemedText>
+      <ErrorText>{error}</ErrorText>
+      <Button title="Yes, end squads now" variant="danger" onPress={end} busy={saving} />
+      <Pressable accessibilityRole="button" onPress={() => setConfirming(false)}>
+        <ThemedText type="smallBold" style={[styles.link, { color: theme.tint }]}>
+          Cancel
+        </ThemedText>
+      </Pressable>
+    </Card>
   );
 }
 

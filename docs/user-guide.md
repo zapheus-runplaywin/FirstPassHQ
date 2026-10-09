@@ -757,7 +757,11 @@ works more simply:
 
 Switching squads off part way through a season moves nobody and deletes nothing: the squads you
 already have, and the teams named from them, keep working until that season ends, and the next
-season starts with teams only. Switching squads on when you only have teams works the other way:
+season starts with teams only. If you don't want to wait, **End squads now instead** on the Teams
+screen does it straight away after an **Are you sure?** step: every team leaves its squad and the
+squads are removed from the season. Athletes who are only in a squad, not in a team, then drop off
+coaches' lists and stop getting squad messages until you add them to a team. Nothing is deleted.
+Switching squads on when you only have teams works the other way:
 add squads as usual, and **Put in a squad** under a team puts it in a squad of the same season.
 Everyone in the team joins the squad too and keeps their place in the team.
 
