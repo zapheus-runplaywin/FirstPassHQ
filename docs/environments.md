@@ -6,7 +6,7 @@ The app talks to one of two Supabase projects:
 | ------------------------------ | ----------------------------------------------------- | ---------------------------------------------------- |
 | Used by                        | Expo Go on your computer (`npx expo start`)           | Preview builds shared with testers, and store builds |
 | People in it                   | You, plus sample people from `supabase/test-data.sql` | Real club members                                    |
-| Sign-in returns to             | `exp://…/--/auth-callback` (your computer)            | `thunderapp://auth-callback` (the installed app)     |
+| Sign-in returns to             | `exp://…/--/auth-callback` (your computer)            | `firstpasshq://auth-callback` (the installed app)     |
 | Where the app gets its address | Your `.env`                                           | The EAS `preview` and `production` environments      |
 
 Both are free Supabase projects. Never copy real members into the test project, and never run
@@ -60,7 +60,7 @@ Until these secrets exist the workflows only warn and carry on updating the live
 ### 4. Point the installed apps at the live project
 
 1. In the live project's **Authentication > URL Configuration**, set **Site URL** to
-   `thunderapp://auth-callback`. You can remove `exp://**` from **Redirect URLs**.
+   `firstpasshq://auth-callback`. You can remove `exp://**` from **Redirect URLs**.
 2. Give the EAS `preview` and `production` environments the live project's URL and `anon` key. The
    `anon` key is public (it ships inside the app), so these can be plain text:
 

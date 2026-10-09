@@ -95,20 +95,39 @@ whole club in **Club settings**. A feature that's off disappears for every role.
 
 The club sends a link to install the app on iPhone (TestFlight) or Android. The first time it
 opens, before it knows which club you're in, the app shows the FirstPass HQ logo on deep navy
-and the sign-in screen. The app is called FirstPass HQ, made by FirstPass; your club runs its own copy. Once you
-sign in it switches to West Coast Thunder's logo and colours and remembers them. From then on,
+and the sign-in screen. The app is called FirstPass HQ, made by FirstPass. Once you
+pick your club and sign in it switches to West Coast Thunder's logo and colours and remembers them. From then on,
 each time the app opens, the FirstPass HQ logo appears in the middle, then rises to make room for the
 Thunder logo beneath it, and a
 small "Powered by FirstPass" sits at the foot of the sign-in and home screens.
 
 <img src="user-guide/opening.png" width="210" alt="Opening screen: FirstPass HQ logo with the club logo beneath">
 
+### Find your club
+
+FirstPass HQ is one app for several clubs, and each club keeps its own members and records
+separate from every other club. So the first time it opens, the app asks for your **club code**.
+West Coast Thunder's is `THUNDER`. Type it in, check the club's name that appears, and tap
+**Continue to West Coast Thunder**. If the club sends you a link instead, opening it fills the
+code in for you. The app remembers your club after that.
+
+<img src="user-guide/club-code.png" width="210" alt="Find your club: the club code screen">
+
 ### Sign in with Google
 
 Tap **Continue with Google** and choose your Google account. There are no passwords to remember:
 Google sign-in is the only way in. The same button is used whether you're new or coming back.
 
+If you picked the wrong club, tap **Change club** under the button.
+
 <img src="user-guide/sign-in.png" width="210" alt="Sign-in screen">
+
+### Belonging to more than one club
+
+If you're in two clubs that both use FirstPass HQ, tap **Switch club** at the foot of the home
+screen and enter the other club's code. You ask to join each club separately, and each club only
+sees what you do in that club. The app stays signed in to both, so switching back doesn't need
+another sign-in.
 
 ### Ask to join the club
 
@@ -164,7 +183,7 @@ Once you're approved, the home screen is where everything starts. From the top:
 - **Coming up**: the next six events from your calendars. Tap **Full calendar** to see them all.
 - **My squads and teams**: tap one to see who's in it. A team's page also has its
   [game goals](#game-goals) for its athletes and coaches.
-- **Sign out** and **Delete account** at the bottom.
+- **Sign out**, **Switch club** and **Delete account** at the bottom.
 
 Pull down on any screen to refresh it.
 
@@ -1012,6 +1031,7 @@ once saved, only replaced or removed.
 | Award results           | Admins only: standings and how many people have voted.                                                                      |
 | Match fixtures          | The members of each squad or team, and admins.                                                                              |
 | Club name, colours and logo | Every signed-in member. The logo file is public so it can show before sign-in. Only admins can change them.            |
+| Other clubs' members and records | Nobody in this club. Each club's members, messages, injuries and documents are kept in that club's own database, which other clubs can't reach. |
 
 When someone leaves, injury records and proof documents are kept for 12 months, visible only to the
 committee and admins, then deleted automatically.

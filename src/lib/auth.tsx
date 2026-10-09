@@ -1,6 +1,7 @@
 import type { Session } from '@supabase/supabase-js';
 import { createContext, use, useCallback, useEffect, useState, type ReactNode } from 'react';
 
+import { useClubChoice } from '@/lib/club-choice';
 import { unregisterForPush } from '@/lib/push';
 import { supabase } from '@/lib/supabase';
 import type { GroupCaptain, Profile, TeamMembership } from '@/lib/types';
@@ -25,8 +26,14 @@ export const PROFILE_COLUMNS =
 
 const AuthContext = createContext<AuthState | null>(null);
 
+/**
+ * The member signed in to the chosen club. Mounted again whenever the club
+ * changes (see the root layout), so it only ever sees one club's sign-in.
+ */
 export function AuthProvider({ children }: { children: ReactNode }) {
-  const [loading, setLoading] = useState(true);
+  const { club } = useClubChoice();
+  // Nobody is signed in until a club is picked.
+  const [loading, setLoading] = useState(!!club);
   const [session, setSession] = useState<Session | null>(null);
   const [profile, setProfile] = useState<Profile | null>(null);
   const [memberships, setMemberships] = useState<TeamMembership[]>([]);
@@ -59,6 +66,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   }, []);
 
   useEffect(() => {
+    if (!club) return;
     supabase.auth.getSession().then(async ({ data }) => {
       setSession(data.session);
       await loadMember(data.session?.user.id);
@@ -71,7 +79,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       setTimeout(() => loadMember(newSession?.user.id), 0);
     });
     return () => listener.subscription.unsubscribe();
-  }, [loadMember]);
+  }, [club, loadMember]);
 
   const refresh = useCallback(() => loadMember(session?.user.id), [loadMember, session]);
 
