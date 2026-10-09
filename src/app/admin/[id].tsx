@@ -10,6 +10,7 @@ import { formatDate, isMinor, parseDate } from '@/lib/age';
 import { PROFILE_COLUMNS, useAuth } from '@/lib/auth';
 import { useSquads } from '@/lib/club';
 import {
+  canHoldTitle,
   coachTitleLabels,
   isTeamRole,
   rejectionReasonLabels,
@@ -63,6 +64,7 @@ export default function MemberScreen() {
   const [dateOfBirth, setDateOfBirth] = useState('');
   const [wwccNumber, setWwccNumber] = useState('');
   const [wwccExpires, setWwccExpires] = useState('');
+  const [title, setTitle] = useState('');
   const [guardianIds, setGuardianIds] = useState<string[]>([]);
   const [guardianOf, setGuardianOf] = useState<string[]>([]);
   const [people, setPeople] = useState<Person[]>([]);
@@ -105,6 +107,7 @@ export default function MemberScreen() {
       setDateOfBirth(formatDate(profile.date_of_birth));
       setWwccNumber(profile.wwcc_number ?? '');
       setWwccExpires(formatDate(profile.wwcc_expires_on));
+      setTitle(profile.title ?? '');
       setReason(profile.rejection_reason);
       const links = linksResult.data ?? [];
       setGuardianIds(links.filter((l) => l.athlete_id === id).map((l) => l.guardian_id));
@@ -247,11 +250,24 @@ export default function MemberScreen() {
       p_under_17: hasGuardians,
       p_guardian_ids: hasGuardians ? guardianIds : [],
     });
-    setSaving(null);
     if (rpcError) {
+      setSaving(null);
       setError(rpcError.message);
       return;
     }
+    // After the role, because only committee members and admins have a title.
+    if (status === 'approved' && canHoldTitle(role) && title.trim() !== (member?.title ?? '')) {
+      const { error: titleError } = await supabase.rpc('admin_set_member_title', {
+        p_profile_id: id,
+        p_title: title,
+      });
+      if (titleError) {
+        setSaving(null);
+        setError(titleError.message);
+        return;
+      }
+    }
+    setSaving(null);
     if (isSelf) await refresh();
     router.back();
   }
@@ -305,6 +321,7 @@ export default function MemberScreen() {
 
       <Card>
         <Detail label="Status" value={statusLabels[member.status]} />
+        <Detail label="Preferred name" value={member.preferred_name} />
         <Detail label="Sign-in email" value={member.email} />
         <Detail label="PlayHQ email" value={member.playhq_email} />
         <Detail
@@ -335,6 +352,17 @@ export default function MemberScreen() {
         selected={[role]}
         onToggle={changeRole}
       />
+
+      {canHoldTitle(role) ? (
+        <TextField
+          label="Title"
+          value={title}
+          onChangeText={setTitle}
+          placeholder="President, Secretary, Treasurer…"
+          autoCapitalize="words"
+          maxLength={40}
+        />
+      ) : null}
 
       {inTeams ? (
         <ChipGroup

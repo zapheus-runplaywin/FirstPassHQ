@@ -35,7 +35,7 @@ import {
   usePendingRequests,
   useSafetyTodos,
 } from '@/lib/use-pending-requests';
-import { rejectionReasonMessages, roleLabels, teamPositionLabel } from '@/lib/labels';
+import { rejectionReasonMessages, roleWithTitle, teamPositionLabel } from '@/lib/labels';
 import { supabase } from '@/lib/supabase';
 import { buildTodos } from '@/lib/todos';
 import type { TeamMembership } from '@/lib/types';
@@ -129,7 +129,7 @@ export default function HomeScreen() {
     setRefreshing(false);
   }
 
-  const name = profile?.full_name || session?.user.email || 'there';
+  const name = profile?.preferred_name || profile?.full_name || session?.user.email || 'there';
   const approved = profile?.status === 'approved';
   const getsMessages = useGetsMessages();
 
@@ -140,7 +140,9 @@ export default function HomeScreen() {
           <FirstPassLogo size="header" />
           <ThemedText type="subtitle">Hi {name}</ThemedText>
           {approved && profile ? (
-            <ThemedText themeColor="textSecondary">{roleLabels[profile.role]}</ThemedText>
+            <ThemedText themeColor="textSecondary">
+              {roleWithTitle(profile.role, profile.title)}
+            </ThemedText>
           ) : null}
         </View>
         <Image
@@ -314,6 +316,14 @@ export default function HomeScreen() {
       ) : null}
 
       <View style={styles.footer}>
+        <Pressable
+          accessibilityRole="button"
+          onPress={() => router.push('/my-details')}
+          style={styles.footerLink}>
+          <ThemedText type="small" style={{ color: theme.tint }}>
+            Your details
+          </ThemedText>
+        </Pressable>
         <Pressable accessibilityRole="button" onPress={signOut} style={styles.footerLink}>
           <ThemedText type="small" style={{ color: theme.tint }}>
             Sign out
@@ -484,7 +494,9 @@ const styles = StyleSheet.create({
   },
   footer: {
     flexDirection: 'row',
+    flexWrap: 'wrap',
     justifyContent: 'space-between',
+    columnGap: Spacing.three,
   },
   footerLink: {
     paddingVertical: Spacing.two,

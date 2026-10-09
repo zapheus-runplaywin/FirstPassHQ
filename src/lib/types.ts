@@ -49,6 +49,10 @@ export type Profile = {
   id: string;
   email: string | null;
   full_name: string | null;
+  /** What they like to be called, set by the member. */
+  preferred_name: string | null;
+  /** Committee members and admins only, e.g. President or Secretary. */
+  title: string | null;
   playhq_email: string | null;
   role: AppRole;
   status: MemberStatus;

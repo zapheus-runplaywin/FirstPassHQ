@@ -34,10 +34,10 @@ one or more **squads** or **teams** for the current season.
 | **Guardian**  | Parents and guardians of athletes under 18.                                                          |
 | **Coach**     | Head coaches and assistant coaches. Both have the same permissions; the title only shows who is who. Need a current Working With Children Check. |
 | **Manager**   | Squad and team managers. Need a current Working With Children Check.                                 |
-| **Committee** | Club committee members.                                                                              |
+| **Committee** | Club committee members. Each can add a title, such as President or Secretary, shown with their role. |
 | **Physio**    | The club's physiotherapists. Need a current Working With Children Check.                             |
 | **Guest**     | Anyone else the club lets in, such as partners and sponsors. Guests can only look.                   |
-| **Admin**     | The people who run the app. Admin is granted by another admin, never requested.                      |
+| **Admin**     | The people who run the app. Admin is granted by another admin, never requested. Admins can add a title too. |
 
 **Squads and teams.** Each season, members join a **squad** (Mixed Open Squad, Open Squad,
 20 & Under Squad, 17 & Under Squad, Lightning Academy). At selections, admins name **teams** from a
@@ -70,6 +70,8 @@ What each role sees on its home screen:
 | Vote in club awards                    |    ✓    |        ✓        |      ✓       |     ✓      |       ✓       |               |         |       ✓       |
 | Set up awards and see results          |         |                 |              |            |               |               |         |       ✓       |
 | Import fixtures from PlayHQ            |         |                 |              |            |               |               |         |       ✓       |
+| Preferred name                         |    ✓    |        ✓        |      ✓       |     ✓      |       ✓       |       ✓       |    ✓    |       ✓       |
+| Title, such as President               |         |                 |              |            |       ✓       |               |         |       ✓       |
 | Club name, colours, logo and features  |         |                 |              |            |               |               |         |       ✓       |
 | Invite members (QR code and link)      |         |                 |              |            |               |               |         |       ✓       |
 | Administration                         |         |                 |              |            |               |               |         |       ✓       |
@@ -190,11 +192,23 @@ Once you're approved, the home screen is where everything starts. From the top:
 - **Coming up**: the next six events from your calendars. Tap **Full calendar** to see them all.
 - **My squads and teams**: tap one to see who's in it. A team's page also has its
   [game goals](#game-goals) for its athletes and coaches.
-- **Sign out**, **Switch club** and **Delete account** at the bottom.
+- **Your details**, **Sign out**, **Switch club** and **Delete account** at the bottom.
 
 Pull down on any screen to refresh it.
 
 <img src="user-guide/home-athlete.png" width="210" alt="Athlete home screen">
+
+### Your preferred name
+
+The home screen greets you by name. To be called something else, such as a nickname, tap **Your
+details** at the bottom of the home screen, enter your **Preferred name** and tap **Save**. Leave it
+blank to go back to your full name. Admins still see your full name, with your preferred name on
+your member page, and can search for you by either.
+
+Committee members and admins also see a **Title** field, for a position such as President,
+Secretary or Treasurer. It shows under your name with your role, like "Committee · President".
+
+<img src="user-guide/your-details.png" width="210" alt="Your details: preferred name and title">
 
 ### Messages
 
@@ -775,12 +789,16 @@ club** or **Other**) and tap **Don't approve**. They see the reason and can requ
 
 ### Changing or removing members
 
-Open any member to change their role, squads, teams or titles, then tap **Save changes**.
+Open any member to change their role, squads, teams or titles, then tap **Save changes**. A
+committee member's or admin's page has a **Title** field (President, Secretary and so on), which
+shows on their home screen and in the Members list. The card at the top shows their **Preferred
+name** if they've set one.
 
 - **Remove access** stops someone using the app but keeps their account. Choose a reason first.
 - **Delete member** permanently deletes their account, squad and team places, guardian links and
   message receipts. Messages they sent stay, and their injury records are kept for 12 months.
 
+<img src="user-guide/member-title.png" width="210" alt="A committee member's page with their preferred name and title">
 <img src="user-guide/delete-member.png" width="210" alt="Delete member confirmation">
 
 ### Squads, teams and selections
@@ -1037,6 +1055,7 @@ once saved, only replaced or removed.
 | Information             | Who can see it                                                                                                              |
 | ----------------------- | --------------------------------------------------------------------------------------------------------------------------- |
 | Your profile and squads | You, the people in your squads and teams (names and positions only), and admins.                                            |
+| Preferred name and title | You and admins.                                                                                                            |
 | Captains                | Club captains: every member. A squad or team's captains: the people in it, and admins.                                     |
 | Date of birth and Working With Children Check | You and admins. Awards with an age limit use it to decide who can be voted for, without showing it.   |
 | Messages                | The people they were sent to, the sender, and admins. Guardians of athletes under 18 get a copy of every message sent to their athlete, and of every message their athlete sends as a captain. Guests don't get messages; physios get messages sent to the Physio role, and whole-club messages only if an admin turns that on. |
