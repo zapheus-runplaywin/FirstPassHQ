@@ -7,10 +7,11 @@ import { ThemedText } from '@/components/themed-text';
 import { PressableCard, TextField } from '@/components/ui';
 import { Spacing } from '@/constants/theme';
 import { PROFILE_COLUMNS } from '@/lib/auth';
-import { rejectionReasonLabels, roleLabels } from '@/lib/labels';
+import { rejectionReasonLabels, roleLabels, rolesLabel } from '@/lib/labels';
 import { safetyIssues } from '@/lib/safety';
 import { supabase } from '@/lib/supabase';
 import type { Profile } from '@/lib/types';
+import { rolesOf } from '@/lib/roles';
 
 export default function MembersScreen() {
   const [members, setMembers] = useState<Profile[]>([]);
@@ -47,7 +48,7 @@ export default function MembersScreen() {
   const matching = members.filter(
     (m) =>
       !query ||
-      [m.full_name, m.email, m.playhq_email].some((v) => v?.toLowerCase().includes(query)),
+      [m.full_name, m.preferred_name, m.email, m.playhq_email].some((v) => v?.toLowerCase().includes(query)),
   );
   const waiting = matching
     .filter((m) => m.status === 'pending' && m.join_requested_at)
@@ -65,13 +66,13 @@ export default function MembersScreen() {
         label="Search"
         value={search}
         onChangeText={setSearch}
-        placeholder="Name or email"
+        placeholder="Name, preferred name or email"
         autoCapitalize="none"
       />
       <Section
         title="Needs checking"
         members={needsChecking}
-        describe={(m) => `${roleLabels[m.role]} · ${issues.get(m.id)?.join(' · ')}`}
+        describe={(m) => `${rolesLabel(rolesOf(m))} · ${issues.get(m.id)?.join(' · ')}`}
         warn
       />
       <Section
@@ -87,7 +88,9 @@ export default function MembersScreen() {
         empty="No approved members yet."
         members={approved}
         describe={(m) =>
-          issues.get(m.id)?.length ? `${roleLabels[m.role]} · Needs checking` : roleLabels[m.role]
+          issues.get(m.id)?.length
+            ? `${rolesLabel(rolesOf(m))} · Needs checking`
+            : rolesLabel(rolesOf(m), m.title)
         }
       />
       <Section

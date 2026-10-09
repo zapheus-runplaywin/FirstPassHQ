@@ -13,6 +13,7 @@ import { useCanMessageClub, useMessageGroups } from '@/lib/messages';
 import { supabase } from '@/lib/supabase';
 import type { AppRole, MessageAudience } from '@/lib/types';
 import { teamLabel, useTeams } from '@/lib/use-teams';
+import { hasRole } from '@/lib/roles';
 
 const MAX_LENGTH = 4000;
 
@@ -35,9 +36,9 @@ export default function NewMessageScreen() {
   // groups they coach, manage or captain.
   const canMessageClub = useCanMessageClub();
   const messagesClubOnly = !isAdmin && canMessageClub;
-  // Captains can be under 18; their parents or guardians get a copy.
+  // Captains and junior coaches can be under 18; their parents or guardians get a copy.
   const copiesGuardians =
-    profile?.role === 'athlete' && isMinor(profile.date_of_birth, profile.under_17);
+    !!profile && hasRole(profile, 'athlete') && isMinor(profile.date_of_birth, profile.under_17);
   const [audience, setAudience] = useState<MessageAudience>(canMessageClub ? 'club' : 'group');
   const [role, setRole] = useState<AppRole | null>(null);
   const [teamId, setTeamId] = useState<string | null>(null);

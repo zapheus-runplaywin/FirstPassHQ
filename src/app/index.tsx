@@ -34,11 +34,12 @@ import {
   usePendingRequests,
   useSafetyTodos,
 } from '@/lib/use-pending-requests';
-import { rejectionReasonMessages, roleLabels, teamPositionLabel } from '@/lib/labels';
+import { rejectionReasonMessages, rolesLabel, teamPositionLabel } from '@/lib/labels';
 import { supabase } from '@/lib/supabase';
 import { buildTodos } from '@/lib/todos';
 import type { TeamMembership } from '@/lib/types';
 import { useEvents } from '@/lib/use-events';
+import { hasRole, rolesOf } from '@/lib/roles';
 
 /** Three rows of two tiles. */
 const UPCOMING_COUNT = 6;
@@ -87,7 +88,7 @@ export default function HomeScreen() {
     teamGames: teamGames ?? [],
   });
 
-  const isGuardian = profile?.status === 'approved' && profile.role === 'guardian';
+  const isGuardian = profile?.status === 'approved' && hasRole(profile, 'guardian');
 
   // The athletes a parent or guardian looks after.
   const loadAthletes = useCallback(async () => {
@@ -128,7 +129,7 @@ export default function HomeScreen() {
     setRefreshing(false);
   }
 
-  const name = profile?.full_name || session?.user.email || 'there';
+  const name = profile?.preferred_name || profile?.full_name || session?.user.email || 'there';
   const approved = profile?.status === 'approved';
   const getsMessages = useGetsMessages();
 
@@ -138,7 +139,9 @@ export default function HomeScreen() {
         <View style={styles.header}>
           <ThemedText type="subtitle">Hi {name}</ThemedText>
           {approved && profile ? (
-            <ThemedText themeColor="textSecondary">{roleLabels[profile.role]}</ThemedText>
+            <ThemedText themeColor="textSecondary">
+              {rolesLabel(rolesOf(profile), profile.title)}
+            </ThemedText>
           ) : null}
         </View>
         <Image
@@ -312,6 +315,14 @@ export default function HomeScreen() {
       ) : null}
 
       <View style={styles.footer}>
+        <Pressable
+          accessibilityRole="button"
+          onPress={() => router.push('/my-details')}
+          style={styles.footerLink}>
+          <ThemedText type="small" style={{ color: theme.tint }}>
+            Your details
+          </ThemedText>
+        </Pressable>
         <Pressable accessibilityRole="button" onPress={signOut} style={styles.footerLink}>
           <ThemedText type="small" style={{ color: theme.tint }}>
             Sign out
@@ -482,7 +493,9 @@ const styles = StyleSheet.create({
   },
   footer: {
     flexDirection: 'row',
+    flexWrap: 'wrap',
     justifyContent: 'space-between',
+    columnGap: Spacing.three,
   },
   footerLink: {
     paddingVertical: Spacing.two,

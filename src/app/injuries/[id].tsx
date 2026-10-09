@@ -22,6 +22,7 @@ import {
 } from '@/lib/injuries';
 import { supabase } from '@/lib/supabase';
 import type { Injury, InjuryUpdate } from '@/lib/types';
+import { hasRole } from '@/lib/roles';
 
 const UPDATE_COLUMNS =
   'id, author_name, kind, notes, restrictions, expected_return, document_path, document_name, created_at';
@@ -79,7 +80,7 @@ export default function InjuryScreen() {
   }
 
   const isCommittee =
-    profile?.status === 'approved' && (profile.role === 'committee' || profile.role === 'admin');
+    profile?.status === 'approved' && hasRole(profile, 'committee', 'admin');
 
   return (
     <Screen refreshing={refreshing} onRefresh={onRefresh}>

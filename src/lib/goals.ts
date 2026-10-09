@@ -14,6 +14,7 @@ import type {
   GoalOutcome,
   TeamGameGoal,
 } from '@/lib/types';
+import { hasRole } from '@/lib/roles';
 
 export const GOAL_COLUMNS =
   'id, athlete_id, fixture_id, body, set_by, set_by_name, set_by_coach, outcome, reflection, reflected_at, created_at';
@@ -87,13 +88,13 @@ export function goalCountsLine(game: GoalGame) {
 /** Athletes set goals for their own games. */
 export function useIsGoalAthlete() {
   const { profile } = useAuth();
-  return profile?.status === 'approved' && profile.role === 'athlete';
+  return profile?.status === 'approved' && hasRole(profile, 'athlete');
 }
 
 /** Parents and guardians act for their athletes. */
 export function useIsGoalGuardian() {
   const { profile } = useAuth();
-  return profile?.status === 'approved' && profile.role === 'guardian';
+  return profile?.status === 'approved' && hasRole(profile, 'guardian');
 }
 
 /**

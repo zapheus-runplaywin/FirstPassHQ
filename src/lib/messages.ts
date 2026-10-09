@@ -5,6 +5,7 @@ import { useAuth } from '@/lib/auth';
 import { pluralRoleLabels } from '@/lib/labels';
 import { supabase } from '@/lib/supabase';
 import type { AppRole, MessageAudience, Team } from '@/lib/types';
+import { hasRole } from '@/lib/roles';
 
 export const MESSAGE_COLUMNS =
   'id, sender_id, sender_name, body, audience, audience_role, audience_label, created_at';
@@ -67,7 +68,7 @@ export function useMessageGroups(teams: Team[]) {
 export function useCanMessageClub() {
   const { isAdmin, isClubCaptain, profile } = useAuth();
   if (profile?.status !== 'approved') return false;
-  return isAdmin || profile.role === 'committee' || isClubCaptain;
+  return isAdmin || hasRole(profile, 'committee') || isClubCaptain;
 }
 
 /**

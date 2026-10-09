@@ -1,5 +1,6 @@
 import { useAuth } from '@/lib/auth';
 import type { AttendanceMark } from '@/lib/types';
+import { hasRole } from '@/lib/roles';
 
 /**
  * Coaches and managers take attendance for their squads and teams. Any coach,
@@ -9,7 +10,7 @@ export function useCanTakeAttendance() {
   const { memberships, profile } = useAuth();
   if (profile?.status !== 'approved') return false;
   return (
-    ['coach', 'manager', 'committee', 'admin'].includes(profile.role) ||
+    hasRole(profile, 'coach', 'manager', 'committee', 'admin') ||
     memberships.some((m) => m.team_role === 'coach' || m.team_role === 'manager')
   );
 }
@@ -19,8 +20,7 @@ export function useCanViewAttendance() {
   const { memberships, profile } = useAuth();
   if (profile?.status !== 'approved') return false;
   return (
-    profile.role === 'committee' ||
-    profile.role === 'admin' ||
+    hasRole(profile, 'committee', 'admin') ||
     memberships.some((m) => m.team_role === 'coach')
   );
 }

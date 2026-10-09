@@ -8,7 +8,8 @@ import { Button, Card, ChipGroup, ErrorText } from '@/components/ui';
 import { Spacing } from '@/constants/theme';
 import { teamPositionLabel } from '@/lib/labels';
 import { supabase } from '@/lib/supabase';
-import type { CoachTitle, RosterEntry, Team, TeamRole, TeamSelection } from '@/lib/types';
+import { rolesOf } from '@/lib/roles';
+import type { AppRole, CoachTitle, RosterEntry, Team, TeamRole, TeamSelection } from '@/lib/types';
 import { TEAM_COLUMNS } from '@/lib/use-teams';
 
 /** An approved member who could be in a team without a squad. */
@@ -16,7 +17,8 @@ type ClubPerson = {
   id: string;
   full_name: string | null;
   email: string | null;
-  role: 'athlete' | 'coach' | 'manager';
+  role: AppRole;
+  extra_roles: AppRole[];
 };
 
 /** For each person who can be picked: how they are selected for this team, if at all. */
@@ -71,16 +73,19 @@ export default function NameTeamScreen() {
         // Without a squad, anyone in the club who can be in a team: athletes first.
         const { data: people } = await supabase
           .from('profiles')
-          .select('id, full_name, email, role')
+          .select('id, full_name, email, role, extra_roles')
           .eq('status', 'approved')
-          .in('role', ['athlete', 'coach', 'manager'])
+          .or('role.in.(athlete,coach,manager),extra_roles.ov.{athlete,coach,manager}')
           .order('full_name');
         const order: TeamRole[] = ['athlete', 'coach', 'manager'];
         members = ((people as ClubPerson[] | null) ?? [])
           .map((p) => ({
             profile_id: p.id,
             full_name: p.full_name || p.email,
-            team_role: p.role,
+            // Someone with two team roles is listed as they're in this team, or by their main one.
+            team_role:
+              current.get(p.id)?.team_role ??
+              (rolesOf(p).find((r) => order.includes(r as TeamRole)) as TeamRole),
             coach_title: current.get(p.id)?.coach_title ?? null,
             selection: null,
           }))
@@ -114,6 +119,7 @@ export default function NameTeamScreen() {
         .filter(([, pick]) => pick !== 'out')
         .map(([profile_id, pick]) => ({
           profile_id,
+          team_role: squadMembers?.find((m) => m.profile_id === profile_id)?.team_role,
           selection: pick === 'in' ? null : pick,
           // Coaches keep their title; new ones start as head coach.
           coach_title: titles[profile_id] ?? null,

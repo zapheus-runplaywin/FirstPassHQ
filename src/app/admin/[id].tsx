@@ -10,13 +10,16 @@ import { formatDate, isMinor, parseDate } from '@/lib/age';
 import { PROFILE_COLUMNS, useAuth } from '@/lib/auth';
 import { useSquads } from '@/lib/club';
 import {
+  canHoldTitle,
   coachTitleLabels,
   isTeamRole,
   rejectionReasonLabels,
   roleLabels,
   selectionLabels,
   statusLabels,
+  teamRoleLabels,
 } from '@/lib/labels';
+import { hasRole, roleCombinationProblem } from '@/lib/roles';
 import { wwccRoles } from '@/lib/safety';
 import { supabase } from '@/lib/supabase';
 import type {
@@ -25,6 +28,7 @@ import type {
   MemberStatus,
   Profile,
   RejectionReason,
+  TeamRole,
   TeamSelection,
 } from '@/lib/types';
 import { teamLabel, topGroups, useTeams } from '@/lib/use-teams';
@@ -34,8 +38,15 @@ const coachTitles = Object.keys(coachTitleLabels) as CoachTitle[];
 const selections = Object.keys(selectionLabels) as TeamSelection[];
 const rejectionReasons = Object.keys(rejectionReasonLabels) as RejectionReason[];
 
-/** A squad or team the member is in: their coach title, or how an athlete was selected. */
-type Placement = { coach_title: CoachTitle | null; selection: TeamSelection | null };
+/**
+ * A squad or team the member is in: the role they're in it as, their coach
+ * title, or how an athlete was selected.
+ */
+type Placement = {
+  team_role: TeamRole;
+  coach_title: CoachTitle | null;
+  selection: TeamSelection | null;
+};
 
 /** Squads and teams the member is in, keyed by id. */
 type Placements = Record<string, Placement>;
@@ -45,6 +56,7 @@ type Person = {
   full_name: string | null;
   email: string | null;
   role: AppRole;
+  extra_roles: AppRole[];
   verified_at: string | null;
 };
 
@@ -58,11 +70,13 @@ export default function MemberScreen() {
   const usesSquads = useSquads();
   const [member, setMember] = useState<Profile | null>(null);
   const [role, setRole] = useState<AppRole>('guest');
+  const [extraRoles, setExtraRoles] = useState<AppRole[]>([]);
   const [selection, setSelection] = useState<Placements>({});
   const [under18, setUnder18] = useState(false);
   const [dateOfBirth, setDateOfBirth] = useState('');
   const [wwccNumber, setWwccNumber] = useState('');
   const [wwccExpires, setWwccExpires] = useState('');
+  const [title, setTitle] = useState('');
   const [guardianIds, setGuardianIds] = useState<string[]>([]);
   const [guardianOf, setGuardianOf] = useState<string[]>([]);
   const [people, setPeople] = useState<Person[]>([]);
@@ -81,7 +95,7 @@ export default function MemberScreen() {
         supabase.from('profiles').select(PROFILE_COLUMNS).eq('id', id).single(),
         supabase
           .from('team_members')
-          .select('team_id, coach_title, selection, team:teams!inner (archived)')
+          .select('team_id, team_role, coach_title, selection, team:teams!inner (archived)')
           .eq('profile_id', id)
           // Past seasons are history; only this season's groups are edited here.
           .eq('team.archived', false),
@@ -91,7 +105,7 @@ export default function MemberScreen() {
           .or(`guardian_id.eq.${id},athlete_id.eq.${id}`),
         supabase
           .from('profiles')
-          .select('id, full_name, email, role, verified_at')
+          .select('id, full_name, email, role, extra_roles, verified_at')
           .eq('status', 'approved')
           .order('full_name'),
       ]);
@@ -105,6 +119,7 @@ export default function MemberScreen() {
       setDateOfBirth(formatDate(profile.date_of_birth));
       setWwccNumber(profile.wwcc_number ?? '');
       setWwccExpires(formatDate(profile.wwcc_expires_on));
+      setTitle(profile.title ?? '');
       setReason(profile.rejection_reason);
       const links = linksResult.data ?? [];
       setGuardianIds(links.filter((l) => l.athlete_id === id).map((l) => l.guardian_id));
@@ -114,11 +129,12 @@ export default function MemberScreen() {
       const existing = teamsResult.data ?? [];
       if (profile.status === 'approved' || existing.length > 0) {
         setRole(profile.role);
+        setExtraRoles(profile.extra_roles ?? []);
         setSelection(
           Object.fromEntries(
             existing.map((t) => [
               t.team_id,
-              { coach_title: t.coach_title, selection: t.selection },
+              { team_role: t.team_role, coach_title: t.coach_title, selection: t.selection },
             ]),
           ),
         );
@@ -129,6 +145,7 @@ export default function MemberScreen() {
         if (profile.requested_team_id && isTeamRole(requested)) {
           setSelection({
             [profile.requested_team_id]: {
+              team_role: requested,
               coach_title: requested === 'coach' ? 'head_coach' : null,
               selection: null,
             },
@@ -138,12 +155,55 @@ export default function MemberScreen() {
     })();
   }, [id]);
 
-  const inTeams = isTeamRole(role);
+  // Every role they'll hold, main role first, and the ones that put them in squads and teams.
+  const roles = [role, ...extraRoles.filter((r) => r !== role)];
+  const teamRolesHeld = roles.filter(isTeamRole);
+  const inTeams = teamRolesHeld.length > 0;
+  const isAthlete = roles.includes('athlete');
+  const isGuardian = roles.includes('guardian');
   const dob = parseDate(dateOfBirth);
   const minor = isMinor(dob, under18);
-  const hasGuardians = role === 'athlete' && minor;
-  const needsWwcc = wwccRoles.includes(role);
+  const hasGuardians = isAthlete && minor;
+  const needsWwcc = roles.some((r) => wwccRoles.includes(r));
+  const comboProblem = roleCombinationProblem(roles, dob, under18);
   const isSelf = id === session?.user.id;
+
+  /** A placement in a group as one of their roles. */
+  function placementFor(teamId: string, teamRole: TeamRole, current?: Placement): Placement {
+    const isTeam = teams.find((t) => t.id === teamId)?.kind === 'team';
+    return {
+      team_role: teamRole,
+      coach_title: teamRole === 'coach' ? (current?.coach_title ?? 'head_coach') : null,
+      selection: teamRole === 'athlete' && isTeam ? (current?.selection ?? 'touring') : null,
+    };
+  }
+
+  /** Keeps every placement in a role they still hold, after their roles change. */
+  function fitPlacements(held: TeamRole[]) {
+    setSelection((current) =>
+      Object.fromEntries(
+        Object.entries(current).map(([teamId, placement]) => [
+          teamId,
+          held.includes(placement.team_role)
+            ? placement
+            : placementFor(teamId, held[0] ?? placement.team_role, placement),
+        ]),
+      ),
+    );
+  }
+
+  /** Sets their role in a squad or team, and in the squad's teams with it. */
+  function setTeamRole(teamId: string, teamRole: TeamRole) {
+    setSelection((current) => {
+      const next = { ...current, [teamId]: placementFor(teamId, teamRole, current[teamId]) };
+      for (const t of teams) {
+        if (t.squad_id === teamId && t.id in next) {
+          next[t.id] = placementFor(t.id, teamRole, next[t.id]);
+        }
+      }
+      return next;
+    });
+  }
 
   function toggleTeam(teamId: string) {
     setSelection((current) => {
@@ -155,33 +215,28 @@ export default function MemberScreen() {
           if (t.squad_id === teamId) delete next[t.id];
         }
       } else {
-        const isTeam = teams.find((t) => t.id === teamId)?.kind === 'team';
-        next[teamId] = {
-          coach_title: role === 'coach' ? 'head_coach' : null,
-          selection: role === 'athlete' && isTeam ? 'touring' : null,
-        };
+        // A team takes the role they have in its squad.
+        const squadId = teams.find((t) => t.id === teamId)?.squad_id;
+        const teamRole = (squadId && next[squadId]?.team_role) || teamRolesHeld[0];
+        next[teamId] = placementFor(teamId, teamRole);
       }
       return next;
     });
   }
 
   function changeRole(newRole: AppRole) {
+    const extras = extraRoles.filter((r) => r !== newRole);
     setRole(newRole);
-    // Coach titles only apply to coaches.
-    setSelection((current) =>
-      Object.fromEntries(
-        Object.keys(current).map((teamId) => [
-          teamId,
-          {
-            coach_title: newRole === 'coach' ? (current[teamId].coach_title ?? 'head_coach') : null,
-            selection:
-              newRole === 'athlete' && teams.find((t) => t.id === teamId)?.kind === 'team'
-                ? (current[teamId].selection ?? 'touring')
-                : null,
-          },
-        ]),
-      ),
-    );
+    setExtraRoles(extras);
+    fitPlacements([newRole, ...extras].filter(isTeamRole));
+  }
+
+  function toggleExtraRole(extra: AppRole) {
+    const extras = extraRoles.includes(extra)
+      ? extraRoles.filter((r) => r !== extra)
+      : [...extraRoles, extra];
+    setExtraRoles(extras);
+    fitPlacements([role, ...extras].filter(isTeamRole));
   }
 
   async function verify() {
@@ -222,6 +277,10 @@ export default function MemberScreen() {
       setError('Enter the check expiry date as DD/MM/YYYY.');
       return;
     }
+    if (comboProblem && status === 'approved') {
+      setError(comboProblem);
+      return;
+    }
     setSaving(status);
     setError(null);
     // Saved first, because the member rules below depend on them.
@@ -246,12 +305,26 @@ export default function MemberScreen() {
       p_rejection_reason: status === 'rejected' ? reason : null,
       p_under_17: hasGuardians,
       p_guardian_ids: hasGuardians ? guardianIds : [],
+      p_extra_roles: extraRoles.filter((r) => r !== role),
     });
-    setSaving(null);
     if (rpcError) {
+      setSaving(null);
       setError(rpcError.message);
       return;
     }
+    // After the role, because only committee members and admins have a title.
+    if (status === 'approved' && canHoldTitle(roles) && title.trim() !== (member?.title ?? '')) {
+      const { error: titleError } = await supabase.rpc('admin_set_member_title', {
+        p_profile_id: id,
+        p_title: title,
+      });
+      if (titleError) {
+        setSaving(null);
+        setError(titleError.message);
+        return;
+      }
+    }
+    setSaving(null);
     if (isSelf) await refresh();
     router.back();
   }
@@ -286,13 +359,13 @@ export default function MemberScreen() {
   const guardianMatches = people
     .filter(
       (p) =>
-        p.role === 'guardian' &&
+        hasRole(p, 'guardian') &&
         p.id !== id &&
         !guardianIds.includes(p.id) &&
         [p.full_name, p.email].some((v) => v?.toLowerCase().includes(search)),
     )
     .slice(0, GUARDIAN_MATCHES);
-  const anyGuardians = people.some((p) => p.role === 'guardian' && p.id !== id);
+  const anyGuardians = people.some((p) => hasRole(p, 'guardian') && p.id !== id);
   const selectedIds = Object.keys(selection);
   // Squads, and teams without one (every team, for a club without squads).
   const groups = topGroups(teams);
@@ -305,6 +378,7 @@ export default function MemberScreen() {
 
       <Card>
         <Detail label="Status" value={statusLabels[member.status]} />
+        <Detail label="Preferred name" value={member.preferred_name} />
         <Detail label="Sign-in email" value={member.email} />
         <Detail label="PlayHQ email" value={member.playhq_email} />
         <Detail
@@ -336,6 +410,37 @@ export default function MemberScreen() {
         onToggle={changeRole}
       />
 
+      {role !== 'guest' || extraRoles.length > 0 ? (
+        <View style={styles.group}>
+          <ChipGroup
+            label="Other roles"
+            options={allRoles
+              .filter((r) => r !== role)
+              .map((r) => ({ value: r, label: roleLabels[r] }))}
+            selected={extraRoles.filter((r) => r !== role)}
+            onToggle={toggleExtraRole}
+          />
+          {comboProblem ? (
+            <ErrorText>{comboProblem}</ErrorText>
+          ) : (
+            <ThemedText type="small" themeColor="textSecondary">
+              For someone with more than one role, such as a coach who is also a parent.
+            </ThemedText>
+          )}
+        </View>
+      ) : null}
+
+      {canHoldTitle(roles) ? (
+        <TextField
+          label="Title"
+          value={title}
+          onChangeText={setTitle}
+          placeholder="President, Secretary, Treasurer…"
+          autoCapitalize="words"
+          maxLength={40}
+        />
+      ) : null}
+
       {inTeams ? (
         <ChipGroup
           label={
@@ -362,9 +467,23 @@ export default function MemberScreen() {
         />
       ) : null}
 
-      {role === 'coach'
-        ? teams
+      {teamRolesHeld.length > 1
+        ? groups
             .filter((t) => t.id in selection)
+            .map((t) => (
+              <ChipGroup
+                key={t.id}
+                label={`Role in ${teamLabel(t, teams)}`}
+                options={teamRolesHeld.map((r) => ({ value: r, label: teamRoleLabels[r] }))}
+                selected={[selection[t.id].team_role]}
+                onToggle={(teamRole) => setTeamRole(t.id, teamRole)}
+              />
+            ))
+        : null}
+
+      {teamRolesHeld.includes('coach')
+        ? teams
+            .filter((t) => t.id in selection && selection[t.id].team_role === 'coach')
             .map((t) => (
               <ChipGroup
                 key={t.id}
@@ -381,9 +500,12 @@ export default function MemberScreen() {
             ))
         : null}
 
-      {role === 'athlete'
+      {isAthlete
         ? teams
-            .filter((t) => t.kind === 'team' && t.id in selection)
+            .filter(
+              (t) =>
+                t.kind === 'team' && t.id in selection && selection[t.id].team_role === 'athlete',
+            )
             .map((t) => (
               <ChipGroup
                 key={t.id}
@@ -400,7 +522,7 @@ export default function MemberScreen() {
             ))
         : null}
 
-      {role === 'athlete' ? (
+      {isAthlete ? (
         <View style={styles.group}>
           <TextField
             label="Date of birth"
@@ -503,7 +625,7 @@ export default function MemberScreen() {
         </View>
       ) : null}
 
-      {role === 'guardian' && member.status === 'approved' ? (
+      {isGuardian && member.status === 'approved' ? (
         <Card>
           <ThemedText type="smallBold">Guardian of</ThemedText>
           <ThemedText type="small" themeColor="textSecondary">
@@ -514,11 +636,11 @@ export default function MemberScreen() {
         </Card>
       ) : null}
 
-      {(member.status !== 'approved' || role === 'guardian') && !member.verified_at ? (
+      {(member.status !== 'approved' || isGuardian) && !member.verified_at ? (
         <View style={styles.group}>
           <ThemedText type="smallBold">Verify who they are</ThemedText>
           <ThemedText type="small" themeColor="textSecondary">
-            {role === 'guardian'
+            {isGuardian
               ? 'Guardians must be verified before you link them to a child. '
               : ''}
             If their PlayHQ email matches the parent or member on the PlayHQ registration, mark

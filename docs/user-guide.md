@@ -25,8 +25,10 @@ Each role starts on a new page when the viewer supports page breaks.
 
 ## 1. Roles at a glance
 
-Everyone in the app has one **club role**. Coaches, managers, athletes and guardians also belong to
-one or more **squads** or **teams** for the current season.
+Everyone in the app has a main **club role**, and some people have **other roles** as well, such as
+a coach who is also a parent. Coaches, managers, athletes and guardians also belong to one or more
+**squads** or **teams** for the current season. Someone with more than one role can do everything
+each of their roles can.
 
 | Role          | Who it's for                                                                                         |
 | ------------- | ---------------------------------------------------------------------------------------------------- |
@@ -34,10 +36,10 @@ one or more **squads** or **teams** for the current season.
 | **Guardian**  | Parents and guardians of athletes under 18.                                                          |
 | **Coach**     | Head coaches and assistant coaches. Both have the same permissions; the title only shows who is who. Need a current Working With Children Check. |
 | **Manager**   | Squad and team managers. Need a current Working With Children Check.                                 |
-| **Committee** | Club committee members.                                                                              |
+| **Committee** | Club committee members. Each can add a title, such as President or Secretary, shown with their role. |
 | **Physio**    | The club's physiotherapists. Need a current Working With Children Check.                             |
 | **Guest**     | Anyone else the club lets in, such as partners and sponsors. Guests can only look.                   |
-| **Admin**     | The people who run the app. Admin is granted by another admin, never requested.                      |
+| **Admin**     | The people who run the app. Admin is granted by another admin, never requested. Admins can add a title too. |
 
 **Squads and teams.** Each season, members join a **squad** (Mixed Open Squad, Open Squad,
 20 & Under Squad, 17 & Under Squad, Lightning Academy). At selections, admins name **teams** from a
@@ -45,6 +47,22 @@ squad and pick each team's final team athletes and training partners. People sel
 in their squad as well. A club that doesn't use squads can switch them off in
 [Club settings](#club-settings): members then join a **team** straight away, as a final team athlete
 or training partner, and the app talks about teams wherever it would say squad.
+
+**Combining roles.** An admin adds other roles from the member's page. Some roles can't go
+together:
+
+- **Guests** can't have any other role.
+- **Admins** can also be a coach, manager, physio, committee member or guardian, but not an athlete.
+- **Athletes** can't also be a manager or a physio. An athlete can coach, but only a squad or team
+  they don't play in.
+- **Athletes under 18** can only add Coach. Parents and guardians must be 18 or over.
+- Nobody endorses or accepts an injury clearance for themselves or their own child, and whoever
+  endorsed a clearance can't also accept it.
+
+The home screen lists every role someone holds, such as "Coach, Guardian", and shows what each of
+those roles would show on its own.
+
+<img src="user-guide/home-two-roles.png" width="210" alt="Home screen of a coach who is also a guardian">
 
 **Captains.** Admins choose **club captains** from the season's athletes, and admins or a squad or
 team's coaches choose its **captain** and **vice captains**. Captains stay athletes; captaincy only
@@ -70,6 +88,8 @@ What each role sees on its home screen:
 | Vote in club awards                    |    ✓    |        ✓        |      ✓       |     ✓      |       ✓       |               |         |       ✓       |
 | Set up awards and see results          |         |                 |              |            |               |               |         |       ✓       |
 | Import fixtures from PlayHQ            |         |                 |              |            |               |               |         |       ✓       |
+| Preferred name                         |    ✓    |        ✓        |      ✓       |     ✓      |       ✓       |       ✓       |    ✓    |       ✓       |
+| Title, such as President               |         |                 |              |            |       ✓       |               |         |       ✓       |
 | Club name, colours, logo and features  |         |                 |              |            |               |               |         |       ✓       |
 | Invite members (QR code and link)      |         |                 |              |            |               |               |         |       ✓       |
 | Administration                         |         |                 |              |            |               |               |         |       ✓       |
@@ -190,11 +210,23 @@ Once you're approved, the home screen is where everything starts. From the top:
 - **Coming up**: the next six events from your calendars. Tap **Full calendar** to see them all.
 - **My squads and teams**: tap one to see who's in it. A team's page also has its
   [game goals](#game-goals) for its athletes and coaches.
-- **Sign out**, **Switch club** and **Delete account** at the bottom.
+- **Your details**, **Sign out**, **Switch club** and **Delete account** at the bottom.
 
 Pull down on any screen to refresh it.
 
 <img src="user-guide/home-athlete.png" width="210" alt="Athlete home screen">
+
+### Your preferred name
+
+The home screen greets you by name. To be called something else, such as a nickname, tap **Your
+details** at the bottom of the home screen, enter your **Preferred name** and tap **Save**. Leave it
+blank to go back to your full name. Admins still see your full name, with your preferred name on
+your member page, and can search for you by either.
+
+Committee members and admins also see a **Title** field, for a position such as President,
+Secretary or Treasurer. It shows under your name with your role, like "Committee · President".
+
+<img src="user-guide/your-details.png" width="210" alt="Your details: preferred name and title">
 
 ### Messages
 
@@ -379,6 +411,9 @@ Two people then sign off, in order:
 2. **A committee member accepts it** (status "Waiting for the committee"). It must be someone other
    than the person who endorsed it.
 
+Nobody signs off their own clearance or their own child's, so a coach or committee member who is
+also your parent or guardian leaves it to someone else.
+
 When it's accepted, the injury shows **Cleared to play**. If either of them sends it back, you'll
 see their note in the history; fix what they ask and ask for clearance again.
 
@@ -550,8 +585,9 @@ your to-do list. Open it, check the proof in the history (tap **View**), then:
   on Tuesday", or
 - **Send back** with a note saying what's missing.
 
-If an athlete has no coach, a club physio endorses instead. Admins can't endorse a clearance; they
-accept it like the committee.
+If an athlete has no coach, a club physio endorses instead. Admins can't endorse a clearance unless
+they're also the athlete's coach or a physio; they accept it like the committee. You can't endorse a
+clearance for your own child: another coach or a physio does it.
 
 <img src="user-guide/injuries-coach.png" width="210" alt="Coach's injuries list">
 <img src="user-guide/endorse-clearance.png" width="210" alt="Endorse or send back a clearance">
@@ -642,7 +678,7 @@ their guardians and their coaches.
 
 The committee sees every athlete's injuries. When a coach or physio endorses a clearance, it
 appears under **Waiting for your sign-off** and in the to-do list of every committee member except
-the person who endorsed it. Open it, check the proof, then:
+the person who endorsed it and the athlete's own parents or guardians. Open it, check the proof, then:
 
 - **Accept clearance** clears the athlete to train and play, or
 - **Send back** with a note.
@@ -685,7 +721,8 @@ Physios need a current Working With Children Check, recorded by an admin, before
   athlete asks for clearance, it appears under **Waiting for your sign-off** and in the physio's
   to-do list. Open it, check the proof, then **Endorse clearance** to pass it to the committee, or
   **Send back** with a note. A committee member other than the physio then accepts it. Physios
-  also endorse clearances for athletes who have no coach.
+  also endorse clearances for athletes who have no coach. A physio who is also on the committee
+  can accept clearances, but never one they endorsed.
 
 <img src="user-guide/physio-home.png" width="210" alt="Physio home screen">
 
@@ -701,7 +738,7 @@ calendar.
 ## 10. Admins
 
 Admins can do everything above except endorse injury clearances (they accept them, like the
-committee), plus run the club's set-up from **Administration** on the home
+committee, and endorse only if they're also a coach or physio), plus run the club's set-up from **Administration** on the home
 screen. Admins' to-do lists include join requests waiting for approval and clearances waiting for
 sign-off, plus child-safety follow-ups: athletes under 18 with no guardian linked, Working With
 Children Checks that are missing, expired or expire within 30 days, and athletes turning 18 within
@@ -775,12 +812,24 @@ club** or **Other**) and tap **Don't approve**. They see the reason and can requ
 
 ### Changing or removing members
 
-Open any member to change their role, squads, teams or titles, then tap **Save changes**.
+Open any member to change their role, squads, teams or titles, then tap **Save changes**. A
+committee member's or admin's page has a **Title** field (President, Secretary and so on), which
+shows on their home screen and in the Members list. The card at the top shows their **Preferred
+name** if they've set one.
+
+**Other roles** adds roles on top of their main one, such as Coach for an athlete who also coaches
+juniors, or Guardian for a coach whose child plays. The rules in
+[Combining roles](#1-roles-at-a-glance) apply, and the page says what's wrong before you save. When
+someone has more than one squad or team role, each squad shows **Role in** so you can pick which
+role they're there as; its teams follow the squad. Coaches, managers and physios need a current
+Working With Children Check whichever role it is, and that includes athletes under 18 who coach.
 
 - **Remove access** stops someone using the app but keeps their account. Choose a reason first.
 - **Delete member** permanently deletes their account, squad and team places, guardian links and
   message receipts. Messages they sent stay, and their injury records are kept for 12 months.
 
+<img src="user-guide/member-title.png" width="210" alt="A committee member's page with their preferred name and title">
+<img src="user-guide/member-roles.png" width="210" alt="An athlete who also coaches: other roles and their role in each squad">
 <img src="user-guide/delete-member.png" width="210" alt="Delete member confirmation">
 
 ### Squads, teams and selections
@@ -1037,6 +1086,7 @@ once saved, only replaced or removed.
 | Information             | Who can see it                                                                                                              |
 | ----------------------- | --------------------------------------------------------------------------------------------------------------------------- |
 | Your profile and squads | You, the people in your squads and teams (names and positions only), and admins.                                            |
+| Preferred name and title | You and admins.                                                                                                            |
 | Captains                | Club captains: every member. A squad or team's captains: the people in it, and admins.                                     |
 | Date of birth and Working With Children Check | You and admins. Awards with an age limit use it to decide who can be voted for, without showing it.   |
 | Messages                | The people they were sent to, the sender, and admins. Guardians of athletes under 18 get a copy of every message sent to their athlete, and of every message their athlete sends as a captain. Guests don't get messages; physios get messages sent to the Physio role, and whole-club messages only if an admin turns that on. |
