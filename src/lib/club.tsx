@@ -2,8 +2,8 @@ import AsyncStorage from '@react-native-async-storage/async-storage';
 import { createContext, use, useCallback, useEffect, useMemo, useState, type ReactNode } from 'react';
 import { Platform } from 'react-native';
 
-import { ClubDefaults, DefaultLogo } from '@/constants/club';
-import { Colors, isHexColour, makeColors, type Palette } from '@/constants/theme';
+import { ClubDefaults, DefaultLogo, FirstPass } from '@/constants/club';
+import { Colors, contrastRatio, isHexColour, makeColors, type Palette } from '@/constants/theme';
 import { supabase } from '@/lib/supabase';
 
 /** Features an admin can turn on and off for the club. */
@@ -40,6 +40,8 @@ type ClubState = {
   shortName: string;
   colors: Palette;
   logo: number | { uri: string };
+  /** True once an admin has uploaded the club's own logo. */
+  hasLogo: boolean;
   features: Features;
   reload: () => Promise<void>;
 };
@@ -54,19 +56,35 @@ export function logoUrl(path: string) {
   return supabase.storage.from('club-branding').getPublicUrl(path).data.publicUrl;
 }
 
+function isDark(background: string) {
+  return contrastRatio(background, '#FFFFFF') >= contrastRatio(background, '#000000');
+}
+
+/** The full FirstPass logo whose lettering reads on this background. */
+export function firstPassLogo(background: string) {
+  return isDark(background) ? FirstPass.logoOnDark : FirstPass.logoOnLight;
+}
+
+/** The FirstPass mark that stands in for a club logo on this background. */
+export function defaultLogo(background: string) {
+  return isDark(background) ? DefaultLogo.onDark : DefaultLogo.onLight;
+}
+
 /** Turns saved settings into what screens use, falling back to the defaults. */
 export function resolveClub(profile: ClubProfile | null) {
   const colour = (value: string | null | undefined, fallback: string) =>
     value && isHexColour(value) ? value.toUpperCase() : fallback;
+  const colors = makeColors({
+    background: colour(profile?.background_colour, ClubDefaults.background),
+    text: colour(profile?.text_colour, ClubDefaults.text),
+    hero: colour(profile?.hero_colour, ClubDefaults.hero),
+  });
   return {
     name: profile?.club_name || ClubDefaults.name,
     shortName: profile?.short_name || ClubDefaults.shortName,
-    colors: makeColors({
-      background: colour(profile?.background_colour, ClubDefaults.background),
-      text: colour(profile?.text_colour, ClubDefaults.text),
-      hero: colour(profile?.hero_colour, ClubDefaults.hero),
-    }),
-    logo: profile?.logo_path ? { uri: logoUrl(profile.logo_path) } : DefaultLogo,
+    colors,
+    logo: profile?.logo_path ? { uri: logoUrl(profile.logo_path) } : defaultLogo(colors.background),
+    hasLogo: !!profile?.logo_path,
     features: Object.fromEntries(
       FEATURES.map((f) => [f.key, profile?.features?.[f.key] !== false]),
     ) as Features,

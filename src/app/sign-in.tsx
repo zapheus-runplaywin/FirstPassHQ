@@ -3,11 +3,12 @@ import { useState } from 'react';
 import { ActivityIndicator, Pressable, StyleSheet, View } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 
+import { PoweredByFirstPass } from '@/components/powered-by';
 import { ThemedText } from '@/components/themed-text';
 import { ThemedView } from '@/components/themed-view';
 import { MaxContentWidth, Spacing } from '@/constants/theme';
 import { useTheme } from '@/hooks/use-theme';
-import { useClub } from '@/lib/club';
+import { firstPassLogo, useClub } from '@/lib/club';
 import { signInWithGoogle } from '@/lib/sign-in';
 
 export default function SignInScreen() {
@@ -32,12 +33,21 @@ export default function SignInScreen() {
     <ThemedView style={styles.container}>
       <SafeAreaView style={styles.safeArea}>
         <View style={styles.header}>
-          <Image
-            source={club.logo}
-            style={styles.logo}
-            contentFit="contain"
-            accessibilityLabel={club.name}
-          />
+          {club.hasLogo ? (
+            <Image
+              source={club.logo}
+              style={styles.logo}
+              contentFit="contain"
+              accessibilityLabel={club.name}
+            />
+          ) : (
+            <Image
+              source={firstPassLogo(theme.background)}
+              style={styles.firstPassLogo}
+              contentFit="contain"
+              accessibilityLabel="FirstPass"
+            />
+          )}
           <ThemedText type="subtitle" style={styles.title}>
             Sign in / Register
           </ThemedText>
@@ -65,6 +75,8 @@ export default function SignInScreen() {
             </ThemedText>
           ) : null}
         </View>
+
+        {club.hasLogo ? <PoweredByFirstPass /> : null}
       </SafeAreaView>
     </ThemedView>
   );
@@ -92,6 +104,11 @@ const styles = StyleSheet.create({
   logo: {
     width: 200,
     height: 200,
+    alignSelf: 'center',
+  },
+  firstPassLogo: {
+    width: 300,
+    height: 147,
     alignSelf: 'center',
   },
   buttons: {

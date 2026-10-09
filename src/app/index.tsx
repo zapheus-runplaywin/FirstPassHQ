@@ -4,6 +4,7 @@ import { useCallback, useEffect, useState } from 'react';
 import { Pressable, StyleSheet, View } from 'react-native';
 
 import { EventGrid } from '@/components/event-card';
+import { PoweredByFirstPass } from '@/components/powered-by';
 import { Screen } from '@/components/screen';
 import { TodoList } from '@/components/todo-list';
 import { ThemedText } from '@/components/themed-text';
@@ -324,6 +325,8 @@ export default function HomeScreen() {
           </ThemedText>
         </Pressable>
       </View>
+
+      <PoweredByFirstPass />
     </Screen>
   );
 }

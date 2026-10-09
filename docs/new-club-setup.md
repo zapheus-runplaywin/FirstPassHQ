@@ -15,22 +15,26 @@ does everything else from the app.
 
 Fork or copy this repository for the club. In the copy:
 
-1. **`src/constants/club.ts`**: the app's built-in look, a generic "Club" in blue (`#02CCFE`) on
-   black with the CLUB shield logo in `assets/images/logo.png`. People see it before they sign in
-   for the first time, and wherever Club settings are empty. You can leave it as it is and set the
-   club's own look in Club settings (step 5), or change it here so the sign-in screen shows the
-   club from the first open.
-2. **`app.json`**: `name` (the name under the icon), `slug`, `scheme` (used for sign-in, for
-   example `hawksapp`), `ios.bundleIdentifier` and `android.package` (for example
-   `au.com.hawks.app`), the splash screen and notification colours, and remove `extra.eas` and
-   `updates` so the club gets its own EAS project in step 4.
-3. **`assets/images/`**: replace `logo.png` (also the splash screen), `icon.png`, `splash-icon.png`, `favicon.png` and the
-   three `android-icon-*.png` files with the club's, at the same sizes.
+1. **`src/constants/club.ts`**: the app's built-in look is FirstPass, orange (`#FF6414`) on navy
+   (`#12213E`) with the FirstPass mark standing in for the club's logo. People see it before they
+   sign in for the first time, and wherever Club settings are empty. You can leave it as it is and
+   set the club's own look in Club settings (step 5), or change `ClubDefaults` so the sign-in
+   screen shows the club from the first open. Leave `FirstPass` as it is: its logo stays on the
+   opening screen and at the foot of the sign-in and home screens whatever the club sets.
+2. **`app.json`**: `name` (the name under the icon, `FirstPass` by default), `slug`, `scheme`
+   (used for sign-in, for example `hawksapp`), `ios.bundleIdentifier` and `android.package` (for
+   example `au.com.hawks.app`), and remove `extra.eas` and `updates` so the club gets its own EAS
+   project in step 4. The splash screen and notification colours are FirstPass's.
+3. **`assets/images/`**: the app icon (`icon.png`, `favicon.png` and the three
+   `android-icon-*.png` files) and the splash screen (`splash-logo.png`) are FirstPass's. The
+   FirstPass logos (`firstpass-logo-*.png`, `firstpass-mark-*.png`) come in a version for dark
+   backgrounds and one for light; the app picks whichever reads on the club's background.
 4. **`docs/user-guide.md`**: the guide describes West Coast Thunder's setup. Update the club name
    and squad names, or leave it out.
 
 The app icon, splash screen and app name are part of the build, so they can't change from Club
-settings. Everything inside the app can.
+settings. Everything inside the app can, apart from the FirstPass logo on the opening, sign-in and
+home screens.
 
 ## 2. Create the Supabase project
 

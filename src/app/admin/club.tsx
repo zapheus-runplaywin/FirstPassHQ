@@ -7,10 +7,10 @@ import { Platform, Pressable, StyleSheet, Switch, View } from 'react-native';
 import { Screen } from '@/components/screen';
 import { ThemedText } from '@/components/themed-text';
 import { Button, Card, ChipGroup, ErrorText, TextField } from '@/components/ui';
-import { ClubDefaults, DefaultLogo } from '@/constants/club';
+import { ClubDefaults } from '@/constants/club';
 import { contrastRatio, isHexColour, makeColors, Spacing } from '@/constants/theme';
 import { useTheme } from '@/hooks/use-theme';
-import { FEATURES, logoUrl, useClub, type FeatureKey } from '@/lib/club';
+import { defaultLogo, FEATURES, logoUrl, useClub, type FeatureKey } from '@/lib/club';
 import { supabase } from '@/lib/supabase';
 
 const LOGO_TYPES = ['image/png', 'image/jpeg'];
@@ -196,21 +196,22 @@ export default function ClubSettingsScreen() {
         <ThemedText type="smallBold">Logo</ThemedText>
         <Card style={[styles.logoCard, { backgroundColor: preview.background }]}>
           <Image
-            source={logoPath ? { uri: logoUrl(logoPath) } : DefaultLogo}
+            source={logoPath ? { uri: logoUrl(logoPath) } : defaultLogo(preview.background)}
             style={styles.logo}
             contentFit="contain"
             accessibilityLabel="Club logo"
           />
         </Card>
         <ThemedText type="small" themeColor="textSecondary">
-          A square PNG with a see-through background, up to 2 MB. It shows on the home screen and
-          when the app opens. The app icon and splash screen are part of the app build.
+          A square PNG with a see-through background, up to 2 MB. It shows on the home screen, the
+          sign-in screen and under the FirstPass logo when the app opens. Until you add one, the
+          FirstPass mark stands in. The app icon and splash screen are part of the app build.
         </ThemedText>
         <Button title="Choose logo" variant="secondary" onPress={pickLogo} busy={uploading} />
         {logoPath ? (
           <Pressable accessibilityRole="button" onPress={() => setLogoPath(null)}>
             <ThemedText type="smallBold" style={[styles.link, { color: theme.tint }]}>
-              Use the built-in logo
+              Use the FirstPass mark
             </ThemedText>
           </Pressable>
         ) : null}
