@@ -5,14 +5,16 @@ import { Screen } from '@/components/screen';
 import { ThemedText } from '@/components/themed-text';
 import { Button, ChipGroup, ErrorText, TextField } from '@/components/ui';
 import { useAuth } from '@/lib/auth';
+import { useSquads } from '@/lib/club';
 import { isTeamRole, requestableRoles, roleLabels } from '@/lib/labels';
 import { supabase } from '@/lib/supabase';
 import type { AppRole } from '@/lib/types';
-import { newestSquads, useTeams } from '@/lib/use-teams';
+import { newestGroups, useTeams } from '@/lib/use-teams';
 
 export default function JoinScreen() {
   const { session, profile, refresh } = useAuth();
-  const squads = newestSquads(useTeams());
+  const groups = newestGroups(useTeams());
+  const word = useSquads() ? 'squad' : 'team';
   const [fullName, setFullName] = useState(profile?.full_name ?? '');
   const [playhqEmail, setPlayhqEmail] = useState(profile?.playhq_email ?? '');
   const [role, setRole] = useState<AppRole | null>(profile?.requested_role ?? null);
@@ -102,8 +104,8 @@ export default function JoinScreen() {
 
       {showTeams ? (
         <ChipGroup
-          label={role === 'guardian' ? "Your athlete's squad" : 'Squad'}
-          options={squads.map((t) => ({ value: t.id, label: t.name }))}
+          label={role === 'guardian' ? `Your athlete's ${word}` : word === 'squad' ? 'Squad' : 'Team'}
+          options={groups.map((t) => ({ value: t.id, label: t.name }))}
           selected={teamId ? [teamId] : []}
           onToggle={(id) => setTeamId(id === teamId ? null : id)}
         />

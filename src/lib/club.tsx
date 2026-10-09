@@ -41,6 +41,8 @@ type ClubState = {
   colors: Palette;
   logo: number | { uri: string };
   features: Features;
+  /** Whether members join a squad before teams are named from it. */
+  squads: boolean;
   reload: () => Promise<void>;
 };
 
@@ -70,6 +72,8 @@ export function resolveClub(profile: ClubProfile | null) {
     features: Object.fromEntries(
       FEATURES.map((f) => [f.key, profile?.features?.[f.key] !== false]),
     ) as Features,
+    // Stored with the features, but it shapes the club rather than adding a screen.
+    squads: profile?.features?.squads !== false,
   };
 }
 
@@ -127,6 +131,11 @@ export function useClub() {
 /** Whether the club has a feature turned on. */
 export function useFeature(key: FeatureKey) {
   return useClub().features[key];
+}
+
+/** Whether the club uses squads, or selects straight into teams. */
+export function useSquads() {
+  return useClub().squads;
 }
 
 /** The club's palette, or the build's default outside ClubProvider. */

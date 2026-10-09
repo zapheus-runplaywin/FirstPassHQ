@@ -8,10 +8,18 @@ import { Button, Card, ChipGroup, ErrorText } from '@/components/ui';
 import { Spacing } from '@/constants/theme';
 import { teamPositionLabel } from '@/lib/labels';
 import { supabase } from '@/lib/supabase';
-import type { RosterEntry, Team, TeamSelection } from '@/lib/types';
+import type { CoachTitle, RosterEntry, Team, TeamRole, TeamSelection } from '@/lib/types';
 import { TEAM_COLUMNS } from '@/lib/use-teams';
 
-/** For each squad member: how they are selected for this team, if at all. */
+/** An approved member who could be in a team without a squad. */
+type ClubPerson = {
+  id: string;
+  full_name: string | null;
+  email: string | null;
+  role: 'athlete' | 'coach' | 'manager';
+};
+
+/** For each person who can be picked: how they are selected for this team, if at all. */
 type Pick = TeamSelection | 'in' | 'out';
 
 const athleteOptions: { value: Pick; label: string }[] = [
@@ -30,6 +38,7 @@ export default function NameTeamScreen() {
   const [squad, setSquad] = useState<Team | null>(null);
   const [squadMembers, setSquadMembers] = useState<RosterEntry[] | null>(null);
   const [picks, setPicks] = useState<Record<string, Pick>>({});
+  const [titles, setTitles] = useState<Record<string, CoachTitle | null>>({});
   const [saving, setSaving] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
@@ -41,22 +50,49 @@ export default function NameTeamScreen() {
         .eq('id', id)
         .single();
       const loadedTeam = teamRow as Team | null;
-      if (!loadedTeam?.squad_id) {
+      if (loadedTeam?.kind !== 'team') {
         setError('Team not found.');
         return;
       }
-      const [squadResult, squadRoster, teamRoster] = await Promise.all([
-        supabase.from('teams').select(TEAM_COLUMNS).eq('id', loadedTeam.squad_id).single(),
-        supabase.rpc('team_roster', { p_team_id: loadedTeam.squad_id }),
-        supabase.rpc('team_roster', { p_team_id: id }),
-      ]);
+      const { data: teamRoster } = await supabase.rpc('team_roster', { p_team_id: id });
       const current = new Map(
-        ((teamRoster.data as RosterEntry[] | null) ?? []).map((m) => [m.profile_id, m]),
+        ((teamRoster as RosterEntry[] | null) ?? []).map((m) => [m.profile_id, m]),
       );
-      const members = (squadRoster.data as RosterEntry[] | null) ?? [];
+
+      let members: RosterEntry[];
+      if (loadedTeam.squad_id) {
+        const [squadResult, squadRoster] = await Promise.all([
+          supabase.from('teams').select(TEAM_COLUMNS).eq('id', loadedTeam.squad_id).single(),
+          supabase.rpc('team_roster', { p_team_id: loadedTeam.squad_id }),
+        ]);
+        setSquad(squadResult.data as Team | null);
+        members = (squadRoster.data as RosterEntry[] | null) ?? [];
+      } else {
+        // Without a squad, anyone in the club who can be in a team: athletes first.
+        const { data: people } = await supabase
+          .from('profiles')
+          .select('id, full_name, email, role')
+          .eq('status', 'approved')
+          .in('role', ['athlete', 'coach', 'manager'])
+          .order('full_name');
+        const order: TeamRole[] = ['athlete', 'coach', 'manager'];
+        members = ((people as ClubPerson[] | null) ?? [])
+          .map((p) => ({
+            profile_id: p.id,
+            full_name: p.full_name || p.email,
+            team_role: p.role,
+            coach_title: current.get(p.id)?.coach_title ?? null,
+            selection: null,
+          }))
+          .sort((a, b) => order.indexOf(a.team_role) - order.indexOf(b.team_role));
+      }
       setTeam(loadedTeam);
-      setSquad(squadResult.data as Team | null);
       setSquadMembers(members);
+      setTitles(
+        Object.fromEntries(
+          [...current.values()].filter((m) => m.coach_title).map((m) => [m.profile_id, m.coach_title]),
+        ),
+      );
       setPicks(
         Object.fromEntries(
           members.map((m) => {
@@ -79,6 +115,8 @@ export default function NameTeamScreen() {
         .map(([profile_id, pick]) => ({
           profile_id,
           selection: pick === 'in' ? null : pick,
+          // Coaches keep their title; new ones start as head coach.
+          coach_title: titles[profile_id] ?? null,
         })),
     });
     setSaving(false);
@@ -108,13 +146,17 @@ export default function NameTeamScreen() {
           {count('touring')} final team · {count('training_partner')} training partners
         </ThemedText>
         <ThemedText type="small" themeColor="textSecondary">
-          Choosing from the {squad?.name ?? 'squad'}. People not selected stay in the squad.
+          {team.squad_id
+            ? `Choosing from the ${squad?.name ?? 'squad'}. People not selected stay in the squad.`
+            : 'Choosing from everyone approved as an athlete, coach or manager. Add guardians from their member page.'}
         </ThemedText>
       </Card>
 
       {squadMembers.length === 0 ? (
         <ThemedText type="small" themeColor="textSecondary">
-          No one is in the squad yet. Add members to the squad from Members first.
+          {team.squad_id
+            ? 'No one is in the squad yet. Add members to the squad from Members first.'
+            : 'No athletes, coaches or managers are approved yet. Approve them from Members first.'}
         </ThemedText>
       ) : (
         squadMembers.map((member) => (
