@@ -45,14 +45,6 @@ export function connectToClub(club: ClubEntry) {
   if (Platform.OS !== 'web' && AppState.currentState === 'active') current.auth.startAutoRefresh();
 }
 
-/** Whether this device has a saved sign-in for the club. */
-export async function hasSavedSession(club: ClubEntry) {
-  if (!canStore) return false;
-  const ref = new URL(club.supabaseUrl).hostname.split('.')[0];
-  const saved = await AsyncStorage.getItem(`sb-${ref}-auth-token`).catch(() => null);
-  return !!saved;
-}
-
 /** The chosen club's database. Using it before a club is chosen is a bug, so it throws. */
 export const supabase = new Proxy({} as Client, {
   get(_target, property) {

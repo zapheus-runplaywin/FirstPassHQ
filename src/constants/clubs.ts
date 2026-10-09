@@ -36,10 +36,7 @@ const HomeClub: ClubEntry = {
   anonKey: homeKey,
 };
 
-/**
- * Every other club, each with its own Supabase project. While this is empty the
- * app never asks for a club code.
- */
+/** Every other club, each with its own Supabase project. */
 const OtherClubs: ClubEntry[] = [];
 
 export const Clubs: readonly ClubEntry[] = [
@@ -56,8 +53,4 @@ export function findClub(code: string | null | undefined) {
   if (!code) return null;
   const wanted = normaliseClubCode(code);
   return Clubs.find((club) => club.code === wanted) ?? null;
-}
-
-export function isHomeClub(club: ClubEntry) {
-  return club.code === HomeClub.code;
 }

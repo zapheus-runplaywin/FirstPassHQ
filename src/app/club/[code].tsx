@@ -13,7 +13,7 @@ import { useClubChoice } from '@/lib/club-choice';
  */
 export default function ClubLinkScreen() {
   const { code } = useLocalSearchParams<{ code: string }>();
-  const { club, canSwitch, choose, switchClub } = useClubChoice();
+  const { club, choose, switchClub } = useClubChoice();
   const linked = findClub(code);
 
   useEffect(() => {
@@ -31,7 +31,7 @@ export default function ClubLinkScreen() {
         the app.
       </ThemedText>
       <Button
-        title={canSwitch ? 'Enter a club code' : 'Continue'}
+        title="Enter a club code"
         onPress={() => {
           router.replace('/');
           switchClub();

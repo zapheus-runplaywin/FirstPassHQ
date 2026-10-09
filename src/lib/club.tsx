@@ -4,7 +4,6 @@ import { Platform } from 'react-native';
 
 import { ClubDefaults, DefaultLogo, FirstPass } from '@/constants/club';
 import { Colors, contrastRatio, isHexColour, makeColors, type Palette } from '@/constants/theme';
-import { isHomeClub } from '@/constants/clubs';
 import { useClubChoice } from '@/lib/club-choice';
 import { supabase } from '@/lib/supabase';
 
@@ -52,8 +51,6 @@ type ClubState = {
 
 /** Saved per club, so one club's look never shows for another. */
 const CACHE_PREFIX = 'club-profile:';
-/** Where the look was saved before there was more than one club. */
-const LEGACY_CACHE_KEY = 'club-profile';
 const ClubContext = createContext<ClubState | null>(null);
 
 // AsyncStorage is unavailable during static web rendering.
@@ -120,20 +117,18 @@ export function ClubProvider({ signedIn, children }: { signedIn: boolean; childr
   const { club } = useClubChoice();
   // Before a club is picked there's nothing saved to show: the build's defaults.
   const cacheKey = club ? CACHE_PREFIX + club.code : null;
-  const legacy = !!club && isHomeClub(club);
   const [ready, setReady] = useState(!canCache || !cacheKey);
   const [profile, setProfile] = useState<ClubProfile | null>(null);
 
   useEffect(() => {
     if (!canCache || !cacheKey) return;
-    (async () => {
-      let saved = await AsyncStorage.getItem(cacheKey);
-      if (!saved && legacy) saved = await AsyncStorage.getItem(LEGACY_CACHE_KEY);
-      if (saved) setProfile((current) => current ?? (JSON.parse(saved) as ClubProfile));
-    })()
+    AsyncStorage.getItem(cacheKey)
+      .then((saved) => {
+        if (saved) setProfile((current) => current ?? (JSON.parse(saved) as ClubProfile));
+      })
       .catch(() => {})
       .finally(() => setReady(true));
-  }, [cacheKey, legacy]);
+  }, [cacheKey]);
 
   const save = useCallback(
     (row: ClubProfile | null) => {

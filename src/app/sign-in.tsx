@@ -15,7 +15,7 @@ import { signInWithGoogle } from '@/lib/sign-in';
 export default function SignInScreen() {
   const theme = useTheme();
   const club = useClub();
-  const { club: chosen, canSwitch, switchClub } = useClubChoice();
+  const { club: chosen, switchClub } = useClubChoice();
   const [busy, setBusy] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
@@ -77,16 +77,14 @@ export default function SignInScreen() {
             </ThemedText>
           ) : null}
 
-          {canSwitch ? (
-            <Pressable accessibilityRole="button" onPress={switchClub} style={styles.switch}>
-              <ThemedText type="small" themeColor="textSecondary" style={styles.title}>
-                Not {chosen?.name}?{' '}
-                <ThemedText type="small" style={{ color: theme.tint }}>
-                  Change club
-                </ThemedText>
+          <Pressable accessibilityRole="button" onPress={switchClub} style={styles.switch}>
+            <ThemedText type="small" themeColor="textSecondary" style={styles.title}>
+              Not {chosen?.name}?{' '}
+              <ThemedText type="small" style={{ color: theme.tint }}>
+                Change club
               </ThemedText>
-            </Pressable>
-          ) : null}
+            </ThemedText>
+          </Pressable>
         </View>
 
         {club.hasLogo ? <PoweredByFirstPass /> : null}

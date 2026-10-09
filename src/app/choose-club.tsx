@@ -13,8 +13,8 @@ import { useClubChoice } from '@/lib/club-choice';
 
 /**
  * Finds the member's club by its code. Each club has its own database, so this
- * decides which one the app connects to. Only shown when the app serves more
- * than one club.
+ * decides which one the app connects to. Shown on the first open and after
+ * Switch club.
  */
 export default function ChooseClubScreen() {
   const theme = useTheme();
