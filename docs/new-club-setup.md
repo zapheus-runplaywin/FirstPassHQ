@@ -15,11 +15,11 @@ does everything else from the app.
 
 Fork or copy this repository for the club. In the copy:
 
-1. **`src/constants/club.ts`**: the app's built-in look is FirstPass, orange (`#FF6414`) on navy
-   (`#12213E`) with the FirstPass mark standing in for the club's logo. People see it before they
+1. **`src/constants/club.ts`**: the app's built-in look follows the FirstPass brand guide: blaze
+   orange (`#F75C03`) on deep navy (`#0F172A`) in Montserrat, with the FirstPass 1P mark standing in for the club's logo. People see it before they
    sign in for the first time, and wherever Club settings are empty. You can leave it as it is and
    set the club's own look in Club settings (step 5), or change `ClubDefaults` so the sign-in
-   screen shows the club from the first open. Leave `FirstPass` as it is: its logo stays on the
+   screen shows the club from the first open. Leave `FirstPass` as it is: its logos stay on the
    opening screen and at the foot of the sign-in and home screens whatever the club sets.
 2. **`app.json`**: `name` (the name under the icon, `FirstPass HQ` by default), `slug`, `scheme`
    (used for sign-in, for example `hawksapp`), `ios.bundleIdentifier` and `android.package` (for
@@ -27,7 +27,7 @@ Fork or copy this repository for the club. In the copy:
    project in step 4. The splash screen and notification colours are FirstPass's.
 3. **`assets/images/`**: the app icon (`icon.png`, `favicon.png` and the three
    `android-icon-*.png` files) and the splash screen (`splash-logo.png`) are FirstPass's. The
-   FirstPass logos (`firstpass-logo-*.png`, `firstpass-mark-*.png`) come in a version for dark
+   FirstPass logos (`firstpass-hq-*.png` for the app, `firstpass-*.png` for the company, `firstpass-mark-*.png` for the 1P mark) come in a version for dark
    backgrounds and one for light; the app picks whichever reads on the club's background.
 4. **`docs/user-guide.md`**: the guide describes West Coast Thunder's setup. Update the club name
    and squad names, or leave it out.

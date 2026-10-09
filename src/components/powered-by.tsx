@@ -4,10 +4,10 @@ import { StyleSheet, View } from 'react-native';
 import { ThemedText } from '@/components/themed-text';
 import { FirstPass } from '@/constants/club';
 import { useTheme } from '@/hooks/use-theme';
-import { firstPassLogo } from '@/lib/club';
+import { companyLogo } from '@/lib/club';
 
 /**
- * A small FirstPass logo for the foot of a screen, so the app's own brand
+ * The FirstPass company wordmark for the foot of a screen, so the app's own brand
  * stays visible once a club has set its own look. Picks the logo whose
  * lettering reads on the club's background.
  */
@@ -19,7 +19,7 @@ export function PoweredByFirstPass() {
         Powered by
       </ThemedText>
       <Image
-        source={firstPassLogo(theme.background)}
+        source={companyLogo(theme.background)}
         style={styles.logo}
         contentFit="contain"
         accessibilityLabel={FirstPass.name}
@@ -35,6 +35,6 @@ const styles = StyleSheet.create({
   },
   logo: {
     width: 120,
-    height: 59,
+    height: 27,
   },
 });

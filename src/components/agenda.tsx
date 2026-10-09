@@ -3,7 +3,7 @@ import type { ReactElement } from 'react';
 import { Pressable, StyleSheet, View, type LayoutChangeEvent } from 'react-native';
 
 import { ThemedText } from '@/components/themed-text';
-import { Spacing, type Palette } from '@/constants/theme';
+import { BrandFonts, Spacing, type Palette } from '@/constants/theme';
 import { useThemedStyles } from '@/hooks/use-theme';
 import type { CalendarEvent } from '@/lib/calendar';
 import {
@@ -159,7 +159,7 @@ const makeStyles = (colors: Palette) =>
     color: colors.tint,
     fontSize: 26,
     lineHeight: 30,
-    fontWeight: 700,
+    fontFamily: BrandFonts.bold,
   },
   onAccent: {
     color: colors.onAccent,

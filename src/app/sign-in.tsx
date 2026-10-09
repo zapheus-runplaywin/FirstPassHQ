@@ -45,7 +45,7 @@ export default function SignInScreen() {
               source={firstPassLogo(theme.background)}
               style={styles.firstPassLogo}
               contentFit="contain"
-              accessibilityLabel="FirstPass"
+              accessibilityLabel="FirstPass HQ"
             />
           )}
           <ThemedText type="subtitle" style={styles.title}>
@@ -108,8 +108,9 @@ const styles = StyleSheet.create({
   },
   firstPassLogo: {
     width: 300,
-    height: 147,
+    height: 49,
     alignSelf: 'center',
+    marginBottom: Spacing.three,
   },
   buttons: {
     gap: Spacing.three,

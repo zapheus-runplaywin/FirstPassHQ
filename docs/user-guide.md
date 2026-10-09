@@ -94,14 +94,14 @@ whole club in **Club settings**. A feature that's off disappears for every role.
 ### Install the app
 
 The club sends a link to install the app on iPhone (TestFlight) or Android. The first time it
-opens, before it knows which club you're in, the app shows the FirstPass logo in orange and navy
+opens, before it knows which club you're in, the app shows the FirstPass HQ logo on deep navy
 and the sign-in screen. The app is called FirstPass HQ, made by FirstPass; your club runs its own copy. Once you
 sign in it switches to West Coast Thunder's logo and colours and remembers them. From then on,
-each time the app opens, the FirstPass logo appears in the middle, then rises to make room for the
+each time the app opens, the FirstPass HQ logo appears in the middle, then rises to make room for the
 Thunder logo beneath it, and a
 small "Powered by FirstPass" sits at the foot of the sign-in and home screens.
 
-<img src="user-guide/opening.png" width="210" alt="Opening screen: FirstPass logo with the club logo beneath">
+<img src="user-guide/opening.png" width="210" alt="Opening screen: FirstPass HQ logo with the club logo beneath">
 
 ### Sign in with Google
 
@@ -947,21 +947,21 @@ to OneDrive or attach it to an email.
 ### Club settings
 
 **Club settings** sets up the app for the club. Anything left empty uses the app's built-in
-FirstPass look: the name "FirstPass HQ", the FirstPass "1" mark as the logo, and orange (`#FF6414`)
-on navy (`#12213E`). West Coast Thunder's name, logo and yellow-on-black colours are saved here,
+FirstPass look: the name "FirstPass HQ", the FirstPass 1P mark as the logo, and blaze orange
+(`#F75C03`) on deep navy (`#0F172A`). West Coast Thunder's name, logo and yellow-on-black colours are saved here,
 so leave them filled in.
 
 - **Club name** is used in the app's wording and read out by screen readers for the logo. The **short name** (for example
   "Thunder") finds the club's teams when importing PlayHQ fixtures and names exported files.
 - **Logo**: **Choose logo** to upload a square PNG or JPEG up to 2 MB. It shows on the home screen
-  and the sign-in screen, and under the FirstPass logo when the app opens. **Use the FirstPass
-  mark** goes back to the built-in FirstPass mark. The FirstPass logo itself always stays on the
+  and the sign-in screen, and under the FirstPass HQ logo when the app opens. **Use the FirstPass
+  mark** goes back to the built-in FirstPass 1P mark. The FirstPass logos always stay on the
   opening screen and at the foot of the sign-in and home screens.
 - **Colours**: type a colour code such as `#FFCD00` for the **background** and the **hero
   colour** (buttons, links and highlights), and choose **Light text** or **Dark text** to suit the
   background. Panels and the softer text for details are worked out from these. The preview shows
   how they look together and warns when text or buttons would be hard to read. **Use the built-in
-  colours** goes back to navy, white and orange.
+  colours** goes back to deep navy, white and blaze orange.
 - **Features**: switch off any of Messages, Calendar, Daily check-ins, Injuries, Attendance,
   Awards and Game goals. A switched-off feature disappears from every member's home screen, to-do list and menus,
   and its Administration pages are hidden. Nothing is deleted, so switching it back on brings
@@ -975,7 +975,7 @@ so leave them filled in.
 
 Tap **Save club settings**. Members see the changes the next time they open the app. Someone
 who has just installed the app sees the FirstPass look on the sign-in screen until they sign in.
-The app's icon (the FirstPass mark), its name under the icon (FirstPass HQ) and the splash screen are
+The app's icon (the FirstPass 1P mark), its name under the icon (FirstPass HQ) and the splash screen are
 part of the app build and don't change here.
 
 <img src="user-guide/club-settings.png" width="210" alt="Club settings: name, logo and colours">
