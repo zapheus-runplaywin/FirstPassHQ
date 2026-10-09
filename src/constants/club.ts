@@ -3,11 +3,11 @@
  * A fresh install looks like FirstPass until
  * an admin sets the club's own name, colours and logo in Administration >
  * Club settings, and the app uses those once a member has signed in. The
- * FirstPass logo stays on the opening screen, the sign-in screen and the
- * foot of the home screen whatever the club sets.
+ * FirstPass HQ logo stays on every screen whatever the club sets: in the
+ * header, at the foot of the home screen and on the sign-in screen.
  */
 export const FirstPass = {
-  /** The company, as in "Powered by FirstPass". */
+  /** The company behind the app. */
   name: 'FirstPass',
   /** The app's name, under its icon. Matches `name` in app.json. */
   appName: 'FirstPass HQ',
@@ -16,14 +16,14 @@ export const FirstPass = {
   orange: '#F75C03',
   blue: '#2274A5',
   gold: '#F1C40F',
+  /** The brand guide's dark-theme panels (`surface-soft`) and secondary text (`ink-muted`). */
+  panel: '#1E293B',
+  inkMuted: '#CBD5E1',
   /** The FirstPass HQ logo, for deep navy and other dark backgrounds. */
   hqOnDark: require('@/assets/images/firstpass-hq-dark.png'),
   /** The FirstPass HQ logo, for white and other light backgrounds. */
   hqOnLight: require('@/assets/images/firstpass-hq-light.png'),
-  /** The FirstPass company wordmark, for "Powered by FirstPass". */
-  companyOnDark: require('@/assets/images/firstpass-dark.png'),
-  companyOnLight: require('@/assets/images/firstpass-light.png'),
-  /** The splash screen image: the FirstPass HQ logo across the middle of a square. */
+  /** The splash screen image: the 1P mark in the middle of a square. */
   splash: require('@/assets/images/splash-logo.png'),
 } as const;
 

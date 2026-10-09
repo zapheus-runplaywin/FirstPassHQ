@@ -69,11 +69,6 @@ export function firstPassLogo(background: string) {
   return isDark(background) ? FirstPass.hqOnDark : FirstPass.hqOnLight;
 }
 
-/** The FirstPass company wordmark whose lettering reads on this background. */
-export function companyLogo(background: string) {
-  return isDark(background) ? FirstPass.companyOnDark : FirstPass.companyOnLight;
-}
-
 /** The FirstPass mark that stands in for a club logo on this background. */
 export function defaultLogo(background: string) {
   return isDark(background) ? DefaultLogo.onDark : DefaultLogo.onLight;

@@ -2,7 +2,7 @@ import '@/global.css';
 
 import { Platform } from 'react-native';
 
-import { ClubDefaults } from '@/constants/club';
+import { ClubDefaults, FirstPass } from '@/constants/club';
 
 export type ClubColours = { background: string; text: string; hero: string };
 
@@ -12,12 +12,15 @@ export type ClubColours = { background: string; text: string; hero: string };
  * background and text colours, so any pair stays readable.
  */
 export function makeColors({ background, text, hero }: ClubColours) {
+  // On FirstPass's own deep navy and white, panels and secondary text use the
+  // brand guide's dark-theme colours rather than blends.
+  const brand = same(background, FirstPass.navy) && same(text, '#FFFFFF');
   return {
     text,
     background,
-    backgroundElement: mix(background, text, 0.11),
+    backgroundElement: brand ? FirstPass.panel : mix(background, text, 0.11),
     backgroundSelected: mix(background, text, 0.18),
-    textSecondary: mix(text, background, 0.286),
+    textSecondary: brand ? FirstPass.inkMuted : mix(text, background, 0.286),
     /** Links, back buttons and other coloured text. */
     tint: hero,
     /** Filled buttons and selected chips. */
@@ -53,6 +56,10 @@ function luminance(hex: string) {
     return v <= 0.03928 ? v / 12.92 : ((v + 0.055) / 1.055) ** 2.4;
   });
   return 0.2126 * r + 0.7152 * g + 0.0722 * b;
+}
+
+function same(a: string, b: string) {
+  return a.trim().toUpperCase() === b.toUpperCase();
 }
 
 /** `from` moved `amount` (0 to 1) of the way towards `to`. */

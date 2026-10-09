@@ -4,7 +4,7 @@ import { useCallback, useEffect, useState } from 'react';
 import { Pressable, StyleSheet, View } from 'react-native';
 
 import { EventGrid } from '@/components/event-card';
-import { PoweredByFirstPass } from '@/components/powered-by';
+import { FirstPassLogo } from '@/components/firstpass-logo';
 import { Screen } from '@/components/screen';
 import { TodoList } from '@/components/todo-list';
 import { ThemedText } from '@/components/themed-text';
@@ -137,6 +137,7 @@ export default function HomeScreen() {
     <Screen withTopInset refreshing={refreshing} onRefresh={onRefresh}>
       <View style={styles.headerRow}>
         <View style={styles.header}>
+          <FirstPassLogo size="header" />
           <ThemedText type="subtitle">Hi {name}</ThemedText>
           {approved && profile ? (
             <ThemedText themeColor="textSecondary">{roleLabels[profile.role]}</ThemedText>
@@ -332,8 +333,6 @@ export default function HomeScreen() {
           </ThemedText>
         </Pressable>
       </View>
-
-      <PoweredByFirstPass />
     </Screen>
   );
 }

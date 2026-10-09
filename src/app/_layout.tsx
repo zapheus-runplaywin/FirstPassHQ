@@ -9,6 +9,7 @@ import { StatusBar } from 'expo-status-bar';
 import { useCallback, useEffect, useMemo, useState, type ReactNode } from 'react';
 
 import { BrandIntro } from '@/components/brand-intro';
+import { HeaderFirstPassLogo } from '@/components/firstpass-logo';
 import { BrandFonts, contrastRatio } from '@/constants/theme';
 import { useTheme } from '@/hooks/use-theme';
 import { AuthProvider, useAuth } from '@/lib/auth';
@@ -105,7 +106,12 @@ function RootStack() {
 
   return (
     <>
-      <Stack screenOptions={{ headerBackButtonDisplayMode: 'minimal' }}>
+      <Stack
+        screenOptions={{
+          headerBackButtonDisplayMode: 'minimal',
+          // The FirstPass HQ logo stays on every screen, whatever the club's look.
+          headerRight: HeaderFirstPassLogo,
+        }}>
         <Stack.Protected guard={!!session}>
           <Stack.Screen name="index" options={{ headerShown: false }} />
           <Stack.Screen name="join" options={{ title: 'Request to join' }} />

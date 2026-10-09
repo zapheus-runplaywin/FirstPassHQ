@@ -7,6 +7,7 @@ import { SafeAreaView } from 'react-native-safe-area-context';
 import { PdfView } from '@/components/pdf-view';
 import { ThemedText } from '@/components/themed-text';
 import { ZoomableImage } from '@/components/zoomable-image';
+import { FirstPass } from '@/constants/club';
 import { Spacing } from '@/constants/theme';
 import { isImageDocument, viewInjuryDocumentUrl } from '@/lib/injuries';
 
@@ -64,7 +65,7 @@ export default function InjuryDocumentScreen() {
 const styles = StyleSheet.create({
   fill: {
     flex: 1,
-    backgroundColor: '#000',
+    backgroundColor: FirstPass.navy,
   },
   centre: {
     flex: 1,
