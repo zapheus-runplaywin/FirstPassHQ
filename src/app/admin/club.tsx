@@ -207,8 +207,8 @@ export default function ClubSettingsScreen() {
         </Card>
         <ThemedText type="small" themeColor="textSecondary">
           A square PNG with a see-through background, up to 2 MB. It shows on the home screen, the
-          sign-in screen and under the FirstPass logo when the app opens. Until you add one, the
-          FirstPass mark stands in. The app icon and splash screen are part of the app build.
+          sign-in screen and under the FirstPass HQ logo when the app opens. Until you add one,
+          the FirstPass 1P mark stands in. The app icon and splash screen are part of the app build.
         </ThemedText>
         <Button title="Choose logo" variant="secondary" onPress={pickLogo} busy={uploading} />
         {logoPath ? (

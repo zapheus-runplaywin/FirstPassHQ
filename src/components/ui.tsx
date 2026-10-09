@@ -12,7 +12,7 @@ import {
 
 import { useRevealFocusedInput } from '@/components/screen';
 import { ThemedText } from '@/components/themed-text';
-import { Spacing } from '@/constants/theme';
+import { BrandFonts, Spacing } from '@/constants/theme';
 import { useTheme } from '@/hooks/use-theme';
 
 /** Red, for actions that can't be undone. */
@@ -208,6 +208,7 @@ const styles = StyleSheet.create({
     height: 48,
     borderRadius: 12,
     paddingHorizontal: Spacing.three,
+    fontFamily: BrandFonts.regular,
     fontSize: 16,
   },
   multiline: {

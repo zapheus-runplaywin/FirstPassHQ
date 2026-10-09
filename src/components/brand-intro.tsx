@@ -20,8 +20,8 @@ import { useClub } from '@/lib/club';
 /** Matches `imageWidth` for the splash screen in app.json, so the hand-off is seamless. */
 export const LOGO_SIZE = 360;
 const CLUB_LOGO_SIZE = 120;
-/** Height of the FirstPass logo itself, which fills the middle 60% of the splash image's width. */
-const FIRSTPASS_HEIGHT = Math.round((LOGO_SIZE * 0.6) / 2.05);
+/** Height of the FirstPass HQ logo itself, which fills the middle 62% of the splash image's width. */
+const FIRSTPASS_HEIGHT = Math.round((LOGO_SIZE * 0.62 * 66) / 401);
 const GAP = 32;
 /** How far the FirstPass logo rises so it and the club's logo sit centred together. */
 const SHIFT = (GAP + CLUB_LOGO_SIZE) / 2;
@@ -89,7 +89,7 @@ export function BrandIntro({ onDone }: { onDone: () => void }) {
           source={FirstPass.splash}
           style={styles.logo}
           contentFit="contain"
-          accessibilityLabel={FirstPass.name}
+          accessibilityLabel={FirstPass.appName}
         />
         {club.hasLogo ? (
           <Animated.View style={[styles.clubLogo, clubStyle]}>

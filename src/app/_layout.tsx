@@ -1,11 +1,15 @@
+import { Montserrat_400Regular } from '@expo-google-fonts/montserrat/400Regular';
+import { Montserrat_700Bold } from '@expo-google-fonts/montserrat/700Bold';
+import { Montserrat_800ExtraBold } from '@expo-google-fonts/montserrat/800ExtraBold';
 import Constants from 'expo-constants';
+import { useFonts } from 'expo-font';
 import { DarkTheme, Stack, ThemeProvider } from 'expo-router';
 import * as SplashScreen from 'expo-splash-screen';
 import { StatusBar } from 'expo-status-bar';
 import { useCallback, useEffect, useMemo, useState, type ReactNode } from 'react';
 
 import { BrandIntro } from '@/components/brand-intro';
-import { contrastRatio } from '@/constants/theme';
+import { BrandFonts, contrastRatio } from '@/constants/theme';
 import { useTheme } from '@/hooks/use-theme';
 import { AuthProvider, useAuth } from '@/lib/auth';
 import { ClubProvider, useClub } from '@/lib/club';
@@ -46,6 +50,12 @@ function ClubTheme({ children }: { children: ReactNode }) {
         card: colors.background,
         text: colors.text,
       },
+      fonts: {
+        regular: { fontFamily: BrandFonts.regular, fontWeight: '400' as const },
+        medium: { fontFamily: BrandFonts.bold, fontWeight: '400' as const },
+        bold: { fontFamily: BrandFonts.bold, fontWeight: '400' as const },
+        heavy: { fontFamily: BrandFonts.extraBold, fontWeight: '400' as const },
+      },
     }),
     [colors],
   );
@@ -62,7 +72,13 @@ function ClubTheme({ children }: { children: ReactNode }) {
 function RootStack() {
   const { loading: authLoading, session, isAdmin } = useAuth();
   const { ready, features } = useClub();
-  const loading = authLoading || !ready;
+  // Montserrat; if it fails to load the app carries on in the system font.
+  const [fontsLoaded, fontError] = useFonts({
+    Montserrat_400Regular,
+    Montserrat_700Bold,
+    Montserrat_800ExtraBold,
+  });
+  const loading = authLoading || !ready || !(fontsLoaded || fontError);
   const [introDone, setIntroDone] = useState(false);
   const finishIntro = useCallback(() => setIntroDone(true), []);
   useAdminPushNotifications(isAdmin);

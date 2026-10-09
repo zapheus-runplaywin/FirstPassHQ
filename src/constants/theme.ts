@@ -96,6 +96,17 @@ export const Fonts = Platform.select({
   },
 });
 
+/**
+ * Montserrat, the FirstPass brand guide's only typeface, loaded in the root
+ * layout. Each weight is its own family because Android can't pick a weight
+ * from one.
+ */
+export const BrandFonts = {
+  regular: 'Montserrat_400Regular',
+  bold: 'Montserrat_700Bold',
+  extraBold: 'Montserrat_800ExtraBold',
+} as const;
+
 export const Spacing = {
   half: 2,
   one: 4,
