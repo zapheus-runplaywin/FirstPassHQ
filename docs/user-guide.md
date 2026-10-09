@@ -322,8 +322,9 @@ Training you still need to complete shows in your **To do** list with its due da
 1. Tap **Open the course** and do the course on the provider's website. Download or photograph
    the certificate of completion at the end.
 2. In the app, tap the to-do item or **Add a certificate** on the Integrity training screen.
-3. Under **Certificate achieved**, tick each course the certificate shows you completed. One
-   certificate can cover more than one course.
+3. Under **Certificate achieved**, tick each course the certificate shows you completed. If one
+   PDF holds several certificates or badges, tick them all and attach it once: each ticked course
+   is checked with that file.
 4. Choose the day you completed it, attach the certificate (a PDF or photo, up to 10 MB), add a
    note if you like and tap **Send for checking**.
 
@@ -334,7 +335,7 @@ record. Overdue training says **Overdue since** its due date.
 
 <img src="user-guide/training-athlete-home.png" width="210" alt="Integrity training in an athlete's to-do list">
 <img src="user-guide/training-athlete.png" width="210" alt="An athlete's integrity training">
-<img src="user-guide/training-submit.png" width="210" alt="Ticking the training a certificate covers and attaching it">
+<img src="user-guide/training-submit.png" width="210" alt="One certificate ticked for three courses">
 
 ### Deleting your account
 
