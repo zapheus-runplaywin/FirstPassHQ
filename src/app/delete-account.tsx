@@ -28,7 +28,7 @@ export default function DeleteAccountScreen() {
 
   return (
     <Screen>
-      <ThemedText type="smallBold">Delete your account</ThemedText>
+      <ThemedText type="smallBold">Delete your {club.name} account</ThemedText>
       <ThemedText type="small" themeColor="textSecondary">
         This permanently deletes your {club.name} app account: your profile, your squad and
         team places, guardian links and your messages inbox. Messages you sent to a group stay with
@@ -39,8 +39,8 @@ export default function DeleteAccountScreen() {
         where only the committee and admins can see them, and then deletes them.
       </ThemedText>
       <ThemedText type="small" themeColor="textSecondary">
-        It doesn’t change your PlayHQ registration or club membership. If you sign in again later,
-        you’ll need to ask to join again.
+        It doesn’t change your PlayHQ registration or club membership, or your account at any other
+        club in FirstPass HQ. If you sign in again later, you’ll need to ask to join again.
       </ThemedText>
       <ErrorText>{error}</ErrorText>
       <ConfirmDelete

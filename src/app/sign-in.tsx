@@ -9,11 +9,13 @@ import { ThemedView } from '@/components/themed-view';
 import { MaxContentWidth, Spacing } from '@/constants/theme';
 import { useTheme } from '@/hooks/use-theme';
 import { firstPassLogo, useClub } from '@/lib/club';
+import { useClubChoice } from '@/lib/club-choice';
 import { signInWithGoogle } from '@/lib/sign-in';
 
 export default function SignInScreen() {
   const theme = useTheme();
   const club = useClub();
+  const { club: chosen, switchClub } = useClubChoice();
   const [busy, setBusy] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
@@ -74,6 +76,15 @@ export default function SignInScreen() {
               {error}
             </ThemedText>
           ) : null}
+
+          <Pressable accessibilityRole="button" onPress={switchClub} style={styles.switch}>
+            <ThemedText type="small" themeColor="textSecondary" style={styles.title}>
+              Not {chosen?.name}?{' '}
+              <ThemedText type="small" style={{ color: theme.tint }}>
+                Change club
+              </ThemedText>
+            </ThemedText>
+          </Pressable>
         </View>
 
         {club.hasLogo ? <FirstPassLogo /> : null}
@@ -123,5 +134,8 @@ const styles = StyleSheet.create({
   },
   error: {
     color: '#DC2626',
+  },
+  switch: {
+    paddingVertical: Spacing.two,
   },
 });

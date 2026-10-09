@@ -27,6 +27,13 @@ export default function AdministrationScreen() {
         </ThemedText>
       </PressableCard>
 
+      <PressableCard onPress={() => router.push('/admin/invite')}>
+        <ThemedText type="smallBold">Invite members</ThemedText>
+        <ThemedText type="small" themeColor="textSecondary">
+          A QR code and link that take new members to the club’s sign-in
+        </ThemedText>
+      </PressableCard>
+
       <PressableCard onPress={() => router.push('/admin/club')}>
         <ThemedText type="smallBold">Club settings</ThemedText>
         <ThemedText type="small" themeColor="textSecondary">
