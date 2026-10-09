@@ -27,6 +27,13 @@ export default function AdministrationScreen() {
         </ThemedText>
       </PressableCard>
 
+      <PressableCard onPress={() => router.push('/admin/reports')}>
+        <ThemedText type="smallBold">Reports</ThemedText>
+        <ThemedText type="small" themeColor="textSecondary">
+          Governance and compliance reports to save as PDFs
+        </ThemedText>
+      </PressableCard>
+
       <PressableCard onPress={() => router.push('/admin/invite')}>
         <ThemedText type="smallBold">Invite members</ThemedText>
         <ThemedText type="small" themeColor="textSecondary">

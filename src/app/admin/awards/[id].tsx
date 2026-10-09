@@ -7,7 +7,7 @@ import { ThemedText } from '@/components/themed-text';
 import { Button, Card } from '@/components/ui';
 import { Spacing } from '@/constants/theme';
 import { useTheme } from '@/hooks/use-theme';
-import { AWARD_COLUMNS, awardSummary, closesLabel } from '@/lib/awards';
+import { AWARD_COLUMNS, awardSummary, closesLabel, isClosed } from '@/lib/awards';
 import { formatShortDay } from '@/lib/format';
 import { supabase } from '@/lib/supabase';
 import type { Award, AwardResult, AwardTurnout } from '@/lib/types';
@@ -138,6 +138,15 @@ export default function AdminAwardScreen() {
           />
         </View>
       </View>
+
+      {isClosed(award.closes_at) ? (
+        <Button
+          title="Full results report"
+          onPress={() =>
+            router.push({ pathname: '/admin/reports/award', params: { id: award.id } })
+          }
+        />
+      ) : null}
 
       {groups.map((group) => {
         const standings = results.filter((r) => r.team_id === group.id);
