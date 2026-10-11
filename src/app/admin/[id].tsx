@@ -20,7 +20,7 @@ import {
   teamRoleLabels,
 } from '@/lib/labels';
 import { hasRole, roleCombinationProblem } from '@/lib/roles';
-import { wwccRoles } from '@/lib/safety';
+import { canBeExempt, wwccRoles } from '@/lib/safety';
 import { supabase } from '@/lib/supabase';
 import type {
   AppRole,
@@ -76,6 +76,8 @@ export default function MemberScreen() {
   const [dateOfBirth, setDateOfBirth] = useState('');
   const [wwccNumber, setWwccNumber] = useState('');
   const [wwccExpires, setWwccExpires] = useState('');
+  const [exempt, setExempt] = useState(false);
+  const [exemptReason, setExemptReason] = useState('');
   const [title, setTitle] = useState('');
   const [guardianIds, setGuardianIds] = useState<string[]>([]);
   const [guardianOf, setGuardianOf] = useState<string[]>([]);
@@ -119,6 +121,8 @@ export default function MemberScreen() {
       setDateOfBirth(formatDate(profile.date_of_birth));
       setWwccNumber(profile.wwcc_number ?? '');
       setWwccExpires(formatDate(profile.wwcc_expires_on));
+      setExempt(!!profile.wwcc_exempt_reason);
+      setExemptReason(profile.wwcc_exempt_reason ?? '');
       setTitle(profile.title ?? '');
       setReason(profile.rejection_reason);
       const links = linksResult.data ?? [];
@@ -164,7 +168,10 @@ export default function MemberScreen() {
   const dob = parseDate(dateOfBirth);
   const minor = isMinor(dob, under18);
   const hasGuardians = isAthlete && minor;
-  const needsWwcc = roles.some((r) => wwccRoles.includes(r));
+  const needsWwcc = roles.some((r) => wwccRoles.includes(r)) || roles.includes('committee');
+  // Only a committee member with no coach, manager or physio role can be excused.
+  const exemptable = canBeExempt(roles);
+  const isExempt = exemptable && exempt;
   const comboProblem = roleCombinationProblem(roles, dob, under18);
   const isSelf = id === session?.user.id;
 
@@ -281,6 +288,10 @@ export default function MemberScreen() {
       setError(comboProblem);
       return;
     }
+    if (isExempt && !exemptReason.trim()) {
+      setError('Write why they don’t need a Working With Children Check.');
+      return;
+    }
     setSaving(status);
     setError(null);
     // Saved first, because the member rules below depend on them.
@@ -294,6 +305,19 @@ export default function MemberScreen() {
       setSaving(null);
       setError(detailsError.message);
       return;
+    }
+    // Also before saving the member: a new committee member needs a check or an exemption.
+    const newReason = isExempt ? exemptReason.trim() : '';
+    if (newReason !== (member?.wwcc_exempt_reason ?? '')) {
+      const { error: exemptError } = await supabase.rpc('admin_set_wwcc_exemption', {
+        p_profile_id: id,
+        p_reason: newReason,
+      });
+      if (exemptError) {
+        setSaving(null);
+        setError(exemptError.message);
+        return;
+      }
     }
     const { error: rpcError } = await supabase.rpc('admin_save_member', {
       p_profile_id: id,
@@ -554,23 +578,61 @@ export default function MemberScreen() {
         <View style={styles.group}>
           <ThemedText type="smallBold">Working With Children Check</ThemedText>
           <ThemedText type="small" themeColor="textSecondary">
-            Coaches, managers and physios need a current check before you can approve them.
+            Coaches, managers, physios and committee members need a current check before you can
+            approve them. You can exempt a committee member instead, with a reason.
           </ThemedText>
-          <TextField
-            label="Card number"
-            value={wwccNumber}
-            onChangeText={setWwccNumber}
-            autoCapitalize="characters"
-            maxLength={30}
-          />
-          <TextField
-            label="Expires"
-            value={wwccExpires}
-            onChangeText={setWwccExpires}
-            placeholder="DD/MM/YYYY"
-            keyboardType="numbers-and-punctuation"
-            maxLength={10}
-          />
+          {exemptable && !(isSelf && !exempt) ? (
+            <ChipGroup
+              options={[
+                { value: 'check', label: 'Needs a check' },
+                { value: 'exempt', label: 'Exempt' },
+              ]}
+              selected={[exempt ? 'exempt' : 'check']}
+              onToggle={(choice) => setExempt(choice === 'exempt')}
+            />
+          ) : null}
+          {exemptable && isSelf && !exempt ? (
+            <ThemedText type="small" themeColor="textSecondary">
+              Another admin needs to exempt you.
+            </ThemedText>
+          ) : null}
+          {isExempt ? (
+            <>
+              <TextField
+                label="Why they don’t need a check"
+                value={exemptReason}
+                onChangeText={setExemptReason}
+                placeholder="For example, treasurer only, never at training or games"
+                multiline
+                maxLength={500}
+              />
+              {member.wwcc_exempted_at && exemptReason.trim() === member.wwcc_exempt_reason ? (
+                <ThemedText type="small" themeColor="textSecondary">
+                  Exempted by{' '}
+                  {member.wwcc_exempted_by ? nameOf(member.wwcc_exempted_by) : 'a former admin'} on{' '}
+                  {new Date(member.wwcc_exempted_at).toLocaleDateString()}
+                </ThemedText>
+              ) : null}
+            </>
+          ) : (
+            <>
+              <TextField
+                label="Card number"
+                value={wwccNumber}
+                onChangeText={setWwccNumber}
+                autoCapitalize="characters"
+                maxLength={30}
+              />
+              <TextField
+                label="Expires"
+                value={wwccExpires}
+                onChangeText={setWwccExpires}
+                placeholder="DD/MM/YYYY"
+                keyboardType="numbers-and-punctuation"
+                maxLength={10}
+              />
+            </>
+          )}
         </View>
       ) : null}
 

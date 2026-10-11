@@ -68,9 +68,13 @@ export type Profile = {
   under_17: boolean;
   /** Recorded by an admin. Decides whether an athlete is under 18. */
   date_of_birth: string | null;
-  /** Working With Children Check, recorded by an admin for coaches and managers. */
+  /** Working With Children Check, recorded by an admin for coaches, managers, physios and committee members. */
   wwcc_number: string | null;
   wwcc_expires_on: string | null;
+  /** Why an admin excused a committee member from the check, who did and when. */
+  wwcc_exempt_reason: string | null;
+  wwcc_exempted_by: string | null;
+  wwcc_exempted_at: string | null;
   /** Why an admin didn't approve them, shown to the member. */
   rejection_reason: RejectionReason | null;
   /** When an admin confirmed who they are with their in-app code. */
