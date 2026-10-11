@@ -20,7 +20,7 @@ const options: { value: Pick; label: string }[] = [
 ];
 
 /**
- * Admins and a squad or team's coaches choose its captain and vice captains,
+ * Admins and a squad or team's coaches choose its captains and vice captains,
  * who can then message the group like its coaches.
  */
 export default function ChooseCaptainsScreen() {
@@ -55,17 +55,9 @@ export default function ChooseCaptainsScreen() {
     })();
   }, [id]);
 
+  // Any number of captains and vice captains: it's up to the coach.
   function choose(profileId: string, pick: Pick) {
-    setPicks((current) => {
-      const next = { ...current, [profileId]: pick };
-      // One captain: picking a new one makes the old one neither.
-      if (pick === 'captain') {
-        for (const [other, value] of Object.entries(current)) {
-          if (other !== profileId && value === 'captain') next[other] = 'none';
-        }
-      }
-      return next;
-    });
+    setPicks((current) => ({ ...current, [profileId]: pick }));
   }
 
   async function save() {
@@ -74,7 +66,7 @@ export default function ChooseCaptainsScreen() {
     const entries = Object.entries(picks);
     const { error: rpcError } = await supabase.rpc('set_group_captains', {
       p_team_id: id,
-      p_captain_id: entries.find(([, pick]) => pick === 'captain')?.[0] ?? null,
+      p_captain_ids: entries.filter(([, pick]) => pick === 'captain').map(([pid]) => pid),
       p_vice_captain_ids: entries.filter(([, pick]) => pick === 'vice_captain').map(([pid]) => pid),
     });
     setSaving(false);
@@ -93,8 +85,8 @@ export default function ChooseCaptainsScreen() {
     <Screen>
       <Stack.Screen options={{ title: team ? `${team.name} captains` : 'Captains' }} />
       <ThemedText type="small" themeColor="textSecondary">
-        The captain and vice captains can message everyone in this{' '}
-        {team?.kind === 'squad' ? 'squad' : 'team'}, like its coaches. Messages from athletes under
+        Choose as many captains and vice captains as you like. They can all message everyone in
+        this {team?.kind === 'squad' ? 'squad' : 'team'}, like its coaches. Messages from athletes under
         18 are copied to their parents or guardians.
       </ThemedText>
 

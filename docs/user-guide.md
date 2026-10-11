@@ -65,7 +65,7 @@ those roles would show on its own.
 <img src="user-guide/home-two-roles.png" width="210" alt="Home screen of a coach who is also a guardian">
 
 **Captains.** Admins choose **club captains** from the season's athletes, and admins or a squad or
-team's coaches choose its **captain** and **vice captains**. Captains stay athletes; captaincy only
+team's coaches choose its **captains** and **vice captains**. Captains stay athletes; captaincy only
 adds the right to send messages. Club captains can message the whole club, and captains and vice
 captains can message their own squad or team. Captaincy ends when the season is archived.
 
@@ -539,18 +539,18 @@ and hasn't read it. Club admins can read every message.
 
 ### Choosing captains
 
-Coaches choose the captain and vice captains of the squads and teams they coach (admins can too).
+Coaches choose the captains and vice captains of the squads and teams they coach (admins can too).
 Open the squad or team from **My squads and teams** and tap **Choose captains** at the bottom. For
 each athlete choose **Captain**, **Vice captain** or **Neither**, then tap **Save captains**. A
-group has one captain and any number of vice captains; picking a new captain makes the old one
-**Neither**.
+group can have any number of captains and any number of vice captains, so it's up to you: co-captains
+and no vice captains, one captain and four vice captains, or anything in between.
 
 Captains and vice captains can then message everyone in that squad or team, like you. They must be
 athletes in it, and they stop being able to message it if they leave it or the season is archived.
 Messages from captains under 18 are copied to their parents or guardians.
 
 <img src="user-guide/captains-team-roster.png" width="210" alt="Team roster with Choose captains">
-<img src="user-guide/captains-choose.png" width="210" alt="Choosing a team's captain and vice captains">
+<img src="user-guide/captains-choose.png" width="210" alt="Choosing a team's captains and vice captains">
 
 ### Athletes' check-ins
 
@@ -1075,7 +1075,7 @@ captains can message everyone in the club until that season is archived; choose 
 season. If last season is still running alongside the new one, pick the season first. Athletes
 under 18 are marked, and their parents or guardians get a copy of everything they send.
 
-Admins can also choose any squad or team's captain and vice captains, the same way coaches do (see
+Admins can also choose any squad or team's captains and vice captains, the same way coaches do (see
 [Choosing captains](#choosing-captains)).
 
 <img src="user-guide/club-captains.png" width="210" alt="Choosing the club captains">
