@@ -12,12 +12,14 @@ import {
   MAX_GOALS,
   fetchGame,
   fetchGoals,
+  fetchTeamGoalComments,
   fetchTeamGoals,
   gamePhase,
   gameTitle,
   gameWhen,
   outcomeLabel,
   outcomeOptions,
+  useCanCommentOnTeamGoals,
   useIsGoalCoach,
 } from '@/lib/goals';
 import { supabase } from '@/lib/supabase';
@@ -27,6 +29,7 @@ import type {
   GoalGame,
   GoalOutcome,
   TeamGameGoal,
+  TeamGameGoalComment,
 } from '@/lib/types';
 
 /** One athlete's goals for one game: set before it, reflected on after it. */
@@ -49,7 +52,9 @@ export default function GameGoalsScreen() {
   const [goals, setGoals] = useState<GameGoal[]>([]);
   const [comments, setComments] = useState<GameGoalComment[]>([]);
   const [teamGoals, setTeamGoals] = useState<TeamGameGoal[]>([]);
+  const [teamComments, setTeamComments] = useState<TeamGameGoalComment[]>([]);
   const [refreshing, setRefreshing] = useState(false);
+  const canCommentOnTeamGoals = useCanCommentOnTeamGoals(game?.team_id);
 
   const load = useCallback(async () => {
     const [row, lists, team] = await Promise.all([
@@ -58,6 +63,7 @@ export default function GameGoalsScreen() {
       fetchTeamGoals(fixture),
     ]);
     setTeamGoals(team);
+    setTeamComments(await fetchTeamGoalComments(team.map((g) => g.id)));
     setGame(row);
     setGoals(lists.goals);
     setComments(lists.comments);
@@ -113,7 +119,13 @@ export default function GameGoalsScreen() {
         </ThemedText>
       </View>
 
-      <TeamGoals goals={teamGoals} />
+      <TeamGoals
+        goals={teamGoals}
+        comments={teamComments}
+        canComment={canCommentOnTeamGoals}
+        userId={session?.user.id}
+        onChanged={load}
+      />
 
       {teamGoals.length > 0 ? <ThemedText type="smallBold">Personal goals</ThemedText> : null}
 
