@@ -2,8 +2,28 @@ import { formatDate, isMinor } from '@/lib/age';
 import type { AppRole, Profile } from '@/lib/types';
 import { hasRole } from '@/lib/roles';
 
-/** Roles that need a current Working With Children Check. */
+/** Roles that always need a current Working With Children Check. */
 export const wwccRoles: AppRole[] = ['coach', 'manager', 'physio'];
+
+/**
+ * Whether an admin can excuse someone with these roles from the check: only
+ * committee members who hold no role that always needs one.
+ */
+export function canBeExempt(roles: AppRole[]) {
+  return roles.includes('committee') && !roles.some((r) => wwccRoles.includes(r));
+}
+
+/**
+ * Whether a member needs a current check: coaches, managers and physios
+ * always, committee members unless an admin exempted them. Same rule as
+ * `public.needs_wwcc` in the database.
+ */
+export function needsWwcc(
+  member: Pick<Profile, 'role' | 'extra_roles' | 'wwcc_exempt_reason'>,
+): boolean {
+  if (hasRole(member, ...wwccRoles)) return true;
+  return hasRole(member, 'committee') && !member.wwcc_exempt_reason?.trim();
+}
 
 /** Today's date as YYYY-MM-DD, plus a number of days. */
 function isoDay(addDays = 0) {
@@ -71,7 +91,7 @@ export function safetyIssues(member: Profile, hasGuardian: boolean): string[] {
   const issues: string[] = [];
   const in30Days = isoDay(30);
 
-  if (hasRole(member, ...wwccRoles)) {
+  if (needsWwcc(member)) {
     const check = wwccStatus(member);
     if (check.problem) issues.push(check.label);
   }

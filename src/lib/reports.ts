@@ -7,7 +7,7 @@ import { formatDateString, toDateString } from '@/lib/injuries';
 import { rolesLabel } from '@/lib/labels';
 import type { Report, ReportRow } from '@/lib/pdf';
 import { hasRole, rolesOf } from '@/lib/roles';
-import { wwccRoles, wwccStatus } from '@/lib/safety';
+import { needsWwcc, wwccStatus } from '@/lib/safety';
 import type { Profile, Team, TeamRole } from '@/lib/types';
 import { teamLabel } from '@/lib/use-teams';
 
@@ -91,10 +91,20 @@ const byName = (a: { name: string }, b: { name: string }) => a.name.localeCompar
 // ---------------------------------------------------------------------------
 
 export function wwccReport(members: Profile[], placements: Placement[], teams: Team[]): Report {
-  const people = members
-    .filter((m) => m.status === 'approved' && hasRole(m, ...wwccRoles))
+  const approved = members.filter((m) => m.status === 'approved');
+  const people = approved
+    .filter((m) => needsWwcc(m))
     .map((m) => ({ member: m, name: memberName(m), status: wwccStatus(m) }))
     .sort(byName);
+  // Committee members an admin excused from the check, with the reason.
+  const exempt = approved
+    .filter((m) => hasRole(m, 'committee') && !needsWwcc(m))
+    .map((m) => ({ member: m, name: memberName(m) }))
+    .sort(byName);
+  const nameOf = (id: string | null) => {
+    const admin = id ? members.find((m) => m.id === id) : undefined;
+    return admin ? memberName(admin) : 'A former admin';
+  };
 
   const row = ({ member, name, status }: (typeof people)[number]): ReportRow => ({
     cells: [
@@ -117,16 +127,24 @@ export function wwccReport(members: Profile[], placements: Placement[], teams: T
     { label: 'Status', width: 1.3 },
   ];
   const count = (kind: string) => people.filter((p) => p.status.kind === kind).length;
+  const exemptColumns = [
+    { label: 'Name', width: 1.4 },
+    { label: 'Roles', width: 1.1 },
+    { label: 'Reason', width: 2.6 },
+    { label: 'Exempted by', width: 1.1 },
+    { label: 'On', width: 0.8 },
+  ];
 
   return {
     title: 'Working With Children Checks',
-    subtitle: 'Approved coaches, managers and physios',
+    subtitle: 'Approved coaches, managers, physios and committee members',
     stats: [
       { label: 'Need a check', value: people.length },
       { label: 'Current', value: count('current') },
       { label: 'Expire within 30 days', value: count('expiring') },
       { label: 'Expired', value: count('expired') },
       { label: 'Missing', value: count('missing') },
+      { label: 'Committee exempt', value: exempt.length },
     ],
     sections: [
       {
@@ -141,6 +159,21 @@ export function wwccReport(members: Profile[], placements: Placement[], teams: T
         columns,
         rows: people.filter((p) => !p.status.problem).map(row),
         empty: 'No current checks recorded.',
+      },
+      {
+        title: 'Committee members exempted',
+        note: 'Excused from the check by an admin, with the reason they gave.',
+        columns: exemptColumns,
+        rows: exempt.map(({ member, name }) => ({
+          cells: [
+            name,
+            rolesLabel(rolesOf(member)),
+            member.wwcc_exempt_reason?.trim() ?? '',
+            nameOf(member.wwcc_exempted_by),
+            member.wwcc_exempted_at ? localDay(member.wwcc_exempted_at) : '',
+          ],
+        })),
+        empty: 'Nobody is exempt.',
       },
     ],
     footnote:
