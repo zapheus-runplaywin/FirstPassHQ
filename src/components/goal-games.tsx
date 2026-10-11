@@ -75,12 +75,15 @@ export function GoalGames({
   athleteId,
   athleteName,
   own,
+  guardianView = false,
   games,
 }: {
   athleteId: string;
   athleteName?: string;
-  /** The athlete or their guardian is looking, rather than a coach. */
+  /** The athlete is looking, rather than a coach or guardian. */
   own: boolean;
+  /** A parent or guardian is looking: games open read-only. */
+  guardianView?: boolean;
   games: ReturnType<typeof useGoalGames>;
 }) {
   const { next, past, more, loadingMore, error, loadMore } = games;
@@ -88,7 +91,12 @@ export function GoalGames({
   function open(game: GoalGame) {
     router.push({
       pathname: '/goals/game',
-      params: { athlete: athleteId, fixture: game.fixture_id, name: athleteName ?? '' },
+      params: {
+        athlete: athleteId,
+        fixture: game.fixture_id,
+        name: athleteName ?? '',
+        ...(guardianView ? { view: 'guardian' } : {}),
+      },
     });
   }
 
