@@ -78,7 +78,7 @@ What each role sees on its home screen:
 | Send messages                          | Captains† |                 |  Own groups  | Own groups |   Whole club  |               |         |     Anyone    |
 | Daily check-in                         |    ✓    |                 |              |            |               |               |         |               |
 | Game goals and reflections             |   Own   | Their athlete's | Own athletes |            |               |               |         |               |
-| Team goals for a game                  |   See   |       See       | Set, review  |            |               |               |         |               |
+| Team goals for a game                  | See, comment |       See       | Set, review, comment |            |               |               |         |               |
 | Check-ins of others                    |         |                 | Own athletes |            | Averages only | Averages only |         | Averages only |
 | Report an injury                       |   Own   | Their athlete's |              |            |               |               |         |               |
 | See injuries                           |   Own   | Their athlete's | Own athletes |            |      All      |      All      |         |      All      |
@@ -407,10 +407,15 @@ too, and they can set goals and reflect for you. Bye rounds are left out.
 
 **Team goals** that your coaches set for the whole team show at the top of the game,
 above your own goals. After the game you'll see how the coaches think the team went on each one.
+Everyone in the team has a say: tap **Comment** under a team goal, write what you think or what
+you'll do to help, and tap **Add comment**. You can comment before or after the game. Your name
+shows on your comment, and everyone in the team, their parents or guardians and the coaches can
+read it. Tap **Remove** on your own comment to take it down.
 
 <img src="user-guide/goals-athlete.png" width="210" alt="Game goals: the next game and played games">
 <img src="user-guide/goals-set.png" width="210" alt="Adding a goal for the next game">
 <img src="user-guide/goals-reflect.png" width="210" alt="Reflecting on goals after a game, with a coach's comment">
+<img src="user-guide/goals-team-comment.png" width="210" alt="An athlete commenting on a team goal">
 
 ### Reporting an injury
 
@@ -597,6 +602,9 @@ last played game.
   team can. Until a team goal is set, "Set team goals for …" stays in your to-do list.
 - The team's athletes and their parents or guardians see the team goals above each
   athlete's own goals.
+- Everyone in the team can comment on a team goal, before or after the game, so every athlete has
+  a say. Their comments show under each goal, and you can add your own with **Comment**. Coaches
+  can **Remove** any comment on their team's goals; athletes can remove only their own.
 - After the game, open the last game, pick **Achieved**, **Partly** or **Not yet** for each team
   goal, add a few words for the team and tap **Save review**. Athletes see your review.
 
@@ -1223,7 +1231,7 @@ once saved, only replaced or removed.
 | Daily check-in answers and notes | The athlete, their guardians and their coaches. The committee, physios and admins see only group averages, hidden below 3 check-ins. |
 | Injuries and documents  | The athlete, their guardians, their coaches, physios, the committee and admins. Managers don't see injuries. Only the committee and admins can save or share documents; everyone else views them in the app. |
 | Game goals and reflections | The athlete, their guardians and their coaches. The committee, physios and admins don't see them. |
-| Team goals              | The team's athletes, their guardians and its coaches. Only its coaches set and review them. |
+| Team goals              | The team's athletes, their guardians and its coaches. Only its coaches set and review them. Athletes and coaches in the team can comment; guardians read the comments. |
 | Integrity training certificates | The member, their parents or guardians, the committee and admins. Coaches don't see them. Certificates can't be changed or removed once sent. |
 | Attendance records      | Coaches, the committee and admins. Managers see their own groups' sessions. Athletes and guardians don't see attendance.    |
 | Committee calendar      | Committee members and admins.                                                                                               |

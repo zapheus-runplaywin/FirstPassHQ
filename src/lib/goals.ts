@@ -13,6 +13,7 @@ import type {
   GoalGame,
   GoalOutcome,
   TeamGameGoal,
+  TeamGameGoalComment,
 } from '@/lib/types';
 import { hasRole } from '@/lib/roles';
 
@@ -21,6 +22,8 @@ export const GOAL_COLUMNS =
 export const GOAL_COMMENT_COLUMNS = 'id, goal_id, author_id, author_name, body, created_at';
 export const TEAM_GOAL_COLUMNS =
   'id, fixture_id, body, set_by_name, outcome, review, reviewed_by_name, created_at';
+export const TEAM_GOAL_COMMENT_COLUMNS =
+  'id, goal_id, author_id, author_name, author_role, body, created_at';
 
 /** Played games shown at a time. */
 export const PAST_PAGE_SIZE = 10;
@@ -161,6 +164,31 @@ export async function fetchTeamGoals(fixtureId: string) {
     .eq('fixture_id', fixtureId)
     .order('created_at');
   return (data as TeamGameGoal[] | null) ?? [];
+}
+
+/** Team members' comments on a game's team goals, oldest first. */
+export async function fetchTeamGoalComments(goalIds: string[]) {
+  if (goalIds.length === 0) return [];
+  const { data } = await supabase
+    .from('team_game_goal_comments')
+    .select(TEAM_GOAL_COMMENT_COLUMNS)
+    .in('goal_id', goalIds)
+    .order('created_at');
+  return (data as TeamGameGoalComment[] | null) ?? [];
+}
+
+/** Such as "Coach Sam Lee", "Manager Jo Park" or, for athletes, just their name. */
+export function commentAuthor(comment: Pick<TeamGameGoalComment, 'author_name' | 'author_role'>) {
+  if (comment.author_role === 'coach') return `Coach ${comment.author_name}`;
+  if (comment.author_role === 'manager') return `Manager ${comment.author_name}`;
+  return comment.author_name;
+}
+
+/** Everyone in the game's current squad or team (athletes, coaches and managers) can comment on its team goals. */
+export function useCanCommentOnTeamGoals(teamId: string | null | undefined) {
+  const { profile, memberships } = useAuth();
+  if (profile?.status !== 'approved' || !teamId) return false;
+  return memberships.some((m) => m.team.id === teamId);
 }
 
 /**

@@ -476,6 +476,18 @@ export type TeamGameGoal = {
   created_at: string;
 };
 
+/** A team member's comment on a team goal. */
+export type TeamGameGoalComment = {
+  id: string;
+  goal_id: string;
+  author_id: string | null;
+  author_name: string;
+  /** Their part in the team when they wrote it. */
+  author_role: TeamRole;
+  body: string;
+  created_at: string;
+};
+
 /** A squad or team the member coaches, with its next or last game, for team goals. */
 export type CoachTeamGame = {
   team_id: string;

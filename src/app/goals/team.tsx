@@ -3,11 +3,13 @@ import { useCallback, useState } from 'react';
 import { StyleSheet, View } from 'react-native';
 
 import { Screen } from '@/components/screen';
+import { AddTeamGoalComment, TeamGoalComments } from '@/components/team-goals';
 import { ThemedText } from '@/components/themed-text';
 import { Button, Card, ChipGroup, ConfirmDelete, ErrorText, TextField } from '@/components/ui';
 import { Spacing } from '@/constants/theme';
 import {
   MAX_GOALS,
+  fetchTeamGoalComments,
   fetchTeamGoals,
   gamePhase,
   gameTitle,
@@ -15,13 +17,19 @@ import {
   outcomeOptions,
 } from '@/lib/goals';
 import { supabase } from '@/lib/supabase';
-import type { CoachTeamGame, GoalOutcome, TeamGameGoal } from '@/lib/types';
+import type {
+  CoachTeamGame,
+  GoalOutcome,
+  TeamGameGoal,
+  TeamGameGoalComment,
+} from '@/lib/types';
 
 /** A coach's goals for the whole squad or team in one game. */
 export default function TeamGoalsScreen() {
   const { fixture } = useLocalSearchParams<{ fixture: string }>();
   const [game, setGame] = useState<CoachTeamGame | null>();
   const [goals, setGoals] = useState<TeamGameGoal[]>([]);
+  const [comments, setComments] = useState<TeamGameGoalComment[]>([]);
   const [refreshing, setRefreshing] = useState(false);
 
   const load = useCallback(async () => {
@@ -31,6 +39,7 @@ export default function TeamGoalsScreen() {
     ]);
     setGame(((data as CoachTeamGame[] | null) ?? []).find((g) => g.fixture_id === fixture) ?? null);
     setGoals(list);
+    setComments(await fetchTeamGoalComments(list.map((g) => g.id)));
   }, [fixture]);
 
   useFocusEffect(
@@ -68,7 +77,7 @@ export default function TeamGoalsScreen() {
         </ThemedText>
         <ThemedText type="small" themeColor="textSecondary">
           {phase === 'open'
-            ? 'Goals for the whole team. Everyone in it, and their parents or guardians, can see them. You can add and change them until the game starts.'
+            ? 'Goals for the whole team. Everyone in it, and their parents or guardians, can see them, and everyone in the team can comment. You can add and change them until the game starts.'
             : phase === 'playing'
               ? 'Game on. You can say how each goal went after the game.'
               : 'How did the team go? Pick how each goal went and add a few words for the team.'}
@@ -86,6 +95,7 @@ export default function TeamGoalsScreen() {
           key={goal.id}
           number={index + 1}
           goal={goal}
+          comments={comments.filter((c) => c.goal_id === goal.id)}
           editable={phase === 'open'}
           canReview={phase === 'played'}
           onChanged={load}
@@ -140,12 +150,14 @@ function AddTeamGoal({ fixtureId, onAdded }: { fixtureId: string; onAdded: () =>
 function TeamGoalCard({
   number,
   goal,
+  comments,
   editable,
   canReview,
   onChanged,
 }: {
   number: number;
   goal: TeamGameGoal;
+  comments: TeamGameGoalComment[];
   editable: boolean;
   canReview: boolean;
   onChanged: () => Promise<void>;
@@ -217,7 +229,10 @@ function TeamGoalCard({
             ) : null}
           </>
         )}
+        {/* Coaches can remove any comment on their team's goals. */}
+        <TeamGoalComments comments={comments} canRemove={() => true} onChanged={onChanged} />
       </Card>
+      <AddTeamGoalComment goalId={goal.id} onAdded={onChanged} />
       {canReview ? <Review goal={goal} onSaved={onChanged} /> : null}
     </View>
   );
