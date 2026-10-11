@@ -19,6 +19,10 @@ export type Todo = {
 /**
  * Everything the member owes, daily items first, built from what the home
  * screen has already loaded. Each item disappears once it's done.
+ *
+ * `member_todos` in the database works out the same list for push
+ * notifications (supabase/migrations/20261011000000_todo_push_notifications.sql).
+ * When an item is added or changed here, change it there too, in a new migration.
  */
 export function buildTodos({
   userId,

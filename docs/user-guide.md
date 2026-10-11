@@ -233,7 +233,27 @@ your member page, and can search for you by either.
 Committee members and admins also see a **Title** field, for a position such as President,
 Secretary or Treasurer. It shows under your name with your role, like "Committee · President".
 
-<img src="user-guide/your-details.png" width="210" alt="Your details: preferred name and title">
+<img src="user-guide/your-details.png" width="210" alt="Your details: preferred name, title and to-do notifications">
+
+### To-do notifications
+
+On an installed app, your phone gets a notification when something new appears on your
+[to-do list](#the-home-screen), such as a clearance to sign off, an award vote opening, training
+to complete or, for athletes, the day's check-in. Tap the notification to go straight to it. The
+first time, your phone asks whether the app may send notifications: tap **Allow**.
+
+- Notifications aren't sent between 8 pm and 7 am. Anything still on your list at 7 am arrives
+  then, with several to-dos in one notification.
+- Each to-do is sent once. Daily items, such as the check-in, come once a day while they're
+  still to do; admins' child-safety follow-ups come once a month.
+- Notifications can show on a locked phone, so they never include injury details or reviewers'
+  notes. Open the app to see those.
+- If you belong to more than one club, tapping a notification opens the club it came from.
+
+To stop them, tap **Your details** at the bottom of the home screen and turn off **To-do
+notifications**. It saves straight away and only changes your own notifications. If your phone is
+blocking notifications from the app, Your details says so and **Open phone settings** takes you
+there to allow them.
 
 ### Messages
 
@@ -807,7 +827,7 @@ sign-off, plus child-safety follow-ups: athletes under 18 with no guardian linke
 Children Checks that are missing, expired or expire within 30 days, and athletes turning 18 within
 30 days. Tapping a child-safety to-do opens **Members**, where the people behind it are listed
 first under **Needs checking**. On an installed app, admins also get a push notification for each
-new join request.
+new join request, unless they have turned off [to-do notifications](#to-do-notifications).
 
 <img src="user-guide/admin-home.png" width="210" alt="Admin home screen">
 <img src="user-guide/administration.png" width="210" alt="Administration menu">
@@ -1216,6 +1236,7 @@ once saved, only replaced or removed.
 | ----------------------- | --------------------------------------------------------------------------------------------------------------------------- |
 | Your profile and squads | You, the people in your squads and teams (names and positions only), and admins.                                            |
 | Preferred name and title | You and admins.                                                                                                            |
+| To-do notifications     | Only you, on the phones you're signed in on. They name the to-do but never injury details or reviewers' notes. Your on/off choice is yours alone. |
 | Captains                | Club captains: every member. A squad or team's captains: the people in it, and admins.                                     |
 | Date of birth and Working With Children Check | You and admins. Awards with an age limit use it to decide who can be voted for, without showing it.   |
 | Messages                | The people they were sent to, the sender, and admins. Guardians of athletes under 18 get a copy of every message sent to their athlete, and of every message their athlete sends as a captain. Guests don't get messages; physios get messages sent to the Physio role, and whole-club messages only if an admin turns that on. |
