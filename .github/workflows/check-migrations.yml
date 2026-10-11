@@ -29,6 +29,16 @@ jobs:
             echo "::error::Merged migrations must not change. Add a new migration instead."
             exit 1
           fi
+      # Supabase records migrations by the number before the first "_", so two
+      # files with the same number stop every deploy after them.
+      - name: Every migration has its own version number
+        run: |
+          dupes=$(ls supabase/migrations/*.sql | xargs -n1 basename | cut -d_ -f1 | sort | uniq -d)
+          if [ -n "$dupes" ]; then
+            for v in $dupes; do ls supabase/migrations/${v}_*.sql; done
+            echo "::error::Two migrations share a version number. Give the newer one a later, unused number."
+            exit 1
+          fi
       - name: Nothing exposes data
         env:
           BASE: origin/${{ github.base_ref }}
