@@ -78,6 +78,7 @@ Until these secrets exist the workflows only warn and carry on updating the live
 ## Day to day
 
 - **Trying a change:** `npx expo start`. You're on test data, so nothing you do reaches members.
+  No computer handy? Run it in a codespace instead: see [Trying the app in GitHub Codespaces](codespaces.md).
 - **A build for testers:** `npx eas-cli@latest build --profile preview --platform android`. It uses
   the live project.
 - **A fix without a new build:** `scripts/publish-update.sh preview "What changed"` (or `production`

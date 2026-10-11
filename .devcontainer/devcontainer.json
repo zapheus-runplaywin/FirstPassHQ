@@ -1,0 +1,29 @@
+// GitHub Codespaces setup for trying the app in Expo Go or a browser.
+// See docs/codespaces.md.
+{
+  "name": "FirstPass HQ",
+  // React Native 0.86 and Metro need Node 20.19.4+ or 22.13+.
+  "image": "mcr.microsoft.com/devcontainers/javascript-node:1-22-bookworm",
+  // @expo/ngrok runs the tunnel that lets Expo Go on a phone reach the dev server.
+  "postCreateCommand": "npm ci && npm install -g @expo/ngrok@^4.1.0",
+  "forwardPorts": [8081],
+  "portsAttributes": {
+    "8081": { "label": "Expo (web preview)", "onAutoForward": "notify" }
+  },
+  // Codespaces offers to ask for these when the codespace is created. Use the TEST Supabase
+  // project's values (docs/environments.md), never the live one. They reach the app as
+  // environment variables, so no .env file is needed.
+  "secrets": {
+    "EXPO_PUBLIC_SUPABASE_URL": {
+      "description": "The test Supabase project's URL, from Project Settings > API."
+    },
+    "EXPO_PUBLIC_SUPABASE_ANON_KEY": {
+      "description": "The test Supabase project's anon public key, from Project Settings > API."
+    }
+  },
+  "customizations": {
+    "vscode": {
+      "extensions": ["expo.vscode-expo-tools", "dbaeumer.vscode-eslint"]
+    }
+  }
+}

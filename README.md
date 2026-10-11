@@ -76,6 +76,9 @@ Scan the QR code with the Expo Go app on your phone. Your `.env` should point at
 Supabase project, so you're working with sample people, not members. See
 [Test and live](docs/environments.md).
 
+To run it in the cloud instead, with nothing installed on your computer, see
+[Trying the app in GitHub Codespaces](docs/codespaces.md).
+
 Before committing, run:
 
 ```bash
