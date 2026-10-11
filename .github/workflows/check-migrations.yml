@@ -31,7 +31,10 @@ jobs:
           fi
       # Supabase records migrations by the number before the first "_", so two
       # files with the same number stop every deploy after them.
+      # The checks below run even when an earlier one fails, so one run shows
+      # every problem.
       - name: Every migration has its own version number
+        if: ${{ !cancelled() }}
         run: |
           dupes=$(ls supabase/migrations/*.sql | xargs -n1 basename | cut -d_ -f1 | sort | uniq -d)
           if [ -n "$dupes" ]; then
@@ -40,22 +43,25 @@ jobs:
             exit 1
           fi
       - name: Nothing exposes data
+        if: ${{ !cancelled() }}
         env:
           BASE: origin/${{ github.base_ref }}
         run: |
           files=$(git diff --name-only --diff-filter=A "$BASE"...HEAD -- 'supabase/migrations/*.sql')
           if [ -n "$files" ]; then python3 scripts/check-migration-security.py $files; fi
       - name: Nothing loses data without permission
-        if: ${{ !contains(github.event.pull_request.labels.*.name, 'data-loss-approved') }}
+        if: ${{ !cancelled() && !contains(github.event.pull_request.labels.*.name, 'data-loss-approved') }}
         env:
           BASE: origin/${{ github.base_ref }}
         run: |
           files=$(git diff --name-only --diff-filter=A "$BASE"...HEAD -- 'supabase/migrations/*.sql')
           if [ -n "$files" ]; then python3 scripts/check-migrations.py $files; fi
       - uses: supabase/setup-cli@45a513f8c64c0bc8e0e3dfe572b5c95be85f6359 # v3.0.1
+        if: ${{ !cancelled() }}
         with:
           version: latest
       - name: Migrations apply to a fresh database
+        if: ${{ !cancelled() }}
         run: |
           supabase init
           supabase db start
