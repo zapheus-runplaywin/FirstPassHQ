@@ -36,7 +36,7 @@ each of their roles can.
 | **Guardian**  | Parents and guardians of athletes under 18.                                                          |
 | **Coach**     | Head coaches and assistant coaches. Both have the same permissions; the title only shows who is who. Need a current Working With Children Check. |
 | **Manager**   | Squad and team managers. Need a current Working With Children Check.                                 |
-| **Committee** | Club committee members. Each can add a title, such as President or Secretary, shown with their role. |
+| **Committee** | Club committee members. Each can add a title, such as President or Secretary, shown with their role. Need a current Working With Children Check unless an admin exempts them. |
 | **Physio**    | The club's physiotherapists. Need a current Working With Children Check.                             |
 | **Guest**     | Anyone else the club lets in, such as partners and sponsors. Guests can only look.                   |
 | **Admin**     | The people who run the app. Admin is granted by another admin, never requested. Admins can add a title too. |
@@ -698,6 +698,8 @@ Managers don't see athletes' attendance histories, check-ins or injuries.
 ## 8. Committee
 
 Committee members oversee the club's athletes without seeing anyone's private check-in answers.
+Like coaches, they need a current Working With Children Check, recorded by an admin, unless an
+admin exempts them with a reason.
 
 <img src="user-guide/committee-home.png" width="210" alt="Committee home screen">
 
@@ -854,14 +856,21 @@ against PlayHQ, then:
    guardians** section: search for a guardian and tap to link them (tap ✕ to unlink). Only
    verified guardians can be linked; unverified ones show "(not verified)". Until you have a date of
    birth, choose **Under 18** or **18 or over** instead.
-4. For coaches, managers and physios, enter their **Working With Children Check** card number and
-   expiry date.
+4. For coaches, managers, physios and committee members, enter their **Working With Children
+   Check** card number and expiry date. A committee member who doesn't need one, such as a
+   treasurer who is never at training or games, can be marked **Exempt** instead: write why, and
+   the app records who exempted them and when. Exemptions are for the committee role only; someone
+   who also coaches, manages or is a physio still needs a check. You can't exempt yourself, so ask
+   another admin.
 5. Tap **Approve**.
 
 The app won't approve or save:
 
 - an athlete under 18 without at least one verified guardian;
-- a coach, manager or physio without a current Working With Children Check.
+- a coach, manager or physio without a current Working With Children Check;
+- a new committee member without a current Working With Children Check or an exemption. Committee
+  members approved before checks were needed keep their access, and show under **Needs checking**
+  until you record a check or exempt them.
 
 **Verifying someone.** Guardians must be verified before they can be linked to a child. If their
 PlayHQ email matches the registration, tap **Checked against PlayHQ**. Otherwise get the 6-digit code
@@ -880,6 +889,7 @@ club** or **Other**) and tap **Don't approve**. They see the reason and can requ
 <img src="user-guide/member-under-18.png" width="210" alt="Athlete under 18 with date of birth and guardians linked">
 <img src="user-guide/member-guardian.png" width="210" alt="Guardian showing their athlete, waiting to be verified">
 <img src="user-guide/member-wwcc.png" width="210" alt="Coach with Working With Children Check fields">
+<img src="user-guide/member-wwcc-exempt.png" width="210" alt="Committee member exempted from the Working With Children Check, with the reason">
 
 ### Changing or removing members
 
@@ -1138,9 +1148,11 @@ with its totals, and **Export PDF** saves the same report as a PDF through the s
 computer it downloads), ready for the committee, an audit or OneDrive. The PDF has the club's
 name, the date it was made and page numbers, and anything that needs attention is in red.
 
-- **Working With Children Checks**: every approved coach, manager and physio with their roles,
-  squads and teams, check number, expiry date and status. Checks that are missing, have no expiry
-  date, have expired or expire within 30 days are listed first under **Needs attention**.
+- **Working With Children Checks**: every approved coach, manager, physio and committee member
+  with their roles, squads and teams, check number, expiry date and status. Checks that are
+  missing, have no expiry date, have expired or expire within 30 days are listed first under
+  **Needs attention**. Committee members who are exempt are listed last, with the reason, who
+  exempted them and when.
 - **Under 18s and their guardians**: every approved athlete under 18 with their date of birth and
   age, squad or team, and parents or guardians with their email addresses. Athletes with no parent
   or guardian linked come first, and guardians who haven't been verified are marked. It prints
@@ -1225,7 +1237,7 @@ once saved, only replaced or removed.
 | Your profile and squads | You, the people in your squads and teams (names and positions only), and admins.                                            |
 | Preferred name and title | You and admins.                                                                                                            |
 | Captains                | Club captains: every member. A squad or team's captains: the people in it, and admins.                                     |
-| Date of birth and Working With Children Check | You and admins. Awards with an age limit use it to decide who can be voted for, without showing it.   |
+| Date of birth, Working With Children Check and exemption | You and admins. Awards with an age limit use it to decide who can be voted for, without showing it.   |
 | Messages                | The people they were sent to, the sender, and admins. Guardians of athletes under 18 get a copy of every message sent to their athlete, and of every message their athlete sends as a captain. Guests don't get messages; physios get messages sent to the Physio role, and whole-club messages only if an admin turns that on. |
 | Read receipts           | The sender and admins.                                                                                                      |
 | Daily check-in answers and notes | The athlete, their guardians and their coaches. The committee, physios and admins see only group averages, hidden below 3 check-ins. |
