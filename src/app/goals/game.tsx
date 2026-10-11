@@ -21,7 +21,6 @@ import {
   outcomeOptions,
   useCanCommentOnTeamGoals,
   useIsGoalCoach,
-  useIsGoalGuardian,
 } from '@/lib/goals';
 import { supabase } from '@/lib/supabase';
 import type {
@@ -35,17 +34,19 @@ import type {
 
 /** One athlete's goals for one game: set before it, reflected on after it. */
 export default function GameGoalsScreen() {
-  const { athlete, fixture, name } = useLocalSearchParams<{
+  const { athlete, fixture, name, view } = useLocalSearchParams<{
     athlete: string;
     fixture: string;
     name?: string;
+    /** 'guardian' when a parent or guardian opened it from their home screen. */
+    view?: string;
   }>();
   const { session } = useAuth();
-  const isGuardian = useIsGoalGuardian();
   const isCoach = useIsGoalCoach();
-  // The athlete, or their guardian acting for them.
-  const own = session?.user.id === athlete || isGuardian;
-  const coach = !own && isCoach;
+  // Only the athlete sets and reflects on their own goals.
+  const own = session?.user.id === athlete;
+  // Parents and guardians only read them.
+  const coach = !own && isCoach && view !== 'guardian';
 
   const [game, setGame] = useState<GoalGame | null>();
   const [goals, setGoals] = useState<GameGoal[]>([]);
@@ -105,14 +106,16 @@ export default function GameGoalsScreen() {
         </ThemedText>
         <ThemedText type="small" themeColor="textSecondary">
           {phase === 'open'
-            ? 'Goals can be added and changed until the game starts.'
+            ? own || coach
+              ? 'Goals can be added and changed until the game starts.'
+              : 'Your athlete and their coaches can add goals until the game starts.'
             : phase === 'playing'
               ? 'Game on. Reflections open after the game.'
               : own
                 ? 'How did it go? Pick how each goal went and add a few words.'
                 : coach
                   ? 'Read how the athlete thinks it went and add your comments.'
-                  : 'How the game went.'}
+                  : 'How the athlete thinks it went, and what their coaches said.'}
         </ThemedText>
       </View>
 

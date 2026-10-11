@@ -77,7 +77,7 @@ What each role sees on its home screen:
 | Read messages                          |    ✓    |        ✓        |      ✓       |     ✓      |       ✓       |       ✓*      |         |       ✓       |
 | Send messages                          | Captains† |                 |  Own groups  | Own groups |   Whole club  |               |         |     Anyone    |
 | Daily check-in                         |    ✓    |                 |              |            |               |               |         |               |
-| Game goals and reflections             |   Own   | Their athlete's | Own athletes |            |               |               |         |               |
+| Game goals and reflections             |   Own   |  See athlete's  | Own athletes |            |               |               |         |               |
 | Team goals for a game                  | See, comment |       See       | Set, review, comment |            |               |               |         |               |
 | Check-ins of others                    |         |                 | Own athletes |            | Averages only | Averages only |         | Averages only |
 | Report an injury                       |   Own   | Their athlete's |              |            |               |               |         |               |
@@ -403,7 +403,8 @@ the team's games at the top and the people in it underneath.
   older ones. Games drop off the list when an admin archives the season.
 
 Your coaches can see your goals and reflections. If you're under 18, your parents or guardians can
-too, and they can set goals and reflect for you. Bye rounds are left out.
+see them too, but only you and your coaches set goals, and only you reflect on yours. Bye rounds are
+left out.
 
 **Team goals** that your coaches set for the whole team show at the top of the game,
 above your own goals. After the game you'll see how the coaches think the team went on each one.
@@ -498,9 +499,10 @@ As a guardian you:
 - **See your athlete's daily check-ins**, including any note they write. Your athlete is told that
   you can read their notes.
 - **See the calendars** for your athlete's squad.
-- **Set game goals and reflect** for your athlete, exactly as an athlete does (see
+- **See your athlete's game goals and reflections**: the goals they and their coaches set for
+  each game, how your athlete thinks each one went, their coaches' comments and the team goals (see
   [Game goals](#game-goals)). Tap your athlete under **Guardian of** on the home screen to see all
-  their games.
+  their games. You can't set goals or reflect: your athlete and their coaches do that in the app.
 - **Report and update injuries** for your athlete, and ask for clearance, exactly as an athlete
   does (see [Athletes](#4-athletes)). If you look after more than one athlete, choose which one
   when reporting.
@@ -511,6 +513,7 @@ As a guardian you:
 <img src="user-guide/guardian-home.png" width="210" alt="Guardian home screen">
 <img src="user-guide/training-guardian.png" width="210" alt="A guardian's view of their athlete's training, one sent back">
 <img src="user-guide/goals-guardian.png" width="210" alt="An athlete's games, opened by their guardian">
+<img src="user-guide/goals-guardian-played.png" width="210" alt="A guardian reading their athlete's goals, reflections and coach comments">
 
 <div style="page-break-before: always"></div>
 
@@ -1242,7 +1245,7 @@ once saved, only replaced or removed.
 | Read receipts           | The sender and admins.                                                                                                      |
 | Daily check-in answers and notes | The athlete, their guardians and their coaches. The committee, physios and admins see only group averages, hidden below 3 check-ins. |
 | Injuries and documents  | The athlete, their guardians, their coaches, physios, the committee and admins. Managers don't see injuries. Only the committee and admins can save or share documents; everyone else views them in the app. |
-| Game goals and reflections | The athlete, their guardians and their coaches. The committee, physios and admins don't see them. |
+| Game goals and reflections | The athlete, their guardians and their coaches. Only the athlete and their coaches set goals, and only the athlete reflects; guardians just read them. The committee, physios and admins don't see them. |
 | Team goals              | The team's athletes, their guardians and its coaches. Only its coaches set and review them. Athletes and coaches in the team can comment; guardians read the comments. |
 | Integrity training certificates | The member, their parents or guardians, the committee and admins. Coaches don't see them. Certificates can't be changed or removed once sent. |
 | Attendance records      | Coaches, the committee and admins. Managers see their own groups' sessions. Athletes and guardians don't see attendance.    |
