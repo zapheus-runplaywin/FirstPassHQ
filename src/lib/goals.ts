@@ -91,12 +91,6 @@ export function useIsGoalAthlete() {
   return profile?.status === 'approved' && hasRole(profile, 'athlete');
 }
 
-/** Parents and guardians act for their athletes. */
-export function useIsGoalGuardian() {
-  const { profile } = useAuth();
-  return profile?.status === 'approved' && hasRole(profile, 'guardian');
-}
-
 /**
  * Coaches of a current squad or team add goals and comment. Like check-ins, a
  * squad's coaches stop once its squad phase is complete.

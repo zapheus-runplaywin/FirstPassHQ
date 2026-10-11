@@ -305,7 +305,10 @@ export default function HomeScreen() {
             <PressableCard
               key={a.id}
               onPress={() =>
-                router.push({ pathname: '/goals/athlete/[id]', params: { id: a.id, name: a.name } })
+                router.push({
+                  pathname: '/goals/athlete/[id]',
+                  params: { id: a.id, name: a.name, view: 'guardian' },
+                })
               }>
               <ThemedText type="smallBold">{a.name}</ThemedText>
               <ThemedText type="small" themeColor="textSecondary">
