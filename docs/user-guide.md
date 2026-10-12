@@ -1004,10 +1004,7 @@ With squads on:
 
 ### Seasons
 
-A season holds the club's squads and teams for one year and who is in them. Each club sets its
-own timing: the season might start at selections and finish a few weeks after the main
-competition, and the dates can move from year to year. **Seasons** handles the change-over
-whenever your club is ready:
+**Seasons** handles the change-over to a new season:
 
 1. **Start the next season.** This creates empty squads with the same names, and their squad
    calendars, for the new season (for example 2027–28). Nobody is moved, and last season keeps
@@ -1207,8 +1204,8 @@ name, the date it was made and page numbers, and anything that needs attention i
   lists everyone with a course not yet approved, in red if a due date has passed, then each course
   lists who must complete it, where they're up to, when they completed it and who checked it.
 - **Attendance** (when Attendance is on): pick the **Period** (last 4 weeks, last 3 months, this
-  season since it was started in **Seasons**, or **Choose dates** for a from and to date) and the
-  **Squads and teams**: **All**, **Whole club events**, or any squads and teams. A squad includes the teams named from it. Each
+  season, or **Choose dates** for a from and to date) and the **Squads and teams**: **All**,
+  **Whole club events**, or any squads and teams. A squad includes the teams named from it. Each
   group lists its athletes with sessions present, absent and their attendance rate, followed by
   every session with who took it.
 - **Award results** (when Awards are on): awards whose voting has closed. Open one for its full
