@@ -75,10 +75,10 @@ export type Profile = {
   declared_date_of_birth: string | null;
   /** A parent's or guardian's email, given by an athlete under 18 when asking to join. */
   guardian_email: string | null;
-  /** Working With Children Check, recorded by an admin for coaches, managers, physios and committee members. */
+  /** Working With Children Check, recorded by an admin for coaches, managers, physios, committee members and admins. */
   wwcc_number: string | null;
   wwcc_expires_on: string | null;
-  /** Why an admin excused a committee member from the check, who did and when. */
+  /** Why another admin excused a committee member or admin from the check, who did and when. */
   wwcc_exempt_reason: string | null;
   wwcc_exempted_by: string | null;
   wwcc_exempted_at: string | null;
