@@ -10,7 +10,8 @@ import { useAuth } from '@/lib/auth';
 import { useSquads } from '@/lib/club';
 import { isTeamRole, requestableRoles, roleLabels } from '@/lib/labels';
 import { supabase } from '@/lib/supabase';
-import type { AppRole } from '@/lib/types';
+import { volunteerScreeningLabels } from '@/lib/safety';
+import type { AppRole, VolunteerScreening } from '@/lib/types';
 import { newestGroups, useTeams } from '@/lib/use-teams';
 
 export default function JoinScreen() {
@@ -23,6 +24,13 @@ export default function JoinScreen() {
   const [teamId, setTeamId] = useState<string | null>(profile?.requested_team_id ?? null);
   const [dateOfBirth, setDateOfBirth] = useState(formatDate(profile?.declared_date_of_birth));
   const [guardianEmail, setGuardianEmail] = useState(profile?.guardian_email ?? '');
+  const [task, setTask] = useState(profile?.volunteer_task ?? '');
+  const [from, setFrom] = useState(formatDate(profile?.volunteer_from));
+  const [until, setUntil] = useState(formatDate(profile?.volunteer_until));
+  const [screening, setScreening] = useState<VolunteerScreening | null>(
+    profile?.volunteer_screening ?? null,
+  );
+  const [cardNumber, setCardNumber] = useState(profile?.declared_wwcc_number ?? '');
   const [password, setPassword] = useState('');
   const [needsPassword, setNeedsPassword] = useState(false);
   const [saving, setSaving] = useState(false);
@@ -32,6 +40,9 @@ export default function JoinScreen() {
   const dob = parseDate(dateOfBirth);
   // A child athlete needs a parent or guardian linked before they're approved.
   const child = role === 'athlete' && !!dob && isMinor(dob, false);
+  const volunteer = role === 'volunteer';
+  const fromDay = parseDate(from);
+  const untilDay = parseDate(until);
 
   useEffect(() => {
     supabase.rpc('join_password_required').then(({ data }) => setNeedsPassword(data === true));
@@ -58,6 +69,22 @@ export default function JoinScreen() {
       setError('Please enter the email you used to register with PlayHQ.');
       return;
     }
+    if (volunteer && !task.trim()) {
+      setError('Please say what you’ll help with.');
+      return;
+    }
+    if (volunteer && (!fromDay || !untilDay)) {
+      setError('Please enter your first and last day as DD/MM/YYYY.');
+      return;
+    }
+    if (volunteer && !screening) {
+      setError('Please choose how you’re screened to work with children.');
+      return;
+    }
+    if (volunteer && screening === 'card' && !cardNumber.trim()) {
+      setError('Please enter your Working With Children Check card number.');
+      return;
+    }
     if (needsPassword && !password.trim()) {
       setError('Please enter the club password. A club admin can give it to you.');
       return;
@@ -75,11 +102,27 @@ export default function JoinScreen() {
       p_date_of_birth: dob,
       p_guardian_email: child ? guardianEmail : null,
     });
-    setSaving(false);
     if (rpcError || refused) {
+      setSaving(false);
       setError(rpcError?.message ?? String(refused));
       return;
     }
+    if (volunteer) {
+      const { error: detailsError } = await supabase.rpc('set_my_volunteer_details', {
+        p_task: task,
+        p_from: fromDay,
+        p_until: untilDay,
+        p_screening: screening,
+        p_card_number: screening === 'card' ? cardNumber : null,
+      });
+      if (detailsError) {
+        setSaving(false);
+        await refresh();
+        setError(detailsError.message);
+        return;
+      }
+    }
+    setSaving(false);
     await refresh();
     router.back();
   }
@@ -143,6 +186,61 @@ export default function JoinScreen() {
         />
       ) : null}
 
+      {volunteer ? (
+        <>
+          <ThemedText type="small" themeColor="textSecondary">
+            For someone helping for a day or a short time, such as at a carnival, clinic or
+            tournament. You won’t see the club’s squads, calendar or messages: this is so the club
+            can check you’re cleared to work with children and keep a record.
+          </ThemedText>
+          <TextField
+            label="What you’ll help with"
+            value={task}
+            onChangeText={setTask}
+            placeholder="For example, bench helper at the State carnival"
+            maxLength={200}
+            multiline
+          />
+          <TextField
+            label="First day"
+            value={from}
+            onChangeText={setFrom}
+            placeholder="DD/MM/YYYY"
+            keyboardType="numbers-and-punctuation"
+            maxLength={10}
+          />
+          <TextField
+            label="Last day"
+            value={until}
+            onChangeText={setUntil}
+            placeholder="DD/MM/YYYY"
+            keyboardType="numbers-and-punctuation"
+            maxLength={10}
+          />
+          <ChipGroup
+            label="Working With Children Check"
+            options={volunteerScreenings.map((v) => ({
+              value: v,
+              label: volunteerScreeningLabels[v],
+            }))}
+            selected={screening ? [screening] : []}
+            onToggle={setScreening}
+          />
+          {screening === 'card' ? (
+            <TextField
+              label="Card number"
+              value={cardNumber}
+              onChangeText={setCardNumber}
+              autoCapitalize="characters"
+              maxLength={30}
+            />
+          ) : null}
+          <ThemedText type="small" themeColor="textSecondary">
+            {screening ? volunteerScreeningHelp[screening] : ''}
+          </ThemedText>
+        </>
+      ) : null}
+
       {needsPassword ? (
         <TextField
           label="Club password"
@@ -186,3 +284,26 @@ export default function JoinScreen() {
     </Screen>
   );
 }
+
+const volunteerScreenings: VolunteerScreening[] = [
+  'card',
+  'visitor',
+  'national_event',
+  'parent',
+  'under_18',
+  'none',
+];
+
+/** What happens next for each answer. */
+const volunteerScreeningHelp: Record<VolunteerScreening, string> = {
+  card: 'A club admin checks your card online before you help.',
+  visitor:
+    'If you don’t normally live in WA, you don’t need a WA check for the first two weeks after you arrive, once in any 12 months. A club admin records the day you arrived and you accept a declaration.',
+  national_event:
+    'If you don’t normally live in WA, you don’t need a WA check for up to 30 days at a national event or tour, once in any 12 months. A club admin records the event and you accept a declaration.',
+  parent:
+    'A parent volunteering at their own child’s club doesn’t need a check. A club admin links you to your child and you accept a declaration.',
+  under_18:
+    'Volunteers under 18 don’t need a check. You’ll accept a declaration in the app.',
+  none: 'You’ll need a WA Working With Children Check before you help. Apply at workingwithchildren.wa.gov.au and tell a club admin your application number.',
+};

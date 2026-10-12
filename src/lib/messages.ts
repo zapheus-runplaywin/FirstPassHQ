@@ -78,7 +78,7 @@ export function useCanMessageClub() {
  */
 export function useGetsMessages() {
   const { profile } = useAuth();
-  return profile?.status === 'approved' && profile.role !== 'guest';
+  return profile?.status === 'approved' && profile.role !== 'guest' && profile.role !== 'volunteer';
 }
 
 /** Admins, the committee, coaches, managers and captains can send messages. */

@@ -17,6 +17,7 @@ export const roleLabels: Record<AppRole, string> = {
   physio: 'Physio',
   guardian: 'Guardian',
   guest: 'Guest',
+  volunteer: 'Temporary volunteer',
 };
 
 /** A role as a group of people, such as "Guardians". */
@@ -29,6 +30,7 @@ export const pluralRoleLabels: Record<AppRole, string> = {
   physio: 'Physios',
   guardian: 'Guardians',
   guest: 'Guests',
+  volunteer: 'Temporary volunteers',
 };
 
 export const statusLabels: Record<MemberStatus, string> = {
@@ -85,6 +87,7 @@ export const requestableRoles: AppRole[] = [
   'committee',
   'physio',
   'guest',
+  'volunteer',
 ];
 
 /** Roles that belong to a team or squad. */

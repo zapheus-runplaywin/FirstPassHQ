@@ -24,6 +24,7 @@ export function roleCombinationProblem(
 ): string | null {
   const has = (r: AppRole) => roles.includes(r);
   if (has('guest') && roles.length > 1) return 'Guests can’t have another role.';
+  if (has('volunteer') && roles.length > 1) return 'Temporary volunteers can’t have another role.';
   if (has('admin') && has('athlete')) return 'Admins can’t also be athletes.';
   if (has('athlete') && has('manager')) return 'Athletes can’t also be managers.';
   if (has('athlete') && has('physio')) return 'Athletes can’t also be physios.';

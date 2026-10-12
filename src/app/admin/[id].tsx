@@ -1,6 +1,6 @@
 import { router, Stack, useLocalSearchParams } from 'expo-router';
 import { useEffect, useState } from 'react';
-import { StyleSheet, View } from 'react-native';
+import { Linking, Pressable, StyleSheet, View } from 'react-native';
 
 import { GuardianHistory } from '@/components/guardian-history';
 import { Screen } from '@/components/screen';
@@ -10,6 +10,7 @@ import { WwccValidation } from '@/components/wwcc-validation';
 import { ThemedText } from '@/components/themed-text';
 import { Button, Card, ChipGroup, ConfirmDelete, ErrorText, TextField } from '@/components/ui';
 import { Spacing } from '@/constants/theme';
+import { useTheme } from '@/hooks/use-theme';
 import { formatDate, isMinor, parseDate } from '@/lib/age';
 import { PROFILE_COLUMNS, useAuth } from '@/lib/auth';
 import { useSquads } from '@/lib/club';
@@ -30,8 +31,11 @@ import {
   canBeExempt,
   exemptionStatus,
   standDownRoles,
+  isDatedExemption,
   verificationMethodLabels,
   volunteerExemptionLabels,
+  volunteerScreeningLabels,
+  wwcSources,
   wwccRoles,
   wwccStatus,
 } from '@/lib/safety';
@@ -98,6 +102,15 @@ export default function MemberScreen() {
   // How a coach, manager or physio is screened: a check, or a volunteer exemption.
   const [screening, setScreening] = useState<'check' | VolunteerExemptionBasis>('check');
   const [exemptChild, setExemptChild] = useState<string | null>(null);
+  // A visitor's arrival in WA, or a national event's first day, name and organiser.
+  const [exemptFrom, setExemptFrom] = useState('');
+  const [eventName, setEventName] = useState('');
+  const [organiser, setOrganiser] = useState('');
+  // A temporary volunteer's task and dates.
+  const [task, setTask] = useState('');
+  const [volunteerFrom, setVolunteerFrom] = useState('');
+  const [volunteerUntil, setVolunteerUntil] = useState('');
+  const [acknowledgedAt, setAcknowledgedAt] = useState<string | null>(null);
   const [exemptions, setExemptions] = useState<VolunteerExemption[]>([]);
   const [title, setTitle] = useState('');
   const [headPhysio, setHeadPhysio] = useState(false);
@@ -161,6 +174,21 @@ export default function MemberScreen() {
       const open = theirs.find((e) => !e.ended_at);
       setScreening(open?.basis ?? 'check');
       setExemptChild(open?.child_id ?? null);
+      setExemptFrom(formatDate(open?.starts_on));
+      setEventName(open?.event_name ?? '');
+      setOrganiser(open?.organiser ?? '');
+      setTask(profile.volunteer_task ?? '');
+      setVolunteerFrom(formatDate(profile.volunteer_from));
+      setVolunteerUntil(formatDate(profile.volunteer_until));
+      // When they last accepted the club's policies.
+      supabase
+        .from('policy_acknowledgements')
+        .select('acknowledged_at')
+        .eq('profile_id', id)
+        .order('acknowledged_at', { ascending: false })
+        .limit(1)
+        .maybeSingle()
+        .then(({ data }) => setAcknowledgedAt(data?.acknowledged_at ?? null));
       setTitle(profile.title ?? '');
       setHeadPhysio(profile.head_physio);
       setReason(profile.rejection_reason);
@@ -219,13 +247,17 @@ export default function MemberScreen() {
     parseDate(wwccExpires) === (member.wwcc_expires_on ?? null);
   const minor = isMinor(dob, under18);
   const hasGuardians = isAthlete && minor;
+  const isVolunteer = roles.includes('volunteer');
   const needsWwcc =
-    roles.some((r) => wwccRoles.includes(r)) || roles.includes('committee') || roles.includes('admin');
+    roles.some((r) => wwccRoles.includes(r)) ||
+    isVolunteer ||
+    roles.includes('committee') ||
+    roles.includes('admin');
   // Only a committee member or admin with no coach, manager or physio role can be excused.
   const exemptable = canBeExempt(roles);
   const isExempt = exemptable && exempt;
-  // Coaches, managers and physios can be screened by a volunteer exemption instead.
-  const canVolunteer = roles.some((r) => wwccRoles.includes(r));
+  // Coaches, managers, physios and temporary volunteers can be screened by an exemption instead.
+  const canVolunteer = isVolunteer || roles.some((r) => wwccRoles.includes(r));
   const volunteerBasis = canVolunteer && screening !== 'check' ? screening : null;
   const openExemption = exemptions.find((e) => !e.ended_at);
   const comboProblem = roleCombinationProblem(roles, dob, under18);
@@ -389,6 +421,21 @@ export default function MemberScreen() {
       setError('Choose the child they volunteer for.');
       return;
     }
+    const exemptStart = parseDate(exemptFrom);
+    if (volunteerBasis && isDatedExemption(volunteerBasis) && !exemptStart) {
+      setError(
+        volunteerBasis === 'short_term_visitor'
+          ? 'Enter the day they arrived in WA as DD/MM/YYYY.'
+          : 'Enter the first day of the event or tour as DD/MM/YYYY.',
+      );
+      return;
+    }
+    const firstDay = parseDate(volunteerFrom);
+    const lastDay = parseDate(volunteerUntil);
+    if (isVolunteer && (firstDay === undefined || lastDay === undefined)) {
+      setError('Enter their first and last day as DD/MM/YYYY.');
+      return;
+    }
     setSaving(status);
     setError(null);
     // Saved first, because the member rules below depend on them.
@@ -416,12 +463,31 @@ export default function MemberScreen() {
         return;
       }
     }
-    // Also before saving the member: a new coach needs a check or an exemption.
-    const exemptionError = await saveExemption();
+    // Also before saving the member: a new coach or volunteer needs a check or an exemption.
+    const exemptionError = await saveExemption(exemptStart ?? null);
     if (exemptionError) {
       setSaving(null);
       setError(exemptionError);
       return;
+    }
+    // And a new volunteer needs their task and dates.
+    if (
+      isVolunteer &&
+      (task.trim() !== (member?.volunteer_task ?? '') ||
+        firstDay !== (member?.volunteer_from ?? null) ||
+        lastDay !== (member?.volunteer_until ?? null))
+    ) {
+      const { error: volunteerError } = await supabase.rpc('admin_set_volunteer_details', {
+        p_profile_id: id,
+        p_task: task,
+        p_from: firstDay,
+        p_until: lastDay,
+      });
+      if (volunteerError) {
+        setSaving(null);
+        setError(volunteerError.message);
+        return;
+      }
     }
     const { error: rpcError } = await supabase.rpc('admin_save_member', {
       p_profile_id: id,
@@ -472,14 +538,28 @@ export default function MemberScreen() {
   }
 
   /** Records, changes or ends their volunteer exemption. Returns an error message. */
-  async function saveExemption(): Promise<string | null> {
+  async function saveExemption(startsOn: string | null): Promise<string | null> {
     if (volunteerBasis) {
       const child = volunteerBasis === 'parent_volunteer' ? exemptChild : null;
-      if (openExemption?.basis === volunteerBasis && openExemption.child_id === child) return null;
+      const dated = isDatedExemption(volunteerBasis);
+      const event = volunteerBasis === 'national_event' ? eventName.trim() : '';
+      const body = volunteerBasis === 'national_event' ? organiser.trim() : '';
+      if (
+        openExemption?.basis === volunteerBasis &&
+        openExemption.child_id === child &&
+        (openExemption.starts_on ?? null) === (dated ? startsOn : null) &&
+        (openExemption.event_name ?? '') === event &&
+        (openExemption.organiser ?? '') === body
+      ) {
+        return null;
+      }
       const { error: setError } = await supabase.rpc('admin_set_volunteer_exemption', {
         p_profile_id: id,
         p_basis: volunteerBasis,
         p_child_id: child,
+        p_starts_on: dated ? startsOn : null,
+        p_event_name: event || null,
+        p_organiser: body || null,
       });
       return setError?.message ?? null;
     }
@@ -588,7 +668,7 @@ export default function MemberScreen() {
         onToggle={changeRole}
       />
 
-      {role !== 'guest' || extraRoles.length > 0 ? (
+      {(role !== 'guest' && role !== 'volunteer') || extraRoles.length > 0 ? (
         <View style={styles.group}>
           <ChipGroup
             label="Other roles"
@@ -605,6 +685,51 @@ export default function MemberScreen() {
               For someone with more than one role, such as a coach who is also a parent.
             </ThemedText>
           )}
+        </View>
+      ) : null}
+
+      {isVolunteer ? (
+        <View style={styles.group}>
+          <ThemedText type="smallBold">Temporary volunteer</ThemedText>
+          <ThemedText type="small" themeColor="textSecondary">
+            Someone helping for a day or a short time. They get no club features or messages. You
+            can approve them once they’ve accepted the club’s policies and a check, or an exemption
+            they’ve accepted, covers every day they’ll help. Their time ends by itself after their
+            last day.
+          </ThemedText>
+          <TextField
+            label="What they’ll help with"
+            value={task}
+            onChangeText={setTask}
+            maxLength={200}
+            multiline
+          />
+          <TextField
+            label="First day"
+            value={volunteerFrom}
+            onChangeText={setVolunteerFrom}
+            placeholder="DD/MM/YYYY"
+            keyboardType="numbers-and-punctuation"
+            maxLength={10}
+          />
+          <TextField
+            label="Last day"
+            value={volunteerUntil}
+            onChangeText={setVolunteerUntil}
+            placeholder="DD/MM/YYYY"
+            keyboardType="numbers-and-punctuation"
+            maxLength={10}
+          />
+          {member.volunteer_screening ? (
+            <Detail label="They said" value={volunteerScreeningLabels[member.volunteer_screening]} />
+          ) : null}
+          {member.declared_wwcc_number ? (
+            <Detail label="Card number they gave" value={member.declared_wwcc_number} />
+          ) : null}
+          <Detail
+            label="Club policies"
+            value={acknowledgedAt ? `Accepted ${localDay(acknowledgedAt)}` : 'Not accepted yet'}
+          />
         </View>
       ) : null}
 
@@ -763,19 +888,33 @@ export default function MemberScreen() {
         <View style={styles.group}>
           <ThemedText type="smallBold">Working With Children Check</ThemedText>
           <ThemedText type="small" themeColor="textSecondary">
-            Coaches, managers, physios, committee members and admins need a current check before
-            you can approve them. In WA, a parent volunteering at their child’s club and a volunteer
-            under 18 are exempt instead: record that here, and they accept a declaration in the app
-            before their role starts. You can exempt a committee member or admin with a reason.
+            Coaches, managers, physios, temporary volunteers, committee members and admins need a
+            current check before you can approve them. In WA, a parent volunteering at their
+            child’s club and a volunteer under 18 are exempt instead. So is someone who doesn’t
+            normally live in WA, for two weeks after they arrive or up to 30 days at a national
+            event or tour, once in any 12 months. Record that here, and they accept a declaration in
+            the app before their role starts. You can exempt a committee member or admin with a
+            reason. Being supervised by someone with a check doesn’t count.
           </ThemedText>
+          <WwcSources />
           {canVolunteer && !isSelf ? (
             <ChipGroup
               options={[
                 { value: 'check', label: 'Has a check' },
-                ...(['parent_volunteer', 'under_18_volunteer'] as const)
+                ...(
+                  [
+                    'parent_volunteer',
+                    'under_18_volunteer',
+                    'short_term_visitor',
+                    'national_event',
+                  ] as const
+                )
                   // A parent volunteer needs a child linked; an under-18 volunteer, a date of birth.
-                  .filter((basis) =>
-                    basis === screening || (basis === 'parent_volunteer' ? guardianOf.length > 0 : minor),
+                  .filter(
+                    (basis) =>
+                      basis === screening ||
+                      isDatedExemption(basis) ||
+                      (basis === 'parent_volunteer' ? guardianOf.length > 0 : minor),
                   )
                   .map((basis) => ({ value: basis, label: volunteerExemptionLabels[basis] })),
               ]}
@@ -791,6 +930,48 @@ export default function MemberScreen() {
               onToggle={(c) => setExemptChild(c === exemptChild ? null : c)}
             />
           ) : null}
+          {volunteerBasis && isDatedExemption(volunteerBasis) ? (
+            <>
+              <TextField
+                label={
+                  volunteerBasis === 'short_term_visitor'
+                    ? 'Day they arrived in WA'
+                    : 'First day of the event or tour'
+                }
+                value={exemptFrom}
+                onChangeText={setExemptFrom}
+                placeholder="DD/MM/YYYY"
+                keyboardType="numbers-and-punctuation"
+                maxLength={10}
+              />
+              {volunteerBasis === 'national_event' ? (
+                <>
+                  <TextField
+                    label="Event or tour"
+                    value={eventName}
+                    onChangeText={setEventName}
+                    placeholder="For example, the national championships"
+                    maxLength={200}
+                  />
+                  <TextField
+                    label="Organised by"
+                    value={organiser}
+                    onChangeText={setOrganiser}
+                    placeholder="The national or state body running it"
+                    maxLength={200}
+                  />
+                </>
+              ) : null}
+              <ThemedText type="small" themeColor="textSecondary">
+                {volunteerBasis === 'short_term_visitor'
+                  ? 'Only for someone who doesn’t normally live in WA. It covers the two weeks from the day they arrived in WA, and ends by itself.'
+                  : 'Only for someone who doesn’t normally live in WA, and only for child-related work at an event or tour run by a recognised body with children from more than one state, territory or country. It covers 30 days in a row from the first day, and ends by itself.'}{' '}
+                A person can use one of these two exemptions once in any 12 months, anywhere in WA,
+                so the app refuses a second one within 12 months and they confirm they haven’t used
+                one elsewhere.
+              </ThemedText>
+            </>
+          ) : null}
           {openExemption && volunteerBasis === openExemption.basis ? (
             <ThemedText
               type="small"
@@ -805,11 +986,15 @@ export default function MemberScreen() {
           {volunteerBasis && volunteerBasis !== openExemption?.basis ? (
             <ThemedText type="small" themeColor="textSecondary">
               Once you save, they’ll get a to-do to accept the volunteer declaration. Their{' '}
-              {rolesLabel(roles.filter((r) => wwccRoles.includes(r))).toLowerCase()} role starts
-              when they do. It ends by itself when{' '}
+              {rolesLabel(
+                roles.filter((r) => wwccRoles.includes(r) || r === 'volunteer'),
+              ).toLowerCase()}{' '}
+              role starts when they do. It ends by itself{' '}
               {volunteerBasis === 'parent_volunteer'
-                ? 'their child turns 18 or leaves'
-                : 'they turn 18'}
+                ? 'when their child turns 18 or leaves'
+                : volunteerBasis === 'under_18_volunteer'
+                  ? 'when they turn 18'
+                  : 'after its last day'}
               .
             </ThemedText>
           ) : null}
@@ -884,7 +1069,12 @@ export default function MemberScreen() {
             .map((e) => (
               <ThemedText key={e.id} type="small" themeColor="textSecondary">
                 Earlier: {volunteerExemptionLabels[e.basis]}
-                {e.child_name ? ` for ${e.child_name}` : ''}, recorded {localDay(e.set_at)}
+                {e.child_name ? ` for ${e.child_name}` : ''}
+                {e.event_name ? ` for ${e.event_name}` : ''}
+                {e.starts_on && e.ends_on
+                  ? `, ${formatDate(e.starts_on)} to ${formatDate(e.ends_on)}`
+                  : ''}
+                , recorded {localDay(e.set_at)}
                 {e.declared_at ? `, declared ${localDay(e.declared_at)}` : ''}, ended{' '}
                 {localDay(e.ended_at!)} by {e.ended_by_name ?? 'a former admin'}
                 {e.end_note ? ` (${e.end_note})` : ''}
@@ -1082,6 +1272,15 @@ export default function MemberScreen() {
         ) : (
           <>
             <Button title="Approve" onPress={() => save('approved')} busy={saving === 'approved'} />
+            {member.status === 'pending' && isVolunteer ? (
+              // A volunteer accepts their exemption before they can be approved.
+              <Button
+                title="Save for now"
+                variant="secondary"
+                onPress={() => save('pending')}
+                busy={saving === 'pending'}
+              />
+            ) : null}
             {member.status === 'pending' || member.status === 'rejected' ? (
               <Button
                 title={member.status === 'pending' ? "Don't approve" : 'Save reason'}
@@ -1107,6 +1306,28 @@ export default function MemberScreen() {
   );
 }
 
+/** The WA rules on checks and exemptions, to read at the source. */
+function WwcSources() {
+  const theme = useTheme();
+  return (
+    <View style={styles.sources}>
+      <ThemedText type="small" themeColor="textSecondary">
+        Read the rules at the source:
+      </ThemedText>
+      {wwcSources.map((source) => (
+        <Pressable
+          key={source.url}
+          accessibilityRole="link"
+          onPress={() => Linking.openURL(source.url)}>
+          <ThemedText type="small" style={{ color: theme.tint }}>
+            {source.label}
+          </ThemedText>
+        </Pressable>
+      ))}
+    </View>
+  );
+}
+
 /** Who recorded a member's checked date of birth, and when. */
 type DobRecord = { recorded_by_name: string | null; recorded_at: string | null };
 
@@ -1127,6 +1348,9 @@ const styles = StyleSheet.create({
   },
   group: {
     gap: Spacing.two,
+  },
+  sources: {
+    gap: Spacing.one,
   },
   detail: {
     flexDirection: 'row',
