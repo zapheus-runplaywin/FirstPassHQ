@@ -39,9 +39,40 @@ const HomeClub: ClubEntry = {
 /** Every other club, each with its own Supabase project. */
 const OtherClubs: ClubEntry[] = [];
 
+/**
+ * Extra test clubs for development, from .env only (docs/environments.md). Each
+ * value is read by name so Expo can build it in; installed builds and updates
+ * never have them, so these clubs only exist in Expo Go.
+ */
+const TestClubs = [
+  {
+    code: process.env.EXPO_PUBLIC_TEST_CLUB_2_CODE,
+    name: process.env.EXPO_PUBLIC_TEST_CLUB_2_NAME,
+    supabaseUrl: process.env.EXPO_PUBLIC_TEST_CLUB_2_URL,
+    anonKey: process.env.EXPO_PUBLIC_TEST_CLUB_2_ANON_KEY,
+  },
+  {
+    code: process.env.EXPO_PUBLIC_TEST_CLUB_3_CODE,
+    name: process.env.EXPO_PUBLIC_TEST_CLUB_3_NAME,
+    supabaseUrl: process.env.EXPO_PUBLIC_TEST_CLUB_3_URL,
+    anonKey: process.env.EXPO_PUBLIC_TEST_CLUB_3_ANON_KEY,
+  },
+].filter(
+  (club): club is ClubEntry => !!(club.code && club.name && club.supabaseUrl && club.anonKey),
+);
+
+const extraClubs = [...OtherClubs, ...TestClubs].map((club) => ({
+  ...club,
+  code: normaliseClubCode(club.code),
+}));
+
+/** The home club, then the others; a code that's already taken is skipped. */
 export const Clubs: readonly ClubEntry[] = [
   HomeClub,
-  ...OtherClubs.filter((club) => club.code !== HomeClub.code),
+  ...extraClubs.filter(
+    (club, i) =>
+      club.code !== HomeClub.code && extraClubs.findIndex((c) => c.code === club.code) === i,
+  ),
 ];
 
 /** Club codes ignore case and spaces. */

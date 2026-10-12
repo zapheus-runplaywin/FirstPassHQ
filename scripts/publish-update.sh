@@ -31,8 +31,11 @@ if [ -z "$url" ] || [ -z "$key" ]; then
 fi
 
 # Values already in the environment win over .env, so the build uses these.
+# The extra test clubs in .env are blanked, so they're never in an update.
 rm -rf dist
 EXPO_PUBLIC_SUPABASE_URL=$url EXPO_PUBLIC_SUPABASE_ANON_KEY=$key \
+  EXPO_PUBLIC_TEST_CLUB_2_URL= EXPO_PUBLIC_TEST_CLUB_2_ANON_KEY= \
+  EXPO_PUBLIC_TEST_CLUB_3_URL= EXPO_PUBLIC_TEST_CLUB_3_ANON_KEY= \
   npx expo export --platform all --clear --output-dir dist
 
 local_url=$(sed -n 's/^EXPO_PUBLIC_SUPABASE_URL=//p' .env 2>/dev/null | tr -d "\"'" || true)
@@ -44,6 +47,13 @@ if [ -n "$local_url" ] && [ "$local_url" != "$url" ] && grep -rqF "$local_url" d
   echo "The update still uses your .env address ($local_url), so it wasn't published."
   exit 1
 fi
+for n in 2 3; do
+  test_url=$(sed -n "s/^EXPO_PUBLIC_TEST_CLUB_${n}_URL=//p" .env 2>/dev/null | tr -d "\"'" || true)
+  if [ -n "$test_url" ] && grep -rqF "$test_url" dist/_expo/static/js; then
+    echo "The update includes test club $n ($test_url), so it wasn't published."
+    exit 1
+  fi
+done
 
 echo "Publishing to the $channel channel, using $url"
 eas update --skip-bundler --channel "$channel" --environment "$channel" --message "$message"

@@ -93,6 +93,67 @@ jobs:
           FIRST_RUN_OK: 'true'
           ALLOW_DATA_LOSS: ${{ inputs.allow_data_loss == true }}
 
+  # The extra test clubs in the development setup (docs/environments.md), each
+  # with its own project. They follow the test project, and the live deploy
+  # doesn't wait for them, so a paused one never holds it up.
+  deploy-test-clubs:
+    needs: [approve-data-loss, deploy-test]
+    if: ${{ !cancelled() && (needs.approve-data-loss.result == 'success' || needs.approve-data-loss.result == 'skipped') && needs.deploy-test.result == 'success' }}
+    runs-on: ubuntu-24.04
+    strategy:
+      fail-fast: false
+      matrix:
+        club: [2, 3]
+    name: deploy-test-club-${{ matrix.club }}
+    steps:
+      - name: Check test club ${{ matrix.club }} is set up
+        id: test
+        env:
+          CLUB_PROJECT_ID: ${{ secrets[format('SUPABASE_TEST_{0}_PROJECT_ID', matrix.club)] }}
+          CLUB_TOKEN: ${{ secrets[format('SUPABASE_TEST_{0}_ACCESS_TOKEN', matrix.club)] }}
+          TEST_PROJECT_ID: ${{ secrets.SUPABASE_TEST_PROJECT_ID }}
+          LIVE_PROJECT_ID: ${{ secrets.SUPABASE_PROJECT_ID }}
+        run: |
+          if [ -z "$CLUB_PROJECT_ID" ]; then
+            echo "There is no test club ${{ matrix.club }} (SUPABASE_TEST_${{ matrix.club }}_PROJECT_ID), so there's nothing to do."
+            echo "ready=false" >> "$GITHUB_OUTPUT"
+            exit 0
+          fi
+          if [ "$CLUB_PROJECT_ID" = "$LIVE_PROJECT_ID" ] || [ "$CLUB_PROJECT_ID" = "$TEST_PROJECT_ID" ]; then
+            echo "::error::SUPABASE_TEST_${{ matrix.club }}_PROJECT_ID is another club's project. It must be test club ${{ matrix.club }}'s own."
+            exit 1
+          fi
+          if [ -z "$CLUB_TOKEN" ]; then
+            echo "::error::SUPABASE_TEST_${{ matrix.club }}_ACCESS_TOKEN is missing. See docs/environments.md."
+            exit 1
+          fi
+          echo "ready=true" >> "$GITHUB_OUTPUT"
+      - if: steps.test.outputs.ready == 'true'
+        uses: actions/checkout@d23441a48e516b6c34aea4fa41551a30e30af803 # v6.1.0
+      - if: steps.test.outputs.ready == 'true'
+        uses: supabase/setup-cli@45a513f8c64c0bc8e0e3dfe572b5c95be85f6359 # v3.0.1
+        with:
+          version: 2.120.0
+      - if: steps.test.outputs.ready == 'true'
+        name: Link test club ${{ matrix.club }}
+        run: |
+          if ! supabase link --project-ref "$SUPABASE_PROJECT_ID"; then
+            echo "::error::Couldn't reach test club ${{ matrix.club }}'s project. If it's paused, restore it in the Supabase dashboard and re-run this job. The live database isn't affected."
+            exit 1
+          fi
+        env:
+          SUPABASE_ACCESS_TOKEN: ${{ secrets[format('SUPABASE_TEST_{0}_ACCESS_TOKEN', matrix.club)] }}
+          SUPABASE_DB_PASSWORD: ${{ secrets[format('SUPABASE_TEST_{0}_DB_PASSWORD', matrix.club)] }}
+          SUPABASE_PROJECT_ID: ${{ secrets[format('SUPABASE_TEST_{0}_PROJECT_ID', matrix.club)] }}
+      - if: steps.test.outputs.ready == 'true'
+        run: scripts/deploy-migrations.sh
+        env:
+          SUPABASE_ACCESS_TOKEN: ${{ secrets[format('SUPABASE_TEST_{0}_ACCESS_TOKEN', matrix.club)] }}
+          SUPABASE_DB_PASSWORD: ${{ secrets[format('SUPABASE_TEST_{0}_DB_PASSWORD', matrix.club)] }}
+          # A new project has no migrations yet, so it gets all of them.
+          FIRST_RUN_OK: 'true'
+          ALLOW_DATA_LOSS: ${{ inputs.allow_data_loss == true }}
+
   deploy:
     needs: [approve-data-loss, deploy-test]
     # Runs when data loss wasn't allowed (skipped) or Matt allowed it, and the
