@@ -189,9 +189,10 @@ export default function JoinScreen() {
       {volunteer ? (
         <>
           <ThemedText type="small" themeColor="textSecondary">
-            For someone helping for a day or a short time, such as at a carnival, clinic or
-            tournament. You won’t see the club’s squads, calendar or messages: this is so the club
-            can check you’re cleared to work with children and keep a record.
+            For someone helping for a day or a short time, paid or unpaid, such as at a carnival,
+            clinic or tournament. It doesn’t make you a member of the club: the app is only used to
+            onboard you, so the club can check you’re cleared to work with children and keep a
+            record. You won’t see the club’s squads, calendar or messages.
           </ThemedText>
           <TextField
             label="What you’ll help with"

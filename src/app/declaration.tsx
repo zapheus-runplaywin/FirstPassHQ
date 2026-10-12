@@ -15,7 +15,7 @@ import { supabase } from '@/lib/supabase';
 /**
  * A volunteer an admin exempted from the Working With Children Check reads
  * and accepts the declaration that goes with it. Their coach, manager,
- * physio or temporary volunteer role starts once they do. Afterwards it shows
+ * physio or temporary helper role starts once they do. Afterwards it shows
  * what they accepted.
  */
 export default function DeclarationScreen() {

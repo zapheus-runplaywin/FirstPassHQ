@@ -137,7 +137,7 @@ export function wwccReport(
   acknowledgements: Acknowledgement[] = [],
 ): Report {
   const approved = members.filter((m) => m.status === 'approved');
-  // Temporary volunteers outside their dates need nothing, and are listed on their own.
+  // Temporary helpers outside their dates need nothing, and are listed on their own.
   const volunteers = approved
     .filter((m) => hasRole(m, 'volunteer'))
     .sort((a, b) => (b.volunteer_from ?? '').localeCompare(a.volunteer_from ?? ''));
@@ -207,7 +207,7 @@ export function wwccReport(
 
   return {
     title: 'Working With Children Checks',
-    subtitle: `Approved coaches, managers, physios, temporary volunteers, committee members and admins. WWC Registration Officer: ${officerName ?? 'not named yet'}`,
+    subtitle: `Approved coaches, managers, physios, temporary helpers, committee members and admins. WWC Registration Officer: ${officerName ?? 'not named yet'}`,
     landscape: true,
     stats: [
       { label: 'Need a check', value: people.length },
@@ -217,7 +217,7 @@ export function wwccReport(
       { label: 'Missing', value: count('missing') },
       { label: 'Committee and admins exempt', value: exempt.length },
       {
-        label: 'Exempt volunteers',
+        label: 'Exempt from a check',
         value: approved.filter((m) => needsWwcc(m) && screenedByExemption(m)).length,
       },
       {
@@ -228,7 +228,7 @@ export function wwccReport(
       },
       { label: 'Stood down now', value: standDowns.filter((s) => !s.lifted_at).length },
       {
-        label: 'Temporary volunteers helping now',
+        label: 'Temporary helpers helping now',
         value: volunteers.filter((m) => !volunteerTimeOff(m)).length,
       },
     ],
@@ -266,7 +266,7 @@ export function wwccReport(
         empty: 'Nobody is exempt.',
       },
       {
-        title: 'Exempt volunteers',
+        title: 'Exempt from a check',
         note: 'Parent volunteers at their child’s club and volunteers under 18 don’t need a check in WA, and nor does someone not ordinarily resident in WA for two weeks after they arrive or up to 30 days at a national event or tour, once in any 12 months. Each accepts a declaration in the app; the exemption ends by itself when the child or volunteer turns 18, the child leaves, or its last day passes. Ended exemptions are listed after current ones.',
         columns: [
           { label: 'Name', width: 1.3 },
@@ -296,7 +296,7 @@ export function wwccReport(
         empty: 'No volunteer exemptions recorded.',
       },
       {
-        title: 'Temporary volunteers',
+        title: 'Temporary helpers',
         note: 'Everyone approved to help for a day or a short time, newest first. They get no club features. Each was approved only once they accepted the club’s code of conduct and safeguarding policy and a check or accepted exemption covered every day they help.',
         columns: [
           { label: 'Name', width: 1.3 },
@@ -336,7 +336,7 @@ export function wwccReport(
             flag: status === 'Helping now' && needsWwcc(m) && card.problem && !exemption?.valid,
           };
         }),
-        empty: 'No temporary volunteers.',
+        empty: 'No temporary helpers.',
       },
       {
         title: 'Screening Unit notices',

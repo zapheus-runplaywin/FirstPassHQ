@@ -98,7 +98,7 @@ export type Profile = {
   /** How they were verified, and what the admin checked. Not recorded before October 2026. */
   verification_method?: VerificationMethod | null;
   verification_note?: string | null;
-  /** A temporary volunteer's task and dates. */
+  /** A temporary helper's task and dates. */
   volunteer_task?: string | null;
   volunteer_from?: string | null;
   volunteer_until?: string | null;
@@ -176,7 +176,7 @@ export type VolunteerExemptionBasis =
   | 'short_term_visitor'
   | 'national_event';
 
-/** How a temporary volunteer said they're screened when they asked to join. */
+/** How a temporary helper said they're screened when they asked to join. */
 export type VolunteerScreening =
   | 'card'
   | 'visitor'

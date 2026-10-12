@@ -106,7 +106,7 @@ export default function MemberScreen() {
   const [exemptFrom, setExemptFrom] = useState('');
   const [eventName, setEventName] = useState('');
   const [organiser, setOrganiser] = useState('');
-  // A temporary volunteer's task and dates.
+  // A temporary helper's task and dates.
   const [task, setTask] = useState('');
   const [volunteerFrom, setVolunteerFrom] = useState('');
   const [volunteerUntil, setVolunteerUntil] = useState('');
@@ -256,7 +256,7 @@ export default function MemberScreen() {
   // Only a committee member or admin with no coach, manager or physio role can be excused.
   const exemptable = canBeExempt(roles);
   const isExempt = exemptable && exempt;
-  // Coaches, managers, physios and temporary volunteers can be screened by an exemption instead.
+  // Coaches, managers, physios and temporary helpers can be screened by an exemption instead.
   const canVolunteer = isVolunteer || roles.some((r) => wwccRoles.includes(r));
   const volunteerBasis = canVolunteer && screening !== 'check' ? screening : null;
   const openExemption = exemptions.find((e) => !e.ended_at);
@@ -690,10 +690,11 @@ export default function MemberScreen() {
 
       {isVolunteer ? (
         <View style={styles.group}>
-          <ThemedText type="smallBold">Temporary volunteer</ThemedText>
+          <ThemedText type="smallBold">Temporary helper</ThemedText>
           <ThemedText type="small" themeColor="textSecondary">
-            Someone helping for a day or a short time. They get no club features or messages. You
-            can approve them once they’ve accepted the club’s policies and a check, or an exemption
+            Someone helping for a day or a short time, paid or unpaid, and not necessarily a club
+            member. The app only onboards them: they get no club features or messages. You can
+            approve them once they’ve accepted the club’s policies and a check, or an exemption
             they’ve accepted, covers every day they’ll help. Their time ends by itself after their
             last day.
           </ThemedText>
@@ -888,7 +889,7 @@ export default function MemberScreen() {
         <View style={styles.group}>
           <ThemedText type="smallBold">Working With Children Check</ThemedText>
           <ThemedText type="small" themeColor="textSecondary">
-            Coaches, managers, physios, temporary volunteers, committee members and admins need a
+            Coaches, managers, physios, temporary helpers, committee members and admins need a
             current check before you can approve them. In WA, a parent volunteering at their
             child’s club and a volunteer under 18 are exempt instead. So is someone who doesn’t
             normally live in WA, for two weeks after they arrive or up to 30 days at a national
@@ -985,7 +986,7 @@ export default function MemberScreen() {
           ) : null}
           {volunteerBasis && volunteerBasis !== openExemption?.basis ? (
             <ThemedText type="small" themeColor="textSecondary">
-              Once you save, they’ll get a to-do to accept the volunteer declaration. Their{' '}
+              Once you save, they’ll get a to-do to accept the exemption declaration. Their{' '}
               {rolesLabel(
                 roles.filter((r) => wwccRoles.includes(r) || r === 'volunteer'),
               ).toLowerCase()}{' '}
