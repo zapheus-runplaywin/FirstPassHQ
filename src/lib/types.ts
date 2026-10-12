@@ -235,12 +235,15 @@ export type InjuryUpdate = {
   created_at: string;
 };
 
-/** A view, share or photo consent on an injury document, for the athlete, guardians and admins. */
+/**
+ * A view, share or photo declaration on an injury document, for the athlete,
+ * guardians and admins.
+ */
 export type InjuryDocumentEvent = {
   document_path: string;
   viewer_name: string | null;
   viewer_role: string | null;
-  kind: 'viewed' | 'shared' | 'consented';
+  kind: 'viewed' | 'shared' | 'consented' | 'letter_declared';
   created_at: string;
 };
 

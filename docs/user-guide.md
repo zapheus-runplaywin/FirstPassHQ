@@ -478,8 +478,9 @@ Open the injury to see its details and history. While you're injured:
 
 - **Add physio update** records what the physio said, any change to restrictions or your expected
   return date, and optionally a physio report (up to 10 MB). Adults can attach a PDF or a photo.
-  If you're under 18, attach the letter or report as a PDF, not a photo of the injury (see
-  [Injury documents and photos](#injury-documents-and-photos)).
+  If you're under 18, attach the letter or report as a PDF or a photo of the letter, and switch
+  on **This is a photo of the letter** before sending a photo. Never send a photo of the injury
+  itself (see [Injury documents and photos](#injury-documents-and-photos)).
 - If your expected return date passes, your to-do list reminds you to ask for clearance or change
   the date.
 
@@ -555,11 +556,12 @@ As a guardian you:
   their games. You can't set goals or reflect: your athlete and their coaches do that in the app.
 - **Report and update injuries** for your athlete, and ask for clearance, exactly as an athlete
   does (see [Athletes](#4-athletes)). If you look after more than one athlete, choose which one
-  when reporting. Proof is a PDF of the physio's or doctor's letter. If the club allows photos and
-  your identity has been verified, you can add a photo of your child's injury after switching on
-  **I consent**; your consent is kept with the photo. Your child can't add photos themselves.
+  when reporting. Proof is the physio's or doctor's letter, as a PDF or a photo of the letter; with
+  a photo you confirm it shows the letter, not the injury. If the club allows photos of injuries and
+  your identity has been verified, you can choose **The injury** and add one after switching on
+  **I consent**; your consent is kept with the photo. Your child can't add photos of injuries.
 - **See who opened your athlete's injury documents**: under each document, every view and share,
-  by whom and when, plus your photo consents.
+  by whom and when, and what was confirmed about each photo.
 - **Complete integrity training** for your athlete: their training shows in your to-do list and
   on the **Integrity training** screen under their name, and you upload their certificates
   exactly as they would (see [Integrity training](#integrity-training)).
@@ -1392,10 +1394,10 @@ Add the sport's **governing body**: its name, phone or hotline, and complaints f
 club's **safeguarding policy** link too. Everyone sees these on **Raise a concern**. Links must
 start with https://.
 
-**Photos of under 18s' injuries** is off by default, so injury proof for athletes under 18 is a
-PDF of the physio's or doctor's letter. Turn it on only if your club's policy allows photos; even
-then, only a verified parent or guardian can add one, after confirming their consent, and athletes
-under 18 can never add a photo themselves.
+**Photos of under 18s' injuries** is off by default, so injury proof for athletes under 18 is the
+physio's or doctor's letter, as a PDF or a photo confirmed to show the letter. Turn it on only if
+your club's policy allows photos of injuries; even then, only a verified parent or guardian can add
+one, after confirming their consent, and athletes under 18 can never add one themselves.
 
 <img src="user-guide/admin-safeguarding-photos.png" width="210" alt="Safeguarding settings: the switch for photos of under 18s' injuries">
 
@@ -1490,12 +1492,14 @@ register](#the-concerns-register), which prints as a PDF.
 Netball's image rules ask for a parent's consent before a club keeps a photo of a child, and for
 images to stay inside the club. So for athletes under 18:
 
-- **Proof is a PDF.** The athlete or their guardian attaches the physio's or doctor's letter or
-  report as a PDF, not a photo of the injury. The file picker offers PDFs only, and a photo renamed
-  as a PDF is refused.
-- **Photos only with consent.** If an admin allows photos under Safeguarding, a verified parent or
-  guardian can add one after switching on **I consent**. The consent is kept with the photo and
-  shown with the document. Athletes under 18 can never add a photo themselves.
+- **Proof is the letter, not the injury.** The athlete or their guardian attaches the physio's or
+  doctor's letter or report, as a PDF or a photo of the letter. Before a photo is sent, whoever adds
+  it switches on **This is a photo of the letter or report, not of the injury**. That confirmation
+  is kept with the photo, with their name and when, and shown under the document. A photo without
+  it is refused, including one renamed to look like a PDF.
+- **Photos of injuries only with consent.** If an admin allows them under Safeguarding, a verified
+  parent or guardian can choose **The injury** and add one after switching on **I consent**. The
+  consent is kept with the photo and shown with the document. Athletes under 18 can never add one.
 - **Every view is recorded.** A document can only be opened after the app records who is opening
   it, their role and when. The athlete, their parents or guardians and admins see the list under
   each document.
@@ -1504,8 +1508,8 @@ images to stay inside the club. So for athletes under 18:
 
 Athletes who are 18 or over attach a PDF or a photo, and see who opened their documents too.
 
-<img src="user-guide/injury-pdf-only.png" width="210" alt="Physio update form for an athlete under 18, PDF only">
-<img src="user-guide/injury-photo-consent.png" width="210" alt="A guardian confirming consent before adding a photo">
+<img src="user-guide/injury-letter-photo.png" width="210" alt="An athlete under 18 confirming a photo shows the physio's letter">
+<img src="user-guide/injury-photo-consent.png" width="210" alt="A guardian choosing The injury and confirming consent before adding a photo">
 
 ### For parents and guardians
 
@@ -1517,9 +1521,10 @@ Athletes who are 18 or over attach a PDF or a photo, and see who opened their do
   message your child sends as a captain. You can read their daily check-ins and notes, their game
   goals and their injuries.
 - **Your access ends at 18.** Guardian access ends on your child's 18th birthday.
-- **Injury photos need your consent.** Injury proof for under 18s is a PDF letter or report. Only if
-  the club allows it can you, as a verified guardian, add a photo of your child's injury, and only
-  after confirming your consent, which is kept with the photo.
+- **Injury photos need your consent.** Injury proof for under 18s is the letter or report, as a PDF
+  or a photo confirmed to show the letter. Only if the club allows it can you, as a verified
+  guardian, add a photo of your child's injury, and only after confirming your consent, which is
+  kept with the photo.
 - **You see who opened your child's injury documents**, with their role and when, and every share.
 
 ### For children and young people
@@ -1529,8 +1534,8 @@ Athletes who are 18 or over attach a PDF or a photo, and see who opened their do
 - **You're told who reads your check-in note**: your coaches and your parents or guardians.
 - **You can tell someone safely.** The check-in screen has a link to raise a concern, and you can
   hide your name. Kids Helpline (1800 55 1800) is free, any time.
-- **No photos of your injuries.** Attach your physio's or doctor's letter as a PDF instead. You can
-  see everyone who has opened it.
+- **No photos of your injuries.** Attach your physio's or doctor's letter instead, as a PDF or a
+  photo of the letter. You can see everyone who has opened it.
 
 ### For coaches, managers, physios and volunteers
 

@@ -8,7 +8,7 @@ import { StatusPill } from '@/components/injury-card';
 import { RaiseConcernLink } from '@/components/safeguarding';
 import { Screen } from '@/components/screen';
 import { ThemedText } from '@/components/themed-text';
-import { Button, Card, ErrorText, TextField } from '@/components/ui';
+import { Button, Card, ChipGroup, ErrorText, TextField } from '@/components/ui';
 import { Spacing } from '@/constants/theme';
 import { useTheme } from '@/hooks/use-theme';
 import { useAuth } from '@/lib/auth';
@@ -17,6 +17,7 @@ import {
   DOCUMENT_TYPES,
   type DocumentRule,
   formatDateString,
+  type PhotoShows,
   injuryUpdateLabels,
   returnQuickPicks,
   shareInjuryDocument,
@@ -285,8 +286,9 @@ function ActionForm({
   const [restrictions, setRestrictions] = useState(injury.restrictions ?? '');
   const [expectedReturn, setExpectedReturn] = useState(injury.expected_return);
   const [attachment, setAttachment] = useState<DocumentPicker.DocumentPickerAsset | null>(null);
-  const [rule, setRule] = useState<DocumentRule>('pdf');
-  const [consent, setConsent] = useState(false);
+  const [rule, setRule] = useState<DocumentRule>('letter');
+  const [shows, setShows] = useState<PhotoShows>('letter');
+  const [confirmed, setConfirmed] = useState(false);
   const [saving, setSaving] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const allowsDocument = action === 'update' || action === 'clearance';
@@ -296,18 +298,18 @@ function ActionForm({
     if (!allowsDocument) return;
     supabase
       .rpc('injury_document_rule', { p_athlete_id: injury.athlete_id })
-      .then(({ data }) => setRule((data as DocumentRule | null) ?? 'pdf'));
+      .then(({ data }) => setRule((data as DocumentRule | null) ?? 'letter'));
   }, [allowsDocument, injury.athlete_id]);
 
   async function pickDocument() {
     const result = await DocumentPicker.getDocumentAsync({
-      // Under 18s attach a letter or report, not a photo of the injury.
-      type: rule === 'pdf' ? ['application/pdf'] : DOCUMENT_TYPES,
+      type: DOCUMENT_TYPES,
       copyToCacheDirectory: true,
     });
     if (!result.canceled) {
       setAttachment(result.assets[0]);
-      setConsent(false);
+      setShows('letter');
+      setConfirmed(false);
       setError(null);
     }
   }
@@ -327,7 +329,7 @@ function ActionForm({
     setError(null);
     try {
       const path = attachment
-        ? await uploadInjuryDocument(injury, attachment, rule, consent)
+        ? await uploadInjuryDocument(injury, attachment, rule, confirmed ? shows : null)
         : null;
       const { error: rpcError } = await rpc(path);
       if (rpcError) throw new Error(rpcError.message);
@@ -415,11 +417,17 @@ function ActionForm({
             variant="secondary"
             onPress={pickDocument}
           />
-          {isPhoto && rule === 'consent' ? (
-            <PhotoConsent
+          {isPhoto && rule !== 'photos' ? (
+            <PhotoDeclaration
               athleteName={injury.athlete_name ?? 'my child'}
-              value={consent}
-              onChange={setConsent}
+              canShowInjury={rule === 'consent'}
+              shows={shows}
+              onShows={(value) => {
+                setShows(value);
+                setConfirmed(false);
+              }}
+              confirmed={confirmed}
+              onConfirm={setConfirmed}
             />
           ) : null}
         </View>
@@ -438,38 +446,65 @@ function ActionForm({
 
 const documentHint: Record<DocumentRule, string> = {
   photos: 'A PDF or photo.',
+  letter: 'A PDF or a photo of the physio’s or doctor’s letter or report, not of the injury.',
   consent:
-    'A PDF of the letter or report. A photo of the injury only if you consent to the club keeping it.',
-  pdf: 'Attach the letter or report as a PDF, not a photo of the injury.',
+    'A PDF or a photo of the letter or report. A photo of the injury only if you consent to the club keeping it.',
 };
 
-/** A guardian's consent to the club keeping a photo of their child's injury. */
-function PhotoConsent({
+/**
+ * For an athlete under 18: what the photo shows, confirmed before it's sent.
+ * A photo of the injury itself is only offered to a verified guardian, when
+ * the club allows it, and needs their consent.
+ */
+function PhotoDeclaration({
   athleteName,
-  value,
-  onChange,
+  canShowInjury,
+  shows,
+  onShows,
+  confirmed,
+  onConfirm,
 }: {
   athleteName: string;
-  value: boolean;
-  onChange: (value: boolean) => void;
+  canShowInjury: boolean;
+  shows: PhotoShows;
+  onShows: (value: PhotoShows) => void;
+  confirmed: boolean;
+  onConfirm: (value: boolean) => void;
 }) {
   const theme = useTheme();
   return (
-    <Card style={styles.consent}>
-      <ThemedText type="small" style={styles.grow}>
-        I’m {athleteName}’s parent or guardian. I consent to the club keeping this photo with their
-        injury record, where their coaches, physios, the committee and admins can view it in the
-        app. Every view is recorded.
-      </ThemedText>
-      <Switch
-        accessibilityLabel="I consent to the club keeping this photo"
-        value={value}
-        onValueChange={onChange}
-        trackColor={{ true: theme.accent, false: theme.backgroundSelected }}
-        thumbColor={theme.text}
-        {...(Platform.OS === 'web' ? { activeThumbColor: theme.onAccent } : {})}
-      />
-    </Card>
+    <View style={styles.document}>
+      {canShowInjury ? (
+        <ChipGroup
+          label="The photo shows"
+          options={[
+            { value: 'letter', label: 'The letter or report' },
+            { value: 'injury', label: 'The injury' },
+          ]}
+          selected={[shows]}
+          onToggle={(value) => onShows(value)}
+        />
+      ) : null}
+      <Card style={styles.consent}>
+        <ThemedText type="small" style={styles.grow}>
+          {shows === 'injury'
+            ? `I’m ${athleteName}’s parent or guardian. I consent to the club keeping this photo with their injury record, where their coaches, physios, the committee and admins can view it in the app. Every view is recorded.`
+            : 'This is a photo of the physio’s or doctor’s letter or report, not of the injury.'}
+        </ThemedText>
+        <Switch
+          accessibilityLabel={
+            shows === 'injury'
+              ? 'I consent to the club keeping this photo'
+              : 'This is a photo of the letter or report'
+          }
+          value={confirmed}
+          onValueChange={onConfirm}
+          trackColor={{ true: theme.accent, false: theme.backgroundSelected }}
+          thumbColor={theme.text}
+          {...(Platform.OS === 'web' ? { activeThumbColor: theme.onAccent } : {})}
+        />
+      </Card>
+    </View>
   );
 }
 
@@ -477,6 +512,7 @@ const eventLabels: Record<InjuryDocumentEvent['kind'], string> = {
   viewed: 'Viewed by',
   shared: 'Shared by',
   consented: 'Photo consent from',
+  letter_declared: 'Confirmed as a photo of the letter by',
 };
 
 /**

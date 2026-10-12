@@ -123,20 +123,23 @@ export function formatDateString(value: string) {
 // ---------------------------------------------------------------------------
 
 /**
- * What the signed-in member can attach for an athlete: 'photos' (a PDF or a
- * photo), 'consent' (a verified guardian may add a photo of their child once
- * they confirm consent) or 'pdf' (under 18s: a letter or report as a PDF).
+ * What the signed-in member can attach for an athlete: 'photos' (adults: a
+ * PDF or any photo), 'letter' (under 18s: a PDF, or a photo confirmed to show
+ * the letter or report) or 'consent' (as 'letter', and a verified guardian
+ * may also add a photo of their child's injury once they confirm consent).
  */
-export type DocumentRule = 'photos' | 'consent' | 'pdf';
+export type DocumentRule = 'photos' | 'letter' | 'consent';
 
-export const PDF_ONLY_MESSAGE = 'Attach the letter or report as a PDF, not a photo of the injury.';
+/** What someone adding a photo for an athlete under 18 says it shows. */
+export type PhotoShows = 'letter' | 'injury';
 
 /** Uploads a picked file for an injury and returns its storage path. */
 export async function uploadInjuryDocument(
   injury: Pick<Injury, 'id' | 'athlete_id'>,
   asset: DocumentPickerAsset,
   rule: DocumentRule,
-  photoConsent: boolean,
+  /** What the photo shows, once confirmed; null when it hasn't been. */
+  photoShows: PhotoShows | null,
 ) {
   if (asset.size && asset.size > MAX_DOCUMENT_BYTES) {
     throw new Error('That file is over 10 MB. Try a smaller photo or a PDF.');
@@ -146,19 +149,23 @@ export async function uploadInjuryDocument(
     throw new Error('Attach a PDF or a photo (JPEG, PNG or HEIC).');
   }
   const photo = contentType !== 'application/pdf';
-  if (photo && rule === 'pdf') throw new Error(PDF_ONLY_MESSAGE);
-  if (photo && rule === 'consent' && !photoConsent) {
-    throw new Error('Confirm your consent before adding a photo of your child.');
+  const declare = photo && rule !== 'photos';
+  if (declare && !photoShows) {
+    throw new Error('Confirm what the photo shows before sending it.');
+  }
+  if (declare && photoShows === 'injury' && rule !== 'consent') {
+    throw new Error('Attach a photo of the letter or report, not of the injury.');
   }
   const body =
     Platform.OS === 'web' && asset.file ? asset.file : await new File(asset.uri).arrayBuffer();
   const path = `${injury.athlete_id}/${injury.id}/${Date.now()}-${safeFileName(asset.name, contentType)}`;
-  if (photo && rule === 'consent') {
-    // The consent is recorded with the photo's path before it uploads.
-    const { error: consentError } = await supabase.rpc('confirm_injury_photo_consent', {
+  if (declare) {
+    // What it shows is recorded with the photo's path before it uploads.
+    const { error: declareError } = await supabase.rpc('confirm_injury_photo', {
       p_path: path,
+      p_kind: photoShows,
     });
-    if (consentError) throw new Error(consentError.message);
+    if (declareError) throw new Error(declareError.message);
   }
   const { error } = await supabase.storage.from(INJURY_BUCKET).upload(path, body, {
     contentType,

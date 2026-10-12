@@ -9,10 +9,13 @@
 -- on personal devices.
 --
 -- Now:
--- - For athletes under 18, proof is a PDF (a letter or report) unless an admin
---   allows photos under Safeguarding. Even then, only a verified guardian can
---   upload a photo of their child, and they confirm their consent first; the
---   consent is kept with the photo.
+-- - For athletes under 18, proof is the physio's or doctor's letter or report:
+--   a PDF, or a photo of the letter once whoever adds it ticks that it shows
+--   the letter and not the injury (Matt, 12 October 2026: families photograph
+--   the paper letter). The tick is kept with the photo. A photo of the injury
+--   itself needs an admin to allow it under Safeguarding, and then only a
+--   verified guardian can add one, after confirming their consent, which is
+--   kept with the photo too.
 -- - Share is only for the committee member or admin who can accept that
 --   clearance, while it's waiting for them.
 -- - Every view and share is recorded (who, their role, when, which document)
@@ -125,8 +128,9 @@ $$;
 
 revoke execute on function public.is_verified_guardian_of(uuid) from public, anon, authenticated;
 
--- 'photos' (adults: a PDF or a photo), 'consent' (a verified guardian may add
--- a photo of their child after confirming consent) or 'pdf' (PDF only).
+-- 'photos' (adults: a PDF or any photo), 'consent' (a verified guardian may
+-- also add a photo of their child's injury after confirming consent) or
+-- 'letter' (a PDF, or a photo confirmed to show the letter or report).
 create or replace function public.injury_document_rule(p_athlete_id uuid)
 returns text
 language sql
@@ -138,7 +142,7 @@ as $$
     when not public.athlete_is_minor(p_athlete_id) then 'photos'
     when public.minor_injury_photos_allowed() and public.is_verified_guardian_of(p_athlete_id)
       then 'consent'
-    else 'pdf'
+    else 'letter'
   end
   where public.can_report_for(p_athlete_id);
 $$;
@@ -146,21 +150,25 @@ $$;
 revoke execute on function public.injury_document_rule(uuid) from public, anon;
 grant execute on function public.injury_document_rule(uuid) to authenticated;
 
--- A guardian's consent for one photo of their child, kept with the photo.
-create table if not exists public.injury_photo_consents (
+-- What the person adding a photo for an athlete under 18 confirmed it shows:
+-- the letter or report ('letter'), or the injury with a verified guardian's
+-- consent ('injury'). Kept with the photo.
+create table if not exists public.injury_photo_declarations (
   id uuid primary key default gen_random_uuid(),
   injury_id uuid not null references public.injuries (id) on delete cascade,
   document_path text not null unique check (length(document_path) <= 500),
-  guardian_id uuid references public.profiles (id) on delete set null,
-  guardian_name text,
+  kind text not null check (kind in ('letter', 'injury')),
+  declared_by uuid references public.profiles (id) on delete set null,
+  declared_by_name text,
+  declared_by_role text,
   created_at timestamptz not null default now()
 );
 
 -- No policies: only reached through the functions below.
-alter table public.injury_photo_consents enable row level security;
+alter table public.injury_photo_declarations enable row level security;
 
--- Called by a verified guardian just before uploading a photo of their child.
-create or replace function public.confirm_injury_photo_consent(p_path text)
+-- Called just before uploading a photo for an athlete under 18.
+create or replace function public.confirm_injury_photo(p_path text, p_kind text)
 returns void
 language plpgsql
 security definer
@@ -168,24 +176,37 @@ set search_path = ''
 as $$
 declare
   v_injury public.injuries := public.injury_document_injury(p_path);
+  v_rule text;
 begin
   if v_injury.id is null or v_injury.status = 'cleared' then
     raise exception 'That injury isn’t open for documents';
   end if;
-  if public.injury_document_rule(v_injury.athlete_id) is distinct from 'consent' then
-    raise exception 'Attach the letter or report as a PDF, not a photo of the injury';
+  v_rule := public.injury_document_rule(v_injury.athlete_id);
+  if v_rule is null then
+    raise exception 'Only the athlete and their guardians can add documents';
   end if;
-  insert into public.injury_photo_consents (injury_id, document_path, guardian_id, guardian_name)
-  values (v_injury.id, p_path, auth.uid(), public.my_display_name())
+  if p_kind = 'injury' and v_rule is distinct from 'consent' then
+    raise exception 'Attach a photo of the letter or report, not of the injury';
+  end if;
+  if p_kind not in ('letter', 'injury') then
+    raise exception 'Say what the photo shows';
+  end if;
+  insert into public.injury_photo_declarations (
+    injury_id, document_path, kind, declared_by, declared_by_name, declared_by_role
+  )
+  values (
+    v_injury.id, p_path, p_kind, auth.uid(), public.my_display_name(),
+    case when v_injury.athlete_id = auth.uid() then 'Athlete' else 'Parent or guardian' end
+  )
   on conflict (document_path) do nothing;
 end;
 $$;
 
-revoke execute on function public.confirm_injury_photo_consent(text) from public, anon;
-grant execute on function public.confirm_injury_photo_consent(text) to authenticated;
+revoke execute on function public.confirm_injury_photo(text, text) from public, anon;
+grant execute on function public.confirm_injury_photo(text, text) to authenticated;
 
 -- Whether a file may be added for this athlete: adults any allowed type;
--- under 18s a PDF, or a photo the uploading guardian consented to.
+-- under 18s a PDF, or a photo the person adding it has declared.
 create or replace function public.injury_document_allowed(p_athlete_id uuid, p_name text)
 returns boolean
 language sql
@@ -195,12 +216,9 @@ set search_path = ''
 as $$
   select not public.is_image_document(p_name)
     or not public.athlete_is_minor(p_athlete_id)
-    or (
-      public.injury_document_rule(p_athlete_id) = 'consent'
-      and exists (
-        select 1 from public.injury_photo_consents c
-        where c.document_path = p_name and c.guardian_id = auth.uid()
-      )
+    or exists (
+      select 1 from public.injury_photo_declarations d
+      where d.document_path = p_name and d.declared_by = auth.uid()
     );
 $$;
 
@@ -225,7 +243,7 @@ end;
 $$;
 
 -- As before, plus the photo rule checked again against the stored file's
--- type, so a photo renamed to .pdf can't be attached for an under 18.
+-- type, so a photo renamed to .pdf can't skip the declaration.
 create or replace function public.check_injury_document(p_injury public.injuries, p_path text)
 returns void
 language plpgsql
@@ -251,11 +269,11 @@ begin
       v_type is not null and v_type <> 'application/pdf'
       and public.athlete_is_minor(p_injury.athlete_id)
       and not exists (
-        select 1 from public.injury_photo_consents c
-        where c.document_path = p_path and c.guardian_id = auth.uid()
+        select 1 from public.injury_photo_declarations d
+        where d.document_path = p_path and d.declared_by = auth.uid()
       )
     ) then
-    raise exception 'Attach the letter or report as a PDF, not a photo of the injury';
+    raise exception 'Confirm what the photo shows before attaching it';
   end if;
 end;
 $$;
@@ -398,7 +416,7 @@ $$;
 revoke execute on function public.can_see_injury_document_log(uuid) from public, anon, authenticated;
 
 -- Everyone who opened or shared one injury's documents, oldest first, with
--- the photo consents given. Null (rather than an empty list) when the
+-- what was declared about each photo. Null (rather than an empty list) when the
 -- signed-in member doesn't see the record.
 create or replace function public.injury_document_log(p_injury_id uuid)
 returns table (
@@ -425,9 +443,10 @@ begin
     from public.injury_document_events e
     where e.injury_id = p_injury_id
     union all
-    select c.document_path, c.guardian_name, 'Parent or guardian', 'consented', c.created_at
-    from public.injury_photo_consents c
-    where c.injury_id = p_injury_id
+    select d.document_path, d.declared_by_name, d.declared_by_role,
+      case d.kind when 'injury' then 'consented' else 'letter_declared' end, d.created_at
+    from public.injury_photo_declarations d
+    where d.injury_id = p_injury_id
     order by 5;
 end;
 $$;
