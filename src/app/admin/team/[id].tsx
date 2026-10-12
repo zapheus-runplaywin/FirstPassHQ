@@ -75,9 +75,9 @@ export default function NameTeamScreen() {
           .from('profiles')
           .select('id, full_name, email, role, extra_roles')
           .eq('status', 'approved')
-          .or('role.in.(athlete,coach,manager),extra_roles.ov.{athlete,coach,manager}')
+          .or('role.in.(athlete,coach,manager,physio),extra_roles.ov.{athlete,coach,manager,physio}')
           .order('full_name');
-        const order: TeamRole[] = ['athlete', 'coach', 'manager'];
+        const order: TeamRole[] = ['athlete', 'coach', 'manager', 'physio'];
         members = ((people as ClubPerson[] | null) ?? [])
           .map((p) => ({
             profile_id: p.id,
