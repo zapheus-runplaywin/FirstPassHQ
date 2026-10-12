@@ -74,6 +74,11 @@ Until these secrets exist the workflows only warn and carry on updating the live
    ```
 
    Or add them on [expo.dev](https://expo.dev) under the project's **Environment variables**.
+3. Protect the daily injury purge. Make up a long random value, set it on the live project's
+   function (`npx supabase secrets set --project-ref <live-project-ref> PURGE_SECRET=<value>`), and
+   add the same value as the GitHub repository secret `PURGE_SECRET`. The purge then refuses any
+   call without it. Until both are set, the function warns in its logs and anyone who finds its
+   address can start a (harmless, but free-plan-quota-eating) purge run.
 
 ## More test clubs
 

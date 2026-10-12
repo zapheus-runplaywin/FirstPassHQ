@@ -27,8 +27,8 @@ jobs:
       - uses: supabase/setup-cli@45a513f8c64c0bc8e0e3dfe572b5c95be85f6359 # v3.0.1
         with:
           version: 2.120.0
-      # No JWT check: the function only removes records already past their
-      # 12 months, so anyone calling it early changes nothing.
+      # No JWT check (the workflow has no member's sign-in); the function
+      # checks the PURGE_SECRET function secret sent below instead.
       - run: >
           supabase functions deploy purge-expired-injuries
           --project-ref "$SUPABASE_PROJECT_ID" --no-verify-jwt --use-api
@@ -98,8 +98,12 @@ jobs:
     runs-on: ubuntu-24.04
     environment: production
     steps:
+      # PURGE_SECRET is the same value set on the function with
+      # `supabase secrets set PURGE_SECRET=...` (docs/environments.md).
       - run: >
           curl --fail-with-body --silent --show-error --max-time 120 -X POST
+          -H "x-purge-key: $PURGE_SECRET"
           "https://$SUPABASE_PROJECT_ID.supabase.co/functions/v1/purge-expired-injuries"
         env:
           SUPABASE_PROJECT_ID: ${{ secrets.SUPABASE_PROJECT_ID }}
+          PURGE_SECRET: ${{ secrets.PURGE_SECRET }}

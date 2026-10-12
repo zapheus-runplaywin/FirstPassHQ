@@ -175,7 +175,14 @@ export async function shareInjuryDocument(path: string, name: string | null) {
   }
   const destination = new File(Paths.cache, safeFileName(name ?? path.split('/').pop() ?? 'file'));
   const file = await File.downloadFileAsync(data.signedUrl, destination, { idempotent: true });
-  await Sharing.shareAsync(file.uri, { dialogTitle: name ?? 'Injury document' });
+  try {
+    await Sharing.shareAsync(file.uri, { dialogTitle: name ?? 'Injury document' });
+  } finally {
+    // The copy made for the share sheet isn't left in the app's cache.
+    try {
+      file.delete();
+    } catch {}
+  }
 }
 
 /** Opens the share sheet for a CSV file. On the web it downloads instead. */

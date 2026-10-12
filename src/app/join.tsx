@@ -49,7 +49,9 @@ export default function JoinScreen() {
     }
     setSaving(true);
     setError(null);
-    const { error: rpcError } = await supabase.rpc('submit_join_request', {
+    // A wrong club password comes back as a message, not an error, so the
+    // database can keep count of wrong tries.
+    const { data: refused, error: rpcError } = await supabase.rpc('submit_join_request', {
       p_full_name: fullName,
       p_playhq_email: playhqEmail,
       p_requested_role: role,
@@ -57,8 +59,8 @@ export default function JoinScreen() {
       p_join_password: needsPassword ? password : null,
     });
     setSaving(false);
-    if (rpcError) {
-      setError(rpcError.message);
+    if (rpcError || refused) {
+      setError(rpcError?.message ?? String(refused));
       return;
     }
     await refresh();

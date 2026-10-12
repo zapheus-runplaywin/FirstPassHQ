@@ -181,7 +181,8 @@ and fill in:
 - **I am a**: the role that best describes you.
 - **Squad**: athletes, coaches, managers and guardians pick their squad (guardians pick their
   athlete's squad). In a club without squads this is **Team**.
-- **Club password**: if the club has set one, ask a club admin for it.
+- **Club password**: if the club has set one, ask a club admin for it. Five wrong tries in a row
+  lock you out of asking for 15 minutes.
 
 Tap **Send request**.
 
@@ -1267,7 +1268,8 @@ part of the app build and don't change here.
 
 **Club password** sets a password new members must enter to ask to join. It stops strangers who
 find the app from sending requests. Approved members never need it. For security it can't be shown
-once saved, only replaced or removed.
+once saved, only replaced or removed, and anyone who gets it wrong five times in a row has to wait
+15 minutes before trying again.
 
 <img src="user-guide/club-password.png" width="210" alt="Club password">
 
