@@ -121,8 +121,9 @@ their parents or guardians.
 messages sent to everyone in the club only when an admin turns on **Physios get club messages** in
 Club settings.
 
-‡ A physio placed in squads or teams looks after the athletes in them. The Head Physio, and a
-physio who isn't in any squad or team, looks after every athlete.
+‡ A physio placed in squads or teams looks after the athletes in them. Only the Head Physio looks
+after every athlete. A physio who isn't in any squad or team sees no athletes until an admin places
+them or makes them Head Physio.
 
 "Own groups" and "own athletes" mean the squads and teams you're listed in as a coach or manager.
 Club awards are voted on by the roles, squads and teams each award names, so not every award is
@@ -159,7 +160,9 @@ separate from every other club. So the first time it opens, the app asks for you
 West Coast Thunder's is `THUNDER`. Type it in, check the club's name that appears, and tap
 **Continue to West Coast Thunder**. If the club gives you a QR code, scan it with your phone's
 camera instead, or open the club's invite link: either one opens the app with the club already
-picked. The app remembers your club after that.
+picked. The app remembers your club after that. If the app is already set up for a club and you open
+another club's link, it asks **Switch to this club?** first; tap **Stay with** your club if you
+didn't expect it.
 
 <img src="user-guide/club-code.png" width="210" alt="Find your club: the club code screen">
 
@@ -330,7 +333,10 @@ without squads the list is called **My teams**.
 
 When the club runs an award vote that includes you, it appears in your to-do list and on the
 **Awards** card. Who can vote depends on the award: for example, every member votes for Volunteer
-of the year, and athletes vote for their own team's Players' player. Physios and guests don't vote.
+of the year, and athletes vote for their own team's Players' player. When an award has a winner for
+each squad or team, you only see and vote for members of your own squad or team, even if it is open to
+every member. Club-wide awards are open to everyone, or to the roles the club chose. Physios and
+guests don't vote.
 
 1. Tap the vote. It shows the award, what to think about, and when voting closes.
 2. Tap who you're voting for. For a 3-2-1 vote, tap three people in order: first place gets 3
@@ -942,7 +948,8 @@ as **Head Physio**. Which athletes a physio looks after:
 
 - **Head Physio**: every athlete, whether or not the Head Physio is in a squad or team.
 - **A physio in squads or teams**: the athletes in those squads and teams.
-- **A physio in no squad or team**: every athlete, so a club with one physio doesn't need to place them.
+- **A physio in no squad or team**: no athletes. A club with one physio should mark them **Head
+  Physio**; otherwise place them in the squads and teams they look after.
 
 - **Check-ins** shows the same squad, team and club averages the committee sees (see
   [Check-in averages](#check-in-averages)). Physios never see an individual athlete's answers.
@@ -1075,7 +1082,7 @@ recorded, and they can still be stood down.
 it under **Their code** and tap **Check code**. Or, under **How you checked**, choose **Matched to
 PlayHQ** (their PlayHQ email matches the parent on the registration) or **ID sighted**, write what
 you checked under **What you checked**, and tap **Record check**. The member then shows as
-"Verified", with how and, under **What was checked**, your note. You can't verify yourself.
+"Verified", with how and, under **What was checked**, your note. You can't verify yourself, change your own date of birth or card details, or exempt yourself; ask another admin. An admin can't approve a member who hasn't given their name.
 
 **Linking guardians.** Linking or unlinking a guardian takes effect when you save. Add a **Reason for
 the change** if there is one, such as a parenting order you've seen; only admins see it. When you
@@ -1259,9 +1266,10 @@ still needed.
   calendar, using the arrows to move to later months.
 - **Voters**: **The whole club**, or **Chosen squads and teams**. For chosen groups, pick **One
   winner** or **A winner for each** squad or team. With a winner for each, members vote only in
-  their own group. Then the **Roles that vote**. Athletes, coaches, managers and guardians vote in
+  their own group, and **Any member** nominees mean the members of that squad or team. Then the **Roles that vote**. Athletes, coaches, managers and guardians vote in
   the squads and teams they're in. Committee and admins vote wherever they are. **Every member**
-  opens it to everyone except physios and guests, who don't vote.
+  opens it to everyone except physios and guests, who don't vote (for a winner-for-each award,
+  to the members of that squad or team).
 - **Nominees**: **Athletes** or **Coaches** in the voting groups, **Any member**, or **Names I
   list**, one per line, for people who aren't in the app, such as umpires.
 - **Age restricted** (not for listed names): **Any age**, or **Set ages** to match the committee's
@@ -1641,8 +1649,14 @@ images to stay inside the club. So for athletes under 18:
   each document.
 - **Sharing is limited.** Only the committee member accepting a clearance can share its documents,
   while it's waiting for them, and each share is recorded in the same list.
+- **Physios see only their own athletes.** A physio sees the injuries of the athletes in their own
+  squads and teams. Only the Head Physio sees every athlete; a physio in no squad or team sees none
+  until an admin places them.
 
 Athletes who are 18 or over attach a PDF or a photo, and see who opened their documents too.
+
+Nobody checks themselves: an admin can't verify themselves or record their own date of birth or
+Working With Children Check, and another admin must do it.
 
 <img src="user-guide/injury-letter-photo.png" width="210" alt="An athlete under 18 confirming a photo shows the physio's letter">
 <img src="user-guide/injury-photo-consent.png" width="210" alt="A guardian choosing The injury and confirming consent before adding a photo">
