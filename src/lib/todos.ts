@@ -35,6 +35,7 @@ export function buildTodos({
   teamGames = [],
   training = [],
   certificatesToCheck = 0,
+  declarationWaiting = false,
   today = new Date(),
 }: {
   userId: string | undefined;
@@ -60,9 +61,21 @@ export function buildTodos({
   training?: MyTraining[];
   /** Training certificates waiting for the committee that the member can check. */
   certificatesToCheck?: number;
+  /** An admin recorded a volunteer exemption the member hasn't accepted yet. */
+  declarationWaiting?: boolean;
   today?: Date;
 }): Todo[] {
   const todos: Todo[] = [];
+
+  // Their club role stays paused until they accept, so it comes first.
+  if (declarationWaiting) {
+    todos.push({
+      key: 'volunteer-declaration',
+      title: 'Accept the volunteer declaration',
+      detail: 'Your club role starts once you do',
+      href: '/declaration',
+    });
+  }
 
   if (needsCheckIn) {
     todos.push({
@@ -261,6 +274,14 @@ export function buildTodos({
           safety.wwcc_missing > 0
             ? `${plural(safety.wwcc_missing, 'member who needs one has', 'members who need one have')} none recorded or it has expired`
             : `Expiring in the next ${WWCC_WARNING_DAYS} days`,
+        href: '/admin',
+      });
+    }
+    if (safety.exemptions_ending > 0) {
+      todos.push({
+        key: 'exemptions-ending',
+        title: `${plural(safety.exemptions_ending, 'volunteer exemption ends', 'volunteer exemptions end')} soon`,
+        detail: `Within ${WWCC_WARNING_DAYS} days. They’ll need a Working With Children Check to keep their role.`,
         href: '/admin',
       });
     }

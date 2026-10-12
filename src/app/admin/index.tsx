@@ -10,20 +10,26 @@ import { PROFILE_COLUMNS } from '@/lib/auth';
 import { rejectionReasonLabels, roleLabels, rolesLabel } from '@/lib/labels';
 import { safetyIssues } from '@/lib/safety';
 import { supabase } from '@/lib/supabase';
-import type { Profile } from '@/lib/types';
+import type { Profile, VolunteerExemption } from '@/lib/types';
 import { rolesOf } from '@/lib/roles';
 
 export default function MembersScreen() {
   const [members, setMembers] = useState<Profile[]>([]);
   const [withGuardian, setWithGuardian] = useState<Set<string>>(new Set());
+  const [exemptions, setExemptions] = useState<Map<string, VolunteerExemption>>(new Map());
   const [search, setSearch] = useState('');
   const [refreshing, setRefreshing] = useState(false);
 
   const load = useCallback(async () => {
-    const [profilesResult, guardiansResult] = await Promise.all([
+    const [profilesResult, guardiansResult, exemptionsResult] = await Promise.all([
       supabase.from('profiles').select(PROFILE_COLUMNS).order('full_name', { nullsFirst: false }),
       supabase.from('guardianships').select('athlete_id'),
+      supabase.rpc('admin_volunteer_exemptions'),
     ]);
+    const open = ((exemptionsResult.data as VolunteerExemption[] | null) ?? []).filter(
+      (e) => !e.ended_at,
+    );
+    setExemptions(new Map(open.map((e) => [e.profile_id, e])));
     setMembers((profilesResult.data as Profile[] | null) ?? []);
     setWithGuardian(
       new Set(
@@ -55,7 +61,9 @@ export default function MembersScreen() {
     .sort((a, b) => (a.join_requested_at ?? '').localeCompare(b.join_requested_at ?? ''));
   const approved = matching.filter((m) => m.status === 'approved');
   // The people behind the child-safety to-dos on the home screen, with why.
-  const issues = new Map(approved.map((m) => [m.id, safetyIssues(m, withGuardian.has(m.id))]));
+  const issues = new Map(
+    approved.map((m) => [m.id, safetyIssues(m, withGuardian.has(m.id), exemptions.get(m.id))]),
+  );
   const needsChecking = approved.filter((m) => issues.get(m.id)?.length);
   const notRequested = matching.filter((m) => m.status === 'pending' && !m.join_requested_at);
   const rejected = matching.filter((m) => m.status === 'rejected');

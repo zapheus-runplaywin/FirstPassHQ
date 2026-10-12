@@ -105,6 +105,41 @@ export type StandDown = {
   lift_note: string | null;
 };
 
+/** Why a volunteer doesn't need a Working With Children Check (WA rules). */
+export type VolunteerExemptionBasis = 'parent_volunteer' | 'under_18_volunteer';
+
+/** The signed-in member's own exemption, from `my_volunteer_exemption`. */
+export type MyVolunteerExemption = {
+  basis: VolunteerExemptionBasis;
+  child_name: string | null;
+  /** When they accepted the declaration; null while it's waiting for them. */
+  declared_at: string | null;
+  /** The words they accepted, or will accept. */
+  declaration_text: string;
+  /** Accepted, and the child or volunteer is still under 18 and linked. */
+  valid: boolean;
+  /** The day it ends by itself, when known. */
+  ends_on: string | null;
+};
+
+/** Any member's exemption, open or ended, from `admin_volunteer_exemptions`. */
+export type VolunteerExemption = {
+  id: string;
+  profile_id: string;
+  basis: VolunteerExemptionBasis;
+  child_id: string | null;
+  child_name: string | null;
+  set_by_name: string | null;
+  set_at: string;
+  declared_at: string | null;
+  declaration_text: string | null;
+  ended_at: string | null;
+  ended_by_name: string | null;
+  end_note: string | null;
+  valid: boolean;
+  ends_on: string | null;
+};
+
 export type TeamMembership = {
   team_role: TeamRole;
   coach_title: CoachTitle | null;

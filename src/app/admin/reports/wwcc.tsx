@@ -8,7 +8,7 @@ import { PROFILE_COLUMNS } from '@/lib/auth';
 import type { Report } from '@/lib/pdf';
 import { fetchAll, wwccReport, type Placement } from '@/lib/reports';
 import { supabase } from '@/lib/supabase';
-import type { Profile, StandDown } from '@/lib/types';
+import type { Profile, StandDown, VolunteerExemption } from '@/lib/types';
 import { useTeams } from '@/lib/use-teams';
 
 export default function WwccReportScreen() {
@@ -17,13 +17,14 @@ export default function WwccReportScreen() {
     members: Profile[];
     placements: Placement[];
     standDowns: StandDown[];
+    exemptions: VolunteerExemption[];
   } | null>(null);
   const [error, setError] = useState<string | null>(null);
   const [refreshing, setRefreshing] = useState(false);
 
   const load = useCallback(async () => {
     try {
-      const [members, placements, standDowns] = await Promise.all([
+      const [members, placements, standDowns, exemptions] = await Promise.all([
         fetchAll<Profile>((from, to) =>
           supabase.from('profiles').select(PROFILE_COLUMNS).eq('status', 'approved').range(from, to),
         ),
@@ -41,8 +42,11 @@ export default function WwccReportScreen() {
             .order('started_at', { ascending: false })
             .range(from, to),
         ),
+        fetchAll<VolunteerExemption>((from, to) =>
+          supabase.rpc('admin_volunteer_exemptions').range(from, to),
+        ),
       ]);
-      setData({ members, placements, standDowns });
+      setData({ members, placements, standDowns, exemptions });
       setError(null);
     } catch (e) {
       setError(e instanceof Error ? e.message : 'The report didn’t load. Try again.');
@@ -61,7 +65,9 @@ export default function WwccReportScreen() {
     setRefreshing(false);
   }
 
-  const report: Report | null = data ? wwccReport(data.members, data.placements, teams, data.standDowns) : null;
+  const report: Report | null = data
+    ? wwccReport(data.members, data.placements, teams, data.standDowns, data.exemptions)
+    : null;
 
   return (
     <Screen refreshing={refreshing} onRefresh={onRefresh}>
