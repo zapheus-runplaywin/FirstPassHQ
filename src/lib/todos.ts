@@ -4,6 +4,7 @@ import { slotTitle } from '@/lib/awards';
 import { formatShortDay } from '@/lib/format';
 import { gamePhase, gameTitle } from '@/lib/goals';
 import { formatDateString, toDateString } from '@/lib/injuries';
+import { WWCC_WARNING_DAYS } from '@/lib/safety';
 import { dueLabel, isOutstanding, type MyTraining } from '@/lib/training';
 import type { AwardSlot, CoachTeamGame, GoalGame, Injury } from '@/lib/types';
 import type { SafetyTodos } from '@/lib/use-pending-requests';
@@ -259,7 +260,7 @@ export function buildTodos({
         detail:
           safety.wwcc_missing > 0
             ? `${plural(safety.wwcc_missing, 'member who needs one has', 'members who need one have')} none recorded or it has expired`
-            : 'Expiring in the next 30 days',
+            : `Expiring in the next ${WWCC_WARNING_DAYS} days`,
         href: '/admin',
       });
     }
