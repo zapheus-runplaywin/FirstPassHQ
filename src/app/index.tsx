@@ -53,7 +53,7 @@ const UPCOMING_COUNT = 6;
 
 export default function HomeScreen() {
   const theme = useTheme();
-  const { session, profile, paused, memberships, isAdmin, refresh, signOut } = useAuth();
+  const { session, profile, paused, exemption, memberships, isAdmin, refresh, signOut } = useAuth();
   const { switchClub } = useClubChoice();
   const club = useClub();
   const { features } = club;
@@ -99,6 +99,7 @@ export default function HomeScreen() {
     teamGames: teamGames ?? [],
     training: features.integrity ? (myTraining ?? []) : [],
     certificatesToCheck: features.integrity ? certificatesToCheck : 0,
+    declarationWaiting: !!exemption && !exemption.declared_at,
   });
 
   const isGuardian = profile?.status === 'approved' && hasRole(profile, 'guardian');
@@ -426,6 +427,28 @@ function rolesHeldLabel(profile: Profile, pausedRoles: AppRole[]) {
     : `${usable}, ${pausedLabel}`;
 }
 
+/** Why the member's roles are paused, in a sentence or two. */
+function pausedReason(
+  paused: NonNullable<ReturnType<typeof useAuth>['paused']>,
+  what: string,
+): string {
+  if (paused.stoodDown) {
+    return `Your ${what} paused by a club admin. Talk to a club admin about it.`;
+  }
+  const exemption = paused.exemption;
+  if (exemption && !exemption.declared_at) {
+    return `Your ${what} paused until you accept the volunteer declaration. Open it from your to-do list.`;
+  }
+  if (exemption) {
+    const ended =
+      exemption.basis === 'parent_volunteer'
+        ? `Your exemption as ${exemption.child_name ?? 'your child'}’s parent no longer applies`
+        : 'Your exemption as an under-18 volunteer ended when you turned 18';
+    return `${ended}, so your ${what} paused. Apply for a Working With Children Check, then send a club admin the card number and expiry date.`;
+  }
+  return `Your Working With Children Check has expired or isn't recorded, so your ${what} paused. Renew it, then send a club admin the new card number and expiry date.`;
+}
+
 /** Roles the member holds but can't use: an expired check or a stand-down. */
 function PausedRoles() {
   const { paused } = useAuth();
@@ -436,9 +459,7 @@ function PausedRoles() {
     <Card>
       <ThemedText type="smallBold">{roles} paused</ThemedText>
       <ThemedText type="small" themeColor="textSecondary">
-        {paused.stoodDown
-          ? `Your ${what} paused by a club admin. Talk to a club admin about it.`
-          : `Your Working With Children Check has expired or isn't recorded, so your ${what} paused. Renew it, then send a club admin the new card number and expiry date.`}
+        {pausedReason(paused, what)}
       </ThemedText>
     </Card>
   );

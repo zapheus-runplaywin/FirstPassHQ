@@ -7,8 +7,15 @@ import { formatDateString, toDateString } from '@/lib/injuries';
 import { rolesLabel } from '@/lib/labels';
 import type { Report, ReportRow } from '@/lib/pdf';
 import { hasRole, rolesOf } from '@/lib/roles';
-import { needsWwcc, standDownReasonLabels, WWCC_WARNING_DAYS, wwccStatus } from '@/lib/safety';
-import type { Profile, StandDown, Team, TeamRole } from '@/lib/types';
+import {
+  exemptionStatus,
+  needsWwcc,
+  standDownReasonLabels,
+  volunteerExemptionLabels,
+  WWCC_WARNING_DAYS,
+  wwccStatus,
+} from '@/lib/safety';
+import type { Profile, StandDown, Team, TeamRole, VolunteerExemption } from '@/lib/types';
 import { teamLabel } from '@/lib/use-teams';
 
 /** "West Coast Thunder" -> "west-coast-thunder", for file names. */
@@ -96,10 +103,17 @@ export function wwccReport(
   placements: Placement[],
   teams: Team[],
   standDowns: StandDown[] = [],
+  exemptions: VolunteerExemption[] = [],
 ): Report {
   const approved = members.filter((m) => m.status === 'approved');
+  const openExemption = new Map(exemptions.filter((e) => !e.ended_at).map((e) => [e.profile_id, e]));
+  // A volunteer exemption stands in for a check they don't have.
+  const screenedByExemption = (m: Profile) => {
+    const kind = wwccStatus(m).kind;
+    return openExemption.has(m.id) && kind !== 'current' && kind !== 'expiring';
+  };
   const people = approved
-    .filter((m) => needsWwcc(m))
+    .filter((m) => needsWwcc(m) && !screenedByExemption(m))
     .map((m) => ({ member: m, name: memberName(m), status: wwccStatus(m) }))
     .sort(byName);
   // Committee members an admin excused from the check, with the reason.
@@ -151,6 +165,10 @@ export function wwccReport(
       { label: 'Expired', value: count('expired') },
       { label: 'Missing', value: count('missing') },
       { label: 'Committee exempt', value: exempt.length },
+      {
+        label: 'Exempt volunteers',
+        value: approved.filter((m) => needsWwcc(m) && screenedByExemption(m)).length,
+      },
       { label: 'Stood down now', value: standDowns.filter((s) => !s.lifted_at).length },
     ],
     sections: [
@@ -181,6 +199,36 @@ export function wwccReport(
           ],
         })),
         empty: 'Nobody is exempt.',
+      },
+      {
+        title: 'Exempt volunteers',
+        note: 'Parent volunteers at their child’s club and volunteers under 18 don’t need a check in WA. Each accepts a declaration in the app; the exemption ends by itself when the child or volunteer turns 18 or the child leaves. Ended exemptions are listed after current ones.',
+        columns: [
+          { label: 'Name', width: 1.3 },
+          { label: 'Exemption', width: 1.5 },
+          { label: 'Recorded', width: 1.3 },
+          { label: 'Declaration', width: 1.0 },
+          { label: 'Status', width: 2.0 },
+        ],
+        rows: exemptions
+          .filter((e) => e.ended_at || approved.some((m) => m.id === e.profile_id))
+          .map((e) => {
+            const member = members.find((m) => m.id === e.profile_id);
+            const status = exemptionStatus(e);
+            return {
+              cells: [
+                member ? memberName(member) : 'A former member',
+                `${volunteerExemptionLabels[e.basis]}${e.child_name ? ` for ${e.child_name}` : ''}`,
+                `${localDay(e.set_at)} by ${e.set_by_name ?? 'a former admin'}`,
+                e.declared_at ? `Accepted ${localDay(e.declared_at)}` : 'Waiting',
+                e.ended_at
+                  ? `Ended ${localDay(e.ended_at)} by ${e.ended_by_name ?? 'a former admin'}${e.end_note ? ` (${e.end_note})` : ''}`
+                  : status.label,
+              ],
+              flag: !e.ended_at && status.problem,
+            };
+          }),
+        empty: 'No volunteer exemptions recorded.',
       },
       {
         title: 'Stand-downs',

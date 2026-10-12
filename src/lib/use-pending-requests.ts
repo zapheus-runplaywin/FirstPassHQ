@@ -40,6 +40,8 @@ export type SafetyTodos = {
   wwcc_expiring: number;
   minors_without_guardian: number;
   turning_18: number;
+  /** Volunteer exemptions that end by themselves within 60 days. */
+  exemptions_ending: number;
 };
 
 /** Child-safety follow-ups for admins, refreshed when the screen is shown. */

@@ -16,12 +16,20 @@ import {
   isTeamRole,
   rejectionReasonLabels,
   roleLabels,
+  rolesLabel,
   selectionLabels,
   statusLabels,
   teamRoleLabels,
 } from '@/lib/labels';
+import { localDay } from '@/lib/reports';
 import { hasRole, roleCombinationProblem } from '@/lib/roles';
-import { canBeExempt, standDownRoles, wwccRoles } from '@/lib/safety';
+import {
+  canBeExempt,
+  exemptionStatus,
+  standDownRoles,
+  volunteerExemptionLabels,
+  wwccRoles,
+} from '@/lib/safety';
 import { supabase } from '@/lib/supabase';
 import type {
   AppRole,
@@ -31,6 +39,8 @@ import type {
   RejectionReason,
   TeamRole,
   TeamSelection,
+  VolunteerExemption,
+  VolunteerExemptionBasis,
 } from '@/lib/types';
 import { teamLabel, topGroups, useTeams } from '@/lib/use-teams';
 
@@ -79,6 +89,10 @@ export default function MemberScreen() {
   const [wwccExpires, setWwccExpires] = useState('');
   const [exempt, setExempt] = useState(false);
   const [exemptReason, setExemptReason] = useState('');
+  // How a coach, manager or physio is screened: a check, or a volunteer exemption.
+  const [screening, setScreening] = useState<'check' | VolunteerExemptionBasis>('check');
+  const [exemptChild, setExemptChild] = useState<string | null>(null);
+  const [exemptions, setExemptions] = useState<VolunteerExemption[]>([]);
   const [title, setTitle] = useState('');
   const [headPhysio, setHeadPhysio] = useState(false);
   const [guardianIds, setGuardianIds] = useState<string[]>([]);
@@ -95,7 +109,8 @@ export default function MemberScreen() {
 
   useEffect(() => {
     (async () => {
-      const [profileResult, teamsResult, linksResult, peopleResult] = await Promise.all([
+      const [profileResult, teamsResult, linksResult, peopleResult, exemptionsResult] =
+        await Promise.all([
         supabase.from('profiles').select(PROFILE_COLUMNS).eq('id', id).single(),
         supabase
           .from('team_members')
@@ -112,6 +127,7 @@ export default function MemberScreen() {
           .select('id, full_name, email, role, extra_roles, verified_at')
           .eq('status', 'approved')
           .order('full_name'),
+        supabase.rpc('admin_volunteer_exemptions'),
       ]);
       const profile = profileResult.data as Profile | null;
       if (!profile) {
@@ -125,6 +141,13 @@ export default function MemberScreen() {
       setWwccExpires(formatDate(profile.wwcc_expires_on));
       setExempt(!!profile.wwcc_exempt_reason);
       setExemptReason(profile.wwcc_exempt_reason ?? '');
+      const theirs = ((exemptionsResult.data as VolunteerExemption[] | null) ?? []).filter(
+        (e) => e.profile_id === id,
+      );
+      setExemptions(theirs);
+      const open = theirs.find((e) => !e.ended_at);
+      setScreening(open?.basis ?? 'check');
+      setExemptChild(open?.child_id ?? null);
       setTitle(profile.title ?? '');
       setHeadPhysio(profile.head_physio);
       setReason(profile.rejection_reason);
@@ -176,6 +199,10 @@ export default function MemberScreen() {
   // Only a committee member with no coach, manager or physio role can be excused.
   const exemptable = canBeExempt(roles);
   const isExempt = exemptable && exempt;
+  // Coaches, managers and physios can be screened by a volunteer exemption instead.
+  const canVolunteer = roles.some((r) => wwccRoles.includes(r));
+  const volunteerBasis = canVolunteer && screening !== 'check' ? screening : null;
+  const openExemption = exemptions.find((e) => !e.ended_at);
   const comboProblem = roleCombinationProblem(roles, dob, under18);
   const isSelf = id === session?.user.id;
 
@@ -296,6 +323,10 @@ export default function MemberScreen() {
       setError('Write why they don’t need a Working With Children Check.');
       return;
     }
+    if (volunteerBasis === 'parent_volunteer' && !exemptChild) {
+      setError('Choose the child they volunteer for.');
+      return;
+    }
     setSaving(status);
     setError(null);
     // Saved first, because the member rules below depend on them.
@@ -322,6 +353,13 @@ export default function MemberScreen() {
         setError(exemptError.message);
         return;
       }
+    }
+    // Also before saving the member: a new coach needs a check or an exemption.
+    const exemptionError = await saveExemption();
+    if (exemptionError) {
+      setSaving(null);
+      setError(exemptionError);
+      return;
     }
     const { error: rpcError } = await supabase.rpc('admin_save_member', {
       p_profile_id: id,
@@ -368,6 +406,28 @@ export default function MemberScreen() {
     setSaving(null);
     if (isSelf) await refresh();
     router.back();
+  }
+
+  /** Records, changes or ends their volunteer exemption. Returns an error message. */
+  async function saveExemption(): Promise<string | null> {
+    if (volunteerBasis) {
+      const child = volunteerBasis === 'parent_volunteer' ? exemptChild : null;
+      if (openExemption?.basis === volunteerBasis && openExemption.child_id === child) return null;
+      const { error: setError } = await supabase.rpc('admin_set_volunteer_exemption', {
+        p_profile_id: id,
+        p_basis: volunteerBasis,
+        p_child_id: child,
+      });
+      return setError?.message ?? null;
+    }
+    if (!openExemption) return null;
+    const { error: endError } = await supabase.rpc('admin_end_volunteer_exemption', {
+      p_profile_id: id,
+      p_note: canVolunteer
+        ? 'Changed to a Working With Children Check'
+        : 'No longer in a role that needs one',
+    });
+    return endError?.message ?? null;
   }
 
   async function deleteMember() {
@@ -615,8 +675,55 @@ export default function MemberScreen() {
           <ThemedText type="smallBold">Working With Children Check</ThemedText>
           <ThemedText type="small" themeColor="textSecondary">
             Coaches, managers, physios and committee members need a current check before you can
-            approve them. You can exempt a committee member instead, with a reason.
+            approve them. In WA, a parent volunteering at their child’s club and a volunteer under
+            18 are exempt instead: record that here, and they accept a declaration in the app
+            before their role starts. You can exempt a committee member with a reason.
           </ThemedText>
+          {canVolunteer && !isSelf ? (
+            <ChipGroup
+              options={[
+                { value: 'check', label: 'Has a check' },
+                ...(['parent_volunteer', 'under_18_volunteer'] as const)
+                  // A parent volunteer needs a child linked; an under-18 volunteer, a date of birth.
+                  .filter((basis) =>
+                    basis === screening || (basis === 'parent_volunteer' ? guardianOf.length > 0 : minor),
+                  )
+                  .map((basis) => ({ value: basis, label: volunteerExemptionLabels[basis] })),
+              ]}
+              selected={[screening]}
+              onToggle={(choice) => setScreening(choice as 'check' | VolunteerExemptionBasis)}
+            />
+          ) : null}
+          {volunteerBasis === 'parent_volunteer' ? (
+            <ChipGroup
+              label="Their child at the club"
+              options={guardianOf.map((c) => ({ value: c, label: nameOf(c) }))}
+              selected={exemptChild ? [exemptChild] : []}
+              onToggle={(c) => setExemptChild(c === exemptChild ? null : c)}
+            />
+          ) : null}
+          {openExemption && volunteerBasis === openExemption.basis ? (
+            <ThemedText
+              type="small"
+              themeColor={exemptionStatus(openExemption).problem ? 'tint' : 'textSecondary'}>
+              {exemptionStatus(openExemption).label}. Recorded by{' '}
+              {openExemption.set_by_name ?? 'a former admin'} on {localDay(openExemption.set_at)}
+              {openExemption.declared_at
+                ? `; declaration accepted ${localDay(openExemption.declared_at)}.`
+                : '.'}
+            </ThemedText>
+          ) : null}
+          {volunteerBasis && volunteerBasis !== openExemption?.basis ? (
+            <ThemedText type="small" themeColor="textSecondary">
+              Once you save, they’ll get a to-do to accept the volunteer declaration. Their{' '}
+              {rolesLabel(roles.filter((r) => wwccRoles.includes(r))).toLowerCase()} role starts
+              when they do. It ends by itself when{' '}
+              {volunteerBasis === 'parent_volunteer'
+                ? 'their child turns 18 or leaves'
+                : 'they turn 18'}
+              .
+            </ThemedText>
+          ) : null}
           {exemptable && !(isSelf && !exempt) ? (
             <ChipGroup
               options={[
@@ -650,7 +757,7 @@ export default function MemberScreen() {
                 </ThemedText>
               ) : null}
             </>
-          ) : (
+          ) : volunteerBasis ? null : (
             <>
               <TextField
                 label="Card number"
@@ -669,6 +776,17 @@ export default function MemberScreen() {
               />
             </>
           )}
+          {exemptions
+            .filter((e) => e.ended_at)
+            .map((e) => (
+              <ThemedText key={e.id} type="small" themeColor="textSecondary">
+                Earlier: {volunteerExemptionLabels[e.basis]}
+                {e.child_name ? ` for ${e.child_name}` : ''}, recorded {localDay(e.set_at)}
+                {e.declared_at ? `, declared ${localDay(e.declared_at)}` : ''}, ended{' '}
+                {localDay(e.ended_at!)} by {e.ended_by_name ?? 'a former admin'}
+                {e.end_note ? ` (${e.end_note})` : ''}
+              </ThemedText>
+            ))}
         </View>
       ) : null}
 

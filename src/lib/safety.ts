@@ -1,5 +1,11 @@
 import { formatDate, isMinor } from '@/lib/age';
-import type { AppRole, Profile, StandDownReason } from '@/lib/types';
+import type {
+  AppRole,
+  MyVolunteerExemption,
+  Profile,
+  StandDownReason,
+  VolunteerExemptionBasis,
+} from '@/lib/types';
 import { hasRole, rolesOf } from '@/lib/roles';
 
 /** Roles that always need a current Working With Children Check. */
@@ -25,6 +31,44 @@ export function needsWwcc(
   return hasRole(member, 'committee') && !member.wwcc_exempt_reason?.trim();
 }
 
+export const volunteerExemptionLabels: Record<VolunteerExemptionBasis, string> = {
+  parent_volunteer: 'Parent volunteer',
+  under_18_volunteer: 'Under-18 volunteer',
+};
+
+/** An exemption's state, as either the member's own or an admin's view has it. */
+type ExemptionState = Pick<
+  MyVolunteerExemption,
+  'basis' | 'child_name' | 'declared_at' | 'valid' | 'ends_on'
+>;
+
+/**
+ * Where a volunteer exemption is up to, in a sentence: waiting for the
+ * declaration, applying (and until when), or no longer applying.
+ */
+export function exemptionStatus(exemption: ExemptionState): { label: string; problem: boolean } {
+  const what =
+    exemption.basis === 'parent_volunteer'
+      ? `Parent volunteer for ${exemption.child_name ?? 'their child'}`
+      : 'Under-18 volunteer';
+  if (!exemption.declared_at) {
+    return { label: `${what}: waiting for them to accept the declaration`, problem: true };
+  }
+  if (!exemption.valid) {
+    return {
+      label: `${what}: no longer applies${exemption.basis === 'parent_volunteer' ? ' (child turned 18, left or was unlinked)' : ' (turned 18)'}`,
+      problem: true,
+    };
+  }
+  if (exemption.ends_on && exemption.ends_on < isoDay(WWCC_WARNING_DAYS)) {
+    return { label: `${what}: ends ${formatDate(exemption.ends_on)}`, problem: true };
+  }
+  return {
+    label: `${what}${exemption.ends_on ? ` until ${formatDate(exemption.ends_on)}` : ''}`,
+    problem: false,
+  };
+}
+
 /** How many days ahead admins hear that a check is about to expire. */
 export const WWCC_WARNING_DAYS = 60;
 
@@ -41,7 +85,8 @@ export const standDownReasonLabels: Record<StandDownReason, string> = {
 
 /**
  * Roles a member holds but can't use right now: coach, manager and physio
- * without a current check, committee when a recorded check has expired
+ * without a current check or a volunteer exemption that applies, committee
+ * when a recorded check has expired
  * (unless exempt), and all of those plus admin while stood down. Same rule as
  * `public.has_role` in the database.
  */
@@ -56,6 +101,8 @@ export function pausedRoles(
     | 'wwcc_exempt_reason'
     | 'stood_down_at'
   >,
+  /** They have a volunteer exemption that applies today. */
+  exempt = false,
 ): AppRole[] {
   if (member.status !== 'approved') return [];
   const check = wwccStatus(member).kind;
@@ -64,7 +111,7 @@ export function pausedRoles(
   return rolesOf(member).filter((r) => {
     if (!standDownRoles.includes(r)) return false;
     if (stoodDown) return true;
-    if (wwccRoles.includes(r)) return !current;
+    if (wwccRoles.includes(r)) return !current && !exempt;
     if (r === 'committee') {
       return !member.wwcc_exempt_reason?.trim() && !!member.wwcc_number?.trim() && !current;
     }
@@ -133,7 +180,12 @@ export function wwccStatus(member: Pick<Profile, 'wwcc_number' | 'wwcc_expires_o
  * Why an approved member shows up in the admin's child-safety to-dos, one line
  * per reason. Same rules as `public.admin_safety_todos` in the database.
  */
-export function safetyIssues(member: Profile, hasGuardian: boolean): string[] {
+export function safetyIssues(
+  member: Profile,
+  hasGuardian: boolean,
+  /** Their open volunteer exemption, if they have one. */
+  exemption?: ExemptionState | null,
+): string[] {
   if (member.status !== 'approved') return [];
   const issues: string[] = [];
   const in30Days = isoDay(30);
@@ -141,7 +193,13 @@ export function safetyIssues(member: Profile, hasGuardian: boolean): string[] {
 
   if (needsWwcc(member)) {
     const check = wwccStatus(member);
-    if (check.problem) issues.push(check.label);
+    const current = check.kind === 'current' || check.kind === 'expiring';
+    if (exemption && !current) {
+      const status = exemptionStatus(exemption);
+      if (status.problem) issues.push(status.label);
+    } else if (check.problem) {
+      issues.push(check.label);
+    }
   }
 
   if (hasRole(member, 'athlete') && isMinor(member.date_of_birth, member.under_17)) {
