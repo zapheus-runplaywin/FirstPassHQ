@@ -8,6 +8,7 @@ import { PROFILE_COLUMNS } from '@/lib/auth';
 import {
   fetchAll,
   under18sReport,
+  type ChildConsentStatus,
   type Guardianship,
   type Placement,
 } from '@/lib/reports';
@@ -15,7 +16,12 @@ import { supabase } from '@/lib/supabase';
 import type { Profile } from '@/lib/types';
 import { useTeams } from '@/lib/use-teams';
 
-type Data = { members: Profile[]; guardianships: Guardianship[]; placements: Placement[] };
+type Data = {
+  members: Profile[];
+  guardianships: Guardianship[];
+  placements: Placement[];
+  consents: ChildConsentStatus[];
+};
 
 export default function Under18sReportScreen() {
   const teams = useTeams();
@@ -25,7 +31,7 @@ export default function Under18sReportScreen() {
 
   const load = useCallback(async () => {
     try {
-      const [members, guardianships, placements] = await Promise.all([
+      const [members, guardianships, placements, consentsResult] = await Promise.all([
         // Guardians who aren't approved yet are still named against their child.
         fetchAll<Profile>((from, to) =>
           supabase.from('profiles').select(PROFILE_COLUMNS).range(from, to),
@@ -40,8 +46,10 @@ export default function Under18sReportScreen() {
             .eq('team_role', 'athlete')
             .range(from, to),
         ),
+        supabase.rpc('admin_child_consents'),
       ]);
-      setData({ members, guardianships, placements });
+      const consents = (consentsResult.data as ChildConsentStatus[] | null) ?? [];
+      setData({ members, guardianships, placements, consents });
       setError(null);
     } catch (e) {
       setError(e instanceof Error ? e.message : 'The report didn’t load. Try again.');
@@ -65,7 +73,13 @@ export default function Under18sReportScreen() {
       <ErrorText>{error}</ErrorText>
       {data ? (
         <ReportView
-          report={under18sReport(data.members, data.guardianships, data.placements, teams)}
+          report={under18sReport(
+            data.members,
+            data.guardianships,
+            data.placements,
+            teams,
+            data.consents,
+          )}
         />
       ) : null}
     </Screen>

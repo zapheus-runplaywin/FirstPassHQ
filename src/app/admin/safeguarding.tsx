@@ -12,6 +12,7 @@ import { PROFILE_COLUMNS } from '@/lib/auth';
 import { memberName } from '@/lib/reports';
 import { wwccStatus } from '@/lib/safety';
 import { supabase } from '@/lib/supabase';
+import type { ClubPolicies } from '@/lib/consents';
 import type { Profile, SafeguardingContacts, VolunteerExemption } from '@/lib/types';
 
 /** How many people to offer while searching. */
@@ -31,17 +32,26 @@ export default function SafeguardingScreen() {
   const [bodyUrl, setBodyUrl] = useState('');
   const [policyUrl, setPolicyUrl] = useState('');
   const [minorPhotos, setMinorPhotos] = useState(false);
+  const [privacyUrl, setPrivacyUrl] = useState('');
+  const [conductUrl, setConductUrl] = useState('');
+  const [policyVersion, setPolicyVersion] = useState('1');
   const theme = useTheme();
   const [busy, setBusy] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
   const load = useCallback(async () => {
-    const [contactsResult, membersResult, exemptionsResult, photosResult] = await Promise.all([
+    const [contactsResult, membersResult, exemptionsResult, photosResult, policiesResult] =
+      await Promise.all([
       supabase.rpc('safeguarding_contacts').maybeSingle(),
       supabase.from('profiles').select(PROFILE_COLUMNS).eq('status', 'approved').order('full_name'),
       supabase.rpc('admin_volunteer_exemptions'),
       supabase.rpc('safeguarding_photo_setting'),
+      supabase.rpc('club_policies').maybeSingle(),
     ]);
+    const policies = policiesResult.data as ClubPolicies | null;
+    setPrivacyUrl(policies?.privacy_policy_url ?? '');
+    setConductUrl(policies?.code_of_conduct_url ?? '');
+    setPolicyVersion(policies?.policy_version ?? '1');
     setMinorPhotos(photosResult.data === true);
     const contacts = contactsResult.data as SafeguardingContacts | null;
     setOfficer(contacts?.child_safety_officer_id ?? null);
@@ -88,9 +98,18 @@ export default function SafeguardingScreen() {
     const { error: photosError } = rpcError
       ? { error: null }
       : await supabase.rpc('admin_set_minor_injury_photos', { p_allowed: minorPhotos });
+    const { error: policiesError } =
+      rpcError || photosError
+        ? { error: null }
+        : await supabase.rpc('admin_set_policies', {
+            p_privacy_policy_url: privacyUrl,
+            p_code_of_conduct_url: conductUrl,
+            p_policy_version: policyVersion,
+          });
     setBusy(false);
-    if (rpcError || photosError) {
-      setError((rpcError ?? photosError)?.message ?? null);
+    const failed = rpcError ?? photosError ?? policiesError;
+    if (failed) {
+      setError(failed.message);
       return;
     }
     router.back();
@@ -147,15 +166,50 @@ export default function SafeguardingScreen() {
           maxLength={500}
         />
       </View>
-      <TextField
-        label="The club’s safeguarding policy (link)"
-        value={policyUrl}
-        onChangeText={setPolicyUrl}
-        placeholder="https://"
-        autoCapitalize="none"
-        keyboardType="url"
-        maxLength={500}
-      />
+      <View style={styles.group}>
+        <ThemedText type="smallBold">Club policies</ThemedText>
+        <ThemedText type="small" themeColor="textSecondary">
+          Links to policies hosted on your club’s website. They show on Join, Your details and
+          where parents give consent. The user guide (section 12) links to templates to adapt.
+        </ThemedText>
+        <TextField
+          label="Child safeguarding policy (link)"
+          value={policyUrl}
+          onChangeText={setPolicyUrl}
+          placeholder="https://"
+          autoCapitalize="none"
+          keyboardType="url"
+          maxLength={500}
+        />
+        <TextField
+          label="Privacy policy (link)"
+          value={privacyUrl}
+          onChangeText={setPrivacyUrl}
+          placeholder="https://"
+          autoCapitalize="none"
+          keyboardType="url"
+          maxLength={500}
+        />
+        <TextField
+          label="Code of conduct (link)"
+          value={conductUrl}
+          onChangeText={setConductUrl}
+          placeholder="https://"
+          autoCapitalize="none"
+          keyboardType="url"
+          maxLength={500}
+        />
+        <TextField
+          label="Policy version"
+          value={policyVersion}
+          onChangeText={setPolicyVersion}
+          placeholder="For example, 2026-1"
+          maxLength={30}
+        />
+        <ThemedText type="small" themeColor="textSecondary">
+          Each parent’s consent is kept with the version in force when they gave it.
+        </ThemedText>
+      </View>
 
       <View style={styles.group}>
         <ThemedText type="smallBold">Photos of under 18s’ injuries</ThemedText>

@@ -38,6 +38,7 @@ import { rejectionReasonMessages, rolesLabel, teamPositionLabel } from '@/lib/la
 import { supabase } from '@/lib/supabase';
 import { useNewConcerns } from '@/lib/concerns';
 import { buildTodos } from '@/lib/todos';
+import type { ChildConsent } from '@/lib/consents';
 import {
   isOutstanding,
   useClubHasTraining,
@@ -72,7 +73,9 @@ export default function HomeScreen() {
   const club = useClub();
   const { features } = club;
   const [refreshing, setRefreshing] = useState(false);
-  const [athletes, setAthletes] = useState<{ id: string; name: string }[]>([]);
+  const [athletes, setAthletes] = useState<
+    { id: string; name: string; data: boolean; health: boolean; canConsent: boolean }[]
+  >([]);
   const { events, reload: reloadEvents } = useEvents();
   const { unreadCount, reloadUnread } = useUnreadCount();
   const { pendingCount, reloadPending } = usePendingRequests();
@@ -115,6 +118,7 @@ export default function HomeScreen() {
     certificatesToCheck: features.integrity ? certificatesToCheck : 0,
     declarationWaiting: !!exemption && !exemption.declared_at,
     newConcerns,
+    consentsNeeded: athletes.filter((a) => a.canConsent && (!a.data || !a.health)),
   });
 
   const isGuardian = profile?.status === 'approved' && hasRole(profile, 'guardian');
@@ -122,11 +126,15 @@ export default function HomeScreen() {
   // The athletes a parent or guardian looks after.
   const loadAthletes = useCallback(async () => {
     if (!isGuardian) return;
-    const { data } = await supabase.rpc('my_athletes');
+    // Each child under 18 with the consents in force for them.
+    const { data } = await supabase.rpc('my_child_consents');
     setAthletes(
-      ((data as { profile_id: string; full_name: string | null }[] | null) ?? []).map((a) => ({
-        id: a.profile_id,
+      ((data as ChildConsent[] | null) ?? []).map((a) => ({
+        id: a.athlete_id,
         name: a.full_name ?? 'Unnamed athlete',
+        data: a.data,
+        health: a.health,
+        canConsent: a.can_consent,
       })),
     );
   }, [isGuardian]);
@@ -359,6 +367,24 @@ export default function HomeScreen() {
               : 'A club admin will link you to your athlete once they have checked your PlayHQ registration.'}
           </ThemedText>
         </Card>
+      ) : null}
+
+      {isGuardian && athletes.length > 0 ? (
+        <View style={styles.section}>
+          <ThemedText type="smallBold">Consent</ThemedText>
+          {athletes.map((a) => (
+            <PressableCard
+              key={a.id}
+              onPress={() => router.push({ pathname: '/consent/[id]', params: { id: a.id } })}>
+              <ThemedText type="smallBold">{a.name}</ThemedText>
+              <ThemedText
+                type="small"
+                themeColor={a.canConsent && (!a.data || !a.health) ? 'tint' : 'textSecondary'}>
+                {consentSummary(a)}
+              </ThemedText>
+            </PressableCard>
+          ))}
+        </View>
       ) : null}
 
       {showGroups ? (
@@ -638,3 +664,10 @@ const styles = StyleSheet.create({
     paddingVertical: Spacing.two,
   },
 });
+
+/** Such as "Check-ins: yes · Injuries: not yet". */
+function consentSummary(a: { data: boolean; health: boolean; canConsent: boolean }) {
+  if (!a.canConsent && !a.data && !a.health) return 'Waiting for an admin to verify you';
+  const word = (on: boolean) => (on ? 'yes' : 'not given');
+  return `Check-ins: ${word(a.data)} · Injuries: ${word(a.health)}`;
+}

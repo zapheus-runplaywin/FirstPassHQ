@@ -1,6 +1,7 @@
 import { router } from 'expo-router';
 import { useState } from 'react';
 
+import { PolicyLinks } from '@/components/policy-links';
 import { Screen } from '@/components/screen';
 import { ThemedText } from '@/components/themed-text';
 import { Button, ErrorText, TextField } from '@/components/ui';
@@ -69,6 +70,7 @@ export default function MyDetailsScreen() {
 
       <ErrorText>{error}</ErrorText>
       <Button title="Save" onPress={save} busy={saving} />
+      <PolicyLinks intro="The club’s policies:" />
     </Screen>
   );
 }
