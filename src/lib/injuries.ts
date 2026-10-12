@@ -122,10 +122,21 @@ export function formatDateString(value: string) {
 // Proof documents
 // ---------------------------------------------------------------------------
 
+/**
+ * What the signed-in member can attach for an athlete: 'photos' (a PDF or a
+ * photo), 'consent' (a verified guardian may add a photo of their child once
+ * they confirm consent) or 'pdf' (under 18s: a letter or report as a PDF).
+ */
+export type DocumentRule = 'photos' | 'consent' | 'pdf';
+
+export const PDF_ONLY_MESSAGE = 'Attach the letter or report as a PDF, not a photo of the injury.';
+
 /** Uploads a picked file for an injury and returns its storage path. */
 export async function uploadInjuryDocument(
   injury: Pick<Injury, 'id' | 'athlete_id'>,
   asset: DocumentPickerAsset,
+  rule: DocumentRule,
+  photoConsent: boolean,
 ) {
   if (asset.size && asset.size > MAX_DOCUMENT_BYTES) {
     throw new Error('That file is over 10 MB. Try a smaller photo or a PDF.');
@@ -134,9 +145,21 @@ export async function uploadInjuryDocument(
   if (!DOCUMENT_TYPES.includes(contentType)) {
     throw new Error('Attach a PDF or a photo (JPEG, PNG or HEIC).');
   }
+  const photo = contentType !== 'application/pdf';
+  if (photo && rule === 'pdf') throw new Error(PDF_ONLY_MESSAGE);
+  if (photo && rule === 'consent' && !photoConsent) {
+    throw new Error('Confirm your consent before adding a photo of your child.');
+  }
   const body =
     Platform.OS === 'web' && asset.file ? asset.file : await new File(asset.uri).arrayBuffer();
-  const path = `${injury.athlete_id}/${injury.id}/${Date.now()}-${safeFileName(asset.name)}`;
+  const path = `${injury.athlete_id}/${injury.id}/${Date.now()}-${safeFileName(asset.name, contentType)}`;
+  if (photo && rule === 'consent') {
+    // The consent is recorded with the photo's path before it uploads.
+    const { error: consentError } = await supabase.rpc('confirm_injury_photo_consent', {
+      p_path: path,
+    });
+    if (consentError) throw new Error(consentError.message);
+  }
   const { error } = await supabase.storage.from(INJURY_BUCKET).upload(path, body, {
     contentType,
     upsert: false,
@@ -152,9 +175,12 @@ export function isImageDocument(path: string) {
 
 /**
  * A link to show a document inside the app. It stops working after two
- * minutes, so it's no use if copied out of the app.
+ * minutes, so it's no use if copied out of the app. Each open is recorded
+ * first, for the athlete, their guardians and admins to see.
  */
 export async function viewInjuryDocumentUrl(path: string) {
+  const { error: logError } = await supabase.rpc('open_injury_document', { p_path: path });
+  if (logError) throw new Error('That document couldn’t be opened. Try again.');
   const { data, error } = await supabase.storage.from(INJURY_BUCKET).createSignedUrl(path, 120);
   if (error || !data) throw new Error('That document couldn’t be opened. Try again.');
   return data.signedUrl;
@@ -163,10 +189,16 @@ export async function viewInjuryDocumentUrl(path: string) {
 /**
  * Opens the share sheet for a proof document, so it can be saved to OneDrive,
  * Files or email. On the web it opens in a new tab instead. Only the
- * committee and admins are offered this; everyone else views documents in the
- * app without saving them.
+ * committee member or admin accepting the clearance is offered this, while
+ * it's waiting for them; the share is recorded for the athlete, their
+ * guardians and admins to see. Everyone else views documents in the app.
  */
 export async function shareInjuryDocument(path: string, name: string | null) {
+  const { error: logError } = await supabase.rpc('open_injury_document', {
+    p_path: path,
+    p_share: true,
+  });
+  if (logError) throw new Error(logError.message);
   const { data, error } = await supabase.storage.from(INJURY_BUCKET).createSignedUrl(path, 60);
   if (error || !data) throw new Error('That document couldn’t be opened. Try again.');
   if (Platform.OS === 'web') {
@@ -218,6 +250,14 @@ export function toCsv(rows: (string | number | null)[][]) {
   return rows.map((row) => row.map(cell).join(',')).join('\r\n');
 }
 
-function safeFileName(name: string) {
-  return name.replace(/[^\w.\- ]+/g, '_').slice(-100) || 'file';
+/**
+ * A file name safe for storage. When the content type is known, a PDF always
+ * ends in .pdf and a photo never does, so the name matches what's inside.
+ */
+function safeFileName(name: string, contentType?: string) {
+  let safe = name.replace(/[^\w.\- ]+/g, '_').slice(-100) || 'file';
+  const pdf = /\.pdf$/i.test(safe);
+  if (contentType === 'application/pdf' && !pdf) safe = `${safe.slice(0, 96)}.pdf`;
+  if (contentType && contentType !== 'application/pdf' && pdf) safe = safe.replace(/\.pdf$/i, '.jpg');
+  return safe;
 }

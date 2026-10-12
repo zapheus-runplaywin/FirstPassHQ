@@ -94,6 +94,7 @@ What each role sees on its home screen:
 | Report an injury                       |   Own   | Their athlete's |              |            |               |               |         |               |
 | See injuries                           |   Own   | Their athlete's | Own athletes |            |      All      |  Own athletes‡ |         |      All      |
 | Sign off injury clearances             |         |                 |   Endorse    |            |     Accept    |   Endorse‡    |         |     Accept    |
+| See who opened injury documents        |   Own   | Their athlete's |              |            |               |               |         |       ✓       |
 | Take attendance                        |         |                 |      ✓       |     ✓      |       ✓       |               |         |       ✓       |
 | See athletes' attendance history       |         |                 |      ✓       |            |       ✓       |               |         |       ✓       |
 | Vote in club awards                    |    ✓    |        ✓        |      ✓       |     ✓      |       ✓       |               |         |       ✓       |
@@ -476,7 +477,9 @@ Your coaches and the committee can see it straight away.
 Open the injury to see its details and history. While you're injured:
 
 - **Add physio update** records what the physio said, any change to restrictions or your expected
-  return date, and optionally a physio report (PDF or photo, up to 10 MB).
+  return date, and optionally a physio report (up to 10 MB). Adults can attach a PDF or a photo.
+  If you're under 18, attach the letter or report as a PDF, not a photo of the injury (see
+  [Injury documents and photos](#injury-documents-and-photos)).
 - If your expected return date passes, your to-do list reminds you to ask for clearance or change
   the date.
 
@@ -502,7 +505,12 @@ see their note in the history; fix what they ask and ask for clearance again.
 
 Documents can't be removed once they're sent, so the record can't be altered later.
 
+Under each document you see everyone who has opened or shared it, with their role and when (for
+example "Viewed by Casey Coach (coach)"). Your parents or guardians and the club's admins see the
+same list.
+
 <img src="user-guide/ask-for-clearance.png" width="210" alt="Ask for clearance with proof attached">
+<img src="user-guide/injury-document-log.png" width="210" alt="An injury document with the list of who viewed and shared it">
 
 ### Captains
 
@@ -547,7 +555,11 @@ As a guardian you:
   their games. You can't set goals or reflect: your athlete and their coaches do that in the app.
 - **Report and update injuries** for your athlete, and ask for clearance, exactly as an athlete
   does (see [Athletes](#4-athletes)). If you look after more than one athlete, choose which one
-  when reporting.
+  when reporting. Proof is a PDF of the physio's or doctor's letter. If the club allows photos and
+  your identity has been verified, you can add a photo of your child's injury after switching on
+  **I consent**; your consent is kept with the photo. Your child can't add photos themselves.
+- **See who opened your athlete's injury documents**: under each document, every view and share,
+  by whom and when, plus your photo consents.
 - **Complete integrity training** for your athlete: their training shows in your to-do list and
   on the **Integrity training** screen under their name, and you upload their certificates
   exactly as they would (see [Integrity training](#integrity-training)).
@@ -712,7 +724,8 @@ clearance for your own child: another coach or a physio does it.
 **View** opens a document inside the app. A photo fills the screen: pinch to zoom in on the
 details, drag to move around, and double-tap to zoom in or back out. A PDF shows its pages one
 under the next, and you can pinch to zoom there too. There's no save or share button, and the
-document isn't kept on your phone.
+document isn't kept on your phone. Each time you open a document, your name, role and the time are
+recorded and shown to the athlete, their parents or guardians and admins.
 
 <img src="user-guide/document-photo.png" width="210" alt="A photo of a clearance letter, zoomed in">
 <img src="user-guide/document-pdf.png" width="210" alt="A PDF clearance letter in the viewer">
@@ -807,8 +820,10 @@ the person who endorsed it and the athlete's own parents or guardians. Open it, 
 
 The committee can also send back a request that no coach or physio has looked at yet. Tap **View**
 on a document to read it in the app (see [Viewing proof documents](#viewing-proof-documents)).
-Committee members and admins also get **Share**, to save a document to OneDrive or attach it to an
-email; nobody else can save or share documents.
+While a clearance is waiting for you to accept it, you also get **Share**, to save its documents to
+the club's records, such as OneDrive. Share disappears once it's accepted or sent back, and nobody
+else can save or share documents. Every share is recorded and shown to the athlete, their parents
+or guardians and admins.
 
 <img src="user-guide/injuries-committee.png" width="210" alt="Committee injuries list">
 <img src="user-guide/accept-clearance.png" width="210" alt="Accept or send back a clearance">
@@ -1377,6 +1392,13 @@ Add the sport's **governing body**: its name, phone or hotline, and complaints f
 club's **safeguarding policy** link too. Everyone sees these on **Raise a concern**. Links must
 start with https://.
 
+**Photos of under 18s' injuries** is off by default, so injury proof for athletes under 18 is a
+PDF of the physio's or doctor's letter. Turn it on only if your club's policy allows photos; even
+then, only a verified parent or guardian can add one, after confirming their consent, and athletes
+under 18 can never add a photo themselves.
+
+<img src="user-guide/admin-safeguarding-photos.png" width="210" alt="Safeguarding settings: the switch for photos of under 18s' injuries">
+
 <img src="user-guide/admin-safeguarding.png" width="210" alt="Safeguarding settings: Child Safety Officer, Complaints Manager, governing body and policy">
 
 ### The concerns register
@@ -1429,7 +1451,8 @@ once saved, only replaced or removed, and anyone who gets it wrong five times in
 | Messages                | The people they were sent to, the sender, and admins. Guardians of athletes under 18 get a copy of every message sent to their athlete, and of every message their athlete sends as a captain. Guests don't get messages; physios get messages sent to the Physio role and to their squads and teams, and whole-club messages only if an admin turns that on. |
 | Read receipts           | The sender and admins.                                                                                                      |
 | Daily check-in answers and notes | The athlete, their guardians and their coaches. The committee, physios and admins see only group averages, hidden below 5 check-ins or when two groups differ by fewer than 5. |
-| Injuries and documents  | The athlete, their guardians, their coaches, the physios who look after them (the Head Physio, physios in their squad or team, and physios in no squad or team), the committee and admins. Managers don't see injuries. Only the committee and admins can save or share documents; everyone else views them in the app. |
+| Injuries and documents  | The athlete, their guardians, their coaches, the physios who look after them (the Head Physio, physios in their squad or team, and physios in no squad or team), the committee and admins. Managers don't see injuries. Only the committee member or admin accepting a clearance can share its documents, while it waits for them; everyone else views them in the app. |
+| Who opened injury documents | The athlete, their guardians and admins: every view and share, by whom, their role and when, and each photo consent. |
 | Game goals and reflections | The athlete, their guardians and their coaches. Only the athlete and their coaches set goals, and only the athlete reflects; guardians just read them. The committee, physios and admins don't see them. |
 | Team goals              | The team's athletes, their guardians and its coaches. Only its coaches set and review them. Athletes and coaches in the team can comment; guardians read the comments. |
 | Integrity training certificates | The member, their parents or guardians, the committee and admins. Coaches don't see them. Certificates can't be changed or removed once sent. |
@@ -1462,6 +1485,28 @@ club's Child Safety Officer, Complaints Manager and admins, never to the person 
 screen. Every concern and every step taken is kept in the [concerns
 register](#the-concerns-register), which prints as a PDF.
 
+### Injury documents and photos
+
+Netball's image rules ask for a parent's consent before a club keeps a photo of a child, and for
+images to stay inside the club. So for athletes under 18:
+
+- **Proof is a PDF.** The athlete or their guardian attaches the physio's or doctor's letter or
+  report as a PDF, not a photo of the injury. The file picker offers PDFs only, and a photo renamed
+  as a PDF is refused.
+- **Photos only with consent.** If an admin allows photos under Safeguarding, a verified parent or
+  guardian can add one after switching on **I consent**. The consent is kept with the photo and
+  shown with the document. Athletes under 18 can never add a photo themselves.
+- **Every view is recorded.** A document can only be opened after the app records who is opening
+  it, their role and when. The athlete, their parents or guardians and admins see the list under
+  each document.
+- **Sharing is limited.** Only the committee member accepting a clearance can share its documents,
+  while it's waiting for them, and each share is recorded in the same list.
+
+Athletes who are 18 or over attach a PDF or a photo, and see who opened their documents too.
+
+<img src="user-guide/injury-pdf-only.png" width="210" alt="Physio update form for an athlete under 18, PDF only">
+<img src="user-guide/injury-photo-consent.png" width="210" alt="A guardian confirming consent before adding a photo">
+
 ### For parents and guardians
 
 - **You're verified before you're linked.** An admin checks you against the club's registration,
@@ -1472,6 +1517,10 @@ register](#the-concerns-register), which prints as a PDF.
   message your child sends as a captain. You can read their daily check-ins and notes, their game
   goals and their injuries.
 - **Your access ends at 18.** Guardian access ends on your child's 18th birthday.
+- **Injury photos need your consent.** Injury proof for under 18s is a PDF letter or report. Only if
+  the club allows it can you, as a verified guardian, add a photo of your child's injury, and only
+  after confirming your consent, which is kept with the photo.
+- **You see who opened your child's injury documents**, with their role and when, and every share.
 
 ### For children and young people
 
@@ -1480,6 +1529,8 @@ register](#the-concerns-register), which prints as a PDF.
 - **You're told who reads your check-in note**: your coaches and your parents or guardians.
 - **You can tell someone safely.** The check-in screen has a link to raise a concern, and you can
   hide your name. Kids Helpline (1800 55 1800) is free, any time.
+- **No photos of your injuries.** Attach your physio's or doctor's letter as a PDF instead. You can
+  see everyone who has opened it.
 
 ### For coaches, managers, physios and volunteers
 
@@ -1501,6 +1552,9 @@ register](#the-concerns-register), which prints as a PDF.
 - **Safeguarding contacts.** Name a Child Safety Officer and a Complaints Manager, two different
   adults with a current check, and add the governing body's contacts and the club's policy (see
   [Safeguarding contacts](#safeguarding-contacts)).
+- **Images of children.** Photos of under 18s' injuries are off unless you turn them on under
+  Safeguarding, and then need a verified guardian's consent. Only the committee member accepting a
+  clearance can share its documents, while it waits for them.
 - **Your to-do list does the chasing**: new concerns, missing or expiring checks, volunteer
   exemptions ending, declarations not yet accepted, athletes under 18 without a guardian and
   athletes turning 18.
@@ -1513,7 +1567,8 @@ register](#the-concerns-register), which prints as a PDF.
 - **Two-deep messaging is enforced by the app**, not just by policy: no direct messages or replies,
   guardians copied on everything to and from a child, and admins can see every message.
 - **Records are kept with who did what and when**: checks, exemptions and the declarations accepted,
-  stand-downs, and every concern with each referral, note and status.
+  stand-downs, every concern with each referral, note and status, and every view and share of an
+  injury document. A document can't be opened without the view being recorded first.
 - **Child abuse and serious crimes go out, not in.** The register prompts the club to refer them to
   Police and the governing body straight away, and records that it did.
 - **Each club's data is kept apart**, in that club's own database.

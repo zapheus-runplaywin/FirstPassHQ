@@ -1,7 +1,7 @@
 import * as DocumentPicker from 'expo-document-picker';
 import { router, useFocusEffect, useLocalSearchParams } from 'expo-router';
-import { useCallback, useState } from 'react';
-import { Pressable, StyleSheet, View } from 'react-native';
+import { useCallback, useEffect, useState } from 'react';
+import { Platform, Pressable, StyleSheet, Switch, View } from 'react-native';
 
 import { DateField } from '@/components/date-field';
 import { StatusPill } from '@/components/injury-card';
@@ -15,15 +15,16 @@ import { useAuth } from '@/lib/auth';
 import { formatDateTime } from '@/lib/format';
 import {
   DOCUMENT_TYPES,
+  type DocumentRule,
   formatDateString,
   injuryUpdateLabels,
   returnQuickPicks,
   shareInjuryDocument,
   uploadInjuryDocument,
 } from '@/lib/injuries';
-import { supabase } from '@/lib/supabase';
-import type { Injury, InjuryUpdate } from '@/lib/types';
 import { hasRole } from '@/lib/roles';
+import { supabase } from '@/lib/supabase';
+import type { Injury, InjuryDocumentEvent, InjuryUpdate } from '@/lib/types';
 
 const UPDATE_COLUMNS =
   'id, author_name, kind, notes, restrictions, expected_return, document_path, document_name, created_at';
@@ -37,19 +38,26 @@ export default function InjuryScreen() {
   const [injury, setInjury] = useState<Injury | null | undefined>(undefined);
   const [updates, setUpdates] = useState<InjuryUpdate[]>([]);
   const [action, setAction] = useState<Action | null>(null);
+  const [canShare, setCanShare] = useState(false);
+  const [log, setLog] = useState<InjuryDocumentEvent[] | null>(null);
   const [refreshing, setRefreshing] = useState(false);
 
   const load = useCallback(async () => {
-    const [injuryResult, updatesResult] = await Promise.all([
+    const [injuryResult, updatesResult, shareResult, logResult] = await Promise.all([
       supabase.rpc('visible_injuries', { p_include_cleared: true, p_injury_id: id }),
       supabase
         .from('injury_updates')
         .select(UPDATE_COLUMNS)
         .eq('injury_id', id)
         .order('created_at', { ascending: false }),
+      supabase.rpc('can_share_injury', { p_injury_id: id }),
+      // Only the athlete, their guardians and admins see who opened documents.
+      supabase.rpc('injury_document_log', { p_injury_id: id }),
     ]);
     setInjury(((injuryResult.data as Injury[] | null) ?? [])[0] ?? null);
     setUpdates((updatesResult.data as InjuryUpdate[] | null) ?? []);
+    setCanShare(shareResult.data === true);
+    setLog(logResult.error ? null : ((logResult.data as InjuryDocumentEvent[] | null) ?? []));
   }, [id]);
 
   useFocusEffect(
@@ -82,6 +90,7 @@ export default function InjuryScreen() {
 
   const isCommittee =
     profile?.status === 'approved' && hasRole(profile, 'committee', 'admin');
+  const hasDocuments = updates.some((u) => u.document_path);
 
   return (
     <Screen refreshing={refreshing} onRefresh={onRefresh}>
@@ -118,12 +127,22 @@ export default function InjuryScreen() {
       <View style={styles.section}>
         <ThemedText type="smallBold">History</ThemedText>
         {updates.map((update) => (
-          <UpdateCard key={update.id} update={update} canShare={isCommittee} />
+          <UpdateCard
+            key={update.id}
+            update={update}
+            canShare={canShare}
+            log={
+              log && update.document_path
+                ? log.filter((e) => e.document_path === update.document_path)
+                : null
+            }
+          />
         ))}
-        {isCommittee && updates.some((u) => u.document_path) ? (
+        {hasDocuments ? (
           <ThemedText type="small" themeColor="textSecondary">
-            Use Share on a document to save it to OneDrive or attach it to an email. Everyone
-            else can only view documents in the app.
+            {canShare
+              ? 'You’re accepting this clearance, so you can Share its documents to keep them in the club’s records. Each share is recorded and shown to the athlete and their guardians.'
+              : 'Documents open in the app only. Every view and share is recorded and shown to the athlete, their guardians and admins.'}
           </ThemedText>
         ) : null}
       </View>
@@ -266,17 +285,29 @@ function ActionForm({
   const [restrictions, setRestrictions] = useState(injury.restrictions ?? '');
   const [expectedReturn, setExpectedReturn] = useState(injury.expected_return);
   const [attachment, setAttachment] = useState<DocumentPicker.DocumentPickerAsset | null>(null);
+  const [rule, setRule] = useState<DocumentRule>('pdf');
+  const [consent, setConsent] = useState(false);
   const [saving, setSaving] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const allowsDocument = action === 'update' || action === 'clearance';
+  const isPhoto = !!attachment && attachment.mimeType !== 'application/pdf';
+
+  useEffect(() => {
+    if (!allowsDocument) return;
+    supabase
+      .rpc('injury_document_rule', { p_athlete_id: injury.athlete_id })
+      .then(({ data }) => setRule((data as DocumentRule | null) ?? 'pdf'));
+  }, [allowsDocument, injury.athlete_id]);
 
   async function pickDocument() {
     const result = await DocumentPicker.getDocumentAsync({
-      type: DOCUMENT_TYPES,
+      // Under 18s attach a letter or report, not a photo of the injury.
+      type: rule === 'pdf' ? ['application/pdf'] : DOCUMENT_TYPES,
       copyToCacheDirectory: true,
     });
     if (!result.canceled) {
       setAttachment(result.assets[0]);
+      setConsent(false);
       setError(null);
     }
   }
@@ -295,7 +326,9 @@ function ActionForm({
     setSaving(true);
     setError(null);
     try {
-      const path = attachment ? await uploadInjuryDocument(injury, attachment) : null;
+      const path = attachment
+        ? await uploadInjuryDocument(injury, attachment, rule, consent)
+        : null;
       const { error: rpcError } = await rpc(path);
       if (rpcError) throw new Error(rpcError.message);
       onDone();
@@ -374,7 +407,7 @@ function ActionForm({
             </ThemedText>
           ) : (
             <ThemedText type="small" themeColor="textSecondary">
-              A PDF or photo, up to 10 MB. It can’t be removed once it’s sent.
+              {documentHint[rule]} Up to 10 MB. It can’t be removed once it’s sent.
             </ThemedText>
           )}
           <Button
@@ -382,6 +415,13 @@ function ActionForm({
             variant="secondary"
             onPress={pickDocument}
           />
+          {isPhoto && rule === 'consent' ? (
+            <PhotoConsent
+              athleteName={injury.athlete_name ?? 'my child'}
+              value={consent}
+              onChange={setConsent}
+            />
+          ) : null}
         </View>
       ) : null}
       {action === 'accept' ? (
@@ -396,8 +436,62 @@ function ActionForm({
   );
 }
 
-/** Committee members and admins can also share documents, to keep them in OneDrive. */
-function UpdateCard({ update, canShare }: { update: InjuryUpdate; canShare: boolean }) {
+const documentHint: Record<DocumentRule, string> = {
+  photos: 'A PDF or photo.',
+  consent:
+    'A PDF of the letter or report. A photo of the injury only if you consent to the club keeping it.',
+  pdf: 'Attach the letter or report as a PDF, not a photo of the injury.',
+};
+
+/** A guardian's consent to the club keeping a photo of their child's injury. */
+function PhotoConsent({
+  athleteName,
+  value,
+  onChange,
+}: {
+  athleteName: string;
+  value: boolean;
+  onChange: (value: boolean) => void;
+}) {
+  const theme = useTheme();
+  return (
+    <Card style={styles.consent}>
+      <ThemedText type="small" style={styles.grow}>
+        I’m {athleteName}’s parent or guardian. I consent to the club keeping this photo with their
+        injury record, where their coaches, physios, the committee and admins can view it in the
+        app. Every view is recorded.
+      </ThemedText>
+      <Switch
+        accessibilityLabel="I consent to the club keeping this photo"
+        value={value}
+        onValueChange={onChange}
+        trackColor={{ true: theme.accent, false: theme.backgroundSelected }}
+        thumbColor={theme.text}
+        {...(Platform.OS === 'web' ? { activeThumbColor: theme.onAccent } : {})}
+      />
+    </Card>
+  );
+}
+
+const eventLabels: Record<InjuryDocumentEvent['kind'], string> = {
+  viewed: 'Viewed by',
+  shared: 'Shared by',
+  consented: 'Photo consent from',
+};
+
+/**
+ * One entry in the history. The committee member accepting a clearance can
+ * also share its documents, to keep them in the club's records.
+ */
+function UpdateCard({
+  update,
+  canShare,
+  log,
+}: {
+  update: InjuryUpdate;
+  canShare: boolean;
+  log: InjuryDocumentEvent[] | null;
+}) {
   const theme = useTheme();
   const [error, setError] = useState<string | null>(null);
   const [opening, setOpening] = useState(false);
@@ -473,6 +567,23 @@ function UpdateCard({ update, canShare }: { update: InjuryUpdate; canShare: bool
             ) : null}
           </View>
           <ErrorText>{error}</ErrorText>
+          {log ? (
+            <View>
+              {log.length === 0 ? (
+                <ThemedText type="small" themeColor="textSecondary">
+                  Nobody has opened it yet.
+                </ThemedText>
+              ) : (
+                log.map((e, i) => (
+                  <ThemedText key={i} type="small" themeColor="textSecondary">
+                    {eventLabels[e.kind]} {e.viewer_name ?? 'a former member'}
+                    {e.viewer_role ? ` (${e.viewer_role.toLowerCase()})` : ''} ·{' '}
+                    {formatDateTime(new Date(e.created_at))}
+                  </ThemedText>
+                ))
+              )}
+            </View>
+          ) : null}
         </View>
       ) : null}
     </Card>
@@ -517,5 +628,10 @@ const styles = StyleSheet.create({
   },
   link: {
     paddingVertical: Spacing.one,
+  },
+  consent: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: Spacing.three,
   },
 });

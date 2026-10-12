@@ -235,6 +235,15 @@ export type InjuryUpdate = {
   created_at: string;
 };
 
+/** A view, share or photo consent on an injury document, for the athlete, guardians and admins. */
+export type InjuryDocumentEvent = {
+  document_path: string;
+  viewer_name: string | null;
+  viewer_role: string | null;
+  kind: 'viewed' | 'shared' | 'consented';
+  created_at: string;
+};
+
 /** A row in the admin injury report. */
 export type InjuryReportRow = {
   id: string;
