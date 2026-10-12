@@ -3,8 +3,10 @@ import type {
   AppRole,
   MyVolunteerExemption,
   Profile,
+  ScreeningNoticeKind,
   StandDownReason,
   VolunteerExemptionBasis,
+  WwccValidationMethod,
 } from '@/lib/types';
 import { hasRole, rolesOf } from '@/lib/roles';
 
@@ -29,6 +31,45 @@ export function needsWwcc(
 ): boolean {
   if (hasRole(member, ...wwccRoles)) return true;
   return hasRole(member, 'committee') && !member.wwcc_exempt_reason?.trim();
+}
+
+export const wwccValidationLabels: Record<WwccValidationMethod, string> = {
+  online: 'Checked online',
+  card_sighted: 'Card sighted',
+  unit_letter: 'Screening Unit letter',
+};
+
+export const screeningNoticeLabels: Record<ScreeningNoticeKind, string> = {
+  interim_negative_notice: 'Interim negative notice',
+  negative_notice: 'Negative notice',
+  interstate_decision: 'Interstate decision',
+  card_cancelled: 'Card cancelled or suspended',
+  other: 'Other notice',
+};
+
+/** Notices that bar someone from child-related work, which the governing body must be told of. */
+export const barringNotices: ScreeningNoticeKind[] = [
+  'interim_negative_notice',
+  'negative_notice',
+  'interstate_decision',
+  'card_cancelled',
+];
+
+/**
+ * What still needs doing for a current card: validating it (never, or more
+ * than a year ago) and linking it to the club with the Screening Unit. Same
+ * rules as `public.admin_safety_todos` in the database.
+ */
+export function wwccRecordIssues(
+  member: Pick<Profile, 'wwcc_validated_at' | 'wwcc_unit_linked_at'>,
+): string[] {
+  const issues: string[] = [];
+  const yearAgo = new Date();
+  yearAgo.setFullYear(yearAgo.getFullYear() - 1);
+  if (!member.wwcc_validated_at) issues.push('Check not validated');
+  else if (new Date(member.wwcc_validated_at) < yearAgo) issues.push('Check validated over a year ago');
+  if (!member.wwcc_unit_linked_at) issues.push('Card not linked with the Screening Unit');
+  return issues;
 }
 
 export const volunteerExemptionLabels: Record<VolunteerExemptionBasis, string> = {
@@ -200,6 +241,7 @@ export function safetyIssues(
     } else if (check.problem) {
       issues.push(check.label);
     }
+    if (current) issues.push(...wwccRecordIssues(member));
   }
 
   if (hasRole(member, 'athlete') && !member.date_of_birth) issues.push('No date of birth');

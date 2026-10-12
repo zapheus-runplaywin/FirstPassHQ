@@ -993,7 +993,8 @@ request yet** and **Not approved**. Search by name or email.
 screen, with the reason under each name: no Working With Children Check recorded, one that has
 expired or expires within 60 days, a volunteer exemption waiting for the declaration, ending within
 60 days or no longer applying, someone who is stood down, an athlete under 18 with no guardian
-linked, an athlete with no date of birth, or an athlete about to turn 18. They also show "Needs checking" in the main list. Open someone to fix it; once saved,
+linked, an athlete with no date of birth, an athlete about to turn 18, a card never validated or
+validated over a year ago, or a card not linked with the Screening Unit. They also show "Needs checking" in the main list. Open someone to fix it; once saved,
 they drop off the list.
 
 Open a request to see the person's sign-in email, PlayHQ email, the date of birth they gave and
@@ -1013,7 +1014,14 @@ Check them against PlayHQ, then:
    started from the email the child gave: tap a guardian to link them (tap ✕ to unlink). Only
    verified guardians can be linked; unverified ones show "(not verified)".
 4. For coaches, managers, physios and committee members, enter their **Working With Children
-   Check** card number and expiry date. A committee member who doesn't need one, such as a
+   Check** card number and expiry date. Cards last three years, so a later expiry is refused. Once
+   the card is saved, **Validation** records checking it: enter the **Name on the card**, choose
+   how you checked it (**Checked online** on the Screening Unit's website, **Card sighted** or
+   **Screening Unit letter**), switch on **Linked to the club with the Screening Unit** once the
+   card is linked so the Unit tells the club of any change, and tap **Record validation**. The
+   page shows who validated it, how and when. Validate every card at least once a year and again
+   when it's renewed: a new card number or expiry needs a new validation. You can't validate your
+   own card. A committee member who doesn't need one, such as a
    treasurer who is never at training or games, can be marked **Exempt** instead: write why, and
    the app records who exempted them and when. Exemptions are for the committee role only; someone
    who also coaches, manages or is a physio still needs a check. You can't exempt yourself, so ask
@@ -1066,6 +1074,7 @@ club** or **Other**) and tap **Don't approve**. They see the reason and can requ
 <img src="user-guide/member-guardian.png" width="210" alt="Guardian showing their athlete, waiting to be verified">
 <img src="user-guide/member-wwcc.png" width="210" alt="Coach with Working With Children Check fields">
 <img src="user-guide/member-wwcc-exempt.png" width="210" alt="Committee member exempted from the Working With Children Check, with the reason">
+<img src="user-guide/member-wwcc-validation.png" width="210" alt="Validating a card: name on the card, how it was checked and the Screening Unit link">
 <img src="user-guide/member-volunteer-exempt.png" width="210" alt="A manager recorded as a parent volunteer, waiting to accept the declaration">
 <img src="user-guide/member-physio.png" width="210" alt="A physio placed in two squads">
 <img src="user-guide/member-head-physio.png" width="210" alt="The Head Physio, who looks after every athlete">
@@ -1098,6 +1107,14 @@ Working With Children Check whichever role it is, and that includes athletes und
   squads and teams. Every stand-down is kept on their page and in the Working With Children Checks
   report, with who started and lifted it, even if the member is later deleted. You can't stand
   yourself down.
+- **Screening Unit notices** records every notice the Working with Children Screening Unit sends
+  about a member: choose the kind (**Interim negative notice**, **Negative notice**, **Interstate
+  decision**, **Card cancelled or suspended** or **Other notice**), the date it arrived and what
+  the club did, then tap **Record notice**. Any kind but **Other notice** stands them down straight
+  away if they hold a coach, manager, physio, committee or admin role. Tell the governing body in
+  writing, then enter the date and tap **Governing body told**; until you do, it stays on your
+  to-do list. Notices are kept on their page and in the Working With Children Checks report. You
+  can't record a notice about yourself.
 - **Delete member** permanently deletes their account, squad and team places, guardian links and
   message receipts. Messages they sent stay, and their injury records are kept for 12 months.
 
@@ -1106,6 +1123,7 @@ Working With Children Check whichever role it is, and that includes athletes und
 <img src="user-guide/delete-member.png" width="210" alt="Delete member confirmation">
 <img src="user-guide/member-stand-down.png" width="210" alt="Standing a coach down, with the reasons to choose from">
 <img src="user-guide/member-stood-down.png" width="210" alt="A stood-down coach's page with Lift stand-down and an earlier stand-down">
+<img src="user-guide/member-screening-notice.png" width="210" alt="A Screening Unit notice waiting for the governing body to be told">
 
 ### Squads, teams and selections
 
@@ -1360,13 +1378,18 @@ with its totals, and **Export PDF** saves the same report as a PDF through the s
 computer it downloads), ready for the committee, an audit or OneDrive. The PDF has the club's
 name, the date it was made and page numbers, and anything that needs attention is in red.
 
-- **Working With Children Checks**: every approved coach, manager, physio and committee member
-  with their roles, squads and teams, check number, expiry date and status. Checks that are
-  missing, have no expiry date, have expired or expire within 60 days are listed first under
+- **Working With Children Checks**: printed across the page, with the WWC Registration Officer
+  at the top. Every approved coach, manager, physio and committee member with their name on the
+  card, date of birth, roles, squads and teams, card number, expiry date, when and how the card was
+  last validated and by whom, when it was linked with the Screening Unit, and status. Checks that
+  are missing, have no expiry date, have expired, expire within 60 days, were never validated or
+  were validated over a year ago, or aren't linked with the Screening Unit are listed first under
   **Needs attention**. Committee members who are exempt are listed next, with the reason, who
   exempted them and when. **Exempt volunteers** lists every parent and under-18 volunteer exemption,
 current ones first, with the child, who recorded it, when the declaration was accepted and where
-it's up to, then ended ones with who ended them. **Stand-downs** lists everyone ever stood down, newest first, with the
+it's up to, then ended ones with who ended them. **Screening Unit notices** lists every notice,
+newest first, with what the club did and when the governing body was told. **Stand-downs** lists
+everyone ever stood down, newest first, with the
   reason, who stood them down and lifted it, and when.
 - **Under 18s and their guardians**: every approved athlete under 18 with their date of birth and
   age, squad or team, parents or guardians with their email addresses, and the consent given
@@ -1437,12 +1460,17 @@ part of the app build and don't change here.
 
 ### Safeguarding contacts
 
-**Administration > Safeguarding** names the club's **Child Safety Officer** and **Complaints
-Manager**. Search for each by name. Both must be approved adults with a current Working With
+**Administration > Safeguarding** names the club's **Child Safety Officer**, **Complaints
+Manager** and **WWC Registration Officer**. Search for each by name. Both must be approved adults with a current Working With
 Children Check (or an exemption that applies) and must be two different people, so a concern
 about one can go to the other. You can't name yourself unless someone else is the other contact.
 If a contact's check lapses or they're stood down, they stop being shown and stop seeing concerns
 until you choose again.
+
+The **WWC Registration Officer** is an admin or committee member with a current check who keeps
+the club's Working With Children Check records, links members' cards to the club with the
+Screening Unit and receives its notices. They're named on the Working With Children Checks report,
+and your to-do list asks you to choose one until you do.
 
 Add the sport's **governing body**: its name, phone or hotline, and complaints form link. Add the
 club's **safeguarding policy** link too. Everyone sees these on **Raise a concern**. Links must
@@ -1462,6 +1490,7 @@ one, after confirming their consent, and athletes under 18 can never add one the
 <img src="user-guide/admin-safeguarding-photos.png" width="210" alt="Safeguarding settings: club policies and photos of under 18s' injuries">
 
 <img src="user-guide/admin-safeguarding.png" width="210" alt="Safeguarding settings: Child Safety Officer, Complaints Manager, governing body and policy">
+<img src="user-guide/admin-wwc-officer.png" width="210" alt="Safeguarding settings: WWC Registration Officer">
 
 ### The concerns register
 
@@ -1508,6 +1537,7 @@ once saved, only replaced or removed, and anyone who gets it wrong five times in
 | Date of birth, Working With Children Check and exemption | You and admins. Awards with an age limit use it to decide who can be voted for, without showing it.   |
 | Date of birth given at Join, and a child's parent or guardian email | You and admins. Admins also see who recorded your checked date of birth and when. |
 | Stand-downs             | Admins only. The member sees that their role is paused, not the reason.                                                     |
+| Screening Unit notices and card validations | Admins only.                                                                                            |
 | Volunteer exemptions and declarations | The volunteer (their own) and admins.                                                                       |
 | Concerns                | The Child Safety Officer, the Complaints Manager and admins, never the person a concern is about. Whoever raised it sees its status. A hidden name is never shown to them. |
 | Safeguarding contacts   | Everyone signed in, including guests and people waiting for approval.                                                       |
@@ -1623,7 +1653,9 @@ Athletes who are 18 or over attach a PDF or a photo, and see who opened their do
 ### For coaches, managers, physios and volunteers
 
 - **A check before you start.** Coaches, managers, physios and committee members need a current
-  Working With Children Check before they're approved.
+  Working With Children Check before they're approved. An admin validates the card, online or by
+  sighting it, at least once a year and whenever it's renewed, and links it to the club with the
+  Screening Unit, so the club hears if anything changes.
 - **Parent and under-18 volunteers.** In WA a parent volunteering at their child's club, or a
   volunteer under 18, is exempt instead and accepts a declaration in the app (see [Volunteer
   exemptions](#volunteer-exemptions)). The exemption ends by itself when the child or volunteer
@@ -1639,7 +1671,11 @@ Athletes who are 18 or over attach a PDF or a photo, and see who opened their do
   kept (see [Changing or removing members](#changing-or-removing-members)).
 - **Safeguarding contacts.** Name a Child Safety Officer and a Complaints Manager, two different
   adults with a current check, and add the governing body's contacts and the club's policy (see
-  [Safeguarding contacts](#safeguarding-contacts)).
+  [Safeguarding contacts](#safeguarding-contacts)). Name a WWC Registration Officer to keep the
+  club's check records.
+- **Screening Unit notices.** Record every notice on the member's page. An interim negative
+  notice, negative notice, interstate decision or cancelled card stands them down at once, and
+  stays on your to-do list until you record telling the governing body in writing.
 - **Policies and consent.** Link the club's safeguarding policy, privacy policy and code of
   conduct under Safeguarding; templates are in [docs/policies](policies/README.md). The under 18s
   report shows which children still need a parent's consent.
@@ -1647,17 +1683,21 @@ Athletes who are 18 or over attach a PDF or a photo, and see who opened their do
   Safeguarding, and then need a verified guardian's consent. Only the committee member accepting a
   clearance can share its documents, while it waits for them.
 - **Your to-do list does the chasing**: new concerns, missing or expiring checks, volunteer
-  exemptions ending, declarations not yet accepted, athletes with no date of birth, athletes under
-  18 without a guardian and athletes turning 18.
-- **Reports for your records.** The Working With Children Checks report lists every check, exemption
-  and stand-down. The under 18s report lists every child and their guardians. The concerns register
+  exemptions ending, declarations not yet accepted, cards to validate or link with the Screening
+  Unit, notices to report to the governing body, no WWC Registration Officer, athletes with no date
+  of birth, athletes under 18 without a guardian and athletes turning 18.
+- **Reports for your records.** The Working With Children Checks report follows the Screening
+  Unit's record layout: every check with the name on the card, date of birth, card number, expiry
+  and validation, plus every exemption, notice and stand-down. The under 18s report lists every child and their guardians. The concerns register
   lists every concern and what was done. Each saves as a PDF.
 
 ### For the governing body and auditors
 
 - **Two-deep messaging is enforced by the app**, not just by policy: no direct messages or replies,
   guardians copied on everything to and from a child, and admins can see every message.
-- **Records are kept with who did what and when**: who recorded each date of birth, checks, exemptions and the declarations accepted,
+- **Records are kept with who did what and when**: who recorded each date of birth, checks and
+  who validated each card and how, Screening Unit notices and when the governing body was told,
+  exemptions and the declarations accepted,
   stand-downs, every concern with each referral, note and status, every view and share of an
   injury document, and every parent's consent with the policy version they agreed to. A document can't be opened without the view being recorded first.
 - **Child abuse and serious crimes go out, not in.** The register prompts the club to refer them to

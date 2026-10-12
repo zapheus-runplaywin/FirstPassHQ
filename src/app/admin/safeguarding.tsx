@@ -10,6 +10,7 @@ import { useTheme } from '@/hooks/use-theme';
 import { isMinor } from '@/lib/age';
 import { PROFILE_COLUMNS } from '@/lib/auth';
 import { memberName } from '@/lib/reports';
+import { hasRole } from '@/lib/roles';
 import { wwccStatus } from '@/lib/safety';
 import { supabase } from '@/lib/supabase';
 import type { ClubPolicies } from '@/lib/consents';
@@ -27,6 +28,8 @@ export default function SafeguardingScreen() {
   const [eligible, setEligible] = useState<Profile[]>([]);
   const [officer, setOfficer] = useState<string | null>(null);
   const [manager, setManager] = useState<string | null>(null);
+  const [wwcOfficer, setWwcOfficer] = useState<string | null>(null);
+  const [savedWwcOfficer, setSavedWwcOfficer] = useState<string | null>(null);
   const [bodyName, setBodyName] = useState('');
   const [bodyPhone, setBodyPhone] = useState('');
   const [bodyUrl, setBodyUrl] = useState('');
@@ -40,14 +43,24 @@ export default function SafeguardingScreen() {
   const [error, setError] = useState<string | null>(null);
 
   const load = useCallback(async () => {
-    const [contactsResult, membersResult, exemptionsResult, photosResult, policiesResult] =
-      await Promise.all([
+    const [
+      contactsResult,
+      membersResult,
+      exemptionsResult,
+      photosResult,
+      policiesResult,
+      wwcOfficerResult,
+    ] = await Promise.all([
       supabase.rpc('safeguarding_contacts').maybeSingle(),
       supabase.from('profiles').select(PROFILE_COLUMNS).eq('status', 'approved').order('full_name'),
       supabase.rpc('admin_volunteer_exemptions'),
       supabase.rpc('safeguarding_photo_setting'),
       supabase.rpc('club_policies').maybeSingle(),
+      supabase.rpc('admin_wwc_officer').maybeSingle(),
     ]);
+    const officerId = (wwcOfficerResult.data as { officer_id: string } | null)?.officer_id ?? null;
+    setWwcOfficer(officerId);
+    setSavedWwcOfficer(officerId);
     const policies = policiesResult.data as ClubPolicies | null;
     setPrivacyUrl(policies?.privacy_policy_url ?? '');
     setConductUrl(policies?.code_of_conduct_url ?? '');
@@ -107,7 +120,11 @@ export default function SafeguardingScreen() {
             p_policy_version: policyVersion,
           });
     setBusy(false);
-    const failed = rpcError ?? photosError ?? policiesError;
+    const { error: officerError } =
+      rpcError || photosError || policiesError || wwcOfficer === savedWwcOfficer
+        ? { error: null }
+        : await supabase.rpc('admin_set_wwc_officer', { p_profile_id: wwcOfficer });
+    const failed = rpcError ?? photosError ?? policiesError ?? officerError;
     if (failed) {
       setError(failed.message);
       return;
@@ -135,6 +152,18 @@ export default function SafeguardingScreen() {
         selected={manager}
         onChange={setManager}
       />
+
+      <PersonPicker
+        label="WWC Registration Officer"
+        people={eligible.filter((m) => hasRole(m, 'admin', 'committee'))}
+        selected={wwcOfficer}
+        onChange={setWwcOfficer}
+      />
+      <ThemedText type="small" themeColor="textSecondary">
+        An admin or committee member who keeps the club’s Working With Children Check records,
+        links members’ cards to the club with the Screening Unit and receives its notices. Shown
+        on the Working With Children Checks report.
+      </ThemedText>
 
       <View style={styles.group}>
         <ThemedText type="smallBold">Governing body</ThemedText>

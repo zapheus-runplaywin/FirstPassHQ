@@ -310,6 +310,38 @@ export function buildTodos({
         href: '/admin',
       });
     }
+    if (safety.notices_to_report > 0) {
+      todos.push({
+        key: 'notices-to-report',
+        title: `Tell the governing body about ${plural(safety.notices_to_report, 'Screening Unit notice', 'Screening Unit notices')}`,
+        detail: 'In writing, then record the date on the member’s page',
+        href: '/admin',
+      });
+    }
+    if (safety.wwcc_to_validate > 0) {
+      todos.push({
+        key: 'wwcc-validate',
+        title: `Validate ${plural(safety.wwcc_to_validate, 'Working With Children Check', 'Working With Children Checks')}`,
+        detail: 'Never validated, or last validated over a year ago',
+        href: '/admin',
+      });
+    }
+    if (safety.wwcc_to_link > 0) {
+      todos.push({
+        key: 'wwcc-link',
+        title: `Link ${plural(safety.wwcc_to_link, 'card', 'cards')} to the club with the Screening Unit`,
+        detail: 'So the Screening Unit tells the club if a card changes',
+        href: '/admin',
+      });
+    }
+    if (safety.wwc_officer_missing > 0) {
+      todos.push({
+        key: 'wwc-officer',
+        title: 'Choose a WWC Registration Officer',
+        detail: 'Under Safeguarding',
+        href: '/admin/safeguarding',
+      });
+    }
     if (safety.exemptions_ending > 0) {
       todos.push({
         key: 'exemptions-ending',

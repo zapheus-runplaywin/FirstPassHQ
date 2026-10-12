@@ -8,14 +8,25 @@ import { rolesLabel } from '@/lib/labels';
 import type { Report, ReportRow } from '@/lib/pdf';
 import { hasRole, rolesOf } from '@/lib/roles';
 import {
+  barringNotices,
   exemptionStatus,
   needsWwcc,
+  screeningNoticeLabels,
   standDownReasonLabels,
   volunteerExemptionLabels,
   WWCC_WARNING_DAYS,
+  wwccRecordIssues,
   wwccStatus,
+  wwccValidationLabels,
 } from '@/lib/safety';
-import type { Profile, StandDown, Team, TeamRole, VolunteerExemption } from '@/lib/types';
+import type {
+  Profile,
+  ScreeningNotice,
+  StandDown,
+  Team,
+  TeamRole,
+  VolunteerExemption,
+} from '@/lib/types';
 import { teamLabel } from '@/lib/use-teams';
 
 /** "West Coast Thunder" -> "west-coast-thunder", for file names. */
@@ -104,6 +115,9 @@ export function wwccReport(
   teams: Team[],
   standDowns: StandDown[] = [],
   exemptions: VolunteerExemption[] = [],
+  notices: ScreeningNotice[] = [],
+  /** The club's WWC Registration Officer, if it has named one. */
+  officerName: string | null = null,
 ): Report {
   const approved = members.filter((m) => m.status === 'approved');
   const openExemption = new Map(exemptions.filter((e) => !e.ended_at).map((e) => [e.profile_id, e]));
@@ -126,25 +140,40 @@ export function wwccReport(
     return admin ? memberName(admin) : 'A former admin';
   };
 
-  const row = ({ member, name, status }: (typeof people)[number]): ReportRow => ({
-    cells: [
-      name,
-      rolesLabel(rolesOf(member)),
-      groupsOf(member.id, placements, teams, ['coach', 'manager', 'physio']),
-      member.wwcc_number?.trim() ?? '',
-      formatDate(member.wwcc_expires_on),
-      status.short,
-    ],
-    flag: status.problem,
-  });
+  const current = (status: (typeof people)[number]['status']) =>
+    status.kind === 'current' || status.kind === 'expiring';
+  const row = ({ member, name, status }: (typeof people)[number]): ReportRow => {
+    const recordIssues = current(status) ? wwccRecordIssues(member) : [];
+    return {
+      cells: [
+        name,
+        member.wwcc_card_name?.trim() ?? '',
+        formatDate(member.date_of_birth),
+        rolesLabel(rolesOf(member)),
+        groupsOf(member.id, placements, teams, ['coach', 'manager', 'physio']),
+        member.wwcc_number?.trim() ?? '',
+        formatDate(member.wwcc_expires_on),
+        member.wwcc_validated_at
+          ? `${localDay(member.wwcc_validated_at)}, ${wwccValidationLabels[member.wwcc_validation_method ?? 'online'].toLowerCase()} by ${nameOf(member.wwcc_validated_by ?? null)}`
+          : '',
+        member.wwcc_unit_linked_at ? localDay(member.wwcc_unit_linked_at) : '',
+        [status.short, ...recordIssues].join('. '),
+      ],
+      flag: status.problem || recordIssues.length > 0,
+    };
+  };
 
   const columns = [
-    { label: 'Name', width: 1.4 },
-    { label: 'Roles', width: 1.1 },
-    { label: 'Squads and teams', width: 1.3 },
-    { label: 'WWCC number', width: 1.1 },
+    { label: 'Name', width: 1.3 },
+    { label: 'Name on card', width: 1.2 },
+    { label: 'Born', width: 0.8 },
+    { label: 'Roles', width: 1.0 },
+    { label: 'Squads and teams', width: 1.2 },
+    { label: 'Card number', width: 1.0 },
     { label: 'Expires', width: 0.8 },
-    { label: 'Status', width: 1.3 },
+    { label: 'Validated', width: 1.5 },
+    { label: 'Linked with Unit', width: 0.9 },
+    { label: 'Status', width: 1.5 },
   ];
   const count = (kind: string) => people.filter((p) => p.status.kind === kind).length;
   const exemptColumns = [
@@ -157,7 +186,8 @@ export function wwccReport(
 
   return {
     title: 'Working With Children Checks',
-    subtitle: 'Approved coaches, managers, physios and committee members',
+    subtitle: `Approved coaches, managers, physios and committee members. WWC Registration Officer: ${officerName ?? 'not named yet'}`,
+    landscape: true,
     stats: [
       { label: 'Need a check', value: people.length },
       { label: 'Current', value: count('current') },
@@ -169,20 +199,30 @@ export function wwccReport(
         label: 'Exempt volunteers',
         value: approved.filter((m) => needsWwcc(m) && screenedByExemption(m)).length,
       },
+      {
+        label: 'To validate',
+        value: people.filter(
+          (p) => current(p.status) && wwccRecordIssues(p.member).some((i) => i.includes('validated')),
+        ).length,
+      },
       { label: 'Stood down now', value: standDowns.filter((s) => !s.lifted_at).length },
     ],
     sections: [
       {
         title: 'Needs attention',
-        note: `Missing, expired or expiring within ${WWCC_WARNING_DAYS} days. Their coach, manager, physio and committee roles are paused while a check is missing or expired.`,
+        note: `Missing, expired or expiring within ${WWCC_WARNING_DAYS} days, never validated or validated over a year ago, or not linked to the club with the Screening Unit. Their coach, manager, physio and committee roles are paused while a check is missing or expired.`,
         columns,
-        rows: people.filter((p) => p.status.problem).map(row),
+        rows: people
+          .filter((p) => p.status.problem || (current(p.status) && wwccRecordIssues(p.member).length > 0))
+          .map(row),
         empty: 'Every check is current.',
       },
       {
         title: 'Current',
         columns,
-        rows: people.filter((p) => !p.status.problem).map(row),
+        rows: people
+          .filter((p) => !p.status.problem && wwccRecordIssues(p.member).length === 0)
+          .map(row),
         empty: 'No current checks recorded.',
       },
       {
@@ -231,6 +271,35 @@ export function wwccReport(
         empty: 'No volunteer exemptions recorded.',
       },
       {
+        title: 'Screening Unit notices',
+        note: 'Every notice recorded, newest first. Interim negative notices, negative notices, interstate decisions and cancelled cards are reported to the governing body in writing.',
+        columns: [
+          { label: 'Name', width: 1.3 },
+          { label: 'Notice', width: 1.3 },
+          { label: 'Received', width: 0.8 },
+          { label: 'What the club did', width: 2.4 },
+          { label: 'Governing body told', width: 1.4 },
+        ],
+        rows: notices.map((n) => {
+          const barring = barringNotices.includes(n.kind);
+          return {
+            cells: [
+              n.member_name,
+              screeningNoticeLabels[n.kind],
+              formatDate(n.received_on),
+              n.action,
+              n.governing_body_told_on
+                ? `${formatDate(n.governing_body_told_on)} by ${n.governing_body_told_by_name ?? 'a former admin'}`
+                : barring
+                  ? 'Not yet'
+                  : 'Not needed',
+            ],
+            flag: barring && !n.governing_body_told_on,
+          };
+        }),
+        empty: 'No notices recorded.',
+      },
+      {
         title: 'Stand-downs',
         note: 'Members an admin stood down from child-related roles, newest first, including ones since lifted.',
         columns: [
@@ -254,7 +323,7 @@ export function wwccReport(
       },
     ],
     footnote:
-      'From the check numbers and expiry dates admins record in Members. Confirm them against the state WWCC register.',
+      'From the cards admins record and validate in Members. Each card is validated online or sighted at least once a year and whenever it is renewed.',
   };
 }
 

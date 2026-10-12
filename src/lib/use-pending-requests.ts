@@ -44,6 +44,14 @@ export type SafetyTodos = {
   exemptions_ending: number;
   /** Approved athletes with no checked date of birth, mostly from before it was needed. */
   athletes_without_date_of_birth: number;
+  /** Current cards never validated, or validated over a year ago. */
+  wwcc_to_validate: number;
+  /** Current cards not linked to the club with the Screening Unit. */
+  wwcc_to_link: number;
+  /** Barring notices the governing body hasn't been told about. */
+  notices_to_report: number;
+  /** 1 when the club has no WWC Registration Officer. */
+  wwc_officer_missing: number;
 };
 
 /** Child-safety follow-ups for admins, refreshed when the screen is shown. */

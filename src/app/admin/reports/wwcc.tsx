@@ -8,7 +8,7 @@ import { PROFILE_COLUMNS } from '@/lib/auth';
 import type { Report } from '@/lib/pdf';
 import { fetchAll, wwccReport, type Placement } from '@/lib/reports';
 import { supabase } from '@/lib/supabase';
-import type { Profile, StandDown, VolunteerExemption } from '@/lib/types';
+import type { Profile, ScreeningNotice, StandDown, VolunteerExemption } from '@/lib/types';
 import { useTeams } from '@/lib/use-teams';
 
 export default function WwccReportScreen() {
@@ -18,13 +18,15 @@ export default function WwccReportScreen() {
     placements: Placement[];
     standDowns: StandDown[];
     exemptions: VolunteerExemption[];
+    notices: ScreeningNotice[];
+    officerName: string | null;
   } | null>(null);
   const [error, setError] = useState<string | null>(null);
   const [refreshing, setRefreshing] = useState(false);
 
   const load = useCallback(async () => {
     try {
-      const [members, placements, standDowns, exemptions] = await Promise.all([
+      const [members, placements, standDowns, exemptions, notices, officer] = await Promise.all([
         fetchAll<Profile>((from, to) =>
           supabase.from('profiles').select(PROFILE_COLUMNS).eq('status', 'approved').range(from, to),
         ),
@@ -45,8 +47,17 @@ export default function WwccReportScreen() {
         fetchAll<VolunteerExemption>((from, to) =>
           supabase.rpc('admin_volunteer_exemptions').range(from, to),
         ),
+        fetchAll<ScreeningNotice>((from, to) =>
+          supabase
+            .from('screening_notices')
+            .select('*')
+            .order('received_on', { ascending: false })
+            .range(from, to),
+        ),
+        supabase.rpc('admin_wwc_officer').maybeSingle(),
       ]);
-      setData({ members, placements, standDowns, exemptions });
+      const officerName = (officer.data as { officer_name: string } | null)?.officer_name ?? null;
+      setData({ members, placements, standDowns, exemptions, notices, officerName });
       setError(null);
     } catch (e) {
       setError(e instanceof Error ? e.message : 'The report didn’t load. Try again.');
@@ -66,7 +77,15 @@ export default function WwccReportScreen() {
   }
 
   const report: Report | null = data
-    ? wwccReport(data.members, data.placements, teams, data.standDowns, data.exemptions)
+    ? wwccReport(
+        data.members,
+        data.placements,
+        teams,
+        data.standDowns,
+        data.exemptions,
+        data.notices,
+        data.officerName,
+      )
     : null;
 
   return (
