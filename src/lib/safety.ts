@@ -28,7 +28,7 @@ export function canBeExempt(roles: AppRole[]) {
 
 /**
  * Whether a member needs a current check: coaches, managers, physios and
- * temporary volunteers always, committee members and admins unless another
+ * temporary helpers always, committee members and admins unless another
  * admin exempted them. Same rule as `public.needs_wwcc` in the database.
  */
 export function needsWwcc(
@@ -174,7 +174,7 @@ export const wwcSources: { label: string; url: string }[] = [
   },
 ];
 
-/** What a temporary volunteer said about their check when they asked to join. */
+/** What a temporary helper said about their check when they asked to join. */
 export const volunteerScreeningLabels: Record<VolunteerScreening, string> = {
   card: 'I have a WA Working With Children Check',
   visitor: 'I’m visiting WA from interstate or overseas',
@@ -184,7 +184,7 @@ export const volunteerScreeningLabels: Record<VolunteerScreening, string> = {
   none: 'I don’t have a check yet',
 };
 
-/** Whether a temporary volunteer's time hasn't started, or has finished. */
+/** Whether a temporary helper's time hasn't started, or has finished. */
 export function volunteerTimeOff(
   member: Pick<Profile, 'role' | 'extra_roles' | 'volunteer_from' | 'volunteer_until'>,
 ) {
@@ -325,7 +325,7 @@ export function safetyIssues(
   const in30Days = isoDay(30);
   if (member.stood_down_at) issues.push('Stood down');
 
-  // A temporary volunteer needs nothing before their first day or after their last.
+  // A temporary helper needs nothing before their first day or after their last.
   if (needsWwcc(member) && !volunteerTimeOff(member)) {
     const check = wwccStatus(member);
     const current = check.kind === 'current' || check.kind === 'expiring';

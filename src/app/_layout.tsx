@@ -155,7 +155,7 @@ function RootStack() {
             <Stack.Screen name="training/requirement/[id]" options={{ title: 'Training' }} />
             <Stack.Screen name="training/document" options={{ title: 'Certificate' }} />
           </Stack.Protected>
-          <Stack.Screen name="declaration" options={{ title: 'Volunteer declaration' }} />
+          <Stack.Screen name="declaration" options={{ title: 'Exemption declaration' }} />
           <Stack.Screen name="concern/new" options={{ title: 'Raise a concern' }} />
           <Stack.Screen name="consent/[id]" options={{ title: 'Consent' }} />
           <Stack.Screen name="concerns/index" options={{ title: 'Concerns' }} />

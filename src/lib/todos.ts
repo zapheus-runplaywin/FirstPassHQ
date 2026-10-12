@@ -87,7 +87,7 @@ export function buildTodos({
   if (declarationWaiting) {
     todos.push({
       key: 'volunteer-declaration',
-      title: 'Accept the volunteer declaration',
+      title: 'Accept the exemption declaration',
       detail: 'Your club role starts once you do',
       href: '/declaration',
     });

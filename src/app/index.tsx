@@ -179,7 +179,7 @@ export default function HomeScreen() {
   const showGroups =
     approved && (memberships.length > 0 || !(isAdmin || hasRole(profile, 'committee')));
   const getsMessages = useGetsMessages();
-  // Temporary volunteers only see the steps to be cleared, and Raise a concern.
+  // Temporary helpers only see the steps to be cleared, and Raise a concern.
   const volunteer =
     profile?.status !== 'rejected' &&
     (approved
@@ -515,7 +515,7 @@ function pausedReason(
   }
   const exemption = paused.exemption;
   if (exemption && !exemption.declared_at) {
-    return `Your ${what} paused until you accept the volunteer declaration. Open it from your to-do list.`;
+    return `Your ${what} paused until you accept the exemption declaration. Open it from your to-do list.`;
   }
   if (exemption) {
     const ended =

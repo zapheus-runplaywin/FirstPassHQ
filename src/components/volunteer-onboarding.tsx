@@ -15,7 +15,7 @@ import { exemptionStatus, volunteerExemptionLabels, wwccStatus } from '@/lib/saf
 import { supabase } from '@/lib/supabase';
 
 /**
- * A temporary volunteer's home: the steps before they can help, and where
+ * A temporary helper's home: the steps before they can help, and where
  * each is up to. Volunteers see none of the club's features, so this is all
  * their home shows besides Raise a concern.
  */
@@ -70,7 +70,7 @@ export function VolunteerOnboarding({ verificationCode }: { verificationCode: Re
       <Card>
         <ThemedText type="smallBold">Thanks for helping</ThemedText>
         <ThemedText type="small" themeColor="textSecondary">
-          Your time as a temporary volunteer finished on {formatDate(until)}. If you’re helping
+          Your time as a temporary helper finished on {formatDate(until)}. If you’re helping
           again, ask a club admin to change your dates.
         </ThemedText>
       </Card>
@@ -84,7 +84,7 @@ export function VolunteerOnboarding({ verificationCode }: { verificationCode: Re
       </ThemedText>
       <ThemedText type="small" themeColor="textSecondary">
         {approved
-          ? 'Thanks for volunteering. This is the record the club keeps of how you were cleared.'
+          ? 'Thanks for helping. This is the record the club keeps of how you were cleared.'
           : 'Every adult helping with children needs to be cleared by the club first. Do these, then a club admin approves you.'}
       </ThemedText>
 
