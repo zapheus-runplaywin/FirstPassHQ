@@ -14,6 +14,7 @@ import {
   screeningNoticeLabels,
   standDownReasonLabels,
   volunteerExemptionLabels,
+  volunteerTimeOff,
   WWCC_WARNING_DAYS,
   wwccRecordIssues,
   wwccStatus,
@@ -109,6 +110,20 @@ const byName = (a: { name: string }, b: { name: string }) => a.name.localeCompar
 // Working With Children Checks
 // ---------------------------------------------------------------------------
 
+/** A member accepting the club's policies, from `policy_acknowledgements`. */
+export type Acknowledgement = {
+  profile_id: string;
+  policy_version: string;
+  acknowledged_at: string;
+};
+
+/** Today in the phone's time zone, as YYYY-MM-DD. */
+function localIsoDay() {
+  const now = new Date();
+  const month = String(now.getMonth() + 1).padStart(2, '0');
+  return `${now.getFullYear()}-${month}-${String(now.getDate()).padStart(2, '0')}`;
+}
+
 export function wwccReport(
   members: Profile[],
   placements: Placement[],
@@ -118,8 +133,14 @@ export function wwccReport(
   notices: ScreeningNotice[] = [],
   /** The club's WWC Registration Officer, if it has named one. */
   officerName: string | null = null,
+  /** Who accepted the club's policies, newest first. */
+  acknowledgements: Acknowledgement[] = [],
 ): Report {
   const approved = members.filter((m) => m.status === 'approved');
+  // Temporary volunteers outside their dates need nothing, and are listed on their own.
+  const volunteers = approved
+    .filter((m) => hasRole(m, 'volunteer'))
+    .sort((a, b) => (b.volunteer_from ?? '').localeCompare(a.volunteer_from ?? ''));
   const openExemption = new Map(exemptions.filter((e) => !e.ended_at).map((e) => [e.profile_id, e]));
   // A volunteer exemption stands in for a check they don't have.
   const screenedByExemption = (m: Profile) => {
@@ -127,7 +148,7 @@ export function wwccReport(
     return openExemption.has(m.id) && kind !== 'current' && kind !== 'expiring';
   };
   const people = approved
-    .filter((m) => needsWwcc(m) && !screenedByExemption(m))
+    .filter((m) => needsWwcc(m) && !screenedByExemption(m) && !volunteerTimeOff(m))
     .map((m) => ({ member: m, name: memberName(m), status: wwccStatus(m) }))
     .sort(byName);
   // Committee members and admins another admin excused from the check, with the reason.
@@ -186,7 +207,7 @@ export function wwccReport(
 
   return {
     title: 'Working With Children Checks',
-    subtitle: `Approved coaches, managers, physios, committee members and admins. WWC Registration Officer: ${officerName ?? 'not named yet'}`,
+    subtitle: `Approved coaches, managers, physios, temporary volunteers, committee members and admins. WWC Registration Officer: ${officerName ?? 'not named yet'}`,
     landscape: true,
     stats: [
       { label: 'Need a check', value: people.length },
@@ -206,6 +227,10 @@ export function wwccReport(
         ).length,
       },
       { label: 'Stood down now', value: standDowns.filter((s) => !s.lifted_at).length },
+      {
+        label: 'Temporary volunteers helping now',
+        value: volunteers.filter((m) => !volunteerTimeOff(m)).length,
+      },
     ],
     sections: [
       {
@@ -242,7 +267,7 @@ export function wwccReport(
       },
       {
         title: 'Exempt volunteers',
-        note: 'Parent volunteers at their child’s club and volunteers under 18 don’t need a check in WA. Each accepts a declaration in the app; the exemption ends by itself when the child or volunteer turns 18 or the child leaves. Ended exemptions are listed after current ones.',
+        note: 'Parent volunteers at their child’s club and volunteers under 18 don’t need a check in WA, and nor does someone not ordinarily resident in WA for two weeks after they arrive or up to 30 days at a national event or tour, once in any 12 months. Each accepts a declaration in the app; the exemption ends by itself when the child or volunteer turns 18, the child leaves, or its last day passes. Ended exemptions are listed after current ones.',
         columns: [
           { label: 'Name', width: 1.3 },
           { label: 'Exemption', width: 1.5 },
@@ -258,7 +283,7 @@ export function wwccReport(
             return {
               cells: [
                 member ? memberName(member) : 'A former member',
-                `${volunteerExemptionLabels[e.basis]}${e.child_name ? ` for ${e.child_name}` : ''}`,
+                `${volunteerExemptionLabels[e.basis]}${e.child_name ? ` for ${e.child_name}` : ''}${e.event_name ? `: ${e.event_name}, run by ${e.organiser ?? 'unknown'}` : ''}${e.starts_on && e.ends_on ? `, ${formatDate(e.starts_on)} to ${formatDate(e.ends_on)}` : ''}`,
                 `${localDay(e.set_at)} by ${e.set_by_name ?? 'a former admin'}`,
                 e.declared_at ? `Accepted ${localDay(e.declared_at)}` : 'Waiting',
                 e.ended_at
@@ -269,6 +294,49 @@ export function wwccReport(
             };
           }),
         empty: 'No volunteer exemptions recorded.',
+      },
+      {
+        title: 'Temporary volunteers',
+        note: 'Everyone approved to help for a day or a short time, newest first. They get no club features. Each was approved only once they accepted the club’s code of conduct and safeguarding policy and a check or accepted exemption covered every day they help.',
+        columns: [
+          { label: 'Name', width: 1.3 },
+          { label: 'Helping with', width: 1.8 },
+          { label: 'Dates', width: 1.3 },
+          { label: 'Screened by', width: 2.0 },
+          { label: 'Policies accepted', width: 1.0 },
+          { label: 'Status', width: 1.0 },
+        ],
+        rows: volunteers.map((m) => {
+          const exemption = exemptions.find((e) => e.profile_id === m.id && !e.ended_at);
+          const card = wwccStatus(m);
+          const accepted = acknowledgements.find((a) => a.profile_id === m.id);
+          const today = localIsoDay();
+          const status = m.stood_down_at
+            ? 'Stood down'
+            : m.volunteer_until && m.volunteer_until < today
+              ? 'Finished'
+              : m.volunteer_from && m.volunteer_from > today
+                ? 'Upcoming'
+                : 'Helping now';
+          return {
+            cells: [
+              memberName(m),
+              m.volunteer_task ?? '',
+              m.volunteer_from && m.volunteer_until
+                ? `${formatDate(m.volunteer_from)} to ${formatDate(m.volunteer_until)}`
+                : '',
+              card.kind === 'current' || card.kind === 'expiring'
+                ? `Card ${m.wwcc_number?.trim() ?? ''}, expires ${formatDate(m.wwcc_expires_on)}`
+                : exemption
+                  ? exemptionStatus(exemption).label
+                  : card.label,
+              accepted ? localDay(accepted.acknowledged_at) : 'No',
+              status,
+            ],
+            flag: status === 'Helping now' && needsWwcc(m) && card.problem && !exemption?.valid,
+          };
+        }),
+        empty: 'No temporary volunteers.',
       },
       {
         title: 'Screening Unit notices',

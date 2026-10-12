@@ -23,7 +23,7 @@ children, for parents, committees, boards and the sport's governing body.
 6. [Coaches](#6-coaches)
 7. [Managers](#7-managers)
 8. [Committee](#8-committee)
-9. [Physios and guests](#9-physios-and-guests)
+9. [Physios, guests and temporary volunteers](#9-physios-guests-and-temporary-volunteers)
 10. [Admins](#10-admins)
 11. [Who can see what](#11-who-can-see-what)
 12. [Child safety and safeguarding](#12-child-safety-and-safeguarding)
@@ -45,6 +45,7 @@ each of their roles can.
 | **Committee** | Club committee members. Each can add a title, such as President or Secretary, shown with their role. Need a current Working With Children Check unless an admin exempts them; the role pauses if a recorded check expires. |
 | **Physio**    | The club's physiotherapists. A physio can be placed in squads or teams to look after their athletes, and one can be the **Head Physio**, who looks after every athlete. Need a current Working With Children Check; the role pauses while it's expired. A parent volunteering at their child's club, or a volunteer under 18, has an exemption instead (see [Volunteer exemptions](#volunteer-exemptions)). |
 | **Guest**     | Anyone else the club lets in, such as partners and sponsors. Guests can only look.                   |
+| **Temporary volunteer** | Someone helping for a day or a short time, such as at a carnival, clinic or tournament. The app only screens them: a Working With Children Check or an exemption covering every day they help, and the club's code of conduct and safeguarding policy accepted. They see none of the club's features or messages, and their time ends by itself after their last day (see [Temporary volunteers](#temporary-volunteers)). |
 | **Admin**     | The people who run the app. Admin is granted by another admin, never requested. Admins can add a title too. Need a current Working With Children Check unless another admin exempts them. An expired check doesn't pause the admin role, so the club is never locked out, but it stays on the admins' to-do list until it's renewed. |
 
 **Safeguarding contacts.** An admin names one member as the club's **Child Safety Officer** and
@@ -61,7 +62,7 @@ or training partner, and the app talks about teams wherever it would say squad.
 **Combining roles.** An admin adds other roles from the member's page. Some roles can't go
 together:
 
-- **Guests** can't have any other role.
+- **Guests** and **temporary volunteers** can't have any other role.
 - **Admins** can also be a coach, manager, physio, committee member or guardian, but not an athlete.
 - **Athletes** can't also be a manager or a physio. An athlete can coach, but only a squad or team
   they don't play in.
@@ -131,6 +132,9 @@ open to everyone.
 
 Integrity training applies to the roles, squads and teams an admin chooses for each course, so not
 everyone has training to complete.
+
+Temporary volunteers see none of these. Their home screen shows only the steps to be cleared to
+help, and **Raise a concern** (see [Temporary volunteers](#temporary-volunteers)).
 
 Admins can turn off Messages, Calendar, Daily check-ins, Injuries, Attendance, Awards, Game goals
 and Integrity training for the whole club in **Club settings**. A feature that's off disappears for every role.
@@ -205,6 +209,10 @@ and fill in:
 
 The club's policies are linked above **Send request**: by joining you agree to them. If you choose
 **Athlete**, a note explains what the club keeps about athletes under 18 and who sees it.
+
+Someone helping for a day or a short time chooses **Temporary volunteer** and also gives what
+they'll help with, their first and last day, and how they're screened to work with children (see
+[Temporary volunteers](#temporary-volunteers)).
 
 An athlete under 18 also gives a **Parent or guardian's email**: the email their parent or guardian
 will sign in with. A parent or guardian needs to join the club in the app too, and an admin links
@@ -659,6 +667,20 @@ no longer linked to you, or, for a volunteer under 18, on your 18th birthday. Yo
 and your home screen asks you to apply for a check. A parent's exemption doesn't cover overnight
 camps.
 
+Someone who doesn't normally live in WA, such as a visiting interstate or national coach, has two
+more exemptions, and can use only one of them, once, in any 12 months anywhere in WA:
+
+- **Short-term visitor**: the two weeks from the day they arrive in WA.
+- **National event or tour**: up to 30 days in a row, only for work at an event or tour run by a
+  national or state body with children from more than one state, territory or country, such as a
+  national championships.
+
+The admin records the day they arrived, or the event, its organiser and first day. The declaration
+names those dates, and the person confirms they haven't used either exemption anywhere in WA in the
+last 12 months. The exemption applies only between its first and last day, then ends by itself, and
+the app refuses a second one for the same person within 12 months. Being supervised by someone
+with a check is not an exemption in WA.
+
 <img src="user-guide/volunteer-declaration.png" width="210" alt="The volunteer declaration a parent volunteer accepts">
 
 After an admin marks a squad's **squad phase complete**, coaches look after only the
@@ -927,7 +949,7 @@ Calendars an admin shares with the **Committee** appear only for committee membe
 
 <div style="page-break-before: always"></div>
 
-## 9. Physios and guests
+## 9. Physios, guests and temporary volunteers
 
 Physios and guests see the squads and teams and the club calendar. They don't vote in club awards,
 so their home screen has no **Awards** card. Guests don't get messages. Physios have a **Messages**
@@ -971,6 +993,39 @@ calendar.
 
 <img src="user-guide/guest-home.png" width="210" alt="Guest home screen">
 
+### Temporary volunteers
+
+In WA there's no exemption for helping for only a few hours or a day, and being supervised by
+someone with a check doesn't count, so everyone who works with children at the club needs a
+Working With Children Check or an exemption. **Temporary volunteer** is for people helping for a
+day or a short time, such as a bench helper at a carnival or a visiting coach at a clinic. The role
+exists only so the club can clear them and keep a record: temporary volunteers don't see squads,
+teams, the calendar, awards, training, check-ins or messages, and can't be sent messages.
+
+1. Sign in, tap **Request to join** and choose **Temporary volunteer**. Say **What you'll help
+   with**, your **First day** and **Last day** (up to 12 months), and how you're screened: **I have
+   a WA Working With Children Check** (with the card number), **I'm visiting WA from interstate or
+   overseas**, **I'm in WA for a national event or tour**, **I'm a parent of an athlete at the
+   club**, **I'm under 18**, or **I don't have a check yet**.
+2. Your home screen then shows **Before you help**, with each step and where it's up to:
+   - **Your details**, which you can edit until you're approved.
+   - **Who you are**: an admin may ask for the code shown.
+   - **Working With Children Check**: an admin checks your card online, or records your exemption,
+     and you tap **Read the declaration** and **I agree** (see [Volunteer
+     exemptions](#volunteer-exemptions)).
+   - **Club policies**: read the club's code of conduct and child safeguarding policy, and tap
+     **I agree**. The club keeps the words you agreed to and the policy version.
+   - **Approved by a club admin**.
+3. Once approved, your home screen says what you're helping with and when. After your last day it
+   says your time has finished; ask an admin to change your dates if you help again.
+
+**Raise a concern** is on your home screen the whole time.
+
+<img src="user-guide/join-volunteer.png" width="210" alt="Asking to join as a temporary volunteer, with the task, dates and how they're screened">
+<img src="user-guide/volunteer-home.png" width="210" alt="A temporary volunteer's home screen with the steps before they help">
+<img src="user-guide/volunteer-policies.png" width="210" alt="Accepting the declaration and the club's policies">
+<img src="user-guide/volunteer-approved.png" width="210" alt="A temporary volunteer's home screen once approved">
+
 <div style="page-break-before: always"></div>
 
 ## 10. Admins
@@ -1011,7 +1066,8 @@ request yet** and **Not approved**. Search by name or email.
 **Needs checking**, at the top, lists the members behind the child-safety to-dos on your home
 screen, with the reason under each name: no Working With Children Check recorded, one that has
 expired or expires within 60 days, a volunteer exemption waiting for the declaration, ending within
-60 days or no longer applying, someone who is stood down, an athlete under 18 with no guardian
+60 days or no longer applying (a visitor or national event exemption is short by design, so it only
+shows once it has ended; a temporary volunteer shows only between their first and last day), someone who is stood down, an athlete under 18 with no guardian
 linked, an athlete with no date of birth, an athlete about to turn 18, a card never validated or
 validated over a year ago, or a card not linked with the Screening Unit. They also show "Needs checking" in the main list. Open someone to fix it; once saved,
 they drop off the list.
@@ -1032,7 +1088,7 @@ Check them against PlayHQ, then:
    date and when. Anyone under 18 gets a **Parents and guardians** section, with the search
    started from the email the child gave: tap a guardian to link them (tap ✕ to unlink). Only
    verified guardians can be linked; unverified ones show "(not verified)".
-4. For coaches, managers, physios, committee members and admins, enter their **Working With Children
+4. For coaches, managers, physios, temporary volunteers, committee members and admins, enter their **Working With Children
    Check** card number and expiry date. Cards last three years, so a later expiry is refused. Once
    the card is saved, **Validation** records checking it: enter the **Name on the card**, choose
    how you checked it (**Checked online** on the Screening Unit's website, **Card sighted** or
@@ -1053,7 +1109,21 @@ Check them against PlayHQ, then:
    volunteer declaration, and their role starts when they do. The page shows where it's up to and
    who recorded it. Choosing **Has a check** again ends the exemption; every exemption stays on
    their page and in the report.
-5. Tap **Approve**.
+
+   For someone who doesn't normally live in WA, choose **Short-term visitor** and enter the **Day
+   they arrived in WA**, or **National event or tour** and enter its **First day**, the **Event or
+   tour** and who it's **Organised by**. The exemption covers two weeks from their arrival, or 30
+   days in a row from the event's first day, and ends by itself. The app refuses a visitor or
+   national event exemption for someone who has used either one in the 12 months before or after,
+   counting from when they accepted it and it started; one replaced before its first day doesn't
+   count. **Read the rules at the source** links to the Working with Children (Screening) Act, the
+   Screening Unit's guide to who needs a check, and its fact sheets on national events and tours,
+   parent volunteers, who can't use an exemption, and sport and recreation.
+5. For a **Temporary volunteer**, check **What they'll help with** and their **First day** and
+   **Last day**. The page shows what they said about their check, the card number they gave and
+   when they accepted the club's policies. Tap **Save for now** to record their card or exemption
+   while you wait for them to accept it.
+6. Tap **Approve**.
 
 The app won't approve or save:
 
@@ -1066,7 +1136,11 @@ The app won't approve or save:
   members approved before checks were needed keep their access, and show under **Needs checking**
   until you record a check or exempt them;
 - a new admin without a current Working With Children Check or an exemption. Admins approved
-  before checks were needed keep their access and show under **Needs checking** in the same way.
+  before checks were needed keep their access and show under **Needs checking** in the same way;
+- a temporary volunteer without their task and dates, whose last day has passed, who hasn't
+  accepted the club's policies, or whose card doesn't last to their last day and who has no
+  exemption they've accepted covering every day they help. Changing an approved volunteer's dates
+  is refused too if their check or exemption doesn't cover the new ones.
 
 Approval isn't the only time the check counts. A coach's, manager's or physio's role pauses on the
 day their check expires, and so does a committee member's when a check you recorded for them
@@ -1112,6 +1186,8 @@ club** or **Other**) and tap **Don't approve**. They see the reason and can requ
 <img src="user-guide/member-wwcc-admin.png" width="210" alt="An admin who needs a Working With Children Check, with the Exempt choice">
 <img src="user-guide/member-wwcc-validation.png" width="210" alt="Validating a card: name on the card, how it was checked and the Screening Unit link">
 <img src="user-guide/member-volunteer-exempt.png" width="210" alt="A manager recorded as a parent volunteer, waiting to accept the declaration">
+<img src="user-guide/member-volunteer.png" width="210" alt="A temporary volunteer waiting for approval: their task, dates and what they said">
+<img src="user-guide/member-visitor-exempt.png" width="210" alt="Recording a national event exemption, with the links to the rules at the source">
 <img src="user-guide/member-physio.png" width="210" alt="A physio placed in two squads">
 <img src="user-guide/member-head-physio.png" width="210" alt="The Head Physio, who looks after every athlete">
 
@@ -1416,15 +1492,18 @@ computer it downloads), ready for the committee, an audit or OneDrive. The PDF h
 name, the date it was made and page numbers, and anything that needs attention is in red.
 
 - **Working With Children Checks**: printed across the page, with the WWC Registration Officer
-  at the top. Every approved coach, manager, physio, committee member and admin with their name on the
+  at the top. Every approved coach, manager, physio, temporary volunteer (while helping), committee member and admin with their name on the
   card, date of birth, roles, squads and teams, card number, expiry date, when and how the card was
   last validated and by whom, when it was linked with the Screening Unit, and status. Checks that
   are missing, have no expiry date, have expired, expire within 60 days, were never validated or
   were validated over a year ago, or aren't linked with the Screening Unit are listed first under
   **Needs attention**. Committee members and admins who are exempt are listed next, with the reason, who
-  exempted them and when. **Exempt volunteers** lists every parent and under-18 volunteer exemption,
-current ones first, with the child, who recorded it, when the declaration was accepted and where
-it's up to, then ended ones with who ended them. **Screening Unit notices** lists every notice,
+  exempted them and when. **Exempt volunteers** lists every volunteer exemption,
+current ones first, with the child, or the event, organiser and dates, who recorded it, when the declaration was accepted and where
+it's up to, then ended ones with who ended them. **Temporary volunteers** lists everyone approved
+as one, newest first, with what they helped with, their dates, the card or exemption that covered
+them, when they accepted the club's policies, and whether they're upcoming, helping now, finished
+or stood down. **Screening Unit notices** lists every notice,
 newest first, with what the club did and when the governing body was told. **Stand-downs** lists
 everyone ever stood down, newest first, with the
   reason, who stood them down and lifted it, and when.
@@ -1578,6 +1657,7 @@ once saved, only replaced or removed, and anyone who gets it wrong five times in
 | Stand-downs             | Admins only. The member sees that their role is paused, not the reason.                                                     |
 | Screening Unit notices and card validations | Admins only.                                                                                            |
 | Volunteer exemptions and declarations | The volunteer (their own) and admins.                                                                       |
+| Temporary volunteers' task, dates and policy acceptance | The volunteer and admins. Temporary volunteers see nothing of the club's members, squads, calendar or messages. |
 | Concerns                | The Child Safety Officer, the Complaints Manager and admins, never the person a concern is about. Whoever raised it sees its status. A hidden name is never shown to them. |
 | Safeguarding contacts   | Everyone signed in, including guests and people waiting for approval.                                                       |
 | Messages                | The people they were sent to, the sender, and admins. Guardians of athletes under 18 get a copy of every message sent to their athlete, and of every message their athlete sends as a captain. Guests don't get messages; physios get messages sent to the Physio role and to their squads and teams, and whole-club messages only if an admin turns that on. |
@@ -1713,6 +1793,14 @@ Working With Children Check, and another admin must do it.
   turns 18.
 - **Your role pauses the day your check expires**, and comes back when an admin records the renewed
   check. Admins are reminded 60 days ahead.
+- **Helping for a day still needs a check.** WA has no exemption for a few hours or a day, and
+  being supervised by a cardholder doesn't count. Someone helping briefly joins as a **Temporary
+  volunteer**: they can't be approved until they've accepted the club's code of conduct and
+  safeguarding policy and a check or an accepted exemption covers every day they help, and they see
+  nothing else in the app (see [Temporary volunteers](#temporary-volunteers)).
+- **Visitors from outside WA.** The short-term visitor exemption (two weeks from arrival) and the
+  national event or tour exemption (up to 30 days at the event) each record their dates, end by
+  themselves, and can be used only once between them in any 12 months; the app refuses a second.
 
 ### For committees, boards and admins
 
@@ -1739,6 +1827,10 @@ Working With Children Check, and another admin must do it.
 - **Images of children.** Photos of under 18s' injuries are off unless you turn them on under
   Safeguarding, and then need a verified guardian's consent. Only the committee member accepting a
   clearance can share its documents, while it waits for them.
+- **Temporary volunteers are cleared, not just let in.** Each one's task, dates, check or exemption
+  and policy acceptance are recorded before an admin can approve them, and the Working With Children
+  Checks report lists them all. The admin's member page links to the Act and the Screening Unit's
+  fact sheets so exemptions can be checked at the source.
 - **Your to-do list does the chasing**: new concerns, missing or expiring checks, volunteer
   exemptions ending, declarations not yet accepted, cards to validate or link with the Screening
   Unit, notices to report to the governing body, no WWC Registration Officer, athletes with no date
@@ -1755,7 +1847,8 @@ Working With Children Check, and another admin must do it.
 - **Records are kept with who did what and when**: how each guardian was verified and what was
   checked, every guardian link and unlink with the admin and the reason, who recorded each date of birth, checks and
   who validated each card and how, Screening Unit notices and when the governing body was told,
-  exemptions and the declarations accepted,
+  exemptions and the declarations accepted (with the dates and event for visitor and national event
+  exemptions), temporary volunteers' tasks, dates and acceptance of the club's policies,
   stand-downs, every concern with each referral, note and status, every view and share of an
   injury document, and every parent's consent with the policy version they agreed to. A document can't be opened without the view being recorded first.
 - **Child abuse and serious crimes go out, not in.** The register prompts the club to refer them to

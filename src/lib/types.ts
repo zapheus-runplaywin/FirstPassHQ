@@ -8,7 +8,8 @@ export type AppRole =
   | 'committee'
   | 'physio'
   | 'guardian'
-  | 'guest';
+  | 'guest'
+  | 'volunteer';
 
 export type MemberStatus = 'pending' | 'approved' | 'rejected';
 
@@ -97,6 +98,13 @@ export type Profile = {
   /** How they were verified, and what the admin checked. Not recorded before October 2026. */
   verification_method?: VerificationMethod | null;
   verification_note?: string | null;
+  /** A temporary volunteer's task and dates. */
+  volunteer_task?: string | null;
+  volunteer_from?: string | null;
+  volunteer_until?: string | null;
+  volunteer_screening?: VolunteerScreening | null;
+  /** The card number a volunteer gave at Join, before an admin records it. */
+  declared_wwcc_number?: string | null;
   /** Set while an admin has stood them down from child-related roles. */
   stood_down_at: string | null;
 };
@@ -162,7 +170,20 @@ export type StandDown = {
 };
 
 /** Why a volunteer doesn't need a Working With Children Check (WA rules). */
-export type VolunteerExemptionBasis = 'parent_volunteer' | 'under_18_volunteer';
+export type VolunteerExemptionBasis =
+  | 'parent_volunteer'
+  | 'under_18_volunteer'
+  | 'short_term_visitor'
+  | 'national_event';
+
+/** How a temporary volunteer said they're screened when they asked to join. */
+export type VolunteerScreening =
+  | 'card'
+  | 'visitor'
+  | 'national_event'
+  | 'parent'
+  | 'under_18'
+  | 'none';
 
 /** The signed-in member's own exemption, from `my_volunteer_exemption`. */
 export type MyVolunteerExemption = {
@@ -176,6 +197,10 @@ export type MyVolunteerExemption = {
   valid: boolean;
   /** The day it ends by itself, when known. */
   ends_on: string | null;
+  /** First day a visitor or national event exemption covers. */
+  starts_on: string | null;
+  event_name: string | null;
+  organiser: string | null;
 };
 
 /** Any member's exemption, open or ended, from `admin_volunteer_exemptions`. */
@@ -194,6 +219,10 @@ export type VolunteerExemption = {
   end_note: string | null;
   valid: boolean;
   ends_on: string | null;
+  /** First day a visitor or national event exemption covers. */
+  starts_on: string | null;
+  event_name: string | null;
+  organiser: string | null;
 };
 
 export type TeamMembership = {

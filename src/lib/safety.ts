@@ -7,6 +7,7 @@ import type {
   StandDownReason,
   VerificationMethod,
   VolunteerExemptionBasis,
+  VolunteerScreening,
   WwccValidationMethod,
 } from '@/lib/types';
 import { hasRole, rolesOf } from '@/lib/roles';
@@ -26,15 +27,14 @@ export function canBeExempt(roles: AppRole[]) {
 }
 
 /**
- * Whether a member needs a current check: coaches, managers and physios
- * always, committee members and admins unless another admin exempted them.
- * Same rule as
- * `public.needs_wwcc` in the database.
+ * Whether a member needs a current check: coaches, managers, physios and
+ * temporary volunteers always, committee members and admins unless another
+ * admin exempted them. Same rule as `public.needs_wwcc` in the database.
  */
 export function needsWwcc(
   member: Pick<Profile, 'role' | 'extra_roles' | 'wwcc_exempt_reason'>,
 ): boolean {
-  if (hasRole(member, ...wwccRoles)) return true;
+  if (hasRole(member, ...wwccRoles, 'volunteer')) return true;
   return hasRole(member, 'committee', 'admin') && !member.wwcc_exempt_reason?.trim();
 }
 
@@ -86,12 +86,19 @@ export function wwccRecordIssues(
 export const volunteerExemptionLabels: Record<VolunteerExemptionBasis, string> = {
   parent_volunteer: 'Parent volunteer',
   under_18_volunteer: 'Under-18 volunteer',
+  short_term_visitor: 'Short-term visitor',
+  national_event: 'National event or tour',
 };
+
+/** Exemptions for people not ordinarily resident in WA, with a first and last day. */
+export function isDatedExemption(basis: VolunteerExemptionBasis) {
+  return basis === 'short_term_visitor' || basis === 'national_event';
+}
 
 /** An exemption's state, as either the member's own or an admin's view has it. */
 type ExemptionState = Pick<
   MyVolunteerExemption,
-  'basis' | 'child_name' | 'declared_at' | 'valid' | 'ends_on'
+  'basis' | 'child_name' | 'declared_at' | 'valid' | 'ends_on' | 'starts_on' | 'event_name'
 >;
 
 /**
@@ -102,9 +109,20 @@ export function exemptionStatus(exemption: ExemptionState): { label: string; pro
   const what =
     exemption.basis === 'parent_volunteer'
       ? `Parent volunteer for ${exemption.child_name ?? 'their child'}`
-      : 'Under-18 volunteer';
+      : exemption.basis === 'national_event'
+        ? `National event exemption for ${exemption.event_name ?? 'an event'}`
+        : exemption.basis === 'short_term_visitor'
+          ? 'Short-term visitor exemption'
+          : 'Under-18 volunteer';
   if (!exemption.declared_at) {
     return { label: `${what}: waiting for them to accept the declaration`, problem: true };
+  }
+  if (isDatedExemption(exemption.basis) && exemption.starts_on && exemption.ends_on) {
+    const dates = `${formatDate(exemption.starts_on)} to ${formatDate(exemption.ends_on)}`;
+    if (exemption.starts_on > isoDay()) return { label: `${what}: ${dates}`, problem: false };
+    if (!exemption.valid) return { label: `${what}: ended ${formatDate(exemption.ends_on)}`, problem: true };
+    // Two weeks or 30 days by design, so not flagged as ending.
+    return { label: `${what} until ${formatDate(exemption.ends_on)}`, problem: false };
   }
   if (!exemption.valid) {
     return {
@@ -121,11 +139,75 @@ export function exemptionStatus(exemption: ExemptionState): { label: string; pro
   };
 }
 
+/**
+ * Where the WA rules on checks and exemptions come from, for admins to read at
+ * the source. Checked October 2026.
+ */
+export const wwcSources: { label: string; url: string }[] = [
+  {
+    label: 'Who needs a Working With Children Check',
+    url: 'https://www.wa.gov.au/organisation/department-of-communities/working-children-check-who-needs-wwc-check',
+  },
+  {
+    label: 'Working with Children (Screening) Act 2004',
+    url: 'https://www.legislation.wa.gov.au/legislation/statutes.nsf/law_a9277.html',
+  },
+  {
+    label: 'Fact sheet: national events and tours (CRW02)',
+    url: 'https://www.wa.gov.au/system/files/2024-06/wwcc_factsheet_crw02_-_exemptions_one-off_national_events_and_national_tours.pdf',
+  },
+  {
+    label: 'Fact sheet: parent volunteers (CRW03)',
+    url: 'https://www.wa.gov.au/system/files/2026-08/factsheet_crw03-exemptions-the_parent_volunteer_exemption.pdf',
+  },
+  {
+    label: 'Fact sheet: who can’t use an exemption (CRW04)',
+    url: 'https://www.wa.gov.au/system/files/2026-09/wwcc-factsheet-crw04-exemptions-narrowing-of-access.pdf',
+  },
+  {
+    label: 'Fact sheet: sport and recreation (ORG03)',
+    url: 'https://www.wa.gov.au/system/files/2024-10/factsheet_org03_wwcc_sport_and_recreation_sector.pdf',
+  },
+  {
+    label: 'All Working With Children Check fact sheets',
+    url: 'https://www.wa.gov.au/government/document-collections/working-children-check-resources',
+  },
+];
+
+/** What a temporary volunteer said about their check when they asked to join. */
+export const volunteerScreeningLabels: Record<VolunteerScreening, string> = {
+  card: 'I have a WA Working With Children Check',
+  visitor: 'I’m visiting WA from interstate or overseas',
+  national_event: 'I’m in WA for a national event or tour',
+  parent: 'I’m a parent of an athlete at the club',
+  under_18: 'I’m under 18',
+  none: 'I don’t have a check yet',
+};
+
+/** Whether a temporary volunteer's time hasn't started, or has finished. */
+export function volunteerTimeOff(
+  member: Pick<Profile, 'role' | 'extra_roles' | 'volunteer_from' | 'volunteer_until'>,
+) {
+  if (!hasRole(member, 'volunteer')) return false;
+  const today = isoDay();
+  return (
+    (!!member.volunteer_until && member.volunteer_until < today) ||
+    (!!member.volunteer_from && member.volunteer_from > today)
+  );
+}
+
 /** How many days ahead admins hear that a check is about to expire. */
 export const WWCC_WARNING_DAYS = 60;
 
 /** Roles a stand-down pauses. */
-export const standDownRoles: AppRole[] = ['coach', 'manager', 'physio', 'committee', 'admin'];
+export const standDownRoles: AppRole[] = [
+  'coach',
+  'manager',
+  'physio',
+  'committee',
+  'admin',
+  'volunteer',
+];
 
 export const standDownReasonLabels: Record<StandDownReason, string> = {
   interim_negative_notice: 'Interim negative notice',
@@ -243,7 +325,8 @@ export function safetyIssues(
   const in30Days = isoDay(30);
   if (member.stood_down_at) issues.push('Stood down');
 
-  if (needsWwcc(member)) {
+  // A temporary volunteer needs nothing before their first day or after their last.
+  if (needsWwcc(member) && !volunteerTimeOff(member)) {
     const check = wwccStatus(member);
     const current = check.kind === 'current' || check.kind === 'expiring';
     if (exemption && !current) {
