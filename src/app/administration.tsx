@@ -41,6 +41,13 @@ export default function AdministrationScreen() {
         </ThemedText>
       </PressableCard>
 
+      <PressableCard onPress={() => router.push('/admin/safeguarding')}>
+        <ThemedText type="smallBold">Safeguarding</ThemedText>
+        <ThemedText type="small" themeColor="textSecondary">
+          Child Safety Officer, Complaints Manager, governing body and policy
+        </ThemedText>
+      </PressableCard>
+
       <PressableCard onPress={() => router.push('/admin/club')}>
         <ThemedText type="smallBold">Club settings</ThemedText>
         <ThemedText type="small" themeColor="textSecondary">

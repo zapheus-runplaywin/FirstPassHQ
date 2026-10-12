@@ -58,6 +58,7 @@ RULE: migrations must be safe to run on the production database and must never t
 RULE: `docs/user-guide.md` is the club's user guide, organised by role, with screenshots in `docs/user-guide/`. It must always match the app.
 
 - Any pull request that adds, removes or changes something a member can see or do updates the matching guide sections, the role tables in sections 1 and 11, and any screenshot that no longer matches, in the same pull request.
+- Child safety is critically important to club admins, boards, committees, parents and the sport's governing body. Any pull request that changes how the app protects children also updates section 12, "Child safety and safeguarding", which summarises every protection for those readers.
 - Make screenshots with the tooling in the project's shared files (`thunder/screenshots/`: `shoot.mjs`, `serve.py`, fixtures; `fixtures/user-guide.mjs` covers screens only the guide uses). Use sample people only, never real club data.
 - Keep images as relative paths and `<img width="210">` tags so the guide prints to PDF cleanly. Crop screenshots to at most 1400 px tall.
 - Describe what is merged, not what is planned.

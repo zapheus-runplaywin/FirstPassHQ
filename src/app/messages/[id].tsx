@@ -2,6 +2,7 @@ import { useFocusEffect, useLocalSearchParams } from 'expo-router';
 import { useCallback, useState } from 'react';
 import { StyleSheet, View } from 'react-native';
 
+import { RaiseConcernLink } from '@/components/safeguarding';
 import { Screen } from '@/components/screen';
 import { ThemedText } from '@/components/themed-text';
 import { Card } from '@/components/ui';
@@ -77,6 +78,10 @@ export default function MessageScreen() {
       </Card>
 
       {receipts ? <Receipts receipts={receipts} /> : null}
+      <RaiseConcernLink
+        context={`Message from ${message.sender_name ?? 'the club'}, ${formatDateTime(new Date(message.created_at))}`}
+        label="Report this message"
+      />
     </Screen>
   );
 }

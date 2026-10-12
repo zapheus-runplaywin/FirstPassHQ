@@ -36,6 +36,7 @@ export function buildTodos({
   training = [],
   certificatesToCheck = 0,
   declarationWaiting = false,
+  newConcerns = 0,
   today = new Date(),
 }: {
   userId: string | undefined;
@@ -63,9 +64,21 @@ export function buildTodos({
   certificatesToCheck?: number;
   /** An admin recorded a volunteer exemption the member hasn't accepted yet. */
   declarationWaiting?: boolean;
+  /** Concerns nobody has acted on yet, for the people who handle them. */
+  newConcerns?: number;
   today?: Date;
 }): Todo[] {
   const todos: Todo[] = [];
+
+  // A concern about a child can't wait, so it comes first.
+  if (newConcerns > 0) {
+    todos.push({
+      key: 'concerns',
+      title: `Look at ${newConcerns} new ${newConcerns === 1 ? 'concern' : 'concerns'}`,
+      detail: 'Refer child abuse and serious crimes to Police straight away',
+      href: '/concerns',
+    });
+  }
 
   // Their club role stays paused until they accept, so it comes first.
   if (declarationWaiting) {
