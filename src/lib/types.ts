@@ -14,7 +14,7 @@ export type MemberStatus = 'pending' | 'approved' | 'rejected';
 
 export type RejectionReason = 'playhq_email_mismatch' | 'not_registered' | 'other';
 
-export type TeamRole = 'coach' | 'manager' | 'athlete' | 'guardian';
+export type TeamRole = 'coach' | 'manager' | 'physio' | 'athlete' | 'guardian';
 
 export type CoachTitle = 'head_coach' | 'assistant_coach';
 
@@ -53,6 +53,8 @@ export type Profile = {
   preferred_name: string | null;
   /** Committee members and admins only, e.g. President or Secretary. */
   title: string | null;
+  /** Physios only: a Head Physio looks after every athlete, in a team or not. */
+  head_physio: boolean;
   playhq_email: string | null;
   role: AppRole;
   /** Roles held as well as the main one, such as a coach who is also a guardian. */

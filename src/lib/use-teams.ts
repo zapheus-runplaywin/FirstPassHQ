@@ -55,7 +55,7 @@ export function teamsIn(teams: Team[], squadId: string) {
   return teams.filter((t) => t.squad_id === squadId);
 }
 
-/** The club year runs May to May, so season 2026 is shown as 2026–27. */
+/** A season usually spans two calendar years, so season 2026 is shown as 2026–27. */
 export function seasonLabel(season: number) {
   return `${season}–${String((season + 1) % 100).padStart(2, '0')}`;
 }

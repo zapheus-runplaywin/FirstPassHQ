@@ -26,7 +26,7 @@ Each role starts on a new page when the viewer supports page breaks.
 ## 1. Roles at a glance
 
 Everyone in the app has a main **club role**, and some people have **other roles** as well, such as
-a coach who is also a parent. Coaches, managers, athletes and guardians also belong to one or more
+a coach who is also a parent. Coaches, managers, physios, athletes and guardians also belong to one or more
 **squads** or **teams** for the current season. Someone with more than one role can do everything
 each of their roles can.
 
@@ -37,7 +37,7 @@ each of their roles can.
 | **Coach**     | Head coaches and assistant coaches. Both have the same permissions; the title only shows who is who. Need a current Working With Children Check. |
 | **Manager**   | Squad and team managers. Need a current Working With Children Check.                                 |
 | **Committee** | Club committee members. Each can add a title, such as President or Secretary, shown with their role. Need a current Working With Children Check unless an admin exempts them. |
-| **Physio**    | The club's physiotherapists. Need a current Working With Children Check.                             |
+| **Physio**    | The club's physiotherapists. A physio can be placed in squads or teams to look after their athletes, and one can be the **Head Physio**, who looks after every athlete. Need a current Working With Children Check. |
 | **Guest**     | Anyone else the club lets in, such as partners and sponsors. Guests can only look.                   |
 | **Admin**     | The people who run the app. Admin is granted by another admin, never requested. Admins can add a title too. |
 
@@ -73,7 +73,8 @@ What each role sees on its home screen:
 
 | Feature                                | Athlete |     Guardian    |    Coach     |  Manager   |   Committee   |     Physio    |  Guest  |     Admin     |
 | -------------------------------------- | :-----: | :-------------: | :----------: | :--------: | :-----------: | :-----------: | :-----: | :-----------: |
-| To-do list, calendar, squads and teams |    ✓    |        ✓        |      ✓       |     ✓      |       ✓       |       ✓       |    ✓    |       ✓       |
+| To-do list and calendar                |    ✓    |        ✓        |      ✓       |     ✓      |       ✓       |       ✓       |    ✓    |       ✓       |
+| My squads and teams                    |    ✓    |        ✓        |      ✓       |     ✓      |  If in one    |       ✓       |    ✓    |   If in one   |
 | Read messages                          |    ✓    |        ✓        |      ✓       |     ✓      |       ✓       |       ✓*      |         |       ✓       |
 | Send messages                          | Captains† |                 |  Own groups  | Own groups |   Whole club  |               |         |     Anyone    |
 | Daily check-in                         |    ✓    |                 |              |            |               |               |         |               |
@@ -81,8 +82,8 @@ What each role sees on its home screen:
 | Team goals for a game                  | See, comment |       See       | Set, review, comment |            |               |               |         |               |
 | Check-ins of others                    |         |                 | Own athletes |            | Averages only | Averages only |         | Averages only |
 | Report an injury                       |   Own   | Their athlete's |              |            |               |               |         |               |
-| See injuries                           |   Own   | Their athlete's | Own athletes |            |      All      |      All      |         |      All      |
-| Sign off injury clearances             |         |                 |   Endorse    |            |     Accept    |    Endorse    |         |     Accept    |
+| See injuries                           |   Own   | Their athlete's | Own athletes |            |      All      |  Own athletes‡ |         |      All      |
+| Sign off injury clearances             |         |                 |   Endorse    |            |     Accept    |   Endorse‡    |         |     Accept    |
 | Take attendance                        |         |                 |      ✓       |     ✓      |       ✓       |               |         |       ✓       |
 | See athletes' attendance history       |         |                 |      ✓       |            |       ✓       |               |         |       ✓       |
 | Vote in club awards                    |    ✓    |        ✓        |      ✓       |     ✓      |       ✓       |               |         |       ✓       |
@@ -102,8 +103,12 @@ What each role sees on its home screen:
 captains and vice captains their own squad or team. Messages from captains under 18 are copied to
 their parents or guardians.
 
-\* Physios get messages sent to the Physio role. They get messages sent to everyone in the club only
-when an admin turns on **Physios get club messages** in Club settings.
+\* Physios get messages sent to the Physio role and to the squads and teams they're in. They get
+messages sent to everyone in the club only when an admin turns on **Physios get club messages** in
+Club settings.
+
+‡ A physio placed in squads or teams looks after the athletes in them. The Head Physio, and a
+physio who isn't in any squad or team, looks after every athlete.
 
 "Own groups" and "own athletes" mean the squads and teams you're listed in as a coach or manager.
 Club awards are voted on by the roles, squads and teams each award names, so not every award is
@@ -216,7 +221,8 @@ Once you're approved, the home screen is where everything starts. From the top:
   Injuries, Attendance, Awards, Integrity training and Administration. The Awards card shows while an award vote is open to you. A yellow number means something new or waiting for you.
 - **Coming up**: the next six events from your calendars. Tap **Full calendar** to see them all.
 - **My squads and teams**: tap one to see who's in it. A team's page also has its
-  [game goals](#game-goals) for its athletes and coaches.
+  [game goals](#game-goals) for its athletes and coaches. Committee members and admins only see
+  this when they're in a squad or team, for example as a coach too.
 - **Your details**, **Sign out**, **Switch club** and **Delete account** at the bottom.
 
 Pull down on any screen to refresh it.
@@ -244,8 +250,8 @@ sender can see that you've read it.
 Who a message went to is shown under the sender's name, for example "To Mixed Open Squad" or
 "To Everyone in the club".
 
-Guests don't get messages. Physios get messages sent to the Physio role, and messages sent to
-everyone in the club only when an admin turns that on.
+Guests don't get messages. Physios get messages sent to the Physio role and to the squads and teams
+they're in, and messages sent to everyone in the club only when an admin turns that on.
 
 <img src="user-guide/inbox.png" width="210" alt="Messages inbox">
 
@@ -282,7 +288,7 @@ the address.
 ### Squads and teams
 
 Tap a squad or team under **My squads and teams** to see everyone in it, with their position:
-Head Coach, Assistant Coach, Manager, Athlete, Final team athlete or Training partner. Captains,
+Head Coach, Assistant Coach, Manager, Physio, Athlete, Final team athlete or Training partner. Captains,
 vice captains and club captains are marked next to their position. When Game goals is switched on,
 a team's page also shows its [game goals](#game-goals) for its athletes and coaches. In a club
 without squads the list is called **My teams**.
@@ -784,16 +790,26 @@ Calendars an admin shares with the **Committee** appear only for committee membe
 
 Physios and guests see the squads and teams and the club calendar. They don't vote in club awards,
 so their home screen has no **Awards** card. Guests don't get messages. Physios have a **Messages**
-card and get messages an admin sends to the Physio role. They also get messages sent to everyone in
-the club when an admin turns on **Physios get club messages** in [Club settings](#club-settings).
+card and get messages an admin sends to the Physio role, and messages sent to the squads and teams
+they're in. They also get messages sent to everyone in the club when an admin turns on **Physios get
+club messages** in [Club settings](#club-settings).
 
 ### Physios
 
 Physios need a current Working With Children Check, recorded by an admin, before they're approved.
 
+Some clubs have one physio, and some have a physio for each team. An admin can place a physio in
+one or more squads or teams, where they show on the roster as **Physio**, and can mark one physio
+as **Head Physio**. Which athletes a physio looks after:
+
+- **Head Physio**: every athlete, whether or not the Head Physio is in a squad or team.
+- **A physio in squads or teams**: the athletes in those squads and teams.
+- **A physio in no squad or team**: every athlete, so a club with one physio doesn't need to place them.
+
 - **Check-ins** shows the same squad, team and club averages the committee sees (see
   [Check-in averages](#check-in-averages)). Physios never see an individual athlete's answers.
-- **Injuries** lists every current athlete's injuries, restrictions and proof documents. When an
+- **Injuries** lists the injuries, restrictions and proof documents of the current athletes they
+  look after. When an
   athlete asks for clearance, it appears under **Waiting for your sign-off** and in the physio's
   to-do list. Open it, check the proof, then **Endorse clearance** to pass it to the committee, or
   **Send back** with a note. A committee member other than the physio then accepts it. Physios
@@ -801,6 +817,7 @@ Physios need a current Working With Children Check, recorded by an admin, before
   can accept clearances, but never one they endorsed.
 
 <img src="user-guide/physio-home.png" width="210" alt="Physio home screen">
+<img src="user-guide/team-roster-physio.png" width="210" alt="A squad's roster with its physio">
 
 ### Guests
 
@@ -854,7 +871,8 @@ against PlayHQ, then:
 1. Choose their **Role**.
 2. Choose their **Squads** and, once teams are named, **Teams**. For coaches, choose **Head Coach**
    or **Assistant Coach** for each group. For athletes in a team, choose **Final team athlete** or
-   **Training partner**.
+   **Training partner**. For physios, choose **Physio** or **Head Physio** under **Physio title**,
+   and place them in the squads or teams they look after (or none, to look after every athlete).
 3. For athletes, enter their **Date of birth** (DD/MM/YYYY). Anyone under 18 gets a **Parents and
    guardians** section: search for a guardian and tap to link them (tap ✕ to unlink). Only
    verified guardians can be linked; unverified ones show "(not verified)". Until you have a date of
@@ -893,12 +911,16 @@ club** or **Other**) and tap **Don't approve**. They see the reason and can requ
 <img src="user-guide/member-guardian.png" width="210" alt="Guardian showing their athlete, waiting to be verified">
 <img src="user-guide/member-wwcc.png" width="210" alt="Coach with Working With Children Check fields">
 <img src="user-guide/member-wwcc-exempt.png" width="210" alt="Committee member exempted from the Working With Children Check, with the reason">
+<img src="user-guide/member-physio.png" width="210" alt="A physio placed in two squads">
+<img src="user-guide/member-head-physio.png" width="210" alt="The Head Physio, who looks after every athlete">
 
 ### Changing or removing members
 
 Open any member to change their role, squads, teams or titles, then tap **Save changes**. A
 committee member's or admin's page has a **Title** field (President, Secretary and so on), which
-shows on their home screen and in the Members list. The card at the top shows their **Preferred
+shows on their home screen and in the Members list. A physio's page has **Physio title**, where
+you can make them the **Head Physio**; it shows as "Head Physio" on their home screen and in the
+Members list. The card at the top shows their **Preferred
 name** if they've set one.
 
 **Other roles** adds roles on top of their main one, such as Coach for an athlete who also coaches
@@ -982,17 +1004,20 @@ With squads on:
 
 ### Seasons
 
-The club year runs May to May. **Seasons** handles the change-over:
+A season holds the club's squads and teams for one year and who is in them. Each club sets its
+own timing: the season might start at selections and finish a few weeks after the main
+competition, and the dates can move from year to year. **Seasons** handles the change-over
+whenever your club is ready:
 
-1. **In May, start the next season.** This creates empty squads with the same names, and their
-   squad calendars, for the new season (for example 2027–28). Nobody is moved, and last season
-   keeps running alongside.
+1. **Start the next season.** This creates empty squads with the same names, and their squad
+   calendars, for the new season (for example 2027–28). Nobody is moved, and last season keeps
+   running alongside.
 2. **Place returning members.** Open each new squad and pick who's coming back from last season's
    squads. They keep their club role, and coaches keep their title. New people still send a join
    request and join the newest season's squads.
-3. **About 4–6 weeks after Easter, archive the old season.** Its squads and teams leave everyone's
-   home screen, calendars, messages and to-dos. Attendance, injuries and check-ins are kept, and
-   you can bring the season back.
+3. **Archive the old season once it has finished.** Its squads and teams leave everyone's home
+   screen, calendars, messages and to-dos. Attendance, injuries and check-ins are kept, and you can
+   bring the season back.
 
 Nothing is deleted when a season is archived.
 
@@ -1259,10 +1284,10 @@ once saved, only replaced or removed.
 | Preferred name and title | You and admins.                                                                                                            |
 | Captains                | Club captains: every member. A squad or team's captains: the people in it, and admins.                                     |
 | Date of birth, Working With Children Check and exemption | You and admins. Awards with an age limit use it to decide who can be voted for, without showing it.   |
-| Messages                | The people they were sent to, the sender, and admins. Guardians of athletes under 18 get a copy of every message sent to their athlete, and of every message their athlete sends as a captain. Guests don't get messages; physios get messages sent to the Physio role, and whole-club messages only if an admin turns that on. |
+| Messages                | The people they were sent to, the sender, and admins. Guardians of athletes under 18 get a copy of every message sent to their athlete, and of every message their athlete sends as a captain. Guests don't get messages; physios get messages sent to the Physio role and to their squads and teams, and whole-club messages only if an admin turns that on. |
 | Read receipts           | The sender and admins.                                                                                                      |
 | Daily check-in answers and notes | The athlete, their guardians and their coaches. The committee, physios and admins see only group averages, hidden below 3 check-ins. |
-| Injuries and documents  | The athlete, their guardians, their coaches, physios, the committee and admins. Managers don't see injuries. Only the committee and admins can save or share documents; everyone else views them in the app. |
+| Injuries and documents  | The athlete, their guardians, their coaches, the physios who look after them (the Head Physio, physios in their squad or team, and physios in no squad or team), the committee and admins. Managers don't see injuries. Only the committee and admins can save or share documents; everyone else views them in the app. |
 | Game goals and reflections | The athlete, their guardians and their coaches. Only the athlete and their coaches set goals, and only the athlete reflects; guardians just read them. The committee, physios and admins don't see them. |
 | Team goals              | The team's athletes, their guardians and its coaches. Only its coaches set and review them. Athletes and coaches in the team can comment; guardians read the comments. |
 | Integrity training certificates | The member, their parents or guardians, the committee and admins. Coaches don't see them. Certificates can't be changed or removed once sent. |

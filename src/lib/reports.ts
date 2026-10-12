@@ -110,7 +110,7 @@ export function wwccReport(members: Profile[], placements: Placement[], teams: T
     cells: [
       name,
       rolesLabel(rolesOf(member)),
-      groupsOf(member.id, placements, teams, ['coach', 'manager']),
+      groupsOf(member.id, placements, teams, ['coach', 'manager', 'physio']),
       member.wwcc_number?.trim() ?? '',
       formatDate(member.wwcc_expires_on),
       status.short,
