@@ -92,8 +92,11 @@ export type Profile = {
   wwcc_unit_linked_at?: string | null;
   /** Why an admin didn't approve them, shown to the member. */
   rejection_reason: RejectionReason | null;
-  /** When an admin confirmed who they are with their in-app code. */
+  /** When an admin confirmed who they are: with their in-app code, against PlayHQ or by sighting ID. */
   verified_at: string | null;
+  /** How they were verified, and what the admin checked. Not recorded before October 2026. */
+  verification_method?: VerificationMethod | null;
+  verification_note?: string | null;
   /** Set while an admin has stood them down from child-related roles. */
   stood_down_at: string | null;
 };
@@ -115,6 +118,22 @@ export type ScreeningNoticeKind =
   | 'interstate_decision'
   | 'card_cancelled'
   | 'other';
+
+export type VerificationMethod = 'code' | 'playhq' | 'id_sighted';
+
+/** A guardian linked to or unlinked from an athlete, kept for the record. Admins only. */
+export type GuardianshipChange = {
+  id: string;
+  guardian_id: string;
+  guardian_name: string | null;
+  athlete_id: string;
+  athlete_name: string | null;
+  change: 'linked' | 'unlinked';
+  reason: string | null;
+  changed_by: string | null;
+  changed_by_name: string | null;
+  changed_at: string;
+};
 
 export type ScreeningNotice = {
   id: string;
@@ -193,7 +212,8 @@ export type RosterEntry = {
 };
 
 /** Who a group message went to: everyone, one role, or a squad or team. */
-export type MessageAudience = 'club' | 'role' | 'group';
+/** 'notice' is the club telling a family about a change, such as a guardian linked. */
+export type MessageAudience = 'club' | 'role' | 'group' | 'notice';
 
 export type Message = {
   id: string;
