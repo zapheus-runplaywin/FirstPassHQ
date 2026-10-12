@@ -169,8 +169,8 @@ export default function SafeguardingScreen() {
       <View style={styles.group}>
         <ThemedText type="smallBold">Club policies</ThemedText>
         <ThemedText type="small" themeColor="textSecondary">
-          Links to policies hosted on your club’s website. They show on sign-in, Join, Your details
-          and where parents give consent. The user guide (section 12) links to templates to adapt.
+          Links to policies hosted on your club’s website. They show on Join, Your details and
+          where parents give consent. The user guide (section 12) links to templates to adapt.
         </ThemedText>
         <TextField
           label="Child safeguarding policy (link)"

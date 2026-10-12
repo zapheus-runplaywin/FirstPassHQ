@@ -8,7 +8,8 @@
 -- Now:
 -- - Admins add links to the club's privacy policy and code of conduct (the
 --   safeguarding policy link already exists) and a policy version. Anyone,
---   signed in or not, can read the links, so they show on sign-in and Join.
+--   signed in, including people waiting for approval, can read the links, so
+--   they show on Join.
 -- - A verified parent or guardian gives, or withdraws, two consents for their
 --   child under 18: "data" (daily check-ins: answers and notes) and "health"
 --   (injury details, physio updates and documents). Each is kept with who
@@ -38,7 +39,7 @@ alter table public.safeguarding_settings
   add column if not exists policy_version text not null default '1'
     check (length(policy_version) between 1 and 30);
 
--- The club's policy links, for everyone including people not signed in.
+-- The club's policy links, for everyone signed in, including people asking to join.
 create or replace function public.club_policies()
 returns table (
   privacy_policy_url text,
@@ -56,8 +57,8 @@ as $$
   where s.id;
 $$;
 
-revoke execute on function public.club_policies() from public;
-grant execute on function public.club_policies() to anon, authenticated;
+revoke execute on function public.club_policies() from public, anon;
+grant execute on function public.club_policies() to authenticated;
 
 -- Saves the privacy policy and code of conduct links and the policy version.
 -- Blank text clears a link.

@@ -166,8 +166,7 @@ picked. The app remembers your club after that.
 Tap **Continue with Google** and choose your Google account. There are no passwords to remember:
 Google sign-in is the only way in. The same button is used whether you're new or coming back.
 
-If you picked the wrong club, tap **Change club** under the button. Links to the club's privacy
-policy, child safeguarding policy and code of conduct show below it, once the club has added them.
+If you picked the wrong club, tap **Change club** under the button.
 
 <img src="user-guide/sign-in.png" width="210" alt="Sign-in screen">
 
@@ -1429,7 +1428,7 @@ start with https://.
 
 Under **Club policies**, add links to the club's **child safeguarding policy**, **privacy
 policy** and **code of conduct**, hosted on your club's website, and the **policy version**. The
-links show on sign-in, Join, Your details and the parents' consent screen. Each parent's consent is
+links show on Join, Your details and the parents' consent screen. Each parent's consent is
 kept with the version in force when they gave it, so change the version when you change a policy.
 Templates to adapt are in [docs/policies](policies/README.md).
 
@@ -1495,7 +1494,7 @@ once saved, only replaced or removed, and anyone who gets it wrong five times in
 | Injuries and documents  | For an athlete under 18 whose parents haven't given consent for injuries: only the athlete, their guardians and admins. Otherwise the athlete, their guardians, their coaches, the physios who look after them (the Head Physio, physios in their squad or team, and physios in no squad or team), the committee and admins. Managers don't see injuries. Only the committee member or admin accepting a clearance can share its documents, while it waits for them; everyone else views them in the app. |
 | Who opened injury documents | The athlete, their guardians and admins: every view and share, by whom, their role and when, and each photo consent. |
 | Consents for a child    | The athlete, their parents or guardians and admins, with every consent given and withdrawn. Only a verified parent or guardian can give or withdraw one. |
-| Club policies           | Everyone, including people who haven't signed in.                                                                           |
+| Club policies           | Everyone signed in, including people asking to join.                                                                        |
 | Game goals and reflections | The athlete, their guardians and their coaches. Only the athlete and their coaches set goals, and only the athlete reflects; guardians just read them. The committee, physios and admins don't see them. |
 | Team goals              | The team's athletes, their guardians and its coaches. Only its coaches set and review them. Athletes and coaches in the team can comment; guardians read the comments. |
 | Integrity training certificates | The member, their parents or guardians, the committee and admins. Coaches don't see them. Certificates can't be changed or removed once sent. |
