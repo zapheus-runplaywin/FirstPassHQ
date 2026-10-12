@@ -1630,8 +1630,14 @@ images to stay inside the club. So for athletes under 18:
   each document.
 - **Sharing is limited.** Only the committee member accepting a clearance can share its documents,
   while it's waiting for them, and each share is recorded in the same list.
+- **Physios see only their own athletes.** A physio sees the injuries of the athletes in their own
+  squads and teams. Only the Head Physio sees every athlete; a physio in no squad or team sees none
+  until an admin places them.
 
 Athletes who are 18 or over attach a PDF or a photo, and see who opened their documents too.
+
+Nobody checks themselves: an admin can't verify themselves or record their own date of birth or
+Working With Children Check, and another admin must do it.
 
 <img src="user-guide/injury-letter-photo.png" width="210" alt="An athlete under 18 confirming a photo shows the physio's letter">
 <img src="user-guide/injury-photo-consent.png" width="210" alt="A guardian choosing The injury and confirming consent before adding a photo">
