@@ -202,6 +202,8 @@ export function safetyIssues(
     }
   }
 
+  if (hasRole(member, 'athlete') && !member.date_of_birth) issues.push('No date of birth');
+
   if (hasRole(member, 'athlete') && isMinor(member.date_of_birth, member.under_17)) {
     if (!hasGuardian) issues.push('Under 18 with no guardian linked');
     if (member.date_of_birth) {

@@ -66,6 +66,8 @@ together:
 - **Athletes** can't also be a manager or a physio. An athlete can coach, but only a squad or team
   they don't play in.
 - **Athletes under 18** can only add Coach. Parents and guardians must be 18 or over.
+- **Who is under 18** is decided by the date of birth an admin checks against PlayHQ or ID. An
+  athlete can't be approved without one.
 - Nobody endorses or accepts an injury clearance for themselves or their own child, and whoever
   endorsed a clearance can't also accept it.
 
@@ -186,6 +188,8 @@ The first time you sign in, the home screen asks you to request to join. Tap **R
 and fill in:
 
 - **Your name.**
+- **Date of birth** (DD/MM/YYYY): everyone gives it. An admin checks it against PlayHQ or ID before
+  approving you, and it decides whether the club's rules for under 18s apply.
 - **PlayHQ email**: only if you registered with PlayHQ using a different email to the Google account
   you signed in with. Parents and guardians must enter the email they used to register their
   athlete, so the club can confirm who they are. An admin must verify a guardian before linking
@@ -199,10 +203,15 @@ and fill in:
 The club's policies are linked above **Send request**: by joining you agree to them. If you choose
 **Athlete**, a note explains what the club keeps about athletes under 18 and who sees it.
 
+An athlete under 18 also gives a **Parent or guardian's email**: the email their parent or guardian
+will sign in with. A parent or guardian needs to join the club in the app too, and an admin links
+them to the child before the child can be approved.
+
 Tap **Send request**.
 
 <img src="user-guide/new-member-home.png" width="210" alt="Home screen before asking to join">
 <img src="user-guide/join.png" width="210" alt="Request to join form">
+<img src="user-guide/join-under-18.png" width="210" alt="Asking to join as an athlete under 18, with a date of birth and a parent's email">
 <img src="user-guide/join-guardian.png" width="210" alt="Request to join as a guardian">
 
 ### Wait for approval
@@ -215,10 +224,15 @@ your home screen. The code proves who you are, so the admin needs to get it from
 over a channel they already trust. Only ever give it to a club admin, and never share it with
 anyone else.
 
+An athlete under 18 also sees **Ask your parent or guardian to join**, with the email they gave,
+and the people they can talk to if anything worries them: the club's Child Safety Officer and
+Complaints Manager, the governing body and helplines.
+
 If your request isn't approved, the home screen says why and you can tap **Request again** after
 fixing your details.
 
 <img src="user-guide/waiting-for-approval.png" width="210" alt="Waiting for approval with a verification code">
+<img src="user-guide/waiting-under-18.png" width="210" alt="An athlete under 18 waiting for approval, asked to have a parent or guardian join">
 <img src="user-guide/not-approved.png" width="210" alt="Request not approved, with the reason">
 
 <div style="page-break-before: always"></div>
@@ -979,21 +993,25 @@ request yet** and **Not approved**. Search by name or email.
 screen, with the reason under each name: no Working With Children Check recorded, one that has
 expired or expires within 60 days, a volunteer exemption waiting for the declaration, ending within
 60 days or no longer applying, someone who is stood down, an athlete under 18 with no guardian
-linked, or an athlete about to turn 18. They also show "Needs checking" in the main list. Open someone to fix it; once saved,
+linked, an athlete with no date of birth, or an athlete about to turn 18. They also show "Needs checking" in the main list. Open someone to fix it; once saved,
 they drop off the list.
 
-Open a request to see the person's sign-in email, PlayHQ email and what they asked for. Check them
-against PlayHQ, then:
+Open a request to see the person's sign-in email, PlayHQ email, the date of birth they gave and
+what they asked for. An athlete under 18 also shows the guardian email they gave. In the
+waiting list, "Says they're under 18" marks an athlete whose date of birth makes them a child.
+Check them against PlayHQ, then:
 
 1. Choose their **Role**.
 2. Choose their **Squads** and, once teams are named, **Teams**. For coaches, choose **Head Coach**
    or **Assistant Coach** for each group. For athletes in a team, choose **Final team athlete** or
    **Training partner**. For physios, choose **Physio** or **Head Physio** under **Physio title**,
    and place them in the squads or teams they look after (or none, to look after every athlete).
-3. For athletes, enter their **Date of birth** (DD/MM/YYYY). Anyone under 18 gets a **Parents and
-   guardians** section: search for a guardian and tap to link them (tap ✕ to unlink). Only
-   verified guardians can be linked; unverified ones show "(not verified)". Until you have a date of
-   birth, choose **Under 18** or **18 or over** instead.
+3. For athletes, check their date of birth against PlayHQ or ID and enter it under **Date of
+   birth** (DD/MM/YYYY). If it matches what they gave, tap **I've checked it: use** that date. If
+   you enter a different date, the page notes the one they gave. The page shows who recorded the
+   date and when. Anyone under 18 gets a **Parents and guardians** section, with the search
+   started from the email the child gave: tap a guardian to link them (tap ✕ to unlink). Only
+   verified guardians can be linked; unverified ones show "(not verified)".
 4. For coaches, managers, physios and committee members, enter their **Working With Children
    Check** card number and expiry date. A committee member who doesn't need one, such as a
    treasurer who is never at training or games, can be marked **Exempt** instead: write why, and
@@ -1012,6 +1030,8 @@ against PlayHQ, then:
 
 The app won't approve or save:
 
+- an athlete without a date of birth. Athletes approved before this was needed keep their access,
+  show "No date of birth" under **Needs checking**, and need one the next time you save them;
 - an athlete under 18 without at least one verified guardian;
 - a coach, manager or physio without a current Working With Children Check or a volunteer
   exemption;
@@ -1040,6 +1060,8 @@ club** or **Other**) and tap **Don't approve**. They see the reason and can requ
 <img src="user-guide/member-approve.png" width="210" alt="Approving a guardian's request">
 <img src="user-guide/member-new.png" width="210" alt="Approving an athlete's request">
 
+<img src="user-guide/member-date-of-birth.png" width="210" alt="An admin checking the date of birth a child gave">
+<img src="user-guide/member-date-checked.png" width="210" alt="The checked date of birth, with the guardian search started from the email the child gave">
 <img src="user-guide/member-under-18.png" width="210" alt="Athlete under 18 with date of birth and guardians linked">
 <img src="user-guide/member-guardian.png" width="210" alt="Guardian showing their athlete, waiting to be verified">
 <img src="user-guide/member-wwcc.png" width="210" alt="Coach with Working With Children Check fields">
@@ -1484,6 +1506,7 @@ once saved, only replaced or removed, and anyone who gets it wrong five times in
 | Preferred name and title | You and admins.                                                                                                            |
 | Captains                | Club captains: every member. A squad or team's captains: the people in it, and admins.                                     |
 | Date of birth, Working With Children Check and exemption | You and admins. Awards with an age limit use it to decide who can be voted for, without showing it.   |
+| Date of birth given at Join, and a child's parent or guardian email | You and admins. Admins also see who recorded your checked date of birth and when. |
 | Stand-downs             | Admins only. The member sees that their role is paused, not the reason.                                                     |
 | Volunteer exemptions and declarations | The volunteer (their own) and admins.                                                                       |
 | Concerns                | The Child Safety Officer, the Complaints Manager and admins, never the person a concern is about. Whoever raised it sees its status. A hidden name is never shown to them. |
@@ -1527,6 +1550,18 @@ club's Child Safety Officer, Complaints Manager and admins, never to the person 
 screen. Every concern and every step taken is kept in the [concerns
 register](#the-concerns-register), which prints as a PDF.
 
+### Who counts as a child
+
+Everyone gives their date of birth when they ask to join. It's never taken on trust: an admin
+checks it against PlayHQ or ID and records it, and the app keeps who recorded it and when. An
+athlete can't be approved without a checked date of birth, so a missed field can never approve a
+child as an adult. A child also gives a parent's or guardian's email, and while they wait they're
+asked to have that parent or guardian join and shown who they can talk to. Athletes approved before
+dates of birth were needed show under **Needs checking** until an admin adds one.
+
+<img src="user-guide/join-under-18.png" width="210" alt="Asking to join as an athlete under 18, with a date of birth and a parent's email">
+<img src="user-guide/member-date-of-birth.png" width="210" alt="An admin checking the date of birth a child gave">
+
 ### Injury documents and photos
 
 Netball's image rules ask for a parent's consent before a club keeps a photo of a child, and for
@@ -1555,8 +1590,9 @@ Athletes who are 18 or over attach a PDF or a photo, and see who opened their do
 
 - **You're verified before you're linked.** An admin checks you against the club's registration,
   or with a code shown on your phone, before linking you to your child.
-- **No child is approved without you.** Every athlete under 18 needs at least one verified guardian
-  before an admin can approve them.
+- **No child is approved without you.** Every athlete under 18 needs a date of birth checked by an
+  admin and at least one verified guardian before an admin can approve them. Your child gives your
+  email when they ask to join, so the admin knows who to look for.
 - **You see what your child sees.** You get a copy of every message sent to your child, and of every
   message your child sends as a captain. You can read their daily check-ins and notes, their game
   goals and their injuries.
@@ -1576,6 +1612,9 @@ Athletes who are 18 or over attach a PDF or a photo, and see who opened their do
   whole squads, teams or roles, and your parents or guardians get a copy.
 - **You're told who sees what you write**: on the check-in, on injury reports, on game goals and
   when you join. Your coaches see your check-ins and injuries once a parent or guardian agrees.
+- **Your parent or guardian joins too.** When you ask to join, you give your date of birth and a
+  parent's or guardian's email. While you wait, the app shows who you can talk to if anything
+  worries you.
 - **You can tell someone safely.** The check-in screen has a link to raise a concern, and you can
   hide your name. Kids Helpline (1800 55 1800) is free, any time.
 - **No photos of your injuries.** Attach your physio's or doctor's letter instead, as a PDF or a
@@ -1608,8 +1647,8 @@ Athletes who are 18 or over attach a PDF or a photo, and see who opened their do
   Safeguarding, and then need a verified guardian's consent. Only the committee member accepting a
   clearance can share its documents, while it waits for them.
 - **Your to-do list does the chasing**: new concerns, missing or expiring checks, volunteer
-  exemptions ending, declarations not yet accepted, athletes under 18 without a guardian and
-  athletes turning 18.
+  exemptions ending, declarations not yet accepted, athletes with no date of birth, athletes under
+  18 without a guardian and athletes turning 18.
 - **Reports for your records.** The Working With Children Checks report lists every check, exemption
   and stand-down. The under 18s report lists every child and their guardians. The concerns register
   lists every concern and what was done. Each saves as a PDF.
@@ -1618,7 +1657,7 @@ Athletes who are 18 or over attach a PDF or a photo, and see who opened their do
 
 - **Two-deep messaging is enforced by the app**, not just by policy: no direct messages or replies,
   guardians copied on everything to and from a child, and admins can see every message.
-- **Records are kept with who did what and when**: checks, exemptions and the declarations accepted,
+- **Records are kept with who did what and when**: who recorded each date of birth, checks, exemptions and the declarations accepted,
   stand-downs, every concern with each referral, note and status, every view and share of an
   injury document, and every parent's consent with the policy version they agreed to. A document can't be opened without the view being recorded first.
 - **Child abuse and serious crimes go out, not in.** The register prompts the club to refer them to

@@ -42,6 +42,8 @@ export type SafetyTodos = {
   turning_18: number;
   /** Volunteer exemptions that end by themselves within 60 days. */
   exemptions_ending: number;
+  /** Approved athletes with no checked date of birth, mostly from before it was needed. */
+  athletes_without_date_of_birth: number;
 };
 
 /** Child-safety follow-ups for admins, refreshed when the screen is shown. */

@@ -21,7 +21,7 @@ import {
   statusLabels,
   teamRoleLabels,
 } from '@/lib/labels';
-import { localDay } from '@/lib/reports';
+import { ageOn, localDay } from '@/lib/reports';
 import { hasRole, roleCombinationProblem } from '@/lib/roles';
 import {
   canBeExempt,
@@ -106,10 +106,11 @@ export default function MemberScreen() {
   const [saving, setSaving] = useState<MemberStatus | null>(null);
   const [deleting, setDeleting] = useState(false);
   const [error, setError] = useState<string | null>(null);
+  const [dobRecord, setDobRecord] = useState<DobRecord | null>(null);
 
   useEffect(() => {
     (async () => {
-      const [profileResult, teamsResult, linksResult, peopleResult, exemptionsResult] =
+      const [profileResult, teamsResult, linksResult, peopleResult, exemptionsResult, dobResult] =
         await Promise.all([
         supabase.from('profiles').select(PROFILE_COLUMNS).eq('id', id).single(),
         supabase
@@ -128,6 +129,7 @@ export default function MemberScreen() {
           .eq('status', 'approved')
           .order('full_name'),
         supabase.rpc('admin_volunteer_exemptions'),
+        supabase.rpc('admin_date_of_birth_record', { p_profile_id: id }).maybeSingle(),
       ]);
       const profile = profileResult.data as Profile | null;
       if (!profile) {
@@ -137,6 +139,7 @@ export default function MemberScreen() {
       setMember(profile);
       setUnder18(profile.under_17);
       setDateOfBirth(formatDate(profile.date_of_birth));
+      setDobRecord((dobResult.data as DobRecord | null) ?? null);
       setWwccNumber(profile.wwcc_number ?? '');
       setWwccExpires(formatDate(profile.wwcc_expires_on));
       setExempt(!!profile.wwcc_exempt_reason);
@@ -153,6 +156,8 @@ export default function MemberScreen() {
       setReason(profile.rejection_reason);
       const links = linksResult.data ?? [];
       setGuardianIds(links.filter((l) => l.athlete_id === id).map((l) => l.guardian_id));
+      // Start the guardian search from the email the child gave at Join.
+      if (!links.some((l) => l.athlete_id === id)) setGuardianSearch(profile.guardian_email ?? '');
       setGuardianOf(links.filter((l) => l.guardian_id === id).map((l) => l.athlete_id));
       setPeople((peopleResult.data as Person[] | null) ?? []);
 
@@ -490,6 +495,13 @@ export default function MemberScreen() {
               : 'Not yet'
           }
         />
+        {member.declared_date_of_birth ? (
+          <Detail
+            label="Date of birth they gave"
+            value={`${formatDate(member.declared_date_of_birth)} (${ageOn(member.declared_date_of_birth)})`}
+          />
+        ) : null}
+        <Detail label="Guardian email they gave" value={member.guardian_email} />
         {member.status !== 'approved' ? (
           <>
             <Detail
@@ -657,15 +669,27 @@ export default function MemberScreen() {
               {minor ? 'Under 18, so needs a parent or guardian.' : '18 or over.'}
             </ThemedText>
           ) : dob === null ? (
-            <ChipGroup
-              label="Age, until you add their date of birth"
-              options={[
-                { value: 'under', label: 'Under 18' },
-                { value: 'over', label: '18 or over' },
-              ]}
-              selected={[under18 ? 'under' : 'over']}
-              onToggle={(age) => setUnder18(age === 'under')}
+            <ThemedText type="small" themeColor="textSecondary">
+              Check their date of birth against PlayHQ or ID and add it before you approve them.
+            </ThemedText>
+          ) : null}
+          {dob && member.declared_date_of_birth && dob !== member.declared_date_of_birth ? (
+            <ThemedText type="small" themeColor="textSecondary">
+              Not the date they gave ({formatDate(member.declared_date_of_birth)}).
+            </ThemedText>
+          ) : null}
+          {dob === null && member.declared_date_of_birth ? (
+            <Button
+              title={`I’ve checked it: use ${formatDate(member.declared_date_of_birth)}`}
+              variant="secondary"
+              onPress={() => setDateOfBirth(formatDate(member.declared_date_of_birth))}
             />
+          ) : null}
+          {dobRecord?.recorded_at && dob === member.date_of_birth ? (
+            <ThemedText type="small" themeColor="textSecondary">
+              Recorded by {dobRecord.recorded_by_name ?? 'an admin'} on{' '}
+              {new Date(dobRecord.recorded_at).toLocaleDateString()}.
+            </ThemedText>
           ) : null}
         </View>
       ) : null}
@@ -949,6 +973,9 @@ export default function MemberScreen() {
     </Screen>
   );
 }
+
+/** Who recorded a member's checked date of birth, and when. */
+type DobRecord = { recorded_by_name: string | null; recorded_at: string | null };
 
 function Detail({ label, value }: { label: string; value: string | null | undefined }) {
   return (

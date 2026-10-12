@@ -290,6 +290,14 @@ export function buildTodos({
         href: '/admin',
       });
     }
+    if (safety.athletes_without_date_of_birth > 0) {
+      todos.push({
+        key: 'no-date-of-birth',
+        title: `Add a date of birth for ${plural(safety.athletes_without_date_of_birth, 'athlete', 'athletes')}`,
+        detail: 'Check it against PlayHQ or ID. It decides whether the under 18 rules apply.',
+        href: '/admin',
+      });
+    }
     const wwcc = safety.wwcc_missing + safety.wwcc_expiring;
     if (wwcc > 0) {
       todos.push({
