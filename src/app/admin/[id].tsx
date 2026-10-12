@@ -3,7 +3,9 @@ import { useEffect, useState } from 'react';
 import { StyleSheet, View } from 'react-native';
 
 import { Screen } from '@/components/screen';
+import { ScreeningNotices } from '@/components/screening-notices';
 import { StandDownSection } from '@/components/stand-down';
+import { WwccValidation } from '@/components/wwcc-validation';
 import { ThemedText } from '@/components/themed-text';
 import { Button, Card, ChipGroup, ConfirmDelete, ErrorText, TextField } from '@/components/ui';
 import { Spacing } from '@/constants/theme';
@@ -29,6 +31,7 @@ import {
   standDownRoles,
   volunteerExemptionLabels,
   wwccRoles,
+  wwccStatus,
 } from '@/lib/safety';
 import { supabase } from '@/lib/supabase';
 import type {
@@ -198,6 +201,13 @@ export default function MemberScreen() {
   const isGuardian = roles.includes('guardian');
   const isPhysio = roles.includes('physio');
   const dob = parseDate(dateOfBirth);
+  // The card as saved, and whether the fields still show it.
+  const savedCard = member ? wwccStatus(member).kind : 'missing';
+  const savedCardCurrent = savedCard === 'current' || savedCard === 'expiring';
+  const cardUnchanged =
+    !!member &&
+    wwccNumber.trim().toUpperCase() === (member.wwcc_number ?? '') &&
+    parseDate(wwccExpires) === (member.wwcc_expires_on ?? null);
   const minor = isMinor(dob, under18);
   const hasGuardians = isAthlete && minor;
   const needsWwcc = roles.some((r) => wwccRoles.includes(r)) || roles.includes('committee');
@@ -318,6 +328,10 @@ export default function MemberScreen() {
     }
     if (expires === undefined) {
       setError('Enter the check expiry date as DD/MM/YYYY.');
+      return;
+    }
+    if (expires && !cardUnchanged && expires > threeYearsFromToday()) {
+      setError('A Working With Children Check lasts three years. Check the expiry date on the card.');
       return;
     }
     if (comboProblem && status === 'approved') {
@@ -798,6 +812,20 @@ export default function MemberScreen() {
                 keyboardType="numbers-and-punctuation"
                 maxLength={10}
               />
+              {savedCardCurrent && cardUnchanged ? (
+                <WwccValidation
+                  member={member}
+                  isSelf={isSelf}
+                  validatorName={nameOf}
+                  onSaved={(changes) =>
+                    setMember((current) => current && { ...current, ...changes })
+                  }
+                />
+              ) : wwccNumber.trim() && !cardUnchanged ? (
+                <ThemedText type="small" themeColor="textSecondary">
+                  Save the new card, then open this page again to validate it.
+                </ThemedText>
+              ) : null}
             </>
           )}
           {exemptions
@@ -812,6 +840,12 @@ export default function MemberScreen() {
               </ThemedText>
             ))}
         </View>
+      ) : null}
+
+      {member.status === 'approved' &&
+      !isSelf &&
+      (member.stood_down_at || hasRole(member, ...standDownRoles, 'guardian')) ? (
+        <ScreeningNotices memberId={member.id} onStandDown={() => router.back()} />
       ) : null}
 
       {member.status === 'approved' &&
@@ -1001,3 +1035,11 @@ const styles = StyleSheet.create({
     gap: Spacing.three,
   },
 });
+
+/** Today plus three years, as YYYY-MM-DD: the latest expiry a card can have. */
+function threeYearsFromToday() {
+  const day = new Date();
+  day.setFullYear(day.getFullYear() + 3);
+  const month = String(day.getMonth() + 1).padStart(2, '0');
+  return `${day.getFullYear()}-${month}-${String(day.getDate()).padStart(2, '0')}`;
+}

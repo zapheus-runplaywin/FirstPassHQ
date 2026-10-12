@@ -82,6 +82,14 @@ export type Profile = {
   wwcc_exempt_reason: string | null;
   wwcc_exempted_by: string | null;
   wwcc_exempted_at: string | null;
+  /** The name as printed on their card, recorded when an admin validates it. */
+  wwcc_card_name?: string | null;
+  /** When and by whom the card was last validated, and how. */
+  wwcc_validated_at?: string | null;
+  wwcc_validated_by?: string | null;
+  wwcc_validation_method?: WwccValidationMethod | null;
+  /** When an admin recorded the card as linked to the club with the Screening Unit. */
+  wwcc_unit_linked_at?: string | null;
   /** Why an admin didn't approve them, shown to the member. */
   rejection_reason: RejectionReason | null;
   /** When an admin confirmed who they are with their in-app code. */
@@ -96,6 +104,30 @@ export type StandDownReason =
   | 'interstate_decision'
   | 'allegation'
   | 'other';
+
+/** How an admin checked a Working With Children Check card. */
+export type WwccValidationMethod = 'online' | 'card_sighted' | 'unit_letter';
+
+/** A notice from the Working with Children Screening Unit about a member. */
+export type ScreeningNoticeKind =
+  | 'interim_negative_notice'
+  | 'negative_notice'
+  | 'interstate_decision'
+  | 'card_cancelled'
+  | 'other';
+
+export type ScreeningNotice = {
+  id: string;
+  profile_id: string | null;
+  member_name: string;
+  kind: ScreeningNoticeKind;
+  received_on: string;
+  action: string;
+  governing_body_told_on: string | null;
+  governing_body_told_by_name: string | null;
+  recorded_at: string;
+  recorded_by_name: string | null;
+};
 
 export type StandDown = {
   id: string;
