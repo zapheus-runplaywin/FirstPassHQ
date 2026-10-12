@@ -104,7 +104,7 @@ begin
     raise exception 'Ask another admin to verify you';
   end if;
   update public.profiles
-  set verified_at = now(), verified_by = auth.uid()
+  set verified_at = now(), verified_by = auth.uid(), verification_method = 'playhq'
   where id = p_profile_id and verified_at is null;
   delete from public.verification_codes where profile_id = p_profile_id;
 end;
@@ -123,7 +123,8 @@ create or replace function public.admin_save_member(
   p_under_17 boolean default false,
   p_guardian_ids uuid[] default '{}',
   p_rejection_reason public.rejection_reason default null,
-  p_extra_roles public.app_role[] default '{}'
+  p_extra_roles public.app_role[] default '{}',
+  p_guardian_reason text default null
 )
 returns void
 language plpgsql
@@ -141,6 +142,8 @@ declare
   v_guardian_ids uuid[] := coalesce(p_guardian_ids, '{}');
   v_was_committee boolean;
   v_was_admin boolean;
+  v_current_guardians uuid[];
+  v_new_guardians uuid[];
   v_exempt_reason text;
 begin
   if not public.is_admin() then
@@ -249,16 +252,31 @@ begin
     raise exception 'Member not found';
   end if;
 
-  -- Guardian links: replace this athlete's guardians, and drop links from
-  -- anyone who is no longer an approved guardian.
-  delete from public.guardianships where athlete_id = p_profile_id;
+  -- Guardian links: only the ones that change are added or removed, so the
+  -- history (written by a trigger) shows real changes, with the reason.
+  if length(p_guardian_reason) > 500 then
+    raise exception 'Keep the reason under 500 characters';
+  end if;
+  perform set_config('app.guardian_reason', coalesce(nullif(trim(p_guardian_reason), ''), ''), true);
+  select coalesce(array_agg(guardian_id order by guardian_id), '{}') into v_current_guardians
+  from public.guardianships where athlete_id = p_profile_id;
+  select coalesce(array_agg(distinct g.id order by g.id), '{}') into v_new_guardians
+  from unnest(case when p_status = 'approved' then v_guardian_ids else '{}'::uuid[] end) as g (id);
+  -- A parent who is also an admin doesn't decide who else is their child's
+  -- guardian: another admin does.
+  if v_current_guardians is distinct from v_new_guardians
+     and auth.uid() = any (v_current_guardians || v_new_guardians) then
+    raise exception 'You''re one of their guardians, so another admin needs to change who their guardians are';
+  end if;
+  delete from public.guardianships
+  where athlete_id = p_profile_id and not guardian_id = any (v_new_guardians);
   if not 'guardian' = any (v_roles) or p_status <> 'approved' then
     delete from public.guardianships where guardian_id = p_profile_id;
   end if;
-  if p_status = 'approved' then
-    insert into public.guardianships (guardian_id, athlete_id)
-    select distinct g.id, p_profile_id from unnest(v_guardian_ids) as g (id);
-  end if;
+  insert into public.guardianships (guardian_id, athlete_id)
+  select g.id, p_profile_id from unnest(v_new_guardians) as g (id)
+  on conflict do nothing;
+  perform set_config('app.guardian_reason', '', true);
 
   delete from public.team_members m
   using public.teams g

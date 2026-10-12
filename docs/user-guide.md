@@ -281,7 +281,8 @@ yellow dot, and the home card shows how many are new. Opening a message marks it
 sender can see that you've read it.
 
 Who a message went to is shown under the sender's name, for example "To Mixed Open Squad" or
-"To Everyone in the club".
+"To Everyone in the club". Messages from **Club safeguarding** tell a family about a change, such
+as a parent or guardian linked to or unlinked from a child.
 
 Guests don't get messages. Physios get messages sent to the Physio role and to the squads and teams
 they're in, and messages sent to everyone in the club only when an admin turns that on.
@@ -563,6 +564,13 @@ verifies who you are (against PlayHQ, or with the 6-digit code on your home scre
 you to your athlete. Every athlete under 18 must have at least one verified guardian before they're
 approved. A guardian can be linked to more than one athlete, and an athlete can
 have more than one guardian.
+
+Whenever a guardian is linked to or unlinked from your child, you and your child's other guardians
+get a message from **Club safeguarding** in **Messages**, naming the guardian and the admin who made
+the change. Your child gets it too if they're 13 or over. If it isn't right, tell the club's Child
+Safety Officer or an admin.
+
+<img src="user-guide/message-guardian-notice.png" width="210" alt="The message guardians get when another guardian is unlinked">
 
 The home screen shows who you're the guardian of. Until an admin links you, it says so.
 
@@ -1069,12 +1077,19 @@ role doesn't pause when their check expires, so the club can never be locked out
 they show under **Needs checking** and on every admin's to-do list until the renewed card is
 recorded, and they can still be stood down.
 
-**Verifying someone.** You can't verify yourself, change your own date of birth or card details, or
-exempt yourself; ask another admin. An admin can't approve a member who hasn't given their name.
-Guardians must be verified before they can be linked to a child. If their
-PlayHQ email matches the registration, tap **Checked against PlayHQ**. Otherwise get the 6-digit code
-from their home screen yourself, in person or over a channel you already trust, enter it
-under **Their code** and tap **Check code**. The member then shows as "Verified".
+**Verifying someone.** Guardians must be verified before they can be linked to a child. Get the
+6-digit code from their home screen yourself, in person or over a channel you already trust, enter
+it under **Their code** and tap **Check code**. Or, under **How you checked**, choose **Matched to
+PlayHQ** (their PlayHQ email matches the parent on the registration) or **ID sighted**, write what
+you checked under **What you checked**, and tap **Record check**. The member then shows as
+"Verified", with how and, under **What was checked**, your note. You can't verify yourself, change your own date of birth or card details, or exempt yourself; ask another admin. An admin can't approve a member who hasn't given their name.
+
+**Linking guardians.** Linking or unlinking a guardian takes effect when you save. Add a **Reason for
+the change** if there is one, such as a parenting order you've seen; only admins see it. When you
+save, the child's guardians, and the child if they're 13 or over, get a message naming the
+guardian and you, without the reason. **Guardian link history** on the child's page, and on the
+guardian's, lists every link and unlink with who made it, when and why. If you're one of the
+child's guardians, another admin has to change who their guardians are.
 
 When an athlete turns 18 their guardians lose access to them that day (injuries, check-ins, goals,
 certificates and the home screen list); the next time you save the athlete the links are removed.
@@ -1090,6 +1105,8 @@ club** or **Other**) and tap **Don't approve**. They see the reason and can requ
 <img src="user-guide/member-date-checked.png" width="210" alt="The checked date of birth, with the guardian search started from the email the child gave">
 <img src="user-guide/member-under-18.png" width="210" alt="Athlete under 18 with date of birth and guardians linked">
 <img src="user-guide/member-guardian.png" width="210" alt="Guardian showing their athlete, waiting to be verified">
+<img src="user-guide/member-verify-id.png" width="210" alt="Recording that you sighted a guardian's ID, with what you checked">
+<img src="user-guide/member-guardian-history.png" width="210" alt="Unlinking a guardian with a reason, and the guardian link history">
 <img src="user-guide/member-wwcc.png" width="210" alt="Coach with Working With Children Check fields">
 <img src="user-guide/member-wwcc-exempt.png" width="210" alt="Committee member exempted from the Working With Children Check, with the reason">
 <img src="user-guide/member-wwcc-admin.png" width="210" alt="An admin who needs a Working With Children Check, with the Exempt choice">
@@ -1556,6 +1573,8 @@ once saved, only replaced or removed, and anyone who gets it wrong five times in
 | Captains                | Club captains: every member. A squad or team's captains: the people in it, and admins.                                     |
 | Date of birth, Working With Children Check and exemption | You and admins. Awards with an age limit use it to decide who can be voted for, without showing it.   |
 | Date of birth given at Join, and a child's parent or guardian email | You and admins. Admins also see who recorded your checked date of birth and when. |
+| How a member was verified | You and admins: the method, and what the admin checked. |
+| Guardian link history   | Admins only: every link and unlink, by whom, when and the reason. The child's guardians, and the child from 13, get a message about each change, without the reason. |
 | Stand-downs             | Admins only. The member sees that their role is paused, not the reason.                                                     |
 | Screening Unit notices and card validations | Admins only.                                                                                            |
 | Volunteer exemptions and declarations | The volunteer (their own) and admins.                                                                       |
@@ -1645,7 +1664,11 @@ Working With Children Check, and another admin must do it.
 ### For parents and guardians
 
 - **You're verified before you're linked.** An admin checks you against the club's registration,
-  or with a code shown on your phone, before linking you to your child.
+  by sighting ID, or with a code shown on your phone, before linking you to your child, and the
+  app keeps how and what they checked.
+- **You're told when another guardian is added or removed.** You get a message naming the guardian
+  and the admin who made the change, and every link and unlink is kept. An admin who is also your
+  child's parent can't change who your child's guardians are.
 - **No child is approved without you.** Every athlete under 18 needs a date of birth checked by an
   admin and at least one verified guardian before an admin can approve them. Your child gives your
   email when they ask to join, so the admin knows who to look for.
@@ -1668,6 +1691,8 @@ Working With Children Check, and another admin must do it.
   whole squads, teams or roles, and your parents or guardians get a copy.
 - **You're told who sees what you write**: on the check-in, on injury reports, on game goals and
   when you join. Your coaches see your check-ins and injuries once a parent or guardian agrees.
+- **You're told who your guardians are.** From 13, you get the same message as your parents when a
+  parent or guardian is added or removed.
 - **Your parent or guardian joins too.** When you ask to join, you give your date of birth and a
   parent's or guardian's email. While you wait, the app shows who you can talk to if anything
   worries you.
@@ -1706,6 +1731,8 @@ Working With Children Check, and another admin must do it.
 - **Screening Unit notices.** Record every notice on the member's page. An interim negative
   notice, negative notice, interstate decision or cancelled card stands them down at once, and
   stays on your to-do list until you record telling the governing body in writing.
+- **Guardian changes leave a trail.** Every guardian link and unlink is kept with who made it,
+  when and why, and the family is told. An admin can't change their own child's guardians.
 - **Policies and consent.** Link the club's safeguarding policy, privacy policy and code of
   conduct under Safeguarding; templates are in [docs/policies](policies/README.md). The under 18s
   report shows which children still need a parent's consent.
@@ -1725,7 +1752,8 @@ Working With Children Check, and another admin must do it.
 
 - **Two-deep messaging is enforced by the app**, not just by policy: no direct messages or replies,
   guardians copied on everything to and from a child, and admins can see every message.
-- **Records are kept with who did what and when**: who recorded each date of birth, checks and
+- **Records are kept with who did what and when**: how each guardian was verified and what was
+  checked, every guardian link and unlink with the admin and the reason, who recorded each date of birth, checks and
   who validated each card and how, Screening Unit notices and when the governing body was told,
   exemptions and the declarations accepted,
   stand-downs, every concern with each referral, note and status, every view and share of an
