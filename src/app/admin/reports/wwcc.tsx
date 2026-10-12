@@ -27,7 +27,7 @@ export default function WwccReportScreen() {
           supabase
             .from('team_members')
             .select('team_id, profile_id, team_role')
-            .in('team_role', ['coach', 'manager'])
+            .in('team_role', ['coach', 'manager', 'physio'])
             .range(from, to),
         ),
       ]);

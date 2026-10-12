@@ -90,7 +90,7 @@ export default function MembersScreen() {
         describe={(m) =>
           issues.get(m.id)?.length
             ? `${rolesLabel(rolesOf(m))} · Needs checking`
-            : rolesLabel(rolesOf(m), m.title)
+            : rolesLabel(rolesOf(m), m.title, m.head_physio)
         }
       />
       <Section

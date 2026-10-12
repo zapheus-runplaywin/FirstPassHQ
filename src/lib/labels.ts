@@ -56,6 +56,7 @@ export const rejectionReasonMessages: Record<RejectionReason, string> = {
 export const teamRoleLabels: Record<TeamRole, string> = {
   coach: 'Coach',
   manager: 'Manager',
+  physio: 'Physio',
   athlete: 'Athlete',
   guardian: 'Guardian',
 };
@@ -87,7 +88,7 @@ export const requestableRoles: AppRole[] = [
 ];
 
 /** Roles that belong to a team or squad. */
-export const teamRoles: TeamRole[] = ['coach', 'manager', 'athlete', 'guardian'];
+export const teamRoles: TeamRole[] = ['coach', 'manager', 'physio', 'athlete', 'guardian'];
 
 export function isTeamRole(role: AppRole): role is TeamRole {
   return (teamRoles as AppRole[]).includes(role);
@@ -111,8 +112,11 @@ export function canHoldTitle(roles: AppRole[]) {
 /**
  * A member's roles, with their title when they hold one:
  * "Committee · President", or "Coach, Guardian" for someone with two roles.
+ * A Head Physio shows as "Head Physio".
  */
-export function rolesLabel(roles: AppRole[], title?: string | null) {
-  const label = roles.map((r) => roleLabels[r]).join(', ');
+export function rolesLabel(roles: AppRole[], title?: string | null, headPhysio = false) {
+  const label = roles
+    .map((r) => (r === 'physio' && headPhysio ? 'Head Physio' : roleLabels[r]))
+    .join(', ');
   return canHoldTitle(roles) && title ? `${label} · ${title}` : label;
 }

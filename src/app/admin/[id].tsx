@@ -79,6 +79,7 @@ export default function MemberScreen() {
   const [exempt, setExempt] = useState(false);
   const [exemptReason, setExemptReason] = useState('');
   const [title, setTitle] = useState('');
+  const [headPhysio, setHeadPhysio] = useState(false);
   const [guardianIds, setGuardianIds] = useState<string[]>([]);
   const [guardianOf, setGuardianOf] = useState<string[]>([]);
   const [people, setPeople] = useState<Person[]>([]);
@@ -124,6 +125,7 @@ export default function MemberScreen() {
       setExempt(!!profile.wwcc_exempt_reason);
       setExemptReason(profile.wwcc_exempt_reason ?? '');
       setTitle(profile.title ?? '');
+      setHeadPhysio(profile.head_physio);
       setReason(profile.rejection_reason);
       const links = linksResult.data ?? [];
       setGuardianIds(links.filter((l) => l.athlete_id === id).map((l) => l.guardian_id));
@@ -165,6 +167,7 @@ export default function MemberScreen() {
   const inTeams = teamRolesHeld.length > 0;
   const isAthlete = roles.includes('athlete');
   const isGuardian = roles.includes('guardian');
+  const isPhysio = roles.includes('physio');
   const dob = parseDate(dateOfBirth);
   const minor = isMinor(dob, under18);
   const hasGuardians = isAthlete && minor;
@@ -348,6 +351,19 @@ export default function MemberScreen() {
         return;
       }
     }
+    // Also after the role, because only physios can be Head Physio.
+    const nextHeadPhysio = isPhysio && headPhysio;
+    if (status === 'approved' && nextHeadPhysio !== member?.head_physio) {
+      const { error: headError } = await supabase.rpc('admin_set_head_physio', {
+        p_profile_id: id,
+        p_on: nextHeadPhysio,
+      });
+      if (headError) {
+        setSaving(null);
+        setError(headError.message);
+        return;
+      }
+    }
     setSaving(null);
     if (isSelf) await refresh();
     router.back();
@@ -463,6 +479,25 @@ export default function MemberScreen() {
           autoCapitalize="words"
           maxLength={40}
         />
+      ) : null}
+
+      {isPhysio ? (
+        <View style={styles.group}>
+          <ChipGroup
+            label="Physio title"
+            options={[
+              { value: 'physio', label: 'Physio' },
+              { value: 'head', label: 'Head Physio' },
+            ]}
+            selected={[headPhysio ? 'head' : 'physio']}
+            onToggle={(choice) => setHeadPhysio(choice === 'head')}
+          />
+          <ThemedText type="small" themeColor="textSecondary">
+            {headPhysio
+              ? 'Looks after every athlete, whether or not they are in a squad or team.'
+              : `Looks after the athletes in the ${usesSquads ? 'squads and teams' : 'teams'} you place them in below, or every athlete if they are in none.`}
+          </ThemedText>
+        </View>
       ) : null}
 
       {inTeams ? (

@@ -147,6 +147,10 @@ export default function HomeScreen() {
 
   const name = profile?.preferred_name || profile?.full_name || session?.user.email || 'there';
   const approved = profile?.status === 'approved';
+  // Committee members and admins aren't in squads, so they only see this
+  // section when they are in one, for example as a coach too.
+  const showGroups =
+    approved && (memberships.length > 0 || !(isAdmin || hasRole(profile, 'committee')));
   const getsMessages = useGetsMessages();
 
   return (
@@ -156,7 +160,7 @@ export default function HomeScreen() {
           <ThemedText type="subtitle">Hi {name}</ThemedText>
           {approved && profile ? (
             <ThemedText themeColor="textSecondary">
-              {rolesLabel(rolesOf(profile), profile.title)}
+              {rolesLabel(rolesOf(profile), profile.title, profile.head_physio)}
             </ThemedText>
           ) : null}
         </View>
@@ -328,7 +332,7 @@ export default function HomeScreen() {
         </Card>
       ) : null}
 
-      {approved ? (
+      {showGroups ? (
         <View style={styles.section}>
           <ThemedText type="smallBold">{club.squads ? 'My squads and teams' : 'My teams'}</ThemedText>
           {memberships.length === 0 ? (
