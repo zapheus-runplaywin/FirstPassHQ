@@ -44,7 +44,7 @@ import {
   useTrainingToReview,
   type MyTraining,
 } from '@/lib/training';
-import type { TeamMembership } from '@/lib/types';
+import type { AppRole, Profile, TeamMembership } from '@/lib/types';
 import { useEvents } from '@/lib/use-events';
 import { hasRole, rolesOf } from '@/lib/roles';
 
@@ -53,7 +53,7 @@ const UPCOMING_COUNT = 6;
 
 export default function HomeScreen() {
   const theme = useTheme();
-  const { session, profile, memberships, isAdmin, refresh, signOut } = useAuth();
+  const { session, profile, paused, memberships, isAdmin, refresh, signOut } = useAuth();
   const { switchClub } = useClubChoice();
   const club = useClub();
   const { features } = club;
@@ -160,7 +160,7 @@ export default function HomeScreen() {
           <ThemedText type="subtitle">Hi {name}</ThemedText>
           {approved && profile ? (
             <ThemedText themeColor="textSecondary">
-              {rolesLabel(rolesOf(profile), profile.title, profile.head_physio)}
+              {rolesHeldLabel(profile, paused?.roles ?? [])}
             </ThemedText>
           ) : null}
         </View>
@@ -173,6 +173,8 @@ export default function HomeScreen() {
       </View>
 
       {!approved ? <JoinStatus /> : null}
+
+      {approved ? <PausedRoles /> : null}
 
       {approved ? <TodoList todos={todos} /> : null}
 
@@ -410,6 +412,35 @@ function sortMemberships(memberships: TeamMembership[]) {
       (a.team.kind === 'team' ? 0 : 1) - (b.team.kind === 'team' ? 0 : 1) ||
       a.team.sort_order - b.team.sort_order ||
       a.team.name.localeCompare(b.team.name),
+  );
+}
+
+/** The member's roles for the header, with any paused ones marked. */
+function rolesHeldLabel(profile: Profile, pausedRoles: AppRole[]) {
+  const usable = rolesLabel(rolesOf(profile), profile.title, profile.head_physio);
+  if (pausedRoles.length === 0) return usable;
+  const pausedLabel = `${rolesLabel(pausedRoles)} (paused)`;
+  // A member with every role paused shows as a guest; say what they hold instead.
+  return hasRole(profile, 'guest') && rolesOf(profile).length === 1
+    ? pausedLabel
+    : `${usable}, ${pausedLabel}`;
+}
+
+/** Roles the member holds but can't use: an expired check or a stand-down. */
+function PausedRoles() {
+  const { paused } = useAuth();
+  if (!paused) return null;
+  const roles = rolesLabel(paused.roles);
+  const what = `${roles.toLowerCase()} ${paused.roles.length > 1 ? 'roles are' : 'role is'}`;
+  return (
+    <Card>
+      <ThemedText type="smallBold">{roles} paused</ThemedText>
+      <ThemedText type="small" themeColor="textSecondary">
+        {paused.stoodDown
+          ? `Your ${what} paused by a club admin. Talk to a club admin about it.`
+          : `Your Working With Children Check has expired or isn't recorded, so your ${what} paused. Renew it, then send a club admin the new card number and expiry date.`}
+      </ThemedText>
+    </Card>
   );
 }
 

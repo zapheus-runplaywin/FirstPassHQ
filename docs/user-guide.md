@@ -34,10 +34,10 @@ each of their roles can.
 | ------------- | ---------------------------------------------------------------------------------------------------- |
 | **Athlete**   | Registered players. Some are club captains, or captains or vice captains of a squad or team.        |
 | **Guardian**  | Parents and guardians of athletes under 18.                                                          |
-| **Coach**     | Head coaches and assistant coaches. Both have the same permissions; the title only shows who is who. Need a current Working With Children Check. |
-| **Manager**   | Squad and team managers. Need a current Working With Children Check.                                 |
-| **Committee** | Club committee members. Each can add a title, such as President or Secretary, shown with their role. Need a current Working With Children Check unless an admin exempts them. |
-| **Physio**    | The club's physiotherapists. A physio can be placed in squads or teams to look after their athletes, and one can be the **Head Physio**, who looks after every athlete. Need a current Working With Children Check. |
+| **Coach**     | Head coaches and assistant coaches. Both have the same permissions; the title only shows who is who. Need a current Working With Children Check; the role pauses while it's expired. |
+| **Manager**   | Squad and team managers. Need a current Working With Children Check; the role pauses while it's expired. |
+| **Committee** | Club committee members. Each can add a title, such as President or Secretary, shown with their role. Need a current Working With Children Check unless an admin exempts them; the role pauses if a recorded check expires. |
+| **Physio**    | The club's physiotherapists. A physio can be placed in squads or teams to look after their athletes, and one can be the **Head Physio**, who looks after every athlete. Need a current Working With Children Check; the role pauses while it's expired. |
 | **Guest**     | Anyone else the club lets in, such as partners and sponsors. Guests can only look.                   |
 | **Admin**     | The people who run the app. Admin is granted by another admin, never requested. Admins can add a title too. |
 
@@ -530,7 +530,12 @@ Head coaches and assistant coaches have the same permissions. Everything below a
 squads and teams you're listed in as a coach.
 
 Coaches and managers need a current Working With Children Check, recorded by an admin, before
-they're approved.
+they're approved. The check is looked at every time you use the app: on the day it expires, your
+coach or manager role pauses and your home screen says so. You keep your squad and team places, and
+everything comes back as soon as an admin records the renewed check. Renew it well before it
+expires; admins are reminded 60 days ahead.
+
+<img src="user-guide/role-paused.png" width="210" alt="Home screen of a coach whose check has expired, saying the coach role is paused">
 
 After an admin marks a squad's **squad phase complete**, coaches look after only the
 athletes in their named teams. Before that, they look after everyone in the squad.
@@ -709,7 +714,8 @@ Managers don't see athletes' attendance histories, check-ins or injuries.
 
 Committee members oversee the club's athletes without seeing anyone's private check-in answers.
 Like coaches, they need a current Working With Children Check, recorded by an admin, unless an
-admin exempts them with a reason.
+admin exempts them with a reason. If a check an admin recorded expires, the committee role pauses
+until the renewed one is recorded.
 
 <img src="user-guide/committee-home.png" width="210" alt="Committee home screen">
 
@@ -799,6 +805,8 @@ club messages** in [Club settings](#club-settings).
 ### Physios
 
 Physios need a current Working With Children Check, recorded by an admin, before they're approved.
+Like a coach's, the physio role pauses on the day the check expires and comes back when an admin
+records the renewed one.
 
 Some clubs have one physio, and some have a physio for each team. An admin can place a physio in
 one or more squads or teams, where they show on the roster as **Physio**, and can mark one physio
@@ -836,7 +844,7 @@ Admins can do everything above except endorse injury clearances (they accept the
 committee, and endorse only if they're also a coach or physio), plus run the club's set-up from **Administration** on the home
 screen. Admins' to-do lists include join requests waiting for approval and clearances waiting for
 sign-off, plus child-safety follow-ups: athletes under 18 with no guardian linked, Working With
-Children Checks that are missing, expired or expire within 30 days, and athletes turning 18 within
+Children Checks that are missing, expired or expire within 60 days, and athletes turning 18 within
 30 days. Tapping a child-safety to-do opens **Members**, where the people behind it are listed
 first under **Needs checking**. On an installed app, admins also get a push notification for each
 new join request.
@@ -863,8 +871,8 @@ request yet** and **Not approved**. Search by name or email.
 
 **Needs checking**, at the top, lists the members behind the child-safety to-dos on your home
 screen, with the reason under each name: no Working With Children Check recorded, one that has
-expired or expires within 30 days, an athlete under 18 with no guardian linked, or an athlete about
-to turn 18. They also show "Needs checking" in the main list. Open someone to fix it; once saved,
+expired or expires within 60 days, someone who is stood down, an athlete under 18 with no guardian
+linked, or an athlete about to turn 18. They also show "Needs checking" in the main list. Open someone to fix it; once saved,
 they drop off the list.
 
 Open a request to see the person's sign-in email, PlayHQ email and what they asked for. Check them
@@ -894,6 +902,11 @@ The app won't approve or save:
 - a new committee member without a current Working With Children Check or an exemption. Committee
   members approved before checks were needed keep their access, and show under **Needs checking**
   until you record a check or exempt them.
+
+Approval isn't the only time the check counts. A coach's, manager's or physio's role pauses on the
+day their check expires, and so does a committee member's when a check you recorded for them
+expires. They keep their squad and team places and see a note on their home screen; the role
+comes back as soon as you record the renewed check.
 
 **Verifying someone.** Guardians must be verified before they can be linked to a child. If their
 PlayHQ email matches the registration, tap **Checked against PlayHQ**. Otherwise get the 6-digit code
@@ -934,12 +947,25 @@ role they're there as; its teams follow the squad. Coaches, managers and physios
 Working With Children Check whichever role it is, and that includes athletes under 18 who coach.
 
 - **Remove access** stops someone using the app but keeps their account. Choose a reason first.
+- **Stand down** is for when someone must be kept away from children straight away, for example
+  when the Working with Children Screening Unit sends an interim negative notice or a negative
+  notice, an interstate decision bars them, or an allegation is being looked into. Choose the
+  reason (and write it down for **Other**), then tap **Stand down now**. Their coach, manager,
+  physio, committee and admin roles stop at once, and they're taken out of the squads and teams
+  they coach, manage or treat; their athlete and guardian roles carry on, so a parent still sees
+  their own child. Their home screen says their role is paused and to talk to a club admin. Only
+  admins see the reason. **Lift stand-down** ends it and puts back their places in this season's
+  squads and teams. Every stand-down is kept on their page and in the Working With Children Checks
+  report, with who started and lifted it, even if the member is later deleted. You can't stand
+  yourself down.
 - **Delete member** permanently deletes their account, squad and team places, guardian links and
   message receipts. Messages they sent stay, and their injury records are kept for 12 months.
 
 <img src="user-guide/member-title.png" width="210" alt="A committee member's page with their preferred name and title">
 <img src="user-guide/member-roles.png" width="210" alt="An athlete who also coaches: other roles and their role in each squad">
 <img src="user-guide/delete-member.png" width="210" alt="Delete member confirmation">
+<img src="user-guide/member-stand-down.png" width="210" alt="Standing a coach down, with the reasons to choose from">
+<img src="user-guide/member-stood-down.png" width="210" alt="A stood-down coach's page with Lift stand-down and an earlier stand-down">
 
 ### Squads, teams and selections
 
@@ -1196,9 +1222,10 @@ name, the date it was made and page numbers, and anything that needs attention i
 
 - **Working With Children Checks**: every approved coach, manager, physio and committee member
   with their roles, squads and teams, check number, expiry date and status. Checks that are
-  missing, have no expiry date, have expired or expire within 30 days are listed first under
-  **Needs attention**. Committee members who are exempt are listed last, with the reason, who
-  exempted them and when.
+  missing, have no expiry date, have expired or expire within 60 days are listed first under
+  **Needs attention**. Committee members who are exempt are listed next, with the reason, who
+  exempted them and when. **Stand-downs** lists everyone ever stood down, newest first, with the
+  reason, who stood them down and lifted it, and when.
 - **Under 18s and their guardians**: every approved athlete under 18 with their date of birth and
   age, squad or team, and parents or guardians with their email addresses. Athletes with no parent
   or guardian linked come first, and guardians who haven't been verified are marked. It prints
@@ -1285,6 +1312,7 @@ once saved, only replaced or removed, and anyone who gets it wrong five times in
 | Preferred name and title | You and admins.                                                                                                            |
 | Captains                | Club captains: every member. A squad or team's captains: the people in it, and admins.                                     |
 | Date of birth, Working With Children Check and exemption | You and admins. Awards with an age limit use it to decide who can be voted for, without showing it.   |
+| Stand-downs             | Admins only. The member sees that their role is paused, not the reason.                                                     |
 | Messages                | The people they were sent to, the sender, and admins. Guardians of athletes under 18 get a copy of every message sent to their athlete, and of every message their athlete sends as a captain. Guests don't get messages; physios get messages sent to the Physio role and to their squads and teams, and whole-club messages only if an admin turns that on. |
 | Read receipts           | The sender and admins.                                                                                                      |
 | Daily check-in answers and notes | The athlete, their guardians and their coaches. The committee, physios and admins see only group averages, hidden below 5 check-ins or when two groups differ by fewer than 5. |

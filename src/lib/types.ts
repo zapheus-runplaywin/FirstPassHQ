@@ -81,6 +81,28 @@ export type Profile = {
   rejection_reason: RejectionReason | null;
   /** When an admin confirmed who they are with their in-app code. */
   verified_at: string | null;
+  /** Set while an admin has stood them down from child-related roles. */
+  stood_down_at: string | null;
+};
+
+export type StandDownReason =
+  | 'interim_negative_notice'
+  | 'negative_notice'
+  | 'interstate_decision'
+  | 'allegation'
+  | 'other';
+
+export type StandDown = {
+  id: string;
+  profile_id: string | null;
+  member_name: string;
+  reason: StandDownReason;
+  note: string | null;
+  started_at: string;
+  started_by_name: string | null;
+  lifted_at: string | null;
+  lifted_by_name: string | null;
+  lift_note: string | null;
 };
 
 export type TeamMembership = {

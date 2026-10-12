@@ -7,8 +7,8 @@ import { formatDateString, toDateString } from '@/lib/injuries';
 import { rolesLabel } from '@/lib/labels';
 import type { Report, ReportRow } from '@/lib/pdf';
 import { hasRole, rolesOf } from '@/lib/roles';
-import { needsWwcc, wwccStatus } from '@/lib/safety';
-import type { Profile, Team, TeamRole } from '@/lib/types';
+import { needsWwcc, standDownReasonLabels, WWCC_WARNING_DAYS, wwccStatus } from '@/lib/safety';
+import type { Profile, StandDown, Team, TeamRole } from '@/lib/types';
 import { teamLabel } from '@/lib/use-teams';
 
 /** "West Coast Thunder" -> "west-coast-thunder", for file names. */
@@ -80,7 +80,8 @@ function groupsOf(profileId: string, placements: Placement[], teams: Team[], rol
 }
 
 /** The local day of an ISO time, such as "Tue 7 Oct 2026". */
-function localDay(iso: string) {
+/** A timestamp as the local day, DD/MM/YYYY. */
+export function localDay(iso: string) {
   return formatDateString(toDateString(new Date(iso)));
 }
 
@@ -90,7 +91,12 @@ const byName = (a: { name: string }, b: { name: string }) => a.name.localeCompar
 // Working With Children Checks
 // ---------------------------------------------------------------------------
 
-export function wwccReport(members: Profile[], placements: Placement[], teams: Team[]): Report {
+export function wwccReport(
+  members: Profile[],
+  placements: Placement[],
+  teams: Team[],
+  standDowns: StandDown[] = [],
+): Report {
   const approved = members.filter((m) => m.status === 'approved');
   const people = approved
     .filter((m) => needsWwcc(m))
@@ -141,15 +147,16 @@ export function wwccReport(members: Profile[], placements: Placement[], teams: T
     stats: [
       { label: 'Need a check', value: people.length },
       { label: 'Current', value: count('current') },
-      { label: 'Expire within 30 days', value: count('expiring') },
+      { label: `Expire within ${WWCC_WARNING_DAYS} days`, value: count('expiring') },
       { label: 'Expired', value: count('expired') },
       { label: 'Missing', value: count('missing') },
       { label: 'Committee exempt', value: exempt.length },
+      { label: 'Stood down now', value: standDowns.filter((s) => !s.lifted_at).length },
     ],
     sections: [
       {
         title: 'Needs attention',
-        note: 'Missing, expired or expiring within 30 days.',
+        note: `Missing, expired or expiring within ${WWCC_WARNING_DAYS} days. Their coach, manager, physio and committee roles are paused while a check is missing or expired.`,
         columns,
         rows: people.filter((p) => p.status.problem).map(row),
         empty: 'Every check is current.',
@@ -174,6 +181,28 @@ export function wwccReport(members: Profile[], placements: Placement[], teams: T
           ],
         })),
         empty: 'Nobody is exempt.',
+      },
+      {
+        title: 'Stand-downs',
+        note: 'Members an admin stood down from child-related roles, newest first, including ones since lifted.',
+        columns: [
+          { label: 'Name', width: 1.3 },
+          { label: 'Reason', width: 1.6 },
+          { label: 'Stood down', width: 1.3 },
+          { label: 'Lifted', width: 1.3 },
+          { label: 'Notes', width: 1.9 },
+        ],
+        rows: standDowns.map((s) => ({
+          cells: [
+            s.member_name,
+            standDownReasonLabels[s.reason],
+            `${localDay(s.started_at)} by ${s.started_by_name ?? 'a former admin'}`,
+            s.lifted_at ? `${localDay(s.lifted_at)} by ${s.lifted_by_name ?? 'a former admin'}` : 'Still stood down',
+            [s.note, s.lift_note].filter(Boolean).join(' · '),
+          ],
+          flag: !s.lifted_at,
+        })),
+        empty: 'Nobody has been stood down.',
       },
     ],
     footnote:
