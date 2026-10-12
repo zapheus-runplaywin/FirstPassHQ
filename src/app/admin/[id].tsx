@@ -2,6 +2,7 @@ import { router, Stack, useLocalSearchParams } from 'expo-router';
 import { useEffect, useState } from 'react';
 import { StyleSheet, View } from 'react-native';
 
+import { GuardianHistory } from '@/components/guardian-history';
 import { Screen } from '@/components/screen';
 import { ScreeningNotices } from '@/components/screening-notices';
 import { StandDownSection } from '@/components/stand-down';
@@ -29,6 +30,7 @@ import {
   canBeExempt,
   exemptionStatus,
   standDownRoles,
+  verificationMethodLabels,
   volunteerExemptionLabels,
   wwccRoles,
   wwccStatus,
@@ -42,6 +44,7 @@ import type {
   RejectionReason,
   TeamRole,
   TeamSelection,
+  VerificationMethod,
   VolunteerExemption,
   VolunteerExemptionBasis,
 } from '@/lib/types';
@@ -99,11 +102,15 @@ export default function MemberScreen() {
   const [title, setTitle] = useState('');
   const [headPhysio, setHeadPhysio] = useState(false);
   const [guardianIds, setGuardianIds] = useState<string[]>([]);
+  const [savedGuardianIds, setSavedGuardianIds] = useState<string[]>([]);
+  const [guardianReason, setGuardianReason] = useState('');
   const [guardianOf, setGuardianOf] = useState<string[]>([]);
   const [people, setPeople] = useState<Person[]>([]);
   const [guardianSearch, setGuardianSearch] = useState('');
   const [reason, setReason] = useState<RejectionReason | null>(null);
   const [code, setCode] = useState('');
+  const [verifyMethod, setVerifyMethod] = useState<VerificationMethod | null>(null);
+  const [verifyNote, setVerifyNote] = useState('');
   const [verifying, setVerifying] = useState(false);
   const [verifyError, setVerifyError] = useState<string | null>(null);
   const [saving, setSaving] = useState<MemberStatus | null>(null);
@@ -158,7 +165,9 @@ export default function MemberScreen() {
       setHeadPhysio(profile.head_physio);
       setReason(profile.rejection_reason);
       const links = linksResult.data ?? [];
-      setGuardianIds(links.filter((l) => l.athlete_id === id).map((l) => l.guardian_id));
+      const linked = links.filter((l) => l.athlete_id === id).map((l) => l.guardian_id);
+      setGuardianIds(linked);
+      setSavedGuardianIds(linked);
       // Start the guardian search from the email the child gave at Join.
       if (!links.some((l) => l.athlete_id === id)) setGuardianSearch(profile.guardian_email ?? '');
       setGuardianOf(links.filter((l) => l.guardian_id === id).map((l) => l.athlete_id));
@@ -221,6 +230,11 @@ export default function MemberScreen() {
   const openExemption = exemptions.find((e) => !e.ended_at);
   const comboProblem = roleCombinationProblem(roles, dob, under18);
   const isSelf = id === session?.user.id;
+  // A parent who is also an admin leaves their child's guardians to another admin.
+  const myChild = !!session && savedGuardianIds.includes(session.user.id);
+  const guardiansChanged =
+    hasGuardians &&
+    [...guardianIds].sort().join() !== [...savedGuardianIds].sort().join();
 
   /** A placement in a group as one of their roles. */
   function placementFor(teamId: string, teamRole: TeamRole, current?: Placement): Placement {
@@ -306,19 +320,47 @@ export default function MemberScreen() {
       return;
     }
     setCode('');
-    setMember((current) => current && { ...current, verified_at: new Date().toISOString() });
+    setMember(
+      (current) =>
+        current && {
+          ...current,
+          verified_at: new Date().toISOString(),
+          verification_method: 'code',
+          verification_note: null,
+        },
+    );
   }
 
-  async function markVerified() {
+  async function recordVerification() {
+    if (!verifyMethod) {
+      setVerifyError('Choose how you checked who they are.');
+      return;
+    }
+    if (!verifyNote.trim()) {
+      setVerifyError('Write what you checked.');
+      return;
+    }
     setVerifying(true);
     setVerifyError(null);
-    const { error: rpcError } = await supabase.rpc('admin_mark_verified', { p_profile_id: id });
+    const { error: rpcError } = await supabase.rpc('admin_record_verification', {
+      p_profile_id: id,
+      p_method: verifyMethod,
+      p_note: verifyNote,
+    });
     setVerifying(false);
     if (rpcError) {
       setVerifyError(rpcError.message);
       return;
     }
-    setMember((current) => current && { ...current, verified_at: new Date().toISOString() });
+    setMember(
+      (current) =>
+        current && {
+          ...current,
+          verified_at: new Date().toISOString(),
+          verification_method: verifyMethod,
+          verification_note: verifyNote.trim(),
+        },
+    );
   }
 
   async function save(status: MemberStatus) {
@@ -392,6 +434,7 @@ export default function MemberScreen() {
       p_under_17: hasGuardians,
       p_guardian_ids: hasGuardians ? guardianIds : [],
       p_extra_roles: extraRoles.filter((r) => r !== role),
+      p_guardian_reason: guardiansChanged ? guardianReason : null,
     });
     if (rpcError) {
       setSaving(null);
@@ -506,10 +549,17 @@ export default function MemberScreen() {
           label="Verified"
           value={
             member.verified_at
-              ? `Yes, ${new Date(member.verified_at).toLocaleDateString()}`
+              ? `Yes, ${new Date(member.verified_at).toLocaleDateString()}${
+                  member.verification_method
+                    ? `, ${verificationMethodLabels[member.verification_method].toLowerCase()}`
+                    : ''
+                }`
               : 'Not yet'
           }
         />
+        {member.verified_at && member.verification_note ? (
+          <Detail label="What was checked" value={member.verification_note} />
+        ) : null}
         {member.declared_date_of_birth ? (
           <Detail
             label="Date of birth they gave"
@@ -862,7 +912,12 @@ export default function MemberScreen() {
       {hasGuardians ? (
         <View style={styles.group}>
           <ThemedText type="smallBold">Parents and guardians</ThemedText>
-          {guardianIds.length > 0 ? (
+          {myChild ? (
+            <ThemedText type="small" themeColor="textSecondary">
+              {guardianIds.map(nameOf).join(', ')}. You’re one of their guardians, so another admin
+              needs to change who their guardians are.
+            </ThemedText>
+          ) : guardianIds.length > 0 ? (
             <ChipGroup
               options={guardianIds.map((g) => ({ value: g, label: `${nameOf(g)}  ✕` }))}
               selected={guardianIds}
@@ -873,7 +928,7 @@ export default function MemberScreen() {
               No guardians linked yet.
             </ThemedText>
           )}
-          {anyGuardians ? (
+          {myChild ? null : anyGuardians ? (
             <>
               <TextField
                 label="Add a guardian"
@@ -907,6 +962,23 @@ export default function MemberScreen() {
               approve them with the Guardian role.
             </ThemedText>
           )}
+          {guardiansChanged ? (
+            <>
+              <TextField
+                label="Reason for the change (optional)"
+                value={guardianReason}
+                onChangeText={setGuardianReason}
+                placeholder="For example, parenting order seen 12/10/2026"
+                multiline
+                maxLength={500}
+              />
+              <ThemedText type="small" themeColor="textSecondary">
+                Only admins see the reason. When you save, the child’s guardians, and the child if
+                they’re 13 or over, get a message saying who was linked or unlinked and by whom.
+              </ThemedText>
+            </>
+          ) : null}
+          <GuardianHistory memberId={id} />
         </View>
       ) : null}
 
@@ -918,6 +990,7 @@ export default function MemberScreen() {
               ? guardianOf.map(nameOf).join(', ')
               : "No athletes yet. Link them from the athlete's page."}
           </ThemedText>
+          <GuardianHistory memberId={id} />
         </Card>
       ) : null}
 
@@ -928,16 +1001,41 @@ export default function MemberScreen() {
             {isGuardian
               ? 'Guardians must be verified before you link them to a child. '
               : ''}
-            If their PlayHQ email matches the parent or member on the PlayHQ registration, mark
-            them as checked. Otherwise ask them to open the app and read you their 6-digit code, in
-            person or over a channel you already trust.
+            Ask them to open the app and read you their 6-digit code, in person or over a channel
+            you already trust. Or, if their PlayHQ email matches the parent or member on the PlayHQ
+            registration, or you’ve seen photo ID, record what you checked.
           </ThemedText>
-          <Button
-            title="Checked against PlayHQ"
-            variant="secondary"
-            onPress={markVerified}
-            busy={verifying}
+          <ChipGroup
+            label="How you checked"
+            options={(['playhq', 'id_sighted'] as const).map((m) => ({
+              value: m,
+              label: verificationMethodLabels[m],
+            }))}
+            selected={verifyMethod ? [verifyMethod] : []}
+            onToggle={(m) => setVerifyMethod(m === verifyMethod ? null : m)}
           />
+          {verifyMethod ? (
+            <>
+              <TextField
+                label="What you checked"
+                value={verifyNote}
+                onChangeText={setVerifyNote}
+                placeholder={
+                  verifyMethod === 'playhq'
+                    ? 'For example, listed as Sam’s parent in PlayHQ with this email'
+                    : 'For example, driver’s licence, name and photo match'
+                }
+                multiline
+                maxLength={500}
+              />
+              <Button
+                title="Record check"
+                variant="secondary"
+                onPress={recordVerification}
+                busy={verifying}
+              />
+            </>
+          ) : null}
           <TextField
             label="Their code"
             value={code}

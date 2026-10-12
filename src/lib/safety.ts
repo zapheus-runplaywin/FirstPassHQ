@@ -5,6 +5,7 @@ import type {
   Profile,
   ScreeningNoticeKind,
   StandDownReason,
+  VerificationMethod,
   VolunteerExemptionBasis,
   WwccValidationMethod,
 } from '@/lib/types';
@@ -36,6 +37,12 @@ export function needsWwcc(
   if (hasRole(member, ...wwccRoles)) return true;
   return hasRole(member, 'committee', 'admin') && !member.wwcc_exempt_reason?.trim();
 }
+
+export const verificationMethodLabels: Record<VerificationMethod, string> = {
+  code: 'Code checked in person',
+  playhq: 'Matched to PlayHQ',
+  id_sighted: 'ID sighted',
+};
 
 export const wwccValidationLabels: Record<WwccValidationMethod, string> = {
   online: 'Checked online',

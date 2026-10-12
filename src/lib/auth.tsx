@@ -56,7 +56,7 @@ type AuthState = {
 };
 
 export const PROFILE_COLUMNS =
-  'id, email, full_name, preferred_name, title, head_physio, playhq_email, role, extra_roles, status, requested_role, requested_team_id, join_requested_at, under_17, rejection_reason, verified_at, date_of_birth, declared_date_of_birth, guardian_email, wwcc_number, wwcc_expires_on, wwcc_exempt_reason, wwcc_exempted_by, wwcc_exempted_at, wwcc_card_name, wwcc_validated_at, wwcc_validated_by, wwcc_validation_method, wwcc_unit_linked_at, stood_down_at';
+  'id, email, full_name, preferred_name, title, head_physio, playhq_email, role, extra_roles, status, requested_role, requested_team_id, join_requested_at, under_17, rejection_reason, verified_at, date_of_birth, declared_date_of_birth, guardian_email, wwcc_number, wwcc_expires_on, wwcc_exempt_reason, wwcc_exempted_by, wwcc_exempted_at, wwcc_card_name, wwcc_validated_at, wwcc_validated_by, wwcc_validation_method, wwcc_unit_linked_at, stood_down_at, verification_method, verification_note';
 
 const AuthContext = createContext<AuthState | null>(null);
 
