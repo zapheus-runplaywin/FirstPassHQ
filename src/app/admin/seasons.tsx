@@ -62,10 +62,8 @@ export default function SeasonsScreen() {
   return (
     <Screen>
       <ThemedText type="small" themeColor="textSecondary">
-        A season holds this year’s {word}s and who is in them. When your club is ready for the next
-        one, start the next season and place returning members in its {word}s. Last season keeps
-        running alongside it until it has finished; then archive it. Nothing is deleted when a
-        season is archived.
+        Start the next season and place returning members in its {word}s. Last season keeps running
+        until you archive it. Nothing is deleted when a season is archived.
       </ThemedText>
 
       {/* One season at a time: archive last season before starting another. */}

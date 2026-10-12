@@ -1004,10 +1004,7 @@ With squads on:
 
 ### Seasons
 
-A season holds the club's squads and teams for one year and who is in them. Each club sets its
-own timing: the season might start at selections and finish a few weeks after the main
-competition, and the dates can move from year to year. **Seasons** handles the change-over
-whenever your club is ready:
+**Seasons** handles the change-over to a new season:
 
 1. **Start the next season.** This creates empty squads with the same names, and their squad
    calendars, for the new season (for example 2027–28). Nobody is moved, and last season keeps
