@@ -3,6 +3,7 @@ import { useEffect, useState } from 'react';
 import { StyleSheet, View } from 'react-native';
 
 import { Screen } from '@/components/screen';
+import { StandDownSection } from '@/components/stand-down';
 import { ThemedText } from '@/components/themed-text';
 import { Button, Card, ChipGroup, ConfirmDelete, ErrorText, TextField } from '@/components/ui';
 import { Spacing } from '@/constants/theme';
@@ -20,7 +21,7 @@ import {
   teamRoleLabels,
 } from '@/lib/labels';
 import { hasRole, roleCombinationProblem } from '@/lib/roles';
-import { canBeExempt, wwccRoles } from '@/lib/safety';
+import { canBeExempt, standDownRoles, wwccRoles } from '@/lib/safety';
 import { supabase } from '@/lib/supabase';
 import type {
   AppRole,
@@ -669,6 +670,16 @@ export default function MemberScreen() {
             </>
           )}
         </View>
+      ) : null}
+
+      {member.status === 'approved' &&
+      !isSelf &&
+      (member.stood_down_at || hasRole(member, ...standDownRoles)) ? (
+        <StandDownSection
+          memberId={member.id}
+          memberName={member.full_name || member.email || 'this member'}
+          onChange={() => router.back()}
+        />
       ) : null}
 
       {hasGuardians ? (

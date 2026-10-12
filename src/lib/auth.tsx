@@ -1,17 +1,33 @@
 import type { Session } from '@supabase/supabase-js';
-import { createContext, use, useCallback, useEffect, useState, type ReactNode } from 'react';
+import {
+  createContext,
+  use,
+  useCallback,
+  useEffect,
+  useMemo,
+  useState,
+  type ReactNode,
+} from 'react';
 
 import { useClubChoice } from '@/lib/club-choice';
 import { unregisterForPush } from '@/lib/push';
 import { supabase } from '@/lib/supabase';
-import type { GroupCaptain, Profile, TeamMembership } from '@/lib/types';
+import type { AppRole, GroupCaptain, Profile, TeamMembership } from '@/lib/types';
 import { TEAM_COLUMNS } from '@/lib/use-teams';
 import { hasRole } from '@/lib/roles';
+import { pausedRoles } from '@/lib/safety';
 
 type AuthState = {
   loading: boolean;
   session: Session | null;
+  /**
+   * The signed-in member, with only the roles they can use right now: roles
+   * paused by an expired check or a stand-down are left out (a member left
+   * with none shows as a guest). The database applies the same rule.
+   */
   profile: Profile | null;
+  /** Roles the member holds but can't use right now, and why. */
+  paused: { roles: AppRole[]; stoodDown: boolean } | null;
   memberships: TeamMembership[];
   /** Squads and teams the member captains or vice captains, from any season. */
   captaincies: GroupCaptain[];
@@ -23,7 +39,7 @@ type AuthState = {
 };
 
 export const PROFILE_COLUMNS =
-  'id, email, full_name, preferred_name, title, head_physio, playhq_email, role, extra_roles, status, requested_role, requested_team_id, join_requested_at, under_17, rejection_reason, verified_at, date_of_birth, wwcc_number, wwcc_expires_on, wwcc_exempt_reason, wwcc_exempted_by, wwcc_exempted_at';
+  'id, email, full_name, preferred_name, title, head_physio, playhq_email, role, extra_roles, status, requested_role, requested_team_id, join_requested_at, under_17, rejection_reason, verified_at, date_of_birth, wwcc_number, wwcc_expires_on, wwcc_exempt_reason, wwcc_exempted_by, wwcc_exempted_at, stood_down_at';
 
 const AuthContext = createContext<AuthState | null>(null);
 
@@ -89,15 +105,26 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     await supabase.auth.signOut();
   }, []);
 
-  const isAdmin = hasRole(profile, 'admin') && profile?.status === 'approved';
+  const { usable, paused } = useMemo(() => usableProfile(profile), [profile]);
+  const usableMemberships = useMemo(
+    () =>
+      paused.length === 0
+        ? memberships
+        : memberships.filter((m) => !paused.includes(m.team_role as AppRole)),
+    [memberships, paused],
+  );
+
+  const isAdmin = hasRole(usable, 'admin') && usable?.status === 'approved';
 
   return (
     <AuthContext
       value={{
         loading,
         session,
-        profile,
-        memberships,
+        profile: usable,
+        paused:
+          paused.length > 0 ? { roles: paused, stoodDown: !!profile?.stood_down_at } : null,
+        memberships: usableMemberships,
         captaincies,
         isClubCaptain,
         isAdmin,
@@ -107,6 +134,16 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       {children}
     </AuthContext>
   );
+}
+
+/** The member with only the roles they can use now, and the roles left out. */
+function usableProfile(profile: Profile | null) {
+  const paused = profile ? pausedRoles(profile) : [];
+  if (!profile || paused.length === 0) return { usable: profile, paused };
+  const [main = 'guest', ...extra] = [profile.role, ...profile.extra_roles].filter(
+    (r) => !paused.includes(r),
+  );
+  return { usable: { ...profile, role: main, extra_roles: extra }, paused };
 }
 
 export function useAuth() {

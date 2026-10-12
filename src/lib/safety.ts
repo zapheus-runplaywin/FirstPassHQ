@@ -1,6 +1,6 @@
 import { formatDate, isMinor } from '@/lib/age';
-import type { AppRole, Profile } from '@/lib/types';
-import { hasRole } from '@/lib/roles';
+import type { AppRole, Profile, StandDownReason } from '@/lib/types';
+import { hasRole, rolesOf } from '@/lib/roles';
 
 /** Roles that always need a current Working With Children Check. */
 export const wwccRoles: AppRole[] = ['coach', 'manager', 'physio'];
@@ -25,6 +25,53 @@ export function needsWwcc(
   return hasRole(member, 'committee') && !member.wwcc_exempt_reason?.trim();
 }
 
+/** How many days ahead admins hear that a check is about to expire. */
+export const WWCC_WARNING_DAYS = 60;
+
+/** Roles a stand-down pauses. */
+export const standDownRoles: AppRole[] = ['coach', 'manager', 'physio', 'committee', 'admin'];
+
+export const standDownReasonLabels: Record<StandDownReason, string> = {
+  interim_negative_notice: 'Interim negative notice',
+  negative_notice: 'Negative notice',
+  interstate_decision: 'Interstate decision',
+  allegation: 'Allegation being looked into',
+  other: 'Other',
+};
+
+/**
+ * Roles a member holds but can't use right now: coach, manager and physio
+ * without a current check, committee when a recorded check has expired
+ * (unless exempt), and all of those plus admin while stood down. Same rule as
+ * `public.has_role` in the database.
+ */
+export function pausedRoles(
+  member: Pick<
+    Profile,
+    | 'role'
+    | 'extra_roles'
+    | 'status'
+    | 'wwcc_number'
+    | 'wwcc_expires_on'
+    | 'wwcc_exempt_reason'
+    | 'stood_down_at'
+  >,
+): AppRole[] {
+  if (member.status !== 'approved') return [];
+  const check = wwccStatus(member).kind;
+  const current = check === 'current' || check === 'expiring';
+  const stoodDown = !!member.stood_down_at;
+  return rolesOf(member).filter((r) => {
+    if (!standDownRoles.includes(r)) return false;
+    if (stoodDown) return true;
+    if (wwccRoles.includes(r)) return !current;
+    if (r === 'committee') {
+      return !member.wwcc_exempt_reason?.trim() && !!member.wwcc_number?.trim() && !current;
+    }
+    return false;
+  });
+}
+
 /** Today's date as YYYY-MM-DD, plus a number of days. */
 function isoDay(addDays = 0) {
   const now = new Date();
@@ -39,7 +86,7 @@ export type WwccStatus = {
   label: string;
   /** The same in a few words, for reports. */
   short: string;
-  /** Missing, expired or expiring within 30 days. */
+  /** Missing, expired or expiring within WWCC_WARNING_DAYS. */
   problem: boolean;
 };
 
@@ -71,11 +118,11 @@ export function wwccStatus(member: Pick<Profile, 'wwcc_number' | 'wwcc_expires_o
       problem: true,
     };
   }
-  if (expires < isoDay(30)) {
+  if (expires < isoDay(WWCC_WARNING_DAYS)) {
     return {
       kind: 'expiring',
       label: `Working With Children Check expires ${formatDate(expires)}`,
-      short: 'Expires within 30 days',
+      short: `Expires within ${WWCC_WARNING_DAYS} days`,
       problem: true,
     };
   }
@@ -90,6 +137,7 @@ export function safetyIssues(member: Profile, hasGuardian: boolean): string[] {
   if (member.status !== 'approved') return [];
   const issues: string[] = [];
   const in30Days = isoDay(30);
+  if (member.stood_down_at) issues.push('Stood down');
 
   if (needsWwcc(member)) {
     const check = wwccStatus(member);
