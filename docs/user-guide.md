@@ -964,17 +964,20 @@ With squads on:
 
 ### Seasons
 
-The club year runs May to May. **Seasons** handles the change-over:
+A season holds the club's squads and teams for one year and who is in them. Each club sets its
+own timing: the season might start at selections and finish a few weeks after the main
+competition, and the dates can move from year to year. **Seasons** handles the change-over
+whenever your club is ready:
 
-1. **In May, start the next season.** This creates empty squads with the same names, and their
-   squad calendars, for the new season (for example 2027–28). Nobody is moved, and last season
-   keeps running alongside.
+1. **Start the next season.** This creates empty squads with the same names, and their squad
+   calendars, for the new season (for example 2027–28). Nobody is moved, and last season keeps
+   running alongside.
 2. **Place returning members.** Open each new squad and pick who's coming back from last season's
    squads. They keep their club role, and coaches keep their title. New people still send a join
    request and join the newest season's squads.
-3. **About 4–6 weeks after Easter, archive the old season.** Its squads and teams leave everyone's
-   home screen, calendars, messages and to-dos. Attendance, injuries and check-ins are kept, and
-   you can bring the season back.
+3. **Archive the old season once it has finished.** Its squads and teams leave everyone's home
+   screen, calendars, messages and to-dos. Attendance, injuries and check-ins are kept, and you can
+   bring the season back.
 
 Nothing is deleted when a season is archived.
 
