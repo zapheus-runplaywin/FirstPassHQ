@@ -1,11 +1,12 @@
 import { router, useFocusEffect } from 'expo-router';
 import { useCallback, useState } from 'react';
-import { StyleSheet, View } from 'react-native';
+import { Platform, StyleSheet, Switch, View } from 'react-native';
 
 import { Screen } from '@/components/screen';
 import { ThemedText } from '@/components/themed-text';
-import { Button, ChipGroup, ErrorText, TextField } from '@/components/ui';
+import { Button, Card, ChipGroup, ErrorText, TextField } from '@/components/ui';
 import { Spacing } from '@/constants/theme';
+import { useTheme } from '@/hooks/use-theme';
 import { isMinor } from '@/lib/age';
 import { PROFILE_COLUMNS } from '@/lib/auth';
 import { memberName } from '@/lib/reports';
@@ -29,15 +30,19 @@ export default function SafeguardingScreen() {
   const [bodyPhone, setBodyPhone] = useState('');
   const [bodyUrl, setBodyUrl] = useState('');
   const [policyUrl, setPolicyUrl] = useState('');
+  const [minorPhotos, setMinorPhotos] = useState(false);
+  const theme = useTheme();
   const [busy, setBusy] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
   const load = useCallback(async () => {
-    const [contactsResult, membersResult, exemptionsResult] = await Promise.all([
+    const [contactsResult, membersResult, exemptionsResult, photosResult] = await Promise.all([
       supabase.rpc('safeguarding_contacts').maybeSingle(),
       supabase.from('profiles').select(PROFILE_COLUMNS).eq('status', 'approved').order('full_name'),
       supabase.rpc('admin_volunteer_exemptions'),
+      supabase.rpc('safeguarding_photo_setting'),
     ]);
+    setMinorPhotos(photosResult.data === true);
     const contacts = contactsResult.data as SafeguardingContacts | null;
     setOfficer(contacts?.child_safety_officer_id ?? null);
     setManager(contacts?.complaints_manager_id ?? null);
@@ -80,9 +85,12 @@ export default function SafeguardingScreen() {
       p_governing_body_url: bodyUrl,
       p_policy_url: policyUrl,
     });
+    const { error: photosError } = rpcError
+      ? { error: null }
+      : await supabase.rpc('admin_set_minor_injury_photos', { p_allowed: minorPhotos });
     setBusy(false);
-    if (rpcError) {
-      setError(rpcError.message);
+    if (rpcError || photosError) {
+      setError((rpcError ?? photosError)?.message ?? null);
       return;
     }
     router.back();
@@ -148,6 +156,28 @@ export default function SafeguardingScreen() {
         keyboardType="url"
         maxLength={500}
       />
+
+      <View style={styles.group}>
+        <ThemedText type="smallBold">Photos of under 18s’ injuries</ThemedText>
+        <Card style={styles.switchRow}>
+          <ThemedText type="small" style={styles.grow}>
+            Allow a verified parent or guardian to add a photo of their child’s injury, after they
+            confirm their consent
+          </ThemedText>
+          <Switch
+            accessibilityLabel="Allow photos of under 18s’ injuries"
+            value={minorPhotos}
+            onValueChange={setMinorPhotos}
+            trackColor={{ true: theme.accent, false: theme.backgroundSelected }}
+            thumbColor={theme.text}
+            {...(Platform.OS === 'web' ? { activeThumbColor: theme.onAccent } : {})}
+          />
+        </Card>
+        <ThemedText type="small" themeColor="textSecondary">
+          Off by default, so under 18s attach the physio’s or doctor’s letter as a PDF. Athletes
+          under 18 can never add a photo themselves.
+        </ThemedText>
+      </View>
       <ErrorText>{error}</ErrorText>
       <Button title="Save" onPress={save} busy={busy} />
     </Screen>
@@ -208,4 +238,6 @@ function PersonPicker({
 
 const styles = StyleSheet.create({
   group: { gap: Spacing.two },
+  grow: { flex: 1 },
+  switchRow: { flexDirection: 'row', alignItems: 'center', gap: Spacing.three },
 });
