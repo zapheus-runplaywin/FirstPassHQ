@@ -41,9 +41,9 @@ each of their roles can.
 | **Guest**     | Anyone else the club lets in, such as partners and sponsors. Guests can only look.                   |
 | **Admin**     | The people who run the app. Admin is granted by another admin, never requested. Admins can add a title too. |
 
-**Squads and teams.** Each season, members join a **squad** (Mixed Open Squad, Open Squad,
-20 & Under Squad, 17 & Under Squad, Lightning Academy). At selections, admins name **teams** from a
-squad and pick each team's final team athletes and training partners. People selected for a team stay
+**Squads and teams.** Each season, members join a **squad** (at West Coast Thunder: Mixed Open
+Squad, Open Squad, 20 & Under Squad, 17 & Under Squad, Lightning Academy). At selections, admins name
+**teams** from a squad and pick each team's final team athletes and training partners. People selected for a team stay
 in their squad as well. A club that doesn't use squads can switch them off in
 [Club settings](#club-settings): members then join a **team** straight away, as a final team athlete
 or training partner, and the app talks about teams wherever it would say squad.
@@ -940,7 +940,25 @@ Working With Children Check whichever role it is, and that includes athletes und
 
 ### Squads, teams and selections
 
-**Squads and teams** lists the current season's squads with the teams named from each.
+**Starting setup.** A new club starts with no squads or teams. The first time an admin opens
+**Squads and teams**, they choose a starting setup to match the club's competition:
+
+- **AMMNA State Teams**: five squads (Mixed Open Squad, Open Squad, 20 & Under Squad, 17 & Under
+  Squad, Lightning Academy) with squads on. Members join a squad and teams are named from it at
+  selections.
+- **WA Netball League**: four teams (Mens Team, Opens Team, 21 & Under Team, Futures Team) with
+  squads off. Members join a team straight away.
+- **Blank**: nothing is added. Add your own squads or teams below.
+
+The squads or teams are added to this season, and squads are switched on or off in
+[Club settings](#club-settings) to match. Rename, add or remove them afterwards as usual. A club
+that chose Blank can still pick a setup with **Use a starting setup instead** until it adds its
+first squad or team. Clubs that already had squads or teams don't see this choice.
+
+<img src="user-guide/team-templates.png" width="210" alt="Choosing a starting setup for squads and teams">
+
+**Squads and teams** lists the current season's squads with the teams named from each. The note at
+the top says whether the club uses squads and what that means.
 If the club has switched squads off in [Club settings](#club-settings), it's called **Teams** and
 works more simply:
 
