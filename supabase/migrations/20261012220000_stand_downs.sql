@@ -724,4 +724,77 @@ as $$
   from members m;
 $$;
 
+-- A coach's check-in trend also needs a current check and no stand-down.
+create or replace function public.check_in_trend(p_team_id uuid, p_since date, p_until date)
+returns table (
+  day date,
+  checked_in_count int,
+  flagged_count int,
+  avg_sleep numeric,
+  avg_soreness numeric,
+  avg_stress numeric,
+  avg_mood numeric
+)
+language sql
+stable
+security definer
+set search_path = ''
+as $$
+  with allowed as (
+    select public.is_approved() and p_until - p_since between 0 and 366 and (
+      public.is_committee()
+      or public.is_physio()
+      or (p_team_id is not null and exists (
+        select 1 from public.team_members coach
+        join public.teams t on t.id = coach.team_id
+        where coach.team_id = p_team_id
+          and coach.profile_id = auth.uid()
+          and coach.team_role = 'coach'
+          and public.can_work_with_children()
+          and not t.archived
+          and t.selections_completed_at is null
+      ))
+    ) as ok
+  ),
+  athletes as (
+    select distinct a.profile_id
+    from public.team_members a
+    join public.teams t on t.id = a.team_id and not t.archived
+    join public.profiles p on p.id = a.profile_id and p.status = 'approved'
+    where a.team_role = 'athlete'
+      and (p_team_id is null or a.team_id = p_team_id)
+  ),
+  days as (
+    select d::date as day from generate_series(p_since, p_until, interval '1 day') d
+  ),
+  scores as (
+    select
+      d.day,
+      count(c.id)::int as checked_in,
+      count(c.id) filter (where least(c.sleep, c.soreness, c.stress, c.mood) <= 2)::int as flagged,
+      avg(c.sleep) as sleep, avg(c.soreness) as soreness,
+      avg(c.stress) as stress, avg(c.mood) as mood
+    from days d
+    left join public.check_ins c on c.day = d.day
+      and c.athlete_id in (select profile_id from athletes)
+    group by d.day
+  ),
+  shown as (
+    select v.day, v.visible
+    from public.check_in_visible_days(p_since, p_until) v
+    where v.team_id is not distinct from p_team_id
+  )
+  select
+    s.day, s.checked_in,
+    case when v.visible then s.flagged end,
+    case when v.visible then round(s.sleep, 1) end,
+    case when v.visible then round(s.soreness, 1) end,
+    case when v.visible then round(s.stress, 1) end,
+    case when v.visible then round(s.mood, 1) end
+  from scores s
+  left join shown v on v.day = s.day, allowed
+  where allowed.ok
+  order by s.day;
+$$;
+
 commit;
