@@ -49,6 +49,8 @@ type AuthState = {
   /** A club captain for a current season. */
   isClubCaptain: boolean;
   isAdmin: boolean;
+  /** The Child Safety Officer or Complaints Manager, able to act as one now. */
+  isSafeguardingOfficer: boolean;
   refresh: () => Promise<void>;
   signOut: () => Promise<void>;
 };
@@ -72,6 +74,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   const [captaincies, setCaptaincies] = useState<GroupCaptain[]>([]);
   const [isClubCaptain, setIsClubCaptain] = useState(false);
   const [exemption, setExemption] = useState<MyVolunteerExemption | null>(null);
+  const [isSafeguardingOfficer, setIsSafeguardingOfficer] = useState(false);
 
   const loadMember = useCallback(async (userId: string | undefined) => {
     if (!userId) {
@@ -80,26 +83,35 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       setCaptaincies([]);
       setIsClubCaptain(false);
       setExemption(null);
+      setIsSafeguardingOfficer(false);
       return;
     }
-    const [profileResult, membershipResult, captainResult, clubCaptainResult, exemptionResult] =
-      await Promise.all([
-        supabase.from('profiles').select(PROFILE_COLUMNS).eq('id', userId).single(),
-        supabase
-          .from('team_members')
-          .select(`team_role, coach_title, selection, team:teams!inner (${TEAM_COLUMNS})`)
-          .eq('profile_id', userId)
-          // Past seasons are archived and left out.
-          .eq('team.archived', false),
-        supabase.from('team_captains').select('team_id, profile_id, captain_role').eq('profile_id', userId),
-        supabase.rpc('is_club_captain'),
-        supabase.rpc('my_volunteer_exemption').maybeSingle(),
-      ]);
+    const [
+      profileResult,
+      membershipResult,
+      captainResult,
+      clubCaptainResult,
+      exemptionResult,
+      officerResult,
+    ] = await Promise.all([
+      supabase.from('profiles').select(PROFILE_COLUMNS).eq('id', userId).single(),
+      supabase
+        .from('team_members')
+        .select(`team_role, coach_title, selection, team:teams!inner (${TEAM_COLUMNS})`)
+        .eq('profile_id', userId)
+        // Past seasons are archived and left out.
+        .eq('team.archived', false),
+      supabase.from('team_captains').select('team_id, profile_id, captain_role').eq('profile_id', userId),
+      supabase.rpc('is_club_captain'),
+      supabase.rpc('my_volunteer_exemption').maybeSingle(),
+      supabase.rpc('is_safeguarding_officer'),
+    ]);
     setProfile((profileResult.data as Profile | null) ?? null);
     setMemberships((membershipResult.data as unknown as TeamMembership[] | null) ?? []);
     setCaptaincies((captainResult.data as GroupCaptain[] | null) ?? []);
     setIsClubCaptain(clubCaptainResult.data === true);
     setExemption((exemptionResult.data as MyVolunteerExemption | null) ?? null);
+    setIsSafeguardingOfficer(officerResult.data === true);
   }, []);
 
   useEffect(() => {
@@ -154,6 +166,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
         captaincies,
         isClubCaptain,
         isAdmin,
+        isSafeguardingOfficer,
         refresh,
         signOut,
       }}>

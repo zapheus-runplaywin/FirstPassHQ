@@ -568,3 +568,67 @@ export type CoachTeamGame = {
   goal_count: number;
   reviewed_count: number;
 };
+
+/** Who to talk to about a child's safety, from `safeguarding_contacts`. */
+export type SafeguardingContacts = {
+  child_safety_officer_id: string | null;
+  child_safety_officer_name: string | null;
+  complaints_manager_id: string | null;
+  complaints_manager_name: string | null;
+  governing_body_name: string | null;
+  governing_body_phone: string | null;
+  governing_body_url: string | null;
+  policy_url: string | null;
+};
+
+export type ConcernStatus = 'received' | 'referred' | 'under_review' | 'closed';
+
+export type ConcernEventKind =
+  | 'note'
+  | 'referred_governing_body'
+  | 'referred_police'
+  | 'status_changed'
+  | 'about_changed';
+
+/** Whether a concern is about a child's safety, as the person raising it said. */
+export type InvolvesChild = 'yes' | 'no' | 'unsure';
+
+/** A concern in the register, from `concern_register`. */
+export type Concern = {
+  id: string;
+  created_at: string;
+  /** Null when they asked for their name not to be shown. */
+  raised_by_name: string | null;
+  anonymous: boolean;
+  contact_ok: boolean;
+  contact_details: string | null;
+  about_member_id: string | null;
+  about_member_name: string | null;
+  about_text: string | null;
+  happened_on: string | null;
+  body: string;
+  involves_child: InvolvesChild;
+  context: string | null;
+  status: ConcernStatus;
+  closed_at: string | null;
+  last_action_at: string | null;
+};
+
+/** Something done about a concern, from `concern_history`. */
+export type ConcernEvent = {
+  id: string;
+  created_at: string;
+  by_name: string | null;
+  kind: ConcernEventKind;
+  status: ConcernStatus | null;
+  note: string | null;
+};
+
+/** A concern the member raised, from `my_concerns`. */
+export type MyConcern = {
+  id: string;
+  created_at: string;
+  status: ConcernStatus;
+  about_text: string | null;
+  anonymous: boolean;
+};

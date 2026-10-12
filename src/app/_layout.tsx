@@ -156,6 +156,10 @@ function RootStack() {
             <Stack.Screen name="training/document" options={{ title: 'Certificate' }} />
           </Stack.Protected>
           <Stack.Screen name="declaration" options={{ title: 'Volunteer declaration' }} />
+          <Stack.Screen name="concern/new" options={{ title: 'Raise a concern' }} />
+          <Stack.Screen name="concerns/index" options={{ title: 'Concerns' }} />
+          <Stack.Screen name="concerns/[id]" options={{ title: 'Concern' }} />
+          <Stack.Screen name="concerns/report" options={{ title: 'Concerns register' }} />
           <Stack.Screen name="my-details" options={{ title: 'Your details' }} />
           <Stack.Screen name="delete-account" options={{ title: 'Delete account' }} />
           <Stack.Protected guard={isAdmin}>
@@ -163,6 +167,7 @@ function RootStack() {
             <Stack.Screen name="admin/index" options={{ title: 'Members' }} />
             <Stack.Screen name="admin/[id]" options={{ title: 'Member' }} />
             <Stack.Screen name="admin/club" options={{ title: 'Club settings' }} />
+            <Stack.Screen name="admin/safeguarding" options={{ title: 'Safeguarding' }} />
             <Stack.Screen name="admin/club-password" options={{ title: 'Club password' }} />
             <Stack.Screen name="admin/invite" options={{ title: 'Invite members' }} />
             <Stack.Screen name="admin/squads" options={{ title: 'Squads and teams' }} />

@@ -5,6 +5,7 @@ import { Pressable, StyleSheet, View } from 'react-native';
 
 import { DateField } from '@/components/date-field';
 import { StatusPill } from '@/components/injury-card';
+import { RaiseConcernLink } from '@/components/safeguarding';
 import { Screen } from '@/components/screen';
 import { ThemedText } from '@/components/themed-text';
 import { Button, Card, ErrorText, TextField } from '@/components/ui';
@@ -126,6 +127,10 @@ export default function InjuryScreen() {
           </ThemedText>
         ) : null}
       </View>
+
+      <RaiseConcernLink
+        context={`${injury.athlete_name ?? 'An athlete'}’s ${injury.body_area.toLowerCase()} injury`}
+      />
     </Screen>
   );
 }

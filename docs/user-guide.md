@@ -8,6 +8,11 @@ Each role starts on a new page when the viewer supports page breaks.
 
 <!-- Maintainers: this guide must match the app. See "Keeping this guide up to date" at the end. -->
 
+**Child safety comes first.** Anyone signed in can **Raise a concern** from the home screen, and the
+club's Child Safety Officer and Complaints Manager act on it. If a child is in danger now, call
+000. [Section 12](#12-child-safety-and-safeguarding) explains every protection the app gives
+children, for parents, committees, boards and the sport's governing body.
+
 ## Contents
 
 1. [Roles at a glance](#1-roles-at-a-glance)
@@ -21,7 +26,8 @@ Each role starts on a new page when the viewer supports page breaks.
 9. [Physios and guests](#9-physios-and-guests)
 10. [Admins](#10-admins)
 11. [Who can see what](#11-who-can-see-what)
-12. [Keeping this guide up to date](#12-keeping-this-guide-up-to-date)
+12. [Child safety and safeguarding](#12-child-safety-and-safeguarding)
+13. [Keeping this guide up to date](#13-keeping-this-guide-up-to-date)
 
 ## 1. Roles at a glance
 
@@ -40,6 +46,10 @@ each of their roles can.
 | **Physio**    | The club's physiotherapists. A physio can be placed in squads or teams to look after their athletes, and one can be the **Head Physio**, who looks after every athlete. Need a current Working With Children Check; the role pauses while it's expired. A parent volunteering at their child's club, or a volunteer under 18, has an exemption instead (see [Volunteer exemptions](#volunteer-exemptions)). |
 | **Guest**     | Anyone else the club lets in, such as partners and sponsors. Guests can only look.                   |
 | **Admin**     | The people who run the app. Admin is granted by another admin, never requested. Admins can add a title too. |
+
+**Safeguarding contacts.** An admin names one member as the club's **Child Safety Officer** and
+another as its **Complaints Manager**. They're not separate roles: each keeps their own role and also
+sees and acts on the concerns members raise (see [The concerns register](#the-concerns-register)).
 
 **Squads and teams.** Each season, members join a **squad** (at West Coast Thunder: Mixed Open
 Squad, Open Squad, 20 & Under Squad, 17 & Under Squad, Lightning Academy). At selections, admins name
@@ -344,6 +354,31 @@ record. Overdue training says **Overdue since** its due date.
 <img src="user-guide/training-athlete-home.png" width="210" alt="Integrity training in an athlete's to-do list">
 <img src="user-guide/training-athlete.png" width="210" alt="An athlete's integrity training">
 <img src="user-guide/training-submit.png" width="210" alt="One certificate ticked for three courses">
+
+### Raising a concern
+
+**Raise a concern**, at the bottom of the home screen, is for anyone signed in: athletes, parents,
+coaches, guests and people still waiting for approval. Use it for anything that worries you about a
+child or about how someone at the club behaves. You don't need to be sure. The same link is on the
+daily check-in screen, on every injury and, as **Report this message**, on every message, so the
+concern notes where it came from.
+
+The screen starts with who to talk to: the club's **Child Safety Officer** and **Complaints
+Manager**, the sport's governing body if the club has added it, and services anyone can call
+(Police on 000, Kids Helpline and the Safe Sport Hotline). Tap a number to call it.
+
+Then say what happened, and optionally who it's about (pick a club leader by name, or describe
+them), when it happened and whether a child's safety is involved. Choose **Show my name** or
+**Don't show my name**. If you hide your name, the people who look into it won't see who you are,
+so they can't ask you more; the app still keeps it with your account so you can follow it. If you
+show your name, say whether they can contact you and how. Tap **Send to the club**.
+
+The Child Safety Officer, the Complaints Manager and admins see it straight away, but the person
+it's about never does, even if they're one of them. **Concerns you've raised** on the same screen
+shows each one and where it's up to: Received, Referred, Being looked into or Closed.
+
+<img src="user-guide/raise-concern.png" width="210" alt="Raise a concern: who to call first">
+<img src="user-guide/raise-concern-form.png" width="210" alt="The concern form: what happened, who, when, and whether to show your name">
 
 ### Deleting your account
 
@@ -734,6 +769,9 @@ Committee members oversee the club's athletes without seeing anyone's private ch
 Like coaches, they need a current Working With Children Check, recorded by an admin, unless an
 admin exempts them with a reason. If a check an admin recorded expires, the committee role pauses
 until the renewed one is recorded.
+
+If you're the club's Child Safety Officer or Complaints Manager, your home screen also has
+**Concerns** (see [The concerns register](#the-concerns-register)).
 
 <img src="user-guide/committee-home.png" width="210" alt="Committee home screen">
 
@@ -1326,6 +1364,45 @@ part of the app build and don't change here.
 <img src="user-guide/club-settings-features.png" width="210" alt="Club settings: turning features on and off">
 <img src="user-guide/club-settings-physios.png" width="210" alt="Club settings: physios get club messages">
 
+### Safeguarding contacts
+
+**Administration > Safeguarding** names the club's **Child Safety Officer** and **Complaints
+Manager**. Search for each by name. Both must be approved adults with a current Working With
+Children Check (or an exemption that applies) and must be two different people, so a concern
+about one can go to the other. You can't name yourself unless someone else is the other contact.
+If a contact's check lapses or they're stood down, they stop being shown and stop seeing concerns
+until you choose again.
+
+Add the sport's **governing body**: its name, phone or hotline, and complaints form link. Add the
+club's **safeguarding policy** link too. Everyone sees these on **Raise a concern**. Links must
+start with https://.
+
+<img src="user-guide/admin-safeguarding.png" width="210" alt="Safeguarding settings: Child Safety Officer, Complaints Manager, governing body and policy">
+
+### The concerns register
+
+The Child Safety Officer, the Complaints Manager and admins open **Concerns** from the home screen.
+New concerns also appear in their to-do list until someone records something about them. Open
+concerns are listed first, newest at the top. Nobody sees a concern about themselves.
+
+Open a concern to see what was raised, by whom (unless they hid their name), how to contact them,
+and where it was raised from. While a concern that may involve a child's safety hasn't been
+referred, a red note at the top says to refer child abuse or a serious crime to Police and the
+governing body straight away and not to resolve it within the club. Then record what you did:
+
+- **Referred to** the governing body, or **Referred to Police**, with a note such as a reference
+  number. Either sets the status to Referred.
+- **Add note** for anything else: who you spoke to and what was decided.
+- **Change status** to Being looked into, or **Closed** with a note saying why.
+- **Who it's about**: name the member it's about. From then on they can't see it, even if they're
+  an admin or handle concerns.
+
+Every step is kept with who did it and when. **Export the register as a PDF** gives the whole
+register with every step, for the committee, the governing body or an auditor.
+
+<img src="user-guide/concerns-register.png" width="210" alt="The concerns register">
+<img src="user-guide/concern.png" width="210" alt="A concern with the referral prompt and what's been done">
+
 ### Club password
 
 **Club password** sets a password new members must enter to ask to join. It stops strangers who
@@ -1347,6 +1424,8 @@ once saved, only replaced or removed, and anyone who gets it wrong five times in
 | Date of birth, Working With Children Check and exemption | You and admins. Awards with an age limit use it to decide who can be voted for, without showing it.   |
 | Stand-downs             | Admins only. The member sees that their role is paused, not the reason.                                                     |
 | Volunteer exemptions and declarations | The volunteer (their own) and admins.                                                                       |
+| Concerns                | The Child Safety Officer, the Complaints Manager and admins, never the person a concern is about. Whoever raised it sees its status. A hidden name is never shown to them. |
+| Safeguarding contacts   | Everyone signed in, including guests and people waiting for approval.                                                       |
 | Messages                | The people they were sent to, the sender, and admins. Guardians of athletes under 18 get a copy of every message sent to their athlete, and of every message their athlete sends as a captain. Guests don't get messages; physios get messages sent to the Physio role and to their squads and teams, and whole-club messages only if an admin turns that on. |
 | Read receipts           | The sender and admins.                                                                                                      |
 | Daily check-in answers and notes | The athlete, their guardians and their coaches. The committee, physios and admins see only group averages, hidden below 5 check-ins or when two groups differ by fewer than 5. |
@@ -1366,12 +1445,89 @@ once saved, only replaced or removed, and anyone who gets it wrong five times in
 When someone leaves, injury records and proof documents are kept for 12 months, visible only to the
 committee and admins, then deleted automatically.
 
-## 12. Keeping this guide up to date
+<div style="page-break-before: always"></div>
+
+## 12. Child safety and safeguarding
+
+Children are the club's first responsibility. This section brings together everything the app does
+to keep them safe, for parents, young people, coaches and volunteers, committees and boards, and
+the sport's governing body. The details are in each role's section.
+
+### Raising a concern
+
+Anyone signed in can raise a concern, from the home screen, the check-in screen, any injury or any
+message, and can hide their name (see [Raising a concern](#raising-a-concern)). It goes to the
+club's Child Safety Officer, Complaints Manager and admins, never to the person it's about. Police
+(000), Kids Helpline, the Safe Sport Hotline and the governing body's contacts are shown on the same
+screen. Every concern and every step taken is kept in the [concerns
+register](#the-concerns-register), which prints as a PDF.
+
+### For parents and guardians
+
+- **You're verified before you're linked.** An admin checks you against the club's registration,
+  or with a code shown on your phone, before linking you to your child.
+- **No child is approved without you.** Every athlete under 18 needs at least one verified guardian
+  before an admin can approve them.
+- **You see what your child sees.** You get a copy of every message sent to your child, and of every
+  message your child sends as a captain. You can read their daily check-ins and notes, their game
+  goals and their injuries.
+- **Your access ends at 18.** Guardian access ends on your child's 18th birthday.
+
+### For children and young people
+
+- **Nobody can message you privately.** There are no direct messages and no replies. Messages go to
+  whole squads, teams or roles, and your parents or guardians get a copy.
+- **You're told who reads your check-in note**: your coaches and your parents or guardians.
+- **You can tell someone safely.** The check-in screen has a link to raise a concern, and you can
+  hide your name. Kids Helpline (1800 55 1800) is free, any time.
+
+### For coaches, managers, physios and volunteers
+
+- **A check before you start.** Coaches, managers, physios and committee members need a current
+  Working With Children Check before they're approved.
+- **Parent and under-18 volunteers.** In WA a parent volunteering at their child's club, or a
+  volunteer under 18, is exempt instead and accepts a declaration in the app (see [Volunteer
+  exemptions](#volunteer-exemptions)). The exemption ends by itself when the child or volunteer
+  turns 18.
+- **Your role pauses the day your check expires**, and comes back when an admin records the renewed
+  check. Admins are reminded 60 days ahead.
+
+### For committees, boards and admins
+
+- **Stand-downs.** An admin can stand someone down straight away, for example on an interim
+  negative notice from the Working with Children Screening Unit. Their coach, manager, physio,
+  committee and admin roles stop and they leave the squads and teams they lead. Every stand-down is
+  kept (see [Changing or removing members](#changing-or-removing-members)).
+- **Safeguarding contacts.** Name a Child Safety Officer and a Complaints Manager, two different
+  adults with a current check, and add the governing body's contacts and the club's policy (see
+  [Safeguarding contacts](#safeguarding-contacts)).
+- **Your to-do list does the chasing**: new concerns, missing or expiring checks, volunteer
+  exemptions ending, declarations not yet accepted, athletes under 18 without a guardian and
+  athletes turning 18.
+- **Reports for your records.** The Working With Children Checks report lists every check, exemption
+  and stand-down. The under 18s report lists every child and their guardians. The concerns register
+  lists every concern and what was done. Each saves as a PDF.
+
+### For the governing body and auditors
+
+- **Two-deep messaging is enforced by the app**, not just by policy: no direct messages or replies,
+  guardians copied on everything to and from a child, and admins can see every message.
+- **Records are kept with who did what and when**: checks, exemptions and the declarations accepted,
+  stand-downs, and every concern with each referral, note and status.
+- **Child abuse and serious crimes go out, not in.** The register prompts the club to refer them to
+  Police and the governing body straight away, and records that it did.
+- **Each club's data is kept apart**, in that club's own database.
+
+<img src="user-guide/safeguarding-home.png" width="210" alt="Raise a concern on the home screen">
+
+<div style="page-break-before: always"></div>
+
+## 13. Keeping this guide up to date
 
 This guide lives in the app's repository at `docs/user-guide.md`, with its screenshots in
 `docs/user-guide/`. Any change that adds, removes or changes something a member can see or do must
 update the matching section, the tables in sections 1 and 11, and any screenshot that no longer
-matches, in the same pull request.
+matches, in the same pull request. A change that touches children's safety also updates section 12.
 
 Screenshots are taken from the web build with sample data (no real club data), at a 390 × 844
 phone screen at 2× scale. The tooling (`shoot.mjs`, `serve.py` and the fixtures, including

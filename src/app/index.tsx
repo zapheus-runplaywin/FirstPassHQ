@@ -36,6 +36,7 @@ import {
 } from '@/lib/use-pending-requests';
 import { rejectionReasonMessages, rolesLabel, teamPositionLabel } from '@/lib/labels';
 import { supabase } from '@/lib/supabase';
+import { useNewConcerns } from '@/lib/concerns';
 import { buildTodos } from '@/lib/todos';
 import {
   isOutstanding,
@@ -53,7 +54,20 @@ const UPCOMING_COUNT = 6;
 
 export default function HomeScreen() {
   const theme = useTheme();
-  const { session, profile, paused, exemption, memberships, isAdmin, refresh, signOut } = useAuth();
+  const {
+    session,
+    profile,
+    paused,
+    exemption,
+    memberships,
+    isAdmin,
+    isSafeguardingOfficer,
+    refresh,
+    signOut,
+  } = useAuth();
+  // Admins and the two safeguarding officers handle concerns members raise.
+  const handlesConcerns = isAdmin || isSafeguardingOfficer;
+  const newConcerns = useNewConcerns(handlesConcerns);
   const { switchClub } = useClubChoice();
   const club = useClub();
   const { features } = club;
@@ -100,6 +114,7 @@ export default function HomeScreen() {
     training: features.integrity ? (myTraining ?? []) : [],
     certificatesToCheck: features.integrity ? certificatesToCheck : 0,
     declarationWaiting: !!exemption && !exemption.declared_at,
+    newConcerns,
   });
 
   const isGuardian = profile?.status === 'approved' && hasRole(profile, 'guardian');
@@ -275,6 +290,17 @@ export default function HomeScreen() {
         </PressableCard>
       ) : null}
 
+      {handlesConcerns ? (
+        <PressableCard onPress={() => router.push('/concerns')}>
+          <ThemedText type="smallBold">Concerns</ThemedText>
+          <ThemedText type="small" themeColor="textSecondary">
+            {newConcerns > 0
+              ? `${newConcerns} new ${newConcerns === 1 ? 'concern' : 'concerns'} to look at`
+              : 'The concerns register'}
+          </ThemedText>
+        </PressableCard>
+      ) : null}
+
       {isAdmin ? (
         <PressableCard onPress={() => router.push('/administration')}>
           <ThemedText type="smallBold">Administration</ThemedText>
@@ -357,6 +383,14 @@ export default function HomeScreen() {
           )}
         </View>
       ) : null}
+
+      <PressableCard onPress={() => router.push('/concern/new')}>
+        <ThemedText type="smallBold">Raise a concern</ThemedText>
+        <ThemedText type="small" themeColor="textSecondary">
+          Worried about a child, or something someone said or did? Tell the club safely. If a child
+          is in danger now, call 000.
+        </ThemedText>
+      </PressableCard>
 
       <View style={styles.footer}>
         <Pressable
