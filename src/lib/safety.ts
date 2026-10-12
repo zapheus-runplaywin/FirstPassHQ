@@ -15,22 +15,26 @@ export const wwccRoles: AppRole[] = ['coach', 'manager', 'physio'];
 
 /**
  * Whether an admin can excuse someone with these roles from the check: only
- * committee members who hold no role that always needs one.
+ * committee members and admins who hold no role that always needs one.
  */
 export function canBeExempt(roles: AppRole[]) {
-  return roles.includes('committee') && !roles.some((r) => wwccRoles.includes(r));
+  return (
+    (roles.includes('committee') || roles.includes('admin')) &&
+    !roles.some((r) => wwccRoles.includes(r))
+  );
 }
 
 /**
  * Whether a member needs a current check: coaches, managers and physios
- * always, committee members unless an admin exempted them. Same rule as
+ * always, committee members and admins unless another admin exempted them.
+ * Same rule as
  * `public.needs_wwcc` in the database.
  */
 export function needsWwcc(
   member: Pick<Profile, 'role' | 'extra_roles' | 'wwcc_exempt_reason'>,
 ): boolean {
   if (hasRole(member, ...wwccRoles)) return true;
-  return hasRole(member, 'committee') && !member.wwcc_exempt_reason?.trim();
+  return hasRole(member, 'committee', 'admin') && !member.wwcc_exempt_reason?.trim();
 }
 
 export const wwccValidationLabels: Record<WwccValidationMethod, string> = {

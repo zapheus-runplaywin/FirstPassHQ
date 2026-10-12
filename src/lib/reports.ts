@@ -130,9 +130,9 @@ export function wwccReport(
     .filter((m) => needsWwcc(m) && !screenedByExemption(m))
     .map((m) => ({ member: m, name: memberName(m), status: wwccStatus(m) }))
     .sort(byName);
-  // Committee members an admin excused from the check, with the reason.
+  // Committee members and admins another admin excused from the check, with the reason.
   const exempt = approved
-    .filter((m) => hasRole(m, 'committee') && !needsWwcc(m))
+    .filter((m) => hasRole(m, 'committee', 'admin') && !needsWwcc(m))
     .map((m) => ({ member: m, name: memberName(m) }))
     .sort(byName);
   const nameOf = (id: string | null) => {
@@ -186,7 +186,7 @@ export function wwccReport(
 
   return {
     title: 'Working With Children Checks',
-    subtitle: `Approved coaches, managers, physios and committee members. WWC Registration Officer: ${officerName ?? 'not named yet'}`,
+    subtitle: `Approved coaches, managers, physios, committee members and admins. WWC Registration Officer: ${officerName ?? 'not named yet'}`,
     landscape: true,
     stats: [
       { label: 'Need a check', value: people.length },
@@ -194,7 +194,7 @@ export function wwccReport(
       { label: `Expire within ${WWCC_WARNING_DAYS} days`, value: count('expiring') },
       { label: 'Expired', value: count('expired') },
       { label: 'Missing', value: count('missing') },
-      { label: 'Committee exempt', value: exempt.length },
+      { label: 'Committee and admins exempt', value: exempt.length },
       {
         label: 'Exempt volunteers',
         value: approved.filter((m) => needsWwcc(m) && screenedByExemption(m)).length,
@@ -210,7 +210,7 @@ export function wwccReport(
     sections: [
       {
         title: 'Needs attention',
-        note: `Missing, expired or expiring within ${WWCC_WARNING_DAYS} days, never validated or validated over a year ago, or not linked to the club with the Screening Unit. Their coach, manager, physio and committee roles are paused while a check is missing or expired.`,
+        note: `Missing, expired or expiring within ${WWCC_WARNING_DAYS} days, never validated or validated over a year ago, or not linked to the club with the Screening Unit. Their coach, manager, physio and committee roles are paused while a check is missing or expired. Admin roles are not paused, so the club is never locked out, but an admin can be stood down.`,
         columns,
         rows: people
           .filter((p) => p.status.problem || (current(p.status) && wwccRecordIssues(p.member).length > 0))
@@ -226,8 +226,8 @@ export function wwccReport(
         empty: 'No current checks recorded.',
       },
       {
-        title: 'Committee members exempted',
-        note: 'Excused from the check by an admin, with the reason they gave.',
+        title: 'Committee members and admins exempted',
+        note: 'Excused from the check by another admin, with the reason they gave.',
         columns: exemptColumns,
         rows: exempt.map(({ member, name }) => ({
           cells: [

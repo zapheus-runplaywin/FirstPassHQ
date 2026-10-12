@@ -210,8 +210,9 @@ export default function MemberScreen() {
     parseDate(wwccExpires) === (member.wwcc_expires_on ?? null);
   const minor = isMinor(dob, under18);
   const hasGuardians = isAthlete && minor;
-  const needsWwcc = roles.some((r) => wwccRoles.includes(r)) || roles.includes('committee');
-  // Only a committee member with no coach, manager or physio role can be excused.
+  const needsWwcc =
+    roles.some((r) => wwccRoles.includes(r)) || roles.includes('committee') || roles.includes('admin');
+  // Only a committee member or admin with no coach, manager or physio role can be excused.
   const exemptable = canBeExempt(roles);
   const isExempt = exemptable && exempt;
   // Coaches, managers and physios can be screened by a volunteer exemption instead.
@@ -360,7 +361,7 @@ export default function MemberScreen() {
       setError(detailsError.message);
       return;
     }
-    // Also before saving the member: a new committee member needs a check or an exemption.
+    // Also before saving the member: a new committee member or admin needs a check or an exemption.
     const newReason = isExempt ? exemptReason.trim() : '';
     if (newReason !== (member?.wwcc_exempt_reason ?? '')) {
       const { error: exemptError } = await supabase.rpc('admin_set_wwcc_exemption', {
@@ -712,10 +713,10 @@ export default function MemberScreen() {
         <View style={styles.group}>
           <ThemedText type="smallBold">Working With Children Check</ThemedText>
           <ThemedText type="small" themeColor="textSecondary">
-            Coaches, managers, physios and committee members need a current check before you can
-            approve them. In WA, a parent volunteering at their child’s club and a volunteer under
-            18 are exempt instead: record that here, and they accept a declaration in the app
-            before their role starts. You can exempt a committee member with a reason.
+            Coaches, managers, physios, committee members and admins need a current check before
+            you can approve them. In WA, a parent volunteering at their child’s club and a volunteer
+            under 18 are exempt instead: record that here, and they accept a declaration in the app
+            before their role starts. You can exempt a committee member or admin with a reason.
           </ThemedText>
           {canVolunteer && !isSelf ? (
             <ChipGroup

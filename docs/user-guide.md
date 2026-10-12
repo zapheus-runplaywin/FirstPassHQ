@@ -45,7 +45,7 @@ each of their roles can.
 | **Committee** | Club committee members. Each can add a title, such as President or Secretary, shown with their role. Need a current Working With Children Check unless an admin exempts them; the role pauses if a recorded check expires. |
 | **Physio**    | The club's physiotherapists. A physio can be placed in squads or teams to look after their athletes, and one can be the **Head Physio**, who looks after every athlete. Need a current Working With Children Check; the role pauses while it's expired. A parent volunteering at their child's club, or a volunteer under 18, has an exemption instead (see [Volunteer exemptions](#volunteer-exemptions)). |
 | **Guest**     | Anyone else the club lets in, such as partners and sponsors. Guests can only look.                   |
-| **Admin**     | The people who run the app. Admin is granted by another admin, never requested. Admins can add a title too. |
+| **Admin**     | The people who run the app. Admin is granted by another admin, never requested. Admins can add a title too. Need a current Working With Children Check unless another admin exempts them. An expired check doesn't pause the admin role, so the club is never locked out, but it stays on the admins' to-do list until it's renewed. |
 
 **Safeguarding contacts.** An admin names one member as the club's **Child Safety Officer** and
 another as its **Complaints Manager**. They're not separate roles: each keeps their own role and also
@@ -969,6 +969,10 @@ within 60 days, and athletes turning 18 within 30 days. Tapping a child-safety t
 first under **Needs checking**. On an installed app, admins also get a push notification for each
 new join request.
 
+Because admins can read every child's records, they need a current Working With Children Check,
+or an exemption with a reason that another admin records, like committee members (see
+[Approving members](#approving-members)).
+
 <img src="user-guide/admin-home.png" width="210" alt="Admin home screen">
 <img src="user-guide/administration.png" width="210" alt="Administration menu">
 <img src="user-guide/admin-safety-todos.png" width="210" alt="Admin to-dos for guardians, Working With Children Checks and athletes turning 18">
@@ -1013,7 +1017,7 @@ Check them against PlayHQ, then:
    date and when. Anyone under 18 gets a **Parents and guardians** section, with the search
    started from the email the child gave: tap a guardian to link them (tap ✕ to unlink). Only
    verified guardians can be linked; unverified ones show "(not verified)".
-4. For coaches, managers, physios and committee members, enter their **Working With Children
+4. For coaches, managers, physios, committee members and admins, enter their **Working With Children
    Check** card number and expiry date. Cards last three years, so a later expiry is refused. Once
    the card is saved, **Validation** records checking it: enter the **Name on the card**, choose
    how you checked it (**Checked online** on the Screening Unit's website, **Card sighted** or
@@ -1021,10 +1025,10 @@ Check them against PlayHQ, then:
    card is linked so the Unit tells the club of any change, and tap **Record validation**. The
    page shows who validated it, how and when. Validate every card at least once a year and again
    when it's renewed: a new card number or expiry needs a new validation. You can't validate your
-   own card. A committee member who doesn't need one, such as a
+   own card. A committee member or admin who doesn't need one, such as a
    treasurer who is never at training or games, can be marked **Exempt** instead: write why, and
-   the app records who exempted them and when. Exemptions are for the committee role only; someone
-   who also coaches, manages or is a physio still needs a check. You can't exempt yourself, so ask
+   the app records who exempted them and when. Exemptions are for the committee and admin roles
+   only; someone who also coaches, manages or is a physio still needs a check. You can't exempt yourself, so ask
    another admin.
 
    A coach, manager or physio who is a parent volunteering at their child's club, or is under 18,
@@ -1045,13 +1049,18 @@ The app won't approve or save:
   exemption;
 - a new committee member without a current Working With Children Check or an exemption. Committee
   members approved before checks were needed keep their access, and show under **Needs checking**
-  until you record a check or exempt them.
+  until you record a check or exempt them;
+- a new admin without a current Working With Children Check or an exemption. Admins approved
+  before checks were needed keep their access and show under **Needs checking** in the same way.
 
 Approval isn't the only time the check counts. A coach's, manager's or physio's role pauses on the
 day their check expires, and so does a committee member's when a check you recorded for them
 expires. They keep their squad and team places and see a note on their home screen; the role
 comes back as soon as you record the renewed check. A volunteer exemption works the same way: the
-role pauses when it ends by itself, and **Needs checking** lists them 60 days before.
+role pauses when it ends by itself, and **Needs checking** lists them 60 days before. An admin's
+role doesn't pause when their check expires, so the club can never be locked out of its own app;
+they show under **Needs checking** and on every admin's to-do list until the renewed card is
+recorded, and they can still be stood down.
 
 **Verifying someone.** Guardians must be verified before they can be linked to a child. If their
 PlayHQ email matches the registration, tap **Checked against PlayHQ**. Otherwise get the 6-digit code
@@ -1074,6 +1083,7 @@ club** or **Other**) and tap **Don't approve**. They see the reason and can requ
 <img src="user-guide/member-guardian.png" width="210" alt="Guardian showing their athlete, waiting to be verified">
 <img src="user-guide/member-wwcc.png" width="210" alt="Coach with Working With Children Check fields">
 <img src="user-guide/member-wwcc-exempt.png" width="210" alt="Committee member exempted from the Working With Children Check, with the reason">
+<img src="user-guide/member-wwcc-admin.png" width="210" alt="An admin who needs a Working With Children Check, with the Exempt choice">
 <img src="user-guide/member-wwcc-validation.png" width="210" alt="Validating a card: name on the card, how it was checked and the Screening Unit link">
 <img src="user-guide/member-volunteer-exempt.png" width="210" alt="A manager recorded as a parent volunteer, waiting to accept the declaration">
 <img src="user-guide/member-physio.png" width="210" alt="A physio placed in two squads">
@@ -1379,12 +1389,12 @@ computer it downloads), ready for the committee, an audit or OneDrive. The PDF h
 name, the date it was made and page numbers, and anything that needs attention is in red.
 
 - **Working With Children Checks**: printed across the page, with the WWC Registration Officer
-  at the top. Every approved coach, manager, physio and committee member with their name on the
+  at the top. Every approved coach, manager, physio, committee member and admin with their name on the
   card, date of birth, roles, squads and teams, card number, expiry date, when and how the card was
   last validated and by whom, when it was linked with the Screening Unit, and status. Checks that
   are missing, have no expiry date, have expired, expire within 60 days, were never validated or
   were validated over a year ago, or aren't linked with the Screening Unit are listed first under
-  **Needs attention**. Committee members who are exempt are listed next, with the reason, who
+  **Needs attention**. Committee members and admins who are exempt are listed next, with the reason, who
   exempted them and when. **Exempt volunteers** lists every parent and under-18 volunteer exemption,
 current ones first, with the child, who recorded it, when the declaration was accepted and where
 it's up to, then ended ones with who ended them. **Screening Unit notices** lists every notice,
@@ -1652,7 +1662,7 @@ Athletes who are 18 or over attach a PDF or a photo, and see who opened their do
 
 ### For coaches, managers, physios and volunteers
 
-- **A check before you start.** Coaches, managers, physios and committee members need a current
+- **A check before you start.** Coaches, managers, physios, committee members and admins need a current
   Working With Children Check before they're approved. An admin validates the card, online or by
   sighting it, at least once a year and whenever it's renewed, and links it to the club with the
   Screening Unit, so the club hears if anything changes.
@@ -1669,6 +1679,10 @@ Athletes who are 18 or over attach a PDF or a photo, and see who opened their do
   negative notice from the Working with Children Screening Unit. Their coach, manager, physio,
   committee and admin roles stop and they leave the squads and teams they lead. Every stand-down is
   kept (see [Changing or removing members](#changing-or-removing-members)).
+- **Admins are screened too.** Admins can read every child's records, so they need a current
+  check, or an exemption with a reason that another admin records; nobody exempts themselves. An
+  admin's role doesn't pause when the check expires, so the club can't be locked out of its own
+  app, but it stays on every admin's to-do list until renewed, and an admin can be stood down.
 - **Safeguarding contacts.** Name a Child Safety Officer and a Complaints Manager, two different
   adults with a current check, and add the governing body's contacts and the club's policy (see
   [Safeguarding contacts](#safeguarding-contacts)). Name a WWC Registration Officer to keep the
