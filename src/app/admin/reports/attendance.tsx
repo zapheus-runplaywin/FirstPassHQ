@@ -1,5 +1,5 @@
 import { useFocusEffect } from 'expo-router';
-import { useCallback, useState } from 'react';
+import { useCallback, useEffect, useState } from 'react';
 
 import { MonthDateField } from '@/components/month-date-field';
 import { ReportView } from '@/components/report-view';
@@ -47,7 +47,8 @@ export default function AttendanceReportScreen() {
   const [error, setError] = useState<string | null>(null);
   const [refreshing, setRefreshing] = useState(false);
 
-  const seasonStart = `${currentSeason(teams.map((t) => t.season))}-05-01`;
+  const season = currentSeason(teams.map((t) => t.season));
+  const seasonStart = useSeasonStart(season) ?? today;
   const [from, to] =
     period === '4w'
       ? [daysAgo(28), today]
@@ -191,6 +192,31 @@ export default function AttendanceReportScreen() {
       ) : null}
     </Screen>
   );
+}
+
+/**
+ * The day a season began: when its first squad or team was made, which is
+ * when an admin started the season (or set up the club, for the first one).
+ */
+function useSeasonStart(season: number) {
+  const [start, setStart] = useState<string | null>(null);
+  useEffect(() => {
+    let cancelled = false;
+    supabase
+      .from('teams')
+      .select('created_at')
+      .eq('season', season)
+      .order('created_at')
+      .limit(1)
+      .then(({ data }) => {
+        const createdAt = (data as { created_at: string | null }[] | null)?.[0]?.created_at;
+        if (!cancelled) setStart(createdAt ? toDateString(new Date(createdAt)) : null);
+      });
+    return () => {
+      cancelled = true;
+    };
+  }, [season]);
+  return start;
 }
 
 function daysAgo(days: number) {

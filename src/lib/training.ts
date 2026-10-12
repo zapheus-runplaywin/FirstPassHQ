@@ -194,8 +194,8 @@ function joinNames(names: string[]) {
 /** The club year the newest current squads and teams belong to, or this year's. */
 export function currentSeason(seasons: number[], today = new Date()) {
   if (seasons.length > 0) return Math.max(...seasons);
-  // The club year starts in May.
-  return today.getMonth() >= 4 ? today.getFullYear() : today.getFullYear() - 1;
+  // No squads or teams yet: the first season is this year's.
+  return today.getFullYear();
 }
 
 // ---------------------------------------------------------------------------

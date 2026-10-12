@@ -1207,8 +1207,8 @@ name, the date it was made and page numbers, and anything that needs attention i
   lists everyone with a course not yet approved, in red if a due date has passed, then each course
   lists who must complete it, where they're up to, when they completed it and who checked it.
 - **Attendance** (when Attendance is on): pick the **Period** (last 4 weeks, last 3 months, this
-  season, or **Choose dates** for a from and to date) and the **Squads and teams**: **All**,
-  **Whole club events**, or any squads and teams. A squad includes the teams named from it. Each
+  season since it was started in **Seasons**, or **Choose dates** for a from and to date) and the
+  **Squads and teams**: **All**, **Whole club events**, or any squads and teams. A squad includes the teams named from it. Each
   group lists its athletes with sessions present, absent and their attendance rate, followed by
   every session with who took it.
 - **Award results** (when Awards are on): awards whose voting has closed. Open one for its full
