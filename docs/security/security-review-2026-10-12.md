@@ -18,17 +18,17 @@ What's left is mostly at the edges: the join flow could be hammered, the sign-in
 | 4 | Medium | Guardians keep full access to an athlete's health records after the athlete turns 18 | Fixed in PR #90 |
 | 5 | Medium | Check-in averages let a committee member or physio work out one athlete's scores | Fixed in PR #90 |
 | 6 | Medium (verify) | Email/password sign-up is probably still on in the dashboard; the repo can't tell | Dashboard + partly fixed in PR #90 |
-| 7 | Low | Any coach or manager can list and mark attendance for every athlete in the club | Decision needed (documented as intended) |
-| 8 | Low | A physio with no team placement sees every athlete's injuries | Decision needed (documented as intended) |
-| 9 | Low | Admins can record their own WWCC and verify themselves | Recommendation |
+| 7 | Low | Any coach or manager can list and mark attendance for every athlete in the club | Decided: leave as is (agreed rule) |
+| 8 | Low | A physio with no team placement sees every athlete's injuries | Fixed in the follow-up PR: Head Physio only |
+| 9 | Low | Admins can record their own WWCC and verify themselves | Fixed in the follow-up PR: another admin must |
 | 10 | Low | Members could change their name and PlayHQ email after approval | Fixed in PR #90 |
-| 11 | Low | Email addresses show in place of a blank name in rosters, boards and nominee lists | Recommendation |
+| 11 | Low | Email addresses show in place of a blank name in rosters, boards and nominee lists | Fixed in the follow-up PR: a name is needed to approve |
 | 12 | Low | The copy of a shared injury document stays in the phone's cache | Fixed in PR #90 |
 | 13 | Low | `is_admin()` was callable by signed-out visitors; `touch_updated_at()` had no `search_path` | Fixed in PR #90 |
-| 14 | Low | Anyone can re-bind another member's push token to themselves | Recommendation |
-| 15 | Low | A `firstpasshq://club/CODE` link switches the device to another club with no confirmation | Recommendation |
+| 14 | Low | Anyone can re-bind another member's push token to themselves | Fixed in the follow-up PR: refused while another member holds it |
+| 15 | Low | A `firstpasshq://club/CODE` link switches the device to another club with no confirmation | Fixed in the follow-up PR: the app asks first |
 | 16 | Low | Over-the-air updates aren't code-signed; no 2FA requirement is written down for the accounts that control the app | Dashboard / docs |
-| 17 | Low | Any voter can list every approved member through `award_nominees()` | Recommendation |
+| 17 | Low | Any voter can list every approved member through `award_nominees()` | Fixed in the follow-up PR: awards for each team or squad list only its members |
 | 18 | Info | Dependencies: one reachable moderate advisory (deep-link query parsing), the rest are build-time tooling | Watch |
 
 ### Earlier findings (7 and 8 October)
@@ -103,19 +103,19 @@ Supabase enables the Email provider with sign-ups by default. The app only offer
 
 **Where:** `can_take_attendance` (`20261009000000_optional_squads.sql:441-455`), `is_attendance_taker` (`20261009110000_multiple_roles.sql:193`), `attendance_roster` (`20261007130000_attendance.sql:378-397`), `can_see_attendance_session` (`attendance.sql:163-181`).
 
-Any approved coach or manager, placed anywhere or nowhere, can call `attendance_roster(<any top-level squad or team>)` or `attendance_roster(null)`, create a session for that group with `save_attendance`, and then see and edit it. This is the agreed "any taker can run whole-squad and club events" rule, so it may be intended; it is the one place in the schema where someone in team A can list and act on team B's athletes. Everyone with those roles holds a WWCC. Consider limiting it to groups the person leads plus club-wide events, or leave it and keep it in mind when giving out the manager role.
+Any approved coach or manager, placed anywhere or nowhere, can call `attendance_roster(<any top-level squad or team>)` or `attendance_roster(null)`, create a session for that group with `save_attendance`, and then see and edit it. This is the agreed "any taker can run whole-squad and club events" rule, so it may be intended; it is the one place in the schema where someone in team A can list and act on team B's athletes. Everyone with those roles holds a WWCC. **Decision (Matt, 12 Oct):** leave as is. Keep it in mind when giving out the manager role.
 
 ## 8. Low: an unplaced physio sees every athlete's injuries
 
 **Where:** `physio_looks_after` (`20261012001000_team_physios.sql:44`).
 
-A member with the physio role who isn't placed in any team "keeps looking after every athlete, as before", so adding the role to someone without placing them grants every injury record and document in the club. Documented, but easy to do by accident. Consider requiring the head physio flag for club-wide access once a club has team physios.
+A member with the physio role who isn't placed in any team "keeps looking after every athlete, as before", so adding the role to someone without placing them grants every injury record and document in the club. Documented, but easy to do by accident. **Decision and fix (Matt, 12 Oct):** only the Head Physio sees every athlete; a physio in no squad or team sees nobody until placed or made Head Physio. Physios who are unplaced today lose access when this deploys, so check each club has a Head Physio.
 
 ## 9. Low: admins can self-attest
 
 **Where:** `admin_set_member_details` (`20261008000000_child_safety.sql:68`), `admin_mark_verified` (`:105`). `admin_set_wwcc_exemption` already refuses `p_profile_id = auth.uid()`; these two don't.
 
-An admin can type their own WWCC number and expiry and mark themselves "checked against PlayHQ". There is still no audit log of admin actions (earlier finding 5). Suggested: refuse self-verification, and record who set a WWCC (a `wwcc_set_by` column, or an `audit_log` table written by the admin functions, readable by admins and never editable). A one-admin club would then need a second admin or committee member to record the first admin's check; the child-safety audit covers whether admins must hold one at all.
+An admin can type their own WWCC number and expiry and mark themselves "checked against PlayHQ". There is still no audit log of admin actions (earlier finding 5). Suggested: refuse self-verification, and record who set a WWCC (a `wwcc_set_by` column, or an `audit_log` table written by the admin functions, readable by admins and never editable). **Decision and fix (Matt, 12 Oct):** another admin must. An admin can no longer change their own date of birth or card details or verify themselves (the exemption and validation functions already refused it). A one-admin club needs a second admin to record the first admin's check. The audit log is still not built.
 
 ## 10. Low: names and PlayHQ emails editable after approval (fixed)
 
@@ -128,6 +128,8 @@ The column grant and update policy let an approved member change `full_name` and
 **Where:** `coalesce(nullif(full_name, ''), email)` in `award_nominee_pool`, `attendance_roster`, `attendance_register`, `athlete_attendance_summary`, `check_in_board`, `goal_board`, `message_receipts`, `visible_injuries`, `training_to_review`, `send_group_message` (sender name), `notify_admins_of_join_request`.
 
 Profiles are own-row-only, so these fallbacks are the only way one member's email reaches another. A name is required by the join form, so it only happens for accounts created without one (`handle_new_user` with no metadata) that an admin approves anyway. Suggested: require a name in `admin_save_member` on approval, and fall back to "Member" instead of the email in the non-admin functions.
+
+**Decision and fix (Matt, 12 Oct):** show "Member". The join form already requires a name, and `admin_save_member` now refuses to approve a member with no name, so an approved member always has one and the email fallback can't be reached for them.
 
 ## 12. Low: shared document copy in the cache (fixed)
 
@@ -145,11 +147,15 @@ Profiles are own-row-only, so these fallbacks are the only way one member's emai
 
 Anyone who learns an admin's Expo push token can register it as their own, so that admin silently stops getting join-request pushes. Tokens aren't secret by design, and nothing is leaked (non-admins receive nothing). The re-bind exists so a phone that changes hands moves to the new member. Suggested: only move a token when the previous owner's session is gone, or just delete the old row on sign-out (already done) and refuse a token that belongs to a different, still-approved member.
 
+**Decision and fix (Matt, 12 Oct):** refuse it while another member holds it. Signing out releases it.
+
 ## 15. Low: club links switch the device silently
 
 **Where:** `src/app/club/[code].tsx`.
 
 Opening `firstpasshq://club/CODE` picks that club and carries on to sign-in or home with no confirmation. Only codes the build knows work, and each club has its own session, so no data crosses; but a link in a message can move someone's app onto another club's sign-in screen, which is confusing at best. Suggested: when the device already has a club chosen and the link names a different one, show "Switch to <club>?" first.
+
+**Decision and fix (Matt, 12 Oct):** the app asks first when the phone already has a club; a first-time open goes straight in.
 
 ## 16. Low: updates, builds and the accounts behind them
 
@@ -161,7 +167,9 @@ Opening `firstpasshq://club/CODE` picks that club and carries on to sign-in or h
 
 **Where:** `20261008010000_fixtures_and_awards.sql:539-553` → `award_nominee_pool` (`20261008160000_award_age_limit.sql:30-60`).
 
-For an award whose nominees are "members" and whose voters include everyone, every approved member's name is returned to every voter. With a min or max age set, who is in and out also says whether their date of birth falls in that window. Names in a club context are low risk, and admins choose the thresholds; mentioned because it is the broadest member listing in the schema. Consider limiting member-wide nominee lists to the voter's own groups.
+For an award whose nominees are "members" and whose voters include everyone, every approved member's name is returned to every voter. With a min or max age set, who is in and out also says whether their date of birth falls in that window. Names in a club context are low risk, and admins choose the thresholds; mentioned because it is the broadest member listing in the schema. 
+
+**Decision and fix (Matt, 12 Oct):** the restriction comes from the award, not from the name risk. An award with a winner for each squad or team is voted on, and its "any member" nominees are drawn from, that squad or team only. Club awards stay open to everyone or to the roles chosen.
 
 ## 18. Info: dependencies
 

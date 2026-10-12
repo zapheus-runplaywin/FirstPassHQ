@@ -121,8 +121,9 @@ their parents or guardians.
 messages sent to everyone in the club only when an admin turns on **Physios get club messages** in
 Club settings.
 
-‡ A physio placed in squads or teams looks after the athletes in them. The Head Physio, and a
-physio who isn't in any squad or team, looks after every athlete.
+‡ A physio placed in squads or teams looks after the athletes in them. Only the Head Physio looks
+after every athlete. A physio who isn't in any squad or team sees no athletes until an admin places
+them or makes them Head Physio.
 
 "Own groups" and "own athletes" mean the squads and teams you're listed in as a coach or manager.
 Club awards are voted on by the roles, squads and teams each award names, so not every award is
@@ -159,7 +160,9 @@ separate from every other club. So the first time it opens, the app asks for you
 West Coast Thunder's is `THUNDER`. Type it in, check the club's name that appears, and tap
 **Continue to West Coast Thunder**. If the club gives you a QR code, scan it with your phone's
 camera instead, or open the club's invite link: either one opens the app with the club already
-picked. The app remembers your club after that.
+picked. The app remembers your club after that. If the app is already set up for a club and you open
+another club's link, it asks **Switch to this club?** first; tap **Stay with** your club if you
+didn't expect it.
 
 <img src="user-guide/club-code.png" width="210" alt="Find your club: the club code screen">
 
@@ -329,7 +332,10 @@ without squads the list is called **My teams**.
 
 When the club runs an award vote that includes you, it appears in your to-do list and on the
 **Awards** card. Who can vote depends on the award: for example, every member votes for Volunteer
-of the year, and athletes vote for their own team's Players' player. Physios and guests don't vote.
+of the year, and athletes vote for their own team's Players' player. When an award has a winner for
+each squad or team, you only see and vote for members of your own squad or team, even if it is open to
+every member. Club-wide awards are open to everyone, or to the roles the club chose. Physios and
+guests don't vote.
 
 1. Tap the vote. It shows the award, what to think about, and when voting closes.
 2. Tap who you're voting for. For a 3-2-1 vote, tap three people in order: first place gets 3
@@ -934,7 +940,8 @@ as **Head Physio**. Which athletes a physio looks after:
 
 - **Head Physio**: every athlete, whether or not the Head Physio is in a squad or team.
 - **A physio in squads or teams**: the athletes in those squads and teams.
-- **A physio in no squad or team**: every athlete, so a club with one physio doesn't need to place them.
+- **A physio in no squad or team**: no athletes. A club with one physio should mark them **Head
+  Physio**; otherwise place them in the squads and teams they look after.
 
 - **Check-ins** shows the same squad, team and club averages the committee sees (see
   [Check-in averages](#check-in-averages)). Physios never see an individual athlete's answers.
@@ -1062,7 +1069,9 @@ role doesn't pause when their check expires, so the club can never be locked out
 they show under **Needs checking** and on every admin's to-do list until the renewed card is
 recorded, and they can still be stood down.
 
-**Verifying someone.** Guardians must be verified before they can be linked to a child. If their
+**Verifying someone.** You can't verify yourself, change your own date of birth or card details, or
+exempt yourself; ask another admin. An admin can't approve a member who hasn't given their name.
+Guardians must be verified before they can be linked to a child. If their
 PlayHQ email matches the registration, tap **Checked against PlayHQ**. Otherwise get the 6-digit code
 from their home screen yourself, in person or over a channel you already trust, enter it
 under **Their code** and tap **Check code**. The member then shows as "Verified".
@@ -1240,9 +1249,10 @@ still needed.
   calendar, using the arrows to move to later months.
 - **Voters**: **The whole club**, or **Chosen squads and teams**. For chosen groups, pick **One
   winner** or **A winner for each** squad or team. With a winner for each, members vote only in
-  their own group. Then the **Roles that vote**. Athletes, coaches, managers and guardians vote in
+  their own group, and **Any member** nominees mean the members of that squad or team. Then the **Roles that vote**. Athletes, coaches, managers and guardians vote in
   the squads and teams they're in. Committee and admins vote wherever they are. **Every member**
-  opens it to everyone except physios and guests, who don't vote.
+  opens it to everyone except physios and guests, who don't vote (for a winner-for-each award,
+  to the members of that squad or team).
 - **Nominees**: **Athletes** or **Coaches** in the voting groups, **Any member**, or **Names I
   list**, one per line, for people who aren't in the app, such as umpires.
 - **Age restricted** (not for listed names): **Any age**, or **Set ages** to match the committee's
