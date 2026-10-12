@@ -726,8 +726,9 @@ also coaches or manages a squad or team can choose **A squad or team** to messag
 
 **Check-ins** shows average scores for each squad, and for each team once its squad phase is
 complete, plus how many checked in and how many are flagged. **Trends** graphs the
-averages for one group or the whole club. Scores only show once at least 3 athletes in a group
-have checked in, so they can't point to one person. Individual answers are only for the athlete,
+averages for one group or the whole club. Scores only show once at least 5 athletes in a group
+have checked in, and a group's scores hide on any day it is within 4 check-ins of the club, its
+squad or one of its teams, so subtracting one group from another can't point to one person. Individual answers are only for the athlete,
 their guardians and their coaches.
 
 <img src="user-guide/check-ins-overview.png" width="210" alt="Committee check-in overview">
@@ -899,7 +900,8 @@ PlayHQ email matches the registration, tap **Checked against PlayHQ**. Otherwise
 from their home screen yourself, in person or over a channel you already trust, enter it
 under **Their code** and tap **Check code**. The member then shows as "Verified".
 
-When an athlete turns 18, the next time you save them their guardian links are removed.
+When an athlete turns 18 their guardians lose access to them that day (injuries, check-ins, goals,
+certificates and the home screen list); the next time you save the athlete the links are removed.
 
 To turn someone down, choose a reason (**PlayHQ email doesn't match**, **Not registered with the
 club** or **Other**) and tap **Don't approve**. They see the reason and can request again.
@@ -1285,7 +1287,7 @@ once saved, only replaced or removed, and anyone who gets it wrong five times in
 | Date of birth, Working With Children Check and exemption | You and admins. Awards with an age limit use it to decide who can be voted for, without showing it.   |
 | Messages                | The people they were sent to, the sender, and admins. Guardians of athletes under 18 get a copy of every message sent to their athlete, and of every message their athlete sends as a captain. Guests don't get messages; physios get messages sent to the Physio role and to their squads and teams, and whole-club messages only if an admin turns that on. |
 | Read receipts           | The sender and admins.                                                                                                      |
-| Daily check-in answers and notes | The athlete, their guardians and their coaches. The committee, physios and admins see only group averages, hidden below 3 check-ins. |
+| Daily check-in answers and notes | The athlete, their guardians and their coaches. The committee, physios and admins see only group averages, hidden below 5 check-ins or when two groups differ by fewer than 5. |
 | Injuries and documents  | The athlete, their guardians, their coaches, the physios who look after them (the Head Physio, physios in their squad or team, and physios in no squad or team), the committee and admins. Managers don't see injuries. Only the committee and admins can save or share documents; everyone else views them in the app. |
 | Game goals and reflections | The athlete, their guardians and their coaches. Only the athlete and their coaches set goals, and only the athlete reflects; guardians just read them. The committee, physios and admins don't see them. |
 | Team goals              | The team's athletes, their guardians and its coaches. Only its coaches set and review them. Athletes and coaches in the team can comment; guardians read the comments. |
