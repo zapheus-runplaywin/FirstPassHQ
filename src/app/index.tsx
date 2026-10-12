@@ -4,12 +4,14 @@ import { useCallback, useEffect, useState } from 'react';
 import { Pressable, StyleSheet, View } from 'react-native';
 
 import { EventGrid } from '@/components/event-card';
+import { SafeguardingContactsCard } from '@/components/safeguarding';
 import { Screen } from '@/components/screen';
 import { TodoList } from '@/components/todo-list';
 import { ThemedText } from '@/components/themed-text';
 import { Button, Card, PressableCard } from '@/components/ui';
 import { Spacing } from '@/constants/theme';
 import { useTheme } from '@/hooks/use-theme';
+import { isMinor } from '@/lib/age';
 import { useAuth } from '@/lib/auth';
 import { useCanTakeAttendance, useCanViewAttendance } from '@/lib/attendance';
 import { useAwardSlots } from '@/lib/awards';
@@ -559,29 +561,52 @@ function JoinStatus() {
     );
   }
 
+  // What they said at Join; the admin checks it before approving them.
+  const child =
+    profile.requested_role === 'athlete' &&
+    !!profile.declared_date_of_birth &&
+    isMinor(profile.declared_date_of_birth, false);
+
   return (
-    <Card>
-      <ThemedText type="smallBold">Waiting for approval</ThemedText>
-      <ThemedText type="small" themeColor="textSecondary">
-        A club admin will approve your request and add you to your team. Pull down to check again.
-      </ThemedText>
-      {profile.verified_at ? (
+    <>
+      <Card>
+        <ThemedText type="smallBold">Waiting for approval</ThemedText>
         <ThemedText type="small" themeColor="textSecondary">
-          ✓ A club admin has confirmed who you are.
+          A club admin will approve your request and add you to your team. Pull down to check
+          again.
         </ThemedText>
-      ) : (
-        <>
+        {profile.verified_at ? (
           <ThemedText type="small" themeColor="textSecondary">
-            If an admin can’t match you to your PlayHQ registration, they may ask for this code in
-            person or over a channel they already trust. Never share it with anyone else.
+            ✓ A club admin has confirmed who you are.
           </ThemedText>
-          <VerificationCode />
-        </>
-      )}
-      <View style={styles.cardAction}>
-        <Button title="Edit request" variant="secondary" onPress={() => router.push('/join')} />
-      </View>
-    </Card>
+        ) : (
+          <>
+            <ThemedText type="small" themeColor="textSecondary">
+              If an admin can’t match you to your PlayHQ registration, they may ask for this code in
+              person or over a channel they already trust. Never share it with anyone else.
+            </ThemedText>
+            <VerificationCode />
+          </>
+        )}
+        <View style={styles.cardAction}>
+          <Button title="Edit request" variant="secondary" onPress={() => router.push('/join')} />
+        </View>
+      </Card>
+      {child ? (
+        <Card>
+          <ThemedText type="smallBold">Ask your parent or guardian to join</ThemedText>
+          <ThemedText type="small" themeColor="textSecondary">
+            You’re under 18, so a parent or guardian needs to join the club in the app too
+            {profile.guardian_email ? `, signing in with ${profile.guardian_email}` : ''}. A club
+            admin checks who they are and links them to you, and then you can be approved.
+          </ThemedText>
+          <ThemedText type="small" themeColor="textSecondary">
+            If anything worries you, these people can help:
+          </ThemedText>
+        </Card>
+      ) : null}
+      {child ? <SafeguardingContactsCard /> : null}
+    </>
   );
 }
 

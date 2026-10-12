@@ -64,12 +64,17 @@ export type Profile = {
   requested_team_id: string | null;
   join_requested_at: string | null;
   /**
-   * The admin's choice that an athlete is under 18, used when no date of birth
-   * is recorded. Athletes under 18 have parents or guardians linked to them.
+   * Whether an athlete is under 18. Set from their date of birth when an admin
+   * saves them; for athletes approved before a date of birth was needed, it is
+   * the admin's old choice. Athletes under 18 have parents or guardians linked.
    */
   under_17: boolean;
-  /** Recorded by an admin. Decides whether an athlete is under 18. */
+  /** Checked and recorded by an admin. Decides whether an athlete is under 18. */
   date_of_birth: string | null;
+  /** What the member said when asking to join. Not checked, so it decides nothing. */
+  declared_date_of_birth: string | null;
+  /** A parent's or guardian's email, given by an athlete under 18 when asking to join. */
+  guardian_email: string | null;
   /** Working With Children Check, recorded by an admin for coaches, managers, physios and committee members. */
   wwcc_number: string | null;
   wwcc_expires_on: string | null;

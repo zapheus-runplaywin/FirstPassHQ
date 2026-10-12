@@ -5,6 +5,7 @@ import { PolicyLinks } from '@/components/policy-links';
 import { Screen } from '@/components/screen';
 import { ThemedText } from '@/components/themed-text';
 import { Button, ChipGroup, ErrorText, TextField } from '@/components/ui';
+import { formatDate, isMinor, parseDate } from '@/lib/age';
 import { useAuth } from '@/lib/auth';
 import { useSquads } from '@/lib/club';
 import { isTeamRole, requestableRoles, roleLabels } from '@/lib/labels';
@@ -20,12 +21,17 @@ export default function JoinScreen() {
   const [playhqEmail, setPlayhqEmail] = useState(profile?.playhq_email ?? '');
   const [role, setRole] = useState<AppRole | null>(profile?.requested_role ?? null);
   const [teamId, setTeamId] = useState<string | null>(profile?.requested_team_id ?? null);
+  const [dateOfBirth, setDateOfBirth] = useState(formatDate(profile?.declared_date_of_birth));
+  const [guardianEmail, setGuardianEmail] = useState(profile?.guardian_email ?? '');
   const [password, setPassword] = useState('');
   const [needsPassword, setNeedsPassword] = useState(false);
   const [saving, setSaving] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
   const showTeams = role !== null && isTeamRole(role);
+  const dob = parseDate(dateOfBirth);
+  // A child athlete needs a parent or guardian linked before they're approved.
+  const child = role === 'athlete' && !!dob && isMinor(dob, false);
 
   useEffect(() => {
     supabase.rpc('join_password_required').then(({ data }) => setNeedsPassword(data === true));
@@ -36,8 +42,16 @@ export default function JoinScreen() {
       setError('Please enter your name.');
       return;
     }
+    if (!dob) {
+      setError('Please enter your date of birth as DD/MM/YYYY.');
+      return;
+    }
     if (!role) {
       setError('Please choose what best describes you.');
+      return;
+    }
+    if (child && !guardianEmail.trim()) {
+      setError('Please enter the email of a parent or guardian.');
       return;
     }
     if (role === 'guardian' && !playhqEmail.trim()) {
@@ -58,6 +72,8 @@ export default function JoinScreen() {
       p_requested_role: role,
       p_requested_team_id: showTeams ? teamId : null,
       p_join_password: needsPassword ? password : null,
+      p_date_of_birth: dob,
+      p_guardian_email: child ? guardianEmail : null,
     });
     setSaving(false);
     if (rpcError || refused) {
@@ -77,6 +93,19 @@ export default function JoinScreen() {
         autoComplete="name"
         textContentType="name"
       />
+
+      <TextField
+        label="Date of birth"
+        value={dateOfBirth}
+        onChangeText={setDateOfBirth}
+        placeholder="DD/MM/YYYY"
+        keyboardType="numbers-and-punctuation"
+        maxLength={10}
+      />
+      <ThemedText type="small" themeColor="textSecondary">
+        A club admin checks it against PlayHQ or ID. It decides whether the club’s rules for
+        under 18s apply to you.
+      </ThemedText>
 
       <TextField
         label="PlayHQ email"
@@ -124,6 +153,24 @@ export default function JoinScreen() {
           autoCorrect={false}
           secureTextEntry
         />
+      ) : null}
+
+      {child ? (
+        <>
+          <TextField
+            label="Parent or guardian’s email"
+            value={guardianEmail}
+            onChangeText={setGuardianEmail}
+            placeholder="The email they’ll sign in with"
+            autoCapitalize="none"
+            autoComplete="off"
+            keyboardType="email-address"
+          />
+          <ThemedText type="small" themeColor="textSecondary">
+            You’re under 18, so a parent or guardian needs to join the club in the app too. A club
+            admin links them to you before you can be approved.
+          </ThemedText>
+        </>
       ) : null}
 
       {role === 'athlete' ? (

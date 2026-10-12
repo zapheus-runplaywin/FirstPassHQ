@@ -6,6 +6,7 @@ import { Screen } from '@/components/screen';
 import { ThemedText } from '@/components/themed-text';
 import { PressableCard, TextField } from '@/components/ui';
 import { Spacing } from '@/constants/theme';
+import { isMinor } from '@/lib/age';
 import { PROFILE_COLUMNS } from '@/lib/auth';
 import { rejectionReasonLabels, roleLabels, rolesLabel } from '@/lib/labels';
 import { safetyIssues } from '@/lib/safety';
@@ -88,7 +89,7 @@ export default function MembersScreen() {
         empty="No requests waiting."
         members={waiting}
         describe={(m) =>
-          `Asked to join as ${m.requested_role ? roleLabels[m.requested_role] : 'a member'}${m.verified_at ? ' · Verified in person' : ''}`
+          `Asked to join as ${m.requested_role ? roleLabels[m.requested_role] : 'a member'}${saysUnder18(m) ? ' · Says they’re under 18' : ''}${m.verified_at ? ' · Verified in person' : ''}`
         }
       />
       <Section
@@ -160,3 +161,12 @@ const styles = StyleSheet.create({
     gap: Spacing.two,
   },
 });
+
+/** An athlete whose date of birth at Join makes them under 18. Not checked yet. */
+function saysUnder18(m: Profile) {
+  return (
+    m.requested_role === 'athlete' &&
+    !!m.declared_date_of_birth &&
+    isMinor(m.declared_date_of_birth, false)
+  );
+}
