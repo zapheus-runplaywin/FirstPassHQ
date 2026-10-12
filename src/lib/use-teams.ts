@@ -13,6 +13,7 @@ export function useTeams() {
 /** Same as useTeams, with a way to load them again after a change. */
 export function useTeamList() {
   const [teams, setTeams] = useState<Team[]>([]);
+  const [loaded, setLoaded] = useState(false);
 
   const reload = useCallback(
     () =>
@@ -23,7 +24,10 @@ export function useTeamList() {
         .order('season', { ascending: false })
         .order('sort_order')
         .order('name')
-        .then(({ data }) => setTeams((data as Team[] | null) ?? [])),
+        .then(({ data }) => {
+          setTeams((data as Team[] | null) ?? []);
+          setLoaded(true);
+        }),
     [],
   );
 
@@ -31,7 +35,7 @@ export function useTeamList() {
     reload();
   }, [reload]);
 
-  return { teams, reload };
+  return { teams, loaded, reload };
 }
 
 export function squadsOf(teams: Team[]) {
