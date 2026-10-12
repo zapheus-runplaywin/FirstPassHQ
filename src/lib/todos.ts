@@ -37,6 +37,7 @@ export function buildTodos({
   certificatesToCheck = 0,
   declarationWaiting = false,
   newConcerns = 0,
+  consentsNeeded = [],
   today = new Date(),
 }: {
   userId: string | undefined;
@@ -66,6 +67,8 @@ export function buildTodos({
   declarationWaiting?: boolean;
   /** Concerns nobody has acted on yet, for the people who handle them. */
   newConcerns?: number;
+  /** A guardian's children under 18 still waiting for their consent. */
+  consentsNeeded?: { id: string; name: string }[];
   today?: Date;
 }): Todo[] {
   const todos: Todo[] = [];
@@ -87,6 +90,15 @@ export function buildTodos({
       title: 'Accept the volunteer declaration',
       detail: 'Your club role starts once you do',
       href: '/declaration',
+    });
+  }
+
+  for (const child of consentsNeeded) {
+    todos.push({
+      key: `consent-${child.id}`,
+      title: `Give consent for ${child.name}`,
+      detail: 'Choose who sees their check-ins and injury details',
+      href: `/consent/${child.id}`,
     });
   }
 

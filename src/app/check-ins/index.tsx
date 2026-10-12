@@ -155,14 +155,16 @@ export default function CheckInsScreen() {
 
                 {board === null ? null : board.length === 0 ? (
                   <ThemedText type="small" themeColor="textSecondary">
-                    There are no athletes in this group yet.
+                    No athletes to show. Athletes under 18 show here once a parent or guardian
+                    gives consent.
                   </ThemedText>
                 ) : (
                   <>
                     <ThemedText type="small" themeColor="textSecondary">
                       {done.length} of {board.length} checked in
                       {flagged.length > 0 ? ` · ${flagged.length} flagged` : ''}. A score of 2 or
-                      less flags an athlete.
+                      less flags an athlete. Athletes under 18 show here once a parent or guardian
+                      gives consent.
                     </ThemedText>
 
                     {flagged.length > 0 ? (

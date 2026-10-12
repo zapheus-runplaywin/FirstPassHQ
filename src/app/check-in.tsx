@@ -88,6 +88,9 @@ export default function CheckInScreen() {
       <ThemedText type="small" themeColor="textSecondary">
         Thirty seconds a day. Your coaches see your answers so they can adjust training, and a low
         score lets them know to check in with you.
+        {profile && isMinor(profile.date_of_birth, profile.under_17)
+          ? ' As you’re under 18, they see them once a parent or guardian agrees.'
+          : ''}
       </ThemedText>
 
       {checkInQuestions.map((q) => (
@@ -110,7 +113,7 @@ export default function CheckInScreen() {
       />
       <ThemedText type="small" themeColor="textSecondary">
         {profile && isMinor(profile.date_of_birth, profile.under_17)
-          ? 'Your coaches and your parents or guardians can read this note.'
+          ? 'Your parents or guardians can read this note, and your coaches once a parent or guardian agrees.'
           : 'Your coaches can read this note.'}
       </ThemedText>
 

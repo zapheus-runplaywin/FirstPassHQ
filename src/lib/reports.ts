@@ -264,6 +264,15 @@ export function wwccReport(
 
 export type Guardianship = { guardian_id: string; athlete_id: string };
 
+/** The consents in force for an athlete under 18. */
+export type ChildConsentStatus = { athlete_id: string; data: boolean; health: boolean };
+
+function consentLabel(consent: ChildConsentStatus | undefined) {
+  if (!consent || (!consent.data && !consent.health)) return 'None given';
+  if (consent.data && consent.health) return 'Check-ins and injuries';
+  return consent.data ? 'Check-ins only' : 'Injuries only';
+}
+
 /** Whole years old today. */
 export function ageOn(dateOfBirth: string, today = new Date()) {
   const [year, month, day] = dateOfBirth.split('-').map(Number);
@@ -277,8 +286,10 @@ export function under18sReport(
   guardianships: Guardianship[],
   placements: Placement[],
   teams: Team[],
+  consents: ChildConsentStatus[] = [],
 ): Report {
   const byId = new Map(members.map((m) => [m.id, m]));
+  const consentOf = new Map(consents.map((c) => [c.athlete_id, c]));
   const athletes = members
     .filter(
       (m) => m.status === 'approved' && hasRole(m, 'athlete') && isMinor(m.date_of_birth, m.under_17),
@@ -310,6 +321,7 @@ export function under18sReport(
             .join('\n')
         : 'None linked',
       guardians.map((g) => g.email ?? g.playhq_email ?? '').join('\n'),
+      consentLabel(consentOf.get(member.id)),
     ],
     flag: guardians.length === 0,
   });
@@ -320,7 +332,12 @@ export function under18sReport(
     { label: 'Squad or team', width: 1.2 },
     { label: 'Parents and guardians', width: 1.5 },
     { label: 'Guardian email', width: 1.8 },
+    { label: 'Consent', width: 1.1 },
   ];
+  const fullConsent = athletes.filter((a) => {
+    const c = consentOf.get(a.member.id);
+    return !!c?.data && !!c?.health;
+  }).length;
   const withGuardian = athletes.filter((a) => a.guardians.length > 0);
   const noBirthday = athletes.filter((a) => !a.member.date_of_birth).length;
 
@@ -333,6 +350,8 @@ export function under18sReport(
       { label: 'With a parent or guardian', value: withGuardian.length },
       { label: 'No parent or guardian', value: athletes.length - withGuardian.length },
       { label: 'No date of birth', value: noBirthday },
+      { label: 'Full consent given', value: fullConsent },
+      { label: 'Consent missing', value: athletes.length - fullConsent },
     ],
     sections: [
       {
@@ -349,7 +368,7 @@ export function under18sReport(
       },
     ],
     footnote:
-      'Under 18 is worked out from the date of birth, or from the admin’s “Under 18” choice when no date of birth is recorded. “Not verified” means the guardian hasn’t been checked with their in-app code or against PlayHQ.',
+      'Under 18 is worked out from the date of birth, or from the admin’s “Under 18” choice when no date of birth is recorded. “Not verified” means the guardian hasn’t been checked with their in-app code or against PlayHQ. Consent is given by a verified parent or guardian in the app; until it is, the athlete’s coaches, physios and the committee don’t see their check-ins or injuries.',
   };
 }
 

@@ -1,6 +1,7 @@
 import { router } from 'expo-router';
 import { useEffect, useState } from 'react';
 
+import { PolicyLinks } from '@/components/policy-links';
 import { Screen } from '@/components/screen';
 import { ThemedText } from '@/components/themed-text';
 import { Button, ChipGroup, ErrorText, TextField } from '@/components/ui';
@@ -125,6 +126,14 @@ export default function JoinScreen() {
         />
       ) : null}
 
+      {role === 'athlete' ? (
+        <ThemedText type="small" themeColor="textSecondary">
+          If you’re under 18: the club keeps your name, date of birth, check-ins, injuries, game
+          goals, attendance and the messages sent to you. Your parents or guardians see them. Your
+          coaches see your check-ins and injuries once a parent or guardian agrees.
+        </ThemedText>
+      ) : null}
+      <PolicyLinks intro="By joining you agree to the club’s policies:" />
       <ErrorText>{error}</ErrorText>
       <Button title="Send request" onPress={submit} busy={saving} />
     </Screen>
