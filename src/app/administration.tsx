@@ -9,7 +9,7 @@ import { pendingRequestsLabel, usePendingRequests } from '@/lib/use-pending-requ
 
 export default function AdministrationScreen() {
   const { pendingCount, reloadPending } = usePendingRequests();
-  const { features, squads } = useClub();
+  const { features, squads, affiliation } = useClub();
   const [refreshing, setRefreshing] = useState(false);
 
   async function onRefresh() {
@@ -47,6 +47,15 @@ export default function AdministrationScreen() {
           Child Safety Officer, Complaints Manager, governing body and policy
         </ThemedText>
       </PressableCard>
+
+      {affiliation ? (
+        <PressableCard onPress={() => router.push('/admin/affiliation')}>
+          <ThemedText type="smallBold">Affiliation</ThemedText>
+          <ThemedText type="small" themeColor="textSecondary">
+            Checklist, primary contacts and PlayHQ registrations for your association
+          </ThemedText>
+        </PressableCard>
+      ) : null}
 
       <PressableCard onPress={() => router.push('/admin/club')}>
         <ThemedText type="smallBold">Club settings</ThemedText>

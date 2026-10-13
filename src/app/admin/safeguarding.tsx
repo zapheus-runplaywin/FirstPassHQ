@@ -2,22 +2,19 @@ import { router, useFocusEffect } from 'expo-router';
 import { useCallback, useState } from 'react';
 import { Platform, StyleSheet, Switch, View } from 'react-native';
 
+import { PersonPicker } from '@/components/person-picker';
 import { Screen } from '@/components/screen';
 import { ThemedText } from '@/components/themed-text';
-import { Button, Card, ChipGroup, ErrorText, TextField } from '@/components/ui';
+import { Button, Card, ErrorText, TextField } from '@/components/ui';
 import { Spacing } from '@/constants/theme';
 import { useTheme } from '@/hooks/use-theme';
 import { isMinor } from '@/lib/age';
 import { PROFILE_COLUMNS } from '@/lib/auth';
-import { memberName } from '@/lib/reports';
 import { hasRole } from '@/lib/roles';
 import { wwccStatus } from '@/lib/safety';
 import { supabase } from '@/lib/supabase';
 import type { ClubPolicies } from '@/lib/consents';
 import type { Profile, SafeguardingContacts, VolunteerExemption } from '@/lib/types';
-
-/** How many people to offer while searching. */
-const MATCHES = 5;
 
 /**
  * The club's Child Safety Officer and Complaints Manager, who see and act on
@@ -264,58 +261,6 @@ export default function SafeguardingScreen() {
       <ErrorText>{error}</ErrorText>
       <Button title="Save" onPress={save} busy={busy} />
     </Screen>
-  );
-}
-
-function PersonPicker({
-  label,
-  people,
-  selected,
-  onChange,
-}: {
-  label: string;
-  people: Profile[];
-  selected: string | null;
-  onChange: (id: string | null) => void;
-}) {
-  const [search, setSearch] = useState('');
-  const query = search.trim().toLowerCase();
-  const chosen = people.find((p) => p.id === selected);
-  const matches = query
-    ? people
-        .filter(
-          (p) =>
-            p.id !== selected &&
-            [p.full_name, p.preferred_name, p.email].some((v) => v?.toLowerCase().includes(query)),
-        )
-        .slice(0, MATCHES)
-    : [];
-  return (
-    <View style={styles.group}>
-      <ThemedText type="smallBold">{label}</ThemedText>
-      {chosen ? (
-        <ChipGroup
-          options={[{ value: chosen.id, label: `${memberName(chosen)}  ✕` }]}
-          selected={[chosen.id]}
-          onToggle={() => onChange(null)}
-        />
-      ) : (
-        <ThemedText type="small" themeColor="textSecondary">
-          Nobody chosen.
-        </ThemedText>
-      )}
-      <TextField label="Search" value={search} onChangeText={setSearch} placeholder="Name or email" />
-      {matches.length > 0 ? (
-        <ChipGroup
-          options={matches.map((p) => ({ value: p.id, label: memberName(p) }))}
-          selected={[]}
-          onToggle={(id) => {
-            onChange(id);
-            setSearch('');
-          }}
-        />
-      ) : null}
-    </View>
   );
 }
 

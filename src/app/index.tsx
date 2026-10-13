@@ -12,6 +12,7 @@ import { ThemedText } from '@/components/themed-text';
 import { Button, Card, PressableCard } from '@/components/ui';
 import { Spacing } from '@/constants/theme';
 import { useTheme } from '@/hooks/use-theme';
+import { useAffiliationTodos } from '@/lib/affiliation';
 import { isMinor } from '@/lib/age';
 import { useAuth } from '@/lib/auth';
 import { useCanTakeAttendance, useCanViewAttendance } from '@/lib/attendance';
@@ -83,6 +84,7 @@ export default function HomeScreen() {
   const { unreadCount, reloadUnread } = useUnreadCount();
   const { pendingCount, reloadPending } = usePendingRequests();
   const { safetyTodos, reloadSafetyTodos } = useSafetyTodos();
+  const { affiliationTodos, reloadAffiliationTodos } = useAffiliationTodos();
   const canSeeInjuries = useCanSeeInjuries();
   const canTakeAttendance = useCanTakeAttendance();
   const canViewAttendance = useCanViewAttendance();
@@ -122,6 +124,7 @@ export default function HomeScreen() {
     declarationWaiting: !!exemption && !exemption.declared_at,
     newConcerns,
     consentsNeeded: athletes.filter((a) => a.canConsent && (!a.data || !a.health)),
+    affiliation: affiliationTodos,
   });
 
   const isGuardian = profile?.status === 'approved' && hasRole(profile, 'guardian');
@@ -154,6 +157,7 @@ export default function HomeScreen() {
       refresh(),
       reloadPending(),
       reloadSafetyTodos(),
+      reloadAffiliationTodos(),
       loadAthletes(),
       reloadEvents(),
       reloadUnread(),

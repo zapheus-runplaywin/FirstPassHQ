@@ -46,6 +46,7 @@ export default function ClubSettingsScreen() {
   const [logoPath, setLogoPath] = useState<string | null>(null);
   const [features, setFeatures] = useState<Record<FeatureKey, boolean>>(club.features);
   const [squads, setSquads] = useState(club.squads);
+  const [affiliation, setAffiliation] = useState(club.affiliation);
   /** Whether physios get messages sent to the whole club. Off unless an admin turns it on. */
   const [physioMessages, setPhysioMessages] = useState(false);
   const [loaded, setLoaded] = useState(false);
@@ -75,6 +76,7 @@ export default function ClubSettingsScreen() {
     setLogoPath(saved?.logo_path ?? null);
     setFeatures(club.features);
     setSquads(club.squads);
+    setAffiliation(club.affiliation);
   }
 
   const defaults: Record<ColourKey, string> = {
@@ -148,6 +150,8 @@ export default function ClubSettingsScreen() {
       p_features: Object.fromEntries([
         ...FEATURES.filter((f) => !features[f.key]).map((f) => [f.key, false]),
         ...(squads ? [] : [['squads', false]]),
+        // Off unless turned on, so only an on switch is stored.
+        ...(affiliation ? [['affiliation', true]] : []),
       ]),
     });
     if (saveError) {
@@ -355,6 +359,28 @@ export default function ClubSettingsScreen() {
             />
           </Card>
         ))}
+      </View>
+
+      <View style={styles.section}>
+        <ThemedText type="smallBold">Affiliation</ThemedText>
+        <Card style={styles.featureRow}>
+          <View style={styles.featureText}>
+            <ThemedText type="smallBold">Affiliation records</ThemedText>
+            <ThemedText type="small" themeColor="textSecondary">
+              For clubs and associations that report to their association or Netball WA: the
+              affiliation checklist, primary contacts, safeguarding inductions and each season’s
+              PlayHQ registrations. Admins only.
+            </ThemedText>
+          </View>
+          <Switch
+            accessibilityLabel="Affiliation records"
+            value={affiliation}
+            onValueChange={setAffiliation}
+            trackColor={{ true: theme.accent, false: theme.backgroundSelected }}
+            thumbColor={theme.text}
+            {...(Platform.OS === 'web' ? { activeThumbColor: theme.onAccent } : {})}
+          />
+        </Card>
       </View>
 
       <View style={styles.section}>

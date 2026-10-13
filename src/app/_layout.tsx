@@ -84,7 +84,7 @@ function ClubTheme({ children }: { children: ReactNode }) {
 
 function RootStack() {
   const { loading: authLoading, session, isAdmin } = useAuth();
-  const { ready, features } = useClub();
+  const { ready, features, affiliation } = useClub();
   const { club } = useClubChoice();
   // Montserrat; if it fails to load the app carries on in the system font.
   const [fontsLoaded, fontError] = useFonts({
@@ -206,6 +206,14 @@ function RootStack() {
                 name="admin/reports/integrity"
                 options={{ title: 'Integrity training report' }}
               />
+            </Stack.Protected>
+            <Stack.Protected guard={affiliation}>
+              <Stack.Screen name="admin/affiliation/index" options={{ title: 'Affiliation' }} />
+              <Stack.Screen
+                name="admin/affiliation/registrations"
+                options={{ title: 'PlayHQ registrations' }}
+              />
+              <Stack.Screen name="admin/reports/affiliation" options={{ title: 'Affiliation' }} />
             </Stack.Protected>
             <Stack.Protected guard={features.calendar || features.awards || features.goals}>
               <Stack.Screen name="admin/fixtures" options={{ title: 'Fixtures' }} />

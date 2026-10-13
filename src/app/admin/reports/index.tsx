@@ -7,7 +7,7 @@ import { useClub } from '@/lib/club';
 
 /** Governance and compliance reports for admins, each saved as a PDF. */
 export default function ReportsScreen() {
-  const { features } = useClub();
+  const { features, affiliation } = useClub();
   return (
     <Screen>
       <ThemedText type="small" themeColor="textSecondary">
@@ -51,6 +51,15 @@ export default function ReportsScreen() {
           <ThemedText type="smallBold">Award results</ThemedText>
           <ThemedText type="small" themeColor="textSecondary">
             Full voting results for awards that have closed
+          </ThemedText>
+        </PressableCard>
+      ) : null}
+
+      {affiliation ? (
+        <PressableCard onPress={() => router.push('/admin/reports/affiliation')}>
+          <ThemedText type="smallBold">Affiliation</ThemedText>
+          <ThemedText type="small" themeColor="textSecondary">
+            The affiliation checklist, officers and this season’s PlayHQ registrations
           </ThemedText>
         </PressableCard>
       ) : null}
