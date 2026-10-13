@@ -27,6 +27,7 @@ about this policy, or requests to see or correct your information, go to them.
 | Concerns raised | Whoever raises one, and whoever it's about | To keep children safe |
 | Consents given by parents and guardians | Athletes under 18 | To record what parents agreed to |
 | Who opened a child's records, and when | Athletes under 18, and the club people who opened them | So parents can see who looked at their child's information |
+| Code of conduct acceptances, if the club asks for them in the app | Members, and parents accepting for their child | To record who agreed to the code of conduct each season |
 
 ## Who sees it
 
@@ -45,6 +46,13 @@ injury document is recorded and shown to the athlete, their parents and admins.
 Information isn't shared outside the club, except: with Police or the sport's
 governing body when a child's safety requires it; with the Working with
 Children Screening Unit to check a card; or where the law requires.
+
+## What the app doesn't do
+
+The app is for running the club, not social media. Members can't message each
+other privately or reply to messages, and there are no feeds, profile
+pictures, likes or following. Messages go to whole squads, teams or roles, and
+a parent or guardian gets a copy of every message to or from their child.
 
 ## Where it's kept
 
@@ -85,4 +93,6 @@ Office of the Australian Information Commissioner (oaic.gov.au).
 
 > Note for clubs: whether the Privacy Act applies to your club depends on its
 > turnover and whether it is a health service provider because it keeps injury
-> records. Get advice and adjust this policy to match.
+> records. Get advice and adjust this policy to match. The app's own
+> assessment, with its reasons, is in
+> `docs/security/privacy-and-social-media-assessment-2026-10-13.md`.
