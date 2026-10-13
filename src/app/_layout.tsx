@@ -161,6 +161,7 @@ function RootStack() {
           <Stack.Screen name="concern/new" options={{ title: 'Raise a concern' }} />
           <Stack.Screen name="consent/[id]" options={{ title: 'Consent' }} />
           <Stack.Screen name="records/[id]" options={{ title: 'Who has viewed their records' }} />
+          <Stack.Screen name="activity/[id]" options={{ title: 'What’s changed' }} />
           <Stack.Screen name="concerns/index" options={{ title: 'Concerns' }} />
           <Stack.Screen name="concerns/[id]" options={{ title: 'Concern' }} />
           <Stack.Screen name="concerns/report" options={{ title: 'Concerns register' }} />
