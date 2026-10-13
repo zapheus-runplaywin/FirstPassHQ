@@ -13,7 +13,14 @@ import { fileSlug, sharePdf } from '@/lib/reports';
  * A report on screen, with a button that saves the same report as a PDF. Each
  * table row shows as a card: its first column in bold, then the others.
  */
-export function ReportView({ report }: { report: Report }) {
+export function ReportView({
+  report,
+  action,
+}: {
+  report: Report;
+  /** Replaces the Export PDF button, such as Send return. Runs after the PDF is shared. */
+  action?: { title: string; note: string; disabled?: boolean; onShared: () => Promise<void> | void };
+}) {
   const club = useClub();
   const [exporting, setExporting] = useState(false);
   const [error, setError] = useState<string | null>(null);
@@ -27,6 +34,7 @@ export function ReportView({ report }: { report: Report }) {
         `${fileSlug(club.shortName)}-${fileSlug(report.title)}-${toDateString(new Date())}.pdf`,
         bytes,
       );
+      await action?.onShared();
     } catch (e) {
       setError(e instanceof Error ? e.message : 'The PDF didn’t save. Try again.');
     } finally {
@@ -55,9 +63,15 @@ export function ReportView({ report }: { report: Report }) {
         </View>
       ) : null}
 
-      <Button title="Export PDF" onPress={exportPdf} busy={exporting} />
+      <Button
+        title={action?.title ?? 'Export PDF'}
+        onPress={exportPdf}
+        busy={exporting}
+        disabled={action?.disabled}
+      />
       <ThemedText type="small" themeColor="textSecondary">
-        Opens the share sheet, so you can save it to OneDrive or attach it to an email.
+        {action?.note ??
+          'Opens the share sheet, so you can save it to OneDrive or attach it to an email.'}
       </ThemedText>
       <ErrorText>{error}</ErrorText>
 

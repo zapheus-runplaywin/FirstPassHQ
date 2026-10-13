@@ -15,9 +15,10 @@ import {
   type Registration,
 } from '@/lib/affiliation';
 import { formatDate, isMinor } from '@/lib/age';
+import type { ClubPolicies } from '@/lib/consents';
 import { formatDateString, toDateString } from '@/lib/injuries';
 import { rolesLabel } from '@/lib/labels';
-import type { Report, ReportRow } from '@/lib/pdf';
+import type { Report, ReportRow, ReportSection } from '@/lib/pdf';
 import { hasRole, rolesOf } from '@/lib/roles';
 import {
   barringNotices,
@@ -34,6 +35,7 @@ import {
 } from '@/lib/safety';
 import type {
   Profile,
+  SafeguardingContacts,
   ScreeningNotice,
   StandDown,
   Team,
@@ -950,13 +952,61 @@ export function awardReport({
 // Affiliation
 // ---------------------------------------------------------------------------
 
+function checklistSection(criteria: ReturnType<typeof affiliationCriteria>): ReportSection {
+  const missing = criteria.filter((c) => c.need === 'required' && !c.met);
+  return {
+    title: 'Checklist',
+    note: missing.length
+      ? `${missing.length} required ${missing.length === 1 ? 'item' : 'items'} not done yet, shown in red.`
+      : undefined,
+    columns: [
+      { label: 'Item', width: 2.2 },
+      { label: 'Need', width: 0.9 },
+      { label: 'Done', width: 0.6 },
+      { label: 'How it’s known', width: 1 },
+    ],
+    rows: criteria.map((c) => ({
+      cells: [
+        c.detail ? `${c.label}\n${c.detail}` : c.label,
+        c.need === 'required' ? 'Required' : 'Recommended',
+        c.met ? 'Yes' : 'No',
+        c.manual ? 'Ticked by an admin' : 'From the app’s records',
+      ],
+      flag: c.need === 'required' && !c.met,
+    })),
+    empty: 'Choose the association’s tier to see the checklist.',
+  };
+}
+
+function officersSection(affiliation: Affiliation, officers: Officer[]): ReportSection {
+  return {
+    title: 'Officers and safeguarding induction',
+    columns: [
+      { label: 'Office', width: 1.6 },
+      { label: 'Name', width: 1.2 },
+      { label: 'Induction completed', width: 1 },
+    ],
+    rows: officesFor(affiliation.tier).map((office) => {
+      const officer = officers.find((o) => o.office === office);
+      return {
+        cells: [
+          officeLabels[office],
+          officer?.name ?? 'Nobody named',
+          officer?.inducted_on ? formatDateString(officer.inducted_on) : 'Not recorded',
+        ],
+        flag: !officer?.inducted_on,
+      };
+    }),
+    empty: 'Choose the association’s tier to see its officers.',
+  };
+}
+
 export function affiliationReport(
   affiliation: Affiliation,
   officers: Officer[],
   registrations: Registration[],
 ): Report {
   const criteria = affiliationCriteria(affiliation, officers);
-  const missing = criteria.filter((c) => c.need === 'required' && !c.met);
   const isClub = affiliation.member_type === 'club';
   const season = affiliation.season;
   const contacts = [affiliation.primary_contact_1_name, affiliation.primary_contact_2_name].filter(
@@ -1006,52 +1056,8 @@ export function affiliationReport(
           ...(affiliation.notes ? [{ cells: ['Notes', affiliation.notes] }] : []),
         ],
       },
-      {
-        title: 'Checklist',
-        note: missing.length
-          ? `${missing.length} required ${missing.length === 1 ? 'item' : 'items'} not done yet, shown in red.`
-          : undefined,
-        columns: [
-          { label: 'Item', width: 2.2 },
-          { label: 'Need', width: 0.9 },
-          { label: 'Done', width: 0.6 },
-          { label: 'How it’s known', width: 1 },
-        ],
-        rows: criteria.map((c) => ({
-          cells: [
-            c.detail ? `${c.label}\n${c.detail}` : c.label,
-            c.need === 'required' ? 'Required' : 'Recommended',
-            c.met ? 'Yes' : 'No',
-            c.manual ? 'Ticked by an admin' : 'From the app’s records',
-          ],
-          flag: c.need === 'required' && !c.met,
-        })),
-        empty: 'Choose the association’s tier to see the checklist.',
-      },
-      ...(!isClub
-        ? [
-            {
-              title: 'Officers and safeguarding induction',
-              columns: [
-                { label: 'Office', width: 1.6 },
-                { label: 'Name', width: 1.2 },
-                { label: 'Induction completed', width: 1 },
-              ],
-              rows: officesFor(affiliation.tier).map((office) => {
-                const officer = officers.find((o) => o.office === office);
-                return {
-                  cells: [
-                    officeLabels[office],
-                    officer?.name ?? 'Nobody named',
-                    officer?.inducted_on ? formatDateString(officer.inducted_on) : 'Not recorded',
-                  ],
-                  flag: !officer?.inducted_on,
-                };
-              }),
-              empty: 'Choose the association’s tier to see its officers.',
-            },
-          ]
-        : []),
+      checklistSection(criteria),
+      ...(!isClub ? [officersSection(affiliation, officers)] : []),
       {
         title: season !== null ? `PlayHQ registrations ${seasonLabel(season)}` : 'PlayHQ registrations',
         columns: [
@@ -1078,5 +1084,170 @@ export function affiliationReport(
     ],
     footnote:
       'Items “From the app’s records” are worked out from what admins have recorded; the rest are ticked by an admin. Registrations are checked by an admin against PlayHQ for each athlete, coach and manager in the season’s squads and teams.',
+  };
+}
+
+/** What the club has set up for safeguarding, for the affiliation return. */
+export type ReturnSafeguarding = {
+  contacts: SafeguardingContacts | null;
+  policies: ClubPolicies | null;
+  wwcOfficerName: string | null;
+};
+
+/**
+ * The yearly affiliation return a club sends its association or Netball WA:
+ * its affiliation records plus counts. Nothing about any member under 18 is in
+ * it, so it can go outside the club.
+ */
+export function affiliationReturn({
+  clubName,
+  affiliation,
+  officers,
+  contacts,
+  safeguarding,
+  wwcc,
+  training,
+  today = new Date(),
+}: {
+  clubName: string;
+  affiliation: Affiliation;
+  officers: Officer[];
+  /** The primary contacts, in order, with the email the association can use. */
+  contacts: { name: string; email: string | null }[];
+  safeguarding: ReturnSafeguarding;
+  /** The figures from the Working With Children Checks report. Left out when null. */
+  wwcc: Report['stats'] | null;
+  /** The figures from the Integrity training report. Left out when null. */
+  training: { season: string; stats: Report['stats'] } | null;
+  today?: Date;
+}): Report {
+  const criteria = affiliationCriteria(affiliation, officers, today);
+  const isClub = affiliation.member_type === 'club';
+  const season = affiliation.season;
+  const required = criteria.filter((c) => c.need === 'required');
+  const done = required.filter((c) => c.met).length;
+  const named = (name: string | null | undefined) => name?.trim() || 'Not named';
+  const link = (url: string | null | undefined) => url?.trim() || 'Not linked';
+  const counts = (stats: Report['stats']): ReportRow[] =>
+    (stats ?? []).map((stat) => ({ cells: [stat.label, String(stat.value)] }));
+  const figureColumns = [
+    { label: 'Figure', width: 2 },
+    { label: 'Count', width: 1 },
+  ];
+
+  return {
+    title: 'Affiliation return',
+    subtitle: `${clubName}: ${memberTypeLabels[affiliation.member_type].toLowerCase()}${
+      affiliation.tier && !isClub ? `, ${tierLabels[affiliation.tier]}` : ''
+    }, as at ${formatDateString(toDateString(today))}. Criteria from Netball WA’s Membership Policy (NWA-POL-07).`,
+    stats: [
+      { label: 'Required items done', value: `${done} of ${required.length}` },
+      ...(season !== null
+        ? [
+            { label: `Teams in ${seasonLabel(season)}`, value: affiliation.team_count },
+            {
+              label: `Registered in PlayHQ ${seasonLabel(season)}`,
+              value: `${affiliation.registered} of ${affiliation.registrations_total}`,
+            },
+          ]
+        : []),
+    ],
+    sections: [
+      {
+        title: 'Details',
+        columns: [
+          { label: 'Detail', width: 1 },
+          { label: 'Recorded', width: 2 },
+        ],
+        rows: [
+          { cells: ['Incorporation number', affiliation.incorporation_number ?? 'Not incorporated'] },
+          { cells: ['Affiliated with', affiliation.affiliated_with ?? 'Not recorded'] },
+          {
+            cells: [
+              isClub ? 'Last registered' : 'Annual agreement signed',
+              affiliation.registered_on ? formatDateString(affiliation.registered_on) : 'Not recorded',
+            ],
+            flag: !isThisYear(affiliation.registered_on, today),
+          },
+        ],
+      },
+      {
+        title: 'Primary contacts',
+        columns: [
+          { label: 'Name', width: 1 },
+          { label: 'Email', width: 1.5 },
+        ],
+        rows: contacts.map((c) => ({ cells: [c.name, c.email ?? ''] })),
+        empty: 'None named.',
+      },
+      checklistSection(criteria),
+      ...(!isClub ? [officersSection(affiliation, officers)] : []),
+      {
+        title: season !== null ? `PlayHQ registrations ${seasonLabel(season)}` : 'PlayHQ registrations',
+        note: 'Athletes, coaches and managers in the season’s squads and teams, checked against PlayHQ by an admin.',
+        columns: figureColumns,
+        rows:
+          season !== null
+            ? [
+                { cells: ['People', String(affiliation.registrations_total)] },
+                { cells: ['Registered', String(affiliation.registered)] },
+                {
+                  cells: ['Not registered', String(affiliation.not_registered)],
+                  flag: affiliation.not_registered > 0,
+                },
+                { cells: ['Still to check', String(registrationsToCheck(affiliation))] },
+              ]
+            : [],
+        empty: 'No squads or teams yet.',
+      },
+      {
+        title: 'Safeguarding',
+        columns: [
+          { label: 'Item', width: 1 },
+          { label: 'Recorded', width: 2 },
+        ],
+        rows: [
+          {
+            cells: ['Child Safety Officer', named(safeguarding.contacts?.child_safety_officer_name)],
+            flag: !safeguarding.contacts?.child_safety_officer_name,
+          },
+          {
+            cells: ['Complaints manager', named(safeguarding.contacts?.complaints_manager_name)],
+            flag: !safeguarding.contacts?.complaints_manager_name,
+          },
+          { cells: ['WWC Registration Officer', named(safeguarding.wwcOfficerName)] },
+          {
+            cells: ['Safeguarding policy', link(safeguarding.policies?.safeguarding_policy_url ?? safeguarding.contacts?.policy_url)],
+            flag: !(safeguarding.policies?.safeguarding_policy_url ?? safeguarding.contacts?.policy_url),
+          },
+          { cells: ['Code of conduct', link(safeguarding.policies?.code_of_conduct_url)] },
+          { cells: ['Privacy policy', link(safeguarding.policies?.privacy_policy_url)] },
+          { cells: ['Policy version members accept', safeguarding.policies?.policy_version ?? '1'] },
+        ],
+      },
+      ...(wwcc
+        ? [
+            {
+              title: 'Working With Children Checks',
+              note: 'Counts only, from the club’s Working With Children Checks report.',
+              columns: figureColumns,
+              rows: counts(wwcc),
+            },
+          ]
+        : []),
+      ...(training
+        ? [
+            {
+              title: `Integrity training ${training.season}`,
+              note: 'Counts only, from the club’s Integrity training report.',
+              columns: figureColumns,
+              rows: counts(training.stats),
+              empty: 'No courses set for the season.',
+            },
+          ]
+        : []),
+    ],
+    footnote:
+      'This return holds the club’s records and counts only. It names no member under 18 and has no details about any child. The primary contacts know their names and emails are shared.',
   };
 }

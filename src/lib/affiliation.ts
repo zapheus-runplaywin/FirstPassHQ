@@ -41,6 +41,20 @@ export type Affiliation = {
   not_registered: number;
 };
 
+/** Where affiliation returns go and when the last one went, from `admin_affiliation_return`. */
+export type ReturnInfo = {
+  return_email: string | null;
+  last_sent_at: string | null;
+  last_sent_to: string | null;
+  last_sent_by_name: string | null;
+};
+
+/** A return is due once a year, after the club has said where returns go. */
+export function returnDue(info: ReturnInfo | null, today = new Date()) {
+  if (!info?.return_email) return false;
+  return !isThisYear(info.last_sent_at ? toDateString(new Date(info.last_sent_at)) : null, today);
+}
+
 /** Someone named to an office, from `admin_affiliation_officers`. */
 export type Officer = {
   office: Office;
@@ -330,6 +344,8 @@ export type AffiliationTodos = {
   toCheck: number;
   notRegistered: number;
   season: number | null;
+  /** No return sent to the governing body in the last year. */
+  returnDue: boolean;
 };
 
 /** Affiliation follow-ups for admins, when the club keeps affiliation records. */
@@ -340,9 +356,10 @@ export function useAffiliationTodos() {
 
   const load = useCallback(async () => {
     if (!isAdmin || !on) return;
-    const [settingsResult, officersResult] = await Promise.all([
+    const [settingsResult, officersResult, returnResult] = await Promise.all([
       supabase.rpc('admin_affiliation').maybeSingle(),
       supabase.rpc('admin_affiliation_officers'),
+      supabase.rpc('admin_affiliation_return').maybeSingle(),
     ]);
     const affiliation = settingsResult.data as Affiliation | null;
     if (!affiliation) return;
@@ -354,6 +371,7 @@ export function useAffiliationTodos() {
       toCheck: registrationsToCheck(affiliation),
       notRegistered: affiliation.not_registered,
       season: affiliation.season,
+      returnDue: returnDue(returnResult.data as ReturnInfo | null),
     });
   }, [isAdmin, on]);
 

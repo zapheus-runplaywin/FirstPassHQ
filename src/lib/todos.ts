@@ -390,6 +390,14 @@ export function buildTodos({
         href: '/admin/affiliation/registrations',
       });
     }
+    if (affiliation.returnDue) {
+      todos.push({
+        key: 'affiliation-return',
+        title: 'Send the affiliation return',
+        detail: 'None sent in the last year',
+        href: '/admin/affiliation/return',
+      });
+    }
   }
 
   return todos;
