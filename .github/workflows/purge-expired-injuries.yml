@@ -2,6 +2,8 @@ name: Purge expired injury records
 
 # Injury records and their documents are kept for 12 months after an athlete
 # leaves the club, then removed by the purge-expired-injuries function.
+# The same function removes other records past the club's keep periods once an
+# admin switches on "Remove old records" in Club settings.
 # This deploys the function when it changes and runs it every day.
 #
 # GitHub pauses scheduled workflows in a repository with no activity for 60
