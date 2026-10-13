@@ -407,6 +407,24 @@ export default function HomeScreen() {
           </View>
         ) : null}
 
+        {isGuardian && athletes.length > 0 && profile?.verified_at ? (
+          <View style={styles.section}>
+            <ThemedText type="smallBold">Who has viewed their records</ThemedText>
+            {athletes.map((a) => (
+              <PressableCard
+                key={a.id}
+                onPress={() =>
+                  router.push({ pathname: '/records/[id]', params: { id: a.id, name: a.name } })
+                }>
+                <ThemedText type="smallBold">{a.name}</ThemedText>
+                <ThemedText type="small" themeColor="textSecondary">
+                  Who at the club opened their injuries, check-ins, game goals or member record
+                </ThemedText>
+              </PressableCard>
+            ))}
+          </View>
+        ) : null}
+
         {showGroups ? (
           <View style={styles.section}>
             <ThemedText type="smallBold">{club.squads ? 'My squads and teams' : 'My teams'}</ThemedText>

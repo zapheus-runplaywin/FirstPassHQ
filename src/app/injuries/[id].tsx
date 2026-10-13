@@ -23,6 +23,7 @@ import {
   shareInjuryDocument,
   uploadInjuryDocument,
 } from '@/lib/injuries';
+import { logRecordView } from '@/lib/record-access';
 import { hasRole } from '@/lib/roles';
 import { supabase } from '@/lib/supabase';
 import type { Injury, InjuryDocumentEvent, InjuryUpdate } from '@/lib/types';
@@ -55,7 +56,9 @@ export default function InjuryScreen() {
       // Only the athlete, their guardians and admins see who opened documents.
       supabase.rpc('injury_document_log', { p_injury_id: id }),
     ]);
-    setInjury(((injuryResult.data as Injury[] | null) ?? [])[0] ?? null);
+    const shown = ((injuryResult.data as Injury[] | null) ?? [])[0] ?? null;
+    setInjury(shown);
+    if (shown) logRecordView(shown.athlete_id, 'injury', shown.id);
     setUpdates((updatesResult.data as InjuryUpdate[] | null) ?? []);
     setCanShare(shareResult.data === true);
     setLog(logResult.error ? null : ((logResult.data as InjuryDocumentEvent[] | null) ?? []));

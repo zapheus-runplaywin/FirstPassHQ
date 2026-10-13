@@ -1,10 +1,11 @@
-import { Stack, useLocalSearchParams } from 'expo-router';
-import { useState } from 'react';
+import { Stack, useFocusEffect, useLocalSearchParams } from 'expo-router';
+import { useCallback, useState } from 'react';
 
 import { GoalGames, useGoalGames } from '@/components/goal-games';
 import { Screen } from '@/components/screen';
 import { ThemedText } from '@/components/themed-text';
 import { useIsGoalCoach } from '@/lib/goals';
+import { logRecordView } from '@/lib/record-access';
 
 /** One athlete's games, for their coaches (from a team's page) and their parents or guardians. */
 export default function AthleteGoalsScreen() {
@@ -21,6 +22,12 @@ export default function AthleteGoalsScreen() {
   // Opened from a squad or team's page, only that group's games.
   const games = useGoalGames(id, team || undefined);
   const [refreshing, setRefreshing] = useState(false);
+
+  useFocusEffect(
+    useCallback(() => {
+      logRecordView(id, 'goals');
+    }, [id]),
+  );
 
   async function onRefresh() {
     setRefreshing(true);

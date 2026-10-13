@@ -8,7 +8,15 @@ import { ScreeningNotices } from '@/components/screening-notices';
 import { StandDownSection } from '@/components/stand-down';
 import { WwccValidation } from '@/components/wwcc-validation';
 import { ThemedText } from '@/components/themed-text';
-import { Button, Card, ChipGroup, ConfirmDelete, ErrorText, TextField } from '@/components/ui';
+import {
+  Button,
+  Card,
+  ChipGroup,
+  ConfirmDelete,
+  ErrorText,
+  PressableCard,
+  TextField,
+} from '@/components/ui';
 import { Spacing } from '@/constants/theme';
 import { useTheme } from '@/hooks/use-theme';
 import { formatDate, isMinor, parseDate } from '@/lib/age';
@@ -25,6 +33,7 @@ import {
   statusLabels,
   teamRoleLabels,
 } from '@/lib/labels';
+import { logRecordView } from '@/lib/record-access';
 import { ageOn, localDay } from '@/lib/reports';
 import { hasRole, roleCombinationProblem } from '@/lib/roles';
 import {
@@ -160,6 +169,7 @@ export default function MemberScreen() {
         return;
       }
       setMember(profile);
+      logRecordView(id, 'member_record');
       setUnder18(profile.under_17);
       setDateOfBirth(formatDate(profile.date_of_birth));
       setDobRecord((dobResult.data as DobRecord | null) ?? null);
@@ -1171,6 +1181,19 @@ export default function MemberScreen() {
           ) : null}
           <GuardianHistory memberId={id} />
         </View>
+      ) : null}
+
+      {member.status === 'approved' && isMinor(member.date_of_birth, member.under_17) ? (
+        <PressableCard
+          onPress={() =>
+            router.push({ pathname: '/records/[id]', params: { id, name: member.full_name ?? '' } })
+          }>
+          <ThemedText type="smallBold">Who has viewed their records</ThemedText>
+          <ThemedText type="small" themeColor="textSecondary">
+            Everyone who opened their injuries, check-ins, game goals or member record, apart from
+            them and their parents and guardians.
+          </ThemedText>
+        </PressableCard>
       ) : null}
 
       {isGuardian && member.status === 'approved' ? (

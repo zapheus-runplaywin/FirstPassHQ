@@ -22,6 +22,7 @@ import {
   useCanCommentOnTeamGoals,
   useIsGoalCoach,
 } from '@/lib/goals';
+import { logRecordView } from '@/lib/record-access';
 import { supabase } from '@/lib/supabase';
 import type {
   GameGoal,
@@ -67,6 +68,7 @@ export default function GameGoalsScreen() {
     setGame(row);
     setGoals(lists.goals);
     setComments(lists.comments);
+    logRecordView(athlete, 'goals');
   }, [athlete, fixture]);
 
   useFocusEffect(
