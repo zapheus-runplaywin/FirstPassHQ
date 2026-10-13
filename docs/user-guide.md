@@ -606,6 +606,20 @@ you're asked each time (see [Injury documents and photos](#injury-documents-and-
 <img src="user-guide/consent.png" width="210" alt="A parent giving consent for their child's check-ins and injuries">
 <img src="user-guide/consent-home.png" width="210" alt="Home screen with Give consent in the to-do list">
 
+### Who has viewed your child's records
+
+Once you're verified, **Who has viewed their records** on your home screen lists each child under
+18. Open it to see everyone at the club who opened your child's injuries, injury documents,
+check-ins, game goals or member record in the app: their name, their role (coach, physio, admin,
+committee or safeguarding contact), what they opened and when, newest first. Sharing an injury
+document is listed too. Your child's own views and those of their parents and guardians aren't
+listed, and opening the same thing again within 30 minutes counts once. The list stops being
+yours to see on your child's 18th birthday. If anything on it worries you, raise a concern (see
+[Raising a concern](#raising-a-concern)).
+
+<img src="user-guide/records-home.png" width="210" alt="Who has viewed their records on a parent's home screen">
+<img src="user-guide/records-guardian.png" width="210" alt="A parent's list of who has viewed their child's records">
+
 As a guardian you:
 
 - **Receive a copy of every message** sent to your athlete, whether it went to their squad, their
@@ -628,6 +642,8 @@ As a guardian you:
   **I consent**; your consent is kept with the photo. Your child can't add photos of injuries.
 - **See who opened your athlete's injury documents**: under each document, every view and share,
   by whom and when, and what was confirmed about each photo.
+- **See who has viewed your athlete's records**: everyone who opened their injuries, check-ins,
+  game goals or member record (see [Who has viewed your child's records](#who-has-viewed-your-childs-records)).
 - **Complete integrity training** for your athlete: their training shows in your to-do list and
   on the **Integrity training** screen under their name, and you upload their certificates
   exactly as they would (see [Integrity training](#integrity-training)).
@@ -1172,6 +1188,14 @@ guardian and you, without the reason. **Guardian link history** on the child's p
 guardian's, lists every link and unlink with who made it, when and why. If you're one of the
 child's guardians, another admin has to change who their guardians are.
 
+**Who has viewed their records.** An approved athlete under 18's page has **Who has viewed their
+records**: everyone other than the athlete and their guardians who opened their injuries, injury
+documents, check-ins, game goals or member record, with their role and when, newest first. Opening
+a child's member page is itself recorded, so your own views are listed too. The child's verified
+parents and guardians see the same list from their home screen.
+
+<img src="user-guide/records-admin.png" width="210" alt="A child's member page with Who has viewed their records">
+
 When an athlete turns 18 their guardians lose access to them that day (injuries, check-ins, goals,
 certificates and the home screen list); the next time you save the athlete the links are removed.
 
@@ -1515,8 +1539,9 @@ newest first, with what the club did and when the governing body was told. **Sta
 everyone ever stood down, newest first, with the
   reason, who stood them down and lifted it, and when.
 - **Under 18s and their guardians**: every approved athlete under 18 with their date of birth and
-  age, squad or team, parents or guardians with their email addresses, and the consent given
-  (check-ins, injuries, both or none). Athletes with no parent or guardian linked come first, and
+  age, squad or team, parents or guardians with their email addresses, the consent given
+  (check-ins, injuries, both or none), and how many times other people viewed their records in the
+  last 12 months, and by how many people. Athletes with no parent or guardian linked come first, and
   guardians who haven't been verified are marked. It prints across the page.
 - **Integrity training** (when Integrity training is on): pick the season. **Still to finish**
   lists everyone with a course not yet approved, in red if a due date has passed, then each course
@@ -1672,6 +1697,7 @@ once saved, only replaced or removed, and anyone who gets it wrong five times in
 | Daily check-in answers and notes | The athlete, their guardians and their coaches. For an athlete under 18, their coaches only once a parent or guardian consents. The committee, physios and admins see only group averages, hidden below 5 check-ins or when two groups differ by fewer than 5. |
 | Injuries and documents  | For an athlete under 18 whose parents haven't given consent for injuries: only the athlete, their guardians and admins. Otherwise the athlete, their guardians, their coaches, the physios who look after them (the Head Physio, physios in their squad or team, and physios in no squad or team), the committee and admins. Managers don't see injuries. Only the committee member or admin accepting a clearance can share its documents, while it waits for them; everyone else views them in the app. |
 | Who opened injury documents | The athlete, their guardians and admins: every view and share, by whom, their role and when, and each photo consent. |
+| Who has viewed a child's records | For an athlete under 18: their verified parents or guardians (until the athlete turns 18) and admins. Lists every time someone other than the athlete or their guardians opened the athlete's injuries, injury documents, check-ins, game goals or member record. Opening a child's records is recorded whoever you are; nobody can switch it off or remove entries. |
 | Consents for a child    | The athlete, their parents or guardians and admins, with every consent given and withdrawn. Only a verified parent or guardian can give or withdraw one. |
 | Club policies           | Everyone signed in, including people asking to join.                                                                        |
 | Game goals and reflections | The athlete, their guardians and their coaches. Only the athlete and their coaches set goals, and only the athlete reflects; guardians just read them. The committee, physios and admins don't see them. |
@@ -1770,7 +1796,10 @@ Working With Children Check, and another admin must do it.
   or a photo confirmed to show the letter. Only if the club allows it can you, as a verified
   guardian, add a photo of your child's injury, and only after confirming your consent, which is
   kept with the photo.
-- **You see who opened your child's injury documents**, with their role and when, and every share.
+- **You see who has viewed your child's records.** Every time a coach, physio, committee member,
+  admin or safeguarding contact opens your child's injuries, injury documents, check-ins, game goals
+  or member record, the app records who, their role, what and when, and you can read the list (see
+  [Who has viewed your child's records](#who-has-viewed-your-childs-records)).
 
 ### For children and young people
 
@@ -1805,6 +1834,9 @@ Working With Children Check, and another admin must do it.
   helper**: they can't be approved until they've accepted the club's code of conduct and
   safeguarding policy and a check or an accepted exemption covers every day they help, and they see
   nothing else in the app (see [Temporary helpers](#temporary-helpers)).
+- **Opening a child's records is recorded.** When you open an under 18's injuries, injury
+  documents, check-ins or game goals, the app records it, and their parents and guardians can see
+  who looked and when.
 - **Visitors from outside WA.** The short-term visitor exemption (two weeks from arrival) and the
   national event or tour exemption (up to 30 days at the event) each record their dates, end by
   themselves, and can be used only once between them in any 12 months; the app refuses a second.
@@ -1826,6 +1858,9 @@ Working With Children Check, and another admin must do it.
 - **Screening Unit notices.** Record every notice on the member's page. An interim negative
   notice, negative notice, interstate decision or cancelled card stands them down at once, and
   stays on your to-do list until you record telling the governing body in writing.
+- **Record views are logged.** Every time someone other than a child or their guardians opens an
+  under 18's injuries, injury documents, check-ins, game goals or member record, it's recorded.
+  Admins see the list on the child's member page, and parents and guardians on their home screen.
 - **Guardian changes leave a trail.** Every guardian link and unlink is kept with who made it,
   when and why, and the family is told. An admin can't change their own child's guardians.
 - **Policies and consent.** Link the club's safeguarding policy, privacy policy and code of
@@ -1844,7 +1879,7 @@ Working With Children Check, and another admin must do it.
   of birth, athletes under 18 without a guardian and athletes turning 18.
 - **Reports for your records.** The Working With Children Checks report follows the Screening
   Unit's record layout: every check with the name on the card, date of birth, card number, expiry
-  and validation, plus every exemption, notice and stand-down. The under 18s report lists every child and their guardians. The concerns register
+  and validation, plus every exemption, notice and stand-down. The under 18s report lists every child, their guardians and how often their records were viewed in the last 12 months. The concerns register
   lists every concern and what was done. Each saves as a PDF.
 
 ### For the governing body and auditors
@@ -1857,7 +1892,8 @@ Working With Children Check, and another admin must do it.
   exemptions and the declarations accepted (with the dates and event for visitor and national event
   exemptions), temporary helpers' tasks, dates and acceptance of the club's policies,
   stand-downs, every concern with each referral, note and status, every view and share of an
-  injury document, and every parent's consent with the policy version they agreed to. A document can't be opened without the view being recorded first.
+  injury document, every time someone other than a child or their guardians opened an under 18's
+  injuries, check-ins, game goals or member record, and every parent's consent with the policy version they agreed to. A document can't be opened without the view being recorded first.
 - **Child abuse and serious crimes go out, not in.** The register prompts the club to refer them to
   Police and the governing body straight away, and records that it did.
 - **Each club's data is kept apart**, in that club's own database.

@@ -11,6 +11,7 @@ import {
   type ChildConsentStatus,
   type Guardianship,
   type Placement,
+  type RecordAccessSummary,
 } from '@/lib/reports';
 import { supabase } from '@/lib/supabase';
 import type { Profile } from '@/lib/types';
@@ -21,6 +22,7 @@ type Data = {
   guardianships: Guardianship[];
   placements: Placement[];
   consents: ChildConsentStatus[];
+  access: RecordAccessSummary[];
 };
 
 export default function Under18sReportScreen() {
@@ -31,7 +33,7 @@ export default function Under18sReportScreen() {
 
   const load = useCallback(async () => {
     try {
-      const [members, guardianships, placements, consentsResult] = await Promise.all([
+      const [members, guardianships, placements, consentsResult, accessResult] = await Promise.all([
         // Guardians who aren't approved yet are still named against their child.
         fetchAll<Profile>((from, to) =>
           supabase.from('profiles').select(PROFILE_COLUMNS).range(from, to),
@@ -47,9 +49,11 @@ export default function Under18sReportScreen() {
             .range(from, to),
         ),
         supabase.rpc('admin_child_consents'),
+        supabase.rpc('admin_record_access_summary'),
       ]);
       const consents = (consentsResult.data as ChildConsentStatus[] | null) ?? [];
-      setData({ members, guardianships, placements, consents });
+      const access = (accessResult.data as RecordAccessSummary[] | null) ?? [];
+      setData({ members, guardianships, placements, consents, access });
       setError(null);
     } catch (e) {
       setError(e instanceof Error ? e.message : 'The report didn’t load. Try again.');
@@ -79,6 +83,7 @@ export default function Under18sReportScreen() {
             data.placements,
             teams,
             data.consents,
+            data.access,
           )}
         />
       ) : null}
