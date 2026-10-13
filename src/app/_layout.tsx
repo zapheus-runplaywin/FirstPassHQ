@@ -132,6 +132,8 @@ function RootStack() {
             <Stack.Screen name="attendance/new" options={{ title: 'Take attendance' }} />
             <Stack.Screen name="attendance/[id]" options={{ title: 'Attendance' }} />
             <Stack.Screen name="attendance/athlete/[id]" options={{ title: 'Athlete attendance' }} />
+            <Stack.Screen name="attendance/family/[id]" options={{ title: 'Attendance' }} />
+            <Stack.Screen name="attendance/absence" options={{ title: 'Report an absence' }} />
           </Stack.Protected>
           <Stack.Protected guard={features.checkIns}>
             <Stack.Screen name="check-in" options={{ title: 'Daily check-in' }} />

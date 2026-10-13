@@ -4,9 +4,10 @@ import { StyleSheet, View } from 'react-native';
 
 import { Screen } from '@/components/screen';
 import { ThemedText } from '@/components/themed-text';
-import { Button, ChipGroup, PressableCard } from '@/components/ui';
+import { Button, Card, ChipGroup, PressableCard } from '@/components/ui';
 import { Spacing } from '@/constants/theme';
 import { useTheme } from '@/hooks/use-theme';
+import { absenceDays, type UpcomingAbsence } from '@/lib/absences';
 import {
   percent,
   presentLabel,
@@ -34,19 +35,22 @@ export default function AttendanceScreen() {
   const [days, setDays] = useState('91');
   const [sessions, setSessions] = useState<AttendanceSession[] | null>(null);
   const [athletes, setAthletes] = useState<AthleteAttendanceSummary[] | null>(null);
+  const [away, setAway] = useState<UpcomingAbsence[]>([]);
   const [refreshing, setRefreshing] = useState(false);
 
   const load = useCallback(async () => {
     const since = new Date();
     since.setDate(since.getDate() - Number(days));
-    const [sessionsResult, athletesResult] = await Promise.all([
+    const [sessionsResult, awayResult, athletesResult] = await Promise.all([
       supabase.rpc('attendance_sessions_list'),
+      supabase.rpc('upcoming_absences'),
       canView
         ? supabase.rpc('athlete_attendance_summary', { p_since: toDateString(since) })
         : Promise.resolve({ data: [] }),
     ]);
     setSessions((sessionsResult.data as AttendanceSession[] | null) ?? []);
     setAthletes((athletesResult.data as AthleteAttendanceSummary[] | null) ?? []);
+    setAway((awayResult.data as UpcomingAbsence[] | null) ?? []);
   }, [canView, days]);
 
   useFocusEffect(
@@ -66,6 +70,8 @@ export default function AttendanceScreen() {
       {canTake ? (
         <Button title="Take attendance" onPress={() => router.push('/attendance/new')} />
       ) : null}
+
+      {away.length > 0 ? <AwaySoon away={away} /> : null}
 
       {canView ? (
         <ChipGroup
@@ -87,6 +93,27 @@ export default function AttendanceScreen() {
         </>
       )}
     </Screen>
+  );
+}
+
+/** Athletes reported away in the next 4 weeks. */
+function AwaySoon({ away }: { away: UpcomingAbsence[] }) {
+  return (
+    <View style={styles.list}>
+      <ThemedText type="smallBold">Away in the next 4 weeks</ThemedText>
+      <Card>
+        {away.map((a) => (
+          <View key={a.id} style={styles.away}>
+            <ThemedText type="smallBold">{a.athlete_name}</ThemedText>
+            <ThemedText type="small" themeColor="textSecondary">
+              {absenceDays(a)}
+              {a.reason ? ` · ${a.reason}` : ''}
+              {a.reported_by_name ? ` · told by ${a.reported_by_name}` : ''}
+            </ThemedText>
+          </View>
+        ))}
+      </Card>
+    </View>
   );
 }
 
@@ -180,5 +207,9 @@ const styles = StyleSheet.create({
   },
   grow: {
     flex: 1,
+  },
+  away: {
+    gap: Spacing.half,
+    paddingVertical: Spacing.one,
   },
 });
