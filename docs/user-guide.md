@@ -39,7 +39,7 @@ each of their roles can.
 | Role          | Who it's for                                                                                         |
 | ------------- | ---------------------------------------------------------------------------------------------------- |
 | **Athlete**   | Registered players. Some are club captains, or captains or vice captains of a squad or team. They see their own attendance and can report an absence. |
-| **Guardian**  | Parents and guardians of athletes under 18. They see their child's attendance and can report an absence for them, and see what has changed around their child. |
+| **Guardian**  | Parents and guardians of athletes under 18. They see their child's attendance and can report an absence for them, and see what has changed around their child. They accept the club's code of conduct for their child each season. |
 | **Coach**     | Head coaches and assistant coaches. Both have the same permissions; the title only shows who is who. Need a current Working With Children Check; the role pauses while it's expired. A parent volunteering at their child's club, or a volunteer under 18, has an exemption instead (see [Volunteer exemptions](#volunteer-exemptions)). |
 | **Manager**   | Squad and team managers. Need a current Working With Children Check; the role pauses while it's expired. A parent volunteering at their child's club, or a volunteer under 18, has an exemption instead (see [Volunteer exemptions](#volunteer-exemptions)). |
 | **Committee** | Club committee members. Each can add a title, such as President or Secretary, shown with their role. Need a current Working With Children Check unless an admin exempts them; the role pauses if a recorded check expires. |
@@ -99,6 +99,7 @@ What each role sees on its home screen:
 | Sign off injury clearances             |         |                 |   Endorse    |            |     Accept    |   Endorse‡    |         |     Accept    |
 | See who opened injury documents        |   Own   | Their athlete's |              |            |               |               |         |       ✓       |
 | Consent for a child's check-ins and injuries |         |        ✓        |              |            |               |               |         |  See status   |
+| Accept the code of conduct each season | Own§ | Own, and their athlete's | Own | Own | Own | Own | | Own, see who has |
 | Take attendance                        |         |                 |      ✓       |     ✓      |       ✓       |               |         |       ✓       |
 | See athletes' attendance history       |         |                 |      ✓       |            |       ✓       |               |         |       ✓       |
 | Vote in club awards                    |    ✓    |        ✓        |      ✓       |     ✓      |       ✓       |               |         |       ✓       |
@@ -122,6 +123,10 @@ their parents or guardians.
 \* Physios get messages sent to the Physio role and to the squads and teams they're in. They get
 messages sent to everyone in the club only when an admin turns on **Physios get club messages** in
 Club settings.
+
+§ Athletes under 18 don't accept it themselves when a parent or guardian is linked: a verified
+parent or guardian accepts it for them. Guests and temporary helpers aren't asked (temporary helpers
+accept it when they join).
 
 ‡ A physio placed in squads or teams looks after the athletes in them. Only the Head Physio looks
 after every athlete. A physio who isn't in any squad or team sees no athletes until an admin places
@@ -397,6 +402,25 @@ record. Overdue training says **Overdue since** its due date.
 <img src="user-guide/training-athlete.png" width="210" alt="An athlete's integrity training">
 <img src="user-guide/training-submit.png" width="210" alt="One certificate ticked for three courses">
 
+### The code of conduct
+
+Once the club has linked its code of conduct, every member accepts it once a season. Your to-do
+list says **Accept the code of conduct** until you have. Open it, tap **Read the code of conduct**,
+then tap **I agree** to accept the words shown:
+
+> I've read the club's code of conduct and I'll follow it at training, at games and online.
+
+The club keeps your name, the date, the words and the policy version as its record. Each season's
+acceptance is listed under **Accepted** on the same screen. When the club starts a new season, the
+to-do comes back.
+
+Athletes under 18 with a parent or guardian linked don't accept it themselves: a verified parent or
+guardian goes through it with them and accepts it for them (see [The code of conduct for your
+child](#the-code-of-conduct-for-your-child)). Guests aren't asked, and temporary helpers accept it
+when they join.
+
+<img src="user-guide/conduct.png" width="210" alt="Accepting the code of conduct, with last season's acceptance below">
+
 ### Raising a concern
 
 **Raise a concern**, at the bottom of the home screen, is for anyone signed in: athletes, parents,
@@ -628,6 +652,22 @@ you're asked each time (see [Injury documents and photos](#injury-documents-and-
 
 <img src="user-guide/consent.png" width="210" alt="A parent giving consent for their child's check-ins and injuries">
 <img src="user-guide/consent-home.png" width="210" alt="Home screen with Give consent in the to-do list">
+
+### The code of conduct for your child
+
+Each season a verified parent or guardian accepts the club's code of conduct for each child under
+18, and their own to-do list shows **Accept the code of conduct for** your child until one of you
+has. Read it, go through it with your child, then tap **I agree** to accept:
+
+> I've read the club's code of conduct and gone through it with my child. We'll both follow it at
+> training, at games and online, and I'll follow it as a parent or guardian.
+
+Once one parent or guardian has accepted, it's done for the season for all of them, and the record
+shows who accepted it and when. If you also coach, manage or sit on the committee, you accept it
+for yourself as well.
+
+<img src="user-guide/conduct-home.png" width="210" alt="A parent who coaches, with both code of conduct to-dos">
+<img src="user-guide/conduct-child.png" width="210" alt="A parent accepting the code of conduct for their child">
 
 ### Who has viewed your child's records
 
@@ -1566,6 +1606,11 @@ Members see it in their to-do lists straight away. Open a course to see who has 
 **Change** to edit it. **Archive** takes it off everyone's to-do list but keeps its certificates;
 **Remove** is only for training added by mistake, before anyone uploads a certificate.
 
+**Add the safeguarding induction** adds Sport Integrity Australia's free **Child Safeguarding in
+Sport Induction** to the season in one tap, for coaches, managers, physios and the committee across
+the whole club, due in 3 months, with its course link. Open it afterwards to change who does it or
+when. The button goes once the season has the course.
+
 Training is set per season because it must be done every year. When a new season starts, open
 it in Integrity training and tap **Copy 2026–27 training** (last season's): each course is copied
 with its due date a year on, and its squads and teams matched by name in the new season. Check
@@ -1608,7 +1653,8 @@ everyone ever stood down, newest first, with the
   reason, who stood them down and lifted it, and when.
 - **Under 18s and their guardians**: every approved athlete under 18 with their date of birth and
   age, squad or team, parents or guardians with their email addresses, the consent given
-  (check-ins, injuries, both or none), and how many times other people viewed their records in the
+  (check-ins, injuries, both or none), when this season's code of conduct was accepted and by whom,
+  and how many times other people viewed their records in the
   last 12 months, and by how many people. Athletes with no parent or guardian linked come first, and
   guardians who haven't been verified are marked. It prints across the page.
 - **Integrity training** (when Integrity training is on): pick the season. **Still to finish**
@@ -1794,7 +1840,9 @@ start with https://.
 Under **Club policies**, add links to the club's **child safeguarding policy**, **privacy
 policy** and **code of conduct**, hosted on your club's website, and the **policy version**. The
 links show on Join, Your details and the parents' consent screen. Each parent's consent is
-kept with the version in force when they gave it, so change the version when you change a policy.
+kept with the version in force when they gave it, and so is each code of conduct acceptance, so
+change the version when you change a policy. Once the code of conduct is linked, every member
+accepts it once a season (see [The code of conduct](#the-code-of-conduct)).
 Templates to adapt are in [docs/policies](policies/README.md).
 
 **Photos of under 18s' injuries** is off by default, so injury proof for athletes under 18 is the
@@ -1803,6 +1851,12 @@ your club's policy allows photos of injuries; even then, only a verified parent 
 one, after confirming their consent, and athletes under 18 can never add one themselves.
 
 <img src="user-guide/admin-safeguarding-photos.png" width="210" alt="Safeguarding settings: club policies and photos of under 18s' injuries">
+
+**Code of conduct** in Administration lists who still has to accept the code of conduct this
+season and who has, with the date and, for an under 18, the parent or guardian who accepted. Tap
+someone to see every season they've accepted it and the words accepted.
+
+<img src="user-guide/admin-conduct.png" width="210" alt="Administration: who has accepted the code of conduct this season">
 
 <img src="user-guide/admin-safeguarding.png" width="210" alt="Safeguarding settings: Child Safety Officer, Complaints Manager, governing body and policy">
 <img src="user-guide/admin-wwc-officer.png" width="210" alt="Safeguarding settings: WWC Registration Officer">
@@ -1867,6 +1921,7 @@ once saved, only replaced or removed, and anyone who gets it wrong five times in
 | Who has viewed a child's records | For an athlete under 18: their verified parents or guardians (until the athlete turns 18) and admins. Lists every time someone other than the athlete or their guardians opened the athlete's injuries, injury documents, check-ins, game goals or member record. Opening a child's records is recorded whoever you are; nobody can switch it off or remove entries. |
 | Consents for a child    | The athlete, their parents or guardians and admins, with every consent given and withdrawn. Only a verified parent or guardian can give or withdraw one. |
 | Club policies           | Everyone signed in, including people asking to join.                                                                        |
+| Code of conduct acceptances | The member, their parents or guardians and admins: each season's acceptance, who accepted it, when, the words and the policy version. |
 | Game goals and reflections | The athlete, their guardians and their coaches. Only the athlete and their coaches set goals, and only the athlete reflects; guardians just read them. The committee, physios and admins don't see them. |
 | Team goals              | The team's athletes, their guardians and its coaches. Only its coaches set and review them. Athletes and coaches in the team can comment; guardians read the comments. |
 | Integrity training certificates | The member, their parents or guardians, the committee and admins. Coaches don't see them. Certificates can't be changed or removed once sent. |
@@ -1972,6 +2027,9 @@ Working With Children Check, and another admin must do it.
 - **Nothing is shared without your consent.** Your child's check-ins and injuries are seen by
   their coaches, physios and the committee only after you consent in the app (see [Giving
   consent](#giving-consent)). You can withdraw it at any time, and every change is kept.
+- **You and your child agree how to behave.** Each season you go through the club's code of
+  conduct with your child and accept it for both of you (see [The code of conduct for your
+  child](#the-code-of-conduct-for-your-child)).
 - **Your access ends at 18.** Guardian access ends on your child's 18th birthday.
 - **Injury photos need your consent.** Injury proof for under 18s is the letter or report, as a PDF
   or a photo confirmed to show the letter. Only if the club allows it can you, as a verified
@@ -1995,6 +2053,8 @@ Working With Children Check, and another admin must do it.
   worries you.
 - **You can tell someone safely.** The check-in screen has a link to raise a concern, and you can
   hide your name. Kids Helpline (1800 55 1800) is free, any time.
+- **Everyone agrees to the same code of conduct**, coaches and parents included, every season,
+  covering training, games and online.
 - **No photos of your injuries.** Attach your physio's or doctor's letter instead, as a PDF or a
   photo of the letter. You can see everyone who has opened it.
 
@@ -2015,6 +2075,9 @@ Working With Children Check, and another admin must do it.
   helper**: they can't be approved until they've accepted the club's code of conduct and
   safeguarding policy and a check or an accepted exemption covers every day they help, and they see
   nothing else in the app (see [Temporary helpers](#temporary-helpers)).
+- **The code of conduct, every season.** Every coach, manager, physio, committee member and admin
+  accepts the club's code of conduct once a season, and the club can add Sport Integrity
+  Australia's Child Safeguarding in Sport Induction to integrity training in one tap.
 - **Opening a child's records is recorded.** When you open an under 18's injuries, injury
   documents, check-ins or game goals, the app records it, and their parents and guardians can see
   who looked and when.
@@ -2050,7 +2113,12 @@ Working With Children Check, and another admin must do it.
   when and why, and the family is told. An admin can't change their own child's guardians.
 - **Policies and consent.** Link the club's safeguarding policy, privacy policy and code of
   conduct under Safeguarding; templates are in [docs/policies](policies/README.md). The under 18s
-  report shows which children still need a parent's consent.
+  report shows which children still need a parent's consent. Once the code of conduct is linked,
+  every member accepts it each season, a verified parent or guardian for an under 18, and
+  **Code of conduct** in Administration shows who still has to.
+- **Safeguarding education.** **Add the safeguarding induction** in Integrity training sets Sport
+  Integrity Australia's Child Safeguarding in Sport Induction for coaches, managers, physios and
+  the committee, and the committee checks each certificate.
 - **Images of children.** Photos of under 18s' injuries are off unless you turn them on under
   Safeguarding, and then need a verified guardian's consent. Only the committee member accepting a
   clearance can share its documents, while it waits for them.
@@ -2078,7 +2146,8 @@ Working With Children Check, and another admin must do it.
   exemptions), temporary helpers' tasks, dates and acceptance of the club's policies,
   stand-downs, every concern with each referral, note and status, every view and share of an
   injury document, every time someone other than a child or their guardians opened an under 18's
-  injuries, check-ins, game goals or member record, and every parent's consent with the policy version they agreed to. A document can't be opened without the view being recorded first.
+  injuries, check-ins, game goals or member record, every parent's consent with the policy version they agreed to, and each season's code of conduct
+  acceptance with who accepted it, the words and the policy version. A document can't be opened without the view being recorded first.
 - **Records are kept as long as they're needed, then removed.** Each club sets its keep periods
   and the app removes older records each night once the club switches it on. Concerns are never
   removed; attendance, training certificates and record views are kept at least 7 years; a removed

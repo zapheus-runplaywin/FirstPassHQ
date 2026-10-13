@@ -48,6 +48,13 @@ export default function AdministrationScreen() {
         </ThemedText>
       </PressableCard>
 
+      <PressableCard onPress={() => router.push('/admin/conduct')}>
+        <ThemedText type="smallBold">Code of conduct</ThemedText>
+        <ThemedText type="small" themeColor="textSecondary">
+          Who has accepted it this season and who still has to
+        </ThemedText>
+      </PressableCard>
+
       {affiliation ? (
         <PressableCard onPress={() => router.push('/admin/affiliation')}>
           <ThemedText type="smallBold">Affiliation</ThemedText>

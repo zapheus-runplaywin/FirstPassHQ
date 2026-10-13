@@ -22,6 +22,7 @@ export default function AdminTrainingScreen() {
   const season = choice ?? newest;
   const { requirements, counts, reload } = useTrainingRequirements(season);
   const [copying, setCopying] = useState(false);
+  const [adding, setAdding] = useState(false);
   const [message, setMessage] = useState<string | null>(null);
   const [error, setError] = useState<string | null>(null);
 
@@ -32,6 +33,9 @@ export default function AdminTrainingScreen() {
   );
   const shown = requirements.filter((r) => r.season === season);
   const previous = requirements.filter((r) => r.season === season - 1 && !r.archived);
+  const hasInduction = shown.some(
+    (r) => !r.archived && r.name.toLowerCase() === INDUCTION.toLowerCase(),
+  );
   const missing = previous.filter(
     (p) => !shown.some((r) => r.name.toLowerCase() === p.name.toLowerCase()),
   );
@@ -52,6 +56,24 @@ export default function AdminTrainingScreen() {
     const n = (data as number | null) ?? 0;
     setMessage(
       `Copied ${n} ${n === 1 ? 'course' : 'courses'} with due dates a year on. Check each one’s squads and teams.`,
+    );
+    await reload();
+  }
+
+  async function addInduction() {
+    setAdding(true);
+    setError(null);
+    setMessage(null);
+    const { error: addError } = await supabase.rpc('admin_add_safeguarding_induction', {
+      p_season: season,
+    });
+    setAdding(false);
+    if (addError) {
+      setError(addError.message);
+      return;
+    }
+    setMessage(
+      `Added the ${INDUCTION} for coaches, managers, physios and the committee, due in 3 months. Open it to change who does it or when.`,
     );
     await reload();
   }
@@ -79,6 +101,20 @@ export default function AdminTrainingScreen() {
           />
         </View>
       ) : null}
+      {hasInduction ? null : (
+        <View style={styles.section}>
+          <ThemedText type="small" themeColor="textSecondary">
+            Sport Integrity Australia’s free {INDUCTION} teaches adults how to keep children safe
+            in sport.
+          </ThemedText>
+          <Button
+            title="Add the safeguarding induction"
+            variant="secondary"
+            onPress={addInduction}
+            busy={adding}
+          />
+        </View>
+      )}
       {message ? <ThemedText type="small">{message}</ThemedText> : null}
       <ErrorText>{error}</ErrorText>
 
@@ -100,6 +136,9 @@ export default function AdminTrainingScreen() {
     </Screen>
   );
 }
+
+/** Sport Integrity Australia's course, added in one tap. */
+const INDUCTION = 'Child Safeguarding in Sport Induction';
 
 const styles = StyleSheet.create({
   section: {

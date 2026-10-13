@@ -13,6 +13,7 @@ import {
   type Placement,
   type RecordAccessSummary,
 } from '@/lib/reports';
+import type { ConductStatus } from '@/lib/conduct';
 import { supabase } from '@/lib/supabase';
 import type { Profile } from '@/lib/types';
 import { useTeams } from '@/lib/use-teams';
@@ -23,6 +24,7 @@ type Data = {
   placements: Placement[];
   consents: ChildConsentStatus[];
   access: RecordAccessSummary[];
+  conduct: ConductStatus[];
 };
 
 export default function Under18sReportScreen() {
@@ -33,27 +35,30 @@ export default function Under18sReportScreen() {
 
   const load = useCallback(async () => {
     try {
-      const [members, guardianships, placements, consentsResult, accessResult] = await Promise.all([
-        // Guardians who aren't approved yet are still named against their child.
-        fetchAll<Profile>((from, to) =>
-          supabase.from('profiles').select(PROFILE_COLUMNS).range(from, to),
-        ),
-        fetchAll<Guardianship>((from, to) =>
-          supabase.from('guardianships').select('guardian_id, athlete_id').range(from, to),
-        ),
-        fetchAll<Placement>((from, to) =>
-          supabase
-            .from('team_members')
-            .select('team_id, profile_id, team_role')
-            .eq('team_role', 'athlete')
-            .range(from, to),
-        ),
-        supabase.rpc('admin_child_consents'),
-        supabase.rpc('admin_record_access_summary'),
-      ]);
+      const [members, guardianships, placements, consentsResult, accessResult, conductResult] =
+        await Promise.all([
+          // Guardians who aren't approved yet are still named against their child.
+          fetchAll<Profile>((from, to) =>
+            supabase.from('profiles').select(PROFILE_COLUMNS).range(from, to),
+          ),
+          fetchAll<Guardianship>((from, to) =>
+            supabase.from('guardianships').select('guardian_id, athlete_id').range(from, to),
+          ),
+          fetchAll<Placement>((from, to) =>
+            supabase
+              .from('team_members')
+              .select('team_id, profile_id, team_role')
+              .eq('team_role', 'athlete')
+              .range(from, to),
+          ),
+          supabase.rpc('admin_child_consents'),
+          supabase.rpc('admin_record_access_summary'),
+          supabase.rpc('admin_conduct_status'),
+        ]);
       const consents = (consentsResult.data as ChildConsentStatus[] | null) ?? [];
       const access = (accessResult.data as RecordAccessSummary[] | null) ?? [];
-      setData({ members, guardianships, placements, consents, access });
+      const conduct = (conductResult.data as ConductStatus[] | null) ?? [];
+      setData({ members, guardianships, placements, consents, access, conduct });
       setError(null);
     } catch (e) {
       setError(e instanceof Error ? e.message : 'The report didn’t load. Try again.');
@@ -84,6 +89,7 @@ export default function Under18sReportScreen() {
             teams,
             data.consents,
             data.access,
+            data.conduct,
           )}
         />
       ) : null}

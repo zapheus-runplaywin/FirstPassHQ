@@ -233,7 +233,9 @@ export default function SafeguardingScreen() {
           maxLength={30}
         />
         <ThemedText type="small" themeColor="textSecondary">
-          Each parent’s consent is kept with the version in force when they gave it.
+          Each parent’s consent, and each code of conduct acceptance, is kept with the version in
+          force at the time. Once the code of conduct is linked, every member accepts it once a
+          season.
         </ThemedText>
       </View>
 
