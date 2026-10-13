@@ -20,6 +20,7 @@ import {
   type MemberType,
   type Office,
   type Officer,
+  type ReturnInfo,
   type Tier,
 } from '@/lib/affiliation';
 import { PROFILE_COLUMNS } from '@/lib/auth';
@@ -48,16 +49,19 @@ export default function AffiliationScreen() {
   const [contact2, setContact2] = useState<string | null>(null);
   const [checks, setChecks] = useState<Record<string, boolean>>({});
   const [notes, setNotes] = useState('');
+  const [returnInfo, setReturnInfo] = useState<ReturnInfo | null>(null);
+  const [returnEmail, setReturnEmail] = useState('');
   const [officers, setOfficers] = useState<Partial<Record<Office, OfficerForm>>>({});
   const [busy, setBusy] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [notice, setNotice] = useState<string | null>(null);
 
   const load = useCallback(async () => {
-    const [settingsResult, officersResult, peopleResult] = await Promise.all([
+    const [settingsResult, officersResult, peopleResult, returnResult] = await Promise.all([
       supabase.rpc('admin_affiliation').maybeSingle(),
       supabase.rpc('admin_affiliation_officers'),
       supabase.from('profiles').select(PROFILE_COLUMNS).eq('status', 'approved').order('full_name'),
+      supabase.rpc('admin_affiliation_return').maybeSingle(),
     ]);
     if (settingsResult.error) {
       setError(settingsResult.error.message);
@@ -74,6 +78,9 @@ export default function AffiliationScreen() {
     setContact2(a?.primary_contact_2_id ?? null);
     setChecks(a?.checks ?? {});
     setNotes(a?.notes ?? '');
+    const info = returnResult.data as ReturnInfo | null;
+    setReturnInfo(info);
+    setReturnEmail(info?.return_email ?? '');
     setOfficers(
       Object.fromEntries(
         ((officersResult.data as Officer[] | null) ?? []).map((o) => [
@@ -164,6 +171,12 @@ export default function AffiliationScreen() {
       p_notes: notes,
     });
     let failed = saveError?.message ?? null;
+    if (!failed && returnEmail.trim() !== (returnInfo?.return_email ?? '')) {
+      const { error: emailError } = await supabase.rpc('admin_set_affiliation_return_email', {
+        p_email: returnEmail,
+      });
+      failed = emailError?.message ?? null;
+    }
     for (const office of failed ? [] : offices) {
       const form = officers[office];
       const { error: officerError } = await supabase.rpc('admin_set_affiliation_officer', {
@@ -249,6 +262,15 @@ export default function AffiliationScreen() {
           keyboardType="numbers-and-punctuation"
           maxLength={10}
         />
+        <TextField
+          label="Send affiliation returns to (email)"
+          value={returnEmail}
+          onChangeText={setReturnEmail}
+          placeholder="Your association’s affiliations email"
+          keyboardType="email-address"
+          autoCapitalize="none"
+          maxLength={200}
+        />
         {saved ? (
           <ThemedText type="small" themeColor="textSecondary">
             {saved.season
@@ -261,7 +283,8 @@ export default function AffiliationScreen() {
       <View style={styles.group}>
         <ThemedText type="smallBold">Primary contacts</ThemedText>
         <ThemedText type="small" themeColor="textSecondary">
-          Two adults the association and Netball WA can contact about the club.
+          Two adults the association and Netball WA can contact about the club. Their names and
+          emails go in the affiliation return, so let them know.
         </ThemedText>
         <PersonPicker
           label="Primary contact 1"
@@ -357,6 +380,17 @@ export default function AffiliationScreen() {
           </ThemedText>
         </PressableCard>
       ) : null}
+
+      <PressableCard onPress={() => router.push('/admin/affiliation/return')}>
+        <ThemedText type="smallBold">Affiliation return</ThemedText>
+        <ThemedText type="small" themeColor="textSecondary">
+          {returnInfo?.last_sent_at
+            ? `Last sent ${localDay(returnInfo.last_sent_at)}${
+                returnInfo.last_sent_by_name ? ` by ${returnInfo.last_sent_by_name}` : ''
+              } to ${returnInfo.last_sent_to}`
+            : 'A yearly summary for your association, as a PDF. None sent yet'}
+        </ThemedText>
+      </PressableCard>
 
       <TextField
         label="Notes"

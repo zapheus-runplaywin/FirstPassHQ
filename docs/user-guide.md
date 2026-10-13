@@ -1063,7 +1063,8 @@ sign-off, plus child-safety follow-ups: athletes under 18 with no guardian linke
 Children Checks that are missing, expired or expire within 60 days, volunteer exemptions that end
 within 60 days, and athletes turning 18 within 30 days. Tapping a child-safety to-do opens **Members**, where the people behind it are listed
 first under **Needs checking**. When Affiliation records are on, the list also has affiliation
-items still to do and members to check in PlayHQ (see [Affiliation](#affiliation)). On an installed app, admins also get a push notification for each
+items still to do, members to check in PlayHQ and a reminder when the yearly affiliation return
+is due (see [Affiliation](#affiliation)). On an installed app, admins also get a push notification for each
 new join request.
 
 Because admins can read every child's records, they need a current Working With Children Check,
@@ -1633,9 +1634,10 @@ it.
 2. Fill in the **Details**: the **Incorporation number** (blank if not incorporated), who the club
    is **Affiliated with**, and the day it **last registered with them** (for a club) or **signed
    the annual agreement** (for an association), as DD/MM/YYYY. The number of teams this season is
-   shown, because a club with 5 or more teams must be incorporated.
+   shown, because a club with 5 or more teams must be incorporated. Under **Send affiliation
+   returns to**, enter the email address your association (or Netball WA) uses for affiliations.
 3. Choose two **Primary contacts**, two different adults the association and Netball WA can
-   contact.
+   contact. Their names and emails go in the affiliation return, so let them know.
 4. An association names its **Officers**: the President, the Association Development Officer and
    the Association Umpire Development Officer, another committee member, or a single representative
    for Tier 4, as its tier needs. Enter the day each completed Sport Integrity Australia's
@@ -1658,6 +1660,18 @@ and when. Filter by **To check**, **Not registered**, **Registered** or **All**,
 name or email. Your to-do list shows how many are still to check, and how many aren't registered
 so you can ask them to register.
 
+**Affiliation return.** Once a year, send your association a summary from **Affiliation >
+Affiliation return**. It shows exactly what will be sent: the details, the primary contacts and
+their emails, the checklist, an association's officers and inductions, PlayHQ registration counts,
+the club's safeguarding contacts and policy links, and counts from the Working With Children
+Checks and Integrity training reports. It names no member under 18 and has nothing about any
+child. Turn off **Working With Children Check counts** or **Integrity training counts** if your
+association doesn't ask for them. Tap **Send return**: on a phone the share sheet opens, so choose Mail and send the PDF to
+the address shown; on the web the PDF downloads and an email to that address opens, so attach the
+PDF and send it. The app records who sent it, when and where, and shows it on the Affiliation
+screen. Once you've entered the email address, your to-do list shows **Send the affiliation
+return** whenever none has gone in the last year.
+
 The **Affiliation** report in Reports puts the details, the checklist (required items not done in
 red), the officers and their inductions, and the season's PlayHQ registrations into one PDF to
 send to the association or keep for an audit.
@@ -1667,6 +1681,7 @@ send to the association or keep for an audit.
 <img src="user-guide/affiliation-association.png" width="210" alt="Affiliation for a Tier 2 association: officers and their safeguarding induction">
 <img src="user-guide/affiliation-registrations.png" width="210" alt="PlayHQ registrations to check for the season">
 <img src="user-guide/admin-affiliation-todos.png" width="210" alt="Affiliation items and PlayHQ checks in an admin's to-do list">
+<img src="user-guide/affiliation-return.png" width="210" alt="The affiliation return, ready to send to the association">
 
 ### Safeguarding contacts
 
@@ -1770,6 +1785,7 @@ once saved, only replaced or removed, and anyone who gets it wrong five times in
 | Award votes             | Only the voter sees their own ballot. Nobody, admins included, can see who someone voted for.                               |
 | Award results           | Admins only: standings and how many people have voted, and once voting closes, how many votes each nominee got at each place. |
 | Affiliation records and PlayHQ registration checks | Admins only. |
+| Affiliation returns     | Admins only, until an admin sends one. A sent return goes to the email address the club entered and holds club facts and counts, naming no member under 18. |
 | Reports and their PDFs  | Admins only. A saved PDF is a copy outside the app, so whoever it's shared with can read it.                                |
 | Match fixtures          | The members of each squad or team, and admins.                                                                              |
 | Club name, colours and logo | Every signed-in member. The logo file is public so it can show before sign-in. Only admins can change them.            |
@@ -1965,6 +1981,10 @@ Working With Children Check, and another admin must do it.
   PlayHQ registrations, and an association records when its President and other officers
   completed the Safeguarding Children and Young People in Sport Induction (see
   [Affiliation](#affiliation)).
+- **Nothing about a child goes up to the association.** The yearly affiliation return holds the
+  club's records and counts only (for example how many people need a Working With Children Check
+  and how many are current). The app builds it, an admin sees exactly what it holds before sending
+  it, and every return sent is recorded with who sent it and when.
 
 <img src="user-guide/safeguarding-home.png" width="210" alt="Raise a concern on the home screen">
 

@@ -6,14 +6,9 @@ import { Screen } from '@/components/screen';
 import { SeasonChips } from '@/components/training-list';
 import { ErrorText } from '@/components/ui';
 import { toDateString } from '@/lib/injuries';
+import { loadCourses } from '@/lib/report-data';
 import { integrityReport, type CourseProgress } from '@/lib/reports';
-import { supabase } from '@/lib/supabase';
-import {
-  currentSeason,
-  REQUIREMENT_COLUMNS,
-  type TrainingMember,
-  type TrainingRequirement,
-} from '@/lib/training';
+import { currentSeason } from '@/lib/training';
 import { seasonLabel, useTeams } from '@/lib/use-teams';
 
 export default function IntegrityReportScreen() {
@@ -27,31 +22,14 @@ export default function IntegrityReportScreen() {
   const season = choice ?? newest;
 
   const load = useCallback(async () => {
-    const { data, error: loadError } = await supabase
-      .from('training_requirements')
-      .select(REQUIREMENT_COLUMNS)
-      .eq('archived', false)
-      .order('due_on')
-      .order('name');
-    if (loadError) {
-      setError(loadError.message);
-      return;
+    try {
+      const loaded = await loadCourses(season);
+      setSeasons(loaded.seasons);
+      setCourses(loaded.courses);
+      setError(loaded.error);
+    } catch (e) {
+      setError(e instanceof Error ? e.message : 'The report didn’t load. Try again.');
     }
-    const requirements = (data as TrainingRequirement[] | null) ?? [];
-    setSeasons([...new Set(requirements.map((r) => r.season))]);
-    const shown = requirements.filter((r) => r.season === season);
-    const members = await Promise.all(
-      shown.map((r) => supabase.rpc('training_requirement_members', { p_requirement_id: r.id })),
-    );
-    const failed = members.find((m) => m.error);
-    setError(failed?.error?.message ?? null);
-    setCourses(
-      shown.map((r, i) => ({
-        name: r.name,
-        due_on: r.due_on,
-        members: (members[i].data as TrainingMember[] | null) ?? [],
-      })),
-    );
   }, [season]);
 
   useFocusEffect(

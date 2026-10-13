@@ -214,6 +214,10 @@ function RootStack() {
                 options={{ title: 'PlayHQ registrations' }}
               />
               <Stack.Screen name="admin/reports/affiliation" options={{ title: 'Affiliation' }} />
+              <Stack.Screen
+                name="admin/affiliation/return"
+                options={{ title: 'Affiliation return' }}
+              />
             </Stack.Protected>
             <Stack.Protected guard={features.calendar || features.awards || features.goals}>
               <Stack.Screen name="admin/fixtures" options={{ title: 'Fixtures' }} />
