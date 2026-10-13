@@ -14,7 +14,8 @@ import { Spacing } from '@/constants/theme';
 import { useTheme } from '@/hooks/use-theme';
 import { useAffiliationTodos } from '@/lib/affiliation';
 import { useConductTodos } from '@/lib/conduct';
-import { isMinor } from '@/lib/age';
+import { committeeCheckDue } from '@/lib/safety';
+import { formatDate, isMinor } from '@/lib/age';
 import { useAuth } from '@/lib/auth';
 import { useCanTakeAttendance, useCanViewAttendance } from '@/lib/attendance';
 import { useAwardSlots } from '@/lib/awards';
@@ -241,6 +242,8 @@ export default function HomeScreen() {
         <>
 
         {approved ? <PausedRoles /> : null}
+
+        {approved ? <CommitteeCheckDue /> : null}
 
         {approved ? <TodoList todos={todos} /> : null}
 
@@ -642,6 +645,28 @@ function PausedRoles() {
       <ThemedText type="smallBold">{roles} paused</ThemedText>
       <ThemedText type="small" themeColor="textSecondary">
         {pausedReason(paused, what)}
+      </ThemedText>
+    </Card>
+  );
+}
+
+/**
+ * A committee member who kept their role without a check: from the club's
+ * committee checks date it pauses unless they have one or are exempt.
+ */
+function CommitteeCheckDue() {
+  const { profile, committeeChecksFrom } = useAuth();
+  if (!profile || !committeeCheckDue(profile, committeeChecksFrom)) return null;
+  return (
+    <Card>
+      <ThemedText type="smallBold">
+        Your committee role needs a Working With Children Check from{' '}
+        {formatDate(committeeChecksFrom)}
+      </ThemedText>
+      <ThemedText type="small" themeColor="textSecondary">
+        Your committee role pauses on that day unless a check is recorded. Apply for one, then send
+        a club admin the card number and expiry date. If you never work with children, ask an admin
+        to exempt you with the reason.
       </ThemedText>
     </Card>
   );

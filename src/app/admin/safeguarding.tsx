@@ -2,6 +2,7 @@ import { router, useFocusEffect } from 'expo-router';
 import { useCallback, useState } from 'react';
 import { Platform, StyleSheet, Switch, View } from 'react-native';
 
+import { DateField } from '@/components/date-field';
 import { PersonPicker } from '@/components/person-picker';
 import { Screen } from '@/components/screen';
 import { ThemedText } from '@/components/themed-text';
@@ -33,6 +34,8 @@ export default function SafeguardingScreen() {
   const [policyUrl, setPolicyUrl] = useState('');
   const [minorPhotos, setMinorPhotos] = useState(false);
   const [conductEachSeason, setConductEachSeason] = useState(false);
+  const [committeeFrom, setCommitteeFrom] = useState<string | null>(null);
+  const [savedCommitteeFrom, setSavedCommitteeFrom] = useState<string | null>(null);
   const [privacyUrl, setPrivacyUrl] = useState('');
   const [conductUrl, setConductUrl] = useState('');
   const [policyVersion, setPolicyVersion] = useState('1');
@@ -49,6 +52,7 @@ export default function SafeguardingScreen() {
       policiesResult,
       wwcOfficerResult,
       conductResult,
+      committeeFromResult,
     ] = await Promise.all([
       supabase.rpc('safeguarding_contacts').maybeSingle(),
       supabase.from('profiles').select(PROFILE_COLUMNS).eq('status', 'approved').order('full_name'),
@@ -57,6 +61,7 @@ export default function SafeguardingScreen() {
       supabase.rpc('club_policies').maybeSingle(),
       supabase.rpc('admin_wwc_officer').maybeSingle(),
       supabase.rpc('conduct_each_season_setting'),
+      supabase.rpc('committee_checks_from'),
     ]);
     const officerId = (wwcOfficerResult.data as { officer_id: string } | null)?.officer_id ?? null;
     setWwcOfficer(officerId);
@@ -67,6 +72,9 @@ export default function SafeguardingScreen() {
     setPolicyVersion(policies?.policy_version ?? '1');
     setMinorPhotos(photosResult.data === true);
     setConductEachSeason(conductResult.data === true);
+    const from = typeof committeeFromResult.data === 'string' ? committeeFromResult.data : null;
+    setCommitteeFrom(from);
+    setSavedCommitteeFrom(from);
     const contacts = contactsResult.data as SafeguardingContacts | null;
     setOfficer(contacts?.child_safety_officer_id ?? null);
     setManager(contacts?.complaints_manager_id ?? null);
@@ -129,7 +137,18 @@ export default function SafeguardingScreen() {
       rpcError || photosError || policiesError || conductError || wwcOfficer === savedWwcOfficer
         ? { error: null }
         : await supabase.rpc('admin_set_wwc_officer', { p_profile_id: wwcOfficer });
-    const failed = rpcError ?? photosError ?? policiesError ?? conductError ?? officerError;
+    const { error: committeeError } =
+      rpcError ||
+      photosError ||
+      policiesError ||
+      conductError ||
+      officerError ||
+      !committeeFrom ||
+      committeeFrom === savedCommitteeFrom
+        ? { error: null }
+        : await supabase.rpc('admin_set_committee_checks_from', { p_date: committeeFrom });
+    const failed =
+      rpcError ?? photosError ?? policiesError ?? conductError ?? officerError ?? committeeError;
     if (failed) {
       setError(failed.message);
       return;
@@ -169,6 +188,24 @@ export default function SafeguardingScreen() {
         links members’ cards to the club with the Screening Unit and receives its notices. Shown
         on the Working With Children Checks report.
       </ThemedText>
+
+      {savedCommitteeFrom ? (
+        <View style={styles.group}>
+          <DateField
+            label="Committee checks required from"
+            value={committeeFrom}
+            onChange={setCommitteeFrom}
+            quickPicks={[{ label: 'Today', days: 0 }]}
+            max={savedCommitteeFrom}
+          />
+          <ThemedText type="small" themeColor="textSecondary">
+            Committee members approved before checks were needed keep their role until this day
+            without one. From then, a committee member with no check and no exemption has their
+            committee role paused. You can bring the date forward but not push it back; exempt
+            anyone who never works with children, with the reason, on their member page.
+          </ThemedText>
+        </View>
+      ) : null}
 
       <View style={styles.group}>
         <ThemedText type="smallBold">Governing body</ThemedText>

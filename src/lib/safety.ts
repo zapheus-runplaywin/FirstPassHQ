@@ -220,9 +220,9 @@ export const standDownReasonLabels: Record<StandDownReason, string> = {
 /**
  * Roles a member holds but can't use right now: coach, manager and physio
  * without a current check or a volunteer exemption that applies, committee
- * when a recorded check has expired
- * (unless exempt), and all of those plus admin while stood down. Same rule as
- * `public.has_role` in the database.
+ * when a recorded check has expired, or none is recorded from the club's
+ * committee checks date (unless exempt), and all of those plus admin while
+ * stood down. Same rule as `public.has_role` in the database.
  */
 export function pausedRoles(
   member: Pick<
@@ -237,6 +237,8 @@ export function pausedRoles(
   >,
   /** They have a volunteer exemption that applies today. */
   exempt = false,
+  /** The day from which committee members need a check, "2027-01-11" style. */
+  committeeChecksFrom: string | null = null,
 ): AppRole[] {
   if (member.status !== 'approved') return [];
   const check = wwccStatus(member).kind;
@@ -247,10 +249,34 @@ export function pausedRoles(
     if (stoodDown) return true;
     if (wwccRoles.includes(r)) return !current && !exempt;
     if (r === 'committee') {
-      return !member.wwcc_exempt_reason?.trim() && !!member.wwcc_number?.trim() && !current;
+      const checksRequired = !!member.wwcc_number?.trim() || committeeChecksDue(committeeChecksFrom);
+      return !member.wwcc_exempt_reason?.trim() && checksRequired && !current;
     }
     return false;
   });
+}
+
+/** Whether the club's committee checks date has come. */
+export function committeeChecksDue(committeeChecksFrom: string | null) {
+  return !!committeeChecksFrom && isoDay() >= committeeChecksFrom;
+}
+
+/**
+ * A committee member who has kept their role without a check, before the
+ * club's committee checks date: they need a check, or an exemption, by then.
+ */
+export function committeeCheckDue(
+  member: Pick<Profile, 'role' | 'extra_roles' | 'status' | 'wwcc_number' | 'wwcc_exempt_reason'>,
+  committeeChecksFrom: string | null,
+) {
+  return (
+    member.status === 'approved' &&
+    rolesOf(member).includes('committee') &&
+    !member.wwcc_number?.trim() &&
+    !member.wwcc_exempt_reason?.trim() &&
+    !!committeeChecksFrom &&
+    !committeeChecksDue(committeeChecksFrom)
+  );
 }
 
 /** Today's date as YYYY-MM-DD, plus a number of days. */
