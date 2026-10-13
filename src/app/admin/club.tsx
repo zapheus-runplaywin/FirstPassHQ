@@ -4,6 +4,7 @@ import { Image } from 'expo-image';
 import { useEffect, useState } from 'react';
 import { Platform, Pressable, StyleSheet, Switch, View } from 'react-native';
 
+import { RecordRetention } from '@/components/record-retention';
 import { Screen } from '@/components/screen';
 import { ThemedText } from '@/components/themed-text';
 import { Button, Card, ChipGroup, ErrorText, TextField } from '@/components/ui';
@@ -411,6 +412,8 @@ export default function ClubSettingsScreen() {
         </ThemedText>
       ) : null}
       <Button title="Save club settings" onPress={save} busy={saving} disabled={uploading} />
+
+      <RecordRetention />
     </Screen>
   );
 }
