@@ -18,10 +18,15 @@ import type { AppRole } from '@/lib/types';
  */
 export default function ConductStatusScreen() {
   const [rows, setRows] = useState<ConductStatus[] | null>(null);
+  const [on, setOn] = useState(false);
 
   const load = useCallback(async () => {
-    const { data } = await supabase.rpc('admin_conduct_status');
-    setRows((data as ConductStatus[] | null) ?? []);
+    const [statusResult, settingResult] = await Promise.all([
+      supabase.rpc('admin_conduct_status'),
+      supabase.rpc('conduct_each_season_setting'),
+    ]);
+    setRows((statusResult.data as ConductStatus[] | null) ?? []);
+    setOn(settingResult.data === true);
   }, []);
 
   useFocusEffect(
@@ -46,9 +51,11 @@ export default function ConductStatusScreen() {
   return (
     <Screen>
       <ThemedText type="small" themeColor="textSecondary">
-        {rows.length === 0
-          ? 'Nobody is asked yet. Add the club’s code of conduct in Safeguarding and every member accepts it once a season, from their to-do list.'
-          : 'Every member accepts the code of conduct once a season, from their to-do list. A verified parent or guardian accepts for an under 18. Guests and temporary helpers aren’t asked.'}
+        {!on
+          ? 'Members aren’t asked to accept the code of conduct. To ask them once a season, turn on Code of conduct each season in Safeguarding.'
+          : rows.length === 0
+            ? 'Nobody is asked yet. Link the club’s code of conduct in Safeguarding and every member accepts it once a season, from their to-do list.'
+            : 'Every member accepts the code of conduct once a season, from their to-do list. A verified parent or guardian accepts for an under 18. Guests and temporary helpers aren’t asked.'}
       </ThemedText>
       {[
         { title: `Still to accept (${waiting.length})`, list: waiting },

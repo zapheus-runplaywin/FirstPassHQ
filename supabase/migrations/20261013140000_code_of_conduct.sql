@@ -1,7 +1,10 @@
 -- Child safety finding 15: the code of conduct, accepted every season, and a
 -- ready-made safeguarding induction course.
 --
--- Once the club links its code of conduct (Safeguarding settings), every
+-- Asking is a club choice, off by default: some clubs already have members
+-- sign a code of conduct, for example in their PlayHQ registration. Once an
+-- admin turns on "Accept the code of conduct each season" and the club has
+-- linked its code of conduct (Safeguarding settings), every
 -- approved member accepts it once a season: for themselves, or, for an
 -- under 18 with a parent or guardian linked, a verified parent or guardian
 -- accepts for them. Guests and
@@ -13,7 +16,7 @@
 -- Sport Induction to a season's integrity training in one tap, for coaches,
 -- managers, physios and the committee.
 --
--- Additive only: a new table and new functions.
+-- Additive only: a new table, a new column with a default and new functions.
 
 begin;
 
@@ -33,6 +36,10 @@ create table if not exists public.conduct_acceptances (
   accepted_at timestamptz not null default now(),
   unique (profile_id, season)
 );
+
+-- Whether the club asks members to accept its code of conduct each season.
+alter table public.safeguarding_settings
+  add column if not exists conduct_each_season boolean not null default false;
 
 alter table public.conduct_acceptances enable row level security;
 -- Read and written only through the functions below.
@@ -70,8 +77,9 @@ $$;
 revoke execute on function public.conduct_statement(boolean) from public, anon;
 grant execute on function public.conduct_statement(boolean) to authenticated;
 
--- Whether a member must accept the code: the club has linked one, and they're
--- an approved member who isn't only a guest or a temporary helper.
+-- Whether a member must accept the code: the club asks for it and has linked
+-- one, and they're an approved member who isn't only a guest or a temporary
+-- helper.
 create or replace function public.conduct_required(p_profile_id uuid)
 returns boolean
 language sql
@@ -81,7 +89,7 @@ set search_path = ''
 as $$
   select exists (
       select 1 from public.safeguarding_settings s
-      where s.id and coalesce(trim(s.code_of_conduct_url), '') <> ''
+      where s.id and s.conduct_each_season and coalesce(trim(s.code_of_conduct_url), '') <> ''
     )
     and exists (
       select 1 from public.profiles p
@@ -95,6 +103,46 @@ as $$
 $$;
 
 revoke execute on function public.conduct_required(uuid) from public, anon, authenticated;
+
+-- Turns asking for the code of conduct each season on or off. Turning it off
+-- keeps every acceptance already made.
+create or replace function public.admin_set_conduct_each_season(p_on boolean)
+returns void
+language plpgsql
+security definer
+set search_path = ''
+as $$
+begin
+  if not public.is_admin() then
+    raise exception 'Only admins can change safeguarding settings';
+  end if;
+  if p_on is null then
+    raise exception 'Choose whether members accept the code of conduct';
+  end if;
+  update public.safeguarding_settings
+  set conduct_each_season = p_on, updated_by = auth.uid(), updated_at = now()
+  where id;
+end;
+$$;
+
+revoke execute on function public.admin_set_conduct_each_season(boolean) from public, anon;
+grant execute on function public.admin_set_conduct_each_season(boolean) to authenticated;
+
+-- Whether the club asks members to accept the code each season, for the
+-- Safeguarding and Code of conduct screens.
+create or replace function public.conduct_each_season_setting()
+returns boolean
+language sql
+stable
+security definer
+set search_path = ''
+as $$
+  select coalesce((select s.conduct_each_season from public.safeguarding_settings s where s.id), false)
+  where auth.uid() is not null;
+$$;
+
+revoke execute on function public.conduct_each_season_setting() from public, anon;
+grant execute on function public.conduct_each_season_setting() to authenticated;
 
 -- Whether a parent or guardian accepts for this member: they're under 18 and
 -- have a parent or guardian linked. Anyone else accepts for themselves.
