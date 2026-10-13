@@ -1682,6 +1682,7 @@ send to the association or keep for an audit.
 <img src="user-guide/affiliation-registrations.png" width="210" alt="PlayHQ registrations to check for the season">
 <img src="user-guide/admin-affiliation-todos.png" width="210" alt="Affiliation items and PlayHQ checks in an admin's to-do list">
 <img src="user-guide/affiliation-return.png" width="210" alt="The affiliation return, ready to send to the association">
+<img src="user-guide/affiliation-return-counts.png" width="210" alt="The return's safeguarding set-up and counts">
 
 ### Safeguarding contacts
 
