@@ -318,6 +318,8 @@ export type InjuryUpdate = {
   expected_return: string | null;
   document_path: string | null;
   document_name: string | null;
+  /** When the file was removed after the club's keep period; the record stays. */
+  document_removed_at: string | null;
   created_at: string;
 };
 

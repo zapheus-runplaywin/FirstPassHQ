@@ -1,4 +1,5 @@
-// Removes injury records 12 months after the athlete left the club, and,
+// Removes injury records 12 months after the athlete left the club, the files
+// of cleared injuries once they are past the club's keep period, and,
 // once an admin has switched on "Remove old records" in Club settings, other
 // records past the club's keep periods (public.purge_expired_records()).
 //
@@ -72,6 +73,21 @@ Deno.serve(async (request) => {
   const { data: purged, error: purgeError } = await supabase.rpc('purge_expired_injuries');
   if (purgeError) return failed('purging injuries', purgeError.message);
 
+  // Files of cleared injuries past the club's keep period go too, while the
+  // injury and the record of each document stay. Nothing is listed while
+  // removal is switched off.
+  const { data: clearedPaths, error: clearedError } = await supabase.rpc(
+    'cleared_injury_documents',
+  );
+  if (clearedError) return failed('listing cleared injury documents', clearedError.message);
+  const cleared = (clearedPaths ?? []) as string[];
+  for (let i = 0; i < cleared.length; i += BATCH) {
+    const { error } = await supabase.storage.from(BUCKET).remove(cleared.slice(i, i + BATCH));
+    if (error) return failed('removing cleared injury documents', error.message);
+  }
+  const { data: marked, error: markError } = await supabase.rpc('mark_removed_injury_documents');
+  if (markError) return failed('marking removed injury documents', markError.message);
+
   // Training certificate files past the club's keep period go before their
   // records, the same way. Nothing is listed while removal is switched off.
   const { data: certificatePaths, error: certificateError } = await supabase.rpc(
@@ -91,6 +107,7 @@ Deno.serve(async (request) => {
 
   // Counts go to the function's logs, not to whoever called it.
   console.log(`Purged ${names.length} document(s) and ${purged} injury record(s)`);
+  console.log(`Removed ${cleared.length} cleared injury file(s); marked ${marked} document(s)`);
   console.log(
     `Removed ${certificates.length} certificate file(s); old records: ${JSON.stringify(records)}`,
   );

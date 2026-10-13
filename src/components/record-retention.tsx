@@ -18,9 +18,28 @@ type Retention = {
   access_log_months: number;
   updated_by_name: string | null;
   updated_at: string | null;
+  /** Days after clearance an injury's files are kept. */
+  injury_documents_days: number;
 };
 
-type PeriodKey = Exclude<keyof Retention, 'enabled' | 'updated_by_name' | 'updated_at'>;
+type PeriodKey = Exclude<
+  keyof Retention,
+  'enabled' | 'updated_by_name' | 'updated_at' | 'injury_documents_days'
+>;
+
+const injuryDocumentDays = [30, 60, 90, 180];
+
+async function loadRetention() {
+  const [{ data }, { data: days }] = await Promise.all([
+    supabase.rpc('record_retention').maybeSingle(),
+    supabase.rpc('injury_documents_keep_days'),
+  ]);
+  if (!data) return null;
+  return {
+    ...(data as Omit<Retention, 'injury_documents_days'>),
+    injury_documents_days: typeof days === 'number' ? days : 90,
+  } as Retention;
+}
 
 const everyday = [12, 24, 36, 60, 120];
 const safety = [84, 120, 180, 240];
@@ -67,7 +86,8 @@ function years(months: number) {
 /**
  * How long the club keeps everyday records, and the switch that lets the
  * daily clean-up remove anything older. Concerns are never removed, and
- * injuries keep their own 12 months after an athlete leaves.
+ * injuries keep their own 12 months after an athlete leaves; their files go
+ * soon after clearance.
  */
 export function RecordRetention() {
   const theme = useTheme();
@@ -78,14 +98,10 @@ export function RecordRetention() {
   const [notice, setNotice] = useState<string | null>(null);
 
   useEffect(() => {
-    supabase
-      .rpc('record_retention')
-      .maybeSingle()
-      .then(({ data }) => {
-        const row = (data as Retention | null) ?? null;
-        setSaved(row);
-        setDraft(row);
-      });
+    loadRetention().then((row) => {
+      setSaved(row);
+      setDraft(row);
+    });
   }, []);
 
   if (!draft) return null;
@@ -104,13 +120,17 @@ export function RecordRetention() {
       p_certificates_months: draft.certificates_months,
       p_access_log_months: draft.access_log_months,
     });
+    const { error: daysError } = rpcError
+      ? { error: null }
+      : await supabase.rpc('admin_set_injury_documents_keep_days', {
+          p_days: draft.injury_documents_days,
+        });
     setBusy(false);
-    if (rpcError) {
-      setError(rpcError.message);
+    if (rpcError || daysError) {
+      setError((rpcError ?? daysError)!.message);
       return;
     }
-    const { data } = await supabase.rpc('record_retention').maybeSingle();
-    const row = (data as Retention | null) ?? draft;
+    const row = (await loadRetention()) ?? draft;
     setSaved(row);
     setDraft(row);
     setNotice('Saved.');
@@ -155,6 +175,19 @@ export function RecordRetention() {
           </ThemedText>
         </View>
       ))}
+      <View style={styles.period}>
+        <ChipGroup
+          label="Injury documents"
+          options={injuryDocumentDays.map((d) => ({ value: String(d), label: `${d} days` }))}
+          selected={[String(draft.injury_documents_days)]}
+          onToggle={(value) => setDraft({ ...draft, injury_documents_days: Number(value) })}
+        />
+        <ThemedText type="small" themeColor="textSecondary">
+          Letters, reports and photos go this long after the injury is cleared, or when its season
+          is archived if that’s sooner. The injury, its sign-offs and who added and viewed each
+          document stay.
+        </ThemedText>
+      </View>
       {saved?.updated_at ? (
         <ThemedText type="small" themeColor="textSecondary">
           Last changed by {saved.updated_by_name ?? 'an admin'},{' '}

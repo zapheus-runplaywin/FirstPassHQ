@@ -29,7 +29,7 @@ import { supabase } from '@/lib/supabase';
 import type { Injury, InjuryDocumentEvent, InjuryUpdate } from '@/lib/types';
 
 const UPDATE_COLUMNS =
-  'id, author_name, kind, notes, restrictions, expected_return, document_path, document_name, created_at';
+  'id, author_name, kind, notes, restrictions, expected_return, document_path, document_name, document_removed_at, created_at';
 
 /** What the member is doing on this screen, if anything. */
 type Action = 'update' | 'clearance' | 'endorse' | 'accept' | 'send_back';
@@ -94,7 +94,7 @@ export default function InjuryScreen() {
 
   const isCommittee =
     profile?.status === 'approved' && hasRole(profile, 'committee', 'admin');
-  const hasDocuments = updates.some((u) => u.document_path);
+  const hasDocuments = updates.some((u) => u.document_path && !u.document_removed_at);
 
   return (
     <Screen refreshing={refreshing} onRefresh={onRefresh}>
@@ -587,24 +587,31 @@ function UpdateCard({
           <ThemedText type="small" numberOfLines={1}>
             📎 {update.document_name ?? 'Document'}
           </ThemedText>
-          <View style={styles.links}>
-            <Pressable accessibilityRole="button" onPress={view} style={styles.link}>
-              <ThemedText type="smallBold" style={{ color: theme.tint }}>
-                View
-              </ThemedText>
-            </Pressable>
-            {canShare ? (
-              <Pressable
-                accessibilityRole="button"
-                onPress={share}
-                disabled={opening}
-                style={styles.link}>
+          {update.document_removed_at ? (
+            <ThemedText type="small" themeColor="textSecondary">
+              Removed {formatDateTime(new Date(update.document_removed_at))}, after the club’s keep
+              period. The record of it stays.
+            </ThemedText>
+          ) : (
+            <View style={styles.links}>
+              <Pressable accessibilityRole="button" onPress={view} style={styles.link}>
                 <ThemedText type="smallBold" style={{ color: theme.tint }}>
-                  {opening ? 'Opening…' : 'Share'}
+                  View
                 </ThemedText>
               </Pressable>
-            ) : null}
-          </View>
+              {canShare ? (
+                <Pressable
+                  accessibilityRole="button"
+                  onPress={share}
+                  disabled={opening}
+                  style={styles.link}>
+                  <ThemedText type="smallBold" style={{ color: theme.tint }}>
+                    {opening ? 'Opening…' : 'Share'}
+                  </ThemedText>
+                </Pressable>
+              ) : null}
+            </View>
+          )}
           <ErrorText>{error}</ErrorText>
           {log ? (
             <View>
