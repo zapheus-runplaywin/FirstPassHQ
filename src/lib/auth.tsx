@@ -49,6 +49,8 @@ type AuthState = {
   /** A club captain for a current season. */
   isClubCaptain: boolean;
   isAdmin: boolean;
+  /** The day from which committee members need a check, "2027-01-11" style. */
+  committeeChecksFrom: string | null;
   /** The Child Safety Officer or Complaints Manager, able to act as one now. */
   isSafeguardingOfficer: boolean;
   refresh: () => Promise<void>;
@@ -75,6 +77,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   const [isClubCaptain, setIsClubCaptain] = useState(false);
   const [exemption, setExemption] = useState<MyVolunteerExemption | null>(null);
   const [isSafeguardingOfficer, setIsSafeguardingOfficer] = useState(false);
+  const [committeeChecksFrom, setCommitteeChecksFrom] = useState<string | null>(null);
 
   const loadMember = useCallback(async (userId: string | undefined) => {
     if (!userId) {
@@ -84,6 +87,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       setIsClubCaptain(false);
       setExemption(null);
       setIsSafeguardingOfficer(false);
+      setCommitteeChecksFrom(null);
       return;
     }
     const [
@@ -93,6 +97,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       clubCaptainResult,
       exemptionResult,
       officerResult,
+      committeeChecksResult,
     ] = await Promise.all([
       supabase.from('profiles').select(PROFILE_COLUMNS).eq('id', userId).single(),
       supabase
@@ -105,6 +110,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       supabase.rpc('is_club_captain'),
       supabase.rpc('my_volunteer_exemption').maybeSingle(),
       supabase.rpc('is_safeguarding_officer'),
+      supabase.rpc('committee_checks_from'),
     ]);
     setProfile((profileResult.data as Profile | null) ?? null);
     setMemberships((membershipResult.data as unknown as TeamMembership[] | null) ?? []);
@@ -112,6 +118,9 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     setIsClubCaptain(clubCaptainResult.data === true);
     setExemption((exemptionResult.data as MyVolunteerExemption | null) ?? null);
     setIsSafeguardingOfficer(officerResult.data === true);
+    setCommitteeChecksFrom(
+      typeof committeeChecksResult.data === 'string' ? committeeChecksResult.data : null,
+    );
   }, []);
 
   useEffect(() => {
@@ -138,8 +147,8 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   }, []);
 
   const { usable, paused } = useMemo(
-    () => usableProfile(profile, !!exemption?.valid),
-    [profile, exemption],
+    () => usableProfile(profile, !!exemption?.valid, committeeChecksFrom),
+    [profile, exemption, committeeChecksFrom],
   );
   const usableMemberships = useMemo(
     () =>
@@ -167,6 +176,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
         isClubCaptain,
         isAdmin,
         isSafeguardingOfficer,
+        committeeChecksFrom,
         refresh,
         signOut,
       }}>
@@ -176,8 +186,12 @@ export function AuthProvider({ children }: { children: ReactNode }) {
 }
 
 /** The member with only the roles they can use now, and the roles left out. */
-function usableProfile(profile: Profile | null, exempt: boolean) {
-  const paused = profile ? pausedRoles(profile, exempt) : [];
+function usableProfile(
+  profile: Profile | null,
+  exempt: boolean,
+  committeeChecksFrom: string | null,
+) {
+  const paused = profile ? pausedRoles(profile, exempt, committeeChecksFrom) : [];
   if (!profile || paused.length === 0) return { usable: profile, paused };
   const [main = 'guest', ...extra] = [profile.role, ...profile.extra_roles].filter(
     (r) => !paused.includes(r),

@@ -42,7 +42,7 @@ each of their roles can.
 | **Guardian**  | Parents and guardians of athletes under 18. They see their child's attendance and can report an absence for them, and see what has changed around their child. If the club asks, they accept the club's code of conduct for their child each season. |
 | **Coach**     | Head coaches and assistant coaches. Both have the same permissions; the title only shows who is who. Need a current Working With Children Check; the role pauses while it's expired. A parent volunteering at their child's club, or a volunteer under 18, has an exemption instead (see [Volunteer exemptions](#volunteer-exemptions)). |
 | **Manager**   | Squad and team managers. Need a current Working With Children Check; the role pauses while it's expired. A parent volunteering at their child's club, or a volunteer under 18, has an exemption instead (see [Volunteer exemptions](#volunteer-exemptions)). |
-| **Committee** | Club committee members. Each can add a title, such as President or Secretary, shown with their role. Need a current Working With Children Check unless an admin exempts them; the role pauses if a recorded check expires. |
+| **Committee** | Club committee members. Each can add a title, such as President or Secretary, shown with their role. Need a current Working With Children Check unless an admin exempts them; the role pauses if a recorded check expires. Committee members approved before checks were needed keep the role without one only until the club's **committee checks date**. |
 | **Physio**    | The club's physiotherapists. A physio can be placed in squads or teams to look after their athletes, and one can be the **Head Physio**, who looks after every athlete. Need a current Working With Children Check; the role pauses while it's expired. A parent volunteering at their child's club, or a volunteer under 18, has an exemption instead (see [Volunteer exemptions](#volunteer-exemptions)). |
 | **Guest**     | Anyone else the club lets in, such as partners and sponsors. Guests can only look.                   |
 | **Temporary helper** | Someone helping for a day or a short time, such as at a carnival, clinic or tournament, paid or unpaid. Not necessarily a member of the club: this is only a role so the app can onboard them. The app screens them: a Working With Children Check or an exemption covering every day they help, and the club's code of conduct and safeguarding policy accepted. They see none of the club's features or messages, and their time ends by itself after their last day (see [Temporary helpers](#temporary-helpers)). |
@@ -990,6 +990,14 @@ Like coaches, they need a current Working With Children Check, recorded by an ad
 admin exempts them with a reason. If a check an admin recorded expires, the committee role pauses
 until the renewed one is recorded.
 
+Committee members approved before checks were needed keep their role without one until the
+club's **committee checks date**, set under Safeguarding (90 days after the rule started, unless
+an admin brought it forward). Until then their home screen says when the role will pause. From
+that day, a committee member with no check and no exemption has their committee role paused until
+an admin records a check or exempts them.
+
+<img src="user-guide/committee-check-due.png" width="210" alt="A committee member's home screen saying when they need a check">
+
 If you're the club's Child Safety Officer or Complaints Manager, your home screen also has
 **Concerns** (see [The concerns register](#the-concerns-register)).
 
@@ -1265,7 +1273,8 @@ The app won't approve or save:
 - a coach, manager or physio without a current Working With Children Check or a volunteer
   exemption;
 - a new committee member without a current Working With Children Check or an exemption. Committee
-  members approved before checks were needed keep their access, and show under **Needs checking**
+  members approved before checks were needed keep their access until the club's committee checks
+  date (see [Safeguarding contacts](#safeguarding-contacts)), and show under **Needs checking**
   until you record a check or exempt them;
 - a new admin without a current Working With Children Check or an exemption. Admins approved
   before checks were needed keep their access and show under **Needs checking** in the same way;
@@ -1834,6 +1843,15 @@ the club's Working With Children Check records, links members' cards to the club
 Screening Unit and receives its notices. They're named on the Working With Children Checks report,
 and your to-do list asks you to choose one until you do.
 
+**Committee checks required from** is the day from which every committee member needs a current
+check or an exemption. It starts 90 days after the rule came in. Committee members approved before
+checks were needed keep their role without one until then; from that day their committee role
+pauses until you record a check or exempt them. You can bring the date forward, for example to
+today, but not push it back, so the club can't keep putting it off. Exempt anyone who never works
+with children, such as a treasurer who works from home, with the reason, on their member page.
+
+<img src="user-guide/admin-committee-checks.png" width="210" alt="Safeguarding settings: committee checks required from">
+
 Add the sport's **governing body**: its name, phone or hotline, and complaints form link. Add the
 club's **safeguarding policy** link too. Everyone sees these on **Raise a concern**. Links must
 start with https://.
@@ -1920,6 +1938,7 @@ once saved, only replaced or removed, and anyone who gets it wrong five times in
 | Temporary helpers' task, dates and policy acceptance | The volunteer and admins. Temporary helpers see nothing of the club's members, squads, calendar or messages. |
 | Concerns                | The Child Safety Officer, the Complaints Manager and admins, never the person a concern is about. Whoever raised it sees its status. A hidden name is never shown to them. |
 | Safeguarding contacts   | Everyone signed in, including guests and people waiting for approval.                                                       |
+| Committee checks date   | Everyone signed in. Only admins change it, and only to bring it forward; who changed it and when is kept. |
 | Messages                | The people they were sent to, the sender, and admins. Guardians of athletes under 18 get a copy of every message sent to their athlete, and of every message their athlete sends as a captain. Guests don't get messages; physios get messages sent to the Physio role and to their squads and teams, and whole-club messages only if an admin turns that on. |
 | Read receipts           | The sender and admins.                                                                                                      |
 | Daily check-in answers and notes | The athlete, their guardians and their coaches. For an athlete under 18, their coaches only once a parent or guardian consents. The committee, physios and admins see only group averages, hidden below 5 check-ins or when two groups differ by fewer than 5. |
@@ -2099,6 +2118,10 @@ Working With Children Check, and another admin must do it.
   negative notice from the Working with Children Screening Unit. Their coach, manager, physio,
   committee and admin roles stop and they leave the squads and teams they lead. Every stand-down is
   kept (see [Changing or removing members](#changing-or-removing-members)).
+- **Committee checks have a deadline.** Committee members approved before checks were needed
+  keep their role without one only until the club's committee checks date. From that day their
+  committee role pauses unless a check is recorded or an admin exempts them with a reason. Admins
+  can bring the date forward but never push it back.
 - **Admins are screened too.** Admins can read every child's records, so they need a current
   check, or an exemption with a reason that another admin records; nobody exempts themselves. An
   admin's role doesn't pause when the check expires, so the club can't be locked out of its own
