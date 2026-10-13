@@ -2187,6 +2187,13 @@ Working With Children Check, and another admin must do it.
 - **Child abuse and serious crimes go out, not in.** The register prompts the club to refer them to
   Police and the governing body straight away, and records that it did.
 - **Each club's data is kept apart**, in that club's own database.
+- **Not social media, by design.** The app is a club administration tool: no replies or direct
+  messages, feeds, profile pictures, likes or following, and posts never reach beyond a member's
+  own squads and teams. That keeps it outside the under-16 social media ban, and the rule is
+  written into how the app is built. Whether the Privacy Act binds a club depends on its turnover
+  and whether keeping injury records makes it a health service provider; the app is built to the
+  Act's standards either way. Both assessments, with their reasons, are kept with the app's code
+  and reviewed each year.
 - **Affiliation evidence in one place.** A club or association that turns on Affiliation records
   keeps its primary contacts, incorporation, registration with its association and each season's
   PlayHQ registrations, and an association records when its President and other officers
