@@ -1180,7 +1180,9 @@ screen. Admins' to-do lists include join requests waiting for approval and clear
 sign-off, plus child-safety follow-ups: athletes under 18 with no guardian linked, Working With
 Children Checks that are missing, expired or expire within 60 days, volunteer exemptions that end
 within 60 days, and athletes turning 18 within 30 days. Tapping a child-safety to-do opens **Members**, where the people behind it are listed
-first under **Needs checking**. When Affiliation records are on, the list also has affiliation
+first under **Needs checking**. While **Remove old records** is off, the list also shows **Old
+records are kept forever**, which opens Club settings so you can switch it on (see [Keeping
+records](#keeping-records)). When Affiliation records are on, the list also has affiliation
 items still to do, members to check in PlayHQ and a reminder when the yearly affiliation return
 is due (see [Affiliation](#affiliation)). On an installed app, admins also get a push notification for each
 new join request.
@@ -1191,7 +1193,7 @@ or an exemption with a reason that another admin records, like committee members
 
 <img src="user-guide/admin-home.png" width="210" alt="Admin home screen">
 <img src="user-guide/administration.png" width="210" alt="Administration menu">
-<img src="user-guide/admin-safety-todos.png" width="210" alt="Admin to-dos for guardians, Working With Children Checks and athletes turning 18">
+<img src="user-guide/admin-safety-todos.png" width="210" alt="Admin to-dos for guardians, Working With Children Checks, athletes turning 18 and old records kept forever">
 
 ### Inviting members
 
@@ -1816,7 +1818,8 @@ The privacy law says a club keeps personal information only while it needs it. *
 at the bottom of Club settings, sets how long the club keeps each kind of record, for everyone,
 adults and children alike.
 
-- **Remove old records** starts off, and nothing is removed while it's off. When it's on, each night
+- **Remove old records** starts off, and nothing is removed while it's off. Until you switch it on,
+  every admin's to-do list shows **Old records are kept forever**. When it's on, each night
   the app permanently removes records older than their keep period. They can't be brought back, so
   save a report first if the club needs a copy.
 - **Daily check-ins**, counted from the day of the check-in: 2 years unless you choose 1, 3, 5 or
@@ -2133,6 +2136,14 @@ Working With Children Check, and another admin must do it.
 
 ### For committees, boards and admins
 
+> **Get legal advice on the Privacy Act.** A club with a turnover of $3 million or less is usually
+> exempt, but keeping injury records, physio updates and medical letters may make the club a
+> "health service provider", and then the Act applies to that information whatever the club's
+> size. Ask a lawyer whether it applies to your club. Until you have an answer, treat injury
+> records as covered by the Act. The app is built to the Act's standards either way, and the
+> reasons are in the [privacy and social media
+> assessment](security/privacy-and-social-media-assessment-2026-10-13.md).
+
 - **Stand-downs.** An admin can stand someone down straight away, for example on an interim
   negative notice from the Working with Children Screening Unit. Their coach, manager, physio,
   committee and admin roles stop and they leave the squads and teams they lead. Every stand-down is
@@ -2180,7 +2191,8 @@ Working With Children Check, and another admin must do it.
 - **Your to-do list does the chasing**: new concerns, missing or expiring checks, volunteer
   exemptions ending, declarations not yet accepted, cards to validate or register with the
   club, notices to report to the governing body, no WWC Registration Officer, athletes with no date
-  of birth, athletes under 18 without a guardian and athletes turning 18.
+  of birth, athletes under 18 without a guardian, athletes turning 18, and old records kept
+  forever while **Remove old records** is off.
 - **Reports for your records.** The Working With Children Checks report follows the Screening
   Unit's record layout: every check with the name on the card, date of birth, card number, expiry
   and validation, plus every exemption, notice and stand-down. The under 18s report lists every child, their guardians and how often their records were viewed in the last 12 months. The concerns register
@@ -2212,7 +2224,8 @@ Working With Children Check, and another admin must do it.
   messages, feeds, profile pictures, likes or following, and posts never reach beyond a member's
   own squads and teams. That keeps it outside the under-16 social media ban, and the rule is
   written into how the app is built. Whether the Privacy Act binds a club depends on its turnover
-  and whether keeping injury records makes it a health service provider; the app is built to the
+  and whether keeping injury records makes it a health service provider. **Each club should get
+  legal advice on this** and treat injury records as covered until it has; the app is built to the
   Act's standards either way. Both assessments, with their reasons, are kept with the app's code
   and reviewed each year.
 - **Affiliation evidence in one place.** A club or association that turns on Affiliation records
