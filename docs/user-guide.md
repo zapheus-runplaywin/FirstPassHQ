@@ -112,6 +112,7 @@ What each role sees on its home screen:
 | Title, such as President               |         |                 |              |            |       ✓       |               |         |       ✓       |
 | Club name, colours, logo and features  |         |                 |              |            |               |               |         |       ✓       |
 | Invite members (QR code and link)      |         |                 |              |            |               |               |         |       ✓       |
+| Affiliation records (when turned on)   |         |                 |              |            |               |               |         |       ✓       |
 | Administration                         |         |                 |              |            |               |               |         |       ✓       |
 
 † Athletes who are captains: club captains can message the whole club, and squad and team
@@ -139,6 +140,8 @@ only to complete onboarding: their home screen shows only the steps to be cleare
 
 Admins can turn off Messages, Calendar, Daily check-ins, Injuries, Attendance, Awards, Game goals
 and Integrity training for the whole club in **Club settings**. A feature that's off disappears for every role.
+**Affiliation records** work the other way: they're off unless an admin turns them on, for a club
+or association that reports to its association or Netball WA (see [Affiliation](#affiliation)).
 
 <div style="page-break-before: always"></div>
 
@@ -1043,7 +1046,8 @@ screen. Admins' to-do lists include join requests waiting for approval and clear
 sign-off, plus child-safety follow-ups: athletes under 18 with no guardian linked, Working With
 Children Checks that are missing, expired or expire within 60 days, volunteer exemptions that end
 within 60 days, and athletes turning 18 within 30 days. Tapping a child-safety to-do opens **Members**, where the people behind it are listed
-first under **Needs checking**. On an installed app, admins also get a push notification for each
+first under **Needs checking**. When Affiliation records are on, the list also has affiliation
+items still to do and members to check in PlayHQ (see [Affiliation](#affiliation)). On an installed app, admins also get a push notification for each
 new join request.
 
 Because admins can read every child's records, they need a current Working With Children Check,
@@ -1526,6 +1530,10 @@ everyone ever stood down, newest first, with the
   **Whole club events**, or any squads and teams. A squad includes the teams named from it. Each
   group lists its athletes with sessions present, absent and their attendance rate, followed by
   every session with who took it.
+- **Affiliation** (when Affiliation records are on): the club's affiliation details, the
+  checklist with required items not done in red, an association's officers and when each
+  completed the safeguarding induction, and every athlete, coach and manager's PlayHQ
+  registration this season, not registered and still to check first.
 - **Award results** (when Awards are on): awards whose voting has closed. Open one for its full
   result: each squad or team's standings with points and how many 1st, 2nd and 3rd place votes
   (and so on) each nominee got, how many people voted, and for match awards the points from each
@@ -1540,6 +1548,7 @@ addresses, so keep them somewhere only the committee can reach.
 <img src="user-guide/report-under-18s.png" width="210" alt="Under 18s and their guardians report">
 <img src="user-guide/report-attendance.png" width="210" alt="Attendance report for the 17 &amp; Under Squad over the last 4 weeks">
 <img src="user-guide/report-award-results.png" width="210" alt="Full results of a closed match award">
+<img src="user-guide/report-affiliation.png" width="210" alt="The Affiliation report">
 
 ### Club settings
 
@@ -1570,6 +1579,9 @@ so leave them filled in.
   the teams. Squads the club already has stay until that season ends, and nobody is moved.
 - **Physios get club messages**: when on, messages sent to everyone in the club also go to
   physios. Physios always get messages sent to the Physio role. It starts off.
+- **Affiliation records**: off unless you turn it on. For a club or association that reports to
+  its association or Netball WA, it adds **Affiliation** to Administration and Reports (see
+  [Affiliation](#affiliation)). Only admins see it.
 
 Tap **Save club settings**. Members see the changes the next time they open the app. Someone
 who has just installed the app sees the FirstPass look on the sign-in screen until they sign in.
@@ -1580,6 +1592,56 @@ part of the app build and don't change here.
 <img src="user-guide/club-settings-squads.png" width="210" alt="Club settings: switching squads off">
 <img src="user-guide/club-settings-features.png" width="210" alt="Club settings: turning features on and off">
 <img src="user-guide/club-settings-physios.png" width="210" alt="Club settings: physios get club messages">
+<img src="user-guide/club-settings-affiliation.png" width="210" alt="Club settings: the Affiliation records switch">
+
+### Affiliation
+
+When **Affiliation records** is on in Club settings, **Administration > Affiliation** keeps what
+your association or Netball WA asks for each year. The checklist follows Netball WA's Membership
+Policy (NWA-POL-07): section 4 for affiliated clubs and section 3 for associations. Only admins see
+it.
+
+1. Under **This club is**, choose **Affiliated club** (a club whose teams play in a member
+   association's competition) or **Association** (a member association or member entity of
+   Netball WA). An association also picks its **Tier**, from Tier 1 (450 or more members) to Tier 4
+   (a member entity).
+2. Fill in the **Details**: the **Incorporation number** (blank if not incorporated), who the club
+   is **Affiliated with**, and the day it **last registered with them** (for a club) or **signed
+   the annual agreement** (for an association), as DD/MM/YYYY. The number of teams this season is
+   shown, because a club with 5 or more teams must be incorporated.
+3. Choose two **Primary contacts**, two different adults the association and Netball WA can
+   contact.
+4. An association names its **Officers**: the President, the Association Development Officer and
+   the Association Umpire Development Officer, another committee member, or a single representative
+   for Tier 4, as its tier needs. Enter the day each completed Sport Integrity Australia's
+   **Safeguarding Children and Young People in Sport Induction**, and keep their certificates.
+5. The **Checklist** shows each criterion for your club or tier, marked **Required** or
+   **Recommended**. Items the app can work out from what you've recorded show ✓ or ✗; tick the
+   rest yourself, such as following Netball Australia and Netball WA policies. Criteria that
+   don't apply to your tier aren't listed.
+6. Add any **Notes**, such as where the evidence is kept, and tap **Save**. The screen shows who
+   saved it last and when.
+
+A registration or agreement counts for a year, so it comes back on the checklist 12 months after
+the date you entered. Until every required item is done, your to-do list shows **Finish N
+affiliation items**.
+
+**PlayHQ registrations.** Every member must register through PlayHQ each season. **PlayHQ
+registrations** lists every athlete, coach and manager in the current season's squads and teams.
+Look each one up in PlayHQ and tap **Registered** or **Not registered**; the app keeps who checked
+and when. Filter by **To check**, **Not registered**, **Registered** or **All**, or search by
+name or email. Your to-do list shows how many are still to check, and how many aren't registered
+so you can ask them to register.
+
+The **Affiliation** report in Reports puts the details, the checklist (required items not done in
+red), the officers and their inductions, and the season's PlayHQ registrations into one PDF to
+send to the association or keep for an audit.
+
+<img src="user-guide/affiliation-club.png" width="210" alt="Affiliation for an affiliated club: what kind of member it is and its details">
+<img src="user-guide/affiliation-checklist.png" width="210" alt="An affiliated club's checklist, with one required item still to do">
+<img src="user-guide/affiliation-association.png" width="210" alt="Affiliation for a Tier 2 association: officers and their safeguarding induction">
+<img src="user-guide/affiliation-registrations.png" width="210" alt="PlayHQ registrations to check for the season">
+<img src="user-guide/admin-affiliation-todos.png" width="210" alt="Affiliation items and PlayHQ checks in an admin's to-do list">
 
 ### Safeguarding contacts
 
@@ -1681,6 +1743,7 @@ once saved, only replaced or removed, and anyone who gets it wrong five times in
 | Committee calendar      | Committee members and admins.                                                                                               |
 | Award votes             | Only the voter sees their own ballot. Nobody, admins included, can see who someone voted for.                               |
 | Award results           | Admins only: standings and how many people have voted, and once voting closes, how many votes each nominee got at each place. |
+| Affiliation records and PlayHQ registration checks | Admins only. |
 | Reports and their PDFs  | Admins only. A saved PDF is a copy outside the app, so whoever it's shared with can read it.                                |
 | Match fixtures          | The members of each squad or team, and admins.                                                                              |
 | Club name, colours and logo | Every signed-in member. The logo file is public so it can show before sign-in. Only admins can change them.            |
@@ -1861,6 +1924,11 @@ Working With Children Check, and another admin must do it.
 - **Child abuse and serious crimes go out, not in.** The register prompts the club to refer them to
   Police and the governing body straight away, and records that it did.
 - **Each club's data is kept apart**, in that club's own database.
+- **Affiliation evidence in one place.** A club or association that turns on Affiliation records
+  keeps its primary contacts, incorporation, registration with its association and each season's
+  PlayHQ registrations, and an association records when its President and other officers
+  completed the Safeguarding Children and Young People in Sport Induction (see
+  [Affiliation](#affiliation)).
 
 <img src="user-guide/safeguarding-home.png" width="210" alt="Raise a concern on the home screen">
 

@@ -2,6 +2,18 @@ import { File, Paths } from 'expo-file-system';
 import * as Sharing from 'expo-sharing';
 import { Platform } from 'react-native';
 
+import {
+  affiliationCriteria,
+  isThisYear,
+  memberTypeLabels,
+  officeLabels,
+  officesFor,
+  registrationsToCheck,
+  tierLabels,
+  type Affiliation,
+  type Officer,
+  type Registration,
+} from '@/lib/affiliation';
 import { formatDate, isMinor } from '@/lib/age';
 import { formatDateString, toDateString } from '@/lib/injuries';
 import { rolesLabel } from '@/lib/labels';
@@ -28,7 +40,7 @@ import type {
   TeamRole,
   VolunteerExemption,
 } from '@/lib/types';
-import { teamLabel } from '@/lib/use-teams';
+import { seasonLabel, teamLabel } from '@/lib/use-teams';
 
 /** "West Coast Thunder" -> "west-coast-thunder", for file names. */
 export function fileSlug(name: string) {
@@ -908,5 +920,140 @@ export function awardReport({
     footnote: weighted
       ? `Score is ${award.preseason_weight}% the share of preseason points and ${100 - award.preseason_weight}% the share of match points. Ballots are secret: this shows how many votes each nominee got at each place, not who voted for whom.`
       : 'Ballots are secret: this shows how many votes each nominee got at each place, not who voted for whom.',
+  };
+}
+
+// ---------------------------------------------------------------------------
+// Affiliation
+// ---------------------------------------------------------------------------
+
+export function affiliationReport(
+  affiliation: Affiliation,
+  officers: Officer[],
+  registrations: Registration[],
+): Report {
+  const criteria = affiliationCriteria(affiliation, officers);
+  const missing = criteria.filter((c) => c.need === 'required' && !c.met);
+  const isClub = affiliation.member_type === 'club';
+  const season = affiliation.season;
+  const contacts = [affiliation.primary_contact_1_name, affiliation.primary_contact_2_name].filter(
+    Boolean,
+  );
+  const status = (r: Registration) =>
+    r.registered === null ? 'To check' : r.registered ? 'Registered' : 'Not registered';
+  const order = (r: Registration) => (r.registered === false ? 0 : r.registered === null ? 1 : 2);
+  const roleNames: Record<string, string> = { athlete: 'Athlete', coach: 'Coach', manager: 'Manager' };
+
+  return {
+    title: 'Affiliation',
+    subtitle: `${memberTypeLabels[affiliation.member_type]}${
+      affiliation.tier && !isClub ? `, ${tierLabels[affiliation.tier]}` : ''
+    }. Criteria from Netball WA’s Membership Policy (NWA-POL-07).`,
+    stats: [
+      { label: 'Required items done', value: `${criteria.filter((c) => c.need === 'required' && c.met).length} of ${criteria.filter((c) => c.need === 'required').length}` },
+      ...(season !== null
+        ? [
+            { label: `Registered in PlayHQ ${seasonLabel(season)}`, value: `${affiliation.registered} of ${affiliation.registrations_total}` },
+            { label: 'Not registered', value: affiliation.not_registered },
+            { label: 'Still to check', value: registrationsToCheck(affiliation) },
+          ]
+        : []),
+    ],
+    sections: [
+      {
+        title: 'Details',
+        columns: [{ label: 'Detail', width: 1 }, { label: 'Recorded', width: 2 }],
+        rows: [
+          { cells: ['Incorporation number', affiliation.incorporation_number ?? 'Not recorded'] },
+          { cells: ['Affiliated with', affiliation.affiliated_with ?? 'Not recorded'] },
+          {
+            cells: [
+              isClub ? 'Last registered' : 'Annual agreement signed',
+              affiliation.registered_on ? formatDateString(affiliation.registered_on) : 'Not recorded',
+            ],
+            flag: !isThisYear(affiliation.registered_on),
+          },
+          {
+            cells: ['Primary contacts', contacts.length ? contacts.join('\n') : 'None named'],
+            flag: isClub && contacts.length < 2,
+          },
+          ...(season !== null
+            ? [{ cells: ['Teams this season', `${affiliation.team_count} in ${seasonLabel(season)}`] }]
+            : []),
+          ...(affiliation.notes ? [{ cells: ['Notes', affiliation.notes] }] : []),
+        ],
+      },
+      {
+        title: 'Checklist',
+        note: missing.length
+          ? `${missing.length} required ${missing.length === 1 ? 'item' : 'items'} not done yet, shown in red.`
+          : undefined,
+        columns: [
+          { label: 'Item', width: 2.2 },
+          { label: 'Need', width: 0.9 },
+          { label: 'Done', width: 0.6 },
+          { label: 'How it’s known', width: 1 },
+        ],
+        rows: criteria.map((c) => ({
+          cells: [
+            c.detail ? `${c.label}\n${c.detail}` : c.label,
+            c.need === 'required' ? 'Required' : 'Recommended',
+            c.met ? 'Yes' : 'No',
+            c.manual ? 'Ticked by an admin' : 'From the app’s records',
+          ],
+          flag: c.need === 'required' && !c.met,
+        })),
+        empty: 'Choose the association’s tier to see the checklist.',
+      },
+      ...(!isClub
+        ? [
+            {
+              title: 'Officers and safeguarding induction',
+              columns: [
+                { label: 'Office', width: 1.6 },
+                { label: 'Name', width: 1.2 },
+                { label: 'Induction completed', width: 1 },
+              ],
+              rows: officesFor(affiliation.tier).map((office) => {
+                const officer = officers.find((o) => o.office === office);
+                return {
+                  cells: [
+                    officeLabels[office],
+                    officer?.name ?? 'Nobody named',
+                    officer?.inducted_on ? formatDateString(officer.inducted_on) : 'Not recorded',
+                  ],
+                  flag: !officer?.inducted_on,
+                };
+              }),
+              empty: 'Choose the association’s tier to see its officers.',
+            },
+          ]
+        : []),
+      {
+        title: season !== null ? `PlayHQ registrations ${seasonLabel(season)}` : 'PlayHQ registrations',
+        columns: [
+          { label: 'Name', width: 1.3 },
+          { label: 'Role', width: 0.9 },
+          { label: 'Squads and teams', width: 1.5 },
+          { label: 'Status', width: 1 },
+          { label: 'Checked', width: 1.3 },
+        ],
+        rows: [...registrations]
+          .sort((a, b) => order(a) - order(b) || a.name.localeCompare(b.name))
+          .map((r) => ({
+            cells: [
+              r.name,
+              r.team_roles.map((role) => roleNames[role] ?? role).join(', '),
+              r.groups.join('\n'),
+              status(r),
+              r.checked_at ? `${localDay(r.checked_at)}${r.checked_by_name ? `\n${r.checked_by_name}` : ''}` : '',
+            ],
+            flag: r.registered !== true,
+          })),
+        empty: 'Nobody is in a squad or team this season.',
+      },
+    ],
+    footnote:
+      'Items “From the app’s records” are worked out from what admins have recorded; the rest are ticked by an admin. Registrations are checked by an admin against PlayHQ for each athlete, coach and manager in the season’s squads and teams.',
   };
 }

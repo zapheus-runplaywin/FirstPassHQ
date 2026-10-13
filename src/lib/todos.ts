@@ -1,5 +1,6 @@
 import type { Href } from 'expo-router';
 
+import type { AffiliationTodos } from '@/lib/affiliation';
 import { slotTitle } from '@/lib/awards';
 import { formatShortDay } from '@/lib/format';
 import { gamePhase, gameTitle } from '@/lib/goals';
@@ -8,6 +9,7 @@ import { WWCC_WARNING_DAYS } from '@/lib/safety';
 import { dueLabel, isOutstanding, type MyTraining } from '@/lib/training';
 import type { AwardSlot, CoachTeamGame, GoalGame, Injury } from '@/lib/types';
 import type { SafetyTodos } from '@/lib/use-pending-requests';
+import { seasonLabel } from '@/lib/use-teams';
 
 /** Something the member still has to do, shown at the top of the home screen. */
 export type Todo = {
@@ -38,6 +40,7 @@ export function buildTodos({
   declarationWaiting = false,
   newConcerns = 0,
   consentsNeeded = [],
+  affiliation = null,
   today = new Date(),
 }: {
   userId: string | undefined;
@@ -69,6 +72,8 @@ export function buildTodos({
   newConcerns?: number;
   /** A guardian's children under 18 still waiting for their consent. */
   consentsNeeded?: { id: string; name: string }[];
+  /** Affiliation follow-ups, for admins of clubs that keep affiliation records. */
+  affiliation?: AffiliationTodos | null;
   today?: Date;
 }): Todo[] {
   const todos: Todo[] = [];
@@ -356,6 +361,33 @@ export function buildTodos({
         title: `${plural(safety.turning_18, 'athlete turns', 'athletes turn')} 18 this month`,
         detail: 'Their guardian links end when you next save them',
         href: '/admin',
+      });
+    }
+  }
+
+  if (affiliation) {
+    if (affiliation.missing > 0) {
+      todos.push({
+        key: 'affiliation-checklist',
+        title: `Finish ${affiliation.missing} affiliation ${affiliation.missing === 1 ? 'item' : 'items'}`,
+        detail: 'Required by your association or Netball WA',
+        href: '/admin/affiliation',
+      });
+    }
+    if (affiliation.toCheck > 0) {
+      todos.push({
+        key: 'playhq-registrations',
+        title: `Check ${affiliation.toCheck} ${affiliation.toCheck === 1 ? 'member' : 'members'} in PlayHQ`,
+        detail: `Whether they’re registered for ${affiliation.season ? seasonLabel(affiliation.season) : 'this season'}`,
+        href: '/admin/affiliation/registrations',
+      });
+    }
+    if (affiliation.notRegistered > 0) {
+      todos.push({
+        key: 'playhq-not-registered',
+        title: `${affiliation.notRegistered} ${affiliation.notRegistered === 1 ? 'member isn’t' : 'members aren’t'} registered in PlayHQ`,
+        detail: 'Ask them to register, then mark them registered',
+        href: '/admin/affiliation/registrations',
       });
     }
   }
