@@ -46,7 +46,7 @@ export type SafetyTodos = {
   athletes_without_date_of_birth: number;
   /** Current cards never validated, or validated over a year ago. */
   wwcc_to_validate: number;
-  /** Current cards not linked to the club with the Screening Unit. */
+  /** Current cards not registered with the club. */
   wwcc_to_link: number;
   /** Barring notices the governing body hasn't been told about. */
   notices_to_report: number;

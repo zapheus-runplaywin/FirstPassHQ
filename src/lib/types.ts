@@ -89,7 +89,7 @@ export type Profile = {
   wwcc_validated_at?: string | null;
   wwcc_validated_by?: string | null;
   wwcc_validation_method?: WwccValidationMethod | null;
-  /** When an admin recorded the card as linked to the club with the Screening Unit. */
+  /** When an admin recorded the card as registered with the club. */
   wwcc_unit_linked_at?: string | null;
   /** Why an admin didn't approve them, shown to the member. */
   rejection_reason: RejectionReason | null;

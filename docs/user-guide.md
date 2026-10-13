@@ -1215,7 +1215,7 @@ expired or expires within 60 days, a volunteer exemption waiting for the declara
 60 days or no longer applying (a visitor or national event exemption is short by design, so it only
 shows once it has ended; a temporary helper shows only between their first and last day), someone who is stood down, an athlete under 18 with no guardian
 linked, an athlete with no date of birth, an athlete about to turn 18, a card never validated or
-validated over a year ago, or a card not linked with the Screening Unit. They also show "Needs checking" in the main list. Open someone to fix it; once saved,
+validated over a year ago, or a card not registered with the club. They also show "Needs checking" in the main list. Open someone to fix it; once saved,
 they drop off the list.
 
 Open a request to see the person's sign-in email, PlayHQ email, the date of birth they gave and
@@ -1238,8 +1238,9 @@ Check them against PlayHQ, then:
    Check** card number and expiry date. Cards last three years, so a later expiry is refused. Once
    the card is saved, **Validation** records checking it: enter the **Name on the card**, choose
    how you checked it (**Checked online** on the Screening Unit's website, **Card sighted** or
-   **Screening Unit letter**), switch on **Linked to the club with the Screening Unit** once the
-   card is linked so the Unit tells the club of any change, and tap **Record validation**. The
+   **Screening Unit letter**), switch on **Registered card with** your club once you've
+   registered the card with the club through the Screening Unit, so the Unit tells the club if the
+   card's status changes, and tap **Record validation**. The
    page shows who validated it, how and when. Validate every card at least once a year and again
    when it's renewed: a new card number or expiry needs a new validation. You can't validate your
    own card. A committee member or admin who doesn't need one, such as a
@@ -1339,7 +1340,7 @@ club** or **Other**) and tap **Don't approve**. They see the reason and can requ
 <img src="user-guide/member-wwcc.png" width="210" alt="Coach with Working With Children Check fields">
 <img src="user-guide/member-wwcc-exempt.png" width="210" alt="Committee member exempted from the Working With Children Check, with the reason">
 <img src="user-guide/member-wwcc-admin.png" width="210" alt="An admin who needs a Working With Children Check, with the Exempt choice">
-<img src="user-guide/member-wwcc-validation.png" width="210" alt="Validating a card: name on the card, how it was checked and the Screening Unit link">
+<img src="user-guide/member-wwcc-validation.png" width="210" alt="Validating a card: name on the card, how it was checked and whether it is registered with the club">
 <img src="user-guide/member-volunteer-exempt.png" width="210" alt="A manager recorded as a parent volunteer, waiting to accept the declaration">
 <img src="user-guide/member-volunteer.png" width="210" alt="A temporary helper waiting for approval: their task, dates and what they said">
 <img src="user-guide/member-visitor-exempt.png" width="210" alt="Recording a national event exemption, with the links to the rules at the source">
@@ -1654,9 +1655,9 @@ name, the date it was made and page numbers, and anything that needs attention i
 - **Working With Children Checks**: printed across the page, with the WWC Registration Officer
   at the top. Every approved coach, manager, physio, temporary helper (while helping), committee member and admin with their name on the
   card, date of birth, roles, squads and teams, card number, expiry date, when and how the card was
-  last validated and by whom, when it was linked with the Screening Unit, and status. Checks that
+  last validated and by whom, when it was registered with the club, and status. Checks that
   are missing, have no expiry date, have expired, expire within 60 days, were never validated or
-  were validated over a year ago, or aren't linked with the Screening Unit are listed first under
+  were validated over a year ago, or aren't registered with the club are listed first under
   **Needs attention**. Committee members and admins who are exempt are listed next, with the reason, who
   exempted them and when. **Exempt from a check** lists every exemption,
 current ones first, with the child, or the event, organiser and dates, who recorded it, when the declaration was accepted and where
@@ -1851,8 +1852,8 @@ If a contact's check lapses or they're stood down, they stop being shown and sto
 until you choose again.
 
 The **WWC Registration Officer** is an admin or committee member with a current check who keeps
-the club's Working With Children Check records, links members' cards to the club with the
-Screening Unit and receives its notices. They're named on the Working With Children Checks report,
+the club's Working With Children Check records, registers members' cards with the club through
+the Screening Unit and receives its notices. They're named on the Working With Children Checks report,
 and your to-do list asks you to choose one until you do.
 
 **Committee checks required from** is the day from which every committee member needs a current
@@ -2107,8 +2108,8 @@ Working With Children Check, and another admin must do it.
 
 - **A check before you start.** Coaches, managers, physios, committee members and admins need a current
   Working With Children Check before they're approved. An admin validates the card, online or by
-  sighting it, at least once a year and whenever it's renewed, and links it to the club with the
-  Screening Unit, so the club hears if anything changes.
+  sighting it, at least once a year and whenever it's renewed, and registers it with the club
+  through the Screening Unit, so the club hears if the card's status changes.
 - **Parent and under-18 volunteers.** In WA a parent volunteering at their child's club, or a
   volunteer under 18, is exempt instead and accepts a declaration in the app (see [Volunteer
   exemptions](#volunteer-exemptions)). The exemption ends by itself when the child or volunteer
@@ -2177,8 +2178,8 @@ Working With Children Check, and another admin must do it.
   Checks report lists them all. The admin's member page links to the Act and the Screening Unit's
   fact sheets so exemptions can be checked at the source.
 - **Your to-do list does the chasing**: new concerns, missing or expiring checks, volunteer
-  exemptions ending, declarations not yet accepted, cards to validate or link with the Screening
-  Unit, notices to report to the governing body, no WWC Registration Officer, athletes with no date
+  exemptions ending, declarations not yet accepted, cards to validate or register with the
+  club, notices to report to the governing body, no WWC Registration Officer, athletes with no date
   of birth, athletes under 18 without a guardian and athletes turning 18.
 - **Reports for your records.** The Working With Children Checks report follows the Screening
   Unit's record layout: every check with the name on the card, date of birth, card number, expiry

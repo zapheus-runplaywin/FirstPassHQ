@@ -68,7 +68,8 @@ export const barringNotices: ScreeningNoticeKind[] = [
 
 /**
  * What still needs doing for a current card: validating it (never, or more
- * than a year ago) and linking it to the club with the Screening Unit. Same
+ * than a year ago) and registering it with the club, so the Screening Unit
+ * tells the club if its status changes. Same
  * rules as `public.admin_safety_todos` in the database.
  */
 export function wwccRecordIssues(
@@ -79,7 +80,7 @@ export function wwccRecordIssues(
   yearAgo.setFullYear(yearAgo.getFullYear() - 1);
   if (!member.wwcc_validated_at) issues.push('Check not validated');
   else if (new Date(member.wwcc_validated_at) < yearAgo) issues.push('Check validated over a year ago');
-  if (!member.wwcc_unit_linked_at) issues.push('Card not linked with the Screening Unit');
+  if (!member.wwcc_unit_linked_at) issues.push('Card not registered with the club');
   return issues;
 }
 

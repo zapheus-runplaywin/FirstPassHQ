@@ -5,6 +5,7 @@ import { ThemedText } from '@/components/themed-text';
 import { Button, Card, ChipGroup, ErrorText, TextField } from '@/components/ui';
 import { Spacing } from '@/constants/theme';
 import { useTheme } from '@/hooks/use-theme';
+import { useClub } from '@/lib/club';
 import { localDay } from '@/lib/reports';
 import { wwccRecordIssues, wwccValidationLabels } from '@/lib/safety';
 import { supabase } from '@/lib/supabase';
@@ -14,7 +15,8 @@ const methods = Object.keys(wwccValidationLabels) as WwccValidationMethod[];
 
 /**
  * An admin records checking a member's current card: the name on it, how it
- * was checked and whether it is linked to the club with the Screening Unit.
+ * was checked and whether the card is registered with the club, so the
+ * Screening Unit tells the club if its status changes.
  * The app keeps who did it and when. Nobody validates their own card.
  */
 export function WwccValidation({
@@ -30,6 +32,7 @@ export function WwccValidation({
   onSaved: (changes: Partial<Profile>) => void;
 }) {
   const theme = useTheme();
+  const club = useClub();
   const [cardName, setCardName] = useState(member.wwcc_card_name ?? member.full_name ?? '');
   const [method, setMethod] = useState<WwccValidationMethod | null>(null);
   const [linked, setLinked] = useState(!!member.wwcc_unit_linked_at);
@@ -75,7 +78,7 @@ export function WwccValidation({
           {member.wwcc_validated_by ? validatorName(member.wwcc_validated_by) : 'a former admin'}
           {member.wwcc_card_name ? `. Name on card: ${member.wwcc_card_name}` : ''}.
           {member.wwcc_unit_linked_at
-            ? ` Linked with the Screening Unit on ${localDay(member.wwcc_unit_linked_at)}.`
+            ? ` Registered with ${club.name} on ${localDay(member.wwcc_unit_linked_at)}.`
             : ''}
         </ThemedText>
       ) : null}
@@ -107,11 +110,14 @@ export function WwccValidation({
             onToggle={(m) => setMethod(m === method ? null : m)}
           />
           <Card style={styles.switchRow}>
-            <ThemedText type="small" style={styles.grow}>
-              Linked to the club with the Screening Unit, so the club hears if the card changes
-            </ThemedText>
+            <View style={styles.grow}>
+              <ThemedText type="small">Registered card with {club.name}</ThemedText>
+              <ThemedText type="small" themeColor="textSecondary">
+                So the Screening Unit tells the club if the card’s status changes
+              </ThemedText>
+            </View>
             <Switch
-              accessibilityLabel="Linked to the club with the Screening Unit"
+              accessibilityLabel={`Registered card with ${club.name}`}
               value={linked}
               onValueChange={setLinked}
               trackColor={{ true: theme.accent, false: theme.backgroundSelected }}

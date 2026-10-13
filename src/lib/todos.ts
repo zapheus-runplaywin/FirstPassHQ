@@ -350,8 +350,8 @@ export function buildTodos({
     if (safety.wwcc_to_link > 0) {
       todos.push({
         key: 'wwcc-link',
-        title: `Link ${plural(safety.wwcc_to_link, 'card', 'cards')} to the club with the Screening Unit`,
-        detail: 'So the Screening Unit tells the club if a card changes',
+        title: `Register ${plural(safety.wwcc_to_link, 'card', 'cards')} with the club`,
+        detail: 'So the Screening Unit tells the club if a card’s status changes',
         href: '/admin',
       });
     }
