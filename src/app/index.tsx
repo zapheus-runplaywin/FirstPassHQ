@@ -128,12 +128,22 @@ export default function HomeScreen() {
   });
 
   const isGuardian = profile?.status === 'approved' && hasRole(profile, 'guardian');
+  // How many changes each child has had since their guardian last looked.
+  const [activityNew, setActivityNew] = useState<Record<string, number>>({});
 
   // The athletes a parent or guardian looks after.
   const loadAthletes = useCallback(async () => {
     if (!isGuardian) return;
     // Each child under 18 with the consents in force for them.
-    const { data } = await supabase.rpc('my_child_consents');
+    const [{ data }, activity] = await Promise.all([
+      supabase.rpc('my_child_consents'),
+      supabase.rpc('child_activity_new'),
+    ]);
+    const counts: Record<string, number> = {};
+    for (const row of (activity.data as { athlete_id: string; new_count: number }[] | null) ?? []) {
+      counts[row.athlete_id] = row.new_count;
+    }
+    setActivityNew(counts);
     setAthletes(
       ((data as ChildConsent[] | null) ?? []).map((a) => ({
         id: a.athlete_id,
@@ -438,6 +448,33 @@ export default function HomeScreen() {
                 <ThemedText type="smallBold">{a.name}</ThemedText>
                 <ThemedText type="small" themeColor="textSecondary">
                   Their sessions, and tell their coaches if they’ll be away
+                </ThemedText>
+              </PressableCard>
+            ))}
+          </View>
+        ) : null}
+
+        {isGuardian && athletes.length > 0 ? (
+          <View style={styles.section}>
+            <ThemedText type="smallBold">What’s changed</ThemedText>
+            {athletes.map((a) => (
+              <PressableCard
+                key={a.id}
+                onPress={() =>
+                  router.push({ pathname: '/activity/[id]', params: { id: a.id, name: a.name } })
+                }>
+                <View style={styles.cardTitleRow}>
+                  <ThemedText type="smallBold">{a.name}</ThemedText>
+                  {(activityNew[a.id] ?? 0) > 0 ? (
+                    <View style={[styles.badge, { backgroundColor: theme.accent }]}>
+                      <ThemedText type="smallBold" style={{ color: theme.onAccent }}>
+                        {activityNew[a.id]}
+                      </ThemedText>
+                    </View>
+                  ) : null}
+                </View>
+                <ThemedText type="small" themeColor="textSecondary">
+                  New coaches, managers and physios, guardians, consents and shared documents
                 </ThemedText>
               </PressableCard>
             ))}

@@ -39,7 +39,7 @@ each of their roles can.
 | Role          | Who it's for                                                                                         |
 | ------------- | ---------------------------------------------------------------------------------------------------- |
 | **Athlete**   | Registered players. Some are club captains, or captains or vice captains of a squad or team. They see their own attendance and can report an absence. |
-| **Guardian**  | Parents and guardians of athletes under 18. They see their child's attendance and can report an absence for them. |
+| **Guardian**  | Parents and guardians of athletes under 18. They see their child's attendance and can report an absence for them, and see what has changed around their child. |
 | **Coach**     | Head coaches and assistant coaches. Both have the same permissions; the title only shows who is who. Need a current Working With Children Check; the role pauses while it's expired. A parent volunteering at their child's club, or a volunteer under 18, has an exemption instead (see [Volunteer exemptions](#volunteer-exemptions)). |
 | **Manager**   | Squad and team managers. Need a current Working With Children Check; the role pauses while it's expired. A parent volunteering at their child's club, or a volunteer under 18, has an exemption instead (see [Volunteer exemptions](#volunteer-exemptions)). |
 | **Committee** | Club committee members. Each can add a title, such as President or Secretary, shown with their role. Need a current Working With Children Check unless an admin exempts them; the role pauses if a recorded check expires. |
@@ -656,7 +656,26 @@ and last day and, if you like, a reason. It works the same as for athletes (see
 parents or guardians see what you report. An absent session that matches a reported absence shows as
 **Absent, reported**. You stop seeing your child's attendance on their 18th birthday.
 
-<img src="user-guide/records-home.png" width="210" alt="Attendance and Who has viewed their records on a parent's home screen">
+<img src="user-guide/records-home.png" width="210" alt="Attendance, What's changed and Who has viewed their records on a parent's home screen">
+
+### What's changed for your child
+
+**What's changed** on your home screen lists each child under 18, with a number when something has
+happened since you last looked. Open it to see, newest first:
+
+- a coach, manager or physio added to, or no longer in, a squad or team your child is in (from when
+  your child joined it)
+- your child added to or removed from a squad or team
+- a parent or guardian linked or unlinked, and by which admin
+- a consent given or withdrawn, and by whom
+- one of your child's injury documents shared out of the app, and by whom
+
+If an adult is stood down, you see only that they're no longer in the group; the reason stays with
+the club's admins. Ordinary views of your child's records are under
+[Who has viewed your child's records](#who-has-viewed-your-childs-records). The list stops on your
+child's 18th birthday.
+
+<img src="user-guide/activity-guardian.png" width="210" alt="What's changed for a parent's child">
 
 As a guardian you:
 
@@ -682,6 +701,8 @@ As a guardian you:
   by whom and when, and what was confirmed about each photo.
 - **See your athlete's attendance and report absences** (see
   [Your child's attendance](#your-childs-attendance)).
+- **See what's changed around your athlete**: new adults in their groups, guardians, consents and
+  shared documents (see [What's changed for your child](#whats-changed-for-your-child)).
 - **See who has viewed your athlete's records**: everyone who opened their injuries, check-ins,
   game goals or member record (see [Who has viewed your child's records](#who-has-viewed-your-childs-records)).
 - **Complete integrity training** for your athlete: their training shows in your to-do list and
@@ -1850,6 +1871,7 @@ once saved, only replaced or removed, and anyone who gets it wrong five times in
 | Team goals              | The team's athletes, their guardians and its coaches. Only its coaches set and review them. Athletes and coaches in the team can comment; guardians read the comments. |
 | Integrity training certificates | The member, their parents or guardians, the committee and admins. Coaches don't see them. Certificates can't be changed or removed once sent. |
 | Attendance records      | Coaches, the committee and admins. Managers see their own groups' sessions. An athlete sees their own marks, and their parents or guardians see them until the athlete turns 18; neither sees other athletes on the register. |
+| What's changed for a child | Their parents or guardians (until the child turns 18) and admins: adults joining or leaving the child's squads and teams, the child's own group changes, guardian links, consents and shared injury documents. A stand-down shows only as the adult leaving. |
 | Reported absences       | The athlete, their parents or guardians, the coaches and managers of the athlete's squads and teams, the committee and admins. Physios don't see them. |
 | Committee calendar      | Committee members and admins.                                                                                               |
 | Award votes             | Only the voter sees their own ballot. Nobody, admins included, can see who someone voted for.                               |
@@ -1941,6 +1963,10 @@ Working With Children Check, and another admin must do it.
 - **You see what your child sees.** You get a copy of every message sent to your child, and of every
   message your child sends as a captain. You can read their daily check-ins and notes, their game
   goals and their injuries, and whether they were at each session.
+- **You're told when something changes.** A new coach, manager or physio in your child's group,
+  your child moving group, a guardian linked or unlinked, a consent changing or an injury document
+  shared out of the app all show under **What's changed** (see
+  [What's changed for your child](#whats-changed-for-your-child)).
 - **You can tell the club your child will be away**, so an absence you didn't report stands out
   (see [Your child's attendance](#your-childs-attendance)).
 - **Nothing is shared without your consent.** Your child's check-ins and injuries are seen by
