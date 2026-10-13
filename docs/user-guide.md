@@ -453,8 +453,9 @@ shows each one and where it's up to: Received, Referred, Being looked into or Cl
 you're in: your profile, your squad and team places, guardian links and your messages inbox. Messages you sent to
 a group stay with the people who received them.
 
-The club keeps your injury records and clearance documents for 12 months after you leave, where
-only the committee and admins can see them, and then deletes them. Deleting your account doesn't
+The club keeps your injury records for 12 months after you leave, where only the committee and
+admins can see them, and then deletes them. Clearance documents may go sooner, after the club's
+keep period for injury documents. Deleting your account doesn't
 change your PlayHQ registration or club membership, or your account at any other club in
 FirstPass HQ.
 
@@ -572,7 +573,11 @@ also your parent or guardian leaves it to someone else.
 When it's accepted, the injury shows **Cleared to play**. If either of them sends it back, you'll
 see their note in the history; fix what they ask and ask for clearance again.
 
-Documents can't be removed once they're sent, so the record can't be altered later.
+Nobody can remove a document once it's sent, so the record can't be altered later. If the club
+removes old records, the files of a cleared injury are removed after the club's keep period: 90
+days after it was cleared unless the club chooses 30, 60 or 180 days, or when its season is
+archived if that's sooner. The injury, its history, each document's name, who added it and who
+viewed it all stay, and the document shows when its file was removed.
 
 Under each document you see everyone who has opened or shared it, with their role and when (for
 example "Viewed by Casey Coach (coach)"). Your parents or guardians and the club's admins see the
@@ -580,6 +585,7 @@ same list.
 
 <img src="user-guide/ask-for-clearance.png" width="210" alt="Ask for clearance with proof attached">
 <img src="user-guide/injury-document-log.png" width="210" alt="An injury document with the list of who viewed and shared it">
+<img src="user-guide/injury-document-removed.png" width="210" alt="A cleared injury whose letter was removed after the club's keep period">
 
 ### Captains
 
@@ -1821,13 +1827,19 @@ adults and children alike.
 - **Attendance**, **Training certificates** (with their files) and **Who viewed a child's
   records**: 7 years, or 10, 15 or 20. These show who was with which children and who was screened
   or trained, so they can't be kept for less than 7 years.
+- **Injury documents**: the letters, reports and photos of a cleared injury go 90 days after it was
+  cleared, or 30, 60 or 180 days if you choose, or when its season is archived if that's sooner.
+  The club only needs them while a clearance is checked. The injury, its sign-offs, each
+  document's name, who added it and who viewed or shared it stay. Documents of injuries that
+  aren't cleared yet stay. Archiving a season can't bring its documents back, even if you restore
+  the season.
 
-Concerns are never removed. Injury records and documents keep their own rule: removed 12 months
-after an athlete leaves. **Last changed by** shows which admin last saved the periods, and when.
+Concerns are never removed. Injury records keep their own rule: removed 12 months after an
+athlete leaves, with any documents still left. **Last changed by** shows which admin last saved the periods, and when.
 Tap **Save keep periods** to save.
 
 <img src="user-guide/club-settings-records.png" width="210" alt="Club settings: keeping records">
-<img src="user-guide/club-settings-records-safety.png" width="210" alt="Club settings: keep periods for attendance, certificates and record views">
+<img src="user-guide/club-settings-records-safety.png" width="210" alt="Club settings: keep periods for attendance, certificates, record views and injury documents">
 
 ### Safeguarding contacts
 
@@ -1967,8 +1979,9 @@ once saved, only replaced or removed, and anyone who gets it wrong five times in
 
 When someone leaves, injury records and proof documents are kept for 12 months, visible only to the
 committee and admins, then deleted automatically. Once an admin switches on **Remove old records**,
-check-ins, game goals and message text go after 24 months, and attendance, training certificates
-and record views after 7 years, unless the club chooses other periods (see
+check-ins, game goals and message text go after 24 months, attendance, training certificates
+and record views after 7 years, and the files of a cleared injury 90 days after clearance or when
+its season is archived, unless the club chooses other periods (see
 [Keeping records](#keeping-records)). Concerns are never removed.
 
 <div style="page-break-before: always"></div>
@@ -2018,6 +2031,10 @@ images to stay inside the club. So for athletes under 18:
   each document.
 - **Sharing is limited.** Only the committee member accepting a clearance can share its documents,
   while it's waiting for them, and each share is recorded in the same list.
+- **Documents don't stay forever.** Once the club removes old records, a cleared injury's letters,
+  reports and photos are removed 90 days after clearance (or the club's chosen period), or when the
+  season is archived if that's sooner. The record that they were added, checked and viewed stays
+  (see [Keeping records](#keeping-records)).
 - **Physios see only their own athletes.** A physio sees the injuries of the athletes in their own
   squads and teams. Only the Head Physio sees every athlete; a physio in no squad or team sees none
   until an admin places them.
@@ -2061,7 +2078,8 @@ Working With Children Check, and another admin must do it.
 - **Injury photos need your consent.** Injury proof for under 18s is the letter or report, as a PDF
   or a photo confirmed to show the letter. Only if the club allows it can you, as a verified
   guardian, add a photo of your child's injury, and only after confirming your consent, which is
-  kept with the photo.
+  kept with the photo. If the club removes old records, letters and photos go soon after your
+  child is cleared, and the record of who saw them stays.
 - **You see who has viewed your child's records.** Every time a coach, physio, committee member,
   admin or safeguarding contact opens your child's injuries, injury documents, check-ins, game goals
   or member record, the app records who, their role, what and when, and you can read the list (see
@@ -2137,7 +2155,7 @@ Working With Children Check, and another admin must do it.
   under 18's injuries, injury documents, check-ins, game goals or member record, it's recorded.
   Admins see the list on the child's member page, and parents and guardians on their home screen.
 - **Records aren't kept forever.** Set how long the club keeps check-ins, game goals, message text,
-  attendance, training certificates and record views under
+  attendance, training certificates, record views and injury documents under
   [Keeping records](#keeping-records), and switch on **Remove old records**. Attendance,
   certificates and record views are kept at least 7 years; concerns are never removed.
 - **Guardian changes leave a trail.** Every guardian link and unlink is kept with who made it,
@@ -2183,7 +2201,9 @@ Working With Children Check, and another admin must do it.
 - **Records are kept as long as they're needed, then removed.** Each club sets its keep periods
   and the app removes older records each night once the club switches it on. Concerns are never
   removed; attendance, training certificates and record views are kept at least 7 years; a removed
-  message keeps who sent it, who it went to and who read it.
+  message keeps who sent it, who it went to and who read it. A child's injury letters and photos
+  go soon after they're cleared (90 days, or at the end of the season), while the record that
+  they were checked and who viewed them stays.
 - **Child abuse and serious crimes go out, not in.** The register prompts the club to refer them to
   Police and the governing body straight away, and records that it did.
 - **Each club's data is kept apart**, in that club's own database.

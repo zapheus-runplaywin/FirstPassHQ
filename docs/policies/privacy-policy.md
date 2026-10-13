@@ -66,7 +66,10 @@ The app removes old records each night once the club has switched this on.
 These are the app's standard periods; the club can set longer ones in the app
 (update this list to match the club's settings).
 
-- Injury records and documents: 12 months after the athlete leaves the club.
+- Injury records: 12 months after the athlete leaves the club.
+- Injury documents (letters, reports and photos): [90 days] after the injury is cleared, or when
+  the season is archived if that's sooner. The record of each document, who added it and who
+  viewed it stays with the injury.
 - Daily check-ins: [24 months] from the day of the check-in.
 - Game goals, reflections and coaches' comments: [24 months] after the game.
 - Message text: [24 months] after it was sent. A record that the message was
