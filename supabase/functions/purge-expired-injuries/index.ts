@@ -1,4 +1,6 @@
-// Removes injury records 12 months after the athlete left the club.
+// Removes injury records 12 months after the athlete left the club, and,
+// once an admin has switched on "Remove old records" in Club settings, other
+// records past the club's keep periods (public.purge_expired_records()).
 //
 // Documents go first, through the storage API (deleting storage rows in SQL
 // would leave the files behind), then the records. A record is only removed
@@ -17,6 +19,7 @@
 import { createClient } from 'npm:@supabase/supabase-js@2';
 
 const BUCKET = 'injury-documents';
+const CERTIFICATES = 'training-certificates';
 // The storage API removes up to 1000 files per call.
 const BATCH = 500;
 
@@ -69,8 +72,28 @@ Deno.serve(async (request) => {
   const { data: purged, error: purgeError } = await supabase.rpc('purge_expired_injuries');
   if (purgeError) return failed('purging injuries', purgeError.message);
 
+  // Training certificate files past the club's keep period go before their
+  // records, the same way. Nothing is listed while removal is switched off.
+  const { data: certificatePaths, error: certificateError } = await supabase.rpc(
+    'expired_certificate_documents',
+  );
+  if (certificateError) return failed('listing expired certificates', certificateError.message);
+  const certificates = (certificatePaths ?? []) as string[];
+  for (let i = 0; i < certificates.length; i += BATCH) {
+    const { error } = await supabase.storage
+      .from(CERTIFICATES)
+      .remove(certificates.slice(i, i + BATCH));
+    if (error) return failed('removing certificates', error.message);
+  }
+
+  const { data: records, error: recordsError } = await supabase.rpc('purge_expired_records');
+  if (recordsError) return failed('removing old records', recordsError.message);
+
   // Counts go to the function's logs, not to whoever called it.
   console.log(`Purged ${names.length} document(s) and ${purged} injury record(s)`);
+  console.log(
+    `Removed ${certificates.length} certificate file(s); old records: ${JSON.stringify(records)}`,
+  );
   return Response.json({ ok: true });
 });
 

@@ -26,6 +26,7 @@ about this policy, or requests to see or correct your information, go to them.
 | Integrity training certificates | Members | The sport requires the training |
 | Concerns raised | Whoever raises one, and whoever it's about | To keep children safe |
 | Consents given by parents and guardians | Athletes under 18 | To record what parents agreed to |
+| Who opened a child's records, and when | Athletes under 18, and the club people who opened them | So parents can see who looked at their child's information |
 
 ## Who sees it
 
@@ -53,9 +54,22 @@ can see it, and only through the app.
 
 ## How long we keep it
 
-- Injury records and documents: [12 months] after the athlete leaves the club.
-- Concerns and what was done about them: [period; safeguarding records are often kept until the child is 25 or longer; get advice].
-- Other information: while you are a member, then [period].
+The app removes old records each night once the club has switched this on.
+These are the app's standard periods; the club can set longer ones in the app
+(update this list to match the club's settings).
+
+- Injury records and documents: 12 months after the athlete leaves the club.
+- Daily check-ins: [24 months] from the day of the check-in.
+- Game goals, reflections and coaches' comments: [24 months] after the game.
+- Message text: [24 months] after it was sent. A record that the message was
+  sent, who it went to and who read it is kept, so a complaint can still be
+  looked into.
+- Attendance: [7 years], as the record of who was with which children.
+- Integrity training certificates: [7 years] after they were added.
+- The record of who opened a child's records: [7 years].
+- Concerns and what was done about them: never removed by the app.
+- Other information, such as your details and Working With Children Check
+  records: while you are a member, then [period].
 
 ## Your choices
 

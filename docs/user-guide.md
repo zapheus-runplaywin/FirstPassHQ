@@ -46,7 +46,7 @@ each of their roles can.
 | **Physio**    | The club's physiotherapists. A physio can be placed in squads or teams to look after their athletes, and one can be the **Head Physio**, who looks after every athlete. Need a current Working With Children Check; the role pauses while it's expired. A parent volunteering at their child's club, or a volunteer under 18, has an exemption instead (see [Volunteer exemptions](#volunteer-exemptions)). |
 | **Guest**     | Anyone else the club lets in, such as partners and sponsors. Guests can only look.                   |
 | **Temporary helper** | Someone helping for a day or a short time, such as at a carnival, clinic or tournament, paid or unpaid. Not necessarily a member of the club: this is only a role so the app can onboard them. The app screens them: a Working With Children Check or an exemption covering every day they help, and the club's code of conduct and safeguarding policy accepted. They see none of the club's features or messages, and their time ends by itself after their last day (see [Temporary helpers](#temporary-helpers)). |
-| **Admin**     | The people who run the app. Admin is granted by another admin, never requested. Admins can add a title too. Need a current Working With Children Check unless another admin exempts them. An expired check doesn't pause the admin role, so the club is never locked out, but it stays on the admins' to-do list until it's renewed. |
+| **Admin**     | The people who run the app. Admin is granted by another admin, never requested. Admins can add a title too. Need a current Working With Children Check unless another admin exempts them. An expired check doesn't pause the admin role, so the club is never locked out, but it stays on the admins' to-do list until it's renewed. Admins set how long the club keeps records. |
 
 **Safeguarding contacts.** An admin names one member as the club's **Child Safety Officer** and
 another as its **Complaints Manager**. They're not separate roles: each keeps their own role and also
@@ -298,6 +298,10 @@ as a parent or guardian linked to or unlinked from a child.
 
 Guests don't get messages. Physios get messages sent to the Physio role and to the squads and teams
 they're in, and messages sent to everyone in the club only when an admin turns that on.
+
+If the club removes old records, the text of a message older than the club's keep period is
+replaced with "This message was removed after the club's keep period." Who sent it, who it went to
+and who read it stay (see [Keeping records](#keeping-records)).
 
 <img src="user-guide/inbox.png" width="210" alt="Messages inbox">
 
@@ -1684,6 +1688,32 @@ send to the association or keep for an audit.
 <img src="user-guide/affiliation-return.png" width="210" alt="The affiliation return, ready to send to the association">
 <img src="user-guide/affiliation-return-counts.png" width="210" alt="The return's safeguarding set-up and counts">
 
+#### Keeping records
+
+The privacy law says a club keeps personal information only while it needs it. **Keeping records**,
+at the bottom of Club settings, sets how long the club keeps each kind of record, for everyone,
+adults and children alike.
+
+- **Remove old records** starts off, and nothing is removed while it's off. When it's on, each night
+  the app permanently removes records older than their keep period. They can't be brought back, so
+  save a report first if the club needs a copy.
+- **Daily check-ins**, counted from the day of the check-in: 2 years unless you choose 1, 3, 5 or
+  10 years.
+- **Game goals and reflections**, counted from the game, with their comments and the team's goals:
+  2 years, or 1, 3, 5 or 10.
+- **Message text**: 2 years, or 1, 3, 5 or 10. Only the text goes; the message stays with who
+  sent it, who it went to and who read it, so a complaint can still be traced.
+- **Attendance**, **Training certificates** (with their files) and **Who viewed a child's
+  records**: 7 years, or 10, 15 or 20. These show who was with which children and who was screened
+  or trained, so they can't be kept for less than 7 years.
+
+Concerns are never removed. Injury records and documents keep their own rule: removed 12 months
+after an athlete leaves. **Last changed by** shows which admin last saved the periods, and when.
+Tap **Save keep periods** to save.
+
+<img src="user-guide/club-settings-records.png" width="210" alt="Club settings: keeping records">
+<img src="user-guide/club-settings-records-safety.png" width="210" alt="Club settings: keep periods for attendance, certificates and record views">
+
 ### Safeguarding contacts
 
 **Administration > Safeguarding** names the club's **Child Safety Officer**, **Complaints
@@ -1789,11 +1819,15 @@ once saved, only replaced or removed, and anyone who gets it wrong five times in
 | Affiliation returns     | Admins only, until an admin sends one. A sent return goes to the email address the club entered and holds club facts and counts, naming no member under 18. |
 | Reports and their PDFs  | Admins only. A saved PDF is a copy outside the app, so whoever it's shared with can read it.                                |
 | Match fixtures          | The members of each squad or team, and admins.                                                                              |
+| How long records are kept | Admins: the keep periods, whether old records are removed and who last changed them. |
 | Club name, colours and logo | Every signed-in member. The logo file is public so it can show before sign-in. Only admins can change them.            |
 | Other clubs' members and records | Nobody in this club. Each club's members, messages, injuries and documents are kept in that club's own database, which other clubs can't reach. |
 
 When someone leaves, injury records and proof documents are kept for 12 months, visible only to the
-committee and admins, then deleted automatically.
+committee and admins, then deleted automatically. Once an admin switches on **Remove old records**,
+check-ins, game goals and message text go after 24 months, and attendance, training certificates
+and record views after 7 years, unless the club chooses other periods (see
+[Keeping records](#keeping-records)). Concerns are never removed.
 
 <div style="page-break-before: always"></div>
 
@@ -1941,6 +1975,10 @@ Working With Children Check, and another admin must do it.
 - **Record views are logged.** Every time someone other than a child or their guardians opens an
   under 18's injuries, injury documents, check-ins, game goals or member record, it's recorded.
   Admins see the list on the child's member page, and parents and guardians on their home screen.
+- **Records aren't kept forever.** Set how long the club keeps check-ins, game goals, message text,
+  attendance, training certificates and record views under
+  [Keeping records](#keeping-records), and switch on **Remove old records**. Attendance,
+  certificates and record views are kept at least 7 years; concerns are never removed.
 - **Guardian changes leave a trail.** Every guardian link and unlink is kept with who made it,
   when and why, and the family is told. An admin can't change their own child's guardians.
 - **Policies and consent.** Link the club's safeguarding policy, privacy policy and code of
@@ -1974,6 +2012,10 @@ Working With Children Check, and another admin must do it.
   stand-downs, every concern with each referral, note and status, every view and share of an
   injury document, every time someone other than a child or their guardians opened an under 18's
   injuries, check-ins, game goals or member record, and every parent's consent with the policy version they agreed to. A document can't be opened without the view being recorded first.
+- **Records are kept as long as they're needed, then removed.** Each club sets its keep periods
+  and the app removes older records each night once the club switches it on. Concerns are never
+  removed; attendance, training certificates and record views are kept at least 7 years; a removed
+  message keeps who sent it, who it went to and who read it.
 - **Child abuse and serious crimes go out, not in.** The register prompts the club to refer them to
   Police and the governing body straight away, and records that it did.
 - **Each club's data is kept apart**, in that club's own database.
