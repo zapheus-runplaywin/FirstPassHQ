@@ -178,6 +178,10 @@ export default function HomeScreen() {
 
   const name = profile?.preferred_name || profile?.full_name || session?.user.email || 'there';
   const approved = profile?.status === 'approved';
+  // Athletes see their own attendance and report absences.
+  const isAthlete =
+    approved &&
+    (hasRole(profile, 'athlete') || memberships.some((m) => m.team_role === 'athlete'));
   // Committee members and admins aren't in squads, so they only see this
   // section when they are in one, for example as a coach too.
   const showGroups =
@@ -287,6 +291,18 @@ export default function HomeScreen() {
               {canTakeAttendance
                 ? 'Take attendance and see past sessions'
                 : 'See athletes’ attendance'}
+            </ThemedText>
+          </PressableCard>
+        ) : null}
+
+        {features.attendance && isAthlete && session ? (
+          <PressableCard
+            onPress={() =>
+              router.push({ pathname: '/attendance/family/[id]', params: { id: session.user.id } })
+            }>
+            <ThemedText type="smallBold">My attendance</ThemedText>
+            <ThemedText type="small" themeColor="textSecondary">
+              Your sessions, and tell your coaches if you’ll be away
             </ThemedText>
           </PressableCard>
         ) : null}
@@ -401,6 +417,27 @@ export default function HomeScreen() {
                   type="small"
                   themeColor={a.canConsent && (!a.data || !a.health) ? 'tint' : 'textSecondary'}>
                   {consentSummary(a)}
+                </ThemedText>
+              </PressableCard>
+            ))}
+          </View>
+        ) : null}
+
+        {isGuardian && features.attendance && athletes.length > 0 ? (
+          <View style={styles.section}>
+            <ThemedText type="smallBold">Attendance</ThemedText>
+            {athletes.map((a) => (
+              <PressableCard
+                key={a.id}
+                onPress={() =>
+                  router.push({
+                    pathname: '/attendance/family/[id]',
+                    params: { id: a.id, name: a.name },
+                  })
+                }>
+                <ThemedText type="smallBold">{a.name}</ThemedText>
+                <ThemedText type="small" themeColor="textSecondary">
+                  Their sessions, and tell their coaches if they’ll be away
                 </ThemedText>
               </PressableCard>
             ))}

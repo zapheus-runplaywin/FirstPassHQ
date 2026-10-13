@@ -21,7 +21,7 @@ about this policy, or requests to see or correct your information, go to them.
 | Daily check-ins (sleep, soreness, stress, mood, notes) | Athletes | To look after athletes' wellbeing |
 | Injuries, physio updates and medical letters or reports | Athletes | To keep injured athletes safe and clear them to play |
 | Game goals and reflections | Athletes | Coaching |
-| Attendance | Athletes | To run training and selections |
+| Attendance, and absences reported by athletes or their parents | Athletes | To run training and selections, and so an unexplained absence stands out |
 | Messages | Everyone who sends or receives them | Club communication |
 | Integrity training certificates | Members | The sport requires the training |
 | Concerns raised | Whoever raises one, and whoever it's about | To keep children safe |
@@ -64,7 +64,7 @@ These are the app's standard periods; the club can set longer ones in the app
 - Message text: [24 months] after it was sent. A record that the message was
   sent, who it went to and who read it is kept, so a complaint can still be
   looked into.
-- Attendance: [7 years], as the record of who was with which children.
+- Attendance and reported absences: [7 years], as the record of who was with which children.
 - Integrity training certificates: [7 years] after they were added.
 - The record of who opened a child's records: [7 years].
 - Concerns and what was done about them: never removed by the app.

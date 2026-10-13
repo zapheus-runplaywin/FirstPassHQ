@@ -38,8 +38,8 @@ each of their roles can.
 
 | Role          | Who it's for                                                                                         |
 | ------------- | ---------------------------------------------------------------------------------------------------- |
-| **Athlete**   | Registered players. Some are club captains, or captains or vice captains of a squad or team.        |
-| **Guardian**  | Parents and guardians of athletes under 18.                                                          |
+| **Athlete**   | Registered players. Some are club captains, or captains or vice captains of a squad or team. They see their own attendance and can report an absence. |
+| **Guardian**  | Parents and guardians of athletes under 18. They see their child's attendance and can report an absence for them. |
 | **Coach**     | Head coaches and assistant coaches. Both have the same permissions; the title only shows who is who. Need a current Working With Children Check; the role pauses while it's expired. A parent volunteering at their child's club, or a volunteer under 18, has an exemption instead (see [Volunteer exemptions](#volunteer-exemptions)). |
 | **Manager**   | Squad and team managers. Need a current Working With Children Check; the role pauses while it's expired. A parent volunteering at their child's club, or a volunteer under 18, has an exemption instead (see [Volunteer exemptions](#volunteer-exemptions)). |
 | **Committee** | Club committee members. Each can add a title, such as President or Secretary, shown with their role. Need a current Working With Children Check unless an admin exempts them; the role pauses if a recorded check expires. |
@@ -439,8 +439,8 @@ FirstPass HQ.
 
 ## 4. Athletes
 
-Athletes see Messages, Daily check-in and Injuries on their home screen, plus their calendar and
-squads. Game goals are on each team's page.
+Athletes see Messages, Daily check-in, Injuries and My attendance on their home screen, plus their
+calendar and squads. Game goals are on each team's page.
 
 <img src="user-guide/todo-athlete.png" width="210" alt="Athlete home screen with to-do items">
 
@@ -570,6 +570,22 @@ parents or guardians get a copy of every message you send.
 
 <img src="user-guide/captain-new-message.png" width="210" alt="A captain writing a message to their squad">
 
+### Your attendance and absences
+
+**My attendance** on your home screen shows every session your coaches took attendance for, and
+whether you were marked **Present** or **Absent**, over 4 weeks, 3 months or 12 months. You see only
+your own marks, not anyone else's. If you're under 18, your parents or guardians see the same.
+
+If you'll be away, tap **Report an absence**, choose the first and last day, add a reason if you
+like, and tap **Report absence**. You can report up to 12 months ahead, or up to 14 days after if you
+forgot, for up to 3 months at a time. Your coaches and managers see it when they take attendance, so
+they know you're not missing without a reason. Leave medical details out of the reason; report an
+injury under **Injuries** instead. **Withdraw** takes an absence back if your plans change. An
+absence your parent or guardian reported shows here too, and you can withdraw it.
+
+<img src="user-guide/attendance-family.png" width="210" alt="An athlete's own attendance and reported absences">
+<img src="user-guide/report-absence.png" width="210" alt="Reporting an absence">
+
 <div style="page-break-before: always"></div>
 
 ## 5. Parents and guardians
@@ -627,6 +643,21 @@ yours to see on your child's 18th birthday. If anything on it worries you, raise
 <img src="user-guide/records-home.png" width="210" alt="Who has viewed their records on a parent's home screen">
 <img src="user-guide/records-guardian.png" width="210" alt="A parent's list of who has viewed their child's records">
 
+### Your child's attendance
+
+**Attendance** on your home screen lists each child under 18. Open it to see every session their
+coaches took attendance for and whether your child was marked **Present** or **Absent**. You see only
+your child's marks, never other children's. If your child was marked absent and you didn't expect it,
+ask their coach, or raise a concern if it worries you.
+
+Tap **Report an absence** to tell the coaches your child will be away, or was away: choose the first
+and last day and, if you like, a reason. It works the same as for athletes (see
+[Your attendance and absences](#your-attendance-and-absences)), and your child and their other
+parents or guardians see what you report. An absent session that matches a reported absence shows as
+**Absent, reported**. You stop seeing your child's attendance on their 18th birthday.
+
+<img src="user-guide/records-home.png" width="210" alt="Attendance and Who has viewed their records on a parent's home screen">
+
 As a guardian you:
 
 - **Receive a copy of every message** sent to your athlete, whether it went to their squad, their
@@ -649,6 +680,8 @@ As a guardian you:
   **I consent**; your consent is kept with the photo. Your child can't add photos of injuries.
 - **See who opened your athlete's injury documents**: under each document, every view and share,
   by whom and when, and what was confirmed about each photo.
+- **See your athlete's attendance and report absences** (see
+  [Your child's attendance](#your-childs-attendance)).
 - **See who has viewed your athlete's records**: everyone who opened their injuries, check-ins,
   game goals or member record (see [Who has viewed your child's records](#who-has-viewed-your-childs-records)).
 - **Complete integrity training** for your athlete: their training shows in your to-do list and
@@ -844,7 +877,9 @@ recorded and shown to the athlete, their parents or guardians and admins.
    **Whole club** for club events, where every approved athlete is on the register.
 3. Name the session. If a calendar event is on now (from an hour before it starts to 30 minutes
    after it ends), its name is filled in for you; other events from today are offered as chips.
-4. Mark each athlete **Present** or **Absent**, or tap **Mark the rest present**.
+4. Mark each athlete **Present** or **Absent**, or tap **Mark the rest present**. Athletes whose
+   absence was reported for that day show **Away** under their name, with the reason if one was
+   given.
 5. Tap **Save attendance**.
 
 If attendance was already taken for the same group in the last 3 hours, a warning shows who took
@@ -859,8 +894,10 @@ session.
   correct it.
 - **Athletes** shows each athlete's attendance over 4 weeks, 3 months or 12 months, with the last
   time they were there. Tap an athlete to see every session.
+- **Away in the next 4 weeks**, at the top, lists the absences athletes or their parents have
+  reported for the squads and teams you coach or manage (everyone's, for the committee and admins).
 
-<img src="user-guide/attendance-sessions.png" width="210" alt="Attendance sessions">
+<img src="user-guide/attendance-sessions.png" width="210" alt="Attendance sessions, with athletes away in the next 4 weeks">
 <img src="user-guide/attendance-session.png" width="210" alt="One attendance session">
 <img src="user-guide/attendance-athletes.png" width="210" alt="Athletes' attendance percentages">
 <img src="user-guide/attendance-athlete.png" width="210" alt="One athlete's attendance">
@@ -876,7 +913,8 @@ Managers look after the logistics of their squads and teams. As a manager you ca
 - **Take attendance** for your groups, a whole squad or the whole club, and see and correct your
   own groups' sessions (see [Taking attendance](#taking-attendance)).
 
-Managers don't see athletes' attendance histories, check-ins or injuries.
+Managers see the absences reported for their groups, on the register and under **Away in the next 4
+weeks**. They don't see athletes' attendance histories, check-ins or injuries.
 
 <img src="user-guide/manager-home.png" width="210" alt="Manager home screen">
 <img src="user-guide/attendance-warning.png" width="210" alt="Warning that attendance may already have been taken">
@@ -1811,7 +1849,8 @@ once saved, only replaced or removed, and anyone who gets it wrong five times in
 | Game goals and reflections | The athlete, their guardians and their coaches. Only the athlete and their coaches set goals, and only the athlete reflects; guardians just read them. The committee, physios and admins don't see them. |
 | Team goals              | The team's athletes, their guardians and its coaches. Only its coaches set and review them. Athletes and coaches in the team can comment; guardians read the comments. |
 | Integrity training certificates | The member, their parents or guardians, the committee and admins. Coaches don't see them. Certificates can't be changed or removed once sent. |
-| Attendance records      | Coaches, the committee and admins. Managers see their own groups' sessions. Athletes and guardians don't see attendance.    |
+| Attendance records      | Coaches, the committee and admins. Managers see their own groups' sessions. An athlete sees their own marks, and their parents or guardians see them until the athlete turns 18; neither sees other athletes on the register. |
+| Reported absences       | The athlete, their parents or guardians, the coaches and managers of the athlete's squads and teams, the committee and admins. Physios don't see them. |
 | Committee calendar      | Committee members and admins.                                                                                               |
 | Award votes             | Only the voter sees their own ballot. Nobody, admins included, can see who someone voted for.                               |
 | Award results           | Admins only: standings and how many people have voted, and once voting closes, how many votes each nominee got at each place. |
@@ -1901,7 +1940,9 @@ Working With Children Check, and another admin must do it.
   email when they ask to join, so the admin knows who to look for.
 - **You see what your child sees.** You get a copy of every message sent to your child, and of every
   message your child sends as a captain. You can read their daily check-ins and notes, their game
-  goals and their injuries.
+  goals and their injuries, and whether they were at each session.
+- **You can tell the club your child will be away**, so an absence you didn't report stands out
+  (see [Your child's attendance](#your-childs-attendance)).
 - **Nothing is shared without your consent.** Your child's check-ins and injuries are seen by
   their coaches, physios and the committee only after you consent in the app (see [Giving
   consent](#giving-consent)). You can withdraw it at any time, and every change is kept.
