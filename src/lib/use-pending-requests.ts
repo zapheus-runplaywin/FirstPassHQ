@@ -52,6 +52,8 @@ export type SafetyTodos = {
   notices_to_report: number;
   /** 1 when the club has no WWC Registration Officer. */
   wwc_officer_missing: number;
+  /** Club settings' "Remove old records" is off, so nothing past its keep period is removed. */
+  records_removal_off?: boolean;
 };
 
 /** Child-safety follow-ups for admins, refreshed when the screen is shown. */
@@ -61,8 +63,13 @@ export function useSafetyTodos() {
 
   const load = useCallback(async () => {
     if (!isAdmin) return;
-    const { data } = await supabase.rpc('admin_safety_todos').maybeSingle();
-    setSafety((data as SafetyTodos | null) ?? null);
+    const [{ data }, { data: retention }] = await Promise.all([
+      supabase.rpc('admin_safety_todos').maybeSingle(),
+      supabase.rpc('record_retention').maybeSingle(),
+    ]);
+    const todos = (data as SafetyTodos | null) ?? null;
+    const removalOn = (retention as { enabled?: unknown } | null)?.enabled;
+    setSafety(todos && { ...todos, records_removal_off: retention != null && removalOn === false });
   }, [isAdmin]);
 
   useFocusEffect(

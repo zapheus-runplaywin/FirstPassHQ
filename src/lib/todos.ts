@@ -379,6 +379,14 @@ export function buildTodos({
         href: '/admin',
       });
     }
+    if (safety.records_removal_off) {
+      todos.push({
+        key: 'records-removal-off',
+        title: 'Old records are kept forever',
+        detail: 'Switch on Remove old records in Club settings, under Keeping records',
+        href: '/admin/club',
+      });
+    }
   }
 
   if (affiliation) {
