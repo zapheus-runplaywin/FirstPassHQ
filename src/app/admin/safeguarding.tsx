@@ -32,6 +32,7 @@ export default function SafeguardingScreen() {
   const [bodyUrl, setBodyUrl] = useState('');
   const [policyUrl, setPolicyUrl] = useState('');
   const [minorPhotos, setMinorPhotos] = useState(false);
+  const [conductEachSeason, setConductEachSeason] = useState(false);
   const [privacyUrl, setPrivacyUrl] = useState('');
   const [conductUrl, setConductUrl] = useState('');
   const [policyVersion, setPolicyVersion] = useState('1');
@@ -47,6 +48,7 @@ export default function SafeguardingScreen() {
       photosResult,
       policiesResult,
       wwcOfficerResult,
+      conductResult,
     ] = await Promise.all([
       supabase.rpc('safeguarding_contacts').maybeSingle(),
       supabase.from('profiles').select(PROFILE_COLUMNS).eq('status', 'approved').order('full_name'),
@@ -54,6 +56,7 @@ export default function SafeguardingScreen() {
       supabase.rpc('safeguarding_photo_setting'),
       supabase.rpc('club_policies').maybeSingle(),
       supabase.rpc('admin_wwc_officer').maybeSingle(),
+      supabase.rpc('conduct_each_season_setting'),
     ]);
     const officerId = (wwcOfficerResult.data as { officer_id: string } | null)?.officer_id ?? null;
     setWwcOfficer(officerId);
@@ -63,6 +66,7 @@ export default function SafeguardingScreen() {
     setConductUrl(policies?.code_of_conduct_url ?? '');
     setPolicyVersion(policies?.policy_version ?? '1');
     setMinorPhotos(photosResult.data === true);
+    setConductEachSeason(conductResult.data === true);
     const contacts = contactsResult.data as SafeguardingContacts | null;
     setOfficer(contacts?.child_safety_officer_id ?? null);
     setManager(contacts?.complaints_manager_id ?? null);
@@ -116,12 +120,16 @@ export default function SafeguardingScreen() {
             p_code_of_conduct_url: conductUrl,
             p_policy_version: policyVersion,
           });
+    const { error: conductError } =
+      rpcError || photosError || policiesError
+        ? { error: null }
+        : await supabase.rpc('admin_set_conduct_each_season', { p_on: conductEachSeason });
     setBusy(false);
     const { error: officerError } =
-      rpcError || photosError || policiesError || wwcOfficer === savedWwcOfficer
+      rpcError || photosError || policiesError || conductError || wwcOfficer === savedWwcOfficer
         ? { error: null }
         : await supabase.rpc('admin_set_wwc_officer', { p_profile_id: wwcOfficer });
-    const failed = rpcError ?? photosError ?? policiesError ?? officerError;
+    const failed = rpcError ?? photosError ?? policiesError ?? conductError ?? officerError;
     if (failed) {
       setError(failed.message);
       return;
@@ -233,7 +241,31 @@ export default function SafeguardingScreen() {
           maxLength={30}
         />
         <ThemedText type="small" themeColor="textSecondary">
-          Each parent’s consent is kept with the version in force when they gave it.
+          Each parent’s consent, and each code of conduct acceptance, is kept with the version in
+          force at the time.
+        </ThemedText>
+      </View>
+
+      <View style={styles.group}>
+        <ThemedText type="smallBold">Code of conduct each season</ThemedText>
+        <Card style={styles.switchRow}>
+          <ThemedText type="small" style={styles.grow}>
+            Ask every member to accept the code of conduct once a season
+          </ThemedText>
+          <Switch
+            accessibilityLabel="Ask every member to accept the code of conduct once a season"
+            value={conductEachSeason}
+            onValueChange={setConductEachSeason}
+            trackColor={{ true: theme.accent, false: theme.backgroundSelected }}
+            thumbColor={theme.text}
+            {...(Platform.OS === 'web' ? { activeThumbColor: theme.onAccent } : {})}
+          />
+        </Card>
+        <ThemedText type="small" themeColor="textSecondary">
+          Off by default. Leave it off if members already sign your code of conduct another way,
+          such as in their PlayHQ registration. When it’s on and the code of conduct is linked
+          above, it goes on every member’s to-do list each season, and a verified parent or
+          guardian accepts it for an under 18.
         </ThemedText>
       </View>
 

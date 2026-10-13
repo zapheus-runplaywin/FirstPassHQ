@@ -40,6 +40,7 @@ export function buildTodos({
   declarationWaiting = false,
   newConcerns = 0,
   consentsNeeded = [],
+  conduct = [],
   affiliation = null,
   today = new Date(),
 }: {
@@ -72,6 +73,8 @@ export function buildTodos({
   newConcerns?: number;
   /** A guardian's children under 18 still waiting for their consent. */
   consentsNeeded?: { id: string; name: string }[];
+  /** Code of conduct acceptances still owed this season, for the member and their children. */
+  conduct?: { id: string; name: string; forChild: boolean }[];
   /** Affiliation follow-ups, for admins of clubs that keep affiliation records. */
   affiliation?: AffiliationTodos | null;
   today?: Date;
@@ -104,6 +107,19 @@ export function buildTodos({
       title: `Give consent for ${child.name}`,
       detail: 'Choose who sees their check-ins and injury details',
       href: `/consent/${child.id}`,
+    });
+  }
+
+  for (const person of conduct) {
+    todos.push({
+      key: `conduct-${person.id}`,
+      title: person.forChild
+        ? `Accept the code of conduct for ${person.name}`
+        : 'Accept the code of conduct',
+      detail: person.forChild
+        ? 'Go through it with them. Every member accepts it each season.'
+        : 'Every member accepts it each season',
+      href: { pathname: '/conduct/[id]', params: { id: person.id } },
     });
   }
 

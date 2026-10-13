@@ -15,6 +15,7 @@ import {
   type Registration,
 } from '@/lib/affiliation';
 import { formatDate, isMinor } from '@/lib/age';
+import type { ConductStatus } from '@/lib/conduct';
 import type { ClubPolicies } from '@/lib/consents';
 import { formatDateString, toDateString } from '@/lib/injuries';
 import { rolesLabel } from '@/lib/labels';
@@ -431,6 +432,12 @@ function consentLabel(consent: ChildConsentStatus | undefined) {
   return consent.data ? 'Check-ins only' : 'Injuries only';
 }
 
+function conductLabel(status: ConductStatus | undefined) {
+  if (!status) return 'Not asked';
+  if (!status.accepted_at) return 'Not yet';
+  return `${localDay(status.accepted_at)}${status.accepted_by_name ? `\nby ${status.accepted_by_name}` : ''}`;
+}
+
 /** Views of a child's records by people other than them and their guardians, last 12 months. */
 export type RecordAccessSummary = {
   subject_id: string;
@@ -454,7 +461,9 @@ export function under18sReport(
   teams: Team[],
   consents: ChildConsentStatus[] = [],
   access: RecordAccessSummary[] = [],
+  conduct: ConductStatus[] = [],
 ): Report {
+  const conductOf = new Map(conduct.map((c) => [c.profile_id, c]));
   const accessOf = new Map(access.map((a) => [a.subject_id, a]));
   const byId = new Map(members.map((m) => [m.id, m]));
   const consentOf = new Map(consents.map((c) => [c.athlete_id, c]));
@@ -490,6 +499,7 @@ export function under18sReport(
         : 'None linked',
       guardians.map((g) => g.email ?? g.playhq_email ?? '').join('\n'),
       consentLabel(consentOf.get(member.id)),
+      conductLabel(conductOf.get(member.id)),
       viewsLabel(accessOf.get(member.id)),
     ],
     flag: guardians.length === 0,
@@ -502,6 +512,7 @@ export function under18sReport(
     { label: 'Parents and guardians', width: 1.5 },
     { label: 'Guardian email', width: 1.8 },
     { label: 'Consent', width: 1.1 },
+    { label: 'Code of conduct', width: 1.1 },
     { label: 'Record views (12 months)', width: 1 },
   ];
   const fullConsent = athletes.filter((a) => {
@@ -523,6 +534,13 @@ export function under18sReport(
       { label: 'Full consent given', value: fullConsent },
       { label: 'Consent missing', value: athletes.length - fullConsent },
       {
+        label: 'Code of conduct to accept',
+        value: athletes.filter((a) => {
+          const c = conductOf.get(a.member.id);
+          return !!c && !c.accepted_at;
+        }).length,
+      },
+      {
         label: 'Record views (12 months)',
         value: athletes.reduce((n, a) => n + Number(accessOf.get(a.member.id)?.views ?? 0), 0),
       },
@@ -542,7 +560,7 @@ export function under18sReport(
       },
     ],
     footnote:
-      'Under 18 is worked out from the date of birth, or from the admin’s “Under 18” choice when no date of birth is recorded. “Not verified” means the guardian hasn’t been checked with their in-app code or against PlayHQ. Consent is given by a verified parent or guardian in the app; until it is, the athlete’s coaches, physios and the committee don’t see their check-ins or injuries. Record views counts each time someone other than the athlete or their guardians opened their injuries, injury documents, check-ins, game goals or member record in the last 12 months; each athlete’s page lists who.',
+      'Under 18 is worked out from the date of birth, or from the admin’s “Under 18” choice when no date of birth is recorded. “Not verified” means the guardian hasn’t been checked with their in-app code or against PlayHQ. Consent is given by a verified parent or guardian in the app; until it is, the athlete’s coaches, physios and the committee don’t see their check-ins or injuries. Code of conduct shows this season’s acceptance, by a verified parent or guardian when one is linked; “Not asked” means the club hasn’t linked its code of conduct. Record views counts each time someone other than the athlete or their guardians opened their injuries, injury documents, check-ins, game goals or member record in the last 12 months; each athlete’s page lists who.',
   };
 }
 
