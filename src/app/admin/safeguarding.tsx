@@ -185,8 +185,8 @@ export default function SafeguardingScreen() {
       />
       <ThemedText type="small" themeColor="textSecondary">
         An admin or committee member who keeps the club’s Working With Children Check records,
-        links members’ cards to the club with the Screening Unit and receives its notices. Shown
-        on the Working With Children Checks report.
+        registers members’ cards with the club through the Screening Unit and receives its notices.
+        Shown on the Working With Children Checks report.
       </ThemedText>
 
       {savedCommitteeFrom ? (

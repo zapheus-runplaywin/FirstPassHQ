@@ -208,7 +208,7 @@ export function wwccReport(
     { label: 'Card number', width: 1.0 },
     { label: 'Expires', width: 0.8 },
     { label: 'Validated', width: 1.5 },
-    { label: 'Linked with Unit', width: 0.9 },
+    { label: 'Registered with club', width: 0.9 },
     { label: 'Status', width: 1.5 },
   ];
   const count = (kind: string) => people.filter((p) => p.status.kind === kind).length;
@@ -250,7 +250,7 @@ export function wwccReport(
     sections: [
       {
         title: 'Needs attention',
-        note: `Missing, expired or expiring within ${WWCC_WARNING_DAYS} days, never validated or validated over a year ago, or not linked to the club with the Screening Unit. Their coach, manager, physio and committee roles are paused while a check is missing or expired. Admin roles are not paused, so the club is never locked out, but an admin can be stood down.`,
+        note: `Missing, expired or expiring within ${WWCC_WARNING_DAYS} days, never validated or validated over a year ago, or not registered with the club (so the Screening Unit tells the club if the card’s status changes). Their coach, manager, physio and committee roles are paused while a check is missing or expired. Admin roles are not paused, so the club is never locked out, but an admin can be stood down.`,
         columns,
         rows: people
           .filter((p) => p.status.problem || (current(p.status) && wwccRecordIssues(p.member).length > 0))
