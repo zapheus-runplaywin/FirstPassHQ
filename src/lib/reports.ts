@@ -404,11 +404,26 @@ export type Guardianship = { guardian_id: string; athlete_id: string };
 /** The consents in force for an athlete under 18. */
 export type ChildConsentStatus = { athlete_id: string; data: boolean; health: boolean };
 
+function viewsLabel(summary: RecordAccessSummary | undefined) {
+  if (!summary || Number(summary.views) === 0) return 'None';
+  const views = Number(summary.views);
+  const viewers = Number(summary.viewers);
+  return `${views} by ${viewers} ${viewers === 1 ? 'person' : 'people'}`;
+}
+
 function consentLabel(consent: ChildConsentStatus | undefined) {
   if (!consent || (!consent.data && !consent.health)) return 'None given';
   if (consent.data && consent.health) return 'Check-ins and injuries';
   return consent.data ? 'Check-ins only' : 'Injuries only';
 }
+
+/** Views of a child's records by people other than them and their guardians, last 12 months. */
+export type RecordAccessSummary = {
+  subject_id: string;
+  views: number;
+  viewers: number;
+  last_viewed_at: string;
+};
 
 /** Whole years old today. */
 export function ageOn(dateOfBirth: string, today = new Date()) {
@@ -424,7 +439,9 @@ export function under18sReport(
   placements: Placement[],
   teams: Team[],
   consents: ChildConsentStatus[] = [],
+  access: RecordAccessSummary[] = [],
 ): Report {
+  const accessOf = new Map(access.map((a) => [a.subject_id, a]));
   const byId = new Map(members.map((m) => [m.id, m]));
   const consentOf = new Map(consents.map((c) => [c.athlete_id, c]));
   const athletes = members
@@ -459,6 +476,7 @@ export function under18sReport(
         : 'None linked',
       guardians.map((g) => g.email ?? g.playhq_email ?? '').join('\n'),
       consentLabel(consentOf.get(member.id)),
+      viewsLabel(accessOf.get(member.id)),
     ],
     flag: guardians.length === 0,
   });
@@ -470,6 +488,7 @@ export function under18sReport(
     { label: 'Parents and guardians', width: 1.5 },
     { label: 'Guardian email', width: 1.8 },
     { label: 'Consent', width: 1.1 },
+    { label: 'Record views (12 months)', width: 1 },
   ];
   const fullConsent = athletes.filter((a) => {
     const c = consentOf.get(a.member.id);
@@ -489,6 +508,10 @@ export function under18sReport(
       { label: 'No date of birth', value: noBirthday },
       { label: 'Full consent given', value: fullConsent },
       { label: 'Consent missing', value: athletes.length - fullConsent },
+      {
+        label: 'Record views (12 months)',
+        value: athletes.reduce((n, a) => n + Number(accessOf.get(a.member.id)?.views ?? 0), 0),
+      },
     ],
     sections: [
       {
@@ -505,7 +528,7 @@ export function under18sReport(
       },
     ],
     footnote:
-      'Under 18 is worked out from the date of birth, or from the admin’s “Under 18” choice when no date of birth is recorded. “Not verified” means the guardian hasn’t been checked with their in-app code or against PlayHQ. Consent is given by a verified parent or guardian in the app; until it is, the athlete’s coaches, physios and the committee don’t see their check-ins or injuries.',
+      'Under 18 is worked out from the date of birth, or from the admin’s “Under 18” choice when no date of birth is recorded. “Not verified” means the guardian hasn’t been checked with their in-app code or against PlayHQ. Consent is given by a verified parent or guardian in the app; until it is, the athlete’s coaches, physios and the committee don’t see their check-ins or injuries. Record views counts each time someone other than the athlete or their guardians opened their injuries, injury documents, check-ins, game goals or member record in the last 12 months; each athlete’s page lists who.',
   };
 }
 

@@ -6,6 +6,7 @@ import { Screen } from '@/components/screen';
 import { ThemedText } from '@/components/themed-text';
 import { CHECK_IN_COLUMNS } from '@/lib/check-ins';
 import { toDateString } from '@/lib/injuries';
+import { logRecordView } from '@/lib/record-access';
 import { supabase } from '@/lib/supabase';
 import type { CheckIn } from '@/lib/types';
 
@@ -27,6 +28,7 @@ export default function AthleteCheckInsScreen() {
       .gte('day', toDateString(since))
       .order('day', { ascending: false });
     setCheckIns((data as CheckIn[] | null) ?? []);
+    logRecordView(id, 'check_ins');
   }, [id]);
 
   useFocusEffect(
