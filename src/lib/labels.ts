@@ -18,6 +18,7 @@ export const roleLabels: Record<AppRole, string> = {
   guardian: 'Guardian',
   guest: 'Guest',
   volunteer: 'Temporary helper',
+  statistician: 'Statistician',
 };
 
 /** A role as a group of people, such as "Guardians". */
@@ -31,6 +32,7 @@ export const pluralRoleLabels: Record<AppRole, string> = {
   guardian: 'Guardians',
   guest: 'Guests',
   volunteer: 'Temporary helpers',
+  statistician: 'Statisticians',
 };
 
 export const statusLabels: Record<MemberStatus, string> = {
@@ -86,6 +88,7 @@ export const requestableRoles: AppRole[] = [
   'manager',
   'committee',
   'physio',
+  'statistician',
   'guest',
   'volunteer',
 ];

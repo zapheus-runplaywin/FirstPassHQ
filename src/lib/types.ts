@@ -9,7 +9,8 @@ export type AppRole =
   | 'physio'
   | 'guardian'
   | 'guest'
-  | 'volunteer';
+  | 'volunteer'
+  | 'statistician';
 
 export type MemberStatus = 'pending' | 'approved' | 'rejected';
 
