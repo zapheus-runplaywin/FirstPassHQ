@@ -251,6 +251,43 @@ $$;
 revoke execute on function public.is_game_member(uuid) from public, anon;
 grant execute on function public.is_game_member(uuid) to authenticated;
 
+-- Statisticians see every fixture, so they can start a game from one.
+drop policy if exists "Statisticians see fixtures" on public.fixtures;
+create policy "Statisticians see fixtures"
+  on public.fixtures for select to authenticated
+  using (public.is_statistician());
+
+-- This season's athletes in a squad or team, for the lineup in Vantage:
+-- their name as they like it, and whether they're a final team athlete or a
+-- training partner. Statisticians and admins only.
+create or replace function public.game_lineup(p_team_id uuid)
+returns table (
+  profile_id uuid,
+  name text,
+  selection public.team_selection
+)
+language sql
+stable
+security definer
+set search_path = ''
+as $$
+  select tm.profile_id, coalesce(nullif(trim(p.preferred_name), ''), p.full_name), tm.selection
+  from public.team_members tm
+  join public.profiles p on p.id = tm.profile_id
+  join public.teams t on t.id = tm.team_id
+  where tm.team_id = p_team_id
+    and tm.team_role = 'athlete'
+    and p.status = 'approved'
+    and not t.archived
+    and public.is_statistician()
+  order by
+    case tm.selection when 'touring' then 0 when 'training_partner' then 1 else 2 end,
+    p.full_name;
+$$;
+
+revoke execute on function public.game_lineup(uuid) from public, anon;
+grant execute on function public.game_lineup(uuid) to authenticated;
+
 -- ---------------------------------------------------------------------------
 -- Starting, pairing and finishing a game
 -- ---------------------------------------------------------------------------
