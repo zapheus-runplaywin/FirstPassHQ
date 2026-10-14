@@ -28,7 +28,6 @@ export function roleCombinationProblem(
   if (has('admin') && has('athlete')) return 'Admins can’t also be athletes.';
   if (has('athlete') && has('manager')) return 'Athletes can’t also be managers.';
   if (has('athlete') && has('physio')) return 'Athletes can’t also be physios.';
-  if (has('athlete') && has('statistician')) return 'Athletes can’t also be statisticians.';
   if (
     has('athlete') &&
     isMinor(dateOfBirth ?? null, under18) &&

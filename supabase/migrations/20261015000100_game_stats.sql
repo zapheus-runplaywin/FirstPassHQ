@@ -73,7 +73,9 @@ $$;
 revoke execute on function public.has_role(public.app_role) from public, anon;
 grant execute on function public.has_role(public.app_role) to authenticated;
 
--- Admins can also be statisticians; athletes can't record their own team.
+-- Statistician stacks with any other role (a manager, or an athlete helping
+-- at a game they aren't playing in), like the rules before it. Only
+-- Temporary helpers now refuse other roles here, as the app always has.
 create or replace function public.role_combination_problem(
   p_roles public.app_role[],
   p_date_of_birth date,
@@ -97,8 +99,6 @@ as $$
       then 'Athletes can''t also be managers'
     when 'athlete' = any (p_roles) and 'physio' = any (p_roles)
       then 'Athletes can''t also be physios'
-    when 'athlete' = any (p_roles) and 'statistician' = any (p_roles)
-      then 'Athletes can''t also be statisticians'
     when 'athlete' = any (p_roles) and public.is_minor(p_date_of_birth, p_under_18)
       and not p_roles <@ array['athlete', 'coach']::public.app_role[]
       then 'Athletes under 18 can only also be a coach'
