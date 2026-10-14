@@ -4,7 +4,7 @@ Sales material for showing FirstPass HQ to clubs, built from the app at build 29
 
 **Brochures** (12 pages) are the short version, for a club president and committee weighing up the app, and for the coaches, athletes and parents on the participation side.
 
-**Detailed guides** (37 pages) open with the same pages, then take each part of the app in turn: governance and compliance, child safety, communication, performance and wellbeing, injuries and return to play, and running the club. They also have a "who sees what" page. Optional features are marked, and the Working With Children Check rules shown are Western Australia's.
+**Detailed guides** (38 pages) open with the same pages, then take each part of the app in turn: governance and compliance, child safety, communication, performance and wellbeing, injuries and return to play, and running the club. They also have an "also in the app" page for the smaller details and a "who sees what" page. Optional features are marked, and the Working With Children Check rules shown are Western Australia's.
 
 | Edition | Brochure | Detailed guide |
 | --- | --- | --- |
