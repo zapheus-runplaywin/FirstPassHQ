@@ -2,7 +2,7 @@
 # Applies new migrations to the linked Supabase project, used by the
 # "Deploy migrations" workflow. Stops before anything can lose data unless
 # ALLOW_DATA_LOSS=true. FIRST_RUN_OK=true lets an empty database (the test
-# project) take every migration. Extra arguments (such as --db-url) go to the CLI.
+# project, or a brand-new live project) take every migration. Extra arguments (such as --db-url) go to the CLI.
 set -euo pipefail
 
 if [ -n "${ALREADY_APPLIED:-}" ]; then
@@ -44,7 +44,8 @@ fi
 
 first=$(ls supabase/migrations | sort | head -1)
 if grep -qx "$first" <<<"$pending"; then
-  # FIRST_RUN_OK is only set for the test project, which starts empty. When
+  # FIRST_RUN_OK is set for the test project, which starts empty, and for the
+  # live project only when Matt ticks "New live project" on a manual run. When
   # none of the migrations have run there is no data to lose, so it takes them
   # all, including older ones the checks flag that were already approved for
   # the live database. New ones are still checked on their way to live.
@@ -55,6 +56,7 @@ if grep -qx "$first" <<<"$pending"; then
   fi
   echo "::error::Supabase has no record of any migrations, so this would rerun them all."
   echo "Run this workflow by hand and list the versions already run in the SQL editor under 'Already applied'."
+  echo "If the live project is brand new and empty, Matt can run it by hand with 'New live project' ticked instead."
   exit 1
 fi
 
