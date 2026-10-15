@@ -156,16 +156,17 @@ or association that reports to its association or Netball WA (see [Affiliation](
 ### Install the app
 
 The club sends a link to install the app on iPhone (TestFlight) or Android. The app is called
-FirstPass HQ, made by FirstPass. It opens on the FirstPass 1P mark on deep navy, and the first
-time, before it knows which club you're in, asks for your club and then shows the sign-in screen.
+FirstPass HQ, made by FirstPass. Its icon is the FirstPass 1P HQ mark on deep navy, and it opens on
+the same mark. The first time, before it knows which club you're in, it asks for your club and then
+shows the sign-in screen.
 Once you pick your club and sign in it switches to West Coast Thunder's logo and colours and
-remembers them. From then on, each time the app opens, the 1P mark appears in the middle, then
+remembers them. From then on, each time the app opens, the 1P HQ mark appears in the middle, then
 rises to make room for the Thunder logo beneath it.
 
 Whatever the club's look, "Powered by" and the FirstPass HQ logo stay at the foot of every
 screen.
 
-<img src="user-guide/opening.png" width="210" alt="Opening screen: FirstPass 1P mark with the club logo beneath">
+<img src="user-guide/opening.png" width="210" alt="Opening screen: FirstPass 1P HQ mark with the club logo beneath">
 
 ### Find your club
 
@@ -1740,7 +1741,7 @@ so leave them filled in.
 
 Tap **Save club settings**. Members see the changes the next time they open the app. Someone
 who has just installed the app sees the FirstPass look on the sign-in screen until they sign in.
-The app's icon (the FirstPass 1P mark), its name under the icon (FirstPass HQ) and the splash screen are
+The app's icon (the FirstPass 1P HQ mark), its name under the icon (FirstPass HQ) and the splash screen are
 part of the app build and don't change here.
 
 <img src="user-guide/club-settings.png" width="210" alt="Club settings: name, logo and colours">
