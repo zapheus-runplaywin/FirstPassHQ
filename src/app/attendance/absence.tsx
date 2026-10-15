@@ -5,7 +5,7 @@ import { DateField } from '@/components/date-field';
 import { Screen } from '@/components/screen';
 import { ThemedText } from '@/components/themed-text';
 import { Button, ChipGroup, ErrorText, TextField } from '@/components/ui';
-import { absenceCategories, type AbsenceCategory } from '@/lib/absences';
+import { useAbsenceReasons } from '@/lib/absences';
 import { useAuth } from '@/lib/auth';
 import { toDateString } from '@/lib/injuries';
 import { supabase } from '@/lib/supabase';
@@ -17,15 +17,16 @@ export default function ReportAbsenceScreen() {
   const today = toDateString(new Date());
   const [from, setFrom] = useState(today);
   const [to, setTo] = useState(today);
-  const [category, setCategory] = useState<AbsenceCategory | null>(null);
+  const { reasons } = useAbsenceReasons(true);
+  const [category, setCategory] = useState<string | null>(null);
   const [reason, setReason] = useState('');
   const [saving, setSaving] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const self = id === session?.user.id;
 
   async function save() {
-    if (!category) {
-      setError('Choose what kind of absence it is.');
+    if (!category && reasons?.length) {
+      setError('Choose a reason.');
       return;
     }
     setSaving(true);
@@ -34,7 +35,7 @@ export default function ReportAbsenceScreen() {
       p_athlete_id: id,
       p_from: from,
       p_to: to < from ? from : to,
-      p_category: category,
+      p_category_id: category,
       p_reason: reason,
     });
     setSaving(false);
@@ -78,16 +79,13 @@ export default function ReportAbsenceScreen() {
           { label: 'In a week', days: 7 },
         ]}
       />
-      <ChipGroup
-        label="Reason"
-        options={absenceCategories}
-        selected={category ? [category] : []}
-        onToggle={setCategory}
-      />
-      {category === 'injured' ? (
-        <ThemedText type="small" themeColor="textSecondary">
-          Report the injury under Injuries too, so the physio and coaches know about it.
-        </ThemedText>
+      {reasons?.length ? (
+        <ChipGroup
+          label="Reason"
+          options={reasons.map((r) => ({ value: r.id, label: r.name }))}
+          selected={category ? [category] : []}
+          onToggle={setCategory}
+        />
       ) : null}
       <TextField
         label="Details (optional)"
@@ -98,7 +96,8 @@ export default function ReportAbsenceScreen() {
       />
       <ThemedText type="small" themeColor="textSecondary">
         Coaches, managers, the committee and admins see the reason and details. Leave out medical
-        details: an injury is better reported under Injuries.
+        details. If you’re injured, report it under Injuries instead: injured athletes still come
+        along to support the team.
       </ThemedText>
       <ErrorText>{error}</ErrorText>
       <Button title="Report absence" onPress={save} busy={saving} />

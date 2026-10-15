@@ -14,7 +14,6 @@ import {
   type Officer,
   type Registration,
 } from '@/lib/affiliation';
-import { absenceCategories, type AbsenceCategory } from '@/lib/absences';
 import { formatDate, isMinor } from '@/lib/age';
 import type { ConductStatus } from '@/lib/conduct';
 import type { ClubPolicies } from '@/lib/consents';
@@ -692,7 +691,9 @@ export type AbsenceReportRow = {
   athlete_id: string;
   from_day: string;
   to_day: string;
-  category: AbsenceCategory | null;
+  category: string | null;
+  /** The reason's place in the club's list. */
+  category_order: number | null;
 };
 
 /** Days from "2026-10-01" to "2026-10-03", counting both: 3. */
@@ -705,25 +706,27 @@ function daysBetween(from: string, to: string) {
  * of their days fell in the period (from and to are "2026-10-01" days).
  */
 export function absenceBreakdown(absences: AbsenceReportRow[], from: string, to: string) {
-  const kinds = [
-    ...absenceCategories,
-    { value: null, label: 'Not given (reported before reasons)' },
-  ];
-  return kinds
-    .map((kind) => {
-      const own = absences.filter((a) => a.category === kind.value);
-      return {
-        label: kind.label,
-        absences: own.length,
-        athletes: new Set(own.map((a) => a.athlete_id)).size,
-        days: own.reduce(
-          (sum, a) =>
-            sum + daysBetween(a.from_day > from ? a.from_day : from, a.to_day < to ? a.to_day : to),
-          0,
-        ),
-      };
-    })
-    .filter((row) => row.absences > 0);
+  const kinds = new Map<string | null, { order: number; rows: AbsenceReportRow[] }>();
+  for (const a of absences) {
+    const kind = kinds.get(a.category) ?? {
+      order: a.category === null ? Infinity : (a.category_order ?? 0),
+      rows: [],
+    };
+    kind.rows.push(a);
+    kinds.set(a.category, kind);
+  }
+  return [...kinds.entries()]
+    .sort(([a, x], [b, y]) => x.order - y.order || (a ?? '').localeCompare(b ?? ''))
+    .map(([category, { rows }]) => ({
+      label: category ?? 'Not given (reported before reasons)',
+      absences: rows.length,
+      athletes: new Set(rows.map((a) => a.athlete_id)).size,
+      days: rows.reduce(
+        (sum, a) =>
+          sum + daysBetween(a.from_day > from ? a.from_day : from, a.to_day < to ? a.to_day : to),
+        0,
+      ),
+    }));
 }
 
 export function rateLabel(present: number, total: number) {
