@@ -208,6 +208,7 @@ export const standDownRoles: AppRole[] = [
   'committee',
   'admin',
   'volunteer',
+  'statistician',
 ];
 
 export const standDownReasonLabels: Record<StandDownReason, string> = {
