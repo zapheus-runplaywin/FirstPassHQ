@@ -80,6 +80,25 @@ Until these secrets exist the workflows only warn and carry on updating the live
    call without it. Until both are set, the function warns in its logs and anyone who finds its
    address can start a (harmless, but free-plan-quota-eating) purge run.
 
+## Replacing the live project
+
+Only while nothing real is in it, for example to move it to another region. Nothing in the code
+names the project, so no code changes:
+
+1. Create the new project in the Sydney region and set it up as in
+   [step 4](#4-point-the-installed-apps-at-the-live-project), with Google sign-in on (same client)
+   and the Email provider off. Add its `https://<new-ref>.supabase.co/auth/v1/callback` to the
+   Google client and remove the old project's.
+2. Update the GitHub secrets `SUPABASE_PROJECT_ID` and `SUPABASE_DB_PASSWORD` (and
+   `SUPABASE_ACCESS_TOKEN` if it's in another organisation), and the EAS `preview` and
+   `production` values of `EXPO_PUBLIC_SUPABASE_URL` and `EXPO_PUBLIC_SUPABASE_ANON_KEY`.
+3. In **Actions**, run **Deploy migrations** by hand with **New live project** ticked. The live
+   deploy normally refuses a database with no record of any migrations; this lets an empty one take
+   them all. Only Matt can tick it, and it does nothing on a project that already has migrations.
+4. Run **Deploy PlayHQ function** and **Purge expired injury records** once each.
+5. Installed apps keep the old address until they get an update (`scripts/publish-update.sh`) or a
+   new build.
+
 ## More test clubs
 
 To try switching clubs, Expo Go can have up to two more test clubs, each with its own free project.
