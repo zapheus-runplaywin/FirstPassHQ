@@ -37,6 +37,15 @@ export default function ReportsScreen() {
         </PressableCard>
       ) : null}
 
+      {features.injuries ? (
+        <PressableCard onPress={() => router.push('/admin/injuries')}>
+          <ThemedText type="smallBold">Injuries</ThemedText>
+          <ThemedText type="small" themeColor="textSecondary">
+            Injuries still open and those cleared recently, with who signed them off
+          </ThemedText>
+        </PressableCard>
+      ) : null}
+
       {features.attendance ? (
         <PressableCard onPress={() => router.push('/admin/reports/attendance')}>
           <ThemedText type="smallBold">Attendance</ThemedText>

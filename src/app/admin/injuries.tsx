@@ -15,6 +15,8 @@ import {
   toDateString,
 } from '@/lib/injuries';
 import { useClub } from '@/lib/club';
+import { reportPdf } from '@/lib/pdf';
+import { fileSlug, injuryReport, sharePdf } from '@/lib/reports';
 import { supabase } from '@/lib/supabase';
 import type { InjuryReportRow } from '@/lib/types';
 
@@ -51,6 +53,23 @@ export default function InjuryReportScreen() {
     setRefreshing(true);
     await load();
     setRefreshing(false);
+  }
+
+  async function exportPdf() {
+    if (!rows) return;
+    setExporting(true);
+    setError(null);
+    try {
+      const bytes = reportPdf(injuryReport(rows, sinceDate), {
+        clubName: club.name,
+        accent: club.colors.accent,
+      });
+      await sharePdf(`${fileSlug(club.shortName)}-injuries-${toDateString(new Date())}.pdf`, bytes);
+    } catch (e) {
+      setError(e instanceof Error ? e.message : 'The PDF didn’t save. Try again.');
+    } finally {
+      setExporting(false);
+    }
   }
 
   async function exportCsv() {
@@ -126,13 +145,20 @@ export default function InjuryReportScreen() {
       ) : null}
 
       <Button
-        title="Export CSV"
-        onPress={exportCsv}
+        title="Export PDF"
+        onPress={exportPdf}
         busy={exporting}
         disabled={!rows || rows.length === 0}
       />
+      <Button
+        title="Export CSV"
+        variant="secondary"
+        onPress={exportCsv}
+        disabled={exporting || !rows || rows.length === 0}
+      />
       <ThemedText type="small" themeColor="textSecondary">
-        Opens the share sheet, so you can save it to OneDrive or attach it to an email.
+        Opens the share sheet, so you can save it to OneDrive or attach it to an email. The CSV
+        opens in a spreadsheet.
       </ThemedText>
       <ErrorText>{error}</ErrorText>
 
@@ -175,8 +201,3 @@ const styles = StyleSheet.create({
     gap: Spacing.two,
   },
 });
-
-/** "Thunder" -> "thunder", for file names. */
-function fileSlug(name: string) {
-  return name.toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/^-|-$/g, '') || 'club';
-}

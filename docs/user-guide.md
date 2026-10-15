@@ -1644,8 +1644,11 @@ each copied course's squads and teams, then archive last season's courses once e
 ### Injury report
 
 **Injury report** lists injuries reported or cleared in the last few months (3 by default), plus
-every injury not yet cleared, with totals. **Export CSV** opens the share sheet so you can save it
-to OneDrive or attach it to an email.
+every injury not yet cleared, with totals. **Export PDF** saves it as a PDF, like the other
+[Reports](#reports): injuries not yet cleared first, then those cleared, with each one's
+restrictions, expected return and who endorsed and cleared it. Medical documents aren't included.
+**Export CSV** saves the same list for a spreadsheet. Both open the share sheet so you can save to
+OneDrive or attach to an email. It's also listed under **Reports**.
 
 <img src="user-guide/injury-report.png" width="210" alt="Injury report">
 
@@ -1681,6 +1684,7 @@ everyone ever stood down, newest first, with the
 - **Integrity training** (when Integrity training is on): pick the season. **Still to finish**
   lists everyone with a course not yet approved, in red if a due date has passed, then each course
   lists who must complete it, where they're up to, when they completed it and who checked it.
+- **Injuries** (when Injuries is on): opens the [Injury report](#injury-report).
 - **Attendance** (when Attendance is on): pick the **Period** (last 4 weeks, last 3 months, this
   season, or **Choose dates** for a from and to date) and the **Squads and teams**: **All**,
   **Whole club events**, or any squads and teams. A squad includes the teams named from it. Each
