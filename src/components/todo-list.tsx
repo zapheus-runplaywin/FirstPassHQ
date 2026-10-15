@@ -1,61 +1,117 @@
 import { router } from 'expo-router';
+import { useState } from 'react';
 import { Pressable, StyleSheet, View } from 'react-native';
 
+import { TaskRow } from '@/components/task-row';
 import { ThemedText } from '@/components/themed-text';
 import { Card } from '@/components/ui';
 import { Spacing } from '@/constants/theme';
 import { useTheme } from '@/hooks/use-theme';
+import type { PersonalTask } from '@/lib/personal-tasks';
 import type { Todo } from '@/lib/todos';
 
-/** The member's to-do list, or a short "all caught up" when there's nothing left. */
-export function TodoList({ todos }: { todos: Todo[] }) {
+/**
+ * The member's to-do list: what the club needs from them, then their own
+ * personal tasks, or a short "all caught up" when there's nothing left.
+ */
+export function TodoList({
+  todos,
+  personalTasks = [],
+  onToggleTask,
+}: {
+  todos: Todo[];
+  personalTasks?: PersonalTask[];
+  onToggleTask?: (task: PersonalTask, done: boolean) => void;
+}) {
   const theme = useTheme();
+  // The task just ticked off, so a mistaken tap can be undone.
+  const [ticked, setTicked] = useState<PersonalTask | null>(null);
+  const count = todos.length + personalTasks.length;
+
+  function toggle(task: PersonalTask, done: boolean) {
+    setTicked(done ? task : null);
+    onToggleTask?.(task, done);
+  }
 
   return (
     <View style={styles.section}>
       <View style={styles.header}>
         <ThemedText type="smallBold">To do</ThemedText>
-        {todos.length > 0 ? (
+        {count > 0 ? (
           <View style={[styles.badge, { backgroundColor: theme.accent }]}>
             <ThemedText type="smallBold" style={{ color: theme.onAccent }}>
-              {todos.length}
+              {count}
             </ThemedText>
           </View>
         ) : null}
       </View>
-      {todos.length === 0 ? (
-        <Card>
-          <ThemedText type="small" themeColor="textSecondary">
+      <Card style={styles.list}>
+        {count === 0 ? (
+          <ThemedText type="small" themeColor="textSecondary" style={styles.caughtUp}>
             ✓ You’re all caught up.
           </ThemedText>
-        </Card>
-      ) : (
-        <Card style={styles.list}>
-          {todos.map((todo, index) => (
-            <Pressable
-              key={todo.key}
-              accessibilityRole="button"
-              accessibilityHint="Opens it so you can tick it off"
-              onPress={() => router.push(todo.href)}
-              style={({ pressed }) => [
-                styles.row,
-                index > 0 && { borderTopWidth: 1, borderTopColor: theme.backgroundSelected },
-                pressed && { backgroundColor: theme.backgroundSelected },
-              ]}>
-              <View style={[styles.dot, { borderColor: theme.accent }]} />
-              <View style={styles.text}>
-                <ThemedText type="smallBold">{todo.title}</ThemedText>
-                <ThemedText type="small" themeColor="textSecondary">
-                  {todo.detail}
-                </ThemedText>
-              </View>
+        ) : null}
+        {todos.map((todo, index) => (
+          <Pressable
+            key={todo.key}
+            accessibilityRole="button"
+            accessibilityHint="Opens it so you can tick it off"
+            onPress={() => router.push(todo.href)}
+            style={({ pressed }) => [
+              styles.row,
+              index > 0 && {
+                borderTopWidth: 1,
+                borderTopColor: theme.backgroundSelected,
+              },
+              pressed && { backgroundColor: theme.backgroundSelected },
+            ]}>
+            <View style={[styles.dot, { borderColor: theme.accent }]} />
+            <View style={styles.text}>
+              <ThemedText type="smallBold">{todo.title}</ThemedText>
+              <ThemedText type="small" themeColor="textSecondary">
+                {todo.detail}
+              </ThemedText>
+            </View>
+            <ThemedText type="smallBold" style={{ color: theme.tint }}>
+              ›
+            </ThemedText>
+          </Pressable>
+        ))}
+        {personalTasks.map((task, index) => (
+          <TaskRow key={task.id} task={task} onToggle={toggle} divider={todos.length + index > 0} />
+        ))}
+        {ticked && !personalTasks.some((t) => t.id === ticked.id) ? (
+          <View style={[styles.footer, { borderTopColor: theme.backgroundSelected }]}>
+            <ThemedText
+              type="small"
+              themeColor="textSecondary"
+              style={styles.text}
+              numberOfLines={1}>
+              Ticked off {ticked.title}
+            </ThemedText>
+            <Pressable accessibilityRole="button" hitSlop={8} onPress={() => toggle(ticked, false)}>
               <ThemedText type="smallBold" style={{ color: theme.tint }}>
-                ›
+                Undo
               </ThemedText>
             </Pressable>
-          ))}
-        </Card>
-      )}
+          </View>
+        ) : null}
+        <View style={[styles.footer, { borderTopColor: theme.backgroundSelected }]}>
+          <Pressable
+            accessibilityRole="button"
+            hitSlop={8}
+            onPress={() => router.push('/tasks/new')}>
+            <ThemedText type="smallBold" style={{ color: theme.tint }}>
+              + Add a task
+            </ThemedText>
+          </Pressable>
+          <Pressable accessibilityRole="button" hitSlop={8} onPress={() => router.push('/tasks')}>
+            <ThemedText type="small" style={{ color: theme.tint }}>
+              Your tasks ›
+            </ThemedText>
+          </Pressable>
+        </View>
+      </Card>
     </View>
   );
 }
@@ -97,5 +153,16 @@ const styles = StyleSheet.create({
   text: {
     flex: 1,
     gap: Spacing.half,
+  },
+  caughtUp: {
+    padding: Spacing.three,
+  },
+  footer: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'space-between',
+    gap: Spacing.three,
+    padding: Spacing.three,
+    borderTopWidth: 1,
   },
 });
