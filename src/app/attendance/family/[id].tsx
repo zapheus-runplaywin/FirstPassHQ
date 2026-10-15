@@ -7,7 +7,7 @@ import { ThemedText } from '@/components/themed-text';
 import { Button, Card, ChipGroup } from '@/components/ui';
 import { Spacing } from '@/constants/theme';
 import { useTheme } from '@/hooks/use-theme';
-import { type Absence, absenceDays, absenceOn } from '@/lib/absences';
+import { type Absence, absenceDays, absenceOn, absenceWhy } from '@/lib/absences';
 import { percent } from '@/lib/attendance';
 import { useAuth } from '@/lib/auth';
 import { formatDateTime } from '@/lib/format';
@@ -102,7 +102,7 @@ export default function FamilyAttendanceScreen() {
             <Card key={a.id}>
               <ThemedText type="smallBold">{absenceDays(a)}</ThemedText>
               <ThemedText type="small" themeColor="textSecondary">
-                {a.reason ? `${a.reason} · ` : ''}Reported by {a.reported_by_name ?? 'a member'}
+                {absenceWhy(a) ? `${absenceWhy(a)} · ` : ''}Reported by {a.reported_by_name ?? 'a member'}
               </ThemedText>
               <Pressable
                 accessibilityRole="button"

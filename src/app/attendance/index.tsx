@@ -7,7 +7,7 @@ import { ThemedText } from '@/components/themed-text';
 import { Button, Card, ChipGroup, PressableCard } from '@/components/ui';
 import { Spacing } from '@/constants/theme';
 import { useTheme } from '@/hooks/use-theme';
-import { absenceDays, type UpcomingAbsence } from '@/lib/absences';
+import { absenceDays, absenceWhy, type UpcomingAbsence } from '@/lib/absences';
 import {
   percent,
   presentLabel,
@@ -107,7 +107,7 @@ function AwaySoon({ away }: { away: UpcomingAbsence[] }) {
             <ThemedText type="smallBold">{a.athlete_name}</ThemedText>
             <ThemedText type="small" themeColor="textSecondary">
               {absenceDays(a)}
-              {a.reason ? ` · ${a.reason}` : ''}
+              {absenceWhy(a) ? ` · ${absenceWhy(a)}` : ''}
               {a.reported_by_name ? ` · told by ${a.reported_by_name}` : ''}
             </ThemedText>
           </View>

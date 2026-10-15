@@ -609,11 +609,12 @@ parents or guardians get a copy of every message you send.
 whether you were marked **Present** or **Absent**, over 4 weeks, 3 months or 12 months. You see only
 your own marks, not anyone else's. If you're under 18, your parents or guardians see the same.
 
-If you'll be away, tap **Report an absence**, choose the first and last day, add a reason if you
-like, and tap **Report absence**. You can report up to 12 months ahead, or up to 14 days after if you
-forgot, for up to 3 months at a time. Your coaches and managers see it when they take attendance, so
-they know you're not missing without a reason. Leave medical details out of the reason; report an
-injury under **Injuries** instead. **Withdraw** takes an absence back if your plans change. An
+If you'll be away, tap **Report an absence**, choose the first and last day, pick a reason
+(**Holiday**, **Sick**, **Injured**, **School or work**, **Day off**, **Personal** or **Other**), add
+details if you like, and tap **Report absence**. You can report up to 12 months ahead, or up to 14
+days after if you forgot, for up to 3 months at a time. Your coaches and managers see it when they
+take attendance, so they know you're not missing without a reason. Leave medical details out of the
+details; if you're injured, report the injury under **Injuries** too. **Withdraw** takes an absence back if your plans change. An
 absence your parent or guardian reported shows here too, and you can withdraw it.
 
 <img src="user-guide/attendance-family.png" width="210" alt="An athlete's own attendance and reported absences">
@@ -700,7 +701,8 @@ your child's marks, never other children's. If your child was marked absent and 
 ask their coach, or raise a concern if it worries you.
 
 Tap **Report an absence** to tell the coaches your child will be away, or was away: choose the first
-and last day and, if you like, a reason. It works the same as for athletes (see
+and last day, pick a reason such as **Holiday** or **Sick**, and add details if you like. It works
+the same as for athletes (see
 [Your attendance and absences](#your-attendance-and-absences)), and your child and their other
 parents or guardians see what you report. An absent session that matches a reported absence shows as
 **Absent, reported**. You stop seeing your child's attendance on their 18th birthday.
@@ -948,8 +950,8 @@ recorded and shown to the athlete, their parents or guardians and admins.
 3. Name the session. If a calendar event is on now (from an hour before it starts to 30 minutes
    after it ends), its name is filled in for you; other events from today are offered as chips.
 4. Mark each athlete **Present** or **Absent**, or tap **Mark the rest present**. Athletes whose
-   absence was reported for that day show **Away** under their name, with the reason if one was
-   given.
+   absence was reported for that day show **Away** under their name, with the reason and any
+   details.
 5. Tap **Save attendance**.
 
 If attendance was already taken for the same group in the last 3 hours, a warning shows who took
@@ -965,7 +967,9 @@ session.
 - **Athletes** shows each athlete's attendance over 4 weeks, 3 months or 12 months, with the last
   time they were there. Tap an athlete to see every session.
 - **Away in the next 4 weeks**, at the top, lists the absences athletes or their parents have
-  reported for the squads and teams you coach or manage (everyone's, for the committee and admins).
+  reported for the squads and teams you coach or manage (everyone's, for the committee and admins),
+  with the reason, such as **Holiday** or **Sick**, and any details. Absences reported before
+  reasons were added show only their details.
 
 <img src="user-guide/attendance-sessions.png" width="210" alt="Attendance sessions, with athletes away in the next 4 weeks">
 <img src="user-guide/attendance-session.png" width="210" alt="One attendance session">
@@ -1689,7 +1693,11 @@ everyone ever stood down, newest first, with the
   season, or **Choose dates** for a from and to date) and the **Squads and teams**: **All**,
   **Whole club events**, or any squads and teams. A squad includes the teams named from it. Each
   group lists its athletes with sessions present, absent and their attendance rate, followed by
-  every session with who took it.
+  every session with who took it. **Reported absences by reason** then counts the absences
+  athletes or their parents reported in the period by reason (**Holiday**, **Sick**, **Injured** and
+  so on): how many, for how many athletes, and the days away inside the period. For chosen squads
+  and teams it counts the athletes on their registers. It shows reasons only, never the details
+  people typed.
 - **Affiliation** (when Affiliation records are on): the club's affiliation details, the
   checklist with required items not done in red, an association's officers and when each
   completed the safeguarding induction, and every athlete, coach and manager's PlayHQ
@@ -1707,6 +1715,7 @@ addresses, so keep them somewhere only the committee can reach.
 <img src="user-guide/report-pdf.png" width="210" alt="The Working With Children Checks report saved as a PDF">
 <img src="user-guide/report-under-18s.png" width="210" alt="Under 18s and their guardians report">
 <img src="user-guide/report-attendance.png" width="210" alt="Attendance report for the 17 &amp; Under Squad over the last 4 weeks">
+<img src="user-guide/report-attendance-absences.png" width="210" alt="Reported absences by reason in the Attendance report">
 <img src="user-guide/report-award-results.png" width="210" alt="Full results of a closed match award">
 <img src="user-guide/report-affiliation.png" width="210" alt="The Affiliation report">
 
@@ -1976,7 +1985,7 @@ once saved, only replaced or removed, and anyone who gets it wrong five times in
 | Integrity training certificates | The member, their parents or guardians, the committee and admins. Coaches don't see them. Certificates can't be changed or removed once sent. |
 | Attendance records      | Coaches, the committee and admins. Managers see their own groups' sessions. An athlete sees their own marks, and their parents or guardians see them until the athlete turns 18; neither sees other athletes on the register. |
 | What's changed for a child | Their parents or guardians (until the child turns 18) and admins: adults joining or leaving the child's squads and teams, the child's own group changes, guardian links, consents and shared injury documents. A stand-down shows only as the adult leaving. |
-| Reported absences       | The athlete, their parents or guardians, the coaches and managers of the athlete's squads and teams, the committee and admins. Physios don't see them. |
+| Reported absences       | The athlete, their parents or guardians, the coaches and managers of the athlete's squads and teams, the committee and admins, with the reason and details. Physios don't see them. The Attendance report counts reasons only, never the details. |
 | Committee calendar      | Committee members and admins.                                                                                               |
 | Award votes             | Only the voter sees their own ballot. Nobody, admins included, can see who someone voted for.                               |
 | Award results           | Admins only: standings and how many people have voted, and once voting closes, how many votes each nominee got at each place. |
