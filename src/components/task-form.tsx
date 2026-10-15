@@ -1,10 +1,10 @@
 import { router } from 'expo-router';
 import { useEffect, useState } from 'react';
 
-import { DateField } from '@/components/date-field';
 import { Screen } from '@/components/screen';
 import { ThemedText } from '@/components/themed-text';
 import { Button, ConfirmDelete, ErrorText, TextField } from '@/components/ui';
+import { WeekDateField } from '@/components/week-date-field';
 import { deleteTask, loadTask, saveTask } from '@/lib/personal-tasks';
 
 /** Adds one of the member's own tasks, or changes or deletes one (`id`). */
@@ -79,18 +79,16 @@ export function TaskForm({ id = null }: { id?: string | null }) {
         returnKeyType="done"
         onSubmitEditing={save}
       />
-      <DateField
-        label="Due"
-        value={dueOn}
-        onChange={setDueOn}
-        optional
-        emptyLabel="No due date"
-        quickPicks={[
-          { label: 'Today', days: 0 },
-          { label: 'Tomorrow', days: 1 },
-          { label: 'In a week', days: 7 },
-        ]}
-      />
+      {/* Waits for the task, so the week opens on its due date. */}
+      {loading ? null : (
+        <WeekDateField
+          label="Due"
+          value={dueOn}
+          onChange={setDueOn}
+          emptyLabel="No due date"
+          clearLabel="Remove due date"
+        />
+      )}
       <ThemedText type="small" themeColor="textSecondary">
         Only you can see your tasks. Your coaches, parents or guardians and the club’s admins can’t,
         and they can’t be shared or sent to anyone.

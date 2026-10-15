@@ -288,8 +288,9 @@ Pull down on any screen to refresh it.
 You can add your own tasks to your to-do list, such as "Wash my training kit" or "Book a physio
 follow-up". They sit under what the club needs from you, marked **Personal**, soonest due first.
 
-- **Add one**: tap **+ Add a task** at the bottom of your to-do list, say what it is, pick a due
-  date or **No due date**, and tap **Add task**.
+- **Add one**: tap **+ Add a task** at the bottom of your to-do list and say what it is. To give
+  it a due date, tap a day in the week (the arrows move a week at a time); leave it for no due
+  date, or tap **Remove due date** to take one off. Then tap **Add task**.
 - **Tick it off**: tap the circle next to it. It leaves your list, and **Undo** puts it back if
   you tapped by mistake.
 - **Change or delete it**: tap the task, change it and tap **Save**, or tap **Delete task**.

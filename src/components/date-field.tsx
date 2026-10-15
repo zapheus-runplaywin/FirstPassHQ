@@ -17,7 +17,6 @@ export function DateField({
   quickPicks,
   max,
   optional = false,
-  emptyLabel = 'Not sure',
 }: {
   label: string;
   value: string | null;
@@ -25,8 +24,6 @@ export function DateField({
   quickPicks: { label: string; days: number }[];
   max?: string;
   optional?: boolean;
-  /** The choice that leaves an optional date unset. */
-  emptyLabel?: string;
 }) {
   const theme = useTheme();
   const today = toDateString(new Date());
@@ -44,11 +41,8 @@ export function DateField({
     return toDateString(date);
   }
 
-  const options = quickPicks.map((pick) => ({
-    value: fromToday(pick.days),
-    label: pick.label,
-  }));
-  if (optional) options.push({ value: '', label: emptyLabel });
+  const options = quickPicks.map((pick) => ({ value: fromToday(pick.days), label: pick.label }));
+  if (optional) options.push({ value: '', label: 'Not sure' });
 
   return (
     <View style={styles.field}>
@@ -56,11 +50,7 @@ export function DateField({
       <View style={[styles.row, { backgroundColor: theme.backgroundElement }]}>
         <Arrow label="Day before" symbol="‹" onPress={() => shift(-1)} />
         <ThemedText style={styles.value}>
-          {value
-            ? formatDateString(value)
-            : emptyLabel === 'Not sure'
-              ? 'Not sure yet'
-              : emptyLabel}
+          {value ? formatDateString(value) : 'Not sure yet'}
         </ThemedText>
         <Arrow
           label="Day after"
