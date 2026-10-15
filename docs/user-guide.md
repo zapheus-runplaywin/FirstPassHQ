@@ -88,6 +88,7 @@ What each role sees on its home screen:
 | Feature                                | Athlete |     Guardian    |    Coach     |  Manager   |   Committee   |     Physio    |  Guest  |     Admin     |
 | -------------------------------------- | :-----: | :-------------: | :----------: | :--------: | :-----------: | :-----------: | :-----: | :-----------: |
 | To-do list and calendar                |    ✓    |        ✓        |      ✓       |     ✓      |       ✓       |       ✓       |    ✓    |       ✓       |
+| Your own personal tasks                |    ✓    |        ✓        |      ✓       |     ✓      |       ✓       |       ✓       |    ✓    |       ✓       |
 | My squads and teams                    |    ✓    |        ✓        |      ✓       |     ✓      |  If in one    |       ✓       |    ✓    |   If in one   |
 | Read messages                          |    ✓    |        ✓        |      ✓       |     ✓      |       ✓       |       ✓*      |         |       ✓       |
 | Send messages                          | Captains† |                 |  Own groups  | Own groups |   Whole club  |               |         |     Anyone    |
@@ -268,7 +269,8 @@ Once you're approved, the home screen is where everything starts. From the top:
 - **To do**: things you need to do, such as your daily check-in, an award vote, integrity training
   due or an injury clearance to sign off.
   Tap an item to go straight to it. Each item disappears once it's done. When there's nothing,
-  it says "You're all caught up."
+  it says "You're all caught up." Your own [personal tasks](#your-own-tasks) come after the
+  club's items.
 - **Cards** for the features your role uses: Messages, Daily check-in, Check-ins,
   Injuries, Attendance, Awards, Integrity training and Administration. The Awards card shows while an award vote is open to you. A yellow number means something new or waiting for you.
 - **Coming up**: the next six events from your calendars. Tap **Full calendar** to see them all.
@@ -280,6 +282,29 @@ Once you're approved, the home screen is where everything starts. From the top:
 Pull down on any screen to refresh it.
 
 <img src="user-guide/home-athlete.png" width="210" alt="Athlete home screen">
+
+### Your own tasks
+
+You can add your own tasks to your to-do list, such as "Wash my training kit" or "Book a physio
+follow-up". They sit under what the club needs from you, marked **Personal**, soonest due first.
+
+- **Add one**: tap **+ Add a task** at the bottom of your to-do list, say what it is, pick a due
+  date or **No due date**, and tap **Add task**.
+- **Tick it off**: tap the circle next to it. It leaves your list, and **Undo** puts it back if
+  you tapped by mistake.
+- **Change or delete it**: tap the task, change it and tap **Save**, or tap **Delete task**.
+- **See them all**: tap **Your tasks** for everything still to do and the last 30 you ticked off.
+  Tap a ticked-off task's circle to put it back on your list, or **Delete done tasks** to clear
+  them.
+
+Only you can see your tasks. Your coaches, parents or guardians, the committee and the club's
+admins can't, and a task can't be shared, assigned or sent to anyone. Members under 18 can add
+tasks too, with the same privacy. You can have up to 100 tasks still to do. They're kept until you
+delete them or your account.
+
+<img src="user-guide/todo-personal.png" width="210" alt="To-do list with club items and personal tasks">
+<img src="user-guide/task-new.png" width="210" alt="Adding a personal task with a due date">
+<img src="user-guide/tasks-list.png" width="210" alt="Your tasks: to do and done">
 
 ### Your preferred name
 
@@ -452,7 +477,7 @@ shows each one and where it's up to: Received, Referred, Being looked into or Cl
 ### Deleting your account
 
 **Delete account** at the bottom of the home screen permanently deletes your account at the club
-you're in: your profile, your squad and team places, guardian links and your messages inbox. Messages you sent to
+you're in: your profile, your squad and team places, guardian links, your personal tasks and your messages inbox. Messages you sent to
 a group stay with the people who received them.
 
 The club keeps your injury records for 12 months after you leave, where only the committee and
@@ -1949,6 +1974,7 @@ once saved, only replaced or removed, and anyone who gets it wrong five times in
 | ----------------------- | --------------------------------------------------------------------------------------------------------------------------- |
 | Your profile and squads | You, the people in your squads and teams (names and positions only), and admins.                                            |
 | Preferred name and title | You and admins.                                                                                                            |
+| Your own personal tasks | Only you. Not your parents or guardians, coaches, the committee or admins. They can't be shared or sent to anyone. |
 | Captains                | Club captains: every member. A squad or team's captains: the people in it, and admins.                                     |
 | Date of birth, Working With Children Check and exemption | You and admins. Awards with an age limit use it to decide who can be voted for, without showing it.   |
 | Date of birth given at Join, and a child's parent or guardian email | You and admins. Admins also see who recorded your checked date of birth and when. |
@@ -2100,6 +2126,8 @@ Working With Children Check, and another admin must do it.
 
 - **Nobody can message you privately.** There are no direct messages and no replies. Messages go to
   whole squads, teams or roles, and your parents or guardians get a copy.
+- **Your own tasks are just for you.** Tasks you add to your to-do list are private reminders:
+  nobody else can see them, and they can't be shared, liked or sent to anyone.
 - **You're told who sees what you write**: on the check-in, on injury reports, on game goals and
   when you join. Your coaches see your check-ins and injuries once a parent or guardian agrees.
 - **You're told who your guardians are.** From 13, you get the same message as your parents when a

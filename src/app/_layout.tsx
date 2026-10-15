@@ -166,6 +166,9 @@ function RootStack() {
           <Stack.Screen name="concerns/index" options={{ title: 'Concerns' }} />
           <Stack.Screen name="concerns/[id]" options={{ title: 'Concern' }} />
           <Stack.Screen name="concerns/report" options={{ title: 'Concerns register' }} />
+          <Stack.Screen name="tasks/index" options={{ title: 'Your tasks' }} />
+          <Stack.Screen name="tasks/new" options={{ title: 'Add a task' }} />
+          <Stack.Screen name="tasks/[id]" options={{ title: 'Task' }} />
           <Stack.Screen name="my-details" options={{ title: 'Your details' }} />
           <Stack.Screen name="delete-account" options={{ title: 'Delete account' }} />
           <Stack.Protected guard={isAdmin}>

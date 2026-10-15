@@ -43,6 +43,7 @@ import {
 import { rejectionReasonMessages, rolesLabel, teamPositionLabel } from '@/lib/labels';
 import { supabase } from '@/lib/supabase';
 import { useNewConcerns } from '@/lib/concerns';
+import { usePersonalTasks } from '@/lib/personal-tasks';
 import { buildTodos } from '@/lib/todos';
 import type { ChildConsent } from '@/lib/consents';
 import {
@@ -88,6 +89,7 @@ export default function HomeScreen() {
   const { safetyTodos, reloadSafetyTodos } = useSafetyTodos();
   const { affiliationTodos, reloadAffiliationTodos } = useAffiliationTodos();
   const { conductTodos, reloadConductTodos } = useConductTodos();
+  const { personalTasks, reloadPersonalTasks, setTaskDone } = usePersonalTasks();
   const canSeeInjuries = useCanSeeInjuries();
   const canTakeAttendance = useCanTakeAttendance();
   const canViewAttendance = useCanViewAttendance();
@@ -177,6 +179,7 @@ export default function HomeScreen() {
       reloadSafetyTodos(),
       reloadAffiliationTodos(),
       reloadConductTodos(),
+      reloadPersonalTasks(),
       loadAthletes(),
       reloadEvents(),
       reloadUnread(),
@@ -245,7 +248,9 @@ export default function HomeScreen() {
 
         {approved ? <CommitteeCheckDue /> : null}
 
-        {approved ? <TodoList todos={todos} /> : null}
+        {approved ? (
+          <TodoList todos={todos} personalTasks={personalTasks} onToggleTask={setTaskDone} />
+        ) : null}
 
         {getsMessages && features.messages ? (
           <PressableCard onPress={() => router.push('/messages')}>
