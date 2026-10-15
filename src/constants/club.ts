@@ -23,7 +23,7 @@ export const FirstPass = {
   hqOnDark: require('@/assets/images/firstpass-hq-dark.png'),
   /** The FirstPass HQ logo, for white and other light backgrounds. */
   hqOnLight: require('@/assets/images/firstpass-hq-light.png'),
-  /** The splash screen image: the 1P mark in the middle of a square. */
+  /** The splash screen image: the 1P HQ mark in the middle of a square. */
   splash: require('@/assets/images/splash-logo.png'),
 } as const;
 
