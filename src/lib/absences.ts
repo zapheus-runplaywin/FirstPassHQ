@@ -1,8 +1,10 @@
 import { useFocusEffect } from 'expo-router';
 import { useCallback, useEffect, useState } from 'react';
 
-import { formatDateString, toDateString } from '@/lib/injuries';
+import { useClub } from '@/lib/club';
+import { formatDateString, toDateString, useCanSeeInjuries } from '@/lib/injuries';
 import { supabase } from '@/lib/supabase';
+import type { Injury } from '@/lib/types';
 
 /** A reason for an absence, from the club's list in Administration. */
 export type AbsenceReason = {
@@ -94,26 +96,61 @@ export function absenceOn<T extends { from_day: string; to_day: string }>(
   return absences.find((a) => a.from_day <= day && day <= a.to_day);
 }
 
+/** Such as "Injured, back Sat, Oct 24, 2026", for a register. */
+export function injuredLabel(expectedReturn: string | null) {
+  return expectedReturn ? `Injured, back ${formatDateString(expectedReturn)}` : 'Injured';
+}
+
+/** Whether an injury was current on a day ("2026-10-09"). */
+function injuredOnDay(
+  i: Pick<Injury, 'injured_on' | 'status' | 'cleared_at'>,
+  day: string,
+) {
+  return (
+    i.injured_on <= day &&
+    (i.status !== 'cleared' || !i.cleared_at || toDateString(new Date(i.cleared_at)) > day)
+  );
+}
+
 /**
- * Athletes reported away on the day of a session, as register notes by
- * profile id. `teamId` null is a club event; pass `enabled` false until a
- * group is chosen.
+ * Register notes by profile id for the day of a session: athletes reported
+ * away, and athletes injured that day. Injured athletes still come to support
+ * the team, so they are marked like anyone else. Injuries show only to those
+ * who can already see them (not managers, and not coaches of an under 18
+ * whose parents haven't given consent). `teamId` null is a club event; pass
+ * `enabled` false until a group is chosen.
  */
 export function useAwayNotes(teamId: string | null, heldAt: string | null, enabled = true) {
+  const { features } = useClub();
+  const canSeeInjuries = useCanSeeInjuries() && features.injuries;
   const [away, setAway] = useState<Record<string, string>>({});
   const day = heldAt ? toDateString(new Date(heldAt)) : null;
   useEffect(() => {
     if (!enabled || !day) return;
     let current = true;
-    supabase.rpc('absences_on', { p_team_id: teamId, p_day: day }).then(({ data }) => {
+    Promise.all([
+      supabase.rpc('absences_on', { p_team_id: teamId, p_day: day }),
+      canSeeInjuries
+        ? supabase.rpc('visible_injuries', { p_include_cleared: true })
+        : Promise.resolve({ data: [] }),
+    ]).then(([absences, injuries]) => {
       if (!current) return;
       const notes: Record<string, string> = {};
-      for (const a of (data as AbsenceOnDay[] | null) ?? []) notes[a.profile_id] = awayLabel(a);
+      for (const i of (injuries.data as Injury[] | null) ?? []) {
+        if (injuredOnDay(i, day) && !notes[i.athlete_id]) {
+          notes[i.athlete_id] = injuredLabel(i.expected_return);
+        }
+      }
+      for (const a of (absences.data as AbsenceOnDay[] | null) ?? []) {
+        notes[a.profile_id] = notes[a.profile_id]
+          ? `${notes[a.profile_id]} · ${awayLabel(a)}`
+          : awayLabel(a);
+      }
       setAway(notes);
     });
     return () => {
       current = false;
     };
-  }, [teamId, day, enabled]);
+  }, [teamId, day, enabled, canSeeInjuries]);
   return enabled ? away : {};
 }

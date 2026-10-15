@@ -537,10 +537,13 @@ read it. Tap **Remove** on your own comment to take it down.
 
 1. Tap **Injuries**, then **Report an injury**.
 2. Say where the injury is, what happened and when.
-3. Add any restrictions (for example "no jumping") and when you expect to be back, if you know.
+3. Add any restrictions (for example "no jumping") and choose when you expect to be back. A best
+   guess is fine; a physio update can change it.
 4. Tap **Report injury**.
 
-Your coaches and the committee can see it straight away.
+Your coaches and the committee can see it straight away. An injury isn't an absence: injured
+athletes are still expected at training to support the team. Until you're cleared, coaches see
+**Injured** and your expected return date next to your name when they take attendance.
 
 <img src="user-guide/injury-report-new.png" width="210" alt="Report an injury form">
 
@@ -549,7 +552,7 @@ Your coaches and the committee can see it straight away.
 Open the injury to see its details and history. While you're injured:
 
 - **Add physio update** records what the physio said, any change to restrictions or your expected
-  return date, and optionally a physio report (up to 10 MB). Adults can attach a PDF or a photo.
+  return date (which is required), and optionally a physio report (up to 10 MB). Adults can attach a PDF or a photo.
   If you're under 18, attach the letter or report as a PDF or a photo of the letter, and switch
   on **This is a photo of the letter** before sending a photo. Never send a photo of the injury
   itself (see [Injury documents and photos](#injury-documents-and-photos)).
@@ -953,7 +956,10 @@ recorded and shown to the athlete, their parents or guardians and admins.
    after it ends), its name is filled in for you; other events from today are offered as chips.
 4. Mark each athlete **Present** or **Absent**, or tap **Mark the rest present**. Athletes whose
    absence was reported for that day show **Away** under their name, with the reason and any
-   details.
+   details. Injured athletes show **Injured** and when they're expected back, if you can see their
+   injuries (managers don't, and nor do coaches of an athlete under 18 whose parents haven't given
+   consent for injuries). Injured athletes are still expected to come and support the team, so mark
+   them like anyone else.
 5. Tap **Save attendance**.
 
 If attendance was already taken for the same group in the last 3 hours, a warning shows who took
@@ -961,6 +967,7 @@ it, in case it's a duplicate. You can open that record, or carry on if it really
 session.
 
 <img src="user-guide/take-attendance.png" width="210" alt="Taking attendance">
+<img src="user-guide/take-attendance-notes.png" width="210" alt="The register with an injured athlete and two reported absences">
 
 ### Attendance records
 
@@ -1988,7 +1995,7 @@ once saved, only replaced or removed, and anyone who gets it wrong five times in
 | Messages                | The people they were sent to, the sender, and admins. Guardians of athletes under 18 get a copy of every message sent to their athlete, and of every message their athlete sends as a captain. Guests don't get messages; physios get messages sent to the Physio role and to their squads and teams, and whole-club messages only if an admin turns that on. |
 | Read receipts           | The sender and admins.                                                                                                      |
 | Daily check-in answers and notes | The athlete, their guardians and their coaches. For an athlete under 18, their coaches only once a parent or guardian consents. The committee, physios and admins see only group averages, hidden below 5 check-ins or when two groups differ by fewer than 5. |
-| Injuries and documents  | For an athlete under 18 whose parents haven't given consent for injuries: only the athlete, their guardians and admins. Otherwise the athlete, their guardians, their coaches, the physios who look after them (the Head Physio, physios in their squad or team, and physios in no squad or team), the committee and admins. Managers don't see injuries. Only the committee member or admin accepting a clearance can share its documents, while it waits for them; everyone else views them in the app. |
+| Injuries and documents  | For an athlete under 18 whose parents haven't given consent for injuries: only the athlete, their guardians and admins. Otherwise the athlete, their guardians, their coaches, the physios who look after them (the Head Physio, physios in their squad or team, and physios in no squad or team), the committee and admins. Managers don't see injuries. The attendance register shows **Injured** and the expected return date only to the same people. Only the committee member or admin accepting a clearance can share its documents, while it waits for them; everyone else views them in the app. |
 | Who opened injury documents | The athlete, their guardians and admins: every view and share, by whom, their role and when, and each photo consent. |
 | Who has viewed a child's records | For an athlete under 18: their verified parents or guardians (until the athlete turns 18) and admins. Lists every time someone other than the athlete or their guardians opened the athlete's injuries, injury documents, check-ins, game goals or member record. Opening a child's records is recorded whoever you are; nobody can switch it off or remove entries. |
 | Consents for a child    | The athlete, their parents or guardians and admins, with every consent given and withdrawn. Only a verified parent or guardian can give or withdraw one. |

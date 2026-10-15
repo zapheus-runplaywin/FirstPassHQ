@@ -324,6 +324,10 @@ function ActionForm({
       );
       return;
     }
+    if (action === 'update' && !expectedReturn) {
+      setError('Choose when they’re expected back.');
+      return;
+    }
     if (action === 'clearance' && !attachment) {
       setError('Attach proof of clearance, such as a letter from the physio.');
       return;
@@ -397,7 +401,6 @@ function ActionForm({
             value={expectedReturn}
             onChange={setExpectedReturn}
             quickPicks={returnQuickPicks}
-            optional
           />
         </>
       ) : null}
