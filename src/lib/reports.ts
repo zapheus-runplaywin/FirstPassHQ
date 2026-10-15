@@ -686,6 +686,49 @@ export type AttendanceSessionRow = {
 
 export type AttendanceMarkRow = { session_id: string; profile_id: string; present: boolean };
 
+/** A reported absence overlapping the report's period, without its details. */
+export type AbsenceReportRow = {
+  athlete_id: string;
+  from_day: string;
+  to_day: string;
+  category: string | null;
+  /** The reason's place in the club's list. */
+  category_order: number | null;
+};
+
+/** Days from "2026-10-01" to "2026-10-03", counting both: 3. */
+function daysBetween(from: string, to: string) {
+  return Math.round((Date.parse(to) - Date.parse(from)) / 86_400_000) + 1;
+}
+
+/**
+ * Reported absences by reason: how many, for how many athletes, and how many
+ * of their days fell in the period (from and to are "2026-10-01" days).
+ */
+export function absenceBreakdown(absences: AbsenceReportRow[], from: string, to: string) {
+  const kinds = new Map<string | null, { order: number; rows: AbsenceReportRow[] }>();
+  for (const a of absences) {
+    const kind = kinds.get(a.category) ?? {
+      order: a.category === null ? Infinity : (a.category_order ?? 0),
+      rows: [],
+    };
+    kind.rows.push(a);
+    kinds.set(a.category, kind);
+  }
+  return [...kinds.entries()]
+    .sort(([a, x], [b, y]) => x.order - y.order || (a ?? '').localeCompare(b ?? ''))
+    .map(([category, { rows }]) => ({
+      label: category ?? 'Not given (reported before reasons)',
+      absences: rows.length,
+      athletes: new Set(rows.map((a) => a.athlete_id)).size,
+      days: rows.reduce(
+        (sum, a) =>
+          sum + daysBetween(a.from_day > from ? a.from_day : from, a.to_day < to ? a.to_day : to),
+        0,
+      ),
+    }));
+}
+
 export function rateLabel(present: number, total: number) {
   return total === 0 ? '' : `${Math.round((present / total) * 100)}%`;
 }
@@ -696,6 +739,7 @@ export function attendanceReport(
   sessions: AttendanceSessionRow[],
   marks: AttendanceMarkRow[],
   names: Map<string, string>,
+  absences?: { rows: AbsenceReportRow[]; from: string; to: string },
 ): Report {
   const groupOf = (s: AttendanceSessionRow) => (s.club_wide ? 'Whole club' : s.team_name);
   const sessionById = new Map(sessions.map((s) => [s.id, s]));
@@ -728,6 +772,7 @@ export function attendanceReport(
       { label: 'Athletes', value: new Set(marks.map((m) => m.profile_id)).size },
       { label: 'Times present', value: present },
       { label: 'Attendance', value: rateLabel(present, marks.length) || '–' },
+      ...(absences ? [{ label: 'Reported absences', value: absences.rows.length }] : []),
     ],
     sections: [
       ...groups.map((group) => {
@@ -774,8 +819,27 @@ export function attendanceReport(
         rows: sessionRows,
         empty: 'No attendance taken in this period.',
       },
+      ...(absences
+        ? [
+            {
+              title: 'Reported absences by reason',
+              note: 'Absences athletes or their parents or guardians reported, overlapping this period',
+              columns: [
+                { label: 'Reason', width: 2 },
+                { label: 'Absences', width: 0.8 },
+                { label: 'Athletes', width: 0.8 },
+                { label: 'Days away', width: 0.8 },
+              ],
+              rows: absenceBreakdown(absences.rows, absences.from, absences.to).map((row) => ({
+                cells: [row.label, String(row.absences), String(row.athletes), String(row.days)],
+              })),
+              empty: 'No absences reported in this period.',
+            },
+          ]
+        : []),
     ],
-    footnote: 'Attendance is the share of marked sessions an athlete was present for.',
+    footnote:
+      'Attendance is the share of marked sessions an athlete was present for. Days away count only the days inside the period.',
   };
 }
 

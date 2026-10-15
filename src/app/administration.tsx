@@ -128,6 +128,15 @@ export default function AdministrationScreen() {
         </PressableCard>
       ) : null}
 
+      {features.attendance ? (
+        <PressableCard onPress={() => router.push('/admin/absence-reasons')}>
+          <ThemedText type="smallBold">Absence reasons</ThemedText>
+          <ThemedText type="small" themeColor="textSecondary">
+            The reasons members choose when they report an absence
+          </ThemedText>
+        </PressableCard>
+      ) : null}
+
       {features.injuries ? (
         <PressableCard onPress={() => router.push('/admin/injuries')}>
           <ThemedText type="smallBold">Injury report</ThemedText>

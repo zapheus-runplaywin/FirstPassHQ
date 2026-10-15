@@ -113,6 +113,7 @@ What each role sees on its home screen:
 | Preferred name                         |    ✓    |        ✓        |      ✓       |     ✓      |       ✓       |       ✓       |    ✓    |       ✓       |
 | Title, such as President               |         |                 |              |            |       ✓       |               |         |       ✓       |
 | Club name, colours, logo and features  |         |                 |              |            |               |               |         |       ✓       |
+| Absence reasons list                   |         |                 |              |            |               |               |         |       ✓       |
 | Invite members (QR code and link)      |         |                 |              |            |               |               |         |       ✓       |
 | Affiliation records (when turned on)   |         |                 |              |            |               |               |         |       ✓       |
 | Administration                         |         |                 |              |            |               |               |         |       ✓       |
@@ -536,10 +537,14 @@ read it. Tap **Remove** on your own comment to take it down.
 
 1. Tap **Injuries**, then **Report an injury**.
 2. Say where the injury is, what happened and when.
-3. Add any restrictions (for example "no jumping") and when you expect to be back, if you know.
+3. Add any restrictions (for example "no jumping") and choose when you expect to be back. A best
+   guess is fine; a physio update can change it.
 4. Tap **Report injury**.
 
-Your coaches and the committee can see it straight away.
+Your coaches and the committee can see it straight away. An injury isn't an absence: injured
+athletes are still expected at training to support the team. Until you're cleared, whoever takes
+attendance sees **Injured** and your expected return date next to your name, and nothing else about
+the injury.
 
 <img src="user-guide/injury-report-new.png" width="210" alt="Report an injury form">
 
@@ -548,7 +553,7 @@ Your coaches and the committee can see it straight away.
 Open the injury to see its details and history. While you're injured:
 
 - **Add physio update** records what the physio said, any change to restrictions or your expected
-  return date, and optionally a physio report (up to 10 MB). Adults can attach a PDF or a photo.
+  return date (which is required), and optionally a physio report (up to 10 MB). Adults can attach a PDF or a photo.
   If you're under 18, attach the letter or report as a PDF or a photo of the letter, and switch
   on **This is a photo of the letter** before sending a photo. Never send a photo of the injury
   itself (see [Injury documents and photos](#injury-documents-and-photos)).
@@ -609,11 +614,13 @@ parents or guardians get a copy of every message you send.
 whether you were marked **Present** or **Absent**, over 4 weeks, 3 months or 12 months. You see only
 your own marks, not anyone else's. If you're under 18, your parents or guardians see the same.
 
-If you'll be away, tap **Report an absence**, choose the first and last day, add a reason if you
-like, and tap **Report absence**. You can report up to 12 months ahead, or up to 14 days after if you
-forgot, for up to 3 months at a time. Your coaches and managers see it when they take attendance, so
-they know you're not missing without a reason. Leave medical details out of the reason; report an
-injury under **Injuries** instead. **Withdraw** takes an absence back if your plans change. An
+If you'll be away, tap **Report an absence**, choose the first and last day, pick a reason from your
+club's list (such as **Planned holidays**, **Personal illness**, **Caring duties** or **School or uni
+exam**), add details if you like, and tap **Report absence**. You can report up to 12 months ahead,
+or up to 14 days after if you forgot, for up to 3 months at a time. Your coaches and managers see it
+when they take attendance, so they know you're not missing without a reason. Leave medical details
+out of the details. An injury isn't an absence: report it under **Injuries**, and still come along
+to support the team. **Withdraw** takes an absence back if your plans change. An
 absence your parent or guardian reported shows here too, and you can withdraw it.
 
 <img src="user-guide/attendance-family.png" width="210" alt="An athlete's own attendance and reported absences">
@@ -652,7 +659,8 @@ kinds of information about your child:
 
 Until you give a consent, only your child, you and the club's admins see that information. Their
 coaches, physios and the committee don't see your child's check-ins or injuries at all, and only an
-admin can clear an injury. Links to the club's policies are on the same screen. Tap **Save**.
+admin can clear an injury. Whoever takes attendance still sees that your child is injured and when
+they're expected back, so they know to expect them at training, but nothing more. Links to the club's policies are on the same screen. Tap **Save**.
 
 You can change your mind at any time: switch a consent off and save. Every consent given and
 withdrawn is kept with who did it, when and the policy version, and listed under **History**. Any
@@ -700,7 +708,8 @@ your child's marks, never other children's. If your child was marked absent and 
 ask their coach, or raise a concern if it worries you.
 
 Tap **Report an absence** to tell the coaches your child will be away, or was away: choose the first
-and last day and, if you like, a reason. It works the same as for athletes (see
+and last day, pick a reason such as **Planned holidays** or **Personal illness**, and add details if you like. It works
+the same as for athletes (see
 [Your attendance and absences](#your-attendance-and-absences)), and your child and their other
 parents or guardians see what you report. An absent session that matches a reported absence shows as
 **Absent, reported**. You stop seeing your child's attendance on their 18th birthday.
@@ -948,8 +957,10 @@ recorded and shown to the athlete, their parents or guardians and admins.
 3. Name the session. If a calendar event is on now (from an hour before it starts to 30 minutes
    after it ends), its name is filled in for you; other events from today are offered as chips.
 4. Mark each athlete **Present** or **Absent**, or tap **Mark the rest present**. Athletes whose
-   absence was reported for that day show **Away** under their name, with the reason if one was
-   given.
+   absence was reported for that day show **Away** under their name, with the reason and any
+   details. Injured athletes show **Injured** and when they're expected back, and nothing else about the
+   injury. Injured athletes are still expected to come and support the team, so mark them like
+   anyone else.
 5. Tap **Save attendance**.
 
 If attendance was already taken for the same group in the last 3 hours, a warning shows who took
@@ -957,6 +968,7 @@ it, in case it's a duplicate. You can open that record, or carry on if it really
 session.
 
 <img src="user-guide/take-attendance.png" width="210" alt="Taking attendance">
+<img src="user-guide/take-attendance-notes.png" width="210" alt="The register with an injured athlete and two reported absences">
 
 ### Attendance records
 
@@ -965,7 +977,9 @@ session.
 - **Athletes** shows each athlete's attendance over 4 weeks, 3 months or 12 months, with the last
   time they were there. Tap an athlete to see every session.
 - **Away in the next 4 weeks**, at the top, lists the absences athletes or their parents have
-  reported for the squads and teams you coach or manage (everyone's, for the committee and admins).
+  reported for the squads and teams you coach or manage (everyone's, for the committee and admins),
+  with the reason, such as **Planned holidays** or **Personal illness**, and any details. Absences
+  reported before reasons were added show only their details.
 
 <img src="user-guide/attendance-sessions.png" width="210" alt="Attendance sessions, with athletes away in the next 4 weeks">
 <img src="user-guide/attendance-session.png" width="210" alt="One attendance session">
@@ -1588,6 +1602,19 @@ events in the app. **Edit name or link** and **Delete** change or remove one.
 
 <img src="user-guide/admin-calendars.png" width="210" alt="Calendars admin">
 
+### Absence reasons
+
+**Absence reasons** (when Attendance is on) is the list athletes and parents choose from when they
+report an absence. It starts with **Planned holidays**, **Personal illness**, **Caring duties**,
+**Planned event**, **National team**, **Volunteering**, **West Coast Fever**, **School or uni exam**,
+**Work commitment** and **Other**. Switch off any your club doesn't use, and add your own under **Add
+a reason**. Reasons can't be deleted, so an absence reported with a reason you later switch off keeps
+it. If every reason is off, members report absences without one. The **Attendance** report counts
+absences by these reasons (see [Reports](#reports)). Injuries aren't an absence reason: injured
+athletes are still expected at training, and their injury is recorded under **Injuries**.
+
+<img src="user-guide/admin-absence-reasons.png" width="210" alt="Absence reasons in Administration">
+
 ### Club captains
 
 **Club captains** in Administration lists the athletes in the current season's squads and teams.
@@ -1689,7 +1716,11 @@ everyone ever stood down, newest first, with the
   season, or **Choose dates** for a from and to date) and the **Squads and teams**: **All**,
   **Whole club events**, or any squads and teams. A squad includes the teams named from it. Each
   group lists its athletes with sessions present, absent and their attendance rate, followed by
-  every session with who took it.
+  every session with who took it. **Reported absences by reason** then counts the absences
+  athletes or their parents reported in the period by reason (**Planned holidays**, **Personal illness** and
+  so on): how many, for how many athletes, and the days away inside the period. For chosen squads
+  and teams it counts the athletes on their registers. It shows reasons only, never the details
+  people typed.
 - **Affiliation** (when Affiliation records are on): the club's affiliation details, the
   checklist with required items not done in red, an association's officers and when each
   completed the safeguarding induction, and every athlete, coach and manager's PlayHQ
@@ -1707,6 +1738,7 @@ addresses, so keep them somewhere only the committee can reach.
 <img src="user-guide/report-pdf.png" width="210" alt="The Working With Children Checks report saved as a PDF">
 <img src="user-guide/report-under-18s.png" width="210" alt="Under 18s and their guardians report">
 <img src="user-guide/report-attendance.png" width="210" alt="Attendance report for the 17 &amp; Under Squad over the last 4 weeks">
+<img src="user-guide/report-attendance-absences.png" width="210" alt="Reported absences by reason in the Attendance report">
 <img src="user-guide/report-award-results.png" width="210" alt="Full results of a closed match award">
 <img src="user-guide/report-affiliation.png" width="210" alt="The Affiliation report">
 
@@ -1964,7 +1996,7 @@ once saved, only replaced or removed, and anyone who gets it wrong five times in
 | Messages                | The people they were sent to, the sender, and admins. Guardians of athletes under 18 get a copy of every message sent to their athlete, and of every message their athlete sends as a captain. Guests don't get messages; physios get messages sent to the Physio role and to their squads and teams, and whole-club messages only if an admin turns that on. |
 | Read receipts           | The sender and admins.                                                                                                      |
 | Daily check-in answers and notes | The athlete, their guardians and their coaches. For an athlete under 18, their coaches only once a parent or guardian consents. The committee, physios and admins see only group averages, hidden below 5 check-ins or when two groups differ by fewer than 5. |
-| Injuries and documents  | For an athlete under 18 whose parents haven't given consent for injuries: only the athlete, their guardians and admins. Otherwise the athlete, their guardians, their coaches, the physios who look after them (the Head Physio, physios in their squad or team, and physios in no squad or team), the committee and admins. Managers don't see injuries. Only the committee member or admin accepting a clearance can share its documents, while it waits for them; everyone else views them in the app. |
+| Injuries and documents  | For an athlete under 18 whose parents haven't given consent for injuries: only the athlete, their guardians and admins. Otherwise the athlete, their guardians, their coaches, the physios who look after them (the Head Physio, physios in their squad or team, and physios in no squad or team), the committee and admins. Managers don't see injuries. Whoever takes attendance (coaches, managers, the committee and admins) sees only that an athlete is **Injured** and their expected return date, whatever the consent. Only the committee member or admin accepting a clearance can share its documents, while it waits for them; everyone else views them in the app. |
 | Who opened injury documents | The athlete, their guardians and admins: every view and share, by whom, their role and when, and each photo consent. |
 | Who has viewed a child's records | For an athlete under 18: their verified parents or guardians (until the athlete turns 18) and admins. Lists every time someone other than the athlete or their guardians opened the athlete's injuries, injury documents, check-ins, game goals or member record. Opening a child's records is recorded whoever you are; nobody can switch it off or remove entries. |
 | Consents for a child    | The athlete, their parents or guardians and admins, with every consent given and withdrawn. Only a verified parent or guardian can give or withdraw one. |
@@ -1976,7 +2008,8 @@ once saved, only replaced or removed, and anyone who gets it wrong five times in
 | Integrity training certificates | The member, their parents or guardians, the committee and admins. Coaches don't see them. Certificates can't be changed or removed once sent. |
 | Attendance records      | Coaches, the committee and admins. Managers see their own groups' sessions. An athlete sees their own marks, and their parents or guardians see them until the athlete turns 18; neither sees other athletes on the register. |
 | What's changed for a child | Their parents or guardians (until the child turns 18) and admins: adults joining or leaving the child's squads and teams, the child's own group changes, guardian links, consents and shared injury documents. A stand-down shows only as the adult leaving. |
-| Reported absences       | The athlete, their parents or guardians, the coaches and managers of the athlete's squads and teams, the committee and admins. Physios don't see them. |
+| Reported absences       | The athlete, their parents or guardians, the coaches and managers of the athlete's squads and teams, the committee and admins, with the reason and details. Physios don't see them. The Attendance report counts reasons only, never the details. |
+| Absence reasons         | Everyone signed in sees the list. Only admins switch reasons off or add them.                                                |
 | Committee calendar      | Committee members and admins.                                                                                               |
 | Award votes             | Only the voter sees their own ballot. Nobody, admins included, can see who someone voted for.                               |
 | Award results           | Admins only: standings and how many people have voted, and once voting closes, how many votes each nominee got at each place. |
@@ -2080,7 +2113,9 @@ Working With Children Check, and another admin must do it.
   (see [Your child's attendance](#your-childs-attendance)).
 - **Nothing is shared without your consent.** Your child's check-ins and injuries are seen by
   their coaches, physios and the committee only after you consent in the app (see [Giving
-  consent](#giving-consent)). You can withdraw it at any time, and every change is kept.
+  consent](#giving-consent)). The one exception is the attendance register: whoever takes
+  attendance sees that your child is injured and when they're expected back, and nothing else, so
+  they know to expect your child at training to support the team. You can withdraw it at any time, and every change is kept.
 - **You and your child agree how to behave.** If the club asks for it in the app, each season you
   go through the club's code of
   conduct with your child and accept it for both of you (see [The code of conduct for your

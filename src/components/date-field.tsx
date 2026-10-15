@@ -8,7 +8,8 @@ import { formatDateString, parseDateString, toDateString } from '@/lib/injuries'
 
 /**
  * Picks a calendar day with back and forward arrows, plus a few quick choices.
- * `value` is a "2026-10-07" style date, or null when `optional` and unset.
+ * `value` is a "2026-10-07" style date, or null when unset. `optional` adds a
+ * "Not sure" choice.
  */
 export function DateField({
   label,
@@ -50,7 +51,7 @@ export function DateField({
       <View style={[styles.row, { backgroundColor: theme.backgroundElement }]}>
         <Arrow label="Day before" symbol="‹" onPress={() => shift(-1)} />
         <ThemedText style={styles.value}>
-          {value ? formatDateString(value) : 'Not sure yet'}
+          {value ? formatDateString(value) : optional ? 'Not sure yet' : 'Choose a day'}
         </ThemedText>
         <Arrow
           label="Day after"

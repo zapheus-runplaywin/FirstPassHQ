@@ -50,6 +50,10 @@ export default function NewInjuryScreen() {
       setError('Say where the injury is and what happened.');
       return;
     }
+    if (!expectedReturn) {
+      setError('Choose when you expect to be back. A physio can change it later.');
+      return;
+    }
     setSaving(true);
     setError(null);
     const { data, error: saveError } = await supabase.rpc('report_injury', {
@@ -125,12 +129,15 @@ export default function NewInjuryScreen() {
         maxLength={1000}
       />
       <DateField
-        label="Expected back (optional)"
+        label="Expected back"
         value={expectedReturn}
         onChange={setExpectedReturn}
         quickPicks={returnQuickPicks}
-        optional
       />
+      <ThemedText type="small" themeColor="textSecondary">
+        A best guess is fine. Until cleared, the athlete shows as injured when attendance is taken,
+        and is still expected at training to support the team.
+      </ThemedText>
 
       <ThemedText type="small" themeColor="textSecondary">
         {profile && isMinor(profile.date_of_birth, profile.under_17)

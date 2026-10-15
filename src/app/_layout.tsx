@@ -196,6 +196,7 @@ function RootStack() {
             </Stack.Protected>
             <Stack.Protected guard={features.attendance}>
               <Stack.Screen name="admin/reports/attendance" options={{ title: 'Attendance report' }} />
+              <Stack.Screen name="admin/absence-reasons" options={{ title: 'Absence reasons' }} />
             </Stack.Protected>
             <Stack.Protected guard={features.awards}>
               <Stack.Screen name="admin/awards/index" options={{ title: 'Awards' }} />

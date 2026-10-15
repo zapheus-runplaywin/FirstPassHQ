@@ -45,7 +45,7 @@ export function AttendanceRegister({
               {mark.full_name ?? 'Unnamed athlete'}
             </ThemedText>
             {away[mark.profile_id] ? (
-              <ThemedText type="small" themeColor="textSecondary" numberOfLines={2}>
+              <ThemedText type="small" themeColor="textSecondary" numberOfLines={3}>
                 {away[mark.profile_id]}
               </ThemedText>
             ) : null}
