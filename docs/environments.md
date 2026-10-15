@@ -15,7 +15,9 @@ accounts).
 
 Database changes reach both automatically. When a pull request with a migration merges, the **Deploy
 migrations** workflow applies it to the test project first and then, only if that worked, to the
-live project. The data-loss check and the **Allow data loss** rule are the same for both.
+live project. The data-loss check is the same for both: a migration that can lose data goes ahead
+only when Matt's `data-loss-approved` label was on its pull request when it merged, or when Matt
+runs the workflow by hand with **Allow data loss** ticked.
 
 ## One-time setup
 
