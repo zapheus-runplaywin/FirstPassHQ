@@ -53,6 +53,14 @@ RULE: migrations must be safe to run on the production database and must never t
 - Migrations deploy automatically: `.github/workflows/deploy-migrations.yml` runs `supabase db push` after a merge to main. It and the pull request check run `scripts/check-migrations.py`, which stops anything that can lose data.
 - Only Matt gives permission for data loss: he adds the `data-loss-approved` label to the PR, then runs "Deploy migrations" by hand with "Allow data loss" ticked. Never add that label, tick that box, or weaken the check yourself.
 
+## Supabase CLI version
+
+RULE: always run the newest Supabase CLI release (Matt, 2026-10-15).
+
+- The workflows pin the CLI with `version:` on each `supabase/setup-cli` step (Deploy migrations, PlayHQ function, Purge expired injuries). When a newer release is out (the CLI prints "A new version of Supabase CLI is available", or check https://github.com/supabase/cli/releases), bump every pin to it in one pull request.
+- `scripts/deploy-migrations.sh` reads the JSON from `supabase db push --dry-run --output-format json`. Before bumping, run that dry run with the new version against a local Postgres and confirm it still lists `migrations`.
+- Update any local or session copy of the CLI to the same release before using it.
+
 ## No social media features for children
 
 RULE: the app is a club administration tool, not social media (see `docs/security/privacy-and-social-media-assessment-2026-10-13.md`). For members under 18 it must never have replies to messages or direct messages, feeds, profile pictures or browsable profiles, following or friends, likes or sharing, or posts visible outside their own squads and teams.
