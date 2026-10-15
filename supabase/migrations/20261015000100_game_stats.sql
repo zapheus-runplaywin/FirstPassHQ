@@ -74,39 +74,8 @@ revoke execute on function public.has_role(public.app_role) from public, anon;
 grant execute on function public.has_role(public.app_role) to authenticated;
 
 -- Statistician stacks with any other role (a manager, or an athlete helping
--- at a game they aren't playing in), like the rules before it. Only
--- Temporary helpers now refuse other roles here, as the app always has.
-create or replace function public.role_combination_problem(
-  p_roles public.app_role[],
-  p_date_of_birth date,
-  p_under_18 boolean
-)
-returns text
-language sql
-stable
-set search_path = ''
-as $$
-  select case
-    when 'partner' = any (p_roles)
-      then 'The Partner role has been removed. Use Guest instead.'
-    when 'guest' = any (p_roles) and cardinality(p_roles) > 1
-      then 'Guests can''t have another role'
-    when 'volunteer' = any (p_roles) and cardinality(p_roles) > 1
-      then 'Temporary helpers can''t have another role'
-    when 'admin' = any (p_roles) and 'athlete' = any (p_roles)
-      then 'Admins can''t also be athletes'
-    when 'athlete' = any (p_roles) and 'manager' = any (p_roles)
-      then 'Athletes can''t also be managers'
-    when 'athlete' = any (p_roles) and 'physio' = any (p_roles)
-      then 'Athletes can''t also be physios'
-    when 'athlete' = any (p_roles) and public.is_minor(p_date_of_birth, p_under_18)
-      and not p_roles <@ array['athlete', 'coach']::public.app_role[]
-      then 'Athletes under 18 can only also be a coach'
-    when 'guardian' = any (p_roles) and p_date_of_birth is not null
-      and public.is_minor(p_date_of_birth, false)
-      then 'Parents and guardians must be 18 or over'
-  end;
-$$;
+-- at a game they aren't playing in), so role_combination_problem is
+-- unchanged.
 
 -- ---------------------------------------------------------------------------
 -- Tables
