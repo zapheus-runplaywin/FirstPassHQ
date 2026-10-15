@@ -17,7 +17,7 @@ import {
 import { formatDate, isMinor } from '@/lib/age';
 import type { ConductStatus } from '@/lib/conduct';
 import type { ClubPolicies } from '@/lib/consents';
-import { formatDateString, toDateString } from '@/lib/injuries';
+import { formatDateString, injuryStatusLabels, toDateString } from '@/lib/injuries';
 import { rolesLabel } from '@/lib/labels';
 import type { Report, ReportRow, ReportSection } from '@/lib/pdf';
 import { hasRole, rolesOf } from '@/lib/roles';
@@ -35,6 +35,7 @@ import {
   wwccValidationLabels,
 } from '@/lib/safety';
 import type {
+  InjuryReportRow,
   Profile,
   SafeguardingContacts,
   ScreeningNotice,
@@ -1269,3 +1270,62 @@ export function affiliationReturn({
       'This return holds the club’s records and counts only. It names no member under 18 and has no details about any child. The primary contacts know their names and emails are shared.',
   };
 }
+
+// ---------------------------------------------------------------------------
+// Injuries
+// ---------------------------------------------------------------------------
+
+/** The admin injury report: injuries still open, then those cleared in the period. */
+export function injuryReport(rows: InjuryReportRow[], sinceDate: string): Report {
+  const columns = [
+    { label: 'Athlete', width: 1.3 },
+    { label: 'Injury', width: 1.3 },
+    { label: 'Injured on', width: 0.9 },
+    { label: 'Reported', width: 0.9 },
+    { label: 'Status', width: 1.2 },
+    { label: 'Restrictions', width: 1.8 },
+    { label: 'Expected back', width: 0.9 },
+    { label: 'Signed off by', width: 1.3 },
+  ];
+  const row = (r: InjuryReportRow): ReportRow => ({
+    cells: [
+      `${r.athlete_name ?? r.athlete_email ?? 'Unnamed member'}${r.athlete_left_at ? ' (left the club)' : ''}`,
+      r.body_area,
+      formatDate(r.injured_on),
+      formatDate(toDateString(new Date(r.reported_at))),
+      injuryStatusLabels[r.status],
+      r.restrictions ?? '',
+      formatDate(r.expected_return),
+      [
+        r.coach_endorsed_by_name ? `Endorsed: ${r.coach_endorsed_by_name}` : '',
+        r.cleared_by_name
+          ? `Cleared: ${r.cleared_by_name}${r.cleared_at ? `, ${formatDate(toDateString(new Date(r.cleared_at)))}` : ''}`
+          : '',
+      ]
+        .filter(Boolean)
+        .join('\n'),
+    ],
+  });
+  const byInjuredOn = (a: InjuryReportRow, b: InjuryReportRow) =>
+    b.injured_on.localeCompare(a.injured_on);
+  const open = rows.filter((r) => r.status !== 'cleared').sort(byInjuredOn);
+  const cleared = rows.filter((r) => r.status === 'cleared').sort(byInjuredOn);
+
+  return {
+    title: 'Injury report',
+    subtitle: `Injuries reported or cleared since ${formatDateString(sinceDate)}, and every injury not yet cleared`,
+    landscape: true,
+    stats: [
+      { label: 'Injuries', value: rows.length },
+      { label: 'Not cleared', value: open.length },
+      { label: 'Cleared', value: cleared.length },
+    ],
+    sections: [
+      { title: 'Not cleared', columns, rows: open.map(row), empty: 'No injuries waiting to be cleared.' },
+      { title: 'Cleared', columns, rows: cleared.map(row), empty: 'No injuries cleared in this period.' },
+    ],
+    footnote:
+      'Medical documents aren’t included. Open an injury in the app to see its updates and documents.',
+  };
+}
+

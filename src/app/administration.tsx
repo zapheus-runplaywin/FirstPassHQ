@@ -132,7 +132,7 @@ export default function AdministrationScreen() {
         <PressableCard onPress={() => router.push('/admin/injuries')}>
           <ThemedText type="smallBold">Injury report</ThemedText>
           <ThemedText type="small" themeColor="textSecondary">
-            Injuries and their status, with a CSV export
+            Injuries and their status, as a PDF or CSV
           </ThemedText>
         </PressableCard>
       ) : null}
