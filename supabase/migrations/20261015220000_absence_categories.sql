@@ -13,7 +13,8 @@
 -- recreated (no data is held in a function) because a function's columns
 -- can't be changed in place; each returns what it did before plus the
 -- reason's name, to the same people. absence_report gives admins the reasons
--- for the Attendance report.
+-- for the Attendance report. injured_on tells whoever takes attendance which
+-- athletes are injured and when they're expected back, without details.
 
 begin;
 
@@ -239,6 +240,42 @@ $$;
 
 revoke execute on function public.upcoming_absences() from public, anon;
 grant execute on function public.upcoming_absences() to authenticated;
+
+-- Athletes injured on a day, for the register of a squad or team (or every
+-- athlete, for a club event, p_team_id null), for whoever can take or see
+-- that group's attendance. Injured athletes still come to support the team,
+-- so this only says they're injured and when they're expected back (Matt,
+-- 2026-10-15: everyone taking attendance sees it). No other injury details.
+create or replace function public.injured_on(p_team_id uuid, p_day date)
+returns table (
+  profile_id uuid,
+  expected_return date
+)
+language sql
+stable
+security definer
+set search_path = ''
+as $$
+  select distinct on (i.athlete_id) i.athlete_id, i.expected_return
+  from public.injuries i
+  where i.athlete_left_at is null
+    and i.injured_on <= p_day
+    and (i.status <> 'cleared' or i.cleared_at is null or i.cleared_at::date > p_day)
+    and (
+      (p_team_id is null and public.is_attendance_taker() and public.is_club_athlete(i.athlete_id))
+      or (p_team_id is not null
+        and (public.can_take_attendance(p_team_id) or public.can_view_team_attendance(p_team_id)
+          or public.leads_group(p_team_id))
+        and exists (
+          select 1 from public.team_members tm
+          where tm.team_id = p_team_id and tm.profile_id = i.athlete_id and tm.team_role = 'athlete'
+        ))
+    )
+  order by i.athlete_id, i.injured_on desc, i.created_at desc;
+$$;
+
+revoke execute on function public.injured_on(uuid, date) from public, anon;
+grant execute on function public.injured_on(uuid, date) to authenticated;
 
 -- Absences overlapping a period, for the admins' Attendance report: who, when
 -- and which reason (with its place in the list), without the free-text details.

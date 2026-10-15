@@ -2,9 +2,8 @@ import { useFocusEffect } from 'expo-router';
 import { useCallback, useEffect, useState } from 'react';
 
 import { useClub } from '@/lib/club';
-import { formatDateString, toDateString, useCanSeeInjuries } from '@/lib/injuries';
+import { formatDateString, toDateString } from '@/lib/injuries';
 import { supabase } from '@/lib/supabase';
-import type { Injury } from '@/lib/types';
 
 /** A reason for an absence, from the club's list in Administration. */
 export type AbsenceReason = {
@@ -75,6 +74,9 @@ export type AbsenceOnDay = {
   reported_by_name: string | null;
 };
 
+/** An athlete injured on the day of a session. */
+type InjuredOnDay = { profile_id: string; expected_return: string | null };
+
 /** Such as "Fri 9 Oct", or "Fri 9 Oct to Sun 11 Oct". */
 export function absenceDays(a: { from_day: string; to_day: string }) {
   return a.from_day === a.to_day
@@ -101,28 +103,17 @@ export function injuredLabel(expectedReturn: string | null) {
   return expectedReturn ? `Injured, back ${formatDateString(expectedReturn)}` : 'Injured';
 }
 
-/** Whether an injury was current on a day ("2026-10-09"). */
-function injuredOnDay(
-  i: Pick<Injury, 'injured_on' | 'status' | 'cleared_at'>,
-  day: string,
-) {
-  return (
-    i.injured_on <= day &&
-    (i.status !== 'cleared' || !i.cleared_at || toDateString(new Date(i.cleared_at)) > day)
-  );
-}
-
 /**
  * Register notes by profile id for the day of a session: athletes reported
  * away, and athletes injured that day. Injured athletes still come to support
- * the team, so they are marked like anyone else. Injuries show only to those
- * who can already see them (not managers, and not coaches of an under 18
- * whose parents haven't given consent). `teamId` null is a club event; pass
- * `enabled` false until a group is chosen.
+ * the team, so they are marked like anyone else; everyone taking attendance
+ * sees that they're injured and when they're expected back, never the injury
+ * itself. `teamId` null is a club event; pass `enabled` false until a group
+ * is chosen.
  */
 export function useAwayNotes(teamId: string | null, heldAt: string | null, enabled = true) {
   const { features } = useClub();
-  const canSeeInjuries = useCanSeeInjuries() && features.injuries;
+  const injuries = features.injuries;
   const [away, setAway] = useState<Record<string, string>>({});
   const day = heldAt ? toDateString(new Date(heldAt)) : null;
   useEffect(() => {
@@ -130,16 +121,14 @@ export function useAwayNotes(teamId: string | null, heldAt: string | null, enabl
     let current = true;
     Promise.all([
       supabase.rpc('absences_on', { p_team_id: teamId, p_day: day }),
-      canSeeInjuries
-        ? supabase.rpc('visible_injuries', { p_include_cleared: true })
+      injuries
+        ? supabase.rpc('injured_on', { p_team_id: teamId, p_day: day })
         : Promise.resolve({ data: [] }),
-    ]).then(([absences, injuries]) => {
+    ]).then(([absences, injured]) => {
       if (!current) return;
       const notes: Record<string, string> = {};
-      for (const i of (injuries.data as Injury[] | null) ?? []) {
-        if (injuredOnDay(i, day) && !notes[i.athlete_id]) {
-          notes[i.athlete_id] = injuredLabel(i.expected_return);
-        }
+      for (const i of (injured.data as InjuredOnDay[] | null) ?? []) {
+        notes[i.profile_id] = injuredLabel(i.expected_return);
       }
       for (const a of (absences.data as AbsenceOnDay[] | null) ?? []) {
         notes[a.profile_id] = notes[a.profile_id]
@@ -151,6 +140,6 @@ export function useAwayNotes(teamId: string | null, heldAt: string | null, enabl
     return () => {
       current = false;
     };
-  }, [teamId, day, enabled, canSeeInjuries]);
+  }, [teamId, day, enabled, injuries]);
   return enabled ? away : {};
 }

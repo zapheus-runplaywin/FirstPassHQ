@@ -542,8 +542,9 @@ read it. Tap **Remove** on your own comment to take it down.
 4. Tap **Report injury**.
 
 Your coaches and the committee can see it straight away. An injury isn't an absence: injured
-athletes are still expected at training to support the team. Until you're cleared, coaches see
-**Injured** and your expected return date next to your name when they take attendance.
+athletes are still expected at training to support the team. Until you're cleared, whoever takes
+attendance sees **Injured** and your expected return date next to your name, and nothing else about
+the injury.
 
 <img src="user-guide/injury-report-new.png" width="210" alt="Report an injury form">
 
@@ -658,7 +659,8 @@ kinds of information about your child:
 
 Until you give a consent, only your child, you and the club's admins see that information. Their
 coaches, physios and the committee don't see your child's check-ins or injuries at all, and only an
-admin can clear an injury. Links to the club's policies are on the same screen. Tap **Save**.
+admin can clear an injury. Whoever takes attendance still sees that your child is injured and when
+they're expected back, so they know to expect them at training, but nothing more. Links to the club's policies are on the same screen. Tap **Save**.
 
 You can change your mind at any time: switch a consent off and save. Every consent given and
 withdrawn is kept with who did it, when and the policy version, and listed under **History**. Any
@@ -956,10 +958,9 @@ recorded and shown to the athlete, their parents or guardians and admins.
    after it ends), its name is filled in for you; other events from today are offered as chips.
 4. Mark each athlete **Present** or **Absent**, or tap **Mark the rest present**. Athletes whose
    absence was reported for that day show **Away** under their name, with the reason and any
-   details. Injured athletes show **Injured** and when they're expected back, if you can see their
-   injuries (managers don't, and nor do coaches of an athlete under 18 whose parents haven't given
-   consent for injuries). Injured athletes are still expected to come and support the team, so mark
-   them like anyone else.
+   details. Injured athletes show **Injured** and when they're expected back, and nothing else about the
+   injury. Injured athletes are still expected to come and support the team, so mark them like
+   anyone else.
 5. Tap **Save attendance**.
 
 If attendance was already taken for the same group in the last 3 hours, a warning shows who took
@@ -1995,7 +1996,7 @@ once saved, only replaced or removed, and anyone who gets it wrong five times in
 | Messages                | The people they were sent to, the sender, and admins. Guardians of athletes under 18 get a copy of every message sent to their athlete, and of every message their athlete sends as a captain. Guests don't get messages; physios get messages sent to the Physio role and to their squads and teams, and whole-club messages only if an admin turns that on. |
 | Read receipts           | The sender and admins.                                                                                                      |
 | Daily check-in answers and notes | The athlete, their guardians and their coaches. For an athlete under 18, their coaches only once a parent or guardian consents. The committee, physios and admins see only group averages, hidden below 5 check-ins or when two groups differ by fewer than 5. |
-| Injuries and documents  | For an athlete under 18 whose parents haven't given consent for injuries: only the athlete, their guardians and admins. Otherwise the athlete, their guardians, their coaches, the physios who look after them (the Head Physio, physios in their squad or team, and physios in no squad or team), the committee and admins. Managers don't see injuries. The attendance register shows **Injured** and the expected return date only to the same people. Only the committee member or admin accepting a clearance can share its documents, while it waits for them; everyone else views them in the app. |
+| Injuries and documents  | For an athlete under 18 whose parents haven't given consent for injuries: only the athlete, their guardians and admins. Otherwise the athlete, their guardians, their coaches, the physios who look after them (the Head Physio, physios in their squad or team, and physios in no squad or team), the committee and admins. Managers don't see injuries. Whoever takes attendance (coaches, managers, the committee and admins) sees only that an athlete is **Injured** and their expected return date, whatever the consent. Only the committee member or admin accepting a clearance can share its documents, while it waits for them; everyone else views them in the app. |
 | Who opened injury documents | The athlete, their guardians and admins: every view and share, by whom, their role and when, and each photo consent. |
 | Who has viewed a child's records | For an athlete under 18: their verified parents or guardians (until the athlete turns 18) and admins. Lists every time someone other than the athlete or their guardians opened the athlete's injuries, injury documents, check-ins, game goals or member record. Opening a child's records is recorded whoever you are; nobody can switch it off or remove entries. |
 | Consents for a child    | The athlete, their parents or guardians and admins, with every consent given and withdrawn. Only a verified parent or guardian can give or withdraw one. |
@@ -2112,7 +2113,9 @@ Working With Children Check, and another admin must do it.
   (see [Your child's attendance](#your-childs-attendance)).
 - **Nothing is shared without your consent.** Your child's check-ins and injuries are seen by
   their coaches, physios and the committee only after you consent in the app (see [Giving
-  consent](#giving-consent)). You can withdraw it at any time, and every change is kept.
+  consent](#giving-consent)). The one exception is the attendance register: whoever takes
+  attendance sees that your child is injured and when they're expected back, and nothing else, so
+  they know to expect your child at training to support the team. You can withdraw it at any time, and every change is kept.
 - **You and your child agree how to behave.** If the club asks for it in the app, each season you
   go through the club's code of
   conduct with your child and accept it for both of you (see [The code of conduct for your

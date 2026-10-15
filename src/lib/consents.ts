@@ -41,7 +41,7 @@ export const consentText: Record<ConsentKind, { title: string; detail: string }>
   health: {
     title: 'Injuries and health information',
     detail:
-      'Their injuries, restrictions, physio updates and the letters or reports you attach are seen by their coaches, the physios who look after them and the committee, who sign off clearances. Without this, none of them see your child’s injuries and nobody but an admin can clear them to play.',
+      'Their injuries, restrictions, physio updates and the letters or reports you attach are seen by their coaches, the physios who look after them and the committee, who sign off clearances. Without this, none of them see your child’s injuries and nobody but an admin can clear them to play. Either way, whoever takes attendance sees that your child is injured and when they’re expected back, and nothing more.',
   },
 };
 
