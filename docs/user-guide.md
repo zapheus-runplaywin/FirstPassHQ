@@ -104,6 +104,7 @@ What each role sees on its home screen:
 | Accept the code of conduct each season (if the club asks) | Own§ | Own, and their athlete's | Own | Own | Own | Own | | Own, see who has |
 | Take attendance                        |         |                 |      ✓       |     ✓      |       ✓       |               |         |       ✓       |
 | See athletes' attendance history       |         |                 |      ✓       |            |       ✓       |               |         |       ✓       |
+| Session plans                          | Read shared |  Read their athlete's shared | Add, share, read shared |            |               |               |         | Add, read all, report |
 | Vote in club awards                    |    ✓    |        ✓        |      ✓       |     ✓      |       ✓       |               |         |       ✓       |
 | Set up awards and see results          |         |                 |              |            |               |               |         |       ✓       |
 | Season KPIs (when turned on)           |   Own   |  See athlete's  | Own; set for own athletes, and assistants if head coach | Own | Set for coaches and managers |  |  | Set for coaches and managers, read athletes', set review dates |
@@ -147,8 +148,8 @@ Temporary helpers see none of these. They aren't necessarily club members, and t
 only to complete onboarding: their home screen shows only the steps to be cleared to help, and
 **Raise a concern** (see [Temporary helpers](#temporary-helpers)).
 
-Admins can turn off Messages, Calendar, Daily check-ins, Injuries, Attendance, Awards, Game goals
-and Integrity training for the whole club in **Club settings**. A feature that's off disappears for every role.
+Admins can turn off Messages, Calendar, Daily check-ins, Injuries, Attendance, Session plans,
+Awards, Game goals and Integrity training for the whole club in **Club settings**. A feature that's off disappears for every role.
 **Season KPIs** and **Affiliation records** work the other way: they're off unless an admin turns
 them on. Season KPIs are for a club that sets its coaches, managers and athletes measures for the
 season (see [Season KPIs](#season-kpis)); Affiliation records are for a club or association that
@@ -711,6 +712,16 @@ absence your parent or guardian reported shows here too, and you can withdraw it
 <img src="user-guide/attendance-family.png" width="210" alt="An athlete's own attendance and reported absences">
 <img src="user-guide/report-absence.png" width="210" alt="Reporting an absence">
 
+### Session plans from your coaches
+
+When a coach shares a session plan with your squad or team, **Session plans** shows on your home
+screen, with a number for plans you haven't opened yet, and your phone gets a notification when a
+plan is first shared with you. Each plan shows the session, the day, who
+wrote it, and any photos or files, such as a drills sheet. Plans are read only: nobody can reply to
+them or react to them. If you're under 18, your parents or guardians can read the same plans.
+
+<img src="user-guide/session-plans-athlete.png" width="210" alt="Session plans shared with an athlete">
+
 <div style="page-break-before: always"></div>
 
 ## 5. Parents and guardians
@@ -800,6 +811,13 @@ parents or guardians see what you report. An absent session that matches a repor
 **Absent, reported**. You stop seeing your child's attendance on their 18th birthday.
 
 <img src="user-guide/records-home.png" width="210" alt="Attendance, What's changed and Who has viewed their records on a parent's home screen">
+
+### Your child's session plans
+
+When a coach shares a session plan with your child's squad or team, you can read it too, under
+**Session plans** on your home screen, until your child turns 18, and you get a notification when
+one is first shared. You see the same plans your
+child does, and nobody can reply to them.
 
 ### Your child's season KPIs
 
@@ -1110,6 +1128,47 @@ session.
 <img src="user-guide/attendance-session.png" width="210" alt="One attendance session">
 <img src="user-guide/attendance-athletes.png" width="210" alt="Athletes' attendance percentages">
 <img src="user-guide/attendance-athlete.png" width="210" alt="One athlete's attendance">
+
+### Session plans
+
+Keep a plan for each session, before or after it, so the club has a record of what was coached.
+Head coaches and assistant coaches can both add plans, for the squads and teams they coach.
+
+1. Tap **Session plans** on your home screen, then **Add a session plan**.
+2. Choose the squad or team.
+3. To save typing, tap a session under **Fill in from the calendar**: it fills in the name, day,
+   times and place from your squad or team's calendar (sessions in the two weeks either side of
+   today). The plan keeps what was filled in: if the calendar changes later, the plan doesn't, so
+   change it yourself if you need to. You can also type everything in.
+4. Write the plan under **Plan**, and add up to 5 photos or files, 10 MB each: **Choose photos**
+   from your phone's photos, **Take a photo** (for example of a whiteboard), or **Attach a PDF or
+   Word document**. Take photos of the plan, not of athletes. A plan needs writing or at least one
+   photo or file.
+5. Choose who to share it with: **The other coaches of this squad or team** (ticked to start),
+   **Its athletes** (parents and guardians of athletes under 18 see it too), and any **Coaches of
+   other squads and teams** by name.
+6. Tap **Save session plan**.
+
+**Session plans** has two tabs: **My plans**, the plans you added, and **Shared with me**, plans
+other coaches and admins shared with you, marked **New** until you open them. When a plan is first
+shared with someone, their phone gets a notification saying who shared it, the session's name, its
+squad or team and its day, if they've allowed the app's notifications; tapping it opens the plan.
+Changing a plan later sends nothing, and nor does sharing it again with someone who was already
+told.
+
+Open a plan to read it and its photos and files. Photos and PDFs open in the app; Word documents
+open in your phone's viewer. On your own plans, **Change this plan** lets you edit anything, share
+it differently or remove a photo or file; the plan then shows when it was last changed and by
+whom. **Use again for another session** starts a new plan copied from this one, files included,
+for today. You can't delete a plan: ask an admin if one was added by mistake.
+
+<img src="user-guide/session-plans-home.png" width="210" alt="Session plans on a coach's home screen, with one new shared plan">
+<img src="user-guide/session-plans-mine.png" width="210" alt="My plans">
+<img src="user-guide/session-plans-shared.png" width="210" alt="Plans shared with a coach">
+<img src="user-guide/session-plan-new.png" width="210" alt="Adding a session plan, with sessions from the calendar">
+<img src="user-guide/session-plan-share.png" width="210" alt="Photos and files, and who to share a plan with">
+<img src="user-guide/session-plan.png" width="210" alt="A session plan">
+<img src="user-guide/session-plan-files.png" width="210" alt="A session plan's files and who it's shared with">
 
 <div style="page-break-before: always"></div>
 
@@ -1833,6 +1892,17 @@ OneDrive or attach to an email. It's also listed under **Reports**.
 
 <img src="user-guide/injury-report.png" width="210" alt="Injury report">
 
+### Session plans for admins
+
+Admins can add a session plan for any squad or team, for example for a conditioning session the
+club's strength and conditioning partner runs. It works like a coach's plan (see
+[Session plans](#session-plans)), with a **Run by** field for whoever ran the session. The plan
+shows that an admin added it. Admins can open every plan, from the
+[Session plans report](#reports), and **Delete this plan** removes a plan and its photos and files
+for everyone, for example one added by mistake. It can't be undone.
+
+<img src="user-guide/session-plan-admin.png" width="210" alt="An admin adding a conditioning session plan with Run by">
+
 ### Reports
 
 **Reports** in Administration has governance and compliance reports. Each one shows on screen
@@ -1879,6 +1949,13 @@ everyone ever stood down, newest first, with the
   checklist with required items not done in red, an association's officers and when each
   completed the safeguarding induction, and every athlete, coach and manager's PlayHQ
   registration this season, not registered and still to check first.
+- **Session plans** (when Session plans are on): pick the **Period** (last 3 months to start, last
+  4 weeks, this season or **Choose dates**) and the **Squads and teams**. **By squad or team** shows
+  how many plans each has, on how many days, and its latest session, with groups that have none in
+  red. **Every plan** lists each plan by day with its squad or team, session, who added it and
+  their position (head coach, assistant coach or admin), who ran it, whether it holds writing or
+  files (empty plans in red), and when it was added and last changed. The plans themselves aren't
+  in the report: tap one under **Open a plan** to read it. Plans aren't matched against the calendar.
 - **Season KPIs** (when Season KPIs are on): pick the season. Each squad and team lists its coaches
   and managers with each KPI or OKR, who set it, where each measure is up to against its target, the
   result and each review (written, confirmed or overdue). Anyone with no KPIs, or a review overdue,
@@ -1899,6 +1976,7 @@ addresses, so keep them somewhere only the committee can reach.
 <img src="user-guide/report-attendance-absences.png" width="210" alt="Reported absences by reason in the Attendance report">
 <img src="user-guide/report-award-results.png" width="210" alt="Full results of a closed match award">
 <img src="user-guide/report-affiliation.png" width="210" alt="The Affiliation report">
+<img src="user-guide/report-session-plans.png" width="210" alt="The Session plans report">
 <img src="user-guide/report-kpis.png" width="210" alt="The Season KPIs report">
 
 ### Club settings
@@ -1921,7 +1999,7 @@ so leave them filled in.
   how they look together and warns when text or buttons would be hard to read. **Use the built-in
   colours** goes back to deep navy, white and blaze orange.
 - **Features**: switch off any of Messages, Calendar, Daily check-ins, Injuries, Attendance,
-  Awards, Game goals and Integrity training. A switched-off feature disappears from every member's home screen, to-do list and menus,
+  Session plans, Awards, Game goals and Integrity training. A switched-off feature disappears from every member's home screen, to-do list and menus,
   and its Administration pages are hidden. Nothing is deleted, so switching it back on brings
   everything back.
 - **Squads**: **Members join a squad first** is on unless the club switches it off. Switched off,
@@ -2030,7 +2108,8 @@ adults and children alike.
   are the club's own governance record and stay.
 - **Message text**: 2 years, or 1, 3, 5 or 10. Only the text goes; the message stays with who
   sent it, who it went to and who read it, so a complaint can still be traced.
-- **Attendance**, **Training certificates** (with their files) and **Who viewed a child's
+- **Attendance** (with session plans and their files, counted from the day of the session),
+  **Training certificates** (with their files) and **Who viewed a child's
   records**: 7 years, or 10, 15 or 20. These show who was with which children and who was screened
   or trained, so they can't be kept for less than 7 years.
 - **Injury documents**: the letters, reports and photos of a cleared injury go 90 days after it was
@@ -2174,6 +2253,7 @@ once saved, only replaced or removed, and anyone who gets it wrong five times in
 | Integrity training certificates | The member, their parents or guardians, the committee and admins. Coaches don't see them. Certificates can't be changed or removed once sent. |
 | Attendance records      | Coaches, the committee and admins. Managers see their own groups' sessions. An athlete sees their own marks, and their parents or guardians see them until the athlete turns 18; neither sees other athletes on the register. |
 | What's changed for a child | Their parents or guardians (until the child turns 18) and admins: adults joining or leaving the child's squads and teams, the child's own group changes, guardian links, consents and shared injury documents. A stand-down shows only as the adult leaving. |
+| Session plans           | The coach or admin who added the plan, and admins. The people the author shares it with: the other coaches of its squad or team, its athletes and the parents and guardians of those under 18, and coaches of other groups chosen by name. Read only: nobody can reply or react. Only the author and admins change it; only admins delete it. Managers, physios and the committee don't see plans unless they also coach. |
 | Reported absences       | The athlete, their parents or guardians, the coaches and managers of the athlete's squads and teams, the committee and admins, with the reason and details. Physios don't see them. The Attendance report counts reasons only, never the details. |
 | Absence reasons         | Everyone signed in sees the list. Only admins switch reasons off or add them.                                                |
 | Committee calendar      | Committee members and admins.                                                                                               |
@@ -2189,7 +2269,7 @@ once saved, only replaced or removed, and anyone who gets it wrong five times in
 
 When someone leaves, injury records and proof documents are kept for 12 months, visible only to the
 committee and admins, then deleted automatically. Once an admin switches on **Remove old records**,
-check-ins, game goals, athletes' season KPIs from archived seasons and message text go after 24 months, attendance, training certificates
+check-ins, game goals, athletes' season KPIs from archived seasons and message text go after 24 months, attendance, session plans, training certificates
 and record views after 7 years, and the files of a cleared injury 90 days after clearance or when
 its season is archived, unless the club chooses other periods (see
 [Keeping records](#keeping-records)). Concerns are never removed.
@@ -2275,6 +2355,8 @@ Working With Children Check, and another admin must do it.
   your child moving group, a guardian linked or unlinked, a consent changing or an injury document
   shared out of the app all show under **What's changed** (see
   [What's changed for your child](#whats-changed-for-your-child)).
+- **You read what the coaches share with your child.** Any session plan a coach shares with your
+  child's squad or team, you can read too (see [Your child's session plans](#your-childs-session-plans)).
 - **You can tell the club your child will be away**, so an absence you didn't report stands out
   (see [Your child's attendance](#your-childs-attendance)).
 - **Nothing is shared without your consent.** Your child's check-ins and injuries are seen by
@@ -2301,6 +2383,8 @@ Working With Children Check, and another admin must do it.
 
 - **Nobody can message you privately.** There are no direct messages and no replies. Messages go to
   whole squads, teams or roles, and your parents or guardians get a copy.
+- **Session plans are read only.** Plans your coaches share can't be replied to, liked or passed
+  on, and your parents or guardians can read them too.
 - **Your season KPIs stay with your coaches and your family.** If your coaches set you KPIs, only
   you, your coaches, your parents or guardians and the club's admins see them. Your teammates
   don't, and there's nothing to like or share.
@@ -2340,6 +2424,9 @@ Working With Children Check, and another admin must do it.
 - **The code of conduct, every season.** If the club asks for it in the app, every coach,
   manager, physio, committee member and admin accepts the club's code of conduct once a season, and the club can add Sport Integrity
   Australia's Child Safeguarding in Sport Induction to integrity training in one tap.
+- **A record of what was coached.** Session plans, written before or after each session, show
+  what each squad or team did and who ran it (see [Session plans](#session-plans)). Photos are of
+  the plan, not of athletes.
 - **Opening a child's records is recorded.** When you open an under 18's injuries, injury
   documents, check-ins, game goals or season KPIs, the app records it, and their parents and guardians can see
   who looked and when.
@@ -2406,6 +2493,8 @@ Working With Children Check, and another admin must do it.
   club, notices to report to the governing body, no WWC Registration Officer, athletes with no date
   of birth, athletes under 18 without a guardian, athletes turning 18, and old records kept
   forever while **Remove old records** is off.
+- **Session plans for every session.** The Session plans report shows which squads and teams have
+  a plan for which days, who added each one and who ran it, with groups that have none in red.
 - **Reports for your records.** The Working With Children Checks report follows the Screening
   Unit's record layout: every check with the name on the card, date of birth, card number, expiry
   and validation, plus every exemption, notice and stand-down. The under 18s report lists every child, their guardians and how often their records were viewed in the last 12 months. The concerns register
@@ -2426,7 +2515,7 @@ Working With Children Check, and another admin must do it.
   acceptance with who accepted it, the words and the policy version. A document can't be opened without the view being recorded first.
 - **Records are kept as long as they're needed, then removed.** Each club sets its keep periods
   and the app removes older records each night once the club switches it on. Concerns are never
-  removed; attendance, training certificates and record views are kept at least 7 years; a removed
+  removed; attendance, session plans, training certificates and record views are kept at least 7 years; a removed
   message keeps who sent it, who it went to and who read it. A child's injury letters and photos
   go soon after they're cleared (90 days, or at the end of the season), while the record that
   they were checked and who viewed them stays.

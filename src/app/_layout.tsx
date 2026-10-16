@@ -135,6 +135,12 @@ function RootStack() {
             <Stack.Screen name="attendance/family/[id]" options={{ title: 'Attendance' }} />
             <Stack.Screen name="attendance/absence" options={{ title: 'Report an absence' }} />
           </Stack.Protected>
+          <Stack.Protected guard={features.sessionPlans}>
+            <Stack.Screen name="session-plans/index" options={{ title: 'Session plans' }} />
+            <Stack.Screen name="session-plans/edit" options={{ title: 'Session plan' }} />
+            <Stack.Screen name="session-plans/[id]" options={{ title: 'Session plan' }} />
+            <Stack.Screen name="session-plans/file" options={{ title: 'File' }} />
+          </Stack.Protected>
           <Stack.Protected guard={features.checkIns}>
             <Stack.Screen name="check-in" options={{ title: 'Daily check-in' }} />
             <Stack.Screen name="check-ins/index" options={{ title: 'Check-ins' }} />
@@ -205,6 +211,12 @@ function RootStack() {
             <Stack.Protected guard={features.attendance}>
               <Stack.Screen name="admin/reports/attendance" options={{ title: 'Attendance report' }} />
               <Stack.Screen name="admin/absence-reasons" options={{ title: 'Absence reasons' }} />
+            </Stack.Protected>
+            <Stack.Protected guard={features.sessionPlans}>
+              <Stack.Screen
+                name="admin/reports/session-plans"
+                options={{ title: 'Session plans report' }}
+              />
             </Stack.Protected>
             <Stack.Protected guard={features.awards}>
               <Stack.Screen name="admin/awards/index" options={{ title: 'Awards' }} />

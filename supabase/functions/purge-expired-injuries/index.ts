@@ -21,6 +21,7 @@ import { createClient } from 'npm:@supabase/supabase-js@2';
 
 const BUCKET = 'injury-documents';
 const CERTIFICATES = 'training-certificates';
+const SESSION_PLANS = 'session-plans';
 // The storage API removes up to 1000 files per call.
 const BATCH = 500;
 
@@ -102,6 +103,20 @@ Deno.serve(async (request) => {
     if (error) return failed('removing certificates', error.message);
   }
 
+  // Session plan files past the attendance keep period go before their plans.
+  const { data: planPaths, error: planError } = await supabase.rpc('expired_session_plan_files');
+  // PGRST202: the migration adding session plans hasn't reached this project yet.
+  if (planError && planError.code !== 'PGRST202') {
+    return failed('listing expired session plan files', planError.message);
+  }
+  const planFiles = (planPaths ?? []) as string[];
+  for (let i = 0; i < planFiles.length; i += BATCH) {
+    const { error } = await supabase.storage
+      .from(SESSION_PLANS)
+      .remove(planFiles.slice(i, i + BATCH));
+    if (error) return failed('removing session plan files', error.message);
+  }
+
   const { data: records, error: recordsError } = await supabase.rpc('purge_expired_records');
   if (recordsError) return failed('removing old records', recordsError.message);
 
@@ -109,7 +124,7 @@ Deno.serve(async (request) => {
   console.log(`Purged ${names.length} document(s) and ${purged} injury record(s)`);
   console.log(`Removed ${cleared.length} cleared injury file(s); marked ${marked} document(s)`);
   console.log(
-    `Removed ${certificates.length} certificate file(s); old records: ${JSON.stringify(records)}`,
+    `Removed ${certificates.length} certificate file(s) and ${planFiles.length} session plan file(s); old records: ${JSON.stringify(records)}`,
   );
   return Response.json({ ok: true });
 });

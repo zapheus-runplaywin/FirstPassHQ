@@ -14,6 +14,11 @@ export const FEATURES = [
   { key: 'checkIns', label: 'Daily check-ins', detail: 'Athletes’ wellbeing check-ins and trends' },
   { key: 'injuries', label: 'Injuries', detail: 'Injury reports, medical documents and clearances' },
   { key: 'attendance', label: 'Attendance', detail: 'Coaches take attendance at sessions' },
+  {
+    key: 'sessionPlans',
+    label: 'Session plans',
+    detail: 'Coaches keep and share a plan for each training session',
+  },
   { key: 'awards', label: 'Awards', detail: 'Award votes and results' },
   { key: 'goals', label: 'Game goals', detail: 'Athletes’ goals and reflections for PlayHQ games' },
   {

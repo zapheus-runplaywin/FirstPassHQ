@@ -55,6 +55,15 @@ export default function ReportsScreen() {
         </PressableCard>
       ) : null}
 
+      {features.sessionPlans ? (
+        <PressableCard onPress={() => router.push('/admin/reports/session-plans')}>
+          <ThemedText type="smallBold">Session plans</ThemedText>
+          <ThemedText type="small" themeColor="textSecondary">
+            Which squads and teams have a session plan for which days, and who added it
+          </ThemedText>
+        </PressableCard>
+      ) : null}
+
       {features.awards ? (
         <PressableCard onPress={() => router.push('/admin/reports/awards')}>
           <ThemedText type="smallBold">Award results</ThemedText>
