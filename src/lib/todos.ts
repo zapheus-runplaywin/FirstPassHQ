@@ -39,6 +39,7 @@ export function buildTodos({
   certificatesToCheck = 0,
   declarationWaiting = false,
   newConcerns = 0,
+  absencesToReview = 0,
   consentsNeeded = [],
   conduct = [],
   affiliation = null,
@@ -71,6 +72,8 @@ export function buildTodos({
   declarationWaiting?: boolean;
   /** Concerns nobody has acted on yet, for the people who handle them. */
   newConcerns?: number;
+  /** Absences reported or withdrawn for the member's squads and teams since they last looked. */
+  absencesToReview?: number;
   /** A guardian's children under 18 still waiting for their consent. */
   consentsNeeded?: { id: string; name: string }[];
   /** Code of conduct acceptances still owed this season, for the member and their children. */
@@ -138,6 +141,15 @@ export function buildTodos({
       title: `Check in with ${flaggedAthletes} ${flaggedAthletes === 1 ? 'athlete' : 'athletes'}`,
       detail: 'They scored low on today’s check-in',
       href: '/check-ins',
+    });
+  }
+
+  if (absencesToReview > 0) {
+    todos.push({
+      key: 'absences-to-review',
+      title: `Review ${absencesToReview} new or changed ${absencesToReview === 1 ? 'absence' : 'absences'}`,
+      detail: 'Athletes in your squads and teams reported or withdrew an absence',
+      href: '/attendance',
     });
   }
 
