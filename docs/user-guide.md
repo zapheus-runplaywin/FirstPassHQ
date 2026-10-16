@@ -291,7 +291,7 @@ Once you're approved, the home screen is where everything starts. From the top:
   this when they're in a squad or team, for example as a coach too.
 - **Your details**, **Sign out**, **Switch club** and **Delete account** at the bottom.
 
-Pull down on any screen to refresh it.
+Pull down on the home screen, the calendar and most lists to refresh them.
 
 <img src="user-guide/home-athlete.png" width="210" alt="Athlete home screen">
 
@@ -722,8 +722,8 @@ absence your parent or guardian reported shows here too, and you can withdraw it
 ### Session plans from your coaches
 
 When a coach shares a session plan with your squad or team, **Session plans** shows on your home
-screen, with a number for plans you haven't opened yet, and your phone gets a notification when a
-plan is first shared with you. Each plan shows the session, the day, who
+screen, with a number for plans you haven't opened yet. Your phone doesn't get a notification for
+it: only admins' phones are set up for the app's notifications. Each plan shows the session, the day, who
 wrote it, and any photos or files, such as a drills sheet. Plans are read only: nobody can reply to
 them or react to them. If you're under 18, your parents or guardians can read the same plans.
 
@@ -760,9 +760,10 @@ kinds of information about your child:
   are seen by their coaches, the physios who look after them and the committee, who sign off
   clearances.
 
-Until you give a consent, only your child, you and the club's admins see that information. Their
-coaches, physios and the committee don't see your child's check-ins or injuries at all, and only an
-admin can clear an injury. Whoever takes attendance still sees that your child is injured and when
+Until you give a consent, only your child and you see their check-ins, and only your child, you
+and the club's admins see their injuries. Their coaches, physios and the committee don't see your
+child's check-ins or injuries at all, and an injury can't be cleared to play, because clearance
+starts with a coach or physio endorsing it. Whoever takes attendance still sees that your child is injured and when
 they're expected back, so they know to expect them at training, but nothing more. Links to the club's policies are on the same screen. Tap **Save**.
 
 You can change your mind at any time: switch a consent off and save. Every consent given and
@@ -822,8 +823,8 @@ parents or guardians see what you report. An absent session that matches a repor
 ### Your child's session plans
 
 When a coach shares a session plan with your child's squad or team, you can read it too, under
-**Session plans** on your home screen, until your child turns 18, and you get a notification when
-one is first shared. You see the same plans your
+**Session plans** on your home screen, until your child turns 18. There's no phone notification
+for it; look for the number on **Session plans**. You see the same plans your
 child does, and nobody can reply to them.
 
 ### Your child's season KPIs
@@ -898,8 +899,8 @@ Head coaches and assistant coaches have the same permissions. Everything below a
 squads and teams you're listed in as a coach.
 
 Coaches and managers need a current Working With Children Check, recorded by an admin, before
-they're approved. The check is looked at every time you use the app: on the day it expires, your
-coach or manager role pauses and your home screen says so. You keep your squad and team places, and
+they're approved. The check is looked at every time you use the app: once the expiry date has
+passed, your coach or manager role pauses and your home screen says so. You keep your squad and team places, and
 everything comes back as soon as an admin records the renewed check. Renew it well before it
 expires; admins are reminded 60 days ahead.
 
@@ -1031,7 +1032,8 @@ last played game.
 
 If the club uses [Season KPIs](#season-kpis), open **Season KPIs** on the home screen. Under each
 squad or team you coach are its athletes and, if you're its head coach, its assistant coaches. Head
-and assistant coaches can both set athletes' KPIs; only a head coach sets assistants'.
+and assistant coaches can both set athletes' KPIs. Of the coaches, only a head coach sets
+assistants'; the committee and admins can set them too.
 
 1. Tap a person, then **Add a KPI or OKR**.
 2. Choose **KPI: one measure** or **OKR: objective and key results**, and name it.
@@ -1064,7 +1066,8 @@ which counts for a set share of the result.
 
 **Injuries** lists your athletes' current injuries with their restrictions and expected return
 date. Choose **Including cleared** to see past injuries too. An athlete under 18's injuries show
-only once a parent or guardian has given consent for injuries; until then, an admin clears them.
+only once a parent or guardian has given consent for injuries; until then, nobody can endorse
+them for clearance.
 
 When one of your athletes asks for clearance, it appears under **Waiting for your sign-off** and in
 your to-do list. Open it, check the proof in the history (tap **View**), then:
@@ -1073,7 +1076,7 @@ your to-do list. Open it, check the proof in the history (tap **View**), then:
   on Tuesday", or
 - **Send back** with a note saying what's missing.
 
-If an athlete has no coach, a club physio endorses instead. Admins can't endorse a clearance unless
+A physio who looks after the athlete can endorse a clearance too. Admins can't endorse a clearance unless
 they're also the athlete's coach or a physio; they accept it like the committee. You can't endorse a
 clearance for your own child: another coach or a physio does it.
 
@@ -1158,10 +1161,11 @@ Head coaches and assistant coaches can both add plans, for the squads and teams 
 
 **Session plans** has two tabs: **My plans**, the plans you added, and **Shared with me**, plans
 other coaches and admins shared with you, marked **New** until you open them. When a plan is first
-shared with someone, their phone gets a notification saying who shared it, the session's name, its
+shared with an admin, their phone gets a notification saying who shared it, the session's name, its
 squad or team and its day, if they've allowed the app's notifications; tapping it opens the plan.
-Changing a plan later sends nothing, and nor does sharing it again with someone who was already
-told.
+Only admins' phones are set up for notifications, so coaches, athletes and parents don't get one;
+they see the plan marked **New**. Changing a plan later sends nothing, and nor does sharing it
+again with someone who was already told.
 
 Open a plan to read it and its photos and files. Photos and PDFs open in the app; Word documents
 open in your phone's viewer. On your own plans, **Change this plan** lets you edit anything, share
@@ -1321,7 +1325,7 @@ club messages** in [Club settings](#club-settings).
 
 Physios need a current Working With Children Check, recorded by an admin, before they're approved,
 or a [volunteer exemption](#volunteer-exemptions) if they volunteer unpaid at their child's club or
-are under 18. Like a coach's, the physio role pauses on the day the check expires and comes back when an admin
+are under 18. Like a coach's, the physio role pauses once the check's expiry date has passed and comes back when an admin
 records the renewed one.
 
 Some clubs have one physio, and some have a physio for each team. An admin can place a physio in
@@ -1397,7 +1401,8 @@ member, and doesn't replace the club's own membership or registration process.
 ## 10. Admins
 
 Admins can do everything above except endorse injury clearances (they accept them, like the
-committee, and endorse only if they're also a coach or physio), plus run the club's set-up from **Administration** on the home
+committee, and endorse only if they're also a coach or physio), read athletes' check-in answers or
+set their game goals (unless they also coach them), plus run the club's set-up from **Administration** on the home
 screen. Admins' to-do lists include join requests waiting for approval and clearances waiting for
 sign-off, plus child-safety follow-ups: athletes under 18 with no guardian linked, Working With
 Children Checks to sort out, volunteer exemptions that end within 60 days, and athletes turning
@@ -2260,7 +2265,7 @@ once saved, only replaced or removed, and anyone who gets it wrong five times in
 | Daily check-in answers and notes | The athlete, their guardians and their coaches. For an athlete under 18, their coaches only once a parent or guardian consents. The committee, physios and admins see only group averages, hidden below 5 check-ins or when two groups differ by fewer than 5. |
 | Injuries and documents  | For an athlete under 18 whose parents haven't given consent for injuries: only the athlete, their guardians and admins. Otherwise the athlete, their guardians, their coaches, the physios who look after them (the Head Physio and physios in their squad or team), the committee and admins. Managers don't see injuries. Whoever takes attendance (coaches, managers, the committee and admins) sees only that an athlete is **Injured** and their expected return date, whatever the consent. Only the committee member or admin accepting a clearance can share its documents, while it waits for them; everyone else views them in the app. |
 | Who opened injury documents | The athlete, their guardians and admins: every view and share, by whom, their role and when, and each photo consent. |
-| Who has viewed a child's records | For an athlete under 18: their verified parents or guardians (until the athlete turns 18) and admins. Lists every time someone other than the athlete or their guardians opened the athlete's injuries, injury documents, check-ins, game goals, season KPIs or member record. Opening a child's records is recorded whoever you are; nobody can switch it off or remove entries. |
+| Who has viewed a child's records | For an athlete under 18: their verified parents or guardians (until the athlete turns 18) and admins. Lists every time someone other than the athlete or their guardians opened the athlete's injuries, injury documents, check-ins, game goals, season KPIs or member record. Opening a child's records is recorded whoever you are; nobody can switch it off or delete entries by hand, and old entries are removed only under the club's Keeping records settings. |
 | Consents for a child    | The athlete, their parents or guardians and admins, with every consent given and withdrawn. Only a verified parent or guardian can give or withdraw one. |
 | Club policies           | Everyone signed in, including people asking to join.                                                                        |
 | Code of conduct acceptances | The member, their parents or guardians and admins: each season's acceptance, who accepted it, when, the words and the policy version. |
