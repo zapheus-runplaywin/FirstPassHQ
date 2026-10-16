@@ -470,6 +470,12 @@ When the club turns on **Season KPIs**, coaches, managers and athletes can be gi
 what they're working to achieve by the end of the season. They're different from game goals, which
 are about one game. Each belongs to one person in one squad or team for that season.
 
+**A development plan for assistant coaches.** Season KPIs are how a head coach works with each
+assistant coach on their coaching development: the head coach sets their KPIs or OKRs for the
+season, they record progress, and the two talk through each review. The committee and admins see
+every assistant coach's plan, its progress and its reviews, can add to it, and admins can save them
+all as a PDF for the board.
+
 - **Who sets them.** The committee and admins set them for the coaches and managers of any squad
   or team. A head coach sets them for the assistant coaches of their squad or team. The coaches of a
   squad or team set them for its athletes.
@@ -1049,6 +1055,10 @@ The person then confirms it was done. At the end of the season, pick each KPI's 
 **Save result**. Opening an athlete under 18's KPIs is recorded for their parents (see [Who has
 viewed your child's records](#who-has-viewed-your-childs-records)).
 
+If you're a head coach, your assistant coaches' KPIs and OKRs are their coaching development plan
+for the season: what they're working on as coaches, how they're tracking and your reviews with
+them. The committee and admins see these plans too.
+
 Your own KPIs, set by the committee or your head coach, are under **Yours**.
 
 <img src="user-guide/kpis-add.png" width="210" alt="Adding an OKR with two key results">
@@ -1302,7 +1312,8 @@ If the club uses [Season KPIs](#season-kpis), the committee sets the KPIs and OK
 and team's coaches and managers. Open **Season KPIs** on the home screen: each squad or team lists
 its coaches and managers. Tap one to add a KPI or OKR, follow their progress, write their reviews
 and record the results, the same way coaches do for athletes (see [Setting season
-KPIs](#setting-season-kpis)). You don't see athletes' KPIs. Admins can save every coach's and
+KPIs](#setting-season-kpis)). That includes each assistant coach's development plan set by their
+head coach: you see its KPIs, progress and reviews, and can add to it. You don't see athletes' KPIs. Admins can save every coach's and
 manager's KPIs as a PDF for the board (see [Reports](#reports)).
 
 <img src="user-guide/kpis-committee.png" width="210" alt="Season KPIs for a squad's coaches and manager">
