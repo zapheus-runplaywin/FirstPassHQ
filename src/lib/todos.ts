@@ -381,20 +381,38 @@ export function buildTodos({
         href: '/admin',
       });
     }
-    const wwcc = safety.wwcc_missing + safety.wwcc_expiring;
+    // One tile for every card problem. wwcc_people counts each member once;
+    // an older database without it falls back to adding up the counts.
+    const wwccParts = [
+      [safety.wwcc_missing ?? 0, 'missing or expired'],
+      [safety.wwcc_expiring ?? 0, 'expiring'],
+      [safety.wwcc_to_validate ?? 0, 'to validate'],
+      [safety.wwcc_to_link ?? 0, 'to register'],
+    ] as const;
+    const wwcc =
+      safety.wwcc_people ?? wwccParts.reduce((total, [count]) => total + count, 0);
     if (wwcc > 0) {
       todos.push({
         key: 'wwcc',
-        title: `Check ${plural(wwcc, 'Working With Children Check', 'Working With Children Checks')}`,
-        detail:
-          safety.wwcc_missing > 0
-            ? `${plural(safety.wwcc_missing, 'member who needs one has', 'members who need one have')} none recorded or it has expired`
-            : `Expiring in the next ${WWCC_WARNING_DAYS} days`,
+        title: `Sort out ${plural(wwcc, 'Working With Children Check', 'Working With Children Checks')}`,
+        detail: wwccParts
+          .filter(([count]) => count > 0)
+          .map(([count, label]) => `${count} ${label}`)
+          .join(', '),
         href: '/admin',
+        // Red when anyone's check is missing or expired, otherwise amber.
         alert:
-          safety.wwcc_missing > 0
+          (safety.wwcc_missing ?? 0) > 0
             ? { level: 'red', label: 'Missing' }
-            : { level: 'amber', label: 'Expiring' },
+            : {
+                level: 'amber',
+                label:
+                  (safety.wwcc_expiring ?? 0) > 0
+                    ? 'Expiring'
+                    : (safety.wwcc_to_validate ?? 0) > 0
+                      ? 'Validate'
+                      : 'Register',
+              },
       });
     }
     if (safety.notices_to_report > 0) {
@@ -403,24 +421,6 @@ export function buildTodos({
         title: `Tell the governing body about ${plural(safety.notices_to_report, 'Screening Unit notice', 'Screening Unit notices')}`,
         detail: 'In writing, then record the date on the member’s page',
         href: '/admin',
-      });
-    }
-    if (safety.wwcc_to_validate > 0) {
-      todos.push({
-        key: 'wwcc-validate',
-        title: `Validate ${plural(safety.wwcc_to_validate, 'Working With Children Check', 'Working With Children Checks')}`,
-        detail: 'Never validated, or last validated over a year ago',
-        href: '/admin',
-        alert: { level: 'amber', label: 'Validate' },
-      });
-    }
-    if (safety.wwcc_to_link > 0) {
-      todos.push({
-        key: 'wwcc-link',
-        title: `Register ${plural(safety.wwcc_to_link, 'card', 'cards')} with the club`,
-        detail: 'So the Screening Unit tells the club if a card’s status changes',
-        href: '/admin',
-        alert: { level: 'amber', label: 'Register' },
       });
     }
     if (safety.wwc_officer_missing > 0) {
