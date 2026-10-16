@@ -84,8 +84,11 @@ async function currentToken() {
 }
 
 function openFromNotification(response: Notifications.NotificationResponse) {
-  const memberId = response.notification.request.content.data?.memberId;
-  if (typeof memberId === 'string') {
-    router.push({ pathname: '/admin/[id]', params: { id: memberId } });
+  const data = response.notification.request.content.data;
+  if (typeof data?.memberId === 'string') {
+    router.push({ pathname: '/admin/[id]', params: { id: data.memberId } });
+  } else if (typeof data?.planId === 'string') {
+    // A session plan shared with the member for the first time.
+    router.push({ pathname: '/session-plans/[id]', params: { id: data.planId } });
   }
 }

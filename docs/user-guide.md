@@ -656,7 +656,8 @@ absence your parent or guardian reported shows here too, and you can withdraw it
 ### Session plans from your coaches
 
 When a coach shares a session plan with your squad or team, **Session plans** shows on your home
-screen, with a number for plans you haven't opened yet. Each plan shows the session, the day, who
+screen, with a number for plans you haven't opened yet, and your phone gets a notification when a
+plan is first shared with you. Each plan shows the session, the day, who
 wrote it, and any photos or files, such as a drills sheet. Plans are read only: nobody can reply to
 them or react to them. If you're under 18, your parents or guardians can read the same plans.
 
@@ -755,7 +756,8 @@ parents or guardians see what you report. An absent session that matches a repor
 ### Your child's session plans
 
 When a coach shares a session plan with your child's squad or team, you can read it too, under
-**Session plans** on your home screen, until your child turns 18. You see the same plans your
+**Session plans** on your home screen, until your child turns 18, and you get a notification when
+one is first shared. You see the same plans your
 child does, and nobody can reply to them.
 
 ### What's changed for your child
@@ -1049,8 +1051,11 @@ Head coaches and assistant coaches can both add plans, for the squads and teams 
 6. Tap **Save session plan**.
 
 **Session plans** has two tabs: **My plans**, the plans you added, and **Shared with me**, plans
-other coaches and admins shared with you, marked **New** until you open them. Nothing is sent when
-a plan is shared.
+other coaches and admins shared with you, marked **New** until you open them. When a plan is first
+shared with someone, their phone gets a notification saying who shared it, the session's name, its
+squad or team and its day, if they've allowed the app's notifications; tapping it opens the plan.
+Changing a plan later sends nothing, and nor does sharing it again with someone who was already
+told.
 
 Open a plan to read it and its photos and files. Photos and PDFs open in the app; Word documents
 open in your phone's viewer. On your own plans, **Change this plan** lets you edit anything, share

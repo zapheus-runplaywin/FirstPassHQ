@@ -328,6 +328,131 @@ create policy "Authors and admins remove session plan files"
   );
 
 -- ---------------------------------------------------------------------------
+-- Notifications
+-- ---------------------------------------------------------------------------
+
+-- Who has been told about a plan, so each person is told once: when it is
+-- first shared with them, not when it is changed later (Matt, 2026-10-16).
+create table if not exists public.session_plan_notices (
+  plan_id uuid not null references public.session_plans (id) on delete cascade,
+  profile_id uuid not null references public.profiles (id) on delete cascade,
+  notified_at timestamptz not null default now(),
+  primary key (plan_id, profile_id)
+);
+
+alter table public.session_plan_notices enable row level security;
+revoke all on table public.session_plan_notices from public, anon, authenticated;
+
+-- Everyone a plan is shared with right now, by the same rules as
+-- session_plan_shared_with_me(), leaving out its author.
+create or replace function public.session_plan_audience(p_plan_id uuid)
+returns setof uuid
+language sql
+stable
+security definer
+set search_path = ''
+as $$
+  with plan as (select * from public.session_plans where id = p_plan_id),
+  people as (
+    -- The other coaches of its squad or team, while they can work with children.
+    select tm.profile_id
+    from plan p
+    join public.team_members tm on tm.team_id = p.team_id and tm.team_role = 'coach'
+    join public.teams t on t.id = tm.team_id and not t.archived
+    join public.profiles c on c.id = tm.profile_id
+    where p.share_team_coaches and c.stood_down_at is null and public.is_cleared(c.id)
+    union
+    -- Its athletes.
+    select tm.profile_id
+    from plan p
+    join public.team_members tm on tm.team_id = p.team_id and tm.team_role = 'athlete'
+    join public.teams t on t.id = tm.team_id and not t.archived
+    where p.share_athletes
+    union
+    -- The parents and guardians of its athletes under 18.
+    select g.guardian_id
+    from plan p
+    join public.team_members tm on tm.team_id = p.team_id and tm.team_role = 'athlete'
+    join public.teams t on t.id = tm.team_id and not t.archived
+    join public.guardianships g on g.athlete_id = tm.profile_id
+    join public.profiles a on a.id = tm.profile_id
+    where p.share_athletes and public.is_minor(a.date_of_birth, a.under_17)
+    union
+    -- Coaches chosen by name, while they can work with children.
+    select s.profile_id
+    from public.session_plan_shares s
+    join public.profiles c on c.id = s.profile_id
+    where s.plan_id = p_plan_id and c.stood_down_at is null and public.is_cleared(c.id)
+  )
+  select pe.profile_id
+  from people pe
+  join public.profiles pr on pr.id = pe.profile_id
+  cross join plan p
+  where pr.id <> p.author_id
+    and pr.status = 'approved'
+    and pr.role <> 'volunteer';
+$$;
+revoke execute on function public.session_plan_audience(uuid) from public, anon, authenticated;
+
+-- Sends a push notification to each person a plan has just been shared with
+-- for the first time, on every phone they've registered. Changes to the plan,
+-- and people who were already told, send nothing. Returns how many people
+-- were told.
+create or replace function public.notify_session_plan_shared(p_plan_id uuid)
+returns int
+language plpgsql
+security definer
+set search_path = ''
+as $$
+declare
+  v_plan public.session_plans;
+  v_new uuid[];
+  v_messages jsonb;
+begin
+  select * into v_plan from public.session_plans where id = p_plan_id;
+  if not found then
+    return 0;
+  end if;
+
+  with added as (
+    insert into public.session_plan_notices (plan_id, profile_id)
+    select p_plan_id, a from public.session_plan_audience(p_plan_id) as a
+    on conflict do nothing
+    returning profile_id
+  )
+  select coalesce(array_agg(profile_id), '{}') into v_new from added;
+  if cardinality(v_new) = 0 then
+    return 0;
+  end if;
+
+  -- The lock screen shows only who shared it, the session's name and group.
+  select jsonb_agg(jsonb_build_object(
+    'to', t.token,
+    'title', 'New session plan',
+    'body', v_plan.author_name || ' shared ' || v_plan.title || ' ('
+      || v_plan.team_name || ', '
+      || to_char(v_plan.session_on, 'FMDy FMDD Mon') || ').',
+    'data', jsonb_build_object('planId', v_plan.id),
+    'sound', 'default'
+  ))
+  into v_messages
+  from public.push_tokens t
+  where t.profile_id = any (v_new);
+
+  if v_messages is not null then
+    -- Sent in the background once the transaction commits.
+    perform net.http_post(
+      url := 'https://exp.host/--/api/v2/push/send',
+      body := v_messages,
+      headers := '{"Content-Type": "application/json", "Accept": "application/json"}'::jsonb
+    );
+  end if;
+  return cardinality(v_new);
+end;
+$$;
+revoke execute on function public.notify_session_plan_shared(uuid) from public, anon, authenticated;
+
+-- ---------------------------------------------------------------------------
 -- Adding and changing plans
 -- ---------------------------------------------------------------------------
 
@@ -480,6 +605,9 @@ begin
   insert into public.session_plan_shares (plan_id, profile_id)
   select v_id, c.id from unnest(v_coach_ids) as c(id)
   on conflict do nothing;
+
+  -- Tells anyone it's now shared with for the first time.
+  perform public.notify_session_plan_shared(v_id);
 
   return v_id;
 end;
