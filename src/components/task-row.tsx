@@ -1,10 +1,12 @@
 import { router } from 'expo-router';
 import { Pressable, StyleSheet, View } from 'react-native';
 
+import { AlertBadge, AlertEdge, AlertIcon } from '@/components/todo-alert';
 import { ThemedText } from '@/components/themed-text';
 import { Spacing } from '@/constants/theme';
 import { useTheme } from '@/hooks/use-theme';
 import { taskDetail, type PersonalTask } from '@/lib/personal-tasks';
+import { dueAlert } from '@/lib/todos';
 
 /**
  * One of the member's own tasks: the circle ticks it off (or puts it back),
@@ -21,6 +23,8 @@ export function TaskRow({
 }) {
   const theme = useTheme();
   const done = !!task.done_at;
+  // Ticked-off tasks aren't late, however long ago they were due.
+  const alert = done ? null : dueAlert(task.due_on);
   return (
     <View
       style={[
@@ -30,6 +34,7 @@ export function TaskRow({
           borderTopColor: theme.backgroundSelected,
         },
       ]}>
+      <AlertEdge alert={alert} />
       <Pressable
         accessibilityRole="checkbox"
         accessibilityState={{ checked: done }}
@@ -56,15 +61,19 @@ export function TaskRow({
         onPress={() => router.push({ pathname: '/tasks/[id]', params: { id: task.id } })}
         style={({ pressed }) => [styles.body, pressed && { opacity: 0.6 }]}>
         <View style={styles.text}>
-          <ThemedText
-            type="smallBold"
-            style={done ? { textDecorationLine: 'line-through' } : undefined}>
-            {task.title}
-          </ThemedText>
+          <View style={styles.titleRow}>
+            <AlertIcon alert={alert} />
+            <ThemedText
+              type="smallBold"
+              style={[styles.title, done && { textDecorationLine: 'line-through' }]}>
+              {task.title}
+            </ThemedText>
+          </View>
           <ThemedText type="small" themeColor="textSecondary">
             {taskDetail(task)}
           </ThemedText>
         </View>
+        <AlertBadge alert={alert} />
         <ThemedText type="smallBold" style={{ color: theme.tint }}>
           ›
         </ThemedText>
@@ -104,5 +113,13 @@ const styles = StyleSheet.create({
   text: {
     flex: 1,
     gap: Spacing.half,
+  },
+  titleRow: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: Spacing.two,
+  },
+  title: {
+    flexShrink: 1,
   },
 });

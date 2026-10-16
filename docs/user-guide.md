@@ -277,6 +277,12 @@ Once you're approved, the home screen is where everything starts. From the top:
   Tap an item to go straight to it. Each item disappears once it's done. When there's nothing,
   it says "You're all caught up." Your own [personal tasks](#your-own-tasks) come after the
   club's items.
+  Anything overdue has a **red circle with !**, a red **Overdue** label and a red bar down its
+  left edge, and moves to the top of the list. Anything due today or in the next 3 days has an
+  **amber triangle with !**, an amber **Due soon** label and an amber bar, and comes next. This
+  covers every to-do with a due date: your own tasks, integrity training, KPI reviews, game goals
+  (due on game day) and an injury past its expected return date. For admins, Working With
+  Children Checks work the same way (see [Admins](#10-admins)).
 - **Cards** for the features your role uses: Messages, Daily check-in, Check-ins,
   Injuries, Attendance, Awards, Integrity training and Administration. The Awards card shows while an award vote is open to you. A yellow number means something new or waiting for you.
 - **Coming up**: the next six events from your calendars. Tap **Full calendar** to see them all.
@@ -293,6 +299,8 @@ Pull down on any screen to refresh it.
 
 You can add your own tasks to your to-do list, such as "Wash my training kit" or "Book a physio
 follow-up". They sit under what the club needs from you, marked **Personal**, soonest due first.
+A task that's overdue or due within 3 days gets the red or amber warning and moves up the list
+with the club's items (see [The home screen](#the-home-screen)).
 
 - **Add one**: tap **+ Add a task** at the bottom of your to-do list and say what it is. To give
   it a due date, tap a day in the week (the arrows move a week at a time); leave it for no due
@@ -309,7 +317,7 @@ admins can't, and a task can't be shared, assigned or sent to anyone. Members un
 tasks too, with the same privacy. You can have up to 100 tasks still to do. They're kept until you
 delete them or your account.
 
-<img src="user-guide/todo-personal.png" width="210" alt="To-do list with club items and personal tasks">
+<img src="user-guide/todo-personal.png" width="210" alt="To-do list with an overdue task in red at the top, tasks due soon in amber, then club items and other tasks">
 <img src="user-guide/task-new.png" width="210" alt="Adding a personal task with a due date">
 <img src="user-guide/tasks-list.png" width="210" alt="Your tasks: to do and done">
 
@@ -1395,7 +1403,11 @@ screen. Admins' to-do lists include join requests waiting for approval and clear
 sign-off, plus child-safety follow-ups: athletes under 18 with no guardian linked, Working With
 Children Checks that are missing, expired or expire within 60 days, volunteer exemptions that end
 within 60 days, and athletes turning 18 within 30 days. Tapping a child-safety to-do opens **Members**, where the people behind it are listed
-first under **Needs checking**. While **Remove old records** is off, the list also shows **Old
+first under **Needs checking**. Working With Children Check to-dos are marked like overdue
+to-dos: red (**Missing**) when someone who needs a check has none recorded or it has expired,
+amber when checks expire within 60 days (**Expiring**), need validating (**Validate**) or need
+registering with the club (**Register**). Red items go to the top of the list, amber ones next.
+While **Remove old records** is off, the list also shows **Old
 records are kept forever**, which opens Club settings so you can switch it on (see [Keeping
 records](#keeping-records)). When Affiliation records are on, the list also has affiliation
 items still to do, members to check in PlayHQ and a reminder when the yearly affiliation return
@@ -1408,7 +1420,7 @@ or an exemption with a reason that another admin records, like committee members
 
 <img src="user-guide/admin-home.png" width="210" alt="Admin home screen">
 <img src="user-guide/administration.png" width="210" alt="Administration menu">
-<img src="user-guide/admin-safety-todos.png" width="210" alt="Admin to-dos for guardians, Working With Children Checks, athletes turning 18 and old records kept forever">
+<img src="user-guide/admin-safety-todos.png" width="210" alt="Admin to-dos with missing Working With Children Checks in red at the top, checks to validate and register in amber, then guardians, athletes turning 18 and old records kept forever">
 
 ### Inviting members
 
@@ -2488,7 +2500,8 @@ Working With Children Check, and another admin must do it.
   and policy acceptance are recorded before an admin can approve them, and the Working With Children
   Checks report lists them all. The admin's member page links to the Act and the Screening Unit's
   fact sheets so exemptions can be checked at the source.
-- **Your to-do list does the chasing**: new concerns, missing or expiring checks, volunteer
+- **Your to-do list does the chasing**: new concerns, missing or expiring checks (missing or
+  expired checks in red at the top, checks to validate, register or renew in amber), volunteer
   exemptions ending, declarations not yet accepted, cards to validate or register with the
   club, notices to report to the governing body, no WWC Registration Officer, athletes with no date
   of birth, athletes under 18 without a guardian, athletes turning 18, and old records kept
