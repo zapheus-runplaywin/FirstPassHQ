@@ -11,7 +11,14 @@ import { Button, Card, ChipGroup, ErrorText, TextField } from '@/components/ui';
 import { ClubDefaults } from '@/constants/club';
 import { contrastRatio, isHexColour, makeColors, Spacing } from '@/constants/theme';
 import { useTheme } from '@/hooks/use-theme';
-import { defaultLogo, FEATURES, logoUrl, useClub, type FeatureKey } from '@/lib/club';
+import {
+  defaultLogo,
+  FEATURES,
+  logoUrl,
+  offByDefault,
+  useClub,
+  type FeatureKey,
+} from '@/lib/club';
 import { supabase } from '@/lib/supabase';
 
 const LOGO_TYPES = ['image/png', 'image/jpeg'];
@@ -147,9 +154,11 @@ export default function ClubSettingsScreen() {
       p_text_colour: textTone ? TONE_COLOURS[textTone] : '',
       p_hero_colour: colours.hero,
       p_logo_path: logoPath ?? '',
-      // Only switched-off features are stored, so new features start on.
+      // Only switches away from a feature's default are stored, so most new
+      // features start on and the few marked off by default start off.
       p_features: Object.fromEntries([
-        ...FEATURES.filter((f) => !features[f.key]).map((f) => [f.key, false]),
+        ...FEATURES.filter((f) => !offByDefault(f) && !features[f.key]).map((f) => [f.key, false]),
+        ...FEATURES.filter((f) => offByDefault(f) && features[f.key]).map((f) => [f.key, true]),
         ...(squads ? [] : [['squads', false]]),
         // Off unless turned on, so only an on switch is stored.
         ...(affiliation ? [['affiliation', true]] : []),

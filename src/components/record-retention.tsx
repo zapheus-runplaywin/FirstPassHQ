@@ -48,8 +48,8 @@ const periods: { key: PeriodKey; label: string; note: string; choices: number[] 
   { key: 'check_ins_months', label: 'Daily check-ins', note: 'From the day of the check-in.', choices: everyday },
   {
     key: 'goals_months',
-    label: 'Game goals and reflections',
-    note: 'From the game, with their comments and team goals.',
+    label: 'Game goals, reflections and athletes’ season KPIs',
+    note: 'Game goals from the game, with their comments and team goals. Athletes’ season KPIs and reviews from their last change, once their season is archived.',
     choices: everyday,
   },
   {

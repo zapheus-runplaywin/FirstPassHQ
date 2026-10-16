@@ -908,6 +908,8 @@ declare
   v_absences int := 0;
   v_certificates int := 0;
   v_access int := 0;
+  v_kpis int := 0;
+  v_kpi_reviews int := 0;
   v_plans int := 0;
 begin
   select * into s from public.club_settings where id;
@@ -930,6 +932,17 @@ begin
   where f.id = g.fixture_id
     and f.starts_at < now() - make_interval(months => s.retention_goals_months);
   get diagnostics v_team_goals = row_count;
+
+  delete from public.season_kpis k
+  using public.teams t
+  where t.id = k.team_id and t.archived and k.team_role = 'athlete'
+    and k.updated_at < now() - make_interval(months => s.retention_goals_months);
+  get diagnostics v_kpis = row_count;
+  delete from public.season_kpi_reviews r
+  using public.teams t
+  where t.id = r.team_id and t.archived and r.team_role = 'athlete'
+    and r.updated_at < now() - make_interval(months => s.retention_goals_months);
+  get diagnostics v_kpi_reviews = row_count;
 
   -- The message stays with who sent it, who it went to and who read it; only
   -- the text is replaced.
@@ -973,6 +986,8 @@ begin
     'check_ins', v_check_ins,
     'game_goals', v_goals,
     'team_goals', v_team_goals,
+    'season_kpis', v_kpis,
+    'season_kpi_reviews', v_kpi_reviews,
     'messages', v_messages,
     'attendance_sessions', v_attendance,
     'absences', v_absences,

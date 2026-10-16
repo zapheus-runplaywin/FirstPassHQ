@@ -155,6 +155,11 @@ function RootStack() {
             <Stack.Screen name="goals/game" options={{ title: 'Game goals' }} />
             <Stack.Screen name="goals/team" options={{ title: 'Team goals' }} />
           </Stack.Protected>
+          <Stack.Protected guard={features.kpis}>
+            <Stack.Screen name="kpis/index" options={{ title: 'Season KPIs' }} />
+            <Stack.Screen name="kpis/person" options={{ title: 'Season KPIs' }} />
+            <Stack.Screen name="kpis/edit" options={{ title: 'Add a KPI or OKR' }} />
+          </Stack.Protected>
           <Stack.Protected guard={features.integrity}>
             <Stack.Screen name="training/index" options={{ title: 'Integrity training' }} />
             <Stack.Screen name="training/submit" options={{ title: 'Add a certificate' }} />
@@ -227,6 +232,10 @@ function RootStack() {
                 name="admin/reports/integrity"
                 options={{ title: 'Integrity training report' }}
               />
+            </Stack.Protected>
+            <Stack.Protected guard={features.kpis}>
+              <Stack.Screen name="admin/reports/kpis" options={{ title: 'Season KPIs report' }} />
+              <Stack.Screen name="admin/kpi-reviews" options={{ title: 'Season KPI reviews' }} />
             </Stack.Protected>
             <Stack.Protected guard={affiliation}>
               <Stack.Screen name="admin/affiliation/index" options={{ title: 'Affiliation' }} />
