@@ -64,6 +64,15 @@ export default function ReportsScreen() {
         </PressableCard>
       ) : null}
 
+      {features.kpis ? (
+        <PressableCard onPress={() => router.push('/admin/reports/kpis')}>
+          <ThemedText type="smallBold">Season KPIs</ThemedText>
+          <ThemedText type="small" themeColor="textSecondary">
+            Coaches’ and managers’ KPIs and OKRs for a season, with progress, results and reviews
+          </ThemedText>
+        </PressableCard>
+      ) : null}
+
       {affiliation ? (
         <PressableCard onPress={() => router.push('/admin/reports/affiliation')}>
           <ThemedText type="smallBold">Affiliation</ThemedText>

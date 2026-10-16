@@ -106,6 +106,7 @@ What each role sees on its home screen:
 | See athletes' attendance history       |         |                 |      ✓       |            |       ✓       |               |         |       ✓       |
 | Vote in club awards                    |    ✓    |        ✓        |      ✓       |     ✓      |       ✓       |               |         |       ✓       |
 | Set up awards and see results          |         |                 |              |            |               |               |         |       ✓       |
+| Season KPIs (when turned on)           |   Own   |  See athlete's  | Own; set for own athletes, and assistants if head coach | Own | Set for coaches and managers |  |  | Set for coaches and managers, read athletes', set review dates |
 | Complete integrity training            |   Own   | Their athlete's |     Own      |    Own     |      Own      |      Own      |         |      Own      |
 | Check training certificates            |         |                 |              |            |       ✓       |               |         |       ✓       |
 | Set integrity training                 |         |                 |              |            |               |               |         |       ✓       |
@@ -148,8 +149,10 @@ only to complete onboarding: their home screen shows only the steps to be cleare
 
 Admins can turn off Messages, Calendar, Daily check-ins, Injuries, Attendance, Awards, Game goals
 and Integrity training for the whole club in **Club settings**. A feature that's off disappears for every role.
-**Affiliation records** work the other way: they're off unless an admin turns them on, for a club
-or association that reports to its association or Netball WA (see [Affiliation](#affiliation)).
+**Season KPIs** and **Affiliation records** work the other way: they're off unless an admin turns
+them on. Season KPIs are for a club that sets its coaches, managers and athletes measures for the
+season (see [Season KPIs](#season-kpis)); Affiliation records are for a club or association that
+reports to its association or Netball WA (see [Affiliation](#affiliation)).
 
 <div style="page-break-before: always"></div>
 
@@ -451,6 +454,51 @@ when they join.
 
 <img src="user-guide/conduct.png" width="210" alt="Accepting the code of conduct, with last season's acceptance below">
 
+### Season KPIs
+
+When the club turns on **Season KPIs**, coaches, managers and athletes can be given measures of
+what they're working to achieve by the end of the season. They're different from game goals, which
+are about one game. Each belongs to one person in one squad or team for that season.
+
+- **Who sets them.** The committee and admins set them for the coaches and managers of any squad
+  or team. A head coach sets them for the assistant coaches of their squad or team. The coaches of a
+  squad or team set them for its athletes.
+- **KPI or OKR.** Whoever sets one chooses each time. A **KPI** is one measure with a target, such as
+  "Squad attendance of 85%". An **OKR** is an objective, such as "Become a reliable goal shooter",
+  with up to 5 **key results** that show it's been achieved. Each measure is either **a number**
+  with a target and an optional unit and starting point (marked **Lower is better** for something
+  like turnovers), or **done or not done**. A person can have up to 10 KPIs and OKRs in a squad or
+  team.
+- **Progress.** The person and whoever can set their KPIs both record where each measure is up to
+  during the season: a number, or **Mark as done**. A bar shows how close it is to the target, and
+  the last update shows who made it and when.
+- **Results.** At the end of the season, whoever sets the KPIs records each one's **Result**:
+  **Met**, **Partly met** or **Not met**, with an optional note. The person can't record their own
+  result.
+- **Reviews.** An admin sets the season's review dates, such as a mid-season and an
+  end-of-season review (see [Season KPI reviews](#season-kpi-reviews)). From a week before each
+  date, whoever set a person's KPIs has **Write …'s KPI review** on their to-do list until they
+  write it. The person then has **Confirm your KPI review was done** on theirs, and taps **Confirm
+  this review was done** once you've talked it through. If the review is changed afterwards, they
+  confirm again. The person can also add **Your own view** at each review; whoever sets their KPIs
+  can remove it if it shouldn't be there.
+- **Past seasons.** When an admin archives a season, its KPIs, results and reviews stay, under
+  **Past seasons**, and can be read but not changed. KPIs don't carry over to the next season.
+
+Open **Season KPIs** on the home screen. **Yours** lists your own KPIs in each squad or team you're
+in; below are the people you set KPIs for, by squad or team, with how many results and reviews are
+in.
+
+Who sees them: an athlete's KPIs are seen by the athlete, their coaches, their parents or
+guardians if they're under 18, and admins. Teammates never see each other's, and the committee
+doesn't see athletes'. A coach's or manager's KPIs are seen by them, the committee and admins, and
+an assistant coach's by their head coach too. Athletes and parents never see coaches' or
+managers'.
+
+<img src="user-guide/kpis-coach.png" width="210" alt="Season KPIs: your own, and the athletes and assistant coaches you set them for">
+<img src="user-guide/kpis-athlete.png" width="210" alt="An athlete's OKR with progress towards each key result">
+<img src="user-guide/kpis-review.png" width="210" alt="A KPI review waiting for the athlete to confirm it was done">
+
 ### Raising a concern
 
 **Raise a concern**, at the bottom of the home screen, is for anyone signed in: athletes, parents,
@@ -558,6 +606,16 @@ read it. Tap **Remove** on your own comment to take it down.
 <img src="user-guide/goals-set.png" width="210" alt="Adding a goal for the next game">
 <img src="user-guide/goals-reflect.png" width="210" alt="Reflecting on goals after a game, with a coach's comment">
 <img src="user-guide/goals-team-comment.png" width="210" alt="An athlete commenting on a team goal">
+
+### Your season KPIs
+
+If the club uses [Season KPIs](#season-kpis), your coaches may set you KPIs or OKRs for the season
+in your squad or team. Open **Season KPIs** on the home screen and pick the squad or team under
+**Yours**. Type where you're up to on a number and tap **Save**, or tap **Mark as done**, as the
+season goes. At each review date, read what your coach wrote, tap **Confirm this review was done**,
+and add **Your own view** if you want to. Your coaches record the result at the end of the season.
+Your coaches see your KPIs and, if you're under 18, so do your parents or guardians. Your teammates
+can't.
 
 ### Reporting an injury
 
@@ -716,7 +774,7 @@ for yourself as well.
 
 Once you're verified, **Who has viewed their records** on your home screen lists each child under
 18. Open it to see everyone at the club who opened your child's injuries, injury documents,
-check-ins, game goals or member record in the app: their name, their role (coach, physio, admin,
+check-ins, game goals, season KPIs or member record in the app: their name, their role (coach, physio, admin,
 committee or safeguarding contact), what they opened and when, newest first. Sharing an injury
 document is listed too. Your child's own views and those of their parents and guardians aren't
 listed, and opening the same thing again within 30 minutes counts once. The list stops being
@@ -741,6 +799,14 @@ parents or guardians see what you report. An absent session that matches a repor
 **Absent, reported**. You stop seeing your child's attendance on their 18th birthday.
 
 <img src="user-guide/records-home.png" width="210" alt="Attendance, What's changed and Who has viewed their records on a parent's home screen">
+
+### Your child's season KPIs
+
+If the club uses [Season KPIs](#season-kpis), **Season KPIs** on your home screen lists your child
+under **Your children**, for each squad or team they have KPIs in. You can read their KPIs, their
+progress, the results and the reviews, including what your child wrote, but you can't change
+anything. Only your child confirms their reviews. Their teammates and the committee don't see
+them.
 
 ### What's changed for your child
 
@@ -788,7 +854,7 @@ As a guardian you:
 - **See what's changed around your athlete**: new adults in their groups, guardians, consents and
   shared documents (see [What's changed for your child](#whats-changed-for-your-child)).
 - **See who has viewed your athlete's records**: everyone who opened their injuries, check-ins,
-  game goals or member record (see [Who has viewed your child's records](#who-has-viewed-your-childs-records)).
+  game goals, season KPIs or member record (see [Who has viewed your child's records](#who-has-viewed-your-childs-records)).
 - **Complete integrity training** for your athlete: their training shows in your to-do list and
   on the **Integrity training** screen under their name, and you upload their certificates
   exactly as they would (see [Integrity training](#integrity-training)).
@@ -935,6 +1001,30 @@ last played game.
 <img src="user-guide/goals-team.png" width="210" alt="Setting team goals before a game">
 <img src="user-guide/goals-team-review.png" width="210" alt="Reviewing team goals after a game">
 
+### Setting season KPIs
+
+If the club uses [Season KPIs](#season-kpis), open **Season KPIs** on the home screen. Under each
+squad or team you coach are its athletes and, if you're its head coach, its assistant coaches. Head
+and assistant coaches can both set athletes' KPIs; only a head coach sets assistants'.
+
+1. Tap a person, then **Add a KPI or OKR**.
+2. Choose **KPI: one measure** or **OKR: objective and key results**, and name it.
+3. For each measure, choose **A number** (with a target, an optional unit such as % or sessions,
+   an optional starting point, and **Lower is better** if fewer is the aim) or **Done or not done**.
+   For an OKR, **Add a key result** for up to 5.
+4. Tap **Add KPI** or **Add OKR**. **Edit** changes it later; progress already recorded stays with
+   each measure you keep. **Remove** takes it away with its progress.
+
+During the season, you and the person record progress. At each review date the club sets, write
+your review under the review's name and tap **Save**; it's on your to-do list from a week before.
+The person then confirms it was done. At the end of the season, pick each KPI's **Result** and tap
+**Save result**. Opening an athlete under 18's KPIs is recorded for their parents (see [Who has
+viewed your child's records](#who-has-viewed-your-childs-records)).
+
+Your own KPIs, set by the committee or your head coach, are under **Yours**.
+
+<img src="user-guide/kpis-add.png" width="210" alt="Adding an OKR with two key results">
+
 ### Match awards
 
 Awards such as the coach's MVP can be voted on by coaches after every match. Each match your team
@@ -1022,6 +1112,8 @@ Managers look after the logistics of their squads and teams. As a manager you ca
   coaches (see [Sending messages](#sending-messages)).
 - **Take attendance** for your groups, a whole squad or the whole club, and see and correct your
   own groups' sessions (see [Taking attendance](#taking-attendance)).
+- **Work on your season KPIs**, if the club uses them: the committee sets them, and you record your
+  progress and confirm your reviews (see [Season KPIs](#season-kpis)).
 
 Managers see the absences reported for their groups, on the register and under **Away in the next 4
 weeks**. They don't see athletes' attendance histories, check-ins or injuries.
@@ -1122,6 +1214,17 @@ Committee members can take attendance for any whole squad or the whole club, and
 session and every athlete's attendance (see [Taking attendance](#taking-attendance)).
 
 <img src="user-guide/attendance-whole-club.png" width="210" alt="Taking whole-club attendance">
+
+### Season KPIs for coaches and managers
+
+If the club uses [Season KPIs](#season-kpis), the committee sets the KPIs and OKRs for every squad
+and team's coaches and managers. Open **Season KPIs** on the home screen: each squad or team lists
+its coaches and managers. Tap one to add a KPI or OKR, follow their progress, write their reviews
+and record the results, the same way coaches do for athletes (see [Setting season
+KPIs](#setting-season-kpis)). You don't see athletes' KPIs. Admins can save every coach's and
+manager's KPIs as a PDF for the board (see [Reports](#reports)).
+
+<img src="user-guide/kpis-committee.png" width="210" alt="Season KPIs for a squad's coaches and manager">
 
 ### Committee calendar
 
@@ -1359,7 +1462,7 @@ child's guardians, another admin has to change who their guardians are.
 
 **Who has viewed their records.** An approved athlete under 18's page has **Who has viewed their
 records**: everyone other than the athlete and their guardians who opened their injuries, injury
-documents, check-ins, game goals or member record, with their role and when, newest first. Opening
+documents, check-ins, game goals, season KPIs or member record, with their role and when, newest first. Opening
 a child's member page is itself recorded, so your own views are listed too. The child's verified
 parents and guardians see the same list from their home screen.
 
@@ -1694,6 +1797,20 @@ each copied course's squads and teams, then archive last season's courses once e
 <img src="user-guide/training-edit.png" width="210" alt="Adding a course with its link and due date">
 <img src="user-guide/training-edit-who.png" width="210" alt="Setting who must complete a course">
 
+### Season KPI reviews
+
+When Season KPIs are on, **Season KPI reviews** in Administration sets when each season's KPIs are
+reviewed. Pick the season, tap **Add a review date**, name it (such as "Mid-season review") and
+pick the date. Tap one to change it. A date can be removed only while no reviews have been written
+for it. From a week before each date, whoever set a person's KPIs gets a to-do to write their
+review, and the person then confirms it was done.
+
+Admins set KPIs for coaches and managers the same way the committee does (see [Season KPIs for
+coaches and managers](#season-kpis-for-coaches-and-managers)), and can read athletes' KPIs, which
+only their coaches change. Opening an under 18's KPIs is recorded for their parents.
+
+<img src="user-guide/admin-kpi-reviews.png" width="210" alt="Season KPI reviews: the season's review dates">
+
 ### Injury report
 
 **Injury report** lists injuries reported or cleared in the last few months (3 by default), plus
@@ -1751,6 +1868,10 @@ everyone ever stood down, newest first, with the
   checklist with required items not done in red, an association's officers and when each
   completed the safeguarding induction, and every athlete, coach and manager's PlayHQ
   registration this season, not registered and still to check first.
+- **Season KPIs** (when Season KPIs are on): pick the season. Each squad and team lists its coaches
+  and managers with each KPI or OKR, who set it, where each measure is up to against its target, the
+  result and each review (written, confirmed or overdue). Anyone with no KPIs, or a review overdue,
+  is in red. It prints across the page. Athletes' KPIs aren't in it.
 - **Award results** (when Awards are on): awards whose voting has closed. Open one for its full
   result: each squad or team's standings with points and how many 1st, 2nd and 3rd place votes
   (and so on) each nominee got, how many people voted, and for match awards the points from each
@@ -1767,6 +1888,7 @@ addresses, so keep them somewhere only the committee can reach.
 <img src="user-guide/report-attendance-absences.png" width="210" alt="Reported absences by reason in the Attendance report">
 <img src="user-guide/report-award-results.png" width="210" alt="Full results of a closed match award">
 <img src="user-guide/report-affiliation.png" width="210" alt="The Affiliation report">
+<img src="user-guide/report-kpis.png" width="210" alt="The Season KPIs report">
 
 ### Club settings
 
@@ -1797,6 +1919,9 @@ so leave them filled in.
   the teams. Squads the club already has stay until that season ends, and nobody is moved.
 - **Physios get club messages**: when on, messages sent to everyone in the club also go to
   physios. Physios always get messages sent to the Physio role. It starts off.
+- **Season KPIs**: off unless you turn it on. It adds **Season KPIs** to the home screen for the
+  committee, coaches, managers, athletes and parents, **Season KPI reviews** to Administration and
+  the **Season KPIs** report (see [Season KPIs](#season-kpis)).
 - **Affiliation records**: off unless you turn it on. For a club or association that reports to
   its association or Netball WA, it adds **Affiliation** to Administration and Reports (see
   [Affiliation](#affiliation)). Only admins see it.
@@ -1888,8 +2013,10 @@ adults and children alike.
   save a report first if the club needs a copy.
 - **Daily check-ins**, counted from the day of the check-in: 2 years unless you choose 1, 3, 5 or
   10 years.
-- **Game goals and reflections**, counted from the game, with their comments and the team's goals:
-  2 years, or 1, 3, 5 or 10.
+- **Game goals, reflections and athletes' season KPIs**: game goals counted from the game, with
+  their comments and the team's goals; athletes' season KPIs and reviews counted from their last
+  change, once their season is archived. 2 years, or 1, 3, 5 or 10. Coaches' and managers' KPIs
+  are the club's own governance record and stay.
 - **Message text**: 2 years, or 1, 3, 5 or 10. Only the text goes; the message stays with who
   sent it, who it went to and who read it, so a complaint can still be traced.
 - **Attendance**, **Training certificates** (with their files) and **Who viewed a child's
@@ -2025,11 +2152,12 @@ once saved, only replaced or removed, and anyone who gets it wrong five times in
 | Daily check-in answers and notes | The athlete, their guardians and their coaches. For an athlete under 18, their coaches only once a parent or guardian consents. The committee, physios and admins see only group averages, hidden below 5 check-ins or when two groups differ by fewer than 5. |
 | Injuries and documents  | For an athlete under 18 whose parents haven't given consent for injuries: only the athlete, their guardians and admins. Otherwise the athlete, their guardians, their coaches, the physios who look after them (the Head Physio, physios in their squad or team, and physios in no squad or team), the committee and admins. Managers don't see injuries. Whoever takes attendance (coaches, managers, the committee and admins) sees only that an athlete is **Injured** and their expected return date, whatever the consent. Only the committee member or admin accepting a clearance can share its documents, while it waits for them; everyone else views them in the app. |
 | Who opened injury documents | The athlete, their guardians and admins: every view and share, by whom, their role and when, and each photo consent. |
-| Who has viewed a child's records | For an athlete under 18: their verified parents or guardians (until the athlete turns 18) and admins. Lists every time someone other than the athlete or their guardians opened the athlete's injuries, injury documents, check-ins, game goals or member record. Opening a child's records is recorded whoever you are; nobody can switch it off or remove entries. |
+| Who has viewed a child's records | For an athlete under 18: their verified parents or guardians (until the athlete turns 18) and admins. Lists every time someone other than the athlete or their guardians opened the athlete's injuries, injury documents, check-ins, game goals, season KPIs or member record. Opening a child's records is recorded whoever you are; nobody can switch it off or remove entries. |
 | Consents for a child    | The athlete, their parents or guardians and admins, with every consent given and withdrawn. Only a verified parent or guardian can give or withdraw one. |
 | Club policies           | Everyone signed in, including people asking to join.                                                                        |
 | Code of conduct acceptances | The member, their parents or guardians and admins: each season's acceptance, who accepted it, when, the words and the policy version. |
 | Game goals and reflections | The athlete, their guardians and their coaches. Only the athlete and their coaches set goals, and only the athlete reflects; guardians just read them. The committee, physios and admins don't see them. |
+| Season KPIs, progress and reviews | An athlete's: the athlete, their coaches in that squad or team, their parents or guardians (read only, until 18) and admins (read only). Not teammates, the committee or physios. A coach's or manager's: them, the committee and admins, and an assistant coach's head coach. Only those who set KPIs change them, record results and write reviews; the person records progress, confirms reviews and adds their own view. |
 | Live game stats         | Admins and statisticians: every game the club records. The coaches and managers of the game's squad or team: that game, once they pair with its code in FirstPass Vision. Athletes, guardians, physios and the committee don't see them. |
 | Team goals              | The team's athletes, their guardians and its coaches. Only its coaches set and review them. Athletes and coaches in the team can comment; guardians read the comments. |
 | Integrity training certificates | The member, their parents or guardians, the committee and admins. Coaches don't see them. Certificates can't be changed or removed once sent. |
@@ -2050,7 +2178,7 @@ once saved, only replaced or removed, and anyone who gets it wrong five times in
 
 When someone leaves, injury records and proof documents are kept for 12 months, visible only to the
 committee and admins, then deleted automatically. Once an admin switches on **Remove old records**,
-check-ins, game goals and message text go after 24 months, attendance, training certificates
+check-ins, game goals, athletes' season KPIs from archived seasons and message text go after 24 months, attendance, training certificates
 and record views after 7 years, and the files of a cleared injury 90 days after clearance or when
 its season is archived, unless the club chooses other periods (see
 [Keeping records](#keeping-records)). Concerns are never removed.
@@ -2131,7 +2259,7 @@ Working With Children Check, and another admin must do it.
   email when they ask to join, so the admin knows who to look for.
 - **You see what your child sees.** You get a copy of every message sent to your child, and of every
   message your child sends as a captain. You can read their daily check-ins and notes, their game
-  goals and their injuries, and whether they were at each session.
+  goals, their season KPIs and reviews, and their injuries, and whether they were at each session.
 - **You're told when something changes.** A new coach, manager or physio in your child's group,
   your child moving group, a guardian linked or unlinked, a consent changing or an injury document
   shared out of the app all show under **What's changed** (see
@@ -2154,14 +2282,17 @@ Working With Children Check, and another admin must do it.
   kept with the photo. If the club removes old records, letters and photos go soon after your
   child is cleared, and the record of who saw them stays.
 - **You see who has viewed your child's records.** Every time a coach, physio, committee member,
-  admin or safeguarding contact opens your child's injuries, injury documents, check-ins, game goals
-  or member record, the app records who, their role, what and when, and you can read the list (see
+  admin or safeguarding contact opens your child's injuries, injury documents, check-ins, game goals,
+  season KPIs or member record, the app records who, their role, what and when, and you can read the list (see
   [Who has viewed your child's records](#who-has-viewed-your-childs-records)).
 
 ### For children and young people
 
 - **Nobody can message you privately.** There are no direct messages and no replies. Messages go to
   whole squads, teams or roles, and your parents or guardians get a copy.
+- **Your season KPIs stay with your coaches and your family.** If your coaches set you KPIs, only
+  you, your coaches, your parents or guardians and the club's admins see them. Your teammates
+  don't, and there's nothing to like or share.
 - **Your own tasks are just for you.** Tasks you add to your to-do list are private reminders:
   nobody else can see them, and they can't be shared, liked or sent to anyone.
 - **You're told who sees what you write**: on the check-in, on injury reports, on game goals and
@@ -2199,7 +2330,7 @@ Working With Children Check, and another admin must do it.
   manager, physio, committee member and admin accepts the club's code of conduct once a season, and the club can add Sport Integrity
   Australia's Child Safeguarding in Sport Induction to integrity training in one tap.
 - **Opening a child's records is recorded.** When you open an under 18's injuries, injury
-  documents, check-ins or game goals, the app records it, and their parents and guardians can see
+  documents, check-ins, game goals or season KPIs, the app records it, and their parents and guardians can see
   who looked and when.
 - **Visitors from outside WA.** The short-term visitor exemption (two weeks from arrival) and the
   national event or tour exemption (up to 30 days at the event) each record their dates, end by
@@ -2235,7 +2366,7 @@ Working With Children Check, and another admin must do it.
   notice, negative notice, interstate decision or cancelled card stands them down at once, and
   stays on your to-do list until you record telling the governing body in writing.
 - **Record views are logged.** Every time someone other than a child or their guardians opens an
-  under 18's injuries, injury documents, check-ins, game goals or member record, it's recorded.
+  under 18's injuries, injury documents, check-ins, game goals, season KPIs or member record, it's recorded.
   Admins see the list on the child's member page, and parents and guardians on their home screen.
 - **Records aren't kept forever.** Set how long the club keeps check-ins, game goals, message text,
   attendance, training certificates, record views and injury documents under
@@ -2280,7 +2411,7 @@ Working With Children Check, and another admin must do it.
   exemptions), temporary helpers' tasks, dates and acceptance of the club's policies,
   stand-downs, every concern with each referral, note and status, every view and share of an
   injury document, every time someone other than a child or their guardians opened an under 18's
-  injuries, check-ins, game goals or member record, every parent's consent with the policy version they agreed to, and each season's code of conduct
+  injuries, check-ins, game goals, season KPIs or member record, every parent's consent with the policy version they agreed to, and each season's code of conduct
   acceptance with who accepted it, the words and the policy version. A document can't be opened without the view being recorded first.
 - **Records are kept as long as they're needed, then removed.** Each club sets its keep periods
   and the app removes older records each night once the club switches it on. Concerns are never

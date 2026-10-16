@@ -21,7 +21,18 @@ export const FEATURES = [
     label: 'Integrity training',
     detail: 'Sports Integrity Australia courses and certificates',
   },
+  {
+    key: 'kpis',
+    label: 'Season KPIs',
+    detail: 'KPIs and OKRs for coaches, managers and athletes, with season reviews',
+    offByDefault: true,
+  },
 ] as const;
+
+/** Whether a feature starts off until an admin turns it on. */
+export function offByDefault(feature: (typeof FEATURES)[number]) {
+  return 'offByDefault' in feature && feature.offByDefault;
+}
 
 export type FeatureKey = (typeof FEATURES)[number]['key'];
 export type Features = Record<FeatureKey, boolean>;
@@ -96,8 +107,12 @@ export function resolveClub(profile: ClubProfile | null) {
     colors,
     logo: profile?.logo_path ? { uri: logoUrl(profile.logo_path) } : defaultLogo(colors.background),
     hasLogo: !!profile?.logo_path,
+    // Newer features that change how the club works start off; the rest start on.
     features: Object.fromEntries(
-      FEATURES.map((f) => [f.key, profile?.features?.[f.key] !== false]),
+      FEATURES.map((f) => [
+        f.key,
+        offByDefault(f) ? profile?.features?.[f.key] === true : profile?.features?.[f.key] !== false,
+      ]),
     ) as Features,
     // Stored with the features, but it shapes the club rather than adding a screen.
     squads: profile?.features?.squads !== false,

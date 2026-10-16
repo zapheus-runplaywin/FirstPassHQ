@@ -5,6 +5,7 @@ import { slotTitle } from '@/lib/awards';
 import { formatShortDay } from '@/lib/format';
 import { gamePhase, gameTitle } from '@/lib/goals';
 import { formatDateString, toDateString } from '@/lib/injuries';
+import type { KpiReviewTodo } from '@/lib/kpis';
 import { WWCC_WARNING_DAYS } from '@/lib/safety';
 import { dueLabel, isOutstanding, type MyTraining } from '@/lib/training';
 import type { AwardSlot, CoachTeamGame, GoalGame, Injury } from '@/lib/types';
@@ -42,6 +43,7 @@ export function buildTodos({
   consentsNeeded = [],
   conduct = [],
   affiliation = null,
+  kpiReviews = [],
   today = new Date(),
 }: {
   userId: string | undefined;
@@ -77,6 +79,8 @@ export function buildTodos({
   conduct?: { id: string; name: string; forChild: boolean }[];
   /** Affiliation follow-ups, for admins of clubs that keep affiliation records. */
   affiliation?: AffiliationTodos | null;
+  /** Season KPI reviews to write, and the member's own to confirm. */
+  kpiReviews?: KpiReviewTodo[];
   today?: Date;
 }): Todo[] {
   const todos: Todo[] = [];
@@ -424,6 +428,8 @@ export function buildTodos({
     }
   }
 
+  todos.push(...kpiReviewTodos(kpiReviews, toDateString(today)));
+
   return todos;
 }
 
@@ -435,4 +441,49 @@ function goalHref(game: GoalGame, athleteId: string | undefined): Href {
     pathname: '/goals/game',
     params: { athlete: athleteId ?? '', fixture: game.fixture_id },
   };
+}
+
+/**
+ * Season KPI reviews: one item per review date and group to write (straight
+ * to the person when there's only one), and one for each of the member's own
+ * reviews to confirm.
+ */
+function kpiReviewTodos(rows: KpiReviewTodo[], today: string): Todo[] {
+  const todos: Todo[] = [];
+  const toWrite = new Map<string, KpiReviewTodo[]>();
+  for (const row of rows.filter((r) => r.kind === 'write')) {
+    const key = `${row.point_id}:${row.team_id}`;
+    toWrite.set(key, [...(toWrite.get(key) ?? []), row]);
+  }
+  for (const [key, people] of toWrite) {
+    const first = people[0];
+    const due = `${first.due_on < today ? 'Was due' : 'Due'} ${formatDateString(first.due_on)}`;
+    todos.push(
+      people.length === 1
+        ? {
+            key: `kpi-review-${key}`,
+            title: `Write ${first.full_name}’s KPI review`,
+            detail: `${first.point_name} · ${first.team_name} · ${due}`,
+            href: {
+              pathname: '/kpis/person',
+              params: { profile: first.profile_id, team: first.team_id },
+            },
+          }
+        : {
+            key: `kpi-review-${key}`,
+            title: `Write ${people.length} KPI reviews`,
+            detail: `${first.point_name} · ${first.team_name} · ${due}`,
+            href: '/kpis',
+          },
+    );
+  }
+  for (const row of rows.filter((r) => r.kind === 'confirm')) {
+    todos.push({
+      key: `kpi-confirm-${row.point_id}:${row.team_id}`,
+      title: 'Confirm your KPI review was done',
+      detail: `${row.point_name} · ${row.team_name}`,
+      href: { pathname: '/kpis/person', params: { profile: row.profile_id, team: row.team_id } },
+    });
+  }
+  return todos;
 }
