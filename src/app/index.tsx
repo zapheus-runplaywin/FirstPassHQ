@@ -44,6 +44,7 @@ import { rejectionReasonMessages, rolesLabel, teamPositionLabel } from '@/lib/la
 import { supabase } from '@/lib/supabase';
 import { useNewConcerns } from '@/lib/concerns';
 import { usePersonalTasks } from '@/lib/personal-tasks';
+import { useSessionPlanSummary } from '@/lib/session-plans';
 import { buildTodos } from '@/lib/todos';
 import type { ChildConsent } from '@/lib/consents';
 import {
@@ -90,6 +91,7 @@ export default function HomeScreen() {
   const { affiliationTodos, reloadAffiliationTodos } = useAffiliationTodos();
   const { conductTodos, reloadConductTodos } = useConductTodos();
   const { personalTasks, reloadPersonalTasks, setTaskDone } = usePersonalTasks();
+  const plans = useSessionPlanSummary();
   const canSeeInjuries = useCanSeeInjuries();
   const canTakeAttendance = useCanTakeAttendance();
   const canViewAttendance = useCanViewAttendance();
@@ -180,6 +182,7 @@ export default function HomeScreen() {
       reloadAffiliationTodos(),
       reloadConductTodos(),
       reloadPersonalTasks(),
+      plans.reloadSummary(),
       loadAthletes(),
       reloadEvents(),
       reloadUnread(),
@@ -317,6 +320,28 @@ export default function HomeScreen() {
               {canTakeAttendance
                 ? 'Take attendance and see past sessions'
                 : 'See athletes’ attendance'}
+            </ThemedText>
+          </PressableCard>
+        ) : null}
+
+        {features.sessionPlans && (plans.canAdd || plans.shared > 0) ? (
+          <PressableCard onPress={() => router.push('/session-plans')}>
+            <View style={styles.cardTitleRow}>
+              <ThemedText type="smallBold">Session plans</ThemedText>
+              {plans.newShared > 0 ? (
+                <View style={[styles.badge, { backgroundColor: theme.accent }]}>
+                  <ThemedText type="smallBold" style={{ color: theme.onAccent }}>
+                    {plans.newShared}
+                  </ThemedText>
+                </View>
+              ) : null}
+            </View>
+            <ThemedText type="small" themeColor="textSecondary">
+              {plans.newShared > 0
+                ? `${plans.newShared} new ${plans.newShared === 1 ? 'plan' : 'plans'} shared with you`
+                : plans.canAdd
+                  ? 'Add a plan before or after a session'
+                  : 'Plans your coaches have shared'}
             </ThemedText>
           </PressableCard>
         ) : null}

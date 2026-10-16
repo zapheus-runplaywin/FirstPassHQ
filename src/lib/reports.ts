@@ -1393,3 +1393,119 @@ export function injuryReport(rows: InjuryReportRow[], sinceDate: string): Report
   };
 }
 
+
+// ---------------------------------------------------------------------------
+// Session plans
+// ---------------------------------------------------------------------------
+
+/** A row from `session_plan_report`. */
+export type SessionPlanReportRow = {
+  id: string;
+  team_id: string | null;
+  team_name: string;
+  title: string;
+  session_on: string;
+  starts_at: string | null;
+  author_name: string;
+  author_position: string;
+  run_by: string | null;
+  has_notes: boolean;
+  file_count: number;
+  created_at: string;
+  edited_at: string | null;
+};
+
+/**
+ * The admin governance report: which squads and teams have a session plan for
+ * which days, who added it and what it holds. `groups` are the chosen squads
+ * and teams, so groups without any plan show too.
+ */
+export function sessionPlanReport(
+  periodLabel: string,
+  groupsLabel: string,
+  rows: SessionPlanReportRow[],
+  groups: { id: string; name: string }[],
+): Report {
+  const content = (r: SessionPlanReportRow) =>
+    [
+      r.has_notes ? 'Written plan' : '',
+      r.file_count > 0 ? `${r.file_count} ${r.file_count === 1 ? 'file' : 'files'}` : '',
+    ]
+      .filter(Boolean)
+      .join(', ') || 'Empty';
+  const time = (t: string | null) => (t ? ` ${t.slice(0, 5)}` : '');
+
+  const byGroup = groups.map((g) => {
+    const own = rows.filter((r) => r.team_id === g.id);
+    const days = new Set(own.map((r) => r.session_on));
+    const last = own.map((r) => r.session_on).sort().pop();
+    return {
+      flag: own.length === 0,
+      cells: [g.name, String(own.length), String(days.size), last ? formatDate(last) : 'None'],
+    };
+  });
+
+  return {
+    title: 'Session plans',
+    subtitle: `${periodLabel} · ${groupsLabel}`,
+    landscape: true,
+    stats: [
+      { label: 'Plans', value: rows.length },
+      { label: 'Days with a plan', value: new Set(rows.map((r) => r.session_on)).size },
+      {
+        label: 'Squads and teams with a plan',
+        value: new Set(rows.map((r) => r.team_id ?? r.team_name)).size,
+      },
+    ],
+    sections: [
+      {
+        title: 'By squad or team',
+        note: 'Groups in red have no session plan in this period.',
+        columns: [
+          { label: 'Squad or team', width: 2 },
+          { label: 'Plans', width: 0.7 },
+          { label: 'Days', width: 0.7 },
+          { label: 'Latest session', width: 1 },
+        ],
+        rows: byGroup,
+        empty: 'No squads or teams chosen.',
+      },
+      {
+        title: 'Every plan',
+        columns: [
+          { label: 'Day', width: 1 },
+          { label: 'Squad or team', width: 1.3 },
+          { label: 'Session', width: 1.6 },
+          { label: 'Added by', width: 1.5 },
+          { label: 'Run by', width: 1.1 },
+          { label: 'Holds', width: 1.1 },
+          { label: 'Added', width: 0.9 },
+          { label: 'Last changed', width: 0.9 },
+        ],
+        rows: [...rows]
+          .sort(
+            (a, b) =>
+              a.session_on.localeCompare(b.session_on) ||
+              a.team_name.localeCompare(b.team_name) ||
+              (a.starts_at ?? '').localeCompare(b.starts_at ?? ''),
+          )
+          .map((r) => ({
+            flag: !r.has_notes && r.file_count === 0,
+            cells: [
+              `${formatDate(r.session_on)}${time(r.starts_at)}`,
+              r.team_name,
+              r.title,
+              `${r.author_name}\n${r.author_position}`,
+              r.run_by ?? '',
+              content(r),
+              formatDate(toDateString(new Date(r.created_at))),
+              r.edited_at ? formatDate(toDateString(new Date(r.edited_at))) : '',
+            ],
+          })),
+        empty: 'No session plans in this period.',
+      },
+    ],
+    footnote:
+      'Plans are counted by the day of the session. The plans themselves aren’t included; open a plan in the app to read it. Plans aren’t matched against the calendar.',
+  };
+}
