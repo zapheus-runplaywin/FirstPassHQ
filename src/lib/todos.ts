@@ -18,7 +18,48 @@ export type Todo = {
   title: string;
   detail: string;
   href: Href;
+  /** Such as "2026-10-17", when it has to be done by a certain day. */
+  dueOn?: string;
+  /** A red or amber warning: overdue or due soon, or a safety check needing attention. */
+  alert?: TodoAlert;
 };
+
+/** Red for overdue or missing, amber for due soon or needing a check. */
+export type TodoAlert = { level: 'red' | 'amber'; label: string };
+
+/** To-dos due within this many days of today get an amber warning. */
+export const DUE_SOON_DAYS = 3;
+
+/** Red "Overdue", amber "Due soon" for within three days, or null. */
+export function dueAlert(dueOn: string | null | undefined, today = new Date()): TodoAlert | null {
+  if (!dueOn) return null;
+  if (dueOn < toDateString(today)) return { level: 'red', label: 'Overdue' };
+  const soon = new Date(today.getFullYear(), today.getMonth(), today.getDate() + DUE_SOON_DAYS);
+  return dueOn <= toDateString(soon) ? { level: 'amber', label: 'Due soon' } : null;
+}
+
+/**
+ * Red warnings first, then amber, then the rest in the order they came.
+ * Within red and amber, the earliest due date comes first.
+ */
+export function sortByAlert<T>(
+  items: T[],
+  alertOf: (item: T) => TodoAlert | null | undefined,
+  dueOf: (item: T) => string | null | undefined,
+) {
+  const rank = (item: T) => {
+    const level = alertOf(item)?.level;
+    return level === 'red' ? 0 : level === 'amber' ? 1 : 2;
+  };
+  return items
+    .map((item, index) => ({ item, index, rank: rank(item), due: dueOf(item) ?? '9999' }))
+    .sort((a, b) => {
+      if (a.rank !== b.rank) return a.rank - b.rank;
+      if (a.rank < 2 && a.due !== b.due) return a.due.localeCompare(b.due);
+      return a.index - b.index;
+    })
+    .map(({ item }) => item);
+}
 
 /**
  * Everything the member owes, daily items first, built from what the home
@@ -194,6 +235,7 @@ export function buildTodos({
       title: `Update ${whose} ${injury.body_area.toLowerCase()} injury`,
       detail: `Expected back ${formatDateString(injury.expected_return)}. Ask for clearance or change the date.`,
       href: { pathname: '/injuries/[id]', params: { id: injury.id } },
+      dueOn: injury.expected_return,
     });
   }
 
@@ -205,6 +247,7 @@ export function buildTodos({
       title: `Set your goals for ${gameTitle(next)}`,
       detail: `${formatShortDay(new Date(next.starts_at))} · goals close when the game starts`,
       href: goalHref(next, userId),
+      dueOn: toDateString(new Date(next.starts_at)),
     });
   }
 
@@ -230,6 +273,7 @@ export function buildTodos({
       title: `Set team goals for ${game.team_name}`,
       detail: `${gameTitle(game)} · ${formatShortDay(new Date(game.starts_at))}`,
       href: { pathname: '/goals/team', params: { fixture: game.fixture_id } },
+      dueOn: toDateString(new Date(game.starts_at)),
     });
   }
 
@@ -277,6 +321,7 @@ export function buildTodos({
       title: `Complete ${toComplete.length} integrity training courses`,
       detail: `${dueLabel(toComplete[0].due_on, today)} · upload each certificate when done`,
       href: '/training',
+      dueOn: toComplete[0].due_on,
     });
   } else {
     for (const row of toComplete) {
@@ -295,6 +340,7 @@ export function buildTodos({
           pathname: '/training/submit',
           params: { profile: row.profile_id, requirement: row.requirement_id },
         },
+        dueOn: row.due_on,
       });
     }
   }
@@ -354,6 +400,19 @@ export function buildTodos({
           .map(([count, label]) => `${count} ${label}`)
           .join(', '),
         href: '/admin',
+        // Red when anyone's check is missing or expired, otherwise amber.
+        alert:
+          (safety.wwcc_missing ?? 0) > 0
+            ? { level: 'red', label: 'Missing' }
+            : {
+                level: 'amber',
+                label:
+                  (safety.wwcc_expiring ?? 0) > 0
+                    ? 'Expiring'
+                    : (safety.wwcc_to_validate ?? 0) > 0
+                      ? 'Validate'
+                      : 'Register',
+              },
       });
     }
     if (safety.notices_to_report > 0) {
@@ -435,7 +494,9 @@ export function buildTodos({
 
   todos.push(...kpiReviewTodos(kpiReviews, toDateString(today)));
 
-  return todos;
+  return todos.map((todo) =>
+    todo.alert || !todo.dueOn ? todo : { ...todo, alert: dueAlert(todo.dueOn, today) ?? undefined },
+  );
 }
 
 /** Reflection reminders stop a week after the game. */
@@ -473,12 +534,14 @@ function kpiReviewTodos(rows: KpiReviewTodo[], today: string): Todo[] {
               pathname: '/kpis/person',
               params: { profile: first.profile_id, team: first.team_id },
             },
+            dueOn: first.due_on,
           }
         : {
             key: `kpi-review-${key}`,
             title: `Write ${people.length} KPI reviews`,
             detail: `${first.point_name} · ${first.team_name} · ${due}`,
             href: '/kpis',
+            dueOn: first.due_on,
           },
     );
   }
