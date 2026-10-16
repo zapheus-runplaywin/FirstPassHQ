@@ -1393,8 +1393,10 @@ Admins can do everything above except endorse injury clearances (they accept the
 committee, and endorse only if they're also a coach or physio), plus run the club's set-up from **Administration** on the home
 screen. Admins' to-do lists include join requests waiting for approval and clearances waiting for
 sign-off, plus child-safety follow-ups: athletes under 18 with no guardian linked, Working With
-Children Checks that are missing, expired or expire within 60 days, volunteer exemptions that end
-within 60 days, and athletes turning 18 within 30 days. Tapping a child-safety to-do opens **Members**, where the people behind it are listed
+Children Checks to sort out, volunteer exemptions that end within 60 days, and athletes turning
+18 within 30 days. Every card problem shares one to-do, **Sort out Working With Children
+Checks**, which counts each person once and says underneath how many are missing or expired,
+expiring within 60 days, waiting to be validated and waiting to be registered with the club. Tapping a child-safety to-do opens **Members**, where the people behind it are listed
 first under **Needs checking**. While **Remove old records** is off, the list also shows **Old
 records are kept forever**, which opens Club settings so you can switch it on (see [Keeping
 records](#keeping-records)). When Affiliation records are on, the list also has affiliation
@@ -1408,7 +1410,7 @@ or an exemption with a reason that another admin records, like committee members
 
 <img src="user-guide/admin-home.png" width="210" alt="Admin home screen">
 <img src="user-guide/administration.png" width="210" alt="Administration menu">
-<img src="user-guide/admin-safety-todos.png" width="210" alt="Admin to-dos for guardians, Working With Children Checks, athletes turning 18 and old records kept forever">
+<img src="user-guide/admin-safety-todos.png" width="210" alt="Admin to-dos for guardians, one Working With Children Checks to-do with its breakdown, athletes turning 18 and old records kept forever">
 
 ### Inviting members
 

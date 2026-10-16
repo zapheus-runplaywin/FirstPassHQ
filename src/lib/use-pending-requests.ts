@@ -52,6 +52,8 @@ export type SafetyTodos = {
   notices_to_report: number;
   /** 1 when the club has no WWC Registration Officer. */
   wwc_officer_missing: number;
+  /** Members behind any of the four card counts above, each counted once. */
+  wwcc_people?: number;
   /** Club settings' "Remove old records" is off, so nothing past its keep period is removed. */
   records_removal_off?: boolean;
 };
