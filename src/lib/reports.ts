@@ -18,7 +18,16 @@ import { formatDate, isMinor } from '@/lib/age';
 import type { ConductStatus } from '@/lib/conduct';
 import type { ClubPolicies } from '@/lib/consents';
 import { formatDateString, injuryStatusLabels, toDateString } from '@/lib/injuries';
-import { rolesLabel } from '@/lib/labels';
+import {
+  formatLabels,
+  progressLabel,
+  resultLabels,
+  targetLabel,
+  type KpiFormat,
+  type KpiMeasure,
+  type KpiResult,
+} from '@/lib/kpis';
+import { rolesLabel, teamPositionLabel } from '@/lib/labels';
 import type { Report, ReportRow, ReportSection } from '@/lib/pdf';
 import { hasRole, rolesOf } from '@/lib/roles';
 import {
@@ -35,6 +44,7 @@ import {
   wwccValidationLabels,
 } from '@/lib/safety';
 import type {
+  CoachTitle,
   InjuryReportRow,
   Profile,
   SafeguardingContacts,
@@ -561,7 +571,7 @@ export function under18sReport(
       },
     ],
     footnote:
-      'Under 18 is worked out from the date of birth, or from the admin’s “Under 18” choice when no date of birth is recorded. “Not verified” means the guardian hasn’t been checked with their in-app code or against PlayHQ. Consent is given by a verified parent or guardian in the app; until it is, the athlete’s coaches, physios and the committee don’t see their check-ins or injuries. Code of conduct shows this season’s acceptance, by a verified parent or guardian when one is linked; “Not asked” means the club hasn’t linked its code of conduct. Record views counts each time someone other than the athlete or their guardians opened their injuries, injury documents, check-ins, game goals or member record in the last 12 months; each athlete’s page lists who.',
+      'Under 18 is worked out from the date of birth, or from the admin’s “Under 18” choice when no date of birth is recorded. “Not verified” means the guardian hasn’t been checked with their in-app code or against PlayHQ. Consent is given by a verified parent or guardian in the app; until it is, the athlete’s coaches, physios and the committee don’t see their check-ins or injuries. Code of conduct shows this season’s acceptance, by a verified parent or guardian when one is linked; “Not asked” means the club hasn’t linked its code of conduct. Record views counts each time someone other than the athlete or their guardians opened their injuries, injury documents, check-ins, game goals, season KPIs or member record in the last 12 months; each athlete’s page lists who.',
   };
 }
 
@@ -1393,3 +1403,112 @@ export function injuryReport(rows: InjuryReportRow[], sinceDate: string): Report
   };
 }
 
+
+// ---------------------------------------------------------------------------
+// Season KPIs
+// ---------------------------------------------------------------------------
+
+/** One coach's or manager's KPI in a group, or a row with no KPI when none are set. */
+export type KpiReportRow = {
+  team_id: string;
+  team_name: string;
+  profile_id: string;
+  full_name: string;
+  team_role: TeamRole;
+  coach_title: CoachTitle | null;
+  kpi_id: string | null;
+  format: KpiFormat | null;
+  title: string | null;
+  measures: Pick<
+    KpiMeasure,
+    'title' | 'kind' | 'target' | 'unit' | 'lower_is_better' | 'current_value' | 'done'
+  >[];
+  result: KpiResult | null;
+  result_note: string | null;
+  set_by_name: string | null;
+  reviews: { name: string; due_on: string; written: boolean; confirmed: boolean }[];
+};
+
+function measureLine(m: KpiReportRow['measures'][number]) {
+  const full = { ...m, id: '', baseline: null, progress_by_name: null, progress_at: null };
+  // The PDF's fonts have no tick, so "Done" is written out.
+  const progress = progressLabel(full).replace('✓ ', '');
+  const target = m.kind === 'number' ? ` (${targetLabel(full).toLowerCase()})` : '';
+  return `${m.title ? `${m.title}: ` : ''}${progress}${target}`;
+}
+
+function reviewsLine(reviews: KpiReportRow['reviews'], today: string) {
+  return reviews
+    .map((r) =>
+      r.confirmed
+        ? `${r.name}: done, confirmed`
+        : r.written
+          ? `${r.name}: written, not yet confirmed`
+          : `${r.name}: ${r.due_on < today ? 'overdue' : `due ${formatDateString(r.due_on)}`}`,
+    )
+    .join('\n');
+}
+
+export function kpiReport(seasonName: string, rows: KpiReportRow[], today: string): Report {
+  const people = new Map<string, KpiReportRow[]>();
+  for (const row of rows) {
+    const key = `${row.team_id}:${row.profile_id}`;
+    people.set(key, [...(people.get(key) ?? []), row]);
+  }
+  const kpis = rows.filter((r) => r.kpi_id);
+  const count = (result: KpiResult | null) => kpis.filter((r) => r.result === result).length;
+  const withoutKpis = [...people.values()].filter((list) => !list[0].kpi_id).length;
+  const overdue = [...people.values()].filter(
+    (list) => list[0].kpi_id && list[0].reviews.some((r) => !r.written && r.due_on < today),
+  ).length;
+
+  const groups = new Map<string, KpiReportRow[]>();
+  for (const row of rows) groups.set(row.team_id, [...(groups.get(row.team_id) ?? []), row]);
+
+  return {
+    title: 'Season KPIs',
+    subtitle: `Coaches’ and managers’ KPIs and OKRs for ${seasonName}`,
+    landscape: true,
+    stats: [
+      { label: 'Coaches and managers', value: people.size },
+      { label: 'Without KPIs', value: withoutKpis },
+      { label: 'KPIs and OKRs', value: kpis.length },
+      { label: resultLabels.met, value: count('met') },
+      { label: resultLabels.partly_met, value: count('partly_met') },
+      { label: resultLabels.not_met, value: count('not_met') },
+      { label: 'No result yet', value: count(null) },
+      { label: 'With a review overdue', value: overdue },
+    ],
+    sections: [...groups.values()].map((list) => ({
+      title: list[0].team_name,
+      note: 'Red: no KPIs set, or a review is overdue.',
+      columns: [
+        { label: 'Person', width: 1.1 },
+        { label: 'KPI or OKR', width: 1.6 },
+        { label: 'Progress', width: 2 },
+        { label: 'Result', width: 1.2 },
+        { label: 'Reviews', width: 1.6 },
+      ],
+      rows: list.map((r) => {
+        const person = `${r.full_name}\n${teamPositionLabel(r.team_role, r.coach_title)}`;
+        const reviewOverdue = r.reviews.some((v) => !v.written && v.due_on < today);
+        if (!r.kpi_id) {
+          return { cells: [person, 'No KPIs set', '', '', ''], flag: true };
+        }
+        return {
+          cells: [
+            person,
+            `${formatLabels[r.format ?? 'kpi']}: ${r.title ?? ''}${r.set_by_name ? `\nSet by ${r.set_by_name}` : ''}`,
+            r.measures.map(measureLine).join('\n'),
+            r.result ? `${resultLabels[r.result]}${r.result_note ? `\n${r.result_note}` : ''}` : 'Not yet',
+            reviewsLine(r.reviews, today),
+          ],
+          flag: reviewOverdue,
+        };
+      }),
+      empty: 'No coaches or managers.',
+    })),
+    footnote:
+      'Results are recorded by whoever sets the KPIs: the committee and admins for coaches and managers, and head coaches for their assistants. Athletes’ KPIs aren’t in this report.',
+  };
+}

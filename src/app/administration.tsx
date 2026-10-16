@@ -110,6 +110,15 @@ export default function AdministrationScreen() {
         </PressableCard>
       ) : null}
 
+      {features.kpis ? (
+        <PressableCard onPress={() => router.push('/admin/kpi-reviews')}>
+          <ThemedText type="smallBold">Season KPI reviews</ThemedText>
+          <ThemedText type="small" themeColor="textSecondary">
+            The dates each season’s KPIs are reviewed
+          </ThemedText>
+        </PressableCard>
+      ) : null}
+
       {features.calendar || features.awards || features.goals ? (
         <PressableCard onPress={() => router.push('/admin/fixtures')}>
           <ThemedText type="smallBold">Fixtures</ThemedText>

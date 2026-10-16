@@ -35,6 +35,7 @@ import {
 } from '@/lib/check-ins';
 import { reflectionsToAnswer, useCoachTeamGames, useGoalBoard, useMyGoals } from '@/lib/goals';
 import { injuriesSummary, useCanSeeInjuries, useOpenInjuries } from '@/lib/injuries';
+import { useKpiPeople, useKpiReviewTodos, type KpiPerson } from '@/lib/kpis';
 import { useGetsMessages, useUnreadCount } from '@/lib/messages';
 import {
   pendingRequestsLabel,
@@ -91,6 +92,8 @@ export default function HomeScreen() {
   const { affiliationTodos, reloadAffiliationTodos } = useAffiliationTodos();
   const { conductTodos, reloadConductTodos } = useConductTodos();
   const { personalTasks, reloadPersonalTasks, setTaskDone } = usePersonalTasks();
+  const { kpiPeople, reloadKpiPeople } = useKpiPeople();
+  const { kpiReviewTodos, reloadKpiReviewTodos } = useKpiReviewTodos();
   const { absencesToReview, reloadAbsencesToReview } = useAbsencesToReview(useLeadsAGroup());
   const canSeeInjuries = useCanSeeInjuries();
   const canTakeAttendance = useCanTakeAttendance();
@@ -138,6 +141,7 @@ export default function HomeScreen() {
       forChild: t.for_child,
     })),
     affiliation: affiliationTodos,
+    kpiReviews: kpiReviewTodos,
   });
 
   const isGuardian = profile?.status === 'approved' && hasRole(profile, 'guardian');
@@ -183,6 +187,8 @@ export default function HomeScreen() {
       reloadAffiliationTodos(),
       reloadConductTodos(),
       reloadPersonalTasks(),
+      reloadKpiPeople(),
+      reloadKpiReviewTodos(),
       reloadAbsencesToReview(),
       loadAthletes(),
       reloadEvents(),
@@ -364,6 +370,15 @@ export default function HomeScreen() {
           </PressableCard>
         ) : null}
 
+        {features.kpis && (kpiPeople ?? []).some((p) => !p.archived) ? (
+          <PressableCard onPress={() => router.push('/kpis')}>
+            <ThemedText type="smallBold">Season KPIs</ThemedText>
+            <ThemedText type="small" themeColor="textSecondary">
+              {kpisLabel(kpiPeople ?? [])}
+            </ThemedText>
+          </PressableCard>
+        ) : null}
+
         {handlesConcerns ? (
           <PressableCard onPress={() => router.push('/concerns')}>
             <ThemedText type="smallBold">Concerns</ThemedText>
@@ -512,7 +527,7 @@ export default function HomeScreen() {
                 }>
                 <ThemedText type="smallBold">{a.name}</ThemedText>
                 <ThemedText type="small" themeColor="textSecondary">
-                  Who at the club opened their injuries, check-ins, game goals or member record
+                  Who at the club opened their injuries, check-ins, game goals, season KPIs or member record
                 </ThemedText>
               </PressableCard>
             ))}
@@ -598,6 +613,23 @@ function trainingLabel(rows: MyTraining[], toCheck: number) {
   }
   if (toCheck > 0) parts.push(`${toCheck} ${toCheck === 1 ? 'certificate' : 'certificates'} to check`);
   return parts.join(' · ') || 'Certificates and everyone’s progress';
+}
+
+/** Such as "3 of yours · 12 people you set them for". */
+function kpisLabel(people: KpiPerson[]) {
+  const current = people.filter((p) => !p.archived);
+  const mine = current
+    .filter((p) => p.relation === 'self')
+    .reduce((n, p) => n + p.kpi_count, 0);
+  const children = new Set(current.filter((p) => p.relation === 'guardian').map((p) => p.profile_id));
+  const setting = new Set(current.filter((p) => p.relation === 'setter').map((p) => p.profile_id));
+  const parts = [];
+  if (mine > 0) parts.push(`${mine} of yours`);
+  if (children.size > 0) parts.push(children.size === 1 ? 'Your child’s' : 'Your children’s');
+  if (setting.size > 0) {
+    parts.push(`${setting.size} ${setting.size === 1 ? 'person' : 'people'} you set them for`);
+  }
+  return parts.join(' · ') || 'What each person is working to achieve this season';
 }
 
 /** Named teams first, then squads, in club order. */

@@ -1190,7 +1190,7 @@ export default function MemberScreen() {
           }>
           <ThemedText type="smallBold">Who has viewed their records</ThemedText>
           <ThemedText type="small" themeColor="textSecondary">
-            Everyone who opened their injuries, check-ins, game goals or member record, apart from
+            Everyone who opened their injuries, check-ins, game goals, season KPIs or member record, apart from
             them and their parents and guardians.
           </ThemedText>
         </PressableCard>

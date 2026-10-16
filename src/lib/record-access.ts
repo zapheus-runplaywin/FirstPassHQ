@@ -7,7 +7,8 @@ export type RecordKind =
   | 'injury_document_shared'
   | 'check_ins'
   | 'goals'
-  | 'member_record';
+  | 'member_record'
+  | 'kpis';
 
 /** One time someone opened a child's record. */
 export type RecordAccess = {
@@ -26,6 +27,7 @@ export const recordKindLabels: Record<RecordKind, string> = {
   check_ins: 'Read check-ins',
   goals: 'Read game goals',
   member_record: 'Opened their member record',
+  kpis: 'Read season KPIs',
 };
 
 /**
