@@ -667,9 +667,8 @@ When it's accepted, the injury shows **Cleared to play**. If either of them send
 see their note in the history; fix what they ask and ask for clearance again.
 
 Nobody can remove a document once it's sent, so the record can't be altered later. If the club
-removes old records, the files of a cleared injury are removed after the club's keep period: 90
-days after it was cleared unless the club chooses 30, 60 or 180 days, or when its season is
-archived if that's sooner. The injury, its history, each document's name, who added it and who
+removes old records, the files of a cleared injury are removed after the club's keep period: 1
+year after it was cleared unless the club chooses 90 days or 3 years. The injury, its history, each document's name, who added it and who
 viewed it all stay, and the document shows when its file was removed.
 
 Under each document you see everyone who has opened or shared it, with their role and when (for
@@ -2092,39 +2091,44 @@ send to the association or keep for an audit.
 
 #### Keeping records
 
-The privacy law says a club keeps personal information only while it needs it. **Keeping records**,
-at the bottom of Club settings, sets how long the club keeps each kind of record, for everyone,
-adults and children alike.
+A club should keep personal information only while it needs it. **Keeping records**, at the
+bottom of Club settings, sets how long the club keeps each kind of record, for everyone, adults
+and children alike. Each setting says which period is recommended, and a club that hasn't saved
+its periods starts on those.
 
 - **Remove old records** starts off, and nothing is removed while it's off. Until you switch it on,
   every admin's to-do list shows **Old records are kept forever**. When it's on, each night
   the app permanently removes records older than their keep period. They can't be brought back, so
   save a report first if the club needs a copy.
-- **Daily check-ins**, counted from the day of the check-in: 2 years unless you choose 1, 3, 5 or
-  10 years.
+- **Daily check-ins**, counted from the day of the check-in: 3 months, 6 months, 1 year
+  (recommended) or 2 years.
 - **Game goals, reflections and athletes' season KPIs**: game goals counted from the game, with
   their comments and the team's goals; athletes' season KPIs and reviews counted from their last
-  change, once their season is archived. 2 years, or 1, 3, 5 or 10. Coaches' and managers' KPIs
-  are the club's own governance record and stay.
-- **Message text**: 2 years, or 1, 3, 5 or 10. Only the text goes; the message stays with who
-  sent it, who it went to and who read it, so a complaint can still be traced.
-- **Attendance** (with session plans and their files, counted from the day of the session),
-  **Training certificates** (with their files) and **Who viewed a child's
-  records**: 7 years, or 10, 15 or 20. These show who was with which children and who was screened
-  or trained, so they can't be kept for less than 7 years.
-- **Injury documents**: the letters, reports and photos of a cleared injury go 90 days after it was
-  cleared, or 30, 60 or 180 days if you choose, or when its season is archived if that's sooner.
-  The club only needs them while a clearance is checked. The injury, its sign-offs, each
-  document's name, who added it and who viewed or shared it stay. Documents of injuries that
-  aren't cleared yet stay. Archiving a season can't bring its documents back, even if you restore
-  the season.
+  change, once their season is archived. 1 year (recommended) to 5 years. Coaches' and managers'
+  KPIs are the club's own governance record and stay.
+- **Message text**: 1, 2, 3 (recommended), 5 or 7 years. Only the text goes; the message stays
+  with who sent it, who it went to and who read it, so a complaint can still be traced.
+- **Message text involving a child**: messages sent by or to anyone who was under 18 when they
+  were sent. 3, 5, 7 (recommended), 10 or 15 years, and never less than **Message text**.
+- **Attendance** (with absences and session plans and their files, counted from the day of the
+  session) and **Training certificates** (with their files, counted from when they were added):
+  1 year (recommended) to 5 years.
+- **Who viewed a child's records**: 3, 5, 7 (recommended), 10 or 15 years.
+- **Injury documents**: the letters, reports and photos of a cleared injury go 90 days, 1 year
+  (recommended) or 3 years after it was cleared. The injury, its sign-offs, each document's name,
+  who added it and who viewed or shared it stay. Documents of injuries that aren't cleared yet
+  stay.
+
+A period the club saved before these choices changed (such as 7 years for attendance) stays as it
+is, shown as its own choice, until an admin picks another.
 
 Concerns are never removed. Injury records keep their own rule: removed 12 months after an
 athlete leaves, with any documents still left. **Last changed by** shows which admin last saved the periods, and when.
 Tap **Save keep periods** to save.
 
 <img src="user-guide/club-settings-records.png" width="210" alt="Club settings: keeping records">
-<img src="user-guide/club-settings-records-safety.png" width="210" alt="Club settings: keep periods for attendance, certificates, record views and injury documents">
+<img src="user-guide/club-settings-records-safety.png" width="210" alt="Club settings: keep periods for message text, messages involving a child, attendance and certificates">
+<img src="user-guide/club-settings-records-injury.png" width="210" alt="Club settings: keep periods for record views and injury documents">
 
 ### Safeguarding contacts
 
@@ -2269,10 +2273,11 @@ once saved, only replaced or removed, and anyone who gets it wrong five times in
 
 When someone leaves, injury records and proof documents are kept for 12 months, visible only to the
 committee and admins, then deleted automatically. Once an admin switches on **Remove old records**,
-check-ins, game goals, athletes' season KPIs from archived seasons and message text go after 24 months, attendance, session plans, training certificates
-and record views after 7 years, and the files of a cleared injury 90 days after clearance or when
-its season is archived, unless the club chooses other periods (see
-[Keeping records](#keeping-records)). Concerns are never removed.
+check-ins, game goals, athletes' season KPIs from archived seasons, attendance, session plans and
+training certificates go after 1 year, message text after 3 years (7 years when a child sent or
+received it), record views after 7 years, and the files of a cleared injury 1 year after
+clearance, unless the club chooses other periods (see [Keeping records](#keeping-records)).
+Concerns are never removed.
 
 <div style="page-break-before: always"></div>
 
@@ -2322,9 +2327,9 @@ images to stay inside the club. So for athletes under 18:
 - **Sharing is limited.** Only the committee member accepting a clearance can share its documents,
   while it's waiting for them, and each share is recorded in the same list.
 - **Documents don't stay forever.** Once the club removes old records, a cleared injury's letters,
-  reports and photos are removed 90 days after clearance (or the club's chosen period), or when the
-  season is archived if that's sooner. The record that they were added, checked and viewed stays
-  (see [Keeping records](#keeping-records)).
+  reports and photos are removed 1 year after clearance (or the club's chosen period: 90 days or
+  3 years). The record that they were added, checked and viewed stays (see
+  [Keeping records](#keeping-records)).
 - **Physios see only their own athletes.** A physio sees the injuries of the athletes in their own
   squads and teams. Only the Head Physio sees every athlete; a physio in no squad or team sees none
   until an admin places them.
@@ -2468,8 +2473,10 @@ Working With Children Check, and another admin must do it.
   Admins see the list on the child's member page, and parents and guardians on their home screen.
 - **Records aren't kept forever.** Set how long the club keeps check-ins, game goals, message text,
   attendance, training certificates, record views and injury documents under
-  [Keeping records](#keeping-records), and switch on **Remove old records**. Attendance,
-  certificates and record views are kept at least 7 years; concerns are never removed.
+  [Keeping records](#keeping-records), and switch on **Remove old records**. The text of messages
+  sent by or to a child is kept at least 3 years (7 recommended) and never less than other
+  messages, and who viewed a child's records at least 3 years (7 recommended); concerns are never
+  removed.
 - **Guardian changes leave a trail.** Every guardian link and unlink is kept with who made it,
   when and why, and the family is told. An admin can't change their own child's guardians.
 - **Policies and consent.** Link the club's safeguarding policy, privacy policy and code of
@@ -2515,10 +2522,11 @@ Working With Children Check, and another admin must do it.
   acceptance with who accepted it, the words and the policy version. A document can't be opened without the view being recorded first.
 - **Records are kept as long as they're needed, then removed.** Each club sets its keep periods
   and the app removes older records each night once the club switches it on. Concerns are never
-  removed; attendance, session plans, training certificates and record views are kept at least 7 years; a removed
-  message keeps who sent it, who it went to and who read it. A child's injury letters and photos
-  go soon after they're cleared (90 days, or at the end of the season), while the record that
-  they were checked and who viewed them stays.
+  removed. The text of messages sent by or to a child is kept at least 3 years (7 recommended)
+  and never less than other messages, and the record of who viewed a child's records at least 3
+  years (7 recommended); a removed message keeps who sent it, who it went to and who read it. A
+  child's injury letters and photos go a set time after they're cleared (1 year recommended, or
+  90 days or 3 years), while the record that they were checked and who viewed them stays.
 - **Child abuse and serious crimes go out, not in.** The register prompts the club to refer them to
   Police and the governing body straight away, and records that it did.
 - **Each club's data is kept apart**, in that club's own database.
