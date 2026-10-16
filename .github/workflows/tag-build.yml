@@ -1,0 +1,49 @@
+name: Tag build
+
+# Tags every commit on main with its build number, so "build N" on the user
+# guide PDFs and in the app docs can be found on GitHub. The build number is
+# the number of commits on main up to and including that commit
+# (`git rev-list --count <commit>`), so tag build-340 is commit 67c82f2.
+#
+# Runs on every push to main. Run it by hand from Actions to tag an older
+# commit: give its full or short SHA.
+on:
+  push:
+    branches: [main]
+  workflow_dispatch:
+    inputs:
+      commit:
+        description: 'Commit to tag (leave empty for the tip of main)'
+        type: string
+        default: ''
+
+permissions:
+  contents: write
+
+concurrency:
+  group: tag-build
+  cancel-in-progress: false
+
+jobs:
+  tag:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+      - name: Tag the build number
+        env:
+          COMMIT: ${{ inputs.commit || github.sha }}
+        run: |
+          sha=$(git rev-parse --verify "$COMMIT^{commit}")
+          n=$(git rev-list --count "$sha")
+          tag="build-$n"
+          if git rev-parse -q --verify "refs/tags/$tag" >/dev/null; then
+            echo "$tag already exists on $(git rev-parse --short "$tag^{commit}")"
+            exit 0
+          fi
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git tag -a "$tag" "$sha" -m "Build $n"
+          git push origin "$tag"
+          echo "Tagged $tag on $(git rev-parse --short "$sha")"

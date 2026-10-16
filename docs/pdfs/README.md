@@ -1,6 +1,6 @@
 # PDFs
 
-Printable documents about FirstPass HQ, all made from the app at **build 340** (16 October 2026). Every screen is from the app itself, filled with made-up sample people. The source of truth for how the app works is the [user guide](../user-guide.md); these PDFs are snapshots of it, numbered by build.
+Printable documents about FirstPass HQ, all made from the app at **build 340** (16 October 2026, tag `build-340`, commit 67c82f2). A build number is the number of commits on main; the Tag build workflow tags each one. Every screen is from the app itself, filled with made-up sample people. The source of truth for how the app works is the [user guide](../user-guide.md); these PDFs are snapshots of it, numbered by build.
 
 | | West Coast Thunder | West Coast Warriors (a pitch) | FirstPass HQ (generic) |
 | --- | --- | --- | --- |
