@@ -1444,7 +1444,8 @@ Check them against PlayHQ, then:
 2. Choose their **Squads** and, once teams are named, **Teams**. For coaches, choose **Head Coach**
    or **Assistant Coach** for each group. For athletes in a team, choose **Final team athlete** or
    **Training partner**. For physios, choose **Physio** or **Head Physio** under **Physio title**,
-   and place them in the squads or teams they look after (or none, to look after every athlete).
+   and place them in the squads or teams they look after. Only the Head Physio looks after every
+   athlete; a physio in no squad or team sees no athletes.
 3. For athletes, check their date of birth against PlayHQ or ID and enter it under **Date of
    birth** (DD/MM/YYYY). If it matches what they gave, tap **I've checked it: use** that date. If
    you enter a different date, the page notes the one they gave. The page shows who recorded the
@@ -1585,7 +1586,7 @@ Working With Children Check whichever role it is, and that includes athletes und
   when the Working with Children Screening Unit sends an interim negative notice or a negative
   notice, an interstate decision bars them, or an allegation is being looked into. Choose the
   reason (and write it down for **Other**), then tap **Stand down now**. Their coach, manager,
-  physio, committee and admin roles stop at once, and they're taken out of the squads and teams
+  physio, committee, admin, statistician and temporary helper roles stop at once, and they're taken out of the squads and teams
   they coach, manage or treat; their athlete and guardian roles carry on, so a parent still sees
   their own child. Their home screen says their role is paused and to talk to a club admin. Only
   admins see the reason. **Lift stand-down** ends it and puts back their places in this season's
@@ -2240,7 +2241,7 @@ once saved, only replaced or removed, and anyone who gets it wrong five times in
 | Messages                | The people they were sent to, the sender, and admins. Guardians of athletes under 18 get a copy of every message sent to their athlete, and of every message their athlete sends as a captain. Guests don't get messages; physios get messages sent to the Physio role and to their squads and teams, and whole-club messages only if an admin turns that on. |
 | Read receipts           | The sender and admins.                                                                                                      |
 | Daily check-in answers and notes | The athlete, their guardians and their coaches. For an athlete under 18, their coaches only once a parent or guardian consents. The committee, physios and admins see only group averages, hidden below 5 check-ins or when two groups differ by fewer than 5. |
-| Injuries and documents  | For an athlete under 18 whose parents haven't given consent for injuries: only the athlete, their guardians and admins. Otherwise the athlete, their guardians, their coaches, the physios who look after them (the Head Physio, physios in their squad or team, and physios in no squad or team), the committee and admins. Managers don't see injuries. Whoever takes attendance (coaches, managers, the committee and admins) sees only that an athlete is **Injured** and their expected return date, whatever the consent. Only the committee member or admin accepting a clearance can share its documents, while it waits for them; everyone else views them in the app. |
+| Injuries and documents  | For an athlete under 18 whose parents haven't given consent for injuries: only the athlete, their guardians and admins. Otherwise the athlete, their guardians, their coaches, the physios who look after them (the Head Physio and physios in their squad or team), the committee and admins. Managers don't see injuries. Whoever takes attendance (coaches, managers, the committee and admins) sees only that an athlete is **Injured** and their expected return date, whatever the consent. Only the committee member or admin accepting a clearance can share its documents, while it waits for them; everyone else views them in the app. |
 | Who opened injury documents | The athlete, their guardians and admins: every view and share, by whom, their role and when, and each photo consent. |
 | Who has viewed a child's records | For an athlete under 18: their verified parents or guardians (until the athlete turns 18) and admins. Lists every time someone other than the athlete or their guardians opened the athlete's injuries, injury documents, check-ins, game goals, season KPIs or member record. Opening a child's records is recorded whoever you are; nobody can switch it off or remove entries. |
 | Consents for a child    | The athlete, their parents or guardians and admins, with every consent given and withdrawn. Only a verified parent or guardian can give or withdraw one. |
@@ -2446,7 +2447,7 @@ Working With Children Check, and another admin must do it.
 
 - **Stand-downs.** An admin can stand someone down straight away, for example on an interim
   negative notice from the Working with Children Screening Unit. Their coach, manager, physio,
-  committee and admin roles stop and they leave the squads and teams they lead. Every stand-down is
+  committee, admin, statistician and temporary helper roles stop and they leave the squads and teams they lead. Every stand-down is
   kept (see [Changing or removing members](#changing-or-removing-members)).
 - **Committee checks have a deadline.** Committee members approved before checks were needed
   keep their role without one only until the club's committee checks date. From that day their
