@@ -11,19 +11,21 @@ Each brochure also has a **print version** for a printer: A4 trim with 3 mm blee
 
 The Warriors edition never names another real club; its second club is the made-up Coastal Hawks. The generic edition uses FirstPass branding and a made-up Bayside Netball Club.
 
-## User guides by role (West Coast Thunder)
+## User guides by role
 
-One guide per role, for members to keep. Each has getting started, what everyone can do, the role's own section and the child-safety parts written for that role. Someone with more than one role reads each of their roles' guides.
+One guide per role, for members to keep, in each edition. Each has getting started, what everyone can do, the role's own section and the child-safety parts written for that role. Someone with more than one role reads each of their roles' guides. The Warriors and generic editions name their own club throughout.
 
-- [Athletes](thunder/user-guides/West-Coast-Thunder-user-guide-athletes-build-340.pdf)
-- [Parents and guardians](thunder/user-guides/West-Coast-Thunder-user-guide-guardians-build-340.pdf)
-- [Coaches](thunder/user-guides/West-Coast-Thunder-user-guide-coaches-build-340.pdf)
-- [Managers](thunder/user-guides/West-Coast-Thunder-user-guide-managers-build-340.pdf)
-- [Committee](thunder/user-guides/West-Coast-Thunder-user-guide-committee-build-340.pdf)
-- [Physios](thunder/user-guides/West-Coast-Thunder-user-guide-physios-build-340.pdf)
-- [Guests](thunder/user-guides/West-Coast-Thunder-user-guide-guests-build-340.pdf)
-- [Temporary helpers](thunder/user-guides/West-Coast-Thunder-user-guide-temporary-helpers-build-340.pdf)
-- [Admins](thunder/user-guides/West-Coast-Thunder-user-guide-admins-build-340.pdf)
+| Role | West Coast Thunder | West Coast Warriors | FirstPass HQ (generic) |
+| --- | --- | --- | --- |
+| Athletes | [Thunder](thunder/user-guides/West-Coast-Thunder-user-guide-athletes-build-340.pdf) | [Warriors](warriors/user-guides/West-Coast-Warriors-user-guide-athletes-build-340.pdf) | [Generic](generic/user-guides/FirstPass-HQ-user-guide-athletes-build-340.pdf) |
+| Parents and guardians | [Thunder](thunder/user-guides/West-Coast-Thunder-user-guide-guardians-build-340.pdf) | [Warriors](warriors/user-guides/West-Coast-Warriors-user-guide-guardians-build-340.pdf) | [Generic](generic/user-guides/FirstPass-HQ-user-guide-guardians-build-340.pdf) |
+| Coaches | [Thunder](thunder/user-guides/West-Coast-Thunder-user-guide-coaches-build-340.pdf) | [Warriors](warriors/user-guides/West-Coast-Warriors-user-guide-coaches-build-340.pdf) | [Generic](generic/user-guides/FirstPass-HQ-user-guide-coaches-build-340.pdf) |
+| Managers | [Thunder](thunder/user-guides/West-Coast-Thunder-user-guide-managers-build-340.pdf) | [Warriors](warriors/user-guides/West-Coast-Warriors-user-guide-managers-build-340.pdf) | [Generic](generic/user-guides/FirstPass-HQ-user-guide-managers-build-340.pdf) |
+| Committee | [Thunder](thunder/user-guides/West-Coast-Thunder-user-guide-committee-build-340.pdf) | [Warriors](warriors/user-guides/West-Coast-Warriors-user-guide-committee-build-340.pdf) | [Generic](generic/user-guides/FirstPass-HQ-user-guide-committee-build-340.pdf) |
+| Physios | [Thunder](thunder/user-guides/West-Coast-Thunder-user-guide-physios-build-340.pdf) | [Warriors](warriors/user-guides/West-Coast-Warriors-user-guide-physios-build-340.pdf) | [Generic](generic/user-guides/FirstPass-HQ-user-guide-physios-build-340.pdf) |
+| Guests | [Thunder](thunder/user-guides/West-Coast-Thunder-user-guide-guests-build-340.pdf) | [Warriors](warriors/user-guides/West-Coast-Warriors-user-guide-guests-build-340.pdf) | [Generic](generic/user-guides/FirstPass-HQ-user-guide-guests-build-340.pdf) |
+| Temporary helpers | [Thunder](thunder/user-guides/West-Coast-Thunder-user-guide-temporary-helpers-build-340.pdf) | [Warriors](warriors/user-guides/West-Coast-Warriors-user-guide-temporary-helpers-build-340.pdf) | [Generic](generic/user-guides/FirstPass-HQ-user-guide-temporary-helpers-build-340.pdf) |
+| Admins | [Thunder](thunder/user-guides/West-Coast-Thunder-user-guide-admins-build-340.pdf) | [Warriors](warriors/user-guides/West-Coast-Warriors-user-guide-admins-build-340.pdf) | [Generic](generic/user-guides/FirstPass-HQ-user-guide-admins-build-340.pdf) |
 
 ## Rebuilding
 
