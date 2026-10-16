@@ -271,7 +271,8 @@ fixing your details.
 Once you're approved, the home screen is where everything starts. From the top:
 
 - **To do**: things you need to do, such as your daily check-in, an award vote, integrity training
-  due or an injury clearance to sign off.
+  due, an injury clearance to sign off or, for coaches and managers, new or changed absences to
+  review.
   Tap an item to go straight to it. Each item disappears once it's done. When there's nothing,
   it says "You're all caught up." Your own [personal tasks](#your-own-tasks) come after the
   club's items.
@@ -1092,11 +1093,19 @@ session.
   correct it.
 - **Athletes** shows each athlete's attendance over 4 weeks, 3 months or 12 months, with the last
   time they were there. Tap an athlete to see every session.
-- **Away in the next 4 weeks**, at the top, lists the absences athletes or their parents have
+- **New or changed absences**, at the very top, lists the absences reported or withdrawn for
+  athletes in the squads and teams you coach or manage since you last looked, each marked **New** or
+  **Withdrawn**, with the days, reason, details, who told the club and when. Tap **Mark as
+  reviewed** once you've read them. Until then, your **To do** list on the home screen says
+  **Review N new or changed absences**, and tapping it opens this screen. Absences you reported or
+  withdrew yourself, for your own child, aren't included, and nor are absences that ended more than
+  two weeks ago.
+- **Away in the next 4 weeks** lists the absences athletes or their parents have
   reported for the squads and teams you coach or manage (everyone's, for the committee and admins),
   with the reason, such as **Planned holidays** or **Personal illness**, and any details. Absences
   reported before reasons were added show only their details.
 
+<img src="user-guide/attendance-to-review.png" width="210" alt="New or changed absences to review, above athletes away in the next 4 weeks">
 <img src="user-guide/attendance-sessions.png" width="210" alt="Attendance sessions, with athletes away in the next 4 weeks">
 <img src="user-guide/attendance-session.png" width="210" alt="One attendance session">
 <img src="user-guide/attendance-athletes.png" width="210" alt="Athletes' attendance percentages">
@@ -1116,7 +1125,9 @@ Managers look after the logistics of their squads and teams. As a manager you ca
   progress and confirm your reviews (see [Season KPIs](#season-kpis)).
 
 Managers see the absences reported for their groups, on the register and under **Away in the next 4
-weeks**. They don't see athletes' attendance histories, check-ins or injuries.
+weeks**. Like coaches, they get a **To do** item when an absence is reported or withdrawn for one
+of their groups, and clear it with **Mark as reviewed** under **New or changed absences** (see
+[Attendance records](#attendance-records)). They don't see athletes' attendance histories, check-ins or injuries.
 
 <img src="user-guide/manager-home.png" width="210" alt="Manager home screen">
 <img src="user-guide/attendance-warning.png" width="210" alt="Warning that attendance may already have been taken">

@@ -1,6 +1,7 @@
 import { useFocusEffect } from 'expo-router';
 import { useCallback, useEffect, useState } from 'react';
 
+import { useAuth } from '@/lib/auth';
 import { useClub } from '@/lib/club';
 import { formatDateString, toDateString } from '@/lib/injuries';
 import { supabase } from '@/lib/supabase';
@@ -142,4 +143,50 @@ export function useAwayNotes(teamId: string | null, heldAt: string | null, enabl
     };
   }, [teamId, day, enabled, injuries]);
   return enabled ? away : {};
+}
+
+/** An absence reported or withdrawn since the coach or manager last reviewed. */
+export type AbsenceToReview = UpcomingAbsence & {
+  withdrawn: boolean;
+  changed_at: string;
+};
+
+/**
+ * Absences reported or withdrawn for the athletes in the squads and teams the
+ * member coaches or manages, since they last tapped Mark as reviewed. Pass
+ * `enabled` false for members who don't lead a group.
+ */
+export function useAbsencesToReview(enabled: boolean) {
+  const [toReview, setToReview] = useState<AbsenceToReview[]>([]);
+  const load = useCallback(async () => {
+    if (!enabled) return;
+    const { data } = await supabase.rpc('absences_to_review');
+    setToReview((data as AbsenceToReview[] | null) ?? []);
+  }, [enabled]);
+  useFocusEffect(
+    useCallback(() => {
+      load();
+    }, [load]),
+  );
+  const markReviewed = useCallback(async () => {
+    const { error } = await supabase.rpc('mark_absences_reviewed');
+    if (!error) setToReview([]);
+    return error;
+  }, []);
+  return {
+    absencesToReview: enabled ? toReview : [],
+    reloadAbsencesToReview: load,
+    markAbsencesReviewed: markReviewed,
+  };
+}
+
+/** Coaches and managers of a squad or team review its new and changed absences. */
+export function useLeadsAGroup() {
+  const { memberships, profile } = useAuth();
+  const { features } = useClub();
+  return (
+    features.attendance &&
+    profile?.status === 'approved' &&
+    memberships.some((m) => m.team_role === 'coach' || m.team_role === 'manager')
+  );
 }
