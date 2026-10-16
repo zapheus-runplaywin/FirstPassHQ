@@ -12,6 +12,7 @@ import { ThemedText } from '@/components/themed-text';
 import { Button, Card, PressableCard } from '@/components/ui';
 import { Spacing } from '@/constants/theme';
 import { useTheme } from '@/hooks/use-theme';
+import { useAbsencesToReview, useLeadsAGroup } from '@/lib/absences';
 import { useAffiliationTodos } from '@/lib/affiliation';
 import { useConductTodos } from '@/lib/conduct';
 import { committeeCheckDue } from '@/lib/safety';
@@ -90,6 +91,7 @@ export default function HomeScreen() {
   const { affiliationTodos, reloadAffiliationTodos } = useAffiliationTodos();
   const { conductTodos, reloadConductTodos } = useConductTodos();
   const { personalTasks, reloadPersonalTasks, setTaskDone } = usePersonalTasks();
+  const { absencesToReview, reloadAbsencesToReview } = useAbsencesToReview(useLeadsAGroup());
   const canSeeInjuries = useCanSeeInjuries();
   const canTakeAttendance = useCanTakeAttendance();
   const canViewAttendance = useCanViewAttendance();
@@ -128,6 +130,7 @@ export default function HomeScreen() {
     certificatesToCheck: features.integrity ? certificatesToCheck : 0,
     declarationWaiting: !!exemption && !exemption.declared_at,
     newConcerns,
+    absencesToReview: absencesToReview.length,
     consentsNeeded: athletes.filter((a) => a.canConsent && (!a.data || !a.health)),
     conduct: conductTodos.map((t) => ({
       id: t.profile_id,
@@ -180,6 +183,7 @@ export default function HomeScreen() {
       reloadAffiliationTodos(),
       reloadConductTodos(),
       reloadPersonalTasks(),
+      reloadAbsencesToReview(),
       loadAthletes(),
       reloadEvents(),
       reloadUnread(),
