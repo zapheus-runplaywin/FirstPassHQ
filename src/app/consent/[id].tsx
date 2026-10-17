@@ -86,7 +86,8 @@ export default function ConsentScreen() {
       <Stack.Screen options={{ title: `Consent for ${name}` }} />
       <ThemedText type="small">
         The club keeps information about {name} so they can train and play safely. Choose who else
-        can see it. {name}, you and the club’s admins always can. You can change this at any time.
+        can see it. {name} and you always can, and the club’s admins can always see their injuries but
+        never their check-in answers. You can change this at any time.
       </ThemedText>
       <PolicyLinks intro="Read the club’s policies first:" />
       {!child.can_consent ? (
