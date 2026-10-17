@@ -253,9 +253,9 @@ export function kpiCountLabel(count: number, results: number) {
 export function whoSetsLabel(teamRole: TeamRole, coachTitle: CoachTitle | null) {
   if (teamRole === 'athlete') return 'Your coaches';
   if (teamRole === 'coach' && coachTitle === 'assistant_coach') {
-    return 'Your head coach and the committee';
+    return 'Your head coach, the committee and admins';
   }
-  return 'The committee';
+  return 'The committee and admins';
 }
 
 /** Who else can read this person's KPIs, for their own sheet. */

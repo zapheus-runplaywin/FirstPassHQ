@@ -802,7 +802,7 @@ function JoinStatus() {
       <Card>
         <ThemedText type="smallBold">Request to join the club</ThemedText>
         <ThemedText type="small" themeColor="textSecondary">
-          Tell us who you are so an admin can add you to your team.
+          Tell us who you are so an admin can add you to your squad or team.
         </ThemedText>
         <View style={styles.cardAction}>
           <Button title="Request to join" onPress={() => router.push('/join')} />
@@ -822,8 +822,8 @@ function JoinStatus() {
       <Card>
         <ThemedText type="smallBold">Waiting for approval</ThemedText>
         <ThemedText type="small" themeColor="textSecondary">
-          A club admin will approve your request and add you to your team. Pull down to check
-          again.
+          A club admin will approve your request and add you to your squad or team. Pull down to
+          check again.
         </ThemedText>
         {profile.verified_at ? (
           <ThemedText type="small" themeColor="textSecondary">

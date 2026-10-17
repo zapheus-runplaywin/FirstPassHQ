@@ -37,7 +37,9 @@ export default function DeleteAccountScreen() {
       <ThemedText type="small" themeColor="textSecondary">
         The club keeps your injury records for 12 months after you leave, where only the
         committee and admins can see them, and then deletes them. Clearance documents may go
-        sooner, after the club’s keep period for injury documents.
+        sooner, after the club’s keep period for injury documents. It also keeps, under your name,
+        your code of conduct acceptances and, if you coach or manage, your season KPIs and their
+        reviews.
       </ThemedText>
       <ThemedText type="small" themeColor="textSecondary">
         It doesn’t change your PlayHQ registration or club membership, or your account at any other

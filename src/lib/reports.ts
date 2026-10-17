@@ -1532,6 +1532,7 @@ export type KpiReportRow = {
   full_name: string;
   team_role: TeamRole;
   coach_title: CoachTitle | null;
+  left_at: string | null;
   kpi_id: string | null;
   format: KpiFormat | null;
   title: string | null;
@@ -1606,7 +1607,7 @@ export function kpiReport(seasonName: string, rows: KpiReportRow[], today: strin
         { label: 'Reviews', width: 1.6 },
       ],
       rows: list.map((r) => {
-        const person = `${r.full_name}\n${teamPositionLabel(r.team_role, r.coach_title)}`;
+        const person = `${r.full_name}\n${teamPositionLabel(r.team_role, r.coach_title)}${r.left_at ? `\nLeft the club ${localDay(r.left_at)}` : ''}`;
         const reviewOverdue = r.reviews.some((v) => !v.written && v.due_on < today);
         if (!r.kpi_id) {
           return { cells: [person, 'No KPIs set', '', '', ''], flag: true };
@@ -1625,6 +1626,6 @@ export function kpiReport(seasonName: string, rows: KpiReportRow[], today: strin
       empty: 'No coaches or managers.',
     })),
     footnote:
-      'Results are recorded by whoever sets the KPIs: the committee and admins for coaches and managers, and head coaches for their assistants. Athletes’ KPIs aren’t in this report.',
+      'Results are recorded by whoever sets the KPIs: the committee and admins for coaches and managers, and head coaches for their assistants. Athletes’ KPIs aren’t in this report. Coaches and managers who have deleted their account stay on it, with the day they left.',
   };
 }

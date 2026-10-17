@@ -84,7 +84,7 @@ function Inbox({ messages }: { messages: InboxMessage[] | null }) {
   if (messages.length === 0) {
     return (
       <ThemedText type="small" themeColor="textSecondary">
-        No messages yet. Messages from your coaches, managers and the club will show here.
+        No messages yet. Messages from your coaches, managers, captains and the club will show here.
       </ThemedText>
     );
   }
