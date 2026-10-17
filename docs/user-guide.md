@@ -40,9 +40,9 @@ each of their roles can.
 | ------------- | ---------------------------------------------------------------------------------------------------- |
 | **Athlete**   | Registered players. Some are club captains, or captains or vice captains of a squad or team. They see their own attendance and can report an absence. |
 | **Guardian**  | Parents and guardians of athletes under 18. They see their child's attendance and can report an absence for them, and see what has changed around their child. If the club asks, they accept the club's code of conduct for their child each season. |
-| **Coach**     | Head coaches and assistant coaches. Both have the same permissions; the title only shows who is who. Need a current Working With Children Check; the role pauses while it's expired. A parent volunteering at their child's club, or a volunteer under 18, has an exemption instead (see [Volunteer exemptions](#volunteer-exemptions)). |
-| **Manager**   | Squad and team managers. Need a current Working With Children Check; the role pauses while it's expired. A parent volunteering at their child's club, or a volunteer under 18, has an exemption instead (see [Volunteer exemptions](#volunteer-exemptions)). |
-| **Committee** | Club committee members. Each can add a title, such as President or Secretary, shown with their role. Need a current Working With Children Check unless an admin exempts them; the role pauses if a recorded check expires. Committee members approved before checks were needed keep the role without one only until the club's **committee checks date**. |
+| **Coach**     | Head coaches and assistant coaches. Both have the same permissions; the title only shows who is who. The app gives each coach a title from their team, or their squad until they're in a team, such as "Head Coach, Open A". Need a current Working With Children Check; the role pauses while it's expired. A parent volunteering at their child's club, or a volunteer under 18, has an exemption instead (see [Volunteer exemptions](#volunteer-exemptions)). |
+| **Manager**   | Squad and team managers. The app gives each manager a title from their team, or their squad until they're in a team, such as "Manager, 17 & Under". Need a current Working With Children Check; the role pauses while it's expired. A parent volunteering at their child's club, or a volunteer under 18, has an exemption instead (see [Volunteer exemptions](#volunteer-exemptions)). |
+| **Committee** | Club committee members. Each can add a title, such as President or Secretary, shown with their role. Only committee members and admins can add their own title. Need a current Working With Children Check unless an admin exempts them; the role pauses if a recorded check expires. Committee members approved before checks were needed keep the role without one only until the club's **committee checks date**. |
 | **Physio**    | The club's physiotherapists. A physio can be placed in squads or teams to look after their athletes, and one can be the **Head Physio**, who looks after every athlete. Need a current Working With Children Check; the role pauses while it's expired. A parent volunteering at their child's club, or a volunteer under 18, has an exemption instead (see [Volunteer exemptions](#volunteer-exemptions)). |
 | **Guest**     | Anyone else the club lets in, such as partners and sponsors. Guests can only look.                   |
 | **Statistician** | The people who record live game stats on a tablet in FirstPass Vantage, which coaches watch live in FirstPass Vision. Statisticians see every game the club records; a game's coaches and managers see their own squad's or team's. Any member can hold it alongside another role, such as a manager or an athlete who isn't playing. The role pauses while a member is stood down. |
@@ -115,6 +115,7 @@ What each role sees on its home screen:
 | Import fixtures from PlayHQ            |         |                 |              |            |               |               |         |       ✓       |
 | Preferred name                         |    ✓    |        ✓        |      ✓       |     ✓      |       ✓       |       ✓       |    ✓    |       ✓       |
 | Title, such as President               |         |                 |              |            |       ✓       |               |         |       ✓       |
+| Team title, set by the app             |         |                 |      ✓       |     ✓      |               |               |         |               |
 | Club name, colours, logo and features  |         |                 |              |            |               |               |         |       ✓       |
 | Absence reasons list                   |         |                 |              |            |               |               |         |       ✓       |
 | Invite members (QR code and link)      |         |                 |              |            |               |               |         |       ✓       |
@@ -330,8 +331,16 @@ your member page, and can search for you by either.
 
 Committee members and admins also see a **Title** field, for a position such as President,
 Secretary or Treasurer. It shows under your name with your role, like "Committee · President".
+Nobody else can set a title.
+
+Coaches and managers get a title from the app instead, shown on **Your details** and under your
+name, like "Coach · Head Coach, Open A" or "Manager · Manager, 17 & Under". It names the teams you
+coach or manage. Until you're in a team, it names your squad. If you coach more than one team, it
+lists them all, like "Assistant Coach, Open A and Open". Only an admin can change whether you're a
+head or assistant coach.
 
 <img src="user-guide/your-details.png" width="210" alt="Your details: preferred name and title">
+<img src="user-guide/your-details-coach.png" width="210" alt="Your details for a coach: the title the app sets from their teams">
 
 ### Messages
 
@@ -902,7 +911,8 @@ As a guardian you:
 ## 6. Coaches
 
 Head coaches and assistant coaches have the same permissions. Everything below applies to the
-squads and teams you're listed in as a coach.
+squads and teams you're listed in as a coach. Your title, like "Head Coach, Open A", comes from your
+team, or your squad until you're in a team (see [Your preferred name](#your-preferred-name)).
 
 Coaches and managers need a current Working With Children Check, recorded by an admin, before
 they're approved. The check is looked at every time you use the app: once the expiry date has
@@ -1195,7 +1205,8 @@ for today. You can't delete a plan: ask an admin if one was added by mistake.
 
 ## 7. Managers
 
-Managers look after the logistics of their squads and teams. As a manager you can:
+Managers look after the logistics of their squads and teams. The app titles you from your team, or
+your squad until you're in a team, like "Manager, 17 & Under". As a manager you can:
 
 - **Send messages** to the squads and teams you manage, and see read receipts, the same way as
   coaches (see [Sending messages](#sending-messages)).
@@ -1597,7 +1608,10 @@ club** or **Other**) and tap **Don't approve**. They see the reason and can requ
 
 Open any member to change their role, squads, teams or titles, then tap **Save changes**. A
 committee member's or admin's page has a **Title** field (President, Secretary and so on), which
-shows on their home screen and in the Members list. A physio's page has **Physio title**, where
+shows on their home screen and in the Members list. Other members don't have this field. A coach's
+or manager's title is set by the app from their teams, or their squad until they're in a team, and
+shows under their squads and teams as "Their title in the app"; choose **Head Coach** or
+**Assistant Coach** for each group under **Head or assistant coach in**. A physio's page has **Physio title**, where
 you can make them the **Head Physio**; it shows as "Head Physio" on their home screen and in the
 Members list. The card at the top shows their **Preferred
 name** if they've set one.
@@ -1633,6 +1647,8 @@ Working With Children Check whichever role it is, and that includes athletes und
   message receipts. Messages they sent stay, and their injury records are kept for 12 months.
 
 <img src="user-guide/member-title.png" width="210" alt="A committee member's page with their preferred name and title">
+<img src="user-guide/member-coach-title.png" width="210" alt="A coach's squads and teams, head or assistant coach in each, and the title the app gives them">
+<img src="user-guide/members-titles.png" width="210" alt="Members list with committee and coach titles">
 <img src="user-guide/member-roles.png" width="210" alt="An athlete who also coaches: other roles and their role in each squad">
 <img src="user-guide/delete-member.png" width="210" alt="Delete member confirmation">
 <img src="user-guide/member-stand-down.png" width="210" alt="Standing a coach down, with the reasons to choose from">
@@ -1666,8 +1682,8 @@ works more simply:
 - **Add a team**: give it a name. There are no squads to choose from.
 - **Choose who is in a team** (tap it): every approved athlete, coach and manager is listed. Pick
   **Final team**, **Training partner** or **Not selected** for athletes, and **In this team** or
-  **Not in this team** for coaches and managers. Guardians are added from their member page and
-  stay when you save.
+  **Not in this team** for coaches and managers. For a coach in the team, choose **Head Coach** or
+  **Assistant Coach**. Guardians are added from their member page and stay when you save.
 - On a member's page, **Teams** replaces **Squads**, and athletes are picked as a final team athlete
   or training partner for each team.
 - There is no squad phase to mark complete: coaches look after their team's athletes from the start.
@@ -1688,7 +1704,8 @@ With squads on:
   named from.
 - **Name a team** (tap it): for each person in the squad, choose **Final team**, **Training partner**
   or **Not selected** for athletes, and **In this team** or **Not in this team** for coaches and
-  managers. People not selected stay in the squad.
+  managers. For a coach in the team, choose **Head Coach** or **Assistant Coach**; they start with
+  the one they have in the squad. People not selected stay in the squad.
 - **Rename** or **Remove** a squad or team. Removing it takes it off this season's lists, home
   screens and coaches' to-dos; its attendance and other records are kept and you can **Bring
   back** it later.

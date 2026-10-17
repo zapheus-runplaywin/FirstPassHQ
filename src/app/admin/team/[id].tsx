@@ -6,7 +6,7 @@ import { Screen } from '@/components/screen';
 import { ThemedText } from '@/components/themed-text';
 import { Button, Card, ChipGroup, ErrorText } from '@/components/ui';
 import { Spacing } from '@/constants/theme';
-import { teamPositionLabel } from '@/lib/labels';
+import { coachTitleLabels, teamPositionLabel } from '@/lib/labels';
 import { supabase } from '@/lib/supabase';
 import { rolesOf } from '@/lib/roles';
 import type { AppRole, CoachTitle, RosterEntry, Team, TeamRole, TeamSelection } from '@/lib/types';
@@ -20,6 +20,8 @@ type ClubPerson = {
   role: AppRole;
   extra_roles: AppRole[];
 };
+
+const coachTitles = Object.keys(coachTitleLabels) as CoachTitle[];
 
 /** For each person who can be picked: how they are selected for this team, if at all. */
 type Pick = TeamSelection | 'in' | 'out';
@@ -93,9 +95,15 @@ export default function NameTeamScreen() {
       }
       setTeam(loadedTeam);
       setSquadMembers(members);
+      // Coaches keep their title in this team, or bring the one they have in the squad.
       setTitles(
         Object.fromEntries(
-          [...current.values()].filter((m) => m.coach_title).map((m) => [m.profile_id, m.coach_title]),
+          members
+            .filter((m) => m.team_role === 'coach')
+            .map((m) => [
+              m.profile_id,
+              current.get(m.profile_id)?.coach_title ?? m.coach_title ?? 'head_coach',
+            ]),
         ),
       );
       setPicks(
@@ -121,7 +129,7 @@ export default function NameTeamScreen() {
           profile_id,
           team_role: squadMembers?.find((m) => m.profile_id === profile_id)?.team_role,
           selection: pick === 'in' ? null : pick,
-          // Coaches keep their title; new ones start as head coach.
+          // Head coach unless marked as an assistant.
           coach_title: titles[profile_id] ?? null,
         })),
     });
@@ -168,11 +176,21 @@ export default function NameTeamScreen() {
         squadMembers.map((member) => (
           <View key={member.profile_id} style={styles.member}>
             <ChipGroup
-              label={`${member.full_name ?? 'Unnamed member'} · ${teamPositionLabel(member.team_role, member.coach_title)}`}
+              label={`${member.full_name ?? 'Unnamed member'} · ${teamPositionLabel(member.team_role, titles[member.profile_id] ?? null)}`}
               options={member.team_role === 'athlete' ? athleteOptions : staffOptions}
               selected={[picks[member.profile_id] ?? 'out']}
               onToggle={(pick) => setPicks((current) => ({ ...current, [member.profile_id]: pick }))}
             />
+            {member.team_role === 'coach' && picks[member.profile_id] === 'in' ? (
+              <ChipGroup
+                label={`${member.full_name ?? 'Unnamed member'}: head or assistant coach`}
+                options={coachTitles.map((c) => ({ value: c, label: coachTitleLabels[c] }))}
+                selected={[titles[member.profile_id] ?? 'head_coach']}
+                onToggle={(title) =>
+                  setTitles((current) => ({ ...current, [member.profile_id]: title }))
+                }
+              />
+            ) : null}
           </View>
         ))
       )}

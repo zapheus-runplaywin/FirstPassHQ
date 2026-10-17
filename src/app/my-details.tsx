@@ -1,23 +1,26 @@
 import { router } from 'expo-router';
 import { useState } from 'react';
+import { StyleSheet, View } from 'react-native';
 
 import { PolicyLinks } from '@/components/policy-links';
 import { Screen } from '@/components/screen';
 import { ThemedText } from '@/components/themed-text';
 import { Button, ErrorText, TextField } from '@/components/ui';
+import { Spacing } from '@/constants/theme';
 import { useAuth } from '@/lib/auth';
-import { canHoldTitle } from '@/lib/labels';
+import { canHoldTitle, staffTitle } from '@/lib/labels';
 import { supabase } from '@/lib/supabase';
 import { rolesOf } from '@/lib/roles';
 
 export default function MyDetailsScreen() {
-  const { profile, refresh } = useAuth();
+  const { profile, memberships, refresh } = useAuth();
   const [preferredName, setPreferredName] = useState(profile?.preferred_name ?? '');
   const [title, setTitle] = useState(profile?.title ?? '');
   const [saving, setSaving] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
   const hasTitle = profile?.status === 'approved' && canHoldTitle(rolesOf(profile));
+  const groupTitle = profile?.status === 'approved' ? staffTitle(memberships) : '';
 
   async function save() {
     setSaving(true);
@@ -68,9 +71,26 @@ export default function MyDetailsScreen() {
         </>
       ) : null}
 
+      {groupTitle ? (
+        <View style={styles.groupTitle}>
+          <ThemedText type="smallBold">{hasTitle ? 'Team title' : 'Title'}</ThemedText>
+          <ThemedText>{groupTitle}</ThemedText>
+          <ThemedText type="small" themeColor="textSecondary">
+            Set by the app from the teams you coach or manage, or your squad if you’re not in a
+            team yet. A club admin can change whether you’re a head or assistant coach.
+          </ThemedText>
+        </View>
+      ) : null}
+
       <ErrorText>{error}</ErrorText>
       <Button title="Save" onPress={save} busy={saving} />
       <PolicyLinks intro="The club’s policies:" />
     </Screen>
   );
 }
+
+const styles = StyleSheet.create({
+  groupTitle: {
+    gap: Spacing.half,
+  },
+});

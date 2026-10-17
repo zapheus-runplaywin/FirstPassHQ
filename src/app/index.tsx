@@ -42,7 +42,7 @@ import {
   usePendingRequests,
   useSafetyTodos,
 } from '@/lib/use-pending-requests';
-import { rejectionReasonMessages, rolesLabel, teamPositionLabel } from '@/lib/labels';
+import { rejectionReasonMessages, rolesLabel, staffTitle, teamPositionLabel } from '@/lib/labels';
 import { supabase } from '@/lib/supabase';
 import { useNewConcerns } from '@/lib/concerns';
 import { usePersonalTasks } from '@/lib/personal-tasks';
@@ -236,7 +236,7 @@ export default function HomeScreen() {
           <ThemedText type="subtitle">Hi {name}</ThemedText>
           {approved && profile ? (
             <ThemedText themeColor="textSecondary">
-              {rolesHeldLabel(profile, paused?.roles ?? [])}
+              {rolesHeldLabel(profile, memberships, paused?.roles ?? [])}
             </ThemedText>
           ) : null}
         </View>
@@ -668,8 +668,17 @@ function sortMemberships(memberships: TeamMembership[]) {
 }
 
 /** The member's roles for the header, with any paused ones marked. */
-function rolesHeldLabel(profile: Profile, pausedRoles: AppRole[]) {
-  const usable = rolesLabel(rolesOf(profile), profile.title, profile.head_physio);
+function rolesHeldLabel(
+  profile: Profile,
+  memberships: TeamMembership[],
+  pausedRoles: AppRole[],
+) {
+  const usable = rolesLabel(
+    rolesOf(profile),
+    profile.title,
+    profile.head_physio,
+    staffTitle(memberships),
+  );
   if (pausedRoles.length === 0) return usable;
   const pausedLabel = `${rolesLabel(pausedRoles)} (paused)`;
   // A member with every role paused shows as a guest; say what they hold instead.
