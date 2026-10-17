@@ -1,7 +1,8 @@
 // Removes injury records 12 months after the athlete left the club, the files
 // of cleared injuries once they are past the club's keep period, and,
 // once an admin has switched on "Remove old records" in Club settings, other
-// records past the club's keep periods (public.purge_expired_records()).
+// records past the club's keep periods (public.purge_expired_records() and
+// public.purge_expired_surveys()).
 //
 // Documents go first, through the storage API (deleting storage rows in SQL
 // would leave the files behind), then the records. A record is only removed
@@ -120,11 +121,14 @@ Deno.serve(async (request) => {
   const { data: records, error: recordsError } = await supabase.rpc('purge_expired_records');
   if (recordsError) return failed('removing old records', recordsError.message);
 
+  const { data: surveys, error: surveysError } = await supabase.rpc('purge_expired_surveys');
+  if (surveysError) return failed('removing old surveys', surveysError.message);
+
   // Counts go to the function's logs, not to whoever called it.
   console.log(`Purged ${names.length} document(s) and ${purged} injury record(s)`);
   console.log(`Removed ${cleared.length} cleared injury file(s); marked ${marked} document(s)`);
   console.log(
-    `Removed ${certificates.length} certificate file(s) and ${planFiles.length} session plan file(s); old records: ${JSON.stringify(records)}`,
+    `Removed ${certificates.length} certificate file(s) and ${planFiles.length} session plan file(s); old records: ${JSON.stringify(records)}; old surveys: ${JSON.stringify(surveys)}`,
   );
   return Response.json({ ok: true });
 });

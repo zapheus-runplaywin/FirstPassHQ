@@ -22,7 +22,13 @@ type Retention = {
   child_messages_months: number;
   /** Days after clearance an injury's files are kept. */
   injury_documents_days: number;
+  /** Months after closing a survey is kept, by who it's from and who sees it. */
+  surveys_months: number;
+  shared_surveys_months: number;
+  team_polls_months: number;
 };
+
+type SurveyRetention = Pick<Retention, 'surveys_months' | 'shared_surveys_months' | 'team_polls_months'>;
 
 type PeriodKey = Exclude<
   keyof Retention,
@@ -30,16 +36,21 @@ type PeriodKey = Exclude<
 >;
 
 async function loadRetention() {
-  const [{ data }, { data: childMonths }, { data: days }] = await Promise.all([
+  const [{ data }, { data: childMonths }, { data: days }, { data: surveys }] = await Promise.all([
     supabase.rpc('record_retention').maybeSingle(),
     supabase.rpc('child_messages_keep_months'),
     supabase.rpc('injury_documents_keep_days'),
+    supabase.rpc('survey_retention').maybeSingle(),
   ]);
   if (!data) return null;
+  const survey = surveys as SurveyRetention | null;
   return {
-    ...(data as Omit<Retention, 'child_messages_months' | 'injury_documents_days'>),
+    ...(data as Omit<Retention, 'child_messages_months' | 'injury_documents_days' | keyof SurveyRetention>),
     child_messages_months: typeof childMonths === 'number' ? childMonths : 84,
     injury_documents_days: typeof days === 'number' ? days : 365,
+    surveys_months: survey?.surveys_months ?? 36,
+    shared_surveys_months: survey?.shared_surveys_months ?? 24,
+    team_polls_months: survey?.team_polls_months ?? 6,
   } as Retention;
 }
 
@@ -82,6 +93,24 @@ const periods: { key: PeriodKey; label: string; note: string; choices: number[] 
     label: 'Training certificates',
     note: 'From when the certificate was added, with its file. Recommended: 1 year.',
     choices: oneToFive,
+  },
+  {
+    key: 'surveys_months',
+    label: 'Surveys from the committee and admins',
+    note: 'From when the survey closes, with its questions, answers and who it went to. Recommended: 3 years.',
+    choices: [12, 24, 36, 60, 84],
+  },
+  {
+    key: 'shared_surveys_months',
+    label: 'Squad and team surveys shared with admins or the committee',
+    note: 'Coaches’ and managers’ surveys that admins see, from when they close. Recommended: 2 years.',
+    choices: [12, 24, 36, 60, 84],
+  },
+  {
+    key: 'team_polls_months',
+    label: 'Squad and team polls kept in the team',
+    note: 'Coaches’ quick polls nobody else sees, and captains’ polls, from when they close. Recommended: 6 months.',
+    choices: [3, 6, 12, 24],
   },
   {
     key: 'access_log_months',
@@ -154,9 +183,16 @@ export function RecordRetention() {
       p_access_log_months: draft.access_log_months,
       p_injury_documents_days: draft.injury_documents_days,
     });
+    const { error: surveyError } = rpcError
+      ? { error: null }
+      : await supabase.rpc('admin_set_survey_retention', {
+          p_surveys_months: draft.surveys_months,
+          p_shared_surveys_months: draft.shared_surveys_months,
+          p_team_polls_months: draft.team_polls_months,
+        });
     setBusy(false);
-    if (rpcError) {
-      setError(rpcError.message);
+    if (rpcError || surveyError) {
+      setError((rpcError ?? surveyError)?.message ?? 'That didn’t save. Try again.');
       return;
     }
     const row = (await loadRetention()) ?? draft;

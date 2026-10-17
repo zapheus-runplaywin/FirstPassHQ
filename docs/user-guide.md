@@ -2393,6 +2393,16 @@ its periods starts on those.
 - **Attendance** (with absences and session plans and their files, counted from the day of the
   session) and **Training certificates** (with their files, counted from when they were added):
   1 year (recommended) to 5 years.
+- **Surveys**, counted from when each survey closes, with its questions, answers and who it went
+  to. There are three periods:
+  - **Surveys from the committee and admins**: 1, 2, 3 (recommended), 5 or 7 years.
+  - **Squad and team surveys shared with admins or the committee** (every coach or manager survey
+    longer than a quick poll or with a written answer, and any they chose to share): 1, 2
+    (recommended), 3, 5 or 7 years.
+  - **Squad and team polls kept in the team** (coaches' and managers' quick polls nobody else sees,
+    and captains' polls): 3 months, 6 months (recommended), 1 year or 2 years.
+
+  Who viewed a child's survey answers stays in their record views, under that setting's own period.
 - **Who viewed a child's records**: 3, 5, 7 (recommended), 10 or 15 years.
 - **Injury documents**: the letters, reports and photos of a cleared injury go 90 days, 1 year
   (recommended) or 3 years after it was cleared. The injury, its sign-offs, each document's name,
@@ -2408,6 +2418,7 @@ Tap **Save keep periods** to save.
 
 <img src="user-guide/club-settings-records.png" width="210" alt="Club settings: keeping records">
 <img src="user-guide/club-settings-records-safety.png" width="210" alt="Club settings: keep periods for message text, messages involving a child, attendance and certificates">
+<img src="user-guide/club-settings-records-surveys.png" width="210" alt="Club settings: keep periods for surveys and team polls">
 <img src="user-guide/club-settings-records-injury.png" width="210" alt="Club settings: keep periods for record views and injury documents">
 
 ### Safeguarding contacts
@@ -2782,10 +2793,10 @@ Working With Children Check, and another admin must do it.
   Parents and guardians get a copy of every survey sent to their child and read their child's named
   answers. Captains can send their own squad or team polls with choices only, no written answers,
   the group's coaches and managers see each poll and its results and can close it, and a captain
-  under 18's parents or guardians get a copy. Survey answers aren't removed under Keeping records
-  yet.
+  under 18's parents or guardians get a copy. Surveys and their answers are removed under
+  Keeping records, with their own periods.
 - **Records aren't kept forever.** Set how long the club keeps check-ins, game goals, message text,
-  attendance, training certificates, record views and injury documents under
+  surveys, attendance, training certificates, record views and injury documents under
   [Keeping records](#keeping-records), and switch on **Remove old records**. The text of messages
   sent by or to a child is kept at least 3 years (7 recommended) and never less than other
   messages, and who viewed a child's records at least 3 years (7 recommended); concerns are never

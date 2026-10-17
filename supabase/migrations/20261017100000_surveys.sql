@@ -45,8 +45,12 @@
 -- opens results that name a child under 18, the view
 -- goes in the child's record access log.
 --
--- Additive only: new types, tables and functions, and the record access log
--- gains a kind.
+-- Keep periods for surveys go under Club settings > Keeping records.
+--
+-- Additive only: new types, tables and functions, three club_settings
+-- columns with defaults, and the record access log gains a kind. No rows are
+-- changed. Surveys are removed after their keep period only by the nightly
+-- clean-up, and only once an admin switches on "Remove old records".
 
 begin;
 
@@ -1134,5 +1138,111 @@ end;
 $$;
 revoke execute on function public.survey_export(uuid) from public, anon;
 grant execute on function public.survey_export(uuid) to authenticated;
+
+-- ---------------------------------------------------------------------------
+-- Keeping records (Matt, 17 October 2026)
+-- ---------------------------------------------------------------------------
+
+-- Three keep periods, counted from when a survey closes:
+--   - surveys sent by the committee or an admin: 1, 2, 3, 5 or 7 years,
+--     default 3 years (as message text);
+--   - squad and team surveys shared with admins or the committee: 1, 2, 3, 5
+--     or 7 years, default 2 years;
+--   - squad and team polls that stay in the team (coaches' quick polls and
+--     captains' polls): 3 or 6 months, 1 or 2 years, default 6 months.
+-- Past its period a survey goes with its questions, answers and who it went
+-- to, but only once an admin has switched on "Remove old records". Who
+-- viewed a child's answers stays in the record views for their own period.
+alter table public.club_settings
+  add column if not exists retention_surveys_months integer not null default 36;
+alter table public.club_settings
+  add column if not exists retention_shared_surveys_months integer not null default 24;
+alter table public.club_settings
+  add column if not exists retention_team_polls_months integer not null default 6;
+
+-- The three survey keep periods, for admins.
+create or replace function public.survey_retention()
+returns table (surveys_months integer, shared_surveys_months integer, team_polls_months integer)
+language sql
+stable
+security definer
+set search_path = ''
+as $$
+  select coalesce(s.retention_surveys_months, 36),
+    coalesce(s.retention_shared_surveys_months, 24),
+    coalesce(s.retention_team_polls_months, 6)
+  from (select 1) as one
+  left join public.club_settings s on s.id
+  where public.is_admin();
+$$;
+revoke execute on function public.survey_retention() from public, anon;
+grant execute on function public.survey_retention() to authenticated;
+
+create or replace function public.admin_set_survey_retention(
+  p_surveys_months integer,
+  p_shared_surveys_months integer,
+  p_team_polls_months integer
+)
+returns void
+language plpgsql
+security definer
+set search_path = ''
+as $$
+declare
+  s public.club_settings;
+begin
+  if not public.is_admin() then
+    raise exception 'Only admins can change how long records are kept';
+  end if;
+  select * into s from public.club_settings where id;
+  if not public.retention_choice_ok(p_surveys_months, array[12, 24, 36, 60, 84], s.retention_surveys_months)
+     or not public.retention_choice_ok(p_shared_surveys_months, array[12, 24, 36, 60, 84], s.retention_shared_surveys_months) then
+    raise exception 'Surveys can be kept 1, 2, 3, 5 or 7 years';
+  end if;
+  if not public.retention_choice_ok(p_team_polls_months, array[3, 6, 12, 24], s.retention_team_polls_months) then
+    raise exception 'Team polls can be kept 3 or 6 months, or 1 or 2 years';
+  end if;
+  insert into public.club_settings (id) values (true) on conflict (id) do nothing;
+  update public.club_settings
+  set retention_surveys_months = p_surveys_months,
+      retention_shared_surveys_months = p_shared_surveys_months,
+      retention_team_polls_months = p_team_polls_months,
+      retention_updated_by_name = public.member_display_name(auth.uid()),
+      retention_updated_at = now()
+  where id;
+end;
+$$;
+revoke execute on function public.admin_set_survey_retention(integer, integer, integer) from public, anon;
+grant execute on function public.admin_set_survey_retention(integer, integer, integer) to authenticated;
+
+-- Removes surveys past their keep period and returns how many went. Does
+-- nothing while "Remove old records" is off. Run each night by the
+-- purge-expired-injuries function after purge_expired_records().
+create or replace function public.purge_expired_surveys()
+returns jsonb
+language plpgsql
+security definer
+set search_path = ''
+as $$
+declare
+  s public.club_settings;
+  v_count int := 0;
+begin
+  select * into s from public.club_settings where id;
+  if not found or not s.retention_enabled then
+    return jsonb_build_object('enabled', false);
+  end if;
+  delete from public.surveys v
+  where v.closes_at < now() - make_interval(months => case
+    when v.sent_as = 'committee' then s.retention_surveys_months
+    when v.share_with_admins or v.share_with_committee then s.retention_shared_surveys_months
+    else s.retention_team_polls_months
+  end);
+  get diagnostics v_count = row_count;
+  return jsonb_build_object('enabled', true, 'surveys', v_count);
+end;
+$$;
+revoke execute on function public.purge_expired_surveys() from public, anon, authenticated;
+grant execute on function public.purge_expired_surveys() to service_role;
 
 commit;
