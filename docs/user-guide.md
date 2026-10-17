@@ -1701,8 +1701,8 @@ this season's squads and teams, aren't a guardian of anyone who has, hold no clu
 (admin, committee, partner or Head Physio), and haven't signed in or changed groups for 2 years.
 Each shows when they were last active. Open them and tap **Delete member** if they've left; the
 app never deletes them by itself. Once **Remove old records** is on, join requests are removed 90
-days after they're turned down or if nobody answers them for 90 days, and temporary helpers a year
-after their last day.
+days after they're turned down or if nobody answers them for 90 days, people who signed in but
+never asked to join after 90 days, and temporary helpers a year after their last day.
 
 **Needs checking**, at the top, lists the members behind the child-safety to-dos on your home
 screen, with the reason under each name: no Working With Children Check recorded, one that has
