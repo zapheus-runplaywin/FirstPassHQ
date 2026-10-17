@@ -4,16 +4,25 @@ import { StyleSheet, View } from 'react-native';
 
 import { Screen } from '@/components/screen';
 import { ThemedText } from '@/components/themed-text';
-import { Card, ErrorText } from '@/components/ui';
+import { Button, Card, ErrorText } from '@/components/ui';
 import { Spacing } from '@/constants/theme';
 import { useTheme } from '@/hooks/use-theme';
+import { useClub } from '@/lib/club';
+import { toDateString } from '@/lib/injuries';
+import { reportPdf } from '@/lib/pdf';
+import { fileSlug, sharePdf } from '@/lib/reports';
+import { shareXlsx, surveyReport, surveyWorkbook, type SurveyExport } from '@/lib/survey-reports';
 import { supabase } from '@/lib/supabase';
 import { answerText, type SurveyResults } from '@/lib/surveys';
+import { workbookXlsx } from '@/lib/xlsx';
 
 export default function SurveyResultsScreen() {
   const { id } = useLocalSearchParams<{ id: string }>();
   const [results, setResults] = useState<SurveyResults | null>(null);
   const [error, setError] = useState<string | null>(null);
+  const club = useClub();
+  const [exporting, setExporting] = useState<'pdf' | 'xlsx' | null>(null);
+  const [exportError, setExportError] = useState<string | null>(null);
 
   const load = useCallback(async () => {
     const { data, error: fetchError } = await supabase.rpc('survey_results', { p_survey_id: id });
@@ -35,6 +44,40 @@ export default function SurveyResultsScreen() {
     );
   }
   if (!results) return <Screen>{null}</Screen>;
+
+  const fileName = (ext: string) =>
+    `${fileSlug(club.shortName)}-${fileSlug(results.survey.title)}-${toDateString(new Date())}.${ext}`;
+
+  async function downloadPdf() {
+    if (!results) return;
+    setExporting('pdf');
+    setExportError(null);
+    try {
+      const bytes = reportPdf(surveyReport(results), {
+        clubName: club.name,
+        accent: club.colors.accent,
+      });
+      await sharePdf(fileName('pdf'), bytes);
+    } catch (e) {
+      setExportError(e instanceof Error ? e.message : 'The PDF didn’t save. Try again.');
+    } finally {
+      setExporting(null);
+    }
+  }
+
+  async function downloadSpreadsheet() {
+    setExporting('xlsx');
+    setExportError(null);
+    try {
+      const { data, error: fetchError } = await supabase.rpc('survey_export', { p_survey_id: id });
+      if (fetchError) throw new Error(fetchError.message);
+      await shareXlsx(fileName('xlsx'), workbookXlsx(surveyWorkbook(data as SurveyExport)));
+    } catch (e) {
+      setExportError(e instanceof Error ? e.message : 'The spreadsheet didn’t save. Try again.');
+    } finally {
+      setExporting(null);
+    }
+  }
 
   return (
     <Screen>
@@ -112,6 +155,31 @@ export default function SurveyResultsScreen() {
           </ThemedText>
         </>
       ) : null}
+
+      {!results.hidden && results.can_export ? (
+        <View style={styles.actions}>
+          <Button
+            title="Download PDF summary"
+            variant="secondary"
+            onPress={downloadPdf}
+            busy={exporting === 'pdf'}
+          />
+          <Button
+            title="Download spreadsheet"
+            variant="secondary"
+            onPress={downloadSpreadsheet}
+            busy={exporting === 'xlsx'}
+          />
+          <ThemedText type="small" themeColor="textSecondary">
+            The spreadsheet is an Excel file with a summary, every set of answers, and a tab for
+            each question.
+            {results.survey.identity === 'anonymous'
+              ? ' Anonymous answers have no names or times.'
+              : ' Keep files with members’ names safe, and delete them when you’re done.'}
+          </ThemedText>
+          <ErrorText>{exportError}</ErrorText>
+        </View>
+      ) : null}
     </Screen>
   );
 }
@@ -146,6 +214,9 @@ function Bars({ labels, counts, total }: { labels: string[]; counts: number[]; t
 }
 
 const styles = StyleSheet.create({
+  actions: {
+    gap: Spacing.three,
+  },
   question: {
     gap: Spacing.two,
   },

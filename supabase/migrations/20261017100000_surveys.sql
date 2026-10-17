@@ -182,6 +182,24 @@ $$;
 revoke execute on function public.surveys_on() from public, anon;
 grant execute on function public.surveys_on() to authenticated;
 
+-- Whether captains and vice captains can send polls (Club settings, on
+-- unless an admin turns it off). Polls already sent stay readable.
+create or replace function public.captain_polls_on()
+returns boolean
+language sql
+stable
+security definer
+set search_path = ''
+as $$
+  select coalesce(
+    (select (s.features ->> 'captainPolls')::boolean is distinct from false
+     from public.club_settings s where s.id),
+    true
+  );
+$$;
+revoke execute on function public.captain_polls_on() from public, anon;
+grant execute on function public.captain_polls_on() to authenticated;
+
 -- The committee and admins make surveys and read their results.
 -- is_committee() is true for admins too.
 create or replace function public.can_manage_surveys()
@@ -361,7 +379,7 @@ begin
     v_sent_as := 'committee';
   elsif public.survey_leads_group(v_team.id) then
     v_sent_as := 'leader';
-  elsif public.is_group_captain(v_team.id) then
+  elsif public.is_group_captain(v_team.id) and public.captain_polls_on() then
     v_sent_as := 'captain';
   else
     raise exception 'You can only send surveys to squads and teams you coach, manage or captain';
@@ -857,6 +875,43 @@ $$;
 revoke execute on function public.manage_surveys() from public, anon;
 grant execute on function public.manage_surveys() to authenticated;
 
+-- A survey's title, who it went to and when, for results and reports.
+create or replace function public.survey_summary(s public.surveys)
+returns jsonb
+language sql
+stable
+set search_path = ''
+as $$
+  select jsonb_build_object(
+    'id', s.id, 'title', s.title, 'identity', s.identity, 'audience', s.audience,
+    'audience_role', s.audience_role, 'audience_label', s.audience_label,
+    'opens_at', s.opens_at, 'closes_at', s.closes_at,
+    'created_by_name', s.created_by_name, 'sent_as', s.sent_as
+  );
+$$;
+revoke execute on function public.survey_summary(public.surveys) from public, anon;
+grant execute on function public.survey_summary(public.surveys) to authenticated;
+
+-- Whether the signed-in member can download a survey's results as a PDF or
+-- spreadsheet: whoever reads its results, except a captain, who reads their
+-- own poll's results in the app only. Files leave the app, so a child's
+-- teammates' names aren't put in a child's hands.
+create or replace function public.survey_can_export(p_survey_id uuid)
+returns boolean
+language sql
+stable
+security definer
+set search_path = ''
+as $$
+  select public.survey_can_see_results(p_survey_id) and exists (
+    select 1 from public.surveys s
+    where s.id = p_survey_id
+      and (s.sent_as <> 'captain' or public.survey_leads_group(s.team_id, true))
+  );
+$$;
+revoke execute on function public.survey_can_export(uuid) from public, anon;
+grant execute on function public.survey_can_export(uuid) to authenticated;
+
 -- A survey's results, for whoever survey_can_see_results allows. Anonymous
 -- and optional surveys show nothing until they've closed and enough people
 -- have answered. Named answers carry the member's name, and named surveys
@@ -888,6 +943,7 @@ begin
 
   if v_hidden then
     return jsonb_build_object(
+      'survey', public.survey_summary(s), 'can_export', false,
       'sent_to', v_sent, 'answered', v_answered, 'hidden', true,
       'closed', now() >= s.closes_at,
       'min_responses', public.survey_min_responses(),
@@ -905,6 +961,8 @@ begin
   end loop;
 
   return jsonb_build_object(
+    'survey', public.survey_summary(s),
+    'can_export', public.survey_can_export(s.id),
     'sent_to', v_sent,
     'answered', v_answered,
     'hidden', false,
@@ -976,5 +1034,82 @@ end;
 $$;
 revoke execute on function public.survey_results(uuid) from public, anon;
 grant execute on function public.survey_results(uuid) to authenticated;
+
+-- Every set of answers, for a spreadsheet: one row each. Only once results
+-- show (see survey_results). Named answers carry the name and time; anonymous
+-- and unnamed ones carry neither and are listed in order of their answers,
+-- not the order they came in. Downloading answers that name a child under 18
+-- is logged against the child, as viewing them is.
+create or replace function public.survey_export(p_survey_id uuid)
+returns jsonb
+language plpgsql
+security definer
+set search_path = ''
+as $$
+declare
+  s public.surveys;
+  v_answered int;
+  v_child uuid;
+begin
+  select * into s from public.surveys where id = p_survey_id;
+  if s.id is null or not public.survey_can_export(s.id) then
+    raise exception 'Survey not found';
+  end if;
+  select count(*) into v_answered from public.survey_responses where survey_id = s.id;
+  if s.identity <> 'named'
+     and (now() < s.closes_at or v_answered < public.survey_min_responses()) then
+    raise exception 'Results show once the survey closes and at least % people have answered',
+      public.survey_min_responses();
+  end if;
+
+  for v_child in
+    select x.respondent_id from public.survey_responses x
+    join public.profiles p on p.id = x.respondent_id
+    where x.survey_id = s.id and public.is_minor(p.date_of_birth, p.under_17)
+  loop
+    -- Every download is logged, even soon after viewing them.
+    perform public.write_record_access(v_child, 'survey_answers', s.id, true);
+  end loop;
+
+  return jsonb_build_object(
+    'survey', public.survey_summary(s),
+    'sent_to', (select count(*) from public.survey_recipients r
+      where r.survey_id = s.id and r.for_children is null),
+    'answered', v_answered,
+    'questions', (
+      select coalesce(jsonb_agg(jsonb_build_object(
+        'id', q.id, 'kind', q.kind, 'prompt', q.prompt, 'options', q.options,
+        'rating_max', q.rating_max
+      ) order by q.sort_order), '[]'::jsonb)
+      from public.survey_questions q where q.survey_id = s.id
+    ),
+    'responses', (
+      select coalesce(jsonb_agg(jsonb_build_object(
+        'name', x.respondent_name, 'submitted_at', x.submitted_at, 'answers', x.answers
+      ) order by x.respondent_name nulls last, x.answers::text), '[]'::jsonb)
+      from (
+        select r.respondent_name, r.submitted_at, (
+          select coalesce(jsonb_agg(jsonb_build_object(
+            'question_id', a.question_id, 'choices', a.choices, 'rating', a.rating, 'text', a.text_answer
+          ) order by q.sort_order), '[]'::jsonb)
+          from public.survey_answers a
+          join public.survey_questions q on q.id = a.question_id
+          where a.response_id = r.id
+        ) as answers
+        from public.survey_responses r
+        where r.survey_id = s.id
+      ) x
+    ),
+    'waiting', case when s.identity = 'named' then (
+      select coalesce(jsonb_agg(public.member_display_name(r.profile_id)
+        order by public.member_display_name(r.profile_id)), '[]'::jsonb)
+      from public.survey_recipients r
+      where r.survey_id = s.id and r.for_children is null and not r.responded
+    ) else '[]'::jsonb end
+  );
+end;
+$$;
+revoke execute on function public.survey_export(uuid) from public, anon;
+grant execute on function public.survey_export(uuid) to authenticated;
 
 commit;

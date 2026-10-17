@@ -155,7 +155,7 @@ only to complete onboarding: their home screen shows only the steps to be cleare
 **Raise a concern** (see [Temporary helpers](#temporary-helpers)).
 
 Admins can turn off Messages, Calendar, Daily check-ins, Injuries, Attendance, Session plans,
-Surveys, Awards, Game goals and Integrity training for the whole club in **Club settings**. A feature that's off disappears for every role.
+Surveys, Captains' polls, Awards, Game goals and Integrity training for the whole club in **Club settings**. A feature that's off disappears for every role.
 **Season KPIs** and **Affiliation records** work the other way: they're off unless an admin turns
 them on. Season KPIs are for a club that sets its coaches, managers and athletes measures for the
 season (see [Season KPIs](#season-kpis)); Affiliation records are for a club or association that
@@ -796,7 +796,9 @@ night everyone is free for a team dinner or to check who's coming to a social ev
 questions, each **One choice** or **Several choices**. Choose **Named** to see who picked what and
 who hasn't answered yet. Your squad or team's coaches and managers see your poll and its results
 too, and can close it. If you're under 18, your parents or guardians get a copy of your poll.
-**My groups** lists the polls you've sent while you're captain.
+**My groups** lists the polls you've sent while you're captain. You read the results in the app;
+only your coaches and managers can download them. Polls are on unless an admin switches off
+**Captains' polls** in Club settings.
 
 <img src="user-guide/survey-captain-new.png" width="210" alt="A captain sending a poll to their team">
 
@@ -1309,7 +1311,8 @@ surveys you sent, while you still coach or manage that squad or team with a curr
 including after the season ends. You don't see other coaches' surveys. You also see your squad or
 team's captains' polls and their results, and can tap **Close it now** on one. The same rules keep
 anonymous answers anonymous, and opening named answers from an athlete under 18 is recorded in
-their record views.
+their record views. You can download your surveys' and your captains' polls' results as a PDF
+summary or an Excel spreadsheet (see [Surveys for the club](#surveys-for-the-club)).
 
 ### Session plans
 
@@ -1456,6 +1459,22 @@ Results show how many picked each choice or rating, the average rating, and ever
 When you open results that name an athlete under 18, the app records it in that child's record
 views, which their parents or guardians can see. Opening an anonymous survey's results is never
 recorded against anyone, because nothing in it says who answered.
+
+Once results show, two buttons at the bottom download them:
+
+- **Download PDF summary**: the title, who it went to and when, how many answered, each question's
+  counts and percentages, average ratings, every written answer, and for a named survey who hasn't
+  answered.
+- **Download spreadsheet**: an Excel file with a **Summary** tab, an **All answers** tab with one
+  row for each set of answers, a tab for each question, and for a named survey a **Not answered
+  yet** tab. Anonymous answers have no names or times, and are listed in order of their answers,
+  not the order they came in. Answers given with a name show it.
+
+<img src="user-guide/survey-results-download.png" width="210" alt="Download buttons under a survey's results">
+
+On a phone, each opens the share sheet so you can save or send the file. Files with members' names
+leave the app, so keep them safe and delete them when you're done. Every download that names an
+athlete under 18 is recorded in their record views, even straight after you viewed the results.
 
 ### Check-in averages
 
@@ -2250,7 +2269,9 @@ so leave them filled in.
   how they look together and warns when text or buttons would be hard to read. **Use the built-in
   colours** goes back to deep navy, white and blaze orange.
 - **Features**: switch off any of Messages, Calendar, Daily check-ins, Injuries, Attendance,
-  Session plans, Surveys, Awards, Game goals and Integrity training. A switched-off feature disappears from every member's home screen, to-do list and menus,
+  Session plans, Surveys, Captains' polls, Awards, Game goals and Integrity training. Switching
+  off **Captains' polls** stops captains sending new polls and leaves the rest of Surveys on; polls
+  already sent stay readable. A switched-off feature disappears from every member's home screen, to-do list and menus,
   and its Administration pages are hidden. Nothing is deleted, so switching it back on brings
   everything back.
 - **Squads**: **Members join a squad first** is on unless the club switches it off. Switched off,
@@ -2497,7 +2518,7 @@ once saved, only replaced or removed, and anyone who gets it wrong five times in
 | Committee checks date   | Everyone signed in. Only admins change it, and only to bring it forward; who changed it and when is kept. |
 | Messages                | The people they were sent to, the sender, and admins. Guardians of athletes under 18 get a copy of every message sent to their athlete, and of every message their athlete sends as a captain. Guests don't get messages; physios get messages sent to the Physio role and to their squads and teams, and whole-club messages only if an admin turns that on. |
 | Read receipts           | The sender and admins.                                                                                                      |
-| Survey answers          | Whoever sent the survey. The committee and admins for their own surveys and ones a coach or manager shared with them. A coach or manager's survey to their own squad or team is seen only by them while they still coach or manage it, unless they shared it. A captain's poll is seen by the captain while they're captain, and by the squad or team's coaches and managers. Named answers show the member's name; parents and guardians of an athlete under 18 also read their child's named answers. Anonymous answers, and name-optional answers given without a name, are kept with no name, no member and no time, so nobody can see who gave them, admins included; their results show only once the survey has closed and at least 3 people have answered. Members never see each other's answers. |
+| Survey answers          | Whoever sent the survey. The committee and admins for their own surveys and ones a coach or manager shared with them. A coach or manager's survey to their own squad or team is seen only by them while they still coach or manage it, unless they shared it. A captain's poll is seen by the captain while they're captain, and by the squad or team's coaches and managers. Named answers show the member's name; parents and guardians of an athlete under 18 also read their child's named answers. Anonymous answers, and name-optional answers given without a name, are kept with no name, no member and no time, so nobody can see who gave them, admins included; their results show only once the survey has closed and at least 3 people have answered. Members never see each other's answers. Whoever sees the results can download them as a PDF or spreadsheet, except captains. |
 | Who has answered a survey | Named surveys: whoever can see the results sees who hasn't answered yet. Anonymous and name-optional surveys: only how many have answered. Each member sees whether they've answered themselves. |
 | Daily check-in answers and notes | The athlete, their guardians and their coaches. For an athlete under 18, their coaches only once a parent or guardian consents, and until then their check-ins count in no average. The committee, physios and admins see only group averages, hidden below 3 check-ins (over three days, in Trends). |
 | Injuries and documents  | For an athlete under 18 whose parents haven't given consent for injuries: only the athlete, their guardians and admins. Otherwise the athlete, their guardians, their coaches, the physios who look after them (the Head Physio and physios in their squad or team), the committee and admins. Managers don't see injuries. Whoever takes attendance (coaches, managers, the committee and admins) sees only that an athlete is **Injured** and their expected return date, whatever the consent. Only the committee member or admin accepting a clearance can share its documents, while it waits for them; everyone else views them in the app. |
@@ -2742,6 +2763,9 @@ Working With Children Check, and another admin must do it.
 - **Record views are logged.** Every time someone other than a child or their guardians opens an
   under 18's injuries, injury documents, check-ins, game goals, season KPIs, named survey answers or member record, it's recorded.
   Admins see the list on the child's member page, and parents and guardians on their home screen.
+- **Downloads of children's answers are recorded.** Downloading a survey's results as a PDF or
+  spreadsheet is recorded in the record views of every athlete under 18 it names. Captains read
+  their polls' results in the app but can't download them.
 - **Anonymous surveys protect children.** An anonymous answer is stored with no name, member or
   time, its results show only after the survey closes and once at least 3 people have answered,
   and children are reminded to raise a concern rather than write a worry nobody can reply to.

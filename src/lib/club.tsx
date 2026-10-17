@@ -24,6 +24,11 @@ export const FEATURES = [
     label: 'Surveys',
     detail: 'Anonymous or named surveys from the committee, coaches and managers, and polls from captains',
   },
+  {
+    key: 'captainPolls',
+    label: 'Captains’ polls',
+    detail: 'Captains and vice captains send polls with choices to their own squad or team (needs Surveys)',
+  },
   { key: 'awards', label: 'Awards', detail: 'Award votes and results' },
   { key: 'goals', label: 'Game goals', detail: 'Athletes’ goals and reflections for PlayHQ games' },
   {

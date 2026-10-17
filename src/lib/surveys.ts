@@ -130,7 +130,24 @@ export type SurveyDetail = {
   children: { name: string; responded: boolean; answers: SurveyAnswer[] }[];
 };
 
+/** A survey's title, who it went to and when. */
+export type SurveySummary = {
+  id: string;
+  title: string;
+  identity: SurveyIdentity;
+  audience: SurveyAudience;
+  audience_role: AppRole | null;
+  audience_label: string | null;
+  opens_at: string;
+  closes_at: string;
+  created_by_name: string | null;
+  sent_as: SurveySentAs;
+};
+
 export type SurveyResults = {
+  survey: SurveySummary;
+  /** Can download the PDF summary and the spreadsheet (not captains). */
+  can_export: boolean;
   sent_to: number;
   answered: number;
   /** True while an anonymous or optional survey is open or has too few answers. */
@@ -203,13 +220,20 @@ export function useCanManageSurveys() {
 export function useCanSendSurveys() {
   const { memberships, profile } = useAuth();
   const canManage = useCanManageSurveys();
-  const captained = useCaptainedGroupIds();
+  const captained = useCaptainedPollGroupIds();
   if (profile?.status !== 'approved') return false;
   return (
     canManage ||
     captained.size > 0 ||
     memberships.some((m) => m.team_role === 'coach' || m.team_role === 'manager')
   );
+}
+
+/** Groups the member captains, when the club lets captains send polls. */
+export function useCaptainedPollGroupIds() {
+  const { features } = useClub();
+  const captained = useCaptainedGroupIds();
+  return features.captainPolls ? captained : new Set<string>();
 }
 
 /** Who sees a survey's answers, in words for the people answering it. */

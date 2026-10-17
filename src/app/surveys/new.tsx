@@ -10,7 +10,7 @@ import { Spacing } from '@/constants/theme';
 import { useTheme } from '@/hooks/use-theme';
 import { toDateString } from '@/lib/injuries';
 import { pluralRoleLabels } from '@/lib/labels';
-import { useCaptainedGroupIds, useLedGroups } from '@/lib/messages';
+import { useLedGroups } from '@/lib/messages';
 import { supabase } from '@/lib/supabase';
 import {
   CAPTAIN_MAX_QUESTIONS,
@@ -20,6 +20,7 @@ import {
   questionKindLabels,
   startOfDayIso,
   useCanManageSurveys,
+  useCaptainedPollGroupIds,
   type SurveyAudience,
   type SurveyIdentity,
   type SurveyQuestionKind,
@@ -72,7 +73,7 @@ export default function NewSurveyScreen() {
   // captains polls to the one they captain; the committee and admins to anyone.
   const canManage = useCanManageSurveys();
   const ledGroups = useLedGroups(teams);
-  const captained = useCaptainedGroupIds();
+  const captained = useCaptainedPollGroupIds();
   const ledIds = new Set(ledGroups.map((t) => t.id));
   const groups = canManage ? teams : teams.filter((t) => ledIds.has(t.id) || captained.has(t.id));
   const [title, setTitle] = useState('');
