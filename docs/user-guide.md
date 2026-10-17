@@ -340,6 +340,7 @@ lists them all, like "Assistant Coach, Open A and Open". Only an admin can chang
 head or assistant coach.
 
 <img src="user-guide/your-details.png" width="210" alt="Your details: preferred name and title">
+<img src="user-guide/your-details-coach.png" width="210" alt="Your details for a coach: the title the app sets from their teams">
 
 ### Messages
 
@@ -1646,6 +1647,8 @@ Working With Children Check whichever role it is, and that includes athletes und
   message receipts. Messages they sent stay, and their injury records are kept for 12 months.
 
 <img src="user-guide/member-title.png" width="210" alt="A committee member's page with their preferred name and title">
+<img src="user-guide/member-coach-title.png" width="210" alt="A coach's squads and teams, head or assistant coach in each, and the title the app gives them">
+<img src="user-guide/members-titles.png" width="210" alt="Members list with committee and coach titles">
 <img src="user-guide/member-roles.png" width="210" alt="An athlete who also coaches: other roles and their role in each squad">
 <img src="user-guide/delete-member.png" width="210" alt="Delete member confirmation">
 <img src="user-guide/member-stand-down.png" width="210" alt="Standing a coach down, with the reasons to choose from">
