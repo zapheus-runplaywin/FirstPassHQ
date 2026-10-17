@@ -93,6 +93,7 @@ What each role sees on its home screen:
 | Read messages                          |    ✓    |        ✓        |      ✓       |     ✓      |       ✓       |       ✓*      |         |       ✓       |
 | Send messages                          | Captains† |                 |  Own groups  | Own groups |   Whole club  |               |         |     Anyone    |
 | Answer surveys                         |    ✓    | Own; see their athlete's |      ✓       |     ✓      |       ✓       |       ✓       |         |       ✓       |
+| Team totals of a shared poll           |    ✓    | Their athlete's |      ✓       |     ✓      |  If sent one  |  If sent one  |         |  If sent one  |
 | Send surveys and polls, see results    | Captains' polls† |                 |  Own groups  | Own groups |    Anyone     |               |         |    Anyone     |
 | Daily check-in                         |    ✓    |                 |              |            |               |               |         |               |
 | Game goals and reflections             |   Own   |  See athlete's  | Own athletes |            |               |               |         |               |
@@ -405,6 +406,14 @@ who sees answers, and it's never other members:
 - a survey from a coach or manager: whoever sent it, plus admins for anything longer than a quick
   poll or with a written answer, and the committee too if the coach shared it;
 - a poll from a captain: the captain who sent it and the squad or team's coaches and managers.
+
+A survey marked **Everyone must answer** says so at the top and in your to-do list. A coach,
+manager or captain can also share a poll's totals with the squad or team. Then everyone it went to,
+and their parents or guardians, sees **Results for the team** on the survey once results show: how
+many picked each choice and the average rating. It never shows names, written answers or who has
+answered.
+
+<img src="user-guide/survey-team-results.png" width="210" alt="Results for the team on a coach's poll">
 
 Athletes under 18 see a reminder on anonymous and name-optional surveys: nobody can reply to
 something written without a name, so if something is worrying them they should tell a coach or
@@ -794,7 +803,9 @@ Captains and vice captains can also send a poll to their own squad or team, for 
 night everyone is free for a team dinner or to check who's coming to a social event. Open
 **Surveys** from the home screen, tap **New survey**, choose your squad or team, and add up to 5
 questions, each **One choice** or **Several choices**. Choose **Named** to see who picked what and
-who hasn't answered yet. Your squad or team's coaches and managers see your poll and its results
+who hasn't answered yet. Choose **Everyone must answer** if you need an answer from everyone, and
+**Share results with the squad or team** to let your teammates see the totals (see [Surveys and
+polls for your squad or team](#surveys-and-polls-for-your-squad-or-team)). Your squad or team's coaches and managers see your poll and its results
 too, and can close it. If you're under 18, your parents or guardians get a copy of your poll.
 **My groups** lists the polls you've sent while you're captain. You read the results in the app;
 only your coaches and managers can download them. Polls are on unless an admin switches off
@@ -1310,6 +1321,16 @@ Under **Who else sees it**, choose:
 
 You can't change this once it's sent.
 
+Under **Answering**, choose **Optional** or **Everyone must answer**. When everyone must answer,
+named results wait until everyone has answered; otherwise they show once 3 people have answered.
+Anonymous and name-optional results still wait until the survey closes, or until everyone has
+answered. Whatever you choose, results show when it closes, and you can close it early and accept
+the answers you have.
+
+Under **Share results with the squad or team**, choose **Yes, the totals** to let everyone it went
+to see how many picked each choice and the average rating, once results show. They never see
+names, written answers or who has answered. Captains have the same two choices for their polls.
+
 <img src="user-guide/survey-coach-new.png" width="210" alt="A coach sending a poll to their squad"> <img src="user-guide/surveys-coach-list.png" width="210" alt="A coach's surveys">
 
 **My groups** lists your own surveys and the polls your captains send, with who else sees each one. You see the results of the
@@ -1437,26 +1458,35 @@ home screen and tap **New survey**.
    squad or team**. Parents and guardians of athletes under 18 get a copy of their child's survey,
    but only the child answers.
 4. Choose the day it opens and the day it closes. It closes at the end of that day.
-5. Add questions. Each is **One choice**, **Several choices**, **Rating** (1 to 5 or 1 to 10) or
+5. For a **Named** survey, choose when results show: **From 3 answers**, once **20%**, **50%** or
+   **80%** have answered, or **Everyone must answer**. For an anonymous or name-optional survey,
+   choose **Optional** or **Everyone must answer** under **Answering**. Results always show when
+   it closes.
+6. Add questions. Each is **One choice**, **Several choices**, **Rating** (1 to 5 or 1 to 10) or
    **Written answer**, and can be **Must answer** or **Can skip**. Up to 30 questions.
-6. Tap **Send survey**. Questions can't be changed once it's sent, so everyone answers the same
+7. Tap **Send survey**. Questions can't be changed once it's sent, so everyone answers the same
    survey.
 
-<img src="user-guide/survey-new.png" width="210" alt="Making a new survey"> <img src="user-guide/survey-new-questions.png" width="210" alt="Adding questions to a survey">
+<img src="user-guide/survey-new.png" width="210" alt="Making a new survey"> <img src="user-guide/survey-new-results.png" width="210" alt="Choosing when a named survey's results show"> <img src="user-guide/survey-new-questions.png" width="210" alt="Adding questions to a survey">
 
 **Club surveys** lists the committee's and admins' surveys and the coach and manager surveys you
 can see, with who it went to, when it opens or closes, and how many have answered. Open one and tap
 **See results**. The person who made a survey, or an admin, can tap **Close it now** to stop more
-answers.
+answers. While results are waiting, the results page shows how many have answered and a **Close
+now and see results** button, so a survey that won't reach its target, such as one everyone must
+answer, can be closed and its answers accepted as they are.
+
+<img src="user-guide/survey-results-waiting.png" width="210" alt="A poll everyone must answer, waiting for the rest">
 
 <img src="user-guide/surveys-list.png" width="210" alt="The committee's list of surveys">
 
 Results show how many picked each choice or rating, the average rating, and every written answer.
 
-- **Named surveys** show each person's answers with their name, and who hasn't answered yet, while
-  the survey is open.
-- **Anonymous and name-optional surveys** show results only once the survey has closed **and** at
-  least 3 people have answered. That way nobody can work out who said what by watching the results
+- **Named surveys** show each person's answers with their name once the survey reaches its target:
+  3 answers, the percentage you chose, or everyone when everyone must answer. Until then you see
+  how many have answered, the percentage, and who hasn't answered yet, so you can remind them.
+- **Anonymous and name-optional surveys** show results only once the survey has closed, or once
+  everyone has answered, **and** at least 3 people have answered. That way nobody can work out who said what by watching the results
   change as each person answers, or by sending a survey to one or two people. Written answers are
   listed in alphabetical order, not the order they came in, and you see how many have answered but
   never who. In a name-optional survey, answers given with a name show it.
@@ -2571,7 +2601,8 @@ once saved, only replaced or removed, and anyone who gets it wrong five times in
 | Committee checks date   | Everyone signed in. Only admins change it, and only to bring it forward; who changed it and when is kept. |
 | Messages                | The people they were sent to, the sender, and admins. Guardians of athletes under 18 get a copy of every message sent to their athlete, and of every message their athlete sends as a captain. Guests don't get messages; physios get messages sent to the Physio role and to their squads and teams, and whole-club messages only if an admin turns that on. |
 | Read receipts           | The sender and admins.                                                                                                      |
-| Survey answers          | Whoever sent the survey. The committee and admins for their own surveys and ones a coach or manager shared with them. A coach or manager's survey to their own squad or team is seen by them while they still coach or manage it, by admins unless it's a quick poll (up to 5 questions with choices or ratings), and by the committee if they shared it. A captain's poll is seen by the captain while they're captain, and by the squad or team's coaches and managers. Named answers show the member's name; parents and guardians of an athlete under 18 also read their child's named answers. Anonymous answers, and name-optional answers given without a name, are kept with no name, no member and no time, so nobody can see who gave them, admins included; their results show only once the survey has closed and at least 3 people have answered. Members never see each other's answers. Whoever sees the results can download them as a PDF or spreadsheet, except captains. |
+| Survey answers          | Whoever sent the survey. The committee and admins for their own surveys and ones a coach or manager shared with them. A coach or manager's survey to their own squad or team is seen by them while they still coach or manage it, by admins unless it's a quick poll (up to 5 questions with choices or ratings), and by the committee if they shared it. A captain's poll is seen by the captain while they're captain, and by the squad or team's coaches and managers. Named answers show the member's name; parents and guardians of an athlete under 18 also read their child's named answers. Anonymous answers, and name-optional answers given without a name, are kept with no name, no member and no time, so nobody can see who gave them, admins included; their results show only once the survey has closed, or everyone has answered, and at least 3 people have answered. Named results show once 3 people have answered, a club survey's chosen 20%, 50% or 80%, or everyone when everyone must answer; every survey's results show once it closes. Members never see each other's answers. Whoever sees the results can download them as a PDF or spreadsheet, except captains. |
+| Survey totals shared with a team | When a coach, manager or captain shares a poll's results with the squad or team: everyone it went to and their parents or guardians, once results show. Only how many picked each choice and average ratings: never names, written answers or who has answered. |
 | Who has answered a survey | Named surveys: whoever can see the results sees who hasn't answered yet. Anonymous and name-optional surveys: only how many have answered. Each member sees whether they've answered themselves. |
 | Daily check-in answers and notes | The athlete, their guardians and their coaches. For an athlete under 18, their coaches only once a parent or guardian consents, and until then their check-ins count in no average. The committee, physios and admins see only group averages, hidden below 3 check-ins (over three days, in Trends). |
 | Injuries and documents  | For an athlete under 18 whose parents haven't given consent for injuries: only the athlete, their guardians and admins. Otherwise the athlete, their guardians, their coaches, the physios who look after them (the Head Physio and physios in their squad or team), the committee and admins. Managers don't see injuries. Whoever takes attendance (coaches, managers, the committee and admins) sees only that an athlete is **Injured** and their expected return date, whatever the consent. Only the committee member or admin accepting a clearance can share its documents, while it waits for them; everyone else views them in the app. |
@@ -2735,7 +2766,8 @@ Working With Children Check, and another admin must do it.
   concern. Surveys come only from the committee, admins, your own coaches and managers, and polls
   from your own captains. Other members never see your answers, and your parents or guardians see
   every survey you're sent. Captains' polls only have choices to pick from, so nobody writes to you
-  through them.
+  through them. When a coach or captain shares a poll's results with your team, the team sees only
+  the totals, never who picked what.
 - **Your own tasks are just for you.** Tasks you add to your to-do list are private reminders:
   nobody else can see them, and they can't be shared, liked or sent to anyone.
 - **You're told who sees what you write**: on the check-in, on injury reports, on game goals and

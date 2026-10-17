@@ -19,7 +19,9 @@ import {
   endOfDayIso,
   identityDetails,
   identityLabels,
+  MIN_RESPONSES,
   questionKindLabels,
+  RESULTS_AT_PERCENTS,
   startOfDayIso,
   useCanManageSurveys,
   useCaptainedPollGroupIds,
@@ -88,6 +90,10 @@ export default function NewSurveyScreen() {
   const [closesOn, setClosesOn] = useState<string | null>(daysFromToday(14));
   const [questions, setQuestions] = useState<DraftQuestion[]>([newQuestion()]);
   const [share, setShare] = useState<'team' | 'admins' | 'committee'>('team');
+  const [everyone, setEveryone] = useState(false);
+  // Club surveys with names: show results from 3 answers, a share, or once everyone has answered.
+  const [resultsAt, setResultsAt] = useState<'min' | '20' | '50' | '80' | 'all'>('min');
+  const [shareResults, setShareResults] = useState(false);
   // Someone who leads one group doesn't need to pick it.
   const selectedTeamId = teamId ?? (!canManage && groups.length === 1 ? groups[0].id : null);
   // A coach or manager's survey stays with the team unless they share it.
@@ -102,6 +108,9 @@ export default function NewSurveyScreen() {
   // written answer, goes to admins too. The database applies the same rule.
   const teamPoll = isTeamPoll(questions);
   const sharedWith = asLeader ? (share === 'team' && !teamPoll ? 'admins' : share) : null;
+  const clubTarget = canManage && identity === 'named';
+  const everyoneAnswers = clubTarget ? resultsAt === 'all' : everyone;
+  const toGroup = (asLeader || asCaptain) && shareResults;
   const [sending, setSending] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
@@ -157,6 +166,10 @@ export default function NewSurveyScreen() {
       })),
       p_share_with_committee: sharedWith === 'committee',
       p_share_with_admins: sharedWith === 'admins' || sharedWith === 'committee',
+      p_everyone_answers: everyoneAnswers,
+      p_results_at_percent:
+        clubTarget && resultsAt !== 'min' && resultsAt !== 'all' ? Number(resultsAt) : null,
+      p_results_to_group: toGroup,
     });
     setSending(false);
     if (sendError) return setError(sendError.message);
@@ -257,6 +270,63 @@ export default function NewSurveyScreen() {
             {teamPoll
               ? `A quick poll (up to ${TEAM_POLL_MAX_QUESTIONS} questions with choices or ratings) can stay in the team. Anything longer, or with a written answer, goes to admins too.`
               : `Admins see surveys with more than ${TEAM_POLL_MAX_QUESTIONS} questions or a written answer, so the club knows what members are asked.`}
+          </ThemedText>
+        </View>
+      ) : null}
+      {clubTarget ? (
+        <View style={styles.options}>
+          <ChipGroup
+            label="Results show"
+            options={[
+              { value: 'min' as const, label: `From ${MIN_RESPONSES} answers` },
+              ...RESULTS_AT_PERCENTS.map((n) => ({
+                value: String(n) as '20' | '50' | '80',
+                label: `${n}% answered`,
+              })),
+              { value: 'all' as const, label: 'Everyone must answer' },
+            ]}
+            selected={[resultsAt]}
+            onToggle={setResultsAt}
+          />
+          <ThemedText type="small" themeColor="textSecondary">
+            Results also show when it closes. If not everyone answers, you can close it early and
+            accept the answers you have.
+          </ThemedText>
+        </View>
+      ) : (
+        <View style={styles.options}>
+          <ChipGroup
+            label="Answering"
+            options={[
+              { value: 'optional', label: 'Optional' },
+              { value: 'everyone', label: 'Everyone must answer' },
+            ]}
+            selected={[everyone ? 'everyone' : 'optional']}
+            onToggle={(value) => setEveryone(value === 'everyone')}
+          />
+          <ThemedText type="small" themeColor="textSecondary">
+            {identity === 'named'
+              ? everyone
+                ? 'Results show once everyone has answered, or when it closes. You can close it early and accept the answers you have.'
+                : `Results show once at least ${MIN_RESPONSES} people have answered.`
+              : `Results show once it closes, or once everyone has answered, with at least ${MIN_RESPONSES} answers.`}
+          </ThemedText>
+        </View>
+      )}
+      {asLeader || asCaptain ? (
+        <View style={styles.options}>
+          <ChipGroup
+            label="Share results with the squad or team"
+            options={[
+              { value: 'no', label: 'No' },
+              { value: 'yes', label: 'Yes, the totals' },
+            ]}
+            selected={[shareResults ? 'yes' : 'no']}
+            onToggle={(value) => setShareResults(value === 'yes')}
+          />
+          <ThemedText type="small" themeColor="textSecondary">
+            Everyone it goes to sees how many picked each choice once results show. Never names or
+            written answers.
           </ThemedText>
         </View>
       ) : null}
@@ -376,6 +446,7 @@ export default function NewSurveyScreen() {
               : sharedWith === 'admins'
                 ? 'Only you and admins see results.'
                 : 'Only you see results.'}
+        {toGroup ? ' The squad or team sees the totals too.' : ''}
       </ThemedText>
       <ErrorText>{error}</ErrorText>
       <Button title="Send survey" onPress={send} busy={sending} />

@@ -520,7 +520,7 @@ export function buildTodos({
     todos.push({
       key: `survey-${survey.id}`,
       title: `Answer the survey “${survey.title}”`,
-      detail: `Open until ${formatDateString(closes)}`,
+      detail: `${survey.everyone_answers ? 'Everyone must answer. ' : ''}Open until ${formatDateString(closes)}`,
       href: { pathname: '/surveys/[id]', params: { id: survey.id } },
       dueOn: closes,
     });
