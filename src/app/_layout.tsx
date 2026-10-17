@@ -121,6 +121,12 @@ function RootStack() {
             <Stack.Screen name="messages/new" options={{ title: 'New message' }} />
             <Stack.Screen name="messages/[id]" options={{ title: 'Message' }} />
           </Stack.Protected>
+          <Stack.Protected guard={features.surveys}>
+            <Stack.Screen name="surveys/index" options={{ title: 'Surveys' }} />
+            <Stack.Screen name="surveys/new" options={{ title: 'New survey' }} />
+            <Stack.Screen name="surveys/[id]" options={{ title: 'Survey' }} />
+            <Stack.Screen name="surveys/results" options={{ title: 'Survey results' }} />
+          </Stack.Protected>
           <Stack.Protected guard={features.injuries}>
             <Stack.Screen name="injuries/index" options={{ title: 'Injuries' }} />
             <Stack.Screen name="injuries/new" options={{ title: 'Report an injury' }} />

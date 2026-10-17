@@ -52,6 +52,7 @@ import { supabase } from '@/lib/supabase';
 import { useNewConcerns } from '@/lib/concerns';
 import { usePersonalTasks } from '@/lib/personal-tasks';
 import { useSessionPlanSummary } from '@/lib/session-plans';
+import { useCanSendSurveys, useMySurveys, surveysToAnswer } from '@/lib/surveys';
 import { buildTodos } from '@/lib/todos';
 import type { ChildConsent } from '@/lib/consents';
 import {
@@ -101,6 +102,9 @@ export default function HomeScreen() {
   const plans = useSessionPlanSummary();
   const { kpiPeople, reloadKpiPeople } = useKpiPeople();
   const { kpiReviewTodos, reloadKpiReviewTodos } = useKpiReviewTodos();
+  const { mySurveys, reloadMySurveys } = useMySurveys();
+  const canSendSurveys = useCanSendSurveys();
+  const surveysWaiting = surveysToAnswer(mySurveys).length;
   const { absencesToReview, reloadAbsencesToReview } = useAbsencesToReview(useLeadsAGroup());
   const canSeeInjuries = useCanSeeInjuries();
   const canTakeAttendance = useCanTakeAttendance();
@@ -149,6 +153,7 @@ export default function HomeScreen() {
     })),
     affiliation: affiliationTodos,
     kpiReviews: kpiReviewTodos,
+    surveys: features.surveys ? mySurveys : [],
   });
 
   const isGuardian = profile?.status === 'approved' && hasRole(profile, 'guardian');
@@ -197,6 +202,7 @@ export default function HomeScreen() {
       plans.reloadSummary(),
       reloadKpiPeople(),
       reloadKpiReviewTodos(),
+      reloadMySurveys(),
       reloadAbsencesToReview(),
       loadAthletes(),
       reloadEvents(),
@@ -286,6 +292,28 @@ export default function HomeScreen() {
               {unreadCount === 0
                 ? 'No new messages'
                 : `${unreadCount} new ${unreadCount === 1 ? 'message' : 'messages'}`}
+            </ThemedText>
+          </PressableCard>
+        ) : null}
+
+        {features.surveys && (canSendSurveys || mySurveys.length > 0) ? (
+          <PressableCard onPress={() => router.push('/surveys')}>
+            <View style={styles.cardTitleRow}>
+              <ThemedText type="smallBold">Surveys</ThemedText>
+              {surveysWaiting > 0 ? (
+                <View style={[styles.badge, { backgroundColor: theme.accent }]}>
+                  <ThemedText type="smallBold" style={{ color: theme.onAccent }}>
+                    {surveysWaiting}
+                  </ThemedText>
+                </View>
+              ) : null}
+            </View>
+            <ThemedText type="small" themeColor="textSecondary">
+              {surveysWaiting > 0
+                ? `${surveysWaiting} to answer`
+                : canSendSurveys
+                  ? 'Send a survey and see results'
+                  : 'Nothing to answer'}
             </ThemedText>
           </PressableCard>
         ) : null}
