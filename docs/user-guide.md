@@ -92,6 +92,8 @@ What each role sees on its home screen:
 | My squads and teams                    |    ✓    |        ✓        |      ✓       |     ✓      |  If in one    |       ✓       |    ✓    |   If in one   |
 | Read messages                          |    ✓    |        ✓        |      ✓       |     ✓      |       ✓       |       ✓*      |         |       ✓       |
 | Send messages                          | Captains† |                 |  Own groups  | Own groups |   Whole club  |               |         |     Anyone    |
+| Answer surveys                         |    ✓    | Own; see their athlete's |      ✓       |     ✓      |       ✓       |       ✓       |         |       ✓       |
+| Make surveys and see results           |         |                 |              |            |       ✓       |               |         |       ✓       |
 | Daily check-in                         |    ✓    |                 |              |            |               |               |         |               |
 | Game goals and reflections             |   Own   |  See athlete's  | Own athletes |            |               |               |         |               |
 | Team goals for a game                  | See, comment |       See       | Set, review, comment |            |               |               |         |               |
@@ -152,7 +154,7 @@ only to complete onboarding: their home screen shows only the steps to be cleare
 **Raise a concern** (see [Temporary helpers](#temporary-helpers)).
 
 Admins can turn off Messages, Calendar, Daily check-ins, Injuries, Attendance, Session plans,
-Awards, Game goals and Integrity training for the whole club in **Club settings**. A feature that's off disappears for every role.
+Surveys, Awards, Game goals and Integrity training for the whole club in **Club settings**. A feature that's off disappears for every role.
 **Season KPIs** and **Affiliation records** work the other way: they're off unless an admin turns
 them on. Season KPIs are for a club that sets its coaches, managers and athletes measures for the
 season (see [Season KPIs](#season-kpis)); Affiliation records are for a club or association that
@@ -375,6 +377,36 @@ messages (a longer one when a child sent or received it) is replaced with "This 
 and who read it stay (see [Keeping records](#keeping-records)).
 
 <img src="user-guide/inbox.png" width="210" alt="Messages inbox">
+
+### Surveys
+
+The committee and admins send surveys to everyone, a role, or a squad or team. A survey you need
+to answer shows in your to-do list until you answer it or it closes, and the **Surveys** card on
+the home screen counts how many are waiting.
+
+<img src="user-guide/survey-home.png" width="210" alt="Home screen with a survey to answer">
+
+Each survey says at the top how your answers are kept:
+
+- **Anonymous**: nobody can see who gave which answers, not the committee and not admins. The app
+  records only that you've answered, so you aren't reminded again, and never which answers were
+  yours. Once sent, even you can't see them again.
+- **Named**: your name goes with your answers, and you can read them back after you send them.
+- **Name optional**: you choose **Give my name** or **Don't give my name** before you send.
+
+Answer each question and tap **Send answers**. Questions marked (optional) can be skipped. You
+can't change your answers once they're sent, and you can answer each survey once. Only the
+committee and admins see answers, never other members.
+
+Athletes under 18 see a reminder on anonymous and name-optional surveys: nobody can reply to
+something written without a name, so if something is worrying them they should tell a coach or
+parent, or use **Raise a concern**.
+
+<img src="user-guide/survey-answer.png" width="210" alt="Answering an anonymous survey"> <img src="user-guide/survey-answered.png" width="210" alt="After sending anonymous answers">
+
+Guests and temporary helpers don't get surveys. Physios get surveys sent to the Physio role and to
+the squads and teams they're in, and surveys sent to everyone only when Physios get club messages
+is on.
 
 ### Calendar
 
@@ -845,7 +877,7 @@ for yourself as well.
 
 Once you're verified, **Who has viewed their records** on your home screen lists each child under
 18. Open it to see everyone at the club who opened your child's injuries, injury documents,
-check-ins, game goals, season KPIs or member record in the app: their name, their role (coach, physio, admin,
+check-ins, game goals, season KPIs, named survey answers or member record in the app: their name, their role (coach, physio, admin,
 committee or safeguarding contact), what they opened and when, newest first. Sharing an injury
 document is listed too. Your child's own views and those of their parents and guardians aren't
 listed, and opening the same thing again within 30 minutes counts once. The list stops being
@@ -885,6 +917,17 @@ under **Your children**, for each squad or team they have KPIs in. You can read 
 progress, the results and the reviews, including what your child wrote, but you can't change
 anything. Only your child confirms their reviews. Their teammates and the committee don't see
 them.
+
+### Your child's surveys
+
+When a survey is sent to your child under 18, you get a copy naming your child, so you can see
+what they're asked. Only your child answers it. If the survey is named, you can read your child's
+answers once they've sent them. If it's anonymous, or your child chose not to give their name,
+nobody can see their answers, including you.
+
+<img src="user-guide/survey-guardian.png" width="210" alt="A parent's copy of their child's named survey">
+
+A survey sent to parents and guardians themselves, for example to all guardians, is yours to answer.
 
 ### What's changed for your child
 
@@ -935,7 +978,7 @@ As a guardian you:
 - **See what's changed around your athlete**: new adults in their groups, guardians, consents and
   shared documents (see [What's changed for your child](#whats-changed-for-your-child)).
 - **See who has viewed your athlete's records**: everyone who opened their injuries, check-ins,
-  game goals, season KPIs or member record (see [Who has viewed your child's records](#who-has-viewed-your-childs-records)).
+  game goals, season KPIs, named survey answers or member record (see [Who has viewed your child's records](#who-has-viewed-your-childs-records)).
 - **Complete integrity training** for your athlete: their training shows in your to-do list and
   on the **Integrity training** screen under their name, and you upload their certificates
   exactly as they would (see [Integrity training](#integrity-training)).
@@ -1326,6 +1369,47 @@ also coaches or manages a squad or team can choose **A squad or team** to messag
 
 <img src="user-guide/new-message-committee.png" width="210" alt="New message from a committee member">
 
+### Surveys for the club
+
+Committee members and admins make surveys and read their results. Open **Surveys** from the home
+screen and tap **New survey**.
+
+1. Give it a title, and an introduction if you like.
+2. Choose how answers are kept: **Anonymous**, **Named** or **Name optional**. This can't be
+   changed once it's sent.
+3. Choose who gets it: **Everyone**, **A role** (such as all coaches or all guardians) or **A
+   squad or team**. Parents and guardians of athletes under 18 get a copy of their child's survey,
+   but only the child answers.
+4. Choose the day it opens and the day it closes. It closes at the end of that day.
+5. Add questions. Each is **One choice**, **Several choices**, **Rating** (1 to 5 or 1 to 10) or
+   **Written answer**, and can be **Must answer** or **Can skip**. Up to 30 questions.
+6. Tap **Send survey**. Questions can't be changed once it's sent, so everyone answers the same
+   survey.
+
+<img src="user-guide/survey-new.png" width="210" alt="Making a new survey"> <img src="user-guide/survey-new-questions.png" width="210" alt="Adding questions to a survey">
+
+**All surveys** lists every survey with who it went to, when it opens or closes, and how many have
+answered. Open one and tap **See results**. The person who made a survey, or an admin, can tap
+**Close it now** to stop more answers.
+
+<img src="user-guide/surveys-list.png" width="210" alt="The committee's list of surveys">
+
+Results show how many picked each choice or rating, the average rating, and every written answer.
+
+- **Named surveys** show each person's answers with their name, and who hasn't answered yet, while
+  the survey is open.
+- **Anonymous and name-optional surveys** show results only once the survey has closed **and** at
+  least 3 people have answered. That way nobody can work out who said what by watching the results
+  change as each person answers, or by sending a survey to one or two people. Written answers are
+  listed in alphabetical order, not the order they came in, and you see how many have answered but
+  never who. In a name-optional survey, answers given with a name show it.
+
+<img src="user-guide/survey-results.png" width="210" alt="Results of an anonymous survey"> <img src="user-guide/survey-results-hidden.png" width="210" alt="An anonymous survey's results waiting for it to close"> <img src="user-guide/survey-results-named.png" width="210" alt="Results of a named survey">
+
+When you open results that name an athlete under 18, the app records it in that child's record
+views, which their parents or guardians can see. Opening an anonymous survey's results is never
+recorded against anyone, because nothing in it says who answered.
+
 ### Check-in averages
 
 **Check-ins** shows average scores for each squad, and for each team once its squad phase is
@@ -1646,7 +1730,7 @@ child's guardians, another admin has to change who their guardians are.
 
 **Who has viewed their records.** An approved athlete under 18's page has **Who has viewed their
 records**: everyone other than the athlete and their guardians who opened their injuries, injury
-documents, check-ins, game goals, season KPIs or member record, with their role and when, newest first. Opening
+documents, check-ins, game goals, season KPIs, named survey answers or member record, with their role and when, newest first. Opening
 a child's member page is itself recorded, so your own views are listed too. The child's verified
 parents and guardians see the same list from their home screen.
 
@@ -2120,7 +2204,7 @@ so leave them filled in.
   how they look together and warns when text or buttons would be hard to read. **Use the built-in
   colours** goes back to deep navy, white and blaze orange.
 - **Features**: switch off any of Messages, Calendar, Daily check-ins, Injuries, Attendance,
-  Session plans, Awards, Game goals and Integrity training. A switched-off feature disappears from every member's home screen, to-do list and menus,
+  Session plans, Surveys, Awards, Game goals and Integrity training. A switched-off feature disappears from every member's home screen, to-do list and menus,
   and its Administration pages are hidden. Nothing is deleted, so switching it back on brings
   everything back.
 - **Squads**: **Members join a squad first** is on unless the club switches it off. Switched off,
@@ -2367,10 +2451,12 @@ once saved, only replaced or removed, and anyone who gets it wrong five times in
 | Committee checks date   | Everyone signed in. Only admins change it, and only to bring it forward; who changed it and when is kept. |
 | Messages                | The people they were sent to, the sender, and admins. Guardians of athletes under 18 get a copy of every message sent to their athlete, and of every message their athlete sends as a captain. Guests don't get messages; physios get messages sent to the Physio role and to their squads and teams, and whole-club messages only if an admin turns that on. |
 | Read receipts           | The sender and admins.                                                                                                      |
+| Survey answers          | The committee and admins. Named answers show the member's name; parents and guardians of an athlete under 18 also read their child's named answers. Anonymous answers, and name-optional answers given without a name, are kept with no name, no member and no time, so nobody can see who gave them, admins included; their results show only once the survey has closed and at least 3 people have answered. Members never see each other's answers. |
+| Who has answered a survey | Named surveys: the committee and admins see who hasn't answered yet. Anonymous and name-optional surveys: only how many have answered. Each member sees whether they've answered themselves. |
 | Daily check-in answers and notes | The athlete, their guardians and their coaches. For an athlete under 18, their coaches only once a parent or guardian consents, and until then their check-ins count in no average. The committee, physios and admins see only group averages, hidden below 5 check-ins (over three days, in Trends) or when two groups differ by fewer than 5. |
 | Injuries and documents  | For an athlete under 18 whose parents haven't given consent for injuries: only the athlete, their guardians and admins. Otherwise the athlete, their guardians, their coaches, the physios who look after them (the Head Physio and physios in their squad or team), the committee and admins. Managers don't see injuries. Whoever takes attendance (coaches, managers, the committee and admins) sees only that an athlete is **Injured** and their expected return date, whatever the consent. Only the committee member or admin accepting a clearance can share its documents, while it waits for them; everyone else views them in the app. |
 | Who opened injury documents | The athlete, their guardians and admins: every view and share, by whom, their role and when, and each photo consent. |
-| Who has viewed a child's records | For an athlete under 18: their verified parents or guardians (until the athlete turns 18) and admins. Lists every time someone other than the athlete or their guardians opened the athlete's injuries, injury documents, check-ins, game goals, season KPIs or member record. Opening a child's records is recorded whoever you are; nobody can switch it off or delete entries by hand, and old entries are removed only under the club's Keeping records settings. |
+| Who has viewed a child's records | For an athlete under 18: their verified parents or guardians (until the athlete turns 18) and admins. Lists every time someone other than the athlete or their guardians opened the athlete's injuries, injury documents, check-ins, game goals, season KPIs, named survey answers or member record. Opening a child's records is recorded whoever you are; nobody can switch it off or delete entries by hand, and old entries are removed only under the club's Keeping records settings. |
 | Consents for a child    | The athlete, their parents or guardians and admins, with every consent given and withdrawn. Only a verified parent or guardian can give or withdraw one. |
 | Club policies           | Everyone signed in, including people asking to join.                                                                        |
 | Code of conduct acceptances | The member, their parents or guardians and admins: each season's acceptance, who accepted it, when, the words and the policy version. |
@@ -2484,6 +2570,9 @@ Working With Children Check, and another admin must do it.
   your child moving group, a guardian linked or unlinked, a consent changing or an injury document
   shared out of the app all show under **What's changed** (see
   [What's changed for your child](#whats-changed-for-your-child)).
+- **You see every survey your child is sent.** You get a copy naming your child, and you can read
+  your child's answers to a named survey. Nobody, including you, can read anonymous answers (see
+  [Your child's surveys](#your-childs-surveys)).
 - **You read what the coaches share with your child.** Any session plan a coach shares with your
   child's squad or team, you can read too (see [Your child's session plans](#your-childs-session-plans)).
 - **You can tell the club your child will be away**, so an absence you didn't report stands out
@@ -2517,6 +2606,10 @@ Working With Children Check, and another admin must do it.
 - **Your season KPIs stay with your coaches and your family.** If your coaches set you KPIs, only
   you, your coaches, your parents or guardians and the club's admins see them. Your teammates
   don't, and there's nothing to like or share.
+- **Anonymous surveys really are anonymous.** Nothing in the app links an anonymous answer to you,
+  and nobody can reply to it. If something is worrying you, tell a coach or parent, or raise a
+  concern. Surveys come only from the committee and admins, other members never see your answers,
+  and your parents or guardians see every survey you're sent.
 - **Your own tasks are just for you.** Tasks you add to your to-do list are private reminders:
   nobody else can see them, and they can't be shared, liked or sent to anyone.
 - **You're told who sees what you write**: on the check-in, on injury reports, on game goals and
@@ -2596,8 +2689,13 @@ Working With Children Check, and another admin must do it.
   notice, negative notice, interstate decision or cancelled card stands them down at once, and
   stays on your to-do list until you record telling the governing body in writing.
 - **Record views are logged.** Every time someone other than a child or their guardians opens an
-  under 18's injuries, injury documents, check-ins, game goals, season KPIs or member record, it's recorded.
+  under 18's injuries, injury documents, check-ins, game goals, season KPIs, named survey answers or member record, it's recorded.
   Admins see the list on the child's member page, and parents and guardians on their home screen.
+- **Anonymous surveys protect children.** An anonymous answer is stored with no name, member or
+  time, its results show only after the survey closes and once at least 3 people have answered,
+  and children are reminded to raise a concern rather than write a worry nobody can reply to.
+  Parents and guardians get a copy of every survey sent to their child and read their child's named
+  answers. Survey answers aren't removed under Keeping records yet.
 - **Records aren't kept forever.** Set how long the club keeps check-ins, game goals, message text,
   attendance, training certificates, record views and injury documents under
   [Keeping records](#keeping-records), and switch on **Remove old records**. The text of messages
@@ -2646,7 +2744,7 @@ Working With Children Check, and another admin must do it.
   exemptions), temporary helpers' tasks, dates and acceptance of the club's policies,
   stand-downs, every concern with each referral, note and status, every view and share of an
   injury document, every time someone other than a child or their guardians opened an under 18's
-  injuries, check-ins, game goals, season KPIs or member record, every parent's consent with the policy version they agreed to, and each season's code of conduct
+  injuries, check-ins, game goals, season KPIs, named survey answers or member record, every parent's consent with the policy version they agreed to, and each season's code of conduct
   acceptance with who accepted it, the words and the policy version. A document can't be opened without the view being recorded first.
 - **Records are kept as long as they're needed, then removed.** Each club sets its keep periods
   and the app removes older records each night once the club switches it on. Concerns are never

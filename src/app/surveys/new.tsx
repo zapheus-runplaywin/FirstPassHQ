@@ -1,0 +1,303 @@
+import { router } from 'expo-router';
+import { useState } from 'react';
+import { StyleSheet, View } from 'react-native';
+
+import { DateField } from '@/components/date-field';
+import { Screen } from '@/components/screen';
+import { ThemedText } from '@/components/themed-text';
+import { Button, ChipGroup, ErrorText, TextField } from '@/components/ui';
+import { Spacing } from '@/constants/theme';
+import { useTheme } from '@/hooks/use-theme';
+import { toDateString } from '@/lib/injuries';
+import { pluralRoleLabels } from '@/lib/labels';
+import { supabase } from '@/lib/supabase';
+import {
+  endOfDayIso,
+  identityDetails,
+  identityLabels,
+  questionKindLabels,
+  startOfDayIso,
+  type SurveyAudience,
+  type SurveyIdentity,
+  type SurveyQuestionKind,
+} from '@/lib/surveys';
+import type { AppRole } from '@/lib/types';
+import { teamLabel, useTeams } from '@/lib/use-teams';
+
+/** Roles a survey can go to, in the order they're shown. */
+const surveyRoles: AppRole[] = [
+  'athlete',
+  'guardian',
+  'coach',
+  'manager',
+  'committee',
+  'physio',
+  'admin',
+];
+
+type DraftQuestion = {
+  key: number;
+  kind: SurveyQuestionKind;
+  prompt: string;
+  options: string[];
+  ratingMax: '5' | '10';
+  required: boolean;
+};
+
+let nextKey = 1;
+function newQuestion(kind: SurveyQuestionKind = 'choice'): DraftQuestion {
+  return { key: nextKey++, kind, prompt: '', options: ['', ''], ratingMax: '5', required: true };
+}
+
+function daysFromToday(days: number) {
+  const date = new Date();
+  date.setDate(date.getDate() + days);
+  return toDateString(date);
+}
+
+export default function NewSurveyScreen() {
+  const theme = useTheme();
+  const teams = useTeams();
+  const [title, setTitle] = useState('');
+  const [intro, setIntro] = useState('');
+  const [identity, setIdentity] = useState<SurveyIdentity>('anonymous');
+  const [audience, setAudience] = useState<SurveyAudience>('club');
+  const [role, setRole] = useState<AppRole | null>(null);
+  const [teamId, setTeamId] = useState<string | null>(null);
+  const [opensOn, setOpensOn] = useState<string | null>(toDateString(new Date()));
+  const [closesOn, setClosesOn] = useState<string | null>(daysFromToday(14));
+  const [questions, setQuestions] = useState<DraftQuestion[]>([newQuestion()]);
+  const [sending, setSending] = useState(false);
+  const [error, setError] = useState<string | null>(null);
+
+  function update(key: number, change: Partial<DraftQuestion>) {
+    setQuestions((qs) => qs.map((q) => (q.key === key ? { ...q, ...change } : q)));
+  }
+
+  async function send() {
+    if (!title.trim()) return setError('Give the survey a title.');
+    if (audience === 'role' && !role) return setError('Choose who to send it to.');
+    if (audience === 'group' && !teamId) return setError('Choose a squad or team.');
+    if (!opensOn || !closesOn) return setError('Choose when it opens and closes.');
+    if (closesOn < opensOn) return setError('Choose a closing day on or after the opening day.');
+    for (const [i, q] of questions.entries()) {
+      if (!q.prompt.trim()) return setError(`Write question ${i + 1}.`);
+      if (
+        (q.kind === 'choice' || q.kind === 'multi_choice') &&
+        q.options.filter((o) => o.trim()).length < 2
+      ) {
+        return setError(`Give question ${i + 1} at least two choices.`);
+      }
+    }
+    setSending(true);
+    setError(null);
+    const today = toDateString(new Date());
+    const { data, error: sendError } = await supabase.rpc('create_survey', {
+      p_title: title,
+      p_intro: intro,
+      p_identity: identity,
+      p_audience: audience,
+      p_role: audience === 'role' ? role : null,
+      p_team_id: audience === 'group' ? teamId : null,
+      // Opening today means straight away.
+      p_opens_at: opensOn <= today ? null : startOfDayIso(opensOn),
+      p_closes_at: endOfDayIso(closesOn),
+      p_questions: questions.map((q) => ({
+        kind: q.kind,
+        prompt: q.prompt,
+        options:
+          q.kind === 'choice' || q.kind === 'multi_choice'
+            ? q.options.filter((o) => o.trim())
+            : null,
+        rating_max: q.kind === 'rating' ? Number(q.ratingMax) : null,
+        required: q.required,
+      })),
+    });
+    setSending(false);
+    if (sendError) return setError(sendError.message);
+    router.replace({ pathname: '/surveys/[id]', params: { id: data as string } });
+  }
+
+  return (
+    <Screen>
+      <TextField
+        label="Title"
+        placeholder="For example, End of season survey"
+        value={title}
+        onChangeText={setTitle}
+        maxLength={120}
+      />
+      <TextField
+        label="Introduction (optional)"
+        value={intro}
+        onChangeText={setIntro}
+        placeholder="What it’s for and how answers will be used"
+        multiline
+        maxLength={2000}
+      />
+
+      <ChipGroup
+        label="Answers"
+        options={(['anonymous', 'named', 'optional'] as const).map((value) => ({
+          value,
+          label: identityLabels[value],
+        }))}
+        selected={[identity]}
+        onToggle={setIdentity}
+      />
+      <ThemedText type="small" themeColor="textSecondary">
+        {identityDetails[identity]} This can’t be changed once it’s sent.
+      </ThemedText>
+
+      <ChipGroup
+        label="Send to"
+        options={[
+          { value: 'club', label: 'Everyone' },
+          { value: 'role', label: 'A role' },
+          { value: 'group', label: 'A squad or team' },
+        ]}
+        selected={[audience]}
+        onToggle={(value) => {
+          setAudience(value);
+          setError(null);
+        }}
+      />
+      {audience === 'role' ? (
+        <ChipGroup
+          label="Role"
+          options={surveyRoles.map((r) => ({ value: r, label: pluralRoleLabels[r] }))}
+          selected={role ? [role] : []}
+          onToggle={setRole}
+        />
+      ) : null}
+      {audience === 'group' ? (
+        <ChipGroup
+          label="Squad or team"
+          options={teams.map((t) => ({ value: t.id, label: teamLabel(t, teams) }))}
+          selected={teamId ? [teamId] : []}
+          onToggle={setTeamId}
+        />
+      ) : null}
+      <ThemedText type="small" themeColor="textSecondary">
+        Parents and guardians of athletes under 18 get a copy so they can see what their child is
+        asked. Only the child answers.
+      </ThemedText>
+
+      <DateField
+        label="Opens"
+        value={opensOn}
+        onChange={setOpensOn}
+        quickPicks={[
+          { label: 'Today', days: 0 },
+          { label: 'Tomorrow', days: 1 },
+          { label: 'In 1 week', days: 7 },
+        ]}
+      />
+      <DateField
+        label="Closes at the end of"
+        value={closesOn}
+        onChange={setClosesOn}
+        quickPicks={[
+          { label: '1 week', days: 7 },
+          { label: '2 weeks', days: 14 },
+          { label: '4 weeks', days: 28 },
+        ]}
+      />
+
+      {questions.map((q, i) => (
+        <View key={q.key} style={[styles.question, { borderColor: theme.backgroundElement }]}>
+          <ThemedText type="smallBold">Question {i + 1}</ThemedText>
+          <ChipGroup
+            options={(['choice', 'multi_choice', 'rating', 'text'] as const).map((value) => ({
+              value,
+              label: questionKindLabels[value],
+            }))}
+            selected={[q.kind]}
+            onToggle={(kind) => update(q.key, { kind })}
+          />
+          <TextField
+            label="Question"
+            placeholder="Write the question"
+            value={q.prompt}
+            onChangeText={(prompt) => update(q.key, { prompt })}
+            maxLength={300}
+          />
+          {q.kind === 'choice' || q.kind === 'multi_choice' ? (
+            <View style={styles.options}>
+              {q.options.map((option, n) => (
+                <TextField
+                  key={n}
+                  label={`Choice ${n + 1}`}
+                  placeholder="Write a choice"
+                  value={option}
+                  onChangeText={(text) =>
+                    update(q.key, { options: q.options.map((o, m) => (m === n ? text : o)) })
+                  }
+                  maxLength={100}
+                />
+              ))}
+              {q.options.length < 12 ? (
+                <Button
+                  title="Add a choice"
+                  variant="secondary"
+                  onPress={() => update(q.key, { options: [...q.options, ''] })}
+                />
+              ) : null}
+            </View>
+          ) : null}
+          {q.kind === 'rating' ? (
+            <ChipGroup
+              label="Scale"
+              options={[
+                { value: '5', label: '1 to 5' },
+                { value: '10', label: '1 to 10' },
+              ]}
+              selected={[q.ratingMax]}
+              onToggle={(ratingMax) => update(q.key, { ratingMax })}
+            />
+          ) : null}
+          <ChipGroup
+            options={[
+              { value: 'yes', label: 'Must answer' },
+              { value: 'no', label: 'Can skip' },
+            ]}
+            selected={[q.required ? 'yes' : 'no']}
+            onToggle={(value) => update(q.key, { required: value === 'yes' })}
+          />
+          {questions.length > 1 ? (
+            <Button
+              title="Remove question"
+              variant="secondary"
+              onPress={() => setQuestions((qs) => qs.filter((x) => x.key !== q.key))}
+            />
+          ) : null}
+        </View>
+      ))}
+      {questions.length < 30 ? (
+        <Button
+          title="Add a question"
+          variant="secondary"
+          onPress={() => setQuestions((qs) => [...qs, newQuestion()])}
+        />
+      ) : null}
+
+      <ThemedText type="small" themeColor="textSecondary">
+        Questions can’t be changed once it’s sent. Only the committee and admins see results.
+      </ThemedText>
+      <ErrorText>{error}</ErrorText>
+      <Button title="Send survey" onPress={send} busy={sending} />
+    </Screen>
+  );
+}
+
+const styles = StyleSheet.create({
+  question: {
+    gap: Spacing.three,
+    padding: Spacing.three,
+    borderWidth: 1,
+    borderRadius: 12,
+  },
+  options: {
+    gap: Spacing.two,
+  },
+});

@@ -19,6 +19,11 @@ export const FEATURES = [
     label: 'Session plans',
     detail: 'Coaches keep and share a plan for each training session',
   },
+  {
+    key: 'surveys',
+    label: 'Surveys',
+    detail: 'The committee and admins send anonymous or named surveys',
+  },
   { key: 'awards', label: 'Awards', detail: 'Award votes and results' },
   { key: 'goals', label: 'Game goals', detail: 'Athletes’ goals and reflections for PlayHQ games' },
   {
