@@ -21,7 +21,7 @@ const AXIS_WIDTH = 16;
  * Small multiples of a group's check-in averages: one line per question on the
  * same 1 to 5 scale, each day averaging that day and the two before it, plus
  * how many athletes checked in each day. Tapping a day shows its values in
- * every chart. Days with fewer than 5 athletes checking in over their three
+ * every chart. Days with fewer than 3 athletes checking in over their three
  * days have no scores, so their lines break there.
  */
 export function CheckInTrends({ days }: { days: CheckInTrendDay[] }) {
@@ -89,8 +89,8 @@ export function CheckInTrends({ days }: { days: CheckInTrendDay[] }) {
 
       <ThemedText type="small" themeColor="textSecondary">
         Averages out of 5, each day covering that day and the two before it. The red line is{' '}
-        {FLAG_AT}: a score at or below it flags an athlete. Scores show once at least 5 athletes
-        checked in over those three days, and hide when a related group is within 4 of this one.
+        {FLAG_AT}: a score at or below it flags an athlete. Scores show once at least 3 athletes
+        checked in over those three days, and hide when a related group is within 2 of this one.
         Tap a day to see its numbers.
       </ThemedText>
 

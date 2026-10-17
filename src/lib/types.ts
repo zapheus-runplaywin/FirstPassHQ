@@ -463,7 +463,7 @@ export type CheckInTrendDay = {
   checked_in_count: number;
   /** Check-ins over the day and the two before it, which the averages cover. */
   window_count: number;
-  /** Null, like the averages, when fewer than 5 athletes checked in over the three days. */
+  /** Null, like the averages, when fewer than 3 athletes checked in over the three days. */
   flagged_count: number | null;
   avg_sleep: number | null;
   avg_soreness: number | null;
