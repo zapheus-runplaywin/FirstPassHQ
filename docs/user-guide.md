@@ -1110,9 +1110,8 @@ show, and count, only once a parent or guardian has given consent for their chec
 - **Trends** graphs the group's average sleep, soreness, stress and mood over 2 weeks, 4 weeks or
   3 months, with the number who checked in each day. Each day's score averages that day and the
   two before it, so a small group whose athletes don't check in every day still gets a line. A day
-  shows scores once at least 5 athletes checked in over those three days, and hides them when
-  the club, the squad or one of its teams is within 4 check-ins of the group, so one person can
-  never be worked out. The red line is 2, the score that flags an athlete. Tap a day to see its
+  shows scores once at least 3 athletes checked in over those three days, so no one athlete's
+  answers show. The red line is 2, the score that flags an athlete. Tap a day to see its
   numbers in every chart, and use the chips to switch group.
 
 <img src="user-guide/check-ins-coach.png" width="210" alt="Coach's day-by-day check-ins">
@@ -1463,11 +1462,10 @@ recorded against anyone, because nothing in it says who answered.
 **Check-ins** shows average scores for each squad, and for each team once its squad phase is
 complete, plus how many checked in and how many are flagged. **Trends** graphs the
 averages for one group or the whole club, each day averaging that day and the two before it.
-Scores only show once at least 5 athletes in a group have checked in (over the three days, in
-Trends), and a group's scores hide on any day it is within 4 check-ins of the club, its squad or
-one of its teams, so subtracting one group from another can't point to one person. Athletes under
-18 count only once a parent or guardian has given consent for their check-ins. Individual answers
-are only for the athlete, their guardians and their coaches.
+Scores only show once at least 3 athletes in a group have checked in (over the three days, in
+Trends), and the overview never says who checked in, so the scores can't point to one person.
+Athletes under 18 count only once a parent or guardian has given consent for their check-ins.
+Individual answers are only for the athlete, their guardians and their coaches.
 
 <img src="user-guide/check-ins-overview.png" width="210" alt="Committee check-in overview">
 <img src="user-guide/check-ins-club-trends.png" width="210" alt="Whole-club check-in trends">
@@ -2501,7 +2499,7 @@ once saved, only replaced or removed, and anyone who gets it wrong five times in
 | Read receipts           | The sender and admins.                                                                                                      |
 | Survey answers          | Whoever sent the survey. The committee and admins for their own surveys and ones a coach or manager shared with them. A coach or manager's survey to their own squad or team is seen only by them while they still coach or manage it, unless they shared it. A captain's poll is seen by the captain while they're captain, and by the squad or team's coaches and managers. Named answers show the member's name; parents and guardians of an athlete under 18 also read their child's named answers. Anonymous answers, and name-optional answers given without a name, are kept with no name, no member and no time, so nobody can see who gave them, admins included; their results show only once the survey has closed and at least 3 people have answered. Members never see each other's answers. |
 | Who has answered a survey | Named surveys: whoever can see the results sees who hasn't answered yet. Anonymous and name-optional surveys: only how many have answered. Each member sees whether they've answered themselves. |
-| Daily check-in answers and notes | The athlete, their guardians and their coaches. For an athlete under 18, their coaches only once a parent or guardian consents, and until then their check-ins count in no average. The committee, physios and admins see only group averages, hidden below 5 check-ins (over three days, in Trends) or when two groups differ by fewer than 5. |
+| Daily check-in answers and notes | The athlete, their guardians and their coaches. For an athlete under 18, their coaches only once a parent or guardian consents, and until then their check-ins count in no average. The committee, physios and admins see only group averages, hidden below 3 check-ins (over three days, in Trends). |
 | Injuries and documents  | For an athlete under 18 whose parents haven't given consent for injuries: only the athlete, their guardians and admins. Otherwise the athlete, their guardians, their coaches, the physios who look after them (the Head Physio and physios in their squad or team), the committee and admins. Managers don't see injuries. Whoever takes attendance (coaches, managers, the committee and admins) sees only that an athlete is **Injured** and their expected return date, whatever the consent. Only the committee member or admin accepting a clearance can share its documents, while it waits for them; everyone else views them in the app. |
 | Who opened injury documents | The athlete, their guardians and admins: every view and share, by whom, their role and when, and each photo consent. |
 | Who has viewed a child's records | For an athlete under 18: their verified parents or guardians (until the athlete turns 18) and admins. Lists every time someone other than the athlete or their guardians opened the athlete's injuries, injury documents, check-ins, game goals, season KPIs, named survey answers or member record. Opening a child's records is recorded whoever you are; nobody can switch it off or delete entries by hand, and old entries are removed only under the club's Keeping records settings. |
@@ -2738,6 +2736,9 @@ Working With Children Check, and another admin must do it.
 - **Screening Unit notices.** Record every notice on the member's page. An interim negative
   notice, negative notice, interstate decision or cancelled card stands them down at once, and
   stays on your to-do list until you record telling the governing body in writing.
+- **Check-ins are only ever averages.** The committee, physios and admins never see who checked in
+  or any one athlete's answers, only a group's average scores, and only once at least 3 athletes in
+  the group have checked in.
 - **Record views are logged.** Every time someone other than a child or their guardians opens an
   under 18's injuries, injury documents, check-ins, game goals, season KPIs, named survey answers or member record, it's recorded.
   Admins see the list on the child's member page, and parents and guardians on their home screen.
