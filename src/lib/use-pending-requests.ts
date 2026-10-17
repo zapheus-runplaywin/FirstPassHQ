@@ -56,6 +56,8 @@ export type SafetyTodos = {
   wwcc_people?: number;
   /** Club settings' "Remove old records" is off, so nothing past its keep period is removed. */
   records_removal_off?: boolean;
+  /** Members with no squad, team or club role for 2 years, from `admin_inactive_members`. */
+  inactive_members?: number;
 };
 
 /** Child-safety follow-ups for admins, refreshed when the screen is shown. */
@@ -65,13 +67,20 @@ export function useSafetyTodos() {
 
   const load = useCallback(async () => {
     if (!isAdmin) return;
-    const [{ data }, { data: retention }] = await Promise.all([
+    const [{ data }, { data: retention }, { data: inactive }] = await Promise.all([
       supabase.rpc('admin_safety_todos').maybeSingle(),
       supabase.rpc('record_retention').maybeSingle(),
+      supabase.rpc('admin_inactive_members'),
     ]);
     const todos = (data as SafetyTodos | null) ?? null;
     const removalOn = (retention as { enabled?: unknown } | null)?.enabled;
-    setSafety(todos && { ...todos, records_removal_off: retention != null && removalOn === false });
+    setSafety(
+      todos && {
+        ...todos,
+        records_removal_off: retention != null && removalOn === false,
+        inactive_members: Array.isArray(inactive) ? inactive.length : 0,
+      },
+    );
   }, [isAdmin]);
 
   useFocusEffect(

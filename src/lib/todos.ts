@@ -468,6 +468,14 @@ export function buildTodos({
         href: '/admin/club',
       });
     }
+    if ((safety.inactive_members ?? 0) > 0) {
+      todos.push({
+        key: 'inactive-members',
+        title: `${plural(safety.inactive_members ?? 0, 'member has', 'members have')} had no team or role for 2 years`,
+        detail: 'Delete them if they’ve left the club. Their safeguarding records stay.',
+        href: '/admin',
+      });
+    }
   }
 
   if (affiliation) {

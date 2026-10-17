@@ -1666,7 +1666,8 @@ is missing or expired, otherwise amber (**Expiring**, **Validate** or **Register
 child-safety to-do opens **Members**, where the people behind it are listed
 first under **Needs checking**. While **Remove old records** is off, the list also shows **Old
 records are kept forever**, which opens Club settings so you can switch it on (see [Keeping
-records](#keeping-records)). When Affiliation records are on, the list also has affiliation
+records](#keeping-records)), and **Members have had no team or role for 2 years** when anyone
+has (see [Approving members](#approving-members)). When Affiliation records are on, the list also has affiliation
 items still to do, members to check in PlayHQ and a reminder when the yearly affiliation return
 is due (see [Affiliation](#affiliation)). On an installed app, admins also get a push notification for each
 new join request.
@@ -1677,7 +1678,7 @@ or an exemption with a reason that another admin records, like committee members
 
 <img src="user-guide/admin-home.png" width="210" alt="Admin home screen">
 <img src="user-guide/administration.png" width="210" alt="Administration menu">
-<img src="user-guide/admin-safety-todos.png" width="210" alt="Admin to-dos with one Working With Children Checks to-do in red at the top, then guardians, athletes turning 18 and old records kept forever">
+<img src="user-guide/admin-safety-todos.png" width="210" alt="Admin to-dos with one Working With Children Checks to-do in red at the top, then guardians, athletes turning 18, old records kept forever and a member with no team or role for 2 years">
 
 ### Inviting members
 
@@ -1692,8 +1693,16 @@ isn't part of the invite, so share it separately.
 
 ### Approving members
 
-**Members** lists everyone, grouped into **Waiting for approval**, **Members**, **Signed in, no
-request yet** and **Not approved**. Search by name or email.
+**Members** lists everyone, grouped into **Waiting for approval**, **Members**, **No team or role
+for 2 years**, **Signed in, no request yet** and **Not approved**. Search by name or email.
+
+**No team or role for 2 years** lists members who may have left the club: they have no place in
+this season's squads and teams, aren't a guardian of anyone who has, hold no club-wide role
+(admin, committee, partner or Head Physio), and haven't signed in or changed groups for 2 years.
+Each shows when they were last active. Open them and tap **Delete member** if they've left; the
+app never deletes them by itself. Once **Remove old records** is on, join requests are removed 90
+days after they're turned down or if nobody answers them for 90 days, and temporary helpers a year
+after their last day.
 
 **Needs checking**, at the top, lists the members behind the child-safety to-dos on your home
 screen, with the reason under each name: no Working With Children Check recorded, one that has
@@ -1815,6 +1824,7 @@ To turn someone down, choose a reason (**PlayHQ email doesn't match**, **Not reg
 club** or **Other**) and tap **Don't approve**. They see the reason and can request again.
 
 <img src="user-guide/members.png" width="210" alt="Members list with Needs checking at the top">
+<img src="user-guide/members-inactive.png" width="210" alt="Members list with a member under No team or role for 2 years, showing when they were last active">
 <img src="user-guide/member-approve.png" width="210" alt="Approving a guardian's request">
 <img src="user-guide/member-new.png" width="210" alt="Approving an athlete's request">
 
@@ -1873,8 +1883,14 @@ Working With Children Check whichever role it is, and that includes athletes und
   writing, then enter the date and tap **Governing body told**; until you do, it stays on your
   to-do list. Notices are kept on their page and in the Working With Children Checks report. You
   can't record a notice about yourself.
-- **Delete member** permanently deletes their account, squad and team places, guardian links and
-  message receipts. Messages they sent stay, and their injury records are kept for 12 months.
+- **Delete member** permanently deletes their account, details, squad and team places and guardian
+  links. The club's safeguarding records about them stay, under the name they had: their
+  attendance, training certificates, message receipts, consents, code of conduct acceptances,
+  policy acknowledgements, exemptions (ended on the day), stand-downs, Screening Unit notices, and
+  who viewed their records. Each goes when its own keep period ends (see [Keeping
+  records](#keeping-records)). Messages they sent stay, and their injury records are kept for 12
+  months. In the attendance report and a message's read receipts they show with "(deleted)" after
+  their name.
 
 <img src="user-guide/member-title.png" width="210" alt="A committee member's page with their preferred name and title">
 <img src="user-guide/member-coach-title.png" width="210" alt="A coach's squads and teams, head or assistant coach in each, and the title the app gives them">
@@ -2408,18 +2424,37 @@ its periods starts on those.
   (recommended) or 3 years after it was cleared. The injury, its sign-offs, each document's name,
   who added it and who viewed or shared it stay. Documents of injuries that aren't cleared yet
   stay.
+- **Cleared injuries**: the injury itself, with its updates, sign-offs and who viewed its
+  documents, goes 3, 5, 7 (recommended) or 10 years after it was cleared, once its documents have
+  gone. 7 years covers the time limits for injury claims, including for children. Injuries that
+  aren't cleared stay.
+- **Safeguarding records**: stand-downs, Screening Unit notices, volunteer exemptions, parents'
+  consents, code of conduct acceptances, policy acknowledgements and guardian link history go 7,
+  10, 15, 20 or 30 (recommended) years after each one ended: when a stand-down was lifted, a notice
+  arrived, an exemption or consent ended, or a code of conduct or link change was recorded.
+  Anything still in force stays, including a member's latest policy acknowledgement.
+- **Who voted for whom in awards**: 1 (recommended), 2, 3 or 5 years after the award closes. Only
+  who cast each vote goes; the points and results stay.
+- **Awards and their results**: the award with all its votes goes 3, 5, 10 (recommended) or 20
+  years after it closes, or choose **Keep for good**. Never shorter than who voted for whom.
 
 A period the club saved before these choices changed (such as 7 years for attendance) stays as it
 is, shown as its own choice, until an admin picks another.
 
 Concerns are never removed. Injury records keep their own rule: removed 12 months after an
-athlete leaves, with any documents still left. **Last changed by** shows which admin last saved the periods, and when.
+athlete leaves, with any documents still left. Join requests go 90 days after they're turned
+down or left unanswered, and temporary helpers a year after their last day; their safeguarding
+records stay for their own periods. Members who stop coming are never removed automatically:
+admins see them under **No team or role for 2 years** (see [Approving
+members](#approving-members)). **Last changed by** shows which admin last saved the periods, and when.
 Tap **Save keep periods** to save.
 
 <img src="user-guide/club-settings-records.png" width="210" alt="Club settings: keeping records">
-<img src="user-guide/club-settings-records-safety.png" width="210" alt="Club settings: keep periods for message text, messages involving a child, attendance and certificates">
-<img src="user-guide/club-settings-records-surveys.png" width="210" alt="Club settings: keep periods for surveys and team polls">
+<img src="user-guide/club-settings-records-safety.png" width="210" alt="Club settings: keep periods for message text, messages involving a child and attendance">
+<img src="user-guide/club-settings-records-surveys.png" width="210" alt="Club settings: keep periods for training certificates, surveys and team polls">
 <img src="user-guide/club-settings-records-injury.png" width="210" alt="Club settings: keep periods for record views and injury documents">
+<img src="user-guide/club-settings-records-more.png" width="210" alt="Club settings: keep periods for cleared injuries and safeguarding records">
+<img src="user-guide/club-settings-records-awards.png" width="210" alt="Club settings: keep periods for who voted for whom and for awards and their results, with Keep for good">
 
 ### Safeguarding contacts
 
@@ -2556,7 +2591,7 @@ once saved, only replaced or removed, and anyone who gets it wrong five times in
 | Reported absences       | The athlete, their parents or guardians, the coaches and managers of the athlete's squads and teams, the committee and admins, with the reason and details. Physios don't see them. The Attendance report counts reasons only, never the details. |
 | Absence reasons         | Everyone signed in sees the list. Only admins switch reasons off or add them.                                                |
 | Committee calendar      | Committee members and admins.                                                                                               |
-| Award votes             | Only the voter sees their own ballot. Nobody, admins included, can see who someone voted for.                               |
+| Award votes             | Only the voter sees their own ballot. Nobody, admins included, can see who someone voted for. Who cast each vote is removed after the club's keep period (1 year recommended). |
 | Award results           | Admins only: standings and how many people have voted, and once voting closes, how many votes each nominee got at each place. |
 | Affiliation records and PlayHQ registration checks | Admins only. |
 | Affiliation returns     | Admins only, until an admin sends one. A sent return goes to the email address the club entered and holds club facts and counts, naming no member under 18. |
@@ -2570,8 +2605,12 @@ When someone leaves, injury records and proof documents are kept for 12 months, 
 committee and admins, then deleted automatically. Once an admin switches on **Remove old records**,
 check-ins, game goals, athletes' season KPIs from archived seasons, attendance, session plans and
 training certificates go after 1 year, message text after 3 years (7 years when a child sent or
-received it), record views after 7 years, and the files of a cleared injury 1 year after
-clearance, unless the club chooses other periods (see [Keeping records](#keeping-records)).
+received it), record views after 7 years, the files of a cleared injury 1 year after
+clearance and the injury 7 years after, safeguarding records 30 years after they end, who voted
+for whom in awards after 1 year and awards with their results after 10 years, unless the club
+chooses other periods (see [Keeping records](#keeping-records)). Join requests go 90 days after
+they're turned down or left unanswered, and temporary helpers a year after their last day.
+Deleting a member keeps the club's safeguarding records about them for their own periods.
 Concerns are never removed.
 
 <div style="page-break-before: always"></div>
@@ -2796,8 +2835,9 @@ Working With Children Check, and another admin must do it.
   under 18's parents or guardians get a copy. Surveys and their answers are removed under
   Keeping records, with their own periods.
 - **Records aren't kept forever.** Set how long the club keeps check-ins, game goals, message text,
-  surveys, attendance, training certificates, record views and injury documents under
-  [Keeping records](#keeping-records), and switch on **Remove old records**. The text of messages
+  surveys, attendance, training certificates, record views, injury documents, cleared injuries,
+  safeguarding records and award votes under [Keeping records](#keeping-records), and switch on
+  **Remove old records**. The text of messages
   sent by or to a child is kept at least 3 years (7 recommended) and never less than other
   messages, and who viewed a child's records at least 3 years (7 recommended); concerns are never
   removed.
@@ -2852,6 +2892,13 @@ Working With Children Check, and another admin must do it.
   years (7 recommended); a removed message keeps who sent it, who it went to and who read it. A
   child's injury letters and photos go a set time after they're cleared (1 year recommended, or
   90 days or 3 years), while the record that they were checked and who viewed them stays.
+  Safeguarding records (stand-downs, Screening Unit notices, exemptions, consents, code of conduct
+  acceptances, policy acknowledgements and guardian link history) are kept 7 to 30 years after
+  they end (30 recommended), and anything still in force stays.
+- **Deleting a member doesn't delete the safeguarding trail.** Their attendance, training
+  certificates, message receipts, consents, code of conduct acceptances, exemptions and who viewed
+  their records stay under the name they had, until each one's own keep period ends, so the club
+  can still show who was with which children and that its people were trained and screened.
 - **Child abuse and serious crimes go out, not in.** The register prompts the club to refer them to
   Police and the governing body straight away, and records that it did.
 - **Each club's data is kept apart**, in that club's own database.
