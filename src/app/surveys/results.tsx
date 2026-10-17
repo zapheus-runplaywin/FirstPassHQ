@@ -4,16 +4,16 @@ import { StyleSheet, View } from 'react-native';
 
 import { Screen } from '@/components/screen';
 import { ThemedText } from '@/components/themed-text';
-import { Button, Card, ErrorText } from '@/components/ui';
+import { SurveyBars } from '@/components/survey-bars';
+import { Button, Card, ConfirmDelete, ErrorText } from '@/components/ui';
 import { Spacing } from '@/constants/theme';
-import { useTheme } from '@/hooks/use-theme';
 import { useClub } from '@/lib/club';
 import { toDateString } from '@/lib/injuries';
 import { reportPdf } from '@/lib/pdf';
 import { fileSlug, sharePdf } from '@/lib/reports';
 import { shareXlsx, surveyReport, surveyWorkbook, type SurveyExport } from '@/lib/survey-reports';
 import { supabase } from '@/lib/supabase';
-import { answerText, type SurveyResults } from '@/lib/surveys';
+import { answeredText, answerText, surveyWaitText, type SurveyResults } from '@/lib/surveys';
 import { workbookXlsx } from '@/lib/xlsx';
 
 export default function SurveyResultsScreen() {
@@ -23,6 +23,8 @@ export default function SurveyResultsScreen() {
   const club = useClub();
   const [exporting, setExporting] = useState<'pdf' | 'xlsx' | null>(null);
   const [exportError, setExportError] = useState<string | null>(null);
+  const [closing, setClosing] = useState(false);
+  const [closeError, setCloseError] = useState<string | null>(null);
 
   const load = useCallback(async () => {
     const { data, error: fetchError } = await supabase.rpc('survey_results', { p_survey_id: id });
@@ -65,6 +67,19 @@ export default function SurveyResultsScreen() {
     }
   }
 
+  // Accept the answers as they are, such as when not everyone will answer.
+  async function closeNow() {
+    setClosing(true);
+    setCloseError(null);
+    const { error: rpcError } = await supabase.rpc('set_survey_closing', {
+      p_survey_id: id,
+      p_closes_at: new Date().toISOString(),
+    });
+    setClosing(false);
+    if (rpcError) return setCloseError(rpcError.message);
+    load();
+  }
+
   async function downloadSpreadsheet() {
     setExporting('xlsx');
     setExportError(null);
@@ -81,17 +96,39 @@ export default function SurveyResultsScreen() {
 
   return (
     <Screen>
-      <ThemedText type="smallBold">
-        {results.answered} of {results.sent_to} answered
-      </ThemedText>
+      <ThemedText type="smallBold">{answeredText(results.answered, results.sent_to)}</ThemedText>
+      {results.survey.everyone_answers || results.survey.results_to_group ? (
+        <ThemedText type="small" themeColor="textSecondary">
+          {[
+            results.survey.everyone_answers ? 'Everyone must answer.' : null,
+            results.survey.results_to_group
+              ? 'The squad or team sees how many picked each choice, never names or written answers.'
+              : null,
+          ]
+            .filter(Boolean)
+            .join(' ')}
+        </ThemedText>
+      ) : null}
 
       {results.hidden ? (
-        <Card>
+        <Card style={styles.question}>
           <ThemedText type="small">
-            {!results.closed
-              ? 'Results show once the survey closes, so nobody can work out who answered from how the results change.'
-              : `Results show once at least ${results.min_responses} people have answered, so nobody can be picked out.`}
+            {results.wait ? surveyWaitText(results.wait, results.survey) : null}
           </ThemedText>
+          {results.can_close ? (
+            <ConfirmDelete
+              title="Close now and see results"
+              warning={
+                results.survey.identity !== 'named' && results.answered < results.min_responses
+                  ? `Nobody else can answer once it’s closed, and results still need at least ${results.min_responses} answers.`
+                  : 'Nobody else can answer once it’s closed. Results show with the answers so far.'
+              }
+              confirmTitle="Close the survey"
+              onConfirm={closeNow}
+              busy={closing}
+            />
+          ) : null}
+          <ErrorText>{closeError}</ErrorText>
         </Card>
       ) : (
         results.questions.map((q, i) => (
@@ -103,17 +140,7 @@ export default function SurveyResultsScreen() {
               {q.answered} answered
               {q.kind === 'rating' && q.average !== null ? ` · Average ${q.average} out of ${q.rating_max}` : ''}
             </ThemedText>
-            {q.counts ? (
-              <Bars
-                labels={
-                  q.kind === 'rating'
-                    ? Array.from({ length: q.rating_max ?? 0 }, (_, n) => String(n + 1))
-                    : (q.options ?? [])
-                }
-                counts={q.counts}
-                total={q.answered}
-              />
-            ) : null}
+            <SurveyBars question={q} />
             {q.texts?.map((t, n) => (
               <View key={n} style={styles.text}>
                 <ThemedText type="small">{t.text}</ThemedText>
@@ -184,63 +211,12 @@ export default function SurveyResultsScreen() {
   );
 }
 
-function Bars({ labels, counts, total }: { labels: string[]; counts: number[]; total: number }) {
-  const theme = useTheme();
-  return (
-    <View style={styles.bars}>
-      {labels.map((label, i) => {
-        const count = counts[i] ?? 0;
-        const share = total > 0 ? count / total : 0;
-        return (
-          <View key={i} style={styles.bar}>
-            <View style={styles.barLabel}>
-              <ThemedText type="small" style={styles.grow}>
-                {label}
-              </ThemedText>
-              <ThemedText type="small" themeColor="textSecondary">
-                {count} · {Math.round(share * 100)}%
-              </ThemedText>
-            </View>
-            <View style={[styles.track, { backgroundColor: theme.backgroundSelected }]}>
-              <View
-                style={[styles.fill, { width: `${share * 100}%`, backgroundColor: theme.accent }]}
-              />
-            </View>
-          </View>
-        );
-      })}
-    </View>
-  );
-}
-
 const styles = StyleSheet.create({
   actions: {
     gap: Spacing.three,
   },
   question: {
     gap: Spacing.two,
-  },
-  bars: {
-    gap: Spacing.two,
-  },
-  bar: {
-    gap: Spacing.half,
-  },
-  barLabel: {
-    flexDirection: 'row',
-    gap: Spacing.two,
-  },
-  grow: {
-    flex: 1,
-  },
-  track: {
-    height: 8,
-    borderRadius: 4,
-    overflow: 'hidden',
-  },
-  fill: {
-    height: 8,
-    borderRadius: 4,
   },
   text: {
     gap: Spacing.half,

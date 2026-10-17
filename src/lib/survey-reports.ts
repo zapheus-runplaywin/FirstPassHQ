@@ -37,6 +37,7 @@ function surveyLine(survey: SurveySummary) {
     identityLabels[survey.identity],
     `To ${surveyAudienceLabel(survey.audience, survey.audience_role, survey.audience_label)}`,
     survey.created_by_name ? `From ${survey.created_by_name}` : null,
+    survey.everyone_answers ? 'Everyone must answer' : null,
     `${formatDateString(openingDay(survey.opens_at))} to ${formatDateString(closingDay(survey.closes_at))}`,
   ]
     .filter(Boolean)

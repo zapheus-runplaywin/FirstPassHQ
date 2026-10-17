@@ -3,6 +3,7 @@ import { useCallback, useState } from 'react';
 import { StyleSheet, View } from 'react-native';
 
 import { Screen } from '@/components/screen';
+import { SurveyBars } from '@/components/survey-bars';
 import { ThemedText } from '@/components/themed-text';
 import { Button, Card, ChipGroup, ConfirmDelete, ErrorText, TextField } from '@/components/ui';
 import { Spacing } from '@/constants/theme';
@@ -11,6 +12,7 @@ import { useAuth } from '@/lib/auth';
 import { formatDateString } from '@/lib/injuries';
 import { supabase } from '@/lib/supabase';
 import {
+  answeredText,
   answerText,
   childCopyLabel,
   closingDay,
@@ -18,8 +20,10 @@ import {
   openingDay,
   surveyAnswersSeenBy,
   surveyAudienceLabel,
+  surveyWaitText,
   type SurveyAnswer,
   type SurveyDetail,
+  type SurveyGroupResults,
   type SurveyQuestion,
 } from '@/lib/surveys';
 
@@ -29,6 +33,7 @@ export default function SurveyScreen() {
   const { id } = useLocalSearchParams<{ id: string }>();
   const { profile } = useAuth();
   const [survey, setSurvey] = useState<SurveyDetail | null>(null);
+  const [groupResults, setGroupResults] = useState<SurveyGroupResults | null>(null);
   const [loadError, setLoadError] = useState<string | null>(null);
   const [draft, setDraft] = useState<Draft>({});
   const [giveName, setGiveName] = useState(false);
@@ -41,8 +46,16 @@ export default function SurveyScreen() {
     const { data, error: fetchError } = await supabase.rpc('survey_detail', {
       p_survey_id: id,
     });
-    if (fetchError) setLoadError(fetchError.message);
-    else setSurvey(data as SurveyDetail);
+    if (fetchError) return setLoadError(fetchError.message);
+    const detail = data as SurveyDetail;
+    setSurvey(detail);
+    // The squad or team's totals, when whoever sent it shared them.
+    if (detail.results_to_group && detail.is_recipient && !detail.is_scheduled) {
+      const { data: shared } = await supabase.rpc('survey_group_results', { p_survey_id: id });
+      setGroupResults((shared as SurveyGroupResults | null) ?? null);
+    } else {
+      setGroupResults(null);
+    }
   }, [id]);
 
   useFocusEffect(
@@ -114,6 +127,9 @@ export default function SurveyScreen() {
         </ThemedText>
       </View>
       {survey.intro ? <ThemedText>{survey.intro}</ThemedText> : null}
+      {survey.everyone_answers && survey.is_open ? (
+        <ThemedText type="smallBold">Everyone must answer this one.</ThemedText>
+      ) : null}
 
       {survey.for_child_names ? (
         <Card>
@@ -202,6 +218,8 @@ export default function SurveyScreen() {
         </>
       )}
 
+      {groupResults ? <TeamResults survey={survey} results={groupResults} /> : null}
+
       {survey.can_see_results ? (
         <View style={styles.actions}>
           <Button
@@ -241,7 +259,44 @@ function IdentityNotice({ survey }: { survey: SurveyDetail }) {
   return (
     <Card>
       <ThemedText type="small">{text}</ThemedText>
+      {survey.results_to_group ? (
+        <ThemedText type="small" themeColor="textSecondary">
+          Everyone it went to sees the totals, never who picked what.
+        </ThemedText>
+      ) : null}
     </Card>
+  );
+}
+
+/** The totals whoever sent it shared with the squad or team. No names or written answers. */
+function TeamResults({ survey, results }: { survey: SurveyDetail; results: SurveyGroupResults }) {
+  return (
+    <View style={styles.list}>
+      <ThemedText type="smallBold">Results for the team</ThemedText>
+      <ThemedText type="small" themeColor="textSecondary">
+        {answeredText(results.answered, results.sent_to)}
+      </ThemedText>
+      {results.wait ? (
+        <Card>
+          <ThemedText type="small">{surveyWaitText(results.wait, survey)}</ThemedText>
+        </Card>
+      ) : (
+        results.questions.map((q, i) => (
+          <Card key={q.id} style={styles.list}>
+            <ThemedText type="smallBold">
+              {i + 1}. {q.prompt}
+            </ThemedText>
+            <ThemedText type="small" themeColor="textSecondary">
+              {q.answered} answered
+              {q.kind === 'rating' && q.average !== null
+                ? ` · Average ${q.average} out of ${q.rating_max}`
+                : ''}
+            </ThemedText>
+            <SurveyBars question={q} />
+          </Card>
+        ))
+      )}
+    </View>
   );
 }
 

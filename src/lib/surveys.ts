@@ -27,12 +27,22 @@ export const identityLabels: Record<SurveyIdentity, string> = {
 
 export const identityDetails: Record<SurveyIdentity, string> = {
   anonymous:
-    'Nobody can see who gave which answers, not even admins. Results show once it closes and at least 3 people have answered.',
+    'Nobody can see who gave which answers, not even admins. Results show once it closes, or once everyone has answered, with at least 3 answers.',
   named:
     'Every answer shows the member’s name. You can see who hasn’t answered yet. Good for a quick poll.',
   optional:
-    'Each member chooses whether to give their name. Results show once it closes and at least 3 people have answered.',
+    'Each member chooses whether to give their name. Results show once it closes, or once everyone has answered, with at least 3 answers.',
 };
+
+/** Club surveys with names can show results once this share has answered. */
+export const RESULTS_AT_PERCENTS = [20, 50, 80] as const;
+
+/**
+ * What a survey's results are waiting for: an anonymous or optional survey
+ * to close (or everyone to answer), at least 3 answers, everyone to answer,
+ * or a club survey's percentage target.
+ */
+export type SurveyWait = 'closing' | 'min' | 'everyone' | 'percent';
 
 export const questionKindLabels: Record<SurveyQuestionKind, string> = {
   choice: 'One choice',
@@ -58,6 +68,8 @@ export type MySurvey = {
   from_child: boolean;
   responded: boolean;
   is_open: boolean;
+  /** Everyone it went to must answer. */
+  everyone_answers: boolean;
 };
 
 /** A survey whose results the member can read. */
@@ -117,6 +129,12 @@ export type SurveyDetail = {
   share_with_committee: boolean;
   /** Admins see a coach or manager's survey: always unless it's a quick poll. */
   share_with_admins: boolean;
+  /** Everyone it went to must answer, and results wait until they have. */
+  everyone_answers: boolean;
+  /** A club survey with names shows results once this share has answered. */
+  results_at_percent: number | null;
+  /** The squad or team it went to sees the counts and averages. */
+  results_to_group: boolean;
   /** Whoever sent it; the committee and admins for theirs and shared ones; coaches and managers for captains' polls. */
   can_see_results: boolean;
   /** Whoever sent it, an admin who can see it, or the group's coaches and managers for a captain's poll, while it's open. */
@@ -145,6 +163,9 @@ export type SurveySummary = {
   closes_at: string;
   created_by_name: string | null;
   sent_as: SurveySentAs;
+  everyone_answers: boolean;
+  results_at_percent: number | null;
+  results_to_group: boolean;
 };
 
 export type SurveyResults = {
@@ -153,9 +174,12 @@ export type SurveyResults = {
   can_export: boolean;
   sent_to: number;
   answered: number;
-  /** True while an anonymous or optional survey is open or has too few answers. */
+  /** True while results wait for something (see wait). */
   hidden: boolean;
+  wait: SurveyWait | null;
   closed: boolean;
+  /** Can close it now and see the results with the answers so far. */
+  can_close: boolean;
   min_responses: number;
   questions: (Omit<SurveyQuestion, 'required'> & {
     answered: number;
@@ -170,6 +194,44 @@ export type SurveyResults = {
   }[];
   waiting: string[];
 };
+
+/** Counts and averages shared with the squad or team, from `survey_group_results`. */
+export type SurveyGroupResults = {
+  sent_to: number;
+  answered: number;
+  wait: SurveyWait | null;
+  closed: boolean;
+  questions: (Omit<SurveyQuestion, 'required'> & {
+    answered: number;
+    counts: number[] | null;
+    average: number | null;
+  })[];
+};
+
+/** Why results aren't showing yet, in words. */
+export function surveyWaitText(
+  wait: SurveyWait,
+  survey: Pick<SurveySummary, 'identity' | 'everyone_answers' | 'results_at_percent'>,
+) {
+  switch (wait) {
+    case 'closing':
+      return 'Results show once the survey closes, or once everyone has answered, so nobody can work out who answered from how the results change.';
+    case 'min':
+      return `Results show once at least ${MIN_RESPONSES} people have answered${
+        survey.identity === 'named' ? '' : ', so nobody can be picked out'
+      }.`;
+    case 'everyone':
+      return 'Everyone must answer, so results show once everyone has answered or the survey closes.';
+    case 'percent':
+      return `Results show once ${survey.results_at_percent}% have answered, or the survey closes.`;
+  }
+}
+
+/** Such as "4 of 12 answered (33%)". */
+export function answeredText(answered: number, sentTo: number) {
+  const percent = sentTo > 0 ? Math.round((answered / sentTo) * 100) : 0;
+  return `${answered} of ${sentTo} answered (${percent}%)`;
+}
 
 /** Who a survey went to, such as "Everyone in the club" or "Open Squad". */
 export function surveyAudienceLabel(
