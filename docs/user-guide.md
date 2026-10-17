@@ -89,6 +89,7 @@ What each role sees on its home screen:
 | -------------------------------------- | :-----: | :-------------: | :----------: | :--------: | :-----------: | :-----------: | :-----: | :-----------: |
 | To-do list and calendar                |    ✓    |        ✓        |      ✓       |     ✓      |       ✓       |       ✓       |    ✓    |       ✓       |
 | Your own personal tasks                |    ✓    |        ✓        |      ✓       |     ✓      |       ✓       |       ✓       |    ✓    |       ✓       |
+| To-do notifications on your phone      |    ✓    |        ✓        |      ✓       |     ✓      |       ✓       |       ✓       |    ✓    |       ✓       |
 | My squads and teams                    |    ✓    |        ✓        |      ✓       |     ✓      |  If in one    |       ✓       |    ✓    |   If in one   |
 | Read messages                          |    ✓    |        ✓        |      ✓       |     ✓      |       ✓       |       ✓*      |         |       ✓       |
 | Send messages                          | Captains† |                 |  Own groups  | Own groups |   Whole club  |               |         |     Anyone    |
@@ -362,14 +363,17 @@ head or assistant coach.
 ### To-do notifications
 
 On an installed app, your phone gets a notification when something new appears on your
-[to-do list](#the-home-screen), such as a clearance to sign off, an award vote opening, training
+[to-do list](#the-home-screen), such as a clearance to sign off, a survey to answer, an award vote opening, training
 to complete or, for athletes, the day's check-in. Tap the notification to go straight to it. The
 first time, your phone asks whether the app may send notifications: tap **Allow**.
 
 - Notifications aren't sent between 8 pm and 7 am. Anything still on your list at 7 am arrives
   then, with several to-dos in one notification.
 - Each to-do is sent once. Daily items, such as the check-in, come once a day while they're
-  still to do; admins' child-safety follow-ups come once a month.
+  still to do; admins' child-safety and records follow-ups come once a month. A new concern or
+  a newly reported absence sends again even if the earlier one is still on your list.
+- Your own [personal tasks](#your-own-tasks) and admins' affiliation items stay on the
+  home screen and aren't sent.
 - Notifications can show on a locked phone, so they never include injury details or reviewers'
   notes. Open the app to see those.
 - If you belong to more than one club, tapping a notification opens the club it came from.

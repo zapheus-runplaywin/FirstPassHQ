@@ -165,6 +165,7 @@ declare
   v_month text;
   v_n int;
   v_text text;
+  v_at timestamptz;
   r record;
 begin
   select coalesce(s.timezone, 'Australia/Perth'), coalesce(s.features, '{}'::jsonb)
@@ -185,6 +186,52 @@ begin
     perform set_config('request.jwt.claim.sub', coalesce(v_old_sub, ''), true);
     return;
   end if;
+
+  -- A concern about a child can't wait. A newer one sends again.
+  select count(*)::int, max(c.created_at)
+  into v_n, v_at
+  from public.concerns c
+  where c.status = 'received' and public.can_handle_concern(c.id)
+    and not exists (select 1 from public.concern_events e where e.concern_id = c.id);
+  if v_n > 0 then
+    todo_key := 'concerns:' || extract(epoch from v_at)::bigint;
+    title := 'Look at ' || v_n || ' new ' || case when v_n = 1 then 'concern' else 'concerns' end;
+    detail := 'Refer child abuse and serious crimes to Police straight away'; href := '/concerns';
+    return next;
+  end if;
+
+  -- A volunteer exemption the member hasn't accepted. Their role waits on it.
+  for r in select * from public.my_volunteer_exemption() where declared_at is null loop
+    todo_key := 'volunteer-declaration:' || coalesce(r.starts_on::text, '');
+    title := 'Accept the exemption declaration';
+    detail := 'Your club role starts once you do'; href := '/declaration';
+    return next;
+  end loop;
+
+  -- A parent or guardian's consents for each child under 18.
+  if public.has_role('guardian') then
+    for r in select * from public.my_child_consents()
+      where can_consent and not (data and health) loop
+      todo_key := 'consent:' || r.athlete_id;
+      title := 'Give consent for ' || coalesce(r.full_name, 'your child');
+      detail := 'Choose who sees their check-ins and injury details';
+      href := '/consent/' || r.athlete_id;
+      return next;
+    end loop;
+  end if;
+
+  -- The code of conduct, once a season, for the member and their children.
+  for r in select * from public.my_conduct_todos() loop
+    todo_key := 'conduct:' || r.profile_id || ':' || public.conduct_season();
+    title := case when r.for_child
+      then 'Accept the code of conduct for ' || coalesce(r.full_name, 'your child')
+      else 'Accept the code of conduct' end;
+    detail := case when r.for_child
+      then 'Go through it with them. Every member accepts it each season.'
+      else 'Every member accepts it each season' end;
+    href := '/conduct/' || r.profile_id;
+    return next;
+  end loop;
 
   -- Daily check-in.
   if coalesce((v_features ->> 'checkIns')::boolean, true) then
@@ -208,6 +255,22 @@ begin
       todo_key := 'check-in-flags:' || v_today;
       title := 'Check in with ' || v_n || case when v_n = 1 then ' athlete' else ' athletes' end;
       detail := 'They scored low on today’s check-in'; href := '/check-ins';
+      return next;
+    end if;
+  end if;
+
+  -- Absences reported or withdrawn for the coach or manager's groups. A newer
+  -- change sends again.
+  if coalesce((v_features ->> 'attendance')::boolean, true) and exists (
+    select 1 from public.team_members tm
+    where tm.profile_id = p_profile_id and tm.team_role in ('coach', 'manager')
+  ) then
+    select count(*)::int, max(a.changed_at) into v_n, v_at from public.absences_to_review() a;
+    if v_n > 0 then
+      todo_key := 'absences-to-review:' || extract(epoch from v_at)::bigint;
+      title := 'Review ' || v_n || ' new or changed ' || case when v_n = 1 then 'absence' else 'absences' end;
+      detail := 'Athletes in your squads and teams reported or withdrew an absence';
+      href := '/attendance';
       return next;
     end if;
   end if;
@@ -330,7 +393,49 @@ begin
     end if;
   end if;
 
-  -- Child-safety follow-ups for admins, once a month while they're outstanding.
+  -- Season KPI reviews to write, one per review date and group, and the
+  -- member's own to confirm. Off unless the club turns KPIs on.
+  if coalesce((v_features ->> 'kpis')::boolean, false) then
+    for r in
+      select k.point_id, k.team_id, min(k.point_name) as point_name, min(k.team_name) as team_name,
+        min(k.due_on) as due_on, count(*)::int as people,
+        min(k.full_name) as full_name, min(k.profile_id::text) as profile_id
+      from public.kpi_review_todos() k
+      where k.kind = 'write'
+      group by k.point_id, k.team_id
+    loop
+      todo_key := 'kpi-review:' || r.point_id || ':' || r.team_id;
+      title := case when r.people = 1 then 'Write ' || r.full_name || '’s KPI review'
+        else 'Write ' || r.people || ' KPI reviews' end;
+      detail := r.point_name || ' · ' || r.team_name || ' · '
+        || case when r.due_on < v_today then 'Was due ' else 'Due ' end
+        || to_char(r.due_on, 'FMDy FMDD Mon YYYY');
+      href := case when r.people = 1
+        then '/kpis/person?profile=' || r.profile_id || '&team=' || r.team_id else '/kpis' end;
+      return next;
+    end loop;
+    for r in select * from public.kpi_review_todos() where kind = 'confirm' loop
+      todo_key := 'kpi-confirm:' || r.point_id || ':' || r.team_id;
+      title := 'Confirm your KPI review was done';
+      detail := r.point_name || ' · ' || r.team_name;
+      href := '/kpis/person?profile=' || r.profile_id || '&team=' || r.team_id;
+      return next;
+    end loop;
+  end if;
+
+  -- Surveys and polls still to answer. A parent's copy of their child's isn't one.
+  for r in select * from public.my_surveys()
+    where is_open and not responded and for_child_names is null loop
+    todo_key := 'survey:' || r.id;
+    title := 'Answer the survey “' || r.title || '”';
+    detail := case when r.everyone_answers then 'Everyone must answer. ' else '' end
+      || 'Open until ' || to_char(((r.closes_at - interval '1 millisecond') at time zone v_tz)::date, 'FMDy FMDD Mon YYYY');
+    href := '/surveys/' || r.id;
+    return next;
+  end loop;
+
+  -- Child-safety and records follow-ups for admins, once a month while
+  -- they're outstanding. Affiliation items stay on the home screen only.
   if public.is_admin() then
     for r in select * from public.admin_safety_todos() loop
       if r.minors_without_guardian > 0 then
@@ -340,13 +445,45 @@ begin
         detail := 'Every athlete under 18 needs a verified guardian'; href := '/admin';
         return next;
       end if;
-      if r.wwcc_missing + r.wwcc_expiring > 0 then
+      if r.athletes_without_date_of_birth > 0 then
+        todo_key := 'no-date-of-birth:' || v_month;
+        title := 'Add a date of birth for ' || r.athletes_without_date_of_birth
+          || case when r.athletes_without_date_of_birth = 1 then ' athlete' else ' athletes' end;
+        detail := 'Check it against PlayHQ or ID. It decides whether the under 18 rules apply.';
+        href := '/admin';
+        return next;
+      end if;
+      v_n := coalesce(r.wwcc_people, 0);
+      if v_n > 0 then
         todo_key := 'wwcc:' || v_month;
-        title := 'Check ' || (r.wwcc_missing + r.wwcc_expiring)
-          || case when r.wwcc_missing + r.wwcc_expiring = 1
-            then ' Working With Children Check' else ' Working With Children Checks' end;
-        detail := case when r.wwcc_missing > 0
-          then 'Some have none recorded or it has expired' else 'Expiring in the next 30 days' end;
+        title := 'Sort out ' || v_n || case when v_n = 1
+          then ' Working With Children Check' else ' Working With Children Checks' end;
+        detail := concat_ws(', ',
+          case when r.wwcc_missing > 0 then r.wwcc_missing || ' missing or expired' end,
+          case when r.wwcc_expiring > 0 then r.wwcc_expiring || ' expiring' end,
+          case when r.wwcc_to_validate > 0 then r.wwcc_to_validate || ' to validate' end,
+          case when r.wwcc_to_link > 0 then r.wwcc_to_link || ' to register' end);
+        href := '/admin';
+        return next;
+      end if;
+      if r.notices_to_report > 0 then
+        todo_key := 'notices-to-report:' || v_month;
+        title := 'Tell the governing body about ' || r.notices_to_report
+          || case when r.notices_to_report = 1 then ' Screening Unit notice' else ' Screening Unit notices' end;
+        detail := 'In writing, then record the date on the member’s page'; href := '/admin';
+        return next;
+      end if;
+      if r.wwc_officer_missing > 0 then
+        todo_key := 'wwc-officer:' || v_month;
+        title := 'Choose a WWC Registration Officer';
+        detail := 'Under Safeguarding'; href := '/admin/safeguarding';
+        return next;
+      end if;
+      if r.exemptions_ending > 0 then
+        todo_key := 'exemptions-ending:' || v_month;
+        title := r.exemptions_ending || case when r.exemptions_ending = 1
+          then ' volunteer exemption ends' else ' volunteer exemptions end' end || ' soon';
+        detail := 'Within 60 days. They’ll need a Working With Children Check to keep their role.';
         href := '/admin';
         return next;
       end if;
@@ -358,6 +495,24 @@ begin
         return next;
       end if;
     end loop;
+
+    if exists (select 1 from public.record_retention() rr where not rr.enabled) then
+      todo_key := 'records-removal-off:' || v_month;
+      title := 'Old records are kept forever';
+      detail := 'Switch on Remove old records in Club settings, under Keeping records';
+      href := '/admin/club';
+      return next;
+    end if;
+
+    select count(*)::int into v_n from public.admin_inactive_members();
+    if v_n > 0 then
+      todo_key := 'inactive-members:' || v_month;
+      title := v_n || case when v_n = 1 then ' member has' else ' members have' end
+        || ' had no team or role for 2 years';
+      detail := 'Delete them if they’ve left the club. Their safeguarding records stay.';
+      href := '/admin';
+      return next;
+    end if;
   end if;
 
   perform set_config('request.jwt.claims', coalesce(v_old_claims, ''), true);
