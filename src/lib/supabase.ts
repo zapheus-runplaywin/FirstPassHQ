@@ -6,16 +6,20 @@ import { createClient } from '@supabase/supabase-js';
 import { AppState, Platform } from 'react-native';
 
 import type { ClubEntry } from '@/constants/clubs';
+import { SecureSessionStore } from '@/lib/secure-session-store';
 
 // AsyncStorage is unavailable during static web rendering.
 const canStore = Platform.OS !== 'web' || typeof window !== 'undefined';
+// On a phone the session is encrypted with a key in the keychain; the web
+// keeps the browser's own storage.
+const sessionStorage = Platform.OS === 'web' ? AsyncStorage : new SecureSessionStore();
 
 function makeClient(club: ClubEntry) {
   return createClient(club.supabaseUrl, club.anonKey, {
     auth: {
       // Sessions are saved under a key named after the club's project, so each
       // club keeps its own sign-in on this device.
-      ...(canStore ? { storage: AsyncStorage } : {}),
+      ...(canStore ? { storage: sessionStorage } : {}),
       autoRefreshToken: true,
       persistSession: true,
       detectSessionInUrl: false,

@@ -8,9 +8,10 @@ import { ThemedText } from '@/components/themed-text';
 import { Button, Card, ChipGroup, ErrorText, PressableCard, TextField } from '@/components/ui';
 import { Spacing } from '@/constants/theme';
 import { useTheme } from '@/hooks/use-theme';
-import { useSquads } from '@/lib/club';
+import { useClub } from '@/lib/club';
 import { formatDay } from '@/lib/format';
 import { supabase } from '@/lib/supabase';
+import { TEAM_TEMPLATES, type TeamTemplate } from '@/lib/team-templates';
 import type { GroupKind, Team } from '@/lib/types';
 import {
   newestGroups,
@@ -24,13 +25,18 @@ import {
 } from '@/lib/use-teams';
 
 export default function SquadsScreen() {
-  const { teams, reload } = useTeamList();
-  const usesSquads = useSquads();
+  const theme = useTheme();
+  const { teams, loaded, reload } = useTeamList();
+  const { squads: usesSquads, reload: reloadClub } = useClub();
+  // undefined while loading; null until an admin picks a starting setup.
+  const [template, setTemplate] = useState<TeamTemplate | null | undefined>(undefined);
+  const [choosing, setChoosing] = useState(false);
   const squads = squadsOf(teams);
   // Teams that don't belong to a squad: every team, for a club without squads.
   const ownTeams = topGroups(teams).filter((t) => t.kind === 'team');
   const [chosenKind, setKind] = useState<GroupKind>('team');
-  const kind = usesSquads ? chosenKind : 'team';
+  // A team is named from a squad, so a club using squads starts with a squad.
+  const kind = !usesSquads ? 'team' : squads.length === 0 ? 'squad' : chosenKind;
   const [name, setName] = useState('');
   const [squadId, setSquadId] = useState<string | null>(null);
   const [saving, setSaving] = useState(false);
@@ -53,6 +59,14 @@ export default function SquadsScreen() {
   useEffect(() => {
     loadRemoved();
   }, [loadRemoved]);
+
+  useEffect(() => {
+    supabase
+      .rpc('club_team_template')
+      .then(({ data, error: loadError }) =>
+        setTemplate(!loadError && typeof data === 'string' ? (data as TeamTemplate) : null),
+      );
+  }, []);
 
   const changed = useCallback(() => {
     reload();
@@ -96,14 +110,36 @@ export default function SquadsScreen() {
   return (
     <Screen>
       <Stack.Screen options={{ title: usesSquads ? 'Squads and teams' : 'Teams' }} />
-      <ThemedText type="small" themeColor="textSecondary">
-        {usesSquads
-          ? 'New members are added to a squad. At selections, name the teams here and pick final team athletes and training partners from the squad. Everyone stays in their squad. Once the teams are named, mark the squad phase complete so coaches only look after their team’s athletes.'
-          : 'Your club doesn’t use squads, so members join a team straight away. Add the teams here and choose who is in each: coaches, managers, and athletes as final team athletes or training partners.'}
-        {!usesSquads && squads.length > 0
-          ? ' Squads from before squads were switched off keep working until their season ends; the next season starts with teams only.'
-          : ''}
-      </ThemedText>
+      {loaded && template !== undefined && teams.length === 0 && (template === null || choosing) ? (
+        <ChooseTemplate
+          onChosen={(chosen) => {
+            setTemplate(chosen);
+            setChoosing(false);
+            reloadClub();
+            changed();
+          }}
+          onCancel={template ? () => setChoosing(false) : undefined}
+        />
+      ) : (
+        <>
+          <ThemedText type="small" themeColor="textSecondary">
+            {usesSquads
+              ? 'Your club uses squads. New members join a squad. At selections, name teams from each squad and pick final team athletes and training partners; everyone stays in their squad. Once a squad’s teams are named, mark its squad phase complete so coaches only look after their own team’s athletes.'
+              : 'Your club doesn’t use squads, so new members join a team straight away. Open a team to choose its coaches, managers, final team athletes and training partners.'}
+            {!usesSquads && squads.length > 0
+              ? ' Squads from before squads were switched off keep working until their season ends; the next season starts with teams only.'
+              : ''}
+            {' Turn squads on or off in Club settings.'}
+          </ThemedText>
+          {loaded && teams.length === 0 && template ? (
+            <Pressable accessibilityRole="button" onPress={() => setChoosing(true)}>
+              <ThemedText type="smallBold" style={[styles.link, { color: theme.tint }]}>
+                Use a starting setup instead
+              </ThemedText>
+            </Pressable>
+          ) : null}
+        </>
+      )}
 
       {squads.map((squad) => (
         <View key={squad.id} style={styles.squad}>
@@ -119,7 +155,10 @@ export default function SquadsScreen() {
             <View key={team.id} style={styles.team}>
               <PressableCard
                 onPress={() =>
-                  router.push({ pathname: '/admin/team/[id]', params: { id: team.id } })
+                  router.push({
+                    pathname: '/admin/team/[id]',
+                    params: { id: team.id },
+                  })
                 }>
                 <ThemedText type="smallBold">{team.name}</ThemedText>
                 <ThemedText type="small" themeColor="textSecondary">
@@ -142,7 +181,12 @@ export default function SquadsScreen() {
       {ownTeams.map((team) => (
         <View key={team.id} style={styles.squad}>
           <PressableCard
-            onPress={() => router.push({ pathname: '/admin/team/[id]', params: { id: team.id } })}>
+            onPress={() =>
+              router.push({
+                pathname: '/admin/team/[id]',
+                params: { id: team.id },
+              })
+            }>
             <ThemedText type="smallBold">{team.name}</ThemedText>
             <ThemedText type="small" themeColor="textSecondary">
               {seasonLabel(team.season)} team · choose who is in it
@@ -162,46 +206,120 @@ export default function SquadsScreen() {
 
       {!usesSquads && squads.length > 0 ? <EndSquadsNow onChange={changed} /> : null}
 
-      {!usesSquads && ownTeams.length === 0 ? (
+      {loaded && template !== null && teams.length === 0 && !choosing ? (
         <ThemedText type="small" themeColor="textSecondary">
-          No teams yet. Add your first team below.
+          {usesSquads
+            ? 'No squads or teams yet. Add your first squad below.'
+            : 'No teams yet. Add your first team below.'}
         </ThemedText>
       ) : null}
 
       <RemovedGroups groups={removed} onChange={changed} />
 
-      <View style={styles.form}>
-        <ThemedText type="smallBold">{usesSquads ? 'Add a squad or team' : 'Add a team'}</ThemedText>
-        {usesSquads ? (
-          <ChipGroup
-            options={[
-              { value: 'team' as const, label: 'Team' },
-              { value: 'squad' as const, label: 'Squad' },
-            ]}
-            selected={[kind]}
-            onToggle={setKind}
+      {loaded && teams.length === 0 && (template === null || choosing) ? null : (
+        <View style={styles.form}>
+          <ThemedText type="smallBold">
+            {usesSquads ? 'Add a squad or team' : 'Add a team'}
+          </ThemedText>
+          {usesSquads && squads.length > 0 ? (
+            <ChipGroup
+              options={[
+                { value: 'team' as const, label: 'Team' },
+                { value: 'squad' as const, label: 'Squad' },
+              ]}
+              selected={[kind]}
+              onToggle={setKind}
+            />
+          ) : null}
+          <TextField
+            label="Name"
+            value={name}
+            onChangeText={setName}
+            placeholder={
+              kind === 'team' ? 'For example, Mixed Open' : 'For example, Mixed Open Squad'
+            }
           />
-        ) : null}
-        <TextField
-          label="Name"
-          value={name}
-          onChangeText={setName}
-          placeholder={
-            kind === 'team' ? 'For example, Mixed Open' : 'For example, Mixed Open Squad'
-          }
-        />
-        {usesSquads && kind === 'team' ? (
-          <ChipGroup
-            label="Named from squad"
-            options={squads.map((s) => ({ value: s.id, label: teamLabel(s, teams) }))}
-            selected={squadId ? [squadId] : []}
-            onToggle={setSquadId}
-          />
-        ) : null}
-        <ErrorText>{error}</ErrorText>
-        <Button title={kind === 'team' ? 'Add team' : 'Add squad'} onPress={add} busy={saving} />
-      </View>
+          {usesSquads && kind === 'team' ? (
+            <ChipGroup
+              label="Named from squad"
+              options={squads.map((s) => ({
+                value: s.id,
+                label: teamLabel(s, teams),
+              }))}
+              selected={squadId ? [squadId] : []}
+              onToggle={setSquadId}
+            />
+          ) : null}
+          <ErrorText>{error}</ErrorText>
+          <Button title={kind === 'team' ? 'Add team' : 'Add squad'} onPress={add} busy={saving} />
+        </View>
+      )}
     </Screen>
+  );
+}
+
+/**
+ * The first time an admin opens this screen, the club has no squads or teams:
+ * they pick a starting setup, which adds its squads or teams for this season
+ * and turns squads on or off to match.
+ */
+function ChooseTemplate({
+  onChosen,
+  onCancel,
+}: {
+  onChosen: (template: TeamTemplate) => void;
+  onCancel?: () => void;
+}) {
+  const theme = useTheme();
+  const [saving, setSaving] = useState<TeamTemplate | null>(null);
+  const [error, setError] = useState<string | null>(null);
+
+  async function choose(template: TeamTemplate) {
+    setSaving(template);
+    setError(null);
+    const { error: saveError } = await supabase.rpc('admin_apply_team_template', {
+      p_template: template,
+    });
+    setSaving(null);
+    if (saveError) {
+      setError(saveError.message);
+      return;
+    }
+    onChosen(template);
+  }
+
+  return (
+    <View style={styles.form}>
+      <ThemedText type="smallBold">Choose a starting setup</ThemedText>
+      <ThemedText type="small" themeColor="textSecondary">
+        Pick the setup that matches your competition. It adds the squads or teams for this season,
+        and you can rename, add or remove them afterwards.
+      </ThemedText>
+      {TEAM_TEMPLATES.map((t) => (
+        <Card key={t.key} style={styles.phase}>
+          <ThemedText type="smallBold">{t.title}</ThemedText>
+          {t.groups.length > 0 ? <ThemedText type="small">{t.groups.join(', ')}</ThemedText> : null}
+          <ThemedText type="small" themeColor="textSecondary">
+            {t.detail}
+          </ThemedText>
+          <Button
+            title={t.key === 'blank' ? 'Start blank' : `Use ${t.title}`}
+            variant={t.key === 'blank' ? 'secondary' : 'primary'}
+            onPress={() => choose(t.key)}
+            busy={saving === t.key}
+            disabled={saving !== null}
+          />
+        </Card>
+      ))}
+      <ErrorText>{error}</ErrorText>
+      {onCancel ? (
+        <Pressable accessibilityRole="button" onPress={onCancel}>
+          <ThemedText type="smallBold" style={[styles.link, { color: theme.tint }]}>
+            Cancel
+          </ThemedText>
+        </Pressable>
+      ) : null}
+    </View>
   );
 }
 
@@ -315,7 +433,10 @@ function PutInSquad({
     <Card style={styles.phase}>
       <ChipGroup
         label={`Put ${team.name} in`}
-        options={squads.map((s) => ({ value: s.id, label: teamLabel(s, teams) }))}
+        options={squads.map((s) => ({
+          value: s.id,
+          label: teamLabel(s, teams),
+        }))}
         selected={squadId ? [squadId] : []}
         onToggle={setSquadId}
       />

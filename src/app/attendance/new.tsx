@@ -9,6 +9,7 @@ import { Button, Card, ChipGroup, ErrorText, TextField } from '@/components/ui';
 import { Spacing } from '@/constants/theme';
 import { useTheme } from '@/hooks/use-theme';
 import type { CalendarEvent } from '@/lib/calendar';
+import { useAwayNotes } from '@/lib/absences';
 import { marksToSave } from '@/lib/attendance';
 import { useSquads } from '@/lib/club';
 import { formatSentAt } from '@/lib/format';
@@ -57,6 +58,7 @@ export default function TakeAttendanceScreen() {
   const name = editedName ?? event?.title ?? '';
   const heldAt = (event?.start ?? takenAt).toISOString();
   const teamId = selected === CLUB ? null : selected;
+  const away = useAwayNotes(teamId, heldAt, !!selected);
 
   // The athletes in the chosen squad, team or club, all unmarked.
   useEffect(() => {
@@ -196,7 +198,7 @@ export default function TakeAttendanceScreen() {
 
           {register ? (
             <>
-              <AttendanceRegister register={register} onChange={mark} />
+              <AttendanceRegister register={register} onChange={mark} away={away} />
               {unmarked > 0 ? (
                 <Button
                   title="Mark the rest present"

@@ -85,10 +85,12 @@ export function usePushNotifications(ready: boolean) {
   }, [ready, clubCode, choose]);
 }
 
-/** The screen a notification opens: a path inside the app, or a join request. */
+/** The screen a notification opens: a path inside the app, a join request or a session plan. */
 function notificationHref(data: Record<string, unknown>) {
   if (typeof data.href === 'string' && data.href.startsWith('/')) return data.href;
   if (typeof data.memberId === 'string') return `/admin/${data.memberId}`;
+  // A session plan shared with the member for the first time.
+  if (typeof data.planId === 'string') return `/session-plans/${data.planId}`;
   return null;
 }
 

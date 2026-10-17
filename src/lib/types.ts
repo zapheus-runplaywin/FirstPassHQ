@@ -8,13 +8,15 @@ export type AppRole =
   | 'committee'
   | 'physio'
   | 'guardian'
-  | 'guest';
+  | 'guest'
+  | 'volunteer'
+  | 'statistician';
 
 export type MemberStatus = 'pending' | 'approved' | 'rejected';
 
 export type RejectionReason = 'playhq_email_mismatch' | 'not_registered' | 'other';
 
-export type TeamRole = 'coach' | 'manager' | 'athlete' | 'guardian';
+export type TeamRole = 'coach' | 'manager' | 'physio' | 'athlete' | 'guardian';
 
 export type CoachTitle = 'head_coach' | 'assistant_coach';
 
@@ -53,6 +55,8 @@ export type Profile = {
   preferred_name: string | null;
   /** Committee members and admins only, e.g. President or Secretary. */
   title: string | null;
+  /** Physios only: a Head Physio looks after every athlete, in a team or not. */
+  head_physio: boolean;
   playhq_email: string | null;
   role: AppRole;
   /** Roles held as well as the main one, such as a coach who is also a guardian. */
@@ -62,23 +66,164 @@ export type Profile = {
   requested_team_id: string | null;
   join_requested_at: string | null;
   /**
-   * The admin's choice that an athlete is under 18, used when no date of birth
-   * is recorded. Athletes under 18 have parents or guardians linked to them.
+   * Whether an athlete is under 18. Set from their date of birth when an admin
+   * saves them; for athletes approved before a date of birth was needed, it is
+   * the admin's old choice. Athletes under 18 have parents or guardians linked.
    */
   under_17: boolean;
-  /** Recorded by an admin. Decides whether an athlete is under 18. */
+  /** Checked and recorded by an admin. Decides whether an athlete is under 18. */
   date_of_birth: string | null;
-  /** Working With Children Check, recorded by an admin for coaches, managers, physios and committee members. */
+  /** What the member said when asking to join. Not checked, so it decides nothing. */
+  declared_date_of_birth: string | null;
+  /** A parent's or guardian's email, given by an athlete under 18 when asking to join. */
+  guardian_email: string | null;
+  /** Working With Children Check, recorded by an admin for coaches, managers, physios, committee members and admins. */
   wwcc_number: string | null;
   wwcc_expires_on: string | null;
-  /** Why an admin excused a committee member from the check, who did and when. */
+  /** Why another admin excused a committee member or admin from the check, who did and when. */
   wwcc_exempt_reason: string | null;
   wwcc_exempted_by: string | null;
   wwcc_exempted_at: string | null;
+  /** The name as printed on their card, recorded when an admin validates it. */
+  wwcc_card_name?: string | null;
+  /** When and by whom the card was last validated, and how. */
+  wwcc_validated_at?: string | null;
+  wwcc_validated_by?: string | null;
+  wwcc_validation_method?: WwccValidationMethod | null;
+  /** When an admin recorded the card as registered with the club. */
+  wwcc_unit_linked_at?: string | null;
   /** Why an admin didn't approve them, shown to the member. */
   rejection_reason: RejectionReason | null;
-  /** When an admin confirmed who they are with their in-app code. */
+  /** When an admin confirmed who they are: with their in-app code, against PlayHQ or by sighting ID. */
   verified_at: string | null;
+  /** How they were verified, and what the admin checked. Not recorded before October 2026. */
+  verification_method?: VerificationMethod | null;
+  verification_note?: string | null;
+  /** A temporary helper's task and dates. */
+  volunteer_task?: string | null;
+  volunteer_from?: string | null;
+  volunteer_until?: string | null;
+  volunteer_screening?: VolunteerScreening | null;
+  /** The card number a volunteer gave at Join, before an admin records it. */
+  declared_wwcc_number?: string | null;
+  /** Set while an admin has stood them down from child-related roles. */
+  stood_down_at: string | null;
+};
+
+export type StandDownReason =
+  | 'interim_negative_notice'
+  | 'negative_notice'
+  | 'interstate_decision'
+  | 'allegation'
+  | 'other';
+
+/** How an admin checked a Working With Children Check card. */
+export type WwccValidationMethod = 'online' | 'card_sighted' | 'unit_letter';
+
+/** A notice from the Working with Children Screening Unit about a member. */
+export type ScreeningNoticeKind =
+  | 'interim_negative_notice'
+  | 'negative_notice'
+  | 'interstate_decision'
+  | 'card_cancelled'
+  | 'other';
+
+export type VerificationMethod = 'code' | 'playhq' | 'id_sighted';
+
+/** A guardian linked to or unlinked from an athlete, kept for the record. Admins only. */
+export type GuardianshipChange = {
+  id: string;
+  guardian_id: string;
+  guardian_name: string | null;
+  athlete_id: string;
+  athlete_name: string | null;
+  change: 'linked' | 'unlinked';
+  reason: string | null;
+  changed_by: string | null;
+  changed_by_name: string | null;
+  changed_at: string;
+};
+
+export type ScreeningNotice = {
+  id: string;
+  profile_id: string | null;
+  member_name: string;
+  kind: ScreeningNoticeKind;
+  received_on: string;
+  action: string;
+  governing_body_told_on: string | null;
+  governing_body_told_by_name: string | null;
+  recorded_at: string;
+  recorded_by_name: string | null;
+};
+
+export type StandDown = {
+  id: string;
+  profile_id: string | null;
+  member_name: string;
+  reason: StandDownReason;
+  note: string | null;
+  started_at: string;
+  started_by_name: string | null;
+  lifted_at: string | null;
+  lifted_by_name: string | null;
+  lift_note: string | null;
+};
+
+/** Why a volunteer doesn't need a Working With Children Check (WA rules). */
+export type VolunteerExemptionBasis =
+  | 'parent_volunteer'
+  | 'under_18_volunteer'
+  | 'short_term_visitor'
+  | 'national_event';
+
+/** How a temporary helper said they're screened when they asked to join. */
+export type VolunteerScreening =
+  | 'card'
+  | 'visitor'
+  | 'national_event'
+  | 'parent'
+  | 'under_18'
+  | 'none';
+
+/** The signed-in member's own exemption, from `my_volunteer_exemption`. */
+export type MyVolunteerExemption = {
+  basis: VolunteerExemptionBasis;
+  child_name: string | null;
+  /** When they accepted the declaration; null while it's waiting for them. */
+  declared_at: string | null;
+  /** The words they accepted, or will accept. */
+  declaration_text: string;
+  /** Accepted, and the child or volunteer is still under 18 and linked. */
+  valid: boolean;
+  /** The day it ends by itself, when known. */
+  ends_on: string | null;
+  /** First day a visitor or national event exemption covers. */
+  starts_on: string | null;
+  event_name: string | null;
+  organiser: string | null;
+};
+
+/** Any member's exemption, open or ended, from `admin_volunteer_exemptions`. */
+export type VolunteerExemption = {
+  id: string;
+  profile_id: string;
+  basis: VolunteerExemptionBasis;
+  child_id: string | null;
+  child_name: string | null;
+  set_by_name: string | null;
+  set_at: string;
+  declared_at: string | null;
+  declaration_text: string | null;
+  ended_at: string | null;
+  ended_by_name: string | null;
+  end_note: string | null;
+  valid: boolean;
+  ends_on: string | null;
+  /** First day a visitor or national event exemption covers. */
+  starts_on: string | null;
+  event_name: string | null;
+  organiser: string | null;
 };
 
 export type TeamMembership = {
@@ -97,7 +242,8 @@ export type RosterEntry = {
 };
 
 /** Who a group message went to: everyone, one role, or a squad or team. */
-export type MessageAudience = 'club' | 'role' | 'group';
+/** 'notice' is the club telling a family about a change, such as a guardian linked. */
+export type MessageAudience = 'club' | 'role' | 'group' | 'notice';
 
 export type Message = {
   id: string;
@@ -114,6 +260,9 @@ export type Message = {
 /** A message in the member's inbox. */
 export type InboxMessage = {
   read_at: string | null;
+  /** For a guardian's copy: the children it was sent for. Null when it's the member's own. */
+  for_children: string[] | null;
+  for_child_names: string[] | null;
   message: Message;
 };
 
@@ -173,6 +322,20 @@ export type InjuryUpdate = {
   expected_return: string | null;
   document_path: string | null;
   document_name: string | null;
+  /** When the file was removed after the club's keep period; the record stays. */
+  document_removed_at: string | null;
+  created_at: string;
+};
+
+/**
+ * A view, share or photo declaration on an injury document, for the athlete,
+ * guardians and admins.
+ */
+export type InjuryDocumentEvent = {
+  document_path: string;
+  viewer_name: string | null;
+  viewer_role: string | null;
+  kind: 'viewed' | 'shared' | 'consented' | 'letter_declared';
   created_at: string;
 };
 
@@ -267,6 +430,8 @@ export type CheckInSummary = {
   team_id: string;
   team_name: string;
   team_kind: GroupKind;
+  /** The squad a team was named from, so its athletes aren't counted twice. */
+  squad_id: string | null;
   athlete_count: number;
   checked_in_count: number;
   flagged_count: number;
@@ -294,7 +459,11 @@ export type CheckInOverviewRow = {
 /** One day of a group's check-in averages. Scores are null below 3 check-ins. */
 export type CheckInTrendDay = {
   day: string;
+  /** Check-ins on the day itself. */
   checked_in_count: number;
+  /** Check-ins over the day and the two before it, which the averages cover. */
+  window_count: number;
+  /** Null, like the averages, when fewer than 3 athletes checked in over the three days. */
   flagged_count: number | null;
   avg_sleep: number | null;
   avg_soreness: number | null;
@@ -508,4 +677,68 @@ export type CoachTeamGame = {
   played_at: string;
   goal_count: number;
   reviewed_count: number;
+};
+
+/** Who to talk to about a child's safety, from `safeguarding_contacts`. */
+export type SafeguardingContacts = {
+  child_safety_officer_id: string | null;
+  child_safety_officer_name: string | null;
+  complaints_manager_id: string | null;
+  complaints_manager_name: string | null;
+  governing_body_name: string | null;
+  governing_body_phone: string | null;
+  governing_body_url: string | null;
+  policy_url: string | null;
+};
+
+export type ConcernStatus = 'received' | 'referred' | 'under_review' | 'closed';
+
+export type ConcernEventKind =
+  | 'note'
+  | 'referred_governing_body'
+  | 'referred_police'
+  | 'status_changed'
+  | 'about_changed';
+
+/** Whether a concern is about a child's safety, as the person raising it said. */
+export type InvolvesChild = 'yes' | 'no' | 'unsure';
+
+/** A concern in the register, from `concern_register`. */
+export type Concern = {
+  id: string;
+  created_at: string;
+  /** Null when they asked for their name not to be shown. */
+  raised_by_name: string | null;
+  anonymous: boolean;
+  contact_ok: boolean;
+  contact_details: string | null;
+  about_member_id: string | null;
+  about_member_name: string | null;
+  about_text: string | null;
+  happened_on: string | null;
+  body: string;
+  involves_child: InvolvesChild;
+  context: string | null;
+  status: ConcernStatus;
+  closed_at: string | null;
+  last_action_at: string | null;
+};
+
+/** Something done about a concern, from `concern_history`. */
+export type ConcernEvent = {
+  id: string;
+  created_at: string;
+  by_name: string | null;
+  kind: ConcernEventKind;
+  status: ConcernStatus | null;
+  note: string | null;
+};
+
+/** A concern the member raised, from `my_concerns`. */
+export type MyConcern = {
+  id: string;
+  created_at: string;
+  status: ConcernStatus;
+  about_text: string | null;
+  anonymous: boolean;
 };

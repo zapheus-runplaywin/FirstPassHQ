@@ -2,6 +2,9 @@ name: Purge expired injury records
 
 # Injury records and their documents are kept for 12 months after an athlete
 # leaves the club, then removed by the purge-expired-injuries function.
+# The same function removes other records past the club's keep periods, and
+# the files of cleared injuries, once an admin switches on "Remove old records"
+# in Club settings.
 # This deploys the function when it changes and runs it every day.
 #
 # GitHub pauses scheduled workflows in a repository with no activity for 60
@@ -26,9 +29,9 @@ jobs:
       - uses: actions/checkout@d23441a48e516b6c34aea4fa41551a30e30af803 # v6.1.0
       - uses: supabase/setup-cli@45a513f8c64c0bc8e0e3dfe572b5c95be85f6359 # v3.0.1
         with:
-          version: 2.120.0
-      # No JWT check: the function only removes records already past their
-      # 12 months, so anyone calling it early changes nothing.
+          version: 2.121.0
+      # No JWT check (the workflow has no member's sign-in); the function
+      # checks the PURGE_SECRET function secret sent below instead.
       - run: >
           supabase functions deploy purge-expired-injuries
           --project-ref "$SUPABASE_PROJECT_ID" --no-verify-jwt --use-api
@@ -53,7 +56,7 @@ jobs:
       - if: steps.test.outputs.ready == 'true'
         uses: supabase/setup-cli@45a513f8c64c0bc8e0e3dfe572b5c95be85f6359 # v3.0.1
         with:
-          version: 2.120.0
+          version: 2.121.0
       - if: steps.test.outputs.ready == 'true'
         run: >
           supabase functions deploy purge-expired-injuries
@@ -62,14 +65,48 @@ jobs:
           SUPABASE_ACCESS_TOKEN: ${{ secrets.SUPABASE_TEST_ACCESS_TOKEN || secrets.SUPABASE_ACCESS_TOKEN }}
           SUPABASE_PROJECT_ID: ${{ secrets.SUPABASE_TEST_PROJECT_ID }}
 
+  # The extra test clubs in the development setup, when they exist (see
+  # docs/environments.md).
+  deploy-test-clubs:
+    if: ${{ github.event_name != 'schedule' }}
+    runs-on: ubuntu-24.04
+    strategy:
+      fail-fast: false
+      matrix:
+        club: [2, 3]
+    name: deploy-test-club-${{ matrix.club }}
+    steps:
+      - name: Check test club ${{ matrix.club }} is set up
+        id: test
+        env:
+          CLUB_PROJECT_ID: ${{ secrets[format('SUPABASE_TEST_{0}_PROJECT_ID', matrix.club)] }}
+        run: echo "ready=$([ -n "$CLUB_PROJECT_ID" ] && echo true || echo false)" >> "$GITHUB_OUTPUT"
+      - if: steps.test.outputs.ready == 'true'
+        uses: actions/checkout@d23441a48e516b6c34aea4fa41551a30e30af803 # v6.1.0
+      - if: steps.test.outputs.ready == 'true'
+        uses: supabase/setup-cli@45a513f8c64c0bc8e0e3dfe572b5c95be85f6359 # v3.0.1
+        with:
+          version: 2.121.0
+      - if: steps.test.outputs.ready == 'true'
+        run: >
+          supabase functions deploy purge-expired-injuries
+          --project-ref "$SUPABASE_PROJECT_ID" --no-verify-jwt --use-api
+        env:
+          SUPABASE_ACCESS_TOKEN: ${{ secrets[format('SUPABASE_TEST_{0}_ACCESS_TOKEN', matrix.club)] }}
+          SUPABASE_PROJECT_ID: ${{ secrets[format('SUPABASE_TEST_{0}_PROJECT_ID', matrix.club)] }}
+
   purge:
     needs: deploy
     if: ${{ !cancelled() && needs.deploy.result != 'failure' && github.event_name != 'push' }}
     runs-on: ubuntu-24.04
     environment: production
     steps:
+      # PURGE_SECRET is the same value set on the function with
+      # `supabase secrets set PURGE_SECRET=...` (docs/environments.md).
       - run: >
           curl --fail-with-body --silent --show-error --max-time 120 -X POST
+          -H "x-purge-key: $PURGE_SECRET"
           "https://$SUPABASE_PROJECT_ID.supabase.co/functions/v1/purge-expired-injuries"
         env:
           SUPABASE_PROJECT_ID: ${{ secrets.SUPABASE_PROJECT_ID }}
+          PURGE_SECRET: ${{ secrets.PURGE_SECRET }}

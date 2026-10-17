@@ -7,6 +7,7 @@ import { Screen } from '@/components/screen';
 import { ChipGroup, ErrorText } from '@/components/ui';
 import { formatDateString, parseDateString, toDateString } from '@/lib/injuries';
 import {
+  type AbsenceReportRow,
   attendanceReport,
   chunk,
   fetchAll,
@@ -30,6 +31,7 @@ const ALL = 'all';
 const CLUB = 'club';
 
 type Data = {
+  absences: AbsenceReportRow[];
   sessions: AttendanceSessionRow[];
   marks: AttendanceMarkRow[];
   names: Map<string, string>;
@@ -78,13 +80,16 @@ export default function AttendanceReportScreen() {
             fetchAll<AttendanceMarkRow>((start, stop) =>
               supabase
                 .from('attendance_marks')
-                .select('session_id, profile_id, present')
+                .select('session_id, profile_id, present, member_name')
                 .in('session_id', ids)
                 .range(start, stop),
             ),
           ),
         )
       ).flat();
+      const absences = await fetchAll<AbsenceReportRow>((start, stop) =>
+        supabase.rpc('absence_report', { p_from: from, p_to: to }).range(start, stop),
+      );
       const people = (
         await Promise.all(
           chunk([...new Set(marks.map((m) => m.profile_id))]).map(async (ids) => {
@@ -98,6 +103,7 @@ export default function AttendanceReportScreen() {
         )
       ).flat();
       setData({
+        absences,
         sessions,
         marks,
         names: new Map(people.map((p) => [p.id, p.full_name || p.email || 'Unnamed member'])),
@@ -150,6 +156,9 @@ export default function AttendanceReportScreen() {
     ) ?? [];
   const sessionIds = new Set(sessions.map((s) => s.id));
   const marks = data?.marks.filter((m) => sessionIds.has(m.session_id)) ?? [];
+  // For chosen groups, the absences of the athletes on their registers.
+  const marked = new Set(marks.map((m) => m.profile_id));
+  const absences = data?.absences.filter((a) => all || marked.has(a.athlete_id)) ?? [];
   const groupsLabel = all
     ? 'All squads, teams and club events'
     : groupOptions
@@ -186,6 +195,7 @@ export default function AttendanceReportScreen() {
             sessions,
             marks,
             data.names,
+            { rows: absences, from, to },
           )}
         />
       ) : null}

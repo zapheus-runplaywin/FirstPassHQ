@@ -14,9 +14,9 @@ import { seasonLabel, topGroups, useTeamList } from '@/lib/use-teams';
 type Season = { season: number; archived: boolean; squad_count: number; team_count: number };
 
 /**
- * The club year runs May to May. Each May an admin starts the next season and
- * places returning members in its squads; a few weeks after Easter they
- * archive the season before.
+ * Each club sets its own season timing. An admin starts the next season and
+ * places returning members in its squads, and later archives the season
+ * before once it has finished.
  */
 export default function SeasonsScreen() {
   const { teams, reload: reloadTeams } = useTeamList();
@@ -62,9 +62,8 @@ export default function SeasonsScreen() {
   return (
     <Screen>
       <ThemedText type="small" themeColor="textSecondary">
-        The club year runs May to May. In May, start the next season and place returning members in
-        its {word}s. Last season keeps running alongside it. About 4–6 weeks after Easter, archive
-        last season. Nothing is deleted when a season is archived.
+        Start the next season and place returning members in its {word}s. Last season keeps running
+        until you archive it. Nothing is deleted when a season is archived.
       </ThemedText>
 
       {/* One season at a time: archive last season before starting another. */}

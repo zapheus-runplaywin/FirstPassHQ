@@ -10,14 +10,16 @@ const ABSENT = '#FF8A8A';
 
 /**
  * Each athlete with Present and Absent buttons. Read-only when `onChange` is
- * left out.
+ * left out. `away` notes athletes reported away that day, by profile id.
  */
 export function AttendanceRegister({
   register,
   onChange,
+  away = {},
 }: {
   register: AttendanceMark[];
   onChange?: (profileId: string, present: boolean) => void;
+  away?: Record<string, string>;
 }) {
   const theme = useTheme();
   const marked = register.filter((m) => m.present !== null);
@@ -38,9 +40,16 @@ export function AttendanceRegister({
         <View
           key={mark.profile_id}
           style={[styles.row, { backgroundColor: theme.backgroundElement }]}>
-          <ThemedText type="small" style={styles.name} numberOfLines={1}>
-            {mark.full_name ?? 'Unnamed athlete'}
-          </ThemedText>
+          <View style={styles.name}>
+            <ThemedText type="small" numberOfLines={1}>
+              {mark.full_name ?? 'Unnamed athlete'}
+            </ThemedText>
+            {away[mark.profile_id] ? (
+              <ThemedText type="small" themeColor="textSecondary" numberOfLines={3}>
+                {away[mark.profile_id]}
+              </ThemedText>
+            ) : null}
+          </View>
           {onChange ? (
             <View style={styles.toggle}>
               <Choice

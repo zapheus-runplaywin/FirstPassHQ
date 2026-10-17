@@ -15,7 +15,9 @@ accounts).
 
 Database changes reach both automatically. When a pull request with a migration merges, the **Deploy
 migrations** workflow applies it to the test project first and then, only if that worked, to the
-live project. The data-loss check and the **Allow data loss** rule are the same for both.
+live project. The data-loss check is the same for both: a migration that can lose data goes ahead
+only when Matt's `data-loss-approved` label was on its pull request when it merged, or when Matt
+runs the workflow by hand with **Allow data loss** ticked.
 
 ## One-time setup
 
@@ -74,6 +76,78 @@ Until these secrets exist the workflows only warn and carry on updating the live
    ```
 
    Or add them on [expo.dev](https://expo.dev) under the project's **Environment variables**.
+3. Protect the daily injury purge. Make up a long random value, set it on the live project's
+   function (`npx supabase secrets set --project-ref <live-project-ref> PURGE_SECRET=<value>`), and
+   add the same value as the GitHub repository secret `PURGE_SECRET`. The purge then refuses any
+   call without it. Until both are set, the function warns in its logs and anyone who finds its
+   address can start a (harmless, but free-plan-quota-eating) purge run.
+
+## Replacing the live project
+
+Only while nothing real is in it, for example to move it to another region. Nothing in the code
+names the project, so no code changes:
+
+1. Create the new project in the Sydney region and set it up as in
+   [step 4](#4-point-the-installed-apps-at-the-live-project), with Google sign-in on (same client)
+   and the Email provider off. Add its `https://<new-ref>.supabase.co/auth/v1/callback` to the
+   Google client and remove the old project's.
+2. Update the GitHub secrets `SUPABASE_PROJECT_ID` and `SUPABASE_DB_PASSWORD` (and
+   `SUPABASE_ACCESS_TOKEN` if it's in another organisation), and the EAS `preview` and
+   `production` values of `EXPO_PUBLIC_SUPABASE_URL` and `EXPO_PUBLIC_SUPABASE_ANON_KEY`.
+3. In **Actions**, run **Deploy migrations** by hand with **New live project** ticked. The live
+   deploy normally refuses a database with no record of any migrations; this lets an empty one take
+   them all. Only Matt can tick it, and it does nothing on a project that already has migrations.
+4. Run **Deploy PlayHQ function** and **Purge expired injury records** once each.
+5. Installed apps keep the old address until they get an update (`scripts/publish-update.sh`) or a
+   new build.
+
+## More test clubs
+
+To try switching clubs, Expo Go can have up to two more test clubs, each with its own free project.
+They only exist on your computer: installed builds and updates never include them.
+
+### 1. Create the projects
+
+1. A Supabase account has two free projects, so use another account (for example a second email).
+   Create two projects there in the Sydney region, such as `firstpass-test-2` and
+   `firstpass-test-3`. Save each database password.
+2. Set up each one like the test project in [step 1](#1-create-the-test-project): the same **Site
+   URL** and `exp://**` redirect, and Google sign-in with the same client. Add each project's
+   `https://<project-ref>.supabase.co/auth/v1/callback` to the Google client too.
+3. Signed in to that account, create a token under **Account > Access Tokens**.
+
+### 2. Let GitHub deploy to them
+
+Add these repository secrets, with `2` for the first project and `3` for the second:
+
+- `SUPABASE_TEST_2_PROJECT_ID`, `SUPABASE_TEST_2_DB_PASSWORD`, `SUPABASE_TEST_2_ACCESS_TOKEN`
+- `SUPABASE_TEST_3_PROJECT_ID`, `SUPABASE_TEST_3_DB_PASSWORD`, `SUPABASE_TEST_3_ACCESS_TOKEN`
+
+Both access tokens can be the same token. Then run **Deploy migrations**, **Deploy PlayHQ
+function** and **Purge expired injury records** once each with **Run workflow**. Database changes
+reach the test clubs after the test project. The live deploy doesn't wait for them, so a paused
+test club never holds it up; its job fails and says so.
+
+### 3. Add them to your `.env`
+
+```bash
+EXPO_PUBLIC_TEST_CLUB_2_CODE=HAWKS
+EXPO_PUBLIC_TEST_CLUB_2_NAME=Hawks Netball Club
+EXPO_PUBLIC_TEST_CLUB_2_URL=https://<project-ref>.supabase.co
+EXPO_PUBLIC_TEST_CLUB_2_ANON_KEY=<its anon public key>
+
+EXPO_PUBLIC_TEST_CLUB_3_CODE=FALCONS
+EXPO_PUBLIC_TEST_CLUB_3_NAME=Falcons Netball Club
+EXPO_PUBLIC_TEST_CLUB_3_URL=https://<project-ref>.supabase.co
+EXPO_PUBLIC_TEST_CLUB_3_ANON_KEY=<its anon public key>
+```
+
+Restart `npx expo start`, choose **Switch club**, enter `HAWKS`, and sign in with Google. Then run
+`supabase/test-data.sql` in that project's **SQL Editor** to become its admin and add sample
+people. In **Administration > Club settings**, give the club its own name, colours and logo so the
+clubs are easy to tell apart. Do the same for `FALCONS`.
+
+`scripts/publish-update.sh` leaves these clubs out of every update and checks that it did.
 
 ## Day to day
 

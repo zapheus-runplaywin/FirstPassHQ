@@ -138,11 +138,11 @@ export function useCheckInSummary() {
 
 /**
  * Totals across the member's groups. A team's athletes are also in its squad,
- * so only squads are counted when the member coaches one.
+ * so a team isn't counted when its squad is; teams of other squads are.
  */
 export function checkInTotals(summary: CheckInSummary[]) {
-  const squads = summary.filter((s) => s.team_kind === 'squad');
-  const groups = squads.length > 0 ? squads : summary;
+  const squadIds = new Set(summary.filter((s) => s.team_kind === 'squad').map((s) => s.team_id));
+  const groups = summary.filter((s) => s.team_kind === 'squad' || !s.squad_id || !squadIds.has(s.squad_id));
   return {
     athletes: groups.reduce((n, s) => n + s.athlete_count, 0),
     checkedIn: groups.reduce((n, s) => n + s.checked_in_count, 0),

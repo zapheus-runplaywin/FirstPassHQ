@@ -7,6 +7,7 @@ import { Screen } from '@/components/screen';
 import { ThemedText } from '@/components/themed-text';
 import { Button, ErrorText, TextField } from '@/components/ui';
 import { Spacing } from '@/constants/theme';
+import { useAwayNotes } from '@/lib/absences';
 import { marksToSave } from '@/lib/attendance';
 import { formatDateTime } from '@/lib/format';
 import { supabase } from '@/lib/supabase';
@@ -21,6 +22,11 @@ export default function AttendanceSessionScreen() {
   const [saving, setSaving] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [refreshing, setRefreshing] = useState(false);
+  const away = useAwayNotes(
+    session?.team_id ?? null,
+    session?.held_at ?? null,
+    !!session && (session.club_wide || !!session.team_id),
+  );
 
   const load = useCallback(async () => {
     const [sessionResult, registerResult] = await Promise.all([
@@ -105,7 +111,7 @@ export default function AttendanceSessionScreen() {
         </ThemedText>
       </View>
 
-      <AttendanceRegister register={register} onChange={editing ? mark : undefined} />
+      <AttendanceRegister register={register} onChange={editing ? mark : undefined} away={away} />
 
       <ErrorText>{error}</ErrorText>
       {session.can_edit ? (

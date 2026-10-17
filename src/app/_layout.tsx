@@ -84,7 +84,7 @@ function ClubTheme({ children }: { children: ReactNode }) {
 
 function RootStack() {
   const { loading: authLoading, session, isAdmin } = useAuth();
-  const { ready, features } = useClub();
+  const { ready, features, affiliation } = useClub();
   const { club } = useClubChoice();
   // Montserrat; if it fails to load the app carries on in the system font.
   const [fontsLoaded, fontError] = useFonts({
@@ -121,6 +121,12 @@ function RootStack() {
             <Stack.Screen name="messages/new" options={{ title: 'New message' }} />
             <Stack.Screen name="messages/[id]" options={{ title: 'Message' }} />
           </Stack.Protected>
+          <Stack.Protected guard={features.surveys}>
+            <Stack.Screen name="surveys/index" options={{ title: 'Surveys' }} />
+            <Stack.Screen name="surveys/new" options={{ title: 'New survey' }} />
+            <Stack.Screen name="surveys/[id]" options={{ title: 'Survey' }} />
+            <Stack.Screen name="surveys/results" options={{ title: 'Survey results' }} />
+          </Stack.Protected>
           <Stack.Protected guard={features.injuries}>
             <Stack.Screen name="injuries/index" options={{ title: 'Injuries' }} />
             <Stack.Screen name="injuries/new" options={{ title: 'Report an injury' }} />
@@ -132,6 +138,14 @@ function RootStack() {
             <Stack.Screen name="attendance/new" options={{ title: 'Take attendance' }} />
             <Stack.Screen name="attendance/[id]" options={{ title: 'Attendance' }} />
             <Stack.Screen name="attendance/athlete/[id]" options={{ title: 'Athlete attendance' }} />
+            <Stack.Screen name="attendance/family/[id]" options={{ title: 'Attendance' }} />
+            <Stack.Screen name="attendance/absence" options={{ title: 'Report an absence' }} />
+          </Stack.Protected>
+          <Stack.Protected guard={features.sessionPlans}>
+            <Stack.Screen name="session-plans/index" options={{ title: 'Session plans' }} />
+            <Stack.Screen name="session-plans/edit" options={{ title: 'Session plan' }} />
+            <Stack.Screen name="session-plans/[id]" options={{ title: 'Session plan' }} />
+            <Stack.Screen name="session-plans/file" options={{ title: 'File' }} />
           </Stack.Protected>
           <Stack.Protected guard={features.checkIns}>
             <Stack.Screen name="check-in" options={{ title: 'Daily check-in' }} />
@@ -147,6 +161,11 @@ function RootStack() {
             <Stack.Screen name="goals/game" options={{ title: 'Game goals' }} />
             <Stack.Screen name="goals/team" options={{ title: 'Team goals' }} />
           </Stack.Protected>
+          <Stack.Protected guard={features.kpis}>
+            <Stack.Screen name="kpis/index" options={{ title: 'Season KPIs' }} />
+            <Stack.Screen name="kpis/person" options={{ title: 'Season KPIs' }} />
+            <Stack.Screen name="kpis/edit" options={{ title: 'Add a KPI or OKR' }} />
+          </Stack.Protected>
           <Stack.Protected guard={features.integrity}>
             <Stack.Screen name="training/index" options={{ title: 'Integrity training' }} />
             <Stack.Screen name="training/submit" options={{ title: 'Add a certificate' }} />
@@ -155,6 +174,18 @@ function RootStack() {
             <Stack.Screen name="training/requirement/[id]" options={{ title: 'Training' }} />
             <Stack.Screen name="training/document" options={{ title: 'Certificate' }} />
           </Stack.Protected>
+          <Stack.Screen name="declaration" options={{ title: 'Exemption declaration' }} />
+          <Stack.Screen name="concern/new" options={{ title: 'Raise a concern' }} />
+          <Stack.Screen name="consent/[id]" options={{ title: 'Consent' }} />
+          <Stack.Screen name="conduct/[id]" options={{ title: 'Code of conduct' }} />
+          <Stack.Screen name="records/[id]" options={{ title: 'Who has viewed their records' }} />
+          <Stack.Screen name="activity/[id]" options={{ title: 'What’s changed' }} />
+          <Stack.Screen name="concerns/index" options={{ title: 'Concerns' }} />
+          <Stack.Screen name="concerns/[id]" options={{ title: 'Concern' }} />
+          <Stack.Screen name="concerns/report" options={{ title: 'Concerns register' }} />
+          <Stack.Screen name="tasks/index" options={{ title: 'Your tasks' }} />
+          <Stack.Screen name="tasks/new" options={{ title: 'Add a task' }} />
+          <Stack.Screen name="tasks/[id]" options={{ title: 'Task' }} />
           <Stack.Screen name="my-details" options={{ title: 'Your details' }} />
           <Stack.Screen name="delete-account" options={{ title: 'Delete account' }} />
           <Stack.Protected guard={isAdmin}>
@@ -162,6 +193,8 @@ function RootStack() {
             <Stack.Screen name="admin/index" options={{ title: 'Members' }} />
             <Stack.Screen name="admin/[id]" options={{ title: 'Member' }} />
             <Stack.Screen name="admin/club" options={{ title: 'Club settings' }} />
+            <Stack.Screen name="admin/safeguarding" options={{ title: 'Safeguarding' }} />
+            <Stack.Screen name="admin/conduct" options={{ title: 'Code of conduct' }} />
             <Stack.Screen name="admin/club-password" options={{ title: 'Club password' }} />
             <Stack.Screen name="admin/invite" options={{ title: 'Invite members' }} />
             <Stack.Screen name="admin/squads" options={{ title: 'Squads and teams' }} />
@@ -183,6 +216,13 @@ function RootStack() {
             </Stack.Protected>
             <Stack.Protected guard={features.attendance}>
               <Stack.Screen name="admin/reports/attendance" options={{ title: 'Attendance report' }} />
+              <Stack.Screen name="admin/absence-reasons" options={{ title: 'Absence reasons' }} />
+            </Stack.Protected>
+            <Stack.Protected guard={features.sessionPlans}>
+              <Stack.Screen
+                name="admin/reports/session-plans"
+                options={{ title: 'Session plans report' }}
+              />
             </Stack.Protected>
             <Stack.Protected guard={features.awards}>
               <Stack.Screen name="admin/awards/index" options={{ title: 'Awards' }} />
@@ -197,6 +237,22 @@ function RootStack() {
               <Stack.Screen
                 name="admin/reports/integrity"
                 options={{ title: 'Integrity training report' }}
+              />
+            </Stack.Protected>
+            <Stack.Protected guard={features.kpis}>
+              <Stack.Screen name="admin/reports/kpis" options={{ title: 'Season KPIs report' }} />
+              <Stack.Screen name="admin/kpi-reviews" options={{ title: 'Season KPI reviews' }} />
+            </Stack.Protected>
+            <Stack.Protected guard={affiliation}>
+              <Stack.Screen name="admin/affiliation/index" options={{ title: 'Affiliation' }} />
+              <Stack.Screen
+                name="admin/affiliation/registrations"
+                options={{ title: 'PlayHQ registrations' }}
+              />
+              <Stack.Screen name="admin/reports/affiliation" options={{ title: 'Affiliation' }} />
+              <Stack.Screen
+                name="admin/affiliation/return"
+                options={{ title: 'Affiliation return' }}
               />
             </Stack.Protected>
             <Stack.Protected guard={features.calendar || features.awards || features.goals}>

@@ -7,7 +7,8 @@ Built with [Expo](https://expo.dev) (React Native) and [Supabase](https://supaba
 free tier.
 
 For how to use the app, role by role, see the [user guide](docs/user-guide.md). To add another
-club, each with its own database, see [Adding another club](docs/new-club-setup.md).
+club, each with its own database, see [Adding another club](docs/new-club-setup.md). Security
+reviews are in [docs/security](docs/security/).
 
 ## What's here
 

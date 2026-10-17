@@ -51,13 +51,29 @@ RULE: migrations must be safe to run on the production database and must never t
 - Write migrations so they can be re-run or fail cleanly: run them in one transaction, and use `if not exists` / `create or replace` where it fits.
 - Test every migration against a local Postgres loaded with realistic data before opening the PR, and confirm row counts are unchanged.
 - Migrations deploy automatically: `.github/workflows/deploy-migrations.yml` runs `supabase db push` after a merge to main. It and the pull request check run `scripts/check-migrations.py`, which stops anything that can lose data.
-- Only Matt gives permission for data loss: he adds the `data-loss-approved` label to the PR, then runs "Deploy migrations" by hand with "Allow data loss" ticked. Never add that label, tick that box, or weaken the check yourself.
+- Only Matt gives permission for data loss: he adds the `data-loss-approved` label to the PR before merging it. After the merge, the deploy goes ahead when `scripts/check-data-loss-approval.py` confirms Matt added that label to the PR that added each flagged migration and it was still there when the PR merged. Otherwise he runs "Deploy migrations" by hand with "Allow data loss" ticked. Never add that label, tick that box, or weaken either check yourself.
+
+## Supabase CLI version
+
+RULE: always run the newest Supabase CLI release (Matt, 2026-10-15).
+
+- The workflows pin the CLI with `version:` on each `supabase/setup-cli` step (Deploy migrations, PlayHQ function, Purge expired injuries). When a newer release is out (the CLI prints "A new version of Supabase CLI is available", or check https://github.com/supabase/cli/releases), bump every pin to it in one pull request.
+- `scripts/deploy-migrations.sh` reads the JSON from `supabase db push --dry-run --output-format json`. Before bumping, run that dry run with the new version against a local Postgres and confirm it still lists `migrations`.
+- Update any local or session copy of the CLI to the same release before using it.
+
+## No social media features for children
+
+RULE: the app is a club administration tool, not social media (see `docs/security/privacy-and-social-media-assessment-2026-10-13.md`). For members under 18 it must never have replies to messages or direct messages, feeds, profile pictures or browsable profiles, following or friends, likes or sharing, or posts visible outside their own squads and teams.
+
+- Any comment feature sits inside a coach-led squad or team, is about a coaching item, is readable by parents and guardians, and can be removed by coaches.
+- A change that would break this rule needs Matt's explicit yes first, and the assessment is redone before it is built.
 
 ## User guide
 
 RULE: `docs/user-guide.md` is the club's user guide, organised by role, with screenshots in `docs/user-guide/`. It must always match the app.
 
 - Any pull request that adds, removes or changes something a member can see or do updates the matching guide sections, the role tables in sections 1 and 11, and any screenshot that no longer matches, in the same pull request.
+- Child safety is critically important to club admins, boards, committees, parents and the sport's governing body. Any pull request that changes how the app protects children also updates section 12, "Child safety and safeguarding", which summarises every protection for those readers.
 - Make screenshots with the tooling in the project's shared files (`thunder/screenshots/`: `shoot.mjs`, `serve.py`, fixtures; `fixtures/user-guide.mjs` covers screens only the guide uses). Use sample people only, never real club data.
 - Keep images as relative paths and `<img width="210">` tags so the guide prints to PDF cleanly. Crop screenshots to at most 1400 px tall.
 - Describe what is merged, not what is planned.

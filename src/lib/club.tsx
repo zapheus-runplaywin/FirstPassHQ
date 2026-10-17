@@ -14,6 +14,21 @@ export const FEATURES = [
   { key: 'checkIns', label: 'Daily check-ins', detail: 'Athletes’ wellbeing check-ins and trends' },
   { key: 'injuries', label: 'Injuries', detail: 'Injury reports, medical documents and clearances' },
   { key: 'attendance', label: 'Attendance', detail: 'Coaches take attendance at sessions' },
+  {
+    key: 'sessionPlans',
+    label: 'Session plans',
+    detail: 'Coaches keep and share a plan for each training session',
+  },
+  {
+    key: 'surveys',
+    label: 'Surveys',
+    detail: 'Anonymous or named surveys from the committee, coaches and managers, and polls from captains',
+  },
+  {
+    key: 'captainPolls',
+    label: 'Captains’ polls',
+    detail: 'Captains and vice captains send polls with choices to their own squad or team (needs Surveys)',
+  },
   { key: 'awards', label: 'Awards', detail: 'Award votes and results' },
   { key: 'goals', label: 'Game goals', detail: 'Athletes’ goals and reflections for PlayHQ games' },
   {
@@ -21,7 +36,18 @@ export const FEATURES = [
     label: 'Integrity training',
     detail: 'Sports Integrity Australia courses and certificates',
   },
+  {
+    key: 'kpis',
+    label: 'Season KPIs',
+    detail: 'KPIs and OKRs for coaches, managers and athletes, with season reviews',
+    offByDefault: true,
+  },
 ] as const;
+
+/** Whether a feature starts off until an admin turns it on. */
+export function offByDefault(feature: (typeof FEATURES)[number]) {
+  return 'offByDefault' in feature && feature.offByDefault;
+}
 
 export type FeatureKey = (typeof FEATURES)[number]['key'];
 export type Features = Record<FeatureKey, boolean>;
@@ -51,6 +77,8 @@ type ClubState = {
   features: Features;
   /** Whether members join a squad before teams are named from it. */
   squads: boolean;
+  /** Whether admins keep affiliation records for the governing body. Off unless turned on. */
+  affiliation: boolean;
   reload: () => Promise<void>;
 };
 
@@ -94,11 +122,17 @@ export function resolveClub(profile: ClubProfile | null) {
     colors,
     logo: profile?.logo_path ? { uri: logoUrl(profile.logo_path) } : defaultLogo(colors.background),
     hasLogo: !!profile?.logo_path,
+    // Newer features that change how the club works start off; the rest start on.
     features: Object.fromEntries(
-      FEATURES.map((f) => [f.key, profile?.features?.[f.key] !== false]),
+      FEATURES.map((f) => [
+        f.key,
+        offByDefault(f) ? profile?.features?.[f.key] === true : profile?.features?.[f.key] !== false,
+      ]),
     ) as Features,
     // Stored with the features, but it shapes the club rather than adding a screen.
     squads: profile?.features?.squads !== false,
+    // Most clubs don't report to a governing body this way, so it starts off.
+    affiliation: profile?.features?.affiliation === true,
   };
 }
 

@@ -4,13 +4,21 @@ import { Image } from 'expo-image';
 import { useEffect, useState } from 'react';
 import { Platform, Pressable, StyleSheet, Switch, View } from 'react-native';
 
+import { RecordRetention } from '@/components/record-retention';
 import { Screen } from '@/components/screen';
 import { ThemedText } from '@/components/themed-text';
 import { Button, Card, ChipGroup, ErrorText, TextField } from '@/components/ui';
 import { ClubDefaults } from '@/constants/club';
 import { contrastRatio, isHexColour, makeColors, Spacing } from '@/constants/theme';
 import { useTheme } from '@/hooks/use-theme';
-import { defaultLogo, FEATURES, logoUrl, useClub, type FeatureKey } from '@/lib/club';
+import {
+  defaultLogo,
+  FEATURES,
+  logoUrl,
+  offByDefault,
+  useClub,
+  type FeatureKey,
+} from '@/lib/club';
 import { supabase } from '@/lib/supabase';
 
 const LOGO_TYPES = ['image/png', 'image/jpeg'];
@@ -46,6 +54,7 @@ export default function ClubSettingsScreen() {
   const [logoPath, setLogoPath] = useState<string | null>(null);
   const [features, setFeatures] = useState<Record<FeatureKey, boolean>>(club.features);
   const [squads, setSquads] = useState(club.squads);
+  const [affiliation, setAffiliation] = useState(club.affiliation);
   /** Whether physios get messages sent to the whole club. Off unless an admin turns it on. */
   const [physioMessages, setPhysioMessages] = useState(false);
   const [loaded, setLoaded] = useState(false);
@@ -75,6 +84,7 @@ export default function ClubSettingsScreen() {
     setLogoPath(saved?.logo_path ?? null);
     setFeatures(club.features);
     setSquads(club.squads);
+    setAffiliation(club.affiliation);
   }
 
   const defaults: Record<ColourKey, string> = {
@@ -144,10 +154,14 @@ export default function ClubSettingsScreen() {
       p_text_colour: textTone ? TONE_COLOURS[textTone] : '',
       p_hero_colour: colours.hero,
       p_logo_path: logoPath ?? '',
-      // Only switched-off features are stored, so new features start on.
+      // Only switches away from a feature's default are stored, so most new
+      // features start on and the few marked off by default start off.
       p_features: Object.fromEntries([
-        ...FEATURES.filter((f) => !features[f.key]).map((f) => [f.key, false]),
+        ...FEATURES.filter((f) => !offByDefault(f) && !features[f.key]).map((f) => [f.key, false]),
+        ...FEATURES.filter((f) => offByDefault(f) && features[f.key]).map((f) => [f.key, true]),
         ...(squads ? [] : [['squads', false]]),
+        // Off unless turned on, so only an on switch is stored.
+        ...(affiliation ? [['affiliation', true]] : []),
       ]),
     });
     if (saveError) {
@@ -358,6 +372,28 @@ export default function ClubSettingsScreen() {
       </View>
 
       <View style={styles.section}>
+        <ThemedText type="smallBold">Affiliation</ThemedText>
+        <Card style={styles.featureRow}>
+          <View style={styles.featureText}>
+            <ThemedText type="smallBold">Affiliation records</ThemedText>
+            <ThemedText type="small" themeColor="textSecondary">
+              For clubs and associations that report to their association or Netball WA: the
+              affiliation checklist, primary contacts, safeguarding inductions and each season’s
+              PlayHQ registrations. Admins only.
+            </ThemedText>
+          </View>
+          <Switch
+            accessibilityLabel="Affiliation records"
+            value={affiliation}
+            onValueChange={setAffiliation}
+            trackColor={{ true: theme.accent, false: theme.backgroundSelected }}
+            thumbColor={theme.text}
+            {...(Platform.OS === 'web' ? { activeThumbColor: theme.onAccent } : {})}
+          />
+        </Card>
+      </View>
+
+      <View style={styles.section}>
         <ThemedText type="smallBold">Physios</ThemedText>
         <Card style={styles.featureRow}>
           <View style={styles.featureText}>
@@ -385,6 +421,8 @@ export default function ClubSettingsScreen() {
         </ThemedText>
       ) : null}
       <Button title="Save club settings" onPress={save} busy={saving} disabled={uploading} />
+
+      <RecordRetention />
     </Screen>
   );
 }

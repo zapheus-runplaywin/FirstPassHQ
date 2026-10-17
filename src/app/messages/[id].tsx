@@ -2,6 +2,7 @@ import { useFocusEffect, useLocalSearchParams } from 'expo-router';
 import { useCallback, useState } from 'react';
 import { StyleSheet, View } from 'react-native';
 
+import { RaiseConcernLink } from '@/components/safeguarding';
 import { Screen } from '@/components/screen';
 import { ThemedText } from '@/components/themed-text';
 import { Card } from '@/components/ui';
@@ -9,25 +10,31 @@ import { Spacing } from '@/constants/theme';
 import { useTheme } from '@/hooks/use-theme';
 import { useAuth } from '@/lib/auth';
 import { formatDateTime, formatSentAt } from '@/lib/format';
-import { audienceLabel, MESSAGE_COLUMNS } from '@/lib/messages';
+import { audienceLabel, guardianCopyLabel, MESSAGE_COLUMNS, RECIPIENT_COLUMNS } from '@/lib/messages';
 import { supabase } from '@/lib/supabase';
-import type { Message, MessageReceipt } from '@/lib/types';
+import type { InboxMessage, Message, MessageReceipt } from '@/lib/types';
 
 export default function MessageScreen() {
   const { id } = useLocalSearchParams<{ id: string }>();
   const { session, isAdmin } = useAuth();
   const [message, setMessage] = useState<Message | null | undefined>(undefined);
   const [receipts, setReceipts] = useState<MessageReceipt[] | null>(null);
+  const [copy, setCopy] = useState<Omit<InboxMessage, 'message'> | null>(null);
   const [refreshing, setRefreshing] = useState(false);
 
   const load = useCallback(async () => {
-    const { data } = await supabase
-      .from('messages')
-      .select(MESSAGE_COLUMNS)
-      .eq('id', id)
-      .maybeSingle();
+    const [{ data }, own] = await Promise.all([
+      supabase.from('messages').select(MESSAGE_COLUMNS).eq('id', id).maybeSingle(),
+      supabase
+        .from('message_recipients')
+        .select(RECIPIENT_COLUMNS)
+        .eq('message_id', id)
+        .eq('profile_id', session?.user.id ?? '')
+        .maybeSingle(),
+    ]);
     const loaded = (data as Message | null) ?? null;
     setMessage(loaded);
+    setCopy((own.data as Omit<InboxMessage, 'message'> | null) ?? null);
     if (!loaded) return;
     // Opening a message marks it read. Does nothing for its sender.
     supabase.rpc('mark_message_read', { p_message_id: id }).then(() => {});
@@ -50,6 +57,9 @@ export default function MessageScreen() {
   }
 
   if (message === undefined) return null;
+  const copyLabel = copy
+    ? guardianCopyLabel(message?.sender_id ?? null, copy.for_children, copy.for_child_names)
+    : null;
   if (message === null) {
     return (
       <Screen>
@@ -70,6 +80,11 @@ export default function MessageScreen() {
         <ThemedText type="small" themeColor="textSecondary">
           {formatDateTime(new Date(message.created_at))}
         </ThemedText>
+        {copyLabel ? (
+          <ThemedText type="small" themeColor="textSecondary">
+            {copyLabel}
+          </ThemedText>
+        ) : null}
       </View>
 
       <Card>
@@ -77,6 +92,10 @@ export default function MessageScreen() {
       </Card>
 
       {receipts ? <Receipts receipts={receipts} /> : null}
+      <RaiseConcernLink
+        context={`Message from ${message.sender_name ?? 'the club'}, ${formatDateTime(new Date(message.created_at))}`}
+        label="Report this message"
+      />
     </Screen>
   );
 }

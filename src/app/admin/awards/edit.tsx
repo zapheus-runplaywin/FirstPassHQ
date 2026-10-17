@@ -443,7 +443,7 @@ export default function EditAwardScreen() {
               onToggle={toggleRole}
             />
             <ThemedText type="small" themeColor="textSecondary">
-              Athletes, coaches, managers and guardians vote in the squads and teams they’re in.
+              Athletes, coaches and managers vote in the squads and teams they’re in. Parents and guardians don’t vote.
               Committee and admins vote wherever they are.
             </ThemedText>
           </>

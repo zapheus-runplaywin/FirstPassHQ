@@ -4,6 +4,7 @@ import type {
   CoachTitle,
   MemberStatus,
   RejectionReason,
+  Team,
   TeamRole,
   TeamSelection,
 } from '@/lib/types';
@@ -17,6 +18,8 @@ export const roleLabels: Record<AppRole, string> = {
   physio: 'Physio',
   guardian: 'Guardian',
   guest: 'Guest',
+  volunteer: 'Temporary helper',
+  statistician: 'Statistician',
 };
 
 /** A role as a group of people, such as "Guardians". */
@@ -29,6 +32,8 @@ export const pluralRoleLabels: Record<AppRole, string> = {
   physio: 'Physios',
   guardian: 'Guardians',
   guest: 'Guests',
+  volunteer: 'Temporary helpers',
+  statistician: 'Statisticians',
 };
 
 export const statusLabels: Record<MemberStatus, string> = {
@@ -56,6 +61,7 @@ export const rejectionReasonMessages: Record<RejectionReason, string> = {
 export const teamRoleLabels: Record<TeamRole, string> = {
   coach: 'Coach',
   manager: 'Manager',
+  physio: 'Physio',
   athlete: 'Athlete',
   guardian: 'Guardian',
 };
@@ -83,11 +89,13 @@ export const requestableRoles: AppRole[] = [
   'manager',
   'committee',
   'physio',
+  'statistician',
   'guest',
+  'volunteer',
 ];
 
 /** Roles that belong to a team or squad. */
-export const teamRoles: TeamRole[] = ['coach', 'manager', 'athlete', 'guardian'];
+export const teamRoles: TeamRole[] = ['coach', 'manager', 'physio', 'athlete', 'guardian'];
 
 export function isTeamRole(role: AppRole): role is TeamRole {
   return (teamRoles as AppRole[]).includes(role);
@@ -108,11 +116,63 @@ export function canHoldTitle(roles: AppRole[]) {
   return roles.includes('committee') || roles.includes('admin');
 }
 
+/** The squads and teams someone is in, enough to work out their coach or manager title. */
+type StaffMembership = {
+  team_role: TeamRole;
+  coach_title: CoachTitle | null;
+  team: Pick<Team, 'name' | 'kind' | 'sort_order'>;
+};
+
+/**
+ * The title a coach or manager gets from the groups they look after, such as
+ * "Head Coach, Open A" or "Manager, 17 & Under". Their teams count first; a
+ * squad only counts when they don't coach or manage any team. Empty if neither.
+ */
+export function staffTitle(memberships: StaffMembership[]) {
+  const titles: string[] = [];
+  for (const role of ['coach', 'manager'] as const) {
+    const groups = memberships.filter((m) => m.team_role === role);
+    const teams = groups.filter((m) => m.team.kind === 'team');
+    const used = (teams.length > 0 ? teams : groups).sort(
+      (a, b) => a.team.sort_order - b.team.sort_order || a.team.name.localeCompare(b.team.name),
+    );
+    // Groups with the same position share one title: "Head Coach, Open A and Open".
+    const byPosition = new Map<string, string[]>();
+    for (const m of used) {
+      const position = teamPositionLabel(m.team_role, m.coach_title);
+      byPosition.set(position, [...(byPosition.get(position) ?? []), m.team.name]);
+    }
+    for (const [position, names] of byPosition) {
+      titles.push(`${position}, ${joinNames(names)}`);
+    }
+  }
+  return titles.join(' · ');
+}
+
+/** "Open A", "Open A and Open", or "Open A, Open and Open Mixed". */
+function joinNames(names: string[]) {
+  if (names.length <= 1) return names.join('');
+  return `${names.slice(0, -1).join(', ')} and ${names[names.length - 1]}`;
+}
+
 /**
  * A member's roles, with their title when they hold one:
  * "Committee · President", or "Coach, Guardian" for someone with two roles.
+ * Coaches and managers add the title from their team or squad, worked out by
+ * `staffTitle`: "Coach · Head Coach, Open A". A Head Physio shows as "Head Physio".
  */
-export function rolesLabel(roles: AppRole[], title?: string | null) {
-  const label = roles.map((r) => roleLabels[r]).join(', ');
-  return canHoldTitle(roles) && title ? `${label} · ${title}` : label;
+export function rolesLabel(
+  roles: AppRole[],
+  title?: string | null,
+  headPhysio = false,
+  groupTitle = '',
+) {
+  const label = roles
+    .map((r) => (r === 'physio' && headPhysio ? 'Head Physio' : roleLabels[r]))
+    .join(', ');
+  const titles = [
+    canHoldTitle(roles) ? title : null,
+    roles.includes('coach') || roles.includes('manager') ? groupTitle : null,
+  ].filter(Boolean);
+  return titles.length > 0 ? `${label} · ${titles.join(' · ')}` : label;
 }

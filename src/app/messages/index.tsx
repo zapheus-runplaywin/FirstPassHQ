@@ -9,7 +9,13 @@ import { Spacing } from '@/constants/theme';
 import { useTheme } from '@/hooks/use-theme';
 import { useAuth } from '@/lib/auth';
 import { formatSentAt } from '@/lib/format';
-import { audienceLabel, MESSAGE_COLUMNS, useCanSendMessages } from '@/lib/messages';
+import {
+  audienceLabel,
+  guardianCopyLabel,
+  MESSAGE_COLUMNS,
+  RECIPIENT_COLUMNS,
+  useCanSendMessages,
+} from '@/lib/messages';
 import { supabase } from '@/lib/supabase';
 import type { InboxMessage, SentMessage } from '@/lib/types';
 
@@ -29,7 +35,7 @@ export default function MessagesScreen() {
     const [inboxResult, sentResult] = await Promise.all([
       supabase
         .from('message_recipients')
-        .select(`read_at, message:messages (${MESSAGE_COLUMNS})`)
+        .select(`${RECIPIENT_COLUMNS}, message:messages (${MESSAGE_COLUMNS})`)
         .eq('profile_id', userId)
         .order('created_at', { ascending: false })
         .limit(100),
@@ -84,7 +90,7 @@ function Inbox({ messages }: { messages: InboxMessage[] | null }) {
   }
   return (
     <View style={styles.list}>
-      {messages.map(({ message, read_at }) => (
+      {messages.map(({ message, read_at, for_children, for_child_names }) => (
         <PressableCard key={message.id} onPress={() => openMessage(message.id)}>
           <View style={styles.row}>
             {read_at ? null : (
@@ -103,12 +109,24 @@ function Inbox({ messages }: { messages: InboxMessage[] | null }) {
           <ThemedText type="small" themeColor="textSecondary" numberOfLines={1}>
             To {audienceLabel(message.audience, message.audience_role, message.audience_label)}
           </ThemedText>
+          <GuardianCopy
+            label={guardianCopyLabel(message.sender_id, for_children, for_child_names)}
+          />
           <ThemedText type="small" numberOfLines={2}>
             {message.body}
           </ThemedText>
         </PressableCard>
       ))}
     </View>
+  );
+}
+
+function GuardianCopy({ label }: { label: string | null }) {
+  if (!label) return null;
+  return (
+    <ThemedText type="small" themeColor="textSecondary" numberOfLines={2}>
+      {label}
+    </ThemedText>
   );
 }
 

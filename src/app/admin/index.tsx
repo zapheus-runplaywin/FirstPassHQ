@@ -6,24 +6,62 @@ import { Screen } from '@/components/screen';
 import { ThemedText } from '@/components/themed-text';
 import { PressableCard, TextField } from '@/components/ui';
 import { Spacing } from '@/constants/theme';
+import { isMinor } from '@/lib/age';
+import { formatMonth } from '@/lib/format';
 import { PROFILE_COLUMNS } from '@/lib/auth';
-import { rejectionReasonLabels, roleLabels, rolesLabel } from '@/lib/labels';
+import { rejectionReasonLabels, roleLabels, rolesLabel, staffTitle } from '@/lib/labels';
 import { safetyIssues } from '@/lib/safety';
 import { supabase } from '@/lib/supabase';
-import type { Profile } from '@/lib/types';
+import type { CoachTitle, Profile, Team, TeamRole, VolunteerExemption } from '@/lib/types';
 import { rolesOf } from '@/lib/roles';
+
+/** One squad or team a coach or manager is in. */
+type StaffRow = {
+  profile_id: string;
+  team_role: TeamRole;
+  coach_title: CoachTitle | null;
+  team: Pick<Team, 'name' | 'kind' | 'sort_order'>;
+};
 
 export default function MembersScreen() {
   const [members, setMembers] = useState<Profile[]>([]);
   const [withGuardian, setWithGuardian] = useState<Set<string>>(new Set());
+  const [exemptions, setExemptions] = useState<Map<string, VolunteerExemption>>(new Map());
+  const [groupTitles, setGroupTitles] = useState<Map<string, string>>(new Map());
+  const [inactive, setInactive] = useState<Map<string, string>>(new Map());
   const [search, setSearch] = useState('');
   const [refreshing, setRefreshing] = useState(false);
 
   const load = useCallback(async () => {
-    const [profilesResult, guardiansResult] = await Promise.all([
+    const [profilesResult, guardiansResult, exemptionsResult, staffResult, inactiveResult] =
+      await Promise.all([
       supabase.from('profiles').select(PROFILE_COLUMNS).order('full_name', { nullsFirst: false }),
       supabase.from('guardianships').select('athlete_id'),
+      supabase.rpc('admin_volunteer_exemptions'),
+      // Coaches and managers in this season's squads and teams, for their titles.
+      supabase
+        .from('team_members')
+        .select('profile_id, team_role, coach_title, team:teams!inner (name, kind, sort_order)')
+        .in('team_role', ['coach', 'manager'])
+        .eq('team.archived', false),
+      // Members with no squad, team or club role for 2 years.
+      supabase.rpc('admin_inactive_members'),
     ]);
+    setInactive(
+      new Map(
+        ((inactiveResult.data as { profile_id: string; last_active: string }[] | null) ?? []).map(
+          (row) => [row.profile_id, row.last_active],
+        ),
+      ),
+    );
+    const staff = (staffResult.data as unknown as StaffRow[] | null) ?? [];
+    const byMember = new Map<string, StaffRow[]>();
+    for (const row of staff) byMember.set(row.profile_id, [...(byMember.get(row.profile_id) ?? []), row]);
+    setGroupTitles(new Map([...byMember].map(([id, rows]) => [id, staffTitle(rows)])));
+    const open = ((exemptionsResult.data as VolunteerExemption[] | null) ?? []).filter(
+      (e) => !e.ended_at,
+    );
+    setExemptions(new Map(open.map((e) => [e.profile_id, e])));
     setMembers((profilesResult.data as Profile[] | null) ?? []);
     setWithGuardian(
       new Set(
@@ -55,8 +93,11 @@ export default function MembersScreen() {
     .sort((a, b) => (a.join_requested_at ?? '').localeCompare(b.join_requested_at ?? ''));
   const approved = matching.filter((m) => m.status === 'approved');
   // The people behind the child-safety to-dos on the home screen, with why.
-  const issues = new Map(approved.map((m) => [m.id, safetyIssues(m, withGuardian.has(m.id))]));
+  const issues = new Map(
+    approved.map((m) => [m.id, safetyIssues(m, withGuardian.has(m.id), exemptions.get(m.id))]),
+  );
   const needsChecking = approved.filter((m) => issues.get(m.id)?.length);
+  const gone = approved.filter((m) => inactive.has(m.id));
   const notRequested = matching.filter((m) => m.status === 'pending' && !m.join_requested_at);
   const rejected = matching.filter((m) => m.status === 'rejected');
 
@@ -80,7 +121,7 @@ export default function MembersScreen() {
         empty="No requests waiting."
         members={waiting}
         describe={(m) =>
-          `Asked to join as ${m.requested_role ? roleLabels[m.requested_role] : 'a member'}${m.verified_at ? ' · Verified in person' : ''}`
+          `Asked to join as ${m.requested_role ? roleLabels[m.requested_role] : 'a member'}${saysUnder18(m) ? ' · Says they’re under 18' : ''}${m.verified_at ? ' · Verified in person' : ''}`
         }
       />
       <Section
@@ -90,7 +131,14 @@ export default function MembersScreen() {
         describe={(m) =>
           issues.get(m.id)?.length
             ? `${rolesLabel(rolesOf(m))} · Needs checking`
-            : rolesLabel(rolesOf(m), m.title)
+            : rolesLabel(rolesOf(m), m.title, m.head_physio, groupTitles.get(m.id))
+        }
+      />
+      <Section
+        title="No team or role for 2 years"
+        members={gone}
+        describe={(m) =>
+          `${rolesLabel(rolesOf(m))} · Last active ${formatMonth(new Date(inactive.get(m.id) ?? ''))} · Delete them if they’ve left`
         }
       />
       <Section
@@ -152,3 +200,12 @@ const styles = StyleSheet.create({
     gap: Spacing.two,
   },
 });
+
+/** An athlete whose date of birth at Join makes them under 18. Not checked yet. */
+function saysUnder18(m: Profile) {
+  return (
+    m.requested_role === 'athlete' &&
+    !!m.declared_date_of_birth &&
+    isMinor(m.declared_date_of_birth, false)
+  );
+}

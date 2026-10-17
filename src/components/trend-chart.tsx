@@ -18,10 +18,11 @@ const DOT = 8;
 const AXIS_WIDTH = 16;
 
 /**
- * Small multiples of a group's daily check-in averages: one line per question
- * on the same 1 to 5 scale, plus how many athletes checked in each day. Tapping
- * a day shows its values in every chart. Days with fewer than 3 check-ins have
- * no scores, so their lines break there.
+ * Small multiples of a group's check-in averages: one line per question on the
+ * same 1 to 5 scale, each day averaging that day and the two before it, plus
+ * how many athletes checked in each day. Tapping a day shows its values in
+ * every chart. Days with fewer than 3 athletes checking in over their three
+ * days have no scores, so their lines break there.
  */
 export function CheckInTrends({ days }: { days: CheckInTrendDay[] }) {
   const [width, setWidth] = useState(0);
@@ -38,9 +39,9 @@ export function CheckInTrends({ days }: { days: CheckInTrendDay[] }) {
       onLayout={(e: LayoutChangeEvent) => setWidth(e.nativeEvent.layout.width - 2 * Spacing.three)}>
       <ThemedText type="small" themeColor="textSecondary">
         {day
-          ? `${formatShortDay(parseDateString(day.day))} · ${day.checked_in_count} checked in${
-              day.flagged_count ? ` · ${day.flagged_count} flagged` : ''
-            }`
+          ? `${formatShortDay(parseDateString(day.day))} · ${day.checked_in_count} checked in · ${
+              day.window_count
+            } over 3 days${day.flagged_count ? ` · ${day.flagged_count} flagged` : ''}`
           : 'Not enough check-ins yet'}
       </ThemedText>
 
@@ -87,8 +88,9 @@ export function CheckInTrends({ days }: { days: CheckInTrendDay[] }) {
       </Card>
 
       <ThemedText type="small" themeColor="textSecondary">
-        Averages out of 5. The red line is {FLAG_AT}: a score at or below it flags an athlete. Days
-        with fewer than 3 check-ins show no scores. Tap a day to see its numbers.
+        Averages out of 5, each day covering that day and the two before it. The red line is{' '}
+        {FLAG_AT}: a score at or below it flags an athlete. Scores show once at least 3 athletes
+        checked in over those three days. Tap a day to see its numbers.
       </ThemedText>
 
       <View style={styles.dates}>

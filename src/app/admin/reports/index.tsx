@@ -7,7 +7,7 @@ import { useClub } from '@/lib/club';
 
 /** Governance and compliance reports for admins, each saved as a PDF. */
 export default function ReportsScreen() {
-  const { features } = useClub();
+  const { features, affiliation } = useClub();
   return (
     <Screen>
       <ThemedText type="small" themeColor="textSecondary">
@@ -37,6 +37,15 @@ export default function ReportsScreen() {
         </PressableCard>
       ) : null}
 
+      {features.injuries ? (
+        <PressableCard onPress={() => router.push('/admin/injuries')}>
+          <ThemedText type="smallBold">Injuries</ThemedText>
+          <ThemedText type="small" themeColor="textSecondary">
+            Injuries still open and those cleared recently, with who signed them off
+          </ThemedText>
+        </PressableCard>
+      ) : null}
+
       {features.attendance ? (
         <PressableCard onPress={() => router.push('/admin/reports/attendance')}>
           <ThemedText type="smallBold">Attendance</ThemedText>
@@ -46,11 +55,38 @@ export default function ReportsScreen() {
         </PressableCard>
       ) : null}
 
+      {features.sessionPlans ? (
+        <PressableCard onPress={() => router.push('/admin/reports/session-plans')}>
+          <ThemedText type="smallBold">Session plans</ThemedText>
+          <ThemedText type="small" themeColor="textSecondary">
+            Which squads and teams have a session plan for which days, and who added it
+          </ThemedText>
+        </PressableCard>
+      ) : null}
+
       {features.awards ? (
         <PressableCard onPress={() => router.push('/admin/reports/awards')}>
           <ThemedText type="smallBold">Award results</ThemedText>
           <ThemedText type="small" themeColor="textSecondary">
             Full voting results for awards that have closed
+          </ThemedText>
+        </PressableCard>
+      ) : null}
+
+      {features.kpis ? (
+        <PressableCard onPress={() => router.push('/admin/reports/kpis')}>
+          <ThemedText type="smallBold">Season KPIs</ThemedText>
+          <ThemedText type="small" themeColor="textSecondary">
+            Coaches’ and managers’ KPIs and OKRs for a season, with progress, results and reviews
+          </ThemedText>
+        </PressableCard>
+      ) : null}
+
+      {affiliation ? (
+        <PressableCard onPress={() => router.push('/admin/reports/affiliation')}>
+          <ThemedText type="smallBold">Affiliation</ThemedText>
+          <ThemedText type="small" themeColor="textSecondary">
+            The affiliation checklist, officers and this season’s PlayHQ registrations
           </ThemedText>
         </PressableCard>
       ) : null}

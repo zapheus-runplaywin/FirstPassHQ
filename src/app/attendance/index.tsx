@@ -4,9 +4,17 @@ import { StyleSheet, View } from 'react-native';
 
 import { Screen } from '@/components/screen';
 import { ThemedText } from '@/components/themed-text';
-import { Button, ChipGroup, PressableCard } from '@/components/ui';
+import { Button, Card, ChipGroup, ErrorText, PressableCard } from '@/components/ui';
 import { Spacing } from '@/constants/theme';
 import { useTheme } from '@/hooks/use-theme';
+import {
+  absenceDays,
+  absenceWhy,
+  type AbsenceToReview,
+  type UpcomingAbsence,
+  useAbsencesToReview,
+  useLeadsAGroup,
+} from '@/lib/absences';
 import {
   percent,
   presentLabel,
@@ -34,19 +42,24 @@ export default function AttendanceScreen() {
   const [days, setDays] = useState('91');
   const [sessions, setSessions] = useState<AttendanceSession[] | null>(null);
   const [athletes, setAthletes] = useState<AthleteAttendanceSummary[] | null>(null);
+  const [away, setAway] = useState<UpcomingAbsence[]>([]);
   const [refreshing, setRefreshing] = useState(false);
+  const { absencesToReview, reloadAbsencesToReview, markAbsencesReviewed } =
+    useAbsencesToReview(useLeadsAGroup());
 
   const load = useCallback(async () => {
     const since = new Date();
     since.setDate(since.getDate() - Number(days));
-    const [sessionsResult, athletesResult] = await Promise.all([
+    const [sessionsResult, awayResult, athletesResult] = await Promise.all([
       supabase.rpc('attendance_sessions_list'),
+      supabase.rpc('upcoming_absences'),
       canView
         ? supabase.rpc('athlete_attendance_summary', { p_since: toDateString(since) })
         : Promise.resolve({ data: [] }),
     ]);
     setSessions((sessionsResult.data as AttendanceSession[] | null) ?? []);
     setAthletes((athletesResult.data as AthleteAttendanceSummary[] | null) ?? []);
+    setAway((awayResult.data as UpcomingAbsence[] | null) ?? []);
   }, [canView, days]);
 
   useFocusEffect(
@@ -57,7 +70,7 @@ export default function AttendanceScreen() {
 
   async function onRefresh() {
     setRefreshing(true);
-    await load();
+    await Promise.all([load(), reloadAbsencesToReview()]);
     setRefreshing(false);
   }
 
@@ -66,6 +79,12 @@ export default function AttendanceScreen() {
       {canTake ? (
         <Button title="Take attendance" onPress={() => router.push('/attendance/new')} />
       ) : null}
+
+      {absencesToReview.length > 0 ? (
+        <ToReview absences={absencesToReview} onReviewed={markAbsencesReviewed} />
+      ) : null}
+
+      {away.length > 0 ? <AwaySoon away={away} /> : null}
 
       {canView ? (
         <ChipGroup
@@ -87,6 +106,78 @@ export default function AttendanceScreen() {
         </>
       )}
     </Screen>
+  );
+}
+
+/**
+ * Absences reported or withdrawn for the coach or manager's squads and teams
+ * since they last marked them reviewed. Marking clears the home to-do.
+ */
+function ToReview({
+  absences,
+  onReviewed,
+}: {
+  absences: AbsenceToReview[];
+  onReviewed: () => Promise<unknown>;
+}) {
+  const [busy, setBusy] = useState(false);
+  const [error, setError] = useState<string | null>(null);
+  async function review() {
+    setBusy(true);
+    setError(null);
+    const failed = await onReviewed();
+    setBusy(false);
+    if (failed) setError('Couldn’t mark them reviewed. Try again.');
+  }
+  return (
+    <View style={styles.list}>
+      <ThemedText type="smallBold">New or changed absences</ThemedText>
+      <Card>
+        {absences.map((a) => (
+          <View key={a.id} style={styles.away}>
+            <View style={styles.row}>
+              <ThemedText type="smallBold" style={styles.grow} numberOfLines={1}>
+                {a.athlete_name}
+              </ThemedText>
+              <ThemedText type="small" themeColor="textSecondary">
+                {a.withdrawn ? 'Withdrawn' : 'New'}
+              </ThemedText>
+            </View>
+            <ThemedText type="small" themeColor="textSecondary">
+              {absenceDays(a)}
+              {absenceWhy(a) ? ` · ${absenceWhy(a)}` : ''}
+              {a.reported_by_name ? ` · told by ${a.reported_by_name}` : ''}
+            </ThemedText>
+            <ThemedText type="small" themeColor="textSecondary">
+              {a.withdrawn ? 'Withdrawn' : 'Reported'} {formatSentAt(new Date(a.changed_at))}
+            </ThemedText>
+          </View>
+        ))}
+      </Card>
+      <ErrorText>{error}</ErrorText>
+      <Button title="Mark as reviewed" variant="secondary" onPress={review} busy={busy} />
+    </View>
+  );
+}
+
+/** Athletes reported away in the next 4 weeks. */
+function AwaySoon({ away }: { away: UpcomingAbsence[] }) {
+  return (
+    <View style={styles.list}>
+      <ThemedText type="smallBold">Away in the next 4 weeks</ThemedText>
+      <Card>
+        {away.map((a) => (
+          <View key={a.id} style={styles.away}>
+            <ThemedText type="smallBold">{a.athlete_name}</ThemedText>
+            <ThemedText type="small" themeColor="textSecondary">
+              {absenceDays(a)}
+              {absenceWhy(a) ? ` · ${absenceWhy(a)}` : ''}
+              {a.reported_by_name ? ` · told by ${a.reported_by_name}` : ''}
+            </ThemedText>
+          </View>
+        ))}
+      </Card>
+    </View>
   );
 }
 
@@ -180,5 +271,9 @@ const styles = StyleSheet.create({
   },
   grow: {
     flex: 1,
+  },
+  away: {
+    gap: Spacing.half,
+    paddingVertical: Spacing.one,
   },
 });

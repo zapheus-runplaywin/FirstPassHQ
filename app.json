@@ -19,6 +19,7 @@
         "monochromeImage": "./assets/images/android-icon-monochrome.png"
       },
       "predictiveBackGestureEnabled": false,
+      "allowBackup": false,
       "package": "au.pivt.firstpass.hq"
     },
     "web": {
@@ -43,7 +44,16 @@
           "defaultChannel": "join-requests"
         }
       ],
-      "expo-sharing"
+      "expo-sharing",
+      "expo-secure-store",
+      [
+        "expo-image-picker",
+        {
+          "photosPermission": "Allow $(PRODUCT_NAME) to attach photos of session plans from your library.",
+          "cameraPermission": "Allow $(PRODUCT_NAME) to take photos of session plans.",
+          "microphonePermission": false
+        }
+      ]
     ],
     "experiments": {
       "typedRoutes": true,

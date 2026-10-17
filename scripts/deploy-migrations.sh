@@ -1,8 +1,9 @@
 #!/usr/bin/env bash
 # Applies new migrations to the linked Supabase project, used by the
 # "Deploy migrations" workflow. Stops before anything can lose data unless
+# Matt's data-loss-approved label was on the pull request that added it, or
 # ALLOW_DATA_LOSS=true. FIRST_RUN_OK=true lets an empty database (the test
-# project) take every migration. Extra arguments (such as --db-url) go to the CLI.
+# project, or a brand-new live project) take every migration. Extra arguments (such as --db-url) go to the CLI.
 set -euo pipefail
 
 if [ -n "${ALREADY_APPLIED:-}" ]; then
@@ -44,7 +45,8 @@ fi
 
 first=$(ls supabase/migrations | sort | head -1)
 if grep -qx "$first" <<<"$pending"; then
-  # FIRST_RUN_OK is only set for the test project, which starts empty. When
+  # FIRST_RUN_OK is set for the test project, which starts empty, and for the
+  # live project only when Matt ticks "New live project" on a manual run. When
   # none of the migrations have run there is no data to lose, so it takes them
   # all, including older ones the checks flag that were already approved for
   # the live database. New ones are still checked on their way to live.
@@ -55,6 +57,7 @@ if grep -qx "$first" <<<"$pending"; then
   fi
   echo "::error::Supabase has no record of any migrations, so this would rerun them all."
   echo "Run this workflow by hand and list the versions already run in the SQL editor under 'Already applied'."
+  echo "If the live project is brand new and empty, Matt can run it by hand with 'New live project' ticked instead."
   exit 1
 fi
 
@@ -66,9 +69,16 @@ if ! python3 scripts/check-migration-security.py $(sed 's|^|supabase/migrations/
 fi
 
 if [ "${ALLOW_DATA_LOSS:-false}" != "true" ]; then
-  # shellcheck disable=SC2046
-  if ! python3 scripts/check-migrations.py $(sed 's|^|supabase/migrations/|' <<<"$pending"); then
-    echo "::error::Nothing was applied. If Matt agrees to this, run the workflow by hand with 'Allow data loss' ticked."
+  # Each migration that can lose data needs Matt's data-loss-approved label on
+  # the pull request that added it (scripts/check-data-loss-approval.py).
+  flagged=()
+  while read -r version; do
+    if ! python3 scripts/check-migrations.py "supabase/migrations/$version"; then
+      flagged+=("supabase/migrations/$version")
+    fi
+  done <<<"$pending"
+  if [ "${#flagged[@]}" -gt 0 ] && ! python3 scripts/check-data-loss-approval.py "${flagged[@]}"; then
+    echo "::error::Nothing was applied. If Matt agrees to this, he runs the workflow by hand with 'Allow data loss' ticked. (His data-loss-approved label only counts when it was on the pull request before it merged.)"
     exit 1
   fi
 fi

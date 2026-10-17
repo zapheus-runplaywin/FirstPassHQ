@@ -40,10 +40,10 @@ supabase link --project-ref <the club's project id>
 FIRST_RUN_OK=true scripts/deploy-migrations.sh
 ```
 
-The first migration adds West Coast Thunder's squads (Lightning Academy, 17 & Under and so on).
-The club's admin renames or removes them in **Squads and teams** in step 5; nothing else depends
-on them. A club without squads switches squads off in Club settings, removes these, and adds its
-teams.
+A new club starts with no squads or teams. The first time the club's admin opens **Squads and
+teams** (step 5), they choose a starting setup: **AMMNA State Teams** (West Coast Thunder's five
+squads, squads on), **WA Netball League** (Mens, Opens, 21 & Under and Futures teams, squads off) or
+**Blank**. Nothing needs setting in the app or its environment for this.
 
 ## 3. Add the club to the app
 
@@ -88,14 +88,15 @@ The admin opens **Administration > Club settings** and sets:
 - **Logo**: a square PNG with a see-through background.
 - **Colours**: background, hero colour (buttons, links and highlights) and light or dark text.
   The preview shows how they look together and warns when they're hard to read.
-- **Squads**: switch off **Members join a squad first** if the club selects straight into teams,
+- **Squads**: the starting setup in **Squads and teams** sets this, so it only needs changing for
+  a Blank club. Switch off **Members join a squad first** if the club selects straight into teams,
   with final team athletes and training partners from the start. Squads and teams then becomes
   **Teams**.
 - **Features**: turn off anything the club doesn't use. Messages, Calendar, Daily check-ins,
   Injuries, Attendance and Awards can each be switched off. Nothing is deleted when a feature is
   off.
 
-Then, still in **Administration**: set a **Club password**, rename the **Squads and teams**, add
+Then, still in **Administration**: set a **Club password**, open **Squads and teams** and choose a starting setup, add
 **Calendars**, and approve members as they ask to join. **Administration > Invite members** shows
 the club's QR code, code and link to share. Members scan it or enter the code, sign in, and ask to
 join with the club password.

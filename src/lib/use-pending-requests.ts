@@ -40,6 +40,24 @@ export type SafetyTodos = {
   wwcc_expiring: number;
   minors_without_guardian: number;
   turning_18: number;
+  /** Volunteer exemptions that end by themselves within 60 days. */
+  exemptions_ending: number;
+  /** Approved athletes with no checked date of birth, mostly from before it was needed. */
+  athletes_without_date_of_birth: number;
+  /** Current cards never validated, or validated over a year ago. */
+  wwcc_to_validate: number;
+  /** Current cards not registered with the club. */
+  wwcc_to_link: number;
+  /** Barring notices the governing body hasn't been told about. */
+  notices_to_report: number;
+  /** 1 when the club has no WWC Registration Officer. */
+  wwc_officer_missing: number;
+  /** Members behind any of the four card counts above, each counted once. */
+  wwcc_people?: number;
+  /** Club settings' "Remove old records" is off, so nothing past its keep period is removed. */
+  records_removal_off?: boolean;
+  /** Members with no squad, team or club role for 2 years, from `admin_inactive_members`. */
+  inactive_members?: number;
 };
 
 /** Child-safety follow-ups for admins, refreshed when the screen is shown. */
@@ -49,8 +67,20 @@ export function useSafetyTodos() {
 
   const load = useCallback(async () => {
     if (!isAdmin) return;
-    const { data } = await supabase.rpc('admin_safety_todos').maybeSingle();
-    setSafety((data as SafetyTodos | null) ?? null);
+    const [{ data }, { data: retention }, { data: inactive }] = await Promise.all([
+      supabase.rpc('admin_safety_todos').maybeSingle(),
+      supabase.rpc('record_retention').maybeSingle(),
+      supabase.rpc('admin_inactive_members'),
+    ]);
+    const todos = (data as SafetyTodos | null) ?? null;
+    const removalOn = (retention as { enabled?: unknown } | null)?.enabled;
+    setSafety(
+      todos && {
+        ...todos,
+        records_removal_off: retention != null && removalOn === false,
+        inactive_members: Array.isArray(inactive) ? inactive.length : 0,
+      },
+    );
   }, [isAdmin]);
 
   useFocusEffect(

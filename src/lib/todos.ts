@@ -1,12 +1,17 @@
 import type { Href } from 'expo-router';
 
+import type { AffiliationTodos } from '@/lib/affiliation';
 import { slotTitle } from '@/lib/awards';
 import { formatShortDay } from '@/lib/format';
 import { gamePhase, gameTitle } from '@/lib/goals';
 import { formatDateString, toDateString } from '@/lib/injuries';
+import type { KpiReviewTodo } from '@/lib/kpis';
+import { closingDay, surveysToAnswer, type MySurvey } from '@/lib/surveys';
+import { WWCC_WARNING_DAYS } from '@/lib/safety';
 import { dueLabel, isOutstanding, type MyTraining } from '@/lib/training';
 import type { AwardSlot, CoachTeamGame, GoalGame, Injury } from '@/lib/types';
 import type { SafetyTodos } from '@/lib/use-pending-requests';
+import { seasonLabel } from '@/lib/use-teams';
 
 /** Something the member still has to do, shown at the top of the home screen. */
 export type Todo = {
@@ -14,7 +19,48 @@ export type Todo = {
   title: string;
   detail: string;
   href: Href;
+  /** Such as "2026-10-17", when it has to be done by a certain day. */
+  dueOn?: string;
+  /** A red or amber warning: overdue or due soon, or a safety check needing attention. */
+  alert?: TodoAlert;
 };
+
+/** Red for overdue or missing, amber for due soon or needing a check. */
+export type TodoAlert = { level: 'red' | 'amber'; label: string };
+
+/** To-dos due within this many days of today get an amber warning. */
+export const DUE_SOON_DAYS = 3;
+
+/** Red "Overdue", amber "Due soon" for within three days, or null. */
+export function dueAlert(dueOn: string | null | undefined, today = new Date()): TodoAlert | null {
+  if (!dueOn) return null;
+  if (dueOn < toDateString(today)) return { level: 'red', label: 'Overdue' };
+  const soon = new Date(today.getFullYear(), today.getMonth(), today.getDate() + DUE_SOON_DAYS);
+  return dueOn <= toDateString(soon) ? { level: 'amber', label: 'Due soon' } : null;
+}
+
+/**
+ * Red warnings first, then amber, then the rest in the order they came.
+ * Within red and amber, the earliest due date comes first.
+ */
+export function sortByAlert<T>(
+  items: T[],
+  alertOf: (item: T) => TodoAlert | null | undefined,
+  dueOf: (item: T) => string | null | undefined,
+) {
+  const rank = (item: T) => {
+    const level = alertOf(item)?.level;
+    return level === 'red' ? 0 : level === 'amber' ? 1 : 2;
+  };
+  return items
+    .map((item, index) => ({ item, index, rank: rank(item), due: dueOf(item) ?? '9999' }))
+    .sort((a, b) => {
+      if (a.rank !== b.rank) return a.rank - b.rank;
+      if (a.rank < 2 && a.due !== b.due) return a.due.localeCompare(b.due);
+      return a.index - b.index;
+    })
+    .map(({ item }) => item);
+}
 
 /**
  * Everything the member owes, daily items first, built from what the home
@@ -38,6 +84,14 @@ export function buildTodos({
   teamGames = [],
   training = [],
   certificatesToCheck = 0,
+  declarationWaiting = false,
+  newConcerns = 0,
+  absencesToReview = 0,
+  consentsNeeded = [],
+  conduct = [],
+  affiliation = null,
+  kpiReviews = [],
+  surveys = [],
   today = new Date(),
 }: {
   userId: string | undefined;
@@ -52,7 +106,7 @@ export function buildTodos({
   /** Child-safety follow-ups, for admins. */
   safety?: SafetyTodos | null;
   /** The athlete's next game and last played game, for game goals. */
-  goals?: { next: GoalGame | null; last: GoalGame | null } | null;
+  goals?: { next: GoalGame | null; recent: GoalGame[] } | null;
   /** Reflections from athletes the member coaches that no coach has answered. */
   goalReflectionsToAnswer?: number;
   /** A squad or team with reflections waiting, whose page the to-do opens. */
@@ -63,9 +117,67 @@ export function buildTodos({
   training?: MyTraining[];
   /** Training certificates waiting for the committee that the member can check. */
   certificatesToCheck?: number;
+  /** An admin recorded a volunteer exemption the member hasn't accepted yet. */
+  declarationWaiting?: boolean;
+  /** Concerns nobody has acted on yet, for the people who handle them. */
+  newConcerns?: number;
+  /** Absences reported or withdrawn for the member's squads and teams since they last looked. */
+  absencesToReview?: number;
+  /** A guardian's children under 18 still waiting for their consent. */
+  consentsNeeded?: { id: string; name: string }[];
+  /** Code of conduct acceptances still owed this season, for the member and their children. */
+  conduct?: { id: string; name: string; forChild: boolean }[];
+  /** Affiliation follow-ups, for admins of clubs that keep affiliation records. */
+  affiliation?: AffiliationTodos | null;
+  /** Season KPI reviews to write, and the member's own to confirm. */
+  kpiReviews?: KpiReviewTodo[];
+  /** Surveys sent to the member, including ones already answered. */
+  surveys?: MySurvey[];
   today?: Date;
 }): Todo[] {
   const todos: Todo[] = [];
+
+  // A concern about a child can't wait, so it comes first.
+  if (newConcerns > 0) {
+    todos.push({
+      key: 'concerns',
+      title: `Look at ${newConcerns} new ${newConcerns === 1 ? 'concern' : 'concerns'}`,
+      detail: 'Refer child abuse and serious crimes to Police straight away',
+      href: '/concerns',
+    });
+  }
+
+  // Their club role stays paused until they accept, so it comes first.
+  if (declarationWaiting) {
+    todos.push({
+      key: 'volunteer-declaration',
+      title: 'Accept the exemption declaration',
+      detail: 'Your club role starts once you do',
+      href: '/declaration',
+    });
+  }
+
+  for (const child of consentsNeeded) {
+    todos.push({
+      key: `consent-${child.id}`,
+      title: `Give consent for ${child.name}`,
+      detail: 'Choose who sees their check-ins and injury details',
+      href: `/consent/${child.id}`,
+    });
+  }
+
+  for (const person of conduct) {
+    todos.push({
+      key: `conduct-${person.id}`,
+      title: person.forChild
+        ? `Accept the code of conduct for ${person.name}`
+        : 'Accept the code of conduct',
+      detail: person.forChild
+        ? 'Go through it with them. Every member accepts it each season.'
+        : 'Every member accepts it each season',
+      href: { pathname: '/conduct/[id]', params: { id: person.id } },
+    });
+  }
 
   if (needsCheckIn) {
     todos.push({
@@ -85,6 +197,15 @@ export function buildTodos({
     });
   }
 
+  if (absencesToReview > 0) {
+    todos.push({
+      key: 'absences-to-review',
+      title: `Review ${absencesToReview} new or changed ${absencesToReview === 1 ? 'absence' : 'absences'}`,
+      detail: 'Athletes in your squads and teams reported or withdrew an absence',
+      href: '/attendance',
+    });
+  }
+
   // Return-to-play sign-offs hold an athlete out of training until they are done.
   const toSignOff = injuries.filter((i) => i.waiting_for_me);
   if (toSignOff.length === 1) {
@@ -99,7 +220,7 @@ export function buildTodos({
     todos.push({
       key: 'injury-sign-off',
       title: `Review ${toSignOff.length} injury clearances`,
-      detail: 'Athletes are waiting for your sign-off to return',
+      detail: waitingLabel(uniqueNames(toSignOff.map((i) => i.athlete_name ?? 'An athlete'))),
       href: '/injuries',
     });
   }
@@ -122,6 +243,7 @@ export function buildTodos({
       title: `Update ${whose} ${injury.body_area.toLowerCase()} injury`,
       detail: `Expected back ${formatDateString(injury.expected_return)}. Ask for clearance or change the date.`,
       href: { pathname: '/injuries/[id]', params: { id: injury.id } },
+      dueOn: injury.expected_return,
     });
   }
 
@@ -133,21 +255,25 @@ export function buildTodos({
       title: `Set your goals for ${gameTitle(next)}`,
       detail: `${formatShortDay(new Date(next.starts_at))} · goals close when the game starts`,
       href: goalHref(next, userId),
+      dueOn: toDateString(new Date(next.starts_at)),
     });
   }
 
-  // A game played in the last week whose goals the athlete hasn't reflected on.
-  const last = goals?.last;
-  if (
-    last &&
-    last.reflected_count < last.goal_count &&
-    today.getTime() - new Date(last.played_at).getTime() < REFLECT_WITHIN_MS
-  ) {
+  // Every game played in the last week whose goals the athlete hasn't reflected on,
+  // oldest first, so two games in one week each get their own reminder.
+  const toReflect = (goals?.recent ?? [])
+    .filter(
+      (game) =>
+        game.reflected_count < game.goal_count &&
+        today.getTime() - new Date(game.played_at).getTime() < REFLECT_WITHIN_MS,
+    )
+    .reverse();
+  for (const game of toReflect) {
     todos.push({
-      key: 'game-reflection',
-      title: `Reflect on ${gameTitle(last)}`,
+      key: `game-reflection-${game.fixture_id}`,
+      title: `Reflect on ${gameTitle(game)}`,
       detail: 'How did your goals go?',
-      href: goalHref(last, userId),
+      href: goalHref(game, userId),
     });
   }
 
@@ -158,6 +284,7 @@ export function buildTodos({
       title: `Set team goals for ${game.team_name}`,
       detail: `${gameTitle(game)} · ${formatShortDay(new Date(game.starts_at))}`,
       href: { pathname: '/goals/team', params: { fixture: game.fixture_id } },
+      dueOn: toDateString(new Date(game.starts_at)),
     });
   }
 
@@ -200,11 +327,18 @@ export function buildTodos({
   // Integrity training, soonest due first. A long list is one item.
   const toComplete = training.filter(isOutstanding).sort((a, b) => a.due_on.localeCompare(b.due_on));
   if (toComplete.length > 2) {
+    // Name whose courses they are, so a parent of several children can tell.
+    const whose = uniqueNames(
+      toComplete.map((row) => (row.is_me ? 'you' : (row.profile_name ?? 'your athlete'))),
+    );
     todos.push({
       key: 'training',
-      title: `Complete ${toComplete.length} integrity training courses`,
+      title: `Complete ${toComplete.length} integrity training courses${
+        whose.length === 1 && whose[0] === 'you' ? '' : ` for ${joinNames(whose)}`
+      }`,
       detail: `${dueLabel(toComplete[0].due_on, today)} · upload each certificate when done`,
       href: '/training',
+      dueOn: toComplete[0].due_on,
     });
   } else {
     for (const row of toComplete) {
@@ -223,6 +357,7 @@ export function buildTodos({
           pathname: '/training/submit',
           params: { profile: row.profile_id, requirement: row.requirement_id },
         },
+        dueOn: row.due_on,
       });
     }
   }
@@ -255,15 +390,69 @@ export function buildTodos({
         href: '/admin',
       });
     }
-    const wwcc = safety.wwcc_missing + safety.wwcc_expiring;
+    if (safety.athletes_without_date_of_birth > 0) {
+      todos.push({
+        key: 'no-date-of-birth',
+        title: `Add a date of birth for ${plural(safety.athletes_without_date_of_birth, 'athlete', 'athletes')}`,
+        detail: 'Check it against PlayHQ or ID. It decides whether the under 18 rules apply.',
+        href: '/admin',
+      });
+    }
+    // One tile for every card problem. wwcc_people counts each member once;
+    // an older database without it falls back to adding up the counts.
+    const wwccParts = [
+      [safety.wwcc_missing ?? 0, 'missing or expired'],
+      [safety.wwcc_expiring ?? 0, 'expiring'],
+      [safety.wwcc_to_validate ?? 0, 'to validate'],
+      [safety.wwcc_to_link ?? 0, 'to register'],
+    ] as const;
+    const wwcc =
+      safety.wwcc_people ?? wwccParts.reduce((total, [count]) => total + count, 0);
     if (wwcc > 0) {
       todos.push({
         key: 'wwcc',
-        title: `Check ${plural(wwcc, 'Working With Children Check', 'Working With Children Checks')}`,
-        detail:
-          safety.wwcc_missing > 0
-            ? `${plural(safety.wwcc_missing, 'member who needs one has', 'members who need one have')} none recorded or it has expired`
-            : 'Expiring in the next 30 days',
+        title: `Sort out ${plural(wwcc, 'Working With Children Check', 'Working With Children Checks')}`,
+        detail: wwccParts
+          .filter(([count]) => count > 0)
+          .map(([count, label]) => `${count} ${label}`)
+          .join(', '),
+        href: '/admin',
+        // Red when anyone's check is missing or expired, otherwise amber.
+        alert:
+          (safety.wwcc_missing ?? 0) > 0
+            ? { level: 'red', label: 'Missing' }
+            : {
+                level: 'amber',
+                label:
+                  (safety.wwcc_expiring ?? 0) > 0
+                    ? 'Expiring'
+                    : (safety.wwcc_to_validate ?? 0) > 0
+                      ? 'Validate'
+                      : 'Register',
+              },
+      });
+    }
+    if (safety.notices_to_report > 0) {
+      todos.push({
+        key: 'notices-to-report',
+        title: `Tell the governing body about ${plural(safety.notices_to_report, 'Screening Unit notice', 'Screening Unit notices')}`,
+        detail: 'In writing, then record the date on the member’s page',
+        href: '/admin',
+      });
+    }
+    if (safety.wwc_officer_missing > 0) {
+      todos.push({
+        key: 'wwc-officer',
+        title: 'Choose a WWC Registration Officer',
+        detail: 'Under Safeguarding',
+        href: '/admin/safeguarding',
+      });
+    }
+    if (safety.exemptions_ending > 0) {
+      todos.push({
+        key: 'exemptions-ending',
+        title: `${plural(safety.exemptions_ending, 'volunteer exemption ends', 'volunteer exemptions end')} soon`,
+        detail: `Within ${WWCC_WARNING_DAYS} days. They’ll need a Working With Children Check to keep their role.`,
         href: '/admin',
       });
     }
@@ -275,17 +464,144 @@ export function buildTodos({
         href: '/admin',
       });
     }
+    if (safety.records_removal_off) {
+      todos.push({
+        key: 'records-removal-off',
+        title: 'Old records are kept forever',
+        detail: 'Switch on Remove old records in Club settings, under Keeping records',
+        href: '/admin/club',
+      });
+    }
+    if ((safety.inactive_members ?? 0) > 0) {
+      todos.push({
+        key: 'inactive-members',
+        title: `${plural(safety.inactive_members ?? 0, 'member has', 'members have')} had no team or role for 2 years`,
+        detail: 'Delete them if they’ve left the club. Their safeguarding records stay.',
+        href: '/admin',
+      });
+    }
   }
 
-  return todos;
+  if (affiliation) {
+    if (affiliation.missing > 0) {
+      todos.push({
+        key: 'affiliation-checklist',
+        title: `Finish ${affiliation.missing} affiliation ${affiliation.missing === 1 ? 'item' : 'items'}`,
+        detail: 'Required by your association or Netball WA',
+        href: '/admin/affiliation',
+      });
+    }
+    if (affiliation.toCheck > 0) {
+      todos.push({
+        key: 'playhq-registrations',
+        title: `Check ${affiliation.toCheck} ${affiliation.toCheck === 1 ? 'member' : 'members'} in PlayHQ`,
+        detail: `Whether they’re registered for ${affiliation.season ? seasonLabel(affiliation.season) : 'this season'}`,
+        href: '/admin/affiliation/registrations',
+      });
+    }
+    if (affiliation.notRegistered > 0) {
+      todos.push({
+        key: 'playhq-not-registered',
+        title: `${affiliation.notRegistered} ${affiliation.notRegistered === 1 ? 'member isn’t' : 'members aren’t'} registered in PlayHQ`,
+        detail: 'Ask them to register, then mark them registered',
+        href: '/admin/affiliation/registrations',
+      });
+    }
+    if (affiliation.returnDue) {
+      todos.push({
+        key: 'affiliation-return',
+        title: 'Send the affiliation return',
+        detail: 'None sent in the last year',
+        href: '/admin/affiliation/return',
+      });
+    }
+  }
+
+  todos.push(...kpiReviewTodos(kpiReviews, toDateString(today)));
+
+  for (const survey of surveysToAnswer(surveys)) {
+    const closes = closingDay(survey.closes_at);
+    todos.push({
+      key: `survey-${survey.id}`,
+      title: `Answer the survey “${survey.title}”`,
+      detail: `${survey.everyone_answers ? 'Everyone must answer. ' : ''}Open until ${formatDateString(closes)}`,
+      href: { pathname: '/surveys/[id]', params: { id: survey.id } },
+      dueOn: closes,
+    });
+  }
+
+  return todos.map((todo) =>
+    todo.alert || !todo.dueOn ? todo : { ...todo, alert: dueAlert(todo.dueOn, today) ?? undefined },
+  );
 }
 
 /** Reflection reminders stop a week after the game. */
 const REFLECT_WITHIN_MS = 7 * 24 * 60 * 60 * 1000;
+
+function waitingLabel(names: string[]) {
+  return `${joinNames(names)} ${names.length === 1 ? 'is' : 'are'} waiting for your sign-off to return`;
+}
+
+/** Each name once, in the order first seen. */
+function uniqueNames(names: string[]) {
+  return [...new Set(names)];
+}
+
+function joinNames(names: string[]) {
+  if (names.length <= 1) return names.join('');
+  return `${names.slice(0, -1).join(', ')} and ${names[names.length - 1]}`;
+}
 
 function goalHref(game: GoalGame, athleteId: string | undefined): Href {
   return {
     pathname: '/goals/game',
     params: { athlete: athleteId ?? '', fixture: game.fixture_id },
   };
+}
+
+/**
+ * Season KPI reviews: one item per review date and group to write (straight
+ * to the person when there's only one), and one for each of the member's own
+ * reviews to confirm.
+ */
+function kpiReviewTodos(rows: KpiReviewTodo[], today: string): Todo[] {
+  const todos: Todo[] = [];
+  const toWrite = new Map<string, KpiReviewTodo[]>();
+  for (const row of rows.filter((r) => r.kind === 'write')) {
+    const key = `${row.point_id}:${row.team_id}`;
+    toWrite.set(key, [...(toWrite.get(key) ?? []), row]);
+  }
+  for (const [key, people] of toWrite) {
+    const first = people[0];
+    const due = `${first.due_on < today ? 'Was due' : 'Due'} ${formatDateString(first.due_on)}`;
+    todos.push(
+      people.length === 1
+        ? {
+            key: `kpi-review-${key}`,
+            title: `Write ${first.full_name}’s KPI review`,
+            detail: `${first.point_name} · ${first.team_name} · ${due}`,
+            href: {
+              pathname: '/kpis/person',
+              params: { profile: first.profile_id, team: first.team_id },
+            },
+            dueOn: first.due_on,
+          }
+        : {
+            key: `kpi-review-${key}`,
+            title: `Write ${people.length} KPI reviews`,
+            detail: `${first.point_name} · ${first.team_name} · ${due}`,
+            href: '/kpis',
+            dueOn: first.due_on,
+          },
+    );
+  }
+  for (const row of rows.filter((r) => r.kind === 'confirm')) {
+    todos.push({
+      key: `kpi-confirm-${row.point_id}:${row.team_id}`,
+      title: 'Confirm your KPI review was done',
+      detail: `${row.point_name} · ${row.team_name}`,
+      href: { pathname: '/kpis/person', params: { profile: row.profile_id, team: row.team_id } },
+    });
+  }
+  return todos;
 }

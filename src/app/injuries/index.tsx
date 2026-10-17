@@ -71,8 +71,9 @@ export default function InjuriesScreen() {
       <Section title="Injured athletes" injuries={others} showAthlete />
 
       <ThemedText type="small" themeColor="textSecondary">
-        Injury records are private. Only the athlete, their guardians, their coaches, physios
-        and the committee can see them.
+        Injury records are private. Only the athlete, their guardians, their coaches, physios,
+        the committee and admins can see them. An athlete under 18 shows to their coaches, physios
+        and the committee only once a parent or guardian gives consent.
       </ThemedText>
     </Screen>
   );

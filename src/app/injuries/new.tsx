@@ -5,6 +5,7 @@ import { DateField } from '@/components/date-field';
 import { Screen } from '@/components/screen';
 import { ThemedText } from '@/components/themed-text';
 import { Button, ChipGroup, ErrorText, TextField } from '@/components/ui';
+import { isMinor } from '@/lib/age';
 import { useAuth } from '@/lib/auth';
 import { returnQuickPicks, toDateString } from '@/lib/injuries';
 import { supabase } from '@/lib/supabase';
@@ -47,6 +48,10 @@ export default function NewInjuryScreen() {
     }
     if (!bodyArea.trim() || !description.trim()) {
       setError('Say where the injury is and what happened.');
+      return;
+    }
+    if (!expectedReturn) {
+      setError('Choose when you expect to be back. A physio can change it later.');
       return;
     }
     setSaving(true);
@@ -124,15 +129,23 @@ export default function NewInjuryScreen() {
         maxLength={1000}
       />
       <DateField
-        label="Expected back (optional)"
+        label="Expected back"
         value={expectedReturn}
         onChange={setExpectedReturn}
         quickPicks={returnQuickPicks}
-        optional
       />
+      <ThemedText type="small" themeColor="textSecondary">
+        A best guess is fine. Until cleared, the athlete shows as injured when attendance is taken,
+        and is still expected at training to support the team.
+      </ThemedText>
 
       <ThemedText type="small" themeColor="textSecondary">
-        Your coaches and the committee will see this. You can add physio updates as it heals.
+        {profile && isMinor(profile.date_of_birth, profile.under_17)
+          ? 'Your parents or guardians and the club’s admins see this. Your coaches, physios and the committee see it once a parent or guardian agrees.'
+          : hasRole(profile, 'guardian') && !hasRole(profile, 'athlete')
+            ? 'Admins see this. For an athlete under 18, their coaches, physios and the committee see it once you give consent for injuries.'
+            : 'Your coaches, physios and the committee will see this.'}{' '}
+        You can add physio updates as it heals.
       </ThemedText>
 
       <ErrorText>{error}</ErrorText>

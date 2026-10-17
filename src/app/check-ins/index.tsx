@@ -155,14 +155,16 @@ export default function CheckInsScreen() {
 
                 {board === null ? null : board.length === 0 ? (
                   <ThemedText type="small" themeColor="textSecondary">
-                    There are no athletes in this group yet.
+                    No athletes to show. Athletes under 18 show here once a parent or guardian
+                    gives consent.
                   </ThemedText>
                 ) : (
                   <>
                     <ThemedText type="small" themeColor="textSecondary">
                       {done.length} of {board.length} checked in
                       {flagged.length > 0 ? ` · ${flagged.length} flagged` : ''}. A score of 2 or
-                      less flags an athlete.
+                      less flags an athlete. Athletes under 18 show here once a parent or guardian
+                      gives consent.
                     </ThemedText>
 
                     {flagged.length > 0 ? (
@@ -188,11 +190,18 @@ export default function CheckInsScreen() {
                     {missing.length > 0 ? (
                       <View style={styles.section}>
                         <ThemedText type="smallBold">Not checked in</ThemedText>
-                        <Card>
-                          <ThemedText type="small" themeColor="textSecondary">
-                            {missing.map((r) => r.full_name ?? 'Unnamed athlete').join(', ')}
-                          </ThemedText>
-                        </Card>
+                        {missing.map((r) => (
+                          <PressableCard
+                            key={r.athlete_id}
+                            onPress={() =>
+                              router.push({
+                                pathname: '/check-ins/athlete/[id]',
+                                params: { id: r.athlete_id, name: r.full_name ?? '' },
+                              })
+                            }>
+                            <ThemedText type="small">{r.full_name ?? 'Unnamed athlete'}</ThemedText>
+                          </PressableCard>
+                        ))}
                       </View>
                     ) : null}
                   </>

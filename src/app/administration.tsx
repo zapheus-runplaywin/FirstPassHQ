@@ -9,7 +9,7 @@ import { pendingRequestsLabel, usePendingRequests } from '@/lib/use-pending-requ
 
 export default function AdministrationScreen() {
   const { pendingCount, reloadPending } = usePendingRequests();
-  const { features, squads } = useClub();
+  const { features, squads, affiliation } = useClub();
   const [refreshing, setRefreshing] = useState(false);
 
   async function onRefresh() {
@@ -41,6 +41,29 @@ export default function AdministrationScreen() {
         </ThemedText>
       </PressableCard>
 
+      <PressableCard onPress={() => router.push('/admin/safeguarding')}>
+        <ThemedText type="smallBold">Safeguarding</ThemedText>
+        <ThemedText type="small" themeColor="textSecondary">
+          Child Safety Officer, Complaints Manager, governing body and policy
+        </ThemedText>
+      </PressableCard>
+
+      <PressableCard onPress={() => router.push('/admin/conduct')}>
+        <ThemedText type="smallBold">Code of conduct</ThemedText>
+        <ThemedText type="small" themeColor="textSecondary">
+          Who has accepted it this season and who still has to
+        </ThemedText>
+      </PressableCard>
+
+      {affiliation ? (
+        <PressableCard onPress={() => router.push('/admin/affiliation')}>
+          <ThemedText type="smallBold">Affiliation</ThemedText>
+          <ThemedText type="small" themeColor="textSecondary">
+            Checklist, primary contacts and PlayHQ registrations for your association
+          </ThemedText>
+        </PressableCard>
+      ) : null}
+
       <PressableCard onPress={() => router.push('/admin/club')}>
         <ThemedText type="smallBold">Club settings</ThemedText>
         <ThemedText type="small" themeColor="textSecondary">
@@ -58,7 +81,7 @@ export default function AdministrationScreen() {
       <PressableCard onPress={() => router.push('/admin/seasons')}>
         <ThemedText type="smallBold">Seasons</ThemedText>
         <ThemedText type="small" themeColor="textSecondary">
-          Start next season in May and archive the last one after Easter
+          Start the next season and archive the last one
         </ThemedText>
       </PressableCard>
 
@@ -87,6 +110,15 @@ export default function AdministrationScreen() {
         </PressableCard>
       ) : null}
 
+      {features.kpis ? (
+        <PressableCard onPress={() => router.push('/admin/kpi-reviews')}>
+          <ThemedText type="smallBold">Season KPI reviews</ThemedText>
+          <ThemedText type="small" themeColor="textSecondary">
+            The dates each season’s KPIs are reviewed
+          </ThemedText>
+        </PressableCard>
+      ) : null}
+
       {features.calendar || features.awards || features.goals ? (
         <PressableCard onPress={() => router.push('/admin/fixtures')}>
           <ThemedText type="smallBold">Fixtures</ThemedText>
@@ -105,11 +137,20 @@ export default function AdministrationScreen() {
         </PressableCard>
       ) : null}
 
+      {features.attendance ? (
+        <PressableCard onPress={() => router.push('/admin/absence-reasons')}>
+          <ThemedText type="smallBold">Absence reasons</ThemedText>
+          <ThemedText type="small" themeColor="textSecondary">
+            The reasons members choose when they report an absence
+          </ThemedText>
+        </PressableCard>
+      ) : null}
+
       {features.injuries ? (
         <PressableCard onPress={() => router.push('/admin/injuries')}>
           <ThemedText type="smallBold">Injury report</ThemedText>
           <ThemedText type="small" themeColor="textSecondary">
-            Injuries and their status, with a CSV export
+            Injuries and their status, as a PDF or CSV
           </ThemedText>
         </PressableCard>
       ) : null}

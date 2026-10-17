@@ -22,6 +22,7 @@ import {
   useCanCommentOnTeamGoals,
   useIsGoalCoach,
 } from '@/lib/goals';
+import { logRecordView } from '@/lib/record-access';
 import { supabase } from '@/lib/supabase';
 import type {
   GameGoal,
@@ -67,6 +68,7 @@ export default function GameGoalsScreen() {
     setGame(row);
     setGoals(lists.goals);
     setComments(lists.comments);
+    logRecordView(athlete, 'goals');
   }, [athlete, fixture]);
 
   useFocusEffect(
@@ -150,6 +152,13 @@ export default function GameGoalsScreen() {
 
       {phase === 'open' && (own || coach) && goals.length < MAX_GOALS ? (
         <AddGoal athleteId={athlete} fixtureId={fixture} asCoach={coach} onAdded={load} />
+      ) : null}
+
+      {own ? (
+        <ThemedText type="small" themeColor="textSecondary">
+          Your coaches see your goals and reflections. If you’re under 18, your parents or guardians
+          do too.
+        </ThemedText>
       ) : null}
     </Screen>
   );

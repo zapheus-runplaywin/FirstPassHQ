@@ -19,17 +19,17 @@ import { useClub } from '@/lib/club';
 
 /** Matches `imageWidth` for the splash screen in app.json, so the hand-off is seamless. */
 export const LOGO_SIZE = 360;
-/** About as wide as the 1P mark (188), so the two logos look the same size. */
+/** Close to the width of the 1P HQ mark (208), so the two logos look about the same size. */
 const CLUB_LOGO_SIZE = 180;
-/** Height of the 1P mark itself, which is 600 of the splash image's 1152 pixels wide and 337:512 in shape. */
-const FIRSTPASS_HEIGHT = Math.round((LOGO_SIZE * (600 / 1152) * 337) / 512);
+/** Height of the 1P HQ mark itself, which is 446 of the splash image's 1152 pixels tall. */
+const FIRSTPASS_HEIGHT = Math.round((LOGO_SIZE * 446) / 1152);
 const GAP = 32;
 /** How far the mark rises so it and the club's logo sit centred together. */
 const SHIFT = (GAP + CLUB_LOGO_SIZE) / 2;
 
 /**
  * Plays over the app when it opens, on the splash screen's FirstPass navy:
- * the FirstPass 1P mark from the splash screen pulses and, once an admin has
+ * the FirstPass 1P HQ mark from the splash screen pulses and, once an admin has
  * uploaded the club's own logo, rises to make room for it beneath, so the
  * pair sits centred on the screen. Then both zoom and
  * fade away to reveal the first screen.
