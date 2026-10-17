@@ -260,6 +260,9 @@ export type Message = {
 /** A message in the member's inbox. */
 export type InboxMessage = {
   read_at: string | null;
+  /** For a guardian's copy: the children it was sent for. Null when it's the member's own. */
+  for_children: string[] | null;
+  for_child_names: string[] | null;
   message: Message;
 };
 

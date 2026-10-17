@@ -26,6 +26,30 @@ export function audienceLabel(
   return label ?? 'A squad or team';
 }
 
+/** Columns of the member's own copy of a message. */
+export const RECIPIENT_COLUMNS = 'read_at, for_children, for_child_names';
+
+/**
+ * Why a parent or guardian got their copy of a message, naming the children
+ * it was for, or null when the message is the member's own.
+ */
+export function guardianCopyLabel(
+  senderId: string | null,
+  children: string[] | null,
+  names: string[] | null,
+) {
+  if (!children?.length || !names?.length) return null;
+  if (children.length === 1 && children[0] === senderId) {
+    return `Copied to you because ${names[0]} sent it`;
+  }
+  return `Copied to you as ${joinNames(names.map((n) => `${n}’s`))} parent or guardian`;
+}
+
+function joinNames(names: string[]) {
+  if (names.length <= 1) return names.join('');
+  return `${names.slice(0, -1).join(', ')} and ${names[names.length - 1]}`;
+}
+
 /**
  * The squads and teams the member coaches or manages: every one for admins.
  * Used for attendance, which captains don't take.

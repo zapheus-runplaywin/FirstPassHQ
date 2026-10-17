@@ -95,7 +95,7 @@ What each role sees on its home screen:
 | Daily check-in                         |    ✓    |                 |              |            |               |               |         |               |
 | Game goals and reflections             |   Own   |  See athlete's  | Own athletes |            |               |               |         |               |
 | Team goals for a game                  | See, comment |       See       | Set, review, comment |            |               |               |         |               |
-| Check-ins of others                    |         |                 | Own athletes |            | Averages only | Averages only |         | Averages only |
+| Check-ins of others                    |         | Their athlete's | Own athletes |            | Averages only | Averages only |         | Averages only |
 | Report an injury                       |   Own   | Their athlete's |              |            |               |               |         |               |
 | See injuries                           |   Own   | Their athlete's | Own athletes |            |      All      |  Own athletes‡ |         |      All      |
 | Sign off injury clearances             |         |                 |   Endorse    |            |     Accept    |   Endorse‡    |         |     Accept    |
@@ -105,7 +105,7 @@ What each role sees on its home screen:
 | Take attendance                        |         |                 |      ✓       |     ✓      |       ✓       |               |         |       ✓       |
 | See athletes' attendance history       |         |                 |      ✓       |            |       ✓       |               |         |       ✓       |
 | Session plans                          | Read shared |  Read their athlete's shared | Add, share, read shared |            |               |               |         | Add, read all, report |
-| Vote in club awards                    |    ✓    |        ✓        |      ✓       |     ✓      |       ✓       |               |         |       ✓       |
+| Vote in club awards                    |    ✓    |                 |      ✓       |     ✓      |       ✓       |               |         |       ✓       |
 | Set up awards and see results          |         |                 |              |            |               |               |         |       ✓       |
 | Season KPIs (when turned on)           |   Own   |  See athlete's  | Own; set for own athletes, and assistants if head coach | Own | Set for coaches and managers |  |  | Set for coaches and managers, read athletes', set review dates |
 | Complete integrity training            |   Own   | Their athlete's |     Own      |    Own     |      Own      |      Own      |         |      Own      |
@@ -140,7 +140,8 @@ them or makes them Head Physio.
 
 "Own groups" and "own athletes" mean the squads and teams you're listed in as a coach or manager.
 Club awards are voted on by the roles, squads and teams each award names, so not every award is
-open to everyone.
+open to everyone. Parents and guardians don't vote, unless they also hold another role, such as
+coach, and then they vote in that role.
 
 Integrity training applies to the roles, squads and teams an admin chooses for each course, so not
 everyone has training to complete.
@@ -288,9 +289,12 @@ Once you're approved, the home screen is where everything starts. From the top:
   Children Checks work the same way (see [Admins](#10-admins)).
 - **Cards** for the features your role uses: Messages, Daily check-in, Check-ins,
   Injuries, Attendance, Session plans, My attendance, Awards, Integrity training, Season KPIs,
-  Concerns and Administration. The Awards card shows while an award vote is open to you, and
-  Session plans once a coach has shared one with you. A number in the club's colour means
-  something new or waiting for you.
+  Concerns and Administration. Athletes fill in their own check-in from **Daily check-in**.
+  Coaches read their athletes' check-ins from **Check-ins**, and committee members, physios and
+  admins see the club's averages there. Parents and guardians see their child's check-ins from
+  the cards for each child instead (see [Parents and guardians](#5-parents-and-guardians)). The
+  Awards card shows while an award vote is open to you, and Session plans once a coach has shared
+  one with you. A number in the club's colour means something new or waiting for you.
 - **Coming up**: the next six events from your calendars, when the club uses the calendar. Tap
   **Full calendar** to see them all.
 - **My squads and teams** (**My teams** in a club without squads): tap one to see who's in it. A
@@ -418,8 +422,9 @@ If the club has turned on awards, when it runs an award vote that includes you, 
 **Awards** card. Who can vote depends on the award: for example, every member votes for Volunteer
 of the year, and athletes vote for their own team's Players' player. When an award has a winner for
 each squad or team, you only see and vote for members of your own squad or team, even if it is open to
-every member. Club-wide awards are open to everyone, or to the roles the club chose. Physios and
-guests don't vote.
+every member. Club-wide awards are open to everyone, or to the roles the club chose. Parents and
+guardians, physios and guests don't vote. A parent who is also an athlete, coach, manager,
+committee member or admin votes in that role.
 
 1. Tap the vote. It shows the award, what to think about, and when voting closes.
 2. Tap who you're voting for. For a 3-2-1 vote, tap three people in order: first place gets 3
@@ -446,12 +451,14 @@ teams, so junior and senior athletes can have different courses.
 
 Training you still need to complete shows in your **To do** list with its due date, and on the
 **Integrity training** card. If you have more than two courses outstanding, the to-do list shows
-them as one item with the soonest due date; open it to see each course. To complete it:
+them as one item with the soonest due date that says whose they are, such as "Complete 3
+integrity training courses for you and Jordan"; open it to see each course. To complete it:
 
 1. Tap **Open the course** and do the course on the provider's website. Download or photograph
    the certificate of completion at the end.
 2. In the app, tap the to-do item or **Add a certificate** on the Integrity training screen.
-3. Under **Certificate achieved**, tick each course the certificate shows you completed. If one
+3. Under **Certificate achieved**, tick each course the certificate shows you completed (or, for a
+   parent uploading for their child, that the child completed). If one
    PDF holds several certificates or badges, tick them all and attach it once: each ticked course
    is checked with that file.
 4. Choose the day you completed it, attach the certificate (a PDF or photo, up to 10 MB), add a
@@ -901,11 +908,14 @@ As a guardian you:
 
 - **Receive a copy of every message** sent to your athlete, whether it went to their squad, their
   team, all athletes or the whole club. You get each message once, even if you're also in the
-  squad.
+  squad. Your copy says which of your children it's for, such as "Copied to you as Jordan's and
+  Riley's parent or guardian" when two of your children are in the same team.
 - **Receive a copy of every message your athlete sends** if they're a captain, so you see what
-  they send to their squad, team or the club.
-- **See your athlete's daily check-ins**, including any note they write. Your athlete is told that
-  you can read their notes.
+  they send to their squad, team or the club. These copies say "Copied to you because Jordan sent
+  it".
+- **See your athlete's daily check-ins**, including any note they write. Tap your athlete under
+  **Check-ins** on the home screen to see the last four weeks. Your athlete is told that you can
+  read their notes.
 - **See the calendars** for your athlete's squad.
 - **See your athlete's game goals and reflections**: the goals they and their coaches set for
   each game, how your athlete thinks each one went, their coaches' comments and the team goals (see
@@ -933,6 +943,8 @@ As a guardian you:
 <img src="user-guide/training-guardian.png" width="210" alt="A guardian's view of their athlete's training, one sent back">
 <img src="user-guide/goals-guardian.png" width="210" alt="An athlete's games, opened by their guardian">
 <img src="user-guide/goals-guardian-played.png" width="210" alt="A guardian reading their athlete's goals, reflections and coach comments">
+<img src="user-guide/check-ins-guardian.png" width="210" alt="A parent reading their child's check-ins and notes">
+<img src="user-guide/messages-guardian.png" width="210" alt="A parent's messages, each copy naming the children it's for">
 
 <div style="page-break-before: always"></div>
 
@@ -1789,9 +1801,10 @@ still needed.
   calendar, using the arrows to move to later months.
 - **Voters**: **The whole club**, or **Chosen squads and teams**. For chosen groups, pick **One
   winner** or **A winner for each** squad or team. With a winner for each, members vote only in
-  their own group, and **Any member** nominees mean the members of that squad or team. Then the **Roles that vote**. Athletes, coaches, managers and guardians vote in
-  the squads and teams they're in. Committee and admins vote wherever they are. **Every member**
-  opens it to everyone except physios and guests, who don't vote (for a winner-for-each award,
+  their own group, and **Any member** nominees mean the members of that squad or team. Then the **Roles that vote**. Athletes, coaches and managers vote in
+  the squads and teams they're in. Committee and admins vote wherever they are. Parents and
+  guardians don't vote, unless they also hold one of those roles. **Every member**
+  opens it to everyone except parents and guardians, physios and guests, who don't vote (for a winner-for-each award,
   to the members of that squad or team).
 - **Nominees**: **Athletes** or **Coaches** in the voting groups, **Any member**, or **Names I
   list**, one per line, for people who aren't in the app, such as umpires.
@@ -2431,7 +2444,7 @@ Working With Children Check, and another admin must do it.
   admin and at least one verified guardian before an admin can approve them. Your child gives your
   email when they ask to join, so the admin knows who to look for.
 - **You see what your child sees.** You get a copy of every message sent to your child, and of every
-  message your child sends as a captain. You can read their daily check-ins and notes, their game
+  message your child sends as a captain, and each copy names the child it's for. You can read their daily check-ins and notes, their game
   goals, their season KPIs and reviews, and their injuries, and whether they were at each session.
 - **You're told when something changes.** A new coach, manager or physio in your child's group,
   your child moving group, a guardian linked or unlinked, a consent changing or an injury document
