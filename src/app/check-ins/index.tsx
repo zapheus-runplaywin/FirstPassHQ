@@ -125,7 +125,7 @@ export default function CheckInsScreen() {
                 {usesSquads
                   ? 'Average scores out of 5 for each squad, then for each team once the squad phase is complete.'
                   : 'Average scores out of 5 for each team.'}{' '}
-                Scores show once 3 athletes have checked in, and hide on days a group is within 2 check-ins of its squad, team or the club, so they can’t point to one person.
+                Scores show once 3 athletes have checked in, so they can’t point to one person.
               </ThemedText>
               {checkInOverview?.map((g) => {
                 const team = teams.find((t) => t.id === g.team_id);

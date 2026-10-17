@@ -3,11 +3,11 @@
 -- athletes, so 5 check-ins in a group hid the Trends too often. The committee,
 -- admins and physios never see who checked in, only counts and averages.
 --
--- The rule otherwise stays the same, scaled to the new minimum: a window
--- shows with 3 or more athletes, and is hidden when a related group (the
--- club, its squad or one of its teams) that also shows differs from it by 1
--- or 2 check-ins, so one group can't be subtracted from another to give one
--- or two athletes' scores.
+-- The rule that also hid a group when the club, its squad or one of its
+-- teams was within 4 check-ins of it is dropped (Matt): an athlete is in one
+-- team at a time, and working out one athlete's scores from two groups'
+-- averages would take more effort than anyone is likely to spend. A window
+-- now shows whenever 3 or more athletes checked in.
 --
 -- Additive only: the function is replaced with the same signature, no table
 -- or row changes.
@@ -57,23 +57,7 @@ as $$
     c.team_id,
     c.day,
     c.n,
-    c.n >= 3 and not exists (
-      select 1
-      from counts r
-      left join public.teams tc on tc.id = c.team_id
-      left join public.teams tr on tr.id = r.team_id
-      where r.day = c.day
-        and r.team_id is distinct from c.team_id
-        and r.n >= 3
-        and abs(r.n - c.n) between 1 and 2
-        and (
-          -- the club against any group
-          r.team_id is null or c.team_id is null
-          -- a squad against its teams
-          or tc.squad_id = r.team_id
-          or tr.squad_id = c.team_id
-        )
-    ) as visible
+    c.n >= 3 as visible
   from counts c;
 $$;
 

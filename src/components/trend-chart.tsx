@@ -90,8 +90,7 @@ export function CheckInTrends({ days }: { days: CheckInTrendDay[] }) {
       <ThemedText type="small" themeColor="textSecondary">
         Averages out of 5, each day covering that day and the two before it. The red line is{' '}
         {FLAG_AT}: a score at or below it flags an athlete. Scores show once at least 3 athletes
-        checked in over those three days, and hide when a related group is within 2 of this one.
-        Tap a day to see its numbers.
+        checked in over those three days. Tap a day to see its numbers.
       </ThemedText>
 
       <View style={styles.dates}>
