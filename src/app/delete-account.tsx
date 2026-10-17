@@ -31,12 +31,13 @@ export default function DeleteAccountScreen() {
       <ThemedText type="smallBold">Delete your {club.name} account</ThemedText>
       <ThemedText type="small" themeColor="textSecondary">
         This permanently deletes your {club.name} app account: your profile, your squad and
-        team places, guardian links and your messages inbox. Messages you sent to a group stay with
-        the people who received them.
+        team places, guardian links, your personal tasks and your messages inbox. Messages you
+        sent to a group stay with the people who received them.
       </ThemedText>
       <ThemedText type="small" themeColor="textSecondary">
-        The club keeps your injury records and clearance documents for 12 months after you leave,
-        where only the committee and admins can see them, and then deletes them.
+        The club keeps your injury records for 12 months after you leave, where only the
+        committee and admins can see them, and then deletes them. Clearance documents may go
+        sooner, after the club’s keep period for injury documents.
       </ThemedText>
       <ThemedText type="small" themeColor="textSecondary">
         It doesn’t change your PlayHQ registration or club membership, or your account at any other

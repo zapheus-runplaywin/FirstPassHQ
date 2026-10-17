@@ -262,8 +262,8 @@ export function whoSetsLabel(teamRole: TeamRole, coachTitle: CoachTitle | null) 
 export function whoSeesLabel(teamRole: TeamRole, minor: boolean) {
   if (teamRole === 'athlete') {
     return minor
-      ? 'Your coaches and your parents or guardians can see them. Your teammates can’t.'
-      : 'Your coaches can see them. Your teammates can’t.';
+      ? 'Your coaches, your parents or guardians and the club’s admins can see them. Your teammates can’t.'
+      : 'Your coaches and the club’s admins can see them. Your teammates can’t.';
   }
   return 'The committee and admins can see them, and your head coach if you’re an assistant coach. Athletes and parents can’t.';
 }
