@@ -190,11 +190,18 @@ export default function CheckInsScreen() {
                     {missing.length > 0 ? (
                       <View style={styles.section}>
                         <ThemedText type="smallBold">Not checked in</ThemedText>
-                        <Card>
-                          <ThemedText type="small" themeColor="textSecondary">
-                            {missing.map((r) => r.full_name ?? 'Unnamed athlete').join(', ')}
-                          </ThemedText>
-                        </Card>
+                        {missing.map((r) => (
+                          <PressableCard
+                            key={r.athlete_id}
+                            onPress={() =>
+                              router.push({
+                                pathname: '/check-ins/athlete/[id]',
+                                params: { id: r.athlete_id, name: r.full_name ?? '' },
+                              })
+                            }>
+                            <ThemedText type="small">{r.full_name ?? 'Unnamed athlete'}</ThemedText>
+                          </PressableCard>
+                        ))}
                       </View>
                     ) : null}
                   </>

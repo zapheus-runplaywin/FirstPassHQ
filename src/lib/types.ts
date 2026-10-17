@@ -427,6 +427,8 @@ export type CheckInSummary = {
   team_id: string;
   team_name: string;
   team_kind: GroupKind;
+  /** The squad a team was named from, so its athletes aren't counted twice. */
+  squad_id: string | null;
   athlete_count: number;
   checked_in_count: number;
   flagged_count: number;
@@ -454,7 +456,11 @@ export type CheckInOverviewRow = {
 /** One day of a group's check-in averages. Scores are null below 3 check-ins. */
 export type CheckInTrendDay = {
   day: string;
+  /** Check-ins on the day itself. */
   checked_in_count: number;
+  /** Check-ins over the day and the two before it, which the averages cover. */
+  window_count: number;
+  /** Null, like the averages, when fewer than 5 athletes checked in over the three days. */
   flagged_count: number | null;
   avg_sleep: number | null;
   avg_soreness: number | null;

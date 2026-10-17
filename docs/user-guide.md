@@ -40,10 +40,10 @@ each of their roles can.
 | ------------- | ---------------------------------------------------------------------------------------------------- |
 | **Athlete**   | Registered players. Some are club captains, or captains or vice captains of a squad or team. They see their own attendance and can report an absence. |
 | **Guardian**  | Parents and guardians of athletes under 18. They see their child's attendance and can report an absence for them, and see what has changed around their child. If the club asks, they accept the club's code of conduct for their child each season. |
-| **Coach**     | Head coaches and assistant coaches. Both have the same permissions; the title only shows who is who. The app gives each coach a title from their team, or their squad until they're in a team, such as "Head Coach, Open A". Need a current Working With Children Check; the role pauses while it's expired. A parent volunteering at their child's club, or a volunteer under 18, has an exemption instead (see [Volunteer exemptions](#volunteer-exemptions)). |
-| **Manager**   | Squad and team managers. The app gives each manager a title from their team, or their squad until they're in a team, such as "Manager, 17 & Under". Need a current Working With Children Check; the role pauses while it's expired. A parent volunteering at their child's club, or a volunteer under 18, has an exemption instead (see [Volunteer exemptions](#volunteer-exemptions)). |
+| **Coach**     | Head coaches and assistant coaches. Both have the same permissions, except that a head coach sets Season KPIs for the group's assistant coaches; otherwise the title only shows who is who. The app gives each coach a title from their team, or their squad until they're in a team, such as "Head Coach, Open A". Need a current Working With Children Check; the role pauses while it's expired. A parent volunteering at their child's club, a volunteer under 18, or a short-term visitor or national event helper from outside WA has an exemption instead (see [Volunteer exemptions](#volunteer-exemptions)). |
+| **Manager**   | Squad and team managers. The app gives each manager a title from their team, or their squad until they're in a team, such as "Manager, 17 & Under". Need a current Working With Children Check; the role pauses while it's expired. A parent volunteering at their child's club, a volunteer under 18, or a short-term visitor or national event helper from outside WA has an exemption instead (see [Volunteer exemptions](#volunteer-exemptions)). |
 | **Committee** | Club committee members. Each can add a title, such as President or Secretary, shown with their role. Only committee members and admins can add their own title. Need a current Working With Children Check unless an admin exempts them; the role pauses if a recorded check expires. Committee members approved before checks were needed keep the role without one only until the club's **committee checks date**. |
-| **Physio**    | The club's physiotherapists. A physio can be placed in squads or teams to look after their athletes, and one can be the **Head Physio**, who looks after every athlete. Need a current Working With Children Check; the role pauses while it's expired. A parent volunteering at their child's club, or a volunteer under 18, has an exemption instead (see [Volunteer exemptions](#volunteer-exemptions)). |
+| **Physio**    | The club's physiotherapists. A physio can be placed in squads or teams to look after their athletes, and one can be the **Head Physio**, who looks after every athlete. Need a current Working With Children Check; the role pauses while it's expired. A parent volunteering at their child's club, a volunteer under 18, or a short-term visitor or national event helper from outside WA has an exemption instead (see [Volunteer exemptions](#volunteer-exemptions)). |
 | **Guest**     | Anyone else the club lets in, such as partners and sponsors. Guests can only look.                   |
 | **Statistician** | The people who record live game stats on a tablet in FirstPass Vantage, which coaches watch live in FirstPass Vision. Statisticians see every game the club records; a game's coaches and managers see their own squad's or team's. Any member can hold it alongside another role, such as a manager or an athlete who isn't playing. The role pauses while a member is stood down. |
 | **Temporary helper** | Someone helping for a day or a short time, such as at a carnival, clinic or tournament, paid or unpaid. Not necessarily a member of the club: this is only a role so the app can onboard them. The app screens them: a Working With Children Check or an exemption covering every day they help, and the club's code of conduct and safeguarding policy accepted. They see none of the club's features or messages, and their time ends by itself after their last day (see [Temporary helpers](#temporary-helpers)). |
@@ -65,8 +65,8 @@ together:
 
 - **Guests** and **temporary helpers** can't have any other role.
 - **Admins** can also be a coach, manager, physio, committee member or guardian, but not an athlete.
-- **Athletes** can't also be a manager or a physio. An athlete can coach, but only a squad or team
-  they don't play in. Anyone but a guest or temporary helper can also be a statistician, including an athlete 18 or over helping at a game they aren't playing in.
+- **Athletes** can't also be a manager or a physio. An athlete can coach, but not the squad they
+  play in, a team named from it, or the squad a team they play in belongs to. Anyone but a guest or temporary helper can also be a statistician, including an athlete 18 or over helping at a game they aren't playing in.
 - **Athletes under 18** can only add Coach. Parents and guardians must be 18 or over.
 - **Who is under 18** is decided by the date of birth an admin checks against PlayHQ or ID. An
   athlete can't be approved without one.
@@ -104,6 +104,7 @@ What each role sees on its home screen:
 | Accept the code of conduct each season (if the club asks) | Own§ | Own, and their athlete's | Own | Own | Own | Own | | Own, see who has |
 | Take attendance                        |         |                 |      ✓       |     ✓      |       ✓       |               |         |       ✓       |
 | See athletes' attendance history       |         |                 |      ✓       |            |       ✓       |               |         |       ✓       |
+| Review reported absences               | Report own | Report their athlete's | Own groups | Own groups |     All      |               |         |      All      |
 | Session plans                          | Read shared |  Read their athlete's shared | Add, share, read shared |            |               |               |         | Add, read all, report |
 | Vote in club awards                    |    ✓    |        ✓        |      ✓       |     ✓      |       ✓       |               |         |       ✓       |
 | Set up awards and see results          |         |                 |              |            |               |               |         |       ✓       |
@@ -938,15 +939,18 @@ As a guardian you:
 
 ## 6. Coaches
 
-Head coaches and assistant coaches have the same permissions. Everything below applies to the
-squads and teams you're listed in as a coach. Your title, like "Head Coach, Open A", comes from your
-team, or your squad until you're in a team (see [Your preferred name](#your-preferred-name)).
+Head coaches and assistant coaches have the same permissions, except that a head coach sets Season
+KPIs for the group's assistant coaches. Everything below applies to the squads and teams you're
+listed in as a coach. Your title, like "Head Coach, Open A", comes from your team, or your squad
+until you're in a team (see [Your preferred name](#your-preferred-name)); more than one group or
+role joins up, like "Head Coach, Open A and Open" or "Head Coach, Open A · Manager, 17 & Under".
 
 Coaches and managers need a current Working With Children Check, recorded by an admin, before
 they're approved. The check is looked at every time you use the app: once the expiry date has
-passed, your coach or manager role pauses and your home screen says so. You keep your squad and team places, and
-everything comes back as soon as an admin records the renewed check. Renew it well before it
-expires; admins are reminded 60 days ahead.
+passed, your coach or manager role pauses and your home screen says so. You keep your squad and
+team places, though they're hidden from your home screen until the role comes back, and everything
+returns as soon as an admin records the renewed check. Renew it well before it expires; admins are
+reminded 60 days ahead, and 60 days before a parent or under-18 exemption ends.
 
 <img src="user-guide/role-paused.png" width="210" alt="Home screen of a coach whose check has expired, saying the coach role is paused">
 
@@ -956,8 +960,9 @@ In WA, a parent who volunteers at the club their own child is in, and any volunt
 doesn't need a Working With Children Check and can't apply for one. If that's you, an admin
 records an exemption instead of a card number, and you get a to-do: **Accept the exemption
 declaration**. It opens the declaration, which says you're not paid for the role, you don't have a
-negative notice or an interim negative notice, no other state has refused or cancelled a working
-with children clearance for you, and you'll tell a club admin straight away if any of that changes.
+negative notice or an interim negative notice, no other state or territory has refused, suspended
+or cancelled a working with children clearance for you, and you'll tell a club admin straight away
+if any of that changes.
 Tap **I agree** if it's true; if it isn't, don't agree and talk to a club admin. Your coach, manager
 or physio role starts once you agree, and the club keeps the words you agreed to.
 
@@ -993,9 +998,9 @@ athletes in their named teams. Before that, they look after everyone in the squa
 2. Choose the squad or team (if you coach just one, it's already chosen).
 3. Write the message and tap **Send**.
 
-Everyone in that squad or team gets it, including the parents and guardians listed in it. Parents
-and guardians of athletes under 18 always get a copy, even if they aren't in the squad. Open
-**Sent** to see how many people have read each message, and open a message to see exactly who has
+Everyone else in that squad or team gets it, including the parents and guardians listed in it.
+Parents and guardians of athletes under 18 always get a copy, even if they aren't in the squad. Open
+**Sent** to see how many of them have read each message, and open a message to see exactly who has
 and hasn't read it. Club admins can read every message.
 
 <img src="user-guide/new-message-coach.png" width="210" alt="New message">
@@ -1025,11 +1030,14 @@ show, and count, only once a parent or guardian has given consent for their chec
 
 - **Day by day** lists today's (or yesterday's) check-ins for a squad or team: athletes to check
   in with first, with what scored low and any note, then those feeling good, then who hasn't
-  checked in.
+  checked in. Tap any athlete, including one who hasn't checked in, to see their last four weeks.
 - **Trends** graphs the group's average sleep, soreness, stress and mood over 2 weeks, 4 weeks or
-  3 months, with the number who checked in each day. The red line is 2, the score that flags an
-  athlete.
-- Tap an athlete to see their last four weeks.
+  3 months, with the number who checked in each day. Each day's score averages that day and the
+  two before it, so a small group whose athletes don't check in every day still gets a line. A day
+  shows scores once at least 5 athletes checked in over those three days, and hides them when
+  the club, the squad or one of its teams is within 4 check-ins of the group, so one person can
+  never be worked out. The red line is 2, the score that flags an athlete. Tap a day to see its
+  numbers in every chart, and use the chips to switch group.
 
 <img src="user-guide/check-ins-coach.png" width="210" alt="Coach's day-by-day check-ins">
 <img src="user-guide/check-ins-trends.png" width="210" alt="Check-in trends">
@@ -1048,7 +1056,11 @@ don't have PlayHQ games, so their pages don't show goals.
 - After the game, open it from **Played games** to read how the athlete thinks each goal went, and
   tap **Comment on this goal** to reply. Any of the athlete's coaches can comment.
 - A number next to an athlete counts reflections no coach has commented on yet, and your to-do list
-  says "Comment on N goal reflections", which opens the team.
+  says "Comment on N goal reflections", which opens the team. Under **Played games**, each game
+  shows how many goals were set, how many the athlete has reflected on and how many coach comments
+  there are, with **Load more** for older games.
+- Opening an athlete under 18's game goals is recorded for their parents (see [Who has viewed your
+  child's records](#who-has-viewed-your-childs-records)).
 
 <img src="user-guide/goals-coach.png" width="210" alt="A team's page for its coach: team goals and athletes with their goals">
 <img src="user-guide/goals-coach-comment.png" width="210" alt="A coach reading reflections and commenting">
@@ -1062,12 +1074,15 @@ last played game.
   "win the third quarter". You can change or remove them until the game starts. Any coach of the
   team can. Until a team goal is set, "Set team goals for …" stays in your to-do list.
 - The team's athletes and their parents or guardians see the team goals above each
-  athlete's own goals.
-- Everyone in the team can comment on a team goal, before or after the game, so every athlete has
-  a say. Their comments show under each goal, and you can add your own with **Comment**. Coaches
-  can **Remove** any comment on their team's goals; athletes can remove only their own.
+  athlete's own goals. Team goals are for the team's coaches and athletes: its managers and
+  physios don't see them.
+- The team's athletes and coaches can comment on a team goal, before or after the game, so every
+  athlete has a say. Their comments show under each goal, and you can add your own with
+  **Comment**. Coaches can **Remove** any comment on their team's goals; athletes can remove only
+  their own.
 - After the game, open the last game, pick **Achieved**, **Partly** or **Not yet** for each team
-  goal, add a few words for the team and tap **Save review**. Athletes see your review.
+  goal, add a few words for the team and tap **Save review**. Athletes see your review, and you
+  can change it later.
 
 <img src="user-guide/goals-team.png" width="210" alt="Setting team goals before a game">
 <img src="user-guide/goals-team-review.png" width="210" alt="Reviewing team goals after a game">
@@ -1084,13 +1099,16 @@ assistants'; the committee and admins can set them too.
 3. For each measure, choose **A number** (with a target, an optional unit such as % or sessions,
    an optional starting point, and **Lower is better** if fewer is the aim) or **Done or not done**.
    For an OKR, **Add a key result** for up to 5.
-4. Tap **Add KPI** or **Add OKR**. **Edit** changes it later; progress already recorded stays with
-   each measure you keep. **Remove** takes it away with its progress.
+4. Add **Details** if the name needs explaining, then tap **Save**. A person can have up to 10 in
+   each squad or team. **Edit KPI** or **Edit OKR** changes it later; progress already recorded
+   stays with each measure you keep. **Remove KPI** or **Remove OKR**, on the edit screen, takes
+   it away with its progress and result.
 
 During the season, you and the person record progress. At each review date the club sets, write
-your review under the review's name and tap **Save**; it's on your to-do list from a week before.
-The person then confirms it was done. At the end of the season, pick each KPI's **Result** and tap
-**Save result**. Opening an athlete under 18's KPIs is recorded for their parents (see [Who has
+your review under the review's name and tap **Save**; if you set any of their KPIs, it's on your
+to-do list from a week before. The person then confirms it was done and can add their own view,
+which you can remove. At the end of the season, pick each KPI's **Result**, add a note on it if
+you like, and tap **Save result**; **Clear result** takes it back. Opening an athlete under 18's KPIs is recorded for their parents (see [Who has
 viewed your child's records](#who-has-viewed-your-childs-records)).
 
 If you're a head coach, your assistant coaches' KPIs and OKRs are their coaching development plan
@@ -1104,9 +1122,10 @@ Your own KPIs, set by the committee or your head coach, are under **Yours**.
 ### Match awards
 
 Awards such as the coach's MVP can be voted on by coaches after every match. Each match your team
-plays opens its own vote when it starts, in your to-do list and under **Awards**, for example
-"Coach's MVP · Mixed Open A · Round 3 v Rockets". Some awards also have one **Preseason** vote,
-which counts for a set share of the result.
+plays opens its own vote when it starts, under **Awards** with the match beneath the award's name,
+such as "Mixed Open A · Round 3 v Rockets", and in your to-do list as "Vote for Coach's MVP" (or
+"Vote in N awards"). Some awards also have one **Preseason** vote, which counts for a set share of
+the result.
 
 <img src="user-guide/awards-coach.png" width="210" alt="A coach's match and preseason votes">
 
@@ -1116,6 +1135,10 @@ which counts for a set share of the result.
 date. Choose **Including cleared** to see past injuries too. An athlete under 18's injuries show
 only once a parent or guardian has given consent for injuries; until then, nobody can endorse
 them for clearance.
+
+Open an injury to see its full history, including the physio's updates and documents, and to
+**Raise a concern** about it. Opening an under 18's injury is itself recorded for their parents,
+separately from opening its documents.
 
 When one of your athletes asks for clearance, it appears under **Waiting for your sign-off** and in
 your to-do list. Open it, check the proof in the history (tap **View**), then:
@@ -1145,19 +1168,22 @@ recorded and shown to the athlete, their parents or guardians and admins.
 ### Taking attendance
 
 1. Tap **Attendance**, then **Take attendance**.
-2. Choose the squad or team. You can also choose **Whole squad** for any current squad, or
+2. Choose the squad or team (it's already chosen if you lead only one). You can also choose
+   **Whole squad** for any current squad (**Another team**, in a club without squads), or
    **Whole club** for club events, where every approved athlete is on the register.
 3. Name the session. If a calendar event is on now (from an hour before it starts to 30 minutes
    after it ends), its name is filled in for you; other events from today are offered as chips.
-4. Mark each athlete **Present** or **Absent**, or tap **Mark the rest present**. Athletes whose
+   You can change the name after it's filled in.
+4. Mark each athlete **Present** or **Absent**, or tap **Mark the rest present**; everyone must be
+   marked before you can save. Athletes whose
    absence was reported for that day show **Away** under their name, with the reason and any
    details. Injured athletes show **Injured** and when they're expected back, and nothing else about the
    injury. Injured athletes are still expected to come and support the team, so mark them like
    anyone else.
 5. Tap **Save attendance**.
 
-If attendance was already taken for the same group in the last 3 hours, a warning shows who took
-it, in case it's a duplicate. You can open that record, or carry on if it really is a different
+If attendance was already taken for the same group within 3 hours of the session's time, a warning
+shows who took it, in case it's a duplicate. You can open that record, or carry on if it really is a different
 session.
 
 <img src="user-guide/take-attendance.png" width="210" alt="Taking attendance">
@@ -1166,16 +1192,17 @@ session.
 ### Attendance records
 
 - **Sessions** lists past sessions. Open one to see who was there, and **Change attendance** to
-  correct it.
+  correct it; athletes who joined the group since show as **Not marked**.
 - **Athletes** shows each athlete's attendance over 4 weeks, 3 months or 12 months, with the last
   time they were there. Tap an athlete to see every session.
-- **New or changed absences**, at the very top, lists the absences reported or withdrawn for
-  athletes in the squads and teams you coach or manage since you last looked, each marked **New** or
-  **Withdrawn**, with the days, reason, details, who told the club and when. Tap **Mark as
-  reviewed** once you've read them. Until then, your **To do** list on the home screen says
-  **Review N new or changed absences**, and tapping it opens this screen. Absences you reported or
-  withdrew yourself, for your own child, aren't included, and nor are absences that ended more than
-  two weeks ago.
+- **New or changed absences**, under the **Take attendance** button, lists the absences reported
+  or withdrawn for athletes in the squads and teams you coach or manage since you last tapped
+  **Mark as reviewed** (the last 7 days, the first time), each marked **New** or **Withdrawn**,
+  with the days, reason, details, who told the club and when. Tap **Mark as reviewed** once you've
+  read them; opening the screen doesn't clear them. Until then, your **To do** list on the home
+  screen says **Review N new or changed absences**, and tapping it opens this screen. Absences you
+  reported or withdrew yourself aren't included, and nor are absences that ended more than two
+  weeks ago.
 - **Away in the next 4 weeks** lists the absences athletes or their parents have
   reported for the squads and teams you coach or manage (everyone's, for the committee and admins),
   with the reason, such as **Planned holidays** or **Personal illness**, and any details. Absences
@@ -1190,18 +1217,21 @@ session.
 ### Session plans
 
 Keep a plan for each session, before or after it, so the club has a record of what was coached.
-Head coaches and assistant coaches can both add plans, for the squads and teams they coach.
+Head coaches and assistant coaches can both add plans, for the squads and teams they coach. Adding
+a plan, being shared one and being told about one all need a current check or exemption.
 
 1. Tap **Session plans** on your home screen, then **Add a session plan**.
 2. Choose the squad or team.
 3. To save typing, tap a session under **Fill in from the calendar**: it fills in the name, day,
-   times and place from your squad or team's calendar (sessions in the two weeks either side of
-   today). The plan keeps what was filled in: if the calendar changes later, the plan doesn't, so
-   change it yourself if you need to. You can also type everything in.
+   times and place from your squad or team's calendar and the club's (the 8 sessions closest to
+   today, within two weeks either side). The plan keeps what was filled in: if the calendar changes
+   later, the plan doesn't, so change it yourself if you need to. You can also type everything in:
+   **Today**, **Yesterday** and **Tomorrow** pick the day, and the start and finish times and the
+   place are optional.
 4. Write the plan under **Plan**, and add up to 5 photos or files, 10 MB each: **Choose photos**
    from your phone's photos, **Take a photo** (for example of a whiteboard), or **Attach a PDF or
-   Word document**. Take photos of the plan, not of athletes. A plan needs writing or at least one
-   photo or file.
+   Word document**. Take photos of the plan, not of athletes; **Leave out** drops a photo or file
+   before you save. A plan needs writing or at least one photo or file.
 5. Choose who to share it with: **The other coaches of this squad or team** (ticked to start),
    **Its athletes** (parents and guardians of athletes under 18 see it too), and any **Coaches of
    other squads and teams** by name.
@@ -1212,14 +1242,16 @@ other coaches and admins shared with you, marked **New** until you open them. Wh
 shared with an admin, their phone gets a notification saying who shared it, the session's name, its
 squad or team and its day, if they've allowed the app's notifications; tapping it opens the plan.
 Only admins' phones are set up for notifications, so coaches, athletes and parents don't get one;
-they see the plan marked **New**. Changing a plan later sends nothing, and nor does sharing it
-again with someone who was already told.
+they see the plan marked **New**. Changing a plan sends nothing to anyone already told; anyone you
+share it with for the first time is told then. A plan shared with nobody says "Not shared. Only you
+and the club's admins can see it".
 
 Open a plan to read it and its photos and files. Photos and PDFs open in the app; Word documents
 open in your phone's viewer. On your own plans, **Change this plan** lets you edit anything, share
 it differently or remove a photo or file; the plan then shows when it was last changed and by
-whom. **Use again for another session** starts a new plan copied from this one, files included,
-for today. You can't delete a plan: ask an admin if one was added by mistake.
+whom. **Use again for another session**, on your own plans and on plans shared with you, starts a
+new plan copied from this one, files included, for today, in a squad or team you coach. You can't
+delete a plan: ask an admin if one was added by mistake.
 
 <img src="user-guide/session-plans-home.png" width="210" alt="Session plans on a coach's home screen, with one new shared plan">
 <img src="user-guide/session-plans-mine.png" width="210" alt="My plans">
@@ -1286,10 +1318,12 @@ also coaches or manages a squad or team can choose **A squad or team** to messag
 
 **Check-ins** shows average scores for each squad, and for each team once its squad phase is
 complete, plus how many checked in and how many are flagged. **Trends** graphs the
-averages for one group or the whole club. Scores only show once at least 5 athletes in a group
-have checked in, and a group's scores hide on any day it is within 4 check-ins of the club, its
-squad or one of its teams, so subtracting one group from another can't point to one person. Individual answers are only for the athlete,
-their guardians and their coaches.
+averages for one group or the whole club, each day averaging that day and the two before it.
+Scores only show once at least 5 athletes in a group have checked in (over the three days, in
+Trends), and a group's scores hide on any day it is within 4 check-ins of the club, its squad or
+one of its teams, so subtracting one group from another can't point to one person. Athletes under
+18 count only once a parent or guardian has given consent for their check-ins. Individual answers
+are only for the athlete, their guardians and their coaches.
 
 <img src="user-guide/check-ins-overview.png" width="210" alt="Committee check-in overview">
 <img src="user-guide/check-ins-club-trends.png" width="210" alt="Whole-club check-in trends">
@@ -2320,7 +2354,7 @@ once saved, only replaced or removed, and anyone who gets it wrong five times in
 | Committee checks date   | Everyone signed in. Only admins change it, and only to bring it forward; who changed it and when is kept. |
 | Messages                | The people they were sent to, the sender, and admins. Guardians of athletes under 18 get a copy of every message sent to their athlete, and of every message their athlete sends as a captain. Guests don't get messages; physios get messages sent to the Physio role and to their squads and teams, and whole-club messages only if an admin turns that on. |
 | Read receipts           | The sender and admins.                                                                                                      |
-| Daily check-in answers and notes | The athlete, their guardians and their coaches. For an athlete under 18, their coaches only once a parent or guardian consents. The committee, physios and admins see only group averages, hidden below 5 check-ins or when two groups differ by fewer than 5. |
+| Daily check-in answers and notes | The athlete, their guardians and their coaches. For an athlete under 18, their coaches only once a parent or guardian consents, and until then their check-ins count in no average. The committee, physios and admins see only group averages, hidden below 5 check-ins (over three days, in Trends) or when two groups differ by fewer than 5. |
 | Injuries and documents  | For an athlete under 18 whose parents haven't given consent for injuries: only the athlete, their guardians and admins. Otherwise the athlete, their guardians, their coaches, the physios who look after them (the Head Physio and physios in their squad or team), the committee and admins. Managers don't see injuries. Whoever takes attendance (coaches, managers, the committee and admins) sees only that an athlete is **Injured** and their expected return date, whatever the consent. Only the committee member or admin accepting a clearance can share its documents, while it waits for them; everyone else views them in the app. |
 | Who opened injury documents | The athlete, their guardians and admins: every view and share, by whom, their role and when, and each photo consent. |
 | Who has viewed a child's records | For an athlete under 18: their verified parents or guardians (until the athlete turns 18) and admins. Lists every time someone other than the athlete or their guardians opened the athlete's injuries, injury documents, check-ins, game goals, season KPIs or member record. Opening a child's records is recorded whoever you are; nobody can switch it off or delete entries by hand, and old entries are removed only under the club's Keeping records settings. |
@@ -2329,10 +2363,10 @@ once saved, only replaced or removed, and anyone who gets it wrong five times in
 | Code of conduct acceptances | The member, their parents or guardians and admins: each season's acceptance, who accepted it, when, the words and the policy version. |
 | Game goals and reflections | The athlete, their guardians and their coaches. Only the athlete and their coaches set goals, and only the athlete reflects; guardians just read them. The committee, physios and admins don't see them. |
 | Season KPIs, progress and reviews | An athlete's: the athlete, their coaches in that squad or team, their parents or guardians (read only, until 18) and admins (read only). Not teammates, the committee or physios. A coach's or manager's: them, the committee and admins, and an assistant coach's head coach. Only those who set KPIs change them, record results and write reviews; the person records progress, confirms reviews and adds their own view. |
-| Live game stats         | Admins and statisticians: every game the club records. The coaches and managers of the game's squad or team: that game, once they pair with its code in FirstPass Vision. Athletes, guardians, physios and the committee don't see them. |
-| Team goals              | The team's athletes, their guardians and its coaches. Only its coaches set and review them. Athletes and coaches in the team can comment; guardians read the comments. |
+| Live game stats         | Admins and statisticians: every game the club records. The coaches and managers of the game's squad or team see that a game is set up, and its stats once they pair with its code in FirstPass Vision. Athletes, guardians, physios and the committee don't see them. |
+| Team goals              | The team's athletes, their guardians, its coaches and admins. Only its coaches set and review them. Athletes and coaches in the team can comment; guardians and admins read the comments. Managers and physios placed in the team don't see them. |
 | Integrity training certificates | The member, their parents or guardians, the committee and admins. Coaches don't see them. Certificates can't be changed or removed once sent. |
-| Attendance records      | Coaches, the committee and admins. Managers see their own groups' sessions. An athlete sees their own marks, and their parents or guardians see them until the athlete turns 18; neither sees other athletes on the register. |
+| Attendance records      | The committee and admins see every session. Coaches and managers see their own groups' sessions, whole-club sessions and any they took themselves. An athlete sees their own marks, and their parents or guardians see them until the athlete turns 18; neither sees other athletes on the register. |
 | What's changed for a child | Their parents or guardians (until the child turns 18) and admins: adults joining or leaving the child's squads and teams, the child's own group changes, guardian links, consents and shared injury documents. A stand-down shows only as the adult leaving. |
 | Session plans           | The coach or admin who added the plan, and admins. The people the author shares it with: the other coaches of its squad or team, its athletes and the parents and guardians of those under 18, and coaches of other groups chosen by name. Read only: nobody can reply or react. Only the author and admins change it; only admins delete it. Managers, physios and the committee don't see plans unless they also coach. |
 | Reported absences       | The athlete, their parents or guardians, the coaches and managers of the athlete's squads and teams, the committee and admins, with the reason and details. Physios don't see them. The Attendance report counts reasons only, never the details. |
@@ -2343,7 +2377,7 @@ once saved, only replaced or removed, and anyone who gets it wrong five times in
 | Affiliation records and PlayHQ registration checks | Admins only. |
 | Affiliation returns     | Admins only, until an admin sends one. A sent return goes to the email address the club entered and holds club facts and counts, naming no member under 18. |
 | Reports and their PDFs  | Admins only. A saved PDF is a copy outside the app, so whoever it's shared with can read it.                                |
-| Match fixtures          | The members of each squad or team, and admins.                                                                              |
+| Match fixtures          | The members of each squad or team, statisticians and admins.                                                                |
 | How long records are kept | Admins: the keep periods, whether old records are removed and who last changed them. |
 | Club name, colours and logo | Every signed-in member. The logo file is public so it can show before sign-in. Only admins can change them.            |
 | Other clubs' members and records | Nobody in this club. Each club's members, messages, injuries and documents are kept in that club's own database, which other clubs can't reach. |
@@ -2498,8 +2532,9 @@ Working With Children Check, and another admin must do it.
   volunteer under 18, is exempt instead and accepts a declaration in the app (see [Volunteer
   exemptions](#volunteer-exemptions)). The exemption ends by itself when the child or volunteer
   turns 18.
-- **Your role pauses the day your check expires**, and comes back when an admin records the renewed
-  check. Admins are reminded 60 days ahead.
+- **Your role pauses the day after your check expires**, and comes back when an admin records the
+  renewed check. Admins are reminded 60 days ahead, and 60 days before a parent or under-18
+  exemption ends.
 - **Helping for a day still needs a check.** WA has no exemption for a few hours or a day, and
   being supervised by a cardholder doesn't count. Someone helping briefly joins as a **Temporary
   helper**: they can't be approved until they've accepted the club's code of conduct and
@@ -2512,8 +2547,8 @@ Working With Children Check, and another admin must do it.
   what each squad or team did and who ran it (see [Session plans](#session-plans)). Photos are of
   the plan, not of athletes.
 - **Opening a child's records is recorded.** When you open an under 18's injuries, injury
-  documents, check-ins, game goals or season KPIs, the app records it, and their parents and guardians can see
-  who looked and when.
+  documents, check-ins, game goals or season KPIs, the app records it, and their verified parents
+  and guardians can see who looked and when.
 - **Visitors from outside WA.** The short-term visitor exemption (two weeks from arrival) and the
   national event or tour exemption (up to 30 days at the event) each record their dates, end by
   themselves, and can be used only once between them in any 12 months; the app refuses a second.

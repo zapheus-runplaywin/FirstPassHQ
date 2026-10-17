@@ -140,11 +140,16 @@ export default function EditSessionPlanScreen() {
     };
   }, [params.id, params.copy]);
 
-  const groupId = groupChoice ?? (groups.length === 1 ? groups[0].id : null);
+  // A copy can only go to groups the member can add plans for, so a plan
+  // shared from another group starts its copy with no group chosen. A plan
+  // being changed keeps its group, even one the member doesn't coach.
+  const editing = !!params.id;
+  const chosen =
+    groupChoice && (editing || groups.some((g) => g.id === groupChoice)) ? groupChoice : null;
+  const groupId = chosen ?? (groups.length === 1 ? groups[0].id : null);
   const group = teams.find((t) => t.id === groupId) ?? null;
-  // A copy can only go to groups the member can add plans for.
   const groupOptions = groups.map((t) => ({ value: t.id, label: teamLabel(t, teams) }));
-  if (group && !groups.some((g) => g.id === group.id)) {
+  if (editing && group && !groups.some((g) => g.id === group.id)) {
     groupOptions.push({ value: group.id, label: teamLabel(group, teams) });
   }
 

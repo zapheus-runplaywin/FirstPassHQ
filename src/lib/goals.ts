@@ -178,11 +178,13 @@ export function commentAuthor(comment: Pick<TeamGameGoalComment, 'author_name' |
   return comment.author_name;
 }
 
-/** Everyone in the game's current squad or team (athletes, coaches and managers) can comment on its team goals. */
+/** The coaches and athletes of the game's current squad or team can comment on its team goals. */
 export function useCanCommentOnTeamGoals(teamId: string | null | undefined) {
   const { profile, memberships } = useAuth();
   if (profile?.status !== 'approved' || !teamId) return false;
-  return memberships.some((m) => m.team.id === teamId);
+  return memberships.some(
+    (m) => m.team.id === teamId && (m.team_role === 'coach' || m.team_role === 'athlete'),
+  );
 }
 
 /**
