@@ -15,9 +15,12 @@
 -- changed once it's sent, so every answer was given to the same questions.
 --
 -- Who sees results: the committee and admins for the surveys the committee
--- and admins send. A coach or manager's survey is a team thing: only they
--- see it, while they still coach or manage that group with a current check,
--- unless they choose to share it with the committee and admins too. A
+-- and admins send. A coach or manager's quick poll (up to 5 questions with
+-- choices or ratings) can stay a team thing: only they see it, while they
+-- still coach or manage that group with a current check. Anything longer, or
+-- with a written answer, always goes to admins too, so the club can see what
+-- coaches ask children (Matt, 17 October 2026). Coaches can also share with
+-- admins, or with admins and the committee, by choice. A
 -- captain's poll is seen by the captain who sent it and by the group's
 -- coaches and managers. Members never see each other's answers.
 --
@@ -76,7 +79,10 @@ create table if not exists public.surveys (
   -- Who it was sent as: 'committee' (the committee or an admin), 'leader' (a
   -- coach or manager of the group) or 'captain' (a captain or vice captain).
   sent_as text not null default 'committee' check (sent_as in ('committee', 'leader', 'captain')),
-  -- A coach or manager chose to let the committee and admins see it too.
+  -- Who else sees a coach or manager's survey: admins (always, for a survey
+  -- longer than a quick poll or with a written answer), and the committee
+  -- if the coach chooses. Sharing with the committee shares with admins too.
+  share_with_admins boolean not null default false,
   share_with_committee boolean not null default false,
   created_at timestamptz not null default now(),
   updated_at timestamptz not null default now(),
@@ -239,7 +245,9 @@ grant execute on function public.survey_leads_group(uuid, boolean) to authentica
 
 -- Whether the signed-in member manages this survey and reads its results:
 --   - the committee and admins, for surveys sent as the committee and ones a
---     coach or manager shared with them;
+--     coach or manager shared with the committee;
+--   - admins, for coach and manager surveys shared with admins (every one
+--     longer than a quick poll or with a written answer);
 --   - a coach or manager, for one they sent to a group they still coach or
 --     manage;
 --   - a captain or vice captain, for a poll they sent while they still
@@ -257,6 +265,7 @@ as $$
     where s.id = p_survey_id
       and (
         (public.can_manage_surveys() and (s.sent_as = 'committee' or s.share_with_committee))
+        or (public.is_approved() and public.is_admin() and s.share_with_admins)
         or (s.created_by = auth.uid() and s.team_id is not null and (
           (s.sent_as = 'leader' and public.survey_leads_group(s.team_id, true))
           or (s.sent_as = 'captain' and public.is_group_captain(s.team_id))
@@ -296,7 +305,8 @@ create or replace function public.create_survey(
   p_opens_at timestamptz,
   p_closes_at timestamptz,
   p_questions jsonb,
-  p_share_with_committee boolean default false
+  p_share_with_committee boolean default false,
+  p_share_with_admins boolean default false
 )
 returns uuid
 language plpgsql
@@ -318,6 +328,7 @@ declare
   v_order int := 0;
   v_count int;
   v_sent_as text;
+  v_quick_poll boolean;
 begin
   if not public.surveys_on() then
     raise exception 'Surveys are turned off for this club';
@@ -385,6 +396,11 @@ begin
     raise exception 'You can only send surveys to squads and teams you coach, manage or captain';
   end if;
 
+  v_quick_poll := jsonb_array_length(p_questions) <= 5 and not exists (
+    select 1 from jsonb_array_elements(p_questions) q
+    where coalesce(q ->> 'kind', '') not in ('choice', 'multi_choice', 'rating')
+  );
+
   -- A captain's poll is a few questions with choices to pick from, such as a
   -- night everyone is free. No written answers or ratings between teammates.
   if v_sent_as = 'captain' then
@@ -401,14 +417,18 @@ begin
 
   insert into public.surveys (
     title, intro, identity, audience, audience_role, team_id, audience_label,
-    opens_at, closes_at, created_by, created_by_name, sent_as, share_with_committee
+    opens_at, closes_at, created_by, created_by_name, sent_as, share_with_committee,
+    share_with_admins
   )
   values (
     v_title, v_intro, p_identity, p_audience,
     case when p_audience = 'role' then p_role end,
     v_team.id, v_team.name, v_opens, p_closes_at, v_sender.id,
     public.member_display_name(v_sender.id), v_sent_as,
-    v_sent_as = 'leader' and coalesce(p_share_with_committee, false)
+    v_sent_as = 'leader' and coalesce(p_share_with_committee, false),
+    -- Only a quick poll can stay in the team.
+    v_sent_as = 'leader' and (not v_quick_poll or coalesce(p_share_with_admins, false)
+      or coalesce(p_share_with_committee, false))
   )
   returning id into v_survey_id;
 
@@ -524,8 +544,8 @@ begin
   return v_survey_id;
 end;
 $$;
-revoke execute on function public.create_survey(text, text, public.survey_identity, public.survey_audience, public.app_role, uuid, timestamptz, timestamptz, jsonb, boolean) from public, anon;
-grant execute on function public.create_survey(text, text, public.survey_identity, public.survey_audience, public.app_role, uuid, timestamptz, timestamptz, jsonb, boolean) to authenticated;
+revoke execute on function public.create_survey(text, text, public.survey_identity, public.survey_audience, public.app_role, uuid, timestamptz, timestamptz, jsonb, boolean, boolean) from public, anon;
+grant execute on function public.create_survey(text, text, public.survey_identity, public.survey_audience, public.app_role, uuid, timestamptz, timestamptz, jsonb, boolean, boolean) to authenticated;
 
 -- Whether the signed-in member can change when this survey closes.
 create or replace function public.survey_can_close(p_survey_id uuid)
@@ -539,7 +559,8 @@ as $$
     select 1 from public.surveys s
     where s.id = p_survey_id
       and (s.created_by = auth.uid()
-        or (public.is_admin() and (s.sent_as = 'committee' or s.share_with_committee))
+        or (public.is_admin() and (s.sent_as = 'committee' or s.share_with_committee
+          or s.share_with_admins))
         or (s.sent_as = 'captain' and public.survey_leads_group(s.team_id, true)))
   );
 $$;
@@ -698,6 +719,7 @@ begin
     'can_see_results', v_manager,
     'sent_as', s.sent_as,
     'share_with_committee', s.share_with_committee,
+    'share_with_admins', s.share_with_admins,
     'can_close', v_manager and public.survey_can_close(s.id) and now() < s.closes_at,
     'for_child_names', r.for_child_names,
     'from_child', coalesce(s.created_by = any (r.for_children), false),
@@ -851,6 +873,7 @@ returns table (
   created_by_name text,
   sent_as text,
   share_with_committee boolean,
+  share_with_admins boolean,
   sent_to int,
   answered int,
   -- 'scheduled', 'open' or 'closed'
@@ -863,7 +886,7 @@ set search_path = ''
 as $$
   select s.id, s.title, s.identity, s.audience, s.audience_role, s.audience_label,
     s.opens_at, s.closes_at, s.created_by, s.created_by_name,
-    s.sent_as, s.share_with_committee,
+    s.sent_as, s.share_with_committee, s.share_with_admins,
     (select count(*)::int from public.survey_recipients r
      where r.survey_id = s.id and r.for_children is null),
     (select count(*)::int from public.survey_responses x where x.survey_id = s.id),

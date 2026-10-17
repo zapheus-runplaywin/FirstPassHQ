@@ -402,8 +402,8 @@ can't change your answers once they're sent, and you can answer each survey once
 who sees answers, and it's never other members:
 
 - a survey from the committee or an admin: whoever sent it, the committee and admins;
-- a survey from a coach or manager: only whoever sent it, unless they shared it with the committee
-  and admins;
+- a survey from a coach or manager: whoever sent it, plus admins for anything longer than a quick
+  poll or with a written answer, and the committee too if the coach shared it;
 - a poll from a captain: the captain who sent it and the squad or team's coaches and managers.
 
 Athletes under 18 see a reminder on anonymous and name-optional surveys: nobody can reply to
@@ -1300,13 +1300,19 @@ club](#surveys-for-the-club)), except that **Send to** only offers your own grou
 just one, it's picked for you. A **Named** survey with one **One choice** question makes a quick
 poll, and shows who hasn't answered yet.
 
-Your survey is a team thing: the committee and admins don't see it. If you want them to, choose
-**Share with them** under **Committee and admins** before you send it, for example for a survey
-about the season the committee should read. You can't change this once it's sent.
+Under **Who else sees it**, choose:
+
+- **Just me**: only for a quick poll, up to 5 questions with choices or ratings and no written
+  answers. It stays in the team.
+- **Admins**: needed for anything longer, or with a written answer, so the club knows what members
+  are asked. Admins see the results; anonymous answers stay anonymous.
+- **Admins and committee**: for example, a survey about the season the committee should read.
+
+You can't change this once it's sent.
 
 <img src="user-guide/survey-coach-new.png" width="210" alt="A coach sending a poll to their squad"> <img src="user-guide/surveys-coach-list.png" width="210" alt="A coach's surveys">
 
-**My groups** lists your own surveys and the polls your captains send. You see the results of the
+**My groups** lists your own surveys and the polls your captains send, with who else sees each one. You see the results of the
 surveys you sent, while you still coach or manage that squad or team with a current check,
 including after the season ends. You don't see other coaches' surveys. You also see your squad or
 team's captains' polls and their results, and can tap **Close it now** on one. The same rules keep
@@ -1418,9 +1424,10 @@ also coaches or manages a squad or team can choose **A squad or team** to messag
 
 ### Surveys for the club
 
-Committee members and admins make surveys and read their results. Surveys and polls that coaches,
-managers and captains send to their own squads and teams stay with the team, so they don't show
-here unless a coach or manager shares one with the committee and admins. Open **Surveys** from the
+Committee members and admins make surveys and read their results. Coaches' and managers' quick
+polls and captains' polls stay with the team, so they don't show here. Admins also see every
+coach or manager survey that's longer than 5 questions or has a written answer, and the committee
+sees the ones a coach shares with them. Open **Surveys** from the
 home screen and tap **New survey**.
 
 1. Give it a title, and an introduction if you like.
@@ -1437,8 +1444,8 @@ home screen and tap **New survey**.
 
 <img src="user-guide/survey-new.png" width="210" alt="Making a new survey"> <img src="user-guide/survey-new-questions.png" width="210" alt="Adding questions to a survey">
 
-**Club surveys** lists the committee's and admins' surveys and the ones coaches and managers
-shared, with who it went to, when it opens or closes, and how many have answered. Open one and tap
+**Club surveys** lists the committee's and admins' surveys and the coach and manager surveys you
+can see, with who it went to, when it opens or closes, and how many have answered. Open one and tap
 **See results**. The person who made a survey, or an admin, can tap **Close it now** to stop more
 answers.
 
@@ -2518,7 +2525,7 @@ once saved, only replaced or removed, and anyone who gets it wrong five times in
 | Committee checks date   | Everyone signed in. Only admins change it, and only to bring it forward; who changed it and when is kept. |
 | Messages                | The people they were sent to, the sender, and admins. Guardians of athletes under 18 get a copy of every message sent to their athlete, and of every message their athlete sends as a captain. Guests don't get messages; physios get messages sent to the Physio role and to their squads and teams, and whole-club messages only if an admin turns that on. |
 | Read receipts           | The sender and admins.                                                                                                      |
-| Survey answers          | Whoever sent the survey. The committee and admins for their own surveys and ones a coach or manager shared with them. A coach or manager's survey to their own squad or team is seen only by them while they still coach or manage it, unless they shared it. A captain's poll is seen by the captain while they're captain, and by the squad or team's coaches and managers. Named answers show the member's name; parents and guardians of an athlete under 18 also read their child's named answers. Anonymous answers, and name-optional answers given without a name, are kept with no name, no member and no time, so nobody can see who gave them, admins included; their results show only once the survey has closed and at least 3 people have answered. Members never see each other's answers. Whoever sees the results can download them as a PDF or spreadsheet, except captains. |
+| Survey answers          | Whoever sent the survey. The committee and admins for their own surveys and ones a coach or manager shared with them. A coach or manager's survey to their own squad or team is seen by them while they still coach or manage it, by admins unless it's a quick poll (up to 5 questions with choices or ratings), and by the committee if they shared it. A captain's poll is seen by the captain while they're captain, and by the squad or team's coaches and managers. Named answers show the member's name; parents and guardians of an athlete under 18 also read their child's named answers. Anonymous answers, and name-optional answers given without a name, are kept with no name, no member and no time, so nobody can see who gave them, admins included; their results show only once the survey has closed and at least 3 people have answered. Members never see each other's answers. Whoever sees the results can download them as a PDF or spreadsheet, except captains. |
 | Who has answered a survey | Named surveys: whoever can see the results sees who hasn't answered yet. Anonymous and name-optional surveys: only how many have answered. Each member sees whether they've answered themselves. |
 | Daily check-in answers and notes | The athlete, their guardians and their coaches. For an athlete under 18, their coaches only once a parent or guardian consents, and until then their check-ins count in no average. The committee, physios and admins see only group averages, hidden below 3 check-ins (over three days, in Trends). |
 | Injuries and documents  | For an athlete under 18 whose parents haven't given consent for injuries: only the athlete, their guardians and admins. Otherwise the athlete, their guardians, their coaches, the physios who look after them (the Head Physio and physios in their squad or team), the committee and admins. Managers don't see injuries. Whoever takes attendance (coaches, managers, the committee and admins) sees only that an athlete is **Injured** and their expected return date, whatever the consent. Only the committee member or admin accepting a clearance can share its documents, while it waits for them; everyone else views them in the app. |
@@ -2763,6 +2770,9 @@ Working With Children Check, and another admin must do it.
 - **Record views are logged.** Every time someone other than a child or their guardians opens an
   under 18's injuries, injury documents, check-ins, game goals, season KPIs, named survey answers or member record, it's recorded.
   Admins see the list on the child's member page, and parents and guardians on their home screen.
+- **Admins see what coaches ask children.** Only a coach or manager's quick poll, up to 5
+  questions with choices or ratings, can stay within the team. Any longer survey, or any survey
+  with a written answer, is always seen by admins too.
 - **Downloads of children's answers are recorded.** Downloading a survey's results as a PDF or
   spreadsheet is recorded in the record views of every athlete under 18 it names. Captains read
   their polls' results in the app but can't download them.

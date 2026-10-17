@@ -14,6 +14,8 @@ import { useLedGroups } from '@/lib/messages';
 import { supabase } from '@/lib/supabase';
 import {
   CAPTAIN_MAX_QUESTIONS,
+  isTeamPoll,
+  TEAM_POLL_MAX_QUESTIONS,
   endOfDayIso,
   identityDetails,
   identityLabels,
@@ -85,7 +87,7 @@ export default function NewSurveyScreen() {
   const [opensOn, setOpensOn] = useState<string | null>(toDateString(new Date()));
   const [closesOn, setClosesOn] = useState<string | null>(daysFromToday(14));
   const [questions, setQuestions] = useState<DraftQuestion[]>([newQuestion()]);
-  const [shareWithCommittee, setShareWithCommittee] = useState(false);
+  const [share, setShare] = useState<'team' | 'admins' | 'committee'>('team');
   // Someone who leads one group doesn't need to pick it.
   const selectedTeamId = teamId ?? (!canManage && groups.length === 1 ? groups[0].id : null);
   // A coach or manager's survey stays with the team unless they share it.
@@ -96,6 +98,10 @@ export default function NewSurveyScreen() {
     ? ['choice', 'multi_choice']
     : ['choice', 'multi_choice', 'rating', 'text'];
   const maxQuestions = asCaptain ? CAPTAIN_MAX_QUESTIONS : 30;
+  // Only a quick poll can stay in the team; anything longer, or with a
+  // written answer, goes to admins too. The database applies the same rule.
+  const teamPoll = isTeamPoll(questions);
+  const sharedWith = asLeader ? (share === 'team' && !teamPoll ? 'admins' : share) : null;
   const [sending, setSending] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
@@ -149,7 +155,8 @@ export default function NewSurveyScreen() {
         rating_max: q.kind === 'rating' ? Number(q.ratingMax) : null,
         required: q.required,
       })),
-      p_share_with_committee: asLeader && shareWithCommittee,
+      p_share_with_committee: sharedWith === 'committee',
+      p_share_with_admins: sharedWith === 'admins' || sharedWith === 'committee',
     });
     setSending(false);
     if (sendError) return setError(sendError.message);
@@ -234,16 +241,24 @@ export default function NewSurveyScreen() {
           />
         )
       ) : null}
-      {asLeader ? (
-        <ChipGroup
-          label="Committee and admins"
-          options={[
-            { value: 'no', label: 'Keep it in the team' },
-            { value: 'yes', label: 'Share with them' },
-          ]}
-          selected={[shareWithCommittee ? 'yes' : 'no']}
-          onToggle={(value) => setShareWithCommittee(value === 'yes')}
-        />
+      {asLeader && sharedWith ? (
+        <View style={styles.options}>
+          <ChipGroup
+            label="Who else sees it"
+            options={[
+              ...(teamPoll ? [{ value: 'team' as const, label: 'Just me' }] : []),
+              { value: 'admins' as const, label: 'Admins' },
+              { value: 'committee' as const, label: 'Admins and committee' },
+            ]}
+            selected={[sharedWith]}
+            onToggle={setShare}
+          />
+          <ThemedText type="small" themeColor="textSecondary">
+            {teamPoll
+              ? `A quick poll (up to ${TEAM_POLL_MAX_QUESTIONS} questions with choices or ratings) can stay in the team. Anything longer, or with a written answer, goes to admins too.`
+              : `Admins see surveys with more than ${TEAM_POLL_MAX_QUESTIONS} questions or a written answer, so the club knows what members are asked.`}
+          </ThemedText>
+        </View>
       ) : null}
       <ThemedText type="small" themeColor="textSecondary">
         Parents and guardians of athletes under 18 get a copy so they can see what their child is
@@ -356,9 +371,11 @@ export default function NewSurveyScreen() {
           ? 'Only you, the committee and admins see results.'
           : asCaptain
             ? 'Only you and the coaches and managers of your squad or team see results.'
-            : asLeader && shareWithCommittee
+            : sharedWith === 'committee'
               ? 'Only you, the committee and admins see results.'
-              : 'Only you see results.'}
+              : sharedWith === 'admins'
+                ? 'Only you and admins see results.'
+                : 'Only you see results.'}
       </ThemedText>
       <ErrorText>{error}</ErrorText>
       <Button title="Send survey" onPress={send} busy={sending} />

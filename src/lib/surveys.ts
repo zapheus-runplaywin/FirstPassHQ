@@ -74,6 +74,7 @@ export type ManagedSurvey = {
   created_by_name: string | null;
   sent_as: SurveySentAs;
   share_with_committee: boolean;
+  share_with_admins: boolean;
   sent_to: number;
   answered: number;
   status: 'scheduled' | 'open' | 'closed';
@@ -114,6 +115,8 @@ export type SurveyDetail = {
   sent_as: SurveySentAs;
   /** A coach or manager let the committee and admins see it too. */
   share_with_committee: boolean;
+  /** Admins see a coach or manager's survey: always unless it's a quick poll. */
+  share_with_admins: boolean;
   /** Whoever sent it; the committee and admins for theirs and shared ones; coaches and managers for captains' polls. */
   can_see_results: boolean;
   /** Whoever sent it, an admin who can see it, or the group's coaches and managers for a captain's poll, while it's open. */
@@ -238,13 +241,22 @@ export function useCaptainedPollGroupIds() {
 
 /** Who sees a survey's answers, in words for the people answering it. */
 export function surveyAnswersSeenBy(
-  survey: Pick<SurveyDetail, 'sent_as' | 'share_with_committee'>,
+  survey: Pick<SurveyDetail, 'sent_as' | 'share_with_committee' | 'share_with_admins'>,
 ) {
   if (survey.sent_as === 'committee') return 'whoever sent it, the committee and admins';
   if (survey.sent_as === 'captain') return 'whoever sent it and the group’s coaches and managers';
-  return survey.share_with_committee
-    ? 'whoever sent it, the committee and admins'
-    : 'whoever sent it';
+  if (survey.share_with_committee) return 'whoever sent it, the committee and admins';
+  return survey.share_with_admins ? 'whoever sent it and admins' : 'whoever sent it';
+}
+
+/** Coaches' and managers' quick polls can stay in the team: up to this many questions, with choices or ratings. */
+export const TEAM_POLL_MAX_QUESTIONS = 5;
+
+/** Whether a coach or manager's survey is a quick poll that can stay in the team. */
+export function isTeamPoll(questions: { kind: SurveyQuestionKind }[]) {
+  return (
+    questions.length <= TEAM_POLL_MAX_QUESTIONS && questions.every((q) => q.kind !== 'text')
+  );
 }
 
 /** Surveys sent to the member that have opened, refreshed when the screen is shown. */

@@ -131,7 +131,11 @@ function ManagedList({ surveys }: { surveys: ManagedSurvey[] | null }) {
               {identityLabels[s.identity]} · To{' '}
               {surveyAudienceLabel(s.audience, s.audience_role, s.audience_label)}
               {s.sent_as === 'committee' ? '' : ` · From ${s.created_by_name ?? 'a member'}`}
-              {s.share_with_committee ? ' · Shared with the committee' : ''}
+              {s.share_with_committee
+                ? ' · Shared with the committee and admins'
+                : s.share_with_admins
+                  ? ' · Shared with admins'
+                  : ''}
             </ThemedText>
             <ThemedText type="small" themeColor="textSecondary">
               {s.status === 'scheduled'
