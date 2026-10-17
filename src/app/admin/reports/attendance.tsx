@@ -80,7 +80,7 @@ export default function AttendanceReportScreen() {
             fetchAll<AttendanceMarkRow>((start, stop) =>
               supabase
                 .from('attendance_marks')
-                .select('session_id, profile_id, present')
+                .select('session_id, profile_id, present, member_name')
                 .in('session_id', ids)
                 .range(start, stop),
             ),
