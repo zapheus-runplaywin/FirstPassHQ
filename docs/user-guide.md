@@ -66,7 +66,7 @@ together:
 - **Guests** and **temporary helpers** can't have any other role.
 - **Admins** can also be a coach, manager, physio, committee member or guardian, but not an athlete.
 - **Athletes** can't also be a manager or a physio. An athlete can coach, but only a squad or team
-  they don't play in. Anyone but a guest or temporary helper can also be a statistician, including an athlete helping at a game they aren't playing in.
+  they don't play in. Anyone but a guest or temporary helper can also be a statistician, including an athlete 18 or over helping at a game they aren't playing in.
 - **Athletes under 18** can only add Coach. Parents and guardians must be 18 or over.
 - **Who is under 18** is decided by the date of birth an admin checks against PlayHQ or ID. An
   athlete can't be approved without one.
@@ -184,8 +184,8 @@ West Coast Thunder's is `THUNDER`. Type it in, check the club's name that appear
 **Continue to West Coast Thunder**. If the club gives you a QR code, scan it with your phone's
 camera instead, or open the club's invite link: either one opens the app with the club already
 picked. The app remembers your club after that. If the app is already set up for a club and you open
-another club's link, it asks **Switch to this club?** first; tap **Stay with** your club if you
-didn't expect it.
+another club's link, it asks **Switch to (that club)?** first; tap **Stay with** your club if you
+didn't expect it. A link for a club the app doesn't know shows **Club not found**.
 
 <img src="user-guide/club-code.png" width="210" alt="Find your club: the club code screen">
 
@@ -221,8 +221,8 @@ and fill in:
   athlete, so the club can confirm who they are. An admin must verify a guardian before linking
   them to a child.
 - **I am a**: the role that best describes you.
-- **Squad**: athletes, coaches, managers and guardians pick their squad (guardians pick their
-  athlete's squad). In a club without squads this is **Team**.
+- **Squad**: athletes, coaches, managers, physios and guardians pick their squad (guardians pick
+  their athlete's squad). In a club without squads this is **Team**.
 - **Club password**: if the club has set one, ask a club admin for it. Five wrong tries in a row
   lock you out of asking for 15 minutes.
 
@@ -247,7 +247,8 @@ Tap **Send request**.
 ### Wait for approval
 
 An admin checks your request against the club's PlayHQ registrations, sets your role and adds you
-to your squad. Pull down on the home screen to check again.
+to your squad. Pull down on the home screen to check again, or tap **Edit request** to change
+what you sent.
 
 If the admin can't match you to a registration, they may ask you for the **6-digit code** shown on
 your home screen. The code proves who you are, so the admin needs to get it from you in person or
@@ -273,11 +274,12 @@ fixing your details.
 
 Once you're approved, the home screen is where everything starts. From the top:
 
-- **To do**: things you need to do, such as your daily check-in, an award vote, integrity training
-  due, an injury clearance to sign off or, for coaches and managers, new or changed absences to
-  review.
+- **To do**: things you need to do, such as your daily check-in, the code of conduct to accept, an
+  award vote, integrity training due, goals to set or reflect on for a game, an injury past its
+  expected return date, a KPI review to confirm or, for coaches, physios and the committee, an
+  injury clearance to sign off, and, for coaches and managers, new or changed absences to review.
   Tap an item to go straight to it. Each item disappears once it's done. When there's nothing,
-  it says "You're all caught up." Your own [personal tasks](#your-own-tasks) come after the
+  it says "✓ You're all caught up." Your own [personal tasks](#your-own-tasks) come after the
   club's items.
   Anything overdue has a **red circle with !**, a red **Overdue** label and a red bar down its
   left edge, and moves to the top of the list. Anything due today or in the next 3 days has an
@@ -285,16 +287,20 @@ Once you're approved, the home screen is where everything starts. From the top:
   covers every to-do with a due date: your own tasks, integrity training, KPI reviews, game goals
   (due on game day) and an injury past its expected return date. For admins, Working With
   Children Checks work the same way (see [Admins](#10-admins)).
-- **Cards** for the features your role uses, such as Messages, Injuries, Attendance, Awards,
-  Integrity training and, for admins, Administration. Athletes get a **Daily check-in** card to
-  fill in their own check-in. Coaches get a **Check-ins** card to read their athletes' check-ins,
-  and committee members, physios and admins get one showing the club's averages. Parents and
-  guardians see their child's check-ins from the home screen instead (see
-  [Parents and guardians](#5-parents-and-guardians)). The Awards card shows while an award vote is open to you. A yellow number means something new or waiting for you.
-- **Coming up**: the next six events from your calendars. Tap **Full calendar** to see them all.
-- **My squads and teams**: tap one to see who's in it. A team's page also has its
-  [game goals](#game-goals) for its athletes and coaches. Committee members and admins only see
-  this when they're in a squad or team, for example as a coach too.
+- **Cards** for the features your role uses: Messages, Daily check-in, Check-ins,
+  Injuries, Attendance, Session plans, My attendance, Awards, Integrity training, Season KPIs,
+  Concerns and Administration. Athletes fill in their own check-in from **Daily check-in**.
+  Coaches read their athletes' check-ins from **Check-ins**, and committee members, physios and
+  admins see the club's averages there. Parents and guardians see their child's check-ins from
+  the cards for each child instead (see [Parents and guardians](#5-parents-and-guardians)). The
+  Awards card shows while an award vote is open to you, and Session plans once a coach has shared
+  one with you. A number in the club's colour means something new or waiting for you.
+- **Coming up**: the next six events from your calendars, when the club uses the calendar. Tap
+  **Full calendar** to see them all.
+- **My squads and teams** (**My teams** in a club without squads): tap one to see who's in it. A
+  team's page also has its [game goals](#game-goals) for its athletes and coaches. Committee
+  members and admins only see this when they're in a squad or team, for example as a coach too.
+- **Raise a concern**, for anyone signed in (see [Raising a concern](#raising-a-concern)).
 - **Your details**, **Sign out**, **Switch club** and **Delete account** at the bottom.
 
 Pull down on the home screen, the calendar and most lists to refresh them.
@@ -313,10 +319,11 @@ with the club's items (see [The home screen](#the-home-screen)).
   date, or tap **Remove due date** to take one off. Then tap **Add task**.
 - **Tick it off**: tap the circle next to it. It leaves your list, and **Undo** puts it back if
   you tapped by mistake.
-- **Change or delete it**: tap the task, change it and tap **Save**, or tap **Delete task**.
+- **Change or delete it**: tap the task, change it and tap **Save**, or tap **Delete task** and
+  confirm with **Delete it**.
 - **See them all**: tap **Your tasks** for everything still to do and the last 30 you ticked off.
-  Tap a ticked-off task's circle to put it back on your list, or **Delete done tasks** to clear
-  them.
+  Tap a ticked-off task's circle to put it back on your list, or **Delete done tasks** (then
+  **Delete them**) to clear them. **Add a task** is at the top of this screen too.
 
 Only you can see your tasks. Your coaches, parents or guardians, the committee and the club's
 admins can't, and a task can't be shared, assigned or sent to anyone. Members under 18 can add
@@ -349,19 +356,21 @@ head or assistant coach.
 
 ### Messages
 
-Messages from your coaches, managers, captains and the club arrive in **Messages**. Unread messages have a
-yellow dot, and the home card shows how many are new. Opening a message marks it as read, and the
-sender can see that you've read it.
+Messages from your coaches, managers, captains, the committee and the club arrive in
+**Messages**. Unread messages have a dot in the club's colour, and the home card shows how many
+are new. Opening a message marks it as read, and the
+sender can see that you've read it. **Report this message** on any message raises a concern
+about it (see [Raising a concern](#raising-a-concern)).
 
 Who a message went to is shown under the sender's name, for example "To Mixed Open Squad" or
 "To Everyone in the club". Messages from **Club safeguarding** tell a family about a change, such
 as a parent or guardian linked to or unlinked from a child.
 
-Guests don't get messages. Physios get messages sent to the Physio role and to the squads and teams
+Guests and temporary helpers don't get messages. Physios get messages sent to the Physio role and to the squads and teams
 they're in, and messages sent to everyone in the club only when an admin turns that on.
 
-If the club removes old records, the text of a message older than the club's keep period is
-replaced with "This message was removed after the club's keep period." Who sent it, who it went to
+If the club removes old records, the text of a message older than the club's keep period for
+messages (a longer one when a child sent or received it) is replaced with "This message was removed after the club's keep period." Who sent it, who it went to
 and who read it stay (see [Keeping records](#keeping-records)).
 
 <img src="user-guide/inbox.png" width="210" alt="Messages inbox">
@@ -382,7 +391,8 @@ committee calendar.
   1st of that month (or today, for this month).
 - You can look back 12 months (to the start of that month) and ahead 12 months. The arrow fades
   out when you reach either end.
-- The chips (**All**, **Club**, your squads and teams) filter which calendars are shown.
+- The chips (**All**, **Club**, and each of your squads and teams with something on in that
+  period) filter which calendars are shown.
 
 Your teams' matches from PlayHQ appear in the calendar too, for example "Mixed Open A v Rockets"
 with the venue and court. A bye shows as an all-day event. Match times follow PlayHQ, so a changed
@@ -408,7 +418,7 @@ without squads the list is called **My teams**.
 
 ### Club awards
 
-When the club runs an award vote that includes you, it appears in your to-do list and on the
+If the club has turned on awards, when it runs an award vote that includes you, it appears in your to-do list and on the
 **Awards** card. Who can vote depends on the award: for example, every member votes for Volunteer
 of the year, and athletes vote for their own team's Players' player. When an award has a winner for
 each squad or team, you only see and vote for members of your own squad or team, even if it is open to
@@ -425,23 +435,24 @@ You can't vote for yourself. You can change your vote until it closes: open it a
 picks and tap **Change my vote**. Votes are secret. Nobody, admins included, can see who you voted
 for, and only admins see the results.
 
-Match awards, such as a coach's MVP, open for voting when each match starts and stay open for a
-day or two after it.
+Match awards, such as a coach's MVP, open for voting when each match starts and stay open for
+the time the club set for that award (two days unless the club changed it), never past the
+award's closing date. Each vote shows when it closes.
 
 <img src="user-guide/awards.png" width="210" alt="Award votes open to you">
 <img src="user-guide/award-vote.png" width="210" alt="A 3-2-1 vote">
 
 ### Integrity training
 
-Each season the club lists the integrity training its members must complete, such as Sports
+If the club has turned on integrity training, each season it lists the integrity training its members must complete, such as Sports
 Integrity Australia's Safeguarding in Sport or anti-doping courses, with a due date. Training is
 set for roles (for example athletes and coaches), across the whole club or only some squads and
 teams, so junior and senior athletes can have different courses.
 
 Training you still need to complete shows in your **To do** list with its due date, and on the
-**Integrity training** card. When there are more than two courses to do, they show as one item
-that says whose they are, such as "Complete 3 integrity training courses for you and Jordan". To
-complete it:
+**Integrity training** card. If you have more than two courses outstanding, the to-do list shows
+them as one item with the soonest due date that says whose they are, such as "Complete 3
+integrity training courses for you and Jordan"; open it to see each course. To complete it:
 
 1. Tap **Open the course** and do the course on the provider's website. Download or photograph
    the certificate of completion at the end.
@@ -477,7 +488,9 @@ to-do comes back.
 
 Athletes under 18 with a parent or guardian linked don't accept it themselves: a verified parent or
 guardian goes through it with them and accepts it for them (see [The code of conduct for your
-child](#the-code-of-conduct-for-your-child)). Guests aren't asked, and temporary helpers accept it
+child](#the-code-of-conduct-for-your-child)). Until an admin has verified one of their parents or
+guardians, nobody can accept it for them: the athlete's code of conduct screen and the admin's
+list both say **Waiting for verification**. Guests aren't asked, and temporary helpers accept it
 when they join.
 
 <img src="user-guide/conduct.png" width="210" alt="Accepting the code of conduct, with last season's acceptance below">
@@ -513,7 +526,7 @@ all as a PDF for the board.
   end-of-season review (see [Season KPI reviews](#season-kpi-reviews)). From a week before each
   date, whoever set a person's KPIs has **Write …'s KPI review** on their to-do list until they
   write it. The person then has **Confirm your KPI review was done** on theirs, and taps **Confirm
-  this review was done** once you've talked it through. If the review is changed afterwards, they
+  this review was done** once they've talked it through. If the review is changed afterwards, they
   confirm again. The person can also add **Your own view** at each review; whoever sets their KPIs
   can remove it if it shouldn't be there.
 - **Past seasons.** When an admin archives a season, its KPIs, results and reviews stay, under
@@ -545,8 +558,8 @@ The screen starts with who to talk to: the club's **Child Safety Officer** and *
 Manager**, the sport's governing body if the club has added it, and services anyone can call
 (Police on 000, Kids Helpline and the Safe Sport Hotline). Tap a number to call it.
 
-Then say what happened, and optionally who it's about (pick a club leader by name, or describe
-them), when it happened and whether a child's safety is involved. Choose **Show my name** or
+Then say what happened, and optionally who it's about (pick a coach, manager, physio, committee
+member, admin or temporary helper by name, or describe anyone else in your own words), when it happened and whether a child's safety is involved. Choose **Show my name** or
 **Don't show my name**. If you hide your name, the people who look into it won't see who you are,
 so they can't ask you more; the app still keeps it with your account so you can follow it. If you
 show your name, say whether they can contact you and how. Tap **Send to the club**.
@@ -561,8 +574,10 @@ shows each one and where it's up to: Received, Referred, Being looked into or Cl
 ### Deleting your account
 
 **Delete account** at the bottom of the home screen permanently deletes your account at the club
-you're in: your profile, your squad and team places, guardian links, your personal tasks and your messages inbox. Messages you sent to
-a group stay with the people who received them.
+you're in: your profile, your squad and team places, guardian links, your personal tasks and your
+messages inbox. Messages you sent to a group stay with the people who received them. Tap
+**Delete my account**, then **Delete my account permanently** to confirm. If you sign in again
+later, you'll need to ask to join again.
 
 The club keeps your injury records for 12 months after you leave, where only the committee and
 admins can see them, and then deletes them. Clearance documents may go sooner, after the club's
@@ -576,8 +591,10 @@ FirstPass HQ.
 
 ## 4. Athletes
 
-Athletes see Messages, Daily check-in, Injuries and My attendance on their home screen, plus their
-calendar and squads. Game goals are on each team's page.
+Athletes see Messages, Daily check-in, Injuries and My attendance on their home screen, plus
+Session plans once a coach has shared one, Awards while a vote is open, Integrity training and
+Season KPIs when the club uses them, their calendar and squads. Game goals are on each team's
+page.
 
 <img src="user-guide/todo-athlete.png" width="210" alt="Athlete home screen with to-do items">
 
@@ -614,14 +631,15 @@ the team's games at the top and the people in it underneath.
 
 - **Before a game:** in the 7 days before your next game, open it under **Next game** and add
   your goals, up to 5, such as "win 3 centre pass receives each quarter". Only your next game is
-  open for goals. You can change or remove your goals until the game starts. Your coaches can add
-  goals for you too; those show "set by Coach …" and only a coach can change them. Until you've set
-  a goal, "Set your goals for …" stays in your to-do list.
+  open for goals. You can change or remove your goals until the game starts (until the end of
+  that day if PlayHQ had no start time). Your coaches can add
+  goals for you too; those show "set by Coach …" and only a coach can change them. Until the game
+  has a goal, yours or a coach's, "Set your goals for …" stays in your to-do list.
 - **After the game:** about 90 minutes after the start (the next day if PlayHQ had no start time),
   the game moves to **Played games**. For each goal, pick **Achieved**, **Partly** or **Not yet**,
   write a few words about how it went and tap **Save reflection**. You can update it later. For a
-  week after the game, "Reflect on …" stays in your to-do list until every goal has a reflection.
-  Your coaches' comments show under each goal.
+  week after the game, "Reflect on …" stays in your to-do list until every goal has a reflection,
+  with an item for each game you've played that week. Your coaches' comments show under each goal.
 - **Played games** lists this season's games for that team, newest first, 10 at a time; tap **Load more** for
   older ones. Games drop off the list when an admin archives the season.
 
@@ -633,8 +651,9 @@ left out.
 above your own goals. After the game you'll see how the coaches think the team went on each one.
 Everyone in the team has a say: tap **Comment** under a team goal, write what you think or what
 you'll do to help, and tap **Add comment**. You can comment before or after the game. Your name
-shows on your comment, and everyone in the team, their parents or guardians and the coaches can
-read it. Tap **Remove** on your own comment to take it down.
+shows on your comment, and everyone in the team (including its manager or physio), their parents
+or guardians, the coaches and the club's admins can read it. Tap **Remove** on your own comment to
+take it down; your coaches can remove any comment.
 
 <img src="user-guide/goals-athlete.png" width="210" alt="Game goals: the next game and played games">
 <img src="user-guide/goals-set.png" width="210" alt="Adding a goal for the next game">
@@ -648,18 +667,21 @@ in your squad or team. Open **Season KPIs** on the home screen and pick the squa
 **Yours**. Type where you're up to on a number and tap **Save**, or tap **Mark as done**, as the
 season goes. At each review date, read what your coach wrote, tap **Confirm this review was done**,
 and add **Your own view** if you want to. Your coaches record the result at the end of the season.
-Your coaches see your KPIs and, if you're under 18, so do your parents or guardians. Your teammates
-can't.
+Your coaches and the club's admins see your KPIs and, if you're under 18, so do your parents or
+guardians. Your teammates can't.
 
 ### Reporting an injury
 
 1. Tap **Injuries**, then **Report an injury**.
 2. Say where the injury is, what happened and when.
-3. Add any restrictions (for example "no jumping") and choose when you expect to be back. A best
-   guess is fine; a physio update can change it.
+3. Add any restrictions (for example "no jumping") and choose when you expect to be back. It's
+   required, but a best guess is fine; a physio update can change it.
 4. Tap **Report injury**.
 
-Your coaches and the committee can see it straight away. An injury isn't an absence: injured
+Your coaches, the physios who look after you and the committee can see it straight away. If
+you're under 18, they see it only once a parent or guardian has given consent for injuries; until
+then only your parents or guardians and the club's admins see it, and only an admin can clear you.
+An injury isn't an absence: injured
 athletes are still expected at training to support the team. Until you're cleared, whoever takes
 attendance sees **Injured** and your expected return date next to your name, and nothing else about
 the injury.
@@ -688,15 +710,17 @@ app, where they can zoom in to read it.
 
 Two people then sign off, in order:
 
-1. **One of your coaches or a club physio endorses it** (status "Waiting for a coach or physio").
+1. **One of your coaches, or a physio who looks after your squad or team (or the Head Physio),
+   endorses it** (status "Waiting for a coach or physio").
 2. **A committee member accepts it** (status "Waiting for the committee"). It must be someone other
    than the person who endorsed it.
 
 Nobody signs off their own clearance or their own child's, so a coach or committee member who is
 also your parent or guardian leaves it to someone else.
 
-When it's accepted, the injury shows **Cleared to play**. If either of them sends it back, you'll
-see their note in the history; fix what they ask and ask for clearance again.
+When it's accepted, the injury shows **Cleared to play**. If a coach, a physio who looks after
+you or a committee member sends it back, you'll see their note in the history; fix what they ask
+and ask for clearance again.
 
 Nobody can remove a document once it's sent, so the record can't be altered later. If the club
 removes old records, the files of a cleared injury are removed after the club's keep period: 1
@@ -704,7 +728,7 @@ year after it was cleared unless the club chooses 90 days or 3 years. The injury
 viewed it all stay, and the document shows when its file was removed.
 
 Under each document you see everyone who has opened or shared it, with their role and when (for
-example "Viewed by Casey Coach (coach)"). Your parents or guardians and the club's admins see the
+example "Viewed by Casey Coach (coach)"), and, for a photo, who confirmed what it shows. Your parents or guardians and the club's admins see the
 same list.
 
 <img src="user-guide/ask-for-clearance.png" width="210" alt="Ask for clearance with proof attached">
@@ -735,7 +759,8 @@ If you'll be away, tap **Report an absence**, choose the first and last day, pic
 club's list (such as **Planned holidays**, **Personal illness**, **Caring duties** or **School or uni
 exam**), add details if you like, and tap **Report absence**. You can report up to 12 months ahead,
 or up to 14 days after if you forgot, for up to 3 months at a time. Your coaches and managers see it
-when they take attendance, so they know you're not missing without a reason. Leave medical details
+when they take attendance, so they know you're not missing without a reason, and the committee
+and admins see it too. Leave medical details
 out of the details. An injury isn't an absence: report it under **Injuries**, and still come along
 to support the team. **Withdraw** takes an absence back if your plans change. An
 absence your parent or guardian reported shows here too, and you can withdraw it.
@@ -808,7 +833,8 @@ has. Read it, go through it with your child, then tap **I agree** to accept:
 > training, at games and online, and I'll follow it as a parent or guardian.
 
 Once one parent or guardian has accepted, it's done for the season for all of them, and the record
-shows who accepted it and when. If you also coach, manage or sit on the committee, you accept it
+shows who accepted it and when. Until an admin has verified you, you can't accept it for your
+child, and your child's screen says **Waiting for verification**. If you also coach, manage or sit on the committee, you accept it
 for yourself as well.
 
 <img src="user-guide/conduct-home.png" width="210" alt="A parent who coaches, with both code of conduct to-dos">
@@ -2241,7 +2267,9 @@ one, after confirming their consent, and athletes under 18 can never add one the
 <img src="user-guide/admin-safeguarding-conduct.png" width="210" alt="Safeguarding settings: Code of conduct each season switched on">
 
 **Code of conduct** in Administration lists who still has to accept the code of conduct this
-season and who has, with the date and, for an under 18, the parent or guardian who accepted. Tap
+season and who has, with the date and, for an under 18, the parent or guardian who accepted. An
+under 18 whose linked parents or guardians aren't verified yet shows **waiting for a parent or
+guardian to be verified**: verify one of them and they can accept it. Tap
 someone to see every season they've accepted it and the words accepted.
 
 <img src="user-guide/admin-conduct.png" width="210" alt="Administration: who has accepted the code of conduct this season">
@@ -2469,7 +2497,9 @@ Working With Children Check, and another admin must do it.
 - **Everyone can agree to the same code of conduct**, coaches and parents included, every season,
   covering training, games and online, when the club asks for it in the app.
 - **No photos of your injuries.** Attach your physio's or doctor's letter instead, as a PDF or a
-  photo of the letter. You can see everyone who has opened it.
+  photo of the letter. Only a verified parent or guardian can add a photo of the injury itself,
+  with their consent recorded, and only if the club allows it. You can see everyone who has
+  opened it.
 
 ### For coaches, managers, physios and volunteers
 

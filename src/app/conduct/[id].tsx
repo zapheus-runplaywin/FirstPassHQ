@@ -24,15 +24,18 @@ export default function ConductScreen() {
   const theme = useTheme();
   const [todo, setTodo] = useState<ConductTodo | null | undefined>(undefined);
   const [history, setHistory] = useState<ConductAcceptance[]>([]);
+  const [waitingForGuardian, setWaitingForGuardian] = useState(false);
   const [busy, setBusy] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const isSelf = id === session?.user.id;
 
   const load = useCallback(async () => {
-    const [todosResult, historyResult] = await Promise.all([
+    const [todosResult, historyResult, waitingResult] = await Promise.all([
       supabase.rpc('my_conduct_todos'),
       supabase.rpc('conduct_history', { p_profile_id: id }),
+      supabase.rpc('conduct_waiting_for_guardian', { p_profile_id: id }),
     ]);
+    setWaitingForGuardian(waitingResult.data === true);
     setTodo(
       ((todosResult.data as ConductTodo[] | null) ?? []).find((t) => t.profile_id === id) ?? null,
     );
@@ -89,6 +92,12 @@ export default function ConductScreen() {
             The club keeps your name, the date and these words as its record.
           </ThemedText>
         </>
+      ) : waitingForGuardian ? (
+        <ThemedText type="small" themeColor="textSecondary">
+          {isSelf
+            ? 'Waiting for verification. Your parent or guardian accepts the code of conduct for you once a club admin has verified them.'
+            : 'Waiting for verification. A parent or guardian accepts the code of conduct for them once a club admin has verified that parent or guardian.'}
+        </ThemedText>
       ) : history.length === 0 ? (
         <ThemedText type="small" themeColor="textSecondary">
           {isSelf
