@@ -15,7 +15,7 @@ import { useTheme } from '@/hooks/use-theme';
 import { useAbsencesToReview, useLeadsAGroup } from '@/lib/absences';
 import { useAffiliationTodos } from '@/lib/affiliation';
 import { useConductTodos } from '@/lib/conduct';
-import { committeeCheckDue } from '@/lib/safety';
+import { committeeCheckDue, isDatedExemption } from '@/lib/safety';
 import { formatDate, isMinor } from '@/lib/age';
 import { useAuth } from '@/lib/auth';
 import { useCanTakeAttendance, useCanViewAttendance } from '@/lib/attendance';
@@ -34,7 +34,12 @@ import {
   useMyCheckIn,
 } from '@/lib/check-ins';
 import { reflectionsToAnswer, useCoachTeamGames, useGoalBoard, useMyGoals } from '@/lib/goals';
-import { injuriesSummary, useCanSeeInjuries, useOpenInjuries } from '@/lib/injuries';
+import {
+  formatDateString,
+  injuriesSummary,
+  useCanSeeInjuries,
+  useOpenInjuries,
+} from '@/lib/injuries';
 import { useKpiPeople, useKpiReviewTodos, type KpiPerson } from '@/lib/kpis';
 import { useGetsMessages, useUnreadCount } from '@/lib/messages';
 import {
@@ -724,7 +729,11 @@ function pausedReason(
     const ended =
       exemption.basis === 'parent_volunteer'
         ? `Your exemption as ${exemption.child_name ?? 'your child'}’s parent no longer applies`
-        : 'Your exemption as an under-18 volunteer ended when you turned 18';
+        : isDatedExemption(exemption.basis)
+          ? `Your ${exemption.basis === 'national_event' ? 'national event' : 'short-term visitor'} exemption ended${
+              exemption.ends_on ? ` on ${formatDateString(exemption.ends_on)}` : ''
+            }`
+          : 'Your exemption as an under-18 volunteer ended when you turned 18';
     return `${ended}, so your ${what} paused. Apply for a Working With Children Check, then send a club admin the card number and expiry date.`;
   }
   return `Your Working With Children Check has expired or isn't recorded, so your ${what} paused. Renew it, then send a club admin the new card number and expiry date.`;
