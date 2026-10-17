@@ -439,12 +439,15 @@ set for roles (for example athletes and coaches), across the whole club or only 
 teams, so junior and senior athletes can have different courses.
 
 Training you still need to complete shows in your **To do** list with its due date, and on the
-**Integrity training** card. To complete it:
+**Integrity training** card. When there are more than two courses to do, they show as one item
+that says whose they are, such as "Complete 3 integrity training courses for you and Jordan". To
+complete it:
 
 1. Tap **Open the course** and do the course on the provider's website. Download or photograph
    the certificate of completion at the end.
 2. In the app, tap the to-do item or **Add a certificate** on the Integrity training screen.
-3. Under **Certificate achieved**, tick each course the certificate shows you completed. If one
+3. Under **Certificate achieved**, tick each course the certificate shows you completed (or, for a
+   parent uploading for their child, that the child completed). If one
    PDF holds several certificates or badges, tick them all and attach it once: each ticked course
    is checked with that file.
 4. Choose the day you completed it, attach the certificate (a PDF or photo, up to 10 MB), add a
@@ -879,9 +882,11 @@ As a guardian you:
 
 - **Receive a copy of every message** sent to your athlete, whether it went to their squad, their
   team, all athletes or the whole club. You get each message once, even if you're also in the
-  squad.
+  squad. Your copy says which of your children it's for, such as "Copied to you as Jordan's and
+  Riley's parent or guardian" when two of your children are in the same team.
 - **Receive a copy of every message your athlete sends** if they're a captain, so you see what
-  they send to their squad, team or the club.
+  they send to their squad, team or the club. These copies say "Copied to you because Jordan sent
+  it".
 - **See your athlete's daily check-ins**, including any note they write. Tap your athlete under
   **Check-ins** on the home screen to see the last four weeks. Your athlete is told that you can
   read their notes.
@@ -913,6 +918,7 @@ As a guardian you:
 <img src="user-guide/goals-guardian.png" width="210" alt="An athlete's games, opened by their guardian">
 <img src="user-guide/goals-guardian-played.png" width="210" alt="A guardian reading their athlete's goals, reflections and coach comments">
 <img src="user-guide/check-ins-guardian.png" width="210" alt="A parent reading their child's check-ins and notes">
+<img src="user-guide/messages-guardian.png" width="210" alt="A parent's messages, each copy naming the children it's for">
 
 <div style="page-break-before: always"></div>
 
@@ -2410,7 +2416,7 @@ Working With Children Check, and another admin must do it.
   admin and at least one verified guardian before an admin can approve them. Your child gives your
   email when they ask to join, so the admin knows who to look for.
 - **You see what your child sees.** You get a copy of every message sent to your child, and of every
-  message your child sends as a captain. You can read their daily check-ins and notes, their game
+  message your child sends as a captain, and each copy names the child it's for. You can read their daily check-ins and notes, their game
   goals, their season KPIs and reviews, and their injuries, and whether they were at each session.
 - **You're told when something changes.** A new coach, manager or physio in your child's group,
   your child moving group, a guardian linked or unlinked, a consent changing or an injury document

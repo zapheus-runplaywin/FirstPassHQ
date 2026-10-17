@@ -46,6 +46,9 @@ export default function SubmitCertificateScreen() {
   const profileId = profileChoice ?? people[0]?.profile_id ?? null;
   const choices = outstanding.filter((row) => row.profile_id === profileId);
   const tickedHere = ticked.filter((id) => choices.some((c) => c.requirement_id === id));
+  // A parent uploading for their child sees the child's name, not "you".
+  const forChild = choices.find((c) => !c.is_me);
+  const who = forChild ? (forChild.profile_name ?? 'your athlete') : 'you';
 
   function toggle(id: string) {
     setTicked((current) =>
@@ -126,7 +129,7 @@ export default function SubmitCertificateScreen() {
       <View style={styles.section}>
         <ThemedText type="smallBold">Certificate achieved</ThemedText>
         <ThemedText type="small" themeColor="textSecondary">
-          Tick each course this certificate shows you completed.
+          Tick each course this certificate shows {who} completed.
         </ThemedText>
         {choices.map((row) => {
           const on = tickedHere.includes(row.requirement_id);

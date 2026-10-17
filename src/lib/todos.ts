@@ -212,7 +212,7 @@ export function buildTodos({
     todos.push({
       key: 'injury-sign-off',
       title: `Review ${toSignOff.length} injury clearances`,
-      detail: 'Athletes are waiting for your sign-off to return',
+      detail: waitingLabel(uniqueNames(toSignOff.map((i) => i.athlete_name ?? 'An athlete'))),
       href: '/injuries',
     });
   }
@@ -316,9 +316,15 @@ export function buildTodos({
   // Integrity training, soonest due first. A long list is one item.
   const toComplete = training.filter(isOutstanding).sort((a, b) => a.due_on.localeCompare(b.due_on));
   if (toComplete.length > 2) {
+    // Name whose courses they are, so a parent of several children can tell.
+    const whose = uniqueNames(
+      toComplete.map((row) => (row.is_me ? 'you' : (row.profile_name ?? 'your athlete'))),
+    );
     todos.push({
       key: 'training',
-      title: `Complete ${toComplete.length} integrity training courses`,
+      title: `Complete ${toComplete.length} integrity training courses${
+        whose.length === 1 && whose[0] === 'you' ? '' : ` for ${joinNames(whose)}`
+      }`,
       detail: `${dueLabel(toComplete[0].due_on, today)} · upload each certificate when done`,
       href: '/training',
       dueOn: toComplete[0].due_on,
@@ -501,6 +507,20 @@ export function buildTodos({
 
 /** Reflection reminders stop a week after the game. */
 const REFLECT_WITHIN_MS = 7 * 24 * 60 * 60 * 1000;
+
+function waitingLabel(names: string[]) {
+  return `${joinNames(names)} ${names.length === 1 ? 'is' : 'are'} waiting for your sign-off to return`;
+}
+
+/** Each name once, in the order first seen. */
+function uniqueNames(names: string[]) {
+  return [...new Set(names)];
+}
+
+function joinNames(names: string[]) {
+  if (names.length <= 1) return names.join('');
+  return `${names.slice(0, -1).join(', ')} and ${names[names.length - 1]}`;
+}
 
 function goalHref(game: GoalGame, athleteId: string | undefined): Href {
   return {
