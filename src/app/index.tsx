@@ -514,6 +514,27 @@ export default function HomeScreen() {
           </View>
         ) : null}
 
+        {isGuardian && features.checkIns && athletes.length > 0 ? (
+          <View style={styles.section}>
+            <ThemedText type="smallBold">Check-ins</ThemedText>
+            {athletes.map((a) => (
+              <PressableCard
+                key={a.id}
+                onPress={() =>
+                  router.push({
+                    pathname: '/check-ins/athlete/[id]',
+                    params: { id: a.id, name: a.name },
+                  })
+                }>
+                <ThemedText type="smallBold">{a.name}</ThemedText>
+                <ThemedText type="small" themeColor="textSecondary">
+                  Their daily check-ins and notes from the last four weeks
+                </ThemedText>
+              </PressableCard>
+            ))}
+          </View>
+        ) : null}
+
         {isGuardian && athletes.length > 0 ? (
           <View style={styles.section}>
             <ThemedText type="smallBold">What’s changed</ThemedText>

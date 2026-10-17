@@ -95,7 +95,7 @@ What each role sees on its home screen:
 | Daily check-in                         |    ✓    |                 |              |            |               |               |         |               |
 | Game goals and reflections             |   Own   |  See athlete's  | Own athletes |            |               |               |         |               |
 | Team goals for a game                  | See, comment |       See       | Set, review, comment |            |               |               |         |               |
-| Check-ins of others                    |         |                 | Own athletes |            | Averages only | Averages only |         | Averages only |
+| Check-ins of others                    |         | Their athlete's | Own athletes |            | Averages only | Averages only |         | Averages only |
 | Report an injury                       |   Own   | Their athlete's |              |            |               |               |         |               |
 | See injuries                           |   Own   | Their athlete's | Own athletes |            |      All      |  Own athletes‡ |         |      All      |
 | Sign off injury clearances             |         |                 |   Endorse    |            |     Accept    |   Endorse‡    |         |     Accept    |
@@ -105,7 +105,7 @@ What each role sees on its home screen:
 | Take attendance                        |         |                 |      ✓       |     ✓      |       ✓       |               |         |       ✓       |
 | See athletes' attendance history       |         |                 |      ✓       |            |       ✓       |               |         |       ✓       |
 | Session plans                          | Read shared |  Read their athlete's shared | Add, share, read shared |            |               |               |         | Add, read all, report |
-| Vote in club awards                    |    ✓    |        ✓        |      ✓       |     ✓      |       ✓       |               |         |       ✓       |
+| Vote in club awards                    |    ✓    |                 |      ✓       |     ✓      |       ✓       |               |         |       ✓       |
 | Set up awards and see results          |         |                 |              |            |               |               |         |       ✓       |
 | Season KPIs (when turned on)           |   Own   |  See athlete's  | Own; set for own athletes, and assistants if head coach | Own | Set for coaches and managers |  |  | Set for coaches and managers, read athletes', set review dates |
 | Complete integrity training            |   Own   | Their athlete's |     Own      |    Own     |      Own      |      Own      |         |      Own      |
@@ -140,7 +140,8 @@ them or makes them Head Physio.
 
 "Own groups" and "own athletes" mean the squads and teams you're listed in as a coach or manager.
 Club awards are voted on by the roles, squads and teams each award names, so not every award is
-open to everyone.
+open to everyone. Parents and guardians don't vote, unless they also hold another role, such as
+coach, and then they vote in that role.
 
 Integrity training applies to the roles, squads and teams an admin chooses for each course, so not
 everyone has training to complete.
@@ -284,8 +285,12 @@ Once you're approved, the home screen is where everything starts. From the top:
   covers every to-do with a due date: your own tasks, integrity training, KPI reviews, game goals
   (due on game day) and an injury past its expected return date. For admins, Working With
   Children Checks work the same way (see [Admins](#10-admins)).
-- **Cards** for the features your role uses: Messages, Daily check-in, Check-ins,
-  Injuries, Attendance, Awards, Integrity training and Administration. The Awards card shows while an award vote is open to you. A yellow number means something new or waiting for you.
+- **Cards** for the features your role uses, such as Messages, Injuries, Attendance, Awards,
+  Integrity training and, for admins, Administration. Athletes get a **Daily check-in** card to
+  fill in their own check-in. Coaches get a **Check-ins** card to read their athletes' check-ins,
+  and committee members, physios and admins get one showing the club's averages. Parents and
+  guardians see their child's check-ins from the home screen instead (see
+  [Parents and guardians](#5-parents-and-guardians)). The Awards card shows while an award vote is open to you. A yellow number means something new or waiting for you.
 - **Coming up**: the next six events from your calendars. Tap **Full calendar** to see them all.
 - **My squads and teams**: tap one to see who's in it. A team's page also has its
   [game goals](#game-goals) for its athletes and coaches. Committee members and admins only see
@@ -407,8 +412,9 @@ When the club runs an award vote that includes you, it appears in your to-do lis
 **Awards** card. Who can vote depends on the award: for example, every member votes for Volunteer
 of the year, and athletes vote for their own team's Players' player. When an award has a winner for
 each squad or team, you only see and vote for members of your own squad or team, even if it is open to
-every member. Club-wide awards are open to everyone, or to the roles the club chose. Physios and
-guests don't vote.
+every member. Club-wide awards are open to everyone, or to the roles the club chose. Parents and
+guardians, physios and guests don't vote. A parent who is also an athlete, coach, manager,
+committee member or admin votes in that role.
 
 1. Tap the vote. It shows the award, what to think about, and when voting closes.
 2. Tap who you're voting for. For a 3-2-1 vote, tap three people in order: first place gets 3
@@ -876,8 +882,9 @@ As a guardian you:
   squad.
 - **Receive a copy of every message your athlete sends** if they're a captain, so you see what
   they send to their squad, team or the club.
-- **See your athlete's daily check-ins**, including any note they write. Your athlete is told that
-  you can read their notes.
+- **See your athlete's daily check-ins**, including any note they write. Tap your athlete under
+  **Check-ins** on the home screen to see the last four weeks. Your athlete is told that you can
+  read their notes.
 - **See the calendars** for your athlete's squad.
 - **See your athlete's game goals and reflections**: the goals they and their coaches set for
   each game, how your athlete thinks each one went, their coaches' comments and the team goals (see
@@ -905,6 +912,7 @@ As a guardian you:
 <img src="user-guide/training-guardian.png" width="210" alt="A guardian's view of their athlete's training, one sent back">
 <img src="user-guide/goals-guardian.png" width="210" alt="An athlete's games, opened by their guardian">
 <img src="user-guide/goals-guardian-played.png" width="210" alt="A guardian reading their athlete's goals, reflections and coach comments">
+<img src="user-guide/check-ins-guardian.png" width="210" alt="A parent reading their child's check-ins and notes">
 
 <div style="page-break-before: always"></div>
 
@@ -1761,9 +1769,10 @@ still needed.
   calendar, using the arrows to move to later months.
 - **Voters**: **The whole club**, or **Chosen squads and teams**. For chosen groups, pick **One
   winner** or **A winner for each** squad or team. With a winner for each, members vote only in
-  their own group, and **Any member** nominees mean the members of that squad or team. Then the **Roles that vote**. Athletes, coaches, managers and guardians vote in
-  the squads and teams they're in. Committee and admins vote wherever they are. **Every member**
-  opens it to everyone except physios and guests, who don't vote (for a winner-for-each award,
+  their own group, and **Any member** nominees mean the members of that squad or team. Then the **Roles that vote**. Athletes, coaches and managers vote in
+  the squads and teams they're in. Committee and admins vote wherever they are. Parents and
+  guardians don't vote, unless they also hold one of those roles. **Every member**
+  opens it to everyone except parents and guardians, physios and guests, who don't vote (for a winner-for-each award,
   to the members of that squad or team).
 - **Nominees**: **Athletes** or **Coaches** in the voting groups, **Any member**, or **Names I
   list**, one per line, for people who aren't in the app, such as umpires.
