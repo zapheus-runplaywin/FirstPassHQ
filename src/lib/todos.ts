@@ -100,7 +100,7 @@ export function buildTodos({
   /** Child-safety follow-ups, for admins. */
   safety?: SafetyTodos | null;
   /** The athlete's next game and last played game, for game goals. */
-  goals?: { next: GoalGame | null; last: GoalGame | null } | null;
+  goals?: { next: GoalGame | null; recent: GoalGame[] } | null;
   /** Reflections from athletes the member coaches that no coach has answered. */
   goalReflectionsToAnswer?: number;
   /** A squad or team with reflections waiting, whose page the to-do opens. */
@@ -251,18 +251,21 @@ export function buildTodos({
     });
   }
 
-  // A game played in the last week whose goals the athlete hasn't reflected on.
-  const last = goals?.last;
-  if (
-    last &&
-    last.reflected_count < last.goal_count &&
-    today.getTime() - new Date(last.played_at).getTime() < REFLECT_WITHIN_MS
-  ) {
+  // Every game played in the last week whose goals the athlete hasn't reflected on,
+  // oldest first, so two games in one week each get their own reminder.
+  const toReflect = (goals?.recent ?? [])
+    .filter(
+      (game) =>
+        game.reflected_count < game.goal_count &&
+        today.getTime() - new Date(game.played_at).getTime() < REFLECT_WITHIN_MS,
+    )
+    .reverse();
+  for (const game of toReflect) {
     todos.push({
-      key: 'game-reflection',
-      title: `Reflect on ${gameTitle(last)}`,
+      key: `game-reflection-${game.fixture_id}`,
+      title: `Reflect on ${gameTitle(game)}`,
       detail: 'How did your goals go?',
-      href: goalHref(last, userId),
+      href: goalHref(game, userId),
     });
   }
 

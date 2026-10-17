@@ -33,6 +33,8 @@ export type ConductStatus = {
   under_18: boolean;
   accepted_at: string | null;
   accepted_by_name: string | null;
+  /** Under 18 with a parent or guardian linked, none of them verified yet. */
+  waiting_for_guardian: boolean;
 };
 
 /**

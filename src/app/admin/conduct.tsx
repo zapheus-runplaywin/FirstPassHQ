@@ -45,6 +45,9 @@ export default function ConductStatusScreen() {
     if (row.accepted_at) {
       return `${role} · ${localDay(row.accepted_at)}${row.accepted_by_name && row.under_18 ? ` by ${row.accepted_by_name}` : ''}`;
     }
+    if (row.waiting_for_guardian) {
+      return `${role} · under 18, waiting for a parent or guardian to be verified`;
+    }
     return row.under_18 ? `${role} · under 18, a parent or guardian accepts` : role;
   }
 

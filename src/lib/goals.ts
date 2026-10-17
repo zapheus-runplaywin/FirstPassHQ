@@ -196,7 +196,7 @@ export function useMyGoals() {
   const userId = session?.user.id;
   const on = features.goals && isAthlete && !!userId;
   // undefined while loading, so the to-do list doesn't flash an item.
-  const [state, setState] = useState<{ next: GoalGame | null; last: GoalGame | null }>();
+  const [state, setState] = useState<{ next: GoalGame | null; recent: GoalGame[] }>();
 
   const load = useCallback(async () => {
     if (!on || !userId) return;
@@ -204,7 +204,8 @@ export function useMyGoals() {
       fetchNextGame(userId),
       fetchPastGames(userId, 0).catch(() => ({ games: [] as GoalGame[] })),
     ]);
-    setState({ next, last: past.games[0] ?? null });
+    // The newest page covers every game of the last week, across all the athlete's teams.
+    setState({ next, recent: past.games });
   }, [on, userId]);
 
   useFocusEffect(
