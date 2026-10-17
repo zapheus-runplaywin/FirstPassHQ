@@ -30,6 +30,7 @@ import {
   roleLabels,
   rolesLabel,
   selectionLabels,
+  staffTitle,
   statusLabels,
   teamRoleLabels,
 } from '@/lib/labels';
@@ -626,6 +627,12 @@ export default function MemberScreen() {
   // Teams are named from a squad, so only offer teams in squads they are in.
   const availableTeams = teams.filter((t) => t.squad_id && t.squad_id in selection);
 
+  const groupTitle = staffTitle(
+    teams
+      .filter((t) => t.id in selection)
+      .map((t) => ({ ...selection[t.id], team: t })),
+  );
+
   return (
     <Screen>
       <Stack.Screen options={{ title: member.full_name || member.email || 'Member' }} />
@@ -820,7 +827,7 @@ export default function MemberScreen() {
             .map((t) => (
               <ChipGroup
                 key={t.id}
-                label={`Title for ${teamLabel(t, teams)}`}
+                label={`Head or assistant coach in ${teamLabel(t, teams)}`}
                 options={coachTitles.map((c) => ({ value: c, label: coachTitleLabels[c] }))}
                 selected={selection[t.id].coach_title ? [selection[t.id].coach_title!] : []}
                 onToggle={(title) =>
@@ -832,6 +839,13 @@ export default function MemberScreen() {
               />
             ))
         : null}
+
+      {groupTitle ? (
+        <ThemedText type="small" themeColor="textSecondary">
+          Their title in the app: {groupTitle}. It comes from the teams they coach or manage, or
+          their squad until they’re in a team.
+        </ThemedText>
+      ) : null}
 
       {isAthlete
         ? teams
