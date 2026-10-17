@@ -17,7 +17,6 @@ import {
   identityLabels,
   openingDay,
   surveyAudienceLabel,
-  useCanManageSurveys,
   type SurveyAnswer,
   type SurveyDetail,
   type SurveyQuestion,
@@ -27,8 +26,7 @@ type Draft = Record<string, { choices?: number[]; rating?: number; text?: string
 
 export default function SurveyScreen() {
   const { id } = useLocalSearchParams<{ id: string }>();
-  const { isAdmin, profile, session } = useAuth();
-  const canManage = useCanManageSurveys();
+  const { profile } = useAuth();
   const [survey, setSurvey] = useState<SurveyDetail | null>(null);
   const [loadError, setLoadError] = useState<string | null>(null);
   const [draft, setDraft] = useState<Draft>({});
@@ -59,8 +57,6 @@ export default function SurveyScreen() {
   }
   if (!survey) return <Screen>{null}</Screen>;
 
-  const canClose =
-    canManage && survey.is_open && (isAdmin || survey.created_by === session?.user.id);
   const hasText = survey.questions.some((q) => q.kind === 'text');
 
   async function submit() {
@@ -199,14 +195,14 @@ export default function SurveyScreen() {
         </>
       )}
 
-      {canManage ? (
+      {survey.can_see_results ? (
         <View style={styles.actions}>
           <Button
             title="See results"
             variant="secondary"
             onPress={() => router.push({ pathname: '/surveys/results', params: { id: survey.id } })}
           />
-          {canClose ? (
+          {survey.can_close ? (
             <ConfirmDelete
               title="Close it now"
               warning="Nobody else can answer once it’s closed."
@@ -227,8 +223,8 @@ function IdentityNotice({ survey }: { survey: SurveyDetail }) {
     survey.identity === 'anonymous'
       ? 'This survey is anonymous. Nobody, including the committee and admins, can see who gave which answers.'
       : survey.identity === 'named'
-        ? 'Your name goes with your answers. Only the committee and admins see them.'
-        : 'You choose whether to give your name. Only the committee and admins see answers.';
+        ? 'Your name goes with your answers. Only whoever sent it, the committee and admins see them.'
+        : 'You choose whether to give your name. Only whoever sent it, the committee and admins see answers.';
   return (
     <Card>
       <ThemedText type="small">{text}</ThemedText>

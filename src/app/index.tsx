@@ -52,7 +52,7 @@ import { supabase } from '@/lib/supabase';
 import { useNewConcerns } from '@/lib/concerns';
 import { usePersonalTasks } from '@/lib/personal-tasks';
 import { useSessionPlanSummary } from '@/lib/session-plans';
-import { useCanManageSurveys, useMySurveys, surveysToAnswer } from '@/lib/surveys';
+import { useCanSendSurveys, useMySurveys, surveysToAnswer } from '@/lib/surveys';
 import { buildTodos } from '@/lib/todos';
 import type { ChildConsent } from '@/lib/consents';
 import {
@@ -103,7 +103,7 @@ export default function HomeScreen() {
   const { kpiPeople, reloadKpiPeople } = useKpiPeople();
   const { kpiReviewTodos, reloadKpiReviewTodos } = useKpiReviewTodos();
   const { mySurveys, reloadMySurveys } = useMySurveys();
-  const canManageSurveys = useCanManageSurveys();
+  const canSendSurveys = useCanSendSurveys();
   const surveysWaiting = surveysToAnswer(mySurveys).length;
   const { absencesToReview, reloadAbsencesToReview } = useAbsencesToReview(useLeadsAGroup());
   const canSeeInjuries = useCanSeeInjuries();
@@ -296,7 +296,7 @@ export default function HomeScreen() {
           </PressableCard>
         ) : null}
 
-        {features.surveys && (canManageSurveys || mySurveys.length > 0) ? (
+        {features.surveys && (canSendSurveys || mySurveys.length > 0) ? (
           <PressableCard onPress={() => router.push('/surveys')}>
             <View style={styles.cardTitleRow}>
               <ThemedText type="smallBold">Surveys</ThemedText>
@@ -311,7 +311,7 @@ export default function HomeScreen() {
             <ThemedText type="small" themeColor="textSecondary">
               {surveysWaiting > 0
                 ? `${surveysWaiting} to answer`
-                : canManageSurveys
+                : canSendSurveys
                   ? 'Send a survey and see results'
                   : 'Nothing to answer'}
             </ThemedText>

@@ -10,6 +10,7 @@ import { Spacing } from '@/constants/theme';
 import { useTheme } from '@/hooks/use-theme';
 import { toDateString } from '@/lib/injuries';
 import { pluralRoleLabels } from '@/lib/labels';
+import { useLedGroups } from '@/lib/messages';
 import { supabase } from '@/lib/supabase';
 import {
   endOfDayIso,
@@ -17,6 +18,7 @@ import {
   identityLabels,
   questionKindLabels,
   startOfDayIso,
+  useCanManageSurveys,
   type SurveyAudience,
   type SurveyIdentity,
   type SurveyQuestionKind,
@@ -58,15 +60,22 @@ function daysFromToday(days: number) {
 export default function NewSurveyScreen() {
   const theme = useTheme();
   const teams = useTeams();
+  // Coaches and managers send to the squads and teams they coach or manage;
+  // the committee and admins to anyone.
+  const canManage = useCanManageSurveys();
+  const ledGroups = useLedGroups(teams);
+  const groups = canManage ? teams : ledGroups;
   const [title, setTitle] = useState('');
   const [intro, setIntro] = useState('');
   const [identity, setIdentity] = useState<SurveyIdentity>('anonymous');
-  const [audience, setAudience] = useState<SurveyAudience>('club');
+  const [audience, setAudience] = useState<SurveyAudience>(canManage ? 'club' : 'group');
   const [role, setRole] = useState<AppRole | null>(null);
   const [teamId, setTeamId] = useState<string | null>(null);
   const [opensOn, setOpensOn] = useState<string | null>(toDateString(new Date()));
   const [closesOn, setClosesOn] = useState<string | null>(daysFromToday(14));
   const [questions, setQuestions] = useState<DraftQuestion[]>([newQuestion()]);
+  // Someone who leads one group doesn't need to pick it.
+  const selectedTeamId = teamId ?? (!canManage && groups.length === 1 ? groups[0].id : null);
   const [sending, setSending] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
@@ -77,7 +86,7 @@ export default function NewSurveyScreen() {
   async function send() {
     if (!title.trim()) return setError('Give the survey a title.');
     if (audience === 'role' && !role) return setError('Choose who to send it to.');
-    if (audience === 'group' && !teamId) return setError('Choose a squad or team.');
+    if (audience === 'group' && !selectedTeamId) return setError('Choose a squad or team.');
     if (!opensOn || !closesOn) return setError('Choose when it opens and closes.');
     if (closesOn < opensOn) return setError('Choose a closing day on or after the opening day.');
     for (const [i, q] of questions.entries()) {
@@ -98,7 +107,7 @@ export default function NewSurveyScreen() {
       p_identity: identity,
       p_audience: audience,
       p_role: audience === 'role' ? role : null,
-      p_team_id: audience === 'group' ? teamId : null,
+      p_team_id: audience === 'group' ? selectedTeamId : null,
       // Opening today means straight away.
       p_opens_at: opensOn <= today ? null : startOfDayIso(opensOn),
       p_closes_at: endOfDayIso(closesOn),
@@ -149,19 +158,21 @@ export default function NewSurveyScreen() {
         {identityDetails[identity]} This can’t be changed once it’s sent.
       </ThemedText>
 
-      <ChipGroup
-        label="Send to"
-        options={[
-          { value: 'club', label: 'Everyone' },
-          { value: 'role', label: 'A role' },
-          { value: 'group', label: 'A squad or team' },
-        ]}
-        selected={[audience]}
-        onToggle={(value) => {
-          setAudience(value);
-          setError(null);
-        }}
-      />
+      {canManage ? (
+        <ChipGroup
+          label="Send to"
+          options={[
+            { value: 'club', label: 'Everyone' },
+            { value: 'role', label: 'A role' },
+            { value: 'group', label: 'A squad or team' },
+          ]}
+          selected={[audience]}
+          onToggle={(value) => {
+            setAudience(value);
+            setError(null);
+          }}
+        />
+      ) : null}
       {audience === 'role' ? (
         <ChipGroup
           label="Role"
@@ -171,12 +182,19 @@ export default function NewSurveyScreen() {
         />
       ) : null}
       {audience === 'group' ? (
-        <ChipGroup
-          label="Squad or team"
-          options={teams.map((t) => ({ value: t.id, label: teamLabel(t, teams) }))}
-          selected={teamId ? [teamId] : []}
-          onToggle={setTeamId}
-        />
+        groups.length === 0 ? (
+          <ThemedText type="small" themeColor="textSecondary">
+            You can send surveys to the squads and teams you coach or manage once an admin adds
+            you to one.
+          </ThemedText>
+        ) : (
+          <ChipGroup
+            label={canManage ? 'Squad or team' : 'Send to'}
+            options={groups.map((t) => ({ value: t.id, label: teamLabel(t, teams) }))}
+            selected={selectedTeamId ? [selectedTeamId] : []}
+            onToggle={setTeamId}
+          />
+        )
       ) : null}
       <ThemedText type="small" themeColor="textSecondary">
         Parents and guardians of athletes under 18 get a copy so they can see what their child is
@@ -282,7 +300,8 @@ export default function NewSurveyScreen() {
       ) : null}
 
       <ThemedText type="small" themeColor="textSecondary">
-        Questions can’t be changed once it’s sent. Only the committee and admins see results.
+        Questions can’t be changed once it’s sent. Only you, the committee and admins see
+        results.
       </ThemedText>
       <ErrorText>{error}</ErrorText>
       <Button title="Send survey" onPress={send} busy={sending} />

@@ -1,7 +1,9 @@
 -- Surveys (Matt, 17 October 2026).
 --
 -- The committee and admins create surveys and send them to everyone, a role,
--- or a squad or team, the same audiences as messages. Each survey is one of:
+-- or a squad or team, the same audiences as messages. Coaches and managers
+-- send surveys and quick polls to the squads and teams they coach or manage
+-- (Matt, 17 October 2026). Each survey is one of:
 --   - anonymous: nobody can ever see who gave which answers;
 --   - named: every answer carries the member's name;
 --   - optional: each member chooses whether to give their name.
@@ -10,8 +12,9 @@
 -- admin, can close it early or change the closing day. Questions can't be
 -- changed once it's sent, so every answer was given to the same questions.
 --
--- Who sees results: the committee and admins only. Members never see each
--- other's answers.
+-- Who sees results: the committee and admins, and a coach or manager who sent
+-- one, for their own survey while they still coach or manage that group with
+-- a current check. Members never see each other's answers.
 --
 -- Anonymous answers are kept apart from who answered:
 --   - survey_recipients records only whether each member has answered, with
@@ -30,8 +33,8 @@
 -- Children: a parent or guardian gets a copy of every survey sent to their
 -- child under 18, naming the child, so they know what their child is asked.
 -- Only the child answers. A parent or guardian can read their child's named
--- answers; nobody, including them, can read an anonymous one. When the
--- committee or an admin opens results that name a child under 18, the view
+-- answers; nobody, including them, can read an anonymous one. When anyone
+-- opens results that name a child under 18, the view
 -- goes in the child's record access log.
 --
 -- Additive only: new types, tables and functions, and the record access log
@@ -183,6 +186,52 @@ $$;
 revoke execute on function public.can_manage_surveys() from public, anon;
 grant execute on function public.can_manage_surveys() to authenticated;
 
+-- Whether the signed-in member coaches or manages this squad or team with a
+-- current check. Archived groups count only when p_archived_too, so a coach
+-- can still read their survey's results after the season ends.
+create or replace function public.survey_leads_group(p_team_id uuid, p_archived_too boolean default false)
+returns boolean
+language sql
+stable
+security definer
+set search_path = ''
+as $$
+  select public.is_approved() and public.can_work_with_children() and exists (
+    select 1
+    from public.team_members tm
+    join public.teams t on t.id = tm.team_id
+    where tm.team_id = p_team_id
+      and tm.profile_id = auth.uid()
+      and tm.team_role in ('coach', 'manager')
+      and (p_archived_too or not t.archived)
+  );
+$$;
+revoke execute on function public.survey_leads_group(uuid, boolean) from public, anon;
+grant execute on function public.survey_leads_group(uuid, boolean) to authenticated;
+
+-- Whether the signed-in member manages this survey and reads its results:
+-- the committee and admins for every survey; a coach or manager for one they
+-- sent to a group they still coach or manage.
+create or replace function public.survey_can_see_results(p_survey_id uuid)
+returns boolean
+language sql
+stable
+security definer
+set search_path = ''
+as $$
+  select public.surveys_on() and (
+    public.can_manage_surveys() or exists (
+      select 1 from public.surveys s
+      where s.id = p_survey_id
+        and s.created_by = auth.uid()
+        and s.team_id is not null
+        and public.survey_leads_group(s.team_id, true)
+    )
+  );
+$$;
+revoke execute on function public.survey_can_see_results(uuid) from public, anon;
+grant execute on function public.survey_can_see_results(uuid) to authenticated;
+
 -- Results show for anonymous and optional surveys only once this many have answered.
 create or replace function public.survey_min_responses()
 returns int
@@ -234,8 +283,8 @@ begin
   if not public.surveys_on() then
     raise exception 'Surveys are turned off for this club';
   end if;
-  if not public.can_manage_surveys() then
-    raise exception 'Only the committee and admins can make surveys';
+  if not public.is_approved() then
+    raise exception 'Only approved members can make surveys';
   end if;
   select * into v_sender from public.profiles where id = auth.uid();
   if v_title = '' then
@@ -266,6 +315,9 @@ begin
     raise exception 'Surveys can have up to 30 questions';
   end if;
 
+  if p_audience in ('club', 'role') and not public.can_manage_surveys() then
+    raise exception 'Only the committee and admins can send surveys to the club or a role';
+  end if;
   if p_audience = 'club' then
     null;
   elsif p_audience = 'role' then
@@ -279,6 +331,9 @@ begin
     select * into v_team from public.teams where id = p_team_id and not archived;
     if v_team.id is null then
       raise exception 'Choose a squad or team to send it to';
+    end if;
+    if not (public.can_manage_surveys() or public.survey_leads_group(v_team.id)) then
+      raise exception 'You can only send surveys to squads and teams you coach or manage';
     end if;
   else
     raise exception 'Choose who to send it to';
@@ -405,7 +460,7 @@ declare
   s public.surveys;
 begin
   select * into s from public.surveys where id = p_survey_id;
-  if s.id is null or not public.can_manage_surveys() then
+  if s.id is null or not public.survey_can_see_results(s.id) then
     raise exception 'Survey not found';
   end if;
   if not (public.is_admin() or s.created_by = auth.uid()) then
@@ -466,8 +521,8 @@ $$;
 revoke execute on function public.my_surveys() from public, anon;
 grant execute on function public.my_surveys() to authenticated;
 
--- One survey and its questions, for a member it was sent to or for the
--- committee and admins. For the member: whether they can answer, and their
+-- One survey and its questions, for a member it was sent to or for whoever
+-- can read its results. For the member: whether they can answer, and their
 -- own named answers. For a parent or guardian's copy: each child's named
 -- answers. Anonymous answers are never returned, to anyone.
 create or replace function public.survey_detail(p_survey_id uuid)
@@ -480,7 +535,7 @@ as $$
 declare
   s public.surveys;
   r public.survey_recipients;
-  v_manager boolean := public.can_manage_surveys();
+  v_manager boolean := public.survey_can_see_results(p_survey_id);
   v_mine uuid;
   v_children jsonb := '[]'::jsonb;
 begin
@@ -538,6 +593,9 @@ begin
     'is_open', now() >= s.opens_at and now() < s.closes_at,
     'is_scheduled', now() < s.opens_at,
     'is_recipient', r.profile_id is not null,
+    'can_see_results', v_manager,
+    'can_close', v_manager and (public.is_admin() or s.created_by = auth.uid())
+      and now() < s.closes_at,
     'for_child_names', r.for_child_names,
     'can_answer', r.profile_id is not null and r.for_children is null and not r.responded
       and now() >= s.opens_at and now() < s.closes_at,
@@ -671,7 +729,9 @@ grant execute on function public.submit_survey_response(uuid, jsonb, boolean) to
 -- The committee and admins
 -- ---------------------------------------------------------------------------
 
--- Every survey, newest first, with how many it went to and how many answered.
+-- The surveys the member can read results for (every one for the committee
+-- and admins; their own for a coach or manager), newest first, with how many
+-- it went to and how many answered.
 -- Parents' and guardians' copies aren't counted: only the child answers.
 create or replace function public.manage_surveys()
 returns table (
@@ -702,13 +762,14 @@ as $$
     (select count(*)::int from public.survey_responses x where x.survey_id = s.id),
     case when now() < s.opens_at then 'scheduled' when now() < s.closes_at then 'open' else 'closed' end
   from public.surveys s
-  where public.can_manage_surveys() and public.surveys_on()
+  where public.survey_can_see_results(s.id)
   order by s.created_at desc;
 $$;
 revoke execute on function public.manage_surveys() from public, anon;
 grant execute on function public.manage_surveys() to authenticated;
 
--- A survey's results, for the committee and admins. Anonymous and optional
+-- A survey's results, for the committee, admins, and the coach or manager who
+-- sent it. Anonymous and optional
 -- surveys show nothing until they've closed and enough people have answered. Named answers carry
 -- the member's name; the committee and admins see who hasn't answered a named
 -- survey yet. Opening results that name a child under 18 is logged against
@@ -727,7 +788,7 @@ declare
   v_child uuid;
 begin
   select * into s from public.surveys where id = p_survey_id;
-  if s.id is null or not public.can_manage_surveys() or not public.surveys_on() then
+  if s.id is null or not public.survey_can_see_results(s.id) then
     raise exception 'Survey not found';
   end if;
 

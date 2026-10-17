@@ -22,7 +22,7 @@ export const identityLabels: Record<SurveyIdentity, string> = {
 export const identityDetails: Record<SurveyIdentity, string> = {
   anonymous:
     'Nobody can see who gave which answers, not even admins. Results show once it closes and at least 3 people have answered.',
-  named: 'Every answer shows the member’s name. You can see who hasn’t answered yet.',
+  named: 'Every answer shows the member’s name. You can see who hasn’t answered yet. Good for a quick poll.',
   optional:
     'Each member chooses whether to give their name. Results show once it closes and at least 3 people have answered.',
 };
@@ -100,6 +100,10 @@ export type SurveyDetail = {
   /** Not open yet: only the committee and admins see it. */
   is_scheduled: boolean;
   is_recipient: boolean;
+  /** The committee and admins, or the coach or manager who sent it. */
+  can_see_results: boolean;
+  /** Whoever sent it, or an admin, while it's still open. */
+  can_close: boolean;
   for_child_names: string[] | null;
   can_answer: boolean;
   responded: boolean;
@@ -160,11 +164,24 @@ export function endOfDayIso(day: string) {
   return date.toISOString();
 }
 
-/** The committee and admins make surveys and read results. The database checks this too. */
+/**
+ * The committee and admins send surveys to anyone and read every survey's
+ * results. The database checks this too.
+ */
 export function useCanManageSurveys() {
   const { isAdmin, profile } = useAuth();
   if (profile?.status !== 'approved') return false;
   return isAdmin || hasRole(profile, 'committee');
+}
+
+/**
+ * Coaches and managers also send surveys, to the squads and teams they coach
+ * or manage, and read their own surveys' results.
+ */
+export function useCanSendSurveys() {
+  const { memberships } = useAuth();
+  const canManage = useCanManageSurveys();
+  return canManage || memberships.some((m) => m.team_role === 'coach' || m.team_role === 'manager');
 }
 
 /** Surveys sent to the member that have opened, refreshed when the screen is shown. */

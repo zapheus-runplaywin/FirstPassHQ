@@ -14,6 +14,7 @@ import {
   identityLabels,
   surveyAudienceLabel,
   useCanManageSurveys,
+  useCanSendSurveys,
   useMySurveys,
   type ManagedSurvey,
   type MySurvey,
@@ -23,18 +24,20 @@ type Tab = 'mine' | 'all';
 
 export default function SurveysScreen() {
   const canManage = useCanManageSurveys();
+  // Coaches and managers send surveys to their own groups and see only those.
+  const canSend = useCanSendSurveys();
   const { mySurveys, reloadMySurveys } = useMySurveys();
   const [managed, setManaged] = useState<ManagedSurvey[] | null>(null);
   const [tab, setTab] = useState<Tab>('mine');
   const [refreshing, setRefreshing] = useState(false);
   // Committee members and admins rarely get surveys themselves, so they start on the club's.
-  const shown: Tab = canManage && mySurveys.length === 0 && tab === 'mine' ? 'all' : tab;
+  const shown: Tab = canSend && mySurveys.length === 0 && tab === 'mine' ? 'all' : tab;
 
   const loadManaged = useCallback(async () => {
-    if (!canManage) return;
+    if (!canSend) return;
     const { data } = await supabase.rpc('manage_surveys');
     setManaged((data as ManagedSurvey[] | null) ?? []);
-  }, [canManage]);
+  }, [canSend]);
 
   useFocusEffect(
     useCallback(() => {
@@ -50,13 +53,13 @@ export default function SurveysScreen() {
 
   return (
     <Screen refreshing={refreshing} onRefresh={onRefresh}>
-      {canManage ? (
+      {canSend ? (
         <View style={styles.actions}>
           <Button title="New survey" onPress={() => router.push('/surveys/new')} />
           <ChipGroup
             options={[
               { value: 'mine', label: 'Sent to me' },
-              { value: 'all', label: 'All surveys' },
+              { value: 'all', label: canManage ? 'All surveys' : 'Sent by me' },
             ]}
             selected={[shown]}
             onToggle={setTab}
