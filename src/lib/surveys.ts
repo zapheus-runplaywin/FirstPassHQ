@@ -5,6 +5,7 @@ import { useAuth } from '@/lib/auth';
 import { useClub } from '@/lib/club';
 import { parseDateString, toDateString } from '@/lib/injuries';
 import { pluralRoleLabels } from '@/lib/labels';
+import { useCaptainedGroupIds } from '@/lib/messages';
 import { hasRole } from '@/lib/roles';
 import { supabase } from '@/lib/supabase';
 import type { AppRole } from '@/lib/types';
@@ -12,6 +13,11 @@ import type { AppRole } from '@/lib/types';
 export type SurveyIdentity = 'anonymous' | 'named' | 'optional';
 export type SurveyAudience = 'club' | 'role' | 'group';
 export type SurveyQuestionKind = 'choice' | 'multi_choice' | 'rating' | 'text';
+/** Who a survey was sent as: the committee or an admin, a coach or manager, or a captain. */
+export type SurveySentAs = 'committee' | 'leader' | 'captain';
+
+/** Captains' polls have up to this many questions, each with choices to pick from. */
+export const CAPTAIN_MAX_QUESTIONS = 5;
 
 export const identityLabels: Record<SurveyIdentity, string> = {
   anonymous: 'Anonymous',
@@ -22,7 +28,8 @@ export const identityLabels: Record<SurveyIdentity, string> = {
 export const identityDetails: Record<SurveyIdentity, string> = {
   anonymous:
     'Nobody can see who gave which answers, not even admins. Results show once it closes and at least 3 people have answered.',
-  named: 'Every answer shows the member’s name. You can see who hasn’t answered yet. Good for a quick poll.',
+  named:
+    'Every answer shows the member’s name. You can see who hasn’t answered yet. Good for a quick poll.',
   optional:
     'Each member chooses whether to give their name. Results show once it closes and at least 3 people have answered.',
 };
@@ -47,11 +54,13 @@ export type MySurvey = {
   created_by_name: string | null;
   /** For a parent or guardian's copy: the children it was sent to. */
   for_child_names: string[] | null;
+  /** A parent or guardian's copy of a poll their child sent. */
+  from_child: boolean;
   responded: boolean;
   is_open: boolean;
 };
 
-/** A survey in the committee and admins' list. */
+/** A survey whose results the member can read. */
 export type ManagedSurvey = {
   id: string;
   title: string;
@@ -63,6 +72,8 @@ export type ManagedSurvey = {
   closes_at: string;
   created_by: string | null;
   created_by_name: string | null;
+  sent_as: SurveySentAs;
+  share_with_committee: boolean;
   sent_to: number;
   answered: number;
   status: 'scheduled' | 'open' | 'closed';
@@ -100,11 +111,16 @@ export type SurveyDetail = {
   /** Not open yet: only the committee and admins see it. */
   is_scheduled: boolean;
   is_recipient: boolean;
-  /** The committee and admins, or the coach or manager who sent it. */
+  sent_as: SurveySentAs;
+  /** A coach or manager let the committee and admins see it too. */
+  share_with_committee: boolean;
+  /** Whoever sent it; the committee and admins for theirs and shared ones; coaches and managers for captains' polls. */
   can_see_results: boolean;
-  /** Whoever sent it, or an admin, while it's still open. */
+  /** Whoever sent it, an admin who can see it, or the group's coaches and managers for a captain's poll, while it's open. */
   can_close: boolean;
   for_child_names: string[] | null;
+  /** A parent or guardian's copy of a poll their child sent. */
+  from_child: boolean;
   can_answer: boolean;
   responded: boolean;
   questions: SurveyQuestion[];
@@ -127,7 +143,11 @@ export type SurveyResults = {
     average: number | null;
     texts: { text: string; name: string | null }[] | null;
   })[];
-  respondents: { name: string; submitted_at: string | null; answers: SurveyAnswer[] }[];
+  respondents: {
+    name: string;
+    submitted_at: string | null;
+    answers: SurveyAnswer[];
+  }[];
   waiting: string[];
 };
 
@@ -165,8 +185,9 @@ export function endOfDayIso(day: string) {
 }
 
 /**
- * The committee and admins send surveys to anyone and read every survey's
- * results. The database checks this too.
+ * The committee and admins send surveys to anyone and read the results of
+ * the committee's surveys and the ones coaches and managers share with them.
+ * The database checks this too.
  */
 export function useCanManageSurveys() {
   const { isAdmin, profile } = useAuth();
@@ -176,12 +197,30 @@ export function useCanManageSurveys() {
 
 /**
  * Coaches and managers also send surveys, to the squads and teams they coach
- * or manage, and read their own surveys' results.
+ * or manage, and captains send polls to the one they captain. Each reads
+ * their own surveys' results.
  */
 export function useCanSendSurveys() {
-  const { memberships } = useAuth();
+  const { memberships, profile } = useAuth();
   const canManage = useCanManageSurveys();
-  return canManage || memberships.some((m) => m.team_role === 'coach' || m.team_role === 'manager');
+  const captained = useCaptainedGroupIds();
+  if (profile?.status !== 'approved') return false;
+  return (
+    canManage ||
+    captained.size > 0 ||
+    memberships.some((m) => m.team_role === 'coach' || m.team_role === 'manager')
+  );
+}
+
+/** Who sees a survey's answers, in words for the people answering it. */
+export function surveyAnswersSeenBy(
+  survey: Pick<SurveyDetail, 'sent_as' | 'share_with_committee'>,
+) {
+  if (survey.sent_as === 'committee') return 'whoever sent it, the committee and admins';
+  if (survey.sent_as === 'captain') return 'whoever sent it and the group’s coaches and managers';
+  return survey.share_with_committee
+    ? 'whoever sent it, the committee and admins'
+    : 'whoever sent it';
 }
 
 /** Surveys sent to the member that have opened, refreshed when the screen is shown. */
@@ -214,12 +253,13 @@ export function surveysToAnswer(surveys: MySurvey[]) {
   return surveys.filter((s) => s.is_open && !s.responded && !s.for_child_names);
 }
 
-/** Such as "Copy for Jordan" or "Copy for Jordan and Sam". */
-export function childCopyLabel(names: string[]) {
+/** Such as "Sent to Jordan and Sam. Your copy shows what they’re asked." */
+export function childCopyLabel(names: string[], fromChild = false) {
   const joined =
     names.length <= 1
       ? names.join('')
       : `${names.slice(0, -1).join(', ')} and ${names[names.length - 1]}`;
+  if (fromChild) return `Copied to you because ${joined} sent it. Your copy shows what they asked.`;
   return `Sent to ${joined}. Your copy shows what they’re asked.`;
 }
 

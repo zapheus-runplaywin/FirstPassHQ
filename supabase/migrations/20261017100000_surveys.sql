@@ -2,8 +2,10 @@
 --
 -- The committee and admins create surveys and send them to everyone, a role,
 -- or a squad or team, the same audiences as messages. Coaches and managers
--- send surveys and quick polls to the squads and teams they coach or manage
--- (Matt, 17 October 2026). Each survey is one of:
+-- send surveys and quick polls to the squads and teams they coach or manage,
+-- and captains and vice captains send polls with choices to the squad or team
+-- they captain, such as finding a night everyone is free (Matt, 17 October
+-- 2026). Each survey is one of:
 --   - anonymous: nobody can ever see who gave which answers;
 --   - named: every answer carries the member's name;
 --   - optional: each member chooses whether to give their name.
@@ -12,9 +14,12 @@
 -- admin, can close it early or change the closing day. Questions can't be
 -- changed once it's sent, so every answer was given to the same questions.
 --
--- Who sees results: the committee and admins, and a coach or manager who sent
--- one, for their own survey while they still coach or manage that group with
--- a current check. Members never see each other's answers.
+-- Who sees results: the committee and admins for the surveys the committee
+-- and admins send. A coach or manager's survey is a team thing: only they
+-- see it, while they still coach or manage that group with a current check,
+-- unless they choose to share it with the committee and admins too. A
+-- captain's poll is seen by the captain who sent it and by the group's
+-- coaches and managers. Members never see each other's answers.
 --
 -- Anonymous answers are kept apart from who answered:
 --   - survey_recipients records only whether each member has answered, with
@@ -68,6 +73,11 @@ create table if not exists public.surveys (
   closes_at timestamptz not null,
   created_by uuid references public.profiles (id) on delete set null,
   created_by_name text,
+  -- Who it was sent as: 'committee' (the committee or an admin), 'leader' (a
+  -- coach or manager of the group) or 'captain' (a captain or vice captain).
+  sent_as text not null default 'committee' check (sent_as in ('committee', 'leader', 'captain')),
+  -- A coach or manager chose to let the committee and admins see it too.
+  share_with_committee boolean not null default false,
   created_at timestamptz not null default now(),
   updated_at timestamptz not null default now(),
   constraint surveys_dates check (closes_at > opens_at)
@@ -210,8 +220,13 @@ revoke execute on function public.survey_leads_group(uuid, boolean) from public,
 grant execute on function public.survey_leads_group(uuid, boolean) to authenticated;
 
 -- Whether the signed-in member manages this survey and reads its results:
--- the committee and admins for every survey; a coach or manager for one they
--- sent to a group they still coach or manage.
+--   - the committee and admins, for surveys sent as the committee and ones a
+--     coach or manager shared with them;
+--   - a coach or manager, for one they sent to a group they still coach or
+--     manage;
+--   - a captain or vice captain, for a poll they sent while they still
+--     captain that group;
+--   - the group's coaches and managers, for a captain's poll.
 create or replace function public.survey_can_see_results(p_survey_id uuid)
 returns boolean
 language sql
@@ -219,14 +234,18 @@ stable
 security definer
 set search_path = ''
 as $$
-  select public.surveys_on() and (
-    public.can_manage_surveys() or exists (
-      select 1 from public.surveys s
-      where s.id = p_survey_id
-        and s.created_by = auth.uid()
-        and s.team_id is not null
-        and public.survey_leads_group(s.team_id, true)
-    )
+  select public.surveys_on() and exists (
+    select 1 from public.surveys s
+    where s.id = p_survey_id
+      and (
+        (public.can_manage_surveys() and (s.sent_as = 'committee' or s.share_with_committee))
+        or (s.created_by = auth.uid() and s.team_id is not null and (
+          (s.sent_as = 'leader' and public.survey_leads_group(s.team_id, true))
+          or (s.sent_as = 'captain' and public.is_group_captain(s.team_id))
+        ))
+        or (s.sent_as = 'captain' and s.team_id is not null
+          and public.survey_leads_group(s.team_id, true))
+      )
   );
 $$;
 revoke execute on function public.survey_can_see_results(uuid) from public, anon;
@@ -258,7 +277,8 @@ create or replace function public.create_survey(
   p_team_id uuid,
   p_opens_at timestamptz,
   p_closes_at timestamptz,
-  p_questions jsonb
+  p_questions jsonb,
+  p_share_with_committee boolean default false
 )
 returns uuid
 language plpgsql
@@ -279,6 +299,7 @@ declare
   v_rating_max int;
   v_order int := 0;
   v_count int;
+  v_sent_as text;
 begin
   if not public.surveys_on() then
     raise exception 'Surveys are turned off for this club';
@@ -332,22 +353,44 @@ begin
     if v_team.id is null then
       raise exception 'Choose a squad or team to send it to';
     end if;
-    if not (public.can_manage_surveys() or public.survey_leads_group(v_team.id)) then
-      raise exception 'You can only send surveys to squads and teams you coach or manage';
-    end if;
   else
     raise exception 'Choose who to send it to';
   end if;
 
+  if public.can_manage_surveys() then
+    v_sent_as := 'committee';
+  elsif public.survey_leads_group(v_team.id) then
+    v_sent_as := 'leader';
+  elsif public.is_group_captain(v_team.id) then
+    v_sent_as := 'captain';
+  else
+    raise exception 'You can only send surveys to squads and teams you coach, manage or captain';
+  end if;
+
+  -- A captain's poll is a few questions with choices to pick from, such as a
+  -- night everyone is free. No written answers or ratings between teammates.
+  if v_sent_as = 'captain' then
+    if jsonb_array_length(p_questions) > 5 then
+      raise exception 'Captains'' polls can have up to 5 questions';
+    end if;
+    if exists (
+      select 1 from jsonb_array_elements(p_questions) q
+      where coalesce(q ->> 'kind', '') not in ('choice', 'multi_choice')
+    ) then
+      raise exception 'Captains'' polls can only have questions with choices';
+    end if;
+  end if;
+
   insert into public.surveys (
     title, intro, identity, audience, audience_role, team_id, audience_label,
-    opens_at, closes_at, created_by, created_by_name
+    opens_at, closes_at, created_by, created_by_name, sent_as, share_with_committee
   )
   values (
     v_title, v_intro, p_identity, p_audience,
     case when p_audience = 'role' then p_role end,
     v_team.id, v_team.name, v_opens, p_closes_at, v_sender.id,
-    public.member_display_name(v_sender.id)
+    public.member_display_name(v_sender.id), v_sent_as,
+    v_sent_as = 'leader' and coalesce(p_share_with_committee, false)
   )
   returning id into v_survey_id;
 
@@ -432,6 +475,7 @@ begin
     join public.profiles gp on gp.id = g.guardian_id and gp.status = 'approved'
     where (a.role = 'athlete' or 'athlete' = any (a.extra_roles))
       and public.is_minor(a.date_of_birth, a.under_17)
+      and a.id <> v_sender.id
   ) r
   where r.id <> v_sender.id
   group by r.id;
@@ -442,14 +486,51 @@ begin
     raise exception 'Nobody else is in that group yet';
   end if;
 
+  -- Parents and guardians of a child who sends one (a captain) get a copy
+  -- too, as they do of the child's messages. They can't answer it.
+  if (v_sender.role = 'athlete' or 'athlete' = any (v_sender.extra_roles))
+     and public.is_minor(v_sender.date_of_birth, v_sender.under_17) then
+    insert into public.survey_recipients (survey_id, profile_id, for_children, for_child_names)
+    select v_survey_id, g.guardian_id, array[v_sender.id], array[public.member_display_name(v_sender.id)]
+    from public.guardianships g
+    join public.profiles gp on gp.id = g.guardian_id and gp.status = 'approved'
+    where g.athlete_id = v_sender.id
+    on conflict (survey_id, profile_id) do update
+      set for_children = public.survey_recipients.for_children || excluded.for_children,
+          for_child_names = public.survey_recipients.for_child_names || excluded.for_child_names
+      -- A guardian who got it in their own right keeps no children named.
+      where public.survey_recipients.for_children is not null
+        and not (v_sender.id = any (public.survey_recipients.for_children));
+  end if;
+
   return v_survey_id;
 end;
 $$;
-revoke execute on function public.create_survey(text, text, public.survey_identity, public.survey_audience, public.app_role, uuid, timestamptz, timestamptz, jsonb) from public, anon;
-grant execute on function public.create_survey(text, text, public.survey_identity, public.survey_audience, public.app_role, uuid, timestamptz, timestamptz, jsonb) to authenticated;
+revoke execute on function public.create_survey(text, text, public.survey_identity, public.survey_audience, public.app_role, uuid, timestamptz, timestamptz, jsonb, boolean) from public, anon;
+grant execute on function public.create_survey(text, text, public.survey_identity, public.survey_audience, public.app_role, uuid, timestamptz, timestamptz, jsonb, boolean) to authenticated;
 
--- The person who made it, or an admin, changes the closing time. A time in
--- the past (or now) closes it straight away.
+-- Whether the signed-in member can change when this survey closes.
+create or replace function public.survey_can_close(p_survey_id uuid)
+returns boolean
+language sql
+stable
+security definer
+set search_path = ''
+as $$
+  select public.survey_can_see_results(p_survey_id) and exists (
+    select 1 from public.surveys s
+    where s.id = p_survey_id
+      and (s.created_by = auth.uid()
+        or (public.is_admin() and (s.sent_as = 'committee' or s.share_with_committee))
+        or (s.sent_as = 'captain' and public.survey_leads_group(s.team_id, true)))
+  );
+$$;
+revoke execute on function public.survey_can_close(uuid) from public, anon;
+grant execute on function public.survey_can_close(uuid) to authenticated;
+
+-- The person who made it, an admin who can see it, or the group's coaches and
+-- managers for a captain's poll, change the closing time. A time in the past
+-- (or now) closes it straight away.
 create or replace function public.set_survey_closing(p_survey_id uuid, p_closes_at timestamptz)
 returns void
 language plpgsql
@@ -463,7 +544,7 @@ begin
   if s.id is null or not public.survey_can_see_results(s.id) then
     raise exception 'Survey not found';
   end if;
-  if not (public.is_admin() or s.created_by = auth.uid()) then
+  if not public.survey_can_close(s.id) then
     raise exception 'Only the person who made it or an admin can change when it closes';
   end if;
   if p_closes_at is null then
@@ -499,6 +580,8 @@ returns table (
   closes_at timestamptz,
   created_by_name text,
   for_child_names text[],
+  -- A parent or guardian's copy of a poll their child sent.
+  from_child boolean,
   responded boolean,
   is_open boolean
 )
@@ -508,7 +591,7 @@ security definer
 set search_path = ''
 as $$
   select s.id, s.title, s.identity, s.opens_at, s.closes_at, s.created_by_name,
-    r.for_child_names, r.responded,
+    r.for_child_names, coalesce(s.created_by = any (r.for_children), false), r.responded,
     now() >= s.opens_at and now() < s.closes_at
   from public.survey_recipients r
   join public.surveys s on s.id = r.survey_id
@@ -571,7 +654,8 @@ begin
     ) order by c.name), '[]'::jsonb)
     into v_children
     from unnest(r.for_children, r.for_child_names) as c(child_id, name)
-    where exists (
+    where c.child_id is distinct from s.created_by
+      and exists (
       select 1 from public.guardianships g
       where g.guardian_id = auth.uid() and g.athlete_id = c.child_id
     );
@@ -594,9 +678,11 @@ begin
     'is_scheduled', now() < s.opens_at,
     'is_recipient', r.profile_id is not null,
     'can_see_results', v_manager,
-    'can_close', v_manager and (public.is_admin() or s.created_by = auth.uid())
-      and now() < s.closes_at,
+    'sent_as', s.sent_as,
+    'share_with_committee', s.share_with_committee,
+    'can_close', v_manager and public.survey_can_close(s.id) and now() < s.closes_at,
     'for_child_names', r.for_child_names,
+    'from_child', coalesce(s.created_by = any (r.for_children), false),
     'can_answer', r.profile_id is not null and r.for_children is null and not r.responded
       and now() >= s.opens_at and now() < s.closes_at,
     'responded', coalesce(r.responded, false),
@@ -729,8 +815,8 @@ grant execute on function public.submit_survey_response(uuid, jsonb, boolean) to
 -- The committee and admins
 -- ---------------------------------------------------------------------------
 
--- The surveys the member can read results for (every one for the committee
--- and admins; their own for a coach or manager), newest first, with how many
+-- The surveys the member can read results for (see survey_can_see_results),
+-- newest first, with how many
 -- it went to and how many answered.
 -- Parents' and guardians' copies aren't counted: only the child answers.
 create or replace function public.manage_surveys()
@@ -745,6 +831,8 @@ returns table (
   closes_at timestamptz,
   created_by uuid,
   created_by_name text,
+  sent_as text,
+  share_with_committee boolean,
   sent_to int,
   answered int,
   -- 'scheduled', 'open' or 'closed'
@@ -757,6 +845,7 @@ set search_path = ''
 as $$
   select s.id, s.title, s.identity, s.audience, s.audience_role, s.audience_label,
     s.opens_at, s.closes_at, s.created_by, s.created_by_name,
+    s.sent_as, s.share_with_committee,
     (select count(*)::int from public.survey_recipients r
      where r.survey_id = s.id and r.for_children is null),
     (select count(*)::int from public.survey_responses x where x.survey_id = s.id),
@@ -768,11 +857,10 @@ $$;
 revoke execute on function public.manage_surveys() from public, anon;
 grant execute on function public.manage_surveys() to authenticated;
 
--- A survey's results, for the committee, admins, and the coach or manager who
--- sent it. Anonymous and optional
--- surveys show nothing until they've closed and enough people have answered. Named answers carry
--- the member's name; the committee and admins see who hasn't answered a named
--- survey yet. Opening results that name a child under 18 is logged against
+-- A survey's results, for whoever survey_can_see_results allows. Anonymous
+-- and optional surveys show nothing until they've closed and enough people
+-- have answered. Named answers carry the member's name, and named surveys
+-- show who hasn't answered yet. Opening results that name a child under 18 is logged against
 -- that child.
 create or replace function public.survey_results(p_survey_id uuid)
 returns jsonb

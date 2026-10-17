@@ -24,7 +24,8 @@ type Tab = 'mine' | 'all';
 
 export default function SurveysScreen() {
   const canManage = useCanManageSurveys();
-  // Coaches and managers send surveys to their own groups and see only those.
+  // Coaches, managers and captains send surveys to their own groups and see
+  // only those, and captains' polls in groups they coach or manage.
   const canSend = useCanSendSurveys();
   const { mySurveys, reloadMySurveys } = useMySurveys();
   const [managed, setManaged] = useState<ManagedSurvey[] | null>(null);
@@ -59,7 +60,7 @@ export default function SurveysScreen() {
           <ChipGroup
             options={[
               { value: 'mine', label: 'Sent to me' },
-              { value: 'all', label: canManage ? 'All surveys' : 'Sent by me' },
+              { value: 'all', label: canManage ? 'Club surveys' : 'My groups' },
             ]}
             selected={[shown]}
             onToggle={setTab}
@@ -76,7 +77,7 @@ function MyList({ surveys }: { surveys: MySurvey[] }) {
   if (surveys.length === 0) {
     return (
       <ThemedText type="small" themeColor="textSecondary">
-        No surveys yet. Surveys from the club’s committee will show here.
+        No surveys yet. Surveys and polls sent to you will show here.
       </ThemedText>
     );
   }
@@ -90,14 +91,18 @@ function MyList({ surveys }: { surveys: MySurvey[] }) {
           <ThemedText type="small" themeColor="textSecondary">
             {identityLabels[s.identity]} · {statusLabel(s.is_open, s.closes_at)}
           </ThemedText>
-          <ThemedText type="small" themeColor={s.responded || !s.is_open ? 'textSecondary' : 'accent'}>
-            {s.for_child_names
-              ? `For ${s.for_child_names.join(' and ')} to answer`
-              : s.responded
-                ? '✓ You’ve answered'
-                : s.is_open
-                  ? 'Not answered yet'
-                  : 'You didn’t answer'}
+          <ThemedText
+            type="small"
+            themeColor={s.responded || !s.is_open ? 'textSecondary' : 'accent'}>
+            {s.from_child
+              ? `Sent by ${s.for_child_names?.join(' and ')}`
+              : s.for_child_names
+                ? `For ${s.for_child_names.join(' and ')} to answer`
+                : s.responded
+                  ? '✓ You’ve answered'
+                  : s.is_open
+                    ? 'Not answered yet'
+                    : 'You didn’t answer'}
           </ThemedText>
         </PressableCard>
       ))}
@@ -125,6 +130,8 @@ function ManagedList({ surveys }: { surveys: ManagedSurvey[] | null }) {
             <ThemedText type="small" themeColor="textSecondary">
               {identityLabels[s.identity]} · To{' '}
               {surveyAudienceLabel(s.audience, s.audience_role, s.audience_label)}
+              {s.sent_as === 'committee' ? '' : ` · From ${s.created_by_name ?? 'a member'}`}
+              {s.share_with_committee ? ' · Shared with the committee' : ''}
             </ThemedText>
             <ThemedText type="small" themeColor="textSecondary">
               {s.status === 'scheduled'

@@ -22,7 +22,7 @@ export const FEATURES = [
   {
     key: 'surveys',
     label: 'Surveys',
-    detail: 'The committee and admins send anonymous or named surveys',
+    detail: 'Anonymous or named surveys from the committee, coaches and managers, and polls from captains',
   },
   { key: 'awards', label: 'Awards', detail: 'Award votes and results' },
   { key: 'goals', label: 'Game goals', detail: 'Athletes’ goals and reflections for PlayHQ games' },

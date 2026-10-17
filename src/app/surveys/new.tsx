@@ -10,9 +10,10 @@ import { Spacing } from '@/constants/theme';
 import { useTheme } from '@/hooks/use-theme';
 import { toDateString } from '@/lib/injuries';
 import { pluralRoleLabels } from '@/lib/labels';
-import { useLedGroups } from '@/lib/messages';
+import { useCaptainedGroupIds, useLedGroups } from '@/lib/messages';
 import { supabase } from '@/lib/supabase';
 import {
+  CAPTAIN_MAX_QUESTIONS,
   endOfDayIso,
   identityDetails,
   identityLabels,
@@ -48,7 +49,14 @@ type DraftQuestion = {
 
 let nextKey = 1;
 function newQuestion(kind: SurveyQuestionKind = 'choice'): DraftQuestion {
-  return { key: nextKey++, kind, prompt: '', options: ['', ''], ratingMax: '5', required: true };
+  return {
+    key: nextKey++,
+    kind,
+    prompt: '',
+    options: ['', ''],
+    ratingMax: '5',
+    required: true,
+  };
 }
 
 function daysFromToday(days: number) {
@@ -60,11 +68,13 @@ function daysFromToday(days: number) {
 export default function NewSurveyScreen() {
   const theme = useTheme();
   const teams = useTeams();
-  // Coaches and managers send to the squads and teams they coach or manage;
-  // the committee and admins to anyone.
+  // Coaches and managers send to the squads and teams they coach or manage,
+  // captains polls to the one they captain; the committee and admins to anyone.
   const canManage = useCanManageSurveys();
   const ledGroups = useLedGroups(teams);
-  const groups = canManage ? teams : ledGroups;
+  const captained = useCaptainedGroupIds();
+  const ledIds = new Set(ledGroups.map((t) => t.id));
+  const groups = canManage ? teams : teams.filter((t) => ledIds.has(t.id) || captained.has(t.id));
   const [title, setTitle] = useState('');
   const [intro, setIntro] = useState('');
   const [identity, setIdentity] = useState<SurveyIdentity>('anonymous');
@@ -74,8 +84,17 @@ export default function NewSurveyScreen() {
   const [opensOn, setOpensOn] = useState<string | null>(toDateString(new Date()));
   const [closesOn, setClosesOn] = useState<string | null>(daysFromToday(14));
   const [questions, setQuestions] = useState<DraftQuestion[]>([newQuestion()]);
+  const [shareWithCommittee, setShareWithCommittee] = useState(false);
   // Someone who leads one group doesn't need to pick it.
   const selectedTeamId = teamId ?? (!canManage && groups.length === 1 ? groups[0].id : null);
+  // A coach or manager's survey stays with the team unless they share it.
+  const asLeader = !canManage && !!selectedTeamId && ledIds.has(selectedTeamId);
+  // A captain's poll has a few questions with choices to pick from.
+  const asCaptain = !canManage && !!selectedTeamId && !asLeader && captained.has(selectedTeamId);
+  const kinds: SurveyQuestionKind[] = asCaptain
+    ? ['choice', 'multi_choice']
+    : ['choice', 'multi_choice', 'rating', 'text'];
+  const maxQuestions = asCaptain ? CAPTAIN_MAX_QUESTIONS : 30;
   const [sending, setSending] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
@@ -88,6 +107,14 @@ export default function NewSurveyScreen() {
     if (audience === 'role' && !role) return setError('Choose who to send it to.');
     if (audience === 'group' && !selectedTeamId) return setError('Choose a squad or team.');
     if (!opensOn || !closesOn) return setError('Choose when it opens and closes.');
+    if (asCaptain) {
+      if (questions.length > maxQuestions) {
+        return setError(`Captains’ polls can have up to ${maxQuestions} questions.`);
+      }
+      if (questions.some((q) => !kinds.includes(q.kind))) {
+        return setError('Captains’ polls can only have questions with choices.');
+      }
+    }
     if (closesOn < opensOn) return setError('Choose a closing day on or after the opening day.');
     for (const [i, q] of questions.entries()) {
       if (!q.prompt.trim()) return setError(`Write question ${i + 1}.`);
@@ -121,10 +148,14 @@ export default function NewSurveyScreen() {
         rating_max: q.kind === 'rating' ? Number(q.ratingMax) : null,
         required: q.required,
       })),
+      p_share_with_committee: asLeader && shareWithCommittee,
     });
     setSending(false);
     if (sendError) return setError(sendError.message);
-    router.replace({ pathname: '/surveys/[id]', params: { id: data as string } });
+    router.replace({
+      pathname: '/surveys/[id]',
+      params: { id: data as string },
+    });
   }
 
   return (
@@ -176,7 +207,10 @@ export default function NewSurveyScreen() {
       {audience === 'role' ? (
         <ChipGroup
           label="Role"
-          options={surveyRoles.map((r) => ({ value: r, label: pluralRoleLabels[r] }))}
+          options={surveyRoles.map((r) => ({
+            value: r,
+            label: pluralRoleLabels[r],
+          }))}
           selected={role ? [role] : []}
           onToggle={setRole}
         />
@@ -184,17 +218,31 @@ export default function NewSurveyScreen() {
       {audience === 'group' ? (
         groups.length === 0 ? (
           <ThemedText type="small" themeColor="textSecondary">
-            You can send surveys to the squads and teams you coach or manage once an admin adds
-            you to one.
+            You can send surveys to the squads and teams you coach or manage once an admin adds you
+            to one.
           </ThemedText>
         ) : (
           <ChipGroup
             label={canManage ? 'Squad or team' : 'Send to'}
-            options={groups.map((t) => ({ value: t.id, label: teamLabel(t, teams) }))}
+            options={groups.map((t) => ({
+              value: t.id,
+              label: teamLabel(t, teams),
+            }))}
             selected={selectedTeamId ? [selectedTeamId] : []}
             onToggle={setTeamId}
           />
         )
+      ) : null}
+      {asLeader ? (
+        <ChipGroup
+          label="Committee and admins"
+          options={[
+            { value: 'no', label: 'Keep it in the team' },
+            { value: 'yes', label: 'Share with them' },
+          ]}
+          selected={[shareWithCommittee ? 'yes' : 'no']}
+          onToggle={(value) => setShareWithCommittee(value === 'yes')}
+        />
       ) : null}
       <ThemedText type="small" themeColor="textSecondary">
         Parents and guardians of athletes under 18 get a copy so they can see what their child is
@@ -226,7 +274,7 @@ export default function NewSurveyScreen() {
         <View key={q.key} style={[styles.question, { borderColor: theme.backgroundElement }]}>
           <ThemedText type="smallBold">Question {i + 1}</ThemedText>
           <ChipGroup
-            options={(['choice', 'multi_choice', 'rating', 'text'] as const).map((value) => ({
+            options={kinds.map((value) => ({
               value,
               label: questionKindLabels[value],
             }))}
@@ -249,7 +297,9 @@ export default function NewSurveyScreen() {
                   placeholder="Write a choice"
                   value={option}
                   onChangeText={(text) =>
-                    update(q.key, { options: q.options.map((o, m) => (m === n ? text : o)) })
+                    update(q.key, {
+                      options: q.options.map((o, m) => (m === n ? text : o)),
+                    })
                   }
                   maxLength={100}
                 />
@@ -291,7 +341,7 @@ export default function NewSurveyScreen() {
           ) : null}
         </View>
       ))}
-      {questions.length < 30 ? (
+      {questions.length < maxQuestions ? (
         <Button
           title="Add a question"
           variant="secondary"
@@ -300,8 +350,14 @@ export default function NewSurveyScreen() {
       ) : null}
 
       <ThemedText type="small" themeColor="textSecondary">
-        Questions can’t be changed once it’s sent. Only you, the committee and admins see
-        results.
+        Questions can’t be changed once it’s sent.{' '}
+        {canManage
+          ? 'Only you, the committee and admins see results.'
+          : asCaptain
+            ? 'Only you and the coaches and managers of your squad or team see results.'
+            : asLeader && shareWithCommittee
+              ? 'Only you, the committee and admins see results.'
+              : 'Only you see results.'}
       </ThemedText>
       <ErrorText>{error}</ErrorText>
       <Button title="Send survey" onPress={send} busy={sending} />

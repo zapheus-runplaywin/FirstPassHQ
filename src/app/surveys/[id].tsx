@@ -16,6 +16,7 @@ import {
   closingDay,
   identityLabels,
   openingDay,
+  surveyAnswersSeenBy,
   surveyAudienceLabel,
   type SurveyAnswer,
   type SurveyDetail,
@@ -37,7 +38,9 @@ export default function SurveyScreen() {
   const minor = !!profile && isMinor(profile.date_of_birth, profile.under_17);
 
   const load = useCallback(async () => {
-    const { data, error: fetchError } = await supabase.rpc('survey_detail', { p_survey_id: id });
+    const { data, error: fetchError } = await supabase.rpc('survey_detail', {
+      p_survey_id: id,
+    });
     if (fetchError) setLoadError(fetchError.message);
     else setSurvey(data as SurveyDetail);
   }, [id]);
@@ -114,12 +117,16 @@ export default function SurveyScreen() {
 
       {survey.for_child_names ? (
         <Card>
-          <ThemedText type="small">{childCopyLabel(survey.for_child_names)}</ThemedText>
-          <ThemedText type="small" themeColor="textSecondary">
-            {survey.identity === 'anonymous'
-              ? 'Answers are anonymous, so nobody can see your child’s answers, including you.'
-              : 'You can read your child’s answers here once they’ve answered.'}
+          <ThemedText type="small">
+            {childCopyLabel(survey.for_child_names, survey.from_child)}
           </ThemedText>
+          {!survey.from_child ? (
+            <ThemedText type="small" themeColor="textSecondary">
+              {survey.identity === 'anonymous'
+                ? 'Answers are anonymous, so nobody can see your child’s answers, including you.'
+                : 'You can read your child’s answers here once they’ve answered.'}
+            </ThemedText>
+          ) : null}
         </Card>
       ) : survey.can_answer ? (
         <IdentityNotice survey={survey} />
@@ -200,7 +207,12 @@ export default function SurveyScreen() {
           <Button
             title="See results"
             variant="secondary"
-            onPress={() => router.push({ pathname: '/surveys/results', params: { id: survey.id } })}
+            onPress={() =>
+              router.push({
+                pathname: '/surveys/results',
+                params: { id: survey.id },
+              })
+            }
           />
           {survey.can_close ? (
             <ConfirmDelete
@@ -219,12 +231,13 @@ export default function SurveyScreen() {
 }
 
 function IdentityNotice({ survey }: { survey: SurveyDetail }) {
+  const seenBy = surveyAnswersSeenBy(survey);
   const text =
     survey.identity === 'anonymous'
-      ? 'This survey is anonymous. Nobody, including the committee and admins, can see who gave which answers.'
+      ? 'This survey is anonymous. Nobody, including whoever sent it, can see who gave which answers.'
       : survey.identity === 'named'
-        ? 'Your name goes with your answers. Only whoever sent it, the committee and admins see them.'
-        : 'You choose whether to give your name. Only whoever sent it, the committee and admins see answers.';
+        ? `Your name goes with your answers. Only ${seenBy} see them.`
+        : `You choose whether to give your name. Only ${seenBy} see answers.`;
   return (
     <Card>
       <ThemedText type="small">{text}</ThemedText>
@@ -262,7 +275,10 @@ function QuestionInput({
       <View style={styles.field}>
         <ChipGroup
           label={label}
-          options={Array.from({ length: max }, (_, i) => ({ value: String(i + 1), label: String(i + 1) }))}
+          options={Array.from({ length: max }, (_, i) => ({
+            value: String(i + 1),
+            label: String(i + 1),
+          }))}
           selected={value?.rating ? [String(value.rating)] : []}
           onToggle={(rating) => onChange({ rating: Number(rating) })}
         />
@@ -277,7 +293,10 @@ function QuestionInput({
     <View style={styles.field}>
       <ChipGroup
         label={label}
-        options={(q.options ?? []).map((o, i) => ({ value: String(i), label: o }))}
+        options={(q.options ?? []).map((o, i) => ({
+          value: String(i),
+          label: o,
+        }))}
         selected={chosen.map(String)}
         onToggle={(picked) => {
           const n = Number(picked);
