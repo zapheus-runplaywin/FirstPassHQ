@@ -1,0 +1,67 @@
+name: Tests
+
+# Runs the regression suite on every push to every branch, so a branch shows a
+# failure before its pull request is merged: lint, typecheck and the Jest unit
+# tests for the app, and the database tests in supabase/tests against every
+# migration. Every pull request adds tests for what it changes (AGENTS.md
+# "Tests").
+on:
+  push:
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: tests-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  app:
+    runs-on: ubuntu-24.04
+    steps:
+      - uses: actions/checkout@d23441a48e516b6c34aea4fa41551a30e30af803 # v6.1.0
+      - run: npm ci --no-audit --no-fund
+      # The checks below run even when an earlier one fails, so one run shows
+      # every problem.
+      - name: Lint
+        env:
+          EXPO_OFFLINE: '1'
+        run: npx expo lint
+      - name: Typecheck
+        if: ${{ !cancelled() }}
+        # expo start writes this file, which is not committed.
+        run: |
+          echo '/// <reference types="expo/types" />' > expo-env.d.ts
+          npx tsc --noEmit
+      - name: Unit tests
+        if: ${{ !cancelled() }}
+        run: npx jest --ci --coverage
+      # The edge functions run on Deno, which tsc doesn't check.
+      - name: Typecheck the edge functions
+        if: ${{ !cancelled() }}
+        run: >
+          npx -y deno@2.5.6 check
+          supabase/functions/purge-expired-injuries/index.ts supabase/functions/playhq/index.ts
+
+  database:
+    runs-on: ubuntu-24.04
+    services:
+      postgres:
+        image: postgres:16
+        env:
+          POSTGRES_PASSWORD: postgres
+        ports: ['5432:5432']
+        options: >-
+          --health-cmd pg_isready --health-interval 5s --health-timeout 5s --health-retries 10
+    env:
+      PGHOST: localhost
+      PGUSER: postgres
+      PGPASSWORD: postgres
+    steps:
+      - uses: actions/checkout@d23441a48e516b6c34aea4fa41551a30e30af803 # v6.1.0
+      - name: Database tests
+        run: scripts/run-sql-tests.sh
+      - name: Row count check catches lost rows
+        if: ${{ !cancelled() }}
+        run: scripts/test-check-row-counts.sh

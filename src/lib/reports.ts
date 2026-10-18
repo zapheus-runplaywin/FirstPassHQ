@@ -694,7 +694,13 @@ export type AttendanceSessionRow = {
   taken_by_name: string | null;
 };
 
-export type AttendanceMarkRow = { session_id: string; profile_id: string; present: boolean };
+export type AttendanceMarkRow = {
+  session_id: string;
+  profile_id: string;
+  present: boolean;
+  /** The member's name, kept on the mark once their account is deleted. */
+  member_name?: string | null;
+};
 
 /** A reported absence overlapping the report's period, without its details. */
 export type AbsenceReportRow = {
@@ -791,7 +797,9 @@ export function attendanceReport(
           const session = sessionById.get(mark.session_id);
           if (!session || groupOf(session) !== group) continue;
           const t = tally.get(mark.profile_id) ?? {
-            name: names.get(mark.profile_id) ?? 'Unnamed member',
+            name:
+              names.get(mark.profile_id) ??
+              (mark.member_name ? `${mark.member_name} (deleted)` : 'Unnamed member'),
             present: 0,
             total: 0,
           };

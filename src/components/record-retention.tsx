@@ -22,7 +22,26 @@ type Retention = {
   child_messages_months: number;
   /** Days after clearance an injury's files are kept. */
   injury_documents_days: number;
+  /** Months after closing a survey is kept, by who it's from and who sees it. */
+  surveys_months: number;
+  shared_surveys_months: number;
+  team_polls_months: number;
+  /** Months after clearance a cleared injury is kept. */
+  injuries_months: number;
+  /** Months after it ends a safeguarding record is kept. */
+  safeguarding_months: number;
+  /** Months after an award closes that who voted for whom is kept. */
+  award_votes_months: number;
+  /** Months after it closes an award and its results are kept; 0 keeps them for good. */
+  awards_months: number;
 };
+
+type SurveyRetention = Pick<Retention, 'surveys_months' | 'shared_surveys_months' | 'team_polls_months'>;
+
+type MoreRetention = Pick<
+  Retention,
+  'injuries_months' | 'safeguarding_months' | 'award_votes_months' | 'awards_months'
+>;
 
 type PeriodKey = Exclude<
   keyof Retention,
@@ -30,16 +49,31 @@ type PeriodKey = Exclude<
 >;
 
 async function loadRetention() {
-  const [{ data }, { data: childMonths }, { data: days }] = await Promise.all([
-    supabase.rpc('record_retention').maybeSingle(),
-    supabase.rpc('child_messages_keep_months'),
-    supabase.rpc('injury_documents_keep_days'),
-  ]);
+  const [{ data }, { data: childMonths }, { data: days }, { data: surveys }, { data: moreData }] =
+    await Promise.all([
+      supabase.rpc('record_retention').maybeSingle(),
+      supabase.rpc('child_messages_keep_months'),
+      supabase.rpc('injury_documents_keep_days'),
+      supabase.rpc('survey_retention').maybeSingle(),
+      supabase.rpc('more_record_retention').maybeSingle(),
+    ]);
   if (!data) return null;
+  const survey = surveys as SurveyRetention | null;
+  const more = moreData as MoreRetention | null;
   return {
-    ...(data as Omit<Retention, 'child_messages_months' | 'injury_documents_days'>),
+    ...(data as Omit<
+      Retention,
+      'child_messages_months' | 'injury_documents_days' | keyof SurveyRetention | keyof MoreRetention
+    >),
     child_messages_months: typeof childMonths === 'number' ? childMonths : 84,
     injury_documents_days: typeof days === 'number' ? days : 365,
+    surveys_months: survey?.surveys_months ?? 36,
+    shared_surveys_months: survey?.shared_surveys_months ?? 24,
+    team_polls_months: survey?.team_polls_months ?? 6,
+    injuries_months: more?.injuries_months ?? 84,
+    safeguarding_months: more?.safeguarding_months ?? 360,
+    award_votes_months: more?.award_votes_months ?? 12,
+    awards_months: more?.awards_months ?? 120,
   } as Retention;
 }
 
@@ -84,6 +118,24 @@ const periods: { key: PeriodKey; label: string; note: string; choices: number[] 
     choices: oneToFive,
   },
   {
+    key: 'surveys_months',
+    label: 'Surveys from the committee and admins',
+    note: 'From when the survey closes, with its questions, answers and who it went to. Recommended: 3 years.',
+    choices: [12, 24, 36, 60, 84],
+  },
+  {
+    key: 'shared_surveys_months',
+    label: 'Squad and team surveys shared with admins or the committee',
+    note: 'Coaches’ and managers’ surveys that admins see, from when they close. Recommended: 2 years.',
+    choices: [12, 24, 36, 60, 84],
+  },
+  {
+    key: 'team_polls_months',
+    label: 'Squad and team polls kept in the team',
+    note: 'Coaches’ quick polls nobody else sees, and captains’ polls, from when they close. Recommended: 6 months.',
+    choices: [3, 6, 12, 24],
+  },
+  {
     key: 'access_log_months',
     label: 'Who viewed a child’s records',
     note: 'Which adults opened a child’s details, so a guardian or the club can check later. Recommended: 7 years.',
@@ -93,14 +145,43 @@ const periods: { key: PeriodKey; label: string; note: string; choices: number[] 
 
 const injuryDocumentDays = [90, 365, 1095];
 
+/** Shown after injury documents. An awards period of 0 keeps them for good. */
+const laterPeriods: { key: PeriodKey; label: string; note: string; choices: number[] }[] = [
+  {
+    key: 'injuries_months',
+    label: 'Cleared injuries',
+    note: 'The injury, its updates, sign-offs and who viewed its documents, from when it was cleared, once its documents have gone. Injuries not yet cleared stay. Recommended: 7 years, which covers the time limits for injury claims, including for children.',
+    choices: [36, 60, 84, 120],
+  },
+  {
+    key: 'safeguarding_months',
+    label: 'Safeguarding records',
+    note: 'Stand-downs, Screening Unit notices, exemptions, consents, code of conduct acceptances, policy acknowledgements and guardian link history, from when each one ended. Anything still in force stays, and concerns are never removed. Recommended: 30 years.',
+    choices: [84, 120, 180, 240, 360],
+  },
+  {
+    key: 'award_votes_months',
+    label: 'Who voted for whom in awards',
+    note: 'From when the award closes. The points and results stay; only who cast each vote goes. Recommended: 1 year.',
+    choices: [12, 24, 36, 60],
+  },
+  {
+    key: 'awards_months',
+    label: 'Awards and their results',
+    note: 'From when the award closes, with every vote. At least as long as who voted for whom. Recommended: 10 years.',
+    choices: [36, 60, 120, 240, 0],
+  },
+];
+
 /** The choices, plus the club's saved period when it's one no longer offered. */
 function withSaved(choices: number[], saved: number | undefined) {
   return saved === undefined || choices.includes(saved)
     ? choices
-    : [...choices, saved].sort((a, b) => a - b);
+    : [...choices, saved].sort((a, b) => (a || Infinity) - (b || Infinity));
 }
 
 function months(m: number) {
+  if (m === 0) return 'Keep for good';
   if (m % 12 !== 0) return `${m} ${m === 1 ? 'month' : 'months'}`;
   const y = m / 12;
   return `${y} ${y === 1 ? 'year' : 'years'}`;
@@ -118,7 +199,7 @@ function days(d: number) {
  * How long the club keeps everyday records, and the switch that lets the
  * daily clean-up remove anything older. Concerns are never removed, and
  * injuries keep their own 12 months after an athlete leaves; their files go
- * a chosen time after clearance. A period the club saved before it stopped
+ * a chosen time after clearance, and the injury a chosen time after that. A period the club saved before it stopped
  * being offered still shows, so saving never shortens it.
  */
 export function RecordRetention() {
@@ -143,7 +224,7 @@ export function RecordRetention() {
     setBusy(true);
     setError(null);
     setNotice(null);
-    const { error: rpcError } = await supabase.rpc('admin_set_record_retention_all', {
+    const { error: firstError } = await supabase.rpc('admin_set_record_retention_all', {
       p_enabled: draft.enabled,
       p_check_ins_months: draft.check_ins_months,
       p_goals_months: draft.goals_months,
@@ -154,9 +235,25 @@ export function RecordRetention() {
       p_access_log_months: draft.access_log_months,
       p_injury_documents_days: draft.injury_documents_days,
     });
+    const { error: surveyError } = firstError
+      ? { error: null }
+      : await supabase.rpc('admin_set_survey_retention', {
+          p_surveys_months: draft.surveys_months,
+          p_shared_surveys_months: draft.shared_surveys_months,
+          p_team_polls_months: draft.team_polls_months,
+        });
+    const { error: moreError } = firstError || surveyError
+      ? { error: null }
+      : await supabase.rpc('admin_set_more_record_retention', {
+          p_injuries_months: draft.injuries_months,
+          p_safeguarding_months: draft.safeguarding_months,
+          p_award_votes_months: draft.award_votes_months,
+          p_awards_months: draft.awards_months,
+        });
     setBusy(false);
+    const rpcError = firstError ?? surveyError ?? moreError;
     if (rpcError) {
-      setError(rpcError.message);
+      setError(rpcError.message ?? 'That didn’t save. Try again.');
       return;
     }
     const row = (await loadRetention()) ?? draft;
@@ -167,12 +264,34 @@ export function RecordRetention() {
 
   const changed = JSON.stringify(saved) !== JSON.stringify(draft);
 
+  function period(p: (typeof periods)[number]) {
+    if (!draft) return null;
+    return (
+      <View key={p.key} style={styles.period}>
+        <ChipGroup
+          label={p.label}
+          options={withSaved(p.choices, saved?.[p.key]).map((m) => ({
+            value: String(m),
+            label: months(m),
+          }))}
+          selected={[String(draft[p.key])]}
+          onToggle={(value) => setDraft({ ...draft, [p.key]: Number(value) })}
+        />
+        <ThemedText type="small" themeColor="textSecondary">
+          {p.note}
+        </ThemedText>
+      </View>
+    );
+  }
+
   return (
     <View style={styles.section}>
       <ThemedText type="smallBold">Keeping records</ThemedText>
       <ThemedText type="small" themeColor="textSecondary">
         How long the club keeps members’ records, adults’ and children’s. Concerns are never
-        removed. Injuries are removed 12 months after an athlete leaves.
+        removed. Injuries are removed 12 months after an athlete leaves. Join requests are removed
+        90 days after they’re turned down or left unanswered, and temporary helpers a year after
+        their end date.
       </ThemedText>
       <Card style={styles.row}>
         <View style={styles.text}>
@@ -191,22 +310,7 @@ export function RecordRetention() {
           {...(Platform.OS === 'web' ? { activeThumbColor: theme.onAccent } : {})}
         />
       </Card>
-      {periods.map((p) => (
-        <View key={p.key} style={styles.period}>
-          <ChipGroup
-            label={p.label}
-            options={withSaved(p.choices, saved?.[p.key]).map((m) => ({
-              value: String(m),
-              label: months(m),
-            }))}
-            selected={[String(draft[p.key])]}
-            onToggle={(value) => setDraft({ ...draft, [p.key]: Number(value) })}
-          />
-          <ThemedText type="small" themeColor="textSecondary">
-            {p.note}
-          </ThemedText>
-        </View>
-      ))}
+      {periods.map(period)}
       <View style={styles.period}>
         <ChipGroup
           label="Injury documents"
@@ -222,6 +326,7 @@ export function RecordRetention() {
           sign-offs and who added and viewed each document stay. Recommended: 1 year.
         </ThemedText>
       </View>
+      {laterPeriods.map(period)}
       {saved?.updated_at ? (
         <ThemedText type="small" themeColor="textSecondary">
           Last changed by {saved.updated_by_name ?? 'an admin'},{' '}

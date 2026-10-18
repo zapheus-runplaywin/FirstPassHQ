@@ -21,6 +21,7 @@ import {
   type SessionPlanFile,
   useSessionPlanSummary,
 } from '@/lib/session-plans';
+import { canWorkWithChildren } from '@/lib/safety';
 import { supabase } from '@/lib/supabase';
 
 /**
@@ -29,7 +30,7 @@ import { supabase } from '@/lib/supabase';
  */
 export default function SessionPlanScreen() {
   const { id } = useLocalSearchParams<{ id: string }>();
-  const { session, isAdmin } = useAuth();
+  const { session, isAdmin, profile, exemption } = useAuth();
   const { canAdd } = useSessionPlanSummary();
   const [plan, setPlan] = useState<SessionPlan | null | undefined>(undefined);
   const [files, setFiles] = useState<SessionPlanFile[]>([]);
@@ -113,7 +114,8 @@ export default function SessionPlanScreen() {
   }
 
   const mine = plan.author_id === session?.user.id;
-  const canEdit = mine || isAdmin;
+  // As can_edit_session_plan: the author only while they can work with children.
+  const canEdit = isAdmin || (mine && canWorkWithChildren(profile, !!exemption?.valid));
   const times = formatTimes(plan.starts_at, plan.ends_at);
   const sharedWith = [
     plan.share_team_coaches ? `the other coaches of ${plan.team_name}` : '',

@@ -209,8 +209,10 @@ function Actions({
       </View>
     );
   }
-  // The committee can also send back a request a coach hasn't looked at yet.
-  if (isCommittee && injury.status === 'clearance_requested') {
+  // The committee can also send back a request a coach hasn't looked at yet,
+  // but not their own or their own child's (`can_report`), as the database
+  // never asks them to sign those off.
+  if (isCommittee && !injury.can_report && injury.status === 'clearance_requested') {
     return (
       <View style={styles.actions}>
         <Waiting text="Waiting for one of the athlete’s coaches or a physio to endorse it." />

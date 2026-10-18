@@ -1,0 +1,26 @@
+name: Security audit
+
+# Checks the app's npm packages for known vulnerabilities (CVEs) after every
+# merge to main, every week (new advisories appear without any change here),
+# and on pull requests that change packages, so a vulnerable package is caught
+# on its branch. Fails on any high or critical advisory not listed in
+# .github/known-vulnerabilities.json; see scripts/check-cves.py.
+on:
+  push:
+    branches: [main]
+  pull_request:
+    paths: ['package.json', 'package-lock.json', '.github/known-vulnerabilities.json', 'scripts/check-cves.py']
+  schedule:
+    - cron: '23 22 * * 0' # 6:23 am Monday in Perth
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  audit:
+    runs-on: ubuntu-24.04
+    steps:
+      - uses: actions/checkout@d23441a48e516b6c34aea4fa41551a30e30af803 # v6.1.0
+      - name: Known vulnerabilities
+        run: python3 scripts/check-cves.py

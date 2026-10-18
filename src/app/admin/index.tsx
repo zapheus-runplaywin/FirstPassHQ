@@ -7,6 +7,7 @@ import { ThemedText } from '@/components/themed-text';
 import { PressableCard, TextField } from '@/components/ui';
 import { Spacing } from '@/constants/theme';
 import { isMinor } from '@/lib/age';
+import { formatMonth } from '@/lib/format';
 import { PROFILE_COLUMNS } from '@/lib/auth';
 import { rejectionReasonLabels, roleLabels, rolesLabel, staffTitle } from '@/lib/labels';
 import { safetyIssues } from '@/lib/safety';
@@ -27,11 +28,13 @@ export default function MembersScreen() {
   const [withGuardian, setWithGuardian] = useState<Set<string>>(new Set());
   const [exemptions, setExemptions] = useState<Map<string, VolunteerExemption>>(new Map());
   const [groupTitles, setGroupTitles] = useState<Map<string, string>>(new Map());
+  const [inactive, setInactive] = useState<Map<string, string>>(new Map());
   const [search, setSearch] = useState('');
   const [refreshing, setRefreshing] = useState(false);
 
   const load = useCallback(async () => {
-    const [profilesResult, guardiansResult, exemptionsResult, staffResult] = await Promise.all([
+    const [profilesResult, guardiansResult, exemptionsResult, staffResult, inactiveResult] =
+      await Promise.all([
       supabase.from('profiles').select(PROFILE_COLUMNS).order('full_name', { nullsFirst: false }),
       supabase.from('guardianships').select('athlete_id'),
       supabase.rpc('admin_volunteer_exemptions'),
@@ -41,7 +44,16 @@ export default function MembersScreen() {
         .select('profile_id, team_role, coach_title, team:teams!inner (name, kind, sort_order)')
         .in('team_role', ['coach', 'manager'])
         .eq('team.archived', false),
+      // Members with no squad, team or club role for 2 years.
+      supabase.rpc('admin_inactive_members'),
     ]);
+    setInactive(
+      new Map(
+        ((inactiveResult.data as { profile_id: string; last_active: string }[] | null) ?? []).map(
+          (row) => [row.profile_id, row.last_active],
+        ),
+      ),
+    );
     const staff = (staffResult.data as unknown as StaffRow[] | null) ?? [];
     const byMember = new Map<string, StaffRow[]>();
     for (const row of staff) byMember.set(row.profile_id, [...(byMember.get(row.profile_id) ?? []), row]);
@@ -85,6 +97,7 @@ export default function MembersScreen() {
     approved.map((m) => [m.id, safetyIssues(m, withGuardian.has(m.id), exemptions.get(m.id))]),
   );
   const needsChecking = approved.filter((m) => issues.get(m.id)?.length);
+  const gone = approved.filter((m) => inactive.has(m.id));
   const notRequested = matching.filter((m) => m.status === 'pending' && !m.join_requested_at);
   const rejected = matching.filter((m) => m.status === 'rejected');
 
@@ -119,6 +132,13 @@ export default function MembersScreen() {
           issues.get(m.id)?.length
             ? `${rolesLabel(rolesOf(m))} · Needs checking`
             : rolesLabel(rolesOf(m), m.title, m.head_physio, groupTitles.get(m.id))
+        }
+      />
+      <Section
+        title="No team or role for 2 years"
+        members={gone}
+        describe={(m) =>
+          `${rolesLabel(rolesOf(m))} · Last active ${formatMonth(new Date(inactive.get(m.id) ?? ''))} · Delete them if they’ve left`
         }
       />
       <Section

@@ -6,6 +6,7 @@ import { Screen } from '@/components/screen';
 import { ThemedText } from '@/components/themed-text';
 import { Button, PressableCard } from '@/components/ui';
 import { Spacing } from '@/constants/theme';
+import { useAuth } from '@/lib/auth';
 import { concernStatusLabels } from '@/lib/concerns';
 import { localDay } from '@/lib/reports';
 import { supabase } from '@/lib/supabase';
@@ -16,6 +17,10 @@ import type { Concern } from '@/lib/types';
  * and admins. Nobody sees a concern about themselves.
  */
 export default function ConcernsScreen() {
+  const { isAdmin, isSafeguardingOfficer } = useAuth();
+  // The route guard lets only these in; this keeps the register's controls
+  // to them even so. The database returns no concerns to anyone else.
+  const handles = isAdmin || isSafeguardingOfficer;
   const [concerns, setConcerns] = useState<Concern[] | null>(null);
   const [refreshing, setRefreshing] = useState(false);
 
@@ -41,16 +46,20 @@ export default function ConcernsScreen() {
 
   return (
     <Screen refreshing={refreshing} onRefresh={onRefresh}>
-      <ThemedText type="small" themeColor="textSecondary">
-        Concerns raised by members, newest first. Only the Child Safety Officer, the Complaints
-        Manager and admins see them, and nobody sees one about themselves. Child abuse and serious
-        crimes go to Police and the governing body straight away.
-      </ThemedText>
-      <Button
-        title="Export the register as a PDF"
-        variant="secondary"
-        onPress={() => router.push('/concerns/report')}
-      />
+      {handles ? (
+        <>
+          <ThemedText type="small" themeColor="textSecondary">
+            Concerns raised by members, newest first. Only the Child Safety Officer, the Complaints
+            Manager and admins see them, and nobody sees one about themselves. Child abuse and serious
+            crimes go to Police and the governing body straight away.
+          </ThemedText>
+          <Button
+            title="Export the register as a PDF"
+            variant="secondary"
+            onPress={() => router.push('/concerns/report')}
+          />
+        </>
+      ) : null}
       <Section title="Open" concerns={open} empty="No open concerns." />
       <Section title="Closed" concerns={closed} empty="None closed yet." />
     </Screen>

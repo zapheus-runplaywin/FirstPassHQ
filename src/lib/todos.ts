@@ -6,6 +6,7 @@ import { formatShortDay } from '@/lib/format';
 import { gamePhase, gameTitle } from '@/lib/goals';
 import { formatDateString, toDateString } from '@/lib/injuries';
 import type { KpiReviewTodo } from '@/lib/kpis';
+import { closingDay, surveysToAnswer, type MySurvey } from '@/lib/surveys';
 import { WWCC_WARNING_DAYS } from '@/lib/safety';
 import { dueLabel, isOutstanding, type MyTraining } from '@/lib/training';
 import type { AwardSlot, CoachTeamGame, GoalGame, Injury } from '@/lib/types';
@@ -86,6 +87,7 @@ export function buildTodos({
   conduct = [],
   affiliation = null,
   kpiReviews = [],
+  surveys = [],
   today = new Date(),
 }: {
   userId: string | undefined;
@@ -125,6 +127,8 @@ export function buildTodos({
   affiliation?: AffiliationTodos | null;
   /** Season KPI reviews to write, and the member's own to confirm. */
   kpiReviews?: KpiReviewTodo[];
+  /** Surveys sent to the member, including ones already answered. */
+  surveys?: MySurvey[];
   today?: Date;
 }): Todo[] {
   const todos: Todo[] = [];
@@ -480,6 +484,14 @@ export function buildTodos({
         href: '/admin/club',
       });
     }
+    if ((safety.inactive_members ?? 0) > 0) {
+      todos.push({
+        key: 'inactive-members',
+        title: `${plural(safety.inactive_members ?? 0, 'member has', 'members have')} had no team or role for 2 years`,
+        detail: 'Delete them if they’ve left the club. Their safeguarding records stay.',
+        href: '/admin',
+      });
+    }
   }
 
   if (affiliation) {
@@ -518,6 +530,17 @@ export function buildTodos({
   }
 
   todos.push(...kpiReviewTodos(kpiReviews, toDateString(today)));
+
+  for (const survey of surveysToAnswer(surveys)) {
+    const closes = closingDay(survey.closes_at);
+    todos.push({
+      key: `survey-${survey.id}`,
+      title: `Answer the survey “${survey.title}”`,
+      detail: `${survey.everyone_answers ? 'Everyone must answer. ' : ''}Open until ${formatDateString(closes)}`,
+      href: { pathname: '/surveys/[id]', params: { id: survey.id } },
+      dueOn: closes,
+    });
+  }
 
   return todos.map((todo) =>
     todo.alert || !todo.dueOn ? todo : { ...todo, alert: dueAlert(todo.dueOn, today) ?? undefined },

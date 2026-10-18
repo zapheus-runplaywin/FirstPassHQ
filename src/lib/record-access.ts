@@ -8,7 +8,8 @@ export type RecordKind =
   | 'check_ins'
   | 'goals'
   | 'member_record'
-  | 'kpis';
+  | 'kpis'
+  | 'survey_answers';
 
 /** One time someone opened a child's record. */
 export type RecordAccess = {
@@ -28,6 +29,7 @@ export const recordKindLabels: Record<RecordKind, string> = {
   goals: 'Read game goals',
   member_record: 'Opened their member record',
   kpis: 'Read season KPIs',
+  survey_answers: 'Read their named survey answers',
 };
 
 /**
