@@ -301,7 +301,9 @@ function OverviewRow({ row, label }: { row: CheckInOverviewRow; label: string })
           ? checkInQuestions
               .map((q) => `${q.label} ${Number(row[`avg_${q.key}`]).toFixed(1)}`)
               .join(' · ')
-          : 'Scores show once 5 athletes have checked in'}
+          : row.checked_in_count >= 5
+            ? 'Scores are hidden while this group is within 4 check-ins of another'
+            : 'Scores show once 5 athletes have checked in'}
       </ThemedText>
     </Card>
   );

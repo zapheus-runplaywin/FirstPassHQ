@@ -736,7 +736,7 @@ function pausedReason(
           : 'Your exemption as an under-18 volunteer ended when you turned 18';
     return `${ended}, so your ${what} paused. Apply for a Working With Children Check, then send a club admin the card number and expiry date.`;
   }
-  return `Your Working With Children Check has expired or isn't recorded, so your ${what} paused. Renew it, then send a club admin the new card number and expiry date.`;
+  return `Your Working With Children Check has expired or isn't recorded, so your ${what} paused. Apply for one or renew it, then send a club admin the card number and expiry date. If you never work with children, ask an admin to exempt you with the reason.`;
 }
 
 /** Roles the member holds but can't use: an expired check or a stand-down. */
@@ -802,7 +802,8 @@ function JoinStatus() {
       <Card>
         <ThemedText type="smallBold">Request to join the club</ThemedText>
         <ThemedText type="small" themeColor="textSecondary">
-          Tell us who you are so an admin can add you to your squad or team.
+          Tell us who you are so an admin can approve you and, if you play, coach or manage, add
+          you to your squad or team.
         </ThemedText>
         <View style={styles.cardAction}>
           <Button title="Request to join" onPress={() => router.push('/join')} />
@@ -822,8 +823,9 @@ function JoinStatus() {
       <Card>
         <ThemedText type="smallBold">Waiting for approval</ThemedText>
         <ThemedText type="small" themeColor="textSecondary">
-          A club admin will approve your request and add you to your squad or team. Pull down to
-          check again.
+          {profile.requested_role === 'committee' || profile.requested_role === 'guest'
+            ? 'A club admin will approve your request. Pull down to check again.'
+            : 'A club admin will approve your request and add you to your squad or team. Pull down to check again.'}
         </ThemedText>
         {profile.verified_at ? (
           <ThemedText type="small" themeColor="textSecondary">
