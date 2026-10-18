@@ -68,11 +68,14 @@ export function useIsCheckInAthlete() {
   return profile?.status === 'approved' && hasRole(profile, 'athlete');
 }
 
-/** Coaches see their own athletes' check-ins. */
+/**
+ * Coaches see their own athletes' check-ins, but not in a squad whose squad
+ * phase is complete (the same rule as the database).
+ */
 export function useIsCheckInCoach() {
   const { profile, memberships } = useAuth();
   if (profile?.status !== 'approved') return false;
-  return memberships.some((m) => m.team_role === 'coach');
+  return memberships.some((m) => m.team_role === 'coach' && !m.team.selections_completed_at);
 }
 
 /** The committee, physios and admins see squad and team averages, never individuals. */

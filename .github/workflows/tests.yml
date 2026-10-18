@@ -56,3 +56,6 @@ jobs:
       - uses: actions/checkout@d23441a48e516b6c34aea4fa41551a30e30af803 # v6.1.0
       - name: Database tests
         run: scripts/run-sql-tests.sh
+      - name: Row count check catches lost rows
+        if: ${{ !cancelled() }}
+        run: scripts/test-check-row-counts.sh

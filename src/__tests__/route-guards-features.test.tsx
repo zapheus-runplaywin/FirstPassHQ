@@ -119,23 +119,49 @@ const FEATURE_ROUTES: FeatureCase[] = [
   },
 ];
 
+/**
+ * Member screens an admin doesn't use (route-guards-roles.test.tsx), with a
+ * member who opens each one while its feature is on. Every other screen is
+ * checked with an admin.
+ */
+const OPENED_BY: Record<string, PersonaName> = {
+  'injuries/new': 'athlete',
+  'attendance/family/[id]': 'athlete',
+  'attendance/absence': 'athlete',
+  'check-in': 'athlete',
+  'check-ins/athlete/[id]': 'coach',
+  'goals/athlete/[id]': 'coach',
+  'goals/game': 'athlete',
+  'goals/team': 'coach',
+};
+const openerOf = (route: string): PersonaName => OPENED_BY[route] ?? 'admin';
+
 it('the feature table names real screens', () => {
   for (const { routes } of FEATURE_ROUTES) {
     for (const route of routes) expect(ROUTES).toContain(route);
   }
+  for (const route of Object.keys(OPENED_BY)) expect(ROUTES).toContain(route);
 });
 
 describe.each(FEATURE_ROUTES)('the $feature switch', ({ feature, routes, offByDefault }) => {
-  const cases = routes.map((route) => ({ route }));
+  const cases = routes.map((route) => ({ route, who: openerOf(route) }));
 
   it.each(cases)('off: an admin can’t open $route', async ({ route }) => {
     setClubFeatures({ [feature]: false });
     await expectTurnedAway('admin', route, 'index');
   });
 
-  it.each(cases)('on: an admin opens $route', async ({ route }) => {
+  const memberOnly = cases.filter(({ who }) => who !== 'admin');
+  if (memberOnly.length > 0) {
+    it.each(memberOnly)('off: the $who who uses $route can’t open it', async ({ route, who }) => {
+      setClubFeatures({ [feature]: false });
+      await expectTurnedAway(who, route, 'index');
+    });
+  }
+
+  it.each(cases)('on: the $who opens $route', async ({ route, who }) => {
     setClubFeatures({ [feature]: true });
-    await expectReaches('admin', route);
+    await expectReaches(who, route);
   });
 
   const memberRoutes = cases.filter(({ route }) => !route.startsWith('admin/'));
@@ -148,8 +174,8 @@ describe.each(FEATURE_ROUTES)('the $feature switch', ({ feature, routes, offByDe
 
   it(offByDefault ? 'starts off until an admin turns it on' : 'starts on', async () => {
     setClubFeatures({});
-    if (offByDefault) await expectTurnedAway('admin', routes[0], 'index');
-    else await expectReaches('admin', routes[0]);
+    if (offByDefault) await expectTurnedAway(openerOf(routes[0]), routes[0], 'index');
+    else await expectReaches(openerOf(routes[0]), routes[0]);
   });
 });
 
