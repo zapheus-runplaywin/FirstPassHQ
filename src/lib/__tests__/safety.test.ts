@@ -549,6 +549,13 @@ describe('safetyIssues', () => {
     ]);
   });
 
+  it('gives 1 March for someone born on 29 February', () => {
+    jest.setSystemTime(new Date(2026, 1, 10, 12));
+    expect(safetyIssues(profile({ date_of_birth: '2008-02-29' }), true)).toEqual([
+      'Turns 18 on 01/03/2026',
+    ]);
+  });
+
   it('lists every reason together', () => {
     expect(
       safetyIssues(
