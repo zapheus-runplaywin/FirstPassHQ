@@ -51,7 +51,7 @@ RULE: migrations must be safe to run on the production database and must never t
 - When a change needs one of those, move or copy the data first, say in the PR exactly what would be lost, and wait for permission before merging.
 - Never edit a migration that has already been merged. Fix things with a new migration.
 - Write migrations so they can be re-run or fail cleanly: run them in one transaction, and use `if not exists` / `create or replace` where it fits.
-- Test every migration against a local Postgres loaded with realistic data before opening the PR, and confirm row counts are unchanged. Add or update its tests in `supabase/tests/` (see "Tests").
+- Test every migration against a local Postgres loaded with realistic data before opening the PR, and confirm row counts are unchanged: `scripts/check-row-counts.sh` does this on the sample data, and "Check migrations" runs it on every pull request. Add or update its tests in `supabase/tests/` (see "Tests").
 - Migrations deploy automatically: `.github/workflows/deploy-migrations.yml` runs `supabase db push` after a merge to main. It and the pull request check run `scripts/check-migrations.py`, which stops anything that can lose data.
 - Only Matt gives permission for data loss: he adds the `data-loss-approved` label to the PR before merging it. After the merge, the deploy goes ahead when `scripts/check-data-loss-approval.py` confirms Matt added that label to the PR that added each flagged migration and it was still there when the PR merged. Otherwise he runs "Deploy migrations" by hand with "Allow data loss" ticked. Never add that label, tick that box, or weaken either check yourself.
 
