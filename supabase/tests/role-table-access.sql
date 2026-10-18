@@ -337,7 +337,40 @@ insert into matrix (phase, label, q, counts) values
   (4, 'game_goals: Kai''s, head coach stood down', $$select 1 from public.game_goals where athlete_id = pg_temp.m('32')$$,
       '{0,0,0,0,0,0,0,1,0,0,1,0,0,0}'),
   (4, 'attendance_sessions: the club-wide clinic, head coach stood down', $$select 1 from public.attendance_sessions where id = '00000000-0000-0000-0000-0000000000c5'$$,
-      '{1,1,0,0,0,1,0,0,0,0,1,1,0,0}');
+      '{1,1,0,0,0,1,0,0,0,0,1,1,0,0}'),
+  -- Nor the records she made as a coach: the register she took, her plans,
+  -- and the messages she sent with their receipts.
+  (4, 'attendance_marks: the register Casey took, head coach stood down', $$select 1 from public.attendance_marks where session_id = '00000000-0000-0000-0000-0000000000a5'$$,
+      '{2,2,0,0,0,2,0,0,0,0,2,0,0,0}'),
+  (4, 'attendance_sessions: the session Casey took, head coach stood down', $$select 1 from public.attendance_sessions where id = '00000000-0000-0000-0000-0000000000a5'$$,
+      '{1,1,0,0,0,1,0,0,0,0,1,0,0,0}'),
+  (4, 'session_plans: Casey''s private plan, head coach stood down', $$select 1 from public.session_plans where id = '00000000-0000-0000-0000-0000000000a7'$$,
+      '{1,0,0,0,0,0,0,0,0,0,0,0,0,0}'),
+  -- Plans she shared stay with the squad: its athletes, their guardians and its other coaches.
+  (4, 'session_plans: Casey''s plans, head coach stood down', $$select 1 from public.session_plans where author_id = pg_temp.m('11')$$,
+      '{3,0,0,0,0,0,0,1,1,1,2,0,0,0}'),
+  (4, 'messages: Casey''s squad message, head coach stood down', $$select 1 from public.messages where id = '00000000-0000-0000-0000-0000000000c1'$$,
+      '{1,0,0,0,1,1,1,1,1,1,1,0,0,0}'),
+  (4, 'message_recipients: receipts of Casey''s squad message, head coach stood down', $$select 1 from public.message_recipients where message_id = '00000000-0000-0000-0000-0000000000c1' and profile_id <> auth.uid()$$,
+      '{8,0,0,0,0,0,0,0,0,0,0,0,0,0}'),
+  (4, 'my_sent_messages: head coach stood down', $$select 1 from public.my_sent_messages()$$,
+      '{1,0,0,0,0,0,0,0,0,0,0,0,0,0}'),
+  (4, 'message_receipts: Casey''s squad message, head coach stood down', $$select 1 from public.message_receipts('00000000-0000-0000-0000-0000000000c1')$$,
+      '{8,0,0,0,0,0,0,0,0,0,0,0,0,0}'),
+  -- Once it's lifted she reads them again.
+  (5, 'attendance_marks: the register Casey took, stand-down lifted', $$select 1 from public.attendance_marks where session_id = '00000000-0000-0000-0000-0000000000a5'$$,
+      '{2,2,0,2,0,2,0,0,0,0,2,0,0,0}'),
+  (5, 'session_plans: Casey''s private plan, stand-down lifted', $$select 1 from public.session_plans where id = '00000000-0000-0000-0000-0000000000a7'$$,
+      '{1,0,0,1,0,0,0,0,0,0,0,0,0,0}'),
+  (5, 'messages: Casey''s squad message, stand-down lifted', $$select 1 from public.messages where id = '00000000-0000-0000-0000-0000000000c1'$$,
+      '{1,0,0,1,1,1,1,1,1,1,1,0,0,0}'),
+  (5, 'message_recipients: receipts of Casey''s squad message, stand-down lifted', $$select 1 from public.message_recipients where message_id = '00000000-0000-0000-0000-0000000000c1' and profile_id <> auth.uid()$$,
+      '{8,0,0,8,0,0,0,0,0,0,0,0,0,0}'),
+  (5, 'my_sent_messages: stand-down lifted', $$select 1 from public.my_sent_messages()$$,
+      '{1,0,0,1,0,0,0,0,0,0,0,0,0,0}'),
+  -- When Olly's check lapses he no longer reads the register he took.
+  (6, 'attendance_sessions: the session Olly took, his check lapsed', $$select 1 from public.attendance_sessions where id = '00000000-0000-0000-0000-0000000000b5'$$,
+      '{1,1,0,0,0,0,0,0,0,0,0,0,0,0}');
 
 -- The sample records are there to be read (checked as the database owner).
 select pg_temp.ok('sample records loaded', (select count(*) = 2 from public.injuries) and (select count(*) = 2 from public.check_ins)
@@ -367,6 +400,14 @@ select pg_temp.cell(x.label, p.who, p.n, x.q, x.counts[p.ord]) from matrix x cro
 reset role;
 select pg_temp.as_member('01');
 select pg_temp.works('admin lifts Casey''s stand-down', $$select public.admin_lift_stand_down('00000000-0000-0000-0000-000000000011', 'Cleared')$$);
+set role authenticated;
+select pg_temp.cell(x.label, p.who, p.n, x.q, x.counts[p.ord]) from matrix x cross join personas p where x.phase = 5 order by x.ord, p.ord;
+reset role;
+
+update public.profiles set wwcc_expires_on = current_date - 1 where id = '00000000-0000-0000-0000-000000000015';
+set role authenticated;
+select pg_temp.cell(x.label, p.who, p.n, x.q, x.counts[p.ord]) from matrix x cross join personas p where x.phase = 6 order by x.ord, p.ord;
+reset role;
 
 -- ---------------------------------------------------------------------------
 -- Tables read only through functions. Nobody, admins included, reads their
