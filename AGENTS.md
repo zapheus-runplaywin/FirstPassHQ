@@ -59,7 +59,9 @@ RULE: migrations must be safe to run on the production database and must never t
 
 RULE: every change includes tests that cover it well enough to make a strong regression suite, and CI runs them (Matt, 2026-10-18). A failure should show on the branch, before merge.
 
-- The "Tests" workflow runs on every push to every branch: lint, typecheck, Jest unit tests (`npm test`), and the database tests (`scripts/run-sql-tests.sh`).
+The test strategy, layers and the kinds of member every access test considers are in `docs/testing-strategy.md`. Role-based access is the priority: a new access rule is tested for every kind of member, both ways.
+
+- The "Tests" workflow runs on every push to every branch: lint, typecheck, Jest (`npm test`, with a coverage floor in `package.json` that may only go up), and the database tests (`scripts/run-sql-tests.sh`).
 - App logic goes in tests next to it, such as `src/lib/__tests__/<module>.test.ts`. Pin today's date in any test that depends on it; CI runs in UTC.
 - Database changes get a file in `supabase/tests/`, named for the feature: who may call each function and who is refused, the rows it changes, and the child-safety and visibility rules. Copy the PASS/FAIL style of `record-access.sql`, and catch expected errors with `pg_temp.fails`, because any `ERROR` fails the run. Add sample people to `supabase/tests/setup/seed-members.sql` only when no existing one fits, and keep the existing ones working.
 - Run them locally against Postgres 16: `PGHOST=localhost PGUSER=postgres PGPASSWORD=... scripts/run-sql-tests.sh [name ...]`.

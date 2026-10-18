@@ -42,6 +42,7 @@
     "react-native-worklets": "0.10.1"
   },
   "devDependencies": {
+    "@testing-library/react-native": "^13.3.3",
     "@types/aes-js": "^3.1.4",
     "@types/jest": "29.5.14",
     "@types/react": "~19.2.2",
@@ -49,6 +50,7 @@
     "eslint-config-expo": "^57.0.2",
     "jest": "~29.7.0",
     "jest-expo": "~57.0.6",
+    "react-test-renderer": "19.2.3",
     "typescript": "~6.0.3"
   },
   "scripts": {
@@ -70,6 +72,22 @@
     "testPathIgnorePatterns": [
       "/node_modules/",
       "/supabase/"
-    ]
+    ],
+    "collectCoverageFrom": [
+      "src/**/*.{ts,tsx}",
+      "!src/**/__tests__/**"
+    ],
+    "coverageReporters": [
+      "text-summary",
+      "json-summary"
+    ],
+    "coverageThreshold": {
+      "global": {
+        "statements": 18,
+        "branches": 17,
+        "functions": 17,
+        "lines": 17
+      }
+    }
   }
 }

@@ -36,7 +36,7 @@ jobs:
           npx tsc --noEmit
       - name: Unit tests
         if: ${{ !cancelled() }}
-        run: npx jest --ci
+        run: npx jest --ci --coverage
 
   database:
     runs-on: ubuntu-24.04
