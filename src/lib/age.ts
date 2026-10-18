@@ -18,7 +18,10 @@ export function parseDate(text: string): string | null | undefined {
   if (!match) return undefined;
   const [day, month, year] = match.slice(1).map(Number);
   const date = new Date(Date.UTC(year, month - 1, day));
-  if (date.getUTCMonth() !== month - 1 || date.getUTCDate() !== day) return undefined;
+  // Date.UTC reads years 0 to 99 as 1900 to 1999, so check the year too.
+  if (date.getUTCFullYear() !== year || date.getUTCMonth() !== month - 1 || date.getUTCDate() !== day) {
+    return undefined;
+  }
   return date.toISOString().slice(0, 10);
 }
 

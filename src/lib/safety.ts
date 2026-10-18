@@ -371,8 +371,10 @@ export function safetyIssues(
   if (hasRole(member, 'athlete') && isMinor(member.date_of_birth, member.under_17)) {
     if (!hasGuardian) issues.push('Under 18 with no guardian linked');
     if (member.date_of_birth) {
-      const [year, month, day] = member.date_of_birth.split('-');
-      const eighteenth = `${Number(year) + 18}-${month}-${day}`;
+      // Built as a date, so someone born on 29 February turns 18 on 1 March in
+      // other years, as in isMinor and the database.
+      const [year, month, day] = member.date_of_birth.split('-').map(Number);
+      const eighteenth = new Date(Date.UTC(year + 18, month - 1, day)).toISOString().slice(0, 10);
       if (eighteenth <= in30Days) issues.push(`Turns 18 on ${formatDate(eighteenth)}`);
     }
   }
