@@ -242,5 +242,31 @@ describe('parseIcs', () => {
       );
       expect(events).toHaveLength(500);
     });
+
+    it('shows a weekly event that started years before the range', () => {
+      const events = parse(
+        ics(['UID:old-weekly', 'DTSTART:20150106T090000Z', 'DTEND:20150106T100000Z', 'RRULE:FREQ=WEEKLY']),
+      );
+      expect(events.map((e) => e.start.toISOString())).toEqual([
+        '2026-10-06T09:00:00.000Z',
+        '2026-10-13T09:00:00.000Z',
+        '2026-10-20T09:00:00.000Z',
+        '2026-10-27T09:00:00.000Z',
+      ]);
+    });
+
+    it('shows a daily event that started more than 500 days before the range', () => {
+      const events = parse(
+        ics(['UID:old-daily', 'DTSTART:20230101T070000Z', 'DTEND:20230101T080000Z', 'RRULE:FREQ=DAILY']),
+      );
+      expect(events).toHaveLength(31);
+    });
+
+    it('caps the steps through an endless rule that started long ago', () => {
+      const events = parse(
+        ics(['UID:old-hourly', 'DTSTART:20200101T000000Z', 'DTEND:20200101T000100Z', 'RRULE:FREQ=HOURLY']),
+      );
+      expect(events).toHaveLength(0);
+    });
   });
 });
