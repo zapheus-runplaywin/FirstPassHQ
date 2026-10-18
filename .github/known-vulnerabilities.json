@@ -1,0 +1,15 @@
+{
+  "_about": "High or critical npm advisories with no fixed release yet. scripts/check-cves.py lets these through and fails on any other. Remove an entry as soon as a fix ships. Checked 2026-10-18.",
+  "advisories": [
+    {
+      "id": "GHSA-vfj7-8cjw-p6xm",
+      "package": "braces <=3.0.3",
+      "reason": "No fixed release (3.0.3 is the latest). Comes in through Metro, the bundler that builds the app on a developer's computer or Expo's servers, and through Jest; it isn't in the app on phones, and only patterns written by the developers reach it."
+    },
+    {
+      "id": "GHSA-86w9-cpqp-85rv",
+      "package": "node-forge <=1.4.0",
+      "reason": "No fixed release (1.4.0 is the latest). Comes in through @expo/code-signing-certificates in the Expo CLI and expo-updates' build tooling, used when signing updates at build time; it isn't in the app on phones."
+    }
+  ]
+}
