@@ -37,6 +37,12 @@ jobs:
       - name: Unit tests
         if: ${{ !cancelled() }}
         run: npx jest --ci --coverage
+      # The edge functions run on Deno, which tsc doesn't check.
+      - name: Typecheck the edge functions
+        if: ${{ !cancelled() }}
+        run: >
+          npx -y deno@2.5.6 check
+          supabase/functions/purge-expired-injuries/index.ts supabase/functions/playhq/index.ts
 
   database:
     runs-on: ubuntu-24.04

@@ -71,7 +71,7 @@
     ],
     "testPathIgnorePatterns": [
       "/node_modules/",
-      "/supabase/"
+      "/supabase/(?!functions/[^/]+/__tests__/)"
     ],
     "collectCoverageFrom": [
       "src/**/*.{ts,tsx}",
@@ -83,10 +83,10 @@
     ],
     "coverageThreshold": {
       "global": {
-        "statements": 18,
-        "branches": 17,
-        "functions": 17,
-        "lines": 17
+        "statements": 28,
+        "branches": 28,
+        "functions": 26,
+        "lines": 28
       }
     }
   }

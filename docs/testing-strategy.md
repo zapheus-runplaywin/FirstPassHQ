@@ -14,6 +14,7 @@ Most of the protection lives in the database, because row level security and dat
 | App role rules | Every `use…` access hook in `src/lib` (for example `useCanSeeInjuries` and `useCanSendMessages`) gives the right answer for each kind of member. Also covers `AuthProvider`'s paused and stood-down roles and `isAdmin` | `src/lib/__tests__/role-access.test.tsx`, `auth.test.tsx` | `npm test` |
 | App logic | Pure rules and formatting: under-18 age, role combinations, Working With Children Check status and exemptions, to-dos and due dates, calendar parsing, PlayHQ links, surveys, awards, goals and more | `src/lib/__tests__/<module>.test.ts` | `npm test` |
 | Routes and screens | Through the real `src/app/_layout.tsx`: who can open each screen by deep link (admin screens only for admins, every other member screen only for the roles it's for, through `useRouteAccess` in `src/lib/route-access.ts`, nothing for signed-out members, and feature switches), and which cards each kind of member sees on Home and Administration | `src/__tests__/*.test.tsx`, `src/lib/__tests__/route-access.test.tsx` | `npm test` |
+| Edge functions | The nightly clean-up removes files before the records they belong to, stops at the first failure, batches files 500 at a time and refuses a wrong purge key; the PlayHQ reader is admin-only, refuses bad links and reads seasons, games, byes and time zones correctly | `supabase/functions/<function>/__tests__/*.test.ts` (the logic is in `purge.ts` and `fixtures.ts`; `index.ts` only starts it) | `npm test`, and `deno check` in the Tests workflow |
 | Static checks | Lint and TypeScript | `eslint.config.js`, `tsconfig.json` | `npx expo lint`, `npx tsc --noEmit` |
 | Migration safety | Merged migrations stay unchanged, versions are unique, nothing exposes or loses data, no table has fewer rows after a branch's new migrations run on the sample data, and migrations apply to a fresh Supabase database | `scripts/check-migrations.py`, `scripts/check-migration-security.py`, `scripts/check-row-counts.sh` (sample data in `supabase/tests/setup/sample-records.sql`) | "Check migrations" workflow |
 | Known vulnerabilities | Fails on any high or critical npm advisory not in `.github/known-vulnerabilities.json` | `scripts/check-cves.py` | "Security audit" workflow |
@@ -66,6 +67,5 @@ The database tests need Postgres 16 and a user that can create databases. `supab
 
 ## What isn't covered yet
 
-- **Supabase edge functions** (`supabase/functions/playhq`, `purge-expired-injuries`).
 - **End-to-end tests on a phone or in a browser:** the screenshot fixtures in the project's shared files drive the web build with sample data for the user guide, but they don't assert anything.
 - **The real Supabase platform:** the database tests run on plain Postgres with stubs. "Check migrations" separately confirms that migrations apply to a real Supabase database.
