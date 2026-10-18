@@ -5,14 +5,16 @@
 -- 20261012210000_guardians_end_at_18_and_check_in_averages.sql (my_athletes),
 -- 20261007120000_injuries.sql and 20261009110000_multiple_roles.sql
 -- (report_injury), 20261007140000_keep_injury_records.sql (injury_report) and
--- 20261012001000_team_physios.sql (send_back_clearance). Rules checked: a
+-- 20261012001000_team_physios.sql and 20261018000000_send_back_needs_consent.sql
+-- (send_back_clearance). Rules checked: a
 -- member marks only their own copy read, and only once; senders see how many
 -- read their messages and recipients can't see each other's receipts; a
 -- guardian's athletes are their children under 18; athletes and their
 -- guardians report injuries, nobody else; the injury report is for admins;
 -- a clearance is sent back by the athlete's coaches, physios or the committee
 -- while it waits for them, by the committee once endorsed, never by the
--- athlete, and always with a note. Prints one line per check.
+-- athlete, never for a child without a guardian's health consent, and always
+-- with a note. Prints one line per check.
 \set ON_ERROR_STOP 0
 \pset tuples_only on
 \pset format unaligned
@@ -206,13 +208,23 @@ select pg_temp.ok('endorsement cleared on send-back', (select status = 'injured'
 update public.injuries set status = 'cleared' where body_area = 'Knee';
 select pg_temp.fails('a cleared injury cannot be sent back', format('select public.send_back_clearance(%L, %L)', pg_temp.injury('Knee'), 'Late'));
 
--- A child's clearance, once a guardian has given health consent.
+-- A child's clearance can't be sent back before a guardian gives health
+-- consent (20261018000000_send_back_needs_consent.sql).
+select pg_temp.works('guardian asks for clearance on the shoulder', $s$ select pg_temp.ask_for_clearance('Shoulder', '41') $s$);
+select pg_temp.ok('guardian asked for the child''s clearance', pg_temp.status('Shoulder') = 'clearance_requested', true);
+select pg_temp.as_member('11');
+select pg_temp.fails('coach cannot send back without health consent', format('select public.send_back_clearance(%L, %L)', pg_temp.injury('Shoulder'), 'See the physio first'));
+select pg_temp.as_member('14');
+select pg_temp.fails('physio cannot send back without health consent', format('select public.send_back_clearance(%L, %L)', pg_temp.injury('Shoulder'), 'See the physio first'));
+select pg_temp.as_member('22');
+select pg_temp.fails('committee cannot send back without health consent', format('select public.send_back_clearance(%L, %L)', pg_temp.injury('Shoulder'), 'See the physio first'));
+select pg_temp.ok('still waiting without consent', pg_temp.status('Shoulder') = 'clearance_requested', true);
+
+-- Once a guardian has given health consent.
 do $$ begin
   perform set_config('request.jwt.claim.sub', '00000000-0000-0000-0000-000000000041', false);
   perform public.set_child_consent('00000000-0000-0000-0000-000000000031', true, true);
 end $$;
-select pg_temp.works('guardian asks for clearance on the shoulder', $s$ select pg_temp.ask_for_clearance('Shoulder', '41') $s$);
-select pg_temp.ok('guardian asked for the child''s clearance', pg_temp.status('Shoulder') = 'clearance_requested', true);
 select pg_temp.as_member('31');
 select pg_temp.fails('child cannot send back their own clearance', format('select public.send_back_clearance(%L, %L)', pg_temp.injury('Shoulder'), 'No'));
 select pg_temp.as_member('41');

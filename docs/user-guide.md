@@ -1222,7 +1222,7 @@ the result.
 **Injuries** lists your athletes' current injuries with their restrictions and expected return
 date. Choose **Including cleared** to see past injuries too. An athlete under 18's injuries show
 only once a parent or guardian has given consent for injuries; until then, nobody can endorse
-them for clearance.
+or send back their clearance.
 
 Open an injury to see its full history, including the physio's updates and documents, and to
 **Raise a concern** about it. Opening an under 18's injury is itself recorded for their parents,
@@ -1536,7 +1536,8 @@ the person who endorsed it and the athlete's own parents or guardians. Open it, 
 - **Accept clearance** clears the athlete to train and play, or
 - **Send back** with a note.
 
-The committee can also send back a request that no coach or physio has looked at yet. Tap **View**
+The committee can also send back a request that no coach or physio has looked at yet. Nobody can
+send back an under 18's clearance before a parent or guardian has given consent for injuries. Tap **View**
 on a document to read it in the app (see [Viewing proof documents](#viewing-proof-documents)).
 While a clearance is waiting for you to accept it, you also get **Share**, to save its documents to
 the club's records, such as OneDrive. Share disappears once it's accepted or sent back, and nobody
@@ -2734,7 +2735,8 @@ Working With Children Check, and another admin must do it.
   (see [Your child's attendance](#your-childs-attendance)).
 - **Nothing is shared without your consent.** Your child's check-ins and injuries are seen by
   their coaches, physios and the committee only after you consent in the app (see [Giving
-  consent](#giving-consent)). The one exception is the attendance register: whoever takes
+  consent](#giving-consent)), and until then none of them can endorse, accept or send back your
+  child's clearance. The one exception is the attendance register: whoever takes
   attendance sees that your child is injured and when they're expected back, and nothing else, so
   they know to expect your child at training to support the team. You can withdraw it at any time, and every change is kept.
 - **You and your child agree how to behave.** If the club asks for it in the app, each season you
