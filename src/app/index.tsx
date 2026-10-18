@@ -228,10 +228,11 @@ export default function HomeScreen() {
     approved && (memberships.length > 0 || !(isAdmin || hasRole(profile, 'committee')));
   const getsMessages = useGetsMessages();
   // Temporary helpers only see the steps to be cleared, and Raise a concern.
+  // Checked on the roles held, so a stood-down helper still only sees these.
   const volunteer =
     profile?.status !== 'rejected' &&
     (approved
-      ? hasRole(profile, 'volunteer')
+      ? hasRole(profile, 'volunteer') || !!paused?.roles.includes('volunteer')
       : !!profile?.join_requested_at && profile.requested_role === 'volunteer');
 
   return (

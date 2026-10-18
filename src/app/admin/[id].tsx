@@ -776,7 +776,7 @@ export default function MemberScreen() {
           <ThemedText type="small" themeColor="textSecondary">
             {headPhysio
               ? 'Looks after every athlete, whether or not they are in a squad or team.'
-              : `Looks after the athletes in the ${usesSquads ? 'squads and teams' : 'teams'} you place them in below, or every athlete if they are in none.`}
+              : `Looks after the athletes in the ${usesSquads ? 'squads and teams' : 'teams'} you place them in below. In none, they look after nobody until you place them or make them Head Physio.`}
           </ThemedText>
         </View>
       ) : null}
@@ -1010,7 +1010,7 @@ export default function MemberScreen() {
           ) : null}
           {volunteerBasis && volunteerBasis !== openExemption?.basis ? (
             <ThemedText type="small" themeColor="textSecondary">
-              Once you save, they’ll get a to-do to accept the exemption declaration. Their{' '}
+              Once you save, they’ll {roles.includes('volunteer') ? 'see Read the declaration in their Before you help steps' : 'get a to-do to accept the exemption declaration'}. Their{' '}
               {rolesLabel(
                 roles.filter((r) => wwccRoles.includes(r) || r === 'volunteer'),
               ).toLowerCase()}{' '}

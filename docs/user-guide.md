@@ -44,7 +44,7 @@ each of their roles can.
 | **Manager**   | Squad and team managers. The app gives each manager a title from their team, or their squad until they're in a team, such as "Manager, 17 & Under". Need a current Working With Children Check; the role pauses while it's expired. A parent volunteering at their child's club, a volunteer under 18, or a short-term visitor or national event helper from outside WA has an exemption instead (see [Volunteer exemptions](#volunteer-exemptions)). |
 | **Committee** | Club committee members. Each can add a title, such as President or Secretary, shown with their role. Only committee members and admins can add their own title. Need a current Working With Children Check unless an admin exempts them with a reason (not if they also coach, manage or physio); the role pauses if a recorded check expires or was recorded without an expiry date. Committee members approved before checks were needed keep the role without one only until the club's **committee checks date**. |
 | **Physio**    | The club's physiotherapists. A physio can be placed in squads or teams to look after their athletes, and one can be the **Head Physio**, who looks after every athlete. Need a current Working With Children Check; the role pauses while it's expired. A parent volunteering at their child's club, a volunteer under 18, or a short-term visitor or national event helper from outside WA has an exemption instead (see [Volunteer exemptions](#volunteer-exemptions)). |
-| **Guest**     | Anyone else the club lets in, such as partners and sponsors. Guests can only look.                   |
+| **Guest**     | Anyone else the club lets in, such as partners and sponsors. Guests see only the club calendar, keep their own tasks and can raise a concern. They aren't in squads or teams, get no messages, don't vote and aren't asked for a Working With Children Check or the code of conduct. |
 | **Statistician** | The people who record live game stats on a tablet in FirstPass Vantage, which coaches watch live in FirstPass Vision. Statisticians see every game the club records; a game's coaches and managers see their own squad's or team's. Any member can hold it alongside another role, such as a manager or an athlete who isn't playing. The role pauses while a member is stood down. |
 | **Temporary helper** | Someone helping for a day or a short time, such as at a carnival, clinic or tournament, paid or unpaid. Not necessarily a member of the club: this is only a role so the app can onboard them. The app screens them: a Working With Children Check or an exemption covering every day they help, and the club's code of conduct and safeguarding policy accepted. They see none of the club's features or messages, and their time ends by itself after their last day (see [Temporary helpers](#temporary-helpers)). |
 | **Admin**     | The people who run the app. Admin is granted by another admin, never requested. Admins can add a title too. Need a current Working With Children Check unless another admin exempts them. An expired check doesn't pause the admin role, so the club is never locked out, but it stays on the admins' to-do list until it's renewed. Admins set how long the club keeps records. |
@@ -89,7 +89,7 @@ What each role sees on its home screen:
 | -------------------------------------- | :-----: | :-------------: | :----------: | :--------: | :-----------: | :-----------: | :-----: | :-----------: |
 | To-do list and calendar                |    ✓    |        ✓        |      ✓       |     ✓      |       ✓       |       ✓       |    ✓    |       ✓       |
 | Your own personal tasks                |    ✓    |        ✓        |      ✓       |     ✓      |       ✓       |       ✓       |    ✓    |       ✓       |
-| My squads and teams                    |    ✓    |        ✓        |      ✓       |     ✓      |  If in one    |       ✓       |    ✓    |   If in one   |
+| My squads and teams                    |    ✓    |        ✓        |      ✓       |     ✓      |  If in one    |       ✓       | Heading only |   If in one   |
 | Read messages                          |    ✓    |        ✓        |      ✓       |     ✓      |       ✓       |       ✓*      |         |       ✓       |
 | Send messages                          | Captains† |                 |  Own groups  | Own groups |   Whole club  |               |         |     Anyone    |
 | Daily check-in                         |    ✓    |                 |              |            |               |               |         |               |
@@ -150,9 +150,10 @@ Integrity training applies to the roles, squads and teams an admin chooses for e
 everyone has training to complete. A course limited to particular squads or teams never reaches
 committee members, who aren't in a squad or team as committee; only courses for every group do.
 
-Temporary helpers see none of these. They aren't necessarily club members, and they use the app
-only to complete onboarding: their home screen shows only the steps to be cleared to help, and
-**Raise a concern** (see [Temporary helpers](#temporary-helpers)).
+Temporary helpers see none of these but a preferred name. They aren't necessarily club members,
+and they use the app only to complete onboarding: their home screen shows only the steps to be
+cleared to help, **Raise a concern**, and the Your details, Switch club and Delete account links
+(see [Temporary helpers](#temporary-helpers)).
 
 Admins can turn off Messages, Calendar, Daily check-ins, Injuries, Attendance, Session plans,
 Awards, Game goals and Integrity training for the whole club in **Club settings**. A feature that's off disappears for every role.
@@ -366,8 +367,8 @@ are new. Opening a message marks it as read, and the
 sender can see that you've read it. **Report this message** on any message raises a concern
 about it (see [Raising a concern](#raising-a-concern)).
 
-Who a message went to is shown under the sender's name, for example "To Mixed Open Squad" or
-"To Everyone in the club". Messages from **Club safeguarding** tell a family about a change, such
+Who a message went to is shown under the sender's name, for example "To Mixed Open Squad",
+"To Physios" or "To Everyone in the club". Messages from **Club safeguarding** tell a family about a change, such
 as a parent or guardian linked to or unlinked from a child.
 
 Guests and temporary helpers don't get messages. Physios get messages sent to the Physio role and to the squads and teams
@@ -587,8 +588,9 @@ later, you'll need to ask to join again.
 
 The club keeps your injury records for 12 months after you leave, where only the committee and
 admins can see them, and then deletes them. Clearance documents may go sooner, after the club's
-keep period for injury documents. It also keeps, under your name, your code of conduct acceptances
-and, if you coach or manage, your season KPIs and their reviews. Deleting your account doesn't
+keep period for injury documents. It also keeps, under your name, your code of conduct acceptances,
+any concerns you raised (unless you hid your name) and, if you coach or manage, your season KPIs
+and their reviews. Deleting your account doesn't
 change your PlayHQ registration or club membership, or your account at any other club in
 FirstPass HQ.
 
@@ -980,7 +982,8 @@ reminded 60 days ahead, and 60 days before a parent or under-18 exemption ends.
 In WA, a parent who volunteers at the club their own child is in, and any volunteer under 18,
 doesn't need a Working With Children Check and can't apply for one. If that's you, an admin
 records an exemption instead of a card number, and you get a to-do: **Accept the exemption
-declaration**. It opens the declaration, which says you're not paid for the role (the national
+declaration** (a temporary helper gets **Read the declaration** in their Before you help steps
+instead). It opens the declaration, which says you're not paid for the role (the national
 event declaration leaves this out), you don't have a
 negative notice or an interim negative notice, no other state or territory has refused, suspended
 or cancelled a working with children clearance for you, and you'll tell a club admin straight away
@@ -994,7 +997,7 @@ and your home screen asks you to apply for a check. A parent's exemption doesn't
 camps.
 
 Someone who doesn't normally live in WA, such as a visiting interstate or national coach, has two
-more exemptions, and can use only one of them, once, in any 12 months anywhere in WA:
+more exemptions, and can use only one of them, once, in any 12 months before or after anywhere in WA:
 
 - **Short-term visitor**: the two weeks from the day they arrive in WA.
 - **National event or tour**: up to 30 days in a row, only for work at an event or tour run by a
@@ -1473,8 +1476,8 @@ with their own colour and filter in the calendar. A paused committee member does
 
 ## 9. Physios, guests and temporary helpers
 
-Physios and guests see the squads and teams and the club calendar. They don't vote in club awards,
-so their home screen has no **Awards** card. Guests don't get messages. Physios have a **Messages**
+Physios see the squads and teams they're placed in and the club calendar; guests see the club
+calendar only. Neither votes in club awards, so their home screen has no **Awards** card. Guests don't get messages. Physios have a **Messages**
 card and get messages an admin sends to the Physio role, and messages sent to the squads and teams
 they're in. They also get messages sent to everyone in the club when an admin turns on **Physios get
 club messages** in [Club settings](#club-settings).
@@ -1492,15 +1495,24 @@ as **Head Physio**. Which athletes a physio looks after:
 
 - **Head Physio**: every athlete, whether or not the Head Physio is in a squad or team.
 - **A physio in squads or teams**: the athletes in those squads and teams.
-- **A physio in no squad or team**: no athletes. A club with one physio should mark them **Head
-  Physio**; otherwise place them in the squads and teams they look after.
+- **A physio in no squad or team**: no athletes, and the home screen says "You are not in a
+  squad yet." A club with one physio should mark them **Head Physio**; otherwise place them in
+  the squads and teams they look after.
 
-- **Check-ins** shows the same squad, team and club averages the committee sees (see
+While the physio role is paused the header reads "Physio (paused)" and a **Physio paused** card
+says what to do. Messages a physio gets are labelled "To Physios", "To {squad or team}" or "To
+Everyone in the club". On a roster the Head Physio shows as **Physio**; "Head Physio" appears on
+their own home screen and the Members list.
+
+- **Check-ins** shows the same squad, team and club averages the committee sees, for every
+  squad and team in the club whatever the physio is placed in (see
   [Check-in averages](#check-in-averages)). Physios never see an individual athlete's answers.
-- **Injuries** lists the injuries, restrictions and proof documents of the current athletes they
-  look after (an athlete under 18 only once a parent or guardian has given consent). When an
-  athlete asks for clearance, it appears under **Waiting for your sign-off** and in the physio's
-  to-do list. Open it, check the proof, then **Endorse clearance** to pass it to the committee, or
+- **Injuries** lists, under **Injured athletes**, the injuries, restrictions and proof documents
+  of the current athletes they look after (an athlete under 18 only once a parent or guardian has
+  given consent); the card reads "N current injuries · N waiting for you". A physio's own notes
+  reach the app through the athlete or their guardian, who add them with **Add physio update**.
+  When an athlete asks for clearance, it appears under **Waiting for your sign-off** and as
+  **Review {name}'s clearance** in the physio's to-do list. Open it, check the proof, then **Endorse clearance** to pass it to the committee, or
   **Send back** with a note. A committee member other than the physio then accepts it. Physios
   also endorse clearances for athletes who have no coach. A physio who is also on the committee
   can accept clearances, but never one they endorsed.
@@ -1510,8 +1522,10 @@ as **Head Physio**. Which athletes a physio looks after:
 
 ### Guests
 
-Guests, such as the club's partners and sponsors, can only look: squads and teams, and the club
-calendar.
+Guests, such as the club's partners and sponsors, can only look at the club calendar. They are
+never in a squad or team, so **My squads and teams** on their home screen always says "You are
+not in a squad yet." Their to-do list holds only their own tasks, and Your details is just a
+preferred name. Guests can't be stood down and need no Working With Children Check.
 
 <img src="user-guide/guest-home.png" width="210" alt="Guest home screen">
 
@@ -1521,13 +1535,16 @@ In WA there's no exemption for helping for only a few hours or a day, and being 
 someone with a check doesn't count, so everyone who works with children at the club needs a
 Working With Children Check or an exemption. **Temporary helper** is for people helping for a
 day or a short time, paid or unpaid, such as a bench helper at a carnival or a visiting coach at
-a clinic.
+a clinic. A paid helper needs a Working With Children Check or the national event exemption; the
+parent, under-18 and short-term visitor exemptions are for people who aren't paid.
 
 **A temporary helper isn't necessarily a member of the club.** It's only a role, and the app is
 only their onboarding process: the club uses it to check they're cleared to work with children,
 record the policies they've accepted, and keep that record for governance and reporting. The
-helper gets nothing else from the app. They don't see squads, teams, the calendar, awards,
-training, check-ins or messages, and can't be sent messages. Joining this way doesn't make them a
+helper gets nothing else from the app. They don't see squads and teams (beyond their names on
+the join form), the calendar, awards, training, check-ins or messages, and can't be sent
+messages. The short-term visitor and national event exemptions can each be used once in any 12
+months (see [Volunteer exemptions](#volunteer-exemptions)). Joining this way doesn't make them a
 member, and doesn't replace the club's own membership or registration process.
 
 1. Sign in, tap **Request to join** and choose **Temporary helper**. Say **What you'll help
@@ -1545,7 +1562,8 @@ member, and doesn't replace the club's own membership or registration process.
      **I agree**. The club keeps the words you agreed to and the policy version.
    - **Approved by a club admin**.
 3. Once approved, your home screen says what you're helping with and when. After your last day it
-   says your time has finished; ask an admin to change your dates if you help again.
+   says your time has finished; ask an admin to change your dates if you help again. Your account
+   stays until an admin removes it, and you can still be named in a concern.
 
 **Raise a concern** is on your home screen the whole time.
 
@@ -1646,7 +1664,8 @@ Check them against PlayHQ, then:
    doesn't need a check in WA. Choose **Parent volunteer** (and their child, who must be an
    athlete under 18 they're linked to as a guardian) or **Under-18 volunteer** (which needs their
    date of birth) instead of **Has a check**. Once you save, they get a to-do to accept the
-   exemption declaration, and their role starts when they do. The page shows where it's up to and
+   exemption declaration (a temporary helper sees **Read the declaration** in their steps), and
+   their role starts when they do. The page shows where it's up to and
    who recorded it. Choosing **Has a check** again ends the exemption; every exemption stays on
    their page and in the report.
 
@@ -2413,7 +2432,7 @@ once saved, only replaced or removed, and anyone who gets it wrong five times in
 
 | Information             | Who can see it                                                                                                              |
 | ----------------------- | --------------------------------------------------------------------------------------------------------------------------- |
-| Your profile and squads | You, the people in your squads and teams (names and positions only), and admins. Your name also shows to anyone choosing who a concern is about, and on absences you report. The committee and admins see every athlete's name on the whole-club register, attendance histories and absences, every coach's and manager's name under Season KPIs, and the name of everyone who must complete a training course. |
+| Your profile and squads | You, the people in your squads and teams (names and positions only), and admins. Your name also shows to anyone choosing who a concern is about if you're a coach, manager, physio, committee member, admin or temporary helper, and on absences you report. The committee and admins see every athlete's name on the whole-club register, attendance histories and absences, every coach's and manager's name under Season KPIs, and the name of everyone who must complete a training course. |
 | Preferred name and title | You and admins; your preferred name then shows wherever your name does.                                                 |
 | Your own personal tasks | Only you. Not your parents or guardians, coaches, the committee or admins. They can't be shared or sent to anyone. |
 | Captains                | Club captains: every member. A squad or team's captains: the people in it, and admins.                                     |

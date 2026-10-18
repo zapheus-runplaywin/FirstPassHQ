@@ -41,7 +41,9 @@ export default function MessagesScreen() {
         .limit(100),
       canSend ? supabase.rpc('my_sent_messages') : Promise.resolve({ data: [] }),
     ]);
-    setInbox((inboxResult.data as unknown as InboxMessage[] | null) ?? []);
+    // A message the member can no longer read (for example a club message to a
+    // physio after the club setting was turned off) comes back without its body.
+    setInbox(((inboxResult.data as unknown as InboxMessage[] | null) ?? []).filter((r) => r.message));
     setSent((sentResult.data as SentMessage[] | null) ?? []);
   }, [userId, canSend]);
 

@@ -10,5 +10,8 @@ and how it was fixed (guide or code), the decisions Matt made, and what was conf
 | Coach | [coach-guide-audit-2026-10-17.md](coach-guide-audit-2026-10-17.md) | PR #142 |
 | Manager | [manager-guide-audit-2026-10-17.md](manager-guide-audit-2026-10-17.md) | PR #143 |
 | Committee | [committee-guide-audit-2026-10-17.md](committee-guide-audit-2026-10-17.md) | PR #143 |
+| Physio | [physio-guide-audit-2026-10-18.md](physio-guide-audit-2026-10-18.md) | PR #143 |
+| Guest | [guest-guide-audit-2026-10-18.md](guest-guide-audit-2026-10-18.md) | PR #143 |
+| Temporary helper | [temporary-helper-guide-audit-2026-10-18.md](temporary-helper-guide-audit-2026-10-18.md) | PR #143 |
 
-Still to audit: guardian, physio, guest, temporary helper, admin.
+Still to audit: guardian (the guide was reviewed in PR #141 without a report), admin.

@@ -306,5 +306,5 @@ const volunteerScreeningHelp: Record<VolunteerScreening, string> = {
     'A parent volunteering at their own child’s club doesn’t need a check. A club admin links you to your child and you accept a declaration.',
   under_18:
     'Volunteers under 18 don’t need a check. You’ll accept a declaration in the app.',
-  none: 'You’ll need a WA Working With Children Check before you help. Apply at workingwithchildren.wa.gov.au and tell a club admin your application number.',
+  none: 'You’ll need a WA Working With Children Check before you help. Apply at workingwithchildren.wa.gov.au and tell a club admin the card number and expiry date when it arrives.',
 };
