@@ -9,5 +9,6 @@ and how it was fixed (guide or code), the decisions Matt made, and what was conf
 | Athlete | [athlete-guide-audit-2026-10-17.md](athlete-guide-audit-2026-10-17.md) | PR #140 |
 | Coach | [coach-guide-audit-2026-10-17.md](coach-guide-audit-2026-10-17.md) | PR #142 |
 | Manager | [manager-guide-audit-2026-10-17.md](manager-guide-audit-2026-10-17.md) | PR #143 |
+| Committee | [committee-guide-audit-2026-10-17.md](committee-guide-audit-2026-10-17.md) | PR #143 |
 
-Still to audit: guardian, committee, physio, guest, temporary helper, admin.
+Still to audit: guardian, physio, guest, temporary helper, admin.
