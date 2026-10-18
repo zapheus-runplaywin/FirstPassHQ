@@ -50,3 +50,6 @@ __pycache__/
 logs/
 *.log
 *.log.[0-9]*
+
+# test coverage
+coverage/

@@ -1900,8 +1900,10 @@ Working With Children Check whichever role it is, and that includes athletes und
   notice, an interstate decision bars them, or an allegation is being looked into. Choose the
   reason (and write it down for **Other**), then tap **Stand down now**. Their coach, manager,
   physio, committee, admin, statistician and temporary helper roles stop at once, and they're taken out of the squads and teams
-  they coach, manage or treat; their athlete and guardian roles carry on, so a parent still sees
-  their own child. Their home screen says their role is paused and to talk to a club admin. Only
+  they coach, manage or treat. They also stop seeing what they made in those roles: attendance
+  they took, their session plans and the messages they sent, with who read them. Plans they shared
+  stay with the squad or team. Their athlete and guardian roles carry on, so a parent still sees
+  their own child and the messages sent to them. Their home screen says their role is paused and to talk to a club admin. Only
   admins see the reason. **Lift stand-down** ends it and puts back their places in this season's
   squads and teams. Every stand-down is kept on their page and in the Working With Children Checks
   report, with who started and lifted it, even if the member is later deleted. You can't stand
@@ -2600,7 +2602,7 @@ once saved, only replaced or removed, and anyone who gets it wrong five times in
 | Concerns                | The Child Safety Officer, the Complaints Manager and admins, never the person a concern is about. Whoever raised it sees its status. A hidden name is never shown to them. |
 | Safeguarding contacts   | Everyone signed in, including guests and people waiting for approval.                                                       |
 | Committee checks date   | Everyone signed in. Only admins change it, and only to bring it forward; who changed it and when is kept. |
-| Messages                | The people they were sent to, the sender, and admins. Guardians of athletes under 18 get a copy of every message sent to their athlete, and of every message their athlete sends as a captain. Guests don't get messages; physios get messages sent to the Physio role and to their squads and teams, and whole-club messages only if an admin turns that on. |
+| Messages                | The people they were sent to, the sender (unless they've been stood down), and admins. Guardians of athletes under 18 get a copy of every message sent to their athlete, and of every message their athlete sends as a captain. Guests don't get messages; physios get messages sent to the Physio role and to their squads and teams, and whole-club messages only if an admin turns that on. |
 | Read receipts           | The sender and admins.                                                                                                      |
 | Survey answers          | Whoever sent the survey. The committee and admins for their own surveys and ones a coach or manager shared with them. A coach or manager's survey to their own squad or team is seen by them while they still coach or manage it, by admins unless it's a quick poll (up to 5 questions with choices or ratings), and by the committee if they shared it. A captain's poll is seen by the captain while they're captain, and by the squad or team's coaches and managers. Named answers show the member's name; parents and guardians of an athlete under 18 also read their child's named answers. Anonymous answers, and name-optional answers given without a name, are kept with no name, no member and no time, so nobody can see who gave them, admins included; their results show only once the survey has closed, or everyone has answered, and at least 3 people have answered. Named results show once 3 people have answered, a club survey's chosen 20%, 50% or 80%, or everyone when everyone must answer; every survey's results show once it closes. Members never see each other's answers. Whoever sees the results can download them as a PDF or spreadsheet, except captains. |
 | Survey totals shared with a team | When a coach, manager or captain shares a poll's results with the squad or team: everyone it went to and their parents or guardians, once results show. Only how many picked each choice and average ratings: never names, written answers or who has answered. |
@@ -2617,9 +2619,9 @@ once saved, only replaced or removed, and anyone who gets it wrong five times in
 | Live game stats         | Admins and statisticians: every game the club records. The coaches and managers of the game's squad or team see that a game is set up, and its stats once they pair with its code in FirstPass Vision. Athletes, guardians, physios and the committee don't see them. |
 | Team goals              | The team's athletes, their guardians, its coaches and admins. Only its coaches set and review them. Athletes and coaches in the team can comment; guardians and admins read the comments. Managers and physios placed in the team don't see them. |
 | Integrity training certificates | The member, their parents or guardians, the committee and admins. Coaches don't see them. Certificates can't be changed or removed once sent. |
-| Attendance records      | The committee and admins see every session. Coaches and managers see their own groups' sessions, whole-club sessions and any they took themselves. An athlete sees their own marks, and their parents or guardians see them until the athlete turns 18; neither sees other athletes on the register. |
+| Attendance records      | The committee and admins see every session. Coaches and managers see their own groups' sessions, whole-club sessions and any they took themselves, while their check is current and they aren't stood down. An athlete sees their own marks, and their parents or guardians see them until the athlete turns 18; neither sees other athletes on the register. |
 | What's changed for a child | Their parents or guardians (until the child turns 18) and admins: adults joining or leaving the child's squads and teams, the child's own group changes, guardian links, consents and shared injury documents. A stand-down shows only as the adult leaving. |
-| Session plans           | The coach or admin who added the plan, and admins. The people the author shares it with: the other coaches of its squad or team, its athletes and the parents and guardians of those under 18, and coaches of other groups chosen by name. Read only: nobody can reply or react. Only the author and admins change it; only admins delete it. Managers, physios and the committee don't see plans unless they also coach. |
+| Session plans           | The coach or admin who added the plan (while their check is current and they aren't stood down), and admins. The people the author shares it with: the other coaches of its squad or team, its athletes and the parents and guardians of those under 18, and coaches of other groups chosen by name. Read only: nobody can reply or react. Only the author and admins change it; only admins delete it. Managers, physios and the committee don't see plans unless they also coach. |
 | Reported absences       | The athlete, their parents or guardians, the coaches and managers of the athlete's squads and teams, the committee and admins, with the reason and details. Physios don't see them. The Attendance report counts reasons only, never the details. |
 | Absence reasons         | Everyone signed in sees the list. Only admins switch reasons off or add them.                                                |
 | Committee calendar      | Committee members and admins.                                                                                               |
@@ -2831,7 +2833,8 @@ Working With Children Check, and another admin must do it.
 
 - **Stand-downs.** An admin can stand someone down straight away, for example on an interim
   negative notice from the Working with Children Screening Unit. Their coach, manager, physio,
-  committee, admin, statistician and temporary helper roles stop and they leave the squads and teams they lead. Every stand-down is
+  committee, admin, statistician and temporary helper roles stop and they leave the squads and teams they lead. They no longer
+  see attendance they took, their session plans or the messages they sent. Every stand-down is
   kept (see [Changing or removing members](#changing-or-removing-members)).
 - **Committee checks have a deadline.** Committee members approved before checks were needed
   keep their role without one only until the club's committee checks date. From that day their
