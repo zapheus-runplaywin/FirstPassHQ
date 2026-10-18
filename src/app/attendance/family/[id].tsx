@@ -35,16 +35,22 @@ export default function FamilyAttendanceScreen() {
   const [sessions, setSessions] = useState<AthleteAttendance[] | null>(null);
   const [absences, setAbsences] = useState<Absence[]>([]);
   const [refreshing, setRefreshing] = useState(false);
+  // The athlete or their parent or guardian, who report and withdraw absences
+  // (the database's own rule). Anyone else the database shows the sessions
+  // to sees them read-only.
+  const [family, setFamily] = useState(false);
   const self = id === session?.user.id;
   const today = toDateString(new Date());
 
   const load = useCallback(async () => {
     const since = new Date();
     since.setDate(since.getDate() - Number(days));
-    const [attendance, reported] = await Promise.all([
+    const [attendance, reported, familyResult] = await Promise.all([
       supabase.rpc('athlete_attendance', { p_profile_id: id, p_since: toDateString(since) }),
       supabase.rpc('my_absences', { p_athlete_id: id }),
+      supabase.rpc('is_athlete_or_guardian', { p_athlete_id: id }),
     ]);
+    setFamily(familyResult.data === true);
     setSessions((attendance.data as AthleteAttendance[] | null) ?? []);
     setAbsences((reported.data as Absence[] | null) ?? []);
   }, [id, days]);
@@ -76,47 +82,53 @@ export default function FamilyAttendanceScreen() {
       <View style={styles.header}>
         <ThemedText type="subtitle">{self ? 'My attendance' : name || 'Attendance'}</ThemedText>
         <ThemedText type="small" themeColor="textSecondary">
-          {self
-            ? 'Whether your coaches marked you present or absent at each session. Your parents or guardians see this too.'
-            : `Whether ${name || 'they'} was marked present or absent at each session. ${
-                name || 'They'
-              } and their other parents or guardians see this too.`}
+          {!family
+            ? `Whether ${name || 'they'} was marked present or absent at each session.`
+            : self
+              ? 'Whether your coaches marked you present or absent at each session. Your parents or guardians see this too.'
+              : `Whether ${name || 'they'} was marked present or absent at each session. ${
+                  name || 'They'
+                } and their other parents or guardians see this too.`}
         </ThemedText>
       </View>
 
-      <Button
-        title="Report an absence"
-        onPress={() =>
-          router.push({ pathname: '/attendance/absence', params: { id, name: name ?? '' } })
-        }
-      />
+      {family ? (
+        <>
+          <Button
+            title="Report an absence"
+            onPress={() =>
+              router.push({ pathname: '/attendance/absence', params: { id, name: name ?? '' } })
+            }
+          />
 
-      <View style={styles.list}>
-        <ThemedText type="smallBold">Reported absences</ThemedText>
-        {upcoming.length === 0 ? (
-          <ThemedText type="small" themeColor="textSecondary">
-            None coming up.
-          </ThemedText>
-        ) : (
-          upcoming.map((a) => (
-            <Card key={a.id}>
-              <ThemedText type="smallBold">{absenceDays(a)}</ThemedText>
+          <View style={styles.list}>
+            <ThemedText type="smallBold">Reported absences</ThemedText>
+            {upcoming.length === 0 ? (
               <ThemedText type="small" themeColor="textSecondary">
-                {absenceWhy(a) ? `${absenceWhy(a)} · ` : ''}Reported by {a.reported_by_name ?? 'a member'}
+                None coming up.
               </ThemedText>
-              <Pressable
-                accessibilityRole="button"
-                onPress={() => withdraw(a.id)}
-                hitSlop={8}
-                style={styles.withdraw}>
-                <ThemedText type="smallBold" style={{ color: theme.tint }}>
-                  Withdraw
-                </ThemedText>
-              </Pressable>
-            </Card>
-          ))
-        )}
-      </View>
+            ) : (
+              upcoming.map((a) => (
+                <Card key={a.id}>
+                  <ThemedText type="smallBold">{absenceDays(a)}</ThemedText>
+                  <ThemedText type="small" themeColor="textSecondary">
+                    {absenceWhy(a) ? `${absenceWhy(a)} · ` : ''}Reported by {a.reported_by_name ?? 'a member'}
+                  </ThemedText>
+                  <Pressable
+                    accessibilityRole="button"
+                    onPress={() => withdraw(a.id)}
+                    hitSlop={8}
+                    style={styles.withdraw}>
+                    <ThemedText type="smallBold" style={{ color: theme.tint }}>
+                      Withdraw
+                    </ThemedText>
+                  </Pressable>
+                </Card>
+              ))
+            )}
+          </View>
+        </>
+      ) : null}
 
       <View style={styles.list}>
         <ThemedText type="smallBold">Sessions</ThemedText>

@@ -1375,8 +1375,8 @@ share it with for the first time is told then. A plan shared with nobody says "N
 and the club's admins can see it".
 
 Open a plan to read it and its photos and files. Photos and PDFs open in the app; Word documents
-open in your phone's viewer. On your own plans, **Change this plan** lets you edit anything, share
-it differently or remove a photo or file; the plan then shows when it was last changed and by
+open in your phone's viewer. On your own plans, while your check or exemption is current, **Change this plan** lets you edit
+anything, share it differently or remove a photo or file; the plan then shows when it was last changed and by
 whom. **Use again for another session**, on your own plans and on plans shared with you, starts a
 new plan copied from this one, files included, for today, in a squad or team you coach. You can't
 delete a plan: ask an admin if one was added by mistake.
@@ -1537,8 +1537,8 @@ the person who endorsed it and the athlete's own parents or guardians. Open it, 
 - **Accept clearance** clears the athlete to train and play, or
 - **Send back** with a note.
 
-The committee can also send back a request that no coach or physio has looked at yet. Nobody can
-send back an under 18's clearance before a parent or guardian has given consent for injuries. Tap **View**
+The committee can also send back a request that no coach or physio has looked at yet, except their
+own or their own child's. Nobody can send back an under 18's clearance before a parent or guardian has given consent for injuries. Tap **View**
 on a document to read it in the app (see [Viewing proof documents](#viewing-proof-documents)).
 While a clearance is waiting for you to accept it, you also get **Share**, to save its documents to
 the club's records, such as OneDrive. Share disappears once it's accepted or sent back, and nobody
