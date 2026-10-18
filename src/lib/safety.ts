@@ -258,6 +258,21 @@ export function pausedRoles(
   });
 }
 
+/**
+ * Whether a member can do child-related work now: approved, not stood down,
+ * and with a current check or a volunteer exemption that applies. Same rule
+ * as `public.can_work_with_children` in the database.
+ */
+export function canWorkWithChildren(
+  member: Pick<Profile, 'status' | 'stood_down_at' | 'wwcc_number' | 'wwcc_expires_on'> | null,
+  /** They have a volunteer exemption that applies today. */
+  exempt = false,
+) {
+  if (!member || member.status !== 'approved' || member.stood_down_at) return false;
+  const check = wwccStatus(member).kind;
+  return check === 'current' || check === 'expiring' || exempt;
+}
+
 /** Whether the club's committee checks date has come. */
 export function committeeChecksDue(committeeChecksFrom: string | null) {
   return !!committeeChecksFrom && isoDay() >= committeeChecksFrom;

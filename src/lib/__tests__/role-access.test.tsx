@@ -450,9 +450,9 @@ describe('daily check-ins', () => {
     expect(hookValue(name, useIsCheckInAthlete)).toBe(expected);
   });
 
-  // Guide: Check-ins of others — coaches, their own athletes. Left out: a coach
-  // of a completed squad only (see the report: the hook doesn't check the phase).
-  test.each(rows(COACHES, ['doneSquadCoach']))('useIsCheckInCoach: %s → %s', (name, expected) => {
+  // Guide: Check-ins of others — coaches, their own athletes. Not a coach whose
+  // only squad has finished its squad phase, the same as the database.
+  test.each(rows(COACHES.filter((n) => n !== 'doneSquadCoach')))('useIsCheckInCoach: %s → %s', (name, expected) => {
     expect(hookValue(name, useIsCheckInCoach)).toBe(expected);
   });
 
@@ -464,7 +464,7 @@ describe('daily check-ins', () => {
     },
   );
 
-  test.each(rows([...ADMINS, 'committee', ...PHYSIOS, ...COACHES], ['doneSquadCoach']))(
+  test.each(rows([...ADMINS, 'committee', ...PHYSIOS, ...COACHES.filter((n) => n !== 'doneSquadCoach')]))(
     'useCanSeeCheckIns: %s → %s',
     (name, expected) => {
       expect(hookValue(name, useCanSeeCheckIns)).toBe(expected);

@@ -16,6 +16,7 @@ import { ClubProvider, useClub } from '@/lib/club';
 import { ClubChoiceProvider, useClubChoice } from '@/lib/club-choice';
 import { startAppLog } from '@/lib/log';
 import { useAdminPushNotifications } from '@/lib/push';
+import { useRouteAccess } from '@/lib/route-access';
 
 SplashScreen.preventAutoHideAsync();
 startAppLog({ version: Constants.expoConfig?.version ?? null });
@@ -86,6 +87,8 @@ function RootStack() {
   const { loading: authLoading, session, isAdmin } = useAuth();
   const { ready, features, affiliation } = useClub();
   const { club } = useClubChoice();
+  // Who can open each member screen: see src/lib/route-access.ts.
+  const can = useRouteAccess();
   // Montserrat; if it fails to load the app carries on in the system font.
   const [fontsLoaded, fontError] = useFonts({
     Montserrat_400Regular,
@@ -111,78 +114,121 @@ function RootStack() {
           <Stack.Screen name="index" options={{ headerShown: false }} />
           <Stack.Screen name="join" options={{ title: 'Request to join' }} />
           <Stack.Screen name="team/[id]" options={{ title: 'Team' }} />
-          <Stack.Screen name="team/captains/[id]" options={{ title: 'Captains' }} />
+          <Stack.Protected guard={can.chooseCaptains}>
+            <Stack.Screen name="team/captains/[id]" options={{ title: 'Captains' }} />
+          </Stack.Protected>
           <Stack.Protected guard={features.calendar}>
             <Stack.Screen name="calendar" options={{ title: 'Calendar' }} />
             <Stack.Screen name="event/[id]" options={{ title: 'Event' }} />
           </Stack.Protected>
-          <Stack.Protected guard={features.messages}>
+          <Stack.Protected guard={features.messages && can.readMessages}>
             <Stack.Screen name="messages/index" options={{ title: 'Messages' }} />
-            <Stack.Screen name="messages/new" options={{ title: 'New message' }} />
             <Stack.Screen name="messages/[id]" options={{ title: 'Message' }} />
+            <Stack.Protected guard={can.sendMessages}>
+              <Stack.Screen name="messages/new" options={{ title: 'New message' }} />
+            </Stack.Protected>
           </Stack.Protected>
-          <Stack.Protected guard={features.surveys}>
+          <Stack.Protected guard={features.surveys && can.answerSurveys}>
             <Stack.Screen name="surveys/index" options={{ title: 'Surveys' }} />
-            <Stack.Screen name="surveys/new" options={{ title: 'New survey' }} />
             <Stack.Screen name="surveys/[id]" options={{ title: 'Survey' }} />
-            <Stack.Screen name="surveys/results" options={{ title: 'Survey results' }} />
+            <Stack.Protected guard={can.sendSurveys}>
+              <Stack.Screen name="surveys/new" options={{ title: 'New survey' }} />
+            </Stack.Protected>
+            <Stack.Protected guard={can.surveyResults}>
+              <Stack.Screen name="surveys/results" options={{ title: 'Survey results' }} />
+            </Stack.Protected>
           </Stack.Protected>
-          <Stack.Protected guard={features.injuries}>
+          <Stack.Protected guard={features.injuries && can.injuries}>
             <Stack.Screen name="injuries/index" options={{ title: 'Injuries' }} />
-            <Stack.Screen name="injuries/new" options={{ title: 'Report an injury' }} />
             <Stack.Screen name="injuries/[id]" options={{ title: 'Injury' }} />
             <Stack.Screen name="injuries/document" options={{ title: 'Document' }} />
+            <Stack.Protected guard={can.reportInjury}>
+              <Stack.Screen name="injuries/new" options={{ title: 'Report an injury' }} />
+            </Stack.Protected>
           </Stack.Protected>
           <Stack.Protected guard={features.attendance}>
-            <Stack.Screen name="attendance/index" options={{ title: 'Attendance' }} />
-            <Stack.Screen name="attendance/new" options={{ title: 'Take attendance' }} />
-            <Stack.Screen name="attendance/[id]" options={{ title: 'Attendance' }} />
-            <Stack.Screen name="attendance/athlete/[id]" options={{ title: 'Athlete attendance' }} />
-            <Stack.Screen name="attendance/family/[id]" options={{ title: 'Attendance' }} />
-            <Stack.Screen name="attendance/absence" options={{ title: 'Report an absence' }} />
+            <Stack.Protected guard={can.attendance}>
+              <Stack.Screen name="attendance/index" options={{ title: 'Attendance' }} />
+              <Stack.Screen name="attendance/[id]" options={{ title: 'Attendance' }} />
+            </Stack.Protected>
+            <Stack.Protected guard={can.takeAttendance}>
+              <Stack.Screen name="attendance/new" options={{ title: 'Take attendance' }} />
+            </Stack.Protected>
+            <Stack.Protected guard={can.athleteAttendance}>
+              <Stack.Screen
+                name="attendance/athlete/[id]"
+                options={{ title: 'Athlete attendance' }}
+              />
+            </Stack.Protected>
+            <Stack.Protected guard={can.familyAttendance}>
+              <Stack.Screen name="attendance/family/[id]" options={{ title: 'Attendance' }} />
+              <Stack.Screen name="attendance/absence" options={{ title: 'Report an absence' }} />
+            </Stack.Protected>
           </Stack.Protected>
-          <Stack.Protected guard={features.sessionPlans}>
+          <Stack.Protected guard={features.sessionPlans && can.readSessionPlans}>
             <Stack.Screen name="session-plans/index" options={{ title: 'Session plans' }} />
-            <Stack.Screen name="session-plans/edit" options={{ title: 'Session plan' }} />
             <Stack.Screen name="session-plans/[id]" options={{ title: 'Session plan' }} />
             <Stack.Screen name="session-plans/file" options={{ title: 'File' }} />
+            <Stack.Protected guard={can.addSessionPlans}>
+              <Stack.Screen name="session-plans/edit" options={{ title: 'Session plan' }} />
+            </Stack.Protected>
           </Stack.Protected>
           <Stack.Protected guard={features.checkIns}>
-            <Stack.Screen name="check-in" options={{ title: 'Daily check-in' }} />
-            <Stack.Screen name="check-ins/index" options={{ title: 'Check-ins' }} />
-            <Stack.Screen name="check-ins/athlete/[id]" options={{ title: 'Check-ins' }} />
+            <Stack.Protected guard={can.checkIn}>
+              <Stack.Screen name="check-in" options={{ title: 'Daily check-in' }} />
+            </Stack.Protected>
+            <Stack.Protected guard={can.checkIns}>
+              <Stack.Screen name="check-ins/index" options={{ title: 'Check-ins' }} />
+            </Stack.Protected>
+            <Stack.Protected guard={can.athleteCheckIns}>
+              <Stack.Screen name="check-ins/athlete/[id]" options={{ title: 'Check-ins' }} />
+            </Stack.Protected>
           </Stack.Protected>
-          <Stack.Protected guard={features.awards}>
+          <Stack.Protected guard={features.awards && can.awards}>
             <Stack.Screen name="awards/index" options={{ title: 'Awards' }} />
             <Stack.Screen name="awards/vote" options={{ title: 'Vote' }} />
           </Stack.Protected>
           <Stack.Protected guard={features.goals}>
-            <Stack.Screen name="goals/athlete/[id]" options={{ title: 'Game goals' }} />
-            <Stack.Screen name="goals/game" options={{ title: 'Game goals' }} />
-            <Stack.Screen name="goals/team" options={{ title: 'Team goals' }} />
+            <Stack.Protected guard={can.gameGoals}>
+              <Stack.Screen name="goals/game" options={{ title: 'Game goals' }} />
+            </Stack.Protected>
+            <Stack.Protected guard={can.athleteGoals}>
+              <Stack.Screen name="goals/athlete/[id]" options={{ title: 'Game goals' }} />
+            </Stack.Protected>
+            <Stack.Protected guard={can.teamGoals}>
+              <Stack.Screen name="goals/team" options={{ title: 'Team goals' }} />
+            </Stack.Protected>
           </Stack.Protected>
-          <Stack.Protected guard={features.kpis}>
+          <Stack.Protected guard={features.kpis && can.kpis}>
             <Stack.Screen name="kpis/index" options={{ title: 'Season KPIs' }} />
             <Stack.Screen name="kpis/person" options={{ title: 'Season KPIs' }} />
-            <Stack.Screen name="kpis/edit" options={{ title: 'Add a KPI or OKR' }} />
+            <Stack.Protected guard={can.setKpis}>
+              <Stack.Screen name="kpis/edit" options={{ title: 'Add a KPI or OKR' }} />
+            </Stack.Protected>
           </Stack.Protected>
-          <Stack.Protected guard={features.integrity}>
+          <Stack.Protected guard={features.integrity && can.training}>
             <Stack.Screen name="training/index" options={{ title: 'Integrity training' }} />
             <Stack.Screen name="training/submit" options={{ title: 'Add a certificate' }} />
-            <Stack.Screen name="training/review" options={{ title: 'Check certificates' }} />
-            <Stack.Screen name="training/progress" options={{ title: 'Training progress' }} />
-            <Stack.Screen name="training/requirement/[id]" options={{ title: 'Training' }} />
             <Stack.Screen name="training/document" options={{ title: 'Certificate' }} />
+            <Stack.Protected guard={can.checkTraining}>
+              <Stack.Screen name="training/review" options={{ title: 'Check certificates' }} />
+              <Stack.Screen name="training/progress" options={{ title: 'Training progress' }} />
+              <Stack.Screen name="training/requirement/[id]" options={{ title: 'Training' }} />
+            </Stack.Protected>
           </Stack.Protected>
           <Stack.Screen name="declaration" options={{ title: 'Exemption declaration' }} />
           <Stack.Screen name="concern/new" options={{ title: 'Raise a concern' }} />
-          <Stack.Screen name="consent/[id]" options={{ title: 'Consent' }} />
           <Stack.Screen name="conduct/[id]" options={{ title: 'Code of conduct' }} />
-          <Stack.Screen name="records/[id]" options={{ title: 'Who has viewed their records' }} />
-          <Stack.Screen name="activity/[id]" options={{ title: 'What’s changed' }} />
-          <Stack.Screen name="concerns/index" options={{ title: 'Concerns' }} />
-          <Stack.Screen name="concerns/[id]" options={{ title: 'Concern' }} />
-          <Stack.Screen name="concerns/report" options={{ title: 'Concerns register' }} />
+          <Stack.Protected guard={can.family}>
+            <Stack.Screen name="consent/[id]" options={{ title: 'Consent' }} />
+            <Stack.Screen name="records/[id]" options={{ title: 'Who has viewed their records' }} />
+            <Stack.Screen name="activity/[id]" options={{ title: 'What’s changed' }} />
+          </Stack.Protected>
+          <Stack.Protected guard={can.concerns}>
+            <Stack.Screen name="concerns/index" options={{ title: 'Concerns' }} />
+            <Stack.Screen name="concerns/[id]" options={{ title: 'Concern' }} />
+            <Stack.Screen name="concerns/report" options={{ title: 'Concerns register' }} />
+          </Stack.Protected>
           <Stack.Screen name="tasks/index" options={{ title: 'Your tasks' }} />
           <Stack.Screen name="tasks/new" options={{ title: 'Add a task' }} />
           <Stack.Screen name="tasks/[id]" options={{ title: 'Task' }} />

@@ -12,8 +12,9 @@
  * own fixtures at the bottom, and only when Jest runs it directly.
  */
 import type { Session } from '@supabase/supabase-js';
-import type { ReactNode } from 'react';
+import type { ComponentType, ReactNode } from 'react';
 import { Text } from 'react-native';
+import { Stack } from 'expo-router';
 import { act, renderRouter, screen } from 'expo-router/testing-library';
 
 import { roleCombinationProblem } from '@/lib/roles';
@@ -50,7 +51,25 @@ export type PersonaName =
   | 'pendingAdmin'
   | 'adminExpiredCheck'
   | 'coachExpiredCheck'
-  | 'stoodDownCoach';
+  | 'stoodDownCoach'
+  // More kinds of member, for the route tests (docs/testing-strategy.md).
+  | 'minorAthlete'
+  | 'captain'
+  | 'clubCaptain'
+  | 'guardianOfAdult'
+  | 'assistantCoach'
+  | 'doneSquadCoach'
+  | 'headPhysio'
+  | 'statistician'
+  | 'safeguardingOfficer'
+  | 'committeeExpiredCheck'
+  | 'committeePastChecksDate'
+  | 'physioExpiredCheck'
+  | 'stoodDownAthlete'
+  | 'coachGuardian'
+  | 'athleteCoach'
+  | 'adminGuardian'
+  | 'adminLapsedCoach';
 
 export type Persona = {
   session: Session | null;
@@ -74,12 +93,30 @@ export const TEAM = {
   selections_completed_at: null,
 };
 
-function membership(team_role: TeamRole): TeamMembership {
+/** A second team, for members who play in one group and coach another. */
+export const TEAM_B = {
+  ...TEAM,
+  id: 'team-17u-a',
+  name: '17 & Under A',
+  sort_order: 2,
+};
+
+/** A squad whose squad phase an admin has marked complete. */
+export const DONE_SQUAD = {
+  ...TEAM,
+  id: 'squad-done',
+  name: 'Mixed Open Squad',
+  sort_order: 3,
+  kind: 'squad' as const,
+  selections_completed_at: '2026-09-01T00:00:00Z',
+};
+
+function membership(team_role: TeamRole, team: TeamMembership['team'] = TEAM): TeamMembership {
   return {
     team_role,
     coach_title: team_role === 'coach' ? 'head_coach' : null,
     selection: team_role === 'athlete' ? 'touring' : null,
-    team: TEAM,
+    team,
   };
 }
 
@@ -136,7 +173,7 @@ function member(id: string, role: AppRole, extra: Partial<Profile> = {}, members
   return {
     session: sessionFor(id),
     profile: profile(id, role, extra),
-    memberships: memberships.map(membership),
+    memberships: memberships.map((r) => membership(r)),
   };
 }
 
@@ -189,7 +226,114 @@ export const personas: Record<PersonaName, Persona> = {
   stoodDownCoach: member('stood-down-coach', 'coach', { stood_down_at: '2026-10-01T00:00:00Z' }, [
     'coach',
   ]),
+
+  minorAthlete: member(
+    'minor-athlete',
+    'athlete',
+    { date_of_birth: '2011-03-02', under_17: true, wwcc_number: null, wwcc_expires_on: null },
+    ['athlete'],
+  ),
+  /** Captain of the team they play in: sends messages and polls to it. */
+  captain: {
+    ...member('captain', 'athlete', { wwcc_number: null, wwcc_expires_on: null }, ['athlete']),
+    captaincies: [{ team_id: TEAM.id, profile_id: 'captain', captain_role: 'captain' }],
+  },
+  /** Messages the whole club. */
+  clubCaptain: {
+    ...member('club-captain', 'athlete', { wwcc_number: null, wwcc_expires_on: null }, ['athlete']),
+    isClubCaptain: true,
+  },
+  /** Their only child has turned 18: still a guardian, with no child's cards on Home. */
+  guardianOfAdult: {
+    ...member('guardian-of-adult', 'guardian', { wwcc_number: null, wwcc_expires_on: null }),
+    rpcs: { my_child_consents: [] },
+  },
+  assistantCoach: {
+    ...member('assistant-coach', 'coach'),
+    memberships: [{ ...membership('coach'), coach_title: 'assistant_coach' }],
+  },
+  /** Coaches only a squad whose squad phase is complete. */
+  doneSquadCoach: {
+    ...member('done-squad-coach', 'coach'),
+    memberships: [membership('coach', DONE_SQUAD)],
+  },
+  /** Looks after every athlete, in no squad or team. */
+  headPhysio: member('head-physio', 'physio', { head_physio: true }),
+  statistician: member('statistician', 'statistician', { wwcc_number: null, wwcc_expires_on: null }),
+  /** A manager named the club's Child Safety Officer. */
+  safeguardingOfficer: {
+    ...member('safeguarding-officer', 'manager', {}, ['manager']),
+    isSafeguardingOfficer: true,
+  },
+  /** A recorded check that has expired pauses the committee role. */
+  committeeExpiredCheck: member('committee-expired', 'committee', { wwcc_expires_on: '2025-01-01' }),
+  /** No check, and the club's committee checks date has passed. */
+  committeePastChecksDate: {
+    ...member('committee-no-check', 'committee', { wwcc_number: null, wwcc_expires_on: null }),
+    rpcs: { committee_checks_from: '2026-10-01' },
+  },
+  physioExpiredCheck: member('physio-expired', 'physio', { wwcc_expires_on: '2025-01-01' }, ['physio']),
+  stoodDownAthlete: member(
+    'stood-down-athlete',
+    'athlete',
+    { wwcc_number: null, wwcc_expires_on: null, stood_down_at: '2026-10-01T00:00:00Z' },
+    ['athlete'],
+  ),
+  /** Coaches Open A and is a parent of a child under 18. */
+  coachGuardian: {
+    ...member('coach-guardian', 'coach', { extra_roles: ['guardian'] }, ['coach']),
+    rpcs: { my_child_consents: CHILD_CONSENTS },
+  },
+  /** Plays in Open A and coaches 17 & Under A. */
+  athleteCoach: {
+    ...member('athlete-coach', 'athlete', { extra_roles: ['coach'] }),
+    memberships: [membership('athlete'), membership('coach', TEAM_B)],
+  },
+  adminGuardian: {
+    ...member('admin-guardian', 'admin', { extra_roles: ['guardian'] }),
+    rpcs: { my_child_consents: CHILD_CONSENTS },
+  },
+  /** An admin who also coaches, with an expired check: admin stays, coaching pauses. */
+  adminLapsedCoach: member(
+    'admin-lapsed-coach',
+    'admin',
+    { extra_roles: ['coach'], wwcc_expires_on: '2025-01-01' },
+    ['coach'],
+  ),
 };
+
+/**
+ * More kinds of member, for screen tests. Kept apart from `personas`, which
+ * the route tests sweep.
+ */
+export const morePersonas = {
+  /** An athlete under 18 (born 2010), with no check. */
+  under18Athlete: member(
+    'u18-athlete',
+    'athlete',
+    { wwcc_number: null, wwcc_expires_on: null, date_of_birth: '2010-03-03' },
+    ['athlete'],
+  ),
+  assistantCoach: {
+    ...member('assistant-coach', 'coach'),
+    memberships: [{ ...membership('coach'), coach_title: 'assistant_coach' as const }],
+  },
+  headPhysio: member('head-physio', 'physio', { head_physio: true }, ['physio']),
+  coachGuardian: member('coach-guardian', 'coach', { extra_roles: ['guardian'] }, ['coach']),
+  adminGuardian: member('admin-guardian', 'admin', { extra_roles: ['guardian'] }),
+  /** An adult athlete in Open A who also coaches the Under 12s. */
+  athleteCoach: {
+    ...member('athlete-coach', 'athlete', { extra_roles: ['coach'] }, ['athlete']),
+    memberships: [
+      membership('athlete'),
+      { ...membership('coach'), team: { ...TEAM, id: 'team-u12', name: 'Under 12' } },
+    ],
+  },
+  /** A committee member whose recorded check has lapsed. */
+  committeeExpiredCheck: member('committee-expired', 'committee', {
+    wwcc_expires_on: '2025-01-01',
+  }),
+} satisfies Record<string, Persona>;
 
 // ---------------------------------------------------------------------------
 // The fake backend
@@ -202,16 +346,62 @@ type Backend = {
 
 let backend: Backend = { session: null, tables: {}, rpcs: {} };
 
-type Result = { data: unknown; error: null; count: number | null; status: number };
+type Result = {
+  data: unknown;
+  error: { message: string } | null;
+  count: number | null;
+  status: number;
+};
+
+/** One call made while building a query, such as `eq('id', 'x')`. */
+export type QueryCall = { method: string; args: unknown[] };
+
+/** What a handler is told about the query it answers. */
+export type QueryInfo = {
+  /** The table, or the RPC's name. */
+  name: string;
+  calls: QueryCall[];
+  /** The value of the query's `.eq(column, value)` filter, if it has one. */
+  eq(column: string): unknown;
+};
+
+/** Rows for one query on a table; return undefined to use the seeded rows. */
+export type TableHandler = (q: QueryInfo) => unknown;
+/** An RPC's result from its arguments (and any filters chained on it). */
+export type RpcHandler = (args: Record<string, unknown>, q: QueryInfo) => unknown;
+
+/** Optional extras for a test's backend. */
+export type BackendOptions = {
+  /** More RPC results, on top of the persona's. */
+  rpcs?: Record<string, unknown>;
+  /** RPC results worked out from the call's arguments. */
+  rpcHandlers?: Record<string, RpcHandler>;
+  /** RPCs that fail with this message, as the database refusing them. */
+  rpcErrors?: Record<string, string>;
+  /** Rows worked out from the query's filters, asked before the seeded rows. */
+  tableHandlers?: Record<string, TableHandler>;
+};
 
 /**
  * A query builder like supabase-js's: every filter returns the builder, and
  * awaiting it (or .single() / .maybeSingle()) gives the canned rows. Filters
- * are ignored; each test only seeds what its member would see.
+ * are ignored unless a handler reads them; each test only seeds what its
+ * member would see.
  */
-function query(resolve: () => unknown): unknown {
+function query(
+  name: string,
+  resolve: (q: QueryInfo) => unknown,
+  error: string | null = null,
+): unknown {
+  const calls: QueryCall[] = [];
+  const info: QueryInfo = {
+    name,
+    calls,
+    eq: (column) => calls.find((c) => c.method === 'eq' && c.args[0] === column)?.args[1],
+  };
   const result = (): Result => {
-    const data = resolve();
+    if (error) return { data: null, error: { message: error }, count: null, status: 400 };
+    const data = resolve(info);
     return { data, error: null, count: Array.isArray(data) ? data.length : 0, status: 200 };
   };
   const one = () => {
@@ -226,7 +416,10 @@ function query(resolve: () => unknown): unknown {
       }
       if (prop === 'single' || prop === 'maybeSingle') return one;
       if (typeof prop === 'symbol') return undefined;
-      return () => builder;
+      return (...args: unknown[]) => {
+        calls.push({ method: prop, args });
+        return builder;
+      };
     },
   });
   return builder;
@@ -244,7 +437,11 @@ type MockedClient = {
  * Points the mocked Supabase client at a backend that holds this member, plus
  * any other tables' rows a test seeds.
  */
-export function signInAs(persona: Persona, tables: Record<string, unknown[]> = {}) {
+export function signInAs(
+  persona: Persona,
+  tables: Record<string, unknown[]> = {},
+  options: BackendOptions = {},
+) {
   const p = persona.profile;
   backend = {
     session: persona.session,
@@ -260,12 +457,26 @@ export function signInAs(persona: Persona, tables: Record<string, unknown[]> = {
       is_safeguarding_officer: persona.isSafeguardingOfficer ?? false,
       committee_checks_from: null,
       ...persona.rpcs,
+      ...options.rpcs,
     },
   };
+  const { tableHandlers = {}, rpcHandlers = {}, rpcErrors = {} } = options;
   const client = supabase as unknown as MockedClient;
-  client.from.mockImplementation((table: string) => query(() => backend.tables[table] ?? []));
-  client.rpc.mockImplementation((name: string) =>
-    query(() => (name in backend.rpcs ? backend.rpcs[name] : null)),
+  client.from.mockImplementation((table: string) =>
+    query(table, (q) => {
+      const handled = tableHandlers[table]?.(q);
+      return handled !== undefined ? handled : (backend.tables[table] ?? []);
+    }),
+  );
+  client.rpc.mockImplementation((name: string, args: Record<string, unknown> = {}) =>
+    query(
+      name,
+      (q) => {
+        if (rpcHandlers[name]) return rpcHandlers[name](args, q);
+        return name in backend.rpcs ? backend.rpcs[name] : null;
+      },
+      rpcErrors[name] ?? null,
+    ),
   );
   client.storage.from.mockImplementation(() => ({
     getPublicUrl: () => ({ data: { publicUrl: 'https://example.test/logo.png' } }),
@@ -397,6 +608,58 @@ export function constantsClubMock() {
 }
 
 // ---------------------------------------------------------------------------
+// One screen on its own
+
+// Loaded when first used, so this file's own checks don't need the app's providers.
+const auth = () => jest.requireActual('@/lib/auth') as typeof import('@/lib/auth');
+
+/**
+ * The root of a one-screen app: the real AuthProvider, and nothing until the
+ * member has loaded, as the real root layout does. Leaves out the real
+ * layout's guards, which the route tests cover.
+ */
+function ScreenTestLayout() {
+  const { AuthProvider } = auth();
+  return (
+    <AuthProvider>
+      <WhenLoaded />
+    </AuthProvider>
+  );
+}
+
+function WhenLoaded() {
+  const { loading } = auth().useAuth();
+  return loading ? null : <Stack />;
+}
+
+/**
+ * Renders real screens (keyed by route, such as "injuries/[id]") for a member
+ * on the fake backend, opened at `url`, and waits for their data to load.
+ * Today is TODAY.
+ */
+export async function openScreen(
+  who: PersonaName | Persona,
+  screens: Record<string, ComponentType>,
+  url: string,
+  tables: Record<string, unknown[]> = {},
+  options: BackendOptions = {},
+) {
+  jest.useFakeTimers({ now: TODAY });
+  signInAs(typeof who === 'string' ? personas[who] : who, tables, options);
+  renderRouter({ _layout: ScreenTestLayout, ...screens }, { initialUrl: url });
+  await settle();
+}
+
+/** Lets pending loads and effects finish. */
+export async function settle(rounds = 10) {
+  for (let i = 0; i < rounds; i++) {
+    await act(async () => {
+      await Promise.resolve();
+    });
+  }
+}
+
+// ---------------------------------------------------------------------------
 // Routes, straight from the file system
 
 // The project has no Node type definitions, so just what's used here.
@@ -521,6 +784,31 @@ if (expect.getState().testPath?.endsWith('/__tests__/helpers/harness.tsx')) {
         expect(roleCombinationProblem(roles, p.profile!.date_of_birth, p.profile!.under_17)).toBeNull();
       },
     );
+
+    it.each(Object.entries(morePersonas))(
+      '%s (screen tests) holds a role combination the app allows',
+      (_name, p) => {
+        const roles = [p.profile.role, ...p.profile.extra_roles];
+        expect(roleCombinationProblem(roles, p.profile.date_of_birth, p.profile.under_17)).toBeNull();
+      },
+    );
+
+    it('handlers see the filters and arguments, and errors come back as the database’s', async () => {
+      signInAs(personas.coach, { notes: [{ id: 'n1' }] }, {
+        tableHandlers: { profiles: (q) => (q.eq('id') === 'other' ? [{ id: 'other' }] : undefined) },
+        rpcHandlers: { echo: (args) => args.p_value },
+        rpcErrors: { refused: 'Not allowed' },
+      });
+      const other = await supabase.from('profiles').select('*').eq('id', 'other').single();
+      expect(other.data).toEqual({ id: 'other' });
+      const own = await supabase.from('profiles').select('*').eq('id', 'coach').single();
+      expect(own.data).toEqual(personas.coach.profile);
+      expect((await supabase.from('notes').select('*')).data).toEqual([{ id: 'n1' }]);
+      expect((await supabase.rpc('echo', { p_value: 3 })).data).toBe(3);
+      const refused = await supabase.rpc('refused');
+      expect(refused.data).toBeNull();
+      expect(refused.error).toEqual({ message: 'Not allowed' });
+    });
 
     it('the fake backend answers queries and RPCs with the seeded rows', async () => {
       signInAs(personas.coach);

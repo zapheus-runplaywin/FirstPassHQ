@@ -1,5 +1,6 @@
 import {
   canBeExempt,
+  canWorkWithChildren,
   committeeCheckDue,
   committeeChecksDue,
   exemptionStatus,
@@ -573,5 +574,27 @@ describe('safetyIssues', () => {
       'Under 18 with no guardian linked',
       'Turns 18 on 01/11/2026',
     ]);
+  });
+});
+
+describe('canWorkWithChildren', () => {
+  const current = { wwcc_number: '1234567A', wwcc_expires_on: '2028-06-30' };
+
+  it.each<[string, Partial<Profile>, boolean, boolean]>([
+    ['an approved member with a current check', current, false, true],
+    ['a check expiring within 60 days', { ...current, wwcc_expires_on: '2026-11-01' }, false, true],
+    ['a check that has expired', { ...current, wwcc_expires_on: '2026-10-17' }, false, false],
+    ['no check', { wwcc_number: null, wwcc_expires_on: null }, false, false],
+    ['no check but an exemption that applies', { wwcc_number: null, wwcc_expires_on: null }, true, true],
+    ['a stood-down member with a current check', { ...current, stood_down_at: '2026-10-01T00:00:00Z' }, false, false],
+    ['a stood-down member with an exemption', { stood_down_at: '2026-10-01T00:00:00Z' }, true, false],
+    ['a member waiting for approval', { ...current, status: 'pending' }, false, false],
+    ['a rejected member', { ...current, status: 'rejected' }, true, false],
+  ])('%s', (_label, overrides, exempt, expected) => {
+    expect(canWorkWithChildren(profile(overrides), exempt)).toBe(expected);
+  });
+
+  it('is false for nobody signed in', () => {
+    expect(canWorkWithChildren(null, true)).toBe(false);
   });
 });

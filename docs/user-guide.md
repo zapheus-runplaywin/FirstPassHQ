@@ -1115,7 +1115,8 @@ Messages from captains under 18 are copied to their parents or guardians.
 
 The **Check-ins** card shows how many of your athletes have checked in today and how many are
 flagged. If any are flagged, your to-do list says "Check in with N athletes". Athletes under 18
-show, and count, only once a parent or guardian has given consent for their check-ins.
+show, and count, only once a parent or guardian has given consent for their check-ins. A squad
+drops out once its squad phase is complete, and if that was your only group the card goes too.
 
 - **Day by day** lists today's (or yesterday's) check-ins for a squad or team: athletes to check
   in with first, with what scored low and any note, then those feeling good, then who hasn't
@@ -1374,8 +1375,8 @@ share it with for the first time is told then. A plan shared with nobody says "N
 and the club's admins can see it".
 
 Open a plan to read it and its photos and files. Photos and PDFs open in the app; Word documents
-open in your phone's viewer. On your own plans, **Change this plan** lets you edit anything, share
-it differently or remove a photo or file; the plan then shows when it was last changed and by
+open in your phone's viewer. On your own plans, while your check or exemption is current, **Change this plan** lets you edit
+anything, share it differently or remove a photo or file; the plan then shows when it was last changed and by
 whom. **Use again for another session**, on your own plans and on plans shared with you, starts a
 new plan copied from this one, files included, for today, in a squad or team you coach. You can't
 delete a plan: ask an admin if one was added by mistake.
@@ -1536,8 +1537,8 @@ the person who endorsed it and the athlete's own parents or guardians. Open it, 
 - **Accept clearance** clears the athlete to train and play, or
 - **Send back** with a note.
 
-The committee can also send back a request that no coach or physio has looked at yet. Nobody can
-send back an under 18's clearance before a parent or guardian has given consent for injuries. Tap **View**
+The committee can also send back a request that no coach or physio has looked at yet, except their
+own or their own child's. Nobody can send back an under 18's clearance before a parent or guardian has given consent for injuries. Tap **View**
 on a document to read it in the app (see [Viewing proof documents](#viewing-proof-documents)).
 While a clearance is waiting for you to accept it, you also get **Share**, to save its documents to
 the club's records, such as OneDrive. Share disappears once it's accepted or sent back, and nobody
@@ -1902,8 +1903,9 @@ Working With Children Check whichever role it is, and that includes athletes und
   physio, committee, admin, statistician and temporary helper roles stop at once, and they're taken out of the squads and teams
   they coach, manage or treat. They also stop seeing what they made in those roles: attendance
   they took, their session plans and the messages they sent, with who read them. Plans they shared
-  stay with the squad or team. Their athlete and guardian roles carry on, so a parent still sees
-  their own child and the messages sent to them. Their home screen says their role is paused and to talk to a club admin. Only
+  stay with the squad or team. Messages they got as a coach, manager, physio, committee member or
+  admin go from their inbox too. Their athlete and guardian roles carry on, so a parent still sees
+  their own child, whole-club messages and the messages that reached them as a parent or athlete. Their home screen says their role is paused and to talk to a club admin. Only
   admins see the reason. **Lift stand-down** ends it and puts back their places in this season's
   squads and teams. Every stand-down is kept on their page and in the Working With Children Checks
   report, with who started and lifted it, even if the member is later deleted. You can't stand
@@ -2602,7 +2604,7 @@ once saved, only replaced or removed, and anyone who gets it wrong five times in
 | Concerns                | The Child Safety Officer, the Complaints Manager and admins, never the person a concern is about. Whoever raised it sees its status. A hidden name is never shown to them. |
 | Safeguarding contacts   | Everyone signed in, including guests and people waiting for approval.                                                       |
 | Committee checks date   | Everyone signed in. Only admins change it, and only to bring it forward; who changed it and when is kept. |
-| Messages                | The people they were sent to, the sender (unless they've been stood down), and admins. Guardians of athletes under 18 get a copy of every message sent to their athlete, and of every message their athlete sends as a captain. Guests don't get messages; physios get messages sent to the Physio role and to their squads and teams, and whole-club messages only if an admin turns that on. |
+| Messages                | The people they were sent to, the sender, and admins. A stood-down member doesn't see the messages they sent, or the ones they got as a coach, manager, physio, committee member or admin. Guardians of athletes under 18 get a copy of every message sent to their athlete, and of every message their athlete sends as a captain. Guests don't get messages; physios get messages sent to the Physio role and to their squads and teams, and whole-club messages only if an admin turns that on. |
 | Read receipts           | The sender and admins.                                                                                                      |
 | Survey answers          | Whoever sent the survey. The committee and admins for their own surveys and ones a coach or manager shared with them. A coach or manager's survey to their own squad or team is seen by them while they still coach or manage it, by admins unless it's a quick poll (up to 5 questions with choices or ratings), and by the committee if they shared it. A captain's poll is seen by the captain while they're captain, and by the squad or team's coaches and managers. Named answers show the member's name; parents and guardians of an athlete under 18 also read their child's named answers. Anonymous answers, and name-optional answers given without a name, are kept with no name, no member and no time, so nobody can see who gave them, admins included; their results show only once the survey has closed, or everyone has answered, and at least 3 people have answered. Named results show once 3 people have answered, a club survey's chosen 20%, 50% or 80%, or everyone when everyone must answer; every survey's results show once it closes. Members never see each other's answers. Whoever sees the results can download them as a PDF or spreadsheet, except captains. |
 | Survey totals shared with a team | When a coach, manager or captain shares a poll's results with the squad or team: everyone it went to and their parents or guardians, once results show. Only how many picked each choice and average ratings: never names, written answers or who has answered. |
@@ -2834,7 +2836,8 @@ Working With Children Check, and another admin must do it.
 - **Stand-downs.** An admin can stand someone down straight away, for example on an interim
   negative notice from the Working with Children Screening Unit. Their coach, manager, physio,
   committee, admin, statistician and temporary helper roles stop and they leave the squads and teams they lead. They no longer
-  see attendance they took, their session plans or the messages they sent. Every stand-down is
+  see attendance they took, their session plans, the messages they sent or the messages they got in
+  those roles. Every stand-down is
   kept (see [Changing or removing members](#changing-or-removing-members)).
 - **Committee checks have a deadline.** Committee members approved before checks were needed
   keep their role without one only until the club's committee checks date. From that day their
@@ -2854,6 +2857,13 @@ Working With Children Check, and another admin must do it.
 - **Check-ins are only ever averages.** The committee, physios and admins never see who checked in
   or any one athlete's answers, only a group's average scores, and only once at least 3 athletes in
   the group have checked in.
+- **Screens only for those who use them.** Each screen opens only for the roles it's for, even
+  from a shared link or a typed web address: for example, only coaches, the committee, physios and
+  admins open Check-ins, only an athlete's coaches and parents or guardians open their check-ins,
+  and only the Child Safety Officer, the Complaints Manager and admins open the concerns register.
+  Someone waiting for approval, a guest, a temporary helper, or someone whose role is paused or
+  stood down is taken back to the home screen. What each screen shows is still decided by the
+  club's database.
 - **Record views are logged.** Every time someone other than a child or their guardians opens an
   under 18's injuries, injury documents, check-ins, game goals, season KPIs, named survey answers or member record, it's recorded.
   Admins see the list on the child's member page, and parents and guardians on their home screen.
