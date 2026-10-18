@@ -15,6 +15,7 @@ Most of the protection lives in the database, because row level security and dat
 | App logic | Pure rules and formatting: under-18 age, role combinations, Working With Children Check status and exemptions, to-dos and due dates, calendar parsing, PlayHQ links, surveys, awards, goals and more | `src/lib/__tests__/<module>.test.ts` | `npm test` |
 | Routes and screens | Through the real `src/app/_layout.tsx`: who can open each screen by deep link (admin screens only for admins, every other member screen only for the roles it's for, through `useRouteAccess` in `src/lib/route-access.ts`, nothing for signed-out members, and feature switches), and which cards each kind of member sees on Home and Administration | `src/__tests__/*.test.tsx`, `src/lib/__tests__/route-access.test.tsx` | `npm test` |
 | Edge functions | The nightly clean-up removes files before the records they belong to, stops at the first failure, batches files 500 at a time and refuses a wrong purge key; the PlayHQ reader is admin-only, refuses bad links and reads seasons, games, byes and time zones correctly | `supabase/functions/<function>/__tests__/*.test.ts` (the logic is in `purge.ts` and `fixtures.ts`; `index.ts` only starts it) | `npm test`, and `deno check` in the Tests workflow |
+| Browser smoke tests | The real web build, in Chromium at phone size, through key flows: signed out it opens on Find your club, or sign-in once a club is picked; an admin approves a member waiting for approval and stands a coach down; a coach takes attendance; an athlete does the daily check-in; a guest's deep links to the concerns register and injuries go Home, while an admin can open the register; an under-18 athlete reads a message with no reply box or Reply button. Each checks what shows and the database function and arguments the app sent. Supabase is answered by a fake backend with sample people, and "today" is pinned | `e2e/specs/*.spec.ts` (`e2e/support/fake-supabase.ts`, `e2e/support/people.ts`) | `npm run e2e:build`, `npm run e2e` |
 | Static checks | Lint and TypeScript | `eslint.config.js`, `tsconfig.json` | `npx expo lint`, `npx tsc --noEmit` |
 | Migration safety | Merged migrations stay unchanged, versions are unique, nothing exposes or loses data, no table has fewer rows after a branch's new migrations run on the sample data, and migrations apply to a fresh Supabase database | `scripts/check-migrations.py`, `scripts/check-migration-security.py`, `scripts/check-row-counts.sh` (sample data in `supabase/tests/setup/sample-records.sql`) | "Check migrations" workflow |
 | Known vulnerabilities | Fails on any high or critical npm advisory not in `.github/known-vulnerabilities.json` | `scripts/check-cves.py` | "Security audit" workflow |
@@ -31,7 +32,7 @@ A new access rule is tested for every one of these, both ways: who gets it and w
 
 | Workflow | When | What |
 |---|---|---|
-| Tests | Every push to every branch | Lint, typecheck, Jest with a coverage floor, every database test against every migration |
+| Tests | Every push to every branch | Lint, typecheck, Jest with a coverage floor, every database test against every migration, and the browser smoke tests against a fresh web build |
 | Check migrations | Pull requests that touch migrations | The migration safety checks above, including the row count check |
 | Security audit | Every merge to main, weekly, and pull requests that change packages | `scripts/check-cves.py` |
 
@@ -61,11 +62,16 @@ npm test                            # Jest; add -- --coverage for the coverage s
 PGHOST=localhost PGUSER=postgres PGPASSWORD=... scripts/run-sql-tests.sh            # every database test
 PGHOST=localhost PGUSER=postgres PGPASSWORD=... scripts/run-sql-tests.sh surveys    # one file
 python3 scripts/check-cves.py
+npm run e2e:build                   # the web build the browser smoke tests use, in e2e/web-build
+npm run e2e                         # the browser smoke tests; e2e/playwright-report has the report
 ```
+
+The browser smoke tests need Chromium for Playwright: `npx playwright install chromium` once, or set `PLAYWRIGHT_BROWSERS_PATH` to a folder that has it. Build again after changing the app, because the tests run the exported build, not the dev server. Each test starts the browser with Thunder picked (the build's club, at `https://example.supabase.co`) and, unless it's signed out, a sample member's session saved, and answers every Supabase request from that test's handler. `backend.rpcCalls('<function>')` gives the arguments of each call, so a test checks what was saved as well as what shows. A test also fails on any uncaught error in the page; the one known exception is listed in `e2e/support/test.ts`.
 
 The database tests need Postgres 16 and a user that can create databases. `supabase/tests/setup/supabase-stubs.sql` stands in for the parts of Supabase that plain Postgres lacks: the auth, storage, realtime and pg_net pieces.
 
 ## What isn't covered yet
 
-- **End-to-end tests on a phone or in a browser:** the screenshot fixtures in the project's shared files drive the web build with sample data for the user guide, but they don't assert anything.
+- **Native phone builds:** the browser smoke tests drive the web build only. Nothing runs the iOS or Android app, so native-only code (secure session storage, push notifications, the camera and file pickers) isn't covered end to end.
+- **Most screens in the browser:** the smoke tests cover a handful of key flows; the rest are covered by the Jest route and screen tests.
 - **The real Supabase platform:** the database tests run on plain Postgres with stubs. "Check migrations" separately confirms that migrations apply to a real Supabase database.

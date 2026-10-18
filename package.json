@@ -62,7 +62,9 @@
     "lint": "expo lint",
     "typecheck": "tsc --noEmit",
     "test": "jest",
-    "test:sql": "scripts/run-sql-tests.sh"
+    "test:sql": "scripts/run-sql-tests.sh",
+    "e2e:build": "EXPO_PUBLIC_SUPABASE_URL=https://example.supabase.co EXPO_PUBLIC_SUPABASE_ANON_KEY=x EXPO_OFFLINE=1 expo export -p web --clear --output-dir e2e/web-build",
+    "e2e": "playwright test -c e2e/playwright.config.ts"
   },
   "private": true,
   "jest": {
@@ -72,7 +74,8 @@
     ],
     "testPathIgnorePatterns": [
       "/node_modules/",
-      "/supabase/(?!functions/[^/]+/__tests__/)"
+      "/supabase/(?!functions/[^/]+/__tests__/)",
+      "/e2e/"
     ],
     "collectCoverageFrom": [
       "src/**/*.{ts,tsx}",
