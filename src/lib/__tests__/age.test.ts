@@ -56,6 +56,11 @@ describe('parseDate', () => {
     expect(parseDate('31/04/2010')).toBeUndefined();
     expect(parseDate('32/01/2010')).toBeUndefined();
     expect(parseDate('00/01/2010')).toBeUndefined();
+  });
+
+  it('is undefined for years 0 to 99 typed with leading zeros', () => {
+    expect(parseDate('01/01/0050')).toBeUndefined();
+    expect(parseDate('01/01/0000')).toBeUndefined();
     expect(parseDate('10/13/2010')).toBeUndefined();
     expect(parseDate('10/00/2010')).toBeUndefined();
   });
