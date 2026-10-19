@@ -478,6 +478,19 @@ export default function HomeScreen() {
           </View>
         ) : null}
 
+        {isGuardian && !profile?.verified_at ? (
+          // An admin can still verify an approved guardian in person with this code.
+          <Card>
+            <ThemedText type="smallBold">Confirm who you are</ThemedText>
+            <ThemedText type="small" themeColor="textSecondary">
+              A club admin verifies you before linking you to your child, against PlayHQ, by
+              sighting your ID, or with this code in person or over a channel they already trust.
+              Never share it with anyone else.
+            </ThemedText>
+            <VerificationCode />
+          </Card>
+        ) : null}
+
         {isGuardian && features.goals && athletes.length > 0 ? (
           // Guardians aren't in a squad, so their athletes' game goals open from here.
           <View style={styles.section}>
@@ -607,7 +620,7 @@ export default function HomeScreen() {
                 }>
                 <ThemedText type="smallBold">{a.name}</ThemedText>
                 <ThemedText type="small" themeColor="textSecondary">
-                  Who at the club opened their injuries, check-ins, game goals, season KPIs or member record
+                  Who at the club opened their injuries, check-ins, game goals, season KPIs, named survey answers or member record
                 </ThemedText>
               </PressableCard>
             ))}
