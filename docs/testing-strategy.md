@@ -20,7 +20,7 @@ Most of the protection lives in the database, because row level security and dat
 | Static checks | Lint and TypeScript | `eslint.config.js`, `tsconfig.json` | `npx expo lint`, `npx tsc --noEmit` |
 | Migration safety | Merged migrations stay unchanged, versions are unique, nothing exposes or loses data, no table has fewer rows after a branch's new migrations run on the sample data, and migrations apply to a fresh Supabase database | `scripts/check-migrations.py`, `scripts/check-migration-security.py`, `scripts/check-row-counts.sh` (sample data in `supabase/tests/setup/sample-records.sql`) | "Check migrations" workflow |
 | Known vulnerabilities | Fails on any high or critical npm advisory not in `.github/known-vulnerabilities.json` | `scripts/check-cves.py` | "Security audit" workflow |
-| Mutation tests (testing the tests) | Stryker makes small changes to the child-safety and access rules, such as turning `<` into `<=`, dropping a role from a rule or treating a blank check number as a real one, and runs the `src/lib` unit tests against each. A change no test notices is a gap in the tests. Covers `age.ts`, `auth.tsx`, `conduct.ts`, `consents.ts`, `record-access.ts`, `roles.ts`, `route-access.ts` and `safety.ts`. Fails below a 95% mutation score | `stryker.config.json` | `npm run test:mutation`, locally only (not in CI) |
+| Mutation tests (testing the tests) | Stryker makes small changes to the child-safety and access rules, such as turning `<` into `<=`, dropping a role from a rule or treating a blank check number as a real one, and runs the `src/lib` unit tests against each. A change no test notices is a gap in the tests. Covers `age.ts`, `auth.tsx`, `conduct.ts`, `consents.ts`, `record-access.ts`, `roles.ts`, `route-access.ts` and `safety.ts`. Fails below a 95% mutation score | `stryker.config.json` | `npm run test:mutation`, and the "Mutation tests" workflow, run by hand |
 
 ## The kinds of member every access test considers
 
@@ -37,6 +37,7 @@ A new access rule is tested for every one of these, both ways: who gets it and w
 | Tests | Every push to every branch | Lint, typecheck, Jest with a coverage floor, every database test against every migration, and the browser smoke tests against a fresh web build |
 | Check migrations | Pull requests that touch migrations | The migration safety checks above, including the row count check |
 | Security audit | Every merge to main, weekly, and pull requests that change packages | `scripts/check-cves.py` |
+| Mutation tests | By hand only (Actions, "Mutation tests", "Run workflow"), to save Actions minutes | Stryker over the child-safety and access rules. Its results are kept in the Actions cache, so only the first run takes about an hour and later runs only test what changed. The report of every surviving change is kept with the run |
 
 The Jest coverage floor is set in `package.json` (`jest.coverageThreshold`): 91% of statements and lines, 85% of branches and 90% of functions (2026-10-19, up from 28%). Raise it when coverage goes up; never lower it to get a change through. A new screen or module comes with tests that keep the total above the floor.
 
@@ -70,7 +71,7 @@ npm run test:mutation               # mutation tests; reports/mutation/index.htm
 npx stryker run --mutate src/lib/safety.ts   # mutation tests for one file
 ```
 
-The mutation tests don't run on GitHub, to save the account's Actions minutes. Run them locally before opening a pull request that changes one of the files they cover. The first run takes about an hour. After that, runs are incremental (`reports/stryker-incremental.json`): only changes in code or tests that changed since the last run are tested again.
+The mutation tests don't run on their own on GitHub, to save the account's Actions minutes. Run them locally, or start the workflow by hand, before opening a pull request that changes one of the files they cover. The first run takes about an hour. After that, runs are incremental (`reports/stryker-incremental.json`): only changes in code or tests that changed since the last run are tested again.
 
 A surviving change in the mutation report is a test to write: a test that fails with the change and passes without it. A few changes can't be caught because they don't change what the code does, such as a shortcut that gives the same answer as the long way. Mark those in the code with `// Stryker disable next-line <mutator>: <why it can't change the result>` so the report shows only real gaps. A hook's fixed dependency list (`[]` changed to `["Stryker was here"]`) can't be marked that way, so the report always lists four of those, in `auth.tsx` and `consents.ts`. To cover a new file, add it to `mutate` in `stryker.config.json`.
 
