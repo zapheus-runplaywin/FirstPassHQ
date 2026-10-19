@@ -510,6 +510,17 @@ describe('approving a request', () => {
     expect(screen.queryByText(/^Recorded by Other admin on /)).toBeNull();
   });
 
+  it.each<[string, PersonaName, string, string]>([
+    ['turning a request down', 'pending', "Don't approve", 'Choose a reason before turning this request down.'],
+    ['removing access', 'committee', 'Remove access', 'Choose a reason before removing access.'],
+  ])('needs a reason before %s, and sends nothing without one', async (_l, who, button, message) => {
+    await openMember(p(who));
+    await press(button);
+    expect(screen.getByText(message)).toBeTruthy();
+    expect(writeNames()).toEqual([]);
+    expect(back).not.toHaveBeenCalled();
+  });
+
   it('turns a request down with the reason chosen', async () => {
     await openMember(p('pending'));
     await pressInSection('Reason if not approving', 'Not registered with the club');
