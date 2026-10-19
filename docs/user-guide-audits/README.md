@@ -13,5 +13,6 @@ and how it was fixed (guide or code), the decisions Matt made, and what was conf
 | Physio | [physio-guide-audit-2026-10-18.md](physio-guide-audit-2026-10-18.md) | PR #143 |
 | Guest | [guest-guide-audit-2026-10-18.md](guest-guide-audit-2026-10-18.md) | PR #143 |
 | Temporary helper | [temporary-helper-guide-audit-2026-10-18.md](temporary-helper-guide-audit-2026-10-18.md) | PR #143 |
+| Parent and guardian | [guardian-guide-audit-2026-10-19.md](guardian-guide-audit-2026-10-19.md) | this PR (the guide was first reviewed in PR #141 without a report) |
 
-Still to audit: guardian (the guide was reviewed in PR #141 without a report), admin.
+Still to audit: admin.

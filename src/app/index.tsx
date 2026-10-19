@@ -607,7 +607,7 @@ export default function HomeScreen() {
                 }>
                 <ThemedText type="smallBold">{a.name}</ThemedText>
                 <ThemedText type="small" themeColor="textSecondary">
-                  Who at the club opened their injuries, check-ins, game goals, season KPIs or member record
+                  Who at the club opened their injuries, check-ins, game goals, season KPIs, named survey answers or member record
                 </ThemedText>
               </PressableCard>
             ))}

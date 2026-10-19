@@ -112,7 +112,7 @@ What each role sees on its home screen:
 | Vote in club awards                    |    ✓    |                 |      ✓       |     ✓      |       ✓       |               |         |       ✓       |
 | Set up awards and see results          |         |                 |              |            |               |               |         |       ✓       |
 | Season KPIs (when turned on)           |   Own   |  See athlete's  | Own; set for own athletes, and assistants if head coach | Own | Set for coaches and managers |  |  | Set for coaches and managers, read athletes', set review dates |
-| Complete integrity training            |   Own   | Their athlete's |     Own      |    Own     |      Own      |      Own      |         |      Own      |
+| Complete integrity training            |   Own   | Own, and their athlete's |     Own      |    Own     |      Own      |      Own      |         |      Own      |
 | Check training certificates            |         |                 |              |            |       ✓       |               |         |       ✓       |
 | Set integrity training                 |         |                 |              |            |               |               |         |       ✓       |
 | Governance reports as PDFs             |         |                 |              |            | Concerns register, if an officer |               |         |       ✓       |
@@ -857,8 +857,8 @@ them or react to them. If you're under 18, your parents or guardians can read th
 
 Parents and guardians of athletes under 18 sign in with their own Google account and ask to join
 as **Guardian**, entering the email they used to register their athlete with PlayHQ. An admin
-verifies who you are (against PlayHQ, or with the 6-digit code on your home screen) and then links
-you to your athlete. Every athlete under 18 must have at least one verified guardian before they're
+verifies who you are (against PlayHQ, by sighting your ID, or with the 6-digit code your home
+screen shows while you wait for approval) and then links you to your athlete. Every athlete under 18 must have at least one verified guardian before they're
 approved. A guardian can be linked to more than one athlete, and an athlete can
 have more than one guardian.
 
@@ -890,7 +890,9 @@ they're expected back, so they know to expect them at training, but nothing more
 
 You can change your mind at any time: switch a consent off and save. Every consent given and
 withdrawn is kept with who did it, when and the policy version, and listed under **History**. Any
-of your child's parents or guardians can give or withdraw consent. Photos of injuries are separate:
+of your child's parents or guardians can give or withdraw consent. A consent you gave stays in
+force if you later delete your account, kept under your name, until another parent or guardian
+withdraws it. Photos of injuries are separate:
 you're asked each time (see [Injury documents and photos](#injury-documents-and-photos)).
 
 <img src="user-guide/consent.png" width="210" alt="A parent giving consent for their child's check-ins and injuries">
@@ -918,7 +920,8 @@ for yourself as well.
 Once you're verified, **Who has viewed their records** on your home screen lists each child under
 18. Open it to see everyone at the club who opened your child's injuries, injury documents,
 check-ins, game goals, season KPIs, named survey answers or member record in the app: their name, their role (coach, physio, admin,
-committee or safeguarding contact), what they opened and when, newest first. Sharing an injury
+committee or safeguarding contact, or member for anyone else, such as a manager reading named
+survey answers), what they opened and when, newest first. Sharing an injury
 document is listed too. Your child's own views and those of their parents and guardians aren't
 listed, and opening the same thing again within 30 minutes counts once. The list stops being
 yours to see on your child's 18th birthday. If anything on it worries you, raise a concern (see
@@ -929,9 +932,9 @@ yours to see on your child's 18th birthday. If anything on it worries you, raise
 
 ### Your child's attendance
 
-**Attendance** on your home screen lists each child under 18. Open it to see every session their
-coaches took attendance for and whether your child was marked **Present** or **Absent**. You see only
-your child's marks, never other children's. If your child was marked absent and you didn't expect it,
+**Attendance** on your home screen lists each child under 18. Open it to see the sessions their
+coaches took attendance for in the last 4 weeks, 3 months or 12 months, and whether your child was
+marked **Present** or **Absent**. You see only your child's marks, never other children's. If your child was marked absent and you didn't expect it,
 ask their coach, or raise a concern if it worries you.
 
 Tap **Report an absence** to tell the coaches your child will be away, or was away: choose the first
@@ -939,7 +942,8 @@ and last day, pick a reason such as **Planned holidays** or **Personal illness**
 the same as for athletes (see
 [Your attendance and absences](#your-attendance-and-absences)), and your child and their other
 parents or guardians see what you report. An absent session that matches a reported absence shows as
-**Absent, reported**. You stop seeing your child's attendance on their 18th birthday.
+**Absent, reported**. If plans change, tap **Withdraw** next to an absence you or your child
+reported. You stop seeing your child's attendance on their 18th birthday.
 
 <img src="user-guide/records-home.png" width="210" alt="Attendance, What's changed and Who has viewed their records on a parent's home screen">
 
@@ -1003,7 +1007,9 @@ As a guardian you:
 - **See your athlete's daily check-ins**, including any note they write. Tap your athlete under
   **Check-ins** on the home screen to see the last four weeks. Your athlete is told that you can
   read their notes.
-- **See the calendars** for your athlete's squad.
+- **See the calendar and matches** of the squad or team you're placed in: the squad you chose when
+  you joined, or any an admin adds you to from your member page. After selections, ask an admin to
+  add you to your child's team to see its matches.
 - **See your athlete's game goals and reflections**: the goals they and their coaches set for
   each game, how your athlete thinks each one went, their coaches' comments and the team goals (see
   [Game goals](#game-goals)). Tap your athlete under **Guardian of** on the home screen to see all
@@ -1022,9 +1028,10 @@ As a guardian you:
   shared documents (see [What's changed for your child](#whats-changed-for-your-child)).
 - **See who has viewed your athlete's records**: everyone who opened their injuries, check-ins,
   game goals, season KPIs, named survey answers or member record (see [Who has viewed your child's records](#who-has-viewed-your-childs-records)).
-- **Complete integrity training** for your athlete: their training shows in your to-do list and
-  on the **Integrity training** screen under their name, and you upload their certificates
-  exactly as they would (see [Integrity training](#integrity-training)).
+- **Complete integrity training** for your athlete, and for yourself if the club sets a course
+  for parents and guardians: their training shows in your to-do list and on the **Integrity
+  training** screen under their name, and you upload their certificates exactly as they would (see
+  [Integrity training](#integrity-training)).
 
 <img src="user-guide/guardian-home.png" width="210" alt="Guardian home screen">
 <img src="user-guide/training-guardian.png" width="210" alt="A guardian's view of their athlete's training, one sent back">

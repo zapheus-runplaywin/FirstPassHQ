@@ -47,8 +47,8 @@ export default function RecordAccessScreen() {
     <Screen refreshing={refreshing} onRefresh={onRefresh}>
       <ThemedText type="small" themeColor="textSecondary">
         Every time someone at the club opened {who} injuries, injury documents, check-ins, game
-        goals or member record in the app, newest first. Views by them and by their parents and
-        guardians aren’t listed. Opening the same thing again within 30 minutes counts once.
+        goals, season KPIs, named survey answers or member record in the app, newest first. Views
+        by them and by their parents and guardians aren’t listed. Opening the same thing again within 30 minutes counts once.
       </ThemedText>
       {!allowed ? (
         <ThemedText type="small" themeColor="textSecondary">
