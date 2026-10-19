@@ -49,16 +49,21 @@ def revokes_from_public_and_anon(statement: str) -> bool:
     return bool(re.search(r'\bpublic\b', grantees)) and bool(re.search(r'\banon\b', grantees))
 
 
-def earlier_functions(path: Path) -> set[str]:
-    """Functions created by migrations that sort before this one."""
+def earlier_functions(path: Path, folder: Path = MIGRATIONS) -> set[str]:
+    """Functions created, or renamed into place, by migrations that sort
+    before this one. Replacing one keeps the grants and revokes it already has."""
     names: set[str] = set()
-    for other in sorted(MIGRATIONS.glob('*.sql')):
+    for other in sorted(folder.glob('*.sql')):
         if other.name >= path.name:
             break
         sql = strip(other.read_text(encoding='utf-8')).lower()
         names.update(
             m.group(2)
             for m in re.finditer(r'\bcreate\s+(or\s+replace\s+)?function\s+' + NAME, sql)
+        )
+        names.update(
+            m.group(1)
+            for m in re.finditer(r'\balter\s+function\b[^;]*?\brename\s+to\s+"?(\w+)"?', sql)
         )
     return names
 
@@ -86,7 +91,7 @@ def check(path: Path) -> list[tuple[int, str]]:
         if not enabled:
             found.append((line_of(sql, match.start()), f'{table} has no row level security'))
 
-    existing = earlier_functions(path)
+    existing = earlier_functions(path, path.parent)
     for match in re.finditer(r'\bcreate\s+(or\s+replace\s+)?function\s+' + NAME, sql):
         name = match.group(2)
         end = sql.find(';', match.end())

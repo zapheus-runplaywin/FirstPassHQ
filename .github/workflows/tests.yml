@@ -65,6 +65,9 @@ jobs:
       - name: Row count check catches lost rows
         if: ${{ !cancelled() }}
         run: scripts/test-check-row-counts.sh
+      - name: Security check flags open functions
+        if: ${{ !cancelled() }}
+        run: python3 scripts/test-check-migration-security.py
 
   # The real web build driven through key flows in Chromium at phone size, with
   # Supabase answered by e2e/support/fake-supabase.ts, so a broken build or a
