@@ -4,8 +4,9 @@
 -- holds its transaction open, sends the second save, then commits the first
 -- and collects the second: the closest two phones or a retried request can
 -- get to each other. The checks then read what was kept: no lost marks, one
--- check-in a day, and one consent and one survey answer each. Prints one
--- line per check.
+-- check-in a day, one register and one absence however often they're sent,
+-- one consent and one survey answer each, and one coach's choice of
+-- captains. Prints one line per check.
 \set ON_ERROR_STOP 0
 \pset tuples_only on
 \pset format unaligned
@@ -106,6 +107,67 @@ select pg_temp.ok('two coaches saving one register: every mark from both is kept
                          pg_temp.n(pg_temp.p('athlete3')), true), true);
 select pg_temp.ok('two coaches saving one register: still one register',
   (select count(*) from public.attendance_sessions where team_id = pg_temp.lc_team(2) and name = 'Tuesday training') = 1, true);
+
+-- ---------------------------------------------------------------------------
+-- Two coaches choose captains at once: the group ends with one coach's
+-- choice, whichever saved last, never a mix of both.
+-- ---------------------------------------------------------------------------
+select pg_temp.race('captains', 10,
+  format('select public.set_group_captains(%L::uuid, %L::uuid[], %L::uuid[])::text', pg_temp.lc_team(2),
+    array[pg_temp.p('athlete1')], array[pg_temp.p('athlete2')]),
+  16,
+  format('select public.set_group_captains(%L::uuid, %L::uuid[], %L::uuid[])::text', pg_temp.lc_team(2),
+    array[pg_temp.p('athlete3')], array[pg_temp.p('athlete4')]));
+select pg_temp.ok('two coaches choosing captains: the second save goes through',
+  (select b_error is null from race_results where label = 'captains'), true);
+select pg_temp.ok('two coaches choosing captains: one coach''s choice is kept, not a mix of both',
+  (select array_agg(profile_id order by captain_role, profile_id) from public.team_captains where team_id = pg_temp.lc_team(2))
+    in (array[pg_temp.p('athlete3'), pg_temp.p('athlete4')], array[pg_temp.p('athlete1'), pg_temp.p('athlete2')]), true);
+
+-- ---------------------------------------------------------------------------
+-- A new register sent twice (a retry after a dropped connection): one
+-- register, with the marks.
+-- ---------------------------------------------------------------------------
+select pg_temp.race('new register', 10,
+  format('select public.save_attendance(null, %L, %L, %L, %L)::text', pg_temp.lc_team(2), 'Thursday training',
+    date_trunc('minute', now()) - interval '1 hour',
+    jsonb_build_array(jsonb_build_object('profile_id', pg_temp.p('athlete1'), 'present', true))),
+  10,
+  format('select public.save_attendance(null, %L, %L, %L, %L)::text', pg_temp.lc_team(2), 'Thursday training',
+    date_trunc('minute', now()) - interval '1 hour',
+    jsonb_build_array(jsonb_build_object('profile_id', pg_temp.p('athlete1'), 'present', true),
+                      jsonb_build_object('profile_id', pg_temp.p('athlete2'), 'present', false))));
+select pg_temp.ok('a new register sent twice: the second waits and goes through',
+  (select b_waited and b_error is null from race_results where label = 'new register'), true);
+select pg_temp.ok('a new register sent twice: one register, with every mark',
+  (select count(*) = 1 from public.attendance_sessions where team_id = pg_temp.lc_team(2) and name = 'Thursday training')
+  and (select count(*) = 2 from public.attendance_marks m join public.attendance_sessions s on s.id = m.session_id
+       where s.team_id = pg_temp.lc_team(2) and s.name = 'Thursday training'), true);
+-- A second coach's register for the same session is their own.
+select set_config('request.jwt.claim.sub', pg_temp.lc(16)::text, false);
+select public.save_attendance(null, pg_temp.lc_team(2), 'Thursday training', date_trunc('minute', now()) - interval '1 hour',
+  jsonb_build_array(jsonb_build_object('profile_id', pg_temp.p('athlete1'), 'present', true)));
+select pg_temp.ok('another coach taking the same session still gets their own register',
+  (select count(*) = 2 from public.attendance_sessions where team_id = pg_temp.lc_team(2) and name = 'Thursday training'), true);
+
+-- ---------------------------------------------------------------------------
+-- An absence sent twice: kept once. A different absence is still added.
+-- ---------------------------------------------------------------------------
+create or replace function pg_temp.absence(days int, reason text) returns text language sql as $$
+  select format('select public.report_absence(%L, current_date + %s, current_date + %s, %L, %L)::text',
+    pg_temp.lc(98), days, days, (select id from public.absence_categories where active order by id limit 1), reason) $$;
+select pg_temp.race('absence', 98, pg_temp.absence(3, 'Away'), 98, pg_temp.absence(3, 'Away'));
+select pg_temp.ok('an absence sent twice: the second waits and goes through',
+  (select b_waited and b_error is null from race_results where label = 'absence'), true);
+select pg_temp.ok('an absence sent twice: kept once',
+  (select count(*) = 1 from public.attendance_absences where athlete_id = pg_temp.lc(98) and from_day = current_date + 3), true);
+select set_config('request.jwt.claim.sub', pg_temp.lc(98)::text, false);
+select public.report_absence(pg_temp.lc(98), current_date + 3, current_date + 3,
+  (select id from public.absence_categories where active order by id limit 1), 'Away for a wedding');
+select public.report_absence(pg_temp.lc(98), current_date + 4, current_date + 4,
+  (select id from public.absence_categories where active order by id limit 1), 'Away');
+select pg_temp.ok('a different reason or day is a new absence',
+  (select count(*) = 3 from public.attendance_absences where athlete_id = pg_temp.lc(98) and from_day >= current_date + 3), true);
 
 -- ---------------------------------------------------------------------------
 -- An athlete's check-in sent twice (a retry on a bad connection): one
