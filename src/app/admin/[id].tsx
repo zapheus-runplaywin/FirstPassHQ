@@ -407,6 +407,15 @@ export default function MemberScreen() {
   }
 
   async function save(status: MemberStatus) {
+    // The member sees why they were turned down or lost access, so it's never left blank.
+    if (status === 'rejected' && !reason) {
+      setError(
+        member?.status === 'approved'
+          ? 'Choose a reason before removing access.'
+          : 'Choose a reason before turning this request down.',
+      );
+      return;
+    }
     const expires = parseDate(wwccExpires);
     if (dob === undefined) {
       setError('Enter the date of birth as DD/MM/YYYY.');
