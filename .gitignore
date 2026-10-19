@@ -53,3 +53,8 @@ logs/
 
 # test coverage
 coverage/
+
+# browser smoke tests (e2e/): the web export and Playwright's output
+e2e/web-build/
+e2e/test-results/
+e2e/playwright-report/

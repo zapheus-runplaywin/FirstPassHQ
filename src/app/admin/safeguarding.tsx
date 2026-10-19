@@ -133,7 +133,6 @@ export default function SafeguardingScreen() {
       rpcError || photosError || policiesError
         ? { error: null }
         : await supabase.rpc('admin_set_conduct_each_season', { p_on: conductEachSeason });
-    setBusy(false);
     const { error: officerError } =
       rpcError || photosError || policiesError || conductError || wwcOfficer === savedWwcOfficer
         ? { error: null }
@@ -150,6 +149,7 @@ export default function SafeguardingScreen() {
         : await supabase.rpc('admin_set_committee_checks_from', { p_date: committeeFrom });
     const failed =
       rpcError ?? photosError ?? policiesError ?? conductError ?? officerError ?? committeeError;
+    setBusy(false);
     if (failed) {
       setError(failed.message);
       return;
