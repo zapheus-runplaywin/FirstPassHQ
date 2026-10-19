@@ -100,6 +100,8 @@ export function samplePeople() {
       under_17: true,
     }),
     guest: person({ id: uuid(12), email: 'gus@example.com', full_name: 'Gus Visitor', role: 'guest' }),
+    /** Riley Evans's parent, linked to Riley as their guardian. */
+    guardian: person({ id: uuid(13), email: 'dana@example.com', full_name: 'Dana Evans', role: 'guardian' }),
     /** Asked to join the Mixed Open Squad as an athlete; not approved yet. */
     pending: person({
       id: uuid(20),
