@@ -62,3 +62,4 @@ e2e/playwright-report/
 # Stryker mutation tests
 .stryker-tmp/
 reports/mutation/
+reports/stryker-incremental.json
