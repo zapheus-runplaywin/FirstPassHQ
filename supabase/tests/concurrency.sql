@@ -1,3 +1,5 @@
+-- Manual test: run by hand (scripts/run-sql-tests.sh large-club concurrency, or
+-- the "Scale tests" workflow), not on every push.
 -- Two people saving at the same moment, in the 200-member sample club
 -- (setup/large-club.sql). Each check opens two extra connections to this
 -- database with dblink, signs each in as a member, starts the first save and

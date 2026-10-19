@@ -1,3 +1,5 @@
+-- Manual test: run by hand (scripts/run-sql-tests.sh large-club concurrency, or
+-- the "Scale tests" workflow), not on every push.
 -- The rules at club size: a generated club of 200 sample members
 -- (setup/large-club.sql) with brothers and sisters, guardians who also coach,
 -- athletes in two teams and every kind of member. Signed in as each member in
