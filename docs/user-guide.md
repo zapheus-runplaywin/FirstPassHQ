@@ -67,7 +67,8 @@ together:
 - **Admins** can also be a coach, manager, physio, committee member or guardian, but not an athlete.
 - **Athletes** can't also be a manager or a physio. An athlete can coach, but not the squad they
   play in, a team named from it, or the squad a team they play in belongs to. Anyone but a guest or temporary helper can also be a statistician, including an athlete 18 or over helping at a game they aren't playing in.
-- **Athletes under 18** can only add Coach. Parents and guardians must be 18 or over.
+- **Athletes under 18** can only add Coach. Parents and guardians must be 18 or over, by their date
+  of birth or, when none is recorded, by whether an admin marked them under 18.
 - **Who is under 18** is decided by the date of birth an admin checks against PlayHQ or ID. An
   athlete can't be approved without one.
 - Nobody endorses or accepts an injury clearance for themselves or their own child, and whoever
@@ -2817,6 +2818,8 @@ Working With Children Check, and another admin must do it.
 - **You're verified before you're linked.** An admin checks you against the club's registration,
   by sighting ID, or with a code shown on your phone, before linking you to your child, and the
   app keeps how and what they checked.
+- **Guardians are adults.** Someone under 18, by date of birth or because an admin marked them
+  under 18, can't be made a parent or guardian.
 - **You're told when another guardian is added or removed.** You get a message naming the guardian
   and the admin who made the change, and every link and unlink is kept. An admin who is also your
   child's parent can't change who your child's guardians are.

@@ -22,6 +22,14 @@ describe('formatDate', () => {
 });
 
 describe('parseDate', () => {
+  it('reads years from 1900 to 2100 only', () => {
+    expect(parseDate('31/12/1899')).toBeUndefined();
+    expect(parseDate('01/01/1900')).toBe('1900-01-01');
+    expect(parseDate('31/12/2100')).toBe('2100-12-31');
+    expect(parseDate('01/01/2101')).toBeUndefined();
+    expect(parseDate('01/01/0500')).toBeUndefined();
+  });
+
   it('reads DD/MM/YYYY', () => {
     expect(parseDate('14/03/2010')).toBe('2010-03-14');
   });
