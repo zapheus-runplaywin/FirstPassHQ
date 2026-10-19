@@ -1782,9 +1782,10 @@ Admins can do everything above except endorse injury clearances (they accept the
 committee, and endorse only if they're also a coach or physio), read athletes' check-in answers or
 set their game goals (unless they also coach them), plus run the club's set-up from **Administration** on the home
 screen. Admins' to-do lists include join requests waiting for approval and clearances waiting for
-sign-off, plus child-safety follow-ups: athletes under 18 with no guardian linked, Working With
-Children Checks to sort out, volunteer exemptions that end within 60 days, and athletes turning
-18 within 30 days. Every card problem shares one to-do, **Sort out Working With Children
+sign-off, plus child-safety follow-ups: new concerns, athletes with no date of birth, athletes under 18 with
+no guardian linked, Working With Children Checks to sort out, volunteer exemptions that end within
+60 days, athletes turning 18 within 30 days, Screening Unit notices still to report to the
+governing body, and no WWC Registration Officer, Child Safety Officer or Complaints Manager. Every card problem shares one to-do, **Sort out Working With Children
 Checks**, which counts each person once and says underneath how many are missing or expired,
 expiring within 60 days, waiting to be validated and waiting to be registered with the club. It
 is marked like an overdue to-do: red (**Missing**) and at the top of the list when anyone's check
@@ -1794,8 +1795,8 @@ first under **Needs checking**. While **Remove old records** is off, the list al
 records are kept forever**, which opens Club settings so you can switch it on (see [Keeping
 records](#keeping-records)), and **Members have had no team or role for 2 years** when anyone
 has (see [Approving members](#approving-members)). When Affiliation records are on, the list also has affiliation
-items still to do, members to check in PlayHQ and a reminder when the yearly affiliation return
-is due (see [Affiliation](#affiliation)). On an installed app, admins also get a push notification for each
+items still to do, members to check in PlayHQ, members not registered in PlayHQ and a reminder
+when the yearly affiliation return is due (see [Affiliation](#affiliation)). On an installed app, admins also get a push notification for each
 new join request.
 
 Because admins can read every child's records, they need a current Working With Children Check,
@@ -1824,7 +1825,7 @@ for 2 years**, **Signed in, no request yet** and **Not approved**. Search by nam
 
 **No team or role for 2 years** lists members who may have left the club: they have no place in
 this season's squads and teams, aren't a guardian of anyone who has, hold no club-wide role
-(admin, committee, partner or Head Physio), and haven't signed in or changed groups for 2 years.
+(admin, committee, partner, temporary helper or Head Physio), and haven't signed in or changed groups for 2 years.
 Each shows when they were last active. Open them and tap **Delete member** if they've left; the
 app never deletes them by itself. Once **Remove old records** is on, join requests are removed 90
 days after they're turned down or if nobody answers them for 90 days, people who signed in but
@@ -2081,8 +2082,8 @@ With squads on:
 - **Add a squad or team**: choose Team or Squad, give it a name, and for a team pick the squad it's
   named from.
 - **Name a team** (tap it): for each person in the squad, choose **Final team**, **Training partner**
-  or **Not selected** for athletes, and **In this team** or **Not in this team** for coaches and
-  managers. For a coach in the team, choose **Head Coach** or **Assistant Coach**; they start with
+  or **Not selected** for athletes, and **In this team** or **Not in this team** for coaches, managers and physios. For a coach in the team, choose **Head
+  Coach** or **Assistant Coach**; they start with
   the one they have in the squad. People not selected stay in the squad.
 - **Rename** or **Remove** a squad or team. Removing it takes it off this season's lists, home
   screens and coaches' to-dos; its attendance and other records are kept and you can **Bring
@@ -2108,7 +2109,8 @@ With squads on:
 2. **Place returning members.** Open each new squad and pick who's coming back from last season's
    squads. They keep their club role, and coaches keep their title. New people still send a join
    request and join the newest season's squads.
-3. **Archive the old season once it has finished.** Its squads and teams leave everyone's home
+3. **Archive the old season once it has finished.** The app allows this only once the next season
+   has been started. Its squads and teams leave everyone's home
    screen, calendars, messages and to-dos. Attendance, injuries and check-ins are kept, and you can
    bring the season back.
 
@@ -2270,12 +2272,13 @@ how many are approved. Tap **Add training** and fill in:
 - **Who must complete it**: one or more of Athletes, Coaches, Managers, Physios, Committee, Admins
   and Guardians. Guests can't be asked.
 - **All squads and teams**, or switch it off and choose squads and teams, such as the 17 & Under
-  Squad and Lightning Academy for a junior course. A squad includes the teams named from it, and
-  only members in those groups with a chosen role must complete it. Training for the whole club
-  also reaches committee members and admins, who aren't in a squad or team.
+  Squad and Lightning Academy for a junior course. A squad includes the teams named from it, and only the athletes, coaches, managers and physios
+  placed in those groups with a chosen role must complete it. A course for guardians, the
+  committee or admins needs **All squads and teams**: training for the whole club reaches everyone
+  with a chosen role, including committee members and admins, who aren't in a squad or team.
 
-Members see it in their to-do lists straight away. Open a course to see who has done it, and tap
-**Change** to edit it. **Archive** takes it off everyone's to-do list but keeps its certificates;
+Members see it in their to-do lists straight away. Open a course to see who has done it, and tap **Change** to edit it. On that screen, **Archive**
+takes it off everyone's to-do list but keeps its certificates, and you can bring it back later;
 **Remove** is only for training added by mistake, before anyone uploads a certificate.
 
 **Add the safeguarding induction** adds Sport Integrity Australia's free **Child Safeguarding in
@@ -2283,10 +2286,11 @@ Sport Induction** to the season in one tap, for coaches, managers, physios and t
 the whole club, due in 3 months, with its course link. Open it afterwards to change who does it or
 when. The button goes once the season has the course.
 
-Training is set per season because it must be done every year. When a new season starts, open
-it in Integrity training and tap **Copy 2026–27 training** (last season's): each course is copied
-with its due date a year on, and its squads and teams matched by name in the new season. Check
-each copied course's squads and teams, then archive last season's courses once everyone is done.
+Training is set per season because it must be done every year. When a new season starts, open it in Integrity training and tap **Copy 2026–27 training** (last
+season's). The button shows while last season has a course this season doesn't have yet. Each
+such course is copied with its due date a year on, and its squads and teams matched by name (a
+squad to a squad, a team to a team) in the new season; archived courses aren't copied. Check each
+copied course's squads and teams, then archive last season's courses once everyone is done.
 
 <img src="user-guide/training-admin.png" width="210" alt="Administration: integrity training for the season">
 <img src="user-guide/training-edit.png" width="210" alt="Adding a course with its link and due date">
@@ -2296,13 +2300,12 @@ each copied course's squads and teams, then archive last season's courses once e
 
 When Season KPIs are on, **Season KPI reviews** in Administration sets when each season's KPIs are
 reviewed. Pick the season, tap **Add a review date**, name it (such as "Mid-season review") and
-pick the date. Tap one to change it. A date can be removed only while no reviews have been written
-for it. From a week before each date, whoever set a person's KPIs gets a to-do to write their
+pick the date. Tap one to change it. A date can be removed only while nobody has written or confirmed a review for it. From a week before each date, whoever set a person's KPIs gets a to-do to write their
 review, and the person then confirms it was done.
 
 Admins set KPIs for coaches and managers the same way the committee does (see [Season KPIs for
-coaches and managers](#season-kpis-for-coaches-and-managers)), and can read athletes' KPIs, which
-only their coaches change. Opening an under 18's KPIs is recorded for their parents.
+coaches and managers](#season-kpis-for-coaches-and-managers)), and can read athletes' KPIs once their coaches have set some; only their coaches change
+them. Opening an under 18's KPIs is recorded for their parents.
 
 <img src="user-guide/admin-kpi-reviews.png" width="210" alt="Season KPI reviews: the season's review dates">
 
@@ -2312,7 +2315,8 @@ only their coaches change. Opening an under 18's KPIs is recorded for their pare
 every injury not yet cleared, with totals. **Export PDF** saves it as a PDF, like the other
 [Reports](#reports): injuries not yet cleared first, then those cleared, with each one's
 restrictions, expected return and who endorsed and cleared it. Medical documents aren't included.
-**Export CSV** saves the same list for a spreadsheet. Both open the share sheet so you can save to
+**Export CSV** saves the same list for a spreadsheet, with each athlete's email address, when they
+left, when the injury was cleared and how many updates and documents it has. Both open the share sheet so you can save to
 OneDrive or attach to an email. It's also listed under **Reports**.
 
 <img src="user-guide/injury-report.png" width="210" alt="Injury report">
@@ -2341,8 +2345,8 @@ name, the date it was made and page numbers, and anything that needs attention i
   last validated and by whom, when it was registered with the club, and status. Checks that
   are missing, have no expiry date, have expired, expire within 60 days, were never validated or
   were validated over a year ago, or aren't registered with the club are listed first under
-  **Needs attention**. Committee members and admins who are exempt are listed next, with the reason, who
-  exempted them and when. **Exempt from a check** lists every exemption,
+  **Needs attention**, then the rest under **Current**. Committee members and admins who are exempt are listed next, with the reason, who
+  exempted them and when. **Exempt from a check** lists every exemption of an approved member, and every ended one,
 current ones first, with the child, or the event, organiser and dates, who recorded it, when the declaration was accepted and where
 it's up to, then ended ones with who ended them. An exemption only counts in place of a check while it
 applies: until the declaration is accepted, after the child turns 18 or is unlinked, or outside its dates, the
@@ -2359,7 +2363,8 @@ everyone ever stood down, newest first, with the
   and how many times other people viewed their records in the
   last 12 months, and by how many people. Athletes with no parent or guardian linked come first, and
   guardians who haven't been verified are marked. It prints across the page.
-- **Integrity training** (when Integrity training is on): pick the season. **Still to finish**
+- **Integrity training** (when Integrity training is on): pick the season; archived courses aren't
+  included. **Still to finish**
   lists everyone with a course not yet approved, in red if a due date has passed, then each course
   lists who must complete it, where they're up to, when they completed it and who checked it.
 - **Injuries** (when Injuries is on): opens the [Injury report](#injury-report).
@@ -2369,8 +2374,8 @@ everyone ever stood down, newest first, with the
   group lists its athletes with sessions present, absent and their attendance rate, followed by
   every session with who took it. **Reported absences by reason** then counts the absences
   athletes or their parents reported in the period by reason (**Planned holidays**, **Personal illness** and
-  so on): how many, for how many athletes, and the days away inside the period. For chosen squads
-  and teams it counts the athletes on their registers. It shows reasons only, never the details
+  so on): how many, for how many athletes, and the days away inside the period. For chosen squads and
+  teams it counts the athletes marked on their registers in the period. It shows reasons only, never the details
   people typed.
 - **Affiliation** (when Affiliation records are on): the club's affiliation details, the
   checklist with required items not done in red, an association's officers and when each
@@ -2380,18 +2385,18 @@ everyone ever stood down, newest first, with the
   4 weeks, this season or **Choose dates**) and the **Squads and teams**. **By squad or team** shows
   how many plans each has, on how many days, and its latest session, with groups that have none in
   red. **Every plan** lists each plan by day with its squad or team, session, who added it and
-  their position (head coach, assistant coach or admin), who ran it, whether it holds writing or
+  their position (head coach, assistant coach, coach or admin), who ran it, whether it holds writing or
   files (empty plans in red), and when it was added and last changed. The plans themselves aren't
   in the report: tap one under **Open a plan** to read it. Plans aren't matched against the calendar.
 - **Season KPIs** (when Season KPIs are on): pick the season. Each squad and team lists its coaches
   and managers with each KPI or OKR, who set it, where each measure is up to against its target, the
   result and each review (written, confirmed or overdue). Anyone with no KPIs, or a review overdue,
-  is in red. Coaches and managers who have deleted their account stay on it, with the day they
-  left. It prints across the page. Athletes' KPIs aren't in it.
+  is in red. Coaches and managers who had KPIs and have since deleted their account stay on it, with the day
+  they left. It prints across the page. Athletes' KPIs aren't in it.
 - **Award results** (when Awards are on): awards whose voting has closed. Open one for its full
   result: each squad or team's standings with points and how many 1st, 2nd and 3rd place votes
-  (and so on) each nominee got, how many people voted, and for match awards the points from each
-  match. Ballots stay secret: it never shows who voted for whom.
+  (and so on) each nominee got, how many ballots were cast, and for match awards the points from
+  each match and how many people voted in it. Ballots stay secret: it never shows who voted for whom.
 
 The PDFs hold members' personal details, such as dates of birth, check numbers and email
 addresses, so keep them somewhere only the committee can reach.
@@ -2427,7 +2432,8 @@ so leave them filled in.
   how they look together and warns when text or buttons would be hard to read. **Use the built-in
   colours** goes back to deep navy, white and blaze orange.
 - **Features**: switch off any of Messages, Calendar, Daily check-ins, Injuries, Attendance,
-  Session plans, Surveys, Captains' polls, Awards, Game goals and Integrity training. Switching
+  Session plans, Surveys, Captains' polls, Awards, Game goals, Integrity training and Season KPIs
+  (see below). Switching
   off **Captains' polls** stops captains sending new polls and leaves the rest of Surveys on; polls
   already sent stay readable. A switched-off feature disappears from every member's home screen, to-do list and menus,
   and its Administration pages are hidden. Nothing is deleted, so switching it back on brings
@@ -2490,7 +2496,8 @@ the date you entered. Until every required item is done, your to-do list shows *
 affiliation items**.
 
 **PlayHQ registrations.** Every member must register through PlayHQ each season. **PlayHQ
-registrations** lists every athlete, coach and manager in the current season's squads and teams.
+registrations** lists every approved athlete, coach and manager in the newest season that isn't
+archived.
 Look each one up in PlayHQ and tap **Registered** or **Not registered**; the app keeps who checked
 and when. Filter by **To check**, **Not registered**, **Registered** or **All**, or search by
 name or email. Your to-do list shows how many are still to check, and how many aren't registered
@@ -2504,8 +2511,8 @@ Checks and Integrity training reports. It names no member under 18 and has nothi
 child. Turn off **Working With Children Check counts** or **Integrity training counts** if your
 association doesn't ask for them. Tap **Send return**: on a phone the share sheet opens, so choose Mail and send the PDF to
 the address shown; on the web the PDF downloads and an email to that address opens, so attach the
-PDF and send it. The app records who sent it, when and where, and shows it on the Affiliation
-screen. Once you've entered the email address, your to-do list shows **Send the affiliation
+PDF and send it. The app records who sent it, when and the address it was for, as soon as the share sheet closes
+or the download starts, and shows it on the Affiliation screen. Once you've entered the email address, your to-do list shows **Send the affiliation
 return** whenever none has gone in the last year.
 
 The **Affiliation** report in Reports puts the details, the checklist (required items not done in
@@ -2528,8 +2535,8 @@ and children alike. Each setting says which period is recommended, and a club th
 its periods starts on those.
 
 - **Remove old records** starts off, and nothing is removed while it's off. Until you switch it on,
-  every admin's to-do list shows **Old records are kept forever**. When it's on, each night
-  the app permanently removes records older than their keep period. They can't be brought back, so
+  every admin's to-do list shows **Old records are kept forever**. When it's on, each night (a scheduled job at about 2 am Perth time) the app permanently
+  removes records older than their keep period. They can't be brought back, so
   save a report first if the club needs a copy.
 - **Daily check-ins**, counted from the day of the check-in: 3 months, 6 months, 1 year
   (recommended) or 2 years.
@@ -2577,9 +2584,9 @@ A period the club saved before these choices changed (such as 7 years for attend
 is, shown as its own choice, until an admin picks another.
 
 Concerns are never removed. Injury records keep their own rule: removed 12 months after an
-athlete leaves, with any documents still left. Join requests go 90 days after they're turned
-down or left unanswered, and temporary helpers a year after their last day; their safeguarding
-records stay for their own periods. Members who stop coming are never removed automatically:
+athlete leaves, with any documents still left. Once **Remove old records** is on, join requests go 90 days after they're turned down or left
+unanswered, and temporary helpers with no other role a year after their last day; their
+safeguarding records stay for their own periods. Members who stop coming are never removed automatically:
 admins see them under **No team or role for 2 years** (see [Approving
 members](#approving-members)). **Last changed by** shows which admin last saved the periods, and when.
 Tap **Save keep periods** to save.
@@ -2594,20 +2601,21 @@ Tap **Save keep periods** to save.
 ### Safeguarding contacts
 
 **Administration > Safeguarding** names the club's **Child Safety Officer**, **Complaints
-Manager** and **WWC Registration Officer**. Search for each by name. Both must be approved adults with a current Working With
-Children Check (or an exemption that applies) and must be two different people, so a concern
-about one can go to the other. You can't name yourself unless someone else is the other contact.
+Manager** and **WWC Registration Officer**. Search for each by name. All three must be approved adults (not guests or temporary helpers) with
+a current Working With Children Check (or an exemption that applies), and the Child Safety
+Officer and Complaints Manager must be two different people, so a concern about one can go to the
+other. You can't name yourself unless someone else is the other contact.
 If a contact's check lapses or they're stood down, they stop being shown and stop seeing concerns
-until you choose again.
+until the check is recorded again or the stand-down is lifted, or you choose someone else.
 
-The **WWC Registration Officer** is an admin or committee member with a current check who keeps
+The **WWC Registration Officer** is an admin or committee member with a current check (or an
+exemption that applies) who keeps
 the club's Working With Children Check records, registers members' cards with the club through
 the Screening Unit and receives its notices. They're named on the Working With Children Checks report,
 and your to-do list asks you to choose one until you do.
 
 **Committee checks required from** is the day from which every committee member needs a current
-check or an exemption. It starts 90 days after the rule came in. Committee members approved before
-checks were needed keep their role without one until then; from that day their committee role
+check or an exemption. It starts 90 days after the rule came in. Committee members without a check keep their role until then; from that day their committee role
 pauses until you record a check or exempt them. You can bring the date forward, for example to
 today, but not push it back, so the club can't keep putting it off. Exempt anyone who never works
 with children, such as a treasurer who works from home, with the reason, on their member page.
@@ -2657,19 +2665,19 @@ New concerns also appear in their to-do list until someone records something abo
 concerns are listed first, newest at the top. Nobody sees a concern about themselves.
 
 Open a concern to see what was raised, by whom (unless they hid their name), how to contact them,
-and where it was raised from. While a concern that may involve a child's safety hasn't been
-referred, a red note at the top says to refer child abuse or a serious crime to Police and the
+and where it was raised from. While a concern that may involve a child's safety is open and hasn't been referred, a red note at the top says to refer child abuse or a serious crime to Police and the
 governing body straight away and not to resolve it within the club. Then record what you did:
 
-- **Referred to** the governing body, or **Referred to Police**, with a note such as a reference
-  number. Either sets the status to Referred.
+- **Referred to** the governing body, or **Referred to Police**, with an optional note such as a
+  reference number. Either sets the status to Referred.
 - **Add note** for anything else: who you spoke to and what was decided.
 - **Change status** to Being looked into, or **Closed** with a note saying why.
 - **Who it's about**: name the member it's about. From then on they can't see it, even if they're
   an admin or handle concerns.
 
 Every step is kept with who did it and when. **Export the register as a PDF** gives the whole
-register with every step, for the committee, the governing body or an auditor.
+register with every step, except any concern about you, for the committee, the governing body or
+an auditor.
 
 <img src="user-guide/concerns-register.png" width="210" alt="The concerns register">
 <img src="user-guide/concern.png" width="210" alt="A concern with the referral prompt and what's been done">
@@ -2744,9 +2752,8 @@ training certificates go after 1 year, message text after 3 years (7 years when 
 received it), record views after 7 years, the files of a cleared injury 1 year after
 clearance and the injury 7 years after, safeguarding records 30 years after they end, who voted
 for whom in awards after 1 year and awards with their results after 10 years, unless the club
-chooses other periods (see [Keeping records](#keeping-records)). Join requests go 90 days after
-they're turned down or left unanswered, and temporary helpers a year after their last day.
-Deleting a member keeps the club's safeguarding records about them for their own periods.
+chooses other periods (see [Keeping records](#keeping-records)). Join requests then go 90 days after they're turned down or left unanswered, and temporary
+helpers with no other role a year after their last day. Deleting a member keeps the club's safeguarding records about them for their own periods.
 Concerns are never removed.
 
 <div style="page-break-before: always"></div>
