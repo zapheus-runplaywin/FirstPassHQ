@@ -89,6 +89,8 @@ type Person = {
   role: AppRole;
   extra_roles: AppRole[];
   verified_at: string | null;
+  date_of_birth: string | null;
+  under_17: boolean;
 };
 
 /** How many guardians to offer while searching. */
@@ -130,6 +132,7 @@ export default function MemberScreen() {
   const [guardianOf, setGuardianOf] = useState<string[]>([]);
   const [people, setPeople] = useState<Person[]>([]);
   const [guardianSearch, setGuardianSearch] = useState('');
+  const [childSearch, setChildSearch] = useState('');
   const [reason, setReason] = useState<RejectionReason | null>(null);
   const [code, setCode] = useState('');
   const [verifyMethod, setVerifyMethod] = useState<VerificationMethod | null>(null);
@@ -158,7 +161,7 @@ export default function MemberScreen() {
           .or(`guardian_id.eq.${id},athlete_id.eq.${id}`),
         supabase
           .from('profiles')
-          .select('id, full_name, email, role, extra_roles, verified_at')
+          .select('id, full_name, email, role, extra_roles, verified_at, date_of_birth, under_17')
           .eq('status', 'approved')
           .order('full_name'),
         supabase.rpc('admin_volunteer_exemptions'),
@@ -639,6 +642,19 @@ export default function MemberScreen() {
     )
     .slice(0, GUARDIAN_MATCHES);
   const anyGuardians = people.some((p) => hasRole(p, 'guardian') && p.id !== id);
+  // A temporary helper can't be linked as a guardian, so the admin names their
+  // child from the club's athletes under 18 instead.
+  const childrenInClub = isVolunteer
+    ? people.filter((p) => hasRole(p, 'athlete') && isMinor(p.date_of_birth, p.under_17))
+    : [];
+  const childQuery = childSearch.trim().toLowerCase();
+  const childMatches = childrenInClub
+    .filter(
+      (p) =>
+        p.id === exemptChild ||
+        (childQuery.length > 0 && [p.full_name, p.email].some((v) => v?.toLowerCase().includes(childQuery))),
+    )
+    .slice(0, GUARDIAN_MATCHES);
   const selectedIds = Object.keys(selection);
   // Squads, and teams without one (every team, for a club without squads).
   const groups = topGroups(teams);
@@ -957,7 +973,9 @@ export default function MemberScreen() {
                     (basis) =>
                       basis === screening ||
                       isDatedExemption(basis) ||
-                      (basis === 'parent_volunteer' ? guardianOf.length > 0 : minor),
+                      (basis === 'parent_volunteer'
+                        ? guardianOf.length > 0 || childrenInClub.length > 0
+                        : minor),
                   )
                   .map((basis) => ({ value: basis, label: volunteerExemptionLabels[basis] })),
               ]}
@@ -965,7 +983,22 @@ export default function MemberScreen() {
               onToggle={(choice) => setScreening(choice as 'check' | VolunteerExemptionBasis)}
             />
           ) : null}
-          {volunteerBasis === 'parent_volunteer' ? (
+          {volunteerBasis === 'parent_volunteer' && isVolunteer ? (
+            <>
+              <TextField
+                label="Their child at the club"
+                value={childSearch}
+                onChangeText={setChildSearch}
+                placeholder="Search the club's athletes under 18 by name"
+                autoCapitalize="none"
+              />
+              <ChipGroup
+                options={childMatches.map((p) => ({ value: p.id, label: nameOf(p.id) }))}
+                selected={exemptChild ? [exemptChild] : []}
+                onToggle={(c) => setExemptChild(c === exemptChild ? null : c)}
+              />
+            </>
+          ) : volunteerBasis === 'parent_volunteer' ? (
             <ChipGroup
               label="Their child at the club"
               options={guardianOf.map((c) => ({ value: c, label: nameOf(c) }))}
