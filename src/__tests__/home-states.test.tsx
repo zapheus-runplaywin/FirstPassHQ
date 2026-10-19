@@ -371,6 +371,21 @@ describe('the footer', () => {
     expect((supabase.auth as unknown as { signOut: jest.Mock }).signOut).toHaveBeenCalled();
   });
 
+  it('shows an approved guardian their code until an admin verifies them', async () => {
+    await openHome(withProfile(personas.guardian, { verified_at: null }), {}, {
+      rpcs: { my_verification_code: '654321' },
+    });
+    expect(screen.getByText('Confirm who you are')).toBeTruthy();
+    expect(screen.getByText('654 321')).toBeTruthy();
+    expect(screen.getByLabelText('Your code is 6 5 4 3 2 1')).toBeTruthy();
+  });
+
+  it('shows a verified guardian no code', async () => {
+    await openHome('guardian');
+    expect(screen.queryByText('Confirm who you are')).toBeNull();
+    expect(rpcNames()).not.toContain('my_verification_code');
+  });
+
   it('greets the member by preferred name, then full name', async () => {
     await openHome(withProfile(personas.athlete, { preferred_name: 'Sam' }));
     expect(screen.getByText('Hi Sam')).toBeTruthy();

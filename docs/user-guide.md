@@ -857,8 +857,9 @@ them or react to them. If you're under 18, your parents or guardians can read th
 
 Parents and guardians of athletes under 18 sign in with their own Google account and ask to join
 as **Guardian**, entering the email they used to register their athlete with PlayHQ. An admin
-verifies who you are (against PlayHQ, by sighting your ID, or with the 6-digit code your home
-screen shows while you wait for approval) and then links you to your athlete. Every athlete under 18 must have at least one verified guardian before they're
+verifies who you are (against PlayHQ, by sighting your ID, or with the 6-digit code on your home
+screen, shown under **Confirm who you are** until you're verified) and then links you to your
+athlete. Every athlete under 18 must have at least one verified guardian before they're
 approved. A guardian can be linked to more than one athlete, and an athlete can
 have more than one guardian.
 
@@ -965,7 +966,8 @@ them.
 ### Your child's surveys
 
 When a survey is sent to your child under 18, you get a copy naming your child, so you can see
-what they're asked. Only your child answers it. If the survey is named, you can read your child's
+what they're asked. Only your child answers it, even if you're placed in their squad or team
+yourself: a survey to the squad is for the athletes in it. If the survey is named, you can read your child's
 answers once they've sent them. If it's anonymous, or your child chose not to give their name,
 nobody can see their answers, including you.
 
@@ -1921,7 +1923,8 @@ they show under **Needs checking** and on every admin's to-do list until the ren
 recorded, and they can still be stood down.
 
 **Verifying someone.** Guardians must be verified before they can be linked to a child. Get the
-6-digit code from their home screen yourself, in person or over a channel you already trust, enter
+6-digit code from their home screen yourself (it shows while they wait for approval, and for a
+guardian until they're verified), in person or over a channel you already trust, enter
 it under **Their code** and tap **Check code**. Or, under **How you checked**, choose **Matched to
 PlayHQ** (their PlayHQ email matches the parent on the registration) or **ID sighted**, write what
 you checked under **What you checked**, and tap **Record check**. The member then shows as

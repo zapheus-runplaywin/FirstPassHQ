@@ -68,3 +68,56 @@ select pg_temp.ok('the copy itself stays in the guardian''s list',
 update public.profiles set date_of_birth = current_date - interval '14 years', under_17 = true where id = '00000000-0000-0000-0000-000000000031';
 select pg_temp.ok('and comes back for a child under 18',
   jsonb_array_length(public.survey_detail((select v from ids where k = 'named')) -> 'children') = 1, true);
+
+-- ---------------------------------------------------------------------------
+-- An approved parent or guardian who isn't verified yet keeps a 6-digit code
+-- (Matt, 19 October); other approved members have none. Logan (41) is an
+-- approved, verified guardian; Kai (32) an approved adult athlete.
+-- ---------------------------------------------------------------------------
+select pg_temp.as_member('41');
+select pg_temp.ok('a verified guardian has no code', public.my_verification_code() is null, true);
+update public.profiles set verified_at = null where id = '00000000-0000-0000-0000-000000000041';
+select pg_temp.ok('an approved guardian not yet verified gets a 6-digit code', public.my_verification_code() ~ '^[0-9]{6}$', true);
+select pg_temp.as_member('01');
+select pg_temp.works('an admin checks that code in person', format($s$ select public.admin_verify_member('00000000-0000-0000-0000-000000000041', %L) $s$,
+  (select code from public.verification_codes where profile_id = '00000000-0000-0000-0000-000000000041')));
+select pg_temp.ok('the guardian is verified by code', (select verification_method = 'code' and verified_at is not null from public.profiles where id = '00000000-0000-0000-0000-000000000041'), true);
+select pg_temp.as_member('41');
+select pg_temp.ok('and has no code once verified', public.my_verification_code() is null, true);
+select pg_temp.as_member('32');
+select pg_temp.ok('an approved athlete never has a code', public.my_verification_code() is null, true);
+
+-- ---------------------------------------------------------------------------
+-- A parent or guardian placed in their child's squad gets the squad's surveys
+-- as the child's copy, never to answer (Matt, 19 October). Logan (41) is put
+-- back in Sample Squad as a guardian; the admin sends it a named survey.
+-- ---------------------------------------------------------------------------
+insert into public.team_members (team_id, profile_id, team_role) values ('00000000-0000-0000-0000-0000000000a1', '00000000-0000-0000-0000-000000000041', 'guardian');
+select pg_temp.as_member('01');
+insert into ids values ('squad', public.create_survey(
+  'Carnival', null, 'named', 'group', null,
+  '00000000-0000-0000-0000-0000000000a1', null, now() + interval '7 days',
+  '[{"kind":"choice","prompt":"Coming?","options":["Yes","No"]}]'));
+select pg_temp.ok('the guardian in the squad gets a copy naming the child',
+  (select for_child_names from public.survey_recipients where survey_id = (select v from ids where k = 'squad') and profile_id = '00000000-0000-0000-0000-000000000041') = array['Jordan Junior'], true);
+select pg_temp.ok('the copy is not counted as someone to answer',
+  (select count(*) from public.survey_recipients where survey_id = (select v from ids where k = 'squad') and for_children is null and profile_id = '00000000-0000-0000-0000-000000000041') = 0, true);
+select pg_temp.as_member('41');
+select pg_temp.ok('the guardian cannot answer it', (public.survey_detail((select v from ids where k = 'squad')) ->> 'can_answer')::boolean, false);
+select pg_temp.fails_with('answering is refused', $s$ select public.submit_survey_response((select v from ids where k = 'squad'), '[]', false) $s$, 'for your child to answer');
+select pg_temp.as_member('31');
+select public.submit_survey_response((select v from ids where k = 'squad'), (
+  select jsonb_build_array(jsonb_build_object('question_id', q ->> 'id', 'choices', jsonb_build_array(0)))
+  from jsonb_array_elements(public.survey_detail((select v from ids where k = 'squad')) -> 'questions') q), false);
+select pg_temp.as_member('41');
+select pg_temp.ok('and reads the child''s named answers',
+  jsonb_array_length(public.survey_detail((select v from ids where k = 'squad')) -> 'children' -> 0 -> 'answers') = 1, true);
+-- A coach who is also a guardian, placed as a coach, still answers in their own right.
+select pg_temp.as_member('42');
+select pg_temp.ok('a coach-parent placed as a coach answers the squad survey themselves',
+  (select for_children is null from public.survey_recipients where survey_id = (select v from ids where k = 'squad') and profile_id = '00000000-0000-0000-0000-000000000042'), true);
+-- Messages are unchanged: the guardian in the squad gets the message once, in their own right.
+select pg_temp.as_member('11');
+insert into ids values ('msg', public.send_group_message('Training moved to 6pm', 'group', null, '00000000-0000-0000-0000-0000000000a1'));
+select pg_temp.ok('the guardian in the squad gets a squad message once, with no child named',
+  (select count(*) = 1 and bool_and(for_children is null) from public.message_recipients where message_id = (select v from ids where k = 'msg') and profile_id = '00000000-0000-0000-0000-000000000041'), true);
