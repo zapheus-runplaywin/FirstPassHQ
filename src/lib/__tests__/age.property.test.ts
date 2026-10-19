@@ -60,7 +60,7 @@ describe('parseDate, randomised', () => {
   const separator = fc.constantFrom('/', '.', '-');
   const space = fc.constantFrom('', ' ', '  ', '\t');
 
-  it('reads exactly the real dates from year 100 on, whatever the padding and separators', () => {
+  it('reads exactly the real dates from 1900 to 2100, whatever the padding and separators', () => {
     fc.assert(
       fc.property(
         fc.integer({ min: 0, max: 99 }),
@@ -74,8 +74,8 @@ describe('parseDate, randomised', () => {
         space,
         (day, month, year, padDay, padMonth, sep1, sep2, before, after) => {
           const text = `${before}${padDay ? pad(day) : day}${sep1}${padMonth ? pad(month) : month}${sep2}${pad(year, 4)}${after}`;
-          // Date.UTC reads years 0 to 99 as 1900 to 1999, so the app refuses them.
-          const real = year >= 100 && month >= 1 && month <= 12 && day >= 1 && day <= daysIn(year, month);
+          // Only years 1900 to 2100 are dates anyone in the club needs.
+          const real = year >= 1900 && year <= 2100 && month >= 1 && month <= 12 && day >= 1 && day <= daysIn(year, month);
           expect(parseDate(text)).toBe(real ? iso(year, month, day) : undefined);
         },
       ),
@@ -84,7 +84,7 @@ describe('parseDate, randomised', () => {
 
   it('refuses the impossible days people mistype', () => {
     fc.assert(
-      fc.property(fc.integer({ min: 1000, max: 9999 }), (year) => {
+      fc.property(fc.integer({ min: 1900, max: 2100 }), (year) => {
         expect(parseDate(`31/04/${year}`)).toBeUndefined();
         expect(parseDate(`31/06/${year}`)).toBeUndefined();
         expect(parseDate(`31/09/${year}`)).toBeUndefined();
@@ -101,7 +101,7 @@ describe('parseDate, randomised', () => {
   it('refuses years that are not four digits', () => {
     fc.assert(
       fc.property(
-        realDate(1000, 9999),
+        realDate(1900, 2100),
         fc.integer({ min: 0, max: 999 }),
         fc.integer({ min: 10000, max: 99999 }),
         ({ m, d }, short, long) => {
@@ -114,7 +114,7 @@ describe('parseDate, randomised', () => {
 
   it('round-trips with formatDate for every real date', () => {
     fc.assert(
-      fc.property(realDate(1000, 9999), ({ y, m, d }) => {
+      fc.property(realDate(1900, 2100), ({ y, m, d }) => {
         const date = iso(y, m, d);
         expect(formatDate(date)).toBe(`${pad(d)}/${pad(m)}/${y}`);
         expect(parseDate(formatDate(date))).toBe(date);

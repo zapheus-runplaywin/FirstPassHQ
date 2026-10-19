@@ -22,6 +22,8 @@ describe('rolesOf', () => {
   });
 
   it('copes with no extra roles', () => {
+    expect(rolesOf({ role: 'guest', extra_roles: ['guest', 'guest'] })).toEqual(['guest']);
+    expect(rolesOf({ role: 'coach', extra_roles: ['guardian', 'guardian'] })).toEqual(['coach', 'guardian']);
     expect(rolesOf({ role: 'athlete' })).toEqual(['athlete']);
     expect(rolesOf({ role: 'athlete', extra_roles: null })).toEqual(['athlete']);
     expect(rolesOf({ role: 'athlete', extra_roles: [] })).toEqual(['athlete']);
@@ -141,8 +143,15 @@ describe('roleCombinationProblem', () => {
     );
   });
 
-  it('allows a guardian with no date of birth, whatever the admin chose', () => {
-    expect(roleCombinationProblem(['guardian'], null, true)).toBeNull();
+  it('goes by the admin’s under-18 choice for a guardian with no date of birth', () => {
+    expect(roleCombinationProblem(['guardian'], null, true)).toBe('Parents and guardians must be 18 or over.');
+    expect(roleCombinationProblem(['guardian'], null, false)).toBeNull();
+  });
+
+  it('counts a role listed twice once', () => {
+    expect(roleCombinationProblem(['guest', 'guest'], null, false)).toBeNull();
+    expect(roleCombinationProblem(['volunteer', 'volunteer'], null, false)).toBeNull();
+    expect(roleCombinationProblem(['guest', 'guest', 'coach'], null, false)).toBe('Guests can’t have another role.');
   });
 
   it('switches at the 18th birthday', () => {
