@@ -1,0 +1,52 @@
+name: Mutation tests
+
+# Tests the tests: Stryker (stryker.config.json) makes small changes to the
+# child-safety and access rules in src/lib, such as turning a < into a <= or
+# a role name into "", and runs the unit tests against each one. A change no
+# test notices is a gap in the tests. Fails when the mutation score drops
+# below the floor in stryker.config.json (thresholds.break). Takes about an
+# hour, so it runs weekly, by hand, and on pull requests that change those
+# rules or their tests.
+on:
+  schedule:
+    - cron: '0 18 * * 0' # Monday 2am in Perth
+  workflow_dispatch:
+  pull_request:
+    paths:
+      - 'src/lib/age.ts'
+      - 'src/lib/auth.tsx'
+      - 'src/lib/conduct.ts'
+      - 'src/lib/consents.ts'
+      - 'src/lib/record-access.ts'
+      - 'src/lib/roles.ts'
+      - 'src/lib/route-access.ts'
+      - 'src/lib/safety.ts'
+      - 'src/lib/__tests__/**'
+      - 'stryker.config.json'
+      - '.github/workflows/mutation-tests.yml'
+
+permissions:
+  contents: read
+
+concurrency:
+  group: mutation-tests-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  mutation:
+    runs-on: ubuntu-24.04
+    timeout-minutes: 120
+    steps:
+      - uses: actions/checkout@d23441a48e516b6c34aea4fa41551a30e30af803 # v6.1.0
+      - run: npm ci --no-audit --no-fund
+      - name: Mutation tests
+        run: npm run test:mutation
+      - name: Keep the mutation report
+        # Each surviving change, with the line it changed and the tests that ran.
+        if: ${{ !cancelled() }}
+        uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7.0.1
+        with:
+          name: mutation-report
+          path: reports/mutation
+          retention-days: 30
+          if-no-files-found: ignore

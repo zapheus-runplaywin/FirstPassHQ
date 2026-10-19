@@ -239,6 +239,38 @@ const CASES: [string, Auth, Key[]][] = [
     }),
     ['readMessages', 'sendMessages', 'answerSurveys', 'sendSurveys', 'surveyResults', 'injuries', 'reportInjury', 'attendance', 'takeAttendance', 'athleteAttendance', 'familyAttendance', 'readSessionPlans', 'addSessionPlans', 'checkIn', 'checkIns', 'athleteCheckIns', 'awards', 'gameGoals', 'athleteGoals', 'teamGoals', 'kpis', 'setKpis', 'training', 'chooseCaptains'],
   ],
+  // A role opens its screens before the member is placed in a squad or team.
+  [
+    'an athlete not yet in a team',
+    auth(profile('athlete')),
+    ['readMessages', 'answerSurveys', 'injuries', 'reportInjury', 'familyAttendance', 'readSessionPlans', 'checkIn', 'awards', 'gameGoals', 'kpis', 'training'],
+  ],
+  [
+    'a coach not yet in a team',
+    auth(profile('coach')),
+    ['readMessages', 'answerSurveys', 'attendance', 'takeAttendance', 'readSessionPlans', 'awards', 'kpis', 'training'],
+  ],
+  [
+    'a manager not yet in a team',
+    auth(profile('manager')),
+    ['readMessages', 'answerSurveys', 'attendance', 'takeAttendance', 'awards', 'kpis', 'training'],
+  ],
+  // And a place in a group opens that place's screens without the club role.
+  [
+    'a statistician placed in a team as an athlete',
+    auth(profile('statistician'), { memberships: [member('athlete')] }),
+    ['readMessages', 'answerSurveys', 'familyAttendance', 'readSessionPlans', 'awards', 'kpis', 'training'],
+  ],
+  [
+    'a statistician placed in a team as a coach',
+    auth(profile('statistician'), { memberships: [member('coach')] }),
+    ['readMessages', 'sendMessages', 'answerSurveys', 'sendSurveys', 'surveyResults', 'injuries', 'attendance', 'takeAttendance', 'athleteAttendance', 'readSessionPlans', 'addSessionPlans', 'checkIns', 'athleteCheckIns', 'awards', 'gameGoals', 'athleteGoals', 'teamGoals', 'kpis', 'setKpis', 'training', 'chooseCaptains'],
+  ],
+  [
+    'a statistician placed in a team as a manager',
+    auth(profile('statistician'), { memberships: [member('manager')] }),
+    ['readMessages', 'sendMessages', 'answerSurveys', 'sendSurveys', 'surveyResults', 'attendance', 'takeAttendance', 'awards', 'kpis', 'training'],
+  ],
 ];
 
 describe.each(CASES)('%s', (_name, who, opens) => {

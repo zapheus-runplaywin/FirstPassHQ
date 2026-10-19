@@ -5,6 +5,8 @@
   "dependencies": {
     "@expo-google-fonts/montserrat": "^0.4.2",
     "@react-native-async-storage/async-storage": "2.2.0",
+    "@stryker-mutator/core": "10.0.0",
+    "@stryker-mutator/jest-runner": "10.0.0",
     "@supabase/supabase-js": "^2.117.2",
     "aes-js": "^3.1.2",
     "expo": "~57.0.27",
@@ -63,6 +65,7 @@
     "typecheck": "tsc --noEmit",
     "test": "jest",
     "test:sql": "scripts/run-sql-tests.sh",
+    "test:mutation": "stryker run",
     "e2e:build": "EXPO_PUBLIC_SUPABASE_URL=https://example.supabase.co EXPO_PUBLIC_SUPABASE_ANON_KEY=x EXPO_OFFLINE=1 expo export -p web --clear --output-dir e2e/web-build",
     "e2e": "playwright test -c e2e/playwright.config.ts"
   },
@@ -75,7 +78,11 @@
     "testPathIgnorePatterns": [
       "/node_modules/",
       "/supabase/(?!functions/[^/]+/__tests__/)",
-      "/e2e/"
+      "/e2e/",
+      "<rootDir>/.stryker-tmp/"
+    ],
+    "modulePathIgnorePatterns": [
+      "<rootDir>/.stryker-tmp/"
     ],
     "collectCoverageFrom": [
       "src/**/*.{ts,tsx}",

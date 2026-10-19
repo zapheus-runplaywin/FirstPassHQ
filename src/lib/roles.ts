@@ -35,6 +35,7 @@ export function roleCombinationProblem(
   ) {
     return 'Athletes under 18 can only also be a coach.';
   }
+  // Stryker disable next-line BooleanLiteral: with a date of birth, isMinor never reads the under-18 choice.
   if (has('guardian') && dateOfBirth && isMinor(dateOfBirth, false)) {
     return 'Parents and guardians must be 18 or over.';
   }

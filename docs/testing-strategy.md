@@ -20,6 +20,7 @@ Most of the protection lives in the database, because row level security and dat
 | Static checks | Lint and TypeScript | `eslint.config.js`, `tsconfig.json` | `npx expo lint`, `npx tsc --noEmit` |
 | Migration safety | Merged migrations stay unchanged, versions are unique, nothing exposes or loses data, no table has fewer rows after a branch's new migrations run on the sample data, and migrations apply to a fresh Supabase database | `scripts/check-migrations.py`, `scripts/check-migration-security.py`, `scripts/check-row-counts.sh` (sample data in `supabase/tests/setup/sample-records.sql`) | "Check migrations" workflow |
 | Known vulnerabilities | Fails on any high or critical npm advisory not in `.github/known-vulnerabilities.json` | `scripts/check-cves.py` | "Security audit" workflow |
+| Mutation tests (testing the tests) | Stryker makes small changes to the child-safety and access rules, such as turning `<` into `<=`, dropping a role from a rule or treating a blank check number as a real one, and runs the `src/lib` unit tests against each. A change no test notices is a gap in the tests. Covers `age.ts`, `auth.tsx`, `conduct.ts`, `consents.ts`, `record-access.ts`, `roles.ts`, `route-access.ts` and `safety.ts`. Fails below a 95% mutation score | `stryker.config.json` | `npm run test:mutation`, and the "Mutation tests" workflow |
 
 ## The kinds of member every access test considers
 
@@ -36,6 +37,7 @@ A new access rule is tested for every one of these, both ways: who gets it and w
 | Tests | Every push to every branch | Lint, typecheck, Jest with a coverage floor, every database test against every migration, and the browser smoke tests against a fresh web build |
 | Check migrations | Pull requests that touch migrations | The migration safety checks above, including the row count check |
 | Security audit | Every merge to main, weekly, and pull requests that change packages | `scripts/check-cves.py` |
+| Mutation tests | Weekly, by hand, and pull requests that change the rules it covers or the `src/lib` tests | Stryker over the child-safety and access rules; the report of every surviving change is kept with the run. It takes about an hour, so it doesn't run on every push |
 
 The Jest coverage floor is set in `package.json` (`jest.coverageThreshold`): 91% of statements and lines, 85% of branches and 90% of functions (2026-10-19, up from 28%). Raise it when coverage goes up; never lower it to get a change through. A new screen or module comes with tests that keep the total above the floor.
 
@@ -65,9 +67,13 @@ PGHOST=localhost PGUSER=postgres PGPASSWORD=... scripts/run-sql-tests.sh surveys
 python3 scripts/check-cves.py
 npm run e2e:build                   # the web build the browser smoke tests use, in e2e/web-build
 npm run e2e                         # the browser smoke tests; e2e/playwright-report has the report
+npm run test:mutation               # mutation tests, about an hour; reports/mutation/index.html has the report
+npx stryker run --mutate src/lib/safety.ts   # mutation tests for one file
 ```
 
-The browser smoke tests need Chromium for Playwright: `npx playwright install chromium` once, or set `PLAYWRIGHT_BROWSERS_PATH` to a folder that has it. Build again after changing the app, because the tests run the exported build, not the dev server. Each test starts the browser with Thunder picked (the build's club, at `https://example.supabase.co`) and, unless it's signed out, a sample member's session saved, and answers every Supabase request from that test's handler. `backend.rpcCalls('<function>')` gives the arguments of each call, so a test checks what was saved as well as what shows. A test also fails on any uncaught error in the page; the one known exception is listed in `e2e/support/test.ts`.
+A surviving change in the mutation report is a test to write: a test that fails with the change and passes without it. A few changes can't be caught because they don't change what the code does, such as a shortcut that gives the same answer as the long way. Mark those in the code with `// Stryker disable next-line <mutator>: <why it can't change the result>` so the report shows only real gaps. A hook's fixed dependency list (`[]` changed to `["Stryker was here"]`) can't be marked that way, so the report always lists four of those, in `auth.tsx` and `consents.ts`. To cover a new file, add it to `mutate` in `stryker.config.json` and to the workflow's `paths`.
+
+The browser smoke tests need Chromium for Playwright: `npx playwright install chromium` once, or set `PLAYWRIGHT_BROWSERS_PATH` to a folder that has it. Build again after changing the app, because the tests run the exported build, not the dev server. Each test starts the browser with Thunder picked (the build's club, at `https://example.supabase.co`) and, unless it's signed out, a sample member's session saved, and answers every Supabase request from that test's handler. `backend.rpcCalls('<function>')` gives the arguments of each call, so a test checks what was saved as well as what shows. A test also fails on any uncaught error in the page (`e2e/support/test.ts`).
 
 The database tests need Postgres 16 and a user that can create databases. `supabase/tests/setup/supabase-stubs.sql` stands in for the parts of Supabase that plain Postgres lacks: the auth, storage, realtime and pg_net pieces.
 

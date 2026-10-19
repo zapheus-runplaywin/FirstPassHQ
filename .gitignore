@@ -58,3 +58,7 @@ coverage/
 e2e/web-build/
 e2e/test-results/
 e2e/playwright-report/
+
+# Stryker mutation tests
+.stryker-tmp/
+reports/mutation/

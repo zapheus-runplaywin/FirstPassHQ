@@ -1,0 +1,56 @@
+{
+  "$schema": "./node_modules/@stryker-mutator/core/schema/stryker-schema.json",
+  "packageManager": "npm",
+  "testRunner": "jest",
+  "jest": {
+    "projectType": "custom",
+    "configFile": "package.json",
+    "enableFindRelatedTests": true,
+    "config": {
+      "testMatch": [
+        "<rootDir>/src/lib/__tests__/**/*.test.[jt]s?(x)"
+      ]
+    }
+  },
+  "coverageAnalysis": "perTest",
+  "mutate": [
+    "src/lib/age.ts",
+    "src/lib/roles.ts",
+    "src/lib/route-access.ts",
+    "src/lib/record-access.ts",
+    "src/lib/safety.ts",
+    "src/lib/consents.ts",
+    "src/lib/conduct.ts",
+    "src/lib/auth.tsx"
+  ],
+  "ignorePatterns": [
+    "/e2e",
+    "/docs",
+    "/supabase",
+    "/coverage",
+    "/reports",
+    "/dist",
+    "/thunder"
+  ],
+  "reporters": [
+    "clear-text",
+    "progress-append-only",
+    "html",
+    "json"
+  ],
+  "htmlReporter": {
+    "fileName": "reports/mutation/index.html"
+  },
+  "jsonReporter": {
+    "fileName": "reports/mutation/mutation.json"
+  },
+  "concurrency": 3,
+  "timeoutMS": 20000,
+  "tempDirName": ".stryker-tmp",
+  "ignoreStatic": true,
+  "thresholds": {
+    "high": 100,
+    "low": 95,
+    "break": 95
+  }
+}

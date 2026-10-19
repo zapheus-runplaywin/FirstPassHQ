@@ -266,6 +266,39 @@ describe('loading the member', () => {
     expect(teamMembers.eq).toHaveBeenCalledWith('team.archived', false);
   });
 
+  it('shows no member, groups or safeguarding contacts while loading', async () => {
+    rows = {
+      profile: profile('coach'),
+      memberships: [member(TEAM_A, 'coach')],
+      isClubCaptain: true,
+      isSafeguardingOfficer: true,
+      exemption: exemption(),
+      committeeChecksFrom: '2027-01-11',
+    };
+    const { result } = renderHook(() => useAuth(), { wrapper });
+    expect(result.current.loading).toBe(true);
+    expect(result.current.profile).toBeNull();
+    expect(result.current.memberships).toEqual([]);
+    expect(result.current.captaincies).toEqual([]);
+    expect(result.current.isClubCaptain).toBe(false);
+    expect(result.current.isSafeguardingOfficer).toBe(false);
+    expect(result.current.exemption).toBeNull();
+    expect(result.current.committeeChecksFrom).toBeNull();
+    await waitFor(() => expect(result.current.loading).toBe(false));
+  });
+
+  it('asks for the member’s team places with their teams, and their captaincies', async () => {
+    await authFor({ profile: profile('athlete') });
+    const teamMembers = jest.mocked(supabase.from).mock.results[1].value as Record<string, jest.Mock>;
+    expect(teamMembers.select).toHaveBeenCalledWith(
+      expect.stringMatching(/^team_role, coach_title, selection, team:teams!inner \(.*\bid\b.*\)$/),
+    );
+    const captains = jest.mocked(supabase.from).mock.results[2].value as Record<string, jest.Mock>;
+    expect(jest.mocked(supabase.from).mock.calls[2][0]).toBe('team_captains');
+    expect(captains.select).toHaveBeenCalledWith('team_id, profile_id, captain_role');
+    expect(captains.eq).toHaveBeenCalledWith('profile_id', 'user-1');
+  });
+
   it('copes with no rows coming back', async () => {
     rows = { profile: null };
     jest.mocked(supabase.from).mockImplementation(() => query({ data: null }) as never);
@@ -299,6 +332,38 @@ describe('loading the member', () => {
     expect(result.current.auth.session).toBeNull();
     expect(result.current.auth.memberships).toEqual([]);
     expect(result.current.auth.isAdmin).toBe(false);
+  });
+
+  it('forgets the last member’s exemption and the club’s committee date on sign out', async () => {
+    const { result } = await signIn({
+      profile: profile('coach'),
+      isClubCaptain: true,
+      isSafeguardingOfficer: true,
+      exemption: exemption(),
+      committeeChecksFrom: '2027-01-11',
+    });
+    expect(result.current.auth.exemption).toEqual(exemption());
+    expect(result.current.auth.committeeChecksFrom).toBe('2027-01-11');
+
+    await act(async () => {
+      authListener?.('SIGNED_OUT', null);
+      jest.runAllTimers();
+    });
+    await waitFor(() => expect(result.current.auth.profile).toBeNull());
+    expect(result.current.auth.exemption).toBeNull();
+    expect(result.current.auth.committeeChecksFrom).toBeNull();
+    expect(result.current.auth.isClubCaptain).toBe(false);
+    expect(result.current.auth.isSafeguardingOfficer).toBe(false);
+  });
+
+  it('refreshes to nobody when signed out', async () => {
+    sessionUserId = null;
+    const { result } = await signIn({ profile: profile('admin') });
+    await act(async () => {
+      await result.current.auth.refresh();
+    });
+    expect(result.current.auth.profile).toBeNull();
+    expect(supabase.from).not.toHaveBeenCalled();
   });
 
   it('stops listening for sign-ins when it unmounts', async () => {

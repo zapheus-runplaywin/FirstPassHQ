@@ -152,12 +152,14 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   );
   const usableMemberships = useMemo(
     () =>
+      // Stryker disable next-line ConditionalExpression: a shortcut; filtering with nothing paused keeps every place.
       paused.length === 0
         ? memberships
         : memberships.filter((m) => !paused.includes(m.team_role as AppRole)),
     [memberships, paused],
   );
 
+  // Stryker disable next-line OptionalChaining: hasRole is false for nobody, so usable is set by then.
   const isAdmin = hasRole(usable, 'admin') && usable?.status === 'approved';
 
   return (
@@ -168,7 +170,8 @@ export function AuthProvider({ children }: { children: ReactNode }) {
         profile: usable,
         paused:
           paused.length > 0
-            ? { roles: paused, stoodDown: !!profile?.stood_down_at, exemption }
+            ? // Stryker disable next-line OptionalChaining: roles are only paused for a member.
+              { roles: paused, stoodDown: !!profile?.stood_down_at, exemption }
             : null,
         exemption,
         memberships: usableMemberships,
@@ -192,6 +195,7 @@ function usableProfile(
   committeeChecksFrom: string | null,
 ) {
   const paused = profile ? pausedRoles(profile, exempt, committeeChecksFrom) : [];
+  // Stryker disable next-line LogicalOperator,ConditionalExpression: a shortcut; nobody has nothing paused, and rebuilding with nothing paused gives the same roles.
   if (!profile || paused.length === 0) return { usable: profile, paused };
   const [main = 'guest', ...extra] = [profile.role, ...profile.extra_roles].filter(
     (r) => !paused.includes(r),
