@@ -253,12 +253,12 @@ function review(extra: Partial<KpiReview> = {}): KpiReview {
   };
 }
 
-/** A reviewer's note on a review; each reviewer keeps their own. */
-function note(text: string, extra: Partial<KpiReviewNote> = {}): KpiReviewNote {
+/** One reviewer's note at a review date. */
+function reviewNote(extra: Partial<KpiReviewNote> = {}): KpiReviewNote {
   return {
-    reviewer_id: 'coach-1',
+    reviewer_id: 'coach',
     reviewer_name: 'Sample coach',
-    note: text,
+    note: 'Strong first half',
     noted_at: '2026-10-01T00:00:00Z',
     confirmed_at: null,
     ...extra,
@@ -358,8 +358,10 @@ describe('a person’s own KPIs', () => {
   });
 
   it('confirms a written review was done, and adds their own view', async () => {
-    await openPerson('athlete', sheet({ reviews: [review({ notes: [note('Strong first half')] })] }));
+    await openPerson('athlete', sheet({ reviews: [review({ notes: [reviewNote()] })] }));
     expect(screen.getByText('Mid-season review')).toBeTruthy();
+    expect(screen.getByText(/^Sample coach, /)).toBeTruthy();
+    expect(screen.getByText('Waiting for you to confirm it was done.')).toBeTruthy();
     expect(screen.getByText(`Due ${formatDateString('2026-12-01')}`)).toBeTruthy();
     expect(screen.getByText('Strong first half')).toBeTruthy();
     await press('Confirm this review was done');
@@ -374,11 +376,31 @@ describe('a person’s own KPIs', () => {
     await openPerson('athlete', sheet({
       reviews: [
         review(),
-        review({ point_id: 'r2', name: 'End of season', notes: [note('Done', { confirmed_at: '2026-10-12T00:00:00Z' })] }),
+        review({ point_id: 'r2', name: 'End of season', notes: [reviewNote({ note: 'Done', confirmed_at: '2026-10-12T00:00:00Z' })] }),
       ],
     }));
     expect(screen.getByText('Not written yet.')).toBeTruthy();
     expect(screen.getByText(/^✓ You confirmed it was done, /)).toBeTruthy();
+    // Every note there is confirmed, so there's nothing left to confirm.
+    expect(screen.queryByText('Confirm this review was done')).toBeNull();
+  });
+
+  it('shows each reviewer’s note, and asks to confirm while any is waiting', async () => {
+    await openPerson('athlete', sheet({
+      reviews: [
+        review({
+          notes: [
+            reviewNote({ confirmed_at: '2026-10-05T00:00:00Z' }),
+            reviewNote({ reviewer_id: 'admin', reviewer_name: 'Sample admin', note: 'Keep it up' }),
+          ],
+        }),
+      ],
+    }));
+    expect(screen.getByText('Strong first half')).toBeTruthy();
+    expect(screen.getByText('Keep it up')).toBeTruthy();
+    expect(screen.getByText(/^✓ You confirmed it was done, /)).toBeTruthy();
+    expect(screen.getByText('Waiting for you to confirm it was done.')).toBeTruthy();
+    expect(screen.getByText('Confirm this review was done')).toBeTruthy();
   });
 
   it.each<[string, Who, string]>([
@@ -396,7 +418,7 @@ describe('a person’s own KPIs', () => {
   });
 
   it('lets nobody change an archived season’s KPIs', async () => {
-    await openPerson('athlete', sheet({ archived: true, can_update: false, reviews: [review({ notes: [note('Done')] })] }));
+    await openPerson('athlete', sheet({ archived: true, can_update: false, reviews: [review({ notes: [reviewNote({ note: 'Done' })] })] }));
     expect(screen.getByText('This season is archived, so these KPIs can be read but not changed.')).toBeTruthy();
     expect(screen.queryByText('Mark as done')).toBeNull();
     expect(screen.queryByText('Confirm this review was done')).toBeNull();
@@ -454,9 +476,29 @@ describe('KPIs the member sets for someone', () => {
   });
 
   it('says the person hasn’t confirmed a review yet', async () => {
-    await openPerson('coach', sheet({ ...SETTER, reviews: [review({ note: 'Good' })] }));
+    await openPerson('coach', sheet({ ...SETTER, reviews: [review({ note: 'Good', notes: [reviewNote({ note: 'Good' })] })] }));
     expect(screen.getByText('Waiting for Sample athlete to confirm it was done.')).toBeTruthy();
+    // Their own note is in the form, not shown again as a card.
+    expect(screen.queryByText(/^Sample coach, /)).toBeNull();
     expect(screen.queryByText('Confirm this review was done')).toBeNull();
+  });
+
+  it('says when the person confirmed the member’s own review', async () => {
+    await openPerson('coach', sheet({
+      ...SETTER,
+      reviews: [review({ note: 'Good', confirmed_at: '2026-10-12T00:00:00Z', notes: [reviewNote({ note: 'Good', confirmed_at: '2026-10-12T00:00:00Z' })] })],
+    }));
+    expect(screen.getByText(/^✓ Sample athlete confirmed your review was done, /)).toBeTruthy();
+  });
+
+  it('shows another reviewer’s note at the same review date', async () => {
+    await openPerson('coach', sheet({
+      ...SETTER,
+      reviews: [review({ notes: [reviewNote({ reviewer_id: 'committee', reviewer_name: 'Sample committee', note: 'From the committee' })] })],
+    }));
+    expect(screen.getByText('From the committee')).toBeTruthy();
+    expect(screen.getByText(/^Sample committee, /)).toBeTruthy();
+    expect(screen.getByText('Waiting for Sample athlete to confirm it was done.')).toBeTruthy();
   });
 
   it('removes the person’s own view only after asking once more', async () => {
@@ -484,7 +526,7 @@ describe('reading someone else’s KPIs', () => {
     await openPerson('guardian', sheet({
       relation: 'guardian',
       can_update: false,
-      reviews: [review({ notes: [note('Great')], self_review: 'I agree' }), review({ point_id: 'r2', name: 'Not written' })],
+      reviews: [review({ notes: [reviewNote({ note: 'Great' })], self_review: 'I agree' }), review({ point_id: 'r2', name: 'Not written' })],
     }));
     expect(screen.getByText('Set by their coaches. You can read them and how the season is going.')).toBeTruthy();
     expect(screen.getByText('Great')).toBeTruthy();
