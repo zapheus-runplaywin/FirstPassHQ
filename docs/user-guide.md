@@ -44,7 +44,7 @@ each of their roles can.
 | **Manager**   | Squad and team managers. The app gives each manager a title from their team, or their squad until they're in a team, such as "Manager, 17 & Under". Need a current Working With Children Check; the role pauses while it's expired. A parent volunteering at their child's club, a volunteer under 18, or a short-term visitor or national event helper from outside WA has an exemption instead (see [Volunteer exemptions](#volunteer-exemptions)). |
 | **Committee** | Club committee members. Each can add a title, such as President or Secretary, shown with their role. Only committee members and admins can add their own title. Need a current Working With Children Check unless an admin exempts them with a reason (not if they also coach, manage or physio); the role pauses if a recorded check expires or was recorded without an expiry date. Committee members approved before checks were needed keep the role without one only until the club's **committee checks date**. |
 | **Physio**    | The club's physiotherapists. A physio can be placed in squads or teams to look after their athletes, and one can be the **Head Physio**, who looks after every athlete. Need a current Working With Children Check; the role pauses while it's expired. A parent volunteering at their child's club, a volunteer under 18, or a short-term visitor or national event helper from outside WA has an exemption instead (see [Volunteer exemptions](#volunteer-exemptions)). |
-| **Guest**     | Anyone else the club lets in, such as partners and sponsors. Guests see only the club calendar, keep their own tasks and can raise a concern. They aren't in squads or teams, get no messages, don't vote and aren't asked for a Working With Children Check or the code of conduct. |
+| **Guest**     | Anyone else the club lets in, such as partners and sponsors. Guests must be 18 or over. They see only the club calendar, keep their own tasks and can raise a concern. They aren't in squads or teams, get no messages, don't vote and aren't asked for a Working With Children Check or the code of conduct. |
 | **Statistician** | The people who record live game stats on a tablet in FirstPass Vantage, which coaches watch live in FirstPass Vision. Statisticians see every game the club records; a game's coaches and managers see their own squad's or team's. Any member can hold it alongside another role, such as a manager or an athlete who isn't playing. The role pauses while a member is stood down. |
 | **Temporary helper** | Someone helping for a day or a short time, such as at a carnival, clinic or tournament, paid or unpaid. Not necessarily a member of the club: this is only a role so the app can onboard them. The app screens them: a Working With Children Check or an exemption covering every day they help, and the club's code of conduct and safeguarding policy accepted. They see none of the club's features or messages, and their time ends by itself after their last day (see [Temporary helpers](#temporary-helpers)). |
 | **Admin**     | The people who run the app. Admin is granted by another admin, never requested. Admins can add a title too. Need a current Working With Children Check unless another admin exempts them. An expired check doesn't pause the admin role, so the club is never locked out, but it stays on the admins' to-do list until it's renewed. Admins set how long the club keeps records. |
@@ -477,8 +477,9 @@ If the club has turned on awards, when it runs an award vote that includes you, 
 of the year, and athletes vote for their own team's Players' player. When an award has a winner for
 each squad or team, you only see and vote for members of your own squad or team, even if it is open to
 every member; committee members and admins vote in every squad's and team's part of such an award when it names them. Club-wide awards are open to everyone, or to the roles the club chose. Parents and
-guardians, physios and guests don't vote. A parent who is also an athlete, coach, manager,
-committee member or admin votes in that role.
+guardians, physios, statisticians, guests and temporary helpers don't vote, because they needn't be
+club members. Someone with one of those roles who is also an athlete, coach, manager, committee
+member or admin votes in that role.
 
 1. Tap the vote. It shows the award, what to think about, and when voting closes.
 2. Tap who you're voting for. For a 3-2-1 vote, tap three people in order: first place gets 3
@@ -1681,7 +1682,9 @@ one or more squads or teams, where they show on the roster as **Physio**, and ca
 as **Head Physio**. Which athletes a physio looks after:
 
 - **Head Physio**: every athlete, whether or not the Head Physio is in a squad or team.
-- **A physio in squads or teams**: the athletes in those squads and teams.
+- **A physio in squads or teams**: the athletes in those squads and teams. Like a coach, a physio
+  in a squad looks after its athletes only until the squad's phase is complete; after selections,
+  place them in the teams they look after.
 - **A physio in no squad or team**: no athletes, and the home screen says "You are not in a
   squad yet." A club with one physio should mark them **Head Physio**; otherwise place them in
   the squads and teams they look after.
@@ -1709,7 +1712,9 @@ their own home screen and the Members list.
 
 ### Guests
 
-Guests, such as the club's partners and sponsors, can only look at the club calendar. They are
+Guests, such as the club's partners and sponsors, can only look at the club calendar. The Guest
+role is for adults: an admin can't approve a guest under 18, because guests get none of the
+protections the app gives children. They are
 never in a squad or team, so **My squads and teams** on their home screen always says "You are
 not in a squad yet." Their to-do list holds only their own tasks, and Your details is just a
 preferred name. Guests can't be stood down and need no Working With Children Check.
@@ -1859,7 +1864,8 @@ Check them against PlayHQ, then:
    A coach, manager or physio who is a parent volunteering at their child's club, or is under 18,
    doesn't need a check in WA. Choose **Parent volunteer** (and their child, who must be an
    athlete under 18 they're linked to as a guardian) or **Under-18 volunteer** (which needs their
-   date of birth) instead of **Has a check**. Once you save, they get a to-do to accept the
+   date of birth) instead of **Has a check**. A temporary helper can't be linked as a guardian, so
+   for them you search for and name their child from the club's athletes under 18 instead. Once you save, they get a to-do to accept the
    exemption declaration (a temporary helper sees **Read the declaration** in their steps), and
    their role starts when they do. The page shows where it's up to and
    who recorded it. Choosing **Has a check** again ends the exemption; every exemption stays on
@@ -2124,9 +2130,9 @@ still needed.
   winner** or **A winner for each** squad or team. With a winner for each, members vote only in
   their own group, and **Any member** nominees mean the members of that squad or team. Then the **Roles that vote**. Athletes, coaches and managers vote in
   the squads and teams they're in. Committee and admins vote wherever they are. Parents and
-  guardians don't vote, unless they also hold one of those roles. **Every member**
-  opens it to everyone except parents and guardians, physios and guests, who don't vote (for a winner-for-each award,
-  to the members of that squad or team).
+  guardians, physios, statisticians, guests and temporary helpers don't vote, unless they also hold
+  one of those roles. **Every member** opens it to every athlete, coach, manager, committee member
+  and admin (for a winner-for-each award, to the members of that squad or team).
 - **Nominees**: **Athletes** or **Coaches** in the voting groups, **Any member**, or **Names I
   list**, one per line, for people who aren't in the app, such as umpires.
 - **Age restricted** (not for listed names): **Any age**, or **Set ages** to match the committee's
@@ -2682,8 +2688,8 @@ once saved, only replaced or removed, and anyone who gets it wrong five times in
 | Guardian link history   | Admins only: every link and unlink, by whom, when and the reason. The child's guardians, and the child from 13, get a message about each change, without the reason. |
 | Stand-downs             | Admins only. The member sees that their role is paused, not the reason.                                                     |
 | Screening Unit notices and card validations | Admins only.                                                                                            |
-| Volunteer exemptions and declarations | The volunteer (their own) and admins.                                                                       |
-| Temporary helpers' task, dates and policy acceptance | The volunteer and admins. Temporary helpers see nothing of the club's members, squads, calendar or messages. |
+| Volunteer exemptions and declarations | The volunteer (their own) and admins. Kept under the member's name if they delete their account; the exemption ends that day. |
+| Temporary helpers' task, dates and policy acceptance | The volunteer and admins. Temporary helpers see nothing of the club's members, squads, calendar or messages. If a helper deletes their account, their policy acceptance and any exemption declaration are kept under their name; their task and dates go with the account. |
 | Concerns                | The Child Safety Officer, the Complaints Manager and admins, never the person a concern is about when they were named from the list (a concern that only describes someone in words is not hidden from anyone who handles concerns). Whoever raised it sees its status. A hidden name is never shown to them. |
 | Safeguarding contacts   | Everyone signed in, including guests and people waiting for approval.                                                       |
 | Committee checks date   | Everyone signed in. Only admins change it, and only to bring it forward; who changed it and when is kept. |

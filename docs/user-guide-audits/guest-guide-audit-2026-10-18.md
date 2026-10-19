@@ -12,7 +12,7 @@ Scope: the guest role guide (`docs/user-guide.md` section 9 intro and "Guests", 
 | A2 | **Section 11, Your profile and squads:** "Your name also shows to anyone choosing who a concern is about". | Not a guest's: the concern picker offers only coaches, managers, physios, committee, admins and temporary helpers. For a guest the row is "You and admins". | `20261013060000_temporary_volunteers.sql:1181-1190` | **Guide (built):** "…if you're a coach, manager, physio, committee member, admin or temporary helper". |
 | A3 | **Section 3, Delete account:** what the club keeps. | Concerns a member raised stay, with the stored name (unless raised anonymously), after the account is deleted. Neither the guide nor the delete screen says so, for any role. | `20261012235000_concerns.sql:205, 263` | **Guide and screen (built):** add "concerns you raised" to what the club keeps. |
 | A4 | **Section 12:** safeguarding contacts are cleared adults. | At the database a guest with a recorded card could be named Child Safety Officer or Complaints Manager: `can_be_safeguarding_contact` checks only approved, adult, not stood down and cleared, and the admin picker applies the same filter. | `20261012235000_concerns.sql:46-58`; `src/app/admin/safeguarding.tsx:91-100` | **Code (built):** guests and temporary helpers can't be safeguarding contacts, in the function and the picker. |
-| A5 | **Section 2:** everyone gives a date of birth and it decides whether the under-18 rules apply. | Nothing stops a child being approved as a guest, and no under-18 rule then applies (no guardian link, no copies, no consent). Guests get nothing, so little is at stake, but the guide doesn't say guests are expected to be adults. | `admin_save_member` (date of birth required for athletes only); `role_combination_problem` | **Decision for Matt (E1):** require guests to be 18 or over at approval, or say in the guide that the Guest role is for adults. I recommend the code rule. |
+| A5 | **Section 2:** everyone gives a date of birth and it decides whether the under-18 rules apply. | Nothing stops a child being approved as a guest, and no under-18 rule then applies (no guardian link, no copies, no consent). Guests get nothing, so little is at stake, but the guide doesn't say guests are expected to be adults. | `admin_save_member` (date of birth required for athletes only); `role_combination_problem` | **Decided by Matt (19 October): code.** `admin_save_member` (in `20261019000000_role_audit_decisions.sql`) needs a date of birth to approve a guest and refuses anyone under 18; sections 1 and 9 say the role is for adults. |
 
 ## B. Code and in-app text fixes
 
@@ -38,7 +38,7 @@ Scope: the guest role guide (`docs/user-guide.md` section 9 intro and "Guests", 
 
 ## E. Questions for Matt
 
-1. **A5 guests under 18 (recommend code):** refuse to approve a guest under 18, or say the role is for adults.
+1. **A5 guests under 18: Matt chose the code rule (19 October).** Built on this PR.
 
 ## F. Confirmed as accurate
 

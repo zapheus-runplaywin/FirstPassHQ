@@ -20,7 +20,7 @@ import EditKpiScreen from '@/app/kpis/edit';
 import KpisScreen from '@/app/kpis/index';
 import KpiPersonScreen from '@/app/kpis/person';
 import { formatDateString } from '@/lib/injuries';
-import type { Kpi, KpiMeasure, KpiPerson, KpiReview, KpiSheet } from '@/lib/kpis';
+import type { Kpi, KpiMeasure, KpiPerson, KpiReview, KpiReviewNote, KpiSheet } from '@/lib/kpis';
 
 import { clearCalls, fieldLabelled, onlyRpcCall, pushTo, rpcCalls, rpcNames } from './helpers/calls';
 import {
@@ -246,8 +246,21 @@ function review(extra: Partial<KpiReview> = {}): KpiReview {
     noted_by_name: null,
     noted_at: null,
     confirmed_at: null,
+    notes: [],
     self_review: null,
     self_reviewed_at: null,
+    ...extra,
+  };
+}
+
+/** A reviewer's note on a review; each reviewer keeps their own. */
+function note(text: string, extra: Partial<KpiReviewNote> = {}): KpiReviewNote {
+  return {
+    reviewer_id: 'coach-1',
+    reviewer_name: 'Sample coach',
+    note: text,
+    noted_at: '2026-10-01T00:00:00Z',
+    confirmed_at: null,
     ...extra,
   };
 }
@@ -345,7 +358,7 @@ describe('a person’s own KPIs', () => {
   });
 
   it('confirms a written review was done, and adds their own view', async () => {
-    await openPerson('athlete', sheet({ reviews: [review({ note: 'Strong first half', noted_by_name: 'Sample coach', noted_at: '2026-10-01T00:00:00Z' })] }));
+    await openPerson('athlete', sheet({ reviews: [review({ notes: [note('Strong first half')] })] }));
     expect(screen.getByText('Mid-season review')).toBeTruthy();
     expect(screen.getByText(`Due ${formatDateString('2026-12-01')}`)).toBeTruthy();
     expect(screen.getByText('Strong first half')).toBeTruthy();
@@ -361,7 +374,7 @@ describe('a person’s own KPIs', () => {
     await openPerson('athlete', sheet({
       reviews: [
         review(),
-        review({ point_id: 'r2', name: 'End of season', note: 'Done', confirmed_at: '2026-10-12T00:00:00Z' }),
+        review({ point_id: 'r2', name: 'End of season', notes: [note('Done', { confirmed_at: '2026-10-12T00:00:00Z' })] }),
       ],
     }));
     expect(screen.getByText('Not written yet.')).toBeTruthy();
@@ -378,12 +391,12 @@ describe('a person’s own KPIs', () => {
 
   it('tells a coach who sets and sees theirs', async () => {
     await openPerson('coach', sheet({ team_role: 'coach', coach_title: 'assistant_coach', full_name: 'Sample coach' }));
-    expect(screen.getByText(/^Your head coach and the committee set these\./)).toBeTruthy();
+    expect(screen.getByText(/^Your head coach, the committee and admins set these\./)).toBeTruthy();
     expect(screen.getByText(/^The committee and admins can see them, and your head coach if you’re an assistant coach\. Athletes and parents can’t\./)).toBeTruthy();
   });
 
   it('lets nobody change an archived season’s KPIs', async () => {
-    await openPerson('athlete', sheet({ archived: true, can_update: false, reviews: [review({ note: 'Done' })] }));
+    await openPerson('athlete', sheet({ archived: true, can_update: false, reviews: [review({ notes: [note('Done')] })] }));
     expect(screen.getByText('This season is archived, so these KPIs can be read but not changed.')).toBeTruthy();
     expect(screen.queryByText('Mark as done')).toBeNull();
     expect(screen.queryByText('Confirm this review was done')).toBeNull();
@@ -471,7 +484,7 @@ describe('reading someone else’s KPIs', () => {
     await openPerson('guardian', sheet({
       relation: 'guardian',
       can_update: false,
-      reviews: [review({ note: 'Great', noted_by_name: 'Sample coach', self_review: 'I agree' }), review({ point_id: 'r2', name: 'Not written' })],
+      reviews: [review({ notes: [note('Great')], self_review: 'I agree' }), review({ point_id: 'r2', name: 'Not written' })],
     }));
     expect(screen.getByText('Set by their coaches. You can read them and how the season is going.')).toBeTruthy();
     expect(screen.getByText('Great')).toBeTruthy();

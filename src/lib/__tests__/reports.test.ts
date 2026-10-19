@@ -1017,6 +1017,7 @@ describe('kpiReport', () => {
     full_name: `Sample ${profile_id}`,
     team_role: 'coach',
     coach_title: 'head_coach',
+    left_at: null,
     kpi_id: `k-${profile_id}`,
     format: 'kpi',
     title: 'Win rate',
