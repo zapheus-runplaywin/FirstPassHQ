@@ -228,6 +228,32 @@ describe('loading the member', () => {
     expect(supabase.from).not.toHaveBeenCalled();
   });
 
+  it('signs the member in once a club is picked, and listens again after a switch', async () => {
+    const choice = (code: string | null) => ({
+      ready: true,
+      club: (code ? { code } : null) as ReturnType<typeof useClubChoice>['club'],
+      recent: [],
+      choose: jest.fn(),
+      switchClub: jest.fn(),
+    });
+    rows = { profile: profile('athlete') };
+    jest.mocked(useClubChoice).mockReturnValue(choice(null));
+    const { result, rerender } = renderHook(() => useAuth(), { wrapper });
+    await act(async () => {});
+    expect(supabase.auth.getSession).not.toHaveBeenCalled();
+
+    jest.mocked(useClubChoice).mockReturnValue(choice('thunder'));
+    rerender({});
+    await waitFor(() => expect(result.current.profile?.role).toBe('athlete'));
+    expect(supabase.auth.onAuthStateChange).toHaveBeenCalledTimes(1);
+
+    jest.mocked(useClubChoice).mockReturnValue(choice('warriors'));
+    rerender({});
+    await act(async () => {});
+    expect(unsubscribe).toHaveBeenCalledTimes(1);
+    expect(supabase.auth.onAuthStateChange).toHaveBeenCalledTimes(2);
+  });
+
   it('is empty when signed out, without asking for any member', async () => {
     sessionUserId = null;
     const auth = await authFor({ profile: profile('admin') });

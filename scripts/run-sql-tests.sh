@@ -4,8 +4,13 @@
 # with the Supabase stubs, every migration and the sample members, then runs
 # each test file on its own copy of it.
 #
-#   scripts/run-sql-tests.sh                    # every test
+#   scripts/run-sql-tests.sh                    # every test except the manual ones
 #   scripts/run-sql-tests.sh surveys concerns   # just these
+#   scripts/run-sql-tests.sh large-club concurrency   # the manual ones
+#
+# A test whose first line is "-- Manual test" (the 200-member club and two
+# saves at once) runs only when named, by hand or from the "Scale tests"
+# workflow, to save Actions minutes (Matt, 2026-10-19).
 #
 # Connects with the usual PGHOST, PGPORT, PGUSER and PGPASSWORD settings; the
 # user must be able to create databases. A test fails when it prints a line
@@ -41,7 +46,10 @@ fi
 if [ $# -gt 0 ]; then
   files=(); for n in "$@"; do files+=("$tests/${n%.sql}.sql"); done
 else
-  files=("$tests"/*.sql)
+  files=()
+  for f in "$tests"/*.sql; do
+    head -n 1 "$f" | grep -q '^-- Manual test' || files+=("$f")
+  done
 fi
 
 failed=0; checks=0
