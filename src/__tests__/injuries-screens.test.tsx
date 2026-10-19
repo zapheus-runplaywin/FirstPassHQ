@@ -378,7 +378,7 @@ describe('one injury', () => {
       expect(shownActions()).toEqual([]);
       expect(
         screen.getByText(
-          'Waiting for a committee member to accept it. It has to be someone other than the coach who endorsed it.',
+          'Waiting for a committee member to accept it. It has to be someone other than the coach or physio who endorsed it.',
         ),
       ).toBeTruthy();
     });
@@ -433,7 +433,7 @@ describe('one injury', () => {
       );
       expect(screen.getByText('View')).toBeTruthy();
       expect(screen.getByText('Share')).toBeTruthy();
-      expect(screen.getByText(/You’re accepting this clearance, so you can Share its documents/)).toBeTruthy();
+      expect(screen.getByText(/This clearance is waiting for the committee, so you can Share its documents/)).toBeTruthy();
     });
 
     const LOG: InjuryDocumentEvent[] = [

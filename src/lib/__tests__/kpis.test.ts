@@ -182,9 +182,9 @@ describe('kpiCountLabel', () => {
 describe('whoSetsLabel and whoSeesLabel', () => {
   it('says who sets them', () => {
     expect(whoSetsLabel('athlete', null)).toBe('Your coaches');
-    expect(whoSetsLabel('coach', 'assistant_coach')).toBe('Your head coach and the committee');
-    expect(whoSetsLabel('coach', 'head_coach')).toBe('The committee');
-    expect(whoSetsLabel('manager', null)).toBe('The committee');
+    expect(whoSetsLabel('coach', 'assistant_coach')).toBe('Your head coach, the committee and admins');
+    expect(whoSetsLabel('coach', 'head_coach')).toBe('The committee and admins');
+    expect(whoSetsLabel('manager', null)).toBe('The committee and admins');
   });
 
   it('tells athletes under 18 their parents can see them, and never teammates', () => {

@@ -444,6 +444,22 @@ export function buildTodos({
         href: '/admin/safeguarding',
       });
     }
+    if ((safety.child_safety_officer_missing ?? 0) > 0) {
+      todos.push({
+        key: 'child-safety-officer',
+        title: 'Name a Child Safety Officer',
+        detail: 'Nobody with a current check holds it. Under Safeguarding',
+        href: '/admin/safeguarding',
+      });
+    }
+    if ((safety.complaints_manager_missing ?? 0) > 0) {
+      todos.push({
+        key: 'complaints-manager',
+        title: 'Name a Complaints Manager',
+        detail: 'Nobody with a current check holds it. Under Safeguarding',
+        href: '/admin/safeguarding',
+      });
+    }
     if (safety.exemptions_ending > 0) {
       todos.push({
         key: 'exemptions-ending',

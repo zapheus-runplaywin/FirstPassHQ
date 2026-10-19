@@ -288,8 +288,10 @@ insert into matrix (phase, label, q, counts) values
       '{0,0,0,1,0,0,0,0,0,0,0,0,0,0}'),
   (1, 'team_members: Kai''s squad places', $$select 1 from public.team_members where profile_id = pg_temp.m('32')$$,
       '{1,0,0,0,0,0,0,1,0,0,0,0,0,0}'),
+  -- A coach whose check has expired loses the fixtures with the rest of the
+  -- group's reads (20261017070000_manager_guide_audit.sql).
   (1, 'fixtures: Sample Squad''s game', $$select 1 from public.fixtures where id = '00000000-0000-0000-0000-0000000000f1'$$,
-      '{1,0,0,1,1,1,1,1,1,0,1,0,0,0}'),
+      '{1,0,0,1,0,1,1,1,1,0,1,0,0,0}'),
   -- Attendance: the committee and admins see every session; coaches and
   -- managers their own groups', whole-club ones and any they took. Athletes
   -- and guardians read marks through functions, never the register.

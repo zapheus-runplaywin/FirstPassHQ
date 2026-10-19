@@ -117,7 +117,7 @@ function CertificateCard({ cert, onDone }: { cert: CertificateToReview; onDone: 
 
       {!cert.can_review ? (
         <ThemedText type="small" themeColor="textSecondary">
-          This is yours or your child’s, so someone else on the committee checks it.
+          This is yours or your child’s, so another committee member or admin checks it.
         </ThemedText>
       ) : sendingBack ? (
         <>

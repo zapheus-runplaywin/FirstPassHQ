@@ -21,6 +21,7 @@ export default function MyDetailsScreen() {
 
   const hasTitle = profile?.status === 'approved' && canHoldTitle(rolesOf(profile));
   const groupTitle = profile?.status === 'approved' ? staffTitle(memberships) : '';
+  const coaches = memberships.some((m) => m.team_role === 'coach');
 
   async function save() {
     setSaving(true);
@@ -77,7 +78,7 @@ export default function MyDetailsScreen() {
           <ThemedText>{groupTitle}</ThemedText>
           <ThemedText type="small" themeColor="textSecondary">
             Set by the app from the teams you coach or manage, or your squad if you’re not in a
-            team yet. A club admin can change whether you’re a head or assistant coach.
+            team yet.{coaches ? ' A club admin can change whether you’re a head or assistant coach.' : ''}
           </ThemedText>
         </View>
       ) : null}

@@ -94,6 +94,7 @@ export default function SafeguardingScreen() {
         return (
           !isMinor(m.date_of_birth, m.under_17) &&
           !m.stood_down_at &&
+          !hasRole(m, 'guest', 'volunteer') &&
           (check === 'current' || check === 'expiring' || exempt.has(m.id))
         );
       }),

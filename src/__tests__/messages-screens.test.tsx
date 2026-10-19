@@ -169,7 +169,7 @@ describe('the messages list', () => {
   it('says what an empty inbox is for', async () => {
     await openList('athlete', []);
     expect(
-      screen.getByText('No messages yet. Messages from your coaches, managers and the club will show here.'),
+      screen.getByText('No messages yet. Messages from your coaches, managers, captains and the club will show here.'),
     ).toBeTruthy();
   });
 });

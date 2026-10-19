@@ -145,7 +145,7 @@ export default function InjuryScreen() {
         {hasDocuments ? (
           <ThemedText type="small" themeColor="textSecondary">
             {canShare
-              ? 'You’re accepting this clearance, so you can Share its documents to keep them in the club’s records. Each share is recorded and shown to the athlete and their guardians.'
+              ? 'This clearance is waiting for the committee, so you can Share its documents to keep them in the club’s records. Each share is recorded and shown to the athlete, their guardians and admins.'
               : 'Documents open in the app only. Every view and share is recorded and shown to the athlete, their guardians and admins.'}
           </ThemedText>
         ) : null}
@@ -225,7 +225,7 @@ function Actions({
   }
   if (injury.status === 'coach_endorsed') {
     return (
-      <Waiting text="Waiting for a committee member to accept it. It has to be someone other than the coach who endorsed it." />
+      <Waiting text="Waiting for a committee member to accept it. It has to be someone other than the coach or physio who endorsed it." />
     );
   }
   return null;
