@@ -5,6 +5,7 @@ import { ThemedText } from '@/components/themed-text';
 import { Button, Card, ChipGroup, ErrorText, TextField } from '@/components/ui';
 import { Spacing } from '@/constants/theme';
 import { useTheme } from '@/hooks/use-theme';
+import { useAuth } from '@/lib/auth';
 import { useClub } from '@/lib/club';
 import { localDay } from '@/lib/reports';
 import { wwccRecordIssues, wwccValidationLabels } from '@/lib/safety';
@@ -33,6 +34,7 @@ export function WwccValidation({
 }) {
   const theme = useTheme();
   const club = useClub();
+  const { session } = useAuth();
   const [cardName, setCardName] = useState(member.wwcc_card_name ?? member.full_name ?? '');
   const [method, setMethod] = useState<WwccValidationMethod | null>(null);
   const [linked, setLinked] = useState(!!member.wwcc_unit_linked_at);
@@ -63,6 +65,7 @@ export function WwccValidation({
     onSaved({
       wwcc_card_name: cardName.trim(),
       wwcc_validated_at: now,
+      wwcc_validated_by: session?.user.id ?? null,
       wwcc_validation_method: method,
       wwcc_unit_linked_at: linked ? (member.wwcc_unit_linked_at ?? now) : null,
     });

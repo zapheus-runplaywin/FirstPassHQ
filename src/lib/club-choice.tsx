@@ -32,9 +32,13 @@ const canStore = Platform.OS !== 'web' || typeof window !== 'undefined';
 export function ClubChoiceProvider({ children }: { children: ReactNode }) {
   const [club, setClub] = useState<ClubEntry | null>(null);
   const [recent, setRecent] = useState<ClubEntry[]>([]);
-  const [ready, setReady] = useState(!canStore);
+  // Not ready on the first render anywhere, including the static web render,
+  // so the page the server sends matches the browser's first render (React
+  // error #418 otherwise).
+  const [ready, setReady] = useState(false);
 
   useEffect(() => {
+    // Effects don't run in the static render, so it stays on the blank page.
     if (!canStore) return;
     let cancelled = false;
     AsyncStorage.multiGet([CHOICE_KEY, RECENT_KEY])

@@ -167,8 +167,9 @@ export function wwccReport(
   const volunteers = approved
     .filter((m) => hasRole(m, 'volunteer'))
     .sort((a, b) => (b.volunteer_from ?? '').localeCompare(a.volunteer_from ?? ''));
-  const openExemption = new Map(exemptions.filter((e) => !e.ended_at).map((e) => [e.profile_id, e]));
-  // A volunteer exemption stands in for a check they don't have.
+  // Only an exemption that applies now (accepted, and still under 18 and
+  // linked, or within its dates) stands in for a check they don't have.
+  const openExemption = new Map(exemptions.filter((e) => !e.ended_at && e.valid).map((e) => [e.profile_id, e]));
   const screenedByExemption = (m: Profile) => {
     const kind = wwccStatus(m).kind;
     return openExemption.has(m.id) && kind !== 'current' && kind !== 'expiring';
@@ -255,7 +256,7 @@ export function wwccReport(
       { label: 'Stood down now', value: standDowns.filter((s) => !s.lifted_at).length },
       {
         label: 'Temporary helpers helping now',
-        value: volunteers.filter((m) => !volunteerTimeOff(m)).length,
+        value: volunteers.filter((m) => !volunteerTimeOff(m) && !m.stood_down_at).length,
       },
     ],
     sections: [

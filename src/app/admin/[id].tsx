@@ -449,13 +449,22 @@ export default function MemberScreen() {
     }
     setSaving(status);
     setError(null);
-    // Saved first, because the member rules below depend on them.
-    const { error: detailsError } = await supabase.rpc('admin_set_member_details', {
-      p_profile_id: id,
-      p_date_of_birth: dob,
-      p_wwcc_number: wwccNumber,
-      p_wwcc_expires_on: expires,
-    });
+    // Saved first, because the member rules below depend on them. Admins
+    // can't change their own, so their own page only sends them when changed,
+    // and the database then says to ask another admin.
+    const detailsChanged =
+      dob !== (member?.date_of_birth ?? null) ||
+      (wwccNumber.trim().toUpperCase() || null) !== (member?.wwcc_number ?? null) ||
+      expires !== (member?.wwcc_expires_on ?? null);
+    const { error: detailsError } =
+      isSelf && !detailsChanged
+        ? { error: null }
+        : await supabase.rpc('admin_set_member_details', {
+            p_profile_id: id,
+            p_date_of_birth: dob,
+            p_wwcc_number: wwccNumber,
+            p_wwcc_expires_on: expires,
+          });
     if (detailsError) {
       setSaving(null);
       setError(detailsError.message);

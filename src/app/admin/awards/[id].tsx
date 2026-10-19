@@ -101,7 +101,7 @@ export default function AdminAwardScreen() {
         </ThemedText>
         <ThemedText type="small" themeColor="textSecondary">
           {seasonLabel(award.season)} · {closesLabel(award.closes_at)}
-          {award.preseason_closes_at
+          {weighted && award.preseason_closes_at
             ? ` · Preseason vote ${closesLabel(award.preseason_closes_at).replace(/^C/, 'c')}`
             : ''}
         </ThemedText>

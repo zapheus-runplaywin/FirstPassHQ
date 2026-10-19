@@ -2247,7 +2247,9 @@ name, the date it was made and page numbers, and anything that needs attention i
   **Needs attention**. Committee members and admins who are exempt are listed next, with the reason, who
   exempted them and when. **Exempt from a check** lists every exemption,
 current ones first, with the child, or the event, organiser and dates, who recorded it, when the declaration was accepted and where
-it's up to, then ended ones with who ended them. **Temporary helpers** lists everyone approved
+it's up to, then ended ones with who ended them. An exemption only counts in place of a check while it
+applies: until the declaration is accepted, after the child turns 18 or is unlinked, or outside its dates, the
+person is counted and listed as needing a check. **Temporary helpers** lists everyone approved
 as one, newest first, with what they helped with, their dates, the card or exemption that covered
 them, when they accepted the club's policies, and whether they're upcoming, helping now, finished
 or stood down. **Screening Unit notices** lists every notice,
