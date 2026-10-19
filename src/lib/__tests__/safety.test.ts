@@ -216,6 +216,18 @@ describe('wwccRecordIssues', () => {
       }),
     ).toEqual(['Check validated over a year ago']);
   });
+
+  it('counts a validation exactly a year old as still in date', () => {
+    const yearAgo = new Date(2025, 9, 18, 12);
+    const linked = '2026-01-01T00:00:00Z';
+    expect(wwccRecordIssues({ wwcc_validated_at: yearAgo.toISOString(), wwcc_unit_linked_at: linked })).toEqual([]);
+    expect(
+      wwccRecordIssues({
+        wwcc_validated_at: new Date(yearAgo.getTime() - 1000).toISOString(),
+        wwcc_unit_linked_at: linked,
+      }),
+    ).toEqual(['Check validated over a year ago']);
+  });
 });
 
 describe('isDatedExemption', () => {
@@ -272,6 +284,27 @@ describe('exemptionStatus', () => {
     ).toEqual({ label: 'National event exemption for Nationals until 20/10/2026', problem: false });
   });
 
+  it('counts a dated exemption starting today as running', () => {
+    expect(
+      exemptionStatus(
+        exemption({ basis: 'short_term_visitor', starts_on: '2026-10-18', ends_on: '2026-10-31' }),
+      ),
+    ).toEqual({ label: 'Short-term visitor exemption until 31/10/2026', problem: false });
+  });
+
+  it('treats a dated exemption with a missing date like any other', () => {
+    expect(
+      exemptionStatus(exemption({ basis: 'short_term_visitor', starts_on: null, ends_on: '2026-11-01' })),
+    ).toEqual({ label: 'Short-term visitor exemption: ends 01/11/2026', problem: true });
+  });
+
+  it('only dates visitors and national events, whatever else is recorded', () => {
+    // A parent volunteer ending soon is flagged, even with a first day recorded.
+    expect(
+      exemptionStatus(exemption({ starts_on: '2026-01-01', ends_on: '2026-11-30' })),
+    ).toEqual({ label: 'Parent volunteer for Jo Sample: ends 30/11/2026', problem: true });
+  });
+
   it('flags a dated exemption that has ended', () => {
     expect(
       exemptionStatus(
@@ -295,6 +328,15 @@ describe('exemptionStatus', () => {
     expect(exemptionStatus(exemption({ ends_on: '2026-11-30' }))).toEqual({
       label: 'Parent volunteer for Jo Sample: ends 30/11/2026',
       problem: true,
+    });
+  });
+
+  it('flags an end up to the day before 60 days from today', () => {
+    // 60 days from 18 October 2026 is 17 December.
+    expect(exemptionStatus(exemption({ ends_on: '2026-12-16' })).problem).toBe(true);
+    expect(exemptionStatus(exemption({ ends_on: '2026-12-17' }))).toEqual({
+      label: 'Parent volunteer for Jo Sample until 17/12/2026',
+      problem: false,
     });
   });
 
@@ -345,6 +387,13 @@ describe('committeeChecksDue', () => {
     expect(committeeChecksDue('2026-10-19')).toBe(false);
     expect(committeeChecksDue(null)).toBe(false);
   });
+
+  it('compares whole dates in one-digit months and days', () => {
+    jest.setSystemTime(new Date(2026, 2, 5, 12));
+    expect(committeeChecksDue('2026-03-05')).toBe(true);
+    expect(committeeChecksDue('2026-03-06')).toBe(false);
+    expect(committeeChecksDue('2026-10-01')).toBe(false);
+  });
 });
 
 describe('committeeCheckDue', () => {
@@ -369,6 +418,11 @@ describe('committeeCheckDue', () => {
   it('is false with a check or an exemption recorded', () => {
     expect(committeeCheckDue(committee({ wwcc_number: '123' }), '2027-01-11')).toBe(false);
     expect(committeeCheckDue(committee({ wwcc_exempt_reason: 'Board only' }), '2027-01-11')).toBe(false);
+  });
+
+  it('does not count a blank check number or exemption reason', () => {
+    expect(committeeCheckDue(committee({ wwcc_number: '  ' }), '2027-01-11')).toBe(true);
+    expect(committeeCheckDue(committee({ wwcc_exempt_reason: '  ' }), '2027-01-11')).toBe(true);
   });
 
   it('is false for members who are not approved committee members', () => {
@@ -437,6 +491,14 @@ describe('pausedRoles', () => {
 
   it('a volunteer exemption does not cover committee', () => {
     expect(pausedRoles(profile({ role: 'committee' }), true, '2026-01-01')).toEqual(['committee']);
+  });
+
+  it('does not count a blank check number or exemption reason for committee', () => {
+    // A blank number is no check, so committee keep their role until the date.
+    expect(pausedRoles(profile({ role: 'committee', wwcc_number: '  ' }))).toEqual([]);
+    expect(
+      pausedRoles(profile({ role: 'committee', wwcc_exempt_reason: '  ' }), false, '2026-01-01'),
+    ).toEqual(['committee']);
   });
 
   it('pauses every stand-down role while stood down, even with a current check', () => {
@@ -596,5 +658,9 @@ describe('canWorkWithChildren', () => {
 
   it('is false for nobody signed in', () => {
     expect(canWorkWithChildren(null, true)).toBe(false);
+  });
+
+  it('counts no exemption unless one is passed', () => {
+    expect(canWorkWithChildren(profile({ wwcc_number: null, wwcc_expires_on: null }))).toBe(false);
   });
 });
