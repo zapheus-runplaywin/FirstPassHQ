@@ -458,7 +458,7 @@ describe('checking certificates', () => {
 
   it('never lets anyone check their own or their child’s', async () => {
     await openReview('committee', [cert({ can_review: false })]);
-    expect(screen.getByText('This is yours or your child’s, so someone else on the committee checks it.')).toBeTruthy();
+    expect(screen.getByText('This is yours or your child’s, so another committee member or admin checks it.')).toBeTruthy();
     expect(screen.queryByText('Approve')).toBeNull();
     expect(screen.queryByText('Send back')).toBeNull();
   });
