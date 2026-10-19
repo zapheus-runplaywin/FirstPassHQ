@@ -1017,6 +1017,7 @@ describe('kpiReport', () => {
     full_name: `Sample ${profile_id}`,
     team_role: 'coach',
     coach_title: 'head_coach',
+    left_at: null,
     kpi_id: `k-${profile_id}`,
     format: 'kpi',
     title: 'Win rate',
@@ -1057,6 +1058,12 @@ describe('kpiReport', () => {
     expect(report.subtitle).toBe('Coaches’ and managers’ KPIs and OKRs for 2026–27');
     expect(report.landscape).toBe(true);
     expect(report.footnote).toContain('Athletes’ KPIs aren’t in this report.');
+  });
+
+  it('keeps a coach who deleted their account, with the day they left', () => {
+    const gone = kpiReport('2026–27', [row('gone', { left_at: noon('2026-09-15') })], '2026-10-18');
+    expect(cellsOf(gone.sections[0])[0][0]).toBe(`Sample gone\nHead Coach\nLeft the club ${localDay(noon('2026-09-15'))}`);
+    expect(gone.footnote).toContain('Coaches and managers who have deleted their account stay on it, with the day they left.');
   });
 
   it('counts people, KPIs, results and overdue reviews', () => {

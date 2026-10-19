@@ -1091,7 +1091,7 @@ const OPEN_STAND_DOWN: StandDown = {
 describe('standing a member down', () => {
   it('needs a reason, then stands them down with the note and goes back', async () => {
     await openMember(p('coach'));
-    expect(screen.getByText(/^Stops Sample coach’s coach, manager, physio, committee and admin roles straight away/)).toBeTruthy();
+    expect(screen.getByText(/^Stops Sample coach’s coach, manager, physio, committee, admin and statistician roles straight away/)).toBeTruthy();
     await press('Stand down now');
     expect(screen.getByText('Choose why.')).toBeTruthy();
     expect(rpcsNamed('admin_stand_down')).toEqual([]);

@@ -198,7 +198,7 @@ describe('paused roles', () => {
     await openHome('coachExpiredCheck');
     expect(
       screen.getByText(
-        "Your Working With Children Check has expired or isn't recorded, so your coach role is paused. Renew it, then send a club admin the new card number and expiry date.",
+        "Your Working With Children Check has expired or isn't recorded, so your coach role is paused. Apply for one or renew it, then send a club admin the card number and expiry date. If you never work with children, ask an admin to exempt you with the reason.",
       ),
     ).toBeTruthy();
   });
