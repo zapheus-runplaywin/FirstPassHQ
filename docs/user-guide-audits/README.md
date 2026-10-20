@@ -14,6 +14,6 @@ and how it was fixed (guide or code), the decisions Matt made, and what was conf
 | Guest | [guest-guide-audit-2026-10-18.md](guest-guide-audit-2026-10-18.md) | PR #143 |
 | Temporary helper | [temporary-helper-guide-audit-2026-10-18.md](temporary-helper-guide-audit-2026-10-18.md) | PR #143 |
 | Parent and guardian | [guardian-guide-audit-2026-10-19.md](guardian-guide-audit-2026-10-19.md) | PR #157 (the guide was first reviewed in PR #141 without a report) |
-| Admin | [admin-guide-audit-2026-10-19.md](admin-guide-audit-2026-10-19.md) | this PR (report; fixes wait on Matt's decisions) |
+| Admin | [admin-guide-audit-2026-10-19.md](admin-guide-audit-2026-10-19.md) | PR #161 (report and every fix from Matt's decisions) |
 
 Every role has been audited.
