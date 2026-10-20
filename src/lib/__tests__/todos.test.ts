@@ -594,7 +594,7 @@ describe('buildTodos', () => {
         }),
       });
       expect(list.map((t) => t.title)).toEqual([
-        'Link guardians for 1 athlete under 18',
+        '1 athlete under 18 locked out',
         'Add a date of birth for 2 athletes',
         'Sort out 1 Working With Children Check',
         'Tell the governing body about 1 Screening Unit notice',

@@ -4,6 +4,7 @@ import { useCallback, useEffect, useState } from 'react';
 import { Pressable, StyleSheet, View } from 'react-native';
 
 import { EventGrid } from '@/components/event-card';
+import { ChildCodeCard, WaitingForGuardian } from '@/components/guardian-link';
 import { SafeguardingContactsCard } from '@/components/safeguarding';
 import { Screen } from '@/components/screen';
 import { TodoList } from '@/components/todo-list';
@@ -16,7 +17,7 @@ import { useAbsencesToReview, useLeadsAGroup } from '@/lib/absences';
 import { useAffiliationTodos } from '@/lib/affiliation';
 import { useConductTodos } from '@/lib/conduct';
 import { committeeCheckDue, isDatedExemption } from '@/lib/safety';
-import { formatDate, isMinor } from '@/lib/age';
+import { formatDate } from '@/lib/age';
 import { useAuth } from '@/lib/auth';
 import { useCanTakeAttendance, useCanViewAttendance } from '@/lib/attendance';
 import { useAwardSlots } from '@/lib/awards';
@@ -79,6 +80,8 @@ export default function HomeScreen() {
     memberships,
     isAdmin,
     isSafeguardingOfficer,
+    waitingForGuardian,
+    isLocked,
     refresh,
     signOut,
   } = useAuth();
@@ -262,11 +265,20 @@ export default function HomeScreen() {
 
       {volunteer ? (
         <VolunteerOnboarding verificationCode={<VerificationCode />} />
+      ) : isLocked ? (
+        // Approved, but locked until a verified parent or guardian is linked.
+        <>
+          <WaitingForGuardian />
+          <ThemedText type="small" themeColor="textSecondary">
+            If anything worries you, these people can help:
+          </ThemedText>
+          <SafeguardingContactsCard />
+        </>
       ) : !approved ? (
         <JoinStatus />
       ) : null}
 
-      {volunteer ? null : (
+      {volunteer || waitingForGuardian ? null : (
         <>
 
         {approved ? <PausedRoles /> : null}
@@ -517,9 +529,15 @@ export default function HomeScreen() {
             <ThemedText type="small" themeColor="textSecondary">
               {athletes.length > 0
                 ? athletes.map((a) => a.name).join(', ')
-                : 'A club admin will link you to your athlete once they have checked your PlayHQ registration.'}
+                : 'Nobody yet. Enter your child’s link code below, and a club admin links you once they have checked who you are.'}
             </ThemedText>
           </Card>
+        ) : null}
+
+        {isGuardian ? (
+          <ChildCodeCard
+            title={athletes.length > 0 ? 'Add another child' : 'Enter your child’s code'}
+          />
         ) : null}
 
         {isGuardian && athletes.length > 0 ? (
@@ -661,14 +679,16 @@ export default function HomeScreen() {
       </PressableCard>
 
       <View style={styles.footer}>
-        <Pressable
-          accessibilityRole="button"
-          onPress={() => router.push('/my-details')}
-          style={styles.footerLink}>
-          <ThemedText type="small" style={{ color: theme.tint }}>
-            Your details
-          </ThemedText>
-        </Pressable>
+        {waitingForGuardian ? null : (
+          <Pressable
+            accessibilityRole="button"
+            onPress={() => router.push('/my-details')}
+            style={styles.footerLink}>
+            <ThemedText type="small" style={{ color: theme.tint }}>
+              Your details
+            </ThemedText>
+          </Pressable>
+        )}
         <Pressable accessibilityRole="button" onPress={signOut} style={styles.footerLink}>
           <ThemedText type="small" style={{ color: theme.tint }}>
             Sign out
@@ -820,7 +840,7 @@ function CommitteeCheckDue() {
 }
 
 function JoinStatus() {
-  const { profile } = useAuth();
+  const { profile, waitingForGuardian } = useAuth();
 
   if (profile?.status === 'rejected') {
     return (
@@ -854,20 +874,20 @@ function JoinStatus() {
     );
   }
 
-  // What they said at Join; the admin checks it before approving them.
-  const child =
-    profile.requested_role === 'athlete' &&
-    !!profile.declared_date_of_birth &&
-    isMinor(profile.declared_date_of_birth, false);
+  // A child under 18 asking to join, with a link code for their parent or guardian.
+  const child = !!waitingForGuardian;
+  const guardian = profile.requested_role === 'guardian';
 
   return (
     <>
       <Card>
         <ThemedText type="smallBold">Waiting for approval</ThemedText>
         <ThemedText type="small" themeColor="textSecondary">
-          {profile.requested_role === 'committee' || profile.requested_role === 'guest'
-            ? 'A club admin will approve your request. Pull down to check again.'
-            : 'A club admin will approve your request and add you to your squad or team. Pull down to check again.'}
+          {guardian
+            ? 'A club admin checks who you are and approves you once they have linked you to your child. Pull down to check again.'
+            : profile.requested_role === 'committee' || profile.requested_role === 'guest'
+              ? 'A club admin will approve your request. Pull down to check again.'
+              : 'A club admin will approve your request and add you to your squad or team. Pull down to check again.'}
         </ThemedText>
         {profile.verified_at ? (
           <ThemedText type="small" themeColor="textSecondary">
@@ -886,18 +906,12 @@ function JoinStatus() {
           <Button title="Edit request" variant="secondary" onPress={() => router.push('/join')} />
         </View>
       </Card>
+      {guardian ? <ChildCodeCard /> : null}
+      {child ? <WaitingForGuardian /> : null}
       {child ? (
-        <Card>
-          <ThemedText type="smallBold">Ask your parent or guardian to join</ThemedText>
-          <ThemedText type="small" themeColor="textSecondary">
-            You’re under 18, so a parent or guardian needs to join the club in the app too
-            {profile.guardian_email ? `, signing in with ${profile.guardian_email}` : ''}. A club
-            admin checks who they are and links them to you, and then you can be approved.
-          </ThemedText>
-          <ThemedText type="small" themeColor="textSecondary">
-            If anything worries you, these people can help:
-          </ThemedText>
-        </Card>
+        <ThemedText type="small" themeColor="textSecondary">
+          If anything worries you, these people can help:
+        </ThemedText>
       ) : null}
       {child ? <SafeguardingContactsCard /> : null}
     </>

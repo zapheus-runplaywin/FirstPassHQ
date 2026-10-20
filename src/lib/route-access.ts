@@ -23,7 +23,8 @@ import type { AppRole, TeamRole } from '@/lib/types';
  * leads to the screen, and the user guide's role tables.
  */
 export function useRouteAccess() {
-  const { profile, memberships, isAdmin, isSafeguardingOfficer } = useAuth();
+  const { profile, memberships, isAdmin, isSafeguardingOfficer, waitingForGuardian, isLocked } =
+    useAuth();
   const approved = profile?.status === 'approved';
   const inGroupAs = (...roles: TeamRole[]) =>
     approved && memberships.some((m) => roles.includes(m.team_role));
@@ -127,6 +128,13 @@ export function useRouteAccess() {
 
     // Choosing a squad or team's captains: admins and its coaches.
     chooseCaptains: isAdmin || inGroupAs('coach'),
+
+    // Screens every signed-in member can open, except a child waiting for a
+    // parent or guardian: they only see their link code on Home, Raise a
+    // concern and Delete account (Matt, 20 October 2026).
+    open: !waitingForGuardian,
+    // Asking to join, or changing the request: not once approved and locked.
+    join: !isLocked,
   };
 }
 

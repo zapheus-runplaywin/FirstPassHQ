@@ -112,6 +112,7 @@ type Rows = {
   exemption?: MyVolunteerExemption | null;
   isSafeguardingOfficer?: unknown;
   committeeChecksFrom?: unknown;
+  linkCode?: unknown;
 };
 
 let rows: Rows;
@@ -172,6 +173,7 @@ beforeEach(() => {
     if (fn === 'my_volunteer_exemption') return query({ data: rows.exemption ?? null });
     if (fn === 'is_safeguarding_officer') return query({ data: rows.isSafeguardingOfficer ?? false });
     if (fn === 'committee_checks_from') return query({ data: rows.committeeChecksFrom ?? null });
+    if (fn === 'my_link_code') return query({ data: rows.linkCode ?? null });
     throw new Error(`Unexpected function ${fn}`);
   }) as never);
 });
@@ -877,5 +879,81 @@ describe('role hooks see only the roles a member can use', () => {
       checkInOverview: false,
       injuries: false,
     });
+  });
+});
+
+// ---------------------------------------------------------------------------
+// Children waiting for a parent or guardian (public.my_link_code)
+// ---------------------------------------------------------------------------
+
+describe('a child waiting for a parent or guardian', () => {
+  const child = (overrides: Partial<Profile> = {}) =>
+    profile('athlete', { date_of_birth: '2012-03-04', wwcc_number: null, ...overrides });
+  const waiting = {
+    waiting: true,
+    code: '7KQ4MD',
+    expires_at: '2026-10-25T12:00:00Z',
+    parents_waiting: [],
+  };
+
+  it('asks for the member’s link code with the rest of their rows', async () => {
+    await authFor({ profile: profile('athlete') });
+    expect(supabase.rpc).toHaveBeenCalledWith('my_link_code');
+  });
+
+  it('shows an approved child with no verified parent as waiting, with no squads or teams, and locked', async () => {
+    const auth = await authFor({
+      profile: child(),
+      memberships: [member(TEAM_A, 'athlete')],
+      linkCode: waiting,
+    });
+    expect(auth.waitingForGuardian).toEqual(waiting);
+    expect(auth.isLocked).toBe(true);
+    expect(auth.profile?.status).toBe('pending');
+    expect(auth.profile?.full_name).toBe('Sam Sample');
+    expect(auth.memberships).toEqual([]);
+    expect(auth.paused).toBeNull();
+    expect(auth.isAdmin).toBe(false);
+  });
+
+  it('shows a child asking to join as waiting, but not locked: they aren’t approved yet', async () => {
+    const auth = await authFor({ profile: child({ status: 'pending' }), linkCode: waiting });
+    expect(auth.waitingForGuardian).toEqual(waiting);
+    expect(auth.isLocked).toBe(false);
+    expect(auth.profile?.status).toBe('pending');
+  });
+
+  test.each([
+    ['no link code row', null],
+    ['a row saying they aren’t waiting', { waiting: false, code: null, expires_at: null, parents_waiting: [] }],
+  ])('leaves a member with %s approved, with their places', async (_, linkCode) => {
+    const auth = await authFor({
+      profile: child(),
+      memberships: [member(TEAM_A, 'athlete')],
+      linkCode,
+    });
+    expect(auth.waitingForGuardian).toBeNull();
+    expect(auth.isLocked).toBe(false);
+    expect(auth.profile?.status).toBe('approved');
+    expect(auth.memberships).toEqual([member(TEAM_A, 'athlete')]);
+  });
+
+  it('gives a locked child nothing a squad place would give', async () => {
+    const { result } = await signIn(
+      { profile: child(), memberships: [member(TEAM_A, 'athlete')], linkCode: waiting },
+      () => ({ injuries: useCanSeeInjuries(), checkInCoach: useIsCheckInCoach() }),
+    );
+    expect(result.current.value).toEqual({ injuries: false, checkInCoach: false });
+  });
+
+  it('forgets the link code on sign out', async () => {
+    const { result } = await signIn({ profile: child(), linkCode: waiting });
+    expect(result.current.auth.waitingForGuardian).not.toBeNull();
+    await act(async () => {
+      authListener?.('SIGNED_OUT', null);
+      jest.runAllTimers();
+    });
+    await waitFor(() => expect(result.current.auth.waitingForGuardian).toBeNull());
+    expect(result.current.auth.isLocked).toBe(false);
   });
 });

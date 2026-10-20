@@ -359,7 +359,8 @@ export function wwccStatus(member: Pick<Profile, 'wwcc_number' | 'wwcc_expires_o
  */
 export function safetyIssues(
   member: Profile,
-  hasGuardian: boolean,
+  /** An approved, verified parent or guardian is linked (`unlocksChild`). */
+  hasVerifiedGuardian: boolean,
   /** Their open volunteer exemption, if they have one. */
   exemption?: ExemptionState | null,
 ): string[] {
@@ -384,7 +385,8 @@ export function safetyIssues(
   if (hasRole(member, 'athlete') && !member.date_of_birth) issues.push('No date of birth');
 
   if (hasRole(member, 'athlete') && isMinor(member.date_of_birth, member.under_17)) {
-    if (!hasGuardian) issues.push('Under 18 with no guardian linked');
+    // Locked out of the app until one is (public.is_locked_child).
+    if (!hasVerifiedGuardian) issues.push('Locked: no verified parent or guardian linked');
     if (member.date_of_birth) {
       // Built as a date, so someone born on 29 February turns 18 on 1 March in
       // other years, as in isMinor and the database.

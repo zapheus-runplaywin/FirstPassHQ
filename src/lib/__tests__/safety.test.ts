@@ -588,9 +588,9 @@ describe('safetyIssues', () => {
     expect(safetyIssues(profile({ date_of_birth: null }), false)).toEqual(['No date of birth']);
   });
 
-  it('flags an athlete under 18 with no guardian', () => {
+  it('flags an athlete under 18 with no verified guardian: they are locked out', () => {
     expect(safetyIssues(profile({ date_of_birth: '2012-01-01' }), false)).toEqual([
-      'Under 18 with no guardian linked',
+      'Locked: no verified parent or guardian linked',
     ]);
     expect(safetyIssues(profile({ date_of_birth: '2012-01-01' }), true)).toEqual([]);
   });
@@ -598,7 +598,7 @@ describe('safetyIssues', () => {
   it('uses the admin choice without a date of birth', () => {
     expect(safetyIssues(profile({ date_of_birth: null, under_17: true }), false)).toEqual([
       'No date of birth',
-      'Under 18 with no guardian linked',
+      'Locked: no verified parent or guardian linked',
     ]);
   });
 
@@ -633,7 +633,7 @@ describe('safetyIssues', () => {
     ).toEqual([
       'Stood down',
       'No Working With Children Check recorded',
-      'Under 18 with no guardian linked',
+      'Locked: no verified parent or guardian linked',
       'Turns 18 on 01/11/2026',
     ]);
   });

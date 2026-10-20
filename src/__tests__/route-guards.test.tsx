@@ -80,6 +80,8 @@ describe('admin screens', () => {
     'physio',
     'committee',
     'stoodDownAdmin',
+    'waitingChild',
+    'lockedChild',
   ];
 
   describe.each(turnedAway)('%s', (who) => {

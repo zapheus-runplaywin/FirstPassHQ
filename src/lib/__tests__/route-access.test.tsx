@@ -115,6 +115,8 @@ function auth(
     isAdmin: roles.includes('admin') && p?.status === 'approved',
     committeeChecksFrom: null,
     isSafeguardingOfficer: extra.isSafeguardingOfficer ?? false,
+    waitingForGuardian: null,
+    isLocked: false,
     refresh: jest.fn(),
     signOut: jest.fn(),
   };
@@ -291,7 +293,39 @@ it('every case names real keys', () => {
     mockAuth = auth(null);
     return useRouteAccess();
   });
-  expect(Object.keys(result.current).sort()).toEqual([...KEYS].sort());
+  expect(Object.keys(result.current).sort()).toEqual([...KEYS, 'open', 'join'].sort());
+});
+
+describe('a child waiting for a parent or guardian', () => {
+  const linkCode = { waiting: true, code: '7KQ4MD', expires_at: null, parents_waiting: [] };
+  // AuthProvider shows a locked child as waiting for approval, with no groups.
+  const locked: Auth = {
+    ...auth(profile('athlete', { status: 'pending' })),
+    waitingForGuardian: linkCode,
+    isLocked: true,
+  };
+  const asking: Auth = { ...locked, isLocked: false };
+
+  test.each([
+    ['everyone else', auth(profile('athlete'), { memberships: [member('athlete')] }), true, true],
+    ['someone waiting for approval', auth(profile('athlete', { status: 'pending' })), true, true],
+    ['signed out', auth(null), true, true],
+    ['a child asking to join', asking, false, true],
+    ['a locked child', locked, false, false],
+  ])('%s: open %s, join %s', (_name, who, open, join) => {
+    mockAuth = who;
+    mockClub.features = features();
+    const { result } = renderHook(() => useRouteAccess());
+    expect(result.current.open).toBe(open);
+    expect(result.current.join).toBe(join);
+  });
+
+  it('opens nothing else for a locked child', () => {
+    mockAuth = locked;
+    mockClub.features = features();
+    const { result } = renderHook(() => useRouteAccess());
+    for (const key of KEYS) expect(result.current[key]).toBe(false);
+  });
 });
 
 describe('feature switches', () => {

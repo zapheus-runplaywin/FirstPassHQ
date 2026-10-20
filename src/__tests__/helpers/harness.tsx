@@ -69,7 +69,9 @@ export type PersonaName =
   | 'coachGuardian'
   | 'athleteCoach'
   | 'adminGuardian'
-  | 'adminLapsedCoach';
+  | 'adminLapsedCoach'
+  | 'waitingChild'
+  | 'lockedChild';
 
 export type Persona = {
   session: Session | null;
@@ -187,6 +189,14 @@ export const CHILD_CONSENTS = [
   },
 ];
 
+/** What `my_link_code` gives a child waiting for a parent or guardian. */
+export const WAITING_LINK_CODE = {
+  waiting: true,
+  code: '7KQ4MD',
+  expires_at: '2026-10-25T04:00:00Z',
+  parents_waiting: [] as string[],
+};
+
 export const personas: Record<PersonaName, Persona> = {
   signedOut: { session: null, profile: null, memberships: [] },
   pending: {
@@ -300,6 +310,31 @@ export const personas: Record<PersonaName, Persona> = {
     { extra_roles: ['coach'], wwcc_expires_on: '2025-01-01' },
     ['coach'],
   ),
+  /** Under 18, asking to join: sees only their link code for a parent. */
+  waitingChild: {
+    ...member('waiting-child', 'guest', {
+      status: 'pending',
+      requested_role: 'athlete',
+      declared_date_of_birth: '2012-04-01',
+      verified_at: null,
+      wwcc_number: null,
+      wwcc_expires_on: null,
+    }),
+    rpcs: { my_link_code: WAITING_LINK_CODE },
+  },
+  /**
+   * Approved and under 18 with no verified parent or guardian linked: locked
+   * out until one is, even though they are in a squad.
+   */
+  lockedChild: {
+    ...member(
+      'locked-child',
+      'athlete',
+      { date_of_birth: '2011-03-02', under_17: true, wwcc_number: null, wwcc_expires_on: null },
+      ['athlete'],
+    ),
+    rpcs: { my_link_code: WAITING_LINK_CODE },
+  },
 };
 
 /**

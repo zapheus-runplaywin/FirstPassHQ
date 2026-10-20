@@ -4,7 +4,7 @@
  *
  * Everyone gives their name and date of birth and picks a role. An athlete
  * under 18 also gives a parent or guardian's email, a guardian gives their
- * PlayHQ email, a temporary helper says what they'll help with, when, and how
+ * PlayHQ email and, if they have it, their child's link code, a temporary helper says what they'll help with, when, and how
  * they're screened, and the club password is asked for only when the club has
  * set one. The database counts wrong passwords, so a refusal comes back as
  * the RPC's message, not an error: the screen shows it and stays put.
@@ -216,6 +216,7 @@ describe('athletes under 18', () => {
     type('Date of birth', '02/03/2011');
     expect(screen.getByText('Parent or guardian’s email')).toBeTruthy();
     expect(screen.getByText(/^You’re under 18, so a parent or guardian needs to join/)).toBeTruthy();
+    expect(screen.getByText(/you’ll see a link code to share with them\. The app stays\s+locked/)).toBeTruthy();
   });
 
   it('turns 18 on their birthday, so needs no guardian that day', async () => {
@@ -278,31 +279,81 @@ describe('athletes under 18', () => {
 });
 
 describe('parents and guardians', () => {
-  it('must give the email they registered their athlete with', async () => {
+  it('must give the email they registered their athlete with, and pick no squad', async () => {
     await openJoin();
     fillBasics();
     fireEvent.press(screen.getByText('Guardian'));
     expect(screen.getByPlaceholderText('Email used to register with PlayHQ')).toBeTruthy();
     expect(screen.getByText(/^Parents and guardians: enter the email you used/)).toBeTruthy();
-    expect(screen.getByText('Your athlete\'s squad')).toBeTruthy();
+    // They follow their children into squads and teams.
+    expect(screen.queryByText('Squad')).toBeNull();
+    expect(screen.queryByText(TEAM_B.name)).toBeNull();
+    expect(screen.getByText('Your child’s link code')).toBeTruthy();
+    expect(screen.getByText(/you’ll follow them into their squads\.$/)).toBeTruthy();
     await send();
     expect(screen.getByText('Please enter the email you used to register with PlayHQ.')).toBeTruthy();
     expect(rpcNames()).not.toContain('submit_join_request');
   });
 
-  it('sends the guardian’s PlayHQ email and their athlete’s squad', async () => {
+  it('sends the guardian’s PlayHQ email and no squad, and no code when left blank', async () => {
     await openJoin();
     fillBasics();
     fireEvent.press(screen.getByText('Guardian'));
     type('PlayHQ email', 'parent@playhq.test');
-    fireEvent.press(screen.getByText(TEAM_B.name));
     await send();
     expect(argsOf('submit_join_request')[0]).toMatchObject({
       p_playhq_email: 'parent@playhq.test',
       p_requested_role: 'guardian',
-      p_requested_team_id: TEAM_B.id,
+      p_requested_team_id: null,
       p_guardian_email: null,
     });
+    expect(rpcNames()).not.toContain('enter_child_code');
+    expect(back).toHaveBeenCalled();
+  });
+
+  it('enters the child’s code after sending the request', async () => {
+    await openJoin(newcomer, { rpcs: { enter_child_code: null } });
+    fillBasics();
+    fireEvent.press(screen.getByText('Guardian'));
+    type('PlayHQ email', 'parent@playhq.test');
+    type('Your child’s link code', '7kq-4md');
+    await send();
+    expect(rpcNames()).toEqual(expect.arrayContaining(['submit_join_request', 'enter_child_code']));
+    expect(rpcNames().indexOf('submit_join_request')).toBeLessThan(rpcNames().indexOf('enter_child_code'));
+    expect(argsOf('enter_child_code')).toEqual([{ p_code: '7kq-4md' }]);
+    expect(back).toHaveBeenCalled();
+  });
+
+  it('checks the code looks right before sending anything', async () => {
+    await openJoin();
+    fillBasics();
+    fireEvent.press(screen.getByText('Guardian'));
+    type('PlayHQ email', 'parent@playhq.test');
+    type('Your child’s link code', '7KQ-4M0');
+    await send();
+    expect(
+      screen.getByText('Enter the 6-letter code from your child’s app, such as 7KQ-4MD, or leave it blank.'),
+    ).toBeTruthy();
+    expect(rpcNames()).not.toContain('submit_join_request');
+  });
+
+  test.each([
+    ['comes back as a message', { rpcs: { enter_child_code: 'Too many wrong codes. Try again in 40 minutes.' } }],
+    ['fails', { rpcErrors: { enter_child_code: 'Too many wrong codes. Try again in 40 minutes.' } }],
+  ])('says the request is sent when the code %s, and stays put', async (_, options) => {
+    await openJoin(newcomer, options);
+    fillBasics();
+    fireEvent.press(screen.getByText('Guardian'));
+    type('PlayHQ email', 'parent@playhq.test');
+    type('Your child’s link code', '7KQ4MD');
+    await send();
+    expect(rpcNames()).toContain('submit_join_request');
+    expect(
+      screen.getByText(
+        'Your request is sent, but the code didn’t work: Too many wrong codes. Try again in 40 minutes. You can enter it again from Home.',
+      ),
+    ).toBeTruthy();
+    expect(back).not.toHaveBeenCalled();
   });
 
   it('other roles may leave the PlayHQ email blank, defaulting to their sign-in email', async () => {

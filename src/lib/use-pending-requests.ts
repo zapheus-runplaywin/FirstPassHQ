@@ -38,6 +38,7 @@ export function pendingRequestsLabel(count: number) {
 export type SafetyTodos = {
   wwcc_missing: number;
   wwcc_expiring: number;
+  /** Approved athletes under 18 locked out: no approved, verified parent or guardian linked. */
   minors_without_guardian: number;
   turning_18: number;
   /** Volunteer exemptions that end by themselves within 60 days. */

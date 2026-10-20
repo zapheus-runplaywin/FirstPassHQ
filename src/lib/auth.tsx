@@ -10,6 +10,7 @@ import {
 } from 'react';
 
 import { useClubChoice } from '@/lib/club-choice';
+import type { LinkCode } from '@/lib/guardian-links';
 import { unregisterForPush } from '@/lib/push';
 import { supabase } from '@/lib/supabase';
 import type {
@@ -53,6 +54,14 @@ type AuthState = {
   committeeChecksFrom: string | null;
   /** The Child Safety Officer or Complaints Manager, able to act as one now. */
   isSafeguardingOfficer: boolean;
+  /**
+   * A child under 18 waiting for a parent or guardian: asking to join, or
+   * approved with no verified guardian linked (locked). Their link code, to
+   * share with a parent or guardian; null for everyone else.
+   */
+  waitingForGuardian: LinkCode | null;
+  /** Approved, but locked until a verified parent or guardian is linked. */
+  isLocked: boolean;
   refresh: () => Promise<void>;
   signOut: () => Promise<void>;
 };
@@ -78,6 +87,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   const [exemption, setExemption] = useState<MyVolunteerExemption | null>(null);
   const [isSafeguardingOfficer, setIsSafeguardingOfficer] = useState(false);
   const [committeeChecksFrom, setCommitteeChecksFrom] = useState<string | null>(null);
+  const [linkCode, setLinkCode] = useState<LinkCode | null>(null);
 
   const loadMember = useCallback(async (userId: string | undefined) => {
     if (!userId) {
@@ -88,6 +98,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       setExemption(null);
       setIsSafeguardingOfficer(false);
       setCommitteeChecksFrom(null);
+      setLinkCode(null);
       return;
     }
     const [
@@ -98,6 +109,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       exemptionResult,
       officerResult,
       committeeChecksResult,
+      linkCodeResult,
     ] = await Promise.all([
       supabase.from('profiles').select(PROFILE_COLUMNS).eq('id', userId).single(),
       supabase
@@ -111,6 +123,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       supabase.rpc('my_volunteer_exemption').maybeSingle(),
       supabase.rpc('is_safeguarding_officer'),
       supabase.rpc('committee_checks_from'),
+      supabase.rpc('my_link_code').maybeSingle(),
     ]);
     setProfile((profileResult.data as Profile | null) ?? null);
     setMemberships((membershipResult.data as unknown as TeamMembership[] | null) ?? []);
@@ -121,6 +134,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     setCommitteeChecksFrom(
       typeof committeeChecksResult.data === 'string' ? committeeChecksResult.data : null,
     );
+    setLinkCode((linkCodeResult.data as LinkCode | null) ?? null);
   }, []);
 
   useEffect(() => {
@@ -146,17 +160,21 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     await supabase.auth.signOut();
   }, []);
 
+  const waitingForGuardian = linkCode?.waiting ? linkCode : null;
   const { usable, paused } = useMemo(
-    () => usableProfile(profile, !!exemption?.valid, committeeChecksFrom),
-    [profile, exemption, committeeChecksFrom],
+    () => usableProfile(profile, !!exemption?.valid, committeeChecksFrom, !!waitingForGuardian),
+    [profile, exemption, committeeChecksFrom, waitingForGuardian],
   );
   const usableMemberships = useMemo(
     () =>
-      // Stryker disable next-line ConditionalExpression: a shortcut; filtering with nothing paused keeps every place.
-      paused.length === 0
-        ? memberships
-        : memberships.filter((m) => !paused.includes(m.team_role as AppRole)),
-    [memberships, paused],
+      // A locked child has no squads or teams to use until a parent is linked.
+      waitingForGuardian
+        ? []
+        : // Stryker disable next-line ConditionalExpression: a shortcut; filtering with nothing paused keeps every place.
+          paused.length === 0
+          ? memberships
+          : memberships.filter((m) => !paused.includes(m.team_role as AppRole)),
+    [memberships, paused, waitingForGuardian],
   );
 
   // Stryker disable next-line OptionalChaining: hasRole is false for nobody, so usable is set by then.
@@ -180,6 +198,8 @@ export function AuthProvider({ children }: { children: ReactNode }) {
         isAdmin,
         isSafeguardingOfficer,
         committeeChecksFrom,
+        waitingForGuardian,
+        isLocked: !!waitingForGuardian && profile?.status === 'approved',
         refresh,
         signOut,
       }}>
@@ -188,12 +208,20 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   );
 }
 
-/** The member with only the roles they can use now, and the roles left out. */
+/**
+ * The member with only the roles they can use now, and the roles left out. A
+ * locked child (approved, waiting for a parent or guardian) shows as waiting,
+ * so no screen treats them as approved; the database locks them the same way.
+ */
 function usableProfile(
   profile: Profile | null,
   exempt: boolean,
   committeeChecksFrom: string | null,
+  waitingForGuardian: boolean,
 ) {
+  if (profile && waitingForGuardian && profile.status === 'approved') {
+    return { usable: { ...profile, status: 'pending' as const }, paused: [] };
+  }
   const paused = profile ? pausedRoles(profile, exempt, committeeChecksFrom) : [];
   // Stryker disable next-line LogicalOperator,ConditionalExpression: a shortcut; nobody has nothing paused, and rebuilding with nothing paused gives the same roles.
   if (!profile || paused.length === 0) return { usable: profile, paused };
