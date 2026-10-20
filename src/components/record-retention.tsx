@@ -150,7 +150,7 @@ const laterPeriods: { key: PeriodKey; label: string; note: string; choices: numb
   {
     key: 'injuries_months',
     label: 'Cleared injuries',
-    note: 'The injury, its updates, sign-offs and who viewed its documents, from when it was cleared, once its documents have gone. Injuries not yet cleared stay. Recommended: 7 years, which covers the time limits for injury claims, including for children.',
+    note: 'The injury, its updates, sign-offs and who viewed its documents, from when it was cleared, once its documents have gone. Injuries not yet cleared stay while the athlete is a member; for an athlete who has left, each of their injuries goes this long after they left. Recommended: 7 years, which covers the time limits for injury claims, including for children.',
     choices: [36, 60, 84, 120],
   },
   {
@@ -197,9 +197,9 @@ function days(d: number) {
 
 /**
  * How long the club keeps everyday records, and the switch that lets the
- * daily clean-up remove anything older. Concerns are never removed, and
- * injuries keep their own 12 months after an athlete leaves; their files go
- * a chosen time after clearance, and the injury a chosen time after that. A period the club saved before it stopped
+ * daily clean-up remove anything older. Concerns are never removed. Injury
+ * files go a chosen time after clearance, and the injury a chosen time after
+ * that; an athlete who left keeps theirs that long from when they left. A period the club saved before it stopped
  * being offered still shows, so saving never shortens it.
  */
 export function RecordRetention() {
@@ -289,8 +289,8 @@ export function RecordRetention() {
       <ThemedText type="smallBold">Keeping records</ThemedText>
       <ThemedText type="small" themeColor="textSecondary">
         How long the club keeps members’ records, adults’ and children’s. Concerns are never
-        removed. Injuries are removed 12 months after an athlete leaves. Once Remove old records
-        is on, join requests go 90 days after they’re turned down or left unanswered, and
+        removed. Injuries of athletes who have left follow Cleared injuries below, counted from
+        when they left. Once Remove old records is on, join requests go 90 days after they’re turned down or left unanswered, and
         temporary helpers with no other role a year after their end date.
       </ThemedText>
       <Card style={styles.row}>

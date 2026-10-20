@@ -16,13 +16,15 @@ $$ begin execute statement; return 'PASS ' || label;
 create or replace function pg_temp.cat(n text) returns uuid language sql as
 $$ select id from public.absence_categories where name = n $$;
 
-select pg_temp.ok('starting list has 10 reasons in order',
-  (select array_agg(name order by sort_order) = array['Planned holidays','Personal illness','Caring duties','Planned event','National team','Volunteering','West Coast Fever','School or uni exam','Work commitment','Other'] from public.absence_categories), true);
+-- Ten from the starting list, then Representative or elite program, added for
+-- every club by 20261020100000 and shown after West Coast Fever.
+select pg_temp.ok('starting list has 11 reasons in order',
+  (select array_agg(name order by sort_order, created_at) = array['Planned holidays','Personal illness','Caring duties','Planned event','National team','Volunteering','West Coast Fever','Representative or elite program','School or uni exam','Work commitment','Other'] from public.absence_categories), true);
 
 -- Members read the list; only admins change it, through the API role.
 set role authenticated;
 select pg_temp.as_member('31');
-select pg_temp.ok('athlete sees the reasons', (select count(*) = 10 from public.absence_categories), true);
+select pg_temp.ok('athlete sees the reasons', (select count(*) = 11 from public.absence_categories), true);
 select pg_temp.fails('athlete cannot add a reason', $s$insert into public.absence_categories (name) values ('Beach day')$s$);
 update public.absence_categories set active = false where name = 'Other';
 select pg_temp.ok('athlete cannot turn a reason off',

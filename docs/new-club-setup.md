@@ -97,7 +97,9 @@ The admin opens **Administration > Club settings** and sets:
   off.
 
 Then, still in **Administration**: set a **Club password**, open **Squads and teams** and choose a starting setup, add
-**Calendars**, and approve members as they ask to join. **Administration > Invite members** shows
+**Calendars**, check **Absence reasons** (the starting list includes **West Coast Fever**, Western
+Australia's Super Netball team: switch it off, or any other reason that isn't the club's, and add
+the club's own), and approve members as they ask to join. **Administration > Invite members** shows
 the club's QR code, code and link to share. Members scan it or enter the code, sign in, and ask to
 join with the club password.
 

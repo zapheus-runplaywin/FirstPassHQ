@@ -35,9 +35,11 @@ export default function DeleteAccountScreen() {
         sent to a group stay with the people who received them.
       </ThemedText>
       <ThemedText type="small" themeColor="textSecondary">
-        The club keeps your injury records for 12 months after you leave, where only the
-        committee and admins can see them, and then deletes them. Clearance documents may go
-        sooner, after the club’s keep period for injury documents. It also keeps, under your name,
+        The club keeps your injury records after you leave, where only the committee and admins
+        can see them, for its keep period for injuries (7 years unless the club chose 3, 5 or 10),
+        counted from when you leave, and then deletes them. Nothing is deleted while the club has
+        removing old records switched off. Clearance documents may go sooner, after the club’s
+        keep period for injury documents. It also keeps, under your name,
         your code of conduct acceptances, any concerns you raised (unless you hid your name) and,
         if you coach or manage, your season KPIs and their reviews.
       </ThemedText>
