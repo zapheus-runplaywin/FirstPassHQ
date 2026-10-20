@@ -230,7 +230,7 @@ const CASES: [string, Auth, Key[]][] = [
   [
     'an admin',
     auth(profile('admin')),
-    ['readMessages', 'sendMessages', 'answerSurveys', 'sendSurveys', 'surveyResults', 'injuries', 'attendance', 'takeAttendance', 'athleteAttendance', 'readSessionPlans', 'addSessionPlans', 'checkIns', 'awards', 'kpis', 'setKpis', 'training', 'checkTraining', 'concerns', 'family', 'chooseCaptains'],
+    ['readMessages', 'sendMessages', 'answerSurveys', 'sendSurveys', 'surveyResults', 'injuries', 'attendance', 'takeAttendance', 'athleteAttendance', 'readSessionPlans', 'addSessionPlans', 'checkIns', 'awards', 'teamGoals', 'kpis', 'setKpis', 'training', 'checkTraining', 'concerns', 'family', 'chooseCaptains'],
   ],
   [
     'an athlete who coaches another team',

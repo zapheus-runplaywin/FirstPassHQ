@@ -85,12 +85,14 @@ export default function AdministrationScreen() {
         </ThemedText>
       </PressableCard>
 
-      <PressableCard onPress={() => router.push('/admin/captains')}>
-        <ThemedText type="smallBold">Club captains</ThemedText>
-        <ThemedText type="small" themeColor="textSecondary">
-          Choose the athletes who can message the whole club
-        </ThemedText>
-      </PressableCard>
+      {features.messages ? (
+        <PressableCard onPress={() => router.push('/admin/captains')}>
+          <ThemedText type="smallBold">Club captains</ThemedText>
+          <ThemedText type="small" themeColor="textSecondary">
+            Choose the athletes who can message the whole club
+          </ThemedText>
+        </PressableCard>
+      ) : null}
 
       {features.awards ? (
         <PressableCard onPress={() => router.push('/admin/awards')}>

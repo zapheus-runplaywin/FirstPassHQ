@@ -241,6 +241,25 @@ export function useGoalBoard() {
   return { goalBoard: on ? board : null, reloadGoalBoard: load };
 }
 
+/** For admins: every current group's next game (or last played one), to read its team goals. */
+export function useAdminTeamGames(on: boolean) {
+  const [games, setGames] = useState<CoachTeamGame[] | null>(null);
+
+  const load = useCallback(async () => {
+    if (!on) return;
+    const { data } = await supabase.rpc('admin_team_games');
+    setGames((data as CoachTeamGame[] | null) ?? []);
+  }, [on]);
+
+  useFocusEffect(
+    useCallback(() => {
+      load();
+    }, [load]),
+  );
+
+  return on ? games : null;
+}
+
 /** For coaches: each group's next game (or last played one), for team goals. */
 export function useCoachTeamGames() {
   const { features } = useClub();

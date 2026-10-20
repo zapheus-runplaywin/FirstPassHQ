@@ -42,16 +42,21 @@ update public.profiles set volunteer_until = current_date - 1, volunteer_from = 
 create temp table after as select * from public.admin_safety_todos();
 select pg_temp.ok('finished helper drops out again', (select wwcc_people from after) = (select wwcc_people from before), true);
 
--- 20261019000000: a physio placed only in a squad stops looking after its
--- athletes once the squad's phase is complete, like a coach. Finley (14) is in
--- Sample Squad only; Kai (32) is in the squad only, Jordan (31) in its team too.
+-- 20261019000000 cut a squad physio off once the squad's phase was complete;
+-- 20261020000000 (Matt, 20 October: "hierarchy") keeps them looking after
+-- the squad's athletes, in its teams or not. Finley (14) is in Sample Squad
+-- only; Kai (32) is in the squad only, Jordan (31) in its team too.
 select pg_temp.as_member('14');
 select pg_temp.ok('squad physio looks after a squad athlete before selections', public.physio_looks_after('00000000-0000-0000-0000-000000000032'), true);
 update public.teams set selections_completed_at = now() where id = '00000000-0000-0000-0000-0000000000a1';
-select pg_temp.ok('squad physio no longer looks after the squad-only athlete', public.physio_looks_after('00000000-0000-0000-0000-000000000032'), false);
-select pg_temp.ok('nor the athlete named in a team the physio is not in', public.physio_looks_after('00000000-0000-0000-0000-000000000031'), false);
+select pg_temp.ok('squad physio still looks after the squad-only athlete after selections', public.physio_looks_after('00000000-0000-0000-0000-000000000032'), true);
+select pg_temp.ok('and the athlete named in a team the physio is not in', public.physio_looks_after('00000000-0000-0000-0000-000000000031'), true);
+delete from public.team_members where team_id = '00000000-0000-0000-0000-0000000000a1' and profile_id = '00000000-0000-0000-0000-000000000014';
+select pg_temp.ok('out of the squad and in no team, the physio looks after nobody', public.physio_looks_after('00000000-0000-0000-0000-000000000031'), false);
 insert into public.team_members (team_id, profile_id, team_role) values ('00000000-0000-0000-0000-0000000000a2', '00000000-0000-0000-0000-000000000014', 'physio');
-select pg_temp.ok('placed in the team, the physio looks after its athlete again', public.physio_looks_after('00000000-0000-0000-0000-000000000031'), true);
+select pg_temp.ok('placed in the team, the physio looks after its athlete', public.physio_looks_after('00000000-0000-0000-0000-000000000031'), true);
+select pg_temp.ok('but not the squad-only athlete', public.physio_looks_after('00000000-0000-0000-0000-000000000032'), false);
+insert into public.team_members (team_id, profile_id, team_role) values ('00000000-0000-0000-0000-0000000000a1', '00000000-0000-0000-0000-000000000014', 'physio');
 update public.profiles set head_physio = true where id = '00000000-0000-0000-0000-000000000014';
 select pg_temp.ok('the Head Physio looks after everyone whatever the phase', public.physio_looks_after('00000000-0000-0000-0000-000000000032'), true);
 update public.teams set selections_completed_at = null where id = '00000000-0000-0000-0000-0000000000a1';

@@ -4,12 +4,14 @@ import { useCallback, useState } from 'react';
 import { ReportView } from '@/components/report-view';
 import { Screen } from '@/components/screen';
 import { ErrorText } from '@/components/ui';
+import { useAuth } from '@/lib/auth';
 import type { Report } from '@/lib/pdf';
 import { loadWwccData, type WwccData } from '@/lib/report-data';
 import { wwccReport } from '@/lib/reports';
 import { useTeams } from '@/lib/use-teams';
 
 export default function WwccReportScreen() {
+  const { committeeChecksFrom } = useAuth();
   const teams = useTeams();
   const [data, setData] = useState<WwccData | null>(null);
   const [error, setError] = useState<string | null>(null);
@@ -46,6 +48,7 @@ export default function WwccReportScreen() {
         data.notices,
         data.officerName,
         data.acknowledgements,
+        committeeChecksFrom,
       )
     : null;
 

@@ -12,7 +12,7 @@ import { isMinor } from '@/lib/age';
 import { useAuth } from '@/lib/auth';
 import { useClub } from '@/lib/club';
 import { formatShortDay } from '@/lib/format';
-import { gamePhase, gameTitle, useCoachTeamGames, useGoalBoard } from '@/lib/goals';
+import { gamePhase, gameTitle, useAdminTeamGames, useCoachTeamGames, useGoalBoard } from '@/lib/goals';
 import { captainRoleLabels, teamPositionLabel } from '@/lib/labels';
 import { supabase } from '@/lib/supabase';
 import type {
@@ -47,6 +47,14 @@ export default function TeamScreen() {
   const goalAthlete = goalsHere && membership?.team_role === 'athlete';
   const goalCoach =
     goalsHere && membership?.team_role === 'coach' && !membership.team.selections_completed_at;
+  // Admins read a team's goals and comments, whether or not they're in it.
+  const goalAdmin =
+    features.goals &&
+    profile?.status === 'approved' &&
+    isAdmin &&
+    team?.kind === 'team' &&
+    !goalCoach;
+  const adminGames = useAdminTeamGames(!!goalAdmin);
   const myGames = useGoalGames(goalAthlete ? session?.user.id : undefined, id);
   const { goalBoard, reloadGoalBoard } = useGoalBoard();
   const { teamGames, reloadTeamGames } = useCoachTeamGames();
@@ -122,10 +130,14 @@ export default function TeamScreen() {
 
       {goalCoach ? (
         <TeamGoalGames games={(teamGames ?? []).filter((g) => g.team_id === id)} />
+      ) : goalAdmin ? (
+        <TeamGoalGames games={(adminGames ?? []).filter((g) => g.team_id === id)} readOnly />
       ) : null}
 
       <View style={styles.section}>
-        {goalAthlete || goalCoach ? <ThemedText type="subtitle">People</ThemedText> : null}
+        {goalAthlete || goalCoach || goalAdmin ? (
+          <ThemedText type="subtitle">People</ThemedText>
+        ) : null}
         {goalCoach ? (
           <ThemedText type="small" themeColor="textSecondary">
             Open an athlete to add goals for their next game, or to comment on their goals once it’s
@@ -180,13 +192,15 @@ export default function TeamScreen() {
   );
 }
 
-/** For the group's coaches: its next game and last played one, for team goals. */
-function TeamGoalGames({ games }: { games: CoachTeamGame[] }) {
+/** For the group's coaches (and, read only, admins): its next game and last played one, for team goals. */
+function TeamGoalGames({ games, readOnly = false }: { games: CoachTeamGame[]; readOnly?: boolean }) {
   return (
     <View style={styles.section}>
       <ThemedText type="subtitle">Team goals</ThemedText>
       <ThemedText type="small" themeColor="textSecondary">
-        Set goals for the whole team before its next game, and say how it went afterwards.
+        {readOnly
+          ? 'The goals its coaches set for the whole team before each game, how they said it went, and the team’s comments.'
+          : 'Set goals for the whole team before its next game, and say how it went afterwards.'}
       </ThemedText>
       {games.length === 0 ? (
         <Card>

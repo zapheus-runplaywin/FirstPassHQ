@@ -60,7 +60,7 @@ const TILES: Tile[] = [
   { title: 'Club settings', route: 'admin/club' },
   { title: 'Squads and teams', route: 'admin/squads' },
   { title: 'Seasons', route: 'admin/seasons' },
-  { title: 'Club captains', route: 'admin/captains' },
+  { title: 'Club captains', route: 'admin/captains', needs: ['messages'] },
   { title: 'Awards', route: 'admin/awards/index', needs: ['awards'] },
   { title: 'Integrity training', route: 'admin/training/index', needs: ['integrity'] },
   { title: 'Season KPI reviews', route: 'admin/kpi-reviews', needs: ['kpis'] },

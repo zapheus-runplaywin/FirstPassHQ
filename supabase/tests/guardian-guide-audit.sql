@@ -28,7 +28,9 @@ insert into public.team_members (team_id, profile_id, team_role) values ('000000
 select pg_temp.ok('a guardian placed in the squad is a member of it', public.is_team_member('00000000-0000-0000-0000-0000000000a1'), true);
 select pg_temp.ok('the guardian sees the squad roster', (select count(*) from public.team_roster('00000000-0000-0000-0000-0000000000a1')) > 0, true);
 select pg_temp.ok('the roster never lists guardians', exists (select 1 from public.team_roster('00000000-0000-0000-0000-0000000000a1') where team_role::text = 'guardian'), false);
-select pg_temp.ok('the guardian is not a member of the team they are not placed in', public.is_team_member('00000000-0000-0000-0000-0000000000a2'), false);
+-- The admin guide audit's rule (20 October) places a guardian in the team their child is in, so Logan is in Sample Team.
+select pg_temp.ok('the guardian is a member of the team their child is in', public.is_team_member('00000000-0000-0000-0000-0000000000a2'), true);
+select pg_temp.ok('the guardian is placed there as a guardian, by the rule', (select team_role::text = 'guardian' from public.team_members where team_id = '00000000-0000-0000-0000-0000000000a2' and profile_id = '00000000-0000-0000-0000-000000000041'), true);
 -- A guardian who is also a lapsed coach still has the squad as a guardian.
 select pg_temp.as_member('12');
 select pg_temp.ok('a lapsed coach is still not a member', public.is_team_member('00000000-0000-0000-0000-0000000000a1'), false);
@@ -116,8 +118,9 @@ select pg_temp.ok('and reads the child''s named answers',
 select pg_temp.as_member('42');
 select pg_temp.ok('a coach-parent placed as a coach answers the squad survey themselves',
   (select for_children is null from public.survey_recipients where survey_id = (select v from ids where k = 'squad') and profile_id = '00000000-0000-0000-0000-000000000042'), true);
--- Messages are unchanged: the guardian in the squad gets the message once, in their own right.
+-- The guardian in the squad gets the message once; since the admin guide audit
+-- (20 October) the copy names their child, as the survey copy does.
 select pg_temp.as_member('11');
 insert into ids values ('msg', public.send_group_message('Training moved to 6pm', 'group', null, '00000000-0000-0000-0000-0000000000a1'));
-select pg_temp.ok('the guardian in the squad gets a squad message once, with no child named',
-  (select count(*) = 1 and bool_and(for_children is null) from public.message_recipients where message_id = (select v from ids where k = 'msg') and profile_id = '00000000-0000-0000-0000-000000000041'), true);
+select pg_temp.ok('the guardian in the squad gets a squad message once, naming their child',
+  (select count(*) = 1 and bool_and(for_child_names = array['Jordan Junior']) from public.message_recipients where message_id = (select v from ids where k = 'msg') and profile_id = '00000000-0000-0000-0000-000000000041'), true);
