@@ -331,6 +331,24 @@ describe('the to-do list', () => {
     expect(push).toHaveBeenCalledWith('/check-in');
   });
 
+  it('tells admins when nobody can endorse an athlete’s clearance, and opens Members', async () => {
+    await openHome('admin', {}, {
+      rpcs: {
+        admin_safety_todos: {},
+        admin_unendorsable_clearances: [{ injury_id: 'i1', athlete_id: 'a1', athlete_name: 'Kai Senior', body_area: 'Knee' }],
+      },
+    });
+    expect(screen.getByText('Nobody can endorse Kai Senior’s clearance')).toBeTruthy();
+    expect(screen.getByText('Make a physio Head Physio, or place a physio in their squad or team')).toBeTruthy();
+    fireEvent.press(screen.getByText('Nobody can endorse Kai Senior’s clearance'));
+    expect(push).toHaveBeenCalledWith('/admin');
+  });
+
+  it('shows no clearance tile when every clearance has someone to endorse it', async () => {
+    await openHome('admin', {}, { rpcs: { admin_safety_todos: {}, admin_unendorsable_clearances: [] } });
+    expect(screen.queryByText(/^Nobody can endorse/)).toBeNull();
+  });
+
   it('says they’re caught up when there’s nothing', async () => {
     await openHome('committee');
     expect(screen.getByText('✓ You’re all caught up.')).toBeTruthy();

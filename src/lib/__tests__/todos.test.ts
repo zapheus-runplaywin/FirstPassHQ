@@ -606,6 +606,26 @@ describe('buildTodos', () => {
       ]);
     });
 
+    it('names the athlete when one clearance has nobody to endorse it', () => {
+      expect(only(todos({ safety: safety({ unendorsable_clearances: ['Kai Senior'] }) }))).toEqual({
+        key: 'unendorsable-clearances',
+        title: 'Nobody can endorse Kai Senior’s clearance',
+        detail: 'Make a physio Head Physio, or place a physio in their squad or team',
+        href: '/admin',
+        alert: { level: 'amber', label: 'Stuck' },
+      });
+    });
+
+    it('counts clearances when several have nobody to endorse them', () => {
+      expect(only(todos({ safety: safety({ unendorsable_clearances: ['A', 'B'] }) })).title).toBe(
+        'Nobody can endorse 2 clearances',
+      );
+    });
+
+    it('adds no clearance tile when every clearance has someone to endorse it', () => {
+      expect(todos({ safety: safety({ unendorsable_clearances: [] }) })).toEqual([]);
+    });
+
     it('makes one red check tile when any card is missing or expired', () => {
       const todo = only(
         todos({ safety: safety({ wwcc_missing: 1, wwcc_expiring: 2, wwcc_to_validate: 1, wwcc_to_link: 0, wwcc_people: 3 }) }),

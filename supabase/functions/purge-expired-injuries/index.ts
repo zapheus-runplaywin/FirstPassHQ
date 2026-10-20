@@ -1,8 +1,8 @@
-// Removes injury records 12 months after the athlete left the club, the files
-// of cleared injuries once they are past the club's keep period, and,
-// once an admin has switched on "Remove old records" in Club settings, other
-// records past the club's keep periods (public.purge_expired_records() and
-// public.purge_expired_surveys()).
+// Once an admin has switched on "Remove old records" in Club settings, removes
+// records past the club's keep periods: injuries of athletes who left the club
+// (the Cleared injuries period, counted from when they left), the files of
+// cleared injuries, and other records (public.purge_expired_records() and
+// public.purge_expired_surveys()). While it's off, nothing is removed.
 //
 // Documents go first, through the storage API (deleting storage rows in SQL
 // would leave the files behind), then the records. A record is only removed
@@ -11,7 +11,7 @@
 // public.expired_injury_documents() and public.purge_expired_injuries().
 //
 // Runs daily from .github/workflows/purge-expired-injuries.yml. It only
-// removes records that are already past their 12 months, so an early call
+// removes records that are already past their keep periods, so an early call
 // changes nothing. It is deployed without JWT verification (the workflow has
 // no member's sign-in), so instead the workflow sends the PURGE_SECRET function
 // secret in the x-purge-key header and anything else is refused. Until that

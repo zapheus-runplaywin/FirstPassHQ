@@ -460,6 +460,19 @@ export function buildTodos({
         href: '/admin/safeguarding',
       });
     }
+    const unendorsable = safety.unendorsable_clearances ?? [];
+    if (unendorsable.length > 0) {
+      todos.push({
+        key: 'unendorsable-clearances',
+        title:
+          unendorsable.length === 1
+            ? `Nobody can endorse ${unendorsable[0]}’s clearance`
+            : `Nobody can endorse ${unendorsable.length} clearances`,
+        detail: 'Make a physio Head Physio, or place a physio in their squad or team',
+        href: '/admin',
+        alert: { level: 'amber', label: 'Stuck' },
+      });
+    }
     if (safety.exemptions_ending > 0) {
       todos.push({
         key: 'exemptions-ending',

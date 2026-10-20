@@ -156,7 +156,12 @@ describe('deleting the account', () => {
   it('explains what goes and what the club keeps, naming the club', async () => {
     await open();
     expect(screen.getByText('Delete your Sample Club account')).toBeTruthy();
-    expect(screen.getByText(/The club keeps your injury records for 12 months after you leave/)).toBeTruthy();
+    expect(
+      screen.getByText(
+        /The club keeps your injury records after you leave, .* for its keep period for injuries \(7 years unless the club chose 3, 5 or 10\), counted from when you leave, and then deletes them\. Nothing is deleted while the club has removing old records switched off\./,
+      ),
+    ).toBeTruthy();
+    expect(screen.queryByText(/12 months after you leave/)).toBeNull();
     expect(screen.getByText(/you’ll need to ask to join again\./)).toBeTruthy();
   });
 
