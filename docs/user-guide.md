@@ -23,7 +23,7 @@ children, for parents, committees, boards and the sport's governing body.
 6. [Coaches](#6-coaches)
 7. [Managers](#7-managers)
 8. [Committee](#8-committee)
-9. [Physios, guests and temporary helpers](#9-physios-guests-and-temporary-helpers)
+9. [Physios, statisticians, guests and temporary helpers](#9-physios-statisticians-guests-and-temporary-helpers)
 10. [Admins](#10-admins)
 11. [Who can see what](#11-who-can-see-what)
 12. [Child safety and safeguarding](#12-child-safety-and-safeguarding)
@@ -155,6 +155,10 @@ coach, and then they vote in that role.
 Integrity training applies to the roles, squads and teams an admin chooses for each course, so not
 everyone has training to complete. A course limited to particular squads or teams never reaches
 committee members, who aren't in a squad or team as committee; only courses for every group do.
+
+Statisticians have no column of their own: on its own the role gives what every member has, plus
+every match the club imports from PlayHQ in their calendar and messages to the Statistician role
+(see [Statisticians](#statisticians)).
 
 Temporary helpers see none of these but a preferred name. They aren't necessarily club members,
 and they use the app only to complete onboarding: their home screen shows only the steps to be
@@ -661,9 +665,10 @@ messages inbox. Messages you sent to a group stay with the people who received t
 **Delete my account**, then **Delete my account permanently** to confirm. If you sign in again
 later, you'll need to ask to join again.
 
-The club keeps your injury records for 12 months after you leave, where only the committee and
-admins can see them, and then deletes them. Clearance documents may go sooner, after the club's
-keep period for injury documents. It also keeps, under your name, your code of conduct acceptances,
+The club keeps your injury records after you leave, where only the committee and admins can see
+them, for its keep period for injuries (7 years unless the club chose 3, 5 or 10), counted from
+when you leave, and then deletes them. Nothing is deleted while the club has **Remove old records**
+switched off. Clearance documents may go sooner, after the club's keep period for injury documents. It also keeps, under your name, your code of conduct acceptances,
 any concerns you raised (unless you hid your name) and, if you coach or manage, your season KPIs
 and their reviews. Deleting your account doesn't
 change your PlayHQ registration or club membership, or your account at any other club in
@@ -735,8 +740,8 @@ left out.
 above your own goals. After the game you'll see how the coaches think the team went on each one.
 Everyone in the team has a say: tap **Comment** under a team goal, write what you think or what
 you'll do to help, and tap **Add comment**. You can comment before or after the game. Your name
-shows on your comment, and everyone in the team (including its manager or physio), their parents
-or guardians, the coaches and the club's admins can read it. Tap **Remove** on your own comment to
+shows on your comment, and the team's athletes and coaches, the athletes' parents or guardians and
+the club's admins can read it. The team's manager and physio can't. Tap **Remove** on your own comment to
 take it down; your coaches can remove any comment.
 
 <img src="user-guide/goals-athlete.png" width="210" alt="Game goals: the next game and played games">
@@ -764,7 +769,9 @@ guardians. Your teammates can't.
 
 Your coaches, the physios who look after you and the committee can see it straight away. If
 you're under 18, they see it only once a parent or guardian has given consent for injuries; until
-then only your parents or guardians and the club's admins see it, and only an admin can clear you.
+then only your parents or guardians and the club's admins see it, and nobody can clear you to play,
+because a coach or physio has to see the injury to endorse your clearance. So ask a parent or
+guardian to give consent for injuries.
 An injury isn't an absence: injured
 athletes are still expected at training to support the team. Until you're cleared, whoever takes
 attendance sees **Injured** and your expected return date next to your name, and nothing else about
@@ -1035,8 +1042,8 @@ As a guardian you:
   **Check-ins** on the home screen to see the last four weeks. Your athlete is told that you can
   read their notes.
 - **See the calendar and matches** of the squad or team you're placed in: the squad you chose when
-  you joined, or any an admin adds you to from your member page. After selections, ask an admin to
-  add you to your child's team to see its matches.
+  you joined, or any an admin adds you to from your member page. While your child is under 18 you
+  join each team they're put in, and leave it when they do, so you see its matches without asking.
 - **See your athlete's game goals and reflections**: the goals they and their coaches set for
   each game, how your athlete thinks each one went, their coaches' comments and the team goals (see
   [Game goals](#game-goals)). Tap your athlete under **Guardian of** on the home screen to see all
@@ -1682,7 +1689,7 @@ its coaches and managers. Tap one to add a KPI or OKR, follow their progress, wr
 and record the results, the same way coaches do for athletes (see [Setting season
 KPIs](#setting-season-kpis)); never for yourself. That includes each assistant coach's development
 plan set by their head coach: you see its KPIs, progress and reviews, and can add to, change or
-remove them. The **Write {name}'s KPI review** to-do comes for the people whose KPIs you set.
+remove them. A to-do such as **Write Alex's KPI review** comes for each person whose KPIs you set.
 Your review note is separate from the head coach's; the person sees both.
 You don't see athletes' KPIs. Admins can save every coach's and
 manager's KPIs as a PDF for the board (see [Reports](#reports)).
@@ -1696,7 +1703,7 @@ with their own colour and filter in the calendar. A paused committee member does
 
 <div style="page-break-before: always"></div>
 
-## 9. Physios, guests and temporary helpers
+## 9. Physios, statisticians, guests and temporary helpers
 
 Physios see the squads and teams they're placed in and the club calendar; guests see the club
 calendar only. Neither votes in club awards, so their home screen has no **Awards** card. Guests don't get messages. Physios have a **Messages**
@@ -1736,9 +1743,11 @@ their own home screen and the Members list.
   given consent); the card reads "N current injuries · N waiting for you". A physio's own notes
   reach the app through the athlete or their guardian, who add them with **Add physio update**.
   When an athlete asks for clearance, it appears under **Waiting for your sign-off** and as
-  **Review {name}'s clearance** in the physio's to-do list. Open it, check the proof, then **Endorse clearance** to pass it to the committee, or
-  **Send back** with a note. A committee member other than the physio then accepts it. Physios
-  also endorse clearances for athletes who have no coach. A physio who is also on the committee
+  a to-do such as **Review Jordan's clearance** in the physio's to-do list. Open it, check the proof, then **Endorse clearance** to pass it to the committee, or
+  **Send back** with a note. A committee member other than the physio then accepts it. A physio
+  endorses for the athletes they look after whether or not the athlete has a coach, so once a squad's
+  phase is complete the squad's physio (or the Head Physio) is the only one who can endorse for an
+  athlete not picked for a team. A physio who is also on the committee
   can accept clearances, but never one they endorsed.
 
 <img src="user-guide/physio-home.png" width="210" alt="Physio home screen">
@@ -1754,6 +1763,29 @@ not in a squad yet." Their to-do list holds only their own tasks, and Your detai
 preferred name. Guests can't be stood down and need no Working With Children Check.
 
 <img src="user-guide/guest-home.png" width="210" alt="Guest home screen">
+
+### Statisticians
+
+Statisticians record live game stats on a tablet in FirstPass Vantage, and the game's coaches
+watch them live in FirstPass Vision. This guide covers only what the role means in FirstPass HQ;
+recording a game happens in Vantage.
+
+- **Who.** Anyone but a guest or temporary helper can be a statistician. Choose **Statistician**
+  when you ask to join, or an admin adds it to another role from your member page, such as a
+  manager or an athlete 18 or over helping at a game they aren't playing in.
+- **What you see in HQ.** Everything in [Things everyone can do](#3-things-everyone-can-do), plus
+  every match the club imports from PlayHQ in your calendar, because you may record any of the
+  club's games. You get messages sent to the whole club and to the Statistician role. Being a
+  statistician doesn't put you in a squad or team, so on its own it shows you no check-ins,
+  injuries, attendance, game goals or session plans.
+- **Games and stats.** Statisticians see every game the club records, in Vantage. A game's
+  coaches and managers see their own squad's or team's games; athletes, guardians, physios and the
+  committee don't (see [Who can see what](#11-who-can-see-what)).
+- **Checks.** The app doesn't ask for a Working With Children Check for the statistician role on
+  its own. If you also coach, manage or are a physio, that role needs one as usual.
+- **Awards.** Statisticians don't vote in club awards, unless they also hold a role that votes.
+- **Stand-downs.** An admin can stand a statistician down like a coach or manager. The role stops
+  at once, in HQ and in Vantage, and comes back only when the stand-down is lifted.
 
 ### Temporary helpers
 
@@ -1809,13 +1841,18 @@ screen. Admins' to-do lists include join requests waiting for approval and clear
 sign-off, plus child-safety follow-ups: new concerns, athletes with no date of birth, athletes under 18 with
 no guardian linked, Working With Children Checks to sort out, volunteer exemptions that end within
 60 days, athletes turning 18 within 30 days, Screening Unit notices still to report to the
-governing body, and no WWC Registration Officer, Child Safety Officer or Complaints Manager. Every card problem shares one to-do, **Sort out Working With Children
+governing body, no WWC Registration Officer, Child Safety Officer or Complaints Manager, and a
+clearance nobody can endorse. Every card problem shares one to-do, **Sort out Working With Children
 Checks**, which counts each person once and says underneath how many are missing or expired,
 expiring within 60 days, waiting to be validated and waiting to be registered with the club. It
 is marked like an overdue to-do: red (**Missing**) and at the top of the list when anyone's check
 is missing or expired, otherwise amber (**Expiring**, **Validate** or **Register**). Tapping a
 child-safety to-do opens **Members**, where the people behind it are listed
-first under **Needs checking**. While **Remove old records** is off, the list also shows **Old
+first under **Needs checking**. **Nobody can endorse Jordan's clearance** (or **Nobody can endorse
+2 clearances**) is amber, marked **Stuck**: the athlete has asked to be cleared, but their squad's
+phase is complete so its coaches no longer look after them, and the club has no Head Physio and no
+physio in their squad or team. Make a physio Head Physio, or place a physio in the athlete's squad
+or team, and it goes. Nobody's access changes on its own. While **Remove old records** is off, the list also shows **Old
 records are kept forever**, which opens Club settings so you can switch it on (see [Keeping
 records](#keeping-records)), and **Members have had no team or role for 2 years** when anyone
 has (see [Approving members](#approving-members)). When Affiliation records are on, the list also has affiliation
@@ -1849,7 +1886,7 @@ for 2 years**, **Signed in, no request yet** and **Not approved**. Search by nam
 
 **No team or role for 2 years** lists members who may have left the club: they have no place in
 this season's squads and teams, aren't a guardian of anyone who has, hold no club-wide role
-(admin, committee, partner, temporary helper or Head Physio), and haven't signed in or changed groups for 2 years.
+(admin, committee, temporary helper or Head Physio), and haven't signed in or changed groups for 2 years.
 Each shows when they were last active. Open them and tap **Delete member** if they've left; the
 app never deletes them by itself. Once **Remove old records** is on, join requests are removed 90
 days after they're turned down or if nobody answers them for 90 days, people who signed in but
@@ -2121,9 +2158,11 @@ With squads on:
   screens and coaches' to-dos; its attendance and other records are kept and you can **Bring
   back** it later.
 - **Mark squad phase complete** when a squad's teams are named. From then on, coaches only
-  look after their own team's athletes, and clearances for athletes left only in the squad fall to
-  admins. Physios are unchanged: one left in the squad still looks after everyone in it. You can
-  **Undo** it.
+  look after their own team's athletes. Physios are unchanged: one left in the squad still looks
+  after everyone in it. So only the squad's physio or the Head Physio can endorse the clearance of an
+  athlete left only in the squad; admins can't. If neither exists, every admin's to-do list shows
+  **Nobody can endorse Jordan's clearance** until you make a physio Head Physio or place one in the
+  squad. You can **Undo** it.
 
 <img src="user-guide/squads-and-teams.png" width="210" alt="Squads and teams">
 <img src="user-guide/name-team.png" width="210" alt="Naming a team from a squad">
@@ -2265,7 +2304,8 @@ events in the app. **Edit name or link** and **Delete** change or remove one.
 
 **Absence reasons** (when Attendance is on) is the list athletes and parents choose from when they
 report an absence. It starts with **Planned holidays**, **Personal illness**, **Caring duties**,
-**Planned event**, **National team**, **Volunteering**, **West Coast Fever**, **School or uni exam**,
+**Planned event**, **National team**, **Volunteering**, **West Coast Fever** (Western Australia's
+Super Netball team; switch it off if it isn't yours), **Representative or elite program**, **School or uni exam**,
 **Work commitment** and **Other**. Switch off any your club doesn't use, and add your own under **Add
 a reason**. Reasons can't be deleted, so an absence reported with a reason you later switch off keeps
 it. If every reason is off, members report absences without one. The **Attendance** report counts
@@ -2602,7 +2642,9 @@ its periods starts on those.
 - **Cleared injuries**: the injury itself, with its updates, sign-offs and who viewed its
   documents, goes 3, 5, 7 (recommended) or 10 years after it was cleared, once its documents have
   gone. 7 years covers the time limits for injury claims, including for children. Injuries that
-  aren't cleared stay.
+  aren't cleared stay. When an athlete leaves the club, the same period counts from the day they
+  leave instead, for every one of their injuries, cleared or not; files of an injury that was never
+  cleared stay until the injury goes.
 - **Safeguarding records**: stand-downs, Screening Unit notices, volunteer exemptions, parents'
   consents, code of conduct acceptances, policy acknowledgements and guardian link history go 7,
   10, 15, 20 or 30 (recommended) years after each one ended: when a stand-down was lifted, a notice
@@ -2616,8 +2658,8 @@ its periods starts on those.
 A period the club saved before these choices changed (such as 7 years for attendance) stays as it
 is, shown as its own choice, until an admin picks another.
 
-Concerns are never removed. Injury records keep their own rule: removed 12 months after an
-athlete leaves, with any documents still left. Once **Remove old records** is on, join requests go 90 days after they're turned down or left
+Concerns are never removed. Nothing at all is removed while **Remove old records** is off,
+including the injuries of athletes who have left. Once it's on, join requests go 90 days after they're turned down or left
 unanswered, and temporary helpers with no other role a year after their last day; their
 safeguarding records stay for their own periods. Members who stop coming are never removed automatically:
 admins see them under **No team or role for 2 years** (see [Approving
@@ -2779,8 +2821,9 @@ once saved, only replaced or removed, and anyone who gets it wrong five times in
 | Club name, colours and logo | Every signed-in member. The logo file is public so it can show before sign-in. Only admins can change them.            |
 | Other clubs' members and records | Nobody in this club. Each club's members, messages, injuries and documents are kept in that club's own database, which other clubs can't reach. |
 
-When someone leaves, injury records and proof documents are kept for 12 months, visible only to the
-committee and admins, then deleted automatically. Once an admin switches on **Remove old records**,
+When someone leaves, their injury records are visible only to the committee and admins. Once an
+admin switches on **Remove old records**, they go after the club's period for cleared injuries (7
+years recommended), counted from when the athlete left, and
 check-ins, game goals, athletes' season KPIs from archived seasons, attendance, session plans and
 training certificates go after 1 year, message text after 3 years (7 years when a child sent or
 received it), record views after 7 years, the files of a cleared injury 1 year after
@@ -2845,6 +2888,10 @@ images to stay inside the club. So for athletes under 18:
 - **Physios see only their own athletes.** A physio sees the injuries of the athletes in their own
   squads and teams. Only the Head Physio sees every athlete; a physio in no squad or team sees none
   until an admin places them.
+- **A clearance can't wait unseen.** If an athlete asks to be cleared and nobody can endorse it
+  (their squad's phase is complete, and the club has no Head Physio and no physio in their squad or
+  team), every admin's to-do list says so until an admin names a Head Physio or places a physio.
+  Admins still can't endorse it themselves, and nobody's access to the injury changes.
 
 Athletes who are 18 or over attach a PDF or a photo, and see who opened their documents too.
 
@@ -3088,8 +3135,11 @@ Working With Children Check, and another admin must do it.
   and never less than other messages, and the record of who viewed a child's records at least 3
   years (7 recommended); a removed message keeps who sent it, who it went to and who read it. A
   child's injury letters and photos go a set time after they're cleared (1 year recommended, or
-  90 days or 3 years), while the record that they were checked and who viewed them stays.
-  Safeguarding records (stand-downs, Screening Unit notices, exemptions, consents, code of conduct
+  90 days or 3 years), while the record that they were checked and who viewed them stays. The
+  injury itself, with who endorsed and accepted its clearance, is kept 7 years (or the club's 3, 5
+  or 10), counted from its clearance or, for a child who has left the club, from when they left,
+  so the club can still answer a claim made years later. Nothing is removed until the club
+  switches on **Remove old records**. Safeguarding records (stand-downs, Screening Unit notices, exemptions, consents, code of conduct
   acceptances, policy acknowledgements and guardian link history) are kept 7 to 30 years after
   they end (30 recommended), and anything still in force stays.
 - **Deleting a member doesn't delete the safeguarding trail.** Their attendance, training

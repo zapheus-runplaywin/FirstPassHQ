@@ -464,6 +464,15 @@ async function saveKeepPeriods() {
 }
 
 describe('Keeping records', () => {
+  it('says injuries of athletes who left follow the Cleared injuries period, not 12 months', async () => {
+    await openRetention();
+    expect(
+      screen.getByText(/Injuries of athletes who have left follow Cleared injuries below, counted from\s+when they left\./),
+    ).toBeTruthy();
+    expect(screen.queryByText(/12 months after an athlete leaves/)).toBeNull();
+    expect(screen.getByText(/for an athlete who has left, each of their injuries goes this long after they left/)).toBeTruthy();
+  });
+
   it('shows the saved periods, the removal switch and who last changed them', async () => {
     await openRetention();
     expect(isOn('Remove old records')).toBe(false);

@@ -61,6 +61,12 @@ export type SafetyTodos = {
   records_removal_off?: boolean;
   /** Members with no squad, team or club role for 2 years, from `admin_inactive_members`. */
   inactive_members?: number;
+  /**
+   * Athletes asking for clearance whom nobody in the club can endorse (no
+   * coach after selections, no Head Physio, no physio in their groups), from
+   * `admin_unendorsable_clearances`, oldest first.
+   */
+  unendorsable_clearances?: string[];
 };
 
 /** Child-safety follow-ups for admins, refreshed when the screen is shown. */
@@ -70,11 +76,13 @@ export function useSafetyTodos() {
 
   const load = useCallback(async () => {
     if (!isAdmin) return;
-    const [{ data }, { data: retention }, { data: inactive }] = await Promise.all([
-      supabase.rpc('admin_safety_todos').maybeSingle(),
-      supabase.rpc('record_retention').maybeSingle(),
-      supabase.rpc('admin_inactive_members'),
-    ]);
+    const [{ data }, { data: retention }, { data: inactive }, { data: unendorsable }] =
+      await Promise.all([
+        supabase.rpc('admin_safety_todos').maybeSingle(),
+        supabase.rpc('record_retention').maybeSingle(),
+        supabase.rpc('admin_inactive_members'),
+        supabase.rpc('admin_unendorsable_clearances'),
+      ]);
     const todos = (data as SafetyTodos | null) ?? null;
     const removalOn = (retention as { enabled?: unknown } | null)?.enabled;
     setSafety(
@@ -82,6 +90,11 @@ export function useSafetyTodos() {
         ...todos,
         records_removal_off: retention != null && removalOn === false,
         inactive_members: Array.isArray(inactive) ? inactive.length : 0,
+        unendorsable_clearances: Array.isArray(unendorsable)
+          ? (unendorsable as { athlete_name: string | null }[]).map(
+              (row) => row.athlete_name ?? 'An athlete',
+            )
+          : [],
       },
     );
   }, [isAdmin]);
