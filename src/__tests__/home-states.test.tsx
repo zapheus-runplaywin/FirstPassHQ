@@ -214,7 +214,7 @@ describe('waiting for approval', () => {
 
   it('asks a parent or guardian for their child’s code', async () => {
     await openHome(withProfile(personas.pending, { requested_role: 'guardian' }));
-    expect(screen.getByText(/approves you once they have linked you to your child\./)).toBeTruthy();
+    expect(screen.getByText(/then approves you, which links you to them\./)).toBeTruthy();
     expect(screen.getByText('Enter your child’s code')).toBeTruthy();
     expect(screen.queryByText('Waiting for your parent or guardian')).toBeNull();
   });

@@ -884,7 +884,7 @@ function JoinStatus() {
         <ThemedText type="smallBold">Waiting for approval</ThemedText>
         <ThemedText type="small" themeColor="textSecondary">
           {guardian
-            ? 'A club admin checks who you are and approves you once they have linked you to your child. Pull down to check again.'
+            ? 'A club admin checks who you are and that you’re your child’s parent or guardian, then approves you, which links you to them. Pull down to check again.'
             : profile.requested_role === 'committee' || profile.requested_role === 'guest'
               ? 'A club admin will approve your request. Pull down to check again.'
               : 'A club admin will approve your request and add you to your squad or team. Pull down to check again.'}
