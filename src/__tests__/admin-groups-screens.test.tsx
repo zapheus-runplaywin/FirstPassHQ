@@ -80,10 +80,13 @@ function group(id: string, name: string, extra: Partial<Team> = {}): Team {
 const SQUAD = group('squad-open', 'Open Squad');
 const TEAM_A = group('team-open-a', 'Open A', { kind: 'team', squad_id: SQUAD.id });
 const EMPTY_SQUAD = group('squad-17u', '17 & Under Squad', { sort_order: 2 });
+const TEAM_B = group('team-open-b', 'Open B', { kind: 'team', squad_id: SQUAD.id, sort_order: 3 });
 
 /** Answers the teams table: current groups, removed ones, or one by id. */
 function teamsTable(current: Team[], removed: Team[] = [], log: TableWrite[] = []) {
   return recordWrites('teams', log, (q) => {
+    const squadId = q.eq('squad_id');
+    if (squadId !== undefined) return current.filter((t) => t.squad_id === squadId);
     if (q.eq('archived') === false) return current;
     if (q.eq('archived') === true) return removed;
     const id = q.eq('id');
@@ -437,6 +440,7 @@ const SQUAD_ROSTER = [
   entry('a2', 'Ben Athlete', 'athlete'),
   entry('c1', 'Cam Coach', 'coach', { coach_title: 'assistant_coach' }),
   entry('m1', 'Mo Manager', 'manager'),
+  entry('p1', 'Pat Physio', 'physio'),
 ];
 
 async function openTeam(
@@ -445,7 +449,7 @@ async function openTeam(
 ) {
   await openScreen('admin', { 'admin/team/[id]': NameTeamScreen }, `/admin/team/${teamId}`, {}, {
     tableHandlers: {
-      teams: teamsTable([SQUAD, TEAM_A, group('team-own', 'Opens Team', { kind: 'team' })]),
+      teams: teamsTable([SQUAD, TEAM_A, TEAM_B, group('team-own', 'Opens Team', { kind: 'team' })]),
       profiles: (q) => (q.eq('status') === 'approved' ? people : undefined),
     },
     rpcHandlers: { team_roster: (args) => rosters[args.p_team_id as string] ?? [] },
@@ -457,12 +461,14 @@ describe('naming a team from its squad', () => {
   const rosters = {
     [SQUAD.id]: SQUAD_ROSTER,
     [TEAM_A.id]: [entry('a1', 'Ava Athlete', 'athlete', { selection: 'training_partner' })],
+    // Pip moved out of the squad into Open B, so Open A can pick them from there.
+    [TEAM_B.id]: [entry('p2', 'Pip Physio', 'physio')],
   };
 
   it('starts from who is in the team, and saves the people picked with their roles', async () => {
     await openTeam(TEAM_A.id, { rosters });
     expect(screen.getByText('0 final team · 1 training partners')).toBeTruthy();
-    expect(screen.getByText('Choosing from the Open Squad. People not selected stay in the squad.')).toBeTruthy();
+    expect(screen.getByText('Choosing from the Open Squad. People not selected stay in the squad. A physio selected for a team moves out of the squad, and back when selected for none of its teams.')).toBeTruthy();
     expect(isChosen(inSection('Ava Athlete · Athlete', 'Training partner'))).toBe(true);
     expect(isChosen(inSection('Ben Athlete · Athlete', 'Not selected'))).toBe(true);
 
@@ -499,6 +505,26 @@ describe('naming a team from its squad', () => {
       selection: null,
       coach_title: 'head_coach',
     });
+  });
+
+  it('picks a physio from the squad, or one already moved into another of its teams (Matt, 20 October)', async () => {
+    await openTeam(TEAM_A.id, { rosters });
+    expect(isChosen(inSection('Pat Physio · Physio', 'Not in this team'))).toBe(true);
+    expect(isChosen(inSection('Pip Physio · Physio', 'Not in this team'))).toBe(true);
+    await pressInSection('Pat Physio · Physio', 'In this team');
+    await pressInSection('Pip Physio · Physio', 'In this team');
+    await press('Save team');
+    const picked = rpcsNamed('admin_set_team_members')[0][1]!.p_members;
+    expect(picked).toContainEqual({ profile_id: 'p1', team_role: 'physio', selection: null, coach_title: null });
+    expect(picked).toContainEqual({ profile_id: 'p2', team_role: 'physio', selection: null, coach_title: null });
+  });
+
+  it('lists a physio in this team who has left the squad, as in the team', async () => {
+    await openTeam(TEAM_A.id, {
+      rosters: { ...rosters, [TEAM_A.id]: [...rosters[TEAM_A.id], entry('p3', 'Pia Physio', 'physio')] },
+    });
+    expect(isChosen(inSection('Pia Physio · Physio', 'In this team'))).toBe(true);
+    expect(screen.getAllByText(/Pia Physio/)).toHaveLength(1);
   });
 
   it('leaves out everyone not selected', async () => {

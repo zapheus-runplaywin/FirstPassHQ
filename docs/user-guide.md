@@ -2084,12 +2084,15 @@ With squads on:
   named from.
 - **Name a team** (tap it): for each person in the squad, choose **Final team**, **Training partner**
   or **Not selected** for athletes, and **In this team** or **Not in this team** for coaches and
-  managers. For a coach in the team, choose **Head Coach** or **Assistant Coach**; they start with
-  the one they have in the squad. People not selected stay in the squad. Saving changes only the
-  athletes, coaches and managers: physios stay in the squad until you move them from their member
-  page, and the parents and guardians of an athlete under 18 follow them, joining the team when the
-  athlete is put in it and leaving when the athlete does (unless another of their children is in
-  it), so they see its calendar, matches and people.
+  managers and physios. For a coach in the team, choose **Head Coach** or **Assistant Coach**; they
+  start with the one they have in the squad. People not selected stay in the squad, and so do the
+  athletes, coaches and managers selected. A physio selected for a team moves out of the squad
+  into it (a physio left in the squad looks after the athletes in all its teams); they can be in
+  several of the squad's teams, and other squads and teams they're in are untouched. Once they're
+  selected for none of the squad's teams they go back into the squad. The parents and guardians of
+  an athlete under 18 follow them, joining the team when the athlete is put in it and leaving when
+  the athlete does (unless another of their children is in it), so they see its calendar, matches
+  and people.
 - **Rename** or **Remove** a squad or team. Removing it takes it off this season's lists, home
   screens and coaches' to-dos; its attendance and other records are kept and you can **Bring
   back** it later.

@@ -65,16 +65,32 @@ export default function NameTeamScreen() {
 
       let members: RosterEntry[];
       if (loadedTeam.squad_id) {
-        const [squadResult, squadRoster] = await Promise.all([
+        const [squadResult, squadRoster, siblings] = await Promise.all([
           supabase.from('teams').select(TEAM_COLUMNS).eq('id', loadedTeam.squad_id).single(),
           supabase.rpc('team_roster', { p_team_id: loadedTeam.squad_id }),
+          supabase.from('teams').select('id').eq('squad_id', loadedTeam.squad_id).eq('archived', false),
         ]);
         setSquad(squadResult.data as Team | null);
-        // Physios stay in the squad until an admin moves them from their
-        // member page, and guardians follow their athlete (Matt, 20 October).
-        members = ((squadRoster.data as RosterEntry[] | null) ?? []).filter(
-          (m) => m.team_role !== 'physio',
-        );
+        // Guardians follow their athlete and aren't picked here; the roster
+        // never lists them. A physio picked into one of the squad's teams has
+        // moved out of the squad, so they're listed from those teams (Matt,
+        // 20 October).
+        const fromSquad = (squadRoster.data as RosterEntry[] | null) ?? [];
+        const seen = new Set(fromSquad.map((m) => m.profile_id));
+        const movedPhysios: RosterEntry[] = [];
+        for (const sibling of ((siblings.data as { id: string }[] | null) ?? [])) {
+          const roster =
+            sibling.id === id
+              ? [...current.values()]
+              : (((await supabase.rpc('team_roster', { p_team_id: sibling.id })).data as RosterEntry[] | null) ?? []);
+          for (const m of roster) {
+            if (m.team_role === 'physio' && !seen.has(m.profile_id)) {
+              seen.add(m.profile_id);
+              movedPhysios.push({ ...m, selection: null });
+            }
+          }
+        }
+        members = [...fromSquad, ...movedPhysios];
       } else {
         // Without a squad, anyone in the club who can be in a team: athletes first.
         const { data: people } = await supabase
@@ -165,7 +181,7 @@ export default function NameTeamScreen() {
         </ThemedText>
         <ThemedText type="small" themeColor="textSecondary">
           {team.squad_id
-            ? `Choosing from the ${squad?.name ?? 'squad'}. People not selected stay in the squad.`
+            ? `Choosing from the ${squad?.name ?? 'squad'}. People not selected stay in the squad. A physio selected for a team moves out of the squad, and back when selected for none of its teams.`
             : 'Choosing from everyone approved as an athlete, coach or manager. Add guardians from their member page.'}
         </ThemedText>
       </Card>

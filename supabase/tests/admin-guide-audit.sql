@@ -1,6 +1,6 @@
 -- Tests for 20261020000000_admin_guide_audit.sql (the admin guide audit's
 -- decisions): naming a team from its squad only changes the athletes, coaches
--- and managers it is given (physios stay until moved by hand, guardians are
+-- managers and physios it is given, leaving the squad alone (guardians are
 -- never picked); guardians of an athlete under 18 follow them into and out
 -- of a team, and come and go with the guardian link, while squads and adult
 -- athletes are untouched; admins read every team's games through
@@ -33,30 +33,53 @@ $$ select exists (select 1 from public.team_members where team_id = pg_temp.m(n)
 select pg_temp.ok('the migration placed the junior''s guardians in the team', pg_temp.in_team('a2', '41', 'guardian') and pg_temp.in_team('a2', '42', 'guardian'), true);
 select pg_temp.ok('nobody was placed in the squad', (select count(*) = 0 from public.team_members where team_id = pg_temp.m('a1') and team_role = 'guardian'), true);
 
--- A physio moved into the team by hand, and the coach-parent as a coach of
--- the team.
+-- The coach-parent as a coach of the team.
 select pg_temp.as_member('01');
-insert into public.team_members (team_id, profile_id, team_role) values (pg_temp.m('a2'), pg_temp.m('14'), 'physio');
 delete from public.team_members where team_id = pg_temp.m('a2') and profile_id = pg_temp.m('42');
 insert into public.team_members (team_id, profile_id, team_role, coach_title) values (pg_temp.m('a2'), pg_temp.m('42'), 'coach', 'assistant_coach');
 
--- Naming the team keeps the physio and the guardian.
-select pg_temp.works('admin names the team with the junior and the head coach', $s$ select public.admin_set_team_members('00000000-0000-0000-0000-0000000000a2', '[{"profile_id": "00000000-0000-0000-0000-000000000031", "selection": "training_partner"}, {"profile_id": "00000000-0000-0000-0000-000000000011", "coach_title": "head_coach"}]') $s$);
-select pg_temp.ok('the physio stays in the team', pg_temp.in_team('a2', '14', 'physio'), true);
+-- Naming the team with the squad's physio (14) moves them out of the squad
+-- and keeps the guardian.
+select pg_temp.works('admin names the team with the junior, the head coach and the physio', $s$ select public.admin_set_team_members('00000000-0000-0000-0000-0000000000a2', '[{"profile_id": "00000000-0000-0000-0000-000000000031", "selection": "training_partner"}, {"profile_id": "00000000-0000-0000-0000-000000000011", "coach_title": "head_coach"}, {"profile_id": "00000000-0000-0000-0000-000000000014"}]') $s$);
+select pg_temp.ok('the physio is in the team', pg_temp.in_team('a2', '14', 'physio'), true);
+select pg_temp.ok('and out of the squad', not pg_temp.in_team('a1', '14', 'physio'), true);
+select pg_temp.ok('the head coach is still in the squad', pg_temp.in_team('a1', '11', 'coach'), true);
 select pg_temp.ok('the guardian stays in the team', pg_temp.in_team('a2', '41', 'guardian'), true);
 select pg_temp.ok('the unpicked coach-parent leaves as a coach and is placed back as a guardian', pg_temp.in_team('a2', '42', 'guardian'), true);
 select pg_temp.ok('the junior''s selection changed in place', (select selection = 'training_partner' from public.team_members where team_id = pg_temp.m('a2') and profile_id = pg_temp.m('31')), true);
 
--- A coach-parent picked as a coach keeps that role rather than becoming a guardian.
-select pg_temp.works('admin names the team with the coach-parent coaching', $s$ select public.admin_set_team_members('00000000-0000-0000-0000-0000000000a2', '[{"profile_id": "00000000-0000-0000-0000-000000000031"}, {"profile_id": "00000000-0000-0000-0000-000000000042", "coach_title": "assistant_coach"}]') $s$);
+-- A coach-parent picked as a coach keeps that role rather than becoming a
+-- guardian, and the moved physio can be picked again though no longer in
+-- the squad.
+select pg_temp.works('admin names the team with the coach-parent coaching', $s$ select public.admin_set_team_members('00000000-0000-0000-0000-0000000000a2', '[{"profile_id": "00000000-0000-0000-0000-000000000031"}, {"profile_id": "00000000-0000-0000-0000-000000000042", "coach_title": "assistant_coach"}, {"profile_id": "00000000-0000-0000-0000-000000000014"}]') $s$);
 select pg_temp.ok('the coach-parent is in the team as a coach only', pg_temp.in_team('a2', '42', 'coach') and not pg_temp.in_team('a2', '42', 'guardian'), true);
 select pg_temp.ok('the head coach left, the physio and guardian stayed', pg_temp.members_of('a2') = array[pg_temp.m('14') || ':physio', pg_temp.m('31') || ':athlete', pg_temp.m('41') || ':guardian', pg_temp.m('42') || ':coach'], true);
 
--- Picking a physio or a guardian here does nothing: they are moved by hand.
-delete from public.team_members where team_id = pg_temp.m('a2') and profile_id = pg_temp.m('14');
-select pg_temp.works('admin picks the physio', $s$ select public.admin_set_team_members('00000000-0000-0000-0000-0000000000a2', '[{"profile_id": "00000000-0000-0000-0000-000000000031"}, {"profile_id": "00000000-0000-0000-0000-000000000014"}]') $s$);
-select pg_temp.ok('the physio is not placed by naming the team', not pg_temp.in_team('a2', '14', 'physio'), true);
+-- The physio can be in a second team of the squad too; leaving one team
+-- keeps them out of the squad while they're in the other, and leaving the
+-- last puts them back in the squad.
+insert into public.teams (id, name, kind, squad_id, season, sort_order) values (pg_temp.m('b5'), 'Sample Team B', 'team', pg_temp.m('a1'), 2026, 6);
+select pg_temp.works('admin names a second team with the physio', $s$ select public.admin_set_team_members('00000000-0000-0000-0000-0000000000b5', '[{"profile_id": "00000000-0000-0000-0000-000000000032"}, {"profile_id": "00000000-0000-0000-0000-000000000014"}]') $s$);
+select pg_temp.ok('the physio is in both teams', pg_temp.in_team('a2', '14', 'physio') and pg_temp.in_team('b5', '14', 'physio'), true);
+select pg_temp.works('admin names the first team without the physio', $s$ select public.admin_set_team_members('00000000-0000-0000-0000-0000000000a2', '[{"profile_id": "00000000-0000-0000-0000-000000000031"}, {"profile_id": "00000000-0000-0000-0000-000000000042", "coach_title": "assistant_coach"}]') $s$);
+select pg_temp.ok('the physio left the first team', not pg_temp.in_team('a2', '14', 'physio'), true);
+select pg_temp.ok('and stays out of the squad while in the second', pg_temp.in_team('b5', '14', 'physio') and not pg_temp.in_team('a1', '14', 'physio'), true);
+select pg_temp.works('admin names the second team without the physio', $s$ select public.admin_set_team_members('00000000-0000-0000-0000-0000000000b5', '[{"profile_id": "00000000-0000-0000-0000-000000000032"}]') $s$);
+select pg_temp.ok('picked for none of the squad''s teams, the physio is back in the squad', pg_temp.in_team('a1', '14', 'physio') and not pg_temp.in_team('b5', '14', 'physio'), true);
+select pg_temp.ok('the squad''s seven placements are as seeded', (select count(*) = 7 from public.team_members where team_id = pg_temp.m('a1')), true);
+-- A physio placed in another squad keeps that placement whatever this squad's teams do.
+insert into public.teams (id, name, kind, season, sort_order) values (pg_temp.m('b6'), 'Other Squad', 'squad', 2026, 7);
+insert into public.team_members (team_id, profile_id, team_role) values (pg_temp.m('b6'), pg_temp.m('14'), 'physio');
+select pg_temp.works('admin names the team with the physio again', $s$ select public.admin_set_team_members('00000000-0000-0000-0000-0000000000a2', '[{"profile_id": "00000000-0000-0000-0000-000000000031"}, {"profile_id": "00000000-0000-0000-0000-000000000014"}]') $s$);
+select pg_temp.ok('the physio stays in the other squad', pg_temp.in_team('b6', '14', 'physio') and not pg_temp.in_team('a1', '14', 'physio') and pg_temp.in_team('a2', '14', 'physio'), true);
+select pg_temp.works('and is taken off the team', $s$ select public.admin_set_team_members('00000000-0000-0000-0000-0000000000a2', '[{"profile_id": "00000000-0000-0000-0000-000000000031"}]') $s$);
+select pg_temp.ok('back in this squad, still in the other', pg_temp.in_team('a1', '14', 'physio') and pg_temp.in_team('b6', '14', 'physio'), true);
+delete from public.team_members where team_id = pg_temp.m('b6');
 select pg_temp.ok('the coach-parent left as a coach and came back as a guardian', pg_temp.in_team('a2', '42', 'guardian'), true);
+-- A physio in neither the squad nor one of its teams can't be picked.
+delete from public.team_members where profile_id = pg_temp.m('14');
+select pg_temp.fails('a physio in no group of the squad is refused', $s$ select public.admin_set_team_members('00000000-0000-0000-0000-0000000000a2', '[{"profile_id": "00000000-0000-0000-0000-000000000031"}, {"profile_id": "00000000-0000-0000-0000-000000000014"}]') $s$);
+insert into public.team_members (team_id, profile_id, team_role) values (pg_temp.m('a1'), pg_temp.m('14'), 'physio');
 
 -- The guardian leaves with the athlete, and comes back with them.
 select pg_temp.works('admin names the team with nobody', $s$ select public.admin_set_team_members('00000000-0000-0000-0000-0000000000a2', '[]') $s$);

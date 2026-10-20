@@ -2,9 +2,12 @@
 -- Matt's decisions of 20 October 2026:
 --
 -- 1. Naming a team from its squad no longer wipes the team: it only changes
---    the athletes, coaches and managers it was given. Physios stay in the
---    squad until an admin moves them from their member page, and guardians
---    are never picked here.
+--    the athletes, coaches, managers and physios it was given. Athletes,
+--    coaches and managers stay in the squad; a physio picked into the team
+--    moves out of the squad (and back into it when picked for none of the
+--    squad's teams), so a physio left in the squad keeps looking after the
+--    athletes in its teams. A physio can be in several of a squad's teams,
+--    and in other squads and teams. Guardians are never picked here.
 -- 2. Guardians move with their athlete: when an athlete under 18 joins a
 --    team, their approved guardians are placed in it too (as guardians), and
 --    when the athlete leaves the team, or the guardian link ends, the
@@ -217,25 +220,47 @@ begin
     return;
   end if;
 
+  -- Everyone picked is in the squad, or a physio already moved into one of
+  -- the squad's teams.
   if exists (
     select 1 from jsonb_array_elements(p_members) as m
     where not exists (
       select 1 from public.team_members sm
-      where sm.team_id = v_team.squad_id and sm.profile_id = (m ->> 'profile_id')::uuid
+      join public.teams st on st.id = sm.team_id
+      where sm.profile_id = (m ->> 'profile_id')::uuid
+        and (sm.team_id = v_team.squad_id
+          or (st.squad_id = v_team.squad_id and not st.archived and sm.team_role = 'physio'))
     )
   ) then
     raise exception 'Everyone in a team must be in its squad';
   end if;
 
-  -- Athletes, coaches and managers not picked leave the team. Physios stay
-  -- until an admin moves them from their member page, and guardians follow
-  -- their athlete.
+  -- A physio no longer picked for any of the squad's teams goes back to the
+  -- squad (Matt, 20 October: the squad placement only stays while they
+  -- aren't moved into a team).
+  insert into public.team_members (team_id, profile_id, team_role)
+  select v_team.squad_id, tm.profile_id, 'physio'
+  from public.team_members tm
+  where tm.team_id = p_team_id
+    and tm.team_role = 'physio'
+    and not (tm.profile_id::text in (select m ->> 'profile_id' from jsonb_array_elements(p_members) as m))
+    and not exists (
+      select 1 from public.team_members o
+      join public.teams ot on ot.id = o.team_id
+      where o.profile_id = tm.profile_id and o.team_role = 'physio'
+        and ot.squad_id = v_team.squad_id and not ot.archived and o.team_id <> p_team_id
+    )
+  on conflict (team_id, profile_id) do nothing;
+
+  -- Athletes, coaches, managers and physios not picked leave the team.
+  -- Guardians follow their athlete.
   delete from public.team_members
   where team_id = p_team_id
-    and team_role in ('athlete', 'coach', 'manager')
+    and team_role in ('athlete', 'coach', 'manager', 'physio')
     and not (profile_id::text in (select m ->> 'profile_id' from jsonb_array_elements(p_members) as m));
 
-  -- Their role in the team is the same as in the squad.
+  -- Their role in the team is the same as in the squad (or, for a physio
+  -- moved in earlier, the one they already have).
   insert into public.team_members (team_id, profile_id, team_role, coach_title, selection)
   select
     p_team_id,
@@ -248,13 +273,30 @@ begin
       then coalesce((m ->> 'selection')::public.team_selection, 'touring')
     end
   from jsonb_array_elements(p_members) as m
-  join public.team_members sm
-    on sm.team_id = v_team.squad_id and sm.profile_id = (m ->> 'profile_id')::uuid
-  where sm.team_role in ('athlete', 'coach', 'manager')
+  join lateral (
+    select sm.profile_id, sm.team_role, sm.coach_title
+    from public.team_members sm
+    join public.teams st on st.id = sm.team_id
+    where sm.profile_id = (m ->> 'profile_id')::uuid
+      and (sm.team_id = v_team.squad_id
+        or (st.squad_id = v_team.squad_id and not st.archived and sm.team_role = 'physio'))
+    order by sm.team_id = v_team.squad_id desc
+    limit 1
+  ) sm on true
+  where sm.team_role in ('athlete', 'coach', 'manager', 'physio')
   on conflict (team_id, profile_id) do update set
     team_role = excluded.team_role,
     coach_title = excluded.coach_title,
     selection = excluded.selection;
+
+  -- A physio picked into the team moves out of the squad.
+  delete from public.team_members sq
+  where sq.team_id = v_team.squad_id
+    and sq.team_role = 'physio'
+    and exists (
+      select 1 from public.team_members tm
+      where tm.team_id = p_team_id and tm.profile_id = sq.profile_id and tm.team_role = 'physio'
+    );
 end;
 $$;
 
