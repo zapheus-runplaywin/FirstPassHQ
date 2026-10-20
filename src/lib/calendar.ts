@@ -19,6 +19,11 @@ export type CalendarEvent = {
 
 /** Stops a runaway rule (e.g. an endless daily event) from freezing the app. */
 const MAX_OCCURRENCES_PER_EVENT = 500;
+/**
+ * Occurrences before the range don't count towards that limit, so a weekly
+ * training that started years ago still shows; this caps the stepping instead.
+ */
+const MAX_STEPS_PER_EVENT = 20000;
 
 /**
  * Parses an ICS file and returns the events that overlap [rangeStart, rangeEnd),
@@ -59,13 +64,14 @@ export function parseIcs(
   }
 
   const results: CalendarEvent[] = [];
+  /** Adds the event when it falls in the range, and says whether it did. */
   const add = (item: ICAL.Event, start: ICAL.Time, end: ICAL.Time) => {
-    if (isCancelled(item)) return;
+    if (isCancelled(item)) return false;
     const startDate = start.toJSDate();
     // Events without an end last a day (all-day) or no time at all.
     const endDate = end ? end.toJSDate() : startDate;
-    if (endDate <= rangeStart && startDate < rangeStart) return;
-    if (startDate >= rangeEnd) return;
+    if (endDate <= rangeStart && startDate < rangeStart) return false;
+    if (startDate >= rangeEnd) return false;
     results.push({
       id: `${item.uid}:${startDate.toISOString()}`,
       title: item.summary || 'Untitled event',
@@ -79,6 +85,7 @@ export function parseIcs(
       clubWide: calendar.clubWide,
       color: calendar.color,
     });
+    return true;
   };
 
   for (const event of [...masters.values(), ...orphanExceptions]) {
@@ -88,10 +95,13 @@ export function parseIcs(
     }
     const iterator = event.iterator();
     let count = 0;
+    let steps = 0;
     for (let next = iterator.next(); next; next = iterator.next()) {
-      if (next.toJSDate() >= rangeEnd || ++count > MAX_OCCURRENCES_PER_EVENT) break;
+      if (next.toJSDate() >= rangeEnd || ++steps > MAX_STEPS_PER_EVENT) break;
       const details = event.getOccurrenceDetails(next);
-      add(details.item, details.startDate, details.endDate);
+      if (add(details.item, details.startDate, details.endDate) && ++count >= MAX_OCCURRENCES_PER_EVENT) {
+        break;
+      }
     }
   }
 

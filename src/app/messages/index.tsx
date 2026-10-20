@@ -41,7 +41,9 @@ export default function MessagesScreen() {
         .limit(100),
       canSend ? supabase.rpc('my_sent_messages') : Promise.resolve({ data: [] }),
     ]);
-    setInbox((inboxResult.data as unknown as InboxMessage[] | null) ?? []);
+    // A message the member can no longer read (for example a club message to a
+    // physio after the club setting was turned off) comes back without its body.
+    setInbox(((inboxResult.data as unknown as InboxMessage[] | null) ?? []).filter((r) => r.message));
     setSent((sentResult.data as SentMessage[] | null) ?? []);
   }, [userId, canSend]);
 
@@ -84,7 +86,7 @@ function Inbox({ messages }: { messages: InboxMessage[] | null }) {
   if (messages.length === 0) {
     return (
       <ThemedText type="small" themeColor="textSecondary">
-        No messages yet. Messages from your coaches, managers and the club will show here.
+        No messages yet. Messages from your coaches, managers, captains and the club will show here.
       </ThemedText>
     );
   }

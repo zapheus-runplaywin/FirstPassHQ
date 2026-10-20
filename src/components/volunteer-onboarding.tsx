@@ -103,6 +103,10 @@ export function VolunteerOnboarding({ verificationCode }: { verificationCode: Re
           <ThemedText type="small" themeColor="textSecondary">
             A club admin has confirmed who you are.
           </ThemedText>
+        ) : approved ? (
+          <ThemedText type="small" themeColor="textSecondary">
+            Not confirmed in person.
+          </ThemedText>
         ) : (
           <>
             <ThemedText type="small" themeColor="textSecondary">

@@ -6,8 +6,10 @@ import { Screen } from '@/components/screen';
 import { ThemedText } from '@/components/themed-text';
 import { PressableCard } from '@/components/ui';
 import { Spacing } from '@/constants/theme';
+import { useAuth } from '@/lib/auth';
 import { kpiCountLabel, reviewCountLabel, useKpiPeople, type KpiPerson } from '@/lib/kpis';
 import { teamPositionLabel } from '@/lib/labels';
+import { hasRole } from '@/lib/roles';
 import { seasonLabel } from '@/lib/use-teams';
 
 /**
@@ -15,6 +17,7 @@ import { seasonLabel } from '@/lib/use-teams';
  * they set them for, by squad or team.
  */
 export default function KpisScreen() {
+  const { profile } = useAuth();
   const { kpiPeople, reloadKpiPeople } = useKpiPeople();
   const [refreshing, setRefreshing] = useState(false);
 
@@ -81,7 +84,9 @@ export default function KpisScreen() {
 
       {current.length === 0 ? (
         <ThemedText type="small" themeColor="textSecondary">
-          You’re not in a squad or team this season, so there are no KPIs to show.
+          {hasRole(profile, 'committee', 'admin')
+            ? 'No squad or team has a coach or manager yet, so there’s nobody to set KPIs for.'
+            : 'You’re not in a squad or team this season, so there are no KPIs to show.'}
         </ThemedText>
       ) : null}
 

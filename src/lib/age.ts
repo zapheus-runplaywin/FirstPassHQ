@@ -17,8 +17,15 @@ export function parseDate(text: string): string | null | undefined {
   const match = /^(\d{1,2})[/.-](\d{1,2})[/.-](\d{4})$/.exec(trimmed);
   if (!match) return undefined;
   const [day, month, year] = match.slice(1).map(Number);
+  // Nobody in the club was born, or has a check that ends, outside these years,
+  // so 01/01/0500 is a typing slip, not a date.
+  if (year < 1900 || year > 2100) return undefined;
   const date = new Date(Date.UTC(year, month - 1, day));
-  if (date.getUTCMonth() !== month - 1 || date.getUTCDate() !== day) return undefined;
+  // A day or month that doesn't exist rolls over into another month.
+  // Stryker disable next-line ConditionalExpression: a day that doesn't exist always changes the month too, so the day check alone never decides.
+  if (date.getUTCMonth() !== month - 1 || date.getUTCDate() !== day) {
+    return undefined;
+  }
   return date.toISOString().slice(0, 10);
 }
 

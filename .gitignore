@@ -50,3 +50,16 @@ __pycache__/
 logs/
 *.log
 *.log.[0-9]*
+
+# test coverage
+coverage/
+
+# browser smoke tests (e2e/): the web export and Playwright's output
+e2e/web-build/
+e2e/test-results/
+e2e/playwright-report/
+
+# Stryker mutation tests
+.stryker-tmp/
+reports/mutation/
+reports/stryker-incremental.json

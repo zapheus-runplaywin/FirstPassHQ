@@ -98,9 +98,9 @@ export function StandDownSection({
         <>
           <ThemedText type="small" themeColor="tint">
             Stood down since {localDay(open.started_at)}: {standDownReasonLabels[open.reason]}
-            {open.note ? ` (${open.note})` : ''}. Their coach, manager, physio, committee and
-            admin roles are paused, and they were taken out of the squads and teams they coach,
-            manage or treat.
+            {open.note ? ` (${open.note})` : ''}. Their coach, manager, physio, committee, admin
+            and statistician roles are paused, and they were taken out of the squads and teams
+            they coach, manage or treat.
           </ThemedText>
           <TextField
             label="Note (optional)"
@@ -113,14 +113,16 @@ export function StandDownSection({
           <ErrorText>{error}</ErrorText>
           <Button title="Lift stand-down" variant="secondary" onPress={lift} busy={busy} />
           <ThemedText type="small" themeColor="textSecondary">
-            Lifting puts back their places in this season’s squads and teams. A coach, manager or
-            physio still needs a current check before their role works again.
+            Lifting puts back their places in this season’s squads and teams. A coach, manager,
+            physio or committee member still needs a current check (or an exemption) before their
+            role works again.
           </ThemedText>
         </>
       ) : (
         <>
           <ThemedText type="small" themeColor="textSecondary">
-            Stops {memberName}’s coach, manager, physio, committee and admin roles straight away,
+            Stops {memberName}’s coach, manager, physio, committee, admin and statistician roles
+            straight away,
             for example when the Working with Children Screening Unit sends a notice. Their athlete
             and guardian roles are unchanged.
           </ThemedText>

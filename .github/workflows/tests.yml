@@ -1,0 +1,100 @@
+name: Tests
+
+# Runs the regression suite on every push to every branch, so a branch shows a
+# failure before its pull request is merged: lint, typecheck and the Jest unit
+# tests for the app, the database tests in supabase/tests against every
+# migration, and browser smoke tests of the web build (e2e/). Every pull request adds tests for what it changes (AGENTS.md
+# "Tests").
+on:
+  push:
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: tests-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  app:
+    runs-on: ubuntu-24.04
+    steps:
+      - uses: actions/checkout@d23441a48e516b6c34aea4fa41551a30e30af803 # v6.1.0
+      - run: npm ci --no-audit --no-fund
+      # The checks below run even when an earlier one fails, so one run shows
+      # every problem.
+      - name: Lint
+        env:
+          EXPO_OFFLINE: '1'
+        run: npx expo lint
+      - name: Typecheck
+        if: ${{ !cancelled() }}
+        # expo start writes this file, which is not committed.
+        run: |
+          echo '/// <reference types="expo/types" />' > expo-env.d.ts
+          npx tsc --noEmit
+      - name: Unit tests
+        if: ${{ !cancelled() }}
+        run: npx jest --ci --coverage
+      # The edge functions run on Deno, which tsc doesn't check.
+      - name: Typecheck the edge functions
+        if: ${{ !cancelled() }}
+        run: >
+          npx -y deno@2.5.6 check
+          supabase/functions/purge-expired-injuries/index.ts supabase/functions/playhq/index.ts
+
+  database:
+    runs-on: ubuntu-24.04
+    services:
+      postgres:
+        image: postgres:16
+        env:
+          POSTGRES_PASSWORD: postgres
+        ports: ['5432:5432']
+        options: >-
+          --health-cmd pg_isready --health-interval 5s --health-timeout 5s --health-retries 10
+    env:
+      PGHOST: localhost
+      PGUSER: postgres
+      PGPASSWORD: postgres
+    steps:
+      - uses: actions/checkout@d23441a48e516b6c34aea4fa41551a30e30af803 # v6.1.0
+      - name: Database tests
+        run: scripts/run-sql-tests.sh
+      - name: Row count check catches lost rows
+        if: ${{ !cancelled() }}
+        run: scripts/test-check-row-counts.sh
+      - name: Security check flags open functions
+        if: ${{ !cancelled() }}
+        run: python3 scripts/test-check-migration-security.py
+
+  # The real web build driven through key flows in Chromium at phone size, with
+  # Supabase answered by e2e/support/fake-supabase.ts, so a broken build or a
+  # broken key flow fails here. See docs/testing-strategy.md.
+  browser:
+    runs-on: ubuntu-24.04
+    steps:
+      - uses: actions/checkout@d23441a48e516b6c34aea4fa41551a30e30af803 # v6.1.0
+      - run: npm ci --no-audit --no-fund
+      - name: Lint the smoke tests
+        env:
+          EXPO_OFFLINE: '1'
+        run: npx expo lint e2e
+      - name: Install Chromium
+        run: npx playwright install --with-deps chromium
+      - name: Build the web app
+        run: npm run e2e:build
+      - name: Browser smoke tests
+        run: npm run e2e
+      - name: Keep the browser test report
+        # The HTML report, with a screenshot and trace of each failed test.
+        if: failure()
+        uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7.0.1
+        with:
+          name: browser-test-report
+          path: |
+            e2e/playwright-report
+            e2e/test-results
+          retention-days: 14
+          if-no-files-found: ignore

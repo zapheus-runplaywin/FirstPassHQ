@@ -5,7 +5,7 @@ type HasRoles = { role: AppRole; extra_roles?: AppRole[] | null };
 
 /** Every role a member holds, their main role first. */
 export function rolesOf(member: HasRoles): AppRole[] {
-  return [member.role, ...(member.extra_roles ?? []).filter((r) => r !== member.role)];
+  return [...new Set([member.role, ...(member.extra_roles ?? [])])];
 }
 
 /** Whether a member holds any of these roles. */
@@ -22,6 +22,7 @@ export function roleCombinationProblem(
   dateOfBirth: string | null | undefined,
   under18: boolean,
 ): string | null {
+  roles = [...new Set(roles)];
   const has = (r: AppRole) => roles.includes(r);
   if (has('guest') && roles.length > 1) return 'Guests can’t have another role.';
   if (has('volunteer') && roles.length > 1) return 'Temporary helpers can’t have another role.';
@@ -35,7 +36,7 @@ export function roleCombinationProblem(
   ) {
     return 'Athletes under 18 can only also be a coach.';
   }
-  if (has('guardian') && dateOfBirth && isMinor(dateOfBirth, false)) {
+  if (has('guardian') && isMinor(dateOfBirth ?? null, under18)) {
     return 'Parents and guardians must be 18 or over.';
   }
   return null;

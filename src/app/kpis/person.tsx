@@ -28,6 +28,7 @@ import {
   type KpiMeasure,
   type KpiResult,
   type KpiReview,
+  type KpiReviewNote,
   type KpiSheet,
 } from '@/lib/kpis';
 import { teamPositionLabel } from '@/lib/labels';
@@ -397,9 +398,13 @@ function Review({
   onChanged: () => Promise<void>;
 }) {
   const own = sheet.relation === 'self';
+  const { profile } = useAuth();
   const { busy, error, run } = useRun(onChanged);
+  // Other reviewers' notes; the member's own is in the form when they can write one.
+  const others = review.notes.filter((n) => !sheet.can_edit || n.reviewer_id !== profile?.id);
+  const unconfirmed = review.notes.some((n) => !n.confirmed_at);
   // Nothing to show a reader who can't write either part.
-  if (!sheet.can_edit && !(own && !sheet.archived) && !review.note && !review.self_review) {
+  if (!sheet.can_edit && !(own && !sheet.archived) && review.notes.length === 0 && !review.self_review) {
     return null;
   }
 
@@ -426,26 +431,27 @@ function Review({
           }
           onChanged={onChanged}
         />
-      ) : review.note ? (
-        <Card>
-          <ThemedText type="small" themeColor="textSecondary">
-            {review.noted_by_name ?? 'Review'}
-            {review.noted_at ? `, ${formatSentAt(new Date(review.noted_at))}` : ''}
-          </ThemedText>
-          <ThemedText type="small">{review.note}</ThemedText>
-        </Card>
-      ) : own ? (
+      ) : null}
+      {sheet.can_edit && review.note && review.confirmed_at ? (
+        <ThemedText type="small" themeColor="textSecondary">
+          ✓ {sheet.full_name} confirmed your review was done,{' '}
+          {formatSentAt(new Date(review.confirmed_at))}
+        </ThemedText>
+      ) : sheet.can_edit && review.note ? (
+        <ThemedText type="small" themeColor="textSecondary">
+          Waiting for {sheet.full_name} to confirm it was done.
+        </ThemedText>
+      ) : null}
+      {others.map((n) => (
+        <ReviewNote key={n.reviewer_id} note={n} own={own} personName={sheet.full_name} />
+      ))}
+      {review.notes.length === 0 && !sheet.can_edit && own ? (
         <ThemedText type="small" themeColor="textSecondary">
           Not written yet.
         </ThemedText>
       ) : null}
 
-      {review.note && review.confirmed_at ? (
-        <ThemedText type="small" themeColor="textSecondary">
-          ✓ {own ? 'You' : sheet.full_name} confirmed it was done,{' '}
-          {formatSentAt(new Date(review.confirmed_at))}
-        </ThemedText>
-      ) : review.note && own && !sheet.archived ? (
+      {unconfirmed && own && !sheet.archived ? (
         <>
           <ErrorText>{error}</ErrorText>
           <Button
@@ -461,10 +467,6 @@ function Review({
             }
           />
         </>
-      ) : review.note ? (
-        <ThemedText type="small" themeColor="textSecondary">
-          Waiting for {sheet.full_name} to confirm it was done.
-        </ThemedText>
       ) : null}
 
       {own && !sheet.archived ? (
@@ -485,6 +487,31 @@ function Review({
         <SelfReview review={review} sheet={sheet} onChanged={onChanged} />
       ) : null}
     </View>
+  );
+}
+
+/** Another reviewer's note, with whether the person has confirmed it. */
+function ReviewNote({
+  note,
+  own,
+  personName,
+}: {
+  note: KpiReviewNote;
+  own: boolean;
+  personName: string;
+}) {
+  return (
+    <Card>
+      <ThemedText type="small" themeColor="textSecondary">
+        {note.reviewer_name}, {formatSentAt(new Date(note.noted_at))}
+      </ThemedText>
+      <ThemedText type="small">{note.note}</ThemedText>
+      <ThemedText type="small" themeColor="textSecondary">
+        {note.confirmed_at
+          ? `✓ ${own ? 'You' : personName} confirmed it was done, ${formatSentAt(new Date(note.confirmed_at))}`
+          : `Waiting for ${own ? 'you' : personName} to confirm it was done.`}
+      </ThemedText>
+    </Card>
   );
 }
 

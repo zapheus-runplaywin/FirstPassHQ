@@ -201,6 +201,10 @@ export default function EditAwardScreen() {
     });
   }
 
+  // Match votes and a preseason vote only apply to an award with a winner
+  // for each squad or team; switching back to one winner turns them off.
+  const matchVoting = !clubWide && perGroup && byMatch;
+
   async function save() {
     if (!closesOn) return;
     setSaving(true);
@@ -216,11 +220,11 @@ export default function EditAwardScreen() {
       p_voter_roles: roles,
       p_nominees: nominees,
       p_points: points.split(',').map(Number),
-      p_by_match: !clubWide && perGroup && byMatch,
+      p_by_match: matchVoting,
       p_match_vote_hours: Number(hours),
-      p_preseason_weight: !clubWide && perGroup && byMatch ? Number(weight) : 0,
+      p_preseason_weight: matchVoting ? Number(weight) : 0,
       p_preseason_closes_at:
-        byMatch && weight !== '0' && preseasonOn ? endOfDay(preseasonOn) : null,
+        matchVoting && weight !== '0' && preseasonOn ? endOfDay(preseasonOn) : null,
       p_annual: annual,
       p_group_ids: clubWide ? [] : groupIds,
       p_candidates:
@@ -268,7 +272,7 @@ export default function EditAwardScreen() {
 
   if (!loaded) return <Screen>{null}</Screen>;
 
-  const needsPreseasonDate = byMatch && weight !== '0' && !preseasonOn;
+  const needsPreseasonDate = matchVoting && weight !== '0' && !preseasonOn;
   const ageOk = (value: string) => value === '' || (Number(value) >= 1 && Number(value) <= 99);
   const ageRestricted = ageLimited && nominees !== 'listed';
   const ageProblem = !ageRestricted
@@ -322,13 +326,13 @@ export default function EditAwardScreen() {
         : minAge
           ? `Aged ${minAge} or over on ${ageDay}`
           : `Under ${maxAge} on ${ageDay}`;
-  const unlinked = byMatch ? chosenGroups.filter((t) => !games[t.id]) : [];
+  const unlinked = matchVoting ? chosenGroups.filter((t) => !games[t.id]) : [];
   const ballotSummary = unlinked.length
     ? `No PlayHQ games linked to ${unlinked.map((t) => teamLabel(t, teams)).join(', ')}`
     : [
         ballotOptions.find((o) => o.value === points)?.label ?? points,
-        byMatch ? 'after every match' : 'once, before it closes',
-        byMatch && weight !== '0' ? `preseason ${weight}%` : null,
+        matchVoting ? 'after every match' : 'once, before it closes',
+        matchVoting && weight !== '0' ? `preseason ${weight}%` : null,
       ]
         .filter(Boolean)
         .join(' · ');
@@ -550,7 +554,7 @@ export default function EditAwardScreen() {
         summary={ballotSummary}
         attention={unlinked.length > 0 || needsPreseasonDate}
         initiallyOpen={unlinked.length > 0 || needsPreseasonDate}>
-        {!locked || byMatch ? (
+        {!locked || matchVoting ? (
           <>
             {!locked ? (
               <ChipGroup
@@ -571,7 +575,7 @@ export default function EditAwardScreen() {
                 onToggle={(value) => setByMatch(value === 'match')}
               />
             ) : null}
-            {byMatch ? (
+            {matchVoting ? (
               <>
                 <ChipGroup
                   label="Match votes stay open for"

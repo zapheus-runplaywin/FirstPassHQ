@@ -32,6 +32,7 @@ import type { Report, ReportRow, ReportSection } from '@/lib/pdf';
 import { hasRole, rolesOf } from '@/lib/roles';
 import {
   barringNotices,
+  committeeChecksDue,
   exemptionStatus,
   needsWwcc,
   screeningNoticeLabels,
@@ -161,14 +162,17 @@ export function wwccReport(
   officerName: string | null = null,
   /** Who accepted the club's policies, newest first. */
   acknowledgements: Acknowledgement[] = [],
+  /** The day from which committee members need a check, if the club has one. */
+  committeeChecksFrom: string | null = null,
 ): Report {
   const approved = members.filter((m) => m.status === 'approved');
   // Temporary helpers outside their dates need nothing, and are listed on their own.
   const volunteers = approved
     .filter((m) => hasRole(m, 'volunteer'))
     .sort((a, b) => (b.volunteer_from ?? '').localeCompare(a.volunteer_from ?? ''));
-  const openExemption = new Map(exemptions.filter((e) => !e.ended_at).map((e) => [e.profile_id, e]));
-  // A volunteer exemption stands in for a check they don't have.
+  // Only an exemption that applies now (accepted, and still under 18 and
+  // linked, or within its dates) stands in for a check they don't have.
+  const openExemption = new Map(exemptions.filter((e) => !e.ended_at && e.valid).map((e) => [e.profile_id, e]));
   const screenedByExemption = (m: Profile) => {
     const kind = wwccStatus(m).kind;
     return openExemption.has(m.id) && kind !== 'current' && kind !== 'expiring';
@@ -255,13 +259,17 @@ export function wwccReport(
       { label: 'Stood down now', value: standDowns.filter((s) => !s.lifted_at).length },
       {
         label: 'Temporary helpers helping now',
-        value: volunteers.filter((m) => !volunteerTimeOff(m)).length,
+        value: volunteers.filter((m) => !volunteerTimeOff(m) && !m.stood_down_at).length,
       },
     ],
     sections: [
       {
         title: 'Needs attention',
-        note: `Missing, expired or expiring within ${WWCC_WARNING_DAYS} days, never validated or validated over a year ago, or not registered with the club (so the Screening Unit tells the club if the card’s status changes). Their coach, manager, physio and committee roles are paused while a check is missing or expired. Admin roles are not paused, so the club is never locked out, but an admin can be stood down.`,
+        note: `Missing, expired or expiring within ${WWCC_WARNING_DAYS} days, never validated or validated over a year ago, or not registered with the club (so the Screening Unit tells the club if the card’s status changes). Their coach, manager and physio roles are paused while a check is missing or expired, and committee roles ${
+          committeeChecksFrom && !committeeChecksDue(committeeChecksFrom)
+            ? `from ${formatDateString(committeeChecksFrom)}`
+            : 'too'
+        }. Admin roles are not paused, so the club is never locked out, but an admin can be stood down.`,
         columns,
         rows: people
           .filter((p) => p.status.problem || (current(p.status) && wwccRecordIssues(p.member).length > 0))
@@ -1540,6 +1548,7 @@ export type KpiReportRow = {
   full_name: string;
   team_role: TeamRole;
   coach_title: CoachTitle | null;
+  left_at: string | null;
   kpi_id: string | null;
   format: KpiFormat | null;
   title: string | null;
@@ -1614,7 +1623,7 @@ export function kpiReport(seasonName: string, rows: KpiReportRow[], today: strin
         { label: 'Reviews', width: 1.6 },
       ],
       rows: list.map((r) => {
-        const person = `${r.full_name}\n${teamPositionLabel(r.team_role, r.coach_title)}`;
+        const person = `${r.full_name}\n${teamPositionLabel(r.team_role, r.coach_title)}${r.left_at ? `\nLeft the club ${localDay(r.left_at)}` : ''}`;
         const reviewOverdue = r.reviews.some((v) => !v.written && v.due_on < today);
         if (!r.kpi_id) {
           return { cells: [person, 'No KPIs set', '', '', ''], flag: true };
@@ -1633,6 +1642,6 @@ export function kpiReport(seasonName: string, rows: KpiReportRow[], today: strin
       empty: 'No coaches or managers.',
     })),
     footnote:
-      'Results are recorded by whoever sets the KPIs: the committee and admins for coaches and managers, and head coaches for their assistants. Athletes’ KPIs aren’t in this report.',
+      'Results are recorded by whoever sets the KPIs: the committee and admins for coaches and managers, and head coaches for their assistants. Athletes’ KPIs aren’t in this report. Coaches and managers who have deleted their account stay on it, with the day they left.',
   };
 }

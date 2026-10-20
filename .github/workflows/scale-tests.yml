@@ -1,0 +1,32 @@
+name: Scale tests
+
+# The database rules at club size and with two saves at once: the
+# 200-member sample club (supabase/tests/large-club.sql) and the
+# two-connection tests (supabase/tests/concurrency.sql). Run by hand only, to
+# save Actions minutes (Matt, 2026-10-19); the "Tests" workflow skips them.
+on:
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  scale:
+    runs-on: ubuntu-24.04
+    timeout-minutes: 15
+    services:
+      postgres:
+        image: postgres:16
+        env:
+          POSTGRES_PASSWORD: postgres
+        ports: ['5432:5432']
+        options: >-
+          --health-cmd pg_isready --health-interval 5s --health-timeout 5s --health-retries 10
+    env:
+      PGHOST: localhost
+      PGUSER: postgres
+      PGPASSWORD: postgres
+    steps:
+      - uses: actions/checkout@d23441a48e516b6c34aea4fa41551a30e30af803 # v6.1.0
+      - name: Scale tests
+        run: scripts/run-sql-tests.sh large-club concurrency

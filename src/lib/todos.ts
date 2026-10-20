@@ -67,7 +67,7 @@ export function sortByAlert<T>(
  * screen has already loaded. Each item disappears once it's done.
  *
  * `member_todos` in the database works out the same list for push
- * notifications (supabase/migrations/20261017160000_todo_push_notifications.sql).
+ * notifications (supabase/migrations/20261020020000_todo_push_notifications.sql).
  * When an item is added or changed here, change it there too, in a new migration.
  */
 export function buildTodos({
@@ -445,6 +445,22 @@ export function buildTodos({
         key: 'wwc-officer',
         title: 'Choose a WWC Registration Officer',
         detail: 'Under Safeguarding',
+        href: '/admin/safeguarding',
+      });
+    }
+    if ((safety.child_safety_officer_missing ?? 0) > 0) {
+      todos.push({
+        key: 'child-safety-officer',
+        title: 'Name a Child Safety Officer',
+        detail: 'Nobody with a current check holds it. Under Safeguarding',
+        href: '/admin/safeguarding',
+      });
+    }
+    if ((safety.complaints_manager_missing ?? 0) > 0) {
+      todos.push({
+        key: 'complaints-manager',
+        title: 'Name a Complaints Manager',
+        detail: 'Nobody with a current check holds it. Under Safeguarding',
         href: '/admin/safeguarding',
       });
     }

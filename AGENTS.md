@@ -17,11 +17,13 @@ npx expo install <package>  # ALWAYS use instead of npm/yarn/pnpm/bun add — re
 npx expo start              # start the dev server
 npx expo lint               # lint
 npx tsc --noEmit            # typecheck
+npm test                    # Jest unit tests
+scripts/run-sql-tests.sh    # database tests (needs a local Postgres 16, see "Tests")
 npx expo-doctor             # diagnose dependency and config issues
 npx expo install --fix      # fix incompatible package versions
 ```
 
-Run lint and typecheck before declaring any task done.
+Run lint, typecheck and the tests before declaring any task done.
 
 ## Navigation & Routing
 
@@ -49,9 +51,23 @@ RULE: migrations must be safe to run on the production database and must never t
 - When a change needs one of those, move or copy the data first, say in the PR exactly what would be lost, and wait for permission before merging.
 - Never edit a migration that has already been merged. Fix things with a new migration.
 - Write migrations so they can be re-run or fail cleanly: run them in one transaction, and use `if not exists` / `create or replace` where it fits.
-- Test every migration against a local Postgres loaded with realistic data before opening the PR, and confirm row counts are unchanged.
+- Test every migration against a local Postgres loaded with realistic data before opening the PR, and confirm row counts are unchanged: `scripts/check-row-counts.sh` does this on the sample data, and "Check migrations" runs it on every pull request. Add or update its tests in `supabase/tests/` (see "Tests").
 - Migrations deploy automatically: `.github/workflows/deploy-migrations.yml` runs `supabase db push` after a merge to main. It and the pull request check run `scripts/check-migrations.py`, which stops anything that can lose data.
 - Only Matt gives permission for data loss: he adds the `data-loss-approved` label to the PR before merging it. After the merge, the deploy goes ahead when `scripts/check-data-loss-approval.py` confirms Matt added that label to the PR that added each flagged migration and it was still there when the PR merged. Otherwise he runs "Deploy migrations" by hand with "Allow data loss" ticked. Never add that label, tick that box, or weaken either check yourself.
+
+## Tests
+
+RULE: every change includes tests that cover it well enough to make a strong regression suite, and CI runs them (Matt, 2026-10-18). A failure should show on the branch, before merge.
+
+The test strategy, layers and the kinds of member every access test considers are in `docs/testing-strategy.md`. Role-based access is the priority: a new access rule is tested for every kind of member, both ways.
+
+- The "Tests" workflow runs on every push to every branch: lint, typecheck, Jest (`npm test`, with a coverage floor in `package.json` that may only go up), and the database tests (`scripts/run-sql-tests.sh`). Tests whose first line is `-- Manual test` (the 200-member club in `large-club.sql` and two saves at once in `concurrency.sql`) are skipped there and run by hand: `scripts/run-sql-tests.sh large-club concurrency`, or the "Scale tests" workflow. Run them before merging a change to the access rules or to a save function they cover. Never make that workflow run on its own without Matt's yes.
+- App logic goes in tests next to it, such as `src/lib/__tests__/<module>.test.ts`. Pin today's date in any test that depends on it; CI runs in UTC.
+- Database changes get a file in `supabase/tests/`, named for the feature: who may call each function and who is refused, the rows it changes, and the child-safety and visibility rules. Copy the PASS/FAIL style of `record-access.sql`, and catch expected errors with `pg_temp.fails`, because any `ERROR` fails the run. Add sample people to `supabase/tests/setup/seed-members.sql` only when no existing one fits, and keep the existing ones working.
+- Run them locally against Postgres 16: `PGHOST=localhost PGUSER=postgres PGPASSWORD=... scripts/run-sql-tests.sh [name ...]`.
+- A change to the child-safety and access rules covered by the mutation tests (`mutate` in `stryker.config.json`) runs `npm run test:mutation` first (locally, or the "Mutation tests" workflow by hand) and reaches 95% or more. Never make that workflow run on its own (on push, pull request or a schedule) without Matt's yes: Actions minutes are limited.
+- When a change alters a rule a test checks, update that test in the same pull request and say in the pull request which expectations changed and why. Never skip, delete or weaken a test to get green.
+- The "Security audit" workflow (`scripts/check-cves.py`) checks npm packages for known vulnerabilities after every merge to main, weekly, and on pull requests that change packages. It fails on any high or critical advisory not in `.github/known-vulnerabilities.json`. Only add an advisory there when no fixed release exists, with the reason it can wait, and remove it once a fix ships.
 
 ## Supabase CLI version
 

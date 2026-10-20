@@ -1,0 +1,91 @@
+# Test strategy
+
+FirstPass HQ holds records about children, so its tests protect two things above all: **who can see and do what**, and **the features members rely on**. Every change ships with tests that CI runs, and a failure shows on the branch before anything is merged (AGENTS.md, "Tests").
+
+## The layers
+
+Most of the protection lives in the database, because row level security and database functions are what actually stop a member reading or changing something. The app tests check that screens and buttons match those rules, so members aren't shown things they can't use.
+
+| Layer | What it proves | Where | Runs with |
+|---|---|---|---|
+| Database access guards | Rules that hold for the whole schema: every table has row level security, every security definer function sets its search path, the anonymous role can't run functions or read rows, clean-up functions are service-role only, and storage buckets are private | `supabase/tests/access-guards.sql` | `scripts/run-sql-tests.sh` |
+| Database access matrix | For each kind of member and each sensitive table, which rows they can read, and that direct writes are refused where the app must go through a function | `supabase/tests/role-table-access.sql` | `scripts/run-sql-tests.sh` |
+| Database features | Each feature's functions: who may call them and who is refused, the rows they change, validation, and the child-safety rules in the migration comments | `supabase/tests/<feature>.sql` | `scripts/run-sql-tests.sh` |
+| Faster access rules | The check-in and attendance rules work out once per read which athletes and registers the member may see, instead of asking for each row. Signed in as every sample member, before and after a guardian's consent and a coach standing down, each reads exactly the rows the original per-row rule allows | `supabase/tests/access-rule-speed.sql` | `scripts/run-sql-tests.sh` |
+| Rules at club size | A generated club of 200 sample members (`supabase/tests/setup/large-club.sql`: admins, committee with lapsed and missing checks, head and assistant coaches, a stood-down coach, managers, physios, 70 junior athletes (one turning 18 today, one tomorrow) and 40 adult athletes in four squads and twelve teams, brothers and sisters, children with two guardians, guardians who also coach or sit on the committee, guests, helpers and members waiting for approval, with two weeks of check-ins, injuries, registers and messages). Signed in as each special case and one in ten of the rest, the profiles, guardian links, check-ins and injuries each reads are compared row by row with an answer worked out separately from the rules; group and club messages reach exactly the right people, with one copy per guardian naming their children; and the busiest lists and reports must answer correctly in under 2 seconds, and the head coach's full read of attendance marks, registers and check-ins in under half a second | `supabase/tests/large-club.sql` | By hand only, to save Actions minutes: `scripts/run-sql-tests.sh large-club`, or the "Scale tests" workflow (the "Tests" workflow skips it) |
+| Two saves at once | Two connections signed in as different members (or the same member twice) save at the same moment, the first holding its transaction open: two coaches changing one register keep every mark from both, two coaches choosing captains leave one coach's choice rather than a mix, a new register or an absence sent twice is kept once, a check-in sent twice is kept once with the later answers, two guardians consenting at once leave one consent of each kind with no error, and a survey answer sent twice is counted once | `supabase/tests/concurrency.sql` (dblink) | By hand only, to save Actions minutes: `scripts/run-sql-tests.sh concurrency`, or the "Scale tests" workflow (the "Tests" workflow skips it) |
+| App role rules | Every `use…` access hook in `src/lib` (for example `useCanSeeInjuries` and `useCanSendMessages`) gives the right answer for each kind of member. Also covers `AuthProvider`'s paused and stood-down roles and `isAdmin` | `src/lib/__tests__/role-access.test.tsx`, `auth.test.tsx` | `npm test` |
+| App logic | Pure rules and formatting: under-18 age, role combinations, Working With Children Check status and exemptions, to-dos and due dates, calendar parsing, PlayHQ links, surveys, awards, goals and more | `src/lib/__tests__/<module>.test.ts` | `npm test` |
+| Randomised rule tests | fast-check tries thousands of generated people and dates (any mix of roles, checks, exemptions and stand-downs, dates of birth from 1900 to 2100, and "today" from 2000 to 2060 at any time of day) against the date, under-18, role combination and Working With Children Check rules, checking each answer against simple day counting written in the test: typed dates are read only when real, the 18th birthday is the day isMinor flips (1 March for a 29 February birthday in other years), checks are expired, expiring within 60 days or current on the right day, `pausedRoles` only pauses stand-down roles the member holds, never athletes, guardians or guests, a refused role set stays refused with more roles or a younger member, to-dos turn amber and red on the right day, and repeating calendar events give exactly the occurrences in range. Each file has a fixed seed, so a failure shows the same counterexample every run | `src/lib/__tests__/*.property.test.ts` (age, safety, roles, todos, calendar) | `npm test`, or `npx jest src/lib/__tests__/*.property.test.ts` |
+| Routes and screens | Through the real `src/app/_layout.tsx`: who can open each screen by deep link (admin screens only for admins, every other member screen only for the roles it's for, through `useRouteAccess` in `src/lib/route-access.ts`, nothing for signed-out members, and feature switches), and which cards each kind of member sees on Home and Administration | `src/__tests__/*.test.tsx`, `src/lib/__tests__/route-access.test.tsx` | `npm test` |
+| Screen behaviour | Each screen's own rules, screen by screen: what each kind of member sees and can press, the exact database function and arguments a form sends, validation and error messages, and the reports, PDFs and spreadsheets the app writes. Shared helpers are in `src/__tests__/helpers/` (`harness.tsx` for sign-in and the fake backend, `forms.tsx`, `calls.tsx`, `admin-screens.tsx`, `settings-forms.tsx`, `report-fixtures.ts`). Waits are on conditions (no new database call), never on the clock | `src/__tests__/<area>-screens.test.tsx`, `src/components/__tests__/` | `npm test` |
+| Edge functions | The nightly clean-up removes files before the records they belong to, stops at the first failure, batches files 500 at a time and refuses a wrong purge key; the PlayHQ reader is admin-only, refuses bad links and reads seasons, games, byes and time zones correctly | `supabase/functions/<function>/__tests__/*.test.ts` (the logic is in `purge.ts` and `fixtures.ts`; `index.ts` only starts it) | `npm test`, and `deno check` in the Tests workflow |
+| Browser smoke tests | The real web build, in Chromium at phone size, through key flows: signed out it opens on Find your club, or sign-in once a club is picked; an admin approves a member waiting for approval and stands a coach down; a coach takes attendance; an athlete does the daily check-in; a guest's deep links to the concerns register and injuries go Home, while an admin can open the register; an under-18 athlete reads a message with no reply box or Reply button; a parent or guardian sees their child on Home and reports them away, and reads their copy of the child's squad message with no way to reply or message the coach, no coach or admin cards and no New message; an athlete reports their own injury and it opens with its next steps, while a coach sees their athlete's injury read-only, has no Report an injury and is sent Home from it, and an athlete's injury waiting for clearance is read-only; an athlete answers a name-optional survey giving their name, and an anonymous survey says so and sends no name; a coach messages their squad (or picks one of two) and sees read receipts, while an athlete has no New message and is sent Home from it. Each checks what shows and the database function and arguments the app sent. Supabase is answered by a fake backend with sample people, and "today" is pinned | `e2e/specs/*.spec.ts` (`e2e/support/fake-supabase.ts`, `e2e/support/people.ts`) | `npm run e2e:build`, `npm run e2e` |
+| Static checks | Lint and TypeScript | `eslint.config.js`, `tsconfig.json` | `npx expo lint`, `npx tsc --noEmit` |
+| Migration safety | Merged migrations stay unchanged, versions are unique, nothing exposes or loses data, no table has fewer rows after a branch's new migrations run on the sample data, and migrations apply to a fresh Supabase database | `scripts/check-migrations.py`, `scripts/check-migration-security.py` (its own test: `scripts/test-check-migration-security.py`), `scripts/check-row-counts.sh` (sample data in `supabase/tests/setup/sample-records.sql`) | "Check migrations" workflow |
+| Known vulnerabilities | Fails on any high or critical npm advisory not in `.github/known-vulnerabilities.json` | `scripts/check-cves.py` | "Security audit" workflow |
+| Mutation tests (testing the tests) | Stryker makes small changes to the child-safety and access rules, such as turning `<` into `<=`, dropping a role from a rule or treating a blank check number as a real one, and runs the `src/lib` unit tests against each. A change no test notices is a gap in the tests. Covers `age.ts`, `auth.tsx`, `conduct.ts`, `consents.ts`, `record-access.ts`, `roles.ts`, `route-access.ts` and `safety.ts`. Fails below a 95% mutation score | `stryker.config.json` | `npm run test:mutation`, and the "Mutation tests" workflow, run by hand |
+
+## The kinds of member every access test considers
+
+Admin, committee, head coach, assistant coach, manager, physio (squad physio and Head Physio), adult athlete, under-18 athlete, guardian (and a guardian whose child has turned 18), guest, temporary helper, pending and signed-out members.
+
+Each test also covers members whose rights have stopped: a coach or committee member whose check has lapsed, a committee member past the club's checks date, and a stood-down coach or admin. It covers members with more than one role, such as coach and guardian, athlete and coach, or admin and guardian.
+
+A new access rule is tested for every one of these, both ways: who gets it and who doesn't.
+
+## When CI runs
+
+| Workflow | When | What |
+|---|---|---|
+| Tests | Every push to every branch | Lint, typecheck, Jest with a coverage floor, every database test against every migration, and the browser smoke tests against a fresh web build |
+| Check migrations | Pull requests that touch migrations | The migration safety checks above, including the row count check |
+| Security audit | Every merge to main, weekly, and pull requests that change packages | `scripts/check-cves.py` |
+| Mutation tests | By hand only (Actions, "Mutation tests", "Run workflow"), to save Actions minutes | Stryker over the child-safety and access rules. Its results are kept in the Actions cache, so only the first run takes about an hour and later runs only test what changed. The report of every surviving change is kept with the run |
+
+The Jest coverage floor is set in `package.json` (`jest.coverageThreshold`): 91% of statements and lines, 85% of branches and 90% of functions (2026-10-19, up from 28%). Raise it when coverage goes up; never lower it to get a change through. A new screen or module comes with tests that keep the total above the floor.
+
+## Writing tests for a change
+
+1. **Database change:** add or update `supabase/tests/<feature>.sql`.
+   - Cover who may call each function, who is refused, the rows it changes, and the child-safety and visibility rules.
+   - Copy the PASS/FAIL style of `record-access.sql`. Catch expected refusals with `pg_temp.fails`, because any `ERROR` fails the run.
+   - If the change adds a table, add it to `role-table-access.sql`. `access-guards.sql` picks it up automatically.
+   - In a row level security policy, write a check on the member as `(select public.is_admin())` or `(select auth.uid())` so it runs once per read, not once per row. A check that needs the row, such as "may see this athlete", goes in a security definer function that returns the whole set the member may see, used as `athlete_id in (select ...)`, with a test in `access-rule-speed.sql` that it matches the per-row rule.
+2. **New or changed role rule in the app:** add rows for every kind of member to `role-access.test.tsx`.
+3. **New screen:** put it behind the right guard in `src/app/_layout.tsx`. The route tests sweep every file under `src/app/admin`, so an admin screen outside the admin guard fails them. A member screen needs a rule in `useRouteAccess` and a row in `route-guards-roles.test.tsx`, which fails when a screen is missing from its table.
+   - If the screen adds a Home or Administration card, add it to `home-by-role.test.tsx` or `administration-by-feature.test.tsx`.
+4. **New pure logic in `src/lib`:** add tests in `src/lib/__tests__/<module>.test.ts`.
+5. **Dates:** fix "today" in any test that depends on it (`jest.useFakeTimers().setSystemTime(...)`), because CI runs in UTC.
+6. **Bugs:** when a test finds a bug, fix it with that test, in the same pull request or the next one. The test must fail before the fix and pass after it.
+7. **Changing what a test expects:** only when the rule itself changes. Say in the pull request which expectations changed and why. Never skip, delete or weaken a test to get green.
+
+## Running the tests locally
+
+```bash
+npm ci
+npx expo lint
+npx tsc --noEmit                    # needs expo-env.d.ts: /// <reference types="expo/types" />
+npm test                            # Jest; add -- --coverage for the coverage summary
+PGHOST=localhost PGUSER=postgres PGPASSWORD=... scripts/run-sql-tests.sh            # every database test
+PGHOST=localhost PGUSER=postgres PGPASSWORD=... scripts/run-sql-tests.sh surveys    # one file
+python3 scripts/check-cves.py
+npm run e2e:build                   # the web build the browser smoke tests use, in e2e/web-build
+npm run e2e                         # the browser smoke tests; e2e/playwright-report has the report
+npm run test:mutation               # mutation tests; reports/mutation/index.html has the report
+npx stryker run --mutate src/lib/safety.ts   # mutation tests for one file
+```
+
+The mutation tests don't run on their own on GitHub, to save the account's Actions minutes. Run them locally, or start the workflow by hand, before opening a pull request that changes one of the files they cover. The first run takes about an hour. After that, runs are incremental (`reports/stryker-incremental.json`): only changes in code or tests that changed since the last run are tested again.
+
+A surviving change in the mutation report is a test to write: a test that fails with the change and passes without it. A few changes can't be caught because they don't change what the code does, such as a shortcut that gives the same answer as the long way. Mark those in the code with `// Stryker disable next-line <mutator>: <why it can't change the result>` so the report shows only real gaps. A hook's fixed dependency list (`[]` changed to `["Stryker was here"]`) can't be marked that way, so the report always lists two of those, in `auth.tsx` and `consents.ts`. To cover a new file, add it to `mutate` in `stryker.config.json`.
+
+The browser smoke tests need Chromium for Playwright: `npx playwright install chromium` once, or set `PLAYWRIGHT_BROWSERS_PATH` to a folder that has it. Build again after changing the app, because the tests run the exported build, not the dev server. Each test starts the browser with Thunder picked (the build's club, at `https://example.supabase.co`) and, unless it's signed out, a sample member's session saved, and answers every Supabase request from that test's handler. `backend.rpcCalls('<function>')` gives the arguments of each call, so a test checks what was saved as well as what shows. A test also fails on any uncaught error in the page (`e2e/support/test.ts`).
+
+The database tests need Postgres 16 and a user that can create databases. `supabase/tests/setup/supabase-stubs.sql` stands in for the parts of Supabase that plain Postgres lacks: the auth, storage, realtime and pg_net pieces. Most tests use the few sample people in `setup/seed-members.sql`; tests about scale and timing load the 200-member club with `\ir setup/large-club.sql`, which is the same every run.
+
+## What isn't covered yet
+
+- **Native phone builds:** the browser smoke tests drive the web build only. Nothing runs the iOS or Android app, so native-only code (secure session storage, push notifications, the camera and file pickers) isn't covered end to end.
+- **Most screens in the browser:** the smoke tests cover a handful of key flows; the rest are covered by the Jest route and screen tests.
+- **The real Supabase platform:** the database tests run on plain Postgres with stubs. "Check migrations" separately confirms that migrations apply to a real Supabase database.

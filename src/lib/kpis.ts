@@ -65,16 +65,29 @@ export type Kpi = {
   measures: KpiMeasure[];
 };
 
+/** One reviewer's note at a review date. */
+export type KpiReviewNote = {
+  reviewer_id: string;
+  reviewer_name: string;
+  note: string;
+  noted_at: string;
+  /** When the person confirmed this review was done with them. */
+  confirmed_at: string | null;
+};
+
 /** A review date in the season, with what's been written for the person. */
 export type KpiReview = {
   point_id: string;
   name: string;
   due_on: string;
+  /** The member's own note, when they review this person. */
   note: string | null;
   noted_by_name: string | null;
   noted_at: string | null;
-  /** When the person confirmed the review was done with them. */
+  /** When the person confirmed the member's own note. */
   confirmed_at: string | null;
+  /** Every reviewer's note: the head coach's and the committee's or an admin's. */
+  notes: KpiReviewNote[];
   self_review: string | null;
   self_reviewed_at: string | null;
 };
@@ -253,9 +266,9 @@ export function kpiCountLabel(count: number, results: number) {
 export function whoSetsLabel(teamRole: TeamRole, coachTitle: CoachTitle | null) {
   if (teamRole === 'athlete') return 'Your coaches';
   if (teamRole === 'coach' && coachTitle === 'assistant_coach') {
-    return 'Your head coach and the committee';
+    return 'Your head coach, the committee and admins';
   }
-  return 'The committee';
+  return 'The committee and admins';
 }
 
 /** Who else can read this person's KPIs, for their own sheet. */
