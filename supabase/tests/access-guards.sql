@@ -35,6 +35,9 @@ revoke all on table public.session_plans, public.session_plan_files, public.sess
 grant select on table public.session_plans, public.session_plan_files, public.session_plan_shares to authenticated;
 revoke all on table public.session_plan_notices from public, anon, authenticated;
 revoke all on public.surveys, public.survey_questions, public.survey_recipients, public.survey_responses, public.survey_answers from public, anon, authenticated; -- 20261017100000_surveys
+revoke all on public.guardian_link_codes, public.guardian_link_code_attempts from public, anon, authenticated; -- 20261020020000_parent_link_codes
+revoke all on public.guardian_link_requests from public, anon, authenticated;
+grant select on public.guardian_link_requests to authenticated;
 -- Supabase's storage API reads storage.objects as the signed-in role.
 grant select, insert, update, delete on storage.objects to anon, authenticated;
 

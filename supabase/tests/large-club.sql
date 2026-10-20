@@ -60,9 +60,20 @@ select pg_temp.ok('children with no consents, and with only the check-ins one',
 -- ---------------------------------------------------------------------------
 -- The rules, worked out independently of the app's functions.
 -- ---------------------------------------------------------------------------
+-- A locked child (20261020020000): an approved athlete under 18 with no
+-- approved, verified parent or guardian linked. They read nothing.
+create temp view lc_locked as
+select p.id from public.profiles p
+where p.status = 'approved' and 'athlete' = any (array[p.role] || p.extra_roles)
+  and case when p.date_of_birth is not null then p.date_of_birth > current_date - interval '18 years'
+    else coalesce(p.under_17, false) end
+  and not exists (
+    select 1 from public.guardianships g join public.profiles gp on gp.id = g.guardian_id
+    where g.athlete_id = p.id and gp.status = 'approved' and gp.verified_at is not null
+      and 'guardian' = any (array[gp.role] || gp.extra_roles));
 create temp view lc_rule_people as
 select p.id,
-  p.status = 'approved' and p.role <> 'volunteer' as approved,
+  p.status = 'approved' and p.role <> 'volunteer' and p.id not in (select id from lc_locked) as approved,
   p.stood_down_at is not null as stood_down,
   coalesce(trim(p.wwcc_number), '') <> '' and p.wwcc_expires_on >= current_date as current_check,
   case when p.date_of_birth is not null then p.date_of_birth > current_date - interval '18 years'
@@ -263,7 +274,7 @@ select pg_temp.same('messages: every approved recipient reads their copy (physio
   (select count(*) from public.message_recipients r join lc_viewers v on v.id = r.profile_id),
   (select count(*) from public.message_recipients r join lc_viewers v on v.id = r.profile_id join lc_members p on p.id = r.profile_id
    where p.status = 'approved' and p.stood_down_at is null and not ('physio' = any (array[p.role] || p.extra_roles))
-     and p.role not in ('guest', 'volunteer')
+     and p.role not in ('guest', 'volunteer') and p.id not in (select id from lc_locked)
      and not exists (select 1 from lc_seen s where s.what = 'messages' and s.viewer = r.profile_id and s.subject = r.message_id)),
   null);
 select pg_temp.ok('a stood-down coach reads none of the squad messages they got as a coach',
@@ -274,7 +285,8 @@ select pg_temp.ok('a stood-down coach reads none of the squad messages they got 
 
 -- ---------------------------------------------------------------------------
 -- Who a squad message reaches, sent through send_group_message: everyone in
--- the group but the sender, plus one copy for each approved guardian of the
+-- the group but the sender (a guardian placed with their child is in it as a
+-- guardian only), plus one copy for each approved guardian of the
 -- group's children under 18, naming every one of their children in it.
 -- ---------------------------------------------------------------------------
 create temp view lc_group_messages as
@@ -308,7 +320,10 @@ with copies as (
       join lc_rule_people c on c.id = tm.profile_id and c.minor
       where tm.team_id = m.team_id order by 1) as children
   from public.message_recipients r join lc_group_messages m on m.id = r.message_id
-  where not exists (select 1 from public.team_members tm where tm.team_id = m.team_id and tm.profile_id = r.profile_id)
+  -- A guardian placed in the group with their child is in it only as a
+  -- guardian, so gets the copy naming their children.
+  where not exists (select 1 from public.team_members tm where tm.team_id = m.team_id and tm.profile_id = r.profile_id
+                      and tm.team_role <> 'guardian')
 )
 select pg_temp.same('a guardian''s copy names every one of their children in the group, and only them',
   (select count(*) from copies),
@@ -320,7 +335,8 @@ select pg_temp.ok('a guardian with two children in one squad gets one copy namin
 select pg_temp.ok('a guardian who is also in the group gets their own copy, not a child''s',
   (select count(*) from public.message_recipients r join lc_group_messages m on m.id = r.message_id
    where r.for_children is not null
-     and exists (select 1 from public.team_members tm where tm.team_id = m.team_id and tm.profile_id = r.profile_id)) = 0, true);
+     and exists (select 1 from public.team_members tm where tm.team_id = m.team_id and tm.profile_id = r.profile_id
+                   and tm.team_role <> 'guardian')) = 0, true);
 select pg_temp.ok('the club notice reaches all 180-odd approved members but guests and temporary helpers',
   (select count(*) from public.message_recipients r join public.messages m on m.id = r.message_id
      join lc_members p on p.id = r.profile_id

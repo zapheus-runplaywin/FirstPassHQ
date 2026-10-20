@@ -31,7 +31,10 @@ $$ select exists (select 1 from public.team_members where team_id = pg_temp.m(n)
 -- (31) is in Sample Team (a2), so Logan Parent (41) and the coach-parent
 -- Morgan (42, a coach of the squad only) are in it as guardians.
 select pg_temp.ok('the migration placed the junior''s guardians in the team', pg_temp.in_team('a2', '41', 'guardian') and pg_temp.in_team('a2', '42', 'guardian'), true);
-select pg_temp.ok('nobody was placed in the squad', (select count(*) = 0 from public.team_members where team_id = pg_temp.m('a1') and team_role = 'guardian'), true);
+-- Since 20261020020000 guardians follow their child into squads too: Logan
+-- is in Sample Squad as a guardian, and Morgan stays in it as a coach.
+select pg_temp.ok('the junior''s guardian was placed in the squad too', pg_temp.in_team('a1', '41', 'guardian') and pg_temp.in_team('a1', '42', 'coach'), true);
+select pg_temp.ok('only that guardian was placed in the squad', (select count(*) = 1 from public.team_members where team_id = pg_temp.m('a1') and team_role = 'guardian'), true);
 
 -- The coach-parent as a coach of the team.
 select pg_temp.as_member('01');
@@ -66,7 +69,7 @@ select pg_temp.ok('the physio left the first team', not pg_temp.in_team('a2', '1
 select pg_temp.ok('and stays out of the squad while in the second', pg_temp.in_team('b5', '14', 'physio') and not pg_temp.in_team('a1', '14', 'physio'), true);
 select pg_temp.works('admin names the second team without the physio', $s$ select public.admin_set_team_members('00000000-0000-0000-0000-0000000000b5', '[{"profile_id": "00000000-0000-0000-0000-000000000032"}]') $s$);
 select pg_temp.ok('picked for none of the squad''s teams, the physio is back in the squad', pg_temp.in_team('a1', '14', 'physio') and not pg_temp.in_team('b5', '14', 'physio'), true);
-select pg_temp.ok('the squad''s seven placements are as seeded', (select count(*) = 7 from public.team_members where team_id = pg_temp.m('a1')), true);
+select pg_temp.ok('the squad''s placements are as seeded, with the guardian placed with the junior', (select count(*) = 8 from public.team_members where team_id = pg_temp.m('a1')), true);
 -- A physio placed in another squad keeps that placement whatever this squad's teams do.
 insert into public.teams (id, name, kind, season, sort_order) values (pg_temp.m('b6'), 'Other Squad', 'squad', 2026, 7);
 insert into public.team_members (team_id, profile_id, team_role) values (pg_temp.m('b6'), pg_temp.m('14'), 'physio');
@@ -110,14 +113,14 @@ select pg_temp.works('admin names the team with the second child only', $s$ sele
 select pg_temp.ok('the guardian stays while the other child is in the team', pg_temp.in_team('a2', '41', 'guardian'), true);
 select pg_temp.ok('the coach-parent, guardian of the first child only, left', not pg_temp.in_team('a2', '42', 'guardian'), true);
 
--- Adults bring nobody, and squads are untouched.
+-- Adults bring nobody. A child placed in a squad brings their guardians.
 insert into public.guardianships (guardian_id, athlete_id) values (pg_temp.m('41'), pg_temp.m('32'));
 select pg_temp.works('admin names the team with the adult athlete', $s$ select public.admin_set_team_members('00000000-0000-0000-0000-0000000000a2', '[{"profile_id": "00000000-0000-0000-0000-000000000032"}]') $s$);
 select pg_temp.ok('an adult athlete''s guardian link places nobody', not pg_temp.in_team('a2', '41', 'guardian'), true);
 delete from public.guardianships where guardian_id = pg_temp.m('41') and athlete_id = pg_temp.m('32');
 insert into public.teams (id, name, kind, season, sort_order) values (pg_temp.m('b3'), 'Second Squad', 'squad', 2026, 3);
 insert into public.team_members (team_id, profile_id, team_role) values (pg_temp.m('b3'), pg_temp.m('31'), 'athlete');
-select pg_temp.ok('placing a child in a squad places no guardian', (select count(*) = 1 from public.team_members where team_id = pg_temp.m('b3')), true);
+select pg_temp.ok('placing a child in a squad places their guardians with them', pg_temp.in_team('b3', '41', 'guardian') and pg_temp.in_team('b3', '42', 'guardian') and (select count(*) = 3 from public.team_members where team_id = pg_temp.m('b3')), true);
 
 -- The rule holds for a team without a squad too.
 insert into public.teams (id, name, kind, season, sort_order) values (pg_temp.m('b4'), 'Free Team', 'team', 2026, 5);

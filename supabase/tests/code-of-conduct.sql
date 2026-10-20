@@ -81,12 +81,13 @@ select pg_temp.ok('unverified guardian is not asked for the child',
   (select count(*) = 0 from public.my_conduct_todos() where for_child), true);
 update public.profiles set verified_at = now() where id = '00000000-0000-0000-0000-000000000041';
 
--- Under 18 with no guardian accepts themselves
+-- Under 18 with no guardian: locked until a verified guardian is linked
+-- (20261020020000), so nothing to do yet.
 delete from public.guardianships where athlete_id = '00000000-0000-0000-0000-000000000031';
 delete from public.conduct_acceptances where profile_id = '00000000-0000-0000-0000-000000000031';
 select pg_temp.as_member('31');
-select pg_temp.ok('child with no guardian has it to do',
-  (select count(*) = 1 from public.my_conduct_todos()), true);
+select pg_temp.ok('child with no guardian is locked, so has nothing to do',
+  (select count(*) = 0 from public.my_conduct_todos()), true);
 
 -- Guests aren't asked
 update public.profiles set role = 'guest', extra_roles = '{}' where id = '00000000-0000-0000-0000-000000000014';

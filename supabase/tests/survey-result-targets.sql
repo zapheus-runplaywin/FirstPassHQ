@@ -11,10 +11,12 @@ create temp table ids (k text primary key, v uuid);
 create temp table people (n serial, id uuid);
 grant all on ids, people to authenticated;
 grant usage on sequence people_n_seq to authenticated;
--- Everyone a survey to the group reaches.
+-- Everyone a survey to the group reaches. A guardian placed in the squad with
+-- their child (20261020020000) isn't in its audience in their own right.
 insert into people (id)
 select tm.profile_id from public.team_members tm join public.profiles p on p.id = tm.profile_id
 where tm.team_id = '00000000-0000-0000-0000-0000000000a1' and p.status = 'approved'
+  and tm.team_role <> 'guardian'
   and p.role not in ('guest', 'volunteer') and p.id <> '00000000-0000-0000-0000-000000000011'
 order by tm.profile_id;
 set role authenticated;

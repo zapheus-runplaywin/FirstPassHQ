@@ -77,7 +77,9 @@ select pg_temp.ok('other needs a note', (select stood_down_at is null from publi
 select public.admin_stand_down('00000000-0000-0000-0000-000000000042', 'interim_negative_notice', 'Letter received 12/10');
 select pg_temp.ok('coach-parent stood down', (select stood_down_at is not null from public.profiles where id = '00000000-0000-0000-0000-000000000042'), true);
 select pg_temp.ok('coach place removed', (select count(*) = 0 from public.team_members where profile_id = '00000000-0000-0000-0000-000000000042' and team_role <> 'guardian'), true);
-select pg_temp.ok('their place as their child''s guardian stays', (select count(*) = 1 from public.team_members where profile_id = '00000000-0000-0000-0000-000000000042' and team_role = 'guardian'), true);
+-- Guardians follow their child into squads as well as teams (20261020020000),
+-- so the coach-parent stays in the squad they coached, as Jordan's guardian.
+select pg_temp.ok('their places as their child''s guardian stay, in the team and the squad', (select count(*) = 2 from public.team_members where profile_id = '00000000-0000-0000-0000-000000000042' and team_role = 'guardian'), true);
 select pg_temp.ok('stand-down recorded', (select count(*) = 1 from public.stand_downs where profile_id = '00000000-0000-0000-0000-000000000042' and lifted_at is null and jsonb_array_length(placements) = 1), true);
 
 select pg_temp.as_member('42');
@@ -98,6 +100,7 @@ select pg_temp.ok('can''t re-place a stood-down coach', (select count(*) = 0 fro
 select public.admin_lift_stand_down('00000000-0000-0000-0000-000000000042', 'Notice withdrawn');
 select pg_temp.ok('lifted', (select stood_down_at is null from public.profiles where id = '00000000-0000-0000-0000-000000000042'), true);
 select pg_temp.ok('place put back', (select count(*) = 1 from public.team_members where profile_id = '00000000-0000-0000-0000-000000000042' and team_role = 'coach' and coach_title = 'assistant_coach'), true);
+select pg_temp.ok('the coaching place took over from the guardian place in the squad', (select team_role::text = 'coach' from public.team_members where profile_id = '00000000-0000-0000-0000-000000000042' and team_id = '00000000-0000-0000-0000-0000000000a1'), true);
 select pg_temp.ok('history kept', (select count(*) = 1 from public.stand_downs where profile_id = '00000000-0000-0000-0000-000000000042' and lifted_by_name is not null), true);
 select pg_temp.as_member('42');
 select pg_temp.ok('lifted coach messages squad again', public.can_message_group('00000000-0000-0000-0000-0000000000a1'), true);
