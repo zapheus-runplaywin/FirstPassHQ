@@ -360,3 +360,36 @@ select pg_temp.timed('head coach: sent messages and receipts', pg_temp.lc(8), 's
 select pg_temp.timed('guardian of four: their children', pg_temp.lc(7), 'select * from public.my_athletes()',
   (select count(*) from public.guardianships g join lc_rule_people c on c.id = g.athlete_id and c.minor where g.guardian_id = pg_temp.lc(7)));
 select pg_temp.timed('guardian of four: their children''s consents', pg_temp.lc(7), 'select * from public.my_child_consents()');
+
+-- The tables the app reads directly, through row level security, as the head
+-- coach: every row they may see, in one read, and each rule checked once per
+-- read rather than once per row (20261020010000_faster_access_rules.sql).
+grant select on public.attendance_sessions, public.attendance_marks to authenticated;
+create or replace function pg_temp.timed_read(label text, who uuid, tbl text, expected_rows bigint)
+returns text language plpgsql as
+$$ declare started timestamptz; ms int; got bigint; begin
+     perform set_config('request.jwt.claim.sub', who::text, false);
+     execute 'set local role authenticated';
+     started := clock_timestamp();
+     execute format('select count(*) from public.%I', tbl) into got;
+     ms := extract(epoch from clock_timestamp() - started) * 1000;
+     execute 'reset role';
+     perform set_config('request.jwt.claim.sub', '', false);
+     return case when ms <= 500 and got = expected_rows and got > 0 then 'PASS ' else 'FAIL ' end
+       || label || ' (' || got || ' rows, expected ' || expected_rows || ', ' || ms || ' ms)';
+   exception when others then execute 'reset role'; return 'FAIL ' || label || ' (' || sqlerrm || ')'; end $$;
+create or replace function pg_temp.as_member(who uuid, q text) returns bigint language plpgsql as
+$$ declare got bigint; begin
+     perform set_config('request.jwt.claim.sub', who::text, false);
+     execute q into got;
+     perform set_config('request.jwt.claim.sub', '', false);
+     return got; end $$;
+
+select pg_temp.timed_read('head coach: every attendance mark they may see', pg_temp.lc(8), 'attendance_marks',
+  pg_temp.as_member(pg_temp.lc(8), 'select count(*) from public.attendance_marks where public.can_see_attendance_session(session_id)'));
+select pg_temp.timed_read('head coach: every attendance session they may see', pg_temp.lc(8), 'attendance_sessions',
+  pg_temp.as_member(pg_temp.lc(8), 'select count(*) from public.attendance_sessions where public.can_see_attendance_session(id)'));
+select pg_temp.timed_read('head coach: every check-in they may see', pg_temp.lc(8), 'check_ins',
+  pg_temp.as_member(pg_temp.lc(8), 'select count(*) from public.check_ins where public.can_view_check_ins(athlete_id)'));
+select pg_temp.timed_read('committee: every attendance mark', pg_temp.lc(3), 'attendance_marks',
+  (select count(*) from public.attendance_marks));
