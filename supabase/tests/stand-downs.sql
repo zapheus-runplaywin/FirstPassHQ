@@ -76,7 +76,8 @@ select pg_temp.fails('other without a note refused', $$select public.admin_stand
 select pg_temp.ok('other needs a note', (select stood_down_at is null from public.profiles where id = '00000000-0000-0000-0000-000000000042'), true);
 select public.admin_stand_down('00000000-0000-0000-0000-000000000042', 'interim_negative_notice', 'Letter received 12/10');
 select pg_temp.ok('coach-parent stood down', (select stood_down_at is not null from public.profiles where id = '00000000-0000-0000-0000-000000000042'), true);
-select pg_temp.ok('coach place removed', (select count(*) = 0 from public.team_members where profile_id = '00000000-0000-0000-0000-000000000042'), true);
+select pg_temp.ok('coach place removed', (select count(*) = 0 from public.team_members where profile_id = '00000000-0000-0000-0000-000000000042' and team_role <> 'guardian'), true);
+select pg_temp.ok('their place as their child''s guardian stays', (select count(*) = 1 from public.team_members where profile_id = '00000000-0000-0000-0000-000000000042' and team_role = 'guardian'), true);
 select pg_temp.ok('stand-down recorded', (select count(*) = 1 from public.stand_downs where profile_id = '00000000-0000-0000-0000-000000000042' and lifted_at is null and jsonb_array_length(placements) = 1), true);
 
 select pg_temp.as_member('42');
@@ -93,7 +94,7 @@ select pg_temp.ok('stood-down member can''t lift their own', (select stood_down_
 select pg_temp.as_member('01');
 select pg_temp.fails('placing a stood-down coach refused', $$insert into public.team_members (team_id, profile_id, team_role, coach_title)
 values ('00000000-0000-0000-0000-0000000000a2', '00000000-0000-0000-0000-000000000042', 'coach', 'assistant_coach')$$);
-select pg_temp.ok('can''t re-place a stood-down coach', (select count(*) = 0 from public.team_members where profile_id = '00000000-0000-0000-0000-000000000042'), true);
+select pg_temp.ok('can''t re-place a stood-down coach', (select count(*) = 0 from public.team_members where profile_id = '00000000-0000-0000-0000-000000000042' and team_role <> 'guardian'), true);
 select public.admin_lift_stand_down('00000000-0000-0000-0000-000000000042', 'Notice withdrawn');
 select pg_temp.ok('lifted', (select stood_down_at is null from public.profiles where id = '00000000-0000-0000-0000-000000000042'), true);
 select pg_temp.ok('place put back', (select count(*) = 1 from public.team_members where profile_id = '00000000-0000-0000-0000-000000000042' and team_role = 'coach' and coach_title = 'assistant_coach'), true);

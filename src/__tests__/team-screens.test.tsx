@@ -245,6 +245,21 @@ describe('game goals on a team’s page', () => {
     expect(push).toHaveBeenCalledWith({ pathname: '/goals/team', params: { fixture: 'fx1' } });
   });
 
+  it('an admin reads this team’s goals through the admin list, and opens them', async () => {
+    await openTeam('admin', TEAM.id, {}, { rpcs: { admin_team_games: [GAME, { ...GAME, team_id: TEAM_B.id, fixture_id: 'fx9', opponent: 'Elsewhere' }] } });
+    expect(screen.getByText('Team goals')).toBeTruthy();
+    expect(screen.getByText(/^The goals its coaches set for the whole team before each game/)).toBeTruthy();
+    expect(screen.getByText('Round 3 v Sample Storm')).toBeTruthy();
+    expect(screen.queryByText('Round 3 v Elsewhere')).toBeNull();
+    fireEvent.press(screen.getByText('Round 3 v Sample Storm'));
+    expect(push).toHaveBeenCalledWith({ pathname: '/goals/team', params: { fixture: 'fx1' } });
+  });
+
+  it('an admin gets no team goals on a squad’s page', async () => {
+    await openTeam('admin', DONE_SQUAD.id, {}, { rpcs: { admin_team_games: [{ ...GAME, team_id: DONE_SQUAD.id }] } });
+    expect(screen.queryByText('Team goals')).toBeNull();
+  });
+
   it('a coach with no game this week is told when team goals open', async () => {
     await openTeam('coach');
     expect(screen.getByText('No game in the next 7 days. Team goals open a week before each game.')).toBeTruthy();

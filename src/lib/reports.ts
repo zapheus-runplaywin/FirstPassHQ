@@ -32,6 +32,7 @@ import type { Report, ReportRow, ReportSection } from '@/lib/pdf';
 import { hasRole, rolesOf } from '@/lib/roles';
 import {
   barringNotices,
+  committeeChecksDue,
   exemptionStatus,
   needsWwcc,
   screeningNoticeLabels,
@@ -161,6 +162,8 @@ export function wwccReport(
   officerName: string | null = null,
   /** Who accepted the club's policies, newest first. */
   acknowledgements: Acknowledgement[] = [],
+  /** The day from which committee members need a check, if the club has one. */
+  committeeChecksFrom: string | null = null,
 ): Report {
   const approved = members.filter((m) => m.status === 'approved');
   // Temporary helpers outside their dates need nothing, and are listed on their own.
@@ -262,7 +265,11 @@ export function wwccReport(
     sections: [
       {
         title: 'Needs attention',
-        note: `Missing, expired or expiring within ${WWCC_WARNING_DAYS} days, never validated or validated over a year ago, or not registered with the club (so the Screening Unit tells the club if the card’s status changes). Their coach, manager, physio and committee roles are paused while a check is missing or expired. Admin roles are not paused, so the club is never locked out, but an admin can be stood down.`,
+        note: `Missing, expired or expiring within ${WWCC_WARNING_DAYS} days, never validated or validated over a year ago, or not registered with the club (so the Screening Unit tells the club if the card’s status changes). Their coach, manager and physio roles are paused while a check is missing or expired, and committee roles ${
+          committeeChecksFrom && !committeeChecksDue(committeeChecksFrom)
+            ? `from ${formatDateString(committeeChecksFrom)}`
+            : 'too'
+        }. Admin roles are not paused, so the club is never locked out, but an admin can be stood down.`,
         columns,
         rows: people
           .filter((p) => p.status.problem || (current(p.status) && wwccRecordIssues(p.member).length > 0))

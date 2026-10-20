@@ -98,7 +98,7 @@ What each role sees on its home screen:
 | Send surveys and polls, see results    | Captains' polls† |                 |  Own groups  | Own groups |    Anyone     |               |         |    Anyone     |
 | Daily check-in                         |    ✓    |                 |              |            |               |               |         |               |
 | Game goals and reflections             |   Own   |  See athlete's  | Own athletes |            |               |               |         |               |
-| Team goals for a game                  | See, comment |       See       | Set, review, comment |            |               |               |         |               |
+| Team goals for a game                  | See, comment |       See       | Set, review, comment |            |               |               |         |      See      |
 | Check-ins of others                    |         | Their athlete's | Own athletes |            | Averages only | Averages only |         | Averages only |
 | Report an injury                       |   Own   | Their athlete's |              |            |               |               |         |               |
 | See injuries                           |   Own   | Their athlete's | Own athletes |            |     All¶      |  Own athletes‡ |         |      All      |
@@ -1189,7 +1189,7 @@ last played game.
   team can. Until a team goal is set, "Set team goals for …" stays in your to-do list.
 - The team's athletes and their parents or guardians see the team goals above each
   athlete's own goals. Team goals are for the team's coaches and athletes: its managers and
-  physios don't see them.
+  physios don't see them. Admins can read them and the comments, from the team's page.
 - The team's athletes and coaches can comment on a team goal, before or after the game, so every
   athlete has a say. Their comments show under each goal, and you can add your own with
   **Comment**. Coaches can **Remove** any comment on their team's goals; athletes can remove only
@@ -2062,7 +2062,8 @@ works more simply:
 - **Choose who is in a team** (tap it): every approved athlete, coach and manager is listed. Pick
   **Final team**, **Training partner** or **Not selected** for athletes, and **In this team** or
   **Not in this team** for coaches and managers. For a coach in the team, choose **Head Coach** or
-  **Assistant Coach**. Guardians are added from their member page and stay when you save.
+  **Assistant Coach**. The parents and guardians of an athlete under 18 follow them into and out of
+  the team by themselves.
 - On a member's page, **Teams** replaces **Squads**, and athletes are picked as a final team athlete
   or training partner for each team.
 - There is no squad phase to mark complete: coaches look after their team's athletes from the start.
@@ -2082,9 +2083,13 @@ With squads on:
 - **Add a squad or team**: choose Team or Squad, give it a name, and for a team pick the squad it's
   named from.
 - **Name a team** (tap it): for each person in the squad, choose **Final team**, **Training partner**
-  or **Not selected** for athletes, and **In this team** or **Not in this team** for coaches, managers and physios. For a coach in the team, choose **Head
-  Coach** or **Assistant Coach**; they start with
-  the one they have in the squad. People not selected stay in the squad.
+  or **Not selected** for athletes, and **In this team** or **Not in this team** for coaches and
+  managers. For a coach in the team, choose **Head Coach** or **Assistant Coach**; they start with
+  the one they have in the squad. People not selected stay in the squad. Saving changes only the
+  athletes, coaches and managers: physios stay in the squad until you move them from their member
+  page, and the parents and guardians of an athlete under 18 follow them, joining the team when the
+  athlete is put in it and leaving when the athlete does (unless another of their children is in
+  it), so they see its calendar, matches and people.
 - **Rename** or **Remove** a squad or team. Removing it takes it off this season's lists, home
   screens and coaches' to-dos; its attendance and other records are kept and you can **Bring
   back** it later.
@@ -2243,7 +2248,7 @@ athletes are still expected at training, and their injury is recorded under **In
 
 ### Club captains
 
-**Club captains** in Administration lists the athletes in the current season's squads and teams.
+**Club captains** in Administration (when Messages is on) lists the athletes in the current season's squads and teams.
 Tap the athletes who are club captains (yellow means chosen) and tap **Save club captains**. Club
 captains can message everyone in the club until that season is archived; choose new ones each
 season. If last season is still running alongside the new one, pick the season first. Athletes
@@ -2284,7 +2289,7 @@ takes it off everyone's to-do list but keeps its certificates, and you can bring
 **Add the safeguarding induction** adds Sport Integrity Australia's free **Child Safeguarding in
 Sport Induction** to the season in one tap, for coaches, managers, physios and the committee across
 the whole club, due in 3 months, with its course link. Open it afterwards to change who does it or
-when. The button goes once the season has the course.
+when. The button goes while the season has the course, and comes back if that course is archived.
 
 Training is set per season because it must be done every year. When a new season starts, open it in Integrity training and tap **Copy 2026–27 training** (last
 season's). The button shows while last season has a course this season doesn't have yet. Each

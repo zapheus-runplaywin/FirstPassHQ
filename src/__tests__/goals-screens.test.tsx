@@ -609,16 +609,62 @@ function teamGame(extra: Partial<CoachTeamGame> = {}): CoachTeamGame {
 
 async function openTeam(
   who: Who,
-  { games = [teamGame()], goals = [] as TeamGameGoal[], comments = [] as TeamGameGoalComment[], errors = {} as Record<string, string> } = {},
+  {
+    games = [teamGame()],
+    adminGames = [] as CoachTeamGame[],
+    goals = [] as TeamGameGoal[],
+    comments = [] as TeamGameGoalComment[],
+    errors = {} as Record<string, string>,
+  } = {},
 ) {
   await openScreen(
     who,
     { 'goals/team': TeamGoalsScreen },
     '/goals/team?fixture=fx1',
     { team_game_goals: goals, team_game_goal_comments: comments },
-    { rpcs: { coach_team_games: games }, rpcErrors: errors },
+    { rpcs: { coach_team_games: games, admin_team_games: adminGames }, rpcErrors: errors },
   );
 }
+
+describe('an admin reading a team’s goals', () => {
+  it('reads the goals, reviews and comments, and can change nothing', async () => {
+    await openTeam('admin', {
+      games: [],
+      adminGames: [teamGame()],
+      goals: [teamGoal()],
+      comments: [teamComment()],
+    });
+    expect(screen.getByText(/^The goals the team’s coaches set for this game/)).toBeTruthy();
+    expect(screen.getByText('Team goal 1 · set by Coach Sample coach')).toBeTruthy();
+    expect(screen.getByText('Win the third quarter')).toBeTruthy();
+    expect(screen.queryByText('Edit')).toBeNull();
+    expect(screen.queryByText('Add team goal')).toBeNull();
+    expect(screen.queryByText('Remove')).toBeNull();
+    expect(screen.queryByPlaceholderText('What you think, and what you’ll do to help')).toBeNull();
+    expect(rpcCalls('admin_team_games')).toHaveLength(1);
+  });
+
+  it('reads a played game without the review form', async () => {
+    await openTeam('admin', {
+      games: [],
+      adminGames: [teamGame({ ...PLAYED, is_next: false })],
+      goals: [teamGoal()],
+    });
+    expect(screen.queryByText(/^How did the team go\?/)).toBeNull();
+    expect(screen.queryByText('Save review')).toBeNull();
+  });
+
+  it('says when the game isn’t in either list', async () => {
+    await openTeam('admin', { games: [], adminGames: [] });
+    expect(screen.getByText('This game isn’t available any more.')).toBeTruthy();
+  });
+
+  it('a coach of the team is never read only, so the admin list isn’t asked for', async () => {
+    await openTeam('coach', { goals: [teamGoal()] });
+    expect(screen.getByText('Edit')).toBeTruthy();
+    expect(rpcCalls('admin_team_games')).toHaveLength(0);
+  });
+});
 
 describe('a coach’s team goals', () => {
   it('adds a goal for the whole team before the game', async () => {

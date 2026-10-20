@@ -9,6 +9,7 @@ import { Card, ErrorText, PressableCard } from '@/components/ui';
 import { Spacing } from '@/constants/theme';
 import { useTheme } from '@/hooks/use-theme';
 import { type Affiliation, type Officer, type ReturnInfo } from '@/lib/affiliation';
+import { useAuth } from '@/lib/auth';
 import { useClub } from '@/lib/club';
 import type { ClubPolicies } from '@/lib/consents';
 import { toDateString } from '@/lib/injuries';
@@ -42,6 +43,7 @@ type Data = {
  * shown as it will be sent, with a button that sends it as a PDF.
  */
 export default function AffiliationReturnScreen() {
+  const { committeeChecksFrom } = useAuth();
   const club = useClub();
   const teams = useTeams();
   const [data, setData] = useState<Data | null>(null);
@@ -90,6 +92,7 @@ export default function AffiliationReturnScreen() {
           wwccData.notices,
           wwccData.officerName,
           wwccData.acknowledgements,
+          committeeChecksFrom,
         ).stats,
         training: {
           season: seasonLabel(trainingSeason),
@@ -104,7 +107,7 @@ export default function AffiliationReturnScreen() {
     } catch (e) {
       setError(e instanceof Error ? e.message : 'The return didn’t load. Try again.');
     }
-  }, [teams, trainingSeason]);
+  }, [committeeChecksFrom, teams, trainingSeason]);
 
   useFocusEffect(
     useCallback(() => {

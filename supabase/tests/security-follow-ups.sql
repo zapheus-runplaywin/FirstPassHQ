@@ -102,8 +102,9 @@ select pg_temp.ok('other squad member votes in theirs',
 select pg_temp.ok('the club award is still open to everyone',
   '00000000-0000-0000-0000-000000000054' in (select public.award_voters('00000000-0000-0000-0000-0000000000c2', null)), true);
 select pg_temp.as_member('32');
+-- 7 since the admin guide audit's rule placed Logan Parent (41) in Sample Team, named from the squad.
 select pg_temp.ok('squad award nominees are that squad only',
-  (select count(*) = 6 from public.award_nominee_pool('00000000-0000-0000-0000-0000000000c1', '00000000-0000-0000-0000-0000000000a1')), true);
+  (select count(*) = 7 from public.award_nominee_pool('00000000-0000-0000-0000-0000000000c1', '00000000-0000-0000-0000-0000000000a1')), true);
 select pg_temp.ok('no other-squad names',
   not exists (select 1 from public.award_nominee_pool('00000000-0000-0000-0000-0000000000c1', '00000000-0000-0000-0000-0000000000a1') where name = 'Other Squad Athlete'), true);
 select pg_temp.ok('club award lists everyone',

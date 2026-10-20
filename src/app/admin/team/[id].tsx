@@ -70,7 +70,11 @@ export default function NameTeamScreen() {
           supabase.rpc('team_roster', { p_team_id: loadedTeam.squad_id }),
         ]);
         setSquad(squadResult.data as Team | null);
-        members = (squadRoster.data as RosterEntry[] | null) ?? [];
+        // Physios stay in the squad until an admin moves them from their
+        // member page, and guardians follow their athlete (Matt, 20 October).
+        members = ((squadRoster.data as RosterEntry[] | null) ?? []).filter(
+          (m) => m.team_role !== 'physio',
+        );
       } else {
         // Without a squad, anyone in the club who can be in a team: athletes first.
         const { data: people } = await supabase

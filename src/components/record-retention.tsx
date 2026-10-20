@@ -289,9 +289,9 @@ export function RecordRetention() {
       <ThemedText type="smallBold">Keeping records</ThemedText>
       <ThemedText type="small" themeColor="textSecondary">
         How long the club keeps members’ records, adults’ and children’s. Concerns are never
-        removed. Injuries are removed 12 months after an athlete leaves. Join requests are removed
-        90 days after they’re turned down or left unanswered, and temporary helpers a year after
-        their end date.
+        removed. Injuries are removed 12 months after an athlete leaves. Once Remove old records
+        is on, join requests go 90 days after they’re turned down or left unanswered, and
+        temporary helpers with no other role a year after their end date.
       </ThemedText>
       <Card style={styles.row}>
         <View style={styles.text}>

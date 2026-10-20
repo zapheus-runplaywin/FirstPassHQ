@@ -314,7 +314,8 @@ select pg_temp.fails('the same season cannot start twice', $s$ select public.adm
 select pg_temp.ok('season list shows both seasons, newest first', (select array_agg(season) = array[2027, 2026] from public.season_list()), true);
 
 -- Returning members and placing them.
-select pg_temp.ok('everyone in last season''s squad is returning', (select count(*) = 7 from public.returning_members(pg_temp.team('Sample Squad', 2027))), true);
+-- Logan Parent (41) is returning too: the admin guide audit's rule placed them in Sample Team with their child.
+select pg_temp.ok('everyone in last season''s squad and team is returning', (select count(*) = 8 from public.returning_members(pg_temp.team('Sample Squad', 2027))), true);
 select pg_temp.ok('returning junior''s last squad is shown', (select last_squad_name = 'Sample Squad' and role = 'athlete' from public.returning_members(pg_temp.team('Sample Squad', 2027)) where profile_id = pg_temp.m('31')), true);
 select pg_temp.as_member('11');
 select pg_temp.ok('coach sees no returning members', (select count(*) = 0 from public.returning_members(pg_temp.team('Sample Squad', 2027))), true);
@@ -325,7 +326,7 @@ select pg_temp.fails('placing into a missing squad refused', format('select publ
 select pg_temp.ok('admin places three, a pending member is skipped', public.admin_place_members(pg_temp.team('Sample Squad', 2027), array[pg_temp.m('31'), pg_temp.m('11'), pg_temp.m('14'), pg_temp.m('34')]) = 3, true);
 select pg_temp.ok('placed with last season''s roles and coach title', (select array_agg(profile_id::text || ':' || team_role || ':' || coalesce(coach_title::text, '-') order by profile_id) = array[pg_temp.m('11') || ':coach:head_coach', pg_temp.m('14') || ':physio:-', pg_temp.m('31') || ':athlete:-'] from public.team_members where team_id = pg_temp.team('Sample Squad', 2027)), true);
 select pg_temp.ok('placing again adds nobody', public.admin_place_members(pg_temp.team('Sample Squad', 2027), array[pg_temp.m('31')]) = 0, true);
-select pg_temp.ok('placed members are no longer returning', (select count(*) = 4 from public.returning_members(pg_temp.team('Sample Squad', 2027))), true);
+select pg_temp.ok('placed members are no longer returning', (select count(*) = 5 from public.returning_members(pg_temp.team('Sample Squad', 2027))), true);
 
 -- Naming a team from the new squad.
 insert into public.teams (id, name, kind, season, squad_id, sort_order) values
@@ -337,9 +338,10 @@ select pg_temp.fails('members must be a list', $s$ select public.admin_set_team_
 select pg_temp.fails('naming a missing team refused', $s$ select public.admin_set_team_members('00000000-0000-0000-0000-0000000000ee', '[]') $s$);
 select pg_temp.fails('team members must be in its squad', $s$ select public.admin_set_team_members('00000000-0000-0000-0000-0000000000b7', '[{"profile_id": "00000000-0000-0000-0000-000000000032"}]') $s$);
 select pg_temp.works('admin names the team', $s$ select public.admin_set_team_members('00000000-0000-0000-0000-0000000000b7', '[{"profile_id": "00000000-0000-0000-0000-000000000031", "selection": "training_partner"}, {"profile_id": "00000000-0000-0000-0000-000000000011", "coach_title": "assistant_coach"}]') $s$);
-select pg_temp.ok('team members take their squad roles', (select array_agg(profile_id::text || ':' || team_role || ':' || coalesce(selection::text, coach_title::text) order by profile_id) = array[pg_temp.m('11') || ':coach:assistant_coach', pg_temp.m('31') || ':athlete:training_partner'] from public.team_members where team_id = pg_temp.m('b7')), true);
+select pg_temp.ok('team members take their squad roles', (select array_agg(profile_id::text || ':' || team_role || ':' || coalesce(selection::text, coach_title::text) order by profile_id) = array[pg_temp.m('11') || ':coach:assistant_coach', pg_temp.m('31') || ':athlete:training_partner'] from public.team_members where team_id = pg_temp.m('b7') and team_role <> 'guardian'), true);
+select pg_temp.ok('the junior''s guardians followed them into the team', (select array_agg(profile_id order by profile_id) = array[pg_temp.m('41'), pg_temp.m('42')] from public.team_members where team_id = pg_temp.m('b7') and team_role = 'guardian'), true);
 select pg_temp.works('admin names it again with just the athlete', $s$ select public.admin_set_team_members('00000000-0000-0000-0000-0000000000b7', '[{"profile_id": "00000000-0000-0000-0000-000000000031"}]') $s$);
-select pg_temp.ok('team replaced, athlete touring by default', (select count(*) = 1 and bool_and(selection = 'touring') from public.team_members where team_id = pg_temp.m('b7')), true);
+select pg_temp.ok('the coach left, the athlete is touring by default, their guardians stay', (select count(*) = 3 and bool_and(selection = 'touring' or team_role = 'guardian') and not bool_or(team_role = 'coach') from public.team_members where team_id = pg_temp.m('b7')), true);
 
 -- A team with no squad, which then joins one.
 insert into public.teams (id, name, kind, season, sort_order) values
@@ -387,7 +389,7 @@ select pg_temp.ok('squads off', public.club_uses_squads(), false);
 select pg_temp.ok('ending squads frees the three named teams', public.admin_end_squads_now() = 3, true);
 select pg_temp.ok('teams keep their old squad and stand alone', (select bool_and(squad_id is null and former_squad_id is not null) from public.teams where id in (pg_temp.m('a2'), pg_temp.m('a4'), pg_temp.m('b7'))), true);
 select pg_temp.ok('every squad archived', (select bool_and(archived) from public.teams where kind = 'squad'), true);
-select pg_temp.ok('team memberships kept', (select count(*) = 2 from public.team_members where team_id = pg_temp.m('a2')), true);
+select pg_temp.ok('team memberships kept', (select count(*) = 4 from public.team_members where team_id = pg_temp.m('a2')), true);
 
 -- Starting setups only for a club with no squads or teams.
 select pg_temp.as_member('11');

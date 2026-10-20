@@ -209,6 +209,15 @@ describe('wwccReport', () => {
     expect(wwccReport([], [], []).subtitle).toMatch(/WWC Registration Officer: not named yet$/);
   });
 
+  it('says committee roles pause with the others, or only from the club’s committee checks date', () => {
+    const note = (from: string | null) =>
+      wwccReport(MEMBERS, PLACEMENTS, TEAMS, STAND_DOWNS, EXEMPTIONS, NOTICES, 'Sample admin', ACKS, from)
+        .sections[0].note;
+    expect(note(null)).toContain('coach, manager and physio roles are paused while a check is missing or expired, and committee roles too.');
+    expect(note('2020-01-01')).toContain('and committee roles too.');
+    expect(note('2099-01-01')).toContain(`and committee roles from ${formatDateString('2099-01-01')}.`);
+  });
+
   it('has its sections in order', () => {
     expect(full().sections.map((s) => s.title)).toEqual([
       'Needs attention',
