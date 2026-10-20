@@ -160,7 +160,8 @@ const WHO_OPENS: Record<string, PersonaName[]> = {
 
   'goals/game': union(ATHLETES, GROUP_COACHES, GUARDIANS),
   'goals/athlete/[id]': union(GROUP_COACHES, GUARDIANS),
-  'goals/team': GROUP_COACHES,
+  // Admins read a team's goals (admin guide audit, 20 October).
+  'goals/team': union(GROUP_COACHES, ADMINS),
 
   'kpis/index': KPI_READERS,
   'kpis/person': KPI_READERS,

@@ -59,7 +59,7 @@ Scope: the admin role guide (`docs/user-guide.md` section 10 in full, the Admin 
 2. **A2:** admins read a team's goals and comments. Built as described in A2.
 3. **B1–B5:** "can proceed." B1, B2, B4 and B5 built; B3 became a guide fix (see B3).
 
-Changed test expectations, named for the PR: `admin-seasons-and-teams.sql` (a named team keeps the junior's guardians, so the returning-member counts are 8 and 5, the re-named team holds 3 rows, and Sample Team keeps 4 rows when squads end), `guardian-guide-audit.sql` (the guardian is now a member of the team their child is in, and their squad message copy names the child), `security-follow-ups.sql` (a squad's **Any member** nominees are 7, Logan Parent now being in the squad's team), `stand-downs.sql` (a stood-down coach-parent keeps their placement as their child's guardian) and `route-access.test.tsx` (admins open team goals).
+Changed test expectations, named for the PR: `admin-seasons-and-teams.sql` (a named team keeps the junior's guardians, so the returning-member counts are 8 and 5, the re-named team holds 3 rows, and Sample Team keeps 4 rows when squads end), `guardian-guide-audit.sql` (the guardian is now a member of the team their child is in, and their squad message copy names the child), `security-follow-ups.sql` (a squad's **Any member** nominees are 7, Logan Parent now being in the squad's team), `stand-downs.sql` (a stood-down coach-parent keeps their placement as their child's guardian) , `route-access.test.tsx` and `route-guards-roles.test.tsx` (admins open team goals).
 
 ## F. Confirmed as accurate
 
