@@ -99,14 +99,14 @@ $$ select exists (
      where c.profile_id = v and c.team_role = 'coach')
    and exists (select 1 from lc_rule_people p where p.id = v and p.approved and not p.stood_down and p.current_check) $$;
 -- A physio looks after every athlete as Head Physio, otherwise the athletes
--- in their current groups.
+-- in their current groups, whatever a squad's phase (20 October).
 create or replace function pg_temp.physio_for(v uuid, a uuid) returns boolean language sql stable as
 $$ select pg_temp.holds(v, 'physio') and exists (select 1 from public.profiles where id = a) and (
      (select head_physio from lc_rule_people where id = v)
      or exists (
        select 1 from public.team_members ph
        join public.team_members x on x.team_id = ph.team_id and x.profile_id = a and x.team_role = 'athlete'
-       join public.teams t on t.id = ph.team_id and not t.archived and t.selections_completed_at is null
+       join public.teams t on t.id = ph.team_id and not t.archived
        where ph.profile_id = v and ph.team_role = 'physio')) $$;
 -- An adult's records need no consent; a child's need their guardian's.
 create or replace function pg_temp.consented(a uuid, k public.consent_kind) returns boolean language sql stable as

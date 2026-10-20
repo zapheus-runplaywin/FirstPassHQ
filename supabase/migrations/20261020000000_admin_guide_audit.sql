@@ -8,6 +8,10 @@
 --    squad's teams), so a physio left in the squad keeps looking after the
 --    athletes in its teams. A physio can be in several of a squad's teams,
 --    and in other squads and teams. Guardians are never picked here.
+--    The hierarchy holds after the squad's phase is complete too: a squad
+--    physio keeps looking after the squad's athletes, so physio_looks_after
+--    no longer ignores a squad whose phase is complete (this replaces the
+--    19 October rule, physio audit A4; the Head Physio is unchanged).
 -- 2. Guardians move with their athlete: when an athlete under 18 joins a
 --    team, their approved guardians are placed in it too (as guardians), and
 --    when the athlete leaves the team, or the guardian link ends, the
@@ -492,5 +496,31 @@ begin
 end;
 $function$;
 
+
+-- ---------------------------------------------------------------------------
+-- 5. A physio in a squad looks after its athletes whatever the squad's phase
+--    (Matt, 20 October: "hierarchy"). Same signature as 20261019000000.
+-- ---------------------------------------------------------------------------
+
+create or replace function public.physio_looks_after(p_athlete_id uuid)
+returns boolean
+language sql
+stable
+security definer
+set search_path = ''
+as $$
+  select public.is_physio()
+    and exists (select 1 from public.profiles where id = p_athlete_id)
+    and (
+      public.is_head_physio()
+      or exists (
+        select 1 from public.team_members me
+        join public.teams t on t.id = me.team_id
+        join public.team_members a on a.team_id = me.team_id
+        where me.profile_id = auth.uid() and me.team_role = 'physio' and not t.archived
+          and a.profile_id = p_athlete_id and a.team_role = 'athlete'
+      )
+    );
+$$;
 
 commit;

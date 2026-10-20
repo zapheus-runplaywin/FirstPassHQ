@@ -1692,9 +1692,9 @@ one or more squads or teams, where they show on the roster as **Physio**, and ca
 as **Head Physio**. Which athletes a physio looks after:
 
 - **Head Physio**: every athlete, whether or not the Head Physio is in a squad or team.
-- **A physio in squads or teams**: the athletes in those squads and teams. Like a coach, a physio
-  in a squad looks after its athletes only until the squad's phase is complete; after selections,
-  place them in the teams they look after.
+- **A physio in squads or teams**: the athletes in those squads and teams. Unlike a coach, a physio
+  in a squad keeps looking after all its athletes, in its teams or not, after the squad's phase is
+  complete; a physio moved into a team looks after that team's athletes.
 - **A physio in no squad or team**: no athletes, and the home screen says "You are not in a
   squad yet." A club with one physio should mark them **Head Physio**; otherwise place them in
   the squads and teams they look after.
@@ -2098,7 +2098,8 @@ With squads on:
   back** it later.
 - **Mark squad phase complete** when a squad's teams are named. From then on, coaches only
   look after their own team's athletes, and clearances for athletes left only in the squad fall to
-  admins. You can **Undo** it.
+  admins. Physios are unchanged: one left in the squad still looks after everyone in it. You can
+  **Undo** it.
 
 <img src="user-guide/squads-and-teams.png" width="210" alt="Squads and teams">
 <img src="user-guide/name-team.png" width="210" alt="Naming a team from a squad">

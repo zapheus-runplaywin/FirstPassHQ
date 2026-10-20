@@ -138,3 +138,16 @@ select pg_temp.as_member('22');
 select pg_temp.ok('the committee sees no games', (select count(*) = 0 from public.admin_team_games()), true);
 select pg_temp.as_member('11');
 select pg_temp.ok('a coach sees nothing through the admin list', (select count(*) = 0 from public.admin_team_games()), true);
+
+-- ---------------------------------------------------------------------------
+-- Hierarchy (Matt, 20 October): a physio left in the squad looks after its
+-- athletes, in its teams or not, after the squad's phase is complete too.
+-- Finley (14) is back in Sample Squad (a1) only.
+-- ---------------------------------------------------------------------------
+select pg_temp.as_member('01');
+update public.teams set selections_completed_at = now(), selections_completed_by = pg_temp.m('01') where id = pg_temp.m('a1');
+select pg_temp.as_member('14');
+select pg_temp.ok('after the phase is complete, the squad physio looks after an athlete in one of its teams', public.physio_looks_after(pg_temp.m('31')), true);
+select pg_temp.ok('and an athlete left in the squad only', public.physio_looks_after(pg_temp.m('32')), true);
+select pg_temp.as_member('01');
+update public.teams set selections_completed_at = null, selections_completed_by = null where id = pg_temp.m('a1');
