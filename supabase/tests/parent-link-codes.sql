@@ -42,6 +42,13 @@ create or replace function pg_temp.last_notice_to() returns text language sql as
 $$ select string_agg(right(r.profile_id::text, 2), ',' order by r.profile_id)
    from public.message_recipients r
    where r.message_id = (select id from public.messages where audience = 'notice' order by created_at desc, id desc limit 1) $$;
+-- Who got the newest notice whose text matches: one save can send more than
+-- one notice at the same moment, such as a parent with two children leaving.
+create or replace function pg_temp.notice_to(p_like text) returns text language sql as
+$$ select string_agg(right(r.profile_id::text, 2), ',' order by r.profile_id)
+   from public.message_recipients r
+   where r.message_id = (select id from public.messages where audience = 'notice' and body like p_like
+                         order by created_at desc, id desc limit 1) $$;
 create temp table codes (k text primary key, v text);
 grant all on codes to authenticated;
 
@@ -383,7 +390,7 @@ select pg_temp.ok('and Robin follows', exists (select 1 from public.team_members
 select pg_temp.as_member('62');
 select pg_temp.works('Robin deletes their account', $$select public.delete_my_account()$$);
 select pg_temp.ok('Sam is locked again', public.is_locked_child(pg_temp.m('61')), true);
-select pg_temp.ok('every admin is told about Sam', pg_temp.last_notice_to() = '01,02' and pg_temp.last_notice() like 'Sam Taylor is under 18%Robin Taylor was the last%', true);
+select pg_temp.ok('every admin is told about Sam', pg_temp.notice_to('Sam Taylor is under 18%Robin Taylor was the last%') = '01,02', true);
 select pg_temp.as_member('61');
 select pg_temp.ok('Sam sees the waiting screen with a fresh code', (select waiting and code is not null and code not in (select v from codes) from public.my_link_code()), true);
 select pg_temp.ok('and can''t read the squad''s club data', public.is_team_member('00000000-0000-0000-0000-0000000000a1'), false);
