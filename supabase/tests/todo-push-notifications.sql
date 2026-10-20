@@ -1,4 +1,4 @@
--- Tests for 20261020020000_todo_push_notifications.sql. Run on a fresh
+-- Tests for 20261020110000_todo_push_notifications.sql. Run on a fresh
 -- database with the migrations and seed-members.sql loaded. Prints one line
 -- per check.
 \set ON_ERROR_STOP 0
@@ -103,6 +103,18 @@ select pg_temp.ok('athlete is asked to update an injury past its return day', pg
 select pg_temp.ok('no to-do names the body area', exists (
   select 1 from public.profiles p, public.member_todos(p.id) m
   where p.status = 'approved' and (m.title || m.detail) ilike '%hamstring%'), false);
+
+-- A clearance nobody can endorse reaches the admin, without injury details.
+insert into auth.users (id, email, email_confirmed_at) values ('00000000-0000-0000-0000-0000000000e1', 'unplaced@example.test', now());
+update public.profiles set status = 'approved', role = 'athlete', full_name = 'Riley Unplaced'
+where id = '00000000-0000-0000-0000-0000000000e1';
+insert into public.injuries (athlete_id, reported_by, body_area, description, injured_on, athlete_name, status)
+values ('00000000-0000-0000-0000-0000000000e1', '00000000-0000-0000-0000-0000000000e1', 'Right wrist', 'Sprain', current_date - 3, 'Riley Unplaced', 'clearance_requested');
+select pg_temp.ok('admin is told nobody can endorse the clearance', exists (
+  select 1 from public.member_todos(pg_temp.id('01')) m
+  where m.todo_key like 'unendorsable-clearances:%' and m.title = 'Nobody can endorse Riley Unplaced’s clearance'
+    and (m.title || m.detail) not ilike '%wrist%'), true);
+select pg_temp.ok('a coach isn''t', pg_temp.has('11', 'unendorsable-clearances:'), false);
 
 -- Sending.
 select pg_temp.ok('nothing goes out at 9 pm', (select public.send_todo_pushes(night) = 0 from t), true);

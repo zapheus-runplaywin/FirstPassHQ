@@ -510,21 +510,18 @@ begin
       end if;
     end loop;
 
-    -- Clearances nobody can endorse. The function comes with PR #164, so this
-    -- only runs once that is in the database too, whichever merges first.
-    if to_regprocedure('public.admin_unendorsable_clearances()') is not null then
-      execute 'select count(*)::int, min(athlete_name),
-          md5(string_agg(injury_id::text, '','' order by injury_id))
-        from public.admin_unendorsable_clearances()'
-      into v_n, v_text, todo_key;
-      if v_n > 0 then
-        todo_key := 'unendorsable-clearances:' || todo_key;
-        title := case when v_n = 1 then 'Nobody can endorse ' || coalesce(v_text, 'an athlete') || '’s clearance'
-          else 'Nobody can endorse ' || v_n || ' clearances' end;
-        detail := 'Make a physio Head Physio, or place a physio in their squad or team';
-        href := '/admin';
-        return next;
-      end if;
+    -- Clearances nobody can endorse. A different set of them sends again.
+    select count(*)::int, min(u.athlete_name),
+      md5(string_agg(u.injury_id::text, ',' order by u.injury_id))
+    into v_n, v_text, todo_key
+    from public.admin_unendorsable_clearances() u;
+    if v_n > 0 then
+      todo_key := 'unendorsable-clearances:' || todo_key;
+      title := case when v_n = 1 then 'Nobody can endorse ' || coalesce(v_text, 'an athlete') || '’s clearance'
+        else 'Nobody can endorse ' || v_n || ' clearances' end;
+      detail := 'Make a physio Head Physio, or place a physio in their squad or team';
+      href := '/admin';
+      return next;
     end if;
 
     if exists (select 1 from public.record_retention() rr where not rr.enabled) then
