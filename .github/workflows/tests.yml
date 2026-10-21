@@ -5,8 +5,13 @@ name: Tests
 # tests for the app, the database tests in supabase/tests against every
 # migration, and browser smoke tests of the web build (e2e/). Every pull request adds tests for what it changes (AGENTS.md
 # "Tests").
+#
+# PAUSED until 1 November 2026 (Matt, 2026-10-21) to save Actions minutes:
+# Matt runs the tests locally instead (AGENTS.md "Tests" lists the commands).
+# It still runs by hand from the Actions tab ("Run workflow"). On 1 November
+# 2026 restore the automatic run by putting `push:` back above
+# `workflow_dispatch:`, and remove this note and the one in AGENTS.md.
 on:
-  push:
   workflow_dispatch:
 
 permissions:
