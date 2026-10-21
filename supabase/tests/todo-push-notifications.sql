@@ -1,4 +1,4 @@
--- Tests for 20261020110000_todo_push_notifications.sql. Run on a fresh
+-- Tests for 20261021010000_todo_push_notifications.sql. Run on a fresh
 -- database with the migrations and seed-members.sql loaded. Prints one line
 -- per check.
 \set ON_ERROR_STOP 0
@@ -42,7 +42,10 @@ select pg_temp.ok('anon cannot run the send job', has_function_privilege('anon',
 select pg_temp.ok('anon cannot register a phone', has_function_privilege('anon', 'public.register_push_device(text, text, text)', 'execute'), false);
 select pg_temp.ok('members register their phone', has_function_privilege('authenticated', 'public.register_push_device(text, text, text)', 'execute'), true);
 select pg_temp.ok('members change their switch', has_function_privilege('authenticated', 'public.set_todo_notifications(boolean)', 'execute'), true);
-select pg_temp.ok('members can only read their settings directly', exists (select 1 from pg_policies where tablename = 'push_settings' and cmd <> 'SELECT'), false);
+select pg_temp.ok('members have no direct access to their settings', has_table_privilege('authenticated', 'public.push_settings', 'select,insert,update,delete'), false);
+select pg_temp.ok('members have no direct access to the sent log', has_table_privilege('authenticated', 'public.push_todo_log', 'select,insert,update,delete'), false);
+select pg_temp.ok('signed-out visitors have none either', has_table_privilege('anon', 'public.push_settings', 'select') or has_table_privilege('anon', 'public.push_todo_log', 'select'), false);
+select pg_temp.ok('the edge functions'' service role reaches both', has_table_privilege('service_role', 'public.push_settings', 'select,insert,update,delete') and has_table_privilege('service_role', 'public.push_todo_log', 'select,insert,update,delete'), true);
 select pg_temp.ok('the sent log has no policies', exists (select 1 from pg_policies where tablename = 'push_todo_log'), false);
 
 -- Registering a phone.

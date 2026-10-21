@@ -12,8 +12,10 @@
 -- is when it registers a phone, and every push carries that club's code. A
 -- tapped notification then opens the right club.
 --
--- Additive only: new tables, a new column with a default, new functions, and a
--- new version of the join request trigger function that respects the switch.
+-- Additive only: new tables (with their own grants, which members don't get:
+-- they go through the functions), a new column with a default, new functions,
+-- and a new version of the join request trigger function that respects the
+-- switch.
 
 begin;
 
@@ -36,12 +38,11 @@ create table if not exists public.push_settings (
   updated_at timestamptz not null default now()
 );
 
+-- The app reads and changes it only through my_push_settings and
+-- set_todo_notifications below, so members get no table access.
 alter table public.push_settings enable row level security;
-
-drop policy if exists "Members see their own notification settings" on public.push_settings;
-create policy "Members see their own notification settings"
-  on public.push_settings for select to authenticated
-  using (profile_id = auth.uid());
+revoke all on table public.push_settings from anon, authenticated;
+grant select, insert, update, delete on table public.push_settings to service_role;
 
 -- The to-dos each member has already been sent (or had when they started), so
 -- each one is pushed once. Keys carry a day or month where a to-do repeats.
@@ -52,8 +53,11 @@ create table if not exists public.push_todo_log (
   primary key (profile_id, todo_key)
 );
 
--- Only the scheduled job reads and writes this; no policies.
+-- Only the scheduled job reads and writes this: no policies, and no access
+-- for members.
 alter table public.push_todo_log enable row level security;
+revoke all on table public.push_todo_log from anon, authenticated;
+grant select, insert, update, delete on table public.push_todo_log to service_role;
 
 -- ---------------------------------------------------------------------------
 -- What the app calls
