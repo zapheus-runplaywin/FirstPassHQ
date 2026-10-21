@@ -9,30 +9,10 @@
 \pset tuples_only on
 \pset format unaligned
 
--- Supabase gives anon and authenticated every table by default and relies on
--- row level security; the local stubs give them nothing. Grant as Supabase
--- would, then replay every table grant and revoke in the migrations, in order,
--- so the privileges match production.
-grant select, insert, update, delete on all tables in schema public to anon, authenticated;
-grant usage, select on all sequences in schema public to anon, authenticated;
-revoke update on public.profiles from authenticated, anon;                                   -- 20261007000000_init, 20261012200000_security_hardening
-revoke all on public.former_partner_roles from public, anon, authenticated;                  -- 20261008100000_remove_partner_role
-revoke all on public.join_password_attempts from public, anon, authenticated;                -- 20261012200000_security_hardening
-revoke all on public.record_access_log from public, anon, authenticated;                     -- 20261013090000_record_access_log
-revoke all on public.attendance_absences from public, anon, authenticated;                   -- 20261013120000_family_attendance
-revoke all on public.group_membership_changes from public, anon, authenticated;              -- 20261013130000_guardian_activity
-revoke all on public.child_activity_seen from public, anon, authenticated;
-revoke all on public.conduct_acceptances from public, anon, authenticated;                   -- 20261013140000_code_of_conduct
-revoke insert, update, delete on public.games, public.game_members, public.game_events, public.game_snapshots from anon, authenticated; -- 20261015000100_game_stats
-revoke all on public.game_pair_attempts from anon, authenticated;
-revoke all on table public.personal_tasks from anon;                                         -- 20261015210000_personal_tasks
-revoke delete on public.absence_categories from anon, authenticated;                         -- 20261015220000_absence_categories
-revoke all on public.absence_reviews from public, anon, authenticated;                       -- 20261015235000_absence_reviews
-revoke all on public.season_kpis, public.season_kpi_review_points, public.season_kpi_measures, public.season_kpi_reviews from public, anon, authenticated; -- 20261016000000_season_kpis
-revoke all on table public.session_plans, public.session_plan_files, public.session_plan_shares, public.session_plan_views from public, anon, authenticated; -- 20261016010000_session_plans
-grant select on table public.session_plans, public.session_plan_files, public.session_plan_shares to authenticated;
-revoke all on table public.session_plan_notices from public, anon, authenticated;
-revoke all on public.surveys, public.survey_questions, public.survey_recipients, public.survey_responses, public.survey_answers from public, anon, authenticated; -- 20261017100000_surveys
+-- Table privileges come from the migrations themselves, as on a Supabase
+-- project created after it stopped granting new tables automatically (30
+-- October 2026): 20261021000000_explicit_table_grants and each later table's
+-- own grants. The local stubs give anon and authenticated nothing else.
 
 create or replace function pg_temp.as_member(n text) returns void language sql as
 $$ select set_config('request.jwt.claim.sub', '00000000-0000-0000-0000-0000000000' || n, false) $$;
