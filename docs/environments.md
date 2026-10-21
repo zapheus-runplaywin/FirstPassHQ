@@ -91,6 +91,9 @@ names the project, so no code changes:
    [step 4](#4-point-the-installed-apps-at-the-live-project), with Google sign-in on (same client)
    and the Email provider off. Add its `https://<new-ref>.supabase.co/auth/v1/callback` to the
    Google client and remove the old project's.
+   Leave **Automatically expose new tables** unticked: since 30 October 2026 Supabase gives new
+   tables no access, and the migrations grant each table what the app needs
+   (`20261021000000_explicit_table_grants.sql`, then each new table's own grants).
 2. Update the GitHub secrets `SUPABASE_PROJECT_ID` and `SUPABASE_DB_PASSWORD` (and
    `SUPABASE_ACCESS_TOKEN` if it's in another organisation), and the EAS `preview` and
    `production` values of `EXPO_PUBLIC_SUPABASE_URL` and `EXPO_PUBLIC_SUPABASE_ANON_KEY`.

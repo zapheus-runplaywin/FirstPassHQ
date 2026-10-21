@@ -5,6 +5,9 @@ Usage: check-migration-security.py FILE...
 
 Checks each new migration for:
 - a new table in public without row level security turned on in the same file
+- a new table in public that no grant or revoke in the same file names
+  (Supabase stopped granting new tables to the app's roles on 30 October
+  2026, so a table nobody grants can't be reached from the app)
 - row level security being turned off
 - tables, functions or policies opened to anon or public (signed-out visitors)
 - a security definer function without `set search_path`
@@ -49,6 +52,15 @@ def revokes_from_public_and_anon(statement: str) -> bool:
     return bool(re.search(r'\bpublic\b', grantees)) and bool(re.search(r'\banon\b', grantees))
 
 
+def states_access(sql: str, table: str) -> bool:
+    """Whether a grant or revoke in the migration names this public table."""
+    return bool(re.search(
+        r'\b(grant|revoke)\b[^;]*?\bon\s+(table\s+)?[^;]*?(public\.|"public"\.)"?'
+        + re.escape(table) + r'"?(?!\w)[^;]*;',
+        sql,
+    ))
+
+
 def earlier_functions(path: Path, folder: Path = MIGRATIONS) -> set[str]:
     """Functions created, or renamed into place, by migrations that sort
     before this one. Replacing one keeps the grants and revokes it already has."""
@@ -90,6 +102,8 @@ def check(path: Path) -> list[tuple[int, str]]:
         )
         if not enabled:
             found.append((line_of(sql, match.start()), f'{table} has no row level security'))
+        if not states_access(sql, table):
+            found.append((line_of(sql, match.start()), f'{table} has no grant or revoke'))
 
     existing = earlier_functions(path, path.parent)
     for match in re.finditer(r'\bcreate\s+(or\s+replace\s+)?function\s+' + NAME, sql):

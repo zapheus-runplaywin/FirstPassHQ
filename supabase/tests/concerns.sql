@@ -53,7 +53,9 @@ select pg_temp.ok('raiser sees their own concern and status', (select count(*) =
 -- Nobody but handlers can read the tables directly.
 set role authenticated;
 select pg_temp.as_member('31');
-select pg_temp.fails('no direct reading of concerns', $s$ select count(*) from public.concerns $s$);
+-- Supabase grants the table, so row level security, with no policy, shows nothing.
+select pg_temp.ok('no direct reading of concerns', (select count(*) = 0 from public.concerns), true);
+select pg_temp.ok('no direct reading of concern events', (select count(*) = 0 from public.concern_events), true);
 reset role;
 
 -- Who sees the register.
