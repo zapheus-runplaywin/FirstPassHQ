@@ -111,7 +111,8 @@ select pg_temp.ok('coach can get the file once recorded',
   (select count(*) = 1 from storage.objects where name = pg_temp.jpath('2-letter.pdf')), true);
 select pg_temp.ok('only that file', (select count(*) = 0 from storage.objects where name = pg_temp.jpath('5-ankle.jpg')), true);
 select pg_temp.fails('coach cannot share', format('select public.open_injury_document(%L, true)', pg_temp.jpath('2-letter.pdf')));
-select pg_temp.fails('no direct reading of the record', 'select count(*) from public.injury_document_events');
+-- Supabase grants the table, so row level security, with no policy, shows nothing.
+select pg_temp.ok('no direct reading of the record', (select count(*) = 0 from public.injury_document_events), true);
 select pg_temp.as_member('13');
 select pg_temp.fails('manager cannot open injury documents', format('select public.open_injury_document(%L)', pg_temp.jpath('2-letter.pdf')));
 select pg_temp.fails('missing file cannot be opened', format('select public.open_injury_document(%L)', pg_temp.jpath('9-none.pdf')));
