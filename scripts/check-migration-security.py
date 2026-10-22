@@ -5,7 +5,8 @@ Usage: check-migration-security.py FILE...
 
 Checks each new migration for:
 - a new table in public without row level security turned on in the same file
-- a new table in public that no grant or revoke in the same file names
+- a new table in public that the same file neither grants nor revokes
+  entirely (`revoke all`)
   (Supabase stopped granting new tables to the app's roles on 30 October
   2026, so a table nobody grants can't be reached from the app)
 - a new sequence in public, made by `create sequence` or a serial column,
@@ -56,9 +57,12 @@ def revokes_from_public_and_anon(statement: str) -> bool:
 
 
 def states_access(sql: str, table: str) -> bool:
-    """Whether a grant or revoke in the migration names this public table."""
-    return bool(re.search(
-        r'\b(grant|revoke)\b[^;]*?\bon\s+(table\s+)?[^;]*?(public\.|"public"\.)"?'
+    """Whether the migration grants this public table, or revokes all of it
+    because the app reaches it only through functions. A partial revoke
+    (say of insert, update and delete) doesn't count: it assumes the old
+    automatic grants, so on a new project the table would have no access."""
+    return grants_table(sql, table) or bool(re.search(
+        r'\brevoke\s+all\b[^;]*?\bon\s+(table\s+)?[^;]*?(public\.|"public"\.)"?'
         + re.escape(table) + r'"?(?!\w)[^;]*;',
         sql,
     ))

@@ -83,6 +83,8 @@ expect_tables('a column grant passes',
               TABLE.format(name='t') + 'grant update (id) on public.t to authenticated;\n', [])
 expect_tables('a new table revoked on purpose passes',
               TABLE.format(name='t') + 'revoke all on public.t from public, anon, authenticated;\n', [])
+expect_tables('a partial revoke without a grant is flagged',
+              TABLE.format(name='t') + 'revoke insert, update, delete on public.t from anon, authenticated;\n', ['t'])
 expect_tables('a grant on a longer table name doesn\'t count',
               TABLE.format(name='t') + TABLE.format(name='t_notes')
               + 'grant select on public.t_notes to authenticated;\n', ['t'])
