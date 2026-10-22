@@ -2,8 +2,8 @@
 """Checks that check-migration-security.py flags new functions left open to
 signed-out visitors, and doesn't flag a function an earlier migration already
 created or renamed into place (replacing one keeps its revokes). Also checks
-it flags a new public table that no grant or revoke names, since Supabase
-stopped granting new tables to the app on 30 October 2026. Run by the
+it flags a new public table or sequence that no grant or revoke names, since
+Supabase stopped granting new tables to the app on 30 October 2026. Run by the
 "Tests" workflow."""
 
 import importlib.util
@@ -83,6 +83,8 @@ expect_tables('a column grant passes',
               TABLE.format(name='t') + 'grant update (id) on public.t to authenticated;\n', [])
 expect_tables('a new table revoked on purpose passes',
               TABLE.format(name='t') + 'revoke all on public.t from public, anon, authenticated;\n', [])
+expect_tables('a partial revoke without a grant is flagged',
+              TABLE.format(name='t') + 'revoke insert, update, delete on public.t from anon, authenticated;\n', ['t'])
 expect_tables('a grant on a longer table name doesn\'t count',
               TABLE.format(name='t') + TABLE.format(name='t_notes')
               + 'grant select on public.t_notes to authenticated;\n', ['t'])
@@ -90,6 +92,21 @@ expect_tables('a grant in a comment doesn\'t count',
               TABLE.format(name='t') + '-- grant select on public.t to authenticated;\n', ['t'])
 expect_tables('a grant on another table doesn\'t count',
               TABLE.format(name='t') + 'grant select on public.other to authenticated;\n', ['t'])
+SERIAL = """create table public.t (id bigserial primary key, x int);
+alter table public.t enable row level security;
+grant select, insert on public.t to authenticated;
+"""
+expect_tables('a serial column on a granted table needs its sequence granted', SERIAL, ['t_id_seq'])
+expect_tables('a granted serial sequence passes',
+              SERIAL + 'grant usage on sequence public.t_id_seq to authenticated;\n', [])
+expect_tables('a serial column on a table reached through functions needs no grant',
+              SERIAL.replace('grant select, insert on public.t to authenticated;',
+                             'revoke all on public.t from public, anon, authenticated;'), [])
+expect_tables('an identity column needs no sequence grant',
+              SERIAL.replace('bigserial', 'bigint generated always as identity'), [])
+expect_tables('a new sequence needs a grant', 'create sequence public.s;\n', ['s'])
+expect_tables('a granted new sequence passes',
+              'create sequence public.s;\ngrant usage on sequence public.s to authenticated;\n', [])
 expect_tables('a table outside public needs no grant',
               'create table private.t (id uuid primary key);\n', [])
 

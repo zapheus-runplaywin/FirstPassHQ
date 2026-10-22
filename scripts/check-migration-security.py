@@ -5,9 +5,13 @@ Usage: check-migration-security.py FILE...
 
 Checks each new migration for:
 - a new table in public without row level security turned on in the same file
-- a new table in public that no grant or revoke in the same file names
+- a new table in public that the same file neither grants nor revokes
+  entirely (`revoke all`)
   (Supabase stopped granting new tables to the app's roles on 30 October
   2026, so a table nobody grants can't be reached from the app)
+- a new sequence in public, made by `create sequence` or a serial column,
+  that no grant or revoke names, on a table the migration grants (inserts
+  that need it would fail; identity columns need no grant)
 - row level security being turned off
 - tables, functions or policies opened to anon or public (signed-out visitors)
 - a security definer function without `set search_path`
@@ -53,9 +57,29 @@ def revokes_from_public_and_anon(statement: str) -> bool:
 
 
 def states_access(sql: str, table: str) -> bool:
-    """Whether a grant or revoke in the migration names this public table."""
+    """Whether the migration grants this public table, or revokes all of it
+    because the app reaches it only through functions. A partial revoke
+    (say of insert, update and delete) doesn't count: it assumes the old
+    automatic grants, so on a new project the table would have no access."""
+    return grants_table(sql, table) or bool(re.search(
+        r'\brevoke\s+all\b[^;]*?\bon\s+(table\s+)?[^;]*?(public\.|"public"\.)"?'
+        + re.escape(table) + r'"?(?!\w)[^;]*;',
+        sql,
+    ))
+
+
+def states_sequence_access(sql: str, sequence: str) -> bool:
+    """Whether a grant or revoke in the migration names this public sequence."""
     return bool(re.search(
-        r'\b(grant|revoke)\b[^;]*?\bon\s+(table\s+)?[^;]*?(public\.|"public"\.)"?'
+        r'\b(grant|revoke)\b[^;]*?\bon\s+sequence\s+[^;]*?(public\.|"public"\.)"?'
+        + re.escape(sequence) + r'"?(?!\w)[^;]*;',
+        sql,
+    ))
+
+
+def grants_table(sql: str, table: str) -> bool:
+    return bool(re.search(
+        r'\bgrant\b[^;]*?\bon\s+(table\s+)?[^;]*?(public\.|"public"\.)"?'
         + re.escape(table) + r'"?(?!\w)[^;]*;',
         sql,
     ))
@@ -104,6 +128,19 @@ def check(path: Path) -> list[tuple[int, str]]:
             found.append((line_of(sql, match.start()), f'{table} has no row level security'))
         if not states_access(sql, table):
             found.append((line_of(sql, match.start()), f'{table} has no grant or revoke'))
+        end = sql.find(';', match.end())
+        body = sql[match.end():end if end != -1 else len(sql)]
+        if grants_table(sql, table):
+            for column in re.finditer(r'[(,]\s*"?(\w+)"?\s+(small|big)?serial\b', body):
+                sequence = f'{table}_{column.group(1)}_seq'
+                if not states_sequence_access(sql, sequence):
+                    found.append((line_of(sql, match.start()), f'{sequence} has no grant or revoke'))
+
+    for match in re.finditer(
+        r'\bcreate\s+sequence\s+(if\s+not\s+exists\s+)?(public\.|"public"\.)"?(\w+)"?', sql
+    ):
+        if not states_sequence_access(sql, match.group(3)):
+            found.append((line_of(sql, match.start()), f'{match.group(3)} has no grant or revoke'))
 
     existing = earlier_functions(path, path.parent)
     for match in re.finditer(r'\bcreate\s+(or\s+replace\s+)?function\s+' + NAME, sql):
