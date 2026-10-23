@@ -100,6 +100,8 @@ function auth(
     captaincies?: GroupCaptain[];
     isClubCaptain?: boolean;
     isSafeguardingOfficer?: boolean;
+    exemption?: Auth['exemption'];
+    wwccApplication?: Auth['wwccApplication'];
   } = {},
 ): Auth {
   const roles = p ? [p.role, ...p.extra_roles] : [];
@@ -108,8 +110,8 @@ function auth(
     session: p ? ({ user: { id: p.id } } as Auth['session']) : null,
     profile: p,
     paused: null,
-    exemption: null,
-    wwccApplication: null,
+    exemption: extra.exemption ?? null,
+    wwccApplication: extra.wwccApplication ?? null,
     memberships: extra.memberships ?? [],
     captaincies: extra.captaincies ?? [],
     isClubCaptain: extra.isClubCaptain ?? false,
@@ -155,6 +157,7 @@ const KEYS: Key[] = [
   'setKpis',
   'training',
   'checkTraining',
+  'reports',
   'concerns',
   'family',
   'medical',
@@ -230,12 +233,57 @@ const CASES: [string, Auth, Key[]][] = [
   [
     'the committee',
     auth(profile('committee')),
+    ['readMessages', 'sendMessages', 'answerSurveys', 'sendSurveys', 'surveyResults', 'injuries', 'attendance', 'takeAttendance', 'athleteAttendance', 'checkIns', 'awards', 'kpis', 'setKpis', 'training', 'checkTraining', 'reports'],
+  ],
+  // The reports name children: a committee member reads them only when
+  // screened to work with children (customer review C14).
+  [
+    'the committee, exempted with a reason',
+    auth(profile('committee', { wwcc_number: null, wwcc_expires_on: null, wwcc_exempt_reason: 'Treasurer' })),
     ['readMessages', 'sendMessages', 'answerSurveys', 'sendSurveys', 'surveyResults', 'injuries', 'attendance', 'takeAttendance', 'athleteAttendance', 'checkIns', 'awards', 'kpis', 'setKpis', 'training', 'checkTraining'],
+  ],
+  [
+    'the committee, before the committee checks date without a check',
+    auth(profile('committee', { wwcc_number: null, wwcc_expires_on: null })),
+    ['readMessages', 'sendMessages', 'answerSurveys', 'sendSurveys', 'surveyResults', 'injuries', 'attendance', 'takeAttendance', 'athleteAttendance', 'checkIns', 'awards', 'kpis', 'setKpis', 'training', 'checkTraining'],
+  ],
+  [
+    'the committee, with a volunteer exemption',
+    auth(profile('committee', { wwcc_number: null, wwcc_expires_on: null }), {
+      exemption: { valid: true } as Auth['exemption'],
+    }),
+    ['readMessages', 'sendMessages', 'answerSurveys', 'sendSurveys', 'surveyResults', 'injuries', 'attendance', 'takeAttendance', 'athleteAttendance', 'checkIns', 'awards', 'kpis', 'setKpis', 'training', 'checkTraining', 'reports'],
+  ],
+  [
+    'the committee, with an ended volunteer exemption',
+    auth(profile('committee', { wwcc_number: null, wwcc_expires_on: null }), {
+      exemption: { valid: false } as Auth['exemption'],
+    }),
+    ['readMessages', 'sendMessages', 'answerSurveys', 'sendSurveys', 'surveyResults', 'injuries', 'attendance', 'takeAttendance', 'athleteAttendance', 'checkIns', 'awards', 'kpis', 'setKpis', 'training', 'checkTraining'],
+  ],
+  [
+    'the committee, with an application in force',
+    auth(profile('committee', { wwcc_number: null, wwcc_expires_on: null }), {
+      wwccApplication: { valid: true } as Auth['wwccApplication'],
+    }),
+    ['readMessages', 'sendMessages', 'answerSurveys', 'sendSurveys', 'surveyResults', 'injuries', 'attendance', 'takeAttendance', 'athleteAttendance', 'checkIns', 'awards', 'kpis', 'setKpis', 'training', 'checkTraining', 'reports'],
+  ],
+  [
+    'the committee, with a lapsed application',
+    auth(profile('committee', { wwcc_number: null, wwcc_expires_on: null }), {
+      wwccApplication: { valid: false } as Auth['wwccApplication'],
+    }),
+    ['readMessages', 'sendMessages', 'answerSurveys', 'sendSurveys', 'surveyResults', 'injuries', 'attendance', 'takeAttendance', 'athleteAttendance', 'checkIns', 'awards', 'kpis', 'setKpis', 'training', 'checkTraining'],
+  ],
+  [
+    'a coach with a check who is not on the committee',
+    auth(profile('coach'), { exemption: { valid: true } as Auth['exemption'] }),
+    ['readMessages', 'answerSurveys', 'attendance', 'takeAttendance', 'readSessionPlans', 'awards', 'kpis', 'training'],
   ],
   [
     'an admin',
     auth(profile('admin')),
-    ['readMessages', 'sendMessages', 'answerSurveys', 'sendSurveys', 'surveyResults', 'injuries', 'attendance', 'takeAttendance', 'athleteAttendance', 'readSessionPlans', 'addSessionPlans', 'checkIns', 'awards', 'teamGoals', 'kpis', 'setKpis', 'training', 'checkTraining', 'concerns', 'family', 'chooseCaptains'],
+    ['readMessages', 'sendMessages', 'answerSurveys', 'sendSurveys', 'surveyResults', 'injuries', 'attendance', 'takeAttendance', 'athleteAttendance', 'readSessionPlans', 'addSessionPlans', 'checkIns', 'awards', 'teamGoals', 'kpis', 'setKpis', 'training', 'checkTraining', 'reports', 'concerns', 'family', 'chooseCaptains'],
   ],
   [
     'an athlete who coaches another team',

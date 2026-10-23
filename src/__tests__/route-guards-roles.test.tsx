@@ -67,7 +67,13 @@ const GROUP_COACHES: PersonaName[] = ['coach', 'assistantCoach', 'coachGuardian'
 const COACHES: PersonaName[] = [...GROUP_COACHES, 'doneSquadCoach'];
 const MANAGERS: PersonaName[] = ['manager', 'safeguardingOfficer'];
 const PHYSIOS: PersonaName[] = ['physio', 'headPhysio'];
-const COMMITTEE: PersonaName[] = ['committee'];
+/**
+ * The committee, including one exempted with a reason, one with no check
+ * before the committee checks date and one cleared by a volunteer exemption:
+ * the same member screens. (Only those screened to work with children also
+ * read the reports, in route-guards.test.tsx.)
+ */
+const COMMITTEE: PersonaName[] = ['committee', 'committeeExempt', 'committeeBeforeChecksDate', 'committeeVolunteerExempt'];
 // An expired check never pauses the admin role; a lapsed admin's coaching pauses.
 const ADMINS: PersonaName[] = [
   'admin',

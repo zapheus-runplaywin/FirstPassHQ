@@ -1,4 +1,3 @@
-import { PROFILE_COLUMNS } from '@/lib/auth';
 import { fetchAll, type Acknowledgement, type CourseProgress, type Placement } from '@/lib/reports';
 import { supabase } from '@/lib/supabase';
 import {
@@ -38,9 +37,9 @@ export async function loadWwccData(): Promise<WwccData> {
     acknowledgements,
     applications,
   ] = await Promise.all([
-    fetchAll<Profile>((from, to) =>
-      supabase.from('profiles').select(PROFILE_COLUMNS).eq('status', 'approved').range(from, to),
-    ),
+    // Approved members without contact details, for admins and checked
+    // committee members alike (public.report_members).
+    fetchAll<Profile>((from, to) => supabase.rpc('report_members').range(from, to)),
     fetchAll<Placement>((from, to) =>
       supabase
         .from('team_members')

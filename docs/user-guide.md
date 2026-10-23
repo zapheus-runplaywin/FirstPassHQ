@@ -44,7 +44,7 @@ each of their roles can.
 | **Guardian**  | Parents and guardians of athletes under 18. They see their child's attendance and can report an absence for them, and see what has changed around their child. If the club asks, they accept the club's code of conduct for their child each season. |
 | **Coach**     | Head coaches and assistant coaches. Both have the same permissions, except that a head coach sets Season KPIs for the group's assistant coaches; otherwise the title only shows who is who. The app gives each coach a title from their team, or their squad until they're in a team, such as "Head Coach, Open A". Need a current Working With Children Check; the role pauses while it's expired. Someone who has applied for one, new or a renewal, can work while it's assessed (see [Checks applied for](#checks-applied-for)). A parent volunteering at their child's club, a volunteer under 18, or a short-term visitor or national event helper from outside WA has an exemption instead (see [Volunteer exemptions](#volunteer-exemptions)). |
 | **Manager**   | Squad and team managers. The app gives each manager a title from their team, or their squad until they're in a team, such as "Manager, 17 & Under". Need a current Working With Children Check; the role pauses while it's expired. Someone who has applied for one, new or a renewal, can work while it's assessed (see [Checks applied for](#checks-applied-for)). A parent volunteering at their child's club, a volunteer under 18, or a short-term visitor or national event helper from outside WA has an exemption instead (see [Volunteer exemptions](#volunteer-exemptions)). |
-| **Committee** | Club committee members. Each can add a title, such as President or Secretary, shown with their role. Only committee members and admins can add their own title. Need a current Working With Children Check, or an application being assessed, unless an admin exempts them with a reason (not if they also coach, manage or physio); the role pauses if a recorded check expires or was recorded without an expiry date. Committee members approved before checks were needed keep the role without one only until the club's **committee checks date**. |
+| **Committee** | Club committee members. Each can add a title, such as President or Secretary, shown with their role. Only committee members and admins can add their own title. Need a current Working With Children Check, or an application being assessed, unless an admin exempts them with a reason (not if they also coach, manage or physio); the role pauses if a recorded check expires or was recorded without an expiry date. Committee members approved before checks were needed keep the role without one only until the club's **committee checks date**. Those with a current check, an application in force or a volunteer exemption also read most of the club's governance reports. |
 | **Physio**    | The club's physiotherapists. A physio can be placed in squads or teams to look after their athletes, and one can be the **Head Physio**, who looks after every athlete. Need a current Working With Children Check; the role pauses while it's expired. Someone who has applied for one, new or a renewal, can work while it's assessed (see [Checks applied for](#checks-applied-for)). A parent volunteering at their child's club, a volunteer under 18, or a short-term visitor or national event helper from outside WA has an exemption instead (see [Volunteer exemptions](#volunteer-exemptions)). |
 | **Guest**     | Anyone else the club lets in, such as partners and sponsors. Guests must be 18 or over. They see only the club calendar, keep their own tasks and can raise a concern. They aren't in squads or teams, get no messages, don't vote and aren't asked for a Working With Children Check or the code of conduct. |
 | **Statistician** | The people who record live game stats on a tablet in FirstPass Vantage, which coaches watch live in FirstPass Vision. Statisticians see every game the club records; a game's coaches and managers see their own squad's or team's. Any member can hold it alongside another role, such as a manager or an athlete who isn't playing. Need a current Working With Children Check, an application being assessed, or a volunteer exemption such as a parent at their child's games, unless an admin exempts them with a reason, such as only recording opens games; the role pauses if a recorded check expires. Statisticians approved before checks were needed keep the role without one only until the club's **statistician checks date**. The role pauses while a member is stood down. |
@@ -111,7 +111,7 @@ What each role sees on its home screen:
 | Sign off injury clearances             |         |                 | Endorse, not concussions◊ |            | Accept, send back¶ |   Endorse‡    |         | Accept, send back |
 | See who opened injury documents        |   Own   | Their athlete's |              |            |               |               |         |       ✓       |
 | Medical and emergency details          | Own; keep if 18 or over | Keep their athlete's | Own athletes‖ | Own athletes‖ |               | Own athletes‡‖ |         |               |
-| Check medical details once a year      | Own, if 18 or over | Their athlete's |              |            |               |               |         | See who has (report) |
+| Check medical details once a year      | Own, if 18 or over | Their athlete's |              |            | See who has (report), if checked |               |         | See who has (report) |
 | Consent for a child's check-ins and injuries |         |        ✓        |              |            |               |               |         |  See status   |
 | Accept the code of conduct each season (if the club asks) | Own§ | Own, and their athlete's | Own | Own | Own | Own | | Own, see who has |
 | Take attendance                        |         |                 |      ✓       |     ✓      |       ✓       |               |         |       ✓       |
@@ -119,12 +119,12 @@ What each role sees on its home screen:
 | Review reported absences               | Report own | Report their athlete's | Own groups | Own groups |   See all    |               |         |    See all    |
 | Session plans                          | Read shared |  Read their athlete's shared | Add, share, read shared |            |               |               |         | Add, read all, report |
 | Vote in club awards                    |    ✓    |                 |      ✓       |     ✓      |       ✓       |               |         |       ✓       |
-| Set up awards and see results          |         |                 |              |            |               |               |         |       ✓       |
+| Set up awards and see results          |         |                 |              |            | See results once closed (report), if checked |               |         |       ✓       |
 | Season KPIs (when turned on)           |   Own   |  See athlete's  | Own; set for own athletes, and assistants if head coach | Own | Set for coaches and managers |  |  | Set for coaches and managers, read athletes', set review dates |
 | Complete integrity training            |   Own   | Own, and their athlete's |     Own      |    Own     |      Own      |      Own      |         |      Own      |
 | Check training certificates            |         |                 |              |            |       ✓       |               |         |       ✓       |
 | Set integrity training                 |         |                 |              |            |               |               |         |       ✓       |
-| Governance reports as PDFs             |         |                 |              |            | Concerns register, if an officer |               |         |       ✓       |
+| Governance reports as PDFs             |         |                 |              |            | Checks, medical details checks, training, attendance and award results, if checked; concerns register, if an officer |               |         |       ✓       |
 | Import fixtures from PlayHQ            |         |                 |              |            |               |               |         |       ✓       |
 | Preferred name                         |    ✓    |        ✓        |      ✓       |     ✓      |       ✓       |       ✓       |    ✓    |       ✓       |
 | Title, such as President               |         |                 |              |            |       ✓       |               |         |       ✓       |
@@ -320,12 +320,13 @@ Once you're approved, the home screen is where everything starts. From the top:
   Children Checks work the same way (see [Admins](#10-admins)).
 - **Cards** for the features your role uses: Messages, Daily check-in, Check-ins,
   Injuries, Attendance, Session plans, My attendance, Awards, Integrity training, Season KPIs,
-  Concerns and Administration. Athletes fill in their own check-in from **Daily check-in**.
+  Concerns, Reports and Administration. Athletes fill in their own check-in from **Daily check-in**.
   Coaches read their athletes' check-ins from **Check-ins**, and committee members, physios and
   admins see the club's averages there. Parents and guardians see their child's check-ins from
   the cards for each child instead (see [Parents and guardians](#5-parents-and-guardians)). The
   Awards card shows while an award vote is open to you, and Session plans once a coach has shared
-  one with you. A number in the club's colour means something new or waiting for you.
+  one with you. **Reports** is for committee members with a current check (admins find Reports in
+  Administration). A number in the club's colour means something new or waiting for you.
 - **Coming up**: the next six events from your calendars, when the club uses the calendar. Tap
   **Full calendar** to see them all.
 - **My squads and teams** (**My teams** in a club without squads): tap one to see who's in it. A
@@ -1673,8 +1674,8 @@ title later under **Your details** (such as President, Secretary or Treasurer), 
 it on your member page. The home screen header lists every role you hold, then your title, then
 any coach or manager title, such as "Coach, Committee · President · Head Coach, Open A". While the
 committee role is paused the header reads "Committee (paused)" without the title (the title is
-kept), and the Messages, Check-ins, Injuries, Attendance, Season KPIs and certificate-checking
-cards, the committee calendar and club-wide messaging go until an admin records a check or an
+kept), and the Messages, Check-ins, Injuries, Attendance, Season KPIs, certificate-checking and
+Reports cards, the committee calendar and club-wide messaging go until an admin records a check or an
 exemption. The code of conduct, your own integrity training, award votes, personal tasks and
 **Raise a concern** stay.
 
@@ -1865,6 +1866,27 @@ You don't see athletes' KPIs. Admins can save every coach's and
 manager's KPIs as a PDF for the board (see [Reports](#reports)).
 
 <img src="user-guide/kpis-committee.png" width="210" alt="Season KPIs for a squad's coaches and manager">
+
+### Reports for the committee
+
+A committee member with a current check, a check application in force or a volunteer exemption has
+**Reports** on the home screen. It opens the same reports admins use (see [Reports](#reports)), to
+read and save as PDFs for a committee or board meeting:
+
+- **Working With Children Checks**, with exemptions, check applications (never the receipts),
+  Screening Unit notices and stand-downs
+- **Medical details checks** (who has checked, never the details themselves)
+- **Integrity training**, **Attendance** and **Award results**, when those features are on
+
+They're read only: nothing in them changes a member, a check or a setting, and admins still make
+every change. **Under 18s and their guardians**, **Injuries**, **Session plans**, **Season KPIs** and
+**Affiliation** stay with admins. The reports name children and hold adults' dates of birth and
+card numbers, so a committee member exempted with a reason (such as a treasurer who never works
+with children), one still to get a check before the committee checks date, and one whose role is
+paused or stood down sees no Reports card. The reports give names, not email addresses.
+
+<img src="user-guide/committee-home-reports.png" width="210" alt="The Reports card on a committee member's home screen">
+<img src="user-guide/committee-reports.png" width="210" alt="Reports for a committee member with a current check">
 
 ### Committee calendar
 
@@ -2639,8 +2661,11 @@ for everyone, for example one added by mistake. It can't be undone.
 
 ### Reports
 
-**Reports** in Administration has governance and compliance reports. Each one shows on screen
-with its totals, and **Export PDF** saves the same report as a PDF through the share sheet (on a
+**Reports** in Administration has governance and compliance reports. Committee members with a
+current check, a check application in force or a volunteer exemption read the Working With
+Children Checks, Medical details checks, Integrity training, Attendance and Award results reports
+too, from **Reports** on their home screen, read only (see [Reports for the
+committee](#reports-for-the-committee)). Each one shows on screen with its totals, and **Export PDF** saves the same report as a PDF through the share sheet (on a
 computer it downloads), ready for the committee, an audit or OneDrive. The PDF has the club's
 name, the date it was made and page numbers, and anything that needs attention is in red.
 
@@ -3097,14 +3122,14 @@ once saved, only replaced or removed, and anyone who gets it wrong five times in
 | Preferred name and title | You and admins; your preferred name then shows wherever your name does.                                                 |
 | Your own personal tasks | Only you. Not your parents or guardians, coaches, the committee or admins. They can't be shared or sent to anyone. |
 | Captains                | Club captains: every member. A squad or team's captains: the people in it, and admins.                                     |
-| Date of birth, Working With Children Check and exemption | You and admins. Awards with an age limit use it to decide who can be voted for, without showing it.   |
+| Date of birth, Working With Children Check and exemption | You and admins. Committee members with a current check also read them, for everyone who needs a check, in the Working With Children Checks report. Awards with an age limit use it to decide who can be voted for, without showing it. |
 | Date of birth given at Join, and a child's parent or guardian email | You and admins. Admins also see who recorded your checked date of birth and when. |
 | How a member was verified | You and admins: the method, and what the admin checked. |
 | Guardian link history   | Admins only: every link and unlink, by whom, when and the reason. The child's guardians, and the child from 13, get a message about each change, without the reason. |
-| Stand-downs             | Admins only. The member sees that their role is paused, not the reason.                                                     |
-| Screening Unit notices and card validations | Admins only.                                                                                            |
-| Check applications, receipts and declarations | The member (their own application and declaration, not the receipt) and admins. Kept, with the receipt, if the member deletes their account. |
-| Volunteer exemptions and declarations | The volunteer (their own) and admins. Kept under the member's name if they delete their account; the exemption ends that day. |
+| Stand-downs             | Admins, and committee members with a current check in the Working With Children Checks report (read only). The member sees that their role is paused, not the reason. |
+| Screening Unit notices and card validations | Admins, and committee members with a current check in the Working With Children Checks report (read only). |
+| Check applications, receipts and declarations | The member (their own application and declaration, not the receipt) and admins. Committee members with a current check read the applications in the Working With Children Checks report, never the receipts. Kept, with the receipt, if the member deletes their account. |
+| Volunteer exemptions and declarations | The volunteer (their own) and admins, and committee members with a current check in the Working With Children Checks report (read only). Kept under the member's name if they delete their account; the exemption ends that day. |
 | Temporary helpers' task, dates and policy acceptance | The volunteer and admins. Temporary helpers see nothing of the club's members, squads, calendar or messages. If a helper deletes their account, their policy acceptance and any exemption declaration are kept under their name; their task and dates go with the account. |
 | Concerns                | The Child Safety Officer, the Complaints Manager and admins, never the person a concern is about when they were named from the list (a concern that only describes someone in words is not hidden from anyone who handles concerns). Whoever raised it sees its status. A hidden name is never shown to them. |
 | Safeguarding contacts   | Everyone signed in, including guests and people waiting for approval.                                                       |
@@ -3135,10 +3160,10 @@ once saved, only replaced or removed, and anyone who gets it wrong five times in
 | Absence reasons         | Every approved member sees the list. Only admins switch reasons off or add them.                                             |
 | Committee calendar      | Committee members and admins.                                                                                               |
 | Award votes             | Only the voter sees their own ballot. Nobody, admins included, can see who someone voted for. Who cast each vote is removed after the club's keep period (1 year recommended). |
-| Award results           | Admins only: standings and how many people have voted, and once voting closes, how many votes each nominee got at each place. |
+| Award results           | Admins: standings and how many people have voted, and once voting closes, how many votes each nominee got at each place. Committee members with a current check read the same results once voting closes. |
 | Affiliation records and PlayHQ registration checks | Admins only. |
 | Affiliation returns     | Admins only, until an admin sends one. A sent return goes to the email address the club entered and holds club facts and counts, naming no member under 18. |
-| Reports and their PDFs  | Admins only. A saved PDF is a copy outside the app, so whoever it's shared with can read it.                                |
+| Reports and their PDFs  | Admins read every report. Committee members with a current check, a check application in force or a volunteer exemption read the Working With Children Checks, Medical details checks, Integrity training, Attendance and Award results reports, read only; never Under 18s and their guardians, Injuries, Session plans, Season KPIs or Affiliation, and none if they're exempted with a reason or have no check yet. A saved PDF is a copy outside the app, so whoever it's shared with can read it. |
 | Match fixtures          | The members of each squad or team, statisticians and admins.                                                                |
 | How long records are kept | Admins: the keep periods, whether old records are removed, who last changed them, and when the nightly removal last ran or where it stopped. |
 | Club name, colours and logo | Every signed-in member. The logo file is public so it can show before sign-in. Only admins can change them.            |
@@ -3413,6 +3438,13 @@ Working With Children Check, and another admin must do it.
   can bring the date forward but never push it back. Statisticians, who often sit courtside at
   junior games, have their own date that works the same way; from it, their role pauses in HQ and
   in Vantage without a check, an application, a volunteer exemption or an exemption with a reason.
+- **Only screened committee members read the reports.** Committee members read the Working With
+  Children Checks, Medical details checks, Integrity training, Attendance and Award results
+  reports only while they have a current check, a check application in force or a volunteer
+  exemption, and aren't stood down. A committee member exempted with a reason, or still without a
+  check before the committee checks date, reads none of them. The reports are read only, give no
+  email addresses or check receipts, and the reports about under 18s' guardians, injuries, session
+  plans, Season KPIs and affiliation stay with admins.
 - **Admins are screened too.** Admins can read every child's records, so they need a current
   check (or an application being assessed), or an exemption with a reason that another admin records; nobody exempts themselves. An
   admin's role doesn't pause when the check expires, so the club can't be locked out of its own

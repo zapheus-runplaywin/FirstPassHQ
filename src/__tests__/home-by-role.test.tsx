@@ -69,6 +69,7 @@ const ITEMS = {
   myAttendance: 'My attendance',
   integrity: 'Certificates and everyone’s progress',
   concerns: 'The concerns register',
+  reports: 'The club’s checks, medical details checks, training, attendance and award results',
   administration: 'Administration',
   comingUp: 'Coming up',
   guardianOf: 'Guardian of',
@@ -151,9 +152,24 @@ const BY_ROLE: { who: PersonaName; sees: Item[] }[] = [
       'injuries',
       'takeAttendance',
       'integrity',
+      'reports',
       'comingUp',
       'raiseConcern',
     ],
+  },
+  {
+    // The reports name children: a committee member exempted with a reason
+    // has no Reports card (customer review C14).
+    who: 'committeeExempt',
+    sees: ['messages', 'sendSurveys', 'checkIns', 'injuries', 'takeAttendance', 'integrity', 'comingUp', 'raiseConcern'],
+  },
+  {
+    who: 'committeeBeforeChecksDate',
+    sees: ['messages', 'sendSurveys', 'checkIns', 'injuries', 'takeAttendance', 'integrity', 'comingUp', 'raiseConcern'],
+  },
+  {
+    who: 'committeeVolunteerExempt',
+    sees: ['messages', 'sendSurveys', 'checkIns', 'injuries', 'takeAttendance', 'integrity', 'reports', 'comingUp', 'raiseConcern'],
   },
   {
     who: 'admin',
@@ -231,6 +247,21 @@ describe('administration and concerns', () => {
     expect(screen.getByText(ITEMS.groups)).toBeTruthy();
     expect(screen.getByText(ITEMS.takeAttendance)).toBeTruthy();
     expect(screen.getByText('Admin, Coach · Head Coach, Open A')).toBeTruthy();
+  });
+});
+
+describe('reports', () => {
+  it('a committee member with a check opens Reports from home', async () => {
+    await openHome('committee');
+    fireEvent.press(screen.getByText('Reports'));
+    await act(async () => {});
+    expect(screen.getByText('screen:admin/reports/index')).toBeTruthy();
+    expect(screen).toHavePathname('/admin/reports');
+  });
+
+  it('an admin reaches Reports from Administration, so has no Reports card on home', async () => {
+    await openHome('admin');
+    expect(screen.queryByText(ITEMS.reports)).toBeNull();
   });
 });
 

@@ -185,6 +185,25 @@ describe('Reports', () => {
   });
 });
 
+describe('Reports for a committee member with a check', () => {
+  it('lists the reports they read, read only, and leaves out the admin-only ones', async () => {
+    setClubFeatures({ kpis: true, affiliation: true });
+    await openScreen('committee', { 'admin/reports/index': ReportsScreen }, '/admin/reports');
+    expect(screen.getByText('Each report shows on screen and saves as a PDF. You can read them; admins make the changes.')).toBeTruthy();
+    for (const title of ['Working With Children Checks', 'Medical details checks', 'Integrity training', 'Attendance', 'Award results']) {
+      expect(screen.getByText(title)).toBeTruthy();
+    }
+    for (const title of ['Under 18s and their guardians', 'Injuries', 'Session plans', 'Season KPIs', 'Affiliation']) {
+      expect(screen.queryByText(title)).toBeNull();
+    }
+  });
+
+  it('admins keep their own intro', async () => {
+    await open('admin/reports/index', ReportsScreen, {}, {}, '/admin/reports');
+    expect(screen.getByText('Each report shows on screen and saves as a PDF for the committee or an audit.')).toBeTruthy();
+  });
+});
+
 // ---------------------------------------------------------------------------
 
 describe('Working With Children Checks', () => {
@@ -201,12 +220,16 @@ describe('Working With Children Checks', () => {
       {
         ...options,
         tableHandlers: {
-          profiles: (q) => (q.eq('status') === 'approved' ? [coach, manager, athlete] : undefined),
           team_members: (q) =>
             q.eq('profile_id') === undefined ? [{ team_id: 't1', profile_id: 'c1', team_role: 'coach' }] : undefined,
           ...options.tableHandlers,
         },
-        rpcs: { admin_volunteer_exemptions: [], admin_wwc_officer: [{ officer_name: 'Wren Officer' }], ...options.rpcs },
+        rpcs: {
+          report_members: [coach, manager, athlete],
+          admin_volunteer_exemptions: [],
+          admin_wwc_officer: [{ officer_name: 'Wren Officer' }],
+          ...options.rpcs,
+        },
       },
     );
   }
@@ -542,7 +565,7 @@ describe('Attendance', () => {
   ];
   const marks = [
     { session_id: 's1', profile_id: 'amy', present: true, member_name: null },
-    { session_id: 's1', profile_id: 'ben', present: false, member_name: null },
+    { session_id: 's1', profile_id: 'ben', present: false, member_name: 'Ben Sample' },
     { session_id: 's2', profile_id: 'cal', present: true, member_name: null },
     { session_id: 'c1', profile_id: 'amy', present: true, member_name: null },
   ];
@@ -557,16 +580,14 @@ describe('Attendance', () => {
     await open('admin/reports/attendance', AttendanceReportScreen, { teams: [SQUAD, TEAM_A, U12], attendance_marks: marks }, {
       tableHandlers: {
         attendance_sessions: recordTable(sessions),
-        profiles: (q) =>
-          q.eq('id') === undefined
-            ? [
-                { id: 'amy', full_name: 'Amy Sample', email: null },
-                { id: 'ben', full_name: null, email: 'ben@example.test' },
-                { id: 'cal', full_name: 'Cal Sample', email: null },
-              ]
-            : undefined,
+        profiles: recordTable([]),
       },
       rpcHandlers: {
+        // Ben has left the club, so report_members no longer lists him.
+        report_members: () => [
+          { id: 'amy', full_name: 'Amy Sample' },
+          { id: 'cal', full_name: 'Cal Sample' },
+        ],
         absence_report: (args) => {
           absenceArgs.push(args);
           return absences;
@@ -593,8 +614,11 @@ describe('Attendance', () => {
     expect(stat('Times present')).toBe('3');
     expect(stat('Attendance')).toBe('75%');
     expect(stat('Reported absences')).toBe('2');
-    // A member with no name is shown by their email.
-    expect(texts()).toContain('ben@example.test');
+    // A member who has left is shown by the name kept on their mark.
+    expect(texts()).toContain('Ben Sample');
+    // Names come from report_members, never from other members' profiles
+    // (which the committee can't read in full); only the signed-in member's own.
+    expect(seen.filter((q) => q.name === 'profiles' && q.eq('id') === undefined)).toEqual([]);
   });
 
   it.each([

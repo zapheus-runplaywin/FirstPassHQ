@@ -5,6 +5,7 @@ import { useIsGoalAthlete, useIsGoalCoach } from '@/lib/goals';
 import { useCanLogInjuries, useCanSeeInjuries } from '@/lib/injuries';
 import { useKpisOn } from '@/lib/kpis';
 import { useCaptainedGroupIds, useCanSendMessages, useGetsMessages } from '@/lib/messages';
+import { useCanReadReports } from '@/lib/report-access';
 import { hasRole, rolesOf } from '@/lib/roles';
 import { useCanSendSurveys } from '@/lib/surveys';
 import { useCanCheckTraining } from '@/lib/training';
@@ -44,6 +45,7 @@ export function useRouteAccess() {
   const isGoalCoach = useIsGoalCoach();
   const kpisOn = useKpisOn();
   const canCheckTraining = useCanCheckTraining();
+  const canReadReports = useCanReadReports();
 
   const isGuardian = holds('guardian');
   const isAthlete = holds('athlete') || inGroupAs('athlete');
@@ -120,6 +122,10 @@ export function useRouteAccess() {
     // admins check certificates and follow everyone's progress.
     training: isClubMember,
     checkTraining: canCheckTraining,
+
+    // Governance reports, read only: admins, and committee members with a
+    // current check, volunteer exemption or application (report-access.ts).
+    reports: canReadReports,
 
     // The concerns register: admins, the Child Safety Officer and the
     // Complaints Manager.
