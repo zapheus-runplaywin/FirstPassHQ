@@ -108,6 +108,8 @@ What each role sees on its home screen:
 | See injuries                           |   Own   | Their athlete's | Own athletes |            |     All¶      |  Own athletes‡ |         |      All      |
 | Sign off injury clearances             |         |                 | Endorse, not concussions◊ |            | Accept, send back¶ |   Endorse‡    |         | Accept, send back |
 | See who opened injury documents        |   Own   | Their athlete's |              |            |               |               |         |       ✓       |
+| Medical and emergency details          | Own; keep if 18 or over | Keep their athlete's | Own athletes‖ | Own athletes‖ |               | Own athletes‡‖ |         |               |
+| Check medical details once a year      | Own, if 18 or over | Their athlete's |              |            |               |               |         | See who has (report) |
 | Consent for a child's check-ins and injuries |         |        ✓        |              |            |               |               |         |  See status   |
 | Accept the code of conduct each season (if the club asks) | Own§ | Own, and their athlete's | Own | Own | Own | Own | | Own, see who has |
 | Take attendance                        |         |                 |      ✓       |     ✓      |       ✓       |               |         |       ✓       |
@@ -151,6 +153,10 @@ them or makes them Head Physio.
 ¶ Except athletes under 18 whose parents haven't given consent for injuries, whom only admins see.
 Committee members see an under 18's injuries, and accept or send back their clearances, only with a
 current Working With Children Check or a parent volunteer exemption.
+
+‖ For an athlete under 18, only once a parent or guardian has given consent for injuries and
+health information. Each time a coach, manager or physio opens them it's recorded, and the athlete
+(18 or over) or their parents see who did. Admins and the committee don't see them.
 
 ◊ Only a physio endorses a suspected concussion's clearance, and only a physio endorses any
 clearance when an admin turns on **Only physios endorse clearances** in Safeguarding settings.
@@ -907,6 +913,37 @@ them or react to them. If you're under 18, your parents or guardians can read th
 
 <img src="user-guide/session-plans-athlete.png" width="210" alt="Session plans shared with an athlete">
 
+### Medical and emergency details
+
+**Your details** (from the home screen) has **Medical and emergency details**: up to three
+emergency contacts, and your allergies, conditions, medications and action plan, such as what to do
+if you have an asthma attack or a reaction. They're for your safety at training and games. Tap a
+contact's phone number to call them.
+
+If you're 18 or over you keep them yourself: tap **Change details**, fill in what's needed, and
+tap **Save**. Each contact needs a name and a phone number. If you're under 18 your parents or
+guardians keep them, and you can read them.
+
+The coaches, managers and physios of your squads and teams can open them; if you're under 18,
+only once a parent or guardian has given consent for injuries and health information. Admins and
+the committee can't. Each time one of them opens your details it's recorded, and **Who has opened
+them** shows you (or, if you're under 18, your parents) who and when. Your details go when your
+account is deleted.
+
+**Check them once a year.** If you're 18 or over, the club asks you to check your details are
+still right once a year. Saving them counts as the check. From 30 days before it's due your to-do
+list says **Check your medical details are still right**, in amber in the last three days and red
+once overdue: open them and tap **Still correct**, or **Change details** if something has changed.
+Until you've saved any, your to-do list says **Add your medical and emergency details**. Under the
+details you'll see who checked them last and when the next check is due. Admins can see whether
+you've checked (but not what your details say) in the [Medical details checks](#reports) report.
+
+<img src="user-guide/medical-todo.png" width="210" alt="Check your medical details are still right in an athlete's to-do list">
+<img src="user-guide/medical-check.png" width="210" alt="Still correct under an athlete's medical details when the yearly check is due">
+
+<img src="user-guide/medical-details.png" width="210" alt="An athlete's medical and emergency details, with who has opened them">
+<img src="user-guide/medical-edit.png" width="210" alt="Changing emergency contacts and an action plan">
+
 <div style="page-break-before: always"></div>
 
 ## 5. Parents and guardians
@@ -939,7 +976,8 @@ kinds of information about your child:
 - **Injuries and health information**: their injuries, restrictions, physio updates and documents
   are seen by their coaches, the physios who look after them and the committee members cleared to
   work with children, who sign off
-  clearances.
+  clearances. The medical and emergency details you keep for your child are seen by their coaches,
+  managers and physios (see [Your child's medical and emergency details](#your-childs-medical-and-emergency-details)).
 
 Until you give a consent, only your child and you see their check-ins, and only your child, you
 and the club's admins see their injuries. Their coaches, physios and the committee don't see your
@@ -956,6 +994,26 @@ you're asked each time (see [Injury documents and photos](#injury-documents-and-
 
 <img src="user-guide/consent.png" width="210" alt="A parent giving consent for their child's check-ins and injuries">
 <img src="user-guide/consent-home.png" width="210" alt="Home screen with Give consent in the to-do list">
+
+### Your child's medical and emergency details
+
+Once you're verified, **Medical and emergency** on your home screen lists each child under 18.
+Open one and tap **Change details** to add up to three emergency contacts and your child's
+allergies, conditions, medications and action plan, then **Save**. Any of your child's verified
+parents or guardians can change them, and your child can read them. Their coaches, managers and
+physios see them once you've given consent for injuries and health information; admins and the
+committee don't. **Who has opened them** lists each time a coach, manager or physio opened them.
+When your child turns 18 they keep their own and you no longer see them.
+
+**Check them once a year.** One of your child's verified parents or guardians checks their
+details are still right once a year; saving them counts. From 30 days before it's due, every one
+of you has **Check …'s medical details are still right** on your to-do list until one of you opens
+them and taps **Still correct** (or changes and saves them). Until anything is saved it says
+**Add …'s medical and emergency details**. Admins see whether each child's details have been
+checked, but not what they say.
+
+<img src="user-guide/medical-home.png" width="210" alt="Medical and emergency on a parent's home screen">
+<img src="user-guide/medical-edit.png" width="210" alt="A parent changing their child's emergency contacts">
 
 ### The code of conduct for your child
 
@@ -978,7 +1036,7 @@ for yourself as well.
 
 Once you're verified, **Who has viewed their records** on your home screen lists each child under
 18. Open it to see everyone at the club who opened your child's injuries, injury documents,
-check-ins, game goals, season KPIs, named survey answers or member record in the app: their name, their role (coach, physio, admin,
+check-ins, game goals, season KPIs, named survey answers, medical and emergency details or member record in the app: their name, their role (coach, manager, physio, admin,
 committee or safeguarding contact, or member for anyone else, such as a manager reading named
 survey answers), what they opened and when, newest first. Sharing an injury
 document is listed too. Your child's own views and those of their parents and guardians aren't
@@ -1373,6 +1431,23 @@ extra access: you see the injury only as you'd see any of your athlete's injurie
 shows only once a parent or guardian has given consent.
 
 <img src="user-guide/injury-log.png" width="210" alt="A coach logging an injury for one of their athletes">
+
+### Medical and emergency details
+
+Coaches, managers and physios open their athletes' emergency contacts, allergies, conditions,
+medications and action plans from the squad or team's page: tap **Medical and emergency details**
+for its list, then an athlete. Tap a contact's phone number to call them. Each athlete keeps their
+own (a parent or guardian for an under 18); you can't change them.
+
+The list says whether each athlete has added emergency contacts. An under 18 opens only once a
+parent or guardian has given consent for injuries and health information, and shows **Waiting for
+a parent's health consent** until then. Opening the list shows nobody's details. Each time you open
+an athlete's details it's recorded with your name, and the athlete (18 or over) or their parents
+can see that you did. A coach or manager of a squad whose selections are complete no longer sees
+its athletes' details, as with check-ins; the Head Physio sees every athlete's.
+
+<img src="user-guide/medical-team.png" width="210" alt="A squad's medical and emergency details list for its coach">
+<img src="user-guide/medical-coach.png" width="210" alt="An athlete's medical and emergency details as their coach sees them">
 <img src="user-guide/injury-logged.png" width="210" alt="Injury logged, with the athlete and parents told">
 
 #### Viewing proof documents
@@ -1540,6 +1615,8 @@ and title together, like "Manager · Manager, 17 & Under". As a manager you can:
   own groups' sessions, every whole-club session and any session you took yourself (see
   [Taking attendance](#taking-attendance)). With a manager role but no squad or team yet, you can
   still take whole-squad and whole-club attendance.
+- **Open your athletes' medical and emergency details** from the squad or team's page, each view
+  recorded (see [Medical and emergency details](#medical-and-emergency-details-1)).
 - **Work on your season KPIs**, if the club uses them: the committee and admins set them, and you
   record your progress, add a note on the result and confirm your reviews (see
   [Season KPIs](#season-kpis)). The card shows once you're in a current squad or team.
@@ -1816,6 +1893,9 @@ as **Head Physio**. Which athletes a physio looks after:
 - **A physio in no squad or team**: no athletes, and the home screen says "You are not in a
   squad yet." A club with one physio should mark them **Head Physio**; otherwise place them in
   the squads and teams they look after.
+
+Physios open the medical and emergency details of the athletes in their squads and teams the same
+way as coaches (see [Medical and emergency details](#medical-and-emergency-details-1)).
 
 While the physio role is paused the header reads "Physio (paused)" and a **Physio paused** card
 says what to do. Messages a physio gets are labelled "To Physios", "To {squad or team}" or "To
@@ -2589,6 +2669,15 @@ everyone ever stood down, newest first, with the
   included. **Still to finish**
   lists everyone with a course not yet approved, in red if a due date has passed, then each course
   lists who must complete it, where they're up to, when they completed it and who checked it.
+- **Medical details checks**: every approved athlete and where their yearly medical details
+  check is up to, printed across the page. Athletes 18 or over check their own, and a verified parent
+  or guardian checks an under 18's. **Overdue** (more than a year since they were last saved or
+  confirmed) and **Nothing saved** come first, in red, then **Due within 30 days** and **Up to
+  date**, each with their squads and teams, who keeps the details, whether emergency contacts are
+  saved, when they were last checked and by whom, and when the next check is due. The totals give
+  the share checked in the last year. Under 18s with no verified parent or guardian are in red,
+  because nobody can check theirs until one is verified. It never shows the medical details
+  themselves.
 - **Injuries** (when Injuries is on): opens the [Injury report](#injury-report).
 - **Attendance** (when Attendance is on): pick the **Period** (last 4 weeks, last 3 months, this
   season, or **Choose dates** for a from and to date) and the **Squads and teams**: **All**,
@@ -2627,6 +2716,7 @@ addresses, so keep them somewhere only the committee can reach.
 <img src="user-guide/report-wwcc.png" width="210" alt="Working With Children Checks report">
 <img src="user-guide/report-pdf.png" width="210" alt="The Working With Children Checks report saved as a PDF">
 <img src="user-guide/report-under-18s.png" width="210" alt="Under 18s and their guardians report">
+<img src="user-guide/report-medical.png" width="210" alt="The Medical details checks report">
 <img src="user-guide/report-attendance.png" width="210" alt="Attendance report for the 17 &amp; Under Squad over the last 4 weeks">
 <img src="user-guide/report-attendance-absences.png" width="210" alt="Reported absences by reason in the Attendance report">
 <img src="user-guide/report-award-results.png" width="210" alt="Full results of a closed match award">
@@ -3002,6 +3092,7 @@ once saved, only replaced or removed, and anyone who gets it wrong five times in
 | Daily check-in answers and notes | The athlete, their guardians and their coaches. For an athlete under 18, their coaches only once a parent or guardian consents, and until then their check-ins count in no average. The committee, physios and admins see only group averages, hidden below 3 check-ins (over three days, in Trends). |
 | Wellbeing flags | Only the Child Safety Officer: for every athlete, selected or not, the day and lowest score of each check-in scoring 2 or less in the last 14 days, never the answers or notes. Under 18s only once a parent or guardian consents to check-ins. |
 | Injuries and documents  | For an athlete under 18 whose parents haven't given consent for injuries: only the athlete, their guardians and admins. Otherwise the athlete, their guardians, their coaches, the physios who look after them (the Head Physio and physios in their squad or team), the committee and admins. For an athlete under 18, only committee members with a current Working With Children Check or a parent volunteer exemption, and admins unless their own check has been missing or expired for over 30 days. Managers don't see injuries, including ones they log. A coach, manager or physio who logs an injury sees it only as their role already allows. Whoever takes attendance (coaches, managers, the committee and admins) sees only that an athlete is **Injured** and their expected return date, whatever the consent. While a clearance waits for the committee, any committee member or admin who could accept it can share its documents; everyone else views them in the app. |
+| Medical and emergency details | The athlete; an under 18's verified parents and guardians, who keep them (an athlete 18 or over keeps their own); and the coaches, managers and physios of the athlete's current squads and teams (the Head Physio for every athlete), for an under 18 only once a parent or guardian has given consent for injuries and health information. Not admins or the committee. Each view by a coach, manager or physio is recorded, and the athlete 18 or over, or an under 18's parents and guardians, see who and when. Checked once a year by whoever keeps them; admins see who has checked and when, but not the details. Deleted with the athlete's account. |
 | Who opened injury documents | The athlete, their guardians and admins: every view and share, by whom, their role and when, and each photo consent. |
 | Who has viewed a child's records | For an athlete under 18: their verified parents or guardians (until the athlete turns 18) and admins. Lists every time someone other than the athlete or their guardians opened the athlete's injuries, injury documents, check-ins, game goals, season KPIs, named survey answers or member record. Opening a child's records is recorded whoever you are; nobody can switch it off or delete entries by hand, and old entries are removed only under the club's Keeping records settings. |
 | Consents for a child    | The athlete, their parents or guardians and admins, with every consent given and withdrawn. Only a verified parent or guardian can give or withdraw one. |
@@ -3176,6 +3267,12 @@ Working With Children Check, and another admin must do it.
   conduct with your child and accept it for both of you (see [The code of conduct for your
   child](#the-code-of-conduct-for-your-child)).
 - **Your access ends at 18.** Guardian access ends on your child's 18th birthday.
+- **You keep your child's medical and emergency details.** Emergency contacts, allergies,
+  conditions, medications and an action plan, written by you. Their coaches, managers and physios
+  read them only once you've given consent for injuries and health information; admins and the
+  committee never do. Every time one of them opens them it's recorded, and you see who and when.
+  You're reminded to check they're still right once a year, and admins can see who has checked
+  without seeing the details.
 - **Injury photos need your consent.** Injury proof for under 18s is the letter or report, as a PDF
   or a photo confirmed to show the letter. Only if the club allows it can you, as a verified
   guardian, add a photo of your child's injury, and only after confirming your consent, which is
@@ -3219,6 +3316,10 @@ Working With Children Check, and another admin must do it.
   photo of the letter. Only a verified parent or guardian can add a photo of the injury itself,
   with their consent recorded, and only if the club allows it. You can see everyone who has
   opened it.
+- **Your medical details are for your safety.** Your parents keep your emergency contacts,
+  allergies and action plan until you're 18, and you can read them. Only your coaches, managers and
+  physios see them, and only with your parents' consent. Your parents check they're still right
+  once a year.
 
 ### For coaches, managers, physios and volunteers
 
@@ -3256,8 +3357,9 @@ Working With Children Check, and another admin must do it.
   what each squad or team did and who ran it (see [Session plans](#session-plans)). Photos are of
   the plan, not of athletes.
 - **Opening a child's records is recorded.** If your role lets you open an under 18's injuries,
-  injury documents, check-ins, game goals or season KPIs, the app records it when you do, and their verified parents
-  and guardians can see who looked and when.
+  injury documents, check-ins, game goals, season KPIs or medical and emergency details, the app records it when you do, and their verified parents
+  and guardians can see who looked and when. Opening an adult athlete's medical and emergency
+  details is recorded too, and they see it.
 - **Visitors from outside WA.** The short-term visitor exemption (two weeks from arrival) and the
   national event or tour exemption (up to 30 days at the event) each record their dates, end by
   themselves, and can be used only once between them in any 12 months; the app refuses a second.
@@ -3318,6 +3420,10 @@ Working With Children Check, and another admin must do it.
 - **Record views are logged.** Every time someone other than a child or their guardians opens an
   under 18's injuries, injury documents, check-ins, game goals, season KPIs, named survey answers or member record, it's recorded.
   Admins see the list on the child's member page, and parents and guardians on their home screen.
+- **Medical details are checked every year.** Each athlete 18 or over, and a verified parent or
+  guardian for each under 18, is reminded to check their medical and emergency details once a year.
+  The **Medical details checks** report shows admins who is up to date, due, overdue or has nothing
+  saved, and which under 18s have no verified parent to keep them, without showing the details.
 - **Admins see what coaches ask children.** Only a coach or manager's quick poll, up to 5
   questions with choices or ratings, can stay within the team. Any longer survey, or any survey
   with a written answer, is always seen by admins too.

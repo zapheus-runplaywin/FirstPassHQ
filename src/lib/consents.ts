@@ -41,7 +41,7 @@ export const consentText: Record<ConsentKind, { title: string; detail: string }>
   health: {
     title: 'Injuries and health information',
     detail:
-      'Their injuries, restrictions, physio updates and the letters or reports you attach are seen by their coaches, the physios who look after them and the committee members cleared to work with children, who sign off clearances. Without this, none of them see your child’s injuries, and an injury can’t be cleared to play, because a coach or physio has to endorse the clearance first. Either way, whoever takes attendance sees that your child is injured and when they’re expected back, and nothing more.',
+      'Their injuries, restrictions, physio updates and the letters or reports you attach are seen by their coaches, the physios who look after them and the committee members cleared to work with children, who sign off clearances. The medical and emergency details you keep for them (emergency contacts, allergies, conditions, medications and an action plan) are seen by their coaches, managers and physios, and you see each time one of them opens them. Without this, none of them see your child’s injuries or medical details, and an injury can’t be cleared to play, because a coach or physio has to endorse the clearance first. Either way, whoever takes attendance sees that your child is injured and when they’re expected back, and nothing more.',
   },
 };
 

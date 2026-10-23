@@ -48,11 +48,12 @@ describe('recordKindLabels', () => {
     ['member_record', 'Opened their member record'],
     ['kpis', 'Read season KPIs'],
     ['survey_answers', 'Read their named survey answers'],
+    ['medical', 'Opened their medical and emergency details'],
   ])('%s reads "%s"', (kind, label) => {
     expect(recordKindLabels[kind]).toBe(label);
   });
 
   it('labels every kind of record', () => {
-    expect(Object.keys(recordKindLabels)).toHaveLength(8);
+    expect(Object.keys(recordKindLabels)).toHaveLength(9);
   });
 });

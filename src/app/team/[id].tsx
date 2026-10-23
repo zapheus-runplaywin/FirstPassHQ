@@ -40,6 +40,16 @@ export default function TeamScreen() {
   const canChooseCaptains =
     !!team && (isAdmin || memberships.some((m) => m.team.id === id && m.team_role === 'coach'));
 
+  // The group's coaches, managers and physios open its athletes' medical and
+  // emergency details.
+  const canSeeMedical =
+    profile?.status === 'approved' &&
+    memberships.some(
+      (m) =>
+        m.team.id === id &&
+        (m.team_role === 'coach' || m.team_role === 'manager' || m.team_role === 'physio'),
+    );
+
   // Game goals live on the team's page: PlayHQ games belong to teams, not squads.
   const membership = memberships.find((m) => m.team.id === id);
   const goalsHere =
@@ -180,6 +190,15 @@ export default function TeamScreen() {
             );
           })
         )}
+        {canSeeMedical && roster?.some((m) => m.team_role === 'athlete') ? (
+          <Button
+            title="Medical and emergency details"
+            variant="secondary"
+            onPress={() =>
+              router.push({ pathname: '/medical/team/[id]', params: { id, name: team?.name } })
+            }
+          />
+        ) : null}
         {canChooseCaptains && roster?.some((m) => m.team_role === 'athlete') ? (
           <Button
             title="Choose captains"

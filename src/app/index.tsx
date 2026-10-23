@@ -43,6 +43,7 @@ import {
   useOpenInjuries,
 } from '@/lib/injuries';
 import { useKpiPeople, useKpiReviewTodos, type KpiPerson } from '@/lib/kpis';
+import { useMyMedicalReviews } from '@/lib/medical';
 import { useGetsMessages, useUnreadCount } from '@/lib/messages';
 import {
   pendingRequestsLabel,
@@ -108,6 +109,11 @@ export default function HomeScreen() {
   const plans = useSessionPlanSummary();
   const { kpiPeople, reloadKpiPeople } = useKpiPeople();
   const { kpiReviewTodos, reloadKpiReviewTodos } = useKpiReviewTodos();
+  // Athletes 18 or over and verified parents keep medical details, checked yearly.
+  const { medicalReviews, reloadMedicalReviews } = useMyMedicalReviews(
+    profile?.status === 'approved' &&
+      (hasRole(profile, 'athlete') || (hasRole(profile, 'guardian') && !!profile.verified_at)),
+  );
   const { mySurveys, reloadMySurveys } = useMySurveys();
   const canSendSurveys = useCanSendSurveys();
   const surveysWaiting = surveysToAnswer(mySurveys).length;
@@ -168,6 +174,7 @@ export default function HomeScreen() {
     affiliation: affiliationTodos,
     kpiReviews: kpiReviewTodos,
     surveys: features.surveys ? mySurveys : [],
+    medicalReviews,
   });
 
   const isGuardian = profile?.status === 'approved' && hasRole(profile, 'guardian');
@@ -216,6 +223,7 @@ export default function HomeScreen() {
       plans.reloadSummary(),
       reloadKpiPeople(),
       reloadKpiReviewTodos(),
+      reloadMedicalReviews(),
       reloadMySurveys(),
       reloadAbsencesToReview(),
       loadAthletes(),
@@ -561,6 +569,22 @@ export default function HomeScreen() {
           </View>
         ) : null}
 
+        {isGuardian && athletes.length > 0 && profile?.verified_at ? (
+          <View style={styles.section}>
+            <ThemedText type="smallBold">Medical and emergency</ThemedText>
+            {athletes.map((a) => (
+              <PressableCard
+                key={a.id}
+                onPress={() => router.push({ pathname: '/medical/[id]', params: { id: a.id } })}>
+                <ThemedText type="smallBold">{a.name}</ThemedText>
+                <ThemedText type="small" themeColor="textSecondary">
+                  Emergency contacts, allergies, conditions, medications and an action plan
+                </ThemedText>
+              </PressableCard>
+            ))}
+          </View>
+        ) : null}
+
         {isGuardian && features.attendance && athletes.length > 0 ? (
           <View style={styles.section}>
             <ThemedText type="smallBold">Attendance</ThemedText>
@@ -641,7 +665,7 @@ export default function HomeScreen() {
                 }>
                 <ThemedText type="smallBold">{a.name}</ThemedText>
                 <ThemedText type="small" themeColor="textSecondary">
-                  Who at the club opened their injuries, check-ins, game goals, season KPIs, named survey answers or member record
+                  Who at the club opened their injuries, check-ins, game goals, season KPIs, named survey answers, medical details or member record
                 </ThemedText>
               </PressableCard>
             ))}
