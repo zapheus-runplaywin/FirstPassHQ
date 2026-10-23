@@ -2,7 +2,7 @@ import { useCanTakeAttendance, useCanViewAttendance } from '@/lib/attendance';
 import { useAuth } from '@/lib/auth';
 import { useCanSeeCheckIns, useIsCheckInAthlete, useIsCheckInCoach } from '@/lib/check-ins';
 import { useIsGoalAthlete, useIsGoalCoach } from '@/lib/goals';
-import { useCanSeeInjuries } from '@/lib/injuries';
+import { useCanLogInjuries, useCanSeeInjuries } from '@/lib/injuries';
 import { useKpisOn } from '@/lib/kpis';
 import { useCaptainedGroupIds, useCanSendMessages, useGetsMessages } from '@/lib/messages';
 import { hasRole, rolesOf } from '@/lib/roles';
@@ -34,6 +34,7 @@ export function useRouteAccess() {
   const canSendSurveys = useCanSendSurveys();
   const captained = useCaptainedGroupIds();
   const canSeeInjuries = useCanSeeInjuries();
+  const canLogInjuries = useCanLogInjuries();
   const canTakeAttendance = useCanTakeAttendance();
   const canViewAttendance = useCanViewAttendance();
   const isCheckInAthlete = useIsCheckInAthlete();
@@ -71,10 +72,13 @@ export function useRouteAccess() {
     // even once captains' polls are switched off), and the committee and admins.
     surveyResults: canSendSurveys || captained.size > 0,
 
-    // Injuries: athletes, guardians, coaches, physios, the committee and admins.
-    injuries: canSeeInjuries,
+    // Injuries: athletes, guardians, coaches, physios, the committee and admins
+    // see them; managers only log them.
+    injuries: canSeeInjuries || canLogInjuries,
     // Athletes report their own, and guardians their child's.
     reportInjury: holds('athlete', 'guardian'),
+    // Coaches, managers and physios log one for an athlete when it happens.
+    logInjury: canLogInjuries,
 
     // Attendance: those who take it or see athletes' records.
     attendance: canTakeAttendance || canViewAttendance,

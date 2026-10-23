@@ -23,7 +23,7 @@ import { supabase } from '@/lib/supabase';
 import type { Profile, VolunteerExemption } from '@/lib/types';
 
 import { openScreen, personas, resetClub, settle } from './helpers/harness';
-import { fieldGroup, flip, input, isDisabled, isOn, pickPerson, type } from './helpers/settings-forms';
+import { fieldGroup, flip, input, isDisabled, isOn, isSelected, pickPerson, type } from './helpers/settings-forms';
 
 jest.mock('@/lib/club', () => jest.requireActual('./helpers/harness').clubModuleMock());
 jest.mock('@/lib/club-choice', () => jest.requireActual('./helpers/harness').clubChoiceModuleMock());
@@ -148,6 +148,7 @@ async function openSafeguarding(
         admin_wwc_officer: { officer_id: 'admin', officer_name: 'Sample admin' },
         conduct_each_season_setting: true,
         committee_checks_from: null,
+        injury_rules: { physio_only_endorsement: false, concussion_min_days: 21 },
         ...rpcs,
       },
       rpcErrors,
@@ -232,6 +233,8 @@ describe('Safeguarding settings', () => {
     type('Policy version', '2026-2');
     flip('Ask every member to accept the code of conduct once a season', false);
     flip('Allow photos of under 18s’ injuries', true);
+    flip('Only physios endorse clearances', true);
+    fireEvent.press(screen.getByText('12 days (elite program)'));
     await saveSafeguarding();
 
     expect(callsTo('admin_set_safeguarding')).toEqual([
@@ -253,14 +256,44 @@ describe('Safeguarding settings', () => {
       },
     ]);
     expect(callsTo('admin_set_conduct_each_season')).toEqual([{ p_on: false }]);
+    expect(callsTo('admin_set_injury_rules')).toEqual([
+      { p_physio_only_endorsement: true, p_concussion_min_days: 12 },
+    ]);
     const saves = rpcNames().filter((n) => n.startsWith('admin_set_'));
     expect(saves).toEqual([
       'admin_set_safeguarding',
       'admin_set_minor_injury_photos',
       'admin_set_policies',
       'admin_set_conduct_each_season',
+      'admin_set_injury_rules',
     ]);
     expect(screen).toHavePathname('/administration');
+  });
+
+  it('starts from the saved injury clearance rules', async () => {
+    await openSafeguarding({ injury_rules: { physio_only_endorsement: true, concussion_min_days: 12 } });
+    expect(isOn('Only physios endorse clearances')).toBe(true);
+    expect(isSelected('12 days (elite program)')).toBe(true);
+  });
+
+  it('defaults to coaches or physios endorsing and 21 days after a concussion', async () => {
+    await openSafeguarding({ injury_rules: null });
+    expect(isOn('Only physios endorse clearances')).toBe(false);
+    expect(isSelected('21 days')).toBe(true);
+    await saveSafeguarding();
+    expect(callsTo('admin_set_injury_rules')).toEqual([
+      { p_physio_only_endorsement: false, p_concussion_min_days: 21 },
+    ]);
+  });
+
+  it('stops at a refused injury rule, before the WWC Registration Officer', async () => {
+    await openSafeguarding({}, { admin_set_injury_rules: 'Choose 21 days, or 12 for an elite program' });
+    fireEvent.press(within(fieldGroup('WWC Registration Officer')).getByText('Sample admin  ✕'));
+    pickPerson('WWC Registration Officer', 'committee', 'Sample committee');
+    await saveSafeguarding();
+    expect(screen.getByText('Choose 21 days, or 12 for an elite program')).toBeTruthy();
+    expect(callsTo('admin_set_wwc_officer')).toEqual([]);
+    expect(screen).toHavePathname('/admin/safeguarding');
   });
 
   it('can leave a contact unnamed', async () => {

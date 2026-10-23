@@ -145,6 +145,9 @@ function RootStack() {
             <Stack.Protected guard={can.reportInjury}>
               <Stack.Screen name="injuries/new" options={{ title: 'Report an injury' }} />
             </Stack.Protected>
+            <Stack.Protected guard={can.logInjury}>
+              <Stack.Screen name="injuries/log" options={{ title: 'Log an injury' }} />
+            </Stack.Protected>
           </Stack.Protected>
           <Stack.Protected guard={features.attendance}>
             <Stack.Protected guard={can.attendance}>

@@ -37,7 +37,9 @@ import { reflectionsToAnswer, useCoachTeamGames, useGoalBoard, useMyGoals } from
 import {
   formatDateString,
   injuriesSummary,
+  useCanLogInjuries,
   useCanSeeInjuries,
+  useLoggedInjuries,
   useOpenInjuries,
 } from '@/lib/injuries';
 import { useKpiPeople, useKpiReviewTodos, type KpiPerson } from '@/lib/kpis';
@@ -107,6 +109,8 @@ export default function HomeScreen() {
   const surveysWaiting = surveysToAnswer(mySurveys).length;
   const { absencesToReview, reloadAbsencesToReview } = useAbsencesToReview(useLeadsAGroup());
   const canSeeInjuries = useCanSeeInjuries();
+  const canLogInjuries = useCanLogInjuries();
+  const { loggedInjuries, reloadLoggedInjuries } = useLoggedInjuries();
   const canTakeAttendance = useCanTakeAttendance();
   const canViewAttendance = useCanViewAttendance();
   const { openInjuries, reloadInjuries } = useOpenInjuries();
@@ -131,6 +135,7 @@ export default function HomeScreen() {
   const todos = buildTodos({
     userId: session?.user.id,
     injuries: features.injuries ? openInjuries : [],
+    loggedInjuries: features.injuries ? loggedInjuries : [],
     pendingCount,
     needsCheckIn: features.checkIns && myCheckIn === null,
     flaggedAthletes: features.checkIns ? checkInTotals(checkInSummary).flagged : 0,
@@ -208,6 +213,7 @@ export default function HomeScreen() {
       reloadEvents(),
       reloadUnread(),
       reloadInjuries(),
+      reloadLoggedInjuries(),
       reloadMyCheckIn(),
       reloadCheckInSummary(),
       reloadCheckInOverview(),
@@ -339,7 +345,7 @@ export default function HomeScreen() {
           </PressableCard>
         ) : null}
 
-        {features.injuries && canSeeInjuries ? (
+        {features.injuries && (canSeeInjuries || canLogInjuries) ? (
           <PressableCard onPress={() => router.push('/injuries')}>
             <View style={styles.cardTitleRow}>
               <ThemedText type="smallBold">Injuries</ThemedText>
@@ -352,7 +358,9 @@ export default function HomeScreen() {
               ) : null}
             </View>
             <ThemedText type="small" themeColor="textSecondary">
-              {injuriesSummary(openInjuries)}
+              {canSeeInjuries
+                ? injuriesSummary(openInjuries)
+                : 'Log an injury at training or a game'}
             </ThemedText>
           </PressableCard>
         ) : null}

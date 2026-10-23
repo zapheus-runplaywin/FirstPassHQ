@@ -291,11 +291,13 @@ insert into matrix (phase, label, q, counts) values
       '{1,0,0,1,0,0,0,1,1,1,1,0,0,0}'),
   (1, 'session_plans: shared with the squad''s coaches', $$select 1 from public.session_plans where id = '00000000-0000-0000-0000-0000000000a9'$$,
       '{1,0,0,1,0,0,0,0,0,0,1,0,0,0}'),
-  -- After Logan (a verified guardian) consents for Jordan.
+  -- After Logan (a verified guardian) consents for Jordan. The committee
+  -- member here is exempt from a check (Treasurer only), so they don't see
+  -- an under 18's injuries even with consent (20261022100000_injury_records.sql).
   (2, 'injuries: Jordan''s, with consent', $$select 1 from public.injuries where athlete_id = pg_temp.m('31')$$,
-      '{1,1,0,1,0,0,1,0,1,1,1,0,0,0}'),
+      '{1,0,0,1,0,0,1,0,1,1,1,0,0,0}'),
   (2, 'injury_updates: Jordan''s, with consent', $$select 1 from public.injury_updates u join public.injuries i on i.id = u.injury_id where i.athlete_id = pg_temp.m('31')$$,
-      '{1,1,0,1,0,0,1,0,1,1,1,0,0,0}'),
+      '{1,0,0,1,0,0,1,0,1,1,1,0,0,0}'),
   (2, 'check_ins: Jordan''s, with consent', $$select 1 from public.check_ins where athlete_id = pg_temp.m('31')$$,
       '{0,0,0,1,0,0,0,0,1,1,1,0,0,0}'),
   (2, 'game_goals: Jordan''s, with consent', $$select 1 from public.game_goals where athlete_id = pg_temp.m('31')$$,
