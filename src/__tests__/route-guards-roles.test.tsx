@@ -112,7 +112,10 @@ const union = (...groups: PersonaName[][]) => [...new Set(groups.flat())];
 
 const MESSAGE_SENDERS = union(ADMINS, COMMITTEE, COACHES, MANAGERS, CAPTAINS);
 const SURVEY_SENDERS = union(ADMINS, COMMITTEE, COACHES, MANAGERS, ['captain']);
-const INJURIES = union(ATHLETES, GUARDIANS, COACHES, PHYSIOS, COMMITTEE, ADMINS);
+// Coaches, managers and physios log injuries; managers open the injury
+// screens only to do that, and see no records there.
+const INJURY_LOGGERS = union(COACHES, MANAGERS, PHYSIOS);
+const INJURIES = union(ATHLETES, GUARDIANS, COACHES, PHYSIOS, COMMITTEE, ADMINS, INJURY_LOGGERS);
 const FAMILY_OF_ATHLETES = union(ATHLETES, GUARDIANS);
 const ATTENDANCE_TAKERS = union(COACHES, MANAGERS, COMMITTEE, ADMINS);
 const ATTENDANCE_VIEWERS = union(COACHES, COMMITTEE, ADMINS);
@@ -138,6 +141,7 @@ const WHO_OPENS: Record<string, PersonaName[]> = {
   'injuries/[id]': INJURIES,
   'injuries/document': INJURIES,
   'injuries/new': FAMILY_OF_ATHLETES,
+  'injuries/log': INJURY_LOGGERS,
 
   'attendance/index': ATTENDANCE_TAKERS,
   'attendance/[id]': ATTENDANCE_TAKERS,

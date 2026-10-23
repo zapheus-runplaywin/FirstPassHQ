@@ -101,8 +101,10 @@ What each role sees on its home screen:
 | Team goals for a game                  | See, comment |       See       | Set, review, comment |            |               |               |         |      See      |
 | Check-ins of others                    |         | Their athlete's | Own athletes |            | Averages only | Averages only |         | Averages only |
 | Report an injury                       |   Own   | Their athlete's |              |            |               |               |         |               |
+| Log an injury when it happens          |         |                 | Own athletes | Own athletes |             |  Own athletes‡ |         |               |
+| Add physio updates                     |   Own   | Their athlete's |              |            |               |  Own athletes‡ |         |               |
 | See injuries                           |   Own   | Their athlete's | Own athletes |            |     All¶      |  Own athletes‡ |         |      All      |
-| Sign off injury clearances             |         |                 |   Endorse    |            | Accept, send back |   Endorse‡    |         | Accept, send back |
+| Sign off injury clearances             |         |                 | Endorse, not concussions◊ |            | Accept, send back¶ |   Endorse‡    |         | Accept, send back |
 | See who opened injury documents        |   Own   | Their athlete's |              |            |               |               |         |       ✓       |
 | Consent for a child's check-ins and injuries |         |        ✓        |              |            |               |               |         |  See status   |
 | Accept the code of conduct each season (if the club asks) | Own§ | Own, and their athlete's | Own | Own | Own | Own | | Own, see who has |
@@ -145,6 +147,11 @@ after every athlete. A physio who isn't in any squad or team sees no athletes un
 them or makes them Head Physio.
 
 ¶ Except athletes under 18 whose parents haven't given consent for injuries, whom only admins see.
+Committee members see an under 18's injuries, and accept or send back their clearances, only with a
+current Working With Children Check or a parent volunteer exemption.
+
+◊ Only a physio endorses a suspected concussion's clearance, and only a physio endorses any
+clearance when an admin turns on **Only physios endorse clearances** in Safeguarding settings.
 
 "Own groups" and "own athletes" mean the squads and teams you're listed in as a coach or manager.
 Club awards are voted on by the roles, squads and teams each award names, so not every award is
@@ -290,7 +297,7 @@ Once you're approved, the home screen is where everything starts. From the top:
 
 - **To do**: things you need to do, such as your daily check-in, the code of conduct to accept, an
   award vote, integrity training due, goals to set or reflect on for a game, an injury past its
-  expected return date, a KPI review to confirm or, for coaches, physios and the committee, an
+  expected return date, an injury a coach, manager or physio logged for you or your child, a KPI review to confirm or, for coaches, physios and the committee, an
   injury clearance to sign off, and, for coaches and managers, new or changed absences to review.
   Tap an item to go straight to it. Each item disappears once it's done. When there's nothing,
   it says "✓ You're all caught up." Your own [personal tasks](#your-own-tasks) come after the
@@ -741,10 +748,13 @@ guardians. Your teammates can't.
 2. Say where the injury is, what happened and when.
 3. Add any restrictions (for example "no jumping") and choose when you expect to be back. It's
    required, but a best guess is fine; a physio update can change it.
-4. Tap **Report injury**.
+4. If it might be a concussion (a knock to the head, face or neck, or any sign of concussion),
+   switch on **Possible concussion**. See [Concussion](#concussion).
+5. Tap **Report injury**.
 
 Your coaches, the physios who look after you and the committee can see it straight away. If
-you're under 18, they see it only once a parent or guardian has given consent for injuries; until
+you're under 18, they see it only once a parent or guardian has given consent for injuries, and
+only committee members cleared to work with children see it; until
 then only your parents or guardians and the club's admins see it, and nobody can clear you to play,
 because a coach or physio has to see the injury to endorse your clearance. So ask a parent or
 guardian to give consent for injuries.
@@ -755,6 +765,14 @@ the injury.
 
 <img src="user-guide/injury-report-new.png" width="210" alt="Report an injury form">
 
+### When a coach, manager or physio logs your injury
+
+If you're hurt at training or a game, one of your coaches, managers or physios may log the injury
+there and then. You and your parents or guardians are told straight away: your to-do list shows
+**Look at the injury Casey Coach logged for you** until you open it. The injury is then yours like
+any other: you add the physio's updates and ask for clearance. The history shows who logged it and
+their role, for example "Casey Coach (coach)". Logging it doesn't change who sees it.
+
 ### Updating an injury
 
 Open the injury to see its details and history. While you're injured:
@@ -764,6 +782,8 @@ Open the injury to see its details and history. While you're injured:
   If you're under 18, attach the letter or report as a PDF or a photo of the letter, and switch
   on **This is a photo of the letter** before sending a photo. Never send a photo of the injury
   itself (see [Injury documents and photos](#injury-documents-and-photos)).
+- A physio who looks after you can add their own updates too, shown with "(physio)" after their
+  name.
 - If your expected return date passes, your to-do list reminds you to ask for clearance or change
   the date.
 
@@ -780,7 +800,10 @@ Two people then sign off, in order:
 1. **One of your coaches, or a physio who looks after your squad or team (or the Head Physio),
    endorses it** (status "Waiting for a coach or physio").
 2. **A committee member accepts it** (status "Waiting for the committee"). It must be someone other
-   than the person who endorsed it.
+   than the person who endorsed it. For an athlete under 18, it must be a committee member with a
+   current Working With Children Check or a parent volunteer exemption.
+
+If the club has turned on **Only physios endorse clearances**, only a physio endorses it.
 
 Nobody signs off their own clearance or their own child's, so a coach or committee member who is
 also your parent or guardian leaves it to someone else.
@@ -801,6 +824,26 @@ same list.
 <img src="user-guide/ask-for-clearance.png" width="210" alt="Ask for clearance with proof attached">
 <img src="user-guide/injury-document-log.png" width="210" alt="An injury document with the list of who viewed and shared it">
 <img src="user-guide/injury-document-removed.png" width="210" alt="A cleared injury whose letter was removed after the club's keep period">
+
+### Concussion
+
+Any knock to the head, face or neck, or any sign of concussion, is treated as a possible
+concussion: **if in doubt, sit them out**. Whoever reports or logs it switches on **Possible
+concussion**, and a physio can mark it later in an update. The injury then shows **Possible
+concussion** at the top, and follows
+[Netball Australia's concussion policy](https://netball.com.au/news/update-netball-australias-concussion-protocols):
+
+- **See a doctor.** The athlete doesn't train or play until they're cleared.
+- **Clearance waits.** You can't ask for clearance until 21 days after the injury (12 days if the
+  club runs an elite program and chose 12). The injury shows **Clearance from** with the first day.
+- **A doctor's clearance.** Attach the doctor's clearance and switch on **This is a doctor's
+  clearance**. The history shows "Confirmed as a doctor's clearance".
+- **Only a physio endorses it**, never a coach. A committee member then accepts it as usual.
+- **Only a physio can rule it out**, by switching **Possible concussion** off in an update once a
+  doctor has said it isn't one. The athlete and their parents or guardians can mark a concussion but
+  can't unmark one.
+
+<img src="user-guide/injury-concussion.png" width="210" alt="A possible concussion with its earliest clearance date">
 
 ### Captains
 
@@ -888,7 +931,8 @@ kinds of information about your child:
 
 - **Daily check-ins**: their answers and notes are seen by their coaches.
 - **Injuries and health information**: their injuries, restrictions, physio updates and documents
-  are seen by their coaches, the physios who look after them and the committee, who sign off
+  are seen by their coaches, the physios who look after them and the committee members cleared to
+  work with children, who sign off
   clearances.
 
 Until you give a consent, only your child and you see their check-ins, and only your child, you
@@ -997,6 +1041,7 @@ happened since you last looked. Open it to see, newest first:
 - a parent or guardian linked or unlinked, and by which admin
 - a consent given or withdrawn, and by whom
 - one of your child's injury documents shared out of the app, and by whom
+- an injury a coach, manager or physio logged for your child, and who logged it
 
 If an adult is stood down, you see only that they're no longer in the group; the reason stays with
 the club's admins. Ordinary views of your child's records are under
@@ -1030,6 +1075,11 @@ As a guardian you:
   a photo you confirm it shows the letter, not the injury. If the club allows photos of injuries and
   your identity has been verified, you can choose **The injury** and add one after switching on
   **I consent**; your consent is kept with the photo. Your child can't add photos of injuries.
+- **Hear straight away when staff log an injury**: if a coach, manager or physio logs an injury for
+  your child at training or a game, your to-do list shows **Look at the injury Casey Coach logged
+  for Jordan** until you open it, and it shows under **What's changed**. You then add the physio's
+  updates and ask for clearance as usual (see
+  [When a coach, manager or physio logs your injury](#when-a-coach-manager-or-physio-logs-your-injury)).
 - **See who opened your athlete's injury documents**: under each document, every view and share,
   by whom and when, and what was confirmed about each photo.
 - **See your athlete's attendance and report absences** (see
@@ -1271,10 +1321,33 @@ your to-do list. Open it, check the proof in the history (tap **View**), then:
 
 A physio who looks after the athlete can endorse a clearance too. Admins can't endorse a clearance unless
 they're also the athlete's coach or a physio; they accept it like the committee. You can't endorse a
-clearance for your own child: another coach or a physio does it.
+clearance for your own child: another coach or a physio does it. You can't endorse a suspected
+concussion's clearance either: only a physio can (see [Concussion](#concussion)). If the club has
+turned on **Only physios endorse clearances**, every clearance waits for a physio.
 
 <img src="user-guide/injuries-coach.png" width="210" alt="Coach's injuries list">
 <img src="user-guide/endorse-clearance.png" width="210" alt="Endorse or send back a clearance">
+
+#### Logging an injury at training or a game
+
+When one of your athletes is hurt at training or a game, log it there and then:
+
+1. Tap **Injuries**, then **Log an injury**.
+2. Choose the athlete. Only athletes in the squads and teams you coach, manage or look after as a
+   physio are listed.
+3. Say where the injury is and what happened, including any first aid, and when. Restrictions and
+   an expected return are optional.
+4. For a knock to the head, face or neck, or any sign of concussion, switch on **Possible
+   concussion**. If in doubt, sit them out.
+5. Tap **Log injury**.
+
+The athlete and their parents or guardians are told straight away, and it goes on the athlete's
+injury record, where they add the physio's updates and ask for clearance. Logging it gives you no
+extra access: you see the injury only as you'd see any of your athlete's injuries, so an under 18's
+shows only once a parent or guardian has given consent.
+
+<img src="user-guide/injury-log.png" width="210" alt="A coach logging an injury for one of their athletes">
+<img src="user-guide/injury-logged.png" width="210" alt="Injury logged, with the athlete and parents told">
 
 #### Viewing proof documents
 
@@ -1446,6 +1519,11 @@ and title together, like "Manager · Manager, 17 & Under". As a manager you can:
   [Season KPIs](#season-kpis)). The card shows once you're in a current squad or team.
 - **Vote in club awards** that name managers, or every member, as voters, and be nominated in
   awards open to any member (see [Club awards](#club-awards)).
+- **Log an injury** when one of your athletes is hurt at training or a game: the **Injuries** card
+  reads "Log an injury at training or a game". The athlete and their parents or guardians are told
+  straight away and keep the record from there (see
+  [Logging an injury at training or a game](#logging-an-injury-at-training-or-a-game)). You don't
+  see injury records, including the ones you log.
 
 Managers see the absences reported for their groups, on the register and under **Away in the next 4
 weeks**. Like coaches, they get a **To do** item when an absence is reported or withdrawn for one
@@ -1453,7 +1531,7 @@ of their groups, and clear it with **Mark as reviewed** under **New or changed a
 [Attendance records](#attendance-records)). The register also shows who took each session, each
 absence's reason, and **Injured, back** with the date for an injured athlete, whatever the consent
 choices, and nothing else about the injury. Managers don't see athletes' attendance histories,
-check-ins, injuries, game goals, team goals or session plans.
+check-ins, injury records, game goals, team goals or session plans.
 
 While your check has expired, or an exemption has ended or hasn't been accepted yet, your home
 screen says **Manager (paused)** and the Messages, Attendance and My squads and teams cards are
@@ -1601,7 +1679,11 @@ Individual answers are only for the athlete, their guardians and their coaches.
 
 The committee sees every athlete's injuries, except an athlete under 18 whose parents haven't yet
 given consent for injuries (admins can see those, but nobody can endorse or accept a clearance
-until a parent gives consent). Athletes who have left the club stay listed under **Including
+until a parent gives consent). An under 18's injuries, and accepting or sending back their
+clearances, are only for committee members cleared to work with children: a current Working With
+Children Check, or a parent volunteer exemption. A committee member with any other exemption, or
+with no check yet before the club's **Committee checks required from** date, sees adults' injuries
+only. Admins see every injury whatever their check. Athletes who have left the club stay listed under **Including
 cleared** for 12 months. When a coach or physio endorses a clearance, it appears under **Waiting
 for your sign-off** and in the to-do list of every committee member and admin except the person
 who endorsed it and the athlete's own parents or guardians. Open it, check the proof, then:
@@ -1716,14 +1798,23 @@ their own home screen and the Members list.
   [Check-in averages](#check-in-averages)). Physios never see an individual athlete's answers.
 - **Injuries** lists, under **Injured athletes**, the injuries, restrictions and proof documents
   of the current athletes they look after (an athlete under 18 only once a parent or guardian has
-  given consent); the card reads "N current injuries · N waiting for you". A physio's own notes
-  reach the app through the athlete or their guardian, who add them with **Add physio update**.
-  When an athlete asks for clearance, it appears under **Waiting for your sign-off** and as
+  given consent); the card reads "N current injuries · N waiting for you".
+- **Add physio update** on an injury of an athlete you look after records your notes, restrictions,
+  expected return date and a report (a PDF or photo for adults; for an under 18, the letter or
+  report, never a photo of the injury). It shows in the history as "Your name (physio)". The athlete
+  and their parents or guardians can still add updates, but only they ask for clearance. You can
+  mark a **Possible concussion** in an update, and you're the only one who can switch it off once a
+  doctor has ruled it out (see [Concussion](#concussion)).
+- **Log an injury** for an athlete you look after when it happens (see
+  [Logging an injury at training or a game](#logging-an-injury-at-training-or-a-game)).
+- When an athlete asks for clearance, it appears under **Waiting for your sign-off** and as
   a to-do such as **Review Jordan's clearance** in the physio's to-do list. Open it, check the proof, then **Endorse clearance** to pass it to the committee, or
   **Send back** with a note. A committee member other than the physio then accepts it. A physio
   endorses for the athletes they look after whether or not the athlete has a coach, so once a squad's
   phase is complete the squad's physio (or the Head Physio) is the only one who can endorse for an
-  athlete not picked for a team. A physio who is also on the committee
+  athlete not picked for a team. Only a physio endorses a suspected concussion's clearance, and
+  then only with a doctor's clearance attached; if the club turns on **Only physios endorse
+  clearances**, every clearance waits for a physio. A physio who is also on the committee
   can accept clearances, but never one they endorsed.
 
 <img src="user-guide/physio-home.png" width="210" alt="Physio home screen">
@@ -2698,6 +2789,21 @@ one, after confirming their consent, and athletes under 18 can never add one the
 <img src="user-guide/admin-safeguarding-photos.png" width="210" alt="Safeguarding settings: club policies and photos of under 18s' injuries">
 <img src="user-guide/admin-safeguarding-conduct.png" width="210" alt="Safeguarding settings: Code of conduct each season switched on">
 
+Under **Injury clearances**:
+
+- **Only physios endorse clearances** is off by default, so one of the athlete's coaches or a
+  physio who looks after them endorses a return to play. Turn it on only if every squad and team
+  has a physio, or the club has a Head Physio, or clearances will wait with nobody to endorse them.
+  A suspected concussion always needs a physio, whatever this says. Clearances already waiting
+  when you turn it on that no physio can endorse show on your to-do list, as they do whenever a
+  clearance has nobody to endorse it.
+- **Concussion: earliest return** is **21 days**, Netball Australia's minimum for community and
+  pathway netball. Choose **12 days (elite program)** only for an elite program, where Netball
+  Australia allows 12. Either way, the athlete needs a doctor's clearance and a physio's
+  endorsement (see [Concussion](#concussion)).
+
+<img src="user-guide/admin-injury-clearances.png" width="210" alt="Safeguarding settings: injury clearances">
+
 **Code of conduct** in Administration lists who still has to accept the code of conduct this
 season and who has, with the date and, for an under 18, the parent or guardian who accepted. An
 under 18 whose linked parents or guardians aren't verified yet shows **waiting for a parent or
@@ -2769,7 +2875,7 @@ once saved, only replaced or removed, and anyone who gets it wrong five times in
 | Survey totals shared with a team | When a coach, manager or captain shares a poll's results with the squad or team: everyone it went to and their parents or guardians, once results show. Only how many picked each choice and average ratings: never names, written answers or who has answered. |
 | Who has answered a survey | Named surveys: whoever can see the results sees who hasn't answered yet. Anonymous and name-optional surveys: only how many have answered. Each member sees whether they've answered themselves. |
 | Daily check-in answers and notes | The athlete, their guardians and their coaches. For an athlete under 18, their coaches only once a parent or guardian consents, and until then their check-ins count in no average. The committee, physios and admins see only group averages, hidden below 3 check-ins (over three days, in Trends). |
-| Injuries and documents  | For an athlete under 18 whose parents haven't given consent for injuries: only the athlete, their guardians and admins. Otherwise the athlete, their guardians, their coaches, the physios who look after them (the Head Physio and physios in their squad or team), the committee and admins. Managers don't see injuries. Whoever takes attendance (coaches, managers, the committee and admins) sees only that an athlete is **Injured** and their expected return date, whatever the consent. While a clearance waits for the committee, any committee member or admin who could accept it can share its documents; everyone else views them in the app. |
+| Injuries and documents  | For an athlete under 18 whose parents haven't given consent for injuries: only the athlete, their guardians and admins. Otherwise the athlete, their guardians, their coaches, the physios who look after them (the Head Physio and physios in their squad or team), the committee and admins. For an athlete under 18, only committee members with a current Working With Children Check or a parent volunteer exemption. Managers don't see injuries, including ones they log. A coach, manager or physio who logs an injury sees it only as their role already allows. Whoever takes attendance (coaches, managers, the committee and admins) sees only that an athlete is **Injured** and their expected return date, whatever the consent. While a clearance waits for the committee, any committee member or admin who could accept it can share its documents; everyone else views them in the app. |
 | Who opened injury documents | The athlete, their guardians and admins: every view and share, by whom, their role and when, and each photo consent. |
 | Who has viewed a child's records | For an athlete under 18: their verified parents or guardians (until the athlete turns 18) and admins. Lists every time someone other than the athlete or their guardians opened the athlete's injuries, injury documents, check-ins, game goals, season KPIs, named survey answers or member record. Opening a child's records is recorded whoever you are; nobody can switch it off or delete entries by hand, and old entries are removed only under the club's Keeping records settings. |
 | Consents for a child    | The athlete, their parents or guardians and admins, with every consent given and withdrawn. Only a verified parent or guardian can give or withdraw one. |
@@ -2876,6 +2982,30 @@ Working With Children Check, and another admin must do it.
 <img src="user-guide/injury-letter-photo.png" width="210" alt="An athlete under 18 confirming a photo shows the physio's letter">
 <img src="user-guide/injury-photo-consent.png" width="210" alt="A guardian choosing The injury and confirming consent before adding a photo">
 
+### Injuries, concussion and return to play
+
+- **Parents hear about an injury straight away.** When a coach, manager or physio logs an injury
+  at training or a game, the athlete and their parents or guardians get a to-do until they open it,
+  and it shows under **What's changed** with who logged it. Logging an injury gives the person who
+  logged it no extra access: a manager never sees injury records, and an under 18's injury still
+  shows to their coaches and physios only once a parent has consented.
+- **Physios write their own updates.** A physio who looks after the athlete adds updates directly,
+  labelled with their role, so the record is the physio's own words. Only the athlete or a parent
+  or guardian asks for clearance.
+- **A concussion pathway.** A suspected concussion follows
+  [Netball Australia's concussion policy](https://netball.com.au/news/update-netball-australias-concussion-protocols): if in doubt, sit them
+  out; no clearance can be asked for until 21 days after the injury (12 for an elite program, if the
+  club chooses); clearance needs a doctor's clearance, confirmed by whoever sends it; and only a
+  physio can endorse it. Only a physio can say it isn't a concussion. See [Concussion](#concussion).
+- **Physio-only clearances, if the club wants.** An admin can turn on **Only physios endorse
+  clearances**, so no coach signs off a return to play. A clearance that nobody can endorse shows
+  on every admin's to-do list.
+- **Only screened committee members handle children's injuries.** A committee member sees an under
+  18's injuries, and accepts or sends back their clearances, only with a current Working With
+  Children Check or a parent volunteer exemption. A committee member exempted for another reason,
+  such as a treasurer who never works with children, or one with no check before the club's
+  **Committee checks required from** date, sees adults' injuries only.
+
 ### For parents and guardians
 
 - **You're verified before you're linked.** An admin checks you against the club's registration,
@@ -2904,7 +3034,7 @@ Working With Children Check, and another admin must do it.
 - **You can tell the club your child will be away**, so an absence you didn't report stands out
   (see [Your child's attendance](#your-childs-attendance)).
 - **Nothing is shared without your consent.** Your child's check-ins and injuries are seen by
-  their coaches, physios and the committee only after you consent in the app (see [Giving
+  their coaches, physios and the committee members cleared to work with children only after you consent in the app (see [Giving
   consent](#giving-consent)), and until then none of them can endorse, accept or send back your
   child's clearance. The one exception is the attendance register: whoever takes
   attendance sees that your child is injured and when they're expected back, and nothing else, so

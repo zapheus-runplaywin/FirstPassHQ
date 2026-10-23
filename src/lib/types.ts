@@ -311,7 +311,20 @@ export type Injury = {
   can_report: boolean;
   /** The member needs to endorse or accept it. */
   waiting_for_me: boolean;
+  /** A suspected concussion, with its own clearance rules. */
+  concussion?: boolean;
+  /** For a concussion, the first day clearance can be asked for. */
+  earliest_clearance?: string | null;
+  /** Only a physio can endorse its clearance (a concussion, or the club's rule). */
+  needs_physio?: boolean;
+  /** The member can add physio updates: the athlete, a guardian or their physio. */
+  can_update?: boolean;
+  /** Who logged it for the athlete, when it wasn't the athlete or a guardian. */
+  logged_by_role?: InjuryLoggerRole | null;
 };
+
+/** The roles that can log an injury for an athlete. */
+export type InjuryLoggerRole = 'coach' | 'manager' | 'physio';
 
 export type InjuryUpdate = {
   id: string;
@@ -325,6 +338,12 @@ export type InjuryUpdate = {
   /** When the file was removed after the club's keep period; the record stays. */
   document_removed_at: string | null;
   created_at: string;
+  /** Written by a coach, manager or physio rather than the athlete or a guardian. */
+  author_role?: InjuryLoggerRole | null;
+  /** This update marked (true) or ruled out (false) a suspected concussion. */
+  concussion?: boolean | null;
+  /** The proof sent with a clearance request was confirmed as a doctor's. */
+  doctor_clearance?: boolean;
 };
 
 /**

@@ -1,4 +1,4 @@
-import { formatDateString } from '@/lib/injuries';
+import { formatDateString, type LoggedInjury } from '@/lib/injuries';
 import type { KpiReviewTodo } from '@/lib/kpis';
 import type { MySurvey } from '@/lib/surveys';
 import { buildTodos, dueAlert, sortByAlert, type Todo } from '@/lib/todos';
@@ -332,6 +332,47 @@ describe('buildTodos', () => {
   });
 
   describe('injuries', () => {
+    const logged = (overrides: Partial<LoggedInjury> = {}): LoggedInjury => ({
+      injury_id: 'i9',
+      athlete_id: 'a1',
+      athlete_name: 'Sam Sample',
+      body_area: 'Knee',
+      logged_by_name: 'Casey Coach',
+      logged_by_role: 'coach',
+      logged_at: '2026-10-18T09:00:00Z',
+      ...overrides,
+    });
+
+    it('asks a guardian to look at an injury a coach logged for their child', () => {
+      expect(only(todos({ loggedInjuries: [logged()] }))).toEqual({
+        key: 'injury-logged-i9',
+        title: 'Look at the injury Casey Coach logged for Sam Sample',
+        detail: 'Knee · logged by their coach. Add the physio’s updates from there.',
+        href: { pathname: '/injuries/[id]', params: { id: 'i9' } },
+      });
+    });
+
+    it('speaks to the athlete about their own, one to-do per injury', () => {
+      const list = todos({
+        loggedInjuries: [
+          logged({ athlete_id: 'me', logged_by_role: 'physio', logged_by_name: null }),
+          logged({ injury_id: 'i10', athlete_name: null, logged_by_role: 'manager' }),
+        ],
+      });
+      expect(list.map((t) => t.title)).toEqual([
+        'Look at the injury a club member logged for you',
+        'Look at the injury Casey Coach logged for your athlete',
+      ]);
+      expect(list.map((t) => t.detail)).toEqual([
+        'Knee · logged by their physio. Add the physio’s updates from there.',
+        'Knee · logged by their manager. Add the physio’s updates from there.',
+      ]);
+    });
+
+    it('has nothing to look at by default', () => {
+      expect(todos()).toEqual([]);
+    });
+
     it('opens a single clearance waiting for the member', () => {
       const todo = only(todos({ injuries: [injury({ waiting_for_me: true })] }));
       expect(todo).toMatchObject({

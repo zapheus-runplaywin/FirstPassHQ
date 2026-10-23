@@ -120,13 +120,28 @@ $$ select coalesce((select approved from lc_rule_people where id = v), false) $$
 create or replace function pg_temp.sees_check_ins(v uuid, a uuid) returns boolean language sql stable as
 $$ select pg_temp.approved(v) and (a = v or pg_temp.guardian_of(v, a)
      or (pg_temp.coaches(v, a) and pg_temp.consented(a, 'data'))) $$;
+-- Screened for working with children: a current check, or a declared
+-- volunteer exemption that still applies (a parent of a child under 18 at
+-- the club, or a volunteer who is under 18).
+create or replace function pg_temp.screened(v uuid) returns boolean language sql stable as
+$$ select coalesce((select current_check from lc_rule_people where id = v), false)
+     or exists (
+       select 1 from public.volunteer_exemptions e
+       where e.profile_id = v and e.ended_at is null and e.declared_at is not null
+         and case e.basis
+           when 'parent_volunteer' then pg_temp.guardian_of(v, e.child_id)
+           when 'under_18_volunteer' then (select minor from lc_rule_people where id = v)
+           else false end) $$;
 -- Injuries: the athlete, their guardians, their coaches and physios, the
 -- committee and admins; a child's only with the health consent, except for
--- the child, their guardians and admins. Never managers.
+-- the child, their guardians and admins. Never managers. The committee see
+-- a child's only when screened (22 October).
 create or replace function pg_temp.sees_injuries(v uuid, a uuid) returns boolean language sql stable as
 $$ select pg_temp.approved(v)
      and (a = v or pg_temp.guardian_of(v, a) or pg_temp.coaches(v, a) or pg_temp.physio_for(v, a)
-       or pg_temp.holds(v, 'committee') or pg_temp.holds(v, 'admin'))
+       or (pg_temp.holds(v, 'committee')
+         and (not (select minor from lc_rule_people where id = a) or pg_temp.screened(v)))
+       or pg_temp.holds(v, 'admin'))
      and (a = v or pg_temp.guardian_of(v, a) or pg_temp.holds(v, 'admin') or pg_temp.consented(a, 'health')) $$;
 
 -- ---------------------------------------------------------------------------

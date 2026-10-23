@@ -4,7 +4,7 @@ import type { AffiliationTodos } from '@/lib/affiliation';
 import { slotTitle } from '@/lib/awards';
 import { formatShortDay } from '@/lib/format';
 import { gamePhase, gameTitle } from '@/lib/goals';
-import { formatDateString, toDateString } from '@/lib/injuries';
+import { formatDateString, type LoggedInjury, toDateString } from '@/lib/injuries';
 import type { KpiReviewTodo } from '@/lib/kpis';
 import { closingDay, surveysToAnswer, type MySurvey } from '@/lib/surveys';
 import { WWCC_WARNING_DAYS } from '@/lib/safety';
@@ -69,6 +69,7 @@ export function sortByAlert<T>(
 export function buildTodos({
   userId,
   injuries,
+  loggedInjuries = [],
   pendingCount,
   needsCheckIn,
   flaggedAthletes,
@@ -92,6 +93,8 @@ export function buildTodos({
 }: {
   userId: string | undefined;
   injuries: Injury[];
+  /** Injuries a coach, manager or physio logged for the member or their child, not yet opened. */
+  loggedInjuries?: LoggedInjury[];
   pendingCount: number;
   /** An athlete who hasn't done today's check-in. */
   needsCheckIn: boolean;
@@ -199,6 +202,18 @@ export function buildTodos({
       title: `Review ${absencesToReview} new or changed ${absencesToReview === 1 ? 'absence' : 'absences'}`,
       detail: 'Athletes in your squads and teams reported or withdrew an absence',
       href: '/attendance',
+    });
+  }
+
+  // A coach, manager or physio logged an injury at training or a game.
+  for (const logged of loggedInjuries) {
+    const whose =
+      logged.athlete_id === userId ? 'you' : (logged.athlete_name ?? 'your athlete');
+    todos.push({
+      key: `injury-logged-${logged.injury_id}`,
+      title: `Look at the injury ${logged.logged_by_name ?? 'a club member'} logged for ${whose}`,
+      detail: `${logged.body_area} · logged by their ${logged.logged_by_role}. Add the physio’s updates from there.`,
+      href: { pathname: '/injuries/[id]', params: { id: logged.injury_id } },
     });
   }
 
