@@ -291,6 +291,18 @@ describe('buildTodos', () => {
     expect(todos({ newConcerns: 1 })[0].title).toBe('Look at 1 new concern');
   });
 
+  it('puts athletes flagged 3 times in a week straight after new concerns, for the Child Safety Officer', () => {
+    const list = todos({ newConcerns: 1, wellbeingFlagAlerts: 2, declarationWaiting: true, needsCheckIn: true });
+    expect(keys(list)).toEqual(['concerns', 'wellbeing-flags', 'volunteer-declaration', 'check-in']);
+    expect(list[1]).toMatchObject({
+      title: 'Look at 2 athletes flagged 3 times this week',
+      detail: 'Low check-in scores on 3 of the last 7 days',
+      href: '/concerns/wellbeing',
+    });
+    expect(todos({ wellbeingFlagAlerts: 1 })[0].title).toBe('Look at 1 athlete flagged 3 times this week');
+    expect(keys(todos({ wellbeingFlagAlerts: 0 }))).toEqual([]);
+  });
+
   it('asks the member to confirm their check application, straight after an exemption declaration', () => {
     const list = todos({
       declarationWaiting: true,

@@ -52,6 +52,8 @@ each of their roles can.
 **Safeguarding contacts.** An admin names one member as the club's **Child Safety Officer** and
 another as its **Complaints Manager**. They're not separate roles: each keeps their own role and also
 sees and acts on the concerns members raise (see [The concerns register](#the-concerns-register)).
+The Child Safety Officer also sees every athlete's wellbeing flags: the day and lowest score of
+each low check-in, never the answers or notes (see [Wellbeing flags](#wellbeing-flags)).
 
 **Squads and teams.** Each season, members join a **squad** (at West Coast Thunder: Mixed Open
 Squad, Open Squad, 20 & Under Squad, 17 & Under Squad, Lightning Academy). At selections, admins name
@@ -687,8 +689,10 @@ the day with **Update check-in**.
 
 Your coaches see your answers so they can adjust training (if you're under 18, once a parent or
 guardian has given consent). A score of 2 or less on any question
-flags you so a coach knows to check in with you. Below the form you can see your last two weeks,
-with low scores marked.
+flags you so a coach knows to check in with you. The club's Child Safety Officer also sees that
+you were flagged, the day and your lowest score, but never your answers or note, so someone still
+notices if you're not in a squad or team (if you're under 18, once a parent or guardian has given
+consent). Below the form you can see your last two weeks, with low scores marked.
 
 Until you've checked in, "Do your daily check-in" stays in your to-do list.
 
@@ -929,7 +933,8 @@ Once you're linked and verified, **Consent** on your home screen lists each chil
 your to-do list says **Give consent for** them until you have. Open it to choose who else sees two
 kinds of information about your child:
 
-- **Daily check-ins**: their answers and notes are seen by their coaches.
+- **Daily check-ins**: their answers and notes are seen by their coaches. When they score low,
+  the club's Child Safety Officer sees the day and the lowest score, never their answers or notes.
 - **Injuries and health information**: their injuries, restrictions, physio updates and documents
   are seen by their coaches, the physios who look after them and the committee members cleared to
   work with children, who sign off
@@ -1597,7 +1602,9 @@ Registration Officer. If you're the Child Safety Officer or Complaints Manager, 
 also has **Concerns** (see [The concerns register](#the-concerns-register)): the register, each
 concern's notes and steps (**Referred to** the governing body or Police, **Being looked into**,
 **Closed** with a note), and **Export the register as a PDF**. A concern about you is never shown
-to you. If your check lapses, Concerns and its to-do go until a renewed check is recorded.
+to you. The Child Safety Officer also has **Wellbeing flags** (see [Wellbeing
+flags](#wellbeing-flags)). If your check lapses, Concerns, wellbeing flags and their to-dos go
+until a renewed check is recorded.
 
 <img src="user-guide/committee-home.png" width="210" alt="Committee home screen">
 
@@ -2920,6 +2927,25 @@ an auditor.
 <img src="user-guide/concerns-register.png" width="210" alt="The concerns register">
 <img src="user-guide/concern.png" width="210" alt="A concern with the referral prompt and what's been done">
 
+### Wellbeing flags
+
+A score of 2 or less on any daily check-in question flags the athlete to their coaches. Once a
+squad's selections are done, athletes who weren't selected drop out of every coach's check-ins, so
+the club's **Child Safety Officer** also sees every athlete's flags, selected or not. Only the Child
+Safety Officer does: not the Complaints Manager, and not admins unless one of them is the Child
+Safety Officer.
+
+**Concerns > Wellbeing flags** lists the last 14 days, one card per athlete, with the day and the
+lowest score of each flagged check-in. The four answers and the athlete's note are never shown.
+Anyone flagged on 3 days in the last 7 is listed first, and the to-do list says **Look at N
+athletes flagged 3 times this week** until the run of low scores stops. An athlete under 18 shows
+only once a parent or guardian has given consent for check-ins, the same consent their coaches
+need, and each time you open the page it's recorded in that child's record views. If you're
+worried, talk to the athlete or their parent, or **Raise a concern** from the same page. The page
+goes when the club turns off Daily check-ins.
+
+<img src="user-guide/wellbeing-flags.png" width="210" alt="Wellbeing flags: each athlete's flagged days and lowest scores">
+
 ### Club password
 
 **Club password** sets a password new members must enter to ask to join. It stops strangers who
@@ -2957,6 +2983,7 @@ once saved, only replaced or removed, and anyone who gets it wrong five times in
 | Survey totals shared with a team | When a coach, manager or captain shares a poll's results with the squad or team: everyone it went to and their parents or guardians, once results show. Only how many picked each choice and average ratings: never names, written answers or who has answered. |
 | Who has answered a survey | Named surveys: whoever can see the results sees who hasn't answered yet. Anonymous and name-optional surveys: only how many have answered. Each member sees whether they've answered themselves. |
 | Daily check-in answers and notes | The athlete, their guardians and their coaches. For an athlete under 18, their coaches only once a parent or guardian consents, and until then their check-ins count in no average. The committee, physios and admins see only group averages, hidden below 3 check-ins (over three days, in Trends). |
+| Wellbeing flags | Only the Child Safety Officer: for every athlete, selected or not, the day and lowest score of each check-in scoring 2 or less in the last 14 days, never the answers or notes. Under 18s only once a parent or guardian consents to check-ins. |
 | Injuries and documents  | For an athlete under 18 whose parents haven't given consent for injuries: only the athlete, their guardians and admins. Otherwise the athlete, their guardians, their coaches, the physios who look after them (the Head Physio and physios in their squad or team), the committee and admins. For an athlete under 18, only committee members with a current Working With Children Check or a parent volunteer exemption, and admins unless their own check has been missing or expired for over 30 days. Managers don't see injuries, including ones they log. A coach, manager or physio who logs an injury sees it only as their role already allows. Whoever takes attendance (coaches, managers, the committee and admins) sees only that an athlete is **Injured** and their expected return date, whatever the consent. While a clearance waits for the committee, any committee member or admin who could accept it can share its documents; everyone else views them in the app. |
 | Who opened injury documents | The athlete, their guardians and admins: every view and share, by whom, their role and when, and each photo consent. |
 | Who has viewed a child's records | For an athlete under 18: their verified parents or guardians (until the athlete turns 18) and admins. Lists every time someone other than the athlete or their guardians opened the athlete's injuries, injury documents, check-ins, game goals, season KPIs, named survey answers or member record. Opening a child's records is recorded whoever you are; nobody can switch it off or delete entries by hand, and old entries are removed only under the club's Keeping records settings. |
@@ -3256,7 +3283,13 @@ Working With Children Check, and another admin must do it.
   stays on your to-do list until you record telling the governing body in writing.
 - **Check-ins are only ever averages.** The committee, physios and admins never see who checked in
   or any one athlete's answers, only a group's average scores, and only once at least 3 athletes in
-  the group have checked in.
+  the group have checked in. The one exception is below.
+- **The Child Safety Officer sees repeated low check-ins.** A low score flags an athlete to their
+  coaches, but athletes who aren't selected drop out of every coach's check-ins. So the Child
+  Safety Officer sees every athlete's flags, the day and lowest score only, never answers or
+  notes, and gets a to-do when the same athlete is flagged on 3 days in 7. A child's flags show
+  only with the parent's consent for check-ins, which says so, and every look is recorded in the
+  child's record views.
 - **Screens only for those who use them.** Each screen opens only for the roles it's for, even
   from a shared link or a typed web address: for example, only coaches, the committee, physios and
   admins open Check-ins, only an athlete's coaches and parents or guardians open their check-ins,

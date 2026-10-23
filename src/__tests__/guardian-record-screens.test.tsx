@@ -113,6 +113,9 @@ describe('consent for a child', () => {
     expect(toggle('Daily check-ins').props.value).toBe(false);
     expect(toggle('Injuries and health information').props.value).toBe(true);
     expect(screen.getByText(/never their check-in answers/)).toBeTruthy();
+    expect(
+      screen.getByText(/the club’s Child Safety Officer sees the day and the lowest score, never their answers or note\. Without this, neither sees/),
+    ).toBeTruthy();
     expect(screen.getByText(/ Policy version 2026\.1\./)).toBeTruthy();
     expect(argsOf('child_consent_history')).toEqual([{ p_athlete_id: 'child-1' }]);
   });

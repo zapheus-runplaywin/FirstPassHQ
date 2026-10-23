@@ -16,14 +16,18 @@ import RaiseConcernScreen from '@/app/concern/new';
 import ConcernScreen from '@/app/concerns/[id]';
 import ConcernsScreen from '@/app/concerns/index';
 import ConcernsReportScreen from '@/app/concerns/report';
+import WellbeingFlagsScreen from '@/app/concerns/wellbeing';
+import { formatDateString } from '@/lib/injuries';
 import { supabase } from '@/lib/supabase';
 import type { Concern, ConcernEvent, MyConcern, SafeguardingContacts } from '@/lib/types';
+import type { WellbeingFlag } from '@/lib/wellbeing-flags';
 
 import {
   morePersonas,
   openScreen,
   personas,
   resetClub,
+  setClubFeatures,
   settle,
   type Persona,
   type PersonaName,
@@ -395,5 +399,104 @@ describe('the concerns register report', () => {
     });
     expect(screen.getByText('Not allowed')).toBeTruthy();
     expect(screen.queryByText('Not acted on yet')).toBeNull();
+  });
+});
+
+// ---------------------------------------------------------------------------
+// Wellbeing flags, for the Child Safety Officer
+
+const FLAGS: WellbeingFlag[] = [
+  { athlete_id: 'a1', athlete_name: 'Sample Junior', day: '2026-10-18', lowest_score: 2, flags_in_7_days: 3 },
+  { athlete_id: 'a2', athlete_name: 'Sample Senior', day: '2026-10-17', lowest_score: 1, flags_in_7_days: 1 },
+  { athlete_id: 'a1', athlete_name: 'Sample Junior', day: '2026-10-16', lowest_score: 1, flags_in_7_days: 3 },
+  { athlete_id: 'a1', athlete_name: 'Sample Junior', day: '2026-10-13', lowest_score: 2, flags_in_7_days: 3 },
+];
+
+describe('wellbeing flags', () => {
+  async function openFlags(who: Who, options: Parameters<typeof openScreen>[4] = {}) {
+    await openScreen(who, { 'concerns/wellbeing': WellbeingFlagsScreen }, '/concerns/wellbeing', {}, options);
+  }
+
+  it('shows the Child Safety Officer each athlete’s flagged days and lowest scores, never answers or notes', async () => {
+    await openFlags(officer, { rpcs: { wellbeing_flags: FLAGS } });
+    expect(rpcCalls()).toContainEqual(['wellbeing_flags', { p_days: 14 }]);
+    expect(screen.getByText('Sample Junior')).toBeTruthy();
+    expect(screen.getByText('Flagged on 3 days in the last 7')).toBeTruthy();
+    expect(screen.getByText('Sample Senior')).toBeTruthy();
+    expect(screen.getByText('Flagged on 1 day in the last 7')).toBeTruthy();
+    expect(screen.getByText(`${formatDateString('2026-10-18')} · lowest score 2`)).toBeTruthy();
+    expect(screen.getByText(`${formatDateString('2026-10-16')} · lowest score 1`)).toBeTruthy();
+    expect(screen.getByText(/never their answers or notes/)).toBeTruthy();
+    expect(screen.queryByText(/Sleep|Soreness|Stress|Mood/)).toBeNull();
+  });
+
+  it('lists the athlete flagged 3 times first', async () => {
+    await openFlags(officer, { rpcs: { wellbeing_flags: [...FLAGS].reverse() } });
+    const names = screen.getAllByText(/^Sample (Junior|Senior)$/).map((n) => n.props.children);
+    expect(names).toEqual(['Sample Junior', 'Sample Senior']);
+  });
+
+  it('says when an athlete hasn’t been flagged this week', async () => {
+    await openFlags(officer, {
+      rpcs: { wellbeing_flags: [{ ...FLAGS[0], day: '2026-10-08', flags_in_7_days: 0 }] },
+    });
+    expect(screen.getByText('Not flagged in the last 7 days')).toBeTruthy();
+  });
+
+  it('says when nobody has been flagged', async () => {
+    await openFlags(officer, { rpcs: { wellbeing_flags: [] } });
+    expect(screen.getByText('Nobody has been flagged in the last 14 days.')).toBeTruthy();
+  });
+
+  it('links to raising a concern', async () => {
+    await openFlags(officer, { rpcs: { wellbeing_flags: [] } });
+    expect(screen.getByText('Raise a concern')).toBeTruthy();
+  });
+
+  it.each<[string, Who]>([
+    ['an admin', 'admin'],
+    ['the Complaints Manager', { ...personas.manager, isSafeguardingOfficer: true }],
+    ['a coach', 'coach'],
+  ])('shows %s the database’s refusal and no flags', async (_l, who) => {
+    await openFlags(who, {
+      rpcs: { wellbeing_flags: FLAGS },
+      rpcErrors: { wellbeing_flags: 'Only the Child Safety Officer sees wellbeing flags' },
+    });
+    expect(screen.getByText('Only the Child Safety Officer sees wellbeing flags.')).toBeTruthy();
+    expect(screen.queryByText('Sample Junior')).toBeNull();
+  });
+
+  describe('the link from the concerns register', () => {
+    it('shows the Child Safety Officer the link, with how many were flagged 3 times in 7 days', async () => {
+      await openScreen(officer, { 'concerns/index': ConcernsScreen }, '/concerns', {}, {
+        rpcs: { concern_register: [], wellbeing_flag_alerts: 2 },
+      });
+      expect(screen.getByText('Wellbeing flags (2 to look at)')).toBeTruthy();
+    });
+
+    it('shows a plain link when nobody was flagged 3 times', async () => {
+      await openScreen(officer, { 'concerns/index': ConcernsScreen }, '/concerns', {}, {
+        rpcs: { concern_register: [], wellbeing_flag_alerts: 0 },
+      });
+      expect(screen.getByText('Wellbeing flags')).toBeTruthy();
+    });
+
+    it('hides it from admins and the Complaints Manager, who the database answers with nothing', async () => {
+      for (const who of ['admin', { ...personas.manager, isSafeguardingOfficer: true }] as Who[]) {
+        await openScreen(who, { 'concerns/index': ConcernsScreen }, '/concerns', {}, {
+          rpcs: { concern_register: [], wellbeing_flag_alerts: null },
+        });
+        expect(screen.queryByText(/^Wellbeing flags/)).toBeNull();
+      }
+    });
+
+    it('hides it, without asking, when the club has check-ins turned off', async () => {
+      setClubFeatures({ checkIns: false });
+      await openScreen(officer, { 'concerns/index': ConcernsScreen }, '/concerns', {}, {
+        rpcs: { concern_register: [], wellbeing_flag_alerts: 2 },
+      });
+      expect(screen.queryByText(/^Wellbeing flags/)).toBeNull();
+      expect(rpcCalls().map(([name]) => name)).not.toContain('wellbeing_flag_alerts');
+    });
   });
 });
