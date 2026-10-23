@@ -319,3 +319,24 @@ select pg_temp.ok('Jordan''s records are all still here', (
     and pg_temp.n('attendance_marks', 'profile_id', '31') = 1
     and pg_temp.n('stand_downs', 'profile_id', '31') = 1
     and pg_temp.n('injuries', 'athlete_id', '31') >= 2), true);
+
+-- ---------------------------------------------------------------------------
+-- A member on hold can't be deleted, by an admin or by themselves
+-- ---------------------------------------------------------------------------
+select pg_temp.as_member('01');
+select pg_temp.fails_with('an admin can''t delete Jordan', $$select public.admin_delete_member(pg_temp.id('31'))$$, 'A concern names this member');
+select pg_temp.fails_with('or a held join request', $$select public.admin_delete_member(pg_temp.id('61'))$$, 'A concern names this member');
+select pg_temp.as_member('31');
+select pg_temp.fails_with('Jordan can''t delete their own account', $$select public.delete_my_account()$$, 'contact a club admin');
+select pg_temp.ok('and isn''t told a concern names them', (
+  select pg_temp.fails_with('x', $$select public.delete_my_account()$$, 'concern') like 'FAIL%'), true);
+select set_config('request.jwt.claim.sub', '', false);
+select pg_temp.ok('Jordan is still a member', (select count(*) = 1 from public.profiles where id = pg_temp.id('31')), true);
+select pg_temp.ok('with their check-ins', pg_temp.n('check_ins', 'athlete_id', '31') = 2, true);
+select pg_temp.as_member('32');
+select pg_temp.works('Kai, not on hold, can delete their own account', $$select public.delete_my_account()$$);
+select set_config('request.jwt.claim.sub', '', false);
+select pg_temp.ok('and is gone', (select count(*) = 0 from public.profiles where id = pg_temp.id('32')), true);
+select pg_temp.as_member('01');
+select pg_temp.works('an admin can still delete a member not on hold', $$select public.admin_delete_member(pg_temp.id('12'))$$);
+select set_config('request.jwt.claim.sub', '', false);

@@ -648,7 +648,8 @@ shows each one and where it's up to: Received, Referred, Being looked into or Cl
 you're in: your profile, your squad and team places, guardian links, your personal tasks and your
 messages inbox. Messages you sent to a group stay with the people who received them. Tap
 **Delete my account**, then **Delete my account permanently** to confirm. If you sign in again
-later, you'll need to ask to join again.
+later, you'll need to ask to join again. Now and then the club has to keep an account for a legal
+matter; then the app says it can't be deleted at the moment and asks you to contact a club admin.
 
 The club keeps your injury records after you leave, where only the committee and admins can see
 them, for its keep period for injuries (7 years unless the club chose 3, 5 or 10), counted from
@@ -2223,8 +2224,10 @@ Working With Children Check whichever role it is, and that includes athletes und
   attendance, training certificates, message receipts, consents, code of conduct acceptances,
   policy acknowledgements, exemptions (ended on the day), stand-downs, Screening Unit notices, and
   who viewed their records. Each goes when its own keep period ends (see [Keeping
-  records](#keeping-records)). Messages they sent stay, and their injury records are kept for 12
-  months. In the attendance report and a message's read receipts they show with "(deleted)" after
+  records](#keeping-records)). Messages they sent stay, and their injury records are kept for the
+  club's period for cleared injuries, counted from when they left. You can't delete a member a
+  concern names: the app says so, and their account and records stay while the concern names
+  them. The member is only told to contact an admin. In the attendance report and a message's read receipts they show with "(deleted)" after
   their name.
 
 <img src="user-guide/member-title.png" width="210" alt="A committee member's page with their preferred name and title">
@@ -3402,6 +3405,9 @@ Working With Children Check, and another admin must do it.
   certificates, message receipts, consents, code of conduct acceptances, exemptions and who viewed
   their records stay under the name they had, until each one's own keep period ends, so the club
   can still show who was with which children and that its people were trained and screened.
+  A member a concern names can't be deleted at all, by an admin or by themselves, so nothing
+  about them is lost while the concern stands; they're only asked to contact an admin, so the
+  concern isn't given away.
 - **Child abuse and serious crimes go out, not in.** The register prompts the club to refer them to
   Police and the governing body straight away, and records that it did.
 - **Each club's data is kept apart**, in that club's own database.

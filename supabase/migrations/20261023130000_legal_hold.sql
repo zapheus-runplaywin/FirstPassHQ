@@ -12,8 +12,13 @@
 --    lasts as long as the member's record does. Their squad and team places
 --    and roles are never removed by the clean-up anyway.
 -- 2. Safeguarding records can also be kept 45 years (the Royal Commission's
---    recommendation 8.1 for records about child sexual abuse) or for good.
+--    recommendation 8.4 for records about child sexual abuse) or for good.
 -- 3. Attendance can also be kept 10 or 15 years.
+-- 4. A member a concern names can't be deleted, by an admin or by themselves:
+--    deleting the sign-in would remove their check-ins, game goals, absences,
+--    places and guardian links, and unlink everything else from them. The
+--    member is told only to contact an admin, so a concern about them isn't
+--    given away.
 --
 -- The recommended periods don't change. The clean-up still only runs once an
 -- admin has switched on "Remove old records". This migration changes no rows
@@ -509,5 +514,48 @@ $$;
 
 revoke execute on function public.purge_expired_records() from public, anon, authenticated;
 grant execute on function public.purge_expired_records() to service_role;
+
+-- ---------------------------------------------------------------------------
+-- 4. No deleting a member on hold
+-- ---------------------------------------------------------------------------
+
+-- As in 20261009110000_multiple_roles.sql, plus the hold. Both
+-- admin_delete_member and delete_my_account come through here.
+create or replace function public.delete_member_now(p_profile_id uuid)
+returns void
+language plpgsql
+security definer
+set search_path = ''
+as $$
+begin
+  if not exists (select 1 from public.profiles where id = p_profile_id) then
+    raise exception 'Member not found';
+  end if;
+  if public.on_legal_hold(p_profile_id) then
+    if p_profile_id = auth.uid() then
+      raise exception 'Your account can’t be deleted at the moment. Please contact a club admin.';
+    end if;
+    raise exception 'A concern names this member, so their account and records are kept while it does.';
+  end if;
+  -- The club always keeps at least one admin.
+  if exists (
+    select 1 from public.profiles
+    where id = p_profile_id and status = 'approved'
+      and (role = 'admin' or 'admin' = any (extra_roles))
+  ) and not exists (
+    select 1 from public.profiles
+    where id <> p_profile_id and status = 'approved'
+      and (role = 'admin' or 'admin' = any (extra_roles))
+  ) then
+    raise exception 'This is the club’s only admin. Make someone else an admin first.';
+  end if;
+
+  delete from auth.users where id = p_profile_id;
+  -- In case the sign-in was already gone.
+  delete from public.profiles where id = p_profile_id;
+end;
+$$;
+
+revoke execute on function public.delete_member_now(uuid) from public, anon, authenticated;
 
 commit;
