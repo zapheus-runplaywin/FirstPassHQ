@@ -65,6 +65,9 @@ export type PersonaName =
   | 'safeguardingOfficer'
   | 'committeeExpiredCheck'
   | 'committeePastChecksDate'
+  | 'committeeBeforeChecksDate'
+  | 'committeeExempt'
+  | 'committeeVolunteerExempt'
   | 'statisticianPastChecksDate'
   | 'statisticianBeforeChecksDate'
   | 'adminLapsedCheck'
@@ -277,6 +280,33 @@ export const personas: Record<PersonaName, Persona> = {
   committeePastChecksDate: {
     ...member('committee-no-check', 'committee', { wwcc_number: null, wwcc_expires_on: null }),
     rpcs: { committee_checks_from: '2026-10-01' },
+  },
+  /** No check yet, before the club's committee checks date. */
+  committeeBeforeChecksDate: {
+    ...member('committee-due', 'committee', { wwcc_number: null, wwcc_expires_on: null }),
+    rpcs: { committee_checks_from: '2099-01-21' },
+  },
+  /** Exempted from a check with a reason (a treasurer who never works with children). */
+  committeeExempt: member('committee-exempt', 'committee', {
+    wwcc_number: null,
+    wwcc_expires_on: null,
+    wwcc_exempt_reason: 'Treasurer, no contact with children',
+  }),
+  /** No check of their own, cleared by a parent volunteer exemption, before the committee checks date. */
+  committeeVolunteerExempt: {
+    ...member('committee-parent', 'committee', { wwcc_number: null, wwcc_expires_on: null }),
+    rpcs: {
+      committee_checks_from: '2099-01-21',
+      my_volunteer_exemption: {
+        basis: 'parent_volunteer',
+        child_name: 'Sample Child',
+        declared_at: '2026-09-01T00:00:00Z',
+        declaration_text: 'Declared',
+        valid: true,
+        ends_on: null,
+        starts_on: null,
+      },
+    },
   },
   /** No check, and the club's statistician checks date has passed. */
   statisticianPastChecksDate: {

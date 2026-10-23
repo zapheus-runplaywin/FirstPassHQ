@@ -90,24 +90,16 @@ export default function AttendanceReportScreen() {
       const absences = await fetchAll<AbsenceReportRow>((start, stop) =>
         supabase.rpc('absence_report', { p_from: from, p_to: to }).range(start, stop),
       );
-      const people = (
-        await Promise.all(
-          chunk([...new Set(marks.map((m) => m.profile_id))]).map(async (ids) => {
-            const { data: rows, error: namesError } = await supabase
-              .from('profiles')
-              .select('id, full_name, email')
-              .in('id', ids);
-            if (namesError) throw new Error(namesError.message);
-            return (rows as { id: string; full_name: string | null; email: string | null }[]) ?? [];
-          }),
-        )
-      ).flat();
-      setData({
-        absences,
-        sessions,
-        marks,
-        names: new Map(people.map((p) => [p.id, p.full_name || p.email || 'Unnamed member'])),
-      });
+      // Names from public.report_members, which admins and checked committee
+      // members both read; a member who has left keeps the name on their mark.
+      const people = await fetchAll<{ id: string; full_name: string | null }>((start, stop) =>
+        supabase.rpc('report_members').select('id, full_name').range(start, stop),
+      );
+      const names = new Map(people.filter((p) => p.full_name).map((p) => [p.id, p.full_name!]));
+      for (const m of marks) {
+        if (!names.has(m.profile_id)) names.set(m.profile_id, m.member_name || 'Unnamed member');
+      }
+      setData({ absences, sessions, marks, names });
       setError(null);
     } catch (e) {
       setError(e instanceof Error ? e.message : 'The report didn’t load. Try again.');

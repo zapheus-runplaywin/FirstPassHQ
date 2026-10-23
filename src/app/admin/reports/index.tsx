@@ -3,15 +3,23 @@ import { router } from 'expo-router';
 import { Screen } from '@/components/screen';
 import { ThemedText } from '@/components/themed-text';
 import { PressableCard } from '@/components/ui';
+import { useAuth } from '@/lib/auth';
 import { useClub } from '@/lib/club';
 
-/** Governance and compliance reports for admins, each saved as a PDF. */
+/**
+ * Governance and compliance reports, each saved as a PDF. Committee members
+ * with a current check read the ones without children's health or
+ * development records; admins read them all.
+ */
 export default function ReportsScreen() {
   const { features, affiliation } = useClub();
+  const { isAdmin } = useAuth();
   return (
     <Screen>
       <ThemedText type="small" themeColor="textSecondary">
-        Each report shows on screen and saves as a PDF for the committee or an audit.
+        {isAdmin
+          ? 'Each report shows on screen and saves as a PDF for the committee or an audit.'
+          : 'Each report shows on screen and saves as a PDF. You can read them; admins make the changes.'}
       </ThemedText>
 
       <PressableCard onPress={() => router.push('/admin/reports/wwcc')}>
@@ -21,12 +29,14 @@ export default function ReportsScreen() {
         </ThemedText>
       </PressableCard>
 
-      <PressableCard onPress={() => router.push('/admin/reports/under-18s')}>
-        <ThemedText type="smallBold">Under 18s and their guardians</ThemedText>
-        <ThemedText type="small" themeColor="textSecondary">
-          Athletes under 18 with their parents and guardians
-        </ThemedText>
-      </PressableCard>
+      {isAdmin ? (
+        <PressableCard onPress={() => router.push('/admin/reports/under-18s')}>
+          <ThemedText type="smallBold">Under 18s and their guardians</ThemedText>
+          <ThemedText type="small" themeColor="textSecondary">
+            Athletes under 18 with their parents and guardians
+          </ThemedText>
+        </PressableCard>
+      ) : null}
 
       <PressableCard onPress={() => router.push('/admin/reports/medical')}>
         <ThemedText type="smallBold">Medical details checks</ThemedText>
@@ -44,7 +54,7 @@ export default function ReportsScreen() {
         </PressableCard>
       ) : null}
 
-      {features.injuries ? (
+      {isAdmin && features.injuries ? (
         <PressableCard onPress={() => router.push('/admin/injuries')}>
           <ThemedText type="smallBold">Injuries</ThemedText>
           <ThemedText type="small" themeColor="textSecondary">
@@ -62,7 +72,7 @@ export default function ReportsScreen() {
         </PressableCard>
       ) : null}
 
-      {features.sessionPlans ? (
+      {isAdmin && features.sessionPlans ? (
         <PressableCard onPress={() => router.push('/admin/reports/session-plans')}>
           <ThemedText type="smallBold">Session plans</ThemedText>
           <ThemedText type="small" themeColor="textSecondary">
@@ -80,7 +90,7 @@ export default function ReportsScreen() {
         </PressableCard>
       ) : null}
 
-      {features.kpis ? (
+      {isAdmin && features.kpis ? (
         <PressableCard onPress={() => router.push('/admin/reports/kpis')}>
           <ThemedText type="smallBold">Season KPIs</ThemedText>
           <ThemedText type="small" themeColor="textSecondary">
@@ -89,7 +99,7 @@ export default function ReportsScreen() {
         </PressableCard>
       ) : null}
 
-      {affiliation ? (
+      {isAdmin && affiliation ? (
         <PressableCard onPress={() => router.push('/admin/reports/affiliation')}>
           <ThemedText type="smallBold">Affiliation</ThemedText>
           <ThemedText type="small" themeColor="textSecondary">

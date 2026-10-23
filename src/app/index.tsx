@@ -53,6 +53,7 @@ import {
 import { rejectionReasonMessages, rolesLabel, staffTitle, teamPositionLabel } from '@/lib/labels';
 import { supabase } from '@/lib/supabase';
 import { useNewConcerns } from '@/lib/concerns';
+import { useCanReadReports } from '@/lib/report-access';
 import { usePersonalTasks } from '@/lib/personal-tasks';
 import { useSessionPlanSummary } from '@/lib/session-plans';
 import { useCanSendSurveys, useMySurveys, surveysToAnswer } from '@/lib/surveys';
@@ -87,6 +88,8 @@ export default function HomeScreen() {
     refresh,
     signOut,
   } = useAuth();
+  // Admins reach Reports from Administration; checked committee members from here.
+  const canReadReports = useCanReadReports();
   // Admins and the two safeguarding officers handle concerns members raise.
   const handlesConcerns = isAdmin || isSafeguardingOfficer;
   const newConcerns = useNewConcerns(handlesConcerns);
@@ -474,6 +477,15 @@ export default function HomeScreen() {
               {newConcerns > 0
                 ? `${newConcerns} new ${newConcerns === 1 ? 'concern' : 'concerns'} to look at`
                 : 'The concerns register'}
+            </ThemedText>
+          </PressableCard>
+        ) : null}
+
+        {canReadReports && !isAdmin ? (
+          <PressableCard onPress={() => router.push('/admin/reports')}>
+            <ThemedText type="smallBold">Reports</ThemedText>
+            <ThemedText type="small" themeColor="textSecondary">
+              The club’s checks, medical details checks, training, attendance and award results
             </ThemedText>
           </PressableCard>
         ) : null}

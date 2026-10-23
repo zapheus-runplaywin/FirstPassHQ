@@ -472,8 +472,12 @@ async function openReturn(info: unknown = RETURN_INFO, rpcErrors: Record<string,
     '/admin/affiliation/return',
     { teams: [TEAM], training_requirements: [], stand_downs: [], screening_notices: [], policy_acknowledgements: [] },
     {
-      tableHandlers: { profiles: (q) => (q.eq('status') === 'approved' ? PEOPLE : undefined) },
+      // The contacts' emails come from their profiles; the counts from report_members.
+      tableHandlers: {
+        profiles: (q) => (q.calls.some((c) => c.method === 'in' && c.args[0] === 'id') ? PEOPLE : undefined),
+      },
       rpcs: {
+        report_members: PEOPLE.map((p) => ({ ...p, email: null, guardian_email: null })),
         admin_affiliation: affiliation({ primary_contact_2_id: 'committee' }),
         admin_affiliation_officers: [],
         admin_affiliation_return: info,
