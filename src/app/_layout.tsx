@@ -228,6 +228,12 @@ function RootStack() {
             <Stack.Screen name="records/[id]" options={{ title: 'Who has viewed their records' }} />
             <Stack.Screen name="activity/[id]" options={{ title: 'What’s changed' }} />
           </Stack.Protected>
+          <Stack.Protected guard={can.medical}>
+            <Stack.Screen name="medical/[id]" options={{ title: 'Medical and emergency' }} />
+          </Stack.Protected>
+          <Stack.Protected guard={can.teamMedical}>
+            <Stack.Screen name="medical/team/[id]" options={{ title: 'Medical and emergency' }} />
+          </Stack.Protected>
           <Stack.Protected guard={can.concerns}>
             <Stack.Screen name="concerns/index" options={{ title: 'Concerns' }} />
             <Stack.Screen name="concerns/[id]" options={{ title: 'Concern' }} />
@@ -262,6 +268,7 @@ function RootStack() {
               options={{ title: 'Working With Children Checks' }}
             />
             <Stack.Screen name="admin/reports/under-18s" options={{ title: 'Under 18s' }} />
+            <Stack.Screen name="admin/reports/medical" options={{ title: 'Medical details checks' }} />
             <Stack.Protected guard={features.calendar}>
               <Stack.Screen name="admin/calendars" options={{ title: 'Calendars' }} />
             </Stack.Protected>

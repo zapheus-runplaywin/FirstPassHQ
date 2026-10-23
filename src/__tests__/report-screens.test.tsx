@@ -19,11 +19,14 @@ import AwardResultsScreen from '@/app/admin/reports/awards';
 import ReportsScreen from '@/app/admin/reports/index';
 import IntegrityReportScreen from '@/app/admin/reports/integrity';
 import KpiReportScreen from '@/app/admin/reports/kpis';
+import MedicalCheckReportScreen from '@/app/admin/reports/medical';
 import SessionPlanReportScreen from '@/app/admin/reports/session-plans';
 import Under18sReportScreen from '@/app/admin/reports/under-18s';
 import WwccReportScreen from '@/app/admin/reports/wwcc';
 import type { Affiliation } from '@/lib/affiliation';
 import { formatDateString } from '@/lib/injuries';
+import type { MedicalComplianceRow } from '@/lib/medical';
+import { supabase } from '@/lib/supabase';
 import type { Award, Team } from '@/lib/types';
 
 import { readPdf } from './helpers/documents';
@@ -134,6 +137,7 @@ describe('Reports', () => {
     for (const title of [
       'Working With Children Checks',
       'Under 18s and their guardians',
+      'Medical details checks',
       'Integrity training',
       'Injuries',
       'Attendance',
@@ -149,6 +153,7 @@ describe('Reports', () => {
   it.each([
     ['Working With Children Checks', '/admin/reports/wwcc'],
     ['Under 18s and their guardians', '/admin/reports/under-18s'],
+    ['Medical details checks', '/admin/reports/medical'],
     ['Integrity training', '/admin/reports/integrity'],
     ['Injuries', '/admin/injuries'],
     ['Attendance', '/admin/reports/attendance'],
@@ -175,6 +180,7 @@ describe('Reports', () => {
     await open('admin/reports/index', ReportsScreen, {}, {}, '/admin/reports');
     expect(screen.getByText('Working With Children Checks')).toBeTruthy();
     expect(screen.getByText('Under 18s and their guardians')).toBeTruthy();
+    expect(screen.getByText('Medical details checks')).toBeTruthy();
     for (const title of ['Integrity training', 'Injuries', 'Attendance', 'Session plans', 'Award results', 'Season KPIs', 'Affiliation']) {
       expect(screen.queryByText(title)).toBeNull();
     }
@@ -737,5 +743,55 @@ describe('Session plans', () => {
     await settle();
     expect(screen.getByText('screen:session-plan')).toBeTruthy();
     expect(screen).toHavePathname('/session-plans/p2');
+  });
+});
+
+// ---------------------------------------------------------------------------
+
+describe('Medical details checks', () => {
+  const row = (id: string, extra: Partial<MedicalComplianceRow>): MedicalComplianceRow => ({
+    athlete_id: id,
+    athlete_name: id,
+    minor: false,
+    has_verified_guardian: false,
+    teams: 'Open A',
+    has_contacts: true,
+    checked_at: '2026-03-01T02:00:00Z',
+    checked_by_name: id,
+    due_on: '2027-03-01',
+    status: 'current',
+    ...extra,
+  });
+  const ROWS = [
+    row('Ada Adult', {}),
+    row('Bo Overdue', { checked_at: '2025-09-01T02:00:00Z', due_on: '2026-09-01', status: 'overdue' }),
+    row('Cam Child', { minor: true, has_verified_guardian: true, checked_by_name: 'Pia Parent', due_on: '2026-11-10', status: 'due_soon' }),
+    row('Dee New', { minor: true, has_contacts: false, checked_at: null, checked_by_name: null, due_on: null, status: 'missing', teams: null }),
+  ];
+
+  it('loads the status from the database, and only that', async () => {
+    await open('admin/reports/medical', MedicalCheckReportScreen, {}, { rpcs: { medical_review_compliance: ROWS } });
+    expect((supabase.rpc as jest.Mock).mock.calls.map(([n]) => n)).toContain('medical_review_compliance');
+    expect(screen.getByText('Checked in the last year')).toBeTruthy();
+  });
+
+  it('groups athletes overdue, with nothing saved, due soon and up to date, and counts them', async () => {
+    await open('admin/reports/medical', MedicalCheckReportScreen, {}, { rpcs: { medical_review_compliance: ROWS } });
+    const { name, pdf } = await exportPdf();
+    expect(name).toMatch(/^sample-medical-details-checks-\d{4}-\d{2}-\d{2}\.pdf$/);
+    for (const text of ['Overdue', 'Nothing saved', 'Due within 30 days', 'Up to date', 'Bo Overdue', 'Dee New', 'Pia Parent', 'Never', 'No verified parent or guardian', 'Parent or guardian']) {
+      expect(pdf.text).toContain(text);
+    }
+    expect(pdf.text).toContain('Checked in the last year');
+    expect(pdf.text).toContain('50%');
+    expect(pdf.text).toContain(formatDateString('2026-09-01'));
+    expect(pdf.text).toContain('This report shows no medical details');
+  });
+
+  it('shows the database’s refusal', async () => {
+    await open('admin/reports/medical', MedicalCheckReportScreen, {}, {
+      rpcErrors: { medical_review_compliance: 'Only admins can see the medical details check report' },
+    });
+    expect(screen.getByText(/Only admins can see the medical details check report/)).toBeTruthy();
   });
 });

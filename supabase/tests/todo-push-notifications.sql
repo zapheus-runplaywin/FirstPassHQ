@@ -138,24 +138,17 @@ values (pg_temp.id('13'), 'APL 13', current_date - 400, 'new', '00000000-0000-00
 select pg_temp.ok('the admin is asked to confirm applications still being assessed', pg_temp.has('01', 'wwcc-applications:'), true);
 select pg_temp.ok('a coach isn''t', pg_temp.has('11', 'wwcc-applications:'), false);
 
--- Medical details to add (PR #173). Until that is in the database the list
--- leaves them out and still works; once it is, an athlete with none saved is
--- asked to add theirs.
-select case
-  when to_regprocedure('public.my_medical_reviews()') is null then
-    pg_temp.ok('without medical details in the database, an athlete''s list still works', pg_temp.has('32', 'check-in:'), true)
-  else
-    pg_temp.ok('an athlete is asked to add their medical details', exists (
-      select 1 from public.member_todos(pg_temp.id('32')) m
-      where m.todo_key = 'medical:' || pg_temp.id('32') || ':missing'
-        and m.title = 'Add your medical and emergency details' and m.href = '/medical/' || pg_temp.id('32')), true)
-end;
-select case
-  when to_regprocedure('public.my_medical_reviews()') is null then
-    pg_temp.ok('a coach has no medical to-do', pg_temp.has('11', 'medical:'), false)
-  else
-    pg_temp.ok('a coach who isn''t an athlete or parent has no medical to-do', pg_temp.has('11', 'medical:'), false)
-end;
+-- Medical details: an athlete with none saved is asked to add theirs, a
+-- verified parent is asked for their child's, and a coach isn't.
+select pg_temp.ok('an athlete is asked to add their medical details', exists (
+  select 1 from public.member_todos(pg_temp.id('32')) m
+  where m.todo_key = 'medical:' || pg_temp.id('32') || ':missing'
+    and m.title = 'Add your medical and emergency details' and m.href = '/medical/' || pg_temp.id('32')), true);
+select pg_temp.ok('a verified parent is asked for their child''s', exists (
+  select 1 from public.member_todos(pg_temp.id('41')) m
+  where m.todo_key = 'medical:' || pg_temp.id('31') || ':missing'
+    and m.title = 'Add Jordan Junior’s medical and emergency details'), true);
+select pg_temp.ok('a coach who isn''t an athlete or parent has no medical to-do', pg_temp.has('11', 'medical:'), false);
 
 -- Injury details never go in a notification: they can show on a locked phone.
 insert into public.injuries (athlete_id, reported_by, body_area, description, injured_on, expected_return, athlete_name)

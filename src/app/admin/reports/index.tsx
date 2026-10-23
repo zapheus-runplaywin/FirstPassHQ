@@ -28,6 +28,13 @@ export default function ReportsScreen() {
         </ThemedText>
       </PressableCard>
 
+      <PressableCard onPress={() => router.push('/admin/reports/medical')}>
+        <ThemedText type="smallBold">Medical details checks</ThemedText>
+        <ThemedText type="small" themeColor="textSecondary">
+          Which athletes and parents have checked their medical details in the last year
+        </ThemedText>
+      </PressableCard>
+
       {features.integrity ? (
         <PressableCard onPress={() => router.push('/admin/reports/integrity')}>
           <ThemedText type="smallBold">Integrity training</ThemedText>

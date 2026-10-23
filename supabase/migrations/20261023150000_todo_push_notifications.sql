@@ -466,12 +466,11 @@ begin
   end if;
 
   -- Medical and emergency details to add, or to check once a year, for
-  -- athletes and verified parents. The function comes with PR #173, so this
-  -- only runs once that is in the database too, whichever merges first.
-  if to_regprocedure('public.my_medical_reviews()') is not null
-    and (public.has_role('athlete') or (public.has_role('guardian') and exists (
+  -- athletes and verified parents. A new stage (missing, due soon, overdue)
+  -- sends again.
+  if (public.has_role('athlete') or (public.has_role('guardian') and exists (
       select 1 from public.profiles p where p.id = p_profile_id and p.verified_at is not null))) then
-    for r in execute 'select athlete_id, athlete_name, status, due_on from public.my_medical_reviews()' loop
+    for r in select * from public.my_medical_reviews() loop
       todo_key := 'medical:' || r.athlete_id || ':' || r.status;
       if r.status = 'missing' or r.due_on is null then
         title := 'Add ' || case when r.athlete_id = p_profile_id then 'your'

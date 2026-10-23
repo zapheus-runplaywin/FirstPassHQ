@@ -5,14 +5,14 @@ import { Platform, StyleSheet, Switch, View } from 'react-native';
 import { PolicyLinks } from '@/components/policy-links';
 import { Screen } from '@/components/screen';
 import { ThemedText } from '@/components/themed-text';
-import { Button, Card, ErrorText, TextField } from '@/components/ui';
+import { Button, Card, ErrorText, PressableCard, TextField } from '@/components/ui';
 import { Spacing } from '@/constants/theme';
 import { useTheme } from '@/hooks/use-theme';
 import { useAuth } from '@/lib/auth';
 import { canHoldTitle, staffTitle } from '@/lib/labels';
 import { openNotificationSettings, useTodoNotifications } from '@/lib/push';
 import { supabase } from '@/lib/supabase';
-import { rolesOf } from '@/lib/roles';
+import { hasRole, rolesOf } from '@/lib/roles';
 
 export default function MyDetailsScreen() {
   const { profile, memberships, refresh } = useAuth();
@@ -24,6 +24,9 @@ export default function MyDetailsScreen() {
   const hasTitle = profile?.status === 'approved' && canHoldTitle(rolesOf(profile));
   const groupTitle = profile?.status === 'approved' ? staffTitle(memberships) : '';
   const coaches = memberships.some((m) => m.team_role === 'coach');
+  const isAthlete =
+    profile?.status === 'approved' &&
+    (hasRole(profile, 'athlete') || memberships.some((m) => m.team_role === 'athlete'));
 
   async function save() {
     setSaving(true);
@@ -88,6 +91,16 @@ export default function MyDetailsScreen() {
       <ErrorText>{error}</ErrorText>
       <Button title="Save" onPress={save} busy={saving} />
 
+      {isAthlete && profile ? (
+        <PressableCard
+          onPress={() => router.push({ pathname: '/medical/[id]', params: { id: profile.id } })}>
+          <ThemedText type="smallBold">Medical and emergency details</ThemedText>
+          <ThemedText type="small" themeColor="textSecondary">
+            Emergency contacts, allergies, conditions, medications and an action plan for your
+            coaches, managers and physios
+          </ThemedText>
+        </PressableCard>
+      ) : null}
       {profile?.status === 'approved' ? <Notifications /> : null}
       <PolicyLinks intro="The club’s policies:" />
     </Screen>
