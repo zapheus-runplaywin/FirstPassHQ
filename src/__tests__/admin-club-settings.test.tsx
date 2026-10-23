@@ -660,3 +660,52 @@ describe('Keeping records', () => {
     expect(isDisabled('Save keep periods')).toBe(true);
   });
 });
+
+describe('Keeping records: the nightly removal', () => {
+  const RUN = {
+    last_run_at: '2026-10-22T18:17:00Z',
+    last_ok_at: '2026-10-22T18:17:00Z',
+    failed_step: null,
+    overdue: false,
+  };
+
+  it('shows when it last ran', async () => {
+    await openRetention({ removal_run_status: RUN });
+    expect(callsTo('removal_run_status')).toHaveLength(1);
+    expect(screen.getByText(/^Last run .+\.$/)).toBeTruthy();
+    expect(screen.queryByText(/Ask FirstPass/)).toBeNull();
+  });
+
+  it('says it hasn’t run yet', async () => {
+    await openRetention({ removal_run_status: { ...RUN, last_run_at: null, last_ok_at: null } });
+    expect(screen.getByText('The nightly removal hasn’t run yet.')).toBeTruthy();
+  });
+
+  it('says where the last run stopped, and that the next one carries on', async () => {
+    await openRetention({
+      removal_run_status: { ...RUN, last_run_at: '2026-10-23T18:17:00Z', failed_step: 'removing documents' },
+    });
+    expect(screen.getByText(/^The last run, .+, stopped while removing documents\. The next run carries on from there\.$/)).toBeTruthy();
+    expect(screen.queryByText(/Ask FirstPass/)).toBeNull();
+  });
+
+  it('warns when it is overdue, since the last time it finished', async () => {
+    await openRetention({ removal_run_status: { ...RUN, overdue: true } });
+    expect(screen.getByText(/^Old records haven’t been removed since .+\. Ask FirstPass to check the nightly removal\.$/)).toBeTruthy();
+  });
+
+  it('warns when it is overdue and has never finished, with where it stopped', async () => {
+    await openRetention({
+      removal_run_status: { last_run_at: '2026-10-21T18:17:00Z', last_ok_at: null, failed_step: 'removing old records', overdue: true },
+    });
+    expect(
+      screen.getByText(/^Old records haven’t been removed yet\. The last run, .+, stopped while removing old records\. Ask FirstPass to check the nightly removal\.$/),
+    ).toBeTruthy();
+  });
+
+  it('shows no line when the status can’t be read', async () => {
+    await openRetention({ removal_run_status: null });
+    expect(screen.getByText('Keeping records')).toBeTruthy();
+    expect(screen.queryByText(/^Last run|nightly removal|haven’t been removed/)).toBeNull();
+  });
+});

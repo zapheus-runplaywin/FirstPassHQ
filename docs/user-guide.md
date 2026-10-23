@@ -27,7 +27,9 @@ children, for parents, committees, boards and the sport's governing body.
 10. [Admins](#10-admins)
 11. [Who can see what](#11-who-can-see-what)
 12. [Child safety and safeguarding](#12-child-safety-and-safeguarding)
-13. [Keeping this guide up to date](#13-keeping-this-guide-up-to-date)
+13. [Your club's data](#13-your-clubs-data)
+14. [Not in the app yet](#14-not-in-the-app-yet)
+15. [Keeping this guide up to date](#15-keeping-this-guide-up-to-date)
 
 ## 1. Roles at a glance
 
@@ -47,7 +49,7 @@ each of their roles can.
 | **Guest**     | Anyone else the club lets in, such as partners and sponsors. Guests must be 18 or over. They see only the club calendar, keep their own tasks and can raise a concern. They aren't in squads or teams, get no messages, don't vote and aren't asked for a Working With Children Check or the code of conduct. |
 | **Statistician** | The people who record live game stats on a tablet in FirstPass Vantage, which coaches watch live in FirstPass Vision. Statisticians see every game the club records; a game's coaches and managers see their own squad's or team's. Any member can hold it alongside another role, such as a manager or an athlete who isn't playing. Need a current Working With Children Check, an application being assessed, or a volunteer exemption such as a parent at their child's games, unless an admin exempts them with a reason, such as only recording opens games; the role pauses if a recorded check expires. Statisticians approved before checks were needed keep the role without one only until the club's **statistician checks date**. The role pauses while a member is stood down. |
 | **Temporary helper** | Someone helping for a day or a short time, such as at a carnival, clinic or tournament, paid or unpaid. Not necessarily a member of the club: this is only a role so the app can onboard them. The app screens them: a Working With Children Check or an exemption covering every day they help, and the club's code of conduct and safeguarding policy accepted. They see none of the club's features or messages, and their time ends by itself after their last day (see [Temporary helpers](#temporary-helpers)). |
-| **Admin**     | The people who run the app. Admin is granted by another admin, never requested. Admins can add a title too. Need a current Working With Children Check, or an application being assessed, unless another admin exempts them. An expired check doesn't pause the admin role, so the club is never locked out, but it stays on the admins' to-do list until it's renewed, and 30 days after it expired (or after the club's committee checks date, if none is recorded) the admin stops seeing under 18s' injuries until a check, an application or a parent volunteer exemption is recorded. Admins set how long the club keeps records. |
+| **Admin**     | The people who run the app. Admin is granted by another admin, never requested. Admins can add a title too. Need a current Working With Children Check, or an application being assessed, unless another admin exempts them. An expired check doesn't pause the admin role, so the club is never locked out, but it stays on the admins' to-do list until it's renewed, and 30 days after it expired (or after the club's committee checks date, if none is recorded) the admin stops seeing under 18s' injuries until a check, an application or a parent volunteer exemption is recorded. Admins set how long the club keeps records, and are warned when the nightly removal of old records stops. |
 
 **Safeguarding contacts.** An admin names one member as the club's **Child Safety Officer** and
 another as its **Complaints Manager**. They're not separate roles: each keeps their own role and also
@@ -1207,7 +1209,7 @@ or physio role starts once you agree, and the club keeps the words you agreed to
 The exemption ends by itself when your child turns 18, stops being an athlete at the club or is
 no longer linked to you, or, for a volunteer under 18, on your 18th birthday. Your role then pauses
 and your home screen asks you to apply for a check. A parent's exemption doesn't cover overnight
-camps.
+camps or trips, such as a tour or state championships: you need a check for those.
 
 Someone who doesn't normally live in WA, such as a visiting interstate or national coach, has two
 more exemptions, and can use only one of them, once, in any 12 months before or after anywhere in WA:
@@ -2127,7 +2129,9 @@ Check them against PlayHQ, then:
    A coach, manager or physio who is a parent volunteering at their child's club, or is under 18,
    doesn't need a check in WA. Choose **Parent volunteer** (and their child, who must be an
    athlete under 18 they're linked to as a guardian) or **Under-18 volunteer** (which needs their
-   date of birth) instead of **Has a check**. A temporary helper can't be linked as a guardian, so
+   date of birth) instead of **Has a check**. A parent's exemption doesn't cover overnight camps or
+   trips, and the app doesn't mark events as overnight, so a parent volunteer going on a tour or
+   state championships needs a check: record it before they go. A temporary helper can't be linked as a guardian, so
    for them you search for and name their child from the club's athletes under 18 instead. Once you save, they get a to-do to accept the
    exemption declaration (a temporary helper sees **Read the declaration** in their steps), and
    their role starts when they do. The page shows where it's up to and
@@ -2856,6 +2860,13 @@ its periods starts on those.
   every admin's to-do list shows **Old records are kept forever**. When it's on, each night (a scheduled job at about 2 am Perth time) the app permanently
   removes records older than their keep period. They can't be brought back, so
   save a report first if the club needs a copy.
+- Under the switch, the app says when the nightly removal last ran (**Last run** and the time), or
+  where the latest run stopped, such as **stopped while removing documents**; the next run carries
+  on from there. If **Remove old records** is on and the removal hasn't finished for 2 days (or
+  hasn't finished once in the 2 days after you switched it on), the line turns red and every admin's
+  to-do list shows a red **Old records haven't been removed since …** (or **… yet**). The scheduled
+  job can pause, for example when GitHub pauses scheduled jobs in a quiet repository, so ask
+  FirstPass to check it.
 - **Daily check-ins**, counted from the day of the check-in: 3 months, 6 months, 1 year
   (recommended) or 2 years.
 - **Game goals, reflections and athletes' season KPIs**: game goals counted from the game, with
@@ -2929,7 +2940,8 @@ admins see them under **No team or role for 2 years** (see [Approving
 members](#approving-members)). **Last changed by** shows which admin last saved the periods, and when.
 Tap **Save keep periods** to save.
 
-<img src="user-guide/club-settings-records.png" width="210" alt="Club settings: keeping records">
+<img src="user-guide/club-settings-records.png" width="210" alt="Club settings: keeping records, with when the nightly removal last ran">
+<img src="user-guide/records-removal-stalled.png" width="210" alt="An admin's to-do list: old records haven't been removed, in red">
 <img src="user-guide/club-settings-records-safety.png" width="210" alt="Club settings: keep periods for message text, messages involving a child and attendance">
 <img src="user-guide/club-settings-records-surveys.png" width="210" alt="Club settings: keep periods for training certificates and surveys">
 <img src="user-guide/club-settings-records-injury.png" width="210" alt="Club settings: keep periods for team polls, record views and injury documents">
@@ -3128,7 +3140,7 @@ once saved, only replaced or removed, and anyone who gets it wrong five times in
 | Affiliation returns     | Admins only, until an admin sends one. A sent return goes to the email address the club entered and holds club facts and counts, naming no member under 18. |
 | Reports and their PDFs  | Admins only. A saved PDF is a copy outside the app, so whoever it's shared with can read it.                                |
 | Match fixtures          | The members of each squad or team, statisticians and admins.                                                                |
-| How long records are kept | Admins: the keep periods, whether old records are removed and who last changed them. |
+| How long records are kept | Admins: the keep periods, whether old records are removed, who last changed them, and when the nightly removal last ran or where it stopped. |
 | Club name, colours and logo | Every signed-in member. The logo file is public so it can show before sign-in. Only admins can change them.            |
 | Other clubs' members and records | Nobody in this club. Each club's members, messages, injuries and documents are kept in that club's own database, which other clubs can't reach. |
 
@@ -3352,7 +3364,8 @@ Working With Children Check, and another admin must do it.
 - **Parent and under-18 volunteers.** In WA a parent volunteering at their child's club, or a
   volunteer under 18, is exempt instead and accepts a declaration in the app (see [Volunteer
   exemptions](#volunteer-exemptions)). The exemption ends by itself when the child or volunteer
-  turns 18.
+  turns 18. A parent's exemption doesn't cover overnight camps or trips, and the app doesn't mark
+  events as overnight, so the club makes sure a parent volunteer has a check before a tour.
 - **Your role pauses the day after your check expires**, and comes back when an admin records the
   renewed check. While it's paused the database closes your groups' rosters, calendars, fixtures,
   attendance and plans; they aren't only hidden on the screen. Messages are hidden from the screen
@@ -3508,7 +3521,9 @@ Working With Children Check, and another admin must do it.
   injuries, check-ins, game goals, season KPIs, named survey answers or member record, every parent's consent with the policy version they agreed to, and each season's code of conduct
   acceptance with who accepted it, the words and the policy version. A document can't be opened without the view being recorded first.
 - **Records are kept as long as they're needed, then removed.** Each club sets its keep periods
-  and the app removes older records each night once the club switches it on. Concerns are never
+  and the app removes older records each night once the club switches it on. Each run is
+  recorded, and if the removal hasn't finished for 2 days every admin gets a red warning, so a
+  paused job can't quietly keep records past their periods. Concerns are never
   removed. The text of messages sent by or to a child is kept at least 3 years (7 recommended)
   and never less than other messages, and the record of who viewed a child's records at least 3
   years (7 recommended); a removed message keeps who sent it, who it went to and who read it. A
@@ -3554,7 +3569,58 @@ Working With Children Check, and another admin must do it.
 
 <div style="page-break-before: always"></div>
 
-## 13. Keeping this guide up to date
+## 13. Your club's data
+
+For boards and committees: where the club's data is, who can read it, what happens if something
+goes wrong, and how the club gets it all back. The full statement is in
+[data-handling.md](data-handling.md).
+
+- **Its own database, in Sydney.** Each club has its own Supabase project, hosted on Amazon Web
+  Services in Sydney, encrypted on disk and on the way to and from the app. No other club's data
+  is in it.
+- **No automatic backups yet.** The projects are on Supabase's free plan, which keeps no backups
+  FirstPass can restore. A record that is deleted, or removed under [Keeping
+  records](#keeping-records), can't be brought back. The club can ask for a full copy at any time
+  and keep it as its own backup.
+- **Who can read it.** Members see only what their roles allow (see section 11), checked by the
+  database. FirstPass, which runs the app, owns each club's project and so can read everything in
+  it; it opens a club's data only to fix a fault, make a copy the club asked for, or when the law
+  requires it, and tells the club's admins when it has. Supabase staff only under Supabase's own
+  terms. Nobody else, and the app has no advertising or tracking.
+- **If something goes wrong**, FirstPass tells the club's admins within 72 hours of finding out
+  what happened and whose data it affected, and helps the club decide who else to tell.
+- **Getting all your data.** An admin asks FirstPass in writing, and within 14 days gets a full
+  copy, every table as a spreadsheet and a database file plus every stored file, through an
+  encrypted link. There's no download button in the app, because one would let any single admin
+  take every child's records at once. When a club leaves, FirstPass deletes the club's project and
+  its own copies once the club has its copy.
+
+<div style="page-break-before: always"></div>
+
+## 14. Not in the app yet
+
+Things clubs have asked for that FirstPass HQ doesn't do today, so nobody expects them. Each is
+decided on its own; until then the club keeps doing it the way it does now.
+
+- **Selection records**: published selection criteria, the selection panel, conflict of interest
+  declarations, when athletes were told, and appeals. Admins name teams in the app (see [Squads,
+  teams and selections](#squads-teams-and-selections)); the rest stays with the club's own
+  selection policy and the governing body's complaints process.
+- **Training logs**: athletes logging their own sessions, or linking Strava, for coaches to see.
+- **Community hours**: a tracker of volunteer hours, with extra hours for AUSTEAM athletes.
+- **Microsoft Forms**: sending a form to chosen roles. [Surveys](#surveys) do this inside the app,
+  with results kept with the club; a Forms link can go in a message.
+- **Asking for a response**: a sender asking members to confirm a message. Read receipts show who
+  opened it (see [Messages](#messages)), but there's no **Acknowledge** button.
+- **Overnight events**: events can't be marked as overnight, so the app doesn't warn that a parent
+  volunteer's exemption doesn't cover a camp or tour. Admins check this themselves (see [Volunteer
+  exemptions](#volunteer-exemptions)).
+- **Sign in with Apple**: members sign in with Google only (see [Sign in with
+  Google](#sign-in-with-google)).
+
+<div style="page-break-before: always"></div>
+
+## 15. Keeping this guide up to date
 
 This guide lives in the app's repository at `docs/user-guide.md`, with its screenshots in
 `docs/user-guide/`. Any change that adds, removes or changes something a member can see or do must

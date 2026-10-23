@@ -6,6 +6,7 @@ import { Button, Card, ChipGroup, ErrorText } from '@/components/ui';
 import { Spacing } from '@/constants/theme';
 import { useTheme } from '@/hooks/use-theme';
 import { formatDateTime } from '@/lib/format';
+import { purgeRunLine, toPurgeRunStatus, type PurgeRunStatus } from '@/lib/purge-runs';
 import { supabase } from '@/lib/supabase';
 
 type Retention = {
@@ -231,13 +232,19 @@ export function RecordRetention() {
   const [busy, setBusy] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [notice, setNotice] = useState<string | null>(null);
+  const [run, setRun] = useState<PurgeRunStatus | null>(null);
 
   useEffect(() => {
     loadRetention().then((row) => {
       setSaved(row);
       setDraft(row);
     });
+    supabase
+      .rpc('removal_run_status')
+      .maybeSingle()
+      .then(({ data }) => setRun(toPurgeRunStatus(data)));
   }, []);
+  const runLine = purgeRunLine(run);
 
   if (!draft) return null;
 
@@ -336,6 +343,15 @@ export function RecordRetention() {
           {...(Platform.OS === 'web' ? { activeThumbColor: theme.onAccent } : {})}
         />
       </Card>
+      {runLine ? (
+        runLine.warning ? (
+          <ErrorText>{runLine.text}</ErrorText>
+        ) : (
+          <ThemedText type="small" themeColor="textSecondary">
+            {runLine.text}
+          </ThemedText>
+        )
+      ) : null}
       {periods.map(period)}
       <View style={styles.period}>
         <ChipGroup

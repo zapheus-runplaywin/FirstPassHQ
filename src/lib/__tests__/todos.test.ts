@@ -675,6 +675,38 @@ describe('buildTodos', () => {
       ]);
     });
 
+    it('warns in red when the nightly removal has stopped, since it last finished', () => {
+      const todo = only(todos({ safety: safety({ records_removal_stalled: { last_ok_at: '2026-01-05T04:00:00Z' } }) }));
+      expect(todo).toMatchObject({
+        key: 'records-removal-stalled',
+        detail: 'The nightly removal hasn’t finished for 2 days. Ask FirstPass to check it.',
+        href: '/admin/club',
+        alert: { level: 'red', label: 'Stopped' },
+      });
+      expect(todo.title).toMatch(/^Old records haven’t been removed since \S.*(5.*Jan|Jan.*5)/);
+    });
+
+    it('says the nightly removal hasn’t finished yet when it never has', () => {
+      expect(only(todos({ safety: safety({ records_removal_stalled: { last_ok_at: null } }) })).title).toBe(
+        'Old records haven’t been removed yet',
+      );
+    });
+
+    it('adds no removal warning while it runs', () => {
+      expect(todos({ safety: safety({ records_removal_stalled: null }) })).toEqual([]);
+    });
+
+    it('lists a stopped removal after Remove old records, and sorts it first as a red warning', () => {
+      const list = todos({
+        safety: safety({ turning_18: 1, records_removal_stalled: { last_ok_at: null } }),
+      });
+      expect(list.map((t) => t.key)).toEqual(['turning-18', 'records-removal-stalled']);
+      expect(sortByAlert(list, (t) => t.alert, (t) => t.dueOn).map((t) => t.key)).toEqual([
+        'records-removal-stalled',
+        'turning-18',
+      ]);
+    });
+
     it('names the athlete when one clearance has nobody to endorse it', () => {
       expect(only(todos({ safety: safety({ unendorsable_clearances: ['Kai Senior'] }) }))).toEqual({
         key: 'unendorsable-clearances',

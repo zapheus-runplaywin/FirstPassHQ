@@ -485,6 +485,35 @@ describe('the to-do list', () => {
     expect(push).toHaveBeenCalledWith('/admin');
   });
 
+  it('warns admins when the nightly removal has stopped, and opens Club settings', async () => {
+    await openHome('admin', {}, {
+      rpcs: {
+        admin_safety_todos: {},
+        removal_run_status: { last_run_at: null, last_ok_at: null, failed_step: null, overdue: true },
+      },
+    });
+    expect(rpcNames().filter((n) => n === 'removal_run_status')).toHaveLength(1);
+    expect(screen.getByText('Old records haven’t been removed yet')).toBeTruthy();
+    expect(screen.getByText('The nightly removal hasn’t finished for 2 days. Ask FirstPass to check it.')).toBeTruthy();
+    fireEvent.press(screen.getByText('Old records haven’t been removed yet'));
+    expect(push).toHaveBeenCalledWith('/admin/club');
+  });
+
+  it('shows no removal warning while the nightly removal runs', async () => {
+    await openHome('admin', {}, {
+      rpcs: {
+        admin_safety_todos: {},
+        removal_run_status: { last_run_at: '2026-10-22T18:17:00Z', last_ok_at: '2026-10-22T18:17:00Z', failed_step: null, overdue: false },
+      },
+    });
+    expect(screen.queryByText(/^Old records haven’t been removed/)).toBeNull();
+  });
+
+  it('never asks for the removal status for members who aren’t admins', async () => {
+    await openHome('committee');
+    expect(rpcNames()).not.toContain('removal_run_status');
+  });
+
   it('shows no clearance tile when every clearance has someone to endorse it', async () => {
     await openHome('admin', {}, { rpcs: { admin_safety_todos: {}, admin_unendorsable_clearances: [] } });
     expect(screen.queryByText(/^Nobody can endorse/)).toBeNull();
