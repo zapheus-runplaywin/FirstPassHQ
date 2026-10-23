@@ -321,11 +321,14 @@ describe('loading the member', () => {
       memberships: [member(TEAM_A, 'coach')],
       isClubCaptain: true,
       isSafeguardingOfficer: true,
+      committeeSeesInjuries: false,
       exemption: exemption(),
       committeeChecksFrom: '2027-01-11',
     };
     const { result } = renderHook(() => useAuth(), { wrapper });
     expect(result.current.loading).toBe(true);
+    // The club's default, the whole committee, until the member loads.
+    expect(result.current.committeeSeesInjuries).toBe(true);
     expect(result.current.profile).toBeNull();
     expect(result.current.memberships).toEqual([]);
     expect(result.current.captaincies).toEqual([]);
