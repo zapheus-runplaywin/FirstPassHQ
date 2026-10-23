@@ -3694,7 +3694,9 @@ decided on its own; until then the club keeps doing it the way it does now.
   declarations, when athletes were told, and appeals. Admins name teams in the app (see [Squads,
   teams and selections](#squads-teams-and-selections)); the rest stays with the club's own
   selection policy and the governing body's complaints process.
-- **Training logs**: athletes logging their own sessions, or linking Strava, for coaches to see.
+- **Strava and testing results**: linking Strava or a watch, and fitness testing results. Athletes
+  log their sessions' minutes and effort by hand under the check-in (see [Training
+  sessions](#training-sessions)).
 - **Community hours**: a tracker of volunteer hours, with extra hours for AUSTEAM athletes.
 - **Microsoft Forms**: sending a form to chosen roles. [Surveys](#surveys) do this inside the app,
   with results kept with the club; a Forms link can go in a message.
