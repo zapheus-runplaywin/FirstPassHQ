@@ -34,6 +34,7 @@ describe('loadWwccData', () => {
   const standDowns = [{ id: 's1' }];
   const exemptions = [{ id: 'e1' }];
   const notices = [{ id: 'n1' }];
+  const applications = [{ id: 'a1' }];
   const acks = [{ profile_id: 'm1', policy_version: '2', acknowledged_at: 'x' }];
 
   function backend(officer: unknown = { officer_name: 'Sample officer' }, rpcErrors: Record<string, string> = {}) {
@@ -47,13 +48,14 @@ describe('loadWwccData', () => {
       },
       rpcHandlers: {
         admin_volunteer_exemptions: recordRpc(exemptions),
+        admin_wwcc_applications: recordRpc(applications),
         admin_wwc_officer: recordRpc(officer ? [officer] : []),
       },
       rpcErrors,
     });
   }
 
-  it('loads approved members, child-related places, stand-downs, exemptions, notices, the officer and acknowledgements', async () => {
+  it('loads approved members, child-related places, stand-downs, exemptions, notices, the officer, acknowledgements and check applications', async () => {
     backend();
     await expect(loadWwccData()).resolves.toEqual({
       members,
@@ -63,6 +65,7 @@ describe('loadWwccData', () => {
       notices,
       officerName: 'Sample officer',
       acknowledgements: acks,
+      applications,
     });
     expect(methods(callsTo('profiles')[0])).toEqual([
       ['select', 'PROFILE_COLUMNS'],

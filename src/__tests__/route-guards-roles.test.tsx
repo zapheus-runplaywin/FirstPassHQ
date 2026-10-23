@@ -197,6 +197,7 @@ const EVERYONE_SIGNED_IN = [
   'calendar',
   'event/[id]',
   'declaration',
+  'wwcc-application',
   'concern/new',
   'conduct/[id]',
   'tasks/index',

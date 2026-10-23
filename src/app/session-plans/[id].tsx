@@ -30,7 +30,7 @@ import { supabase } from '@/lib/supabase';
  */
 export default function SessionPlanScreen() {
   const { id } = useLocalSearchParams<{ id: string }>();
-  const { session, isAdmin, profile, exemption } = useAuth();
+  const { session, isAdmin, profile, exemption, wwccApplication } = useAuth();
   const { canAdd } = useSessionPlanSummary();
   const [plan, setPlan] = useState<SessionPlan | null | undefined>(undefined);
   const [files, setFiles] = useState<SessionPlanFile[]>([]);
@@ -115,7 +115,9 @@ export default function SessionPlanScreen() {
 
   const mine = plan.author_id === session?.user.id;
   // As can_edit_session_plan: the author only while they can work with children.
-  const canEdit = isAdmin || (mine && canWorkWithChildren(profile, !!exemption?.valid));
+  const canEdit =
+    isAdmin ||
+    (mine && canWorkWithChildren(profile, !!exemption?.valid || !!wwccApplication?.valid));
   const times = formatTimes(plan.starts_at, plan.ends_at);
   const sharedWith = [
     plan.share_team_coaches ? `the other coaches of ${plan.team_name}` : '',

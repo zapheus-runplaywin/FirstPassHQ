@@ -93,6 +93,7 @@ export default function AffiliationReturnScreen() {
           wwccData.officerName,
           wwccData.acknowledgements,
           committeeChecksFrom,
+          wwccData.applications,
         ).stats,
         training: {
           season: seasonLabel(trainingSeason),

@@ -2,7 +2,10 @@ import { useFocusEffect } from 'expo-router';
 import { useCallback, useState } from 'react';
 
 import { useAuth } from '@/lib/auth';
+import { toDateString } from '@/lib/injuries';
 import { supabase } from '@/lib/supabase';
+import type { WwccApplication } from '@/lib/types';
+import { applicationsToConfirm } from '@/lib/wwcc-applications';
 
 /** How many join requests are waiting for an admin, refreshed when the screen is shown. */
 export function usePendingRequests() {
@@ -67,6 +70,12 @@ export type SafetyTodos = {
    * `admin_unendorsable_clearances`, oldest first.
    */
   unendorsable_clearances?: string[];
+  /**
+   * Lodged check applications due to be confirmed as still being assessed,
+   * and ones that lapsed because nobody did, from `admin_wwcc_applications`.
+   */
+  wwcc_applications_due?: number;
+  wwcc_applications_lapsed?: number;
 };
 
 /** Child-safety follow-ups for admins, refreshed when the screen is shown. */
@@ -76,13 +85,23 @@ export function useSafetyTodos() {
 
   const load = useCallback(async () => {
     if (!isAdmin) return;
-    const [{ data }, { data: retention }, { data: inactive }, { data: unendorsable }] =
-      await Promise.all([
-        supabase.rpc('admin_safety_todos').maybeSingle(),
-        supabase.rpc('record_retention').maybeSingle(),
-        supabase.rpc('admin_inactive_members'),
-        supabase.rpc('admin_unendorsable_clearances'),
-      ]);
+    const [
+      { data },
+      { data: retention },
+      { data: inactive },
+      { data: unendorsable },
+      { data: applications },
+    ] = await Promise.all([
+      supabase.rpc('admin_safety_todos').maybeSingle(),
+      supabase.rpc('record_retention').maybeSingle(),
+      supabase.rpc('admin_inactive_members'),
+      supabase.rpc('admin_unendorsable_clearances'),
+      supabase.rpc('admin_wwcc_applications'),
+    ]);
+    const toConfirm = applicationsToConfirm(
+      Array.isArray(applications) ? (applications as WwccApplication[]) : [],
+      toDateString(new Date()),
+    );
     const todos = (data as SafetyTodos | null) ?? null;
     const removalOn = (retention as { enabled?: unknown } | null)?.enabled;
     setSafety(
@@ -95,6 +114,8 @@ export function useSafetyTodos() {
               (row) => row.athlete_name ?? 'An athlete',
             )
           : [],
+        wwcc_applications_due: toConfirm.due,
+        wwcc_applications_lapsed: toConfirm.lapsed,
       },
     );
   }, [isAdmin]);

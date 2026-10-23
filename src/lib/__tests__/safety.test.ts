@@ -1,4 +1,5 @@
 import {
+  applicationStatus,
   canBeExempt,
   canWorkWithChildren,
   committeeCheckDue,
@@ -9,10 +10,12 @@ import {
   pausedRoles,
   safetyIssues,
   volunteerTimeOff,
+  wwccApplicationEndLabels,
   wwccRecordIssues,
   wwccStatus,
+  wwcSources,
 } from '@/lib/safety';
-import type { MyVolunteerExemption, Profile } from '@/lib/types';
+import type { MyVolunteerExemption, Profile, WwccApplication } from '@/lib/types';
 
 // Today is Sunday 18 October 2026, local time.
 beforeEach(() => {
@@ -501,6 +504,49 @@ describe('pausedRoles', () => {
     ).toEqual(['committee']);
   });
 
+  it('keeps coaching roles with a lodged check application in force', () => {
+    expect(
+      pausedRoles(profile({ role: 'coach', extra_roles: ['manager', 'physio'] }), false, null, true),
+    ).toEqual([]);
+    expect(
+      pausedRoles(
+        profile({ role: 'coach', wwcc_number: '123', wwcc_expires_on: '2026-01-01' }),
+        false,
+        null,
+        true,
+      ),
+    ).toEqual([]);
+  });
+
+  it('keeps committee after the committee checks date with an application in force', () => {
+    expect(pausedRoles(profile({ role: 'committee' }), false, '2026-01-01', true)).toEqual([]);
+    expect(
+      pausedRoles(
+        profile({ role: 'committee', wwcc_number: '123', wwcc_expires_on: '2026-01-01' }),
+        false,
+        null,
+        true,
+      ),
+    ).toEqual([]);
+  });
+
+  it('pauses committee after the date when nothing but a lapsed application is held', () => {
+    expect(pausedRoles(profile({ role: 'committee' }), false, '2026-01-01', false)).toEqual([
+      'committee',
+    ]);
+  });
+
+  it('an application doesn’t lift a stand-down', () => {
+    expect(
+      pausedRoles(
+        profile({ role: 'coach', extra_roles: ['committee'], stood_down_at: '2026-10-01T00:00:00Z' }),
+        false,
+        '2026-01-01',
+        true,
+      ),
+    ).toEqual(['coach', 'committee']);
+  });
+
   it('pauses every stand-down role while stood down, even with a current check', () => {
     expect(
       pausedRoles(
@@ -662,5 +708,101 @@ describe('canWorkWithChildren', () => {
 
   it('counts no exemption unless one is passed', () => {
     expect(canWorkWithChildren(profile({ wwcc_number: null, wwcc_expires_on: null }))).toBe(false);
+  });
+});
+
+type Application = Pick<WwccApplication, 'lodged_on' | 'status' | 'lapses_on' | 'check_due_on'>;
+
+function application(overrides: Partial<Application> = {}): Application {
+  return {
+    lodged_on: '2026-10-01',
+    status: 'in_force',
+    lapses_on: '2026-12-30',
+    check_due_on: '2026-10-31',
+    ...overrides,
+  };
+}
+
+describe('applicationStatus', () => {
+  it('says an application in force counts until it lapses', () => {
+    expect(applicationStatus(application())).toEqual({
+      label: 'Check applied for 01/10/2026, counts until 30/12/2026',
+      problem: false,
+    });
+  });
+
+  it('asks for it to be confirmed from the day it’s due', () => {
+    expect(applicationStatus(application({ check_due_on: '2026-10-19' })).problem).toBe(false);
+    expect(applicationStatus(application({ check_due_on: '2026-10-18' }))).toEqual({
+      label: 'Check applied for 01/10/2026: confirm it’s still being assessed by 30/12/2026',
+      problem: true,
+    });
+    expect(applicationStatus(application({ check_due_on: '2026-10-01' })).problem).toBe(true);
+  });
+
+  it('works from the member’s own view, which has no confirm date', () => {
+    expect(applicationStatus(application({ check_due_on: undefined })).problem).toBe(false);
+  });
+
+  it.each([
+    ['waiting_for_declaration', 'waiting for them to accept the declaration'],
+    ['lapsed', 'lapsed, nobody confirmed it’s still being assessed'],
+    ['stopped', 'stopped by a Screening Unit notice'],
+  ] as const)('flags one %s', (status, words) => {
+    expect(applicationStatus(application({ status }))).toEqual({
+      label: `Check applied for 01/10/2026: ${words}`,
+      problem: true,
+    });
+  });
+
+  it('doesn’t flag an ended one', () => {
+    expect(applicationStatus(application({ status: 'ended' }))).toEqual({
+      label: 'Check applied for 01/10/2026: ended',
+      problem: false,
+    });
+  });
+
+  it('names every way an application ends', () => {
+    expect(wwccApplicationEndLabels).toEqual({
+      card_recorded: 'their card was recorded',
+      withdrawn: 'withdrawn',
+      refused: 'refused',
+      replaced: 'replaced by a later application',
+      other: 'ended',
+    });
+  });
+
+  it('links admins to the WA rule on working while an application is assessed', () => {
+    expect(wwcSources).toContainEqual({
+      label: 'Applying, and working while an application is assessed',
+      url: 'https://www.wa.gov.au/organisation/department-of-communities/working-children-check-application-and-renewal-process',
+    });
+  });
+});
+
+describe('safetyIssues with a check application', () => {
+  it('leaves out a coach whose application is in force and not yet due', () => {
+    expect(safetyIssues(profile({ role: 'coach' }), false, null, application())).toEqual([]);
+  });
+
+  it('says what an application still needs', () => {
+    expect(
+      safetyIssues(profile({ role: 'coach' }), false, null, application({ status: 'lapsed' })),
+    ).toEqual(['Check applied for 01/10/2026: lapsed, nobody confirmed it’s still being assessed']);
+    expect(
+      safetyIssues(profile({ role: 'committee' }), false, null, application({ check_due_on: '2026-10-18' })),
+    ).toEqual(['Check applied for 01/10/2026: confirm it’s still being assessed by 30/12/2026']);
+  });
+
+  it('goes by the card once a current one is recorded', () => {
+    expect(
+      safetyIssues(profile({ role: 'coach', ...goodCard }), false, null, application({ status: 'lapsed' })),
+    ).toEqual([]);
+  });
+
+  it('goes by a volunteer exemption first', () => {
+    expect(
+      safetyIssues(profile({ role: 'coach' }), false, exemption(), application({ status: 'lapsed' })),
+    ).toEqual([]);
   });
 });

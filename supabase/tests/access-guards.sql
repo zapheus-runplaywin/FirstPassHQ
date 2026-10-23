@@ -218,7 +218,7 @@ create temp table public_buckets (id text, reason text);
 insert into public_buckets values
   ('club-branding', 'the club logo and colours show on the sign-in screen, before anyone signs in');
 select pg_temp.ok(b || ' bucket exists', exists (select 1 from storage.buckets where id = b), true)
-from unnest(array['injury-documents', 'training-certificates', 'session-plans', 'club-branding']) b order by b;
+from unnest(array['injury-documents', 'training-certificates', 'session-plans', 'club-branding', 'wwcc-receipts']) b order by b;
 select pg_temp.ok(id || ' bucket is private', public, false)
 from storage.buckets where id not in (select id from public_buckets) order by id;
 select pg_temp.ok('allow-listed public bucket ' || id || ' still exists', exists (select 1 from storage.buckets b where b.id = p.id), true)
@@ -227,9 +227,9 @@ insert into storage.objects (bucket_id, name, metadata)
 select id, '00000000-0000-0000-0000-000000000031/sample/file.pdf', '{"mimetype": "application/pdf"}' from storage.buckets;
 set role anon;
 select pg_temp.ok(b.id || ': anon reads no files', pg_temp.n(format('select 1 from storage.objects where bucket_id = %L', b.id)) = 0, true)
-from (values ('injury-documents'), ('training-certificates'), ('session-plans'), ('club-branding')) b(id) order by b.id;
+from (values ('injury-documents'), ('training-certificates'), ('session-plans'), ('club-branding'), ('wwcc-receipts')) b(id) order by b.id;
 select pg_temp.refused(b.id || ': anon cannot upload', format($$insert into storage.objects (bucket_id, name) values (%L, '00000000-0000-0000-0000-000000000031/x/upload.pdf')$$, b.id))
-from (values ('injury-documents'), ('training-certificates'), ('session-plans'), ('club-branding')) b(id) order by b.id;
+from (values ('injury-documents'), ('training-certificates'), ('session-plans'), ('club-branding'), ('wwcc-receipts')) b(id) order by b.id;
 select pg_temp.ok('anon deletes no files', pg_temp.changed('delete from storage.objects') = 0, true);
 reset role;
-select pg_temp.ok('every sample file is still there', (select count(*) = 4 from storage.objects), true);
+select pg_temp.ok('every sample file is still there', (select count(*) = 5 from storage.objects), true);

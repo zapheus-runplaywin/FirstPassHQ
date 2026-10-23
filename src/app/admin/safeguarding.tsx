@@ -15,7 +15,12 @@ import { hasRole } from '@/lib/roles';
 import { wwccStatus } from '@/lib/safety';
 import { supabase } from '@/lib/supabase';
 import type { ClubPolicies } from '@/lib/consents';
-import type { Profile, SafeguardingContacts, VolunteerExemption } from '@/lib/types';
+import type {
+  Profile,
+  SafeguardingContacts,
+  VolunteerExemption,
+  WwccApplication,
+} from '@/lib/types';
 
 /**
  * The club's Child Safety Officer and Complaints Manager, who see and act on
@@ -56,6 +61,7 @@ export default function SafeguardingScreen() {
       conductResult,
       committeeFromResult,
       injuryRulesResult,
+      applicationsResult,
     ] = await Promise.all([
       supabase.rpc('safeguarding_contacts').maybeSingle(),
       supabase.from('profiles').select(PROFILE_COLUMNS).eq('status', 'approved').order('full_name'),
@@ -66,6 +72,7 @@ export default function SafeguardingScreen() {
       supabase.rpc('conduct_each_season_setting'),
       supabase.rpc('committee_checks_from'),
       supabase.rpc('injury_rules').maybeSingle(),
+      supabase.rpc('admin_wwcc_applications'),
     ]);
     const officerId = (wwcOfficerResult.data as { officer_id: string } | null)?.officer_id ?? null;
     setWwcOfficer(officerId);
@@ -97,6 +104,10 @@ export default function SafeguardingScreen() {
         .filter((e) => !e.ended_at && e.valid)
         .map((e) => e.profile_id),
     );
+    // A lodged check application in force counts as a check.
+    for (const a of (applicationsResult.data as WwccApplication[] | null) ?? []) {
+      if (!a.ended_at && a.status === 'in_force') exempt.add(a.profile_id);
+    }
     // The same rule as the database: approved adults, not stood down, screened.
     setEligible(
       ((membersResult.data as Profile[] | null) ?? []).filter((m) => {

@@ -23,6 +23,7 @@ import type {
   AppRole,
   GroupCaptain,
   MyVolunteerExemption,
+  MyWwccApplication,
   Profile,
   TeamMembership,
   TeamRole,
@@ -79,6 +80,8 @@ export type Persona = {
   isClubCaptain?: boolean;
   isSafeguardingOfficer?: boolean;
   exemption?: MyVolunteerExemption | null;
+  /** Their lodged Working With Children Check application, if an admin recorded one. */
+  wwccApplication?: MyWwccApplication | null;
   /** Extra RPC results this member's backend returns. */
   rpcs?: Record<string, unknown>;
 };
@@ -454,6 +457,7 @@ export function signInAs(
     rpcs: {
       is_club_captain: persona.isClubCaptain ?? false,
       my_volunteer_exemption: persona.exemption ?? null,
+      my_wwcc_application: persona.wwccApplication ?? null,
       is_safeguarding_officer: persona.isSafeguardingOfficer ?? false,
       committee_checks_from: null,
       ...persona.rpcs,

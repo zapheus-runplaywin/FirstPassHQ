@@ -78,6 +78,7 @@ export default function HomeScreen() {
     profile,
     paused,
     exemption,
+    wwccApplication,
     memberships,
     isAdmin,
     isSafeguardingOfficer,
@@ -148,6 +149,10 @@ export default function HomeScreen() {
     training: features.integrity ? (myTraining ?? []) : [],
     certificatesToCheck: features.integrity ? certificatesToCheck : 0,
     declarationWaiting: !!exemption && !exemption.declared_at,
+    applicationDeclarationWaiting:
+      !!wwccApplication &&
+      !wwccApplication.declared_at &&
+      wwccApplication.status === 'waiting_for_declaration',
     newConcerns,
     absencesToReview: absencesToReview.length,
     consentsNeeded: athletes.filter((a) => a.canConsent && (!a.data || !a.health)),
@@ -770,6 +775,13 @@ function pausedReason(
 ): string {
   if (paused.stoodDown) {
     return `Your ${what} paused by a club admin. Talk to a club admin about it.`;
+  }
+  const application = paused.application;
+  if (application?.status === 'waiting_for_declaration') {
+    return `Your ${what} paused until you accept the declaration for your Working With Children Check application. Open it from your to-do list.`;
+  }
+  if (application?.status === 'lapsed') {
+    return `Your Working With Children Check application has lapsed because nobody confirmed it’s still being assessed, so your ${what} paused. Ask a club admin to check it, or send them your card number and expiry date if it has arrived.`;
   }
   const exemption = paused.exemption;
   if (exemption && !exemption.declared_at) {

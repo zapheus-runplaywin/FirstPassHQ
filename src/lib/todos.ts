@@ -82,6 +82,7 @@ export function buildTodos({
   training = [],
   certificatesToCheck = 0,
   declarationWaiting = false,
+  applicationDeclarationWaiting = false,
   newConcerns = 0,
   absencesToReview = 0,
   consentsNeeded = [],
@@ -118,6 +119,8 @@ export function buildTodos({
   certificatesToCheck?: number;
   /** An admin recorded a volunteer exemption the member hasn't accepted yet. */
   declarationWaiting?: boolean;
+  /** An admin recorded the member's check application, and they haven't accepted its declaration. */
+  applicationDeclarationWaiting?: boolean;
   /** Concerns nobody has acted on yet, for the people who handle them. */
   newConcerns?: number;
   /** Absences reported or withdrawn for the member's squads and teams since they last looked. */
@@ -153,6 +156,14 @@ export function buildTodos({
       title: 'Accept the exemption declaration',
       detail: 'Your club role starts once you do',
       href: '/declaration',
+    });
+  }
+  if (applicationDeclarationWaiting) {
+    todos.push({
+      key: 'wwcc-application-declaration',
+      title: 'Confirm your Working With Children Check application',
+      detail: 'It counts as your check once you accept the declaration',
+      href: '/wwcc-application',
     });
   }
 
@@ -441,6 +452,24 @@ export function buildTodos({
                       ? 'Validate'
                       : 'Register',
               },
+      });
+    }
+    const applicationsDue = safety.wwcc_applications_due ?? 0;
+    const applicationsLapsed = safety.wwcc_applications_lapsed ?? 0;
+    if (applicationsDue + applicationsLapsed > 0) {
+      const count = applicationsDue + applicationsLapsed;
+      todos.push({
+        key: 'wwcc-applications',
+        title: `Confirm ${plural(count, 'check application is', 'check applications are')} still being assessed`,
+        detail:
+          applicationsLapsed > 0
+            ? `${applicationsLapsed} lapsed. Check online, then confirm on the member’s page.`
+            : 'Check online, then confirm on the member’s page',
+        href: '/admin',
+        alert:
+          applicationsLapsed > 0
+            ? { level: 'red', label: 'Lapsed' }
+            : { level: 'amber', label: 'Confirm' },
       });
     }
     if (safety.notices_to_report > 0) {

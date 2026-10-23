@@ -109,6 +109,7 @@ function auth(
     profile: p,
     paused: null,
     exemption: null,
+    wwccApplication: null,
     memberships: extra.memberships ?? [],
     captaincies: extra.captaincies ?? [],
     isClubCaptain: extra.isClubCaptain ?? false,

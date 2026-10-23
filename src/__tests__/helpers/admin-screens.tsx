@@ -128,9 +128,12 @@ export function adminWrites() {
   return rpcCalls().filter(
     ([name]) =>
       name.startsWith('admin_') &&
-      !['admin_volunteer_exemptions', 'admin_date_of_birth_record', 'admin_inactive_members'].includes(
-        name,
-      ),
+      ![
+        'admin_volunteer_exemptions',
+        'admin_wwcc_applications',
+        'admin_date_of_birth_record',
+        'admin_inactive_members',
+      ].includes(name),
   );
 }
 
