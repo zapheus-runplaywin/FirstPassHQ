@@ -204,11 +204,35 @@ begin
     return next;
   end if;
 
+  -- Athletes flagged on 3 of the last 7 days, for the Child Safety Officer.
+  -- Once a day while there are any, and again when another athlete is added.
+  if coalesce((v_features ->> 'checkIns')::boolean, true) then
+    v_n := coalesce(public.wellbeing_flag_alerts(), 0);
+    if v_n > 0 then
+      todo_key := 'wellbeing-flags:' || v_today || ':' || v_n;
+      title := 'Look at ' || v_n || case when v_n = 1 then ' athlete' else ' athletes' end
+        || ' flagged 3 times this week';
+      detail := 'Low check-in scores on 3 of the last 7 days';
+      href := '/concerns/wellbeing';
+      return next;
+    end if;
+  end if;
+
   -- A volunteer exemption the member hasn't accepted. Their role waits on it.
   for r in select * from public.my_volunteer_exemption() where declared_at is null loop
     todo_key := 'volunteer-declaration:' || coalesce(r.starts_on::text, '');
     title := 'Accept the exemption declaration';
     detail := 'Your club role starts once you do'; href := '/declaration';
+    return next;
+  end loop;
+
+  -- A check application an admin recorded, waiting for the member's declaration.
+  for r in select * from public.my_wwcc_application()
+    where status = 'waiting_for_declaration' and declared_at is null loop
+    todo_key := 'wwcc-application-declaration:' || r.id;
+    title := 'Confirm your Working With Children Check application';
+    detail := 'It counts as your check once you accept the declaration';
+    href := '/wwcc-application';
     return next;
   end loop;
 
@@ -277,6 +301,20 @@ begin
       href := '/attendance';
       return next;
     end if;
+  end if;
+
+  -- Injuries a coach, manager or physio logged for the member or their child.
+  -- The body area stays in the app: notifications can show on a locked phone.
+  if coalesce((v_features ->> 'injuries')::boolean, true)
+    and (public.has_role('athlete') or public.has_role('guardian')) then
+    for r in select * from public.my_logged_injuries() loop
+      todo_key := 'injury-logged:' || r.injury_id;
+      title := 'Look at the injury ' || coalesce(r.logged_by_name, 'a club member') || ' logged for '
+        || case when r.athlete_id = p_profile_id then 'you' else coalesce(r.athlete_name, 'your athlete') end;
+      detail := 'Logged by their ' || r.logged_by_role || '. Add the physio’s updates from there.';
+      href := '/injuries/' || r.injury_id;
+      return next;
+    end loop;
   end if;
 
   -- Injury sign-offs and injuries past their expected return.
@@ -427,6 +465,28 @@ begin
     end loop;
   end if;
 
+  -- Medical and emergency details to add, or to check once a year, for
+  -- athletes and verified parents. The function comes with PR #173, so this
+  -- only runs once that is in the database too, whichever merges first.
+  if to_regprocedure('public.my_medical_reviews()') is not null
+    and (public.has_role('athlete') or (public.has_role('guardian') and exists (
+      select 1 from public.profiles p where p.id = p_profile_id and p.verified_at is not null))) then
+    for r in execute 'select athlete_id, athlete_name, status, due_on from public.my_medical_reviews()' loop
+      todo_key := 'medical:' || r.athlete_id || ':' || r.status;
+      if r.status = 'missing' or r.due_on is null then
+        title := 'Add ' || case when r.athlete_id = p_profile_id then 'your'
+          else coalesce(r.athlete_name, 'your athlete') || '’s' end || ' medical and emergency details';
+        detail := 'Emergency contacts, allergies, conditions and medications, for training and games';
+      else
+        title := 'Check ' || case when r.athlete_id = p_profile_id then 'your'
+          else coalesce(r.athlete_name, 'your athlete') || '’s' end || ' medical details are still right';
+        detail := 'Once a year. Due ' || to_char(r.due_on, 'FMDy FMDD Mon YYYY');
+      end if;
+      href := '/medical/' || r.athlete_id;
+      return next;
+    end loop;
+  end if;
+
   -- Surveys and polls still to answer. A parent's copy of their child's isn't one.
   for r in select * from public.my_surveys()
     where is_open and not responded and for_child_names is null loop
@@ -467,6 +527,20 @@ begin
           case when r.wwcc_expiring > 0 then r.wwcc_expiring || ' expiring' end,
           case when r.wwcc_to_validate > 0 then r.wwcc_to_validate || ' to validate' end,
           case when r.wwcc_to_link > 0 then r.wwcc_to_link || ' to register' end);
+        href := '/admin';
+        return next;
+      end if;
+      -- Lodged check applications to confirm as still being assessed, and
+      -- ones that lapsed because nobody did.
+      select count(*)::int into v_n
+      from public.admin_wwcc_applications() a
+      where a.ended_at is null
+        and ((a.status = 'in_force' and a.check_due_on <= v_today) or a.status = 'lapsed');
+      if v_n > 0 then
+        todo_key := 'wwcc-applications:' || v_month;
+        title := 'Confirm ' || v_n || case when v_n = 1 then ' check application is'
+          else ' check applications are' end || ' still being assessed';
+        detail := 'Check online, then confirm on the member’s page';
         href := '/admin';
         return next;
       end if;

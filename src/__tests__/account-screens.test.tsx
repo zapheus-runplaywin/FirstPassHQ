@@ -1,7 +1,8 @@
 /**
  * The member's own screens: Your details (src/app/my-details.tsx), Delete
  * account (delete-account.tsx), the volunteer exemption declaration
- * (declaration.tsx) and their personal tasks (tasks/index.tsx, new.tsx,
+ * (declaration.tsx), the declaration for a lodged Working With Children
+ * Check application (wwcc-application.tsx) and their personal tasks (tasks/index.tsx, new.tsx,
  * [id].tsx with components/task-form.tsx). From "Your preferred name", "Your
  * own tasks" and "Deleting your account" in section 3, and "Volunteer
  * exemptions" in section 6 of docs/user-guide.md.
@@ -20,11 +21,12 @@ import MyDetailsScreen from '@/app/my-details';
 import EditTaskScreen from '@/app/tasks/[id]';
 import TasksScreen from '@/app/tasks/index';
 import NewTaskScreen from '@/app/tasks/new';
+import WwccApplicationScreen from '@/app/wwcc-application';
 import { formatDate } from '@/lib/age';
 import type { PersonalTask } from '@/lib/personal-tasks';
 import { localDay } from '@/lib/reports';
 import { supabase } from '@/lib/supabase';
-import type { MyVolunteerExemption } from '@/lib/types';
+import type { MyVolunteerExemption, MyWwccApplication } from '@/lib/types';
 
 import { argsOf, clearCalls, field, recordTable, rpcNames, type } from './helpers/forms';
 import {
@@ -186,6 +188,16 @@ describe('deleting the account', () => {
     expect(signOut()).toHaveBeenCalled();
   });
 
+  it('asks a member the club must keep to contact an admin, without saying why', async () => {
+    await open({ rpcErrors: { delete_my_account: 'Your account can’t be deleted at the moment. Please contact a club admin.' } });
+    fireEvent.press(screen.getByText('Delete my account'));
+    fireEvent.press(screen.getByText('Delete my account permanently'));
+    await settle();
+    expect(screen.getByText('Your account can’t be deleted at the moment. Please contact a club admin.')).toBeTruthy();
+    expect(screen.queryByText(/concern names/i)).toBeNull();
+    expect(signOut()).not.toHaveBeenCalled();
+  });
+
   it('when deleting fails, says why and stays signed in', async () => {
     await open({ rpcErrors: { delete_my_account: 'Admins can’t delete their own account.' } });
     fireEvent.press(screen.getByText('Delete my account'));
@@ -295,6 +307,95 @@ describe('the exemption declaration', () => {
   it('one that has ended says they now need a check', async () => {
     await open(coach(exemption({ declared_at: '2026-01-10T03:00:00Z', valid: false })));
     expect(screen.getByText(/It no longer applies, so you need a Working With Children Check\.$/)).toBeTruthy();
+  });
+});
+
+// ---------------------------------------------------------------------------
+// The declaration for a lodged check application
+
+describe('the check application declaration', () => {
+  const application = (extra: Partial<MyWwccApplication> = {}): MyWwccApplication => ({
+    id: 'application-1',
+    application_number: 'APL 123',
+    lodged_on: '2026-10-10',
+    kind: 'new',
+    declaration_text: 'I applied for a Working With Children Check on 10 October 2026 (application APL 123)…',
+    declared_at: null,
+    lapses_on: '2027-01-08',
+    status: 'waiting_for_declaration',
+    valid: false,
+    ...extra,
+  });
+  /** A coach waiting for their card. */
+  const coach = (a: MyWwccApplication | null): Persona => ({
+    ...personas.coach,
+    profile: { ...personas.coach.profile!, wwcc_number: null, wwcc_expires_on: null },
+    wwccApplication: a,
+  });
+
+  async function open(who: Persona, options: BackendOptions = {}) {
+    await openScreen(who, { 'wwcc-application': WwccApplicationScreen }, '/wwcc-application', {}, options);
+  }
+
+  it('says so when no application is recorded, with nothing to agree to', async () => {
+    await open(coach(null));
+    expect(screen.getByText(/^You don’t have a Working With Children Check application recorded\./)).toBeTruthy();
+    expect(screen.queryByText('I agree')).toBeNull();
+  });
+
+  it('explains the rule, names the application and shows the words to accept', async () => {
+    await open(coach(application()));
+    expect(screen.getByText('Working With Children Check application')).toBeTruthy();
+    expect(screen.getByText(/A club admin has recorded your application APL 123, lodged 10\/10\/2026\./)).toBeTruthy();
+    expect(screen.getByText(/^I applied for a Working With Children Check on 10 October 2026/)).toBeTruthy();
+    expect(screen.getByText('I agree')).toBeTruthy();
+    expect(screen.getByText('If any of this isn’t true, don’t agree. Talk to a club admin instead.')).toBeTruthy();
+  });
+
+  it('accepting sends the declaration and reloads their roles', async () => {
+    await open(coach(application()));
+    clearCalls();
+    fireEvent.press(screen.getByText('I agree'));
+    await settle();
+    expect(argsOf('accept_wwcc_application_declaration')).toEqual([undefined]);
+    expect(rpcNames()).toContain('my_wwcc_application');
+  });
+
+  it('when accepting fails, says why and keeps I agree', async () => {
+    await open(coach(application()), {
+      rpcErrors: { accept_wwcc_application_declaration: 'You’ve already accepted this' },
+    });
+    fireEvent.press(screen.getByText('I agree'));
+    await settle();
+    expect(screen.getByText('You’ve already accepted this')).toBeTruthy();
+    expect(screen.getByText('I agree')).toBeTruthy();
+    expect(back).not.toHaveBeenCalled();
+  });
+
+  it.each<[string, Partial<MyWwccApplication>, string]>([
+    [
+      'in force',
+      { status: 'in_force', valid: true },
+      ' It counts as your check until your card arrives. Send a club admin the card number and expiry date as soon as it does.',
+    ],
+    [
+      'lapsed',
+      { status: 'lapsed' },
+      ' It has lapsed because nobody at the club confirmed it’s still being assessed. Ask a club admin to check it.',
+    ],
+    ['stopped', { status: 'stopped' }, ' It no longer counts. Talk to a club admin.'],
+  ])('once accepted and %s, says when and where it’s up to', async (_what, extra, words) => {
+    await open(coach(application({ declared_at: '2026-10-11T03:00:00Z', ...extra })));
+    expect(screen.queryByText('I agree')).toBeNull();
+    expect(screen.getByText(`You accepted this on ${localDay('2026-10-11T03:00:00Z')}.${words}`)).toBeTruthy();
+  });
+
+  it('one stopped by a notice before it was accepted can’t be accepted', async () => {
+    await open(coach(application({ status: 'stopped' })));
+    expect(screen.queryByText('I agree')).toBeNull();
+    expect(
+      screen.getByText('A notice from the Screening Unit means this application doesn’t count. Talk to a club admin.'),
+    ).toBeTruthy();
   });
 });
 

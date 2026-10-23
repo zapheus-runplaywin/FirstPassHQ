@@ -108,6 +108,7 @@ test('an athlete reports their own injury, and it opens with their next steps', 
     p_injured_on: '2026-10-17',
     p_restrictions: 'No jumping',
     p_expected_return: '2026-11-01',
+    p_concussion: false,
   });
 
   // It opens on the new injury, where the athlete adds updates and asks for clearance.
@@ -122,7 +123,7 @@ test('an athlete reports their own injury, and it opens with their next steps', 
   expect(backend.rpcCalls('visible_injuries')).toContainEqual({ p_include_cleared: true, p_injury_id: injuryId });
 });
 
-test('a coach has no Report an injury, and their athlete’s injury opens read-only', async ({ page }) => {
+test('a coach has Log an injury but no Report an injury, and their athlete’s injury opens read-only', async ({ page }) => {
   const { coach } = samplePeople();
   const injuries = [ankle()];
 
@@ -145,6 +146,7 @@ test('a coach has no Report an injury, and their athlete’s injury opens read-o
   await page.getByRole('button', { name: 'Injuries 1 current injury' }).click();
   await expect(page.getByText('Injured athletes', { exact: true })).toBeVisible();
   await expect(page.getByRole('button', { name: 'Report an injury' })).toHaveCount(0);
+  await expect(page.getByRole('button', { name: 'Log an injury' })).toBeVisible();
   await page.getByRole('button', { name: /^Alex Nguyen · Left ankle/ }).click();
 
   await expect(page).toHaveURL(new RegExp(`/injuries/${injuryId}$`));
@@ -161,6 +163,54 @@ test('a coach has no Report an injury, and their athlete’s injury opens read-o
     .toEqual([{ p_subject_id: uuid(10), p_kind: 'injury', p_record_id: injuryId }]);
   const writes = backend.requests.filter((r) => r.method !== 'GET' && r.method !== 'HEAD' && !r.rpc);
   expect(writes).toEqual([]);
+});
+
+test('a coach logs an injury at training for one of their athletes', async ({ page }) => {
+  const { coach } = samplePeople();
+
+  const backend = await openApp(page, {
+    me: coach,
+    teams: [openSquad],
+    memberships: [{ team_role: 'coach', coach_title: 'head_coach', selection: null, team: openSquad }],
+    handle: (req) => {
+      if (req.rpc === 'visible_injuries') return [];
+      if (req.rpc === 'injury_loggable_athletes') {
+        return [
+          { athlete_id: uuid(10), athlete_name: 'Alex Nguyen', logged_as: 'coach' },
+          { athlete_id: uuid(11), athlete_name: 'Riley Evans', logged_as: 'coach' },
+        ];
+      }
+      if (req.rpc === 'log_injury') return injuryId;
+      return undefined;
+    },
+  });
+
+  await expect(page.getByText(`Hi ${coach.full_name}`)).toBeVisible();
+  await page.getByRole('button', { name: 'Injuries No current injuries' }).click();
+  await page.getByRole('button', { name: 'Log an injury' }).click();
+  await expect(page).toHaveURL(/\/injuries\/log$/);
+
+  await page.getByRole('button', { name: 'Alex Nguyen', exact: true }).click();
+  await page.getByPlaceholder('For example, left ankle').fill('Head');
+  await page
+    .getByPlaceholder('What happened, where and when, and what first aid was given')
+    .fill('Clash of heads in a contest at training. Sat out, ice pack.');
+  await page.getByRole('switch', { name: 'Possible concussion' }).click();
+  await expect(page.getByText(/^If in doubt, sit them out\./)).toBeVisible();
+  await page.getByRole('button', { name: 'Log injury', exact: true }).click();
+
+  await expect.poll(() => backend.rpcCalls('log_injury').length).toBe(1);
+  expect(backend.rpcCalls('log_injury')[0]).toEqual({
+    p_athlete_id: uuid(10),
+    p_body_area: 'Head',
+    p_description: 'Clash of heads in a contest at training. Sat out, ice pack.',
+    p_injured_on: '2026-10-18',
+    p_restrictions: '',
+    p_expected_return: null,
+    p_concussion: true,
+  });
+  await expect(page.getByText('Injury logged')).toBeVisible();
+  await expect(page.getByText(/^Alex Nguyen and their parents or guardians have been told\./)).toBeVisible();
 });
 
 test('a coach who opens /injuries/new is sent Home', async ({ page }) => {

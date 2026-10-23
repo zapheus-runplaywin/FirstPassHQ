@@ -15,7 +15,7 @@ import { useTheme } from '@/hooks/use-theme';
 import { useAbsencesToReview, useLeadsAGroup } from '@/lib/absences';
 import { useAffiliationTodos } from '@/lib/affiliation';
 import { useConductTodos } from '@/lib/conduct';
-import { committeeCheckDue, isDatedExemption } from '@/lib/safety';
+import { committeeCheckDue, isDatedExemption, statisticianCheckDue } from '@/lib/safety';
 import { formatDate, isMinor } from '@/lib/age';
 import { useAuth } from '@/lib/auth';
 import { useCanTakeAttendance, useCanViewAttendance } from '@/lib/attendance';
@@ -37,7 +37,9 @@ import { reflectionsToAnswer, useCoachTeamGames, useGoalBoard, useMyGoals } from
 import {
   formatDateString,
   injuriesSummary,
+  useCanLogInjuries,
   useCanSeeInjuries,
+  useLoggedInjuries,
   useOpenInjuries,
 } from '@/lib/injuries';
 import { useKpiPeople, useKpiReviewTodos, type KpiPerson } from '@/lib/kpis';
@@ -64,6 +66,7 @@ import {
 } from '@/lib/training';
 import type { AppRole, Profile, TeamMembership } from '@/lib/types';
 import { useEvents } from '@/lib/use-events';
+import { useWellbeingFlagAlerts } from '@/lib/wellbeing-flags';
 import { hasRole, rolesOf } from '@/lib/roles';
 
 /** Three rows of two tiles. */
@@ -76,6 +79,7 @@ export default function HomeScreen() {
     profile,
     paused,
     exemption,
+    wwccApplication,
     memberships,
     isAdmin,
     isSafeguardingOfficer,
@@ -88,6 +92,8 @@ export default function HomeScreen() {
   const { switchClub } = useClubChoice();
   const club = useClub();
   const { features } = club;
+  // The Child Safety Officer sees athletes flagged again and again.
+  const wellbeingFlags = useWellbeingFlagAlerts(handlesConcerns && features.checkIns);
   const [refreshing, setRefreshing] = useState(false);
   const [athletes, setAthletes] = useState<
     { id: string; name: string; data: boolean; health: boolean; canConsent: boolean }[]
@@ -107,6 +113,8 @@ export default function HomeScreen() {
   const surveysWaiting = surveysToAnswer(mySurveys).length;
   const { absencesToReview, reloadAbsencesToReview } = useAbsencesToReview(useLeadsAGroup());
   const canSeeInjuries = useCanSeeInjuries();
+  const canLogInjuries = useCanLogInjuries();
+  const { loggedInjuries, reloadLoggedInjuries } = useLoggedInjuries();
   const canTakeAttendance = useCanTakeAttendance();
   const canViewAttendance = useCanViewAttendance();
   const { openInjuries, reloadInjuries } = useOpenInjuries();
@@ -131,6 +139,7 @@ export default function HomeScreen() {
   const todos = buildTodos({
     userId: session?.user.id,
     injuries: features.injuries ? openInjuries : [],
+    loggedInjuries: features.injuries ? loggedInjuries : [],
     pendingCount,
     needsCheckIn: features.checkIns && myCheckIn === null,
     flaggedAthletes: features.checkIns ? checkInTotals(checkInSummary).flagged : 0,
@@ -143,7 +152,12 @@ export default function HomeScreen() {
     training: features.integrity ? (myTraining ?? []) : [],
     certificatesToCheck: features.integrity ? certificatesToCheck : 0,
     declarationWaiting: !!exemption && !exemption.declared_at,
+    applicationDeclarationWaiting:
+      !!wwccApplication &&
+      !wwccApplication.declared_at &&
+      wwccApplication.status === 'waiting_for_declaration',
     newConcerns,
+    wellbeingFlagAlerts: wellbeingFlags.repeated,
     absencesToReview: absencesToReview.length,
     consentsNeeded: athletes.filter((a) => a.canConsent && (!a.data || !a.health)),
     conduct: conductTodos.map((t) => ({
@@ -208,6 +222,7 @@ export default function HomeScreen() {
       reloadEvents(),
       reloadUnread(),
       reloadInjuries(),
+      reloadLoggedInjuries(),
       reloadMyCheckIn(),
       reloadCheckInSummary(),
       reloadCheckInOverview(),
@@ -272,6 +287,10 @@ export default function HomeScreen() {
         {approved ? <PausedRoles /> : null}
 
         {approved ? <CommitteeCheckDue /> : null}
+
+        {approved ? <StatisticianCheckDue /> : null}
+
+        {approved ? <AdminChildInjuriesClosed /> : null}
 
         {approved ? (
           <TodoList todos={todos} personalTasks={personalTasks} onToggleTask={setTaskDone} />
@@ -339,7 +358,7 @@ export default function HomeScreen() {
           </PressableCard>
         ) : null}
 
-        {features.injuries && canSeeInjuries ? (
+        {features.injuries && (canSeeInjuries || canLogInjuries) ? (
           <PressableCard onPress={() => router.push('/injuries')}>
             <View style={styles.cardTitleRow}>
               <ThemedText type="smallBold">Injuries</ThemedText>
@@ -352,7 +371,9 @@ export default function HomeScreen() {
               ) : null}
             </View>
             <ThemedText type="small" themeColor="textSecondary">
-              {injuriesSummary(openInjuries)}
+              {canSeeInjuries
+                ? injuriesSummary(openInjuries)
+                : 'Log an injury at training or a game'}
             </ThemedText>
           </PressableCard>
         ) : null}
@@ -763,6 +784,13 @@ function pausedReason(
   if (paused.stoodDown) {
     return `Your ${what} paused by a club admin. Talk to a club admin about it.`;
   }
+  const application = paused.application;
+  if (application?.status === 'waiting_for_declaration') {
+    return `Your ${what} paused until you accept the declaration for your Working With Children Check application. Open it from your to-do list.`;
+  }
+  if (application?.status === 'lapsed') {
+    return `Your Working With Children Check application has lapsed because nobody confirmed it’s still being assessed, so your ${what} paused. Ask a club admin to check it, or send them your card number and expiry date if it has arrived.`;
+  }
   const exemption = paused.exemption;
   if (exemption && !exemption.declared_at) {
     return `Your ${what} paused until you accept the exemption declaration. Open it from your to-do list.`;
@@ -814,6 +842,58 @@ function CommitteeCheckDue() {
         Your committee role pauses on that day unless a check is recorded. Apply for one, then send
         a club admin the card number and expiry date. If you never work with children, ask an admin
         to exempt you with the reason.
+      </ThemedText>
+    </Card>
+  );
+}
+
+/**
+ * A statistician who kept their role without a check: from the club's
+ * statistician checks date it pauses unless they have one or are exempt.
+ */
+function StatisticianCheckDue() {
+  const { profile, statisticianChecksFrom } = useAuth();
+  if (!profile || !statisticianCheckDue(profile, statisticianChecksFrom)) return null;
+  return (
+    <Card>
+      <ThemedText type="smallBold">
+        Your statistician role needs a Working With Children Check from{' '}
+        {formatDate(statisticianChecksFrom)}
+      </ThemedText>
+      <ThemedText type="small" themeColor="textSecondary">
+        Your statistician role pauses on that day, in HQ and in Vantage, unless a check is
+        recorded. Apply for one, then send a club admin the card number and expiry date. If you
+        only record opens games and never work with children, ask an admin to exempt you with the
+        reason.
+      </ThemedText>
+    </Card>
+  );
+}
+
+/**
+ * An admin whose check expired or is missing for over 30 days: they keep
+ * every admin power, but don't see under 18s' injuries until it's sorted.
+ */
+function AdminChildInjuriesClosed() {
+  const { isAdmin } = useAuth();
+  const [closed, setClosed] = useState(false);
+  useFocusEffect(
+    useCallback(() => {
+      if (!isAdmin) {
+        setClosed(false);
+        return;
+      }
+      supabase.rpc('my_admin_sees_children_injuries').then(({ data }) => setClosed(data === false));
+    }, [isAdmin]),
+  );
+  if (!closed) return null;
+  return (
+    <Card>
+      <ThemedText type="smallBold">You can’t see under 18s’ injuries right now</ThemedText>
+      <ThemedText type="small" themeColor="textSecondary">
+        Your Working With Children Check expired or isn’t recorded, and it’s been over 30 days. You
+        keep everything else an admin can do. Ask another admin to record your current check, or
+        an application you’ve lodged, and you’ll see children’s injuries again.
       </ThemedText>
     </Card>
   );

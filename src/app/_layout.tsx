@@ -145,6 +145,9 @@ function RootStack() {
             <Stack.Protected guard={can.reportInjury}>
               <Stack.Screen name="injuries/new" options={{ title: 'Report an injury' }} />
             </Stack.Protected>
+            <Stack.Protected guard={can.logInjury}>
+              <Stack.Screen name="injuries/log" options={{ title: 'Log an injury' }} />
+            </Stack.Protected>
           </Stack.Protected>
           <Stack.Protected guard={features.attendance}>
             <Stack.Protected guard={can.attendance}>
@@ -217,6 +220,7 @@ function RootStack() {
             </Stack.Protected>
           </Stack.Protected>
           <Stack.Screen name="declaration" options={{ title: 'Exemption declaration' }} />
+          <Stack.Screen name="wwcc-application" options={{ title: 'Check application' }} />
           <Stack.Screen name="concern/new" options={{ title: 'Raise a concern' }} />
           <Stack.Screen name="conduct/[id]" options={{ title: 'Code of conduct' }} />
           <Stack.Protected guard={can.family}>
@@ -228,6 +232,7 @@ function RootStack() {
             <Stack.Screen name="concerns/index" options={{ title: 'Concerns' }} />
             <Stack.Screen name="concerns/[id]" options={{ title: 'Concern' }} />
             <Stack.Screen name="concerns/report" options={{ title: 'Concerns register' }} />
+            <Stack.Screen name="concerns/wellbeing" options={{ title: 'Wellbeing flags' }} />
           </Stack.Protected>
           <Stack.Screen name="tasks/index" options={{ title: 'Your tasks' }} />
           <Stack.Screen name="tasks/new" options={{ title: 'Add a task' }} />
@@ -238,6 +243,7 @@ function RootStack() {
             <Stack.Screen name="administration" options={{ title: 'Administration' }} />
             <Stack.Screen name="admin/index" options={{ title: 'Members' }} />
             <Stack.Screen name="admin/[id]" options={{ title: 'Member' }} />
+            <Stack.Screen name="admin/wwcc-receipt" options={{ title: 'Application receipt' }} />
             <Stack.Screen name="admin/club" options={{ title: 'Club settings' }} />
             <Stack.Screen name="admin/safeguarding" options={{ title: 'Safeguarding' }} />
             <Stack.Screen name="admin/conduct" options={{ title: 'Code of conduct' }} />

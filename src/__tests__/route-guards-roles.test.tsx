@@ -71,7 +71,16 @@ const MANAGERS: PersonaName[] = ['manager', 'safeguardingOfficer'];
 const PHYSIOS: PersonaName[] = ['physio', 'headPhysio'];
 const COMMITTEE: PersonaName[] = ['committee'];
 // An expired check never pauses the admin role; a lapsed admin's coaching pauses.
-const ADMINS: PersonaName[] = ['admin', 'adminExpiredCheck', 'adminGuardian', 'adminLapsedCoach'];
+const ADMINS: PersonaName[] = [
+  'admin',
+  'adminExpiredCheck',
+  'adminGuardian',
+  'adminLapsedCoach',
+  // Over 30 days without a check: no under 18s' injuries, every admin screen still.
+  'adminLapsedCheck',
+];
+/** Statisticians, including one with no check before the club's statistician checks date. */
+const STATISTICIANS: PersonaName[] = ['statistician', 'statisticianBeforeChecksDate'];
 const CAPTAINS: PersonaName[] = ['captain', 'clubCaptain'];
 
 /** Approved, holding a role they can use other than guest or temporary helper. */
@@ -83,7 +92,7 @@ const CLUB_MEMBERS: PersonaName[] = [
   ...PHYSIOS,
   ...COMMITTEE,
   ...ADMINS,
-  'statistician',
+  ...STATISTICIANS,
 ];
 
 /**
@@ -102,6 +111,7 @@ const NO_ROLE_SCREENS: PersonaName[] = [
   'stoodDownCoach',
   'committeeExpiredCheck',
   'committeePastChecksDate',
+  'statisticianPastChecksDate',
   'physioExpiredCheck',
 ];
 
@@ -114,14 +124,17 @@ const union = (...groups: PersonaName[][]) => [...new Set(groups.flat())];
 
 const MESSAGE_SENDERS = union(ADMINS, COMMITTEE, COACHES, MANAGERS, CAPTAINS);
 const SURVEY_SENDERS = union(ADMINS, COMMITTEE, COACHES, MANAGERS, ['captain']);
-const INJURIES = union(ATHLETES, GUARDIANS, COACHES, PHYSIOS, COMMITTEE, ADMINS);
+// Coaches, managers and physios log injuries; managers open the injury
+// screens only to do that, and see no records there.
+const INJURY_LOGGERS = union(COACHES, MANAGERS, PHYSIOS);
+const INJURIES = union(ATHLETES, GUARDIANS, COACHES, PHYSIOS, COMMITTEE, ADMINS, INJURY_LOGGERS);
 const FAMILY_OF_ATHLETES = union(ATHLETES, GUARDIANS);
 const ATTENDANCE_TAKERS = union(COACHES, MANAGERS, COMMITTEE, ADMINS);
 const ATTENDANCE_VIEWERS = union(COACHES, COMMITTEE, ADMINS);
 const PLAN_READERS = union(ADMINS, COACHES, ATHLETES, GUARDIANS);
 const PLAN_AUTHORS = union(ADMINS, COACHES);
 const CHECK_IN_VIEWERS = union(GROUP_COACHES, COMMITTEE, PHYSIOS, ADMINS);
-const AWARD_VOTERS = union(ATHLETES, COACHES, MANAGERS, COMMITTEE, ADMINS, ['statistician']);
+const AWARD_VOTERS = union(ATHLETES, COACHES, MANAGERS, COMMITTEE, ADMINS, STATISTICIANS);
 const KPI_READERS = union(ATHLETES, COACHES, MANAGERS, GUARDIANS, COMMITTEE, ADMINS);
 const KPI_SETTERS = union(COMMITTEE, ADMINS, COACHES);
 const CERTIFICATE_CHECKERS = union(COMMITTEE, ADMINS);
@@ -140,6 +153,7 @@ const WHO_OPENS: Record<string, PersonaName[]> = {
   'injuries/[id]': INJURIES,
   'injuries/document': INJURIES,
   'injuries/new': FAMILY_OF_ATHLETES,
+  'injuries/log': INJURY_LOGGERS,
 
   'attendance/index': ATTENDANCE_TAKERS,
   'attendance/[id]': ATTENDANCE_TAKERS,
@@ -179,6 +193,7 @@ const WHO_OPENS: Record<string, PersonaName[]> = {
   'concerns/index': union(ADMINS, ['safeguardingOfficer']),
   'concerns/[id]': union(ADMINS, ['safeguardingOfficer']),
   'concerns/report': union(ADMINS, ['safeguardingOfficer']),
+  'concerns/wellbeing': union(ADMINS, ['safeguardingOfficer']),
 
   'consent/[id]': union(GUARDIANS, ADMINS),
   'records/[id]': union(GUARDIANS, ADMINS),
@@ -195,6 +210,7 @@ const EVERYONE_SIGNED_IN = [
   'calendar',
   'event/[id]',
   'declaration',
+  'wwcc-application',
   'concern/new',
   'conduct/[id]',
   'tasks/index',
@@ -238,7 +254,7 @@ describe('the route table', () => {
         ...COMMITTEE,
         ...ADMINS,
         ...NO_ROLE_SCREENS,
-        'statistician',
+        ...STATISTICIANS,
       ]),
     );
   });

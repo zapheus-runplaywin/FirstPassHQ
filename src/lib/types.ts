@@ -226,6 +226,64 @@ export type VolunteerExemption = {
   organiser: string | null;
 };
 
+/**
+ * Where a lodged Working With Children Check application is up to:
+ * waiting for the member's declaration, in force (it counts as screening),
+ * lapsed (no admin confirmed it for 90 days), stopped (a barring Screening
+ * Unit notice since it was lodged) or ended.
+ */
+export type WwccApplicationStatus =
+  | 'waiting_for_declaration'
+  | 'in_force'
+  | 'lapsed'
+  | 'stopped'
+  | 'ended';
+
+export type WwccApplicationKind = 'new' | 'renewal';
+
+export type WwccApplicationEndReason = 'card_recorded' | 'withdrawn' | 'refused' | 'replaced' | 'other';
+
+/** The member's own open application, from `my_wwcc_application`. */
+export type MyWwccApplication = {
+  id: string;
+  application_number: string;
+  lodged_on: string;
+  kind: WwccApplicationKind;
+  /** The words they accepted, or will accept. */
+  declaration_text: string;
+  declared_at: string | null;
+  /** The day it lapses unless an admin confirms it's still being assessed. */
+  lapses_on: string;
+  status: WwccApplicationStatus;
+  /** It counts as screening today. */
+  valid: boolean;
+};
+
+/** Any member's application, open or ended in the last year, from `admin_wwcc_applications`. */
+export type WwccApplication = {
+  id: string;
+  profile_id: string;
+  member_name: string;
+  application_number: string;
+  lodged_on: string;
+  kind: WwccApplicationKind;
+  receipt_path: string;
+  receipt_name: string | null;
+  recorded_at: string;
+  recorded_by_name: string | null;
+  declared_at: string | null;
+  checked_at: string | null;
+  checked_by_name: string | null;
+  /** When an admin should next confirm it's still being assessed. */
+  check_due_on: string;
+  lapses_on: string;
+  status: WwccApplicationStatus;
+  ended_at: string | null;
+  ended_reason: WwccApplicationEndReason | null;
+  ended_by_name: string | null;
+  end_note: string | null;
+};
+
 export type TeamMembership = {
   team_role: TeamRole;
   coach_title: CoachTitle | null;
@@ -311,7 +369,20 @@ export type Injury = {
   can_report: boolean;
   /** The member needs to endorse or accept it. */
   waiting_for_me: boolean;
+  /** A suspected concussion, with its own clearance rules. */
+  concussion?: boolean;
+  /** For a concussion, the first day clearance can be asked for. */
+  earliest_clearance?: string | null;
+  /** Only a physio can endorse its clearance (a concussion, or the club's rule). */
+  needs_physio?: boolean;
+  /** The member can add physio updates: the athlete, a guardian or their physio. */
+  can_update?: boolean;
+  /** Who logged it for the athlete, when it wasn't the athlete or a guardian. */
+  logged_by_role?: InjuryLoggerRole | null;
 };
+
+/** The roles that can log an injury for an athlete. */
+export type InjuryLoggerRole = 'coach' | 'manager' | 'physio';
 
 export type InjuryUpdate = {
   id: string;
@@ -325,6 +396,12 @@ export type InjuryUpdate = {
   /** When the file was removed after the club's keep period; the record stays. */
   document_removed_at: string | null;
   created_at: string;
+  /** Written by a coach, manager or physio rather than the athlete or a guardian. */
+  author_role?: InjuryLoggerRole | null;
+  /** This update marked (true) or ruled out (false) a suspected concussion. */
+  concussion?: boolean | null;
+  /** The proof sent with a clearance request was confirmed as a doctor's. */
+  doctor_clearance?: boolean;
 };
 
 /**

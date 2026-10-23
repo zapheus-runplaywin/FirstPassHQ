@@ -8,6 +8,7 @@ import { ThemedText } from '@/components/themed-text';
 import { Button, ChipGroup } from '@/components/ui';
 import { Spacing } from '@/constants/theme';
 import { useAuth } from '@/lib/auth';
+import { useCanLogInjuries, useCanSeeInjuries } from '@/lib/injuries';
 import { supabase } from '@/lib/supabase';
 import type { Injury } from '@/lib/types';
 import { hasRole } from '@/lib/roles';
@@ -18,6 +19,8 @@ export default function InjuriesScreen() {
   const [injuries, setInjuries] = useState<Injury[] | null>(null);
   const [refreshing, setRefreshing] = useState(false);
   const canReport = hasRole(profile, 'athlete', 'guardian');
+  const canLog = useCanLogInjuries();
+  const canSee = useCanSeeInjuries();
 
   const load = useCallback(async () => {
     const { data } = await supabase.rpc('visible_injuries', { p_include_cleared: showCleared });
@@ -46,6 +49,19 @@ export default function InjuriesScreen() {
       {canReport ? (
         <Button title="Report an injury" onPress={() => router.push('/injuries/new')} />
       ) : null}
+      {canLog ? (
+        <Button
+          title="Log an injury"
+          variant={canReport ? 'secondary' : 'primary'}
+          onPress={() => router.push('/injuries/log')}
+        />
+      ) : null}
+      {canLog && !canSee ? (
+        <ThemedText type="small" themeColor="textSecondary">
+          Log an injury when it happens at training or a game. It goes to the athlete and their
+          parents or guardians, who keep the record from there. Managers don’t see injury records.
+        </ThemedText>
+      ) : null}
 
       <ChipGroup
         options={[
@@ -73,7 +89,8 @@ export default function InjuriesScreen() {
       <ThemedText type="small" themeColor="textSecondary">
         Injury records are private. Only the athlete, their guardians, their coaches, physios,
         the committee and admins can see them. An athlete under 18 shows to their coaches, physios
-        and the committee only once a parent or guardian gives consent.
+        and the committee members cleared to work with children only once a parent or guardian
+        gives consent.
       </ThemedText>
     </Screen>
   );

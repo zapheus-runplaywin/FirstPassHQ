@@ -181,7 +181,7 @@ describe('the injuries list', () => {
     await openList('coach', []);
     expect(screen.getByText('No current injuries.')).toBeTruthy();
     expect(
-      screen.getByText(/An athlete under 18 shows to their coaches, physios and the committee only once a parent or guardian gives consent\./),
+      screen.getByText(/An athlete under 18 shows to their coaches, physios and the committee members cleared to work with children only once a parent or guardian gives consent\./),
     ).toBeTruthy();
   });
 

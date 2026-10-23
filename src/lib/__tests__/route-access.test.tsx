@@ -109,11 +109,13 @@ function auth(
     profile: p,
     paused: null,
     exemption: null,
+    wwccApplication: null,
     memberships: extra.memberships ?? [],
     captaincies: extra.captaincies ?? [],
     isClubCaptain: extra.isClubCaptain ?? false,
     isAdmin: roles.includes('admin') && p?.status === 'approved',
     committeeChecksFrom: null,
+    statisticianChecksFrom: null,
     isSafeguardingOfficer: extra.isSafeguardingOfficer ?? false,
     refresh: jest.fn(),
     signOut: jest.fn(),
@@ -135,6 +137,7 @@ const KEYS: Key[] = [
   'surveyResults',
   'injuries',
   'reportInjury',
+  'logInjury',
   'attendance',
   'takeAttendance',
   'athleteAttendance',
@@ -194,32 +197,32 @@ const CASES: [string, Auth, Key[]][] = [
   [
     'a coach',
     auth(profile('coach'), { memberships: [member('coach')] }),
-    ['readMessages', 'sendMessages', 'answerSurveys', 'sendSurveys', 'surveyResults', 'injuries', 'attendance', 'takeAttendance', 'athleteAttendance', 'readSessionPlans', 'addSessionPlans', 'checkIns', 'athleteCheckIns', 'awards', 'gameGoals', 'athleteGoals', 'teamGoals', 'kpis', 'setKpis', 'training', 'chooseCaptains'],
+    ['readMessages', 'sendMessages', 'answerSurveys', 'sendSurveys', 'surveyResults', 'injuries', 'logInjury', 'attendance', 'takeAttendance', 'athleteAttendance', 'readSessionPlans', 'addSessionPlans', 'checkIns', 'athleteCheckIns', 'awards', 'gameGoals', 'athleteGoals', 'teamGoals', 'kpis', 'setKpis', 'training', 'chooseCaptains'],
   ],
   [
     'a coach of only a finished squad',
     auth(profile('coach'), { memberships: [member('coach', DONE_SQUAD)] }),
-    ['readMessages', 'sendMessages', 'answerSurveys', 'sendSurveys', 'surveyResults', 'injuries', 'attendance', 'takeAttendance', 'athleteAttendance', 'readSessionPlans', 'addSessionPlans', 'awards', 'kpis', 'setKpis', 'training', 'chooseCaptains'],
+    ['readMessages', 'sendMessages', 'answerSurveys', 'sendSurveys', 'surveyResults', 'injuries', 'logInjury', 'attendance', 'takeAttendance', 'athleteAttendance', 'readSessionPlans', 'addSessionPlans', 'awards', 'kpis', 'setKpis', 'training', 'chooseCaptains'],
   ],
   [
     'a manager',
     auth(profile('manager'), { memberships: [member('manager')] }),
-    ['readMessages', 'sendMessages', 'answerSurveys', 'sendSurveys', 'surveyResults', 'attendance', 'takeAttendance', 'awards', 'kpis', 'training'],
+    ['readMessages', 'sendMessages', 'answerSurveys', 'sendSurveys', 'surveyResults', 'injuries', 'logInjury', 'attendance', 'takeAttendance', 'awards', 'kpis', 'training'],
   ],
   [
     'a manager who is the Child Safety Officer',
     auth(profile('manager'), { memberships: [member('manager')], isSafeguardingOfficer: true }),
-    ['readMessages', 'sendMessages', 'answerSurveys', 'sendSurveys', 'surveyResults', 'attendance', 'takeAttendance', 'awards', 'kpis', 'training', 'concerns'],
+    ['readMessages', 'sendMessages', 'answerSurveys', 'sendSurveys', 'surveyResults', 'injuries', 'logInjury', 'attendance', 'takeAttendance', 'awards', 'kpis', 'training', 'concerns'],
   ],
   [
     'a physio',
     auth(profile('physio'), { memberships: [member('physio')] }),
-    ['readMessages', 'answerSurveys', 'injuries', 'checkIns', 'training'],
+    ['readMessages', 'answerSurveys', 'injuries', 'logInjury', 'checkIns', 'training'],
   ],
   [
     'a physio who is also a guardian',
     auth(profile('physio', { extra_roles: ['guardian'] })),
-    ['readMessages', 'answerSurveys', 'injuries', 'reportInjury', 'familyAttendance', 'readSessionPlans', 'checkIns', 'athleteCheckIns', 'awards', 'gameGoals', 'athleteGoals', 'kpis', 'training', 'family'],
+    ['readMessages', 'answerSurveys', 'injuries', 'reportInjury', 'logInjury', 'familyAttendance', 'readSessionPlans', 'checkIns', 'athleteCheckIns', 'awards', 'gameGoals', 'athleteGoals', 'kpis', 'training', 'family'],
   ],
   ['a statistician', auth(profile('statistician')), ['readMessages', 'answerSurveys', 'awards', 'training']],
   [
@@ -237,7 +240,7 @@ const CASES: [string, Auth, Key[]][] = [
     auth(profile('athlete', { extra_roles: ['coach'] }), {
       memberships: [member('athlete'), member('coach', OTHER_TEAM)],
     }),
-    ['readMessages', 'sendMessages', 'answerSurveys', 'sendSurveys', 'surveyResults', 'injuries', 'reportInjury', 'attendance', 'takeAttendance', 'athleteAttendance', 'familyAttendance', 'readSessionPlans', 'addSessionPlans', 'checkIn', 'checkIns', 'athleteCheckIns', 'awards', 'gameGoals', 'athleteGoals', 'teamGoals', 'kpis', 'setKpis', 'training', 'chooseCaptains'],
+    ['readMessages', 'sendMessages', 'answerSurveys', 'sendSurveys', 'surveyResults', 'injuries', 'reportInjury', 'logInjury', 'attendance', 'takeAttendance', 'athleteAttendance', 'familyAttendance', 'readSessionPlans', 'addSessionPlans', 'checkIn', 'checkIns', 'athleteCheckIns', 'awards', 'gameGoals', 'athleteGoals', 'teamGoals', 'kpis', 'setKpis', 'training', 'chooseCaptains'],
   ],
   // A role opens its screens before the member is placed in a squad or team.
   [
@@ -264,12 +267,12 @@ const CASES: [string, Auth, Key[]][] = [
   [
     'a statistician placed in a team as a coach',
     auth(profile('statistician'), { memberships: [member('coach')] }),
-    ['readMessages', 'sendMessages', 'answerSurveys', 'sendSurveys', 'surveyResults', 'injuries', 'attendance', 'takeAttendance', 'athleteAttendance', 'readSessionPlans', 'addSessionPlans', 'checkIns', 'athleteCheckIns', 'awards', 'gameGoals', 'athleteGoals', 'teamGoals', 'kpis', 'setKpis', 'training', 'chooseCaptains'],
+    ['readMessages', 'sendMessages', 'answerSurveys', 'sendSurveys', 'surveyResults', 'injuries', 'logInjury', 'attendance', 'takeAttendance', 'athleteAttendance', 'readSessionPlans', 'addSessionPlans', 'checkIns', 'athleteCheckIns', 'awards', 'gameGoals', 'athleteGoals', 'teamGoals', 'kpis', 'setKpis', 'training', 'chooseCaptains'],
   ],
   [
     'a statistician placed in a team as a manager',
     auth(profile('statistician'), { memberships: [member('manager')] }),
-    ['readMessages', 'sendMessages', 'answerSurveys', 'sendSurveys', 'surveyResults', 'attendance', 'takeAttendance', 'awards', 'kpis', 'training'],
+    ['readMessages', 'sendMessages', 'answerSurveys', 'sendSurveys', 'surveyResults', 'injuries', 'logInjury', 'attendance', 'takeAttendance', 'awards', 'kpis', 'training'],
   ],
 ];
 

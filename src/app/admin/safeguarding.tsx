@@ -6,7 +6,7 @@ import { DateField } from '@/components/date-field';
 import { PersonPicker } from '@/components/person-picker';
 import { Screen } from '@/components/screen';
 import { ThemedText } from '@/components/themed-text';
-import { Button, Card, ErrorText, TextField } from '@/components/ui';
+import { Button, Card, ChipGroup, ErrorText, TextField } from '@/components/ui';
 import { Spacing } from '@/constants/theme';
 import { useTheme } from '@/hooks/use-theme';
 import { isMinor } from '@/lib/age';
@@ -15,7 +15,12 @@ import { hasRole } from '@/lib/roles';
 import { wwccStatus } from '@/lib/safety';
 import { supabase } from '@/lib/supabase';
 import type { ClubPolicies } from '@/lib/consents';
-import type { Profile, SafeguardingContacts, VolunteerExemption } from '@/lib/types';
+import type {
+  Profile,
+  SafeguardingContacts,
+  VolunteerExemption,
+  WwccApplication,
+} from '@/lib/types';
 
 /**
  * The club's Child Safety Officer and Complaints Manager, who see and act on
@@ -33,9 +38,13 @@ export default function SafeguardingScreen() {
   const [bodyUrl, setBodyUrl] = useState('');
   const [policyUrl, setPolicyUrl] = useState('');
   const [minorPhotos, setMinorPhotos] = useState(false);
+  const [physioOnly, setPhysioOnly] = useState(false);
+  const [concussionDays, setConcussionDays] = useState<'21' | '12'>('21');
   const [conductEachSeason, setConductEachSeason] = useState(false);
   const [committeeFrom, setCommitteeFrom] = useState<string | null>(null);
   const [savedCommitteeFrom, setSavedCommitteeFrom] = useState<string | null>(null);
+  const [statisticianFrom, setStatisticianFrom] = useState<string | null>(null);
+  const [savedStatisticianFrom, setSavedStatisticianFrom] = useState<string | null>(null);
   const [privacyUrl, setPrivacyUrl] = useState('');
   const [conductUrl, setConductUrl] = useState('');
   const [policyVersion, setPolicyVersion] = useState('1');
@@ -53,6 +62,9 @@ export default function SafeguardingScreen() {
       wwcOfficerResult,
       conductResult,
       committeeFromResult,
+      injuryRulesResult,
+      applicationsResult,
+      statisticianFromResult,
     ] = await Promise.all([
       supabase.rpc('safeguarding_contacts').maybeSingle(),
       supabase.from('profiles').select(PROFILE_COLUMNS).eq('status', 'approved').order('full_name'),
@@ -62,6 +74,9 @@ export default function SafeguardingScreen() {
       supabase.rpc('admin_wwc_officer').maybeSingle(),
       supabase.rpc('conduct_each_season_setting'),
       supabase.rpc('committee_checks_from'),
+      supabase.rpc('injury_rules').maybeSingle(),
+      supabase.rpc('admin_wwcc_applications'),
+      supabase.rpc('statistician_checks_from'),
     ]);
     const officerId = (wwcOfficerResult.data as { officer_id: string } | null)?.officer_id ?? null;
     setWwcOfficer(officerId);
@@ -71,10 +86,20 @@ export default function SafeguardingScreen() {
     setConductUrl(policies?.code_of_conduct_url ?? '');
     setPolicyVersion(policies?.policy_version ?? '1');
     setMinorPhotos(photosResult.data === true);
+    const rules = injuryRulesResult.data as {
+      physio_only_endorsement: boolean;
+      concussion_min_days: number;
+    } | null;
+    setPhysioOnly(rules?.physio_only_endorsement === true);
+    setConcussionDays(rules?.concussion_min_days === 12 ? '12' : '21');
     setConductEachSeason(conductResult.data === true);
     const from = typeof committeeFromResult.data === 'string' ? committeeFromResult.data : null;
     setCommitteeFrom(from);
     setSavedCommitteeFrom(from);
+    const statsFrom =
+      typeof statisticianFromResult.data === 'string' ? statisticianFromResult.data : null;
+    setStatisticianFrom(statsFrom);
+    setSavedStatisticianFrom(statsFrom);
     const contacts = contactsResult.data as SafeguardingContacts | null;
     setOfficer(contacts?.child_safety_officer_id ?? null);
     setManager(contacts?.complaints_manager_id ?? null);
@@ -87,6 +112,10 @@ export default function SafeguardingScreen() {
         .filter((e) => !e.ended_at && e.valid)
         .map((e) => e.profile_id),
     );
+    // A lodged check application in force counts as a check.
+    for (const a of (applicationsResult.data as WwccApplication[] | null) ?? []) {
+      if (!a.ended_at && a.status === 'in_force') exempt.add(a.profile_id);
+    }
     // The same rule as the database: approved adults, not stood down, screened.
     setEligible(
       ((membersResult.data as Profile[] | null) ?? []).filter((m) => {
@@ -133,8 +162,22 @@ export default function SafeguardingScreen() {
       rpcError || photosError || policiesError
         ? { error: null }
         : await supabase.rpc('admin_set_conduct_each_season', { p_on: conductEachSeason });
+    const { error: injuryError } =
+      rpcError || photosError || policiesError || conductError
+        ? { error: null }
+        : await supabase.rpc('admin_set_injury_rules', {
+            p_physio_only_endorsement: physioOnly,
+            p_concussion_min_days: Number(concussionDays),
+          });
+    // The WWC Registration Officer and committee checks date go last, as they
+    // can change who manages these settings.
     const { error: officerError } =
-      rpcError || photosError || policiesError || conductError || wwcOfficer === savedWwcOfficer
+      rpcError ||
+      photosError ||
+      policiesError ||
+      conductError ||
+      injuryError ||
+      wwcOfficer === savedWwcOfficer
         ? { error: null }
         : await supabase.rpc('admin_set_wwc_officer', { p_profile_id: wwcOfficer });
     const { error: committeeError } =
@@ -142,13 +185,33 @@ export default function SafeguardingScreen() {
       photosError ||
       policiesError ||
       conductError ||
+      injuryError ||
       officerError ||
       !committeeFrom ||
       committeeFrom === savedCommitteeFrom
         ? { error: null }
         : await supabase.rpc('admin_set_committee_checks_from', { p_date: committeeFrom });
+    const { error: statisticianError } =
+      rpcError ||
+      photosError ||
+      policiesError ||
+      conductError ||
+      injuryError ||
+      officerError ||
+      committeeError ||
+      !statisticianFrom ||
+      statisticianFrom === savedStatisticianFrom
+        ? { error: null }
+        : await supabase.rpc('admin_set_statistician_checks_from', { p_date: statisticianFrom });
     const failed =
-      rpcError ?? photosError ?? policiesError ?? conductError ?? officerError ?? committeeError;
+      rpcError ??
+      photosError ??
+      policiesError ??
+      conductError ??
+      injuryError ??
+      officerError ??
+      committeeError ??
+      statisticianError;
     setBusy(false);
     if (failed) {
       setError(failed.message);
@@ -203,7 +266,28 @@ export default function SafeguardingScreen() {
             Committee members approved before checks were needed keep their role until this day
             without one. From then, a committee member with no check and no exemption has their
             committee role paused. You can bring the date forward but not push it back; exempt
-            anyone who never works with children, with the reason, on their member page.
+            anyone who never works with children, with the reason, on their member page. An admin
+            with no check stops seeing under 18s’ injuries 30 days after this day, until a check,
+            an application or a parent volunteer exemption is recorded.
+          </ThemedText>
+        </View>
+      ) : null}
+
+      {savedStatisticianFrom ? (
+        <View style={styles.group}>
+          <DateField
+            label="Statistician checks required from"
+            value={statisticianFrom}
+            onChange={setStatisticianFrom}
+            quickPicks={[{ label: 'Today', days: 0 }]}
+            max={savedStatisticianFrom}
+          />
+          <ThemedText type="small" themeColor="textSecondary">
+            Statisticians approved before they needed a check keep their role until this day
+            without one. From then, a statistician with no check, application or exemption has
+            their statistician role paused, in HQ and in Vantage. You can bring the date forward
+            but not push it back; exempt a statistician who never works with children, such as one
+            who only records opens games, with the reason, on their member page.
           </ThemedText>
         </View>
       ) : null}
@@ -326,6 +410,41 @@ export default function SafeguardingScreen() {
         <ThemedText type="small" themeColor="textSecondary">
           Off by default, so under 18s attach the physio’s or doctor’s letter as a PDF. Athletes
           under 18 can never add a photo themselves.
+        </ThemedText>
+      </View>
+
+      <View style={styles.group}>
+        <ThemedText type="smallBold">Injury clearances</ThemedText>
+        <Card style={styles.switchRow}>
+          <ThemedText type="small" style={styles.grow}>
+            Only physios endorse clearances
+          </ThemedText>
+          <Switch
+            accessibilityLabel="Only physios endorse clearances"
+            value={physioOnly}
+            onValueChange={setPhysioOnly}
+            trackColor={{ true: theme.accent, false: theme.backgroundSelected }}
+            thumbColor={theme.text}
+            {...(Platform.OS === 'web' ? { activeThumbColor: theme.onAccent } : {})}
+          />
+        </Card>
+        <ThemedText type="small" themeColor="textSecondary">
+          Off by default, so an athlete’s coach or a physio endorses a return to play. Turn it on
+          only if every squad and team has a physio, or the club has a Head Physio, or clearances
+          will wait. A suspected concussion always needs a physio.
+        </ThemedText>
+        <ChipGroup
+          label="Concussion: earliest return"
+          options={[
+            { value: '21', label: '21 days' },
+            { value: '12', label: '12 days (elite program)' },
+          ]}
+          selected={[concussionDays]}
+          onToggle={(value) => setConcussionDays(value)}
+        />
+        <ThemedText type="small" themeColor="textSecondary">
+          Netball Australia sets at least 21 days before a return after concussion for community
+          and pathway netball, and 12 at elite level, with a doctor’s clearance either way.
         </ThemedText>
       </View>
       <ErrorText>{error}</ErrorText>

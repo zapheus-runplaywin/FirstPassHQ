@@ -525,6 +525,21 @@ describe('Keeping records', () => {
     }
   });
 
+  it('offers attendance for 10 or 15 years and safeguarding for 45 years or for good', async () => {
+    await openRetention();
+    for (const choice of ['1 year', '5 years', '10 years', '15 years']) expect(chip('Attendance', choice)).toBeTruthy();
+    for (const choice of ['7 years', '30 years', '45 years', 'Keep for good']) {
+      expect(chip('Safeguarding records', choice)).toBeTruthy();
+    }
+    expect(screen.getByText(/at least 45 years/)).toBeTruthy();
+    expect(screen.getByText(/while a concern names a member nothing about them is removed/)).toBeTruthy();
+    fireEvent.press(chip('Attendance', '15 years'));
+    fireEvent.press(chip('Safeguarding records', 'Keep for good'));
+    await saveKeepPeriods();
+    expect(callsTo('admin_set_record_retention_all')[0].p_attendance_months).toBe(180);
+    expect(callsTo('admin_set_more_record_retention')[0].p_safeguarding_months).toBe(0);
+  });
+
   it('saves the removal switch and every period across the three settings, in order', async () => {
     await openRetention();
     flip('Remove old records', true);

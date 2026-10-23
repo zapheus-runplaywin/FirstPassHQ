@@ -1,4 +1,4 @@
-import { formatDateString } from '@/lib/injuries';
+import { formatDateString, type LoggedInjury } from '@/lib/injuries';
 import type { KpiReviewTodo } from '@/lib/kpis';
 import type { MySurvey } from '@/lib/surveys';
 import { buildTodos, dueAlert, sortByAlert, type Todo } from '@/lib/todos';
@@ -291,6 +291,33 @@ describe('buildTodos', () => {
     expect(todos({ newConcerns: 1 })[0].title).toBe('Look at 1 new concern');
   });
 
+  it('puts athletes flagged 3 times in a week straight after new concerns, for the Child Safety Officer', () => {
+    const list = todos({ newConcerns: 1, wellbeingFlagAlerts: 2, declarationWaiting: true, needsCheckIn: true });
+    expect(keys(list)).toEqual(['concerns', 'wellbeing-flags', 'volunteer-declaration', 'check-in']);
+    expect(list[1]).toMatchObject({
+      title: 'Look at 2 athletes flagged 3 times this week',
+      detail: 'Low check-in scores on 3 of the last 7 days',
+      href: '/concerns/wellbeing',
+    });
+    expect(todos({ wellbeingFlagAlerts: 1 })[0].title).toBe('Look at 1 athlete flagged 3 times this week');
+    expect(keys(todos({ wellbeingFlagAlerts: 0 }))).toEqual([]);
+  });
+
+  it('asks the member to confirm their check application, straight after an exemption declaration', () => {
+    const list = todos({
+      declarationWaiting: true,
+      applicationDeclarationWaiting: true,
+      needsCheckIn: true,
+    });
+    expect(keys(list)).toEqual(['volunteer-declaration', 'wwcc-application-declaration', 'check-in']);
+    expect(list[1]).toEqual({
+      key: 'wwcc-application-declaration',
+      title: 'Confirm your Working With Children Check application',
+      detail: 'It counts as your check once you accept the declaration',
+      href: '/wwcc-application',
+    });
+  });
+
   it('asks for consent for each child', () => {
     const list = todos({
       consentsNeeded: [
@@ -332,6 +359,47 @@ describe('buildTodos', () => {
   });
 
   describe('injuries', () => {
+    const logged = (overrides: Partial<LoggedInjury> = {}): LoggedInjury => ({
+      injury_id: 'i9',
+      athlete_id: 'a1',
+      athlete_name: 'Sam Sample',
+      body_area: 'Knee',
+      logged_by_name: 'Casey Coach',
+      logged_by_role: 'coach',
+      logged_at: '2026-10-18T09:00:00Z',
+      ...overrides,
+    });
+
+    it('asks a guardian to look at an injury a coach logged for their child', () => {
+      expect(only(todos({ loggedInjuries: [logged()] }))).toEqual({
+        key: 'injury-logged-i9',
+        title: 'Look at the injury Casey Coach logged for Sam Sample',
+        detail: 'Knee · logged by their coach. Add the physio’s updates from there.',
+        href: { pathname: '/injuries/[id]', params: { id: 'i9' } },
+      });
+    });
+
+    it('speaks to the athlete about their own, one to-do per injury', () => {
+      const list = todos({
+        loggedInjuries: [
+          logged({ athlete_id: 'me', logged_by_role: 'physio', logged_by_name: null }),
+          logged({ injury_id: 'i10', athlete_name: null, logged_by_role: 'manager' }),
+        ],
+      });
+      expect(list.map((t) => t.title)).toEqual([
+        'Look at the injury a club member logged for you',
+        'Look at the injury Casey Coach logged for your athlete',
+      ]);
+      expect(list.map((t) => t.detail)).toEqual([
+        'Knee · logged by their physio. Add the physio’s updates from there.',
+        'Knee · logged by their manager. Add the physio’s updates from there.',
+      ]);
+    });
+
+    it('has nothing to look at by default', () => {
+      expect(todos()).toEqual([]);
+    });
+
     it('opens a single clearance waiting for the member', () => {
       const todo = only(todos({ injuries: [injury({ waiting_for_me: true })] }));
       expect(todo).toMatchObject({
@@ -642,6 +710,47 @@ describe('buildTodos', () => {
       expect(only(todos({ safety: safety({ wwcc_expiring: 1, wwcc_to_link: 2 }) })).title).toBe(
         'Sort out 3 Working With Children Checks',
       );
+    });
+
+    it('asks admins to confirm check applications are still being assessed', () => {
+      expect(only(todos({ safety: safety({ wwcc_applications_due: 1 }) }))).toEqual({
+        key: 'wwcc-applications',
+        title: 'Confirm 1 check application is still being assessed',
+        detail: 'Check online, then confirm on the member’s page',
+        href: '/admin',
+        alert: { level: 'amber', label: 'Confirm' },
+      });
+    });
+
+    it('turns the applications tile red, counting lapsed ones too, once any has lapsed', () => {
+      expect(
+        only(todos({ safety: safety({ wwcc_applications_due: 1, wwcc_applications_lapsed: 2 }) })),
+      ).toEqual({
+        key: 'wwcc-applications',
+        title: 'Confirm 3 check applications are still being assessed',
+        detail: '2 lapsed. Check online, then confirm on the member’s page.',
+        href: '/admin',
+        alert: { level: 'red', label: 'Lapsed' },
+      });
+      expect(only(todos({ safety: safety({ wwcc_applications_lapsed: 1 }) })).title).toBe(
+        'Confirm 1 check application is still being assessed',
+      );
+    });
+
+    it('adds no applications tile when none is due', () => {
+      expect(
+        todos({ safety: safety({ wwcc_applications_due: 0, wwcc_applications_lapsed: 0 }) }),
+      ).toEqual([]);
+    });
+
+    it('puts the applications tile after the checks tile and before notices', () => {
+      expect(
+        keys(
+          todos({
+            safety: safety({ wwcc_missing: 1, wwcc_applications_due: 1, notices_to_report: 1 }),
+          }),
+        ),
+      ).toEqual(['wwcc', 'wwcc-applications', 'notices-to-report']);
     });
 
     it('makes the check tile amber, naming the most urgent kind', () => {

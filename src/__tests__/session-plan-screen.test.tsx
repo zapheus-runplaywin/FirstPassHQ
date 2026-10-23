@@ -179,7 +179,8 @@ describe('one session plan', () => {
   });
 
   // can_edit_session_plan: the author only while approved, not stood down,
-  // and with a current check or a volunteer exemption in force.
+  // and with a current check, or a volunteer exemption or lodged check
+  // application in force.
   it.each<[string, Persona]>([
     ['whose check lapsed', personas.coachExpiredCheck],
     ['who is stood down', personas.stoodDownCoach],
@@ -209,6 +210,33 @@ describe('one session plan', () => {
       { canAdd: true },
     );
     expect(shownControls()).toEqual(['Change this plan', 'Use again for another session']);
+  });
+
+  it.each([
+    ['in force', 'in_force', true],
+    ['that lapsed', 'lapsed', false],
+  ] as const)('with a lodged check application %s, the author can change their plan: %s', async (_l, status, valid) => {
+    const coach = personas.coach;
+    await openPlan(
+      {
+        ...coach,
+        profile: { ...coach.profile!, wwcc_number: null, wwcc_expires_on: null },
+        wwccApplication: {
+          id: 'application-1',
+          application_number: 'APL 1',
+          lodged_on: '2026-10-01',
+          kind: 'new',
+          declaration_text: 'I applied',
+          declared_at: '2026-10-02T00:00:00Z',
+          lapses_on: '2026-12-30',
+          status,
+          valid,
+        },
+      },
+      plan(),
+      { canAdd: valid },
+    );
+    expect(shownControls()).toEqual(valid ? ['Change this plan', 'Use again for another session'] : []);
   });
 
   it('marks the plan seen when it opens', async () => {

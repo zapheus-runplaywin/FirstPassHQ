@@ -1,4 +1,4 @@
--- Tests for 20261021010000_todo_push_notifications.sql. Run on a fresh
+-- Tests for 20261023150000_todo_push_notifications.sql. Run on a fresh
 -- database with the migrations and seed-members.sql loaded. Prints one line
 -- per check.
 \set ON_ERROR_STOP 0
@@ -98,6 +98,64 @@ select pg_temp.ok('admin is told about the concern', pg_temp.has('01', 'concerns
 select pg_temp.ok('a coach isn''t', pg_temp.has('11', 'concerns:'), false);
 select pg_temp.ok('the concern''s words never go in a notification', exists (
   select 1 from public.member_todos(pg_temp.id('01')) m where m.title || m.detail like '%Test concern%'), false);
+
+-- Athletes flagged on 3 days in 7 reach the Child Safety Officer only.
+insert into public.safeguarding_settings (id) values (true) on conflict (id) do nothing;
+update public.safeguarding_settings set child_safety_officer_id = pg_temp.id('11') where id;
+insert into public.check_ins (athlete_id, day, sleep, soreness, stress, mood, note)
+select pg_temp.id('32'), current_date - d, 4, 1, 4, 5, 'Private note' from generate_series(1, 3) d
+on conflict (athlete_id, day) do update set soreness = excluded.soreness;
+select pg_temp.ok('the Child Safety Officer is told about the flagged athlete', exists (
+  select 1 from public.member_todos(pg_temp.id('11')) m
+  where m.todo_key like 'wellbeing-flags:%' and m.title = 'Look at 1 athlete flagged 3 times this week'
+    and m.href = '/concerns/wellbeing'), true);
+select pg_temp.ok('the manager isn''t', pg_temp.has('13', 'wellbeing-flags:'), false);
+select pg_temp.ok('nor an admin who isn''t the officer', pg_temp.has('01', 'wellbeing-flags:'), false);
+select pg_temp.ok('the check-in note never goes in a notification', exists (
+  select 1 from public.member_todos(pg_temp.id('11')) m where m.title || m.detail like '%Private note%'), false);
+-- The officer also handles concerns; step back so the sending checks below
+-- only have the admin handling them.
+update public.safeguarding_settings set child_safety_officer_id = null where id;
+
+-- An injury a coach logged reaches the athlete, without the body area.
+select pg_temp.as_member('11');
+select pg_temp.works('coach logs Kai''s injury', $$select public.log_injury('00000000-0000-0000-0000-000000000032', 'Wrist', 'Fell at training', current_date, 'No catching', current_date + 7)$$);
+select set_config('request.jwt.claim.sub', '', false);
+select pg_temp.ok('the athlete is asked to look at it', exists (
+  select 1 from public.member_todos(pg_temp.id('32')) m
+  where m.todo_key like 'injury-logged:%' and m.title = 'Look at the injury Casey Coach logged for you'
+    and (m.title || m.detail) not ilike '%wrist%'), true);
+select pg_temp.ok('the coach who logged it isn''t', pg_temp.has('11', 'injury-logged:'), false);
+
+-- A check application waiting for the member's declaration, and the
+-- admin's follow-up once one lapses.
+insert into public.wwcc_applications (profile_id, application_number, lodged_on, kind, receipt_path)
+values (pg_temp.id('12'), 'APL 12', current_date - 2, 'renewal', '00000000-0000-0000-0000-000000000012/receipt.pdf');
+select pg_temp.ok('the member is asked to confirm their application', pg_temp.has('12', 'wwcc-application-declaration:'), true);
+select pg_temp.ok('nobody else is', pg_temp.has('11', 'wwcc-application-declaration:'), false);
+insert into public.wwcc_applications (profile_id, application_number, lodged_on, kind, receipt_path, declared_at, recorded_at)
+values (pg_temp.id('13'), 'APL 13', current_date - 400, 'new', '00000000-0000-0000-0000-000000000013/receipt.pdf', now() - interval '399 days', now() - interval '399 days');
+select pg_temp.ok('the admin is asked to confirm applications still being assessed', pg_temp.has('01', 'wwcc-applications:'), true);
+select pg_temp.ok('a coach isn''t', pg_temp.has('11', 'wwcc-applications:'), false);
+
+-- Medical details to add (PR #173). Until that is in the database the list
+-- leaves them out and still works; once it is, an athlete with none saved is
+-- asked to add theirs.
+select case
+  when to_regprocedure('public.my_medical_reviews()') is null then
+    pg_temp.ok('without medical details in the database, an athlete''s list still works', pg_temp.has('32', 'check-in:'), true)
+  else
+    pg_temp.ok('an athlete is asked to add their medical details', exists (
+      select 1 from public.member_todos(pg_temp.id('32')) m
+      where m.todo_key = 'medical:' || pg_temp.id('32') || ':missing'
+        and m.title = 'Add your medical and emergency details' and m.href = '/medical/' || pg_temp.id('32')), true)
+end;
+select case
+  when to_regprocedure('public.my_medical_reviews()') is null then
+    pg_temp.ok('a coach has no medical to-do', pg_temp.has('11', 'medical:'), false)
+  else
+    pg_temp.ok('a coach who isn''t an athlete or parent has no medical to-do', pg_temp.has('11', 'medical:'), false)
+end;
 
 -- Injury details never go in a notification: they can show on a locked phone.
 insert into public.injuries (athlete_id, reported_by, body_area, description, injured_on, expected_return, athlete_name)

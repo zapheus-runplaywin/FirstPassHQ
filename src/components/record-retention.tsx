@@ -108,8 +108,8 @@ const periods: { key: PeriodKey; label: string; note: string; choices: number[] 
   {
     key: 'attendance_months',
     label: 'Attendance',
-    note: 'Who was at each session, with absences and session plans, from the day of the session. Recommended: 1 year.',
-    choices: oneToFive,
+    note: 'Who was at each session, with absences and session plans, from the day of the session. Keep it 10 or 15 years if your insurer or governing body asks for proof of who was at training. Recommended: 1 year.',
+    choices: [...oneToFive, 120, 180],
   },
   {
     key: 'certificates_months',
@@ -156,8 +156,8 @@ const laterPeriods: { key: PeriodKey; label: string; note: string; choices: numb
   {
     key: 'safeguarding_months',
     label: 'Safeguarding records',
-    note: 'Stand-downs, Screening Unit notices, exemptions, consents, code of conduct acceptances, policy acknowledgements and guardian link history, from when each one ended. Anything still in force stays, and concerns are never removed. Recommended: 30 years.',
-    choices: [84, 120, 180, 240, 360],
+    note: 'Stand-downs, Screening Unit notices, exemptions, consents, code of conduct acceptances, policy acknowledgements and guardian link history, from when each one ended. Anything still in force stays, and concerns are never removed. The Royal Commission into Institutional Responses to Child Sexual Abuse recommended keeping these records at least 45 years, because survivors often come forward decades later. Recommended: 30 years.',
+    choices: [84, 120, 180, 240, 360, 540, 0],
   },
   {
     key: 'award_votes_months',
@@ -289,7 +289,8 @@ export function RecordRetention() {
       <ThemedText type="smallBold">Keeping records</ThemedText>
       <ThemedText type="small" themeColor="textSecondary">
         How long the club keeps members’ records, adults’ and children’s. Concerns are never
-        removed. Injuries of athletes who have left follow Cleared injuries below, counted from
+        removed, and while a concern names a member nothing about them is removed either: their
+        attendance, messages, check-ins, injuries and safeguarding records stay. Injuries of athletes who have left follow Cleared injuries below, counted from
         when they left. Once Remove old records is on, join requests go 90 days after they’re turned down or left unanswered, and
         temporary helpers with no other role a year after their end date.
       </ThemedText>

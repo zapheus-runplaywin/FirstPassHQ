@@ -5,7 +5,8 @@
  * An athlete reports their own injury; a parent or guardian reports one for
  * a child an admin has linked them to (`my_athletes`), and can't until then.
  * The screen tells each of them who will see it: an athlete under 18's
- * coaches, physios and the committee only once a parent or guardian agrees.
+ * coaches, physios and the committee members cleared to work with children only
+ * once a parent or guardian agrees.
  * The database (`report_injury`) decides whether the report is allowed.
  */
 import { router } from 'expo-router';
@@ -88,9 +89,20 @@ describe('an athlete’s own injury', () => {
         p_injured_on: '2026-10-18',
         p_restrictions: 'No jumping',
         p_expected_return: '2026-11-01',
+        p_concussion: false,
       },
     ]);
     expect(replace).toHaveBeenCalledWith({ pathname: '/injuries/[id]', params: { id: 'inj-new' } });
+  });
+
+  it('marks a possible concussion, and says what that means', async () => {
+    await open('athlete');
+    expect(screen.queryByText(/^If in doubt, sit them out\./)).toBeNull();
+    fill();
+    fireEvent(screen.getByLabelText('Possible concussion'), 'valueChange', true);
+    expect(screen.getByText(/^If in doubt, sit them out\. They need to see a doctor\./)).toBeTruthy();
+    await send();
+    expect(argsOf('report_injury')[0]).toMatchObject({ p_concussion: true });
   });
 
   it('can say it happened yesterday or earlier, but never after today', async () => {
@@ -166,14 +178,14 @@ describe('who is told they’ll see it', () => {
     await open(who);
     expect(
       screen.getByText(
-        /^Your parents or guardians and the club’s admins see this\. Your coaches, physios and the committee see it once a parent or guardian agrees\./,
+        /^Your parents or guardians and the club’s admins see this\. Your coaches, physios and the committee members cleared to work with children see it once a parent or guardian agrees\./,
       ),
     ).toBeTruthy();
   });
 
   it('a guardian: admins, and staff once they consent for a child', async () => {
     await open('guardian');
-    expect(screen.getByText(/^Admins see this\. For an athlete under 18, their coaches, physios and the committee see it once you give consent for injuries\./)).toBeTruthy();
+    expect(screen.getByText(/^Admins see this\. For an athlete under 18, their coaches, physios and the committee members cleared to work with children see it once you give consent for injuries\./)).toBeTruthy();
   });
 });
 

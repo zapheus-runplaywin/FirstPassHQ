@@ -31,8 +31,10 @@ import { rolesLabel, teamPositionLabel } from '@/lib/labels';
 import type { Report, ReportRow, ReportSection } from '@/lib/pdf';
 import { hasRole, rolesOf } from '@/lib/roles';
 import {
+  applicationStatus,
   barringNotices,
   committeeChecksDue,
+  exemptableRoles,
   exemptionStatus,
   needsWwcc,
   screeningNoticeLabels,
@@ -40,6 +42,7 @@ import {
   volunteerExemptionLabels,
   volunteerTimeOff,
   WWCC_WARNING_DAYS,
+  wwccApplicationEndLabels,
   wwccRecordIssues,
   wwccStatus,
   wwccValidationLabels,
@@ -54,8 +57,14 @@ import type {
   Team,
   TeamRole,
   VolunteerExemption,
+  WwccApplication,
 } from '@/lib/types';
 import { seasonLabel, teamLabel } from '@/lib/use-teams';
+import {
+  APPLICATION_CHECK_DAYS,
+  APPLICATION_LAPSE_DAYS,
+  applicationKindLabels,
+} from '@/lib/wwcc-applications';
 
 /** "West Coast Thunder" -> "west-coast-thunder", for file names. */
 export function fileSlug(name: string) {
@@ -164,6 +173,10 @@ export function wwccReport(
   acknowledgements: Acknowledgement[] = [],
   /** The day from which committee members need a check, if the club has one. */
   committeeChecksFrom: string | null = null,
+  /** Lodged check applications, open or ended in the last year. */
+  applications: WwccApplication[] = [],
+  /** The day from which statisticians need a check, if the club has one. */
+  statisticianChecksFrom: string | null = null,
 ): Report {
   const approved = members.filter((m) => m.status === 'approved');
   // Temporary helpers outside their dates need nothing, and are listed on their own.
@@ -177,13 +190,27 @@ export function wwccReport(
     const kind = wwccStatus(m).kind;
     return openExemption.has(m.id) && kind !== 'current' && kind !== 'expiring';
   };
+  // So does a lodged application in force, until their card is recorded.
+  const applied = new Set(
+    applications.filter((a) => !a.ended_at && a.status === 'in_force').map((a) => a.profile_id),
+  );
+  const screenedByApplication = (m: Profile) => {
+    const kind = wwccStatus(m).kind;
+    return applied.has(m.id) && kind !== 'current' && kind !== 'expiring' && !screenedByExemption(m);
+  };
   const people = approved
-    .filter((m) => needsWwcc(m) && !screenedByExemption(m) && !volunteerTimeOff(m))
+    .filter(
+      (m) =>
+        needsWwcc(m) &&
+        !screenedByExemption(m) &&
+        !screenedByApplication(m) &&
+        !volunteerTimeOff(m),
+    )
     .map((m) => ({ member: m, name: memberName(m), status: wwccStatus(m) }))
     .sort(byName);
-  // Committee members and admins another admin excused from the check, with the reason.
+  // Committee members, admins and statisticians another admin excused from the check, with the reason.
   const exempt = approved
-    .filter((m) => hasRole(m, 'committee', 'admin') && !needsWwcc(m))
+    .filter((m) => hasRole(m, ...exemptableRoles) && !needsWwcc(m))
     .map((m) => ({ member: m, name: memberName(m) }))
     .sort(byName);
   const nameOf = (id: string | null) => {
@@ -237,7 +264,7 @@ export function wwccReport(
 
   return {
     title: 'Working With Children Checks',
-    subtitle: `Approved coaches, managers, physios, temporary helpers, committee members and admins. WWC Registration Officer: ${officerName ?? 'not named yet'}`,
+    subtitle: `Approved coaches, managers, physios, statisticians, temporary helpers, committee members and admins. WWC Registration Officer: ${officerName ?? 'not named yet'}`,
     landscape: true,
     stats: [
       { label: 'Need a check', value: people.length },
@@ -245,10 +272,14 @@ export function wwccReport(
       { label: `Expire within ${WWCC_WARNING_DAYS} days`, value: count('expiring') },
       { label: 'Expired', value: count('expired') },
       { label: 'Missing', value: count('missing') },
-      { label: 'Committee and admins exempt', value: exempt.length },
+      { label: 'Exempt with a reason', value: exempt.length },
       {
         label: 'Exempt from a check',
         value: approved.filter((m) => needsWwcc(m) && screenedByExemption(m)).length,
+      },
+      {
+        label: 'Check applied for',
+        value: approved.filter((m) => needsWwcc(m) && screenedByApplication(m)).length,
       },
       {
         label: 'To validate',
@@ -269,7 +300,11 @@ export function wwccReport(
           committeeChecksFrom && !committeeChecksDue(committeeChecksFrom)
             ? `from ${formatDateString(committeeChecksFrom)}`
             : 'too'
-        }. Admin roles are not paused, so the club is never locked out, but an admin can be stood down.`,
+        }, and statistician roles ${
+          statisticianChecksFrom && !committeeChecksDue(statisticianChecksFrom)
+            ? `from ${formatDateString(statisticianChecksFrom)}`
+            : 'too'
+        }. Admin roles are not paused, so the club is never locked out, but an admin can be stood down, and one whose check has been missing or expired for over 30 days doesn’t see under 18s’ injuries.`,
         columns,
         rows: people
           .filter((p) => p.status.problem || (current(p.status) && wwccRecordIssues(p.member).length > 0))
@@ -285,7 +320,7 @@ export function wwccReport(
         empty: 'No current checks recorded.',
       },
       {
-        title: 'Committee members and admins exempted',
+        title: 'Exempted with a reason',
         note: 'Excused from the check by another admin, with the reason they gave.',
         columns: exemptColumns,
         rows: exempt.map(({ member, name }) => ({
@@ -328,6 +363,35 @@ export function wwccReport(
             };
           }),
         empty: 'No volunteer exemptions recorded.',
+      },
+      {
+        title: 'Checks applied for',
+        note: `Someone who has applied for a check, new or a renewal, can start or keep doing child-related work in WA while it’s assessed, with the receipt, unless they’ve had a negative or interim negative notice, been charged with or convicted of a Class 1 offence as an adult, or withdrawn it. Each accepts a declaration saying so in the app. An admin confirms it’s still being assessed every ${APPLICATION_CHECK_DAYS} days, and it lapses after ${APPLICATION_LAPSE_DAYS} days without that. Recording their card ends it. Applications that ended in the last year are listed after open ones.`,
+        columns: [
+          { label: 'Name', width: 1.3 },
+          { label: 'Application', width: 1.4 },
+          { label: 'Recorded', width: 1.3 },
+          { label: 'Declaration', width: 1.0 },
+          { label: 'Last confirmed', width: 1.2 },
+          { label: 'Status', width: 2.0 },
+        ],
+        rows: applications.map((a) => {
+          const status = applicationStatus(a);
+          return {
+            cells: [
+              a.member_name,
+              `${a.application_number}, ${applicationKindLabels[a.kind].toLowerCase()}, lodged ${formatDate(a.lodged_on)}`,
+              `${localDay(a.recorded_at)} by ${a.recorded_by_name ?? 'a former admin'}`,
+              a.declared_at ? `Accepted ${localDay(a.declared_at)}` : 'Waiting',
+              a.checked_at ? `${localDay(a.checked_at)} by ${a.checked_by_name ?? 'a former admin'}` : '',
+              a.ended_at
+                ? `Ended ${localDay(a.ended_at)}${a.ended_reason ? `, ${wwccApplicationEndLabels[a.ended_reason]}` : ''}${a.end_note ? ` (${a.end_note})` : ''}`
+                : status.label,
+            ],
+            flag: !a.ended_at && status.problem,
+          };
+        }),
+        empty: 'No check applications recorded.',
       },
       {
         title: 'Temporary helpers',

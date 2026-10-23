@@ -66,6 +66,7 @@ const ITEMS = {
   dailyCheckIn: 'Not done yet today',
   checkIns: 'See how squads and teams are feeling',
   injuries: 'No current injuries',
+  logInjuries: 'Log an injury at training or a game',
   takeAttendance: 'Take attendance and see past sessions',
   myAttendance: 'My attendance',
   integrity: 'Certificates and everyone’s progress',
@@ -133,9 +134,9 @@ const BY_ROLE: { who: PersonaName; sees: Item[] }[] = [
     ],
   },
   {
-    // Managers don't see injuries (section 11), and only take attendance.
+    // Managers don't see injuries (section 11), only log them, and only take attendance.
     who: 'manager',
-    sees: ['messages', 'sendSurveys', 'takeAttendance', 'comingUp', 'groups', 'raiseConcern'],
+    sees: ['messages', 'sendSurveys', 'logInjuries', 'takeAttendance', 'comingUp', 'groups', 'raiseConcern'],
   },
   {
     // Averages only; no surveys to send, no attendance.
@@ -391,6 +392,34 @@ describe('cards that need something from the club', () => {
     });
     expect(screen.getByText('Add a plan before or after a session')).toBeTruthy();
   });
+
+  it('a guardian has a to-do for an injury a coach logged for their child, until they open it', async () => {
+    const LOGGED = {
+      injury_id: 'inj-9',
+      athlete_id: 'child-1',
+      athlete_name: 'Sample Child',
+      body_area: 'Knee',
+      logged_by_name: 'Sample coach',
+      logged_by_role: 'coach',
+      logged_at: '2026-10-18T01:00:00Z',
+    };
+    await openHome({ ...personas.guardian, rpcs: { ...personas.guardian.rpcs, my_logged_injuries: [LOGGED] } });
+    expect(screen.getByText('Look at the injury Sample coach logged for Sample Child')).toBeTruthy();
+  });
+
+  it('injuries off leaves no logged-injury to-do', async () => {
+    setClubFeatures({ injuries: false });
+    await openHome({
+      ...personas.guardian,
+      rpcs: {
+        ...personas.guardian.rpcs,
+        my_logged_injuries: [
+          { injury_id: 'inj-9', athlete_id: 'child-1', athlete_name: 'Sample Child', body_area: 'Knee', logged_by_name: 'Sample coach', logged_by_role: 'coach', logged_at: '2026-10-18T01:00:00Z' },
+        ],
+      },
+    });
+    expect(screen.queryByText(/^Look at the injury/)).toBeNull();
+  });
 });
 
 // ---------------------------------------------------------------------------
@@ -408,6 +437,7 @@ describe('feature switches', () => {
     { feature: 'checkIns', who: 'guardian', item: 'childCheckIns' },
     { feature: 'injuries', who: 'admin', item: 'injuries' },
     { feature: 'injuries', who: 'athlete', item: 'injuries' },
+    { feature: 'injuries', who: 'manager', item: 'logInjuries' },
     { feature: 'attendance', who: 'admin', item: 'takeAttendance' },
     { feature: 'attendance', who: 'coach', item: 'takeAttendance' },
     { feature: 'attendance', who: 'athlete', item: 'myAttendance' },

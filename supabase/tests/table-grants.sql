@@ -27,12 +27,12 @@ create temp view public_tables as
 create temp table through_functions(name text);
 insert into through_functions values
   ('absence_reviews'), ('attendance_absences'), ('child_activity_seen'), ('conduct_acceptances'),
-  ('former_partner_roles'), ('game_pair_attempts'), ('group_membership_changes'),
+  ('former_partner_roles'), ('game_pair_attempts'), ('group_membership_changes'), ('injury_log_seen'),
   ('push_settings'), ('push_todo_log'),
   ('join_password_attempts'), ('record_access_log'), ('season_kpi_measures'),
   ('season_kpi_review_notes'), ('season_kpi_review_points'), ('season_kpi_reviews'), ('season_kpis'),
   ('session_plan_notices'), ('session_plan_views'), ('survey_answers'), ('survey_questions'),
-  ('survey_recipients'), ('survey_responses'), ('surveys');
+  ('survey_recipients'), ('survey_responses'), ('surveys'), ('wwcc_applications');
 
 -- Every other table is granted to signed-in members. A new table whose
 -- migration forgot its grant shows up here.
@@ -49,6 +49,21 @@ select pg_temp.none('the list of tables reached through functions names real tab
 select pg_temp.none('every table has row level security on',
   $$select t.relname from public_tables t join pg_class c on c.oid = t.oid
     where c.relkind = 'r' and not c.relrowsecurity$$);
+
+-- Sequences: a serial column's sequence needs usage for anyone who inserts
+-- into its table (identity columns don't). Today public has none; this
+-- catches the first one added without its grant.
+select pg_temp.none('signed-in members can use the sequence of every table they insert into',
+  $$select s.relname from pg_class s
+      join pg_namespace n on n.oid = s.relnamespace
+      join pg_depend d on d.objid = s.oid and d.classid = 'pg_class'::regclass and d.deptype = 'a'
+      join pg_class t on t.oid = d.refobjid
+    where n.nspname = 'public' and s.relkind = 'S'
+      and has_table_privilege('authenticated', t.oid, 'insert')
+      and case when s.relkind = 'S' then not has_sequence_privilege('authenticated', s.oid, 'usage') end$$);
+select pg_temp.none('signed-out visitors get no sequence',
+  $$select s.relname from pg_class s join pg_namespace n on n.oid = s.relnamespace
+    where n.nspname = 'public' and case when s.relkind = 'S' then has_sequence_privilege('anon', s.oid, 'usage,select,update') end$$);
 
 -- Signed-out visitors get no table.
 select pg_temp.none('signed-out visitors get no table',
