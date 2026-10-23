@@ -14,7 +14,7 @@ import HomeScreen from '@/app/index';
 import { formatDateString } from '@/lib/injuries';
 import { taskDetail, type PersonalTask } from '@/lib/personal-tasks';
 import { supabase } from '@/lib/supabase';
-import type { MyVolunteerExemption, Profile, RejectionReason } from '@/lib/types';
+import type { MyVolunteerExemption, MyWwccApplication, Profile, RejectionReason } from '@/lib/types';
 
 import { argsOf, clearCalls, recordTable, rpcNames } from './helpers/forms';
 import {
@@ -242,6 +242,91 @@ describe('paused roles', () => {
     await openHome(exemptCoach(exemption({ valid: true })));
     expect(screen.queryByText('Coach paused')).toBeNull();
     expect(screen.getByText('Open A')).toBeTruthy();
+  });
+});
+
+describe('a lodged check application', () => {
+  const application = (extra: Partial<MyWwccApplication> = {}): MyWwccApplication => ({
+    id: 'application-1',
+    application_number: 'APL 123',
+    lodged_on: '2026-10-10',
+    kind: 'new',
+    declaration_text: 'I applied for a Working With Children Check…',
+    declared_at: '2026-10-11T00:00:00Z',
+    lapses_on: '2027-01-08',
+    status: 'in_force',
+    valid: true,
+    ...extra,
+  });
+  const appliedCoach = (a: MyWwccApplication): Persona => ({
+    ...withProfile(personas.coach, { wwcc_number: null, wwcc_expires_on: null }),
+    wwccApplication: a,
+  });
+
+  it('keeps a coach coaching while their application is in force', async () => {
+    await openHome(appliedCoach(application()));
+    expect(screen.queryByText('Coach paused')).toBeNull();
+    expect(screen.getByText('Open A')).toBeTruthy();
+    expect(screen.queryByText('Confirm your Working With Children Check application')).toBeNull();
+  });
+
+  it('waits for the declaration, and opens it from the to-do list', async () => {
+    await openHome(
+      appliedCoach(application({ declared_at: null, status: 'waiting_for_declaration', valid: false })),
+    );
+    expect(
+      screen.getByText(
+        'Your coach role is paused until you accept the declaration for your Working With Children Check application. Open it from your to-do list.',
+      ),
+    ).toBeTruthy();
+    fireEvent.press(screen.getByText('Confirm your Working With Children Check application'));
+    expect(push).toHaveBeenCalledWith('/wwcc-application');
+  });
+
+  it('says when it has lapsed, and lists nothing to accept', async () => {
+    await openHome(appliedCoach(application({ status: 'lapsed', valid: false })));
+    expect(
+      screen.getByText(
+        'Your Working With Children Check application has lapsed because nobody confirmed it’s still being assessed, so your coach role is paused. Ask a club admin to check it, or send them your card number and expiry date if it has arrived.',
+      ),
+    ).toBeTruthy();
+    expect(screen.queryByText('Confirm your Working With Children Check application')).toBeNull();
+  });
+
+  it('lists nothing to accept for a stopped application that was never accepted', async () => {
+    await openHome(
+      appliedCoach(application({ declared_at: null, status: 'stopped', valid: false })),
+    );
+    expect(screen.queryByText('Confirm your Working With Children Check application')).toBeNull();
+    expect(screen.getByText('Coach paused')).toBeTruthy();
+  });
+
+  it('asks admins to confirm applications that are due, and opens Members', async () => {
+    await openHome('admin', {}, {
+      rpcs: {
+        admin_safety_todos: {},
+        admin_wwcc_applications: [
+          { id: 'a1', profile_id: 'm1', status: 'in_force', check_due_on: '2026-10-18', ended_at: null },
+          { id: 'a2', profile_id: 'm2', status: 'lapsed', check_due_on: '2026-09-01', ended_at: null },
+        ],
+      },
+    });
+    expect(screen.getByText('Confirm 2 check applications are still being assessed')).toBeTruthy();
+    expect(screen.getByText('1 lapsed. Check online, then confirm on the member’s page.')).toBeTruthy();
+    fireEvent.press(screen.getByText('Confirm 2 check applications are still being assessed'));
+    expect(push).toHaveBeenCalledWith('/admin');
+  });
+
+  it('asks admins nothing for applications not yet due', async () => {
+    await openHome('admin', {}, {
+      rpcs: {
+        admin_safety_todos: {},
+        admin_wwcc_applications: [
+          { id: 'a1', profile_id: 'm1', status: 'in_force', check_due_on: '2026-10-19', ended_at: null },
+        ],
+      },
+    });
+    expect(screen.queryByText(/check applications? (is|are) still being assessed/)).toBeNull();
   });
 });
 

@@ -18,6 +18,7 @@ import type {
   AppRole,
   GroupCaptain,
   MyVolunteerExemption,
+  MyWwccApplication,
   Profile,
   Team,
   TeamMembership,
@@ -89,6 +90,21 @@ function profile(role: AppRole, overrides: Partial<Profile> = {}): Profile {
   };
 }
 
+function application(overrides: Partial<MyWwccApplication> = {}): MyWwccApplication {
+  return {
+    id: 'application-1',
+    application_number: 'APL 123',
+    lodged_on: '2026-10-10',
+    kind: 'new',
+    declaration_text: 'I applied for a Working With Children Check.',
+    declared_at: '2026-10-11T00:00:00Z',
+    lapses_on: '2027-01-08',
+    status: 'in_force',
+    valid: true,
+    ...overrides,
+  };
+}
+
 function exemption(overrides: Partial<MyVolunteerExemption> = {}): MyVolunteerExemption {
   return {
     basis: 'parent_volunteer',
@@ -110,6 +126,7 @@ type Rows = {
   captaincies?: GroupCaptain[];
   isClubCaptain?: unknown;
   exemption?: MyVolunteerExemption | null;
+  application?: MyWwccApplication | null;
   isSafeguardingOfficer?: unknown;
   committeeChecksFrom?: unknown;
 };
@@ -170,6 +187,7 @@ beforeEach(() => {
   jest.mocked(supabase.rpc).mockReset().mockImplementation(((fn: string) => {
     if (fn === 'is_club_captain') return query({ data: rows.isClubCaptain ?? false });
     if (fn === 'my_volunteer_exemption') return query({ data: rows.exemption ?? null });
+    if (fn === 'my_wwcc_application') return query({ data: rows.application ?? null });
     if (fn === 'is_safeguarding_officer') return query({ data: rows.isSafeguardingOfficer ?? false });
     if (fn === 'committee_checks_from') return query({ data: rows.committeeChecksFrom ?? null });
     throw new Error(`Unexpected function ${fn}`);
@@ -360,15 +378,17 @@ describe('loading the member', () => {
     expect(result.current.auth.isAdmin).toBe(false);
   });
 
-  it('forgets the last member’s exemption and the club’s committee date on sign out', async () => {
+  it('forgets the last member’s exemption, application and the club’s committee date on sign out', async () => {
     const { result } = await signIn({
       profile: profile('coach'),
       isClubCaptain: true,
       isSafeguardingOfficer: true,
       exemption: exemption(),
+      application: application(),
       committeeChecksFrom: '2027-01-11',
     });
     expect(result.current.auth.exemption).toEqual(exemption());
+    expect(result.current.auth.wwccApplication).toEqual(application());
     expect(result.current.auth.committeeChecksFrom).toBe('2027-01-11');
 
     await act(async () => {
@@ -377,6 +397,7 @@ describe('loading the member', () => {
     });
     await waitFor(() => expect(result.current.auth.profile).toBeNull());
     expect(result.current.auth.exemption).toBeNull();
+    expect(result.current.auth.wwccApplication).toBeNull();
     expect(result.current.auth.committeeChecksFrom).toBeNull();
     expect(result.current.auth.isClubCaptain).toBe(false);
     expect(result.current.auth.isSafeguardingOfficer).toBe(false);
@@ -473,7 +494,12 @@ describe('roles paused by the Working With Children Check', () => {
     expect(auth.profile?.role).toBe('guest');
     expect(auth.profile?.extra_roles).toEqual([]);
     expect(auth.memberships).toEqual([]);
-    expect(auth.paused).toEqual({ roles: [role], stoodDown: false, exemption: null });
+    expect(auth.paused).toEqual({
+      roles: [role],
+      stoodDown: false,
+      exemption: null,
+      application: null,
+    });
   });
 
   test.each([
@@ -532,7 +558,12 @@ describe('roles paused by the Working With Children Check', () => {
       exemption: ended,
     });
     expect(auth.memberships).toEqual([]);
-    expect(auth.paused).toEqual({ roles: ['coach'], stoodDown: false, exemption: ended });
+    expect(auth.paused).toEqual({
+      roles: ['coach'],
+      stoodDown: false,
+      exemption: ended,
+      application: null,
+    });
   });
 
   it('pauses a coach whose exemption is still waiting for the declaration', async () => {
@@ -542,6 +573,49 @@ describe('roles paused by the Working With Children Check', () => {
       exemption: exemption({ declared_at: null, valid: false }),
     });
     expect(auth.paused?.roles).toEqual(['coach']);
+  });
+
+  test.each(['coach', 'manager', 'physio'] as const)(
+    'keeps a %s with no check whose lodged application is in force',
+    async (role) => {
+      const auth = await authFor({
+        profile: profile(role, { wwcc_number: null, wwcc_expires_on: null }),
+        memberships: [member(TEAM_A, role)],
+        application: application(),
+      });
+      expect(auth.profile?.role).toBe(role);
+      expect(auth.memberships).toEqual([member(TEAM_A, role)]);
+      expect(auth.paused).toBeNull();
+      expect(auth.wwccApplication).toEqual(application());
+    },
+  );
+
+  it('keeps a coach whose check expired while their renewal is assessed', async () => {
+    const auth = await authFor({
+      profile: profile('coach', { wwcc_expires_on: YESTERDAY }),
+      application: application({ kind: 'renewal' }),
+    });
+    expect(auth.paused).toBeNull();
+  });
+
+  test.each([
+    ['still waiting for the declaration', { declared_at: null, status: 'waiting_for_declaration', valid: false }],
+    ['lapsed', { status: 'lapsed', valid: false }],
+    ['stopped by a notice', { status: 'stopped', valid: false }],
+  ] as const)('pauses a coach whose application is %s, and says why', async (_what, overrides) => {
+    const open = application(overrides);
+    const auth = await authFor({
+      profile: profile('coach', { wwcc_number: null, wwcc_expires_on: null }),
+      memberships: [member(TEAM_A, 'coach')],
+      application: open,
+    });
+    expect(auth.memberships).toEqual([]);
+    expect(auth.paused).toEqual({
+      roles: ['coach'],
+      stoodDown: false,
+      exemption: null,
+      application: open,
+    });
   });
 
   it('keeps the other roles of a coach who is also a guardian, and the guardian’s team place', async () => {
@@ -642,7 +716,39 @@ describe('committee checks', () => {
   ])('pauses a committee member with no check %s', async (_when, from) => {
     const auth = await authFor({ profile: profile('committee', noCheck), committeeChecksFrom: from });
     expect(auth.profile?.role).toBe('guest');
-    expect(auth.paused).toEqual({ roles: ['committee'], stoodDown: false, exemption: null });
+    expect(auth.paused).toEqual({
+      roles: ['committee'],
+      stoodDown: false,
+      exemption: null,
+      application: null,
+    });
+  });
+
+  it('keeps a committee member with no check after the date while their application is in force', async () => {
+    const auth = await authFor({
+      profile: profile('committee', noCheck),
+      committeeChecksFrom: '2026-09-01',
+      application: application(),
+    });
+    expect(auth.profile?.role).toBe('committee');
+    expect(auth.paused).toBeNull();
+  });
+
+  it('keeps a committee member whose recorded check expired while their renewal is assessed', async () => {
+    const auth = await authFor({
+      profile: profile('committee', { wwcc_expires_on: YESTERDAY }),
+      application: application({ kind: 'renewal' }),
+    });
+    expect(auth.paused).toBeNull();
+  });
+
+  it('pauses a committee member after the date whose application lapsed', async () => {
+    const auth = await authFor({
+      profile: profile('committee', noCheck),
+      committeeChecksFrom: '2026-09-01',
+      application: application({ status: 'lapsed', valid: false }),
+    });
+    expect(auth.paused?.roles).toEqual(['committee']);
   });
 
   it('keeps an exempt committee member with no check after the date', async () => {
@@ -694,7 +800,12 @@ describe('stand-downs', () => {
     async (role) => {
       const auth = await authFor({ profile: profile(role, stoodDown) });
       expect(auth.profile?.role).toBe('guest');
-      expect(auth.paused).toEqual({ roles: [role], stoodDown: true, exemption: null });
+      expect(auth.paused).toEqual({
+      roles: [role],
+      stoodDown: true,
+      exemption: null,
+      application: null,
+    });
       expect(auth.isAdmin).toBe(false);
     },
   );
@@ -729,6 +840,7 @@ describe('stand-downs', () => {
       roles: ['admin', 'coach', 'committee'],
       stoodDown: true,
       exemption: null,
+      application: null,
     });
   });
 

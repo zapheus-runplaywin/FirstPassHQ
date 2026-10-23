@@ -226,6 +226,64 @@ export type VolunteerExemption = {
   organiser: string | null;
 };
 
+/**
+ * Where a lodged Working With Children Check application is up to:
+ * waiting for the member's declaration, in force (it counts as screening),
+ * lapsed (no admin confirmed it for 90 days), stopped (a barring Screening
+ * Unit notice since it was lodged) or ended.
+ */
+export type WwccApplicationStatus =
+  | 'waiting_for_declaration'
+  | 'in_force'
+  | 'lapsed'
+  | 'stopped'
+  | 'ended';
+
+export type WwccApplicationKind = 'new' | 'renewal';
+
+export type WwccApplicationEndReason = 'card_recorded' | 'withdrawn' | 'refused' | 'replaced' | 'other';
+
+/** The member's own open application, from `my_wwcc_application`. */
+export type MyWwccApplication = {
+  id: string;
+  application_number: string;
+  lodged_on: string;
+  kind: WwccApplicationKind;
+  /** The words they accepted, or will accept. */
+  declaration_text: string;
+  declared_at: string | null;
+  /** The day it lapses unless an admin confirms it's still being assessed. */
+  lapses_on: string;
+  status: WwccApplicationStatus;
+  /** It counts as screening today. */
+  valid: boolean;
+};
+
+/** Any member's application, open or ended in the last year, from `admin_wwcc_applications`. */
+export type WwccApplication = {
+  id: string;
+  profile_id: string;
+  member_name: string;
+  application_number: string;
+  lodged_on: string;
+  kind: WwccApplicationKind;
+  receipt_path: string;
+  receipt_name: string | null;
+  recorded_at: string;
+  recorded_by_name: string | null;
+  declared_at: string | null;
+  checked_at: string | null;
+  checked_by_name: string | null;
+  /** When an admin should next confirm it's still being assessed. */
+  check_due_on: string;
+  lapses_on: string;
+  status: WwccApplicationStatus;
+  ended_at: string | null;
+  ended_reason: WwccApplicationEndReason | null;
+  ended_by_name: string | null;
+  end_note: string | null;
+};
+
 export type TeamMembership = {
   team_role: TeamRole;
   coach_title: CoachTitle | null;

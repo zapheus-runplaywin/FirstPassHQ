@@ -49,6 +49,7 @@ export default function WwccReportScreen() {
         data.officerName,
         data.acknowledgements,
         committeeChecksFrom,
+        data.applications,
       )
     : null;
 

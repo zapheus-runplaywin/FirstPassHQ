@@ -8,6 +8,8 @@ import type {
   VerificationMethod,
   VolunteerExemptionBasis,
   VolunteerScreening,
+  WwccApplication,
+  WwccApplicationEndReason,
   WwccValidationMethod,
 } from '@/lib/types';
 import { hasRole, rolesOf } from '@/lib/roles';
@@ -65,6 +67,48 @@ export const barringNotices: ScreeningNoticeKind[] = [
   'interstate_decision',
   'card_cancelled',
 ];
+
+export const wwccApplicationEndLabels: Record<WwccApplicationEndReason, string> = {
+  card_recorded: 'their card was recorded',
+  withdrawn: 'withdrawn',
+  refused: 'refused',
+  replaced: 'replaced by a later application',
+  other: 'ended',
+};
+
+/** An application's state, as either the member's own or an admin's view has it. */
+type ApplicationState = Pick<WwccApplication, 'lodged_on' | 'status' | 'lapses_on'> &
+  Partial<Pick<WwccApplication, 'check_due_on'>>;
+
+/**
+ * Where a lodged check application is up to, in a sentence: waiting for the
+ * declaration, counting (and whether an admin should confirm it), lapsed or
+ * stopped. Same rules as `public.wwcc_application_status` in the database.
+ */
+export function applicationStatus(application: ApplicationState): {
+  label: string;
+  problem: boolean;
+} {
+  const what = `Check applied for ${formatDate(application.lodged_on)}`;
+  switch (application.status) {
+    case 'waiting_for_declaration':
+      return { label: `${what}: waiting for them to accept the declaration`, problem: true };
+    case 'lapsed':
+      return { label: `${what}: lapsed, nobody confirmed it’s still being assessed`, problem: true };
+    case 'stopped':
+      return { label: `${what}: stopped by a Screening Unit notice`, problem: true };
+    case 'ended':
+      return { label: `${what}: ended`, problem: false };
+    default:
+      if (application.check_due_on && application.check_due_on <= isoDay()) {
+        return {
+          label: `${what}: confirm it’s still being assessed by ${formatDate(application.lapses_on)}`,
+          problem: true,
+        };
+      }
+      return { label: `${what}, counts until ${formatDate(application.lapses_on)}`, problem: false };
+  }
+}
 
 /**
  * What still needs doing for a current card: validating it (never, or more
@@ -148,6 +192,10 @@ export const wwcSources: { label: string; url: string }[] = [
   {
     label: 'Who needs a Working With Children Check',
     url: 'https://www.wa.gov.au/organisation/department-of-communities/working-children-check-who-needs-wwc-check',
+  },
+  {
+    label: 'Applying, and working while an application is assessed',
+    url: 'https://www.wa.gov.au/organisation/department-of-communities/working-children-check-application-and-renewal-process',
   },
   {
     label: 'Working with Children (Screening) Act 2004',
@@ -241,6 +289,8 @@ export function pausedRoles(
   exempt = false,
   /** The day from which committee members need a check, "2027-01-11" style. */
   committeeChecksFrom: string | null = null,
+  /** They have a lodged check application in force today. */
+  applied = false,
 ): AppRole[] {
   if (member.status !== 'approved') return [];
   const check = wwccStatus(member).kind;
@@ -249,10 +299,10 @@ export function pausedRoles(
   return rolesOf(member).filter((r) => {
     if (!standDownRoles.includes(r)) return false;
     if (stoodDown) return true;
-    if (wwccRoles.includes(r)) return !current && !exempt;
+    if (wwccRoles.includes(r)) return !current && !exempt && !applied;
     if (r === 'committee') {
       const checksRequired = !!member.wwcc_number?.trim() || committeeChecksDue(committeeChecksFrom);
-      return !member.wwcc_exempt_reason?.trim() && checksRequired && !current;
+      return !member.wwcc_exempt_reason?.trim() && checksRequired && !current && !applied;
     }
     return false;
   });
@@ -260,12 +310,13 @@ export function pausedRoles(
 
 /**
  * Whether a member can do child-related work now: approved, not stood down,
- * and with a current check or a volunteer exemption that applies. Same rule
+ * and with a current check, or a volunteer exemption or lodged application
+ * that applies. Same rule
  * as `public.can_work_with_children` in the database.
  */
 export function canWorkWithChildren(
   member: Pick<Profile, 'status' | 'stood_down_at' | 'wwcc_number' | 'wwcc_expires_on'> | null,
-  /** They have a volunteer exemption that applies today. */
+  /** They have a volunteer exemption or a lodged application that applies today. */
   exempt = false,
 ) {
   if (!member || member.status !== 'approved' || member.stood_down_at) return false;
@@ -362,6 +413,8 @@ export function safetyIssues(
   hasGuardian: boolean,
   /** Their open volunteer exemption, if they have one. */
   exemption?: ExemptionState | null,
+  /** Their open check application, if they have one. */
+  application?: ApplicationState | null,
 ): string[] {
   if (member.status !== 'approved') return [];
   const issues: string[] = [];
@@ -374,6 +427,9 @@ export function safetyIssues(
     const current = check.kind === 'current' || check.kind === 'expiring';
     if (exemption && !current) {
       const status = exemptionStatus(exemption);
+      if (status.problem) issues.push(status.label);
+    } else if (application && !current) {
+      const status = applicationStatus(application);
       if (status.problem) issues.push(status.label);
     } else if (check.problem) {
       issues.push(check.label);

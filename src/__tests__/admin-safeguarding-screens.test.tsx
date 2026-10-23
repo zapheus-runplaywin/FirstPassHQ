@@ -214,6 +214,27 @@ describe('Safeguarding settings', () => {
     );
   });
 
+  it('counts a lodged check application in force as a check, but not one that lapsed', async () => {
+    const application = (profile_id: string, status: string) => ({
+      id: `a-${profile_id}`,
+      profile_id,
+      status,
+      ended_at: null,
+    });
+    await openSafeguarding({
+      safeguarding_contacts: null,
+      admin_volunteer_exemptions: [],
+      admin_wwcc_applications: [
+        application('ended', 'in_force'),
+        application('invalid', 'lapsed'),
+        { ...application('athlete', 'in_force'), ended_at: '2026-10-01T00:00:00Z' },
+      ],
+    });
+    expect(offered('Child Safety Officer')).toEqual(
+      ['Sample admin', 'Sample coach', 'Sample committee', 'Sample ended exemption', 'Sample expiring'].sort(),
+    );
+  });
+
   it('offers as WWC Registration Officer only eligible admins and committee members', async () => {
     await openSafeguarding({ admin_wwc_officer: null });
     expect(offered('WWC Registration Officer')).toEqual(['Sample admin', 'Sample committee', 'Sample expiring']);

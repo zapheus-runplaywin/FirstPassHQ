@@ -6,6 +6,7 @@ import { GuardianHistory } from '@/components/guardian-history';
 import { Screen } from '@/components/screen';
 import { ScreeningNotices } from '@/components/screening-notices';
 import { StandDownSection } from '@/components/stand-down';
+import { WwccApplicationSection } from '@/components/wwcc-application';
 import { WwccValidation } from '@/components/wwcc-validation';
 import { ThemedText } from '@/components/themed-text';
 import {
@@ -953,7 +954,8 @@ export default function MemberScreen() {
             normally live in WA, for two weeks after they arrive or up to 30 days at a national
             event or tour, once in any 12 months. Record that here, and they accept a declaration in
             the app before their role starts. You can exempt a committee member or admin with a
-            reason. Being supervised by someone with a check doesn’t count.
+            reason. Someone who has applied for a check can work while it’s assessed once you record
+            the application below. Being supervised by someone with a check doesn’t count.
           </ThemedText>
           <WwcSources />
           {canVolunteer && !isSelf ? (
@@ -1140,6 +1142,9 @@ export default function MemberScreen() {
               ) : null}
             </>
           )}
+          {!isExempt && !volunteerBasis && !isVolunteer && !minor && !savedCardCurrent ? (
+            <WwccApplicationSection memberId={member.id} isSelf={isSelf} />
+          ) : null}
           {exemptions
             .filter((e) => e.ended_at)
             .map((e) => (

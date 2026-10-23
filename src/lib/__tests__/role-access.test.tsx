@@ -206,8 +206,9 @@ function persona({
     loading: false,
     session: p ? ({ user: { id: p.id } } as Auth['session']) : null,
     profile: p,
-    paused: paused ? { ...paused, exemption: null } : null,
+    paused: paused ? { ...paused, exemption: null, application: null } : null,
     exemption: null,
+    wwccApplication: null,
     memberships,
     captaincies,
     isClubCaptain,
@@ -706,6 +707,7 @@ const GATED: [string, () => unknown, Fetch, PersonaName[], PersonaName[]?][] = [
   ['usePendingRequests', usePendingRequests, { from: 'profiles' }, ADMINS],
   ['useSafetyTodos', useSafetyTodos, { rpc: 'admin_safety_todos' }, ADMINS],
   ['useSafetyTodos (clearances nobody can endorse)', useSafetyTodos, { rpc: 'admin_unendorsable_clearances' }, ADMINS],
+  ['useSafetyTodos (check applications to confirm)', useSafetyTodos, { rpc: 'admin_wwcc_applications' }, ADMINS],
   ['useAffiliationTodos', useAffiliationTodos, { rpc: 'admin_affiliation' }, ADMINS],
   // The committee and admins.
   ['useTrainingToReview', useTrainingToReview, { rpc: 'training_to_review' }, [...ADMINS, 'committee']],
