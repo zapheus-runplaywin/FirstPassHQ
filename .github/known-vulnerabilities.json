@@ -1,15 +1,15 @@
 {
-  "_about": "High or critical npm advisories with no fixed release yet. scripts/check-cves.py lets these through and fails on any other. Remove an entry as soon as a fix ships. Checked 2026-10-18.",
+  "_about": "High or critical npm advisories with no fixed release yet. scripts/check-cves.py lets these through and fails on any other. Remove an entry as soon as a fix ships. Checked 2026-10-23.",
   "advisories": [
-    {
-      "id": "GHSA-vfj7-8cjw-p6xm",
-      "package": "braces <=3.0.3",
-      "reason": "No fixed release (3.0.3 is the latest). Comes in through Metro, the bundler that builds the app on a developer's computer or Expo's servers, and through Jest; it isn't in the app on phones, and only patterns written by the developers reach it."
-    },
     {
       "id": "GHSA-86w9-cpqp-85rv",
       "package": "node-forge <=1.4.0",
       "reason": "No fixed release (1.4.0 is the latest). Comes in through @expo/code-signing-certificates in the Expo CLI and expo-updates' build tooling, used when signing updates at build time; it isn't in the app on phones."
+    },
+    {
+      "id": "GHSA-mrhx-c7xc-m3w5",
+      "package": "zod <4.6.6",
+      "reason": "Fixed only in zod 4, and the Expo CLI (@expo/cli 57 and the newest, 58.1.15) still needs zod 3 (^3.25.76), which has no fixed release. Zod 3 is used only by the Expo CLI and ESLint on a developer's computer or Expo's build servers, on the CLI's own config and inputs; it isn't in the app on phones. Remove once @expo/cli moves to zod 4."
     }
   ]
 }
