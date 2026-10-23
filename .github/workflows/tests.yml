@@ -76,6 +76,9 @@ jobs:
       - name: Club data export copies everything
         if: ${{ !cancelled() }}
         run: scripts/test-export-club-data.sh
+      - name: Deploy script pushes new migrations every time
+        if: ${{ !cancelled() }}
+        run: scripts/test-deploy-migrations.sh
 
   # The real web build driven through key flows in Chromium at phone size, with
   # Supabase answered by e2e/support/fake-supabase.ts, so a broken build or a
