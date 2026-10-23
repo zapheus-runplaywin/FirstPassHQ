@@ -819,3 +819,17 @@ export type MyConcern = {
   about_text: string | null;
   anonymous: boolean;
 };
+
+/** A session an athlete logged beside their check-ins (customer review R10). */
+export type SessionLog = {
+  id: string;
+  athlete_id: string;
+  day: string;
+  kind: SessionKind;
+  minutes: number;
+  /** Session RPE: how hard it felt, 1 (very easy) to 10 (maximal). */
+  rpe: number;
+  updated_at: string;
+};
+
+export type SessionKind = 'training' | 'game' | 'gym' | 'other';

@@ -101,9 +101,11 @@ What each role sees on its home screen:
 | Team totals of a shared poll           |    ✓    | Their athlete's |      ✓       |     ✓      |  If sent one  |  If sent one  |         |  If sent one  |
 | Send surveys and polls, see results    | Captains' polls† |                 |  Own groups  | Own groups |    Anyone     |               |         |    Anyone     |
 | Daily check-in                         |    ✓    |                 |              |            |               |               |         |               |
+| Log training sessions (minutes, effort) |    ✓    |                 |              |            |               |               |         |               |
 | Game goals and reflections             |   Own   |  See athlete's  | Own athletes |            |               |               |         |               |
 | Team goals for a game                  | See, comment |       See       | Set, review, comment |            |               |               |         |      See      |
 | Check-ins of others                    |         | Their athlete's | Own athletes |            | Averages only | Averages only |         | Averages only |
+| Training sessions of others            |         | Their athlete's | Own athletes |            |               |               |         |               |
 | Report an injury                       |   Own   | Their athlete's |              |            |               |               |         |               |
 | Log an injury when it happens          |         |                 | Own athletes | Own athletes |             |  Own athletes‡ |         |               |
 | Add physio updates                     |   Own   | Their athlete's |              |            |               |  Own athletes‡ |         |               |
@@ -711,6 +713,27 @@ Until you've checked in, "Do your daily check-in" stays in your to-do list.
 <img src="user-guide/check-in.png" width="210" alt="Daily check-in form and history">
 <img src="user-guide/check-in-note.png" width="210" alt="Check-in note, saying who can read it">
 
+### Training sessions
+
+Under your check-in, **Training sessions** keeps a log of each training, game or gym session. Tap
+**Log a session**, pick the day (today or any day in the past week), **Training**, **Game**,
+**Gym** or **Other**, the minutes (up to 300) and **How hard did it feel?** from 1 (very easy)
+to 10 (maximal), then **Save session**. You can log up to six sessions a day. Tap a session to
+change it or **Delete session**.
+
+Minutes times effort is the session's load: an hour at 6 is 360. The card at the top totals your
+sessions, minutes and load for the last 7 days and each of the three weeks before, and says how
+this week compares, such as "Up 40% on the 3 weeks before". A sudden jump is worth talking about
+with your coach.
+
+Your sessions are seen exactly as your check-ins are: by your coaches (if you're under 18, once a
+parent or guardian has given consent) and your parents or guardians. Your teammates, the
+committee, physios and admins never see them, and the screen says so. They're removed with
+check-ins, after the club's period under Keeping records.
+
+<img src="user-guide/session-log.png" width="210" alt="Logging a training session with minutes and effort">
+<img src="user-guide/session-log-weeks.png" width="210" alt="Weekly training load and logged sessions">
+
 ### Game goals
 
 **Game goals** uses the club's PlayHQ fixtures, which belong to teams, so they start once you're
@@ -978,7 +1001,8 @@ Once you're linked and verified, **Consent** on your home screen lists each chil
 your to-do list says **Give consent for** them until you have. Open it to choose who else sees two
 kinds of information about your child:
 
-- **Daily check-ins**: their answers and notes are seen by their coaches. When they score low,
+- **Daily check-ins**: their answers and notes, and the training sessions they log (minutes and
+  how hard each felt), are seen by their coaches. When they score low,
   the club's Child Safety Officer sees the day and the lowest score, never their answers or notes.
 - **Injuries and health information**: their injuries, restrictions, physio updates and documents
   are seen by their coaches, the physios who look after them and the committee members cleared to
@@ -1132,9 +1156,9 @@ As a guardian you:
 - **Receive a copy of every message your athlete sends** if they're a captain, so you see what
   they send to their squad, team or the club. These copies say "Copied to you because Jordan sent
   it".
-- **See your athlete's daily check-ins**, including any note they write. Tap your athlete under
-  **Check-ins** on the home screen to see the last four weeks. Your athlete is told that you can
-  read their notes.
+- **See your athlete's daily check-ins**, including any note they write, and the training
+  sessions they log with their weekly load. Tap your athlete under **Check-ins** on the home
+  screen to see the last four weeks. Your athlete is told that you can read their notes.
 - **See the calendar and matches** of the squad or team you're placed in: the squad you chose when
   you joined, or any an admin adds you to from your member page. While your child is under 18 you
   join each team they're put in, and leave it when they do, so you see its matches without asking.
@@ -1295,7 +1319,11 @@ drops out once its squad phase is complete, and if that was your only group the 
 
 - **Day by day** lists today's (or yesterday's) check-ins for a squad or team: athletes to check
   in with first, with what scored low and any note, then those feeling good, then who hasn't
-  checked in. Tap any athlete, including one who hasn't checked in, to see their last four weeks.
+  checked in. Tap any athlete, including one who hasn't checked in, to see their last four weeks,
+  with the training sessions they logged: each session's minutes and effort (1 to 10), and the
+  load (minutes times effort) for each week and how this week compares with the weeks before.
+  Only you, their other coaches and their parents or guardians see an athlete's sessions; there's
+  no team total.
 - **Trends** graphs the group's average sleep, soreness, stress and mood over 2 weeks, 4 weeks or
   3 months, with the number who checked in each day. Each day's score averages that day and the
   two before it, so a small group whose athletes don't check in every day still gets a line. A day
@@ -1306,6 +1334,7 @@ drops out once its squad phase is complete, and if that was your only group the 
 <img src="user-guide/check-ins-coach.png" width="210" alt="Coach's day-by-day check-ins">
 <img src="user-guide/check-ins-trends.png" width="210" alt="Check-in trends">
 <img src="user-guide/check-ins-athlete-history.png" width="210" alt="One athlete's check-in history">
+<img src="user-guide/check-ins-athlete-sessions.png" width="210" alt="One athlete's training sessions and weekly load">
 
 ### Game goals
 
@@ -2900,8 +2929,8 @@ its periods starts on those.
   to-do list shows a red **Old records haven't been removed since …** (or **… yet**). The scheduled
   job can pause, for example when GitHub pauses scheduled jobs in a quiet repository, so ask
   FirstPass to check it.
-- **Daily check-ins**, counted from the day of the check-in: 3 months, 6 months, 1 year
-  (recommended) or 2 years.
+- **Daily check-ins**, counted from the day of the check-in, with the training sessions athletes
+  log beside them: 3 months, 6 months, 1 year (recommended) or 2 years.
 - **Game goals, reflections and athletes' season KPIs**: game goals counted from the game, with
   their comments and the team's goals; athletes' season KPIs and reviews counted from their last
   change, once their season is archived. 1 year (recommended) to 5 years. Coaches' and managers'
@@ -3161,7 +3190,7 @@ once saved, only replaced or removed, and anyone who gets it wrong five times in
 | Survey answers          | Whoever sent the survey. The committee and admins for their own surveys and ones a coach or manager shared with them. A coach or manager's survey to their own squad or team is seen by them while they still coach or manage it, by admins unless it's a quick poll (up to 5 questions with choices or ratings), and by the committee if they shared it. A captain's poll is seen by the captain while they're captain, and by the squad or team's coaches and managers. Named answers show the member's name; parents and guardians of an athlete under 18 also read their child's named answers. Anonymous answers, and name-optional answers given without a name, are kept with no name, no member and no time, so nobody can see who gave them, admins included; their results show only once the survey has closed, or everyone has answered, and at least 3 people have answered. Named results show once 3 people have answered, a club survey's chosen 20%, 50% or 80%, or everyone when everyone must answer; every survey's results show once it closes. Members never see each other's answers. Whoever sees the results can download them as a PDF or spreadsheet, except captains. |
 | Survey totals shared with a team | When a coach, manager or captain shares a poll's results with the squad or team: everyone it went to and their parents or guardians, once results show. Only how many picked each choice and average ratings: never names, written answers or who has answered. |
 | Who has answered a survey | Named surveys: whoever can see the results sees who hasn't answered yet. Anonymous and name-optional surveys: only how many have answered. Each member sees whether they've answered themselves. |
-| Daily check-in answers and notes | The athlete, their guardians and their coaches. For an athlete under 18, their coaches only once a parent or guardian consents, and until then their check-ins count in no average. The committee, physios and admins see only group averages, hidden below 3 check-ins (over three days, in Trends). |
+| Daily check-in answers, notes and training sessions | The athlete, their guardians and their coaches. For an athlete under 18, their coaches only once a parent or guardian consents, and until then their check-ins count in no average. The committee, physios and admins see only group averages of check-in answers, hidden below 3 check-ins (over three days, in Trends), and nothing of training sessions; teammates see none. |
 | Wellbeing flags | Only the Child Safety Officer: for every athlete, selected or not, the day and lowest score of each check-in scoring 2 or less in the last 14 days, never the answers or notes. Under 18s only once a parent or guardian consents to check-ins. |
 | Injuries and documents  | For an athlete under 18 whose parents haven't given consent for injuries: only the athlete, their guardians and admins. Otherwise the athlete, their guardians, their coaches, the physios who look after them (the Head Physio and physios in their squad or team), the committee (or only the committee members the club chose under **Injuries are seen by**) and admins. For an athlete under 18, only committee members with a current Working With Children Check or a parent volunteer exemption, and admins unless their own check has been missing or expired for over 30 days. Managers don't see injuries, including ones they log. A coach, manager or physio who logs an injury sees it only as their role already allows. Whoever takes attendance (coaches, managers, the committee and admins) sees only that an athlete is **Injured** and their expected return date, whatever the consent. While a clearance waits for the committee, any committee member or admin who could accept it can share its documents; everyone else views them in the app. |
 | Medical and emergency details | The athlete; an under 18's verified parents and guardians, who keep them (an athlete 18 or over keeps their own); and the coaches, managers and physios of the athlete's current squads and teams (the Head Physio for every athlete), for an under 18 only once a parent or guardian has given consent for injuries and health information. Not admins or the committee. Each view by a coach, manager or physio is recorded, and the athlete 18 or over, or an under 18's parents and guardians, see who and when. Checked once a year by whoever keeps them; admins see who has checked and when, but not the details. Removed when nobody has checked them for the club's chosen time (Keeping records), and deleted with the athlete's account. |
@@ -3486,7 +3515,9 @@ Working With Children Check, and another admin must do it.
   stays on your to-do list until you record telling the governing body in writing.
 - **Check-ins are only ever averages.** The committee, physios and admins never see who checked in
   or any one athlete's answers, only a group's average scores, and only once at least 3 athletes in
-  the group have checked in. The one exception is below.
+  the group have checked in. The one exception is below. The training sessions athletes log beside
+  their check-ins follow the same rules, and nobody but their coaches and parents sees them, not
+  even as an average.
 - **The Child Safety Officer sees repeated low check-ins.** A low score flags an athlete to their
   coaches, but athletes who aren't selected drop out of every coach's check-ins. So the Child
   Safety Officer sees every athlete's flags, the day and lowest score only, never answers or

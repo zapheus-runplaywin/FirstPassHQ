@@ -99,7 +99,7 @@ const periods: { key: PeriodKey; label: string; note: string; choices: number[] 
   {
     key: 'check_ins_months',
     label: 'Daily check-ins',
-    note: 'From the day of the check-in. Coaches use recent weeks, so 1 year is enough for most clubs. If a check-in worries you, raise a concern: concerns are never removed.',
+    note: 'From the day of the check-in, with the training sessions athletes log beside them. Coaches use recent weeks, so 1 year is enough for most clubs. If a check-in worries you, raise a concern: concerns are never removed.',
     choices: [3, 6, 12, 24],
   },
   {
