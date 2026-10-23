@@ -205,3 +205,17 @@ select set_config('request.jwt.claim.sub', '', false);
 -- Nothing else changed: check-ins are as they were.
 select pg_temp.is('check-ins are untouched', (select count(*) from public.check_ins), 11);
 select pg_temp.ok('notes are kept', (select count(*) = 10 from public.check_ins where note = 'Private note'), true);
+
+-- ---------------------------------------------------------------------------
+-- Daily check-ins switched off: the database shows nothing either
+-- (20261023150000_review_follow_ups.sql)
+-- ---------------------------------------------------------------------------
+select pg_temp.as_member('14');
+update public.club_settings set features = coalesce(features, '{}'::jsonb) || '{"checkIns": false}'::jsonb where id;
+select pg_temp.is('with Daily check-ins off, the officer sees no flags', (select count(*) from public.wellbeing_flags()), 0);
+select pg_temp.is('and the to-do count is 0', public.wellbeing_flag_alerts(), 0);
+update public.club_settings set features = features || '{"checkIns": true}'::jsonb where id;
+select pg_temp.is('switched back on, the flags are back', pg_temp.flag_days('32'), 3);
+update public.club_settings set features = features - 'checkIns' where id;
+select pg_temp.is('and with no setting at all they stay on', pg_temp.flag_days('32'), 3);
+select set_config('request.jwt.claim.sub', '', false);
