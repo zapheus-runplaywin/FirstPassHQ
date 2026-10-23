@@ -68,6 +68,7 @@ export type PersonaName =
   | 'committeeBeforeChecksDate'
   | 'committeeExempt'
   | 'committeeVolunteerExempt'
+  | 'committeeNotChosen'
   | 'statisticianPastChecksDate'
   | 'statisticianBeforeChecksDate'
   | 'adminLapsedCheck'
@@ -307,6 +308,14 @@ export const personas: Record<PersonaName, Persona> = {
         starts_on: null,
       },
     },
+  },
+  /**
+   * Checked, but the club chose which committee members see injuries and left
+   * this one out (customer review R7).
+   */
+  committeeNotChosen: {
+    ...member('committee-not-chosen', 'committee'),
+    rpcs: { my_committee_sees_injuries: false },
   },
   /** No check, and the club's statistician checks date has passed. */
   statisticianPastChecksDate: {

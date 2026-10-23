@@ -132,6 +132,7 @@ function Placeholder() {
 async function openSafeguarding(
   rpcs: Record<string, unknown> = {},
   rpcErrors: Record<string, string> = {},
+  people: Profile[] = PEOPLE,
 ) {
   await openScreen(
     'admin',
@@ -139,7 +140,7 @@ async function openSafeguarding(
     '/administration',
     {},
     {
-      tableHandlers: { profiles: (q) => (q.eq('status') === 'approved' ? PEOPLE : undefined) },
+      tableHandlers: { profiles: (q) => (q.eq('status') === 'approved' ? people : undefined) },
       rpcs: {
         safeguarding_contacts: SAVED_CONTACTS,
         admin_volunteer_exemptions: EXEMPTIONS,
@@ -518,6 +519,125 @@ describe('Safeguarding settings', () => {
     expect(input('Phone or hotline').props.maxLength).toBe(30);
     expect(input('Complaints form link').props.maxLength).toBe(500);
     expect(input('Policy version').props.maxLength).toBe(30);
+  });
+});
+
+// ---------------------------------------------------------------------------
+// Who on the committee sees injuries (customer review R7)
+
+describe('Injuries are seen by', () => {
+  const sees = (name: string) => `${name} sees injuries`;
+
+  it('starts as the whole committee, with nobody to choose, and saves nothing unchanged', async () => {
+    await openSafeguarding({ admin_injury_committee: null });
+    expect(isSelected('Whole committee')).toBe(true);
+    expect(screen.queryByLabelText(sees('Sample committee'))).toBeNull();
+    expect(screen.queryByText(/With nobody chosen/)).toBeNull();
+    await saveSafeguarding();
+    expect(callsTo('admin_set_injury_committee')).toEqual([]);
+    expect(screen).toHavePathname('/administration');
+  });
+
+  it('explains the choice, and that admins aren’t affected', async () => {
+    await openSafeguarding();
+    expect(screen.getByText(/Committee members left out don’t see injuries or sign off returns to play/)).toBeTruthy();
+    expect(screen.getByText(/Admins see injuries as admins, whatever you choose here/)).toBeTruthy();
+  });
+
+  it('lists only committee members who aren’t admins, with their titles', async () => {
+    await openSafeguarding({}, {}, [
+      ...PEOPLE,
+      person('treasurer', { full_name: 'Sample treasurer', preferred_name: 'Sam', role: 'coach', extra_roles: ['committee'], title: 'Treasurer' }),
+      person('admin-committee', { full_name: 'Sample admin committee', role: 'admin', extra_roles: ['committee'] }),
+    ]);
+    fireEvent.press(screen.getByText('Chosen committee members'));
+    expect(screen.getByLabelText(sees('Sample committee'))).toBeTruthy();
+    expect(screen.getByLabelText(sees('Sample expiring'))).toBeTruthy();
+    expect(screen.getByLabelText(sees('Sam'))).toBeTruthy();
+    expect(screen.getByText('Sam, Treasurer')).toBeTruthy();
+    expect(screen.queryByLabelText(sees('Sample admin committee'))).toBeNull();
+    expect(screen.queryByLabelText(sees('Sample admin'))).toBeNull();
+    expect(screen.queryByLabelText(sees('Sample coach'))).toBeNull();
+  });
+
+  it('warns while nobody is chosen, and saves the members ticked after the injury rules', async () => {
+    await openSafeguarding();
+    fireEvent.press(screen.getByText('Chosen committee members'));
+    expect(screen.getByText(/With nobody chosen, no committee member sees injuries and only admins accept/)).toBeTruthy();
+    flip(sees('Sample committee'), true);
+    flip(sees('Sample expiring'), true);
+    flip(sees('Sample expiring'), false);
+    expect(screen.queryByText(/With nobody chosen/)).toBeNull();
+    fireEvent.press(within(fieldGroup('WWC Registration Officer')).getByText('Sample admin  ✕'));
+    pickPerson('WWC Registration Officer', 'committee', 'Sample committee');
+    await saveSafeguarding();
+    expect(callsTo('admin_set_injury_committee')).toEqual([{ p_chosen: true, p_member_ids: ['committee'] }]);
+    const saves = rpcNames().filter((n) => n.startsWith('admin_set_'));
+    expect(saves.indexOf('admin_set_injury_committee')).toBe(saves.indexOf('admin_set_injury_rules') + 1);
+    expect(saves.at(-1)).toBe('admin_set_wwc_officer');
+    expect(screen).toHavePathname('/administration');
+  });
+
+  it('can save chosen members with nobody ticked', async () => {
+    await openSafeguarding();
+    fireEvent.press(screen.getByText('Chosen committee members'));
+    await saveSafeguarding();
+    expect(callsTo('admin_set_injury_committee')).toEqual([{ p_chosen: true, p_member_ids: [] }]);
+  });
+
+  it('starts from the saved choice', async () => {
+    await openSafeguarding({ admin_injury_committee: { chosen: true, member_ids: ['expiring'] } });
+    expect(isSelected('Chosen committee members')).toBe(true);
+    expect(isOn(sees('Sample expiring'))).toBe(true);
+    expect(isOn(sees('Sample committee'))).toBe(false);
+    expect(screen.queryByText(/With nobody chosen/)).toBeNull();
+  });
+
+  it('warns when the only one chosen has left the committee', async () => {
+    await openSafeguarding({ admin_injury_committee: { chosen: true, member_ids: ['coach'] } });
+    expect(screen.getByText(/With nobody chosen/)).toBeTruthy();
+  });
+
+  it('saves nothing when the same members end up ticked', async () => {
+    await openSafeguarding({ admin_injury_committee: { chosen: true, member_ids: ['committee', 'expiring'] } });
+    flip(sees('Sample committee'), false);
+    flip(sees('Sample committee'), true);
+    await saveSafeguarding();
+    expect(callsTo('admin_set_injury_committee')).toEqual([]);
+  });
+
+  it('saves a different set of the same size', async () => {
+    await openSafeguarding({ admin_injury_committee: { chosen: true, member_ids: ['committee'] } });
+    flip(sees('Sample committee'), false);
+    flip(sees('Sample expiring'), true);
+    await saveSafeguarding();
+    expect(callsTo('admin_set_injury_committee')).toEqual([{ p_chosen: true, p_member_ids: ['expiring'] }]);
+  });
+
+  it('keeps the list when switching back to the whole committee', async () => {
+    await openSafeguarding({ admin_injury_committee: { chosen: true, member_ids: ['committee'] } });
+    fireEvent.press(screen.getByText('Whole committee'));
+    expect(screen.queryByLabelText(sees('Sample committee'))).toBeNull();
+    await saveSafeguarding();
+    expect(callsTo('admin_set_injury_committee')).toEqual([{ p_chosen: false, p_member_ids: ['committee'] }]);
+  });
+
+  it('stops at a refusal, before the WWC Registration Officer', async () => {
+    await openSafeguarding({}, { admin_set_injury_committee: 'Only approved committee members can be chosen to see injuries' });
+    fireEvent.press(screen.getByText('Chosen committee members'));
+    fireEvent.press(within(fieldGroup('WWC Registration Officer')).getByText('Sample admin  ✕'));
+    pickPerson('WWC Registration Officer', 'committee', 'Sample committee');
+    await saveSafeguarding();
+    expect(screen.getByText('Only approved committee members can be chosen to see injuries')).toBeTruthy();
+    expect(callsTo('admin_set_wwc_officer')).toEqual([]);
+    expect(screen).toHavePathname('/admin/safeguarding');
+  });
+
+  it('isn’t saved when an injury rule is refused', async () => {
+    await openSafeguarding({}, { admin_set_injury_rules: 'Choose 21 days, or 12 for an elite program' });
+    fireEvent.press(screen.getByText('Chosen committee members'));
+    await saveSafeguarding();
+    expect(callsTo('admin_set_injury_committee')).toEqual([]);
   });
 });
 

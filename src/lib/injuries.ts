@@ -50,10 +50,12 @@ export const injuryUpdateLabels: Record<InjuryUpdateKind, string> = {
  * screen. The database decides which injuries each of them sees.
  */
 export function useCanSeeInjuries() {
-  const { profile, memberships } = useAuth();
+  const { profile, memberships, committeeSeesInjuries } = useAuth();
   if (profile?.status !== 'approved') return false;
   return (
-    hasRole(profile, 'athlete', 'guardian', 'committee', 'physio', 'admin') ||
+    hasRole(profile, 'athlete', 'guardian', 'physio', 'admin') ||
+    // A club can choose which committee members see injuries.
+    (hasRole(profile, 'committee') && committeeSeesInjuries) ||
     memberships.some((m) => m.team_role === 'coach')
   );
 }

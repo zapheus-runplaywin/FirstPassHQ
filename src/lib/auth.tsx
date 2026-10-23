@@ -62,6 +62,12 @@ type AuthState = {
   statisticianChecksFrom: string | null;
   /** The Child Safety Officer or Complaints Manager, able to act as one now. */
   isSafeguardingOfficer: boolean;
+  /**
+   * Whether the club's choice of who on the committee sees injuries includes
+   * this member (true unless the club chose members and left them out). Only
+   * matters while they hold the committee role; the database applies it.
+   */
+  committeeSeesInjuries: boolean;
   refresh: () => Promise<void>;
   signOut: () => Promise<void>;
 };
@@ -87,6 +93,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   const [exemption, setExemption] = useState<MyVolunteerExemption | null>(null);
   const [wwccApplication, setWwccApplication] = useState<MyWwccApplication | null>(null);
   const [isSafeguardingOfficer, setIsSafeguardingOfficer] = useState(false);
+  const [committeeSeesInjuries, setCommitteeSeesInjuries] = useState(true);
   const [committeeChecksFrom, setCommitteeChecksFrom] = useState<string | null>(null);
   const [statisticianChecksFrom, setStatisticianChecksFrom] = useState<string | null>(null);
 
@@ -99,6 +106,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       setExemption(null);
       setWwccApplication(null);
       setIsSafeguardingOfficer(false);
+      setCommitteeSeesInjuries(true);
       setCommitteeChecksFrom(null);
       setStatisticianChecksFrom(null);
       return;
@@ -113,6 +121,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       committeeChecksResult,
       applicationResult,
       statisticianChecksResult,
+      committeeInjuriesResult,
     ] = await Promise.all([
       supabase.from('profiles').select(PROFILE_COLUMNS).eq('id', userId).single(),
       supabase
@@ -128,6 +137,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       supabase.rpc('committee_checks_from'),
       supabase.rpc('my_wwcc_application').maybeSingle(),
       supabase.rpc('statistician_checks_from'),
+      supabase.rpc('my_committee_sees_injuries'),
     ]);
     setProfile((profileResult.data as Profile | null) ?? null);
     setMemberships((membershipResult.data as unknown as TeamMembership[] | null) ?? []);
@@ -136,6 +146,8 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     setExemption((exemptionResult.data as MyVolunteerExemption | null) ?? null);
     setWwccApplication((applicationResult.data as MyWwccApplication | null) ?? null);
     setIsSafeguardingOfficer(officerResult.data === true);
+    // False only when the club chose committee members and left this one out.
+    setCommitteeSeesInjuries(committeeInjuriesResult.data !== false);
     setCommitteeChecksFrom(
       typeof committeeChecksResult.data === 'string' ? committeeChecksResult.data : null,
     );
@@ -213,6 +225,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
         isClubCaptain,
         isAdmin,
         isSafeguardingOfficer,
+        committeeSeesInjuries,
         committeeChecksFrom,
         statisticianChecksFrom,
         refresh,

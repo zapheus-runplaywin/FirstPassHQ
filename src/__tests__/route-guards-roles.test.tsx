@@ -73,7 +73,16 @@ const PHYSIOS: PersonaName[] = ['physio', 'headPhysio'];
  * the same member screens. (Only those screened to work with children also
  * read the reports, in route-guards.test.tsx.)
  */
-const COMMITTEE: PersonaName[] = ['committee', 'committeeExempt', 'committeeBeforeChecksDate', 'committeeVolunteerExempt'];
+const COMMITTEE: PersonaName[] = [
+  'committee',
+  'committeeExempt',
+  'committeeBeforeChecksDate',
+  'committeeVolunteerExempt',
+  // The same screens, but no injuries: the club chose who on the committee
+  // sees them and left this one out (customer review R7).
+  'committeeNotChosen',
+];
+const COMMITTEE_SEEING_INJURIES = COMMITTEE.filter((p) => p !== 'committeeNotChosen');
 // An expired check never pauses the admin role; a lapsed admin's coaching pauses.
 const ADMINS: PersonaName[] = [
   'admin',
@@ -131,7 +140,7 @@ const SURVEY_SENDERS = union(ADMINS, COMMITTEE, COACHES, MANAGERS, ['captain']);
 // Coaches, managers and physios log injuries; managers open the injury
 // screens only to do that, and see no records there.
 const INJURY_LOGGERS = union(COACHES, MANAGERS, PHYSIOS);
-const INJURIES = union(ATHLETES, GUARDIANS, COACHES, PHYSIOS, COMMITTEE, ADMINS, INJURY_LOGGERS);
+const INJURIES = union(ATHLETES, GUARDIANS, COACHES, PHYSIOS, COMMITTEE_SEEING_INJURIES, ADMINS, INJURY_LOGGERS);
 const FAMILY_OF_ATHLETES = union(ATHLETES, GUARDIANS);
 const ATTENDANCE_TAKERS = union(COACHES, MANAGERS, COMMITTEE, ADMINS);
 const ATTENDANCE_VIEWERS = union(COACHES, COMMITTEE, ADMINS);

@@ -30,7 +30,7 @@ Most of the protection lives in the database, because row level security and dat
 
 Admin, committee, head coach, assistant coach, manager, physio (squad physio and Head Physio), adult athlete, under-18 athlete, guardian (and a guardian whose child has turned 18), guest, temporary helper, pending and signed-out members.
 
-Each test also covers members whose rights have stopped: a coach or committee member whose check has lapsed, a committee member past the club's checks date, and a stood-down coach or admin. It covers members with more than one role, such as coach and guardian, athlete and coach, or admin and guardian.
+Each test also covers members whose rights have stopped: a coach or committee member whose check has lapsed, a committee member past the club's checks date, and a stood-down coach or admin. It covers members with more than one role, such as coach and guardian, athlete and coach, or admin and guardian. Where a club setting narrows a role, it covers a member the setting leaves out, such as a committee member not among those the club chose to see injuries.
 
 A new access rule is tested for every one of these, both ways: who gets it and who doesn't.
 
