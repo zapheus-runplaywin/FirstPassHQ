@@ -73,6 +73,7 @@ function medical(extra: Partial<MedicalProfile> = {}): MedicalProfile {
     checked_by_name: 'Sample Athlete',
     check_due_on: '2027-10-20',
     check_status: 'current',
+    removal_on: null,
     ...extra,
   };
 }
@@ -484,5 +485,19 @@ describe('Home to-dos for the yearly check', () => {
     await openScreen(who, { index: HomeScreen }, '/', {}, { rpcs: { my_medical_reviews: reviews } });
     expect(callsTo('my_medical_reviews')).toEqual([]);
     expect(screen.queryByText(/medical details are still right/)).toBeNull();
+  });
+});
+
+describe('removal when nobody checks them', () => {
+  it('tells the keeper the day they go once the check is due', async () => {
+    await openMedical('athlete', medical({ check_status: 'overdue', check_due_on: '2026-10-01', removal_on: '2027-10-01' }));
+    expect(
+      screen.getByText(`The yearly check was due ${formatDateString('2026-10-01')}. If nobody checks them by ${formatDateString('2027-10-01')}, they’ll be removed.`),
+    ).toBeTruthy();
+  });
+
+  it('says nothing about removal while the check is up to date', async () => {
+    await openMedical('athlete', medical({ removal_on: '2028-10-20' }));
+    expect(screen.queryByText(/removed/)).toBeNull();
   });
 });

@@ -1721,7 +1721,12 @@ export function kpiReport(seasonName: string, rows: KpiReportRow[], today: strin
  * guardians keep theirs. Lists no medical details, only whether emergency
  * contacts are saved.
  */
-export function medicalCheckReport(rows: MedicalComplianceRow[], today = new Date()): Report {
+export function medicalCheckReport(
+  rows: MedicalComplianceRow[],
+  today = new Date(),
+  /** The chosen squads and teams, when not the whole club. */
+  groups?: string,
+): Report {
   const sorted = [...rows].sort((a, b) => a.athlete_name.localeCompare(b.athlete_name));
   const noKeeper = (r: MedicalComplianceRow) => r.minor && !r.has_verified_guardian;
   const of = (status: MedicalCheckStatus) => sorted.filter((r) => r.status === status);
@@ -1762,7 +1767,7 @@ export function medicalCheckReport(rows: MedicalComplianceRow[], today = new Dat
 
   return {
     title: 'Medical details checks',
-    subtitle: `Approved athletes on ${formatDateString(toDateString(today))}`,
+    subtitle: `Approved athletes${groups ? ` in ${groups}` : ''} on ${formatDateString(toDateString(today))}`,
     landscape: true,
     stats: [
       { label: 'Athletes', value: sorted.length },

@@ -1171,6 +1171,13 @@ describe('medicalCheckReport', () => {
     expect(stat(report, 'Checked in the last year')).toBe('100%');
   });
 
+  it('names the chosen squads and teams in the subtitle', () => {
+    expect(medicalCheckReport([], REPORT_DAY, '17 & Under Squad, Open A').subtitle).toBe(
+      `Approved athletes in 17 & Under Squad, Open A on ${formatDateString('2026-10-18')}`,
+    );
+    expect(medicalCheckReport([], REPORT_DAY).subtitle).toBe(`Approved athletes on ${formatDateString('2026-10-18')}`);
+  });
+
   it('copes with no athletes', () => {
     const report = medicalCheckReport([], REPORT_DAY);
     expect(stat(report, 'Checked in the last year')).toBe('0%');
