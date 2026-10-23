@@ -40,6 +40,10 @@ export default function SafeguardingScreen() {
   const [minorPhotos, setMinorPhotos] = useState(false);
   const [physioOnly, setPhysioOnly] = useState(false);
   const [concussionDays, setConcussionDays] = useState<'21' | '12'>('21');
+  const [committee, setCommittee] = useState<Profile[]>([]);
+  const [injuryCommittee, setInjuryCommittee] = useState<InjuryCommittee>(WHOLE_COMMITTEE);
+  const [savedInjuryCommittee, setSavedInjuryCommittee] =
+    useState<InjuryCommittee>(WHOLE_COMMITTEE);
   const [conductEachSeason, setConductEachSeason] = useState(false);
   const [committeeFrom, setCommitteeFrom] = useState<string | null>(null);
   const [savedCommitteeFrom, setSavedCommitteeFrom] = useState<string | null>(null);
@@ -65,6 +69,7 @@ export default function SafeguardingScreen() {
       injuryRulesResult,
       applicationsResult,
       statisticianFromResult,
+      injuryCommitteeResult,
     ] = await Promise.all([
       supabase.rpc('safeguarding_contacts').maybeSingle(),
       supabase.from('profiles').select(PROFILE_COLUMNS).eq('status', 'approved').order('full_name'),
@@ -77,6 +82,7 @@ export default function SafeguardingScreen() {
       supabase.rpc('injury_rules').maybeSingle(),
       supabase.rpc('admin_wwcc_applications'),
       supabase.rpc('statistician_checks_from'),
+      supabase.rpc('admin_injury_committee').maybeSingle(),
     ]);
     const officerId = (wwcOfficerResult.data as { officer_id: string } | null)?.officer_id ?? null;
     setWwcOfficer(officerId);
@@ -92,6 +98,13 @@ export default function SafeguardingScreen() {
     } | null;
     setPhysioOnly(rules?.physio_only_endorsement === true);
     setConcussionDays(rules?.concussion_min_days === 12 ? '12' : '21');
+    const chosen = injuryCommitteeResult.data as { chosen: boolean; member_ids: string[] } | null;
+    const choice: InjuryCommittee = {
+      chosen: chosen?.chosen === true,
+      memberIds: chosen?.member_ids ?? [],
+    };
+    setInjuryCommittee(choice);
+    setSavedInjuryCommittee(choice);
     setConductEachSeason(conductResult.data === true);
     const from = typeof committeeFromResult.data === 'string' ? committeeFromResult.data : null;
     setCommitteeFrom(from);
@@ -116,9 +129,12 @@ export default function SafeguardingScreen() {
     for (const a of (applicationsResult.data as WwccApplication[] | null) ?? []) {
       if (!a.ended_at && a.status === 'in_force') exempt.add(a.profile_id);
     }
+    const members = (membersResult.data as Profile[] | null) ?? [];
+    // Admins see injuries as admins, whatever the choice.
+    setCommittee(members.filter((m) => hasRole(m, 'committee') && !hasRole(m, 'admin')));
     // The same rule as the database: approved adults, not stood down, screened.
     setEligible(
-      ((membersResult.data as Profile[] | null) ?? []).filter((m) => {
+      members.filter((m) => {
         const check = wwccStatus(m).kind;
         return (
           !isMinor(m.date_of_birth, m.under_17) &&
@@ -169,6 +185,18 @@ export default function SafeguardingScreen() {
             p_physio_only_endorsement: physioOnly,
             p_concussion_min_days: Number(concussionDays),
           });
+    const { error: injuryCommitteeError } =
+      rpcError ||
+      photosError ||
+      policiesError ||
+      conductError ||
+      injuryError ||
+      sameChoice(injuryCommittee, savedInjuryCommittee)
+        ? { error: null }
+        : await supabase.rpc('admin_set_injury_committee', {
+            p_chosen: injuryCommittee.chosen,
+            p_member_ids: injuryCommittee.memberIds,
+          });
     // The WWC Registration Officer and committee checks date go last, as they
     // can change who manages these settings.
     const { error: officerError } =
@@ -177,6 +205,7 @@ export default function SafeguardingScreen() {
       policiesError ||
       conductError ||
       injuryError ||
+      injuryCommitteeError ||
       wwcOfficer === savedWwcOfficer
         ? { error: null }
         : await supabase.rpc('admin_set_wwc_officer', { p_profile_id: wwcOfficer });
@@ -186,6 +215,7 @@ export default function SafeguardingScreen() {
       policiesError ||
       conductError ||
       injuryError ||
+      injuryCommitteeError ||
       officerError ||
       !committeeFrom ||
       committeeFrom === savedCommitteeFrom
@@ -197,6 +227,7 @@ export default function SafeguardingScreen() {
       policiesError ||
       conductError ||
       injuryError ||
+      injuryCommitteeError ||
       officerError ||
       committeeError ||
       !statisticianFrom ||
@@ -209,6 +240,7 @@ export default function SafeguardingScreen() {
       policiesError ??
       conductError ??
       injuryError ??
+      injuryCommitteeError ??
       officerError ??
       committeeError ??
       statisticianError;
@@ -447,9 +479,76 @@ export default function SafeguardingScreen() {
           and pathway netball, and 12 at elite level, with a doctor’s clearance either way.
         </ThemedText>
       </View>
+
+      <View style={styles.group}>
+        <ChipGroup
+          label="Injuries are seen by"
+          options={[
+            { value: 'whole', label: 'Whole committee' },
+            { value: 'chosen', label: 'Chosen committee members' },
+          ]}
+          selected={[injuryCommittee.chosen ? 'chosen' : 'whole']}
+          onToggle={(value) => setInjuryCommittee((c) => ({ ...c, chosen: value === 'chosen' }))}
+        />
+        <ThemedText type="small" themeColor="textSecondary">
+          The whole committee by default. Choose members to keep injuries to the few who need them,
+          such as the president and whoever looks after player welfare. Committee members left out
+          don’t see injuries or sign off returns to play. A chosen member sees an under 18’s
+          injuries only with a check, an application in force or an exemption. Admins see injuries
+          as admins, whatever you choose here.
+        </ThemedText>
+        {injuryCommittee.chosen ? (
+          <>
+            {committee.map((m) => {
+              const name = m.preferred_name || m.full_name;
+              return (
+                <Card key={m.id} style={styles.switchRow}>
+                  <ThemedText type="small" style={styles.grow}>
+                    {m.title ? `${name}, ${m.title}` : name}
+                  </ThemedText>
+                  <Switch
+                    accessibilityLabel={`${name} sees injuries`}
+                    value={injuryCommittee.memberIds.includes(m.id)}
+                    onValueChange={(on) =>
+                      setInjuryCommittee((c) => ({
+                        ...c,
+                        memberIds: on
+                          ? [...c.memberIds, m.id]
+                          : c.memberIds.filter((id) => id !== m.id),
+                      }))
+                    }
+                    trackColor={{ true: theme.accent, false: theme.backgroundSelected }}
+                    thumbColor={theme.text}
+                    {...(Platform.OS === 'web' ? { activeThumbColor: theme.onAccent } : {})}
+                  />
+                </Card>
+              );
+            })}
+            {!committee.some((m) => injuryCommittee.memberIds.includes(m.id)) ? (
+              <ThemedText type="smallBold">
+                With nobody chosen, no committee member sees injuries and only admins accept
+                clearances.
+              </ThemedText>
+            ) : null}
+          </>
+        ) : null}
+      </View>
       <ErrorText>{error}</ErrorText>
       <Button title="Save" onPress={save} busy={busy} />
     </Screen>
+  );
+}
+
+/** Who on the committee sees injuries (customer review R7). */
+type InjuryCommittee = { chosen: boolean; memberIds: string[] };
+
+const WHOLE_COMMITTEE: InjuryCommittee = { chosen: false, memberIds: [] };
+
+function sameChoice(a: InjuryCommittee, b: InjuryCommittee) {
+  return (
+    a.chosen === b.chosen &&
+    a.memberIds.length === b.memberIds.length &&
+    a.memberIds.every((id) => b.memberIds.includes(id))
   );
 }
 

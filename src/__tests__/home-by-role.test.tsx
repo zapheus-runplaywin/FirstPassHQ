@@ -168,6 +168,12 @@ const BY_ROLE: { who: PersonaName; sees: Item[] }[] = [
     sees: ['messages', 'sendSurveys', 'checkIns', 'injuries', 'takeAttendance', 'integrity', 'comingUp', 'raiseConcern'],
   },
   {
+    // The club chose who on the committee sees injuries and left them out
+    // (customer review R7): no Injuries card.
+    who: 'committeeNotChosen',
+    sees: ['messages', 'sendSurveys', 'checkIns', 'takeAttendance', 'integrity', 'reports', 'comingUp', 'raiseConcern'],
+  },
+  {
     who: 'committeeVolunteerExempt',
     sees: ['messages', 'sendSurveys', 'checkIns', 'injuries', 'takeAttendance', 'integrity', 'reports', 'comingUp', 'raiseConcern'],
   },

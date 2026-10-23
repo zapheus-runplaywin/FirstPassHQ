@@ -128,6 +128,7 @@ type Rows = {
   exemption?: MyVolunteerExemption | null;
   application?: MyWwccApplication | null;
   isSafeguardingOfficer?: unknown;
+  committeeSeesInjuries?: unknown;
   committeeChecksFrom?: unknown;
   statisticianChecksFrom?: unknown;
 };
@@ -190,6 +191,7 @@ beforeEach(() => {
     if (fn === 'my_volunteer_exemption') return query({ data: rows.exemption ?? null });
     if (fn === 'my_wwcc_application') return query({ data: rows.application ?? null });
     if (fn === 'is_safeguarding_officer') return query({ data: rows.isSafeguardingOfficer ?? false });
+    if (fn === 'my_committee_sees_injuries') return query({ data: rows.committeeSeesInjuries ?? true });
     if (fn === 'committee_checks_from') return query({ data: rows.committeeChecksFrom ?? null });
     if (fn === 'statistician_checks_from') return query({ data: rows.statisticianChecksFrom ?? null });
     throw new Error(`Unexpected function ${fn}`);
@@ -285,6 +287,7 @@ describe('loading the member', () => {
     expect(auth.isAdmin).toBe(false);
     expect(auth.isClubCaptain).toBe(false);
     expect(auth.isSafeguardingOfficer).toBe(false);
+    expect(auth.committeeSeesInjuries).toBe(true);
     expect(supabase.from).not.toHaveBeenCalled();
     expect(supabase.rpc).not.toHaveBeenCalled();
   });
@@ -318,11 +321,14 @@ describe('loading the member', () => {
       memberships: [member(TEAM_A, 'coach')],
       isClubCaptain: true,
       isSafeguardingOfficer: true,
+      committeeSeesInjuries: false,
       exemption: exemption(),
       committeeChecksFrom: '2027-01-11',
     };
     const { result } = renderHook(() => useAuth(), { wrapper });
     expect(result.current.loading).toBe(true);
+    // The club's default, the whole committee, until the member loads.
+    expect(result.current.committeeSeesInjuries).toBe(true);
     expect(result.current.profile).toBeNull();
     expect(result.current.memberships).toEqual([]);
     expect(result.current.captaincies).toEqual([]);
@@ -385,10 +391,12 @@ describe('loading the member', () => {
       profile: profile('coach'),
       isClubCaptain: true,
       isSafeguardingOfficer: true,
+      committeeSeesInjuries: false,
       exemption: exemption(),
       application: application(),
       committeeChecksFrom: '2027-01-11',
     });
+    expect(result.current.auth.committeeSeesInjuries).toBe(false);
     expect(result.current.auth.exemption).toEqual(exemption());
     expect(result.current.auth.wwccApplication).toEqual(application());
     expect(result.current.auth.committeeChecksFrom).toBe('2027-01-11');
@@ -403,6 +411,7 @@ describe('loading the member', () => {
     expect(result.current.auth.committeeChecksFrom).toBeNull();
     expect(result.current.auth.isClubCaptain).toBe(false);
     expect(result.current.auth.isSafeguardingOfficer).toBe(false);
+    expect(result.current.auth.committeeSeesInjuries).toBe(true);
   });
 
   it('refreshes to nobody when signed out', async () => {
@@ -996,6 +1005,25 @@ describe('club captains and safeguarding contacts', () => {
   ])('isClubCaptain when the database says %j → %s', async (value, expected) => {
     const auth = await authFor({ profile: profile('athlete'), isClubCaptain: value });
     expect(auth.isClubCaptain).toBe(expected);
+  });
+
+  // The club's choice of committee members who see injuries (customer review
+  // R7): only a plain false leaves the member out, so a failed call keeps the
+  // screen and the database still decides what's in it.
+  test.each([
+    [true, true],
+    [false, false],
+    [null, true],
+    ['false', true],
+    [0, true],
+  ])('committeeSeesInjuries when the database says %j → %s', async (value, expected) => {
+    const auth = await authFor({ profile: profile('committee'), committeeSeesInjuries: value });
+    expect(auth.committeeSeesInjuries).toBe(expected);
+  });
+
+  it('asks the database whether the committee member sees injuries', async () => {
+    await authFor({ profile: profile('committee') });
+    expect(supabase.rpc).toHaveBeenCalledWith('my_committee_sees_injuries');
   });
 
   it('isn’t a safeguarding officer when signed out', async () => {

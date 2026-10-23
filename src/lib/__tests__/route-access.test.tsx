@@ -100,6 +100,7 @@ function auth(
     captaincies?: GroupCaptain[];
     isClubCaptain?: boolean;
     isSafeguardingOfficer?: boolean;
+    committeeSeesInjuries?: boolean;
     exemption?: Auth['exemption'];
     wwccApplication?: Auth['wwccApplication'];
   } = {},
@@ -119,6 +120,7 @@ function auth(
     committeeChecksFrom: null,
     statisticianChecksFrom: null,
     isSafeguardingOfficer: extra.isSafeguardingOfficer ?? false,
+    committeeSeesInjuries: extra.committeeSeesInjuries ?? true,
     refresh: jest.fn(),
     signOut: jest.fn(),
   };
@@ -274,6 +276,22 @@ const CASES: [string, Auth, Key[]][] = [
       wwccApplication: { valid: false } as Auth['wwccApplication'],
     }),
     ['readMessages', 'sendMessages', 'answerSurveys', 'sendSurveys', 'surveyResults', 'injuries', 'attendance', 'takeAttendance', 'athleteAttendance', 'checkIns', 'awards', 'kpis', 'setKpis', 'training', 'checkTraining'],
+  ],
+  // A club can choose which committee members see injuries (customer review R7).
+  [
+    'the committee, left out of the members who see injuries',
+    auth(profile('committee'), { committeeSeesInjuries: false }),
+    ['readMessages', 'sendMessages', 'answerSurveys', 'sendSurveys', 'surveyResults', 'attendance', 'takeAttendance', 'athleteAttendance', 'checkIns', 'awards', 'kpis', 'setKpis', 'training', 'checkTraining', 'reports'],
+  ],
+  [
+    'the committee, left out of the members who see injuries, who is also a guardian',
+    auth(profile('committee', { extra_roles: ['guardian'] }), { committeeSeesInjuries: false }),
+    ['readMessages', 'sendMessages', 'answerSurveys', 'sendSurveys', 'surveyResults', 'injuries', 'reportInjury', 'attendance', 'takeAttendance', 'athleteAttendance', 'familyAttendance', 'readSessionPlans', 'checkIns', 'athleteCheckIns', 'awards', 'gameGoals', 'athleteGoals', 'kpis', 'setKpis', 'training', 'checkTraining', 'family', 'medical', 'reports'],
+  ],
+  [
+    'an admin on the committee, left out of the members who see injuries',
+    auth(profile('admin', { extra_roles: ['committee'] }), { committeeSeesInjuries: false }),
+    ['readMessages', 'sendMessages', 'answerSurveys', 'sendSurveys', 'surveyResults', 'injuries', 'attendance', 'takeAttendance', 'athleteAttendance', 'readSessionPlans', 'addSessionPlans', 'checkIns', 'awards', 'teamGoals', 'kpis', 'setKpis', 'training', 'checkTraining', 'reports', 'concerns', 'family', 'chooseCaptains'],
   ],
   [
     'a coach with a check who is not on the committee',

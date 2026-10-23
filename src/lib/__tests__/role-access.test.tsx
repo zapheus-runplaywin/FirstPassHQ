@@ -217,6 +217,7 @@ function persona({
     committeeChecksFrom: null,
     statisticianChecksFrom: null,
     isSafeguardingOfficer: false,
+    committeeSeesInjuries: true,
     refresh: jest.fn(),
     signOut: jest.fn(),
   };

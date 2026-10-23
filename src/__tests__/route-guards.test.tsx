@@ -144,7 +144,7 @@ describe('committee reports', () => {
     for (const route of COMMITTEE_REPORTS) expect(ADMIN_ROUTES).toContain(route);
   });
 
-  describe.each(['committee', 'committeeVolunteerExempt'] as PersonaName[])('%s', (who) => {
+  describe.each(['committee', 'committeeVolunteerExempt', 'committeeNotChosen'] as PersonaName[])('%s', (who) => {
     it.each(COMMITTEE_REPORTS)('opens %s', async (route) => {
       await expectReaches(who, route);
     });

@@ -154,7 +154,9 @@ them or makes them Head Physio.
 
 ¶ Except athletes under 18 whose parents haven't given consent for injuries, whom only admins see.
 Committee members see an under 18's injuries, and accept or send back their clearances, only with a
-current Working With Children Check or a parent volunteer exemption.
+current Working With Children Check or a parent volunteer exemption. A club can choose which committee
+members see injuries under **Injuries are seen by** in Safeguarding settings; the rest see none and
+sign off none.
 
 ‖ For an athlete under 18, only once a parent or guardian has given consent for injuries and
 health information. Each time a coach, manager or physio opens them it's recorded, and the athlete
@@ -1789,6 +1791,12 @@ Individual answers are only for the athlete, their guardians and their coaches.
 
 ### Accepting clearances
 
+Your club may choose which committee members see injuries, under **Injuries are seen by** in
+Safeguarding settings (see [Safeguarding contacts](#safeguarding-contacts)). If it has and you
+aren't one of them, you have no **Injuries** card or screen, no clearance to-dos, and can't accept,
+send back or share a clearance. Everything below is for committee members who see injuries, which is
+the whole committee unless the club has chosen.
+
 The committee sees every athlete's injuries, except an athlete under 18 whose parents haven't yet
 given consent for injuries (admins can see those, but nobody can endorse or accept a clearance
 until a parent gives consent). An under 18's injuries, and accepting or sending back their
@@ -1798,7 +1806,7 @@ with no check yet before the club's **Committee checks required from** date, see
 only. Admins see every injury, unless their own check has been missing or expired for over 30
 days (see [Approving members](#approving-members)): then they see adults' injuries only. Athletes who have left the club stay listed under **Including
 cleared** for 12 months. When a coach or physio endorses a clearance, it appears under **Waiting
-for your sign-off** and in the to-do list of every committee member and admin except the person
+for your sign-off** and in the to-do list of every committee member who sees injuries and every admin, except the person
 who endorsed it and the athlete's own parents or guardians. Open it, check the proof, then:
 
 - **Accept clearance** clears the athlete to train and play, or
@@ -3047,6 +3055,20 @@ Under **Injury clearances**:
 
 <img src="user-guide/admin-injury-clearances.png" width="210" alt="Safeguarding settings: injury clearances">
 
+**Injuries are seen by** is **Whole committee** by default, so every committee member sees
+injuries and accepts clearances as [Accepting clearances](#accepting-clearances) describes. Choose
+**Chosen committee members** to keep injuries to the few who need them, such as the president and
+whoever looks after player welfare, then switch on each one. Only committee members who aren't
+admins are listed. Committee members left out see no injuries, get no clearance to-dos and can't
+accept, send back or share a clearance. A chosen member still sees an under 18's injuries only with
+a current check, an application in force or a parent volunteer exemption. Admins aren't affected:
+they see injuries as admins. With nobody switched on, no committee member sees injuries and only
+admins accept clearances; the screen warns you. Going back to **Whole committee** keeps your list,
+so choosing again brings the same people back. Someone who leaves the committee stops seeing
+injuries straight away.
+
+<img src="user-guide/admin-injury-committee.png" width="210" alt="Safeguarding settings: injuries seen by chosen committee members">
+
 **Code of conduct** in Administration lists who still has to accept the code of conduct this
 season and who has, with the date and, for an under 18, the parent or guardian who accepted. An
 under 18 whose linked parents or guardians aren't verified yet shows **waiting for a parent or
@@ -3141,7 +3163,7 @@ once saved, only replaced or removed, and anyone who gets it wrong five times in
 | Who has answered a survey | Named surveys: whoever can see the results sees who hasn't answered yet. Anonymous and name-optional surveys: only how many have answered. Each member sees whether they've answered themselves. |
 | Daily check-in answers and notes | The athlete, their guardians and their coaches. For an athlete under 18, their coaches only once a parent or guardian consents, and until then their check-ins count in no average. The committee, physios and admins see only group averages, hidden below 3 check-ins (over three days, in Trends). |
 | Wellbeing flags | Only the Child Safety Officer: for every athlete, selected or not, the day and lowest score of each check-in scoring 2 or less in the last 14 days, never the answers or notes. Under 18s only once a parent or guardian consents to check-ins. |
-| Injuries and documents  | For an athlete under 18 whose parents haven't given consent for injuries: only the athlete, their guardians and admins. Otherwise the athlete, their guardians, their coaches, the physios who look after them (the Head Physio and physios in their squad or team), the committee and admins. For an athlete under 18, only committee members with a current Working With Children Check or a parent volunteer exemption, and admins unless their own check has been missing or expired for over 30 days. Managers don't see injuries, including ones they log. A coach, manager or physio who logs an injury sees it only as their role already allows. Whoever takes attendance (coaches, managers, the committee and admins) sees only that an athlete is **Injured** and their expected return date, whatever the consent. While a clearance waits for the committee, any committee member or admin who could accept it can share its documents; everyone else views them in the app. |
+| Injuries and documents  | For an athlete under 18 whose parents haven't given consent for injuries: only the athlete, their guardians and admins. Otherwise the athlete, their guardians, their coaches, the physios who look after them (the Head Physio and physios in their squad or team), the committee (or only the committee members the club chose under **Injuries are seen by**) and admins. For an athlete under 18, only committee members with a current Working With Children Check or a parent volunteer exemption, and admins unless their own check has been missing or expired for over 30 days. Managers don't see injuries, including ones they log. A coach, manager or physio who logs an injury sees it only as their role already allows. Whoever takes attendance (coaches, managers, the committee and admins) sees only that an athlete is **Injured** and their expected return date, whatever the consent. While a clearance waits for the committee, any committee member or admin who could accept it can share its documents; everyone else views them in the app. |
 | Medical and emergency details | The athlete; an under 18's verified parents and guardians, who keep them (an athlete 18 or over keeps their own); and the coaches, managers and physios of the athlete's current squads and teams (the Head Physio for every athlete), for an under 18 only once a parent or guardian has given consent for injuries and health information. Not admins or the committee. Each view by a coach, manager or physio is recorded, and the athlete 18 or over, or an under 18's parents and guardians, see who and when. Checked once a year by whoever keeps them; admins see who has checked and when, but not the details. Removed when nobody has checked them for the club's chosen time (Keeping records), and deleted with the athlete's account. |
 | Who opened injury documents | The athlete, their guardians and admins: every view and share, by whom, their role and when, and each photo consent. |
 | Who has viewed a child's records | For an athlete under 18: their verified parents or guardians (until the athlete turns 18) and admins. Lists every time someone other than the athlete or their guardians opened the athlete's injuries, injury documents, check-ins, game goals, season KPIs, named survey answers or member record. Opening a child's records is recorded whoever you are; nobody can switch it off or delete entries by hand, and old entries are removed only under the club's Keeping records settings. |
@@ -3273,6 +3295,9 @@ Working With Children Check, and another admin must do it.
   Children Check or a parent volunteer exemption. A committee member exempted for another reason,
   such as a treasurer who never works with children, or one with no check before the club's
   **Committee checks required from** date, sees adults' injuries only.
+- **Fewer people see injuries, if the club wants.** An admin can choose which committee members see
+  injuries and sign off returns to play, such as the president and whoever looks after player
+  welfare. The rest of the committee then sees no injury at all, adult or child.
 - **Admins lose children's injuries when their check lapses.** An admin keeps every admin power
   when their check expires, so the club is never locked out, but 30 days after it expired, or after
   the committee checks date if none is recorded, they stop seeing under 18s' injuries and
