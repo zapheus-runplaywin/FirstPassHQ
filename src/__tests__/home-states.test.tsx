@@ -21,6 +21,7 @@ import {
   openScreen,
   personas,
   resetClub,
+  setClubFeatures,
   settle,
   type BackendOptions,
   type Persona,
@@ -554,5 +555,40 @@ describe('the footer', () => {
     fireEvent.press(screen.getByText('Raise a concern'));
     expect(push).toHaveBeenCalledWith('/concern/new');
     expect(argsOf('my_verification_code')).toHaveLength(1);
+  });
+});
+
+// ---------------------------------------------------------------------------
+// Wellbeing flags, for the Child Safety Officer
+
+describe('athletes flagged 3 times in a week', () => {
+  it('puts them on the Child Safety Officer’s to-do list, opening the flags', async () => {
+    await openHome('safeguardingOfficer', {}, { rpcs: { wellbeing_flag_alerts: 2 } });
+    fireEvent.press(screen.getByText('Look at 2 athletes flagged 3 times this week'));
+    expect(push).toHaveBeenCalledWith('/concerns/wellbeing');
+  });
+
+  it('adds nothing when nobody was flagged 3 times', async () => {
+    await openHome('safeguardingOfficer', {}, { rpcs: { wellbeing_flag_alerts: 0 } });
+    expect(screen.queryByText(/flagged 3 times this week/)).toBeNull();
+  });
+
+  it('never asks for members who don’t handle concerns', async () => {
+    await openHome('coach', {}, { rpcs: { wellbeing_flag_alerts: 2 } });
+    expect(rpcNames()).not.toContain('wellbeing_flag_alerts');
+    expect(screen.queryByText(/flagged 3 times this week/)).toBeNull();
+  });
+
+  it('shows admins nothing, as the database gives them no count', async () => {
+    await openHome('admin', {}, { rpcs: { wellbeing_flag_alerts: null } });
+    expect(rpcNames()).toContain('wellbeing_flag_alerts');
+    expect(screen.queryByText(/flagged 3 times this week/)).toBeNull();
+  });
+
+  it('adds nothing, without asking, when the club has check-ins turned off', async () => {
+    setClubFeatures({ checkIns: false });
+    await openHome('safeguardingOfficer', {}, { rpcs: { wellbeing_flag_alerts: 2 } });
+    expect(rpcNames()).not.toContain('wellbeing_flag_alerts');
+    expect(screen.queryByText(/flagged 3 times this week/)).toBeNull();
   });
 });

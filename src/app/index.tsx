@@ -66,6 +66,7 @@ import {
 } from '@/lib/training';
 import type { AppRole, Profile, TeamMembership } from '@/lib/types';
 import { useEvents } from '@/lib/use-events';
+import { useWellbeingFlagAlerts } from '@/lib/wellbeing-flags';
 import { hasRole, rolesOf } from '@/lib/roles';
 
 /** Three rows of two tiles. */
@@ -91,6 +92,8 @@ export default function HomeScreen() {
   const { switchClub } = useClubChoice();
   const club = useClub();
   const { features } = club;
+  // The Child Safety Officer sees athletes flagged again and again.
+  const wellbeingFlags = useWellbeingFlagAlerts(handlesConcerns && features.checkIns);
   const [refreshing, setRefreshing] = useState(false);
   const [athletes, setAthletes] = useState<
     { id: string; name: string; data: boolean; health: boolean; canConsent: boolean }[]
@@ -154,6 +157,7 @@ export default function HomeScreen() {
       !wwccApplication.declared_at &&
       wwccApplication.status === 'waiting_for_declaration',
     newConcerns,
+    wellbeingFlagAlerts: wellbeingFlags.repeated,
     absencesToReview: absencesToReview.length,
     consentsNeeded: athletes.filter((a) => a.canConsent && (!a.data || !a.health)),
     conduct: conductTodos.map((t) => ({

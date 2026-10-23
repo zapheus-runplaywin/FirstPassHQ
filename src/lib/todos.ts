@@ -84,6 +84,7 @@ export function buildTodos({
   declarationWaiting = false,
   applicationDeclarationWaiting = false,
   newConcerns = 0,
+  wellbeingFlagAlerts = 0,
   absencesToReview = 0,
   consentsNeeded = [],
   conduct = [],
@@ -123,6 +124,8 @@ export function buildTodos({
   applicationDeclarationWaiting?: boolean;
   /** Concerns nobody has acted on yet, for the people who handle them. */
   newConcerns?: number;
+  /** Athletes flagged on 3 or more days in the last 7, for the Child Safety Officer. */
+  wellbeingFlagAlerts?: number;
   /** Absences reported or withdrawn for the member's squads and teams since they last looked. */
   absencesToReview?: number;
   /** A guardian's children under 18 still waiting for their consent. */
@@ -146,6 +149,16 @@ export function buildTodos({
       title: `Look at ${newConcerns} new ${newConcerns === 1 ? 'concern' : 'concerns'}`,
       detail: 'Refer child abuse and serious crimes to Police straight away',
       href: '/concerns',
+    });
+  }
+
+  // A run of low check-ins can be the first sign something is wrong.
+  if (wellbeingFlagAlerts > 0) {
+    todos.push({
+      key: 'wellbeing-flags',
+      title: `Look at ${wellbeingFlagAlerts} ${wellbeingFlagAlerts === 1 ? 'athlete' : 'athletes'} flagged 3 times this week`,
+      detail: 'Low check-in scores on 3 of the last 7 days',
+      href: '/concerns/wellbeing',
     });
   }
 

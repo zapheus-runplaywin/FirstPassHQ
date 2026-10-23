@@ -191,6 +191,7 @@ const WHO_OPENS: Record<string, PersonaName[]> = {
   'concerns/index': union(ADMINS, ['safeguardingOfficer']),
   'concerns/[id]': union(ADMINS, ['safeguardingOfficer']),
   'concerns/report': union(ADMINS, ['safeguardingOfficer']),
+  'concerns/wellbeing': union(ADMINS, ['safeguardingOfficer']),
 
   'consent/[id]': union(GUARDIANS, ADMINS),
   'records/[id]': union(GUARDIANS, ADMINS),

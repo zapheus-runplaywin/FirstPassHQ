@@ -232,6 +232,7 @@ function RootStack() {
             <Stack.Screen name="concerns/index" options={{ title: 'Concerns' }} />
             <Stack.Screen name="concerns/[id]" options={{ title: 'Concern' }} />
             <Stack.Screen name="concerns/report" options={{ title: 'Concerns register' }} />
+            <Stack.Screen name="concerns/wellbeing" options={{ title: 'Wellbeing flags' }} />
           </Stack.Protected>
           <Stack.Screen name="tasks/index" options={{ title: 'Your tasks' }} />
           <Stack.Screen name="tasks/new" options={{ title: 'Add a task' }} />
