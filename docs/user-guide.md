@@ -931,7 +931,9 @@ them** shows you (or, if you're under 18, your parents) who and when. Your detai
 account is deleted.
 
 **Check them once a year.** If you're 18 or over, the club asks you to check your details are
-still right once a year. Saving them counts as the check. From 30 days before it's due your to-do
+still right once a year. If the club removes old records, details nobody has checked for a while
+(2 years unless the club chose longer) are removed, and the date shows under them once the check
+is due. Saving them counts as the check. From 30 days before it's due your to-do
 list says **Check your medical details are still right**, in amber in the last three days and red
 once overdue: open them and tap **Still correct**, or **Change details** if something has changed.
 Until you've saved any, your to-do list says **Add your medical and emergency details**. Under the
@@ -1009,7 +1011,9 @@ When your child turns 18 they keep their own and you no longer see them.
 details are still right once a year; saving them counts. From 30 days before it's due, every one
 of you has **Check …'s medical details are still right** on your to-do list until one of you opens
 them and taps **Still correct** (or changes and saves them). Until anything is saved it says
-**Add …'s medical and emergency details**. Admins see whether each child's details have been
+**Add …'s medical and emergency details**. If the club removes old records, details nobody has
+checked for a while (2 years unless the club chose longer) are removed, and the date shows under
+them once the check is due. Admins see whether each child's details have been
 checked, but not what they say.
 
 <img src="user-guide/medical-home.png" width="210" alt="Medical and emergency on a parent's home screen">
@@ -2670,7 +2674,8 @@ everyone ever stood down, newest first, with the
   lists everyone with a course not yet approved, in red if a due date has passed, then each course
   lists who must complete it, where they're up to, when they completed it and who checked it.
 - **Medical details checks**: every approved athlete and where their yearly medical details
-  check is up to, printed across the page. Athletes 18 or over check their own, and a verified parent
+  check is up to, printed across the page. Pick **Squads and teams** to see only those athletes (a
+  squad includes the teams named from it); the PDF says which you chose. Athletes 18 or over check their own, and a verified parent
   or guardian checks an under 18's. **Overdue** (more than a year since they were last saved or
   confirmed) and **Nothing saved** come first, in red, then **Due within 30 days** and **Up to
   date**, each with their squads and teams, who keeps the details, whether emergency contacts are
@@ -2717,6 +2722,7 @@ addresses, so keep them somewhere only the committee can reach.
 <img src="user-guide/report-pdf.png" width="210" alt="The Working With Children Checks report saved as a PDF">
 <img src="user-guide/report-under-18s.png" width="210" alt="Under 18s and their guardians report">
 <img src="user-guide/report-medical.png" width="210" alt="The Medical details checks report">
+<img src="user-guide/report-medical-squad.png" width="210" alt="The Medical details checks report for the 17 &amp; Under Squad">
 <img src="user-guide/report-attendance.png" width="210" alt="Attendance report for the 17 &amp; Under Squad over the last 4 weeks">
 <img src="user-guide/report-attendance-absences.png" width="210" alt="Reported absences by reason in the Attendance report">
 <img src="user-guide/report-award-results.png" width="210" alt="Full results of a closed match award">
@@ -2880,6 +2886,12 @@ its periods starts on those.
   (recommended) or 3 years after it was cleared. The injury, its sign-offs, each document's name,
   who added it and who viewed or shared it stay. Documents of injuries that aren't cleared yet
   stay.
+- **Medical and emergency details**: an athlete's emergency contacts, allergies, conditions,
+  medications and action plan go when nobody has done their yearly check for 2 (recommended), 3, 5
+  or 7 years. Once the check is due, the athlete (or their parents, for an under 18) see the day
+  they'll be removed under the details. Details nobody has checked can't be relied on in an
+  emergency, so 2 years is a year after the check falls overdue. Who opened them stays in the
+  record views. After removal the athlete or their parents are asked to add them again.
 - **Cleared injuries**: the injury itself, with its updates, sign-offs and who viewed its
   documents, goes 3, 5, 7 (recommended) or 10 years after it was cleared, once its documents have
   gone. 7 years covers the time limits for injury claims, including for children. Injuries that
@@ -2921,6 +2933,7 @@ Tap **Save keep periods** to save.
 <img src="user-guide/club-settings-records-safety.png" width="210" alt="Club settings: keep periods for message text, messages involving a child and attendance">
 <img src="user-guide/club-settings-records-surveys.png" width="210" alt="Club settings: keep periods for training certificates and surveys">
 <img src="user-guide/club-settings-records-injury.png" width="210" alt="Club settings: keep periods for team polls, record views and injury documents">
+<img src="user-guide/club-settings-records-medical.png" width="210" alt="Club settings: how long medical and emergency details are kept without their yearly check">
 <img src="user-guide/club-settings-records-more.png" width="210" alt="Club settings: keep periods for cleared injuries and safeguarding records">
 <img src="user-guide/club-settings-records-awards.png" width="210" alt="Club settings: keep periods for who voted for whom and for awards and their results, with Keep for good">
 
@@ -3092,7 +3105,7 @@ once saved, only replaced or removed, and anyone who gets it wrong five times in
 | Daily check-in answers and notes | The athlete, their guardians and their coaches. For an athlete under 18, their coaches only once a parent or guardian consents, and until then their check-ins count in no average. The committee, physios and admins see only group averages, hidden below 3 check-ins (over three days, in Trends). |
 | Wellbeing flags | Only the Child Safety Officer: for every athlete, selected or not, the day and lowest score of each check-in scoring 2 or less in the last 14 days, never the answers or notes. Under 18s only once a parent or guardian consents to check-ins. |
 | Injuries and documents  | For an athlete under 18 whose parents haven't given consent for injuries: only the athlete, their guardians and admins. Otherwise the athlete, their guardians, their coaches, the physios who look after them (the Head Physio and physios in their squad or team), the committee and admins. For an athlete under 18, only committee members with a current Working With Children Check or a parent volunteer exemption, and admins unless their own check has been missing or expired for over 30 days. Managers don't see injuries, including ones they log. A coach, manager or physio who logs an injury sees it only as their role already allows. Whoever takes attendance (coaches, managers, the committee and admins) sees only that an athlete is **Injured** and their expected return date, whatever the consent. While a clearance waits for the committee, any committee member or admin who could accept it can share its documents; everyone else views them in the app. |
-| Medical and emergency details | The athlete; an under 18's verified parents and guardians, who keep them (an athlete 18 or over keeps their own); and the coaches, managers and physios of the athlete's current squads and teams (the Head Physio for every athlete), for an under 18 only once a parent or guardian has given consent for injuries and health information. Not admins or the committee. Each view by a coach, manager or physio is recorded, and the athlete 18 or over, or an under 18's parents and guardians, see who and when. Checked once a year by whoever keeps them; admins see who has checked and when, but not the details. Deleted with the athlete's account. |
+| Medical and emergency details | The athlete; an under 18's verified parents and guardians, who keep them (an athlete 18 or over keeps their own); and the coaches, managers and physios of the athlete's current squads and teams (the Head Physio for every athlete), for an under 18 only once a parent or guardian has given consent for injuries and health information. Not admins or the committee. Each view by a coach, manager or physio is recorded, and the athlete 18 or over, or an under 18's parents and guardians, see who and when. Checked once a year by whoever keeps them; admins see who has checked and when, but not the details. Removed when nobody has checked them for the club's chosen time (Keeping records), and deleted with the athlete's account. |
 | Who opened injury documents | The athlete, their guardians and admins: every view and share, by whom, their role and when, and each photo consent. |
 | Who has viewed a child's records | For an athlete under 18: their verified parents or guardians (until the athlete turns 18) and admins. Lists every time someone other than the athlete or their guardians opened the athlete's injuries, injury documents, check-ins, game goals, season KPIs, named survey answers or member record. Opening a child's records is recorded whoever you are; nobody can switch it off or delete entries by hand, and old entries are removed only under the club's Keeping records settings. |
 | Consents for a child    | The athlete, their parents or guardians and admins, with every consent given and withdrawn. Only a verified parent or guardian can give or withdraw one. |
@@ -3125,7 +3138,7 @@ years recommended), counted from when the athlete left, and
 check-ins, game goals, athletes' season KPIs from archived seasons, attendance, session plans and
 training certificates go after 1 year, message text after 3 years (7 years when a child sent or
 received it), record views after 7 years, the files of a cleared injury 1 year after
-clearance and the injury 7 years after, safeguarding records 30 years after they end, who voted
+clearance and the injury 7 years after, medical and emergency details nobody has checked for 2 years, safeguarding records 30 years after they end, who voted
 for whom in awards after 1 year and awards with their results after 10 years, unless the club
 chooses other periods (see [Keeping records](#keeping-records)). Join requests then go 90 days after they're turned down or left unanswered, and temporary
 helpers with no other role a year after their last day. Deleting a member keeps the club's safeguarding records about them for their own periods.
@@ -3272,7 +3285,7 @@ Working With Children Check, and another admin must do it.
   read them only once you've given consent for injuries and health information; admins and the
   committee never do. Every time one of them opens them it's recorded, and you see who and when.
   You're reminded to check they're still right once a year, and admins can see who has checked
-  without seeing the details.
+  without seeing the details. Details nobody checks for the club's chosen time are removed.
 - **Injury photos need your consent.** Injury proof for under 18s is the letter or report, as a PDF
   or a photo confirmed to show the letter. Only if the club allows it can you, as a verified
   guardian, add a photo of your child's injury, and only after confirming your consent, which is
@@ -3424,6 +3437,8 @@ Working With Children Check, and another admin must do it.
   guardian for each under 18, is reminded to check their medical and emergency details once a year.
   The **Medical details checks** report shows admins who is up to date, due, overdue or has nothing
   saved, and which under 18s have no verified parent to keep them, without showing the details.
+  Details nobody checks for the club's chosen time (2 years recommended) are removed under
+  Keeping records, so stale emergency contacts aren't relied on.
 - **Admins see what coaches ask children.** Only a coach or manager's quick poll, up to 5
   questions with choices or ratings, can stay within the team. Any longer survey, or any survey
   with a written answer, is always seen by admins too.
@@ -3439,8 +3454,8 @@ Working With Children Check, and another admin must do it.
   under 18's parents or guardians get a copy. Surveys and their answers are removed under
   Keeping records, with their own periods.
 - **Records aren't kept forever.** Set how long the club keeps check-ins, game goals, message text,
-  surveys, attendance, training certificates, record views, injury documents, cleared injuries,
-  safeguarding records and award votes under [Keeping records](#keeping-records), and switch on
+  surveys, attendance, training certificates, record views, injury documents, medical details
+  nobody checks, cleared injuries, safeguarding records and award votes under [Keeping records](#keeping-records), and switch on
   **Remove old records**. The text of messages
   sent by or to a child is kept at least 3 years (7 recommended) and never less than other
   messages, and who viewed a child's records at least 3 years (7 recommended); concerns are never

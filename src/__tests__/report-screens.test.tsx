@@ -786,6 +786,59 @@ describe('Medical details checks', () => {
     expect(pdf.text).toContain('This report shows no medical details');
   });
 
+  const SQUAD = team('sq', '17 & Under Squad', { kind: 'squad', sort_order: 1 });
+  const TEAM_A = team('ta', '17 & Under A', { squad_id: 'sq', sort_order: 2 });
+  const OPEN = team('op', 'Open A', { sort_order: 3 });
+  const PLACES = [
+    { team_id: 'ta', profile_id: 'Cam Child', team_role: 'athlete' },
+    { team_id: 'sq', profile_id: 'Dee New', team_role: 'athlete' },
+    { team_id: 'op', profile_id: 'Ada Adult', team_role: 'athlete' },
+    { team_id: 'op', profile_id: 'Bo Overdue', team_role: 'athlete' },
+  ];
+  const openFiltered = () =>
+    open('admin/reports/medical', MedicalCheckReportScreen, { teams: [SQUAD, TEAM_A, OPEN] }, {
+      tableHandlers: { team_members: (q) => (q.eq('team_role') === 'athlete' ? PLACES : undefined) },
+      rpcs: { medical_review_compliance: ROWS },
+    });
+
+  it('filters by squad, including the teams named from it', async () => {
+    await openFiltered();
+    expect(screen.getByText('Bo Overdue')).toBeTruthy();
+    chip('17 & Under Squad');
+    await settle();
+    expect(screen.queryByText('Bo Overdue')).toBeNull();
+    expect(screen.queryByText('Ada Adult')).toBeNull();
+    expect(screen.getByText('Cam Child')).toBeTruthy();
+    expect(screen.getByText('Dee New')).toBeTruthy();
+    expect(screen.getByText(/Approved athletes in 17 & Under Squad on/)).toBeTruthy();
+  });
+
+  it('filters by a team, and goes back to everyone with All', async () => {
+    await openFiltered();
+    chip('Open A');
+    await settle();
+    expect(screen.getByText('Bo Overdue')).toBeTruthy();
+    expect(screen.queryByText('Cam Child')).toBeNull();
+    const { pdf } = await exportPdf();
+    expect(pdf.text).toContain('Approved athletes in Open A on');
+    expect(pdf.text).not.toContain('Dee New');
+    chip('All');
+    await settle();
+    expect(screen.getByText('Cam Child')).toBeTruthy();
+    expect(screen.queryByText(/Approved athletes in/)).toBeNull();
+  });
+
+  it('counts only the chosen squads and teams', async () => {
+    await openFiltered();
+    chip('17 & Under A');
+    await settle();
+    expect(screen.getByText('Cam Child')).toBeTruthy();
+    expect(screen.queryByText('Dee New')).toBeNull();
+    chip('17 & Under A');
+    await settle();
+    expect(screen.getByText('Dee New')).toBeTruthy();
+  });
+
   it('shows the database’s refusal', async () => {
     await open('admin/reports/medical', MedicalCheckReportScreen, {}, {
       rpcErrors: { medical_review_compliance: 'Only admins can see the medical details check report' },

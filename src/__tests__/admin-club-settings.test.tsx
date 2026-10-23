@@ -85,6 +85,7 @@ const RETENTION_RPCS = {
   injury_documents_keep_days: 365,
   survey_retention: SURVEYS,
   more_record_retention: MORE,
+  medical_keep_months: 24,
 };
 
 async function openClub(
@@ -478,6 +479,7 @@ describe('Keeping records', () => {
     expect(chosen('Message text', '3 years')).toBe(true);
     expect(chosen('Message text involving a child', '7 years')).toBe(true);
     expect(chosen('Injury documents', '1 year')).toBe(true);
+    expect(chosen('Medical and emergency details', '2 years')).toBe(true);
     expect(chosen('Cleared injuries', '7 years')).toBe(true);
     expect(chosen('Safeguarding records', '30 years')).toBe(true);
     expect(chosen('Awards and their results', '10 years')).toBe(true);
@@ -493,8 +495,10 @@ describe('Keeping records', () => {
       injury_documents_keep_days: null,
       survey_retention: null,
       more_record_retention: null,
+      medical_keep_months: null,
     });
     expect(chosen('Message text involving a child', '7 years')).toBe(true);
+    expect(chosen('Medical and emergency details', '2 years')).toBe(true);
     expect(chosen('Injury documents', '1 year')).toBe(true);
     expect(chosen('Surveys from the committee and admins', '3 years')).toBe(true);
     expect(chosen('Squad and team surveys shared with admins or the committee', '2 years')).toBe(true);
@@ -518,6 +522,10 @@ describe('Keeping records', () => {
       expect(chip('Daily check-ins', choice)).toBeTruthy();
     }
     for (const choice of ['90 days', '1 year', '3 years']) expect(chip('Injury documents', choice)).toBeTruthy();
+    for (const choice of ['2 years', '3 years', '5 years', '7 years']) {
+      expect(chip('Medical and emergency details', choice)).toBeTruthy();
+    }
+    expect(screen.getByText(/when nobody has done their yearly check for this long/)).toBeTruthy();
     for (const choice of ['3 years', '5 years', '10 years', '20 years', 'Keep for good']) {
       expect(chip('Awards and their results', choice)).toBeTruthy();
     }
@@ -546,6 +554,7 @@ describe('Keeping records', () => {
     fireEvent.press(chip('Injury documents', '90 days'));
     fireEvent.press(chip('Squad and team polls kept in the team', '1 year'));
     fireEvent.press(chip('Awards and their results', 'Keep for good'));
+    fireEvent.press(chip('Medical and emergency details', '5 years'));
     expect(isDisabled('Save keep periods')).toBe(false);
     await saveKeepPeriods();
     expect(callsTo('admin_set_record_retention_all')).toEqual([
@@ -570,6 +579,8 @@ describe('Keeping records', () => {
     const names = (rpc().mock.calls as [string][]).map(([n]) => n);
     expect(names.indexOf('admin_set_record_retention_all')).toBeLessThan(names.indexOf('admin_set_survey_retention'));
     expect(names.indexOf('admin_set_survey_retention')).toBeLessThan(names.indexOf('admin_set_more_record_retention'));
+    expect(callsTo('admin_set_medical_keep_months')).toEqual([{ p_months: 60 }]);
+    expect(names.indexOf('admin_set_more_record_retention')).toBeLessThan(names.indexOf('admin_set_medical_keep_months'));
     expect(screen.getByText('Saved.')).toBeTruthy();
   });
 
@@ -604,6 +615,7 @@ describe('Keeping records', () => {
     ).toBeTruthy();
     expect(callsTo('admin_set_survey_retention')).toEqual([]);
     expect(callsTo('admin_set_more_record_retention')).toEqual([]);
+    expect(callsTo('admin_set_medical_keep_months')).toEqual([]);
     expect(screen.queryByText('Saved.')).toBeNull();
   });
 
@@ -623,6 +635,17 @@ describe('Keeping records', () => {
     fireEvent.press(chip('Who voted for whom in awards', '5 years'));
     await saveKeepPeriods();
     expect(screen.getByText('Awards must be kept at least as long as who voted for whom')).toBeTruthy();
+    expect(callsTo('admin_set_medical_keep_months')).toEqual([]);
+    expect(screen.queryByText('Saved.')).toBeNull();
+  });
+
+  it('shows a refusal of the medical details period', async () => {
+    await openRetention({}, {
+      admin_set_medical_keep_months: 'Medical details can be kept 2, 3, 5 or 7 years without their yearly check',
+    });
+    fireEvent.press(chip('Medical and emergency details', '3 years'));
+    await saveKeepPeriods();
+    expect(screen.getByText('Medical details can be kept 2, 3, 5 or 7 years without their yearly check')).toBeTruthy();
     expect(screen.queryByText('Saved.')).toBeNull();
   });
 

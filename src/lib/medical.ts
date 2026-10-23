@@ -30,6 +30,8 @@ export type MedicalProfile = {
   /** Such as "2027-10-23", a year after the last check. */
   check_due_on: string | null;
   check_status: MedicalCheckStatus;
+  /** When they'll be removed if nobody checks them; null unless the club removes old records. */
+  removal_on: string | null;
 };
 
 /**
@@ -128,15 +130,21 @@ export function teamMedicalLine(row: TeamMedicalRow) {
 }
 
 /** The line about the yearly check on someone's medical details. */
-export function checkLine(profile: Pick<MedicalProfile, 'check_status' | 'check_due_on' | 'checked_by_name'>) {
+export function checkLine(
+  profile: Pick<MedicalProfile, 'check_status' | 'check_due_on' | 'checked_by_name'> &
+    Partial<Pick<MedicalProfile, 'removal_on'>>,
+) {
   const due = profile.check_due_on ? formatDateString(profile.check_due_on) : null;
+  const removal = profile.removal_on
+    ? ` If nobody checks them by ${formatDateString(profile.removal_on)}, they’ll be removed.`
+    : '';
   switch (profile.check_status) {
     case 'missing':
       return 'Nothing saved yet. They’re checked once a year.';
     case 'overdue':
-      return `The yearly check was due ${due}.`;
+      return `The yearly check was due ${due}.${removal}`;
     case 'due_soon':
-      return `The yearly check is due ${due}.`;
+      return `The yearly check is due ${due}.${removal}`;
     default:
       return `Checked by ${profile.checked_by_name ?? 'a former member'}. Next check due ${due}.`;
   }

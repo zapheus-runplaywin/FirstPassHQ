@@ -345,8 +345,66 @@ select pg_temp.as_member('41');
 select pg_temp.fails_with('a guardian can''t', $$select count(*) from public.medical_review_compliance()$$, 'Only admins');
 
 -- ---------------------------------------------------------------------------
+-- Removing details nobody checks
+-- ---------------------------------------------------------------------------
+select set_config('request.jwt.claim.sub', '', false);
+insert into public.club_settings (id) values (true) on conflict (id) do nothing;
+select pg_temp.ok('the removal helper is closed to the app', has_function_privilege('authenticated', 'public.medical_removal_on(uuid, timestamptz)', 'execute'), false);
+select pg_temp.ok('signed-out visitors can''t read the keep period', has_function_privilege('anon', 'public.medical_keep_months()', 'execute'), false);
+select pg_temp.ok('or set it', has_function_privilege('anon', 'public.admin_set_medical_keep_months(integer)', 'execute'), false);
+
+select pg_temp.as_member('01');
+select pg_temp.ok('an admin sees the default: 2 years', public.medical_keep_months() = 24, true);
+select pg_temp.works('and can choose 3 years', $$select public.admin_set_medical_keep_months(36)$$);
+select pg_temp.ok('which is saved', (select retention_medical_months = 36 from public.club_settings where id), true);
+select pg_temp.fails_with('but not 1 year', $$select public.admin_set_medical_keep_months(12)$$, '2, 3, 5 or 7 years');
+select pg_temp.fails_with('or nothing', $$select public.admin_set_medical_keep_months(null)$$, '2, 3, 5 or 7 years');
+select pg_temp.works('back to 2 years', $$select public.admin_set_medical_keep_months(24)$$);
+select pg_temp.as_member('21');
+select pg_temp.ok('the committee doesn''t see it', public.medical_keep_months() is null, true);
+select pg_temp.fails_with('or change it', $$select public.admin_set_medical_keep_months(36)$$, 'Only admins');
+select pg_temp.as_member('11');
+select pg_temp.fails_with('nor a coach', $$select public.admin_set_medical_keep_months(36)$$, 'Only admins');
+
+-- Kai's were checked 25 months ago, Jordan's today.
+update public.medical_profiles set checked_at = now() - interval '25 months' where athlete_id = pg_temp.id('32');
+update public.club_settings set retention_enabled = false where id;
+select set_config('request.jwt.claim.sub', '', false);
+select pg_temp.ok('with Remove old records off, the clean-up removes nothing', (public.purge_expired_records() ->> 'enabled')::boolean, false);
+select pg_temp.ok('so Kai''s stay', (select count(*) = 1 from public.medical_profiles where athlete_id = pg_temp.id('32')), true);
+select pg_temp.as_member('32');
+select pg_temp.ok('and Kai isn''t given a removal date', (public.medical_profile(pg_temp.id('32')) -> 'removal_on') = 'null'::jsonb, true);
+
+update public.club_settings set retention_enabled = true where id;
+select pg_temp.ok('with it on, Kai is told the day they''ll go', (public.medical_profile(pg_temp.id('32')) ->> 'removal_on')::date = ((now() - interval '25 months') + interval '24 months')::date, true);
+select pg_temp.as_member('41');
+select pg_temp.ok('Jordan''s, checked today, go in 2 years', (public.medical_profile(pg_temp.id('31')) ->> 'removal_on')::date = (now() + interval '24 months')::date, true);
+select set_config('request.jwt.claim.sub', '', false);
+create temp table purged as select public.purge_expired_records() as r;
+select pg_temp.ok('the clean-up removes details unchecked for 2 years', (select (r ->> 'medical_details')::int = 1 from purged), true);
+select pg_temp.ok('Kai''s are gone', (select count(*) = 0 from public.medical_profiles where athlete_id = pg_temp.id('32')), true);
+select pg_temp.ok('Jordan''s, checked recently, stay', (select count(*) = 1 from public.medical_profiles where athlete_id = pg_temp.id('31')), true);
+select pg_temp.ok('who opened Kai''s stays on the record', pg_temp.views('32') > 0, true);
+select pg_temp.as_member('32');
+select pg_temp.ok('Kai is asked to add them again', (select status = 'missing' from public.my_medical_reviews() where athlete_id = pg_temp.id('32')), true);
+select pg_temp.as_member('01');
+select pg_temp.ok('and the report shows nothing saved', (select status = 'missing' from public.medical_review_compliance() where athlete_id = pg_temp.id('32')), true);
+
+-- A concern holds them.
+update public.medical_profiles set checked_at = now() - interval '30 months' where athlete_id = pg_temp.id('31');
+insert into public.concerns (raised_by, raised_by_name, body, about_member_id, about_member_name)
+values (pg_temp.id('41'), 'Logan Parent', 'Worried about Jordan', pg_temp.id('31'), 'Jordan Junior');
+select pg_temp.as_member('41');
+select pg_temp.ok('while a concern names Jordan there''s no removal date', (public.medical_profile(pg_temp.id('31')) -> 'removal_on') = 'null'::jsonb, true);
+select set_config('request.jwt.claim.sub', '', false);
+select pg_temp.ok('and the clean-up keeps theirs', (public.purge_expired_records() ->> 'medical_details')::int = 0 and (select count(*) = 1 from public.medical_profiles where athlete_id = pg_temp.id('31')), true);
+update public.club_settings set retention_enabled = false where id;
+
+-- ---------------------------------------------------------------------------
 -- Keeping
 -- ---------------------------------------------------------------------------
 select set_config('request.jwt.claim.sub', '', false);
+insert into public.medical_profiles (athlete_id, conditions) values (pg_temp.id('32'), 'Asthma');
+select pg_temp.ok('Kai has details again before their account goes', (select count(*) = 1 from public.medical_profiles where athlete_id = pg_temp.id('32')), true);
 delete from auth.users where id = pg_temp.id('32');
 select pg_temp.ok('deleting an athlete''s account removes their details', (select count(*) = 0 from public.medical_profiles where athlete_id = pg_temp.id('32')), true);
