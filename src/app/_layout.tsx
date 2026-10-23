@@ -228,6 +228,12 @@ function RootStack() {
             <Stack.Screen name="records/[id]" options={{ title: 'Who has viewed their records' }} />
             <Stack.Screen name="activity/[id]" options={{ title: 'What’s changed' }} />
           </Stack.Protected>
+          <Stack.Protected guard={can.medical}>
+            <Stack.Screen name="medical/[id]" options={{ title: 'Medical and emergency' }} />
+          </Stack.Protected>
+          <Stack.Protected guard={can.teamMedical}>
+            <Stack.Screen name="medical/team/[id]" options={{ title: 'Medical and emergency' }} />
+          </Stack.Protected>
           <Stack.Protected guard={can.concerns}>
             <Stack.Screen name="concerns/index" options={{ title: 'Concerns' }} />
             <Stack.Screen name="concerns/[id]" options={{ title: 'Concern' }} />

@@ -129,6 +129,12 @@ export function useRouteAccess() {
     // records: their parents and guardians, and admins.
     family: isGuardian || isAdmin,
 
+    // Medical and emergency details: an athlete's own, a guardian's child's,
+    // and the athletes of a squad or team's coaches, managers and physios.
+    // Not admins or the committee.
+    medical: isAthlete || isGuardian || inGroupAs('coach', 'manager', 'physio'),
+    teamMedical: inGroupAs('coach', 'manager', 'physio'),
+
     // Choosing a squad or team's captains: admins and its coaches.
     chooseCaptains: isAdmin || inGroupAs('coach'),
   };

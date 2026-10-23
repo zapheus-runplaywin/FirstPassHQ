@@ -561,6 +561,22 @@ export default function HomeScreen() {
           </View>
         ) : null}
 
+        {isGuardian && athletes.length > 0 && profile?.verified_at ? (
+          <View style={styles.section}>
+            <ThemedText type="smallBold">Medical and emergency</ThemedText>
+            {athletes.map((a) => (
+              <PressableCard
+                key={a.id}
+                onPress={() => router.push({ pathname: '/medical/[id]', params: { id: a.id } })}>
+                <ThemedText type="smallBold">{a.name}</ThemedText>
+                <ThemedText type="small" themeColor="textSecondary">
+                  Emergency contacts, allergies, conditions, medications and an action plan
+                </ThemedText>
+              </PressableCard>
+            ))}
+          </View>
+        ) : null}
+
         {isGuardian && features.attendance && athletes.length > 0 ? (
           <View style={styles.section}>
             <ThemedText type="smallBold">Attendance</ThemedText>
@@ -641,7 +657,7 @@ export default function HomeScreen() {
                 }>
                 <ThemedText type="smallBold">{a.name}</ThemedText>
                 <ThemedText type="small" themeColor="textSecondary">
-                  Who at the club opened their injuries, check-ins, game goals, season KPIs, named survey answers or member record
+                  Who at the club opened their injuries, check-ins, game goals, season KPIs, named survey answers, medical details or member record
                 </ThemedText>
               </PressableCard>
             ))}

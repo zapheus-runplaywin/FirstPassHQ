@@ -136,6 +136,11 @@ const AWARD_VOTERS = union(ATHLETES, COACHES, MANAGERS, COMMITTEE, ADMINS, STATI
 const KPI_READERS = union(ATHLETES, COACHES, MANAGERS, GUARDIANS, COMMITTEE, ADMINS);
 const KPI_SETTERS = union(COMMITTEE, ADMINS, COACHES);
 const CERTIFICATE_CHECKERS = union(COMMITTEE, ADMINS);
+// Medical and emergency details: an athlete's own, a guardian's child's, and
+// the coaches, managers and physios of a squad or team (a Head Physio in no
+// group reaches them only from a link). Never admins or the committee as such.
+const MEDICAL_READERS = union(ATHLETES, GUARDIANS, COACHES, MANAGERS, ['physio']);
+const GROUP_STAFF = union(COACHES, MANAGERS, ['physio']);
 
 const WHO_OPENS: Record<string, PersonaName[]> = {
   'messages/index': CLUB_MEMBERS,
@@ -195,6 +200,8 @@ const WHO_OPENS: Record<string, PersonaName[]> = {
 
   'consent/[id]': union(GUARDIANS, ADMINS),
   'records/[id]': union(GUARDIANS, ADMINS),
+  'medical/[id]': MEDICAL_READERS,
+  'medical/team/[id]': GROUP_STAFF,
   'activity/[id]': union(GUARDIANS, ADMINS),
 
   'team/captains/[id]': union(ADMINS, COACHES),
