@@ -5,6 +5,11 @@
 // Documents go first, through the storage API (deleting storage rows in SQL
 // would leave the files behind), then the records. A record is only removed
 // once all its documents are gone, so a failed run is finished by the next.
+//
+// Each run ends by recording itself (public.record_purge_run): when it ran,
+// whether it finished or the step it stopped at, and what it removed. Admins
+// see the last run under Keeping records and get a to-do once it hasn't
+// finished for 2 days (public.removal_run_status).
 
 export const BUCKET = 'injury-documents';
 export const CERTIFICATES = 'training-certificates';
@@ -21,7 +26,7 @@ type Result<T> = { data: T | null; error: { message: string; code?: string } | n
 
 /** The parts of the Supabase client the purge uses. */
 export interface PurgeClient {
-  rpc(fn: string): PromiseLike<Result<unknown>>;
+  rpc(fn: string, args?: Record<string, unknown>): PromiseLike<Result<unknown>>;
   storage: {
     from(bucket: string): {
       remove(paths: string[]): PromiseLike<{ error: { message: string } | null }>;
@@ -74,9 +79,21 @@ export async function handlePurge(request: Request, deps: PurgeDeps): Promise<Re
 
 /** Removes expired files, then records, stopping at the first error. */
 export async function runPurge(supabase: PurgeClient, logger: Logger): Promise<Response> {
-  /** Logs the detail and tells the caller only that it failed. */
-  function failed(step: string, message: string) {
+  /** Records the run, so admins can see when it last ran. */
+  async function record(ok: boolean, step: string | null, counts: Record<string, unknown> | null) {
+    const { error } = await supabase.rpc('record_purge_run', {
+      p_ok: ok,
+      p_failed_step: step,
+      p_counts: counts,
+    });
+    if (error) logger.error(`Couldn't record the purge run: ${error.message}`);
+    return !error;
+  }
+
+  /** Logs the detail, records the failed run and tells the caller only that it failed. */
+  async function failed(step: string, message: string) {
     logger.error(`Purge failed while ${step}: ${message}`);
+    await record(false, step, null);
     return Response.json({ error: `Failed while ${step}` }, { status: 500 });
   }
 
@@ -147,5 +164,18 @@ export async function runPurge(supabase: PurgeClient, logger: Logger): Promise<R
   logger.log(
     `Removed ${certificates.length} certificate file(s) and ${planFiles.length} session plan file(s); old records: ${JSON.stringify(records)}; old surveys: ${JSON.stringify(surveys)}`,
   );
+  // A run that removed everything but couldn't say so fails, so the workflow
+  // shows it: otherwise admins would be told it stopped when it hadn't.
+  const recorded = await record(true, null, {
+    documents: names.length,
+    injuries: purged,
+    cleared_injury_files: cleared.length,
+    marked_documents: marked,
+    certificates: certificates.length,
+    session_plan_files: planFiles.length,
+    records,
+    surveys,
+  });
+  if (!recorded) return Response.json({ error: 'Failed while recording the run' }, { status: 500 });
   return Response.json({ ok: true });
 }

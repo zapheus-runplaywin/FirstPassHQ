@@ -187,3 +187,33 @@ who can't sign in. To see a screen as an athlete, coach or guardian:
 Accounts you have approved with a role other than admin keep it when you run the script again.
 Sample games and goals need the game goals migration, so they appear once its pull request has
 merged and the migration has reached the test project.
+
+## A full copy of a club's data
+
+When a club asks for all its data, or leaves, FirstPass makes the copy with
+`scripts/export-club-data.sh` (what the club is promised is in [data-handling.md](data-handling.md)).
+It runs on your computer, never in GitHub Actions, so the copy doesn't sit in a workflow's logs or
+artifacts.
+
+1. In the club's Supabase project, open **Connect** and copy the **Session pooler** connection
+   string, with the database password filled in. Copy the project ref and, under **Project
+   Settings > API keys**, the secret (service role) key.
+2. Use a `pg_dump` of the same major version as the project's Postgres or newer (the dashboard
+   shows the version under **Project Settings > Infrastructure**).
+3. Run it into a new folder:
+
+   ```bash
+   CLUB_DB_URL='postgresql://...' CLUB_PROJECT_REF=abcd... CLUB_SERVICE_KEY=sb_secret_... \
+     scripts/export-club-data.sh ~/club-export-THUNDER-2026-10-23
+   ```
+
+   It refuses a folder that already exists, makes the folder readable only by you, and stops at
+   the first file it can't download. `manifest.txt` lists rows per table and files per bucket:
+   check it against the dashboard.
+4. Zip the folder with a password, send it to the admin the club names through an encrypted link,
+   and send the password another way (a phone call or text).
+5. Once the club confirms it has the copy, delete every copy you hold. For a club that's leaving,
+   delete its Supabase project too, and tell the club in writing.
+
+`scripts/test-export-club-data.sh` tests the script against a local Postgres; the "Tests" workflow
+runs it.

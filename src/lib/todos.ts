@@ -558,6 +558,18 @@ export function buildTodos({
         href: '/admin/club',
       });
     }
+    if (safety.records_removal_stalled) {
+      const since = safety.records_removal_stalled.last_ok_at;
+      todos.push({
+        key: 'records-removal-stalled',
+        title: since
+          ? `Old records haven’t been removed since ${formatShortDay(new Date(since))}`
+          : 'Old records haven’t been removed yet',
+        detail: 'The nightly removal hasn’t finished for 2 days. Ask FirstPass to check it.',
+        href: '/admin/club',
+        alert: { level: 'red', label: 'Stopped' },
+      });
+    }
     if ((safety.inactive_members ?? 0) > 0) {
       todos.push({
         key: 'inactive-members',
