@@ -1,4 +1,28 @@
-import { groupWellbeingFlags, REPEAT_FLAGS, WELLBEING_FLAG_DAYS, type WellbeingFlag } from '@/lib/wellbeing-flags';
+import { act, renderHook, waitFor } from '@testing-library/react-native';
+
+import { supabase } from '@/lib/supabase';
+import {
+  groupWellbeingFlags,
+  REPEAT_FLAGS,
+  useWellbeingFlagAlerts,
+  WELLBEING_FLAG_DAYS,
+  type WellbeingFlag,
+} from '@/lib/wellbeing-flags';
+
+jest.mock('expo-router', () => {
+  const React = jest.requireActual<typeof import('react')>('react');
+  return {
+    useFocusEffect(effect: () => void) {
+      React.useEffect(effect, [effect]);
+    },
+  };
+});
+
+const rpc = jest.mocked(supabase.rpc);
+const answers = (data: unknown) => {
+  rpc.mockReset();
+  rpc.mockResolvedValue({ data, error: null } as never);
+};
 
 const flag = (extra: Partial<WellbeingFlag>): WellbeingFlag => ({
   athlete_id: 'a1',
@@ -57,5 +81,62 @@ describe('wellbeing flags', () => {
       flag({ athlete_id: 'repeat', athlete_name: 'Zed', day: '2026-10-12', flags_in_7_days: 3 }),
     ]);
     expect(grouped.map((a) => a.id)).toEqual(['repeat', 'new-a', 'new-b', 'old']);
+  });
+});
+
+describe('useWellbeingFlagAlerts', () => {
+  it('asks the database, and reports the officer and how many were flagged 3 times', async () => {
+    answers(2);
+    const { result } = renderHook(() => useWellbeingFlagAlerts(true));
+    await waitFor(() => expect(result.current).toEqual({ isOfficer: true, repeated: 2 }));
+    expect(rpc).toHaveBeenCalledWith('wellbeing_flag_alerts');
+  });
+
+  it('reports the officer with nobody flagged 3 times', async () => {
+    answers(0);
+    const { result } = renderHook(() => useWellbeingFlagAlerts(true));
+    await waitFor(() => expect(result.current).toEqual({ isOfficer: true, repeated: 0 }));
+  });
+
+  it('treats a null answer as not the officer', async () => {
+    answers(null);
+    const { result } = renderHook(() => useWellbeingFlagAlerts(true));
+    await waitFor(() => expect(rpc).toHaveBeenCalled());
+    expect(result.current).toEqual({ isOfficer: false, repeated: 0 });
+  });
+
+  it('treats anything but a number as not the officer', async () => {
+    answers('2');
+    const { result } = renderHook(() => useWellbeingFlagAlerts(true));
+    await waitFor(() => expect(rpc).toHaveBeenCalled());
+    await act(async () => {});
+    expect(result.current).toEqual({ isOfficer: false, repeated: 0 });
+  });
+
+  it('never asks, and reports nothing, when not enabled', async () => {
+    answers(2);
+    const { result } = renderHook(() => useWellbeingFlagAlerts(false));
+    expect(rpc).not.toHaveBeenCalled();
+    expect(result.current).toEqual({ isOfficer: false, repeated: 0 });
+  });
+
+  it('stops reporting when turned off after an answer', async () => {
+    answers(3);
+    const { result, rerender } = renderHook(({ on }: { on: boolean }) => useWellbeingFlagAlerts(on), {
+      initialProps: { on: true },
+    });
+    await waitFor(() => expect(result.current.repeated).toBe(3));
+    rerender({ on: false });
+    expect(result.current).toEqual({ isOfficer: false, repeated: 0 });
+  });
+
+  it('asks once it is turned on', async () => {
+    answers(1);
+    const { result, rerender } = renderHook(({ on }: { on: boolean }) => useWellbeingFlagAlerts(on), {
+      initialProps: { on: false },
+    });
+    expect(rpc).not.toHaveBeenCalled();
+    rerender({ on: true });
+    await waitFor(() => expect(result.current).toEqual({ isOfficer: true, repeated: 1 }));
   });
 });
