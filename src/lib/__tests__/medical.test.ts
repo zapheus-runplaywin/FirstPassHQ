@@ -1,4 +1,7 @@
+import { formatDateString } from '@/lib/injuries';
 import {
+  checkLine,
+  checkStatusLabels,
   cleanContacts,
   contactsError,
   emptyContact,
@@ -9,6 +12,10 @@ import {
   telLink,
   type TeamMedicalRow,
 } from '@/lib/medical';
+
+// Dates are written the way injuries write them, and that module loads auth.
+jest.mock('@/lib/auth', () => ({ useAuth: jest.fn() }));
+jest.mock('@/lib/club', () => ({ useClub: jest.fn(), useFeature: jest.fn() }));
 
 const contact = (name: string, phone: string, relationship = '') => ({ name, relationship, phone });
 
@@ -101,5 +108,32 @@ describe('teamMedicalLine', () => {
   });
   it('otherwise says they can’t see them', () => {
     expect(teamMedicalLine(row({ can_open: false, has_contacts: false }))).toBe('You can’t see their details');
+  });
+});
+
+describe('checkLine', () => {
+  const line = (check_status: Parameters<typeof checkLine>[0]['check_status'], checked_by_name: string | null = 'Pia Parent') =>
+    checkLine({ check_status, check_due_on: check_status === 'missing' ? null : '2027-03-01', checked_by_name });
+  it('says who checked and when the next is due', () => {
+    expect(line('current')).toBe(`Checked by Pia Parent. Next check due ${formatDateString('2027-03-01')}.`);
+    expect(line('current', null)).toBe(`Checked by a former member. Next check due ${formatDateString('2027-03-01')}.`);
+  });
+  it('says when it’s due or was due', () => {
+    expect(line('due_soon')).toBe(`The yearly check is due ${formatDateString('2027-03-01')}.`);
+    expect(line('overdue')).toBe(`The yearly check was due ${formatDateString('2027-03-01')}.`);
+  });
+  it('says nothing is saved yet', () => {
+    expect(line('missing')).toBe('Nothing saved yet. They’re checked once a year.');
+  });
+});
+
+describe('checkStatusLabels', () => {
+  it('labels every status', () => {
+    expect(checkStatusLabels).toEqual({
+      missing: 'Nothing saved',
+      overdue: 'Overdue',
+      due_soon: 'Due within 30 days',
+      current: 'Up to date',
+    });
   });
 });

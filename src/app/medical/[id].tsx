@@ -8,6 +8,7 @@ import { Button, Card, ErrorText, TextField } from '@/components/ui';
 import { Spacing } from '@/constants/theme';
 import { formatDateTime } from '@/lib/format';
 import {
+  checkLine,
   cleanContacts,
   contactsError,
   emptyContact,
@@ -48,6 +49,8 @@ export default function MedicalScreen() {
   const [draft, setDraft] = useState<Draft | null>(null);
   const [saving, setSaving] = useState(false);
   const [error, setError] = useState<string | null>(null);
+  const [confirming, setConfirming] = useState(false);
+  const [confirmError, setConfirmError] = useState<string | null>(null);
   const [refreshing, setRefreshing] = useState(false);
 
   const load = useCallback(async () => {
@@ -103,6 +106,19 @@ export default function MedicalScreen() {
       return;
     }
     setDraft(null);
+    await load();
+  }
+
+  // The yearly check, when nothing needs changing.
+  async function confirm() {
+    setConfirming(true);
+    setConfirmError(null);
+    const { error: rpcError } = await supabase.rpc('confirm_medical_profile', { p_athlete_id: id });
+    setConfirming(false);
+    if (rpcError) {
+      setConfirmError(rpcError.message);
+      return;
+    }
     await load();
   }
 
@@ -255,7 +271,24 @@ export default function MedicalScreen() {
         </ThemedText>
       ) : null}
       {profile.can_edit ? (
-        <Button title="Change details" onPress={() => setDraft(draftOf(profile))} />
+        <ThemedText
+          type="small"
+          themeColor={profile.check_status === 'current' ? 'textSecondary' : 'tint'}>
+          {checkLine(profile)}
+        </ThemedText>
+      ) : null}
+      {profile.can_edit && profile.saved && profile.check_status !== 'current' ? (
+        <>
+          <Button title="Still correct" onPress={confirm} busy={confirming} />
+          <ErrorText>{confirmError}</ErrorText>
+        </>
+      ) : null}
+      {profile.can_edit ? (
+        <Button
+          title="Change details"
+          variant={profile.saved && profile.check_status !== 'current' ? 'secondary' : undefined}
+          onPress={() => setDraft(draftOf(profile))}
+        />
       ) : profile.role === 'self' ? (
         <ThemedText type="small" themeColor="textSecondary">
           Your parents or guardians keep these up to date until you turn 18.

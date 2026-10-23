@@ -43,6 +43,7 @@ import {
   useOpenInjuries,
 } from '@/lib/injuries';
 import { useKpiPeople, useKpiReviewTodos, type KpiPerson } from '@/lib/kpis';
+import { useMyMedicalReviews } from '@/lib/medical';
 import { useGetsMessages, useUnreadCount } from '@/lib/messages';
 import {
   pendingRequestsLabel,
@@ -108,6 +109,11 @@ export default function HomeScreen() {
   const plans = useSessionPlanSummary();
   const { kpiPeople, reloadKpiPeople } = useKpiPeople();
   const { kpiReviewTodos, reloadKpiReviewTodos } = useKpiReviewTodos();
+  // Athletes 18 or over and verified parents keep medical details, checked yearly.
+  const { medicalReviews, reloadMedicalReviews } = useMyMedicalReviews(
+    profile?.status === 'approved' &&
+      (hasRole(profile, 'athlete') || (hasRole(profile, 'guardian') && !!profile.verified_at)),
+  );
   const { mySurveys, reloadMySurveys } = useMySurveys();
   const canSendSurveys = useCanSendSurveys();
   const surveysWaiting = surveysToAnswer(mySurveys).length;
@@ -168,6 +174,7 @@ export default function HomeScreen() {
     affiliation: affiliationTodos,
     kpiReviews: kpiReviewTodos,
     surveys: features.surveys ? mySurveys : [],
+    medicalReviews,
   });
 
   const isGuardian = profile?.status === 'approved' && hasRole(profile, 'guardian');
@@ -216,6 +223,7 @@ export default function HomeScreen() {
       plans.reloadSummary(),
       reloadKpiPeople(),
       reloadKpiReviewTodos(),
+      reloadMedicalReviews(),
       reloadMySurveys(),
       reloadAbsencesToReview(),
       loadAthletes(),

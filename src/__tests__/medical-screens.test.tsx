@@ -19,7 +19,8 @@ import TeamMedicalScreen from '@/app/medical/team/[id]';
 import MyDetailsScreen from '@/app/my-details';
 import TeamScreen from '@/app/team/[id]';
 import { formatDateTime } from '@/lib/format';
-import type { MedicalProfile, MedicalView, TeamMedicalRow } from '@/lib/medical';
+import { formatDateString } from '@/lib/injuries';
+import type { MedicalProfile, MedicalReview, MedicalView, TeamMedicalRow } from '@/lib/medical';
 import { supabase } from '@/lib/supabase';
 
 import {
@@ -68,6 +69,10 @@ function medical(extra: Partial<MedicalProfile> = {}): MedicalProfile {
     action_plan: 'EpiPen in the outer pocket, then call 000',
     updated_at: '2026-10-20T02:00:00Z',
     updated_by_name: 'Sample Athlete',
+    checked_at: '2026-10-20T02:00:00Z',
+    checked_by_name: 'Sample Athlete',
+    check_due_on: '2027-10-20',
+    check_status: 'current',
     ...extra,
   };
 }
@@ -382,5 +387,102 @@ describe('Home for a parent or guardian', () => {
   it('doesn’t until an admin has verified them', async () => {
     await openScreen({ ...personas.guardian, profile: { ...personas.guardian.profile!, verified_at: null } }, { index: HomeScreen }, '/');
     expect(screen.queryByText('Medical and emergency')).toBeNull();
+  });
+});
+
+// ---------------------------------------------------------------------------
+// The yearly check
+
+describe('the yearly check', () => {
+  it('says when the athlete last checked and when the next is due, with nothing to do yet', async () => {
+    await openMedical('athlete', medical());
+    expect(screen.getByText(`Checked by Sample Athlete. Next check due ${formatDateString('2027-10-20')}.`)).toBeTruthy();
+    expect(screen.queryByText('Still correct')).toBeNull();
+  });
+
+  it.each<[MedicalProfile['check_status'], string]>([
+    ['due_soon', 'is due'],
+    ['overdue', 'was due'],
+  ])('when %s, confirms the details are still correct without changing them', async (status, words) => {
+    await openMedical('athlete', medical({ check_status: status, check_due_on: '2026-10-30' }), {
+      rpcs: { confirm_medical_profile: null },
+    });
+    expect(screen.getByText(`The yearly check ${words} ${formatDateString('2026-10-30')}.`)).toBeTruthy();
+    fireEvent.press(screen.getByText('Still correct'));
+    await settle();
+    expect(callsTo('confirm_medical_profile')).toEqual([{ p_athlete_id: 'athlete' }]);
+    expect(callsTo('save_medical_profile')).toEqual([]);
+    expect(callsTo('medical_profile')).toHaveLength(2);
+  });
+
+  it('shows the database’s refusal to confirm', async () => {
+    await openMedical('athlete', medical({ check_status: 'overdue', check_due_on: '2026-10-01' }), {
+      rpcErrors: { confirm_medical_profile: 'Only the athlete, or a parent or guardian for an under 18, can check these details' },
+    });
+    fireEvent.press(screen.getByText('Still correct'));
+    await settle();
+    expect(screen.getByText(/can check these details/)).toBeTruthy();
+  });
+
+  it('asks for details to be added when nothing is saved, with nothing to confirm', async () => {
+    await openMedical(
+      'athlete',
+      medical({ saved: false, emergency_contacts: [], checked_at: null, checked_by_name: null, check_due_on: null, check_status: 'missing' }),
+    );
+    expect(screen.getByText('Nothing saved yet. They’re checked once a year.')).toBeTruthy();
+    expect(screen.queryByText('Still correct')).toBeNull();
+    expect(screen.getByText('Change details')).toBeTruthy();
+  });
+
+  it('lets a guardian confirm their child’s', async () => {
+    await openMedical('guardian', medical({ athlete_id: 'child-1', role: 'guardian', check_status: 'overdue', check_due_on: '2026-10-01' }), {
+      rpcs: { confirm_medical_profile: null },
+    });
+    fireEvent.press(screen.getByText('Still correct'));
+    await settle();
+    expect(callsTo('confirm_medical_profile')).toEqual([{ p_athlete_id: 'child-1' }]);
+  });
+
+  it.each<[string, Who, Partial<MedicalProfile>]>([
+    ['an athlete under 18', 'minorAthlete', { athlete_id: 'minor-athlete', can_edit: false }],
+    ['a coach', 'coach', { role: 'coach', can_edit: false }],
+    ['a physio', 'physio', { role: 'physio', can_edit: false }],
+  ])('isn’t offered to %s, who can’t change them', async (_l, who, extra) => {
+    await openMedical(who, medical({ ...extra, check_status: 'overdue', check_due_on: '2026-10-01' }));
+    expect(screen.queryByText('Still correct')).toBeNull();
+    expect(screen.queryByText(/yearly check/)).toBeNull();
+  });
+});
+
+describe('Home to-dos for the yearly check', () => {
+  const reviews: MedicalReview[] = [
+    { athlete_id: 'athlete', athlete_name: 'Sample Athlete', status: 'overdue', due_on: '2026-10-01' },
+  ];
+
+  it('reminds an athlete to check their own, and opens them', async () => {
+    await openScreen('athlete', { index: HomeScreen, 'medical/[id]': MedicalScreen }, '/', {}, {
+      rpcs: { my_medical_reviews: reviews, medical_profile: medical({ check_status: 'overdue', check_due_on: '2026-10-01' }) },
+    });
+    expect(callsTo('my_medical_reviews')).not.toHaveLength(0);
+    fireEvent.press(screen.getByText('Check your medical details are still right'));
+    await settle();
+    expect(callsTo('medical_profile')).toEqual([{ p_athlete_id: 'athlete' }]);
+  });
+
+  it('reminds a verified guardian to add their child’s', async () => {
+    await openScreen('guardian', { index: HomeScreen }, '/', { guardianships: [] }, {
+      rpcs: { my_medical_reviews: [{ athlete_id: 'child-1', athlete_name: 'Sample Child', status: 'missing', due_on: null }] },
+    });
+    expect(screen.getByText('Add Sample Child’s medical and emergency details')).toBeTruthy();
+  });
+
+  it.each<[string, Who]>([
+    ['a coach', 'coach'],
+    ['an admin', 'admin'],
+    ['an unverified guardian', { ...personas.guardian, profile: { ...personas.guardian.profile!, verified_at: null } }],
+  ])('doesn’t ask for them for %s', async (_l, who) => {
+    await openScreen(who, { index: HomeScreen }, '/', {}, { rpcs: { my_medical_reviews: reviews } });
+    expect(callsTo('my_medical_reviews')).toEqual([]);
+    expect(screen.queryByText(/medical details are still right/)).toBeNull();
   });
 });

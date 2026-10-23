@@ -37,7 +37,9 @@ import {
   type SessionPlanReportRow,
   type TurnoutRow,
   type VoteBreakdownRow,
+  medicalCheckReport,
 } from '@/lib/reports';
+import type { MedicalComplianceRow } from '@/lib/medical';
 import type { InjuryReportRow } from '@/lib/types';
 
 import { noon, REPORT_DAY } from '../../__tests__/helpers/report-fixtures';
@@ -1108,5 +1110,70 @@ describe('kpiReport', () => {
 
   it('never shows a tick the PDF can’t draw', () => {
     expect(JSON.stringify(report)).not.toContain('✓');
+  });
+});
+
+describe('medicalCheckReport', () => {
+  const row = (name: string, extra: Partial<MedicalComplianceRow> = {}): MedicalComplianceRow => ({
+    athlete_id: name,
+    athlete_name: name,
+    minor: false,
+    has_verified_guardian: false,
+    teams: 'Open A',
+    has_contacts: true,
+    checked_at: '2026-03-01T02:00:00Z',
+    checked_by_name: 'Checker',
+    due_on: '2027-03-01',
+    status: 'current',
+    ...extra,
+  });
+  const stat = (report: ReturnType<typeof medicalCheckReport>, label: string) =>
+    report.stats?.find((s) => s.label === label)?.value;
+
+  it('puts each athlete in their status, alphabetically, and flags those needing action', () => {
+    const report = medicalCheckReport(
+      [
+        row('Zed', { status: 'overdue', due_on: '2026-09-01' }),
+        row('Amy', { status: 'overdue', due_on: '2026-08-01' }),
+        row('Kit', { minor: true, has_verified_guardian: false }),
+        row('Lu', { status: 'missing', checked_at: null, checked_by_name: null, due_on: null, has_contacts: false, teams: null }),
+      ],
+      REPORT_DAY,
+    );
+    expect(report.sections.map((s) => s.title)).toEqual(['Overdue', 'Nothing saved', 'Due within 30 days', 'Up to date']);
+    expect(report.sections[0].rows.map((r) => r.cells[0])).toEqual(['Amy', 'Zed']);
+    expect(report.sections[0].rows.every((r) => r.flag)).toBe(true);
+    expect(report.sections[1].rows[0].cells).toEqual(['Lu', 'None', 'Athlete', 'None', 'Never', 'Now']);
+    expect(report.sections[1].rows[0].flag).toBe(true);
+    expect(report.sections[2].rows).toEqual([]);
+    expect(report.sections[3].rows[0].cells[2]).toBe('No verified parent or guardian');
+    expect(report.sections[3].rows[0].flag).toBe(true);
+    expect(stat(report, 'Athletes')).toBe(4);
+    expect(stat(report, 'Checked in the last year')).toBe('25%');
+    expect(stat(report, 'Overdue')).toBe(2);
+    expect(stat(report, 'Nothing saved')).toBe(1);
+    expect(stat(report, 'No emergency contacts')).toBe(1);
+    expect(stat(report, 'Under 18s with no verified parent')).toBe(1);
+  });
+
+  it('shows who checked last and when the next is due, unflagged when up to date', () => {
+    const report = medicalCheckReport([row('Ada', { minor: true, has_verified_guardian: true, status: 'due_soon' })], REPORT_DAY);
+    const [only] = report.sections[2].rows;
+    expect(only.cells).toEqual([
+      'Ada',
+      'Open A',
+      'Parent or guardian',
+      'Yes',
+      `${formatDateString('2026-03-01')}\nChecker`,
+      formatDateString('2027-03-01'),
+    ]);
+    expect(only.flag).toBe(false);
+    expect(stat(report, 'Checked in the last year')).toBe('100%');
+  });
+
+  it('copes with no athletes', () => {
+    const report = medicalCheckReport([], REPORT_DAY);
+    expect(stat(report, 'Checked in the last year')).toBe('0%');
+    expect(report.sections.every((s) => s.rows.length === 0 && !!s.empty)).toBe(true);
   });
 });

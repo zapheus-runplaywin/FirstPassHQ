@@ -1,3 +1,9 @@
+import { useFocusEffect } from 'expo-router';
+import { useCallback, useState } from 'react';
+
+import { formatDateString } from '@/lib/injuries';
+import { supabase } from '@/lib/supabase';
+
 /** One emergency contact on an athlete's medical and emergency details. */
 export type EmergencyContact = { name: string; relationship: string; phone: string };
 
@@ -18,6 +24,40 @@ export type MedicalProfile = {
   action_plan: string;
   updated_at: string | null;
   updated_by_name: string | null;
+  /** The last yearly check: a save or "Still correct". */
+  checked_at: string | null;
+  checked_by_name: string | null;
+  /** Such as "2027-10-23", a year after the last check. */
+  check_due_on: string | null;
+  check_status: MedicalCheckStatus;
+};
+
+/**
+ * The yearly check: 'missing' when nothing is saved, 'due_soon' in the last
+ * 30 days before it's due, 'overdue' after.
+ */
+export type MedicalCheckStatus = 'missing' | 'due_soon' | 'overdue' | 'current';
+
+/** Medical details the signed-in member keeps that need adding or checking. */
+export type MedicalReview = {
+  athlete_id: string;
+  athlete_name: string;
+  status: Exclude<MedicalCheckStatus, 'current'>;
+  due_on: string | null;
+};
+
+/** One athlete in the admins' compliance report. No medical details. */
+export type MedicalComplianceRow = {
+  athlete_id: string;
+  athlete_name: string;
+  minor: boolean;
+  has_verified_guardian: boolean;
+  teams: string | null;
+  has_contacts: boolean;
+  checked_at: string | null;
+  checked_by_name: string | null;
+  due_on: string | null;
+  status: MedicalCheckStatus;
 };
 
 /** One time someone other than the athlete or their guardians opened them. */
@@ -85,4 +125,46 @@ export function teamMedicalLine(row: TeamMedicalRow) {
   if (row.can_open) return row.has_contacts ? 'Emergency contacts added' : 'No emergency contacts yet';
   if (row.needs_consent) return 'Waiting for a parent’s health consent';
   return 'You can’t see their details';
+}
+
+/** The line about the yearly check on someone's medical details. */
+export function checkLine(profile: Pick<MedicalProfile, 'check_status' | 'check_due_on' | 'checked_by_name'>) {
+  const due = profile.check_due_on ? formatDateString(profile.check_due_on) : null;
+  switch (profile.check_status) {
+    case 'missing':
+      return 'Nothing saved yet. They’re checked once a year.';
+    case 'overdue':
+      return `The yearly check was due ${due}.`;
+    case 'due_soon':
+      return `The yearly check is due ${due}.`;
+    default:
+      return `Checked by ${profile.checked_by_name ?? 'a former member'}. Next check due ${due}.`;
+  }
+}
+
+/** Status labels in the compliance report. */
+export const checkStatusLabels: Record<MedicalCheckStatus, string> = {
+  missing: 'Nothing saved',
+  overdue: 'Overdue',
+  due_soon: 'Due within 30 days',
+  current: 'Up to date',
+};
+
+/**
+ * Medical details the signed-in member keeps (their own at 18 or over, an
+ * under 18's as a verified guardian) that need adding or their yearly check.
+ */
+export function useMyMedicalReviews(enabled: boolean) {
+  const [reviews, setReviews] = useState<MedicalReview[]>([]);
+  const load = useCallback(async () => {
+    if (!enabled) return;
+    const { data } = await supabase.rpc('my_medical_reviews');
+    setReviews((data as MedicalReview[] | null) ?? []);
+  }, [enabled]);
+  useFocusEffect(
+    useCallback(() => {
+      load();
+    }, [load]),
+  );
+  return { medicalReviews: enabled ? reviews : [], reloadMedicalReviews: load };
 }

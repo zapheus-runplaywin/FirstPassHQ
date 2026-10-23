@@ -268,6 +268,7 @@ function RootStack() {
               options={{ title: 'Working With Children Checks' }}
             />
             <Stack.Screen name="admin/reports/under-18s" options={{ title: 'Under 18s' }} />
+            <Stack.Screen name="admin/reports/medical" options={{ title: 'Medical details checks' }} />
             <Stack.Protected guard={features.calendar}>
               <Stack.Screen name="admin/calendars" options={{ title: 'Calendars' }} />
             </Stack.Protected>

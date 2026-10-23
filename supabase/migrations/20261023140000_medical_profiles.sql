@@ -19,6 +19,12 @@
 --   guardians see who looked. The log is removed under the club's "Who
 --   viewed a child's records" keep period like the rest of it.
 -- * The profile goes when the athlete's account is deleted.
+-- * Once a year whoever keeps it (the athlete 18 or over, or a parent or
+--   guardian) checks it's still right (Matt, 23 October 2026). Saving counts
+--   as a check, and so does tapping "Still correct". It's due a year after
+--   the last check; a to-do appears 30 days before. Admins get a compliance
+--   report of who is current, due, overdue or has nothing saved, without
+--   any of the details themselves.
 --
 -- Additive: one new table reached only through functions, new functions,
 -- and the access log accepts one more kind. No rows are changed or removed.
@@ -36,7 +42,11 @@ create table if not exists public.medical_profiles (
   action_plan text not null default '' check (char_length(action_plan) <= 4000),
   updated_at timestamptz not null default now(),
   updated_by uuid references public.profiles (id) on delete set null,
-  updated_by_name text
+  updated_by_name text,
+  -- The last yearly check: a save or a "Still correct".
+  checked_at timestamptz not null default now(),
+  checked_by uuid references public.profiles (id) on delete set null,
+  checked_by_name text
 );
 
 alter table public.medical_profiles enable row level security;
@@ -114,6 +124,23 @@ as $$
 $$;
 revoke execute on function public.can_see_medical_views(uuid) from public, anon, authenticated;
 
+-- The yearly check. 'missing' when nothing is saved, 'overdue' after the
+-- year is up, 'due_soon' in its last 30 days, otherwise 'current'.
+create or replace function public.medical_review_status(p_checked_at timestamptz)
+returns text
+language sql
+stable
+set search_path = ''
+as $$
+  select case
+    when p_checked_at is null then 'missing'
+    when (p_checked_at + interval '1 year')::date < current_date then 'overdue'
+    when (p_checked_at + interval '1 year')::date <= current_date + 30 then 'due_soon'
+    else 'current'
+  end;
+$$;
+revoke execute on function public.medical_review_status(timestamptz) from public, anon, authenticated;
+
 -- ---------------------------------------------------------------------------
 -- Reading and saving
 -- ---------------------------------------------------------------------------
@@ -161,7 +188,11 @@ begin
     'medications', coalesce(v_profile.medications, ''),
     'action_plan', coalesce(v_profile.action_plan, ''),
     'updated_at', v_profile.updated_at,
-    'updated_by_name', v_profile.updated_by_name
+    'updated_by_name', v_profile.updated_by_name,
+    'checked_at', v_profile.checked_at,
+    'checked_by_name', v_profile.checked_by_name,
+    'check_due_on', (v_profile.checked_at + interval '1 year')::date,
+    'check_status', public.medical_review_status(v_profile.checked_at)
   );
 end;
 $$;
@@ -229,12 +260,13 @@ begin
 
   insert into public.medical_profiles as m (
     athlete_id, emergency_contacts, conditions, allergies, medications, action_plan,
-    updated_at, updated_by, updated_by_name
+    updated_at, updated_by, updated_by_name, checked_at, checked_by, checked_by_name
   )
   values (
     p_athlete_id, v_contacts,
     btrim(coalesce(p_conditions, '')), btrim(coalesce(p_allergies, '')),
     btrim(coalesce(p_medications, '')), btrim(coalesce(p_action_plan, '')),
+    now(), auth.uid(), public.member_display_name(auth.uid()),
     now(), auth.uid(), public.member_display_name(auth.uid())
   )
   on conflict (athlete_id) do update set
@@ -245,11 +277,113 @@ begin
     action_plan = excluded.action_plan,
     updated_at = excluded.updated_at,
     updated_by = excluded.updated_by,
-    updated_by_name = excluded.updated_by_name;
+    updated_by_name = excluded.updated_by_name,
+    checked_at = excluded.checked_at,
+    checked_by = excluded.checked_by,
+    checked_by_name = excluded.checked_by_name;
 end;
 $$;
 revoke execute on function public.save_medical_profile(uuid, jsonb, text, text, text, text) from public, anon;
 grant execute on function public.save_medical_profile(uuid, jsonb, text, text, text, text) to authenticated;
+
+-- The yearly check without changing anything: "Still correct".
+create or replace function public.confirm_medical_profile(p_athlete_id uuid)
+returns void
+language plpgsql
+security definer
+set search_path = ''
+as $$
+begin
+  if not public.can_edit_medical_profile(p_athlete_id) then
+    raise exception 'Only the athlete, or a parent or guardian for an under 18, can check these details';
+  end if;
+  update public.medical_profiles
+  set checked_at = now(), checked_by = auth.uid(), checked_by_name = public.member_display_name(auth.uid())
+  where athlete_id = p_athlete_id;
+  if not found then
+    raise exception 'Add the details first';
+  end if;
+end;
+$$;
+revoke execute on function public.confirm_medical_profile(uuid) from public, anon;
+grant execute on function public.confirm_medical_profile(uuid) to authenticated;
+
+-- The signed-in member's own medical details, and an under 18's they keep,
+-- that need adding or their yearly check (from 30 days before it's due).
+create or replace function public.my_medical_reviews()
+returns table (athlete_id uuid, athlete_name text, status text, due_on date)
+language sql
+stable
+security definer
+set search_path = ''
+as $$
+  select c.id, coalesce(public.member_display_name(c.id), 'Unnamed member'),
+    public.medical_review_status(m.checked_at), (m.checked_at + interval '1 year')::date
+  from (
+    select auth.uid() as id
+    union
+    select g.athlete_id from public.guardianships g where g.guardian_id = auth.uid()
+  ) c
+  left join public.medical_profiles m on m.athlete_id = c.id
+  where public.can_edit_medical_profile(c.id)
+    and public.medical_review_status(m.checked_at) <> 'current'
+  order by 4 nulls first, 2;
+$$;
+revoke execute on function public.my_medical_reviews() from public, anon;
+grant execute on function public.my_medical_reviews() to authenticated;
+
+-- Admins' compliance report: every approved athlete, who keeps their
+-- details, and where the yearly check is up to. Whether contacts are saved,
+-- but never the details themselves.
+create or replace function public.medical_review_compliance()
+returns table (
+  athlete_id uuid,
+  athlete_name text,
+  minor boolean,
+  has_verified_guardian boolean,
+  teams text,
+  has_contacts boolean,
+  checked_at timestamptz,
+  checked_by_name text,
+  due_on date,
+  status text
+)
+language plpgsql
+stable
+security definer
+set search_path = ''
+as $$
+begin
+  if not public.is_admin() then
+    raise exception 'Only admins can see the medical details check report';
+  end if;
+  return query
+  select p.id,
+    coalesce(public.member_display_name(p.id), 'Unnamed member'),
+    public.athlete_is_minor(p.id),
+    exists (
+      select 1 from public.guardianships g
+      join public.profiles gp on gp.id = g.guardian_id
+      where g.athlete_id = p.id and gp.status = 'approved' and gp.verified_at is not null
+    ),
+    (
+      select string_agg(t.name, ', ' order by t.name)
+      from public.team_members tm join public.teams t on t.id = tm.team_id
+      where tm.profile_id = p.id and tm.team_role = 'athlete' and not t.archived
+    ),
+    coalesce(jsonb_array_length(m.emergency_contacts), 0) > 0,
+    m.checked_at,
+    m.checked_by_name,
+    (m.checked_at + interval '1 year')::date,
+    public.medical_review_status(m.checked_at)
+  from public.profiles p
+  left join public.medical_profiles m on m.athlete_id = p.id
+  where p.status = 'approved' and (p.role = 'athlete' or 'athlete' = any (p.extra_roles))
+  order by 2;
+end;
+$$;
+revoke execute on function public.medical_review_compliance() from public, anon;
+grant execute on function public.medical_review_compliance() to authenticated;
 
 -- Who has opened this athlete's medical details, newest first. Empty for
 -- anyone but the athlete 18 or over and an under 18's guardians.

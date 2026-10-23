@@ -28,6 +28,7 @@ import {
   type KpiResult,
 } from '@/lib/kpis';
 import { rolesLabel, teamPositionLabel } from '@/lib/labels';
+import { checkStatusLabels, type MedicalCheckStatus, type MedicalComplianceRow } from '@/lib/medical';
 import type { Report, ReportRow, ReportSection } from '@/lib/pdf';
 import { hasRole, rolesOf } from '@/lib/roles';
 import {
@@ -1707,5 +1708,85 @@ export function kpiReport(seasonName: string, rows: KpiReportRow[], today: strin
     })),
     footnote:
       'Results are recorded by whoever sets the KPIs: the committee and admins for coaches and managers, and head coaches for their assistants. Athletes’ KPIs aren’t in this report. Coaches and managers who have deleted their account stay on it, with the day they left.',
+  };
+}
+
+// ---------------------------------------------------------------------------
+// Medical details checks
+// ---------------------------------------------------------------------------
+
+/**
+ * Who has checked their medical and emergency details in the last year.
+ * Athletes 18 or over keep their own; an under 18's verified parents and
+ * guardians keep theirs. Lists no medical details, only whether emergency
+ * contacts are saved.
+ */
+export function medicalCheckReport(rows: MedicalComplianceRow[], today = new Date()): Report {
+  const sorted = [...rows].sort((a, b) => a.athlete_name.localeCompare(b.athlete_name));
+  const noKeeper = (r: MedicalComplianceRow) => r.minor && !r.has_verified_guardian;
+  const of = (status: MedicalCheckStatus) => sorted.filter((r) => r.status === status);
+  const checkedInYear = sorted.filter((r) => r.status === 'current' || r.status === 'due_soon').length;
+
+  const columns = [
+    { label: 'Athlete', width: 1.3 },
+    { label: 'Squad or team', width: 1.3 },
+    { label: 'Kept by', width: 1.2 },
+    { label: 'Emergency contacts', width: 0.9 },
+    { label: 'Last checked', width: 1.4 },
+    { label: 'Next check due', width: 1 },
+  ];
+  const row = (r: MedicalComplianceRow): ReportRow => ({
+    cells: [
+      r.athlete_name,
+      r.teams ?? 'None',
+      r.minor
+        ? r.has_verified_guardian
+          ? 'Parent or guardian'
+          : 'No verified parent or guardian'
+        : 'Athlete',
+      r.has_contacts ? 'Yes' : 'None',
+      r.checked_at
+        ? `${formatDateString(toDateString(new Date(r.checked_at)))}\n${r.checked_by_name ?? 'Former member'}`
+        : 'Never',
+      r.due_on ? formatDateString(r.due_on) : 'Now',
+    ],
+    flag: r.status === 'overdue' || r.status === 'missing' || noKeeper(r),
+  });
+  const section = (status: MedicalCheckStatus, note: string, empty: string): ReportSection => ({
+    title: checkStatusLabels[status],
+    note,
+    columns,
+    rows: of(status).map(row),
+    empty,
+  });
+
+  return {
+    title: 'Medical details checks',
+    subtitle: `Approved athletes on ${formatDateString(toDateString(today))}`,
+    landscape: true,
+    stats: [
+      { label: 'Athletes', value: sorted.length },
+      {
+        label: 'Checked in the last year',
+        value: sorted.length ? `${Math.round((checkedInYear / sorted.length) * 100)}%` : '0%',
+      },
+      { label: checkStatusLabels.overdue, value: of('overdue').length },
+      { label: checkStatusLabels.missing, value: of('missing').length },
+      { label: checkStatusLabels.due_soon, value: of('due_soon').length },
+      { label: 'No emergency contacts', value: sorted.filter((r) => !r.has_contacts).length },
+      { label: 'Under 18s with no verified parent', value: sorted.filter(noKeeper).length },
+    ],
+    sections: [
+      section(
+        'overdue',
+        'More than a year since the athlete or a parent last saved or confirmed them.',
+        'Nobody is overdue.',
+      ),
+      section('missing', 'No medical and emergency details saved yet.', 'Every athlete has details saved.'),
+      section('due_soon', 'The yearly check falls due in the next 30 days.', 'Nobody is due in the next 30 days.'),
+      section('current', 'Saved or confirmed in the last 11 months.', 'Nobody is up to date yet.'),
+    ],
+    footnote:
+      'Athletes 18 or over check their own details once a year, and a verified parent or guardian checks an under 18’s. Saving the details or tapping “Still correct” counts as the check, and the app reminds them from 30 days before it’s due. This report shows no medical details. Under 18s with no verified parent or guardian can’t be checked until one is verified.',
   };
 }

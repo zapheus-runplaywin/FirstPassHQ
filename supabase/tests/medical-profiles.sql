@@ -256,6 +256,95 @@ select pg_temp.ok('not for an archived squad', (select count(*) = 0 from public.
 update public.teams set archived = false where id = pg_temp.id('a1');
 
 -- ---------------------------------------------------------------------------
+-- The yearly check
+-- ---------------------------------------------------------------------------
+select set_config('request.jwt.claim.sub', '', false);
+select pg_temp.ok('the status helper is closed to the app', has_function_privilege('authenticated', 'public.medical_review_status(timestamptz)', 'execute'), false);
+select pg_temp.ok('nothing saved is missing', public.medical_review_status(null) = 'missing', true);
+select pg_temp.ok('checked today is current', public.medical_review_status(now()) = 'current', true);
+select pg_temp.ok('checked 10 months ago is current', public.medical_review_status(now() - interval '10 months') = 'current', true);
+select pg_temp.ok('checked 11 and a half months ago is due soon', public.medical_review_status(now() - interval '345 days') = 'due_soon', true);
+select pg_temp.ok('checked a year ago today is due today, so due soon', public.medical_review_status(now() - interval '1 year') = 'due_soon', true);
+select pg_temp.ok('checked a year and a day ago is overdue', public.medical_review_status(now() - interval '1 year 1 day') = 'overdue', true);
+select pg_temp.ok('signed-out visitors can''t confirm', has_function_privilege('anon', 'public.confirm_medical_profile(uuid)', 'execute'), false);
+select pg_temp.ok('or list reviews', has_function_privilege('anon', 'public.my_medical_reviews()', 'execute'), false);
+select pg_temp.ok('or see the compliance report', has_function_privilege('anon', 'public.medical_review_compliance()', 'execute'), false);
+
+select pg_temp.ok('saving counted as Kai''s check', (select checked_by_name = 'Kai Senior' and checked_at > now() - interval '1 hour' from public.medical_profiles where athlete_id = pg_temp.id('32')), true);
+update public.medical_profiles set checked_at = now() - interval '13 months', checked_by_name = 'Old' where athlete_id in (pg_temp.id('31'), pg_temp.id('32'));
+create temp table kept as select athlete_id, updated_at, conditions, emergency_contacts from public.medical_profiles;
+
+select pg_temp.as_member('32');
+select pg_temp.ok('Kai''s profile says the check is overdue', (select public.medical_profile(pg_temp.id('32')) ->> 'check_status') = 'overdue', true);
+select pg_temp.ok('with the date it was due', (select (public.medical_profile(pg_temp.id('32')) ->> 'check_due_on')::date = ((now() - interval '13 months') + interval '1 year')::date), true);
+select pg_temp.ok('Kai is reminded about their own', (select array_agg(athlete_id) = array[pg_temp.id('32')] and bool_and(status = 'overdue') from public.my_medical_reviews()), true);
+select pg_temp.works('Kai confirms theirs are still correct', $$select public.confirm_medical_profile(pg_temp.id('32'))$$);
+select pg_temp.ok('the check is recorded with who did it', (select checked_by_name = 'Kai Senior' and checked_at > now() - interval '1 minute' from public.medical_profiles where athlete_id = pg_temp.id('32')), true);
+select pg_temp.ok('without changing the details or when they were last changed', (select m.updated_at = k.updated_at and m.conditions = k.conditions and m.emergency_contacts = k.emergency_contacts from public.medical_profiles m join kept k using (athlete_id) where athlete_id = pg_temp.id('32')), true);
+select pg_temp.ok('and the profile is current again', (select public.medical_profile(pg_temp.id('32')) ->> 'check_status') = 'current', true);
+select pg_temp.ok('so Kai has no reminder', (select count(*) = 0 from public.my_medical_reviews()), true);
+select pg_temp.fails_with('Kai can''t confirm Jordan''s', $$select public.confirm_medical_profile(pg_temp.id('31'))$$, 'parent or guardian for an under 18');
+
+select pg_temp.as_member('31');
+select pg_temp.fails_with('Jordan, under 18, can''t confirm their own', $$select public.confirm_medical_profile(pg_temp.id('31'))$$, 'parent or guardian for an under 18');
+select pg_temp.ok('and isn''t reminded', (select count(*) = 0 from public.my_medical_reviews()), true);
+
+select pg_temp.as_member('11');
+select pg_temp.fails_with('a coach can''t confirm an athlete''s', $$select public.confirm_medical_profile(pg_temp.id('32'))$$, 'Only the athlete');
+select pg_temp.ok('or gets reminders for them', (select count(*) = 0 from public.my_medical_reviews()), true);
+select pg_temp.as_member('01');
+select pg_temp.fails_with('nor an admin', $$select public.confirm_medical_profile(pg_temp.id('32'))$$, 'Only the athlete');
+
+select pg_temp.as_member('42');
+select pg_temp.ok('Morgan, Jordan''s other guardian, is reminded about Jordan''s', (select array_agg(athlete_id) = array[pg_temp.id('31')] from public.my_medical_reviews()), true);
+select pg_temp.as_member('41');
+select pg_temp.ok('so is Logan', (select array_agg(athlete_id) = array[pg_temp.id('31')] and bool_and(status = 'overdue') from public.my_medical_reviews()), true);
+select pg_temp.works('Logan confirms Jordan''s', $$select public.confirm_medical_profile(pg_temp.id('31'))$$);
+select pg_temp.ok('which clears it for Logan', (select count(*) = 0 from public.my_medical_reviews()), true);
+select pg_temp.as_member('42');
+select pg_temp.ok('and for Morgan', (select count(*) = 0 from public.my_medical_reviews()), true);
+update public.profiles set verified_at = null where id = pg_temp.id('41');
+select pg_temp.as_member('41');
+select pg_temp.fails_with('an unverified guardian can''t confirm', $$select public.confirm_medical_profile(pg_temp.id('31'))$$, 'Only the athlete');
+update public.profiles set verified_at = now() where id = pg_temp.id('41');
+
+-- Due within 30 days, and nothing saved yet.
+update public.medical_profiles set checked_at = now() - interval '350 days' where athlete_id = pg_temp.id('31');
+select pg_temp.ok('a check due within 30 days reminds the guardian', (select status = 'due_soon' from public.my_medical_reviews() where athlete_id = pg_temp.id('31')), true);
+delete from public.medical_profiles where athlete_id = pg_temp.id('31');
+select pg_temp.ok('nothing saved reminds them to add them', (select status = 'missing' and due_on is null from public.my_medical_reviews() where athlete_id = pg_temp.id('31')), true);
+select pg_temp.ok('the profile says so too', (select public.medical_profile(pg_temp.id('31')) ->> 'check_status') = 'missing', true);
+select pg_temp.fails_with('there''s nothing to confirm yet', $$select public.confirm_medical_profile(pg_temp.id('31'))$$, 'Add the details first');
+select pg_temp.ok('saving adds them', pg_temp.saves('31'), true);
+select pg_temp.ok('and counts as the check', (select checked_by = pg_temp.id('41') and checked_at > now() - interval '1 minute' from public.medical_profiles where athlete_id = pg_temp.id('31')), true);
+select pg_temp.ok('so there''s no reminder', (select count(*) = 0 from public.my_medical_reviews()), true);
+
+-- The admins' compliance report.
+update public.medical_profiles set checked_at = now() - interval '13 months' where athlete_id = pg_temp.id('32');
+select pg_temp.as_member('01');
+select pg_temp.ok('an admin sees every approved athlete', (select count(*) = (select count(*) from public.profiles where status = 'approved' and (role = 'athlete' or 'athlete' = any (extra_roles))) from public.medical_review_compliance()), true);
+select pg_temp.ok('with Kai overdue and who checked last', (select status = 'overdue' and checked_by_name = 'Kai Senior' and not minor and has_contacts from public.medical_review_compliance() where athlete_id = pg_temp.id('32')), true);
+select pg_temp.ok('Jordan current, under 18, with a verified guardian', (select status = 'current' and minor and has_verified_guardian from public.medical_review_compliance() where athlete_id = pg_temp.id('31')), true);
+select pg_temp.ok('with their squads and teams', (select teams like '%Sample Squad%' from public.medical_review_compliance() where athlete_id = pg_temp.id('31')), true);
+select pg_temp.ok('and the report has no medical details in it', (select count(*) = 0 from information_schema.parameters where specific_name like 'medical_review_compliance%' and parameter_name in ('conditions', 'allergies', 'medications', 'action_plan', 'emergency_contacts')), true);
+update public.profiles set verified_at = null where id in (pg_temp.id('41'), pg_temp.id('42'));
+select pg_temp.ok('an under 18 with no verified guardian is flagged', (select not has_verified_guardian from public.medical_review_compliance() where athlete_id = pg_temp.id('31')), true);
+update public.profiles set verified_at = now() where id in (pg_temp.id('41'), pg_temp.id('42'));
+update public.profiles set status = 'pending' where id = pg_temp.id('01');
+select pg_temp.fails_with('an admin waiting for approval can''t see it', $$select count(*) from public.medical_review_compliance()$$, 'Only admins');
+update public.profiles set status = 'approved' where id = pg_temp.id('01');
+select pg_temp.as_member('21');
+select pg_temp.fails_with('the committee can''t see it', $$select count(*) from public.medical_review_compliance()$$, 'Only admins');
+select pg_temp.as_member('11');
+select pg_temp.fails_with('a coach can''t', $$select count(*) from public.medical_review_compliance()$$, 'Only admins');
+select pg_temp.as_member('14');
+select pg_temp.fails_with('a physio can''t', $$select count(*) from public.medical_review_compliance()$$, 'Only admins');
+select pg_temp.as_member('32');
+select pg_temp.fails_with('an athlete can''t', $$select count(*) from public.medical_review_compliance()$$, 'Only admins');
+select pg_temp.as_member('41');
+select pg_temp.fails_with('a guardian can''t', $$select count(*) from public.medical_review_compliance()$$, 'Only admins');
+
+-- ---------------------------------------------------------------------------
 -- Keeping
 -- ---------------------------------------------------------------------------
 select set_config('request.jwt.claim.sub', '', false);
