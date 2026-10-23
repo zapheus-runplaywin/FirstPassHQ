@@ -186,6 +186,16 @@ describe('deleting the account', () => {
     expect(signOut()).toHaveBeenCalled();
   });
 
+  it('asks a member the club must keep to contact an admin, without saying why', async () => {
+    await open({ rpcErrors: { delete_my_account: 'Your account can’t be deleted at the moment. Please contact a club admin.' } });
+    fireEvent.press(screen.getByText('Delete my account'));
+    fireEvent.press(screen.getByText('Delete my account permanently'));
+    await settle();
+    expect(screen.getByText('Your account can’t be deleted at the moment. Please contact a club admin.')).toBeTruthy();
+    expect(screen.queryByText(/concern names/i)).toBeNull();
+    expect(signOut()).not.toHaveBeenCalled();
+  });
+
   it('when deleting fails, says why and stays signed in', async () => {
     await open({ rpcErrors: { delete_my_account: 'Admins can’t delete their own account.' } });
     fireEvent.press(screen.getByText('Delete my account'));

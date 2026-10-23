@@ -648,7 +648,8 @@ shows each one and where it's up to: Received, Referred, Being looked into or Cl
 you're in: your profile, your squad and team places, guardian links, your personal tasks and your
 messages inbox. Messages you sent to a group stay with the people who received them. Tap
 **Delete my account**, then **Delete my account permanently** to confirm. If you sign in again
-later, you'll need to ask to join again.
+later, you'll need to ask to join again. Now and then the club has to keep an account for a legal
+matter; then the app says it can't be deleted at the moment and asks you to contact a club admin.
 
 The club keeps your injury records after you leave, where only the committee and admins can see
 them, for its keep period for injuries (7 years unless the club chose 3, 5 or 10), counted from
@@ -2223,8 +2224,10 @@ Working With Children Check whichever role it is, and that includes athletes und
   attendance, training certificates, message receipts, consents, code of conduct acceptances,
   policy acknowledgements, exemptions (ended on the day), stand-downs, Screening Unit notices, and
   who viewed their records. Each goes when its own keep period ends (see [Keeping
-  records](#keeping-records)). Messages they sent stay, and their injury records are kept for 12
-  months. In the attendance report and a message's read receipts they show with "(deleted)" after
+  records](#keeping-records)). Messages they sent stay, and their injury records are kept for the
+  club's period for cleared injuries, counted from when they left. You can't delete a member a
+  concern names: the app says so, and their account and records stay while the concern names
+  them. The member is only told to contact an admin. In the attendance report and a message's read receipts they show with "(deleted)" after
   their name.
 
 <img src="user-guide/member-title.png" width="210" alt="A committee member's page with their preferred name and title">
@@ -2768,8 +2771,10 @@ its periods starts on those.
 - **Message text involving a child**: messages sent by or to anyone who was under 18 when they
   were sent. 3, 5, 7 (recommended), 10 or 15 years, and never less than **Message text**.
 - **Attendance** (with absences and session plans and their files, counted from the day of the
-  session) and **Training certificates** (with their files, counted from when they were added):
-  1 year (recommended) to 5 years.
+  session): 1 year (recommended) to 5 years, 10 years or 15 years. Keep it longer if your insurer
+  or governing body asks for proof of who was at training.
+- **Training certificates** (with their files, counted from when they were added): 1 year
+  (recommended) to 5 years.
 - **Surveys**, counted from when each survey closes, with its questions, answers and who it went
   to. There are three periods:
   - **Surveys from the committee and admins**: 1, 2, 3 (recommended), 5 or 7 years.
@@ -2793,9 +2798,12 @@ its periods starts on those.
   cleared stay until the injury goes.
 - **Safeguarding records**: stand-downs, Screening Unit notices, volunteer exemptions, parents'
   consents, code of conduct acceptances, policy acknowledgements and guardian link history go 7,
-  10, 15, 20 or 30 (recommended) years after each one ended: when a stand-down was lifted, a notice
-  arrived, an exemption or consent ended, or a code of conduct or link change was recorded.
-  Anything still in force stays, including a member's latest policy acknowledgement.
+  10, 15, 20, 30 (recommended) or 45 years after each one ended, or are kept for good: when a
+  stand-down was lifted, a notice arrived, an exemption or consent ended, or a code of conduct or
+  link change was recorded. Anything still in force stays, including a member's latest policy
+  acknowledgement. The Royal Commission into Institutional Responses to Child Sexual Abuse
+  recommended keeping these records at least 45 years, because survivors often come forward
+  decades later.
 - **Who voted for whom in awards**: 1 (recommended), 2, 3 or 5 years after the award closes. Only
   who cast each vote goes; the points and results stay.
 - **Awards and their results**: the award with all its votes goes 3, 5, 10 (recommended) or 20
@@ -2804,7 +2812,14 @@ its periods starts on those.
 A period the club saved before these choices changed (such as 7 years for attendance) stays as it
 is, shown as its own choice, until an admin picks another.
 
-Concerns are never removed. Nothing at all is removed while **Remove old records** is off,
+Concerns are never removed. While a concern names a member (open or closed), nothing about them
+is removed either, whatever these periods say: their attendance and the sessions they were at, messages they
+sent or received, check-ins, game goals, season KPIs, absences, training certificates, injuries
+and their documents, safeguarding records, who viewed their records and who viewed what with
+them, award votes, survey answers given by name, and a join request that's still waiting. Their
+squad and team places and roles are never removed by the clean-up anyway. This legal hold lasts as
+long as the concern names them, so the club can still answer an investigation, insurer or court.
+Nothing at all is removed while **Remove old records** is off,
 including the injuries of athletes who have left. Once it's on, join requests go 90 days after they're turned down or left
 unanswered, and temporary helpers with no other role a year after their last day; their
 safeguarding records stay for their own periods. Members who stop coming are never removed automatically:
@@ -2918,7 +2933,9 @@ governing body straight away and not to resolve it within the club. Then record 
 - **Add note** for anything else: who you spoke to and what was decided.
 - **Change status** to Being looked into, or **Closed** with a note saying why.
 - **Who it's about**: name the member it's about. From then on they can't see it, even if they're
-  an admin or handle concerns.
+  an admin or handle concerns. Nothing about them is removed under [Keeping
+  records](#keeping-records) while the concern names them, even once it's closed: their
+  attendance, messages, check-ins, injuries and safeguarding records are kept as a legal hold.
 
 Every step is kept with who did it and when. **Export the register as a PDF** gives the whole
 register with every step, except any concern about you, for the committee, the governing body or
@@ -3021,7 +3038,8 @@ clearance and the injury 7 years after, safeguarding records 30 years after they
 for whom in awards after 1 year and awards with their results after 10 years, unless the club
 chooses other periods (see [Keeping records](#keeping-records)). Join requests then go 90 days after they're turned down or left unanswered, and temporary
 helpers with no other role a year after their last day. Deleting a member keeps the club's safeguarding records about them for their own periods.
-Concerns are never removed.
+Concerns are never removed, and nothing about a member a concern names is removed while it names
+them.
 
 <div style="page-break-before: always"></div>
 
@@ -3379,12 +3397,17 @@ Working With Children Check, and another admin must do it.
   or 10), counted from its clearance or, for a child who has left the club, from when they left,
   so the club can still answer a claim made years later. Nothing is removed until the club
   switches on **Remove old records**. Safeguarding records (stand-downs, Screening Unit notices, exemptions, consents, code of conduct
-  acceptances, policy acknowledgements and guardian link history) are kept 7 to 30 years after
-  they end (30 recommended), and anything still in force stays.
+  acceptances, policy acknowledgements and guardian link history) are kept 7 to 45 years after
+  they end (30 recommended), or for good, and anything still in force stays. While a concern names
+  a member, a legal hold keeps everything about them, whatever the periods say: attendance,
+  messages, check-ins, injuries, safeguarding records and the rest.
 - **Deleting a member doesn't delete the safeguarding trail.** Their attendance, training
   certificates, message receipts, consents, code of conduct acceptances, exemptions and who viewed
   their records stay under the name they had, until each one's own keep period ends, so the club
   can still show who was with which children and that its people were trained and screened.
+  A member a concern names can't be deleted at all, by an admin or by themselves, so nothing
+  about them is lost while the concern stands; they're only asked to contact an admin, so the
+  concern isn't given away.
 - **Child abuse and serious crimes go out, not in.** The register prompts the club to refer them to
   Police and the governing body straight away, and records that it did.
 - **Each club's data is kept apart**, in that club's own database.

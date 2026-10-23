@@ -1105,12 +1105,22 @@ describe('deleting a member', () => {
     await press('Delete member');
     expect(
       screen.getByText(
-        'This permanently deletes Sample coach: their account, squad and team places, guardian links and message receipts. Messages they sent stay, and their injury records are kept for 12 months. It can’t be undone. To only stop them using the app, use Remove access instead.',
+        'This permanently deletes Sample coach: their account, squad and team places, guardian links and message receipts. Messages they sent stay, and their injury records are kept for the club’s period for cleared injuries. It can’t be undone. To only stop them using the app, use Remove access instead.',
       ),
     ).toBeTruthy();
     await press('Delete permanently');
     expect(adminWrites()).toEqual([['admin_delete_member', { p_profile_id: 'coach' }]]);
     expect(back).toHaveBeenCalledTimes(1);
+  });
+
+  it('says why when a concern names the member, and stays on their page', async () => {
+    await openMember(p('coach'), {
+      rpcErrors: { admin_delete_member: 'A concern names this member, so their account and records are kept while it does.' },
+    });
+    await press('Delete member');
+    await press('Delete permanently');
+    expect(screen.getByText('A concern names this member, so their account and records are kept while it does.')).toBeTruthy();
+    expect(back).not.toHaveBeenCalled();
   });
 
   it('doesn’t mention Remove access for a request that was never approved', async () => {
