@@ -230,6 +230,7 @@ describe('Club settings', () => {
     // Off by default: switching on is saved.
     flip('Season KPIs', true);
     flip('Affiliation records', true);
+    flip('Policy and conflict registers', true);
     flip('Members join a squad first', false);
     await save();
     expect(savedProfile()[0].p_features).toEqual({
@@ -237,6 +238,7 @@ describe('Club settings', () => {
       injuries: false,
       captainPolls: false,
       kpis: true,
+      registers: true,
       squads: false,
       affiliation: true,
     });
@@ -264,10 +266,11 @@ describe('Club settings', () => {
   });
 
   it('turning a switched-off feature back on stores nothing for it', async () => {
-    setSavedClub({ features: { messages: false, kpis: true } });
+    setSavedClub({ features: { messages: false, kpis: true, registers: true } });
     await openClub();
     flip('Messages', true);
     flip('Season KPIs', false);
+    flip('Policy and conflict registers', false);
     await save();
     expect(savedProfile()[0].p_features).toEqual({});
   });

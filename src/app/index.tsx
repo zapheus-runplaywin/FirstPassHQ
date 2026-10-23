@@ -57,6 +57,11 @@ import { useCanReadReports } from '@/lib/report-access';
 import { usePersonalTasks } from '@/lib/personal-tasks';
 import { useSessionPlanSummary } from '@/lib/session-plans';
 import { useCanSendSurveys, useMySurveys, surveysToAnswer } from '@/lib/surveys';
+import {
+  useCanReadRegisters,
+  useMyConflictDeclaration,
+  useMyPolicyReviews,
+} from '@/lib/registers';
 import { buildTodos } from '@/lib/todos';
 import type { ChildConsent } from '@/lib/consents';
 import {
@@ -118,6 +123,9 @@ export default function HomeScreen() {
       (hasRole(profile, 'athlete') || (hasRole(profile, 'guardian') && !!profile.verified_at)),
   );
   const { mySurveys, reloadMySurveys } = useMySurveys();
+  const { policyReviews, reloadPolicyReviews } = useMyPolicyReviews();
+  const { conflictDeclaration, reloadConflictDeclaration } = useMyConflictDeclaration();
+  const canReadRegisters = useCanReadRegisters() && features.registers;
   const canSendSurveys = useCanSendSurveys();
   const surveysWaiting = surveysToAnswer(mySurveys).length;
   const { absencesToReview, reloadAbsencesToReview } = useAbsencesToReview(useLeadsAGroup());
@@ -178,6 +186,8 @@ export default function HomeScreen() {
     kpiReviews: kpiReviewTodos,
     surveys: features.surveys ? mySurveys : [],
     medicalReviews,
+    policyReviews,
+    conflictDeclaration,
   });
 
   const isGuardian = profile?.status === 'approved' && hasRole(profile, 'guardian');
@@ -227,6 +237,8 @@ export default function HomeScreen() {
       reloadKpiPeople(),
       reloadKpiReviewTodos(),
       reloadMedicalReviews(),
+      reloadPolicyReviews(),
+      reloadConflictDeclaration(),
       reloadMySurveys(),
       reloadAbsencesToReview(),
       loadAthletes(),
@@ -477,6 +489,15 @@ export default function HomeScreen() {
               {newConcerns > 0
                 ? `${newConcerns} new ${newConcerns === 1 ? 'concern' : 'concerns'} to look at`
                 : 'The concerns register'}
+            </ThemedText>
+          </PressableCard>
+        ) : null}
+
+        {canReadRegisters ? (
+          <PressableCard onPress={() => router.push('/registers')}>
+            <ThemedText type="smallBold">Registers</ThemedText>
+            <ThemedText type="small" themeColor="textSecondary">
+              The club’s policies and conflicts of interest
             </ThemedText>
           </PressableCard>
         ) : null}

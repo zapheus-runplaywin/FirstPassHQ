@@ -42,10 +42,10 @@ jest.mock('@react-native-async-storage/async-storage', () =>
 jest.mock('@/global.css', () => ({}));
 jest.mock('expo-font', () => ({ ...jest.requireActual('expo-font'), useFonts: () => [true, null] }));
 
-// Every feature on, Season KPIs included, so only the role guards decide.
+// Every feature on, Season KPIs and the registers included, so only the role guards decide.
 beforeEach(() => {
   resetClub();
-  setClubFeatures({ kpis: true });
+  setClubFeatures({ kpis: true, registers: true });
 });
 
 // ---------------------------------------------------------------------------
@@ -156,6 +156,12 @@ const CERTIFICATE_CHECKERS = union(COMMITTEE, ADMINS);
 // group reaches them only from a link). Never admins or the committee as such.
 const MEDICAL_READERS = union(ATHLETES, GUARDIANS, COACHES, MANAGERS, ['physio']);
 const GROUP_STAFF = union(COACHES, MANAGERS, ['physio']);
+// The policy and conflict registers: the committee and admins read them, a
+// policy's owner (a club official) records its review, and committee members
+// and coaches declare their conflicts of interest.
+const REGISTER_READERS = union(COMMITTEE, ADMINS);
+const POLICY_REVIEWERS = union(ADMINS, COMMITTEE, COACHES, MANAGERS, PHYSIOS, STATISTICIANS);
+const CONFLICT_DECLARERS = union(COMMITTEE, COACHES);
 
 const WHO_OPENS: Record<string, PersonaName[]> = {
   'messages/index': CLUB_MEMBERS,
@@ -220,6 +226,14 @@ const WHO_OPENS: Record<string, PersonaName[]> = {
   'activity/[id]': union(GUARDIANS, ADMINS),
 
   'team/captains/[id]': union(ADMINS, COACHES),
+
+  'registers/index': REGISTER_READERS,
+  'registers/conflicts': REGISTER_READERS,
+  'registers/policies': union(REGISTER_READERS, POLICY_REVIEWERS),
+  'registers/review': POLICY_REVIEWERS,
+  'registers/policy': ADMINS,
+  'registers/conflict': ADMINS,
+  'declare-conflicts': CONFLICT_DECLARERS,
 };
 
 /** Screens every signed-in member has, including those waiting for approval. */
@@ -312,9 +326,26 @@ describe('Season KPIs off', () => {
   );
 });
 
+describe('registers off', () => {
+  it.each([
+    'registers/index',
+    'registers/conflicts',
+    'registers/policies',
+    'registers/review',
+    'registers/policy',
+    'registers/conflict',
+    'declare-conflicts',
+  ])('sends even admins, the committee and coaches home from %s', async (route) => {
+    setClubFeatures({ kpis: true });
+    await expectTurnedAway('admin', route, 'index');
+    await expectTurnedAway('committee', route, 'index');
+    await expectTurnedAway('coach', route, 'index');
+  }, 20000);
+});
+
 describe('captains’ polls off', () => {
   it('a captain can no longer send polls, but keeps their polls’ results and still answers surveys', async () => {
-    setClubFeatures({ kpis: true, captainPolls: false });
+    setClubFeatures({ kpis: true, registers: true, captainPolls: false });
     await expectTurnedAway('captain', 'surveys/new', 'index');
     await expectReaches('captain', 'surveys/results');
     await expectReaches('captain', 'surveys/index');

@@ -3,6 +3,7 @@ import { useAuth } from '@/lib/auth';
 import { useCanSeeCheckIns, useIsCheckInAthlete, useIsCheckInCoach } from '@/lib/check-ins';
 import { useIsGoalAthlete, useIsGoalCoach } from '@/lib/goals';
 import { useCanLogInjuries, useCanSeeInjuries } from '@/lib/injuries';
+import { useFeature } from '@/lib/club';
 import { useKpisOn } from '@/lib/kpis';
 import { useCaptainedGroupIds, useCanSendMessages, useGetsMessages } from '@/lib/messages';
 import { useCanReadReports } from '@/lib/report-access';
@@ -46,6 +47,7 @@ export function useRouteAccess() {
   const kpisOn = useKpisOn();
   const canCheckTraining = useCanCheckTraining();
   const canReadReports = useCanReadReports();
+  const registersOn = useFeature('registers');
 
   const isGuardian = holds('guardian');
   const isAthlete = holds('athlete') || inGroupAs('athlete');
@@ -143,6 +145,15 @@ export function useRouteAccess() {
 
     // Choosing a squad or team's captains: admins and its coaches.
     chooseCaptains: isAdmin || inGroupAs('coach'),
+
+    // Policy and conflict registers, when the club turns them on: read by the
+    // committee and admins and changed by admins; a policy's owner (a club
+    // official) records its review; committee members and coaches declare
+    // their conflicts of interest each season.
+    registers: registersOn && holds('committee', 'admin'),
+    editRegisters: registersOn && isAdmin,
+    reviewPolicy: registersOn && holds('admin', 'committee', 'coach', 'manager', 'physio', 'statistician'),
+    declareConflicts: registersOn && (holds('committee', 'coach') || inGroupAs('coach')),
   };
 }
 

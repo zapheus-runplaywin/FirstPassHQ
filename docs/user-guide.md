@@ -135,6 +135,7 @@ What each role sees on its home screen:
 | Manage absence reasons                 |         |                 |              |            |               |               |         |       ✓       |
 | Invite members (QR code and link)      |         |                 |              |            |               |               |         |       ✓       |
 | Affiliation records (when turned on)   |         |                 |              |            |               |               |         |       ✓       |
+| Policy and conflict registers (when turned on) |  |                 | Declare conflicts; review policies they own | Review policies they own | Read both; declare conflicts; review policies they own | Review policies they own |  | Read and change both; record any review |
 | Administration                         |         |                 |              |            |               |               |         |       ✓       |
 
 † Athletes who are captains: club captains can message the whole club, and squad and team
@@ -187,10 +188,13 @@ cleared to help, **Raise a concern**, and the Your details, Switch club and Dele
 
 Admins can turn off Messages, Calendar, Daily check-ins, Injuries, Attendance, Session plans,
 Surveys, Captains' polls, Awards, Game goals and Integrity training for the whole club in **Club settings**. A feature that's off disappears for every role.
-**Season KPIs** and **Affiliation records** work the other way: they're off unless an admin turns
-them on. Season KPIs are for a club that sets its coaches, managers and athletes measures for the
-season (see [Season KPIs](#season-kpis)); Affiliation records are for a club or association that
-reports to its association or Netball WA (see [Affiliation](#affiliation)).
+**Season KPIs**, **Affiliation records** and **Policy and conflict registers** work the other way:
+they're off unless an admin turns them on. Season KPIs are for a club that sets its coaches,
+managers and athletes measures for the season (see [Season KPIs](#season-kpis)); Affiliation
+records are for a club or association that reports to its association or Netball WA (see
+[Affiliation](#affiliation)); the registers keep the club's policies with their owners and review
+dates, and each season's conflict-of-interest declarations (see [Policy and conflict
+registers](#policy-and-conflict-registers)).
 
 <div style="page-break-before: always"></div>
 
@@ -1219,6 +1223,22 @@ reminded 60 days ahead, and 60 days before a parent or under-18 exemption ends.
 
 <img src="user-guide/role-paused.png" width="210" alt="Home screen of a coach whose check has expired, saying the coach role is paused">
 
+### Declaring conflicts of interest
+
+If the club uses the [policy and conflict registers](#policy-and-conflict-registers), each season
+every coach (and every committee member) declares any conflict of interest: anything that could
+affect, or look like it affects, a decision you make for the club, such as your child trialling
+for a team you coach or select. A to-do, **Declare any conflicts of interest**, stays on your list
+until you do, even if you have none. Tap it, choose **No conflicts of interest** or **A conflict
+to declare** (and say what it is and how it's managed), and tap **Declare**. You can change it
+during the season from the same screen. The committee and admins read what you declare; other
+coaches, athletes and parents don't. Declaring a conflict doesn't stop you coaching.
+
+<img src="user-guide/declare-conflicts.png" width="210" alt="Declaring conflicts of interest for the season">
+
+If an admin makes you the owner of a club policy, you also get a to-do 30 days before its review
+date (see [Reviewing a policy you own](#reviewing-a-policy-you-own)).
+
 ### Volunteer exemptions
 
 In WA, a parent who volunteers at the club their own child is in, and any volunteer under 18,
@@ -1924,6 +1944,35 @@ paused or stood down sees no Reports card. The reports give names, not email add
 
 <img src="user-guide/committee-home-reports.png" width="210" alt="The Reports card on a committee member's home screen">
 <img src="user-guide/committee-reports.png" width="210" alt="Reports for a committee member with a current check">
+
+### The registers
+
+If the club turns on the policy and conflict registers, committee members have **Registers** on
+the home screen. **Policies** lists each club policy with its owner, version and next review date,
+soonest first, marked **Overdue for review** or **Review due within 30 days**, with **Open** for
+its link. **Conflicts of interest** shows this season's declarations from the committee and
+coaches: who declared a conflict and what it is, who declared none, and who still has to declare.
+Earlier seasons are kept and chosen at the top. Both are read only for the committee; admins make
+the changes (see [Policy and conflict registers](#policy-and-conflict-registers)). Like coaches,
+you declare your own conflicts of interest each season from your to-do list (see [Declaring
+conflicts of interest](#declaring-conflicts-of-interest)). A paused committee member has no
+Registers card.
+
+<img src="user-guide/registers.png" width="210" alt="The registers: policies and conflicts of interest">
+<img src="user-guide/registers-policies.png" width="210" alt="The policy register with review dates">
+<img src="user-guide/registers-conflicts.png" width="210" alt="This season's conflict-of-interest register">
+
+### Reviewing a policy you own
+
+An admin can make any adult club official (a committee member, coach, manager, physio,
+statistician or admin) the **owner** of a policy. Thirty days before its review date, the owner
+gets a to-do, **Review the** (policy's name), which turns amber in the last three days and red once
+it's overdue. Read the policy, update it if needed, then tap the to-do (or **Record a review** on
+the policy), check the version and link, choose when it's next reviewed (a year ahead is
+suggested) and tap **Record review**. The register shows when and by whom it was last reviewed,
+and the to-do goes.
+
+<img src="user-guide/registers-review.png" width="210" alt="Recording a policy review">
 
 ### Committee calendar
 
@@ -2816,8 +2865,8 @@ so leave them filled in.
   how they look together and warns when text or buttons would be hard to read. **Use the built-in
   colours** goes back to deep navy, white and blaze orange.
 - **Features**: switch off any of Messages, Calendar, Daily check-ins, Injuries, Attendance,
-  Session plans, Surveys, Captains' polls, Awards, Game goals, Integrity training and Season KPIs
-  (see below). Switching
+  Session plans, Surveys, Captains' polls, Awards, Game goals, Integrity training, Season KPIs and
+  the policy and conflict registers (see below). Switching
   off **Captains' polls** stops captains sending new polls and leaves the rest of Surveys on; polls
   already sent stay readable. A switched-off feature disappears from every member's home screen, to-do list and menus,
   and its Administration pages are hidden. Nothing is deleted, so switching it back on brings
@@ -2834,6 +2883,10 @@ so leave them filled in.
 - **Affiliation records**: off unless you turn it on. For a club or association that reports to
   its association or Netball WA, it adds **Affiliation** to Administration and Reports (see
   [Affiliation](#affiliation)). Only admins see it.
+- **Policy and conflict registers**: off unless you turn it on. It adds **Registers** to the home
+  screen for the committee and admins, policy review to-dos for policy owners, and a to-do each
+  season for the committee and coaches to declare conflicts of interest (see [Policy and conflict
+  registers](#policy-and-conflict-registers)).
 
 Tap **Save club settings**. Members see the changes the next time they open the app. Someone
 who has just installed the app sees the FirstPass look on the sign-in screen until they sign in.
@@ -2845,6 +2898,37 @@ part of the app build and don't change here.
 <img src="user-guide/club-settings-features.png" width="210" alt="Club settings: turning features on and off">
 <img src="user-guide/club-settings-physios.png" width="210" alt="Club settings: physios get club messages">
 <img src="user-guide/club-settings-affiliation.png" width="210" alt="Club settings: the Affiliation records switch">
+<img src="user-guide/club-settings-registers.png" width="210" alt="Club settings: the Policy and conflict registers switch">
+
+### Policy and conflict registers
+
+Turned on in [Club settings](#club-settings), **Registers** on the home screen holds two
+governance registers for the committee, the board and an audit. Admins change both; the committee
+reads them.
+
+**Policies.** Tap **Add a policy** and give its name (such as Child Safeguarding Policy), its
+**owner** (search for any adult club official: a committee member, coach, manager, physio,
+statistician or admin), its version, a link to the document on the club's website or shared drive
+(the app doesn't store the file), its **next review** date (within 5 years) and any notes, then
+**Add policy**. **Change** a policy to update any of these, or **Remove** it. The owner gets a
+to-do 30 days before the review date and records the review (see [Reviewing a policy you
+own](#reviewing-a-policy-you-own)); admins can record a review for any policy. A policy with no
+owner gets no to-do, so give every policy one.
+
+<img src="user-guide/registers-policy.png" width="210" alt="Adding a policy to the register">
+
+**Conflicts of interest.** Each season, every committee member and coach (including coaches in a
+squad or team who don't hold the club Coach role) is asked to declare. The app has no selector
+role: selectors are covered as coaches or committee members. The register lists who declared a
+conflict and what it is, who declared none, and who still has to. Admins don't declare unless they
+also coach or sit on the committee. Tap someone to correct their entry or to record a declaration
+given on paper; the register then shows that you changed it. Earlier seasons stay in the register.
+A member's declarations go if they delete their account.
+
+<img src="user-guide/registers-conflict.png" width="210" alt="An admin changing a conflict-of-interest entry">
+
+Risk and incident registers and the AGM pack aren't in the app yet (see [Not in the app
+yet](#14-not-in-the-app-yet)).
 
 ### Affiliation
 
@@ -3213,6 +3297,8 @@ once saved, only replaced or removed, and anyone who gets it wrong five times in
 | Award votes             | Only the voter sees their own ballot. Nobody, admins included, can see who someone voted for. Who cast each vote is removed after the club's keep period (1 year recommended). |
 | Award results           | Admins: standings and how many people have voted, and once voting closes, how many votes each nominee got at each place. Committee members with a current check read the same results once voting closes. |
 | Affiliation records and PlayHQ registration checks | Admins only. |
+| Policy register         | The committee and admins, when the club turns the registers on. A policy's owner also sees the policies they own. Only admins add, change or remove policies; the owner or an admin records a review. |
+| Conflict-of-interest declarations | The member (their own), the committee and admins, when the club turns the registers on. Coaches, athletes and parents don't see anyone else's. Only the member declares; admins can correct an entry, and the register shows they did. |
 | Affiliation returns     | Admins only, until an admin sends one. A sent return goes to the email address the club entered and holds club facts and counts, naming no member under 18. |
 | Reports and their PDFs  | Admins read every report. Committee members with a current check, a check application in force or a volunteer exemption read the Working With Children Checks, Medical details checks, Integrity training, Attendance and Award results reports, read only; never Under 18s and their guardians, Injuries, Session plans, Season KPIs or Affiliation, and none if they're exempted with a reason or have no check yet. A saved PDF is a copy outside the app, so whoever it's shared with can read it. |
 | Match fixtures          | The members of each squad or team, statisticians and admins.                                                                |
@@ -3499,6 +3585,12 @@ Working With Children Check, and another admin must do it.
   check before the committee checks date, reads none of them. The reports are read only, give no
   email addresses or check receipts, and the reports about under 18s' guardians, injuries, session
   plans, Season KPIs and affiliation stay with admins.
+- **Policies stay current, and conflicts are declared.** When the club uses the registers, each
+  policy, the child safeguarding policy included, has an owner who gets a to-do 30 days before
+  its review date, and the committee sees which reviews are overdue. Every committee member and
+  coach declares any conflict of interest each season, such as a child in a team they select,
+  and the committee sees who still has to (see [Policy and conflict
+  registers](#policy-and-conflict-registers)).
 - **Admins are screened too.** Admins can read every child's records, so they need a current
   check (or an application being assessed), or an exemption with a reason that another admin records; nobody exempts themselves. An
   admin's role doesn't pause when the check expires, so the club can't be locked out of its own
@@ -3690,10 +3782,15 @@ goes wrong, and how the club gets it all back. The full statement is in
 Things clubs have asked for that FirstPass HQ doesn't do today, so nobody expects them. Each is
 decided on its own; until then the club keeps doing it the way it does now.
 
-- **Selection records**: published selection criteria, the selection panel, conflict of interest
-  declarations, when athletes were told, and appeals. Admins name teams in the app (see [Squads,
-  teams and selections](#squads-teams-and-selections)); the rest stays with the club's own
-  selection policy and the governing body's complaints process.
+- **Selection records**: published selection criteria, the selection panel, when athletes were
+  told, and appeals. Admins name teams in the app (see [Squads, teams and
+  selections](#squads-teams-and-selections)), and coaches and the committee declare conflicts of
+  interest each season when the club uses the registers (see [Policy and conflict
+  registers](#policy-and-conflict-registers)); the rest stays with the club's own selection policy
+  and the governing body's complaints process.
+- **Risk and incident registers, and the AGM pack**: the club's risk register, a register of
+  incidents that aren't injuries or concerns, and an annual general meeting pack. The [policy and
+  conflict registers](#policy-and-conflict-registers) are in the app; these stay with the club.
 - **Strava and testing results**: linking Strava or a watch, and fitness testing results. Athletes
   log their sessions' minutes and effort by hand under the check-in (see [Training
   sessions](#training-sessions)).

@@ -1,6 +1,7 @@
 import { formatDateString, type LoggedInjury } from '@/lib/injuries';
 import type { KpiReviewTodo } from '@/lib/kpis';
 import type { MedicalReview } from '@/lib/medical';
+import type { MyConflictDeclaration, PolicyReview } from '@/lib/registers';
 import type { MySurvey } from '@/lib/surveys';
 import { buildTodos, dueAlert, sortByAlert, type Todo } from '@/lib/todos';
 import type { MyTraining } from '@/lib/training';
@@ -954,5 +955,64 @@ describe('medical details', () => {
   it('has one to-do per athlete, and none without reviews', () => {
     expect(keys(todos({ medicalReviews: [review({}), review({ athlete_id: 'kid', athlete_name: 'Kit' })] }))).toEqual(['medical-me', 'medical-kid']);
     expect(todos()).toEqual([]);
+  });
+});
+
+describe('policy reviews and conflicts of interest', () => {
+  const policy = (extra: Partial<PolicyReview> = {}): PolicyReview => ({
+    id: 'p1',
+    title: 'Child Safeguarding Policy',
+    review_on: '2026-11-10',
+    ...extra,
+  });
+  const declaration = (extra: Partial<MyConflictDeclaration> = {}): MyConflictDeclaration => ({
+    required: true,
+    season: 2026,
+    has_conflict: null,
+    details: null,
+    declared_at: null,
+    ...extra,
+  });
+
+  it('asks a policy’s owner to review it by its review date', () => {
+    expect(only(todos({ policyReviews: [policy()] }))).toEqual({
+      key: 'policy-p1',
+      title: 'Review the Child Safeguarding Policy',
+      detail: `Due ${formatDateString('2026-11-10')}`,
+      href: { pathname: '/registers/review', params: { id: 'p1' } },
+      dueOn: '2026-11-10',
+    });
+  });
+
+  it('says a review was due once its day has passed, in red, and amber in the last three days', () => {
+    const overdue = only(todos({ policyReviews: [policy({ review_on: '2026-10-01' })] }));
+    expect(overdue.detail).toBe(`Was due ${formatDateString('2026-10-01')}`);
+    expect(overdue.alert).toEqual({ level: 'red', label: 'Overdue' });
+    const today = only(todos({ policyReviews: [policy({ review_on: '2026-10-18' })] }));
+    expect(today.detail).toBe(`Due ${formatDateString('2026-10-18')}`);
+    expect(today.alert).toEqual({ level: 'amber', label: 'Due soon' });
+    expect(only(todos({ policyReviews: [policy()] })).alert).toBeUndefined();
+  });
+
+  it('has one to-do per policy', () => {
+    expect(keys(todos({ policyReviews: [policy(), policy({ id: 'p2', title: 'Privacy Policy' })] }))).toEqual([
+      'policy-p1',
+      'policy-p2',
+    ]);
+  });
+
+  it('asks committee members and coaches to declare once a season, even with none', () => {
+    expect(only(todos({ conflictDeclaration: declaration() }))).toEqual({
+      key: 'conflicts',
+      title: 'Declare any conflicts of interest',
+      detail: 'Once a season, for the 2026–27 season, even if you have none',
+      href: '/declare-conflicts',
+    });
+  });
+
+  it('stops asking once they declare, and never asks someone who doesn’t declare', () => {
+    expect(todos({ conflictDeclaration: declaration({ declared_at: '2026-10-01T00:00:00Z', has_conflict: false }) })).toEqual([]);
+    expect(todos({ conflictDeclaration: declaration({ required: false }) })).toEqual([]);
+    expect(todos({ conflictDeclaration: null })).toEqual([]);
   });
 });

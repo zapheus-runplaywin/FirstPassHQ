@@ -42,6 +42,12 @@ export const FEATURES = [
     detail: 'KPIs and OKRs for coaches, managers and athletes, with season reviews',
     offByDefault: true,
   },
+  {
+    key: 'registers',
+    label: 'Policy and conflict registers',
+    detail: 'Policy review dates and owners, and conflict-of-interest declarations each season',
+    offByDefault: true,
+  },
 ] as const;
 
 /** Whether a feature starts off until an admin turns it on. */

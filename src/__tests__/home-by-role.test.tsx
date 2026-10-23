@@ -559,4 +559,50 @@ describe('feature switches', () => {
     expect(screen.getByText('Season KPIs')).toBeTruthy();
     expect(screen.getByText('2 of yours')).toBeTruthy();
   });
+
+  it('the registers stay hidden until an admin turns them on', async () => {
+    setClubFeatures({});
+    await openHome('committee');
+    expect(screen.queryByText('The club’s policies and conflicts of interest')).toBeNull();
+    setClubFeatures({ registers: true });
+    await openHome('admin');
+    expect(screen.getByText('The club’s policies and conflicts of interest')).toBeTruthy();
+  });
+
+  it('a committee member opens the registers from home', async () => {
+    setClubFeatures({ registers: true });
+    await openHome('committee');
+    fireEvent.press(screen.getByText('The club’s policies and conflicts of interest'));
+    await act(async () => {});
+    expect(screen.getByText('screen:registers/index')).toBeTruthy();
+    expect(screen).toHavePathname('/registers');
+  });
+
+  it('coaches, athletes and parents have no registers card', async () => {
+    setClubFeatures({ registers: true });
+    for (const who of ['coach', 'athlete', 'guardian'] as const) {
+      await openHome(who);
+      expect(screen.queryByText('The club’s policies and conflicts of interest')).toBeNull();
+    }
+  }, 20000);
+
+  it('a coach is asked to declare conflicts of interest, and a policy owner to review their policy, only while the registers are on', async () => {
+    const asked: Persona = {
+      ...personas.coach,
+      rpcs: {
+        my_conflict_declaration: [
+          { required: true, season: 2026, has_conflict: null, details: null, declared_at: null },
+        ],
+        my_policy_reviews: [{ id: 'p1', title: 'Privacy Policy', review_on: '2026-11-01' }],
+      },
+    };
+    setClubFeatures({});
+    await openHome(asked);
+    expect(screen.queryByText('Declare any conflicts of interest')).toBeNull();
+    expect(screen.queryByText('Review the Privacy Policy')).toBeNull();
+    setClubFeatures({ registers: true });
+    await openHome(asked);
+    expect(screen.getByText('Declare any conflicts of interest')).toBeTruthy();
+    expect(screen.getByText('Review the Privacy Policy')).toBeTruthy();
+  });
 });
