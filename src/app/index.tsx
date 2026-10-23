@@ -15,7 +15,7 @@ import { useTheme } from '@/hooks/use-theme';
 import { useAbsencesToReview, useLeadsAGroup } from '@/lib/absences';
 import { useAffiliationTodos } from '@/lib/affiliation';
 import { useConductTodos } from '@/lib/conduct';
-import { committeeCheckDue, isDatedExemption } from '@/lib/safety';
+import { committeeCheckDue, isDatedExemption, statisticianCheckDue } from '@/lib/safety';
 import { formatDate, isMinor } from '@/lib/age';
 import { useAuth } from '@/lib/auth';
 import { useCanTakeAttendance, useCanViewAttendance } from '@/lib/attendance';
@@ -283,6 +283,10 @@ export default function HomeScreen() {
         {approved ? <PausedRoles /> : null}
 
         {approved ? <CommitteeCheckDue /> : null}
+
+        {approved ? <StatisticianCheckDue /> : null}
+
+        {approved ? <AdminChildInjuriesClosed /> : null}
 
         {approved ? (
           <TodoList todos={todos} personalTasks={personalTasks} onToggleTask={setTaskDone} />
@@ -834,6 +838,58 @@ function CommitteeCheckDue() {
         Your committee role pauses on that day unless a check is recorded. Apply for one, then send
         a club admin the card number and expiry date. If you never work with children, ask an admin
         to exempt you with the reason.
+      </ThemedText>
+    </Card>
+  );
+}
+
+/**
+ * A statistician who kept their role without a check: from the club's
+ * statistician checks date it pauses unless they have one or are exempt.
+ */
+function StatisticianCheckDue() {
+  const { profile, statisticianChecksFrom } = useAuth();
+  if (!profile || !statisticianCheckDue(profile, statisticianChecksFrom)) return null;
+  return (
+    <Card>
+      <ThemedText type="smallBold">
+        Your statistician role needs a Working With Children Check from{' '}
+        {formatDate(statisticianChecksFrom)}
+      </ThemedText>
+      <ThemedText type="small" themeColor="textSecondary">
+        Your statistician role pauses on that day, in HQ and in Vantage, unless a check is
+        recorded. Apply for one, then send a club admin the card number and expiry date. If you
+        only record opens games and never work with children, ask an admin to exempt you with the
+        reason.
+      </ThemedText>
+    </Card>
+  );
+}
+
+/**
+ * An admin whose check expired or is missing for over 30 days: they keep
+ * every admin power, but don't see under 18s' injuries until it's sorted.
+ */
+function AdminChildInjuriesClosed() {
+  const { isAdmin } = useAuth();
+  const [closed, setClosed] = useState(false);
+  useFocusEffect(
+    useCallback(() => {
+      if (!isAdmin) {
+        setClosed(false);
+        return;
+      }
+      supabase.rpc('my_admin_sees_children_injuries').then(({ data }) => setClosed(data === false));
+    }, [isAdmin]),
+  );
+  if (!closed) return null;
+  return (
+    <Card>
+      <ThemedText type="smallBold">You can’t see under 18s’ injuries right now</ThemedText>
+      <ThemedText type="small" themeColor="textSecondary">
+        Your Working With Children Check expired or isn’t recorded, and it’s been over 30 days. You
+        keep everything else an admin can do. Ask another admin to record your current check, or
+        an application you’ve lodged, and you’ll see children’s injuries again.
       </ThemedText>
     </Card>
   );

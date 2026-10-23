@@ -43,6 +43,8 @@ export default function SafeguardingScreen() {
   const [conductEachSeason, setConductEachSeason] = useState(false);
   const [committeeFrom, setCommitteeFrom] = useState<string | null>(null);
   const [savedCommitteeFrom, setSavedCommitteeFrom] = useState<string | null>(null);
+  const [statisticianFrom, setStatisticianFrom] = useState<string | null>(null);
+  const [savedStatisticianFrom, setSavedStatisticianFrom] = useState<string | null>(null);
   const [privacyUrl, setPrivacyUrl] = useState('');
   const [conductUrl, setConductUrl] = useState('');
   const [policyVersion, setPolicyVersion] = useState('1');
@@ -62,6 +64,7 @@ export default function SafeguardingScreen() {
       committeeFromResult,
       injuryRulesResult,
       applicationsResult,
+      statisticianFromResult,
     ] = await Promise.all([
       supabase.rpc('safeguarding_contacts').maybeSingle(),
       supabase.from('profiles').select(PROFILE_COLUMNS).eq('status', 'approved').order('full_name'),
@@ -73,6 +76,7 @@ export default function SafeguardingScreen() {
       supabase.rpc('committee_checks_from'),
       supabase.rpc('injury_rules').maybeSingle(),
       supabase.rpc('admin_wwcc_applications'),
+      supabase.rpc('statistician_checks_from'),
     ]);
     const officerId = (wwcOfficerResult.data as { officer_id: string } | null)?.officer_id ?? null;
     setWwcOfficer(officerId);
@@ -92,6 +96,10 @@ export default function SafeguardingScreen() {
     const from = typeof committeeFromResult.data === 'string' ? committeeFromResult.data : null;
     setCommitteeFrom(from);
     setSavedCommitteeFrom(from);
+    const statsFrom =
+      typeof statisticianFromResult.data === 'string' ? statisticianFromResult.data : null;
+    setStatisticianFrom(statsFrom);
+    setSavedStatisticianFrom(statsFrom);
     const contacts = contactsResult.data as SafeguardingContacts | null;
     setOfficer(contacts?.child_safety_officer_id ?? null);
     setManager(contacts?.complaints_manager_id ?? null);
@@ -183,6 +191,18 @@ export default function SafeguardingScreen() {
       committeeFrom === savedCommitteeFrom
         ? { error: null }
         : await supabase.rpc('admin_set_committee_checks_from', { p_date: committeeFrom });
+    const { error: statisticianError } =
+      rpcError ||
+      photosError ||
+      policiesError ||
+      conductError ||
+      injuryError ||
+      officerError ||
+      committeeError ||
+      !statisticianFrom ||
+      statisticianFrom === savedStatisticianFrom
+        ? { error: null }
+        : await supabase.rpc('admin_set_statistician_checks_from', { p_date: statisticianFrom });
     const failed =
       rpcError ??
       photosError ??
@@ -190,7 +210,8 @@ export default function SafeguardingScreen() {
       conductError ??
       injuryError ??
       officerError ??
-      committeeError;
+      committeeError ??
+      statisticianError;
     setBusy(false);
     if (failed) {
       setError(failed.message);
@@ -245,7 +266,28 @@ export default function SafeguardingScreen() {
             Committee members approved before checks were needed keep their role until this day
             without one. From then, a committee member with no check and no exemption has their
             committee role paused. You can bring the date forward but not push it back; exempt
-            anyone who never works with children, with the reason, on their member page.
+            anyone who never works with children, with the reason, on their member page. An admin
+            with no check stops seeing under 18s’ injuries 30 days after this day, until a check,
+            an application or a parent volunteer exemption is recorded.
+          </ThemedText>
+        </View>
+      ) : null}
+
+      {savedStatisticianFrom ? (
+        <View style={styles.group}>
+          <DateField
+            label="Statistician checks required from"
+            value={statisticianFrom}
+            onChange={setStatisticianFrom}
+            quickPicks={[{ label: 'Today', days: 0 }]}
+            max={savedStatisticianFrom}
+          />
+          <ThemedText type="small" themeColor="textSecondary">
+            Statisticians approved before they needed a check keep their role until this day
+            without one. From then, a statistician with no check, application or exemption has
+            their statistician role paused, in HQ and in Vantage. You can bring the date forward
+            but not push it back; exempt a statistician who never works with children, such as one
+            who only records opens games, with the reason, on their member page.
           </ThemedText>
         </View>
       ) : null}

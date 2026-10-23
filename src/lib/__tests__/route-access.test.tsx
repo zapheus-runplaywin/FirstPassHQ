@@ -115,6 +115,7 @@ function auth(
     isClubCaptain: extra.isClubCaptain ?? false,
     isAdmin: roles.includes('admin') && p?.status === 'approved',
     committeeChecksFrom: null,
+    statisticianChecksFrom: null,
     isSafeguardingOfficer: extra.isSafeguardingOfficer ?? false,
     refresh: jest.fn(),
     signOut: jest.fn(),

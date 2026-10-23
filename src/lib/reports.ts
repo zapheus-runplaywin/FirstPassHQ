@@ -34,6 +34,7 @@ import {
   applicationStatus,
   barringNotices,
   committeeChecksDue,
+  exemptableRoles,
   exemptionStatus,
   needsWwcc,
   screeningNoticeLabels,
@@ -174,6 +175,8 @@ export function wwccReport(
   committeeChecksFrom: string | null = null,
   /** Lodged check applications, open or ended in the last year. */
   applications: WwccApplication[] = [],
+  /** The day from which statisticians need a check, if the club has one. */
+  statisticianChecksFrom: string | null = null,
 ): Report {
   const approved = members.filter((m) => m.status === 'approved');
   // Temporary helpers outside their dates need nothing, and are listed on their own.
@@ -205,9 +208,9 @@ export function wwccReport(
     )
     .map((m) => ({ member: m, name: memberName(m), status: wwccStatus(m) }))
     .sort(byName);
-  // Committee members and admins another admin excused from the check, with the reason.
+  // Committee members, admins and statisticians another admin excused from the check, with the reason.
   const exempt = approved
-    .filter((m) => hasRole(m, 'committee', 'admin') && !needsWwcc(m))
+    .filter((m) => hasRole(m, ...exemptableRoles) && !needsWwcc(m))
     .map((m) => ({ member: m, name: memberName(m) }))
     .sort(byName);
   const nameOf = (id: string | null) => {
@@ -261,7 +264,7 @@ export function wwccReport(
 
   return {
     title: 'Working With Children Checks',
-    subtitle: `Approved coaches, managers, physios, temporary helpers, committee members and admins. WWC Registration Officer: ${officerName ?? 'not named yet'}`,
+    subtitle: `Approved coaches, managers, physios, statisticians, temporary helpers, committee members and admins. WWC Registration Officer: ${officerName ?? 'not named yet'}`,
     landscape: true,
     stats: [
       { label: 'Need a check', value: people.length },
@@ -269,7 +272,7 @@ export function wwccReport(
       { label: `Expire within ${WWCC_WARNING_DAYS} days`, value: count('expiring') },
       { label: 'Expired', value: count('expired') },
       { label: 'Missing', value: count('missing') },
-      { label: 'Committee and admins exempt', value: exempt.length },
+      { label: 'Exempt with a reason', value: exempt.length },
       {
         label: 'Exempt from a check',
         value: approved.filter((m) => needsWwcc(m) && screenedByExemption(m)).length,
@@ -297,7 +300,11 @@ export function wwccReport(
           committeeChecksFrom && !committeeChecksDue(committeeChecksFrom)
             ? `from ${formatDateString(committeeChecksFrom)}`
             : 'too'
-        }. Admin roles are not paused, so the club is never locked out, but an admin can be stood down.`,
+        }, and statistician roles ${
+          statisticianChecksFrom && !committeeChecksDue(statisticianChecksFrom)
+            ? `from ${formatDateString(statisticianChecksFrom)}`
+            : 'too'
+        }. Admin roles are not paused, so the club is never locked out, but an admin can be stood down, and one whose check has been missing or expired for over 30 days doesn’t see under 18s’ injuries.`,
         columns,
         rows: people
           .filter((p) => p.status.problem || (current(p.status) && wwccRecordIssues(p.member).length > 0))
@@ -313,7 +320,7 @@ export function wwccReport(
         empty: 'No current checks recorded.',
       },
       {
-        title: 'Committee members and admins exempted',
+        title: 'Exempted with a reason',
         note: 'Excused from the check by another admin, with the reason they gave.',
         columns: exemptColumns,
         rows: exempt.map(({ member, name }) => ({

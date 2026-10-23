@@ -357,6 +357,61 @@ describe('the committee checks date', () => {
   });
 });
 
+describe('the statistician checks date', () => {
+  it('warns a statistician with no check before the date', async () => {
+    await openHome('statisticianBeforeChecksDate');
+    expect(
+      screen.getByText('Your statistician role needs a Working With Children Check from 21/01/2099'),
+    ).toBeTruthy();
+    expect(screen.getByText(/pauses on that day, in HQ and in Vantage/)).toBeTruthy();
+    expect(screen.queryByText('Statistician paused')).toBeNull();
+  });
+
+  it('once the date has passed, pauses the role instead', async () => {
+    await openHome('statisticianPastChecksDate');
+    expect(screen.getByText('Statistician paused')).toBeTruthy();
+    expect(screen.queryByText(/needs a Working With Children Check from/)).toBeNull();
+  });
+
+  it.each<[string, Partial<Profile>]>([
+    ['who has a check', { wwcc_number: 'WWC1234567', wwcc_expires_on: '2028-01-01' }],
+    ['who is exempt', { wwcc_exempt_reason: 'Opens games only' }],
+  ])('doesn’t warn a statistician %s', async (_l, extra) => {
+    await openHome({
+      ...withProfile(personas.statistician, extra),
+      rpcs: { statistician_checks_from: '2099-01-21' },
+    });
+    expect(screen.queryByText(/needs a Working With Children Check from/)).toBeNull();
+  });
+
+  it('doesn’t warn a committee member about the statistician date', async () => {
+    await openHome({
+      ...withProfile(personas.committee, { wwcc_number: null, wwcc_expires_on: null }),
+      rpcs: { statistician_checks_from: '2099-01-21' },
+    });
+    expect(screen.queryByText(/statistician role needs/)).toBeNull();
+  });
+});
+
+describe('an admin whose check lapsed over 30 days ago', () => {
+  it('is told they can’t see under 18s’ injuries, and keeps the admin home', async () => {
+    await openHome('adminLapsedCheck');
+    expect(screen.getByText('You can’t see under 18s’ injuries right now')).toBeTruthy();
+    expect(screen.getByText(/You keep everything else an admin can do/)).toBeTruthy();
+    expect(screen.queryByText('Admin paused')).toBeNull();
+  });
+
+  it('says nothing to an admin who still sees them', async () => {
+    await openHome('admin');
+    expect(screen.queryByText('You can’t see under 18s’ injuries right now')).toBeNull();
+  });
+
+  it('never asks for members who aren’t admins', async () => {
+    await openHome({ ...personas.coach, rpcs: { my_admin_sees_children_injuries: false } });
+    expect(screen.queryByText('You can’t see under 18s’ injuries right now')).toBeNull();
+  });
+});
+
 // ---------------------------------------------------------------------------
 // The to-do list
 

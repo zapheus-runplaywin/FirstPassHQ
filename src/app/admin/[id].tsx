@@ -267,12 +267,14 @@ export default function MemberScreen() {
     roles.some((r) => wwccRoles.includes(r)) ||
     isVolunteer ||
     roles.includes('committee') ||
-    roles.includes('admin');
-  // Only a committee member or admin with no coach, manager or physio role can be excused.
+    roles.includes('admin') ||
+    roles.includes('statistician');
+  // Only a committee member, admin or statistician with no coach, manager or physio role can be excused.
   const exemptable = canBeExempt(roles);
   const isExempt = exemptable && exempt;
-  // Coaches, managers, physios and temporary helpers can be screened by an exemption instead.
-  const canVolunteer = isVolunteer || roles.some((r) => wwccRoles.includes(r));
+  // Coaches, managers, physios, statisticians and temporary helpers can be screened by an exemption instead.
+  const canVolunteer =
+    isVolunteer || roles.some((r) => wwccRoles.includes(r) || r === 'statistician');
   const volunteerBasis = canVolunteer && screening !== 'check' ? screening : null;
   const openExemption = exemptions.find((e) => !e.ended_at);
   const comboProblem = roleCombinationProblem(roles, dob, under18);
@@ -948,13 +950,13 @@ export default function MemberScreen() {
         <View style={styles.group}>
           <ThemedText type="smallBold">Working With Children Check</ThemedText>
           <ThemedText type="small" themeColor="textSecondary">
-            Coaches, managers, physios, temporary helpers, committee members and admins need a
-            current check before you can approve them. In WA, a parent volunteering at their
+            Coaches, managers, physios, statisticians, temporary helpers, committee members and
+            admins need a current check before you can approve them. In WA, a parent volunteering at their
             child’s club and a volunteer under 18 are exempt instead. So is someone who doesn’t
             normally live in WA, for two weeks after they arrive or up to 30 days at a national
             event or tour, once in any 12 months. Record that here, and they accept a declaration in
-            the app before their role starts. You can exempt a committee member or admin with a
-            reason. Someone who has applied for a check can work while it’s assessed once you record
+            the app before their role starts. You can exempt a committee member, admin or
+            statistician with a reason, such as a statistician who only records opens games. Someone who has applied for a check can work while it’s assessed once you record
             the application below. Being supervised by someone with a check doesn’t count.
           </ThemedText>
           <WwcSources />
@@ -1065,7 +1067,7 @@ export default function MemberScreen() {
             <ThemedText type="small" themeColor="textSecondary">
               Once you save, they’ll {roles.includes('volunteer') ? 'see Read the declaration in their Before you help steps' : 'get a to-do to accept the exemption declaration'}. Their{' '}
               {rolesLabel(
-                roles.filter((r) => wwccRoles.includes(r) || r === 'volunteer'),
+                roles.filter((r) => wwccRoles.includes(r) || r === 'volunteer' || r === 'statistician'),
               ).toLowerCase()}{' '}
               role starts when they do. It ends by itself{' '}
               {volunteerBasis === 'parent_volunteer'

@@ -45,9 +45,9 @@ each of their roles can.
 | **Committee** | Club committee members. Each can add a title, such as President or Secretary, shown with their role. Only committee members and admins can add their own title. Need a current Working With Children Check, or an application being assessed, unless an admin exempts them with a reason (not if they also coach, manage or physio); the role pauses if a recorded check expires or was recorded without an expiry date. Committee members approved before checks were needed keep the role without one only until the club's **committee checks date**. |
 | **Physio**    | The club's physiotherapists. A physio can be placed in squads or teams to look after their athletes, and one can be the **Head Physio**, who looks after every athlete. Need a current Working With Children Check; the role pauses while it's expired. Someone who has applied for one, new or a renewal, can work while it's assessed (see [Checks applied for](#checks-applied-for)). A parent volunteering at their child's club, a volunteer under 18, or a short-term visitor or national event helper from outside WA has an exemption instead (see [Volunteer exemptions](#volunteer-exemptions)). |
 | **Guest**     | Anyone else the club lets in, such as partners and sponsors. Guests must be 18 or over. They see only the club calendar, keep their own tasks and can raise a concern. They aren't in squads or teams, get no messages, don't vote and aren't asked for a Working With Children Check or the code of conduct. |
-| **Statistician** | The people who record live game stats on a tablet in FirstPass Vantage, which coaches watch live in FirstPass Vision. Statisticians see every game the club records; a game's coaches and managers see their own squad's or team's. Any member can hold it alongside another role, such as a manager or an athlete who isn't playing. The role pauses while a member is stood down. |
+| **Statistician** | The people who record live game stats on a tablet in FirstPass Vantage, which coaches watch live in FirstPass Vision. Statisticians see every game the club records; a game's coaches and managers see their own squad's or team's. Any member can hold it alongside another role, such as a manager or an athlete who isn't playing. Need a current Working With Children Check, an application being assessed, or a volunteer exemption such as a parent at their child's games, unless an admin exempts them with a reason, such as only recording opens games; the role pauses if a recorded check expires. Statisticians approved before checks were needed keep the role without one only until the club's **statistician checks date**. The role pauses while a member is stood down. |
 | **Temporary helper** | Someone helping for a day or a short time, such as at a carnival, clinic or tournament, paid or unpaid. Not necessarily a member of the club: this is only a role so the app can onboard them. The app screens them: a Working With Children Check or an exemption covering every day they help, and the club's code of conduct and safeguarding policy accepted. They see none of the club's features or messages, and their time ends by itself after their last day (see [Temporary helpers](#temporary-helpers)). |
-| **Admin**     | The people who run the app. Admin is granted by another admin, never requested. Admins can add a title too. Need a current Working With Children Check, or an application being assessed, unless another admin exempts them. An expired check doesn't pause the admin role, so the club is never locked out, but it stays on the admins' to-do list until it's renewed. Admins set how long the club keeps records. |
+| **Admin**     | The people who run the app. Admin is granted by another admin, never requested. Admins can add a title too. Need a current Working With Children Check, or an application being assessed, unless another admin exempts them. An expired check doesn't pause the admin role, so the club is never locked out, but it stays on the admins' to-do list until it's renewed, and 30 days after it expired (or after the club's committee checks date, if none is recorded) the admin stops seeing under 18s' injuries until a check, an application or a parent volunteer exemption is recorded. Admins set how long the club keeps records. |
 
 **Safeguarding contacts.** An admin names one member as the club's **Child Safety Officer** and
 another as its **Complaints Manager**. They're not separate roles: each keeps their own role and also
@@ -1703,7 +1703,8 @@ until a parent gives consent). An under 18's injuries, and accepting or sending 
 clearances, are only for committee members cleared to work with children: a current Working With
 Children Check, or a parent volunteer exemption. A committee member with any other exemption, or
 with no check yet before the club's **Committee checks required from** date, sees adults' injuries
-only. Admins see every injury whatever their check. Athletes who have left the club stay listed under **Including
+only. Admins see every injury, unless their own check has been missing or expired for over 30
+days (see [Approving members](#approving-members)): then they see adults' injuries only. Athletes who have left the club stay listed under **Including
 cleared** for 12 months. When a coach or physio endorses a clearance, it appears under **Waiting
 for your sign-off** and in the to-do list of every committee member and admin except the person
 who endorsed it and the athlete's own parents or guardians. Open it, check the proof, then:
@@ -1868,8 +1869,18 @@ recording a game happens in Vantage.
 - **Games and stats.** Statisticians see every game the club records, in Vantage. A game's
   coaches and managers see their own squad's or team's games; athletes, guardians, physios and the
   committee don't (see [Who can see what](#11-who-can-see-what)).
-- **Checks.** The app doesn't ask for a Working With Children Check for the statistician role on
-  its own. If you also coach, manage or are a physio, that role needs one as usual.
+- **Checks.** Statisticians often sit courtside at junior games, so the role needs a current
+  Working With Children Check, an application being assessed (see [Checks applied
+  for](#checks-applied-for)), or a volunteer exemption, such as a parent recording their child's
+  games. If you only record opens games, or code from video and never work with children, an admin
+  can exempt you with the reason instead. A new statistician isn't approved without one of these.
+  Statisticians approved before checks were needed keep the role until the club's **Statistician
+  checks required from** date (90 days after the rule came in, unless an admin brings it forward);
+  until then your home screen says when it will pause. From that day, or the day after a recorded
+  check expires, the statistician role pauses, in HQ and in Vantage, until an admin records a
+  check, an application or an exemption.
+
+  <img src="user-guide/statistician-check-due.png" width="210" alt="A statistician's home screen saying when their role needs a check">
 - **Awards.** Statisticians don't vote in club awards, unless they also hold a role that votes.
 - **Stand-downs.** An admin can stand a statistician down like a coach or manager. The role stops
   at once, in HQ and in Vantage, and comes back only when the stand-down is lifted.
@@ -2080,6 +2091,10 @@ The app won't approve or save:
 - a new admin without a current Working With Children Check, an application like that, or an
   exemption. Admins approved
   before checks were needed keep their access and show under **Needs checking** in the same way;
+- a new statistician without a current Working With Children Check, an application like that, a
+  volunteer exemption, or an exemption with a reason, such as one who only records opens games.
+  Statisticians approved before checks were needed keep the role until the club's statistician
+  checks date, and show under **Needs checking** until you record a check or exempt them;
 - a temporary helper without their task and dates, whose last day has passed, who hasn't
   accepted the club's policies, or whose card doesn't last to their last day and who has no
   exemption they've accepted covering every day they help. Changing an approved helper's dates
@@ -2093,7 +2108,14 @@ role pauses when it ends by itself, and **Needs checking** lists them 60 days be
 check application: the role pauses if it lapses or a notice stops it. An admin's
 role doesn't pause when their check expires, so the club can never be locked out of its own app;
 they show under **Needs checking** and on every admin's to-do list until the renewed card is
-recorded, and they can still be stood down.
+recorded, and they can still be stood down. But 30 days after their card expired, or 30 days after
+the club's committee checks date if they have none, they stop seeing under 18s' injuries and
+accepting their clearances, and their home screen says so. Everything else an admin does still
+works. A current check, an application in force or a parent volunteer exemption brings it back; an
+exemption with a reason doesn't. A statistician's role pauses the same way as a committee
+member's: the day after a recorded check expires, or from the club's statistician checks date.
+
+<img src="user-guide/admin-children-injuries-closed.png" width="210" alt="An admin's home screen saying they can't see under 18s' injuries until their check is recorded">
 
 **Verifying someone.** Guardians must be verified before they can be linked to a child. Get the
 6-digit code from their home screen yourself (it shows while they wait for approval, and for a
@@ -2525,12 +2547,12 @@ computer it downloads), ready for the committee, an audit or OneDrive. The PDF h
 name, the date it was made and page numbers, and anything that needs attention is in red.
 
 - **Working With Children Checks**: printed across the page, with the WWC Registration Officer
-  at the top. Every approved coach, manager, physio, temporary helper (while helping), committee member and admin with their name on the
+  at the top. Every approved coach, manager, physio, statistician, temporary helper (while helping), committee member and admin with their name on the
   card, date of birth, roles, squads and teams, card number, expiry date, when and how the card was
   last validated and by whom, when it was registered with the club, and status. Checks that
   are missing, have no expiry date, have expired, expire within 60 days, were never validated or
   were validated over a year ago, or aren't registered with the club are listed first under
-  **Needs attention**, then the rest under **Current**. Committee members and admins who are exempt are listed next, with the reason, who
+  **Needs attention**, then the rest under **Current**. Committee members, admins and statisticians exempted with a reason are listed next, under **Exempted with a reason**, with the reason, who
   exempted them and when. **Exempt from a check** lists every exemption of an approved member, and every ended one,
 current ones first, with the child, or the event, organiser and dates, who recorded it, when the declaration was accepted and where
 it's up to, then ended ones with who ended them. An exemption only counts in place of a check while it
@@ -2814,6 +2836,15 @@ with children, such as a treasurer who works from home, with the reason, on thei
 
 <img src="user-guide/admin-committee-checks.png" width="210" alt="Safeguarding settings: committee checks required from">
 
+An admin with no check recorded stops seeing under 18s' injuries 30 days after the committee
+checks date, until a check, an application or a parent volunteer exemption is recorded.
+
+**Statistician checks required from** works the same way for statisticians. It starts 90 days
+after statisticians first needed a check. Statisticians without one keep their role until then;
+from that day their statistician role pauses, in HQ and in Vantage, until you record a check, an
+application or a volunteer exemption, or exempt them with a reason, such as one who only records
+opens games. You can bring the date forward but not push it back.
+
 Add the sport's **governing body**: its name, phone or hotline, and complaints form link. Add the
 club's **safeguarding policy** link too. Everyone sees these on **Raise a concern**. Links must
 start with https://.
@@ -2926,7 +2957,7 @@ once saved, only replaced or removed, and anyone who gets it wrong five times in
 | Survey totals shared with a team | When a coach, manager or captain shares a poll's results with the squad or team: everyone it went to and their parents or guardians, once results show. Only how many picked each choice and average ratings: never names, written answers or who has answered. |
 | Who has answered a survey | Named surveys: whoever can see the results sees who hasn't answered yet. Anonymous and name-optional surveys: only how many have answered. Each member sees whether they've answered themselves. |
 | Daily check-in answers and notes | The athlete, their guardians and their coaches. For an athlete under 18, their coaches only once a parent or guardian consents, and until then their check-ins count in no average. The committee, physios and admins see only group averages, hidden below 3 check-ins (over three days, in Trends). |
-| Injuries and documents  | For an athlete under 18 whose parents haven't given consent for injuries: only the athlete, their guardians and admins. Otherwise the athlete, their guardians, their coaches, the physios who look after them (the Head Physio and physios in their squad or team), the committee and admins. For an athlete under 18, only committee members with a current Working With Children Check or a parent volunteer exemption. Managers don't see injuries, including ones they log. A coach, manager or physio who logs an injury sees it only as their role already allows. Whoever takes attendance (coaches, managers, the committee and admins) sees only that an athlete is **Injured** and their expected return date, whatever the consent. While a clearance waits for the committee, any committee member or admin who could accept it can share its documents; everyone else views them in the app. |
+| Injuries and documents  | For an athlete under 18 whose parents haven't given consent for injuries: only the athlete, their guardians and admins. Otherwise the athlete, their guardians, their coaches, the physios who look after them (the Head Physio and physios in their squad or team), the committee and admins. For an athlete under 18, only committee members with a current Working With Children Check or a parent volunteer exemption, and admins unless their own check has been missing or expired for over 30 days. Managers don't see injuries, including ones they log. A coach, manager or physio who logs an injury sees it only as their role already allows. Whoever takes attendance (coaches, managers, the committee and admins) sees only that an athlete is **Injured** and their expected return date, whatever the consent. While a clearance waits for the committee, any committee member or admin who could accept it can share its documents; everyone else views them in the app. |
 | Who opened injury documents | The athlete, their guardians and admins: every view and share, by whom, their role and when, and each photo consent. |
 | Who has viewed a child's records | For an athlete under 18: their verified parents or guardians (until the athlete turns 18) and admins. Lists every time someone other than the athlete or their guardians opened the athlete's injuries, injury documents, check-ins, game goals, season KPIs, named survey answers or member record. Opening a child's records is recorded whoever you are; nobody can switch it off or delete entries by hand, and old entries are removed only under the club's Keeping records settings. |
 | Consents for a child    | The athlete, their parents or guardians and admins, with every consent given and withdrawn. Only a verified parent or guardian can give or withdraw one. |
@@ -2934,7 +2965,7 @@ once saved, only replaced or removed, and anyone who gets it wrong five times in
 | Code of conduct acceptances | The member, their parents or guardians and admins: each season's acceptance, who accepted it, when, the words and the policy version. Kept under the member's name if they delete their account. |
 | Game goals and reflections | The athlete, their guardians and their coaches. Only the athlete and their coaches set goals, and only the athlete reflects; guardians just read them. The committee, managers, physios and admins don't see them. |
 | Season KPIs, progress and reviews | An athlete's: the athlete, their coaches in that squad or team, their parents or guardians (read only, until 18) and admins (read only). Not teammates, the committee or physios. A coach's or manager's: them, the committee and admins, and an assistant coach's head coach. Only those who set KPIs change them, record results and write reviews; the person records progress, confirms reviews and adds their own view. A coach's or manager's KPIs and reviews are kept under their name if they delete their account, and stay on the admin report. |
-| Live game stats         | Admins and statisticians: every game the club records. The coaches and managers of the game's squad or team see the team's games at every stage and who has paired with each, and the stats once they pair with its code in FirstPass Vision. Athletes, guardians, physios and the committee don't see them. |
+| Live game stats         | Admins and statisticians (while their statistician role isn't paused for a check): every game the club records. The coaches and managers of the game's squad or team see the team's games at every stage and who has paired with each, and the stats once they pair with its code in FirstPass Vision. Athletes, guardians, physios and the committee don't see them. |
 | Team goals              | The team's athletes, their guardians, its coaches and admins. Only its coaches set and review them. Athletes and coaches in the team can comment; guardians and admins read the comments. Managers and physios placed in the team don't see them. |
 | Integrity training certificates | The member, their parents or guardians, the committee and admins. Coaches, managers and physios don't see them. Certificates can't be changed or removed once sent. |
 | Attendance records      | The committee and admins see every session. Coaches and managers see their own groups' sessions, whole-club sessions and any they took themselves, while their check is current and they aren't stood down. An athlete sees their own marks, and their parents or guardians see them until the athlete turns 18; neither sees other athletes on the register. |
@@ -3056,6 +3087,11 @@ Working With Children Check, and another admin must do it.
   Children Check or a parent volunteer exemption. A committee member exempted for another reason,
   such as a treasurer who never works with children, or one with no check before the club's
   **Committee checks required from** date, sees adults' injuries only.
+- **Admins lose children's injuries when their check lapses.** An admin keeps every admin power
+  when their check expires, so the club is never locked out, but 30 days after it expired, or after
+  the committee checks date if none is recorded, they stop seeing under 18s' injuries and
+  accepting their clearances until a check, an application or a parent volunteer exemption is
+  recorded. An exemption with a reason doesn't count.
 
 ### For parents and guardians
 
@@ -3142,8 +3178,8 @@ Working With Children Check, and another admin must do it.
 ### For coaches, managers, physios and volunteers
 
 - **A check before you start.** Coaches, managers and physios need a current Working With Children
-  Check before they're approved, and new committee members and admins need one or an exemption
-  with a reason. An admin validates the card, online or by
+  Check before they're approved, and new committee members, admins and statisticians need one or
+  an exemption with a reason (a statistician who only records opens games, for example). An admin validates the card, online or by
   sighting it, at least once a year and whenever it's renewed, and registers it with the club
   through the Screening Unit, so the club hears if the card's status changes.
 - **Applied, and waiting for the card.** In WA someone who has applied for a check, new or a
@@ -3201,11 +3237,14 @@ Working With Children Check, and another admin must do it.
   keep their role without one only until the club's committee checks date. From that day their
   committee role pauses unless a check is recorded, an application they've lodged is in force, or
   an admin exempts them with a reason. Admins
-  can bring the date forward but never push it back.
+  can bring the date forward but never push it back. Statisticians, who often sit courtside at
+  junior games, have their own date that works the same way; from it, their role pauses in HQ and
+  in Vantage without a check, an application, a volunteer exemption or an exemption with a reason.
 - **Admins are screened too.** Admins can read every child's records, so they need a current
   check (or an application being assessed), or an exemption with a reason that another admin records; nobody exempts themselves. An
   admin's role doesn't pause when the check expires, so the club can't be locked out of its own
-  app, but it stays on every admin's to-do list until renewed, and an admin can be stood down.
+  app, but it stays on every admin's to-do list until renewed, and an admin can be stood down. After
+  30 days without one they stop seeing under 18s' injuries.
 - **Safeguarding contacts.** Name a Child Safety Officer and a Complaints Manager, two different
   adults with a current check, a check application in force or a volunteer exemption (an exemption
   with a reason doesn't count;

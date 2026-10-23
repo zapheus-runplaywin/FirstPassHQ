@@ -43,7 +43,7 @@ type Data = {
  * shown as it will be sent, with a button that sends it as a PDF.
  */
 export default function AffiliationReturnScreen() {
-  const { committeeChecksFrom } = useAuth();
+  const { committeeChecksFrom, statisticianChecksFrom } = useAuth();
   const club = useClub();
   const teams = useTeams();
   const [data, setData] = useState<Data | null>(null);
@@ -94,6 +94,7 @@ export default function AffiliationReturnScreen() {
           wwccData.acknowledgements,
           committeeChecksFrom,
           wwccData.applications,
+          statisticianChecksFrom,
         ).stats,
         training: {
           season: seasonLabel(trainingSeason),
@@ -108,7 +109,7 @@ export default function AffiliationReturnScreen() {
     } catch (e) {
       setError(e instanceof Error ? e.message : 'The return didn’t load. Try again.');
     }
-  }, [committeeChecksFrom, teams, trainingSeason]);
+  }, [committeeChecksFrom, statisticianChecksFrom, teams, trainingSeason]);
 
   useFocusEffect(
     useCallback(() => {

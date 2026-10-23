@@ -65,6 +65,9 @@ export type PersonaName =
   | 'safeguardingOfficer'
   | 'committeeExpiredCheck'
   | 'committeePastChecksDate'
+  | 'statisticianPastChecksDate'
+  | 'statisticianBeforeChecksDate'
+  | 'adminLapsedCheck'
   | 'physioExpiredCheck'
   | 'stoodDownAthlete'
   | 'coachGuardian'
@@ -275,6 +278,21 @@ export const personas: Record<PersonaName, Persona> = {
     ...member('committee-no-check', 'committee', { wwcc_number: null, wwcc_expires_on: null }),
     rpcs: { committee_checks_from: '2026-10-01' },
   },
+  /** No check, and the club's statistician checks date has passed. */
+  statisticianPastChecksDate: {
+    ...member('statistician-no-check', 'statistician', { wwcc_number: null, wwcc_expires_on: null }),
+    rpcs: { statistician_checks_from: '2026-10-01' },
+  },
+  /** No check yet, before the club's statistician checks date. */
+  statisticianBeforeChecksDate: {
+    ...member('statistician-due', 'statistician', { wwcc_number: null, wwcc_expires_on: null }),
+    rpcs: { statistician_checks_from: '2099-01-21' },
+  },
+  /** An admin whose check lapsed over 30 days ago: no under 18s' injuries. */
+  adminLapsedCheck: {
+    ...member('admin-lapsed', 'admin', { wwcc_expires_on: '2025-01-01' }),
+    rpcs: { my_admin_sees_children_injuries: false },
+  },
   physioExpiredCheck: member('physio-expired', 'physio', { wwcc_expires_on: '2025-01-01' }, ['physio']),
   stoodDownAthlete: member(
     'stood-down-athlete',
@@ -460,6 +478,8 @@ export function signInAs(
       my_wwcc_application: persona.wwccApplication ?? null,
       is_safeguarding_officer: persona.isSafeguardingOfficer ?? false,
       committee_checks_from: null,
+      statistician_checks_from: null,
+      my_admin_sees_children_injuries: true,
       ...persona.rpcs,
       ...options.rpcs,
     },

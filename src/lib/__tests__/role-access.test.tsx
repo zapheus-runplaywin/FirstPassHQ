@@ -215,6 +215,7 @@ function persona({
     // As AuthProvider works it out: an approved member who can use the admin role.
     isAdmin: roles.includes('admin') && p?.status === 'approved',
     committeeChecksFrom: null,
+    statisticianChecksFrom: null,
     isSafeguardingOfficer: false,
     refresh: jest.fn(),
     signOut: jest.fn(),
