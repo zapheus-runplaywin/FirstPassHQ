@@ -111,6 +111,10 @@ insert into public.injury_updates (injury_id, author_id, author_name, kind, note
 select id, athlete_id, athlete_name, 'reported', 'Reported' from public.injuries;
 insert into public.check_ins (athlete_id, day, sleep, soreness, stress, mood, note)
 values ('00000000-0000-0000-0000-000000000032', current_date, 3, 3, 3, 3, 'Fine');
+-- Training sessions follow the same rule as check-ins.
+insert into public.session_logs (athlete_id, day, kind, minutes, rpe) values
+  ('00000000-0000-0000-0000-000000000031', current_date, 'training', 90, 6),
+  ('00000000-0000-0000-0000-000000000032', current_date, 'game', 60, 8);
 insert into public.fixtures (id, team_id, team_name, opponent, starts_at)
 values ('00000000-0000-0000-0000-0000000000f1', '00000000-0000-0000-0000-0000000000a1', 'Sample Squad', 'Rivals', now() + interval '2 days');
 insert into public.game_goals (athlete_id, fixture_id, body, set_by, set_by_name) values
@@ -225,6 +229,10 @@ insert into matrix (phase, label, q, counts) values
       '{0,0,0,0,0,0,0,0,1,1,1,0,0,0}'),
   (1, 'check_ins: Kai''s', $$select 1 from public.check_ins where athlete_id = pg_temp.m('32')$$,
       '{0,0,0,1,0,0,0,1,0,0,1,0,0,0}'),
+  (1, 'session_logs: Jordan''s, no consent yet', $$select 1 from public.session_logs where athlete_id = pg_temp.m('31')$$,
+      '{0,0,0,0,0,0,0,0,1,1,1,0,0,0}'),
+  (1, 'session_logs: Kai''s', $$select 1 from public.session_logs where athlete_id = pg_temp.m('32')$$,
+      '{0,0,0,1,0,0,0,1,0,0,1,0,0,0}'),
   -- Game goals: the athlete, their guardians and their coaches. Not the committee, physios or admins.
   (1, 'game_goals: Jordan''s', $$select 1 from public.game_goals where athlete_id = pg_temp.m('31')$$,
       '{0,0,0,1,0,0,0,0,1,1,1,0,0,0}'),
@@ -300,12 +308,16 @@ insert into matrix (phase, label, q, counts) values
       '{1,0,0,1,0,0,1,0,1,1,1,0,0,0}'),
   (2, 'check_ins: Jordan''s, with consent', $$select 1 from public.check_ins where athlete_id = pg_temp.m('31')$$,
       '{0,0,0,1,0,0,0,0,1,1,1,0,0,0}'),
+  (2, 'session_logs: Jordan''s, with consent', $$select 1 from public.session_logs where athlete_id = pg_temp.m('31')$$,
+      '{0,0,0,1,0,0,0,0,1,1,1,0,0,0}'),
   (2, 'game_goals: Jordan''s, with consent', $$select 1 from public.game_goals where athlete_id = pg_temp.m('31')$$,
       '{0,0,0,1,0,0,0,0,1,1,1,0,0,0}'),
   -- Once Jordan turns 18 the guardians' access ends.
   (3, 'injuries: Jordan''s, at 18', $$select 1 from public.injuries where athlete_id = pg_temp.m('31')$$,
       '{1,1,0,1,0,0,1,0,1,0,1,0,0,0}'),
   (3, 'check_ins: Jordan''s, at 18', $$select 1 from public.check_ins where athlete_id = pg_temp.m('31')$$,
+      '{0,0,0,1,0,0,0,0,1,0,1,0,0,0}'),
+  (3, 'session_logs: Jordan''s, at 18', $$select 1 from public.session_logs where athlete_id = pg_temp.m('31')$$,
       '{0,0,0,1,0,0,0,0,1,0,1,0,0,0}'),
   (3, 'game_goals: Jordan''s, at 18', $$select 1 from public.game_goals where athlete_id = pg_temp.m('31')$$,
       '{0,0,0,1,0,0,0,0,1,0,1,0,0,0}'),
@@ -317,6 +329,8 @@ insert into matrix (phase, label, q, counts) values
   (4, 'injuries: Kai''s, head coach stood down', $$select 1 from public.injuries where athlete_id = pg_temp.m('32')$$,
       '{1,1,0,0,0,0,1,1,0,0,1,0,0,0}'),
   (4, 'check_ins: Kai''s, head coach stood down', $$select 1 from public.check_ins where athlete_id = pg_temp.m('32')$$,
+      '{0,0,0,0,0,0,0,1,0,0,1,0,0,0}'),
+  (4, 'session_logs: Kai''s, head coach stood down', $$select 1 from public.session_logs where athlete_id = pg_temp.m('32')$$,
       '{0,0,0,0,0,0,0,1,0,0,1,0,0,0}'),
   (4, 'game_goals: Kai''s, head coach stood down', $$select 1 from public.game_goals where athlete_id = pg_temp.m('32')$$,
       '{0,0,0,0,0,0,0,1,0,0,1,0,0,0}'),
@@ -448,6 +462,7 @@ insert into writes values
   ('injuries', $$athlete_id = '00000000-0000-0000-0000-000000000031'$$, 'description', 'rls'),
   ('injury_updates', $$true$$, 'notes', 'rls'),
   ('check_ins', $$athlete_id = '00000000-0000-0000-0000-000000000031'$$, 'note', 'rls'),
+  ('session_logs', $$athlete_id = '00000000-0000-0000-0000-000000000031'$$, 'minutes', 'select only'),
   ('messages', $$id = '00000000-0000-0000-0000-0000000000c1'$$, 'body', 'rls'),
   ('message_recipients', $$message_id = '00000000-0000-0000-0000-0000000000c1'$$, 'read_at', 'rls'),
   ('child_consents', $$athlete_id = '00000000-0000-0000-0000-000000000031'$$, 'withdrawn_at', 'rls'),
