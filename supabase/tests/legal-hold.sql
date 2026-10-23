@@ -342,6 +342,6 @@ select pg_temp.works('an admin can still delete a member not on hold', $$select 
 select set_config('request.jwt.claim.sub', '', false);
 
 -- The clean-up asks who each concern is about once per candidate row, so
--- it is indexed (20261023150000_review_follow_ups.sql).
+-- it is indexed (20261023160000_review_follow_ups.sql).
 select pg_temp.ok('who a concern is about is indexed',
   exists (select 1 from pg_indexes where schemaname = 'public' and tablename = 'concerns' and indexname = 'concerns_about_member_idx'), true);

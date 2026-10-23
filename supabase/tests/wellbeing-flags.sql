@@ -208,7 +208,7 @@ select pg_temp.ok('notes are kept', (select count(*) = 10 from public.check_ins 
 
 -- ---------------------------------------------------------------------------
 -- Daily check-ins switched off: the database shows nothing either
--- (20261023150000_review_follow_ups.sql)
+-- (20261023160000_review_follow_ups.sql)
 -- ---------------------------------------------------------------------------
 select pg_temp.as_member('14');
 update public.club_settings set features = coalesce(features, '{}'::jsonb) || '{"checkIns": false}'::jsonb where id;

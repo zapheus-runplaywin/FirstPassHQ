@@ -374,6 +374,6 @@ select pg_temp.as_member('41');
 select pg_temp.ok('a guardian still sees their child''s injury', pg_temp.reads('Ankle'), true);
 
 -- has_role says why statisticians and committee members are screened
--- differently (20261023150000_review_follow_ups.sql).
+-- differently (20261023160000_review_follow_ups.sql).
 select pg_temp.ok('has_role explains the statistician and committee rules',
   obj_description('public.has_role(public.app_role)'::regprocedure) like '%is_cleared%committee%', true);
