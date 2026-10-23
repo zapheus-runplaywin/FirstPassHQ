@@ -208,13 +208,15 @@ describe('canWorkWithChildren, randomised', () => {
 
 describe('pausedRoles, randomised', () => {
   const checksFrom = fc.option(offset, { nil: null });
-  const args = fc.tuple(anyToday, memberShape, fc.boolean(), checksFrom);
+  const args = fc.tuple(anyToday, memberShape, fc.boolean(), checksFrom, fc.boolean(), checksFrom);
+  type Args = [Day & { ms: number }, Shape, boolean, number | null, boolean, number | null];
 
   /** Runs pausedRoles for a generated member with today set. */
-  function paused([today, shape, exempt, from]: [Day & { ms: number }, Shape, boolean, number | null]) {
+  function paused([today, shape, exempt, from, applied, statFrom]: Args) {
     setToday(today);
     const m = member(shape, today);
-    return { m, roles: rolesOf(m), result: pausedRoles(m, exempt, from === null ? null : addDays(today, from)) };
+    const day = (n: number | null) => (n === null ? null : addDays(today, n));
+    return { m, roles: rolesOf(m), result: pausedRoles(m, exempt, day(from), applied, day(statFrom)) };
   }
 
   it('only pauses roles the member holds, in their order, and only stand-down roles', () => {
@@ -257,15 +259,34 @@ describe('pausedRoles, randomised', () => {
     );
   });
 
-  it('otherwise never pauses admin, temporary helper or statistician', () => {
+  it('otherwise never pauses admin or temporary helper', () => {
     fc.assert(
       fc.property(args, (a) => {
         fc.pre(!a[1].stood_down_at);
         const { result } = paused(a);
         expect(result).not.toContain('admin');
         expect(result).not.toContain('volunteer');
-        expect(result).not.toContain('statistician');
       }),
+    );
+  });
+
+  it('pauses statisticians without a current check, exemption or application once one is recorded or their date has come, unless exempted with a reason', () => {
+    fc.assert(
+      fc.property(args, (a) => {
+        const [, shape, exempt, , applied, statFrom] = a;
+        fc.pre(shape.status === 'approved' && !shape.stood_down_at);
+        const { roles, result } = paused(a);
+        const required = !!shape.wwcc_number?.trim() || (statFrom !== null && statFrom <= 0);
+        const expected =
+          roles.includes('statistician') &&
+          !shape.wwcc_exempt_reason?.trim() &&
+          required &&
+          !hasCurrentCheck(shape) &&
+          !exempt &&
+          !applied;
+        expect(result.includes('statistician')).toBe(expected);
+      }),
+      { numRuns: 1000 },
     );
   });
 
@@ -274,7 +295,7 @@ describe('pausedRoles, randomised', () => {
       fc.property(args, (a) => {
         fc.pre(a[1].status === 'approved' && !a[1].stood_down_at);
         const { m, roles, result } = paused(a);
-        const canWork = canWorkWithChildren(m, a[2]);
+        const canWork = canWorkWithChildren(m, a[2] || a[4]);
         for (const r of wwccRoles) {
           expect(result.includes(r)).toBe(roles.includes(r) && !canWork);
         }
@@ -286,12 +307,16 @@ describe('pausedRoles, randomised', () => {
   it('pauses committee without a current check once one is recorded or the club’s date has come, unless exempted', () => {
     fc.assert(
       fc.property(args, (a) => {
-        const [, shape, , from] = a;
+        const [, shape, , from, applied] = a;
         fc.pre(shape.status === 'approved' && !shape.stood_down_at);
         const { roles, result } = paused(a);
         const required = !!shape.wwcc_number?.trim() || (from !== null && from <= 0);
         const expected =
-          roles.includes('committee') && !shape.wwcc_exempt_reason?.trim() && required && !hasCurrentCheck(shape);
+          roles.includes('committee') &&
+          !shape.wwcc_exempt_reason?.trim() &&
+          required &&
+          !hasCurrentCheck(shape) &&
+          !applied;
         expect(result.includes('committee')).toBe(expected);
       }),
       { numRuns: 1000 },
@@ -348,25 +373,26 @@ describe('committeeChecksDue and committeeCheckDue, randomised', () => {
 // ---- needsWwcc and canBeExempt ----
 
 describe('needsWwcc and canBeExempt, randomised', () => {
-  it('always needs a check for coach, manager, physio or temporary helper, and for committee or admin unless exempted', () => {
+  it('always needs a check for coach, manager, physio or temporary helper, and for committee, admin or statistician unless exempted', () => {
     fc.assert(
       fc.property(anyToday, memberShape, (today, shape) => {
         const m = member(shape, today);
         const roles = rolesOf(m);
         const always = roles.some((r) => ['coach', 'manager', 'physio', 'volunteer'].includes(r));
-        const unlessExempt = roles.includes('committee') || roles.includes('admin');
+        const unlessExempt = roles.some((r) => ['committee', 'admin', 'statistician'].includes(r));
         expect(needsWwcc(m)).toBe(always || (unlessExempt && !shape.wwcc_exempt_reason?.trim()));
       }),
     );
   });
 
-  it('can exempt only committee members and admins, and an exemption then lifts the need unless they are a temporary helper', () => {
+  it('can exempt only committee members, admins and statisticians, and an exemption then lifts the need unless they are a temporary helper', () => {
     fc.assert(
       fc.property(anyToday, memberShape, (today, shape) => {
         const m = member(shape, today);
         const roles = rolesOf(m);
         expect(canBeExempt(roles)).toBe(
-          (roles.includes('committee') || roles.includes('admin')) && !roles.some((r) => wwccRoles.includes(r)),
+          roles.some((r) => ['committee', 'admin', 'statistician'].includes(r)) &&
+            !roles.some((r) => wwccRoles.includes(r)),
         );
         if (canBeExempt(roles) && !roles.includes('volunteer')) {
           expect(needsWwcc({ ...m, wwcc_exempt_reason: 'Exempted' })).toBe(false);

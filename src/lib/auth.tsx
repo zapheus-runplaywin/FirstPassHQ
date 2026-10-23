@@ -58,6 +58,8 @@ type AuthState = {
   isAdmin: boolean;
   /** The day from which committee members need a check, "2027-01-11" style. */
   committeeChecksFrom: string | null;
+  /** The day from which statisticians need a check, "2027-01-21" style. */
+  statisticianChecksFrom: string | null;
   /** The Child Safety Officer or Complaints Manager, able to act as one now. */
   isSafeguardingOfficer: boolean;
   refresh: () => Promise<void>;
@@ -86,6 +88,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   const [wwccApplication, setWwccApplication] = useState<MyWwccApplication | null>(null);
   const [isSafeguardingOfficer, setIsSafeguardingOfficer] = useState(false);
   const [committeeChecksFrom, setCommitteeChecksFrom] = useState<string | null>(null);
+  const [statisticianChecksFrom, setStatisticianChecksFrom] = useState<string | null>(null);
 
   const loadMember = useCallback(async (userId: string | undefined) => {
     if (!userId) {
@@ -97,6 +100,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       setWwccApplication(null);
       setIsSafeguardingOfficer(false);
       setCommitteeChecksFrom(null);
+      setStatisticianChecksFrom(null);
       return;
     }
     const [
@@ -108,6 +112,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       officerResult,
       committeeChecksResult,
       applicationResult,
+      statisticianChecksResult,
     ] = await Promise.all([
       supabase.from('profiles').select(PROFILE_COLUMNS).eq('id', userId).single(),
       supabase
@@ -122,6 +127,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       supabase.rpc('is_safeguarding_officer'),
       supabase.rpc('committee_checks_from'),
       supabase.rpc('my_wwcc_application').maybeSingle(),
+      supabase.rpc('statistician_checks_from'),
     ]);
     setProfile((profileResult.data as Profile | null) ?? null);
     setMemberships((membershipResult.data as unknown as TeamMembership[] | null) ?? []);
@@ -132,6 +138,9 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     setIsSafeguardingOfficer(officerResult.data === true);
     setCommitteeChecksFrom(
       typeof committeeChecksResult.data === 'string' ? committeeChecksResult.data : null,
+    );
+    setStatisticianChecksFrom(
+      typeof statisticianChecksResult.data === 'string' ? statisticianChecksResult.data : null,
     );
   }, []);
 
@@ -160,8 +169,14 @@ export function AuthProvider({ children }: { children: ReactNode }) {
 
   const { usable, paused } = useMemo(
     () =>
-      usableProfile(profile, !!exemption?.valid, committeeChecksFrom, !!wwccApplication?.valid),
-    [profile, exemption, committeeChecksFrom, wwccApplication],
+      usableProfile(
+        profile,
+        !!exemption?.valid,
+        committeeChecksFrom,
+        !!wwccApplication?.valid,
+        statisticianChecksFrom,
+      ),
+    [profile, exemption, committeeChecksFrom, wwccApplication, statisticianChecksFrom],
   );
   const usableMemberships = useMemo(
     () =>
@@ -199,6 +214,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
         isAdmin,
         isSafeguardingOfficer,
         committeeChecksFrom,
+        statisticianChecksFrom,
         refresh,
         signOut,
       }}>
@@ -213,8 +229,11 @@ function usableProfile(
   exempt: boolean,
   committeeChecksFrom: string | null,
   applied: boolean,
+  statisticianChecksFrom: string | null,
 ) {
-  const paused = profile ? pausedRoles(profile, exempt, committeeChecksFrom, applied) : [];
+  const paused = profile
+    ? pausedRoles(profile, exempt, committeeChecksFrom, applied, statisticianChecksFrom)
+    : [];
   // Stryker disable next-line LogicalOperator,ConditionalExpression: a shortcut; nobody has nothing paused, and rebuilding with nothing paused gives the same roles.
   if (!profile || paused.length === 0) return { usable: profile, paused };
   const [main = 'guest', ...extra] = [profile.role, ...profile.extra_roles].filter(

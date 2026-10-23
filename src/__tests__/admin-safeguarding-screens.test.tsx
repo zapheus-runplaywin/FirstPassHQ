@@ -444,6 +444,74 @@ describe('Safeguarding settings', () => {
     expect(screen).toHavePathname('/admin/safeguarding');
   });
 
+  it('has no statistician checks date until one is set', async () => {
+    await openSafeguarding();
+    expect(screen.queryByText('Statistician checks required from')).toBeNull();
+    await saveSafeguarding();
+    expect(callsTo('admin_set_statistician_checks_from')).toEqual([]);
+  });
+
+  it('brings the statistician checks date forward to today, and explains it', async () => {
+    await openSafeguarding({ statistician_checks_from: '2027-01-21' });
+    expect(screen.getByText('Statistician checks required from')).toBeTruthy();
+    expect(screen.getByText(formatDateString('2027-01-21'))).toBeTruthy();
+    expect(screen.getByText(/their statistician role paused, in HQ and in Vantage/)).toBeTruthy();
+    fireEvent.press(screen.getByText('Today'));
+    await saveSafeguarding();
+    expect(callsTo('admin_set_statistician_checks_from')).toEqual([{ p_date: '2026-10-18' }]);
+    expect(callsTo('admin_set_committee_checks_from')).toEqual([]);
+  });
+
+  it('never lets the statistician checks date move past the saved one', async () => {
+    await openSafeguarding({ statistician_checks_from: '2027-01-21' });
+    expect(isDisabled('›')).toBe(true);
+    await saveSafeguarding();
+    expect(callsTo('admin_set_statistician_checks_from')).toEqual([]);
+  });
+
+  it('saves both dates, the committee one first', async () => {
+    await openSafeguarding({ committee_checks_from: '2026-12-01', statistician_checks_from: '2027-01-21' });
+    const todays = screen.getAllByText('Today');
+    expect(todays).toHaveLength(2);
+    fireEvent.press(todays[0]);
+    fireEvent.press(todays[1]);
+    await saveSafeguarding();
+    expect(rpcNames().filter((n) => n.endsWith('_checks_from') && n.startsWith('admin_set_'))).toEqual([
+      'admin_set_committee_checks_from',
+      'admin_set_statistician_checks_from',
+    ]);
+    expect(callsTo('admin_set_statistician_checks_from')).toEqual([{ p_date: '2026-10-18' }]);
+  });
+
+  it('doesn’t save the statistician date when the committee date is refused', async () => {
+    await openSafeguarding(
+      { committee_checks_from: '2026-12-01', statistician_checks_from: '2027-01-21' },
+      { admin_set_committee_checks_from: 'Not later' },
+    );
+    const todays = screen.getAllByText('Today');
+    fireEvent.press(todays[0]);
+    fireEvent.press(todays[1]);
+    await saveSafeguarding();
+    expect(screen.getByText('Not later')).toBeTruthy();
+    expect(callsTo('admin_set_statistician_checks_from')).toEqual([]);
+  });
+
+  it('shows a refused statistician checks date', async () => {
+    await openSafeguarding(
+      { statistician_checks_from: '2027-01-21' },
+      { admin_set_statistician_checks_from: 'The date can only be brought forward' },
+    );
+    fireEvent.press(screen.getByText('Today'));
+    await saveSafeguarding();
+    expect(screen.getByText('The date can only be brought forward')).toBeTruthy();
+    expect(screen).toHavePathname('/admin/safeguarding');
+  });
+
+  it('tells admins when one without a check stops seeing under 18s’ injuries', async () => {
+    await openSafeguarding({ committee_checks_from: '2026-12-01' });
+    expect(screen.getByText(/stops seeing under 18s’ injuries 30 days after this day/)).toBeTruthy();
+  });
+
   it('keeps the field limits', async () => {
     await openSafeguarding();
     expect(input('Name').props.maxLength).toBe(100);

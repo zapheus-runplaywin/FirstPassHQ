@@ -219,16 +219,56 @@ describe('wwccReport', () => {
     const note = (from: string | null) =>
       wwccReport(MEMBERS, PLACEMENTS, TEAMS, STAND_DOWNS, EXEMPTIONS, NOTICES, 'Sample admin', ACKS, from)
         .sections[0].note;
-    expect(note(null)).toContain('coach, manager and physio roles are paused while a check is missing or expired, and committee roles too.');
-    expect(note('2020-01-01')).toContain('and committee roles too.');
-    expect(note('2099-01-01')).toContain(`and committee roles from ${formatDateString('2099-01-01')}.`);
+    expect(note(null)).toContain('coach, manager and physio roles are paused while a check is missing or expired, and committee roles too,');
+    expect(note('2020-01-01')).toContain('and committee roles too,');
+    expect(note('2099-01-01')).toContain(`and committee roles from ${formatDateString('2099-01-01')},`);
+  });
+
+  it('says statistician roles pause too, or only from the club’s statistician checks date', () => {
+    const note = (from: string | null) =>
+      wwccReport(MEMBERS, PLACEMENTS, TEAMS, STAND_DOWNS, EXEMPTIONS, NOTICES, 'Sample admin', ACKS, null, [], from)
+        .sections[0].note;
+    expect(note(null)).toContain('and committee roles too, and statistician roles too.');
+    expect(note('2020-01-01')).toContain('and statistician roles too.');
+    expect(note('2099-01-21')).toContain(`and statistician roles from ${formatDateString('2099-01-21')}.`);
+    expect(note(null)).toContain(
+      'one whose check has been missing or expired for over 30 days doesn’t see under 18s’ injuries.',
+    );
+  });
+
+  it('names statisticians among who it covers', () => {
+    expect(full().subtitle).toMatch(/^Approved coaches, managers, physios, statisticians, temporary helpers/);
+  });
+
+  it('asks for a statistician’s check, and lists one exempted with a reason', () => {
+    const stats = (id: string, name: string, extra: Partial<Profile>): Profile =>
+      ({ ...MEMBERS[0], id, full_name: name, role: 'statistician', extra_roles: [], ...extra }) as Profile;
+    const report = wwccReport(
+      [
+        stats('s1', 'Sam Statsnone', { wwcc_number: null, wwcc_expires_on: null }),
+        stats('s2', 'Sky Opens', {
+          wwcc_number: null,
+          wwcc_expires_on: null,
+          wwcc_exempt_reason: 'Opens games only, from video',
+          wwcc_exempted_by: null,
+          wwcc_exempted_at: '2026-10-01T00:00:00Z',
+        }),
+      ],
+      [],
+      [],
+    );
+    expect(names(report, 'Needs attention')).toEqual(['Sam Statsnone']);
+    expect(sectionOf(report, 'Exempted with a reason').rows.map((r) => r.cells.slice(0, 3))).toEqual([
+      ['Sky Opens', 'Statistician', 'Opens games only, from video'],
+    ]);
+    expect(report.stats!.find((st) => st.label === 'Exempt with a reason')!.value).toBe(1);
   });
 
   it('has its sections in order', () => {
     expect(full().sections.map((s) => s.title)).toEqual([
       'Needs attention',
       'Current',
-      'Committee members and admins exempted',
+      'Exempted with a reason',
       'Exempt from a check',
       'Checks applied for',
       'Temporary helpers',
@@ -326,7 +366,7 @@ describe('wwccReport', () => {
       'Expire within 60 days': 1,
       Expired: 1,
       Missing: 3,
-      'Committee and admins exempt': 1,
+      'Exempt with a reason': 1,
       'Exempt from a check': 1,
       'Check applied for': 0,
       'To validate': 2,
@@ -351,7 +391,7 @@ describe('wwccReport', () => {
   });
 
   it('lists committee members and admins another admin exempted, with the reason, who and when', () => {
-    const exempt = sectionOf(full(), 'Committee members and admins exempted');
+    const exempt = sectionOf(full(), 'Exempted with a reason');
     expect(exempt.rows.map((r) => r.cells)).toEqual([
       ['Ivy Exempt', 'Admin', 'Board member who never works with children', 'Sample admin', day('2026-02-01')],
     ]);
@@ -370,7 +410,7 @@ describe('wwccReport', () => {
     const report = wwccReport([coachToo], [], []);
     expect(names(report, 'Needs attention')).toEqual(['Coach Committee']);
     expect(sectionOf(report, 'Needs attention').rows[0].cells[3]).toBe('Committee, Coach');
-    expect(sectionOf(report, 'Committee members and admins exempted').rows).toHaveLength(0);
+    expect(sectionOf(report, 'Exempted with a reason').rows).toHaveLength(0);
   });
 
   it('keeps someone with an exemption on the list when their own card is current', () => {

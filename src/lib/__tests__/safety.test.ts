@@ -4,11 +4,13 @@ import {
   canWorkWithChildren,
   committeeCheckDue,
   committeeChecksDue,
+  exemptableRoles,
   exemptionStatus,
   isDatedExemption,
   needsWwcc,
   pausedRoles,
   safetyIssues,
+  statisticianCheckDue,
   volunteerTimeOff,
   wwccApplicationEndLabels,
   wwccRecordIssues,
@@ -84,16 +86,20 @@ function exemption(overrides: Partial<Exemption> = {}): Exemption {
 }
 
 describe('canBeExempt', () => {
-  it('lets committee members and admins be exempt', () => {
+  it('lets committee members, admins and statisticians be exempt', () => {
     expect(canBeExempt(['committee'])).toBe(true);
     expect(canBeExempt(['admin'])).toBe(true);
     expect(canBeExempt(['admin', 'guardian'])).toBe(true);
+    expect(canBeExempt(['statistician'])).toBe(true);
+    expect(canBeExempt(['athlete', 'statistician'])).toBe(true);
+    expect(exemptableRoles).toEqual(['committee', 'admin', 'statistician']);
   });
 
   it('never exempts someone who also coaches, manages or is a physio', () => {
     expect(canBeExempt(['committee', 'coach'])).toBe(false);
     expect(canBeExempt(['admin', 'manager'])).toBe(false);
     expect(canBeExempt(['admin', 'physio'])).toBe(false);
+    expect(canBeExempt(['statistician', 'manager'])).toBe(false);
   });
 
   it('is false for other roles', () => {
@@ -132,11 +138,17 @@ describe('needsWwcc', () => {
     expect(needsWwcc(member('committee', [], '   '))).toBe(true);
   });
 
-  it('is false for athletes, guardians, guests and statisticians', () => {
+  it('needs one for statisticians unless exempt', () => {
+    expect(needsWwcc(member('statistician'))).toBe(true);
+    expect(needsWwcc(member('athlete', ['statistician']))).toBe(true);
+    expect(needsWwcc(member('statistician', [], 'Opens games only'))).toBe(false);
+    expect(needsWwcc(member('statistician', [], '  '))).toBe(true);
+  });
+
+  it('is false for athletes, guardians and guests', () => {
     expect(needsWwcc(member('athlete'))).toBe(false);
     expect(needsWwcc(member('guardian'))).toBe(false);
     expect(needsWwcc(member('guest'))).toBe(false);
-    expect(needsWwcc(member('statistician'))).toBe(false);
   });
 });
 
@@ -434,6 +446,115 @@ describe('committeeCheckDue', () => {
   });
 });
 
+describe('statisticianCheckDue', () => {
+  const statistician = (overrides: Partial<Profile> = {}) =>
+    profile({ role: 'statistician', ...overrides });
+
+  it('is true for a statistician with no check before the date', () => {
+    expect(statisticianCheckDue(statistician(), '2027-01-21')).toBe(true);
+    expect(
+      statisticianCheckDue(statistician({ role: 'athlete', extra_roles: ['statistician'] }), '2027-01-21'),
+    ).toBe(true);
+  });
+
+  it('is false once the date has come', () => {
+    expect(statisticianCheckDue(statistician(), '2026-10-18')).toBe(false);
+  });
+
+  it('is false with no date set', () => {
+    expect(statisticianCheckDue(statistician(), null)).toBe(false);
+  });
+
+  it('is false with a check or an exemption recorded', () => {
+    expect(statisticianCheckDue(statistician({ wwcc_number: '123' }), '2027-01-21')).toBe(false);
+    expect(statisticianCheckDue(statistician({ wwcc_exempt_reason: 'Opens only' }), '2027-01-21')).toBe(
+      false,
+    );
+  });
+
+  it('does not count a blank check number or exemption reason', () => {
+    expect(statisticianCheckDue(statistician({ wwcc_number: '  ' }), '2027-01-21')).toBe(true);
+    expect(statisticianCheckDue(statistician({ wwcc_exempt_reason: '  ' }), '2027-01-21')).toBe(true);
+  });
+
+  it('is false for members who are not approved statisticians', () => {
+    expect(statisticianCheckDue(statistician({ status: 'pending' }), '2027-01-21')).toBe(false);
+    expect(statisticianCheckDue(profile({ role: 'committee' }), '2027-01-21')).toBe(false);
+  });
+});
+
+describe('pausedRoles for statisticians', () => {
+  const noCheck = { role: 'statistician' as const, wwcc_number: null, wwcc_expires_on: null };
+
+  it('keeps a statistician with no check before the date or with no date', () => {
+    expect(pausedRoles(profile(noCheck), false, null, false, '2027-01-21')).toEqual([]);
+    expect(pausedRoles(profile(noCheck), false, null, false, null)).toEqual([]);
+  });
+
+  it('pauses a statistician with no check from the date', () => {
+    expect(pausedRoles(profile(noCheck), false, null, false, '2026-10-18')).toEqual(['statistician']);
+    expect(pausedRoles(profile(noCheck), false, null, false, '2026-09-01')).toEqual(['statistician']);
+  });
+
+  it('uses its own date, not the committee date', () => {
+    expect(pausedRoles(profile(noCheck), false, '2026-09-01', false, '2027-01-21')).toEqual([]);
+    expect(
+      pausedRoles(profile({ ...noCheck, extra_roles: ['committee'] }), false, '2026-09-01', false, '2027-01-21'),
+    ).toEqual(['committee']);
+  });
+
+  it('pauses one whose recorded check expired, even before the date', () => {
+    expect(
+      pausedRoles(
+        profile({ role: 'statistician', wwcc_number: '123', wwcc_expires_on: '2026-10-17' }),
+        false,
+        null,
+        false,
+        '2027-01-21',
+      ),
+    ).toEqual(['statistician']);
+  });
+
+  it('keeps one with a current or expiring check, an exemption, an application or a reason', () => {
+    expect(pausedRoles(profile({ role: 'statistician', ...goodCard }), false, null, false, '2026-09-01')).toEqual([]);
+    expect(
+      pausedRoles(
+        profile({ role: 'statistician', wwcc_number: '123', wwcc_expires_on: '2026-10-18' }),
+        false,
+        null,
+        false,
+        '2026-09-01',
+      ),
+    ).toEqual([]);
+    expect(pausedRoles(profile(noCheck), true, null, false, '2026-09-01')).toEqual([]);
+    expect(pausedRoles(profile(noCheck), false, null, true, '2026-09-01')).toEqual([]);
+    expect(
+      pausedRoles(profile({ ...noCheck, wwcc_exempt_reason: 'Opens only' }), false, null, false, '2026-09-01'),
+    ).toEqual([]);
+  });
+
+  it('does not count a blank check number or reason', () => {
+    expect(
+      pausedRoles(profile({ ...noCheck, wwcc_number: '  ', wwcc_exempt_reason: '  ' }), false, null, false, '2027-01-21'),
+    ).toEqual([]);
+    expect(
+      pausedRoles(profile({ ...noCheck, wwcc_exempt_reason: '  ' }), false, null, false, '2026-09-01'),
+    ).toEqual(['statistician']);
+  });
+
+  it('pauses a stood-down statistician whatever the check says', () => {
+    expect(
+      pausedRoles(
+        profile({ role: 'statistician', ...goodCard, stood_down_at: '2026-10-01T00:00:00Z' }),
+        true,
+        null,
+        true,
+        null,
+      ),
+    ).toEqual(['statistician']);
+  });
+});
+
 describe('pausedRoles', () => {
   it('pauses nothing for members who are not approved', () => {
     expect(pausedRoles(profile({ role: 'coach', status: 'pending' }))).toEqual([]);
@@ -466,7 +587,7 @@ describe('pausedRoles', () => {
     expect(pausedRoles(profile({ role: 'guest' }))).toEqual([]);
   });
 
-  it('keeps admin and statistician without a check', () => {
+  it('keeps admin, and a statistician with no statistician checks date, without a check', () => {
     expect(pausedRoles(profile({ role: 'admin', extra_roles: ['statistician'] }))).toEqual([]);
   });
 

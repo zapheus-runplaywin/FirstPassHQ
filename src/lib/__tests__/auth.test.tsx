@@ -129,6 +129,7 @@ type Rows = {
   application?: MyWwccApplication | null;
   isSafeguardingOfficer?: unknown;
   committeeChecksFrom?: unknown;
+  statisticianChecksFrom?: unknown;
 };
 
 let rows: Rows;
@@ -190,6 +191,7 @@ beforeEach(() => {
     if (fn === 'my_wwcc_application') return query({ data: rows.application ?? null });
     if (fn === 'is_safeguarding_officer') return query({ data: rows.isSafeguardingOfficer ?? false });
     if (fn === 'committee_checks_from') return query({ data: rows.committeeChecksFrom ?? null });
+    if (fn === 'statistician_checks_from') return query({ data: rows.statisticianChecksFrom ?? null });
     throw new Error(`Unexpected function ${fn}`);
   }) as never);
 });
@@ -790,6 +792,121 @@ describe('committee checks', () => {
     const auth = await authFor({ profile: profile('committee'), committeeChecksFrom: value });
     expect(auth.committeeChecksFrom).toBe(typeof value === 'string' ? value : null);
   });
+});
+
+describe('statistician checks', () => {
+  const noCheck = { wwcc_number: null, wwcc_expires_on: null };
+
+  it('keeps a statistician with no check before the club’s statistician checks date', async () => {
+    const auth = await authFor({
+      profile: profile('statistician', noCheck),
+      statisticianChecksFrom: '2027-01-21',
+    });
+    expect(auth.profile?.role).toBe('statistician');
+    expect(auth.paused).toBeNull();
+    expect(auth.statisticianChecksFrom).toBe('2027-01-21');
+  });
+
+  it('keeps a statistician with no check when the club has no statistician checks date', async () => {
+    const auth = await authFor({ profile: profile('statistician', noCheck) });
+    expect(auth.paused).toBeNull();
+    expect(auth.statisticianChecksFrom).toBeNull();
+  });
+
+  test.each([
+    ['on the day', TODAY],
+    ['after it', '2026-09-01'],
+  ])('pauses a statistician with no check %s', async (_when, from) => {
+    const auth = await authFor({
+      profile: profile('statistician', noCheck),
+      statisticianChecksFrom: from,
+    });
+    expect(auth.profile?.role).toBe('guest');
+    expect(auth.paused).toEqual({
+      roles: ['statistician'],
+      stoodDown: false,
+      exemption: null,
+      application: null,
+    });
+  });
+
+  it('uses the statistician date, not the committee date', async () => {
+    const auth = await authFor({
+      profile: profile('statistician', noCheck),
+      committeeChecksFrom: '2026-09-01',
+      statisticianChecksFrom: '2027-01-21',
+    });
+    expect(auth.paused).toBeNull();
+  });
+
+  it('pauses a statistician whose recorded check expired, even before the date', async () => {
+    const auth = await authFor({
+      profile: profile('statistician', { wwcc_expires_on: YESTERDAY }),
+      statisticianChecksFrom: '2027-01-21',
+    });
+    expect(auth.paused?.roles).toEqual(['statistician']);
+  });
+
+  it('keeps an exempt statistician with no check after the date', async () => {
+    const auth = await authFor({
+      profile: profile('statistician', { ...noCheck, wwcc_exempt_reason: 'Opens games only' }),
+      statisticianChecksFrom: '2026-09-01',
+    });
+    expect(auth.paused).toBeNull();
+  });
+
+  it('keeps a statistician with a current check after the date', async () => {
+    const auth = await authFor({
+      profile: profile('statistician'),
+      statisticianChecksFrom: '2026-09-01',
+    });
+    expect(auth.paused).toBeNull();
+  });
+
+  it('keeps a statistician after the date while their application is in force', async () => {
+    const auth = await authFor({
+      profile: profile('statistician', noCheck),
+      statisticianChecksFrom: '2026-09-01',
+      application: application(),
+    });
+    expect(auth.paused).toBeNull();
+  });
+
+  it('keeps a parent statistician after the date with a volunteer exemption that applies', async () => {
+    const auth = await authFor({
+      profile: profile('statistician', noCheck),
+      statisticianChecksFrom: '2026-09-01',
+      exemption: exemption(),
+    });
+    expect(auth.paused).toBeNull();
+  });
+
+  it('pauses a statistician after the date whose exemption no longer applies', async () => {
+    const auth = await authFor({
+      profile: profile('statistician', noCheck),
+      statisticianChecksFrom: '2026-09-01',
+      exemption: exemption({ valid: false }),
+    });
+    expect(auth.paused?.roles).toEqual(['statistician']);
+  });
+
+  it('leaves an athlete an athlete when their statistician role pauses', async () => {
+    const auth = await authFor({
+      profile: profile('athlete', { ...noCheck, extra_roles: ['statistician'] }),
+      statisticianChecksFrom: '2026-09-01',
+    });
+    expect(auth.profile?.role).toBe('athlete');
+    expect(auth.profile?.extra_roles).toEqual([]);
+    expect(auth.paused?.roles).toEqual(['statistician']);
+  });
+
+  test.each([42, true, ''])(
+    'ignores a statistician checks date that isn’t a date string: %j',
+    async (value) => {
+      const auth = await authFor({ profile: profile('statistician'), statisticianChecksFrom: value });
+      expect(auth.statisticianChecksFrom).toBe(typeof value === 'string' ? value : null);
+    },
+  );
 });
 
 describe('stand-downs', () => {

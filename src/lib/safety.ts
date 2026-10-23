@@ -17,27 +17,31 @@ import { hasRole, rolesOf } from '@/lib/roles';
 /** Roles that always need a current Working With Children Check. */
 export const wwccRoles: AppRole[] = ['coach', 'manager', 'physio'];
 
+/** Roles an admin can excuse from the check with a reason. */
+export const exemptableRoles: AppRole[] = ['committee', 'admin', 'statistician'];
+
 /**
  * Whether an admin can excuse someone with these roles from the check: only
- * committee members and admins who hold no role that always needs one.
+ * committee members, admins and statisticians who hold no role that always
+ * needs one.
  */
 export function canBeExempt(roles: AppRole[]) {
   return (
-    (roles.includes('committee') || roles.includes('admin')) &&
+    roles.some((r) => exemptableRoles.includes(r)) &&
     !roles.some((r) => wwccRoles.includes(r))
   );
 }
 
 /**
  * Whether a member needs a current check: coaches, managers, physios and
- * temporary helpers always, committee members and admins unless another
- * admin exempted them. Same rule as `public.needs_wwcc` in the database.
+ * temporary helpers always, committee members, admins and statisticians
+ * unless another admin exempted them. Same rule as `public.needs_wwcc` in the database.
  */
 export function needsWwcc(
   member: Pick<Profile, 'role' | 'extra_roles' | 'wwcc_exempt_reason'>,
 ): boolean {
   if (hasRole(member, ...wwccRoles, 'volunteer')) return true;
-  return hasRole(member, 'committee', 'admin') && !member.wwcc_exempt_reason?.trim();
+  return hasRole(member, ...exemptableRoles) && !member.wwcc_exempt_reason?.trim();
 }
 
 export const verificationMethodLabels: Record<VerificationMethod, string> = {
@@ -271,8 +275,9 @@ export const standDownReasonLabels: Record<StandDownReason, string> = {
  * Roles a member holds but can't use right now: coach, manager and physio
  * without a current check or a volunteer exemption that applies, committee
  * when a recorded check has expired, or none is recorded from the club's
- * committee checks date (unless exempt), and all of those plus admin while
- * stood down. Same rule as `public.has_role` in the database.
+ * committee checks date (unless exempt), statistician the same way from the
+ * club's statistician checks date (a volunteer exemption also counts), and
+ * all of those plus admin while stood down. Same rule as `public.has_role` in the database.
  */
 export function pausedRoles(
   member: Pick<
@@ -291,6 +296,8 @@ export function pausedRoles(
   committeeChecksFrom: string | null = null,
   /** They have a lodged check application in force today. */
   applied = false,
+  /** The day from which statisticians need a check, "2027-01-21" style. */
+  statisticianChecksFrom: string | null = null,
 ): AppRole[] {
   if (member.status !== 'approved') return [];
   const check = wwccStatus(member).kind;
@@ -303,6 +310,13 @@ export function pausedRoles(
     if (r === 'committee') {
       const checksRequired = !!member.wwcc_number?.trim() || committeeChecksDue(committeeChecksFrom);
       return !member.wwcc_exempt_reason?.trim() && checksRequired && !current && !applied;
+    }
+    if (r === 'statistician') {
+      const checksRequired =
+        !!member.wwcc_number?.trim() || committeeChecksDue(statisticianChecksFrom);
+      return (
+        !member.wwcc_exempt_reason?.trim() && checksRequired && !current && !exempt && !applied
+      );
     }
     return false;
   });
@@ -344,6 +358,24 @@ export function committeeCheckDue(
     !member.wwcc_exempt_reason?.trim() &&
     !!committeeChecksFrom &&
     !committeeChecksDue(committeeChecksFrom)
+  );
+}
+
+/**
+ * A statistician who has kept their role without a check, before the club's
+ * statistician checks date: they need a check, or an exemption, by then.
+ */
+export function statisticianCheckDue(
+  member: Pick<Profile, 'role' | 'extra_roles' | 'status' | 'wwcc_number' | 'wwcc_exempt_reason'>,
+  statisticianChecksFrom: string | null,
+) {
+  return (
+    member.status === 'approved' &&
+    rolesOf(member).includes('statistician') &&
+    !member.wwcc_number?.trim() &&
+    !member.wwcc_exempt_reason?.trim() &&
+    !!statisticianChecksFrom &&
+    !committeeChecksDue(statisticianChecksFrom)
   );
 }
 

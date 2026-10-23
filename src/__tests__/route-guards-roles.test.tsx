@@ -69,7 +69,16 @@ const MANAGERS: PersonaName[] = ['manager', 'safeguardingOfficer'];
 const PHYSIOS: PersonaName[] = ['physio', 'headPhysio'];
 const COMMITTEE: PersonaName[] = ['committee'];
 // An expired check never pauses the admin role; a lapsed admin's coaching pauses.
-const ADMINS: PersonaName[] = ['admin', 'adminExpiredCheck', 'adminGuardian', 'adminLapsedCoach'];
+const ADMINS: PersonaName[] = [
+  'admin',
+  'adminExpiredCheck',
+  'adminGuardian',
+  'adminLapsedCoach',
+  // Over 30 days without a check: no under 18s' injuries, every admin screen still.
+  'adminLapsedCheck',
+];
+/** Statisticians, including one with no check before the club's statistician checks date. */
+const STATISTICIANS: PersonaName[] = ['statistician', 'statisticianBeforeChecksDate'];
 const CAPTAINS: PersonaName[] = ['captain', 'clubCaptain'];
 
 /** Approved, holding a role they can use other than guest or temporary helper. */
@@ -81,7 +90,7 @@ const CLUB_MEMBERS: PersonaName[] = [
   ...PHYSIOS,
   ...COMMITTEE,
   ...ADMINS,
-  'statistician',
+  ...STATISTICIANS,
 ];
 
 /**
@@ -100,6 +109,7 @@ const NO_ROLE_SCREENS: PersonaName[] = [
   'stoodDownCoach',
   'committeeExpiredCheck',
   'committeePastChecksDate',
+  'statisticianPastChecksDate',
   'physioExpiredCheck',
 ];
 
@@ -122,7 +132,7 @@ const ATTENDANCE_VIEWERS = union(COACHES, COMMITTEE, ADMINS);
 const PLAN_READERS = union(ADMINS, COACHES, ATHLETES, GUARDIANS);
 const PLAN_AUTHORS = union(ADMINS, COACHES);
 const CHECK_IN_VIEWERS = union(GROUP_COACHES, COMMITTEE, PHYSIOS, ADMINS);
-const AWARD_VOTERS = union(ATHLETES, COACHES, MANAGERS, COMMITTEE, ADMINS, ['statistician']);
+const AWARD_VOTERS = union(ATHLETES, COACHES, MANAGERS, COMMITTEE, ADMINS, STATISTICIANS);
 const KPI_READERS = union(ATHLETES, COACHES, MANAGERS, GUARDIANS, COMMITTEE, ADMINS);
 const KPI_SETTERS = union(COMMITTEE, ADMINS, COACHES);
 const CERTIFICATE_CHECKERS = union(COMMITTEE, ADMINS);
@@ -241,7 +251,7 @@ describe('the route table', () => {
         ...COMMITTEE,
         ...ADMINS,
         ...NO_ROLE_SCREENS,
-        'statistician',
+        ...STATISTICIANS,
       ]),
     );
   });
