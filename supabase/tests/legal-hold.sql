@@ -340,3 +340,8 @@ select pg_temp.ok('and is gone', (select count(*) = 0 from public.profiles where
 select pg_temp.as_member('01');
 select pg_temp.works('an admin can still delete a member not on hold', $$select public.admin_delete_member(pg_temp.id('12'))$$);
 select set_config('request.jwt.claim.sub', '', false);
+
+-- The clean-up asks who each concern is about once per candidate row, so
+-- it is indexed (20261023160000_review_follow_ups.sql).
+select pg_temp.ok('who a concern is about is indexed',
+  exists (select 1 from pg_indexes where schemaname = 'public' and tablename = 'concerns' and indexname = 'concerns_about_member_idx'), true);
