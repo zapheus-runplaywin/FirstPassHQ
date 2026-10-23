@@ -1,5 +1,6 @@
 import { formatDateString, type LoggedInjury } from '@/lib/injuries';
 import type { KpiReviewTodo } from '@/lib/kpis';
+import type { MedicalReview } from '@/lib/medical';
 import type { MySurvey } from '@/lib/surveys';
 import { buildTodos, dueAlert, sortByAlert, type Todo } from '@/lib/todos';
 import type { MyTraining } from '@/lib/training';
@@ -873,5 +874,53 @@ describe('buildTodos', () => {
       'join-requests',
       'minors-without-guardian',
     ]);
+  });
+});
+
+describe('medical details', () => {
+  const review = (extra: Partial<MedicalReview>): MedicalReview => ({
+    athlete_id: 'me',
+    athlete_name: 'Sample Me',
+    status: 'due_soon',
+    due_on: '2026-11-10',
+    ...extra,
+  });
+
+  it('asks an athlete to check their own once a year, by the day it’s due', () => {
+    const todo = only(todos({ medicalReviews: [review({})] }));
+    expect(todo).toEqual({
+      key: 'medical-me',
+      title: 'Check your medical details are still right',
+      detail: `Once a year. Due ${formatDateString('2026-11-10')}`,
+      href: { pathname: '/medical/[id]', params: { id: 'me' } },
+      dueOn: '2026-11-10',
+    });
+  });
+
+  it('names the child for a guardian', () => {
+    expect(only(todos({ medicalReviews: [review({ athlete_id: 'kid', athlete_name: 'Kit Child' })] })).title).toBe(
+      'Check Kit Child’s medical details are still right',
+    );
+  });
+
+  it('warns amber in the last three days and red once overdue', () => {
+    expect(only(todos({ medicalReviews: [review({ due_on: '2026-10-20' })] })).alert).toEqual({ level: 'amber', label: 'Due soon' });
+    expect(only(todos({ medicalReviews: [review({ status: 'overdue', due_on: '2026-10-01' })] })).alert).toEqual({ level: 'red', label: 'Overdue' });
+    expect(only(todos({ medicalReviews: [review({})] })).alert).toBeUndefined();
+  });
+
+  it('asks for them to be added when nothing is saved, with no due day', () => {
+    const own = only(todos({ medicalReviews: [review({ status: 'missing', due_on: null })] }));
+    expect(own.title).toBe('Add your medical and emergency details');
+    expect(own.dueOn).toBeUndefined();
+    expect(own.alert).toBeUndefined();
+    expect(only(todos({ medicalReviews: [review({ athlete_id: 'kid', athlete_name: 'Kit Child', status: 'missing', due_on: null })] })).title).toBe(
+      'Add Kit Child’s medical and emergency details',
+    );
+  });
+
+  it('has one to-do per athlete, and none without reviews', () => {
+    expect(keys(todos({ medicalReviews: [review({}), review({ athlete_id: 'kid', athlete_name: 'Kit' })] }))).toEqual(['medical-me', 'medical-kid']);
+    expect(todos()).toEqual([]);
   });
 });

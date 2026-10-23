@@ -6,6 +6,7 @@ import { formatShortDay } from '@/lib/format';
 import { gamePhase, gameTitle } from '@/lib/goals';
 import { formatDateString, type LoggedInjury, toDateString } from '@/lib/injuries';
 import type { KpiReviewTodo } from '@/lib/kpis';
+import type { MedicalReview } from '@/lib/medical';
 import { closingDay, surveysToAnswer, type MySurvey } from '@/lib/surveys';
 import { WWCC_WARNING_DAYS } from '@/lib/safety';
 import { dueLabel, isOutstanding, type MyTraining } from '@/lib/training';
@@ -91,6 +92,7 @@ export function buildTodos({
   affiliation = null,
   kpiReviews = [],
   surveys = [],
+  medicalReviews = [],
   today = new Date(),
 }: {
   userId: string | undefined;
@@ -138,6 +140,8 @@ export function buildTodos({
   kpiReviews?: KpiReviewTodo[];
   /** Surveys sent to the member, including ones already answered. */
   surveys?: MySurvey[];
+  /** Medical details the member keeps that need adding or their yearly check. */
+  medicalReviews?: MedicalReview[];
   today?: Date;
 }): Todo[] {
   const todos: Todo[] = [];
@@ -610,6 +614,28 @@ export function buildTodos({
       href: { pathname: '/surveys/[id]', params: { id: survey.id } },
       dueOn: closes,
     });
+  }
+
+  for (const review of medicalReviews) {
+    const own = review.athlete_id === userId;
+    const whose = own ? 'your' : `${review.athlete_name}’s`;
+    const href: Href = { pathname: '/medical/[id]', params: { id: review.athlete_id } };
+    if (review.status === 'missing' || !review.due_on) {
+      todos.push({
+        key: `medical-${review.athlete_id}`,
+        title: `Add ${whose} medical and emergency details`,
+        detail: 'Emergency contacts, allergies, conditions and medications, for training and games',
+        href,
+      });
+    } else {
+      todos.push({
+        key: `medical-${review.athlete_id}`,
+        title: `Check ${whose} medical details are still right`,
+        detail: `Once a year. Due ${formatDateString(review.due_on)}`,
+        href,
+        dueOn: review.due_on,
+      });
+    }
   }
 
   return todos.map((todo) =>
