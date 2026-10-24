@@ -117,6 +117,19 @@ const FEATURE_ROUTES: FeatureCase[] = [
       'admin/reports/affiliation',
     ],
   },
+  {
+    feature: 'registers',
+    offByDefault: true,
+    routes: [
+      'registers/index',
+      'registers/policies',
+      'registers/policy',
+      'registers/review',
+      'registers/conflicts',
+      'registers/conflict',
+      'declare-conflicts',
+    ],
+  },
 ];
 
 /**
@@ -133,6 +146,7 @@ const OPENED_BY: Record<string, PersonaName> = {
   'goals/athlete/[id]': 'coach',
   'goals/game': 'athlete',
   'goals/team': 'coach',
+  'declare-conflicts': 'committee',
 };
 const openerOf = (route: string): PersonaName => OPENED_BY[route] ?? 'admin';
 

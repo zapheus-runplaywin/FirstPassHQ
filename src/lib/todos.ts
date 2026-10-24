@@ -7,6 +7,7 @@ import { gamePhase, gameTitle } from '@/lib/goals';
 import { formatDateString, type LoggedInjury, toDateString } from '@/lib/injuries';
 import type { KpiReviewTodo } from '@/lib/kpis';
 import type { MedicalReview } from '@/lib/medical';
+import type { MyConflictDeclaration, PolicyReview } from '@/lib/registers';
 import { closingDay, surveysToAnswer, type MySurvey } from '@/lib/surveys';
 import { WWCC_WARNING_DAYS } from '@/lib/safety';
 import { dueLabel, isOutstanding, type MyTraining } from '@/lib/training';
@@ -93,6 +94,8 @@ export function buildTodos({
   kpiReviews = [],
   surveys = [],
   medicalReviews = [],
+  policyReviews = [],
+  conflictDeclaration = null,
   today = new Date(),
 }: {
   userId: string | undefined;
@@ -142,6 +145,10 @@ export function buildTodos({
   surveys?: MySurvey[];
   /** Medical details the member keeps that need adding or their yearly check. */
   medicalReviews?: MedicalReview[];
+  /** Policies the member owns whose review is due within 30 days or overdue. */
+  policyReviews?: PolicyReview[];
+  /** The member's conflict-of-interest declaration this season, if they make one. */
+  conflictDeclaration?: MyConflictDeclaration | null;
   today?: Date;
 }): Todo[] {
   const todos: Todo[] = [];
@@ -648,6 +655,26 @@ export function buildTodos({
         dueOn: review.due_on,
       });
     }
+  }
+
+  // Policy owners review each policy by its review date.
+  for (const policy of policyReviews) {
+    todos.push({
+      key: `policy-${policy.id}`,
+      title: `Review the ${policy.title}`,
+      detail: `${policy.review_on < toDateString(today) ? 'Was due' : 'Due'} ${formatDateString(policy.review_on)}`,
+      href: { pathname: '/registers/review', params: { id: policy.id } },
+      dueOn: policy.review_on,
+    });
+  }
+
+  if (conflictDeclaration?.required && !conflictDeclaration.declared_at) {
+    todos.push({
+      key: 'conflicts',
+      title: 'Declare any conflicts of interest',
+      detail: `Once a season, for the ${seasonLabel(conflictDeclaration.season)} season, even if you have none`,
+      href: '/declare-conflicts',
+    });
   }
 
   return todos.map((todo) =>

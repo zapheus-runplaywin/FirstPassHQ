@@ -90,12 +90,12 @@ describe('resolveClub', () => {
     expect(club.affiliation).toBe(false);
   });
 
-  it('starts every feature on except Season KPIs', () => {
+  it('starts every feature on except Season KPIs and the registers', () => {
     const { features } = resolveClub(null);
     for (const f of FEATURES) {
-      expect([f.key, features[f.key]]).toEqual([f.key, f.key !== 'kpis']);
+      expect([f.key, features[f.key]]).toEqual([f.key, f.key !== 'kpis' && f.key !== 'registers']);
     }
-    expect(FEATURES.filter(offByDefault).map((f) => f.key)).toEqual(['kpis']);
+    expect(FEATURES.filter(offByDefault).map((f) => f.key)).toEqual(['kpis', 'registers']);
   });
 
   it('turns off only what the admin turned off, and Season KPIs on only when turned on', () => {

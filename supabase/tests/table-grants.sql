@@ -26,9 +26,9 @@ create temp view public_tables as
 -- them from the app's roles on purpose, so they must stay ungranted.
 create temp table through_functions(name text);
 insert into through_functions values
-  ('absence_reviews'), ('attendance_absences'), ('child_activity_seen'), ('conduct_acceptances'),
+  ('absence_reviews'), ('attendance_absences'), ('child_activity_seen'), ('conduct_acceptances'), ('conflict_declarations'),
   ('former_partner_roles'), ('game_pair_attempts'), ('group_membership_changes'), ('injury_log_seen'),
-  ('join_password_attempts'), ('medical_profiles'), ('purge_runs'), ('record_access_log'), ('season_kpi_measures'),
+  ('join_password_attempts'), ('medical_profiles'), ('policy_register'), ('purge_runs'), ('record_access_log'), ('season_kpi_measures'),
   ('season_kpi_review_notes'), ('season_kpi_review_points'), ('season_kpi_reviews'), ('season_kpis'),
   ('session_plan_notices'), ('session_plan_views'), ('survey_answers'), ('survey_questions'),
   ('survey_recipients'), ('survey_responses'), ('surveys'), ('wwcc_applications');

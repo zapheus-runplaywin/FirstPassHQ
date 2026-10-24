@@ -219,6 +219,23 @@ function RootStack() {
               <Stack.Screen name="training/requirement/[id]" options={{ title: 'Training' }} />
             </Stack.Protected>
           </Stack.Protected>
+          <Stack.Protected guard={can.registers}>
+            <Stack.Screen name="registers/index" options={{ title: 'Registers' }} />
+            <Stack.Screen name="registers/conflicts" options={{ title: 'Conflicts of interest' }} />
+          </Stack.Protected>
+          <Stack.Protected guard={can.registers || can.reviewPolicy}>
+            <Stack.Screen name="registers/policies" options={{ title: 'Policies' }} />
+          </Stack.Protected>
+          <Stack.Protected guard={can.reviewPolicy}>
+            <Stack.Screen name="registers/review" options={{ title: 'Review a policy' }} />
+          </Stack.Protected>
+          <Stack.Protected guard={can.editRegisters}>
+            <Stack.Screen name="registers/policy" options={{ title: 'Policy' }} />
+            <Stack.Screen name="registers/conflict" options={{ title: 'Conflict of interest' }} />
+          </Stack.Protected>
+          <Stack.Protected guard={can.declareConflicts}>
+            <Stack.Screen name="declare-conflicts" options={{ title: 'Conflicts of interest' }} />
+          </Stack.Protected>
           <Stack.Screen name="declaration" options={{ title: 'Exemption declaration' }} />
           <Stack.Screen name="wwcc-application" options={{ title: 'Check application' }} />
           <Stack.Screen name="concern/new" options={{ title: 'Raise a concern' }} />

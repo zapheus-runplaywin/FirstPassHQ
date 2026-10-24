@@ -102,6 +102,7 @@ function allFeatures(): Features {
     goals: true,
     integrity: true,
     kpis: true,
+    registers: true,
   };
 }
 
