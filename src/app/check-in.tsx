@@ -4,6 +4,7 @@ import { Pressable, StyleSheet, View } from 'react-native';
 
 import { CheckInHistory } from '@/components/check-in-history';
 import { RaiseConcernLink } from '@/components/safeguarding';
+import { SessionLogSection } from '@/components/session-log-form';
 import { Screen } from '@/components/screen';
 import { ThemedText } from '@/components/themed-text';
 import { Button, ErrorText, TextField } from '@/components/ui';
@@ -124,6 +125,12 @@ export default function CheckInScreen() {
         <ThemedText type="smallBold">Last two weeks</ThemedText>
         {history ? <CheckInHistory checkIns={history} /> : null}
       </View>
+      {userId ? (
+        <SessionLogSection
+          athleteId={userId}
+          minor={!!profile && isMinor(profile.date_of_birth, profile.under_17)}
+        />
+      ) : null}
       <RaiseConcernLink context="Daily check-in" label="Something worrying you? Tell the club safely" />
     </Screen>
   );

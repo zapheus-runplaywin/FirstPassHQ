@@ -15,7 +15,7 @@ like the [user guide](user-guide.md), and summarised in its section 13,
 - **Encrypted.** Supabase encrypts the database and stored files on disk, and everything between
   the app and the database travels encrypted (TLS).
 - **What it holds.** Members' names, contact details and roles; dates of birth and guardian links;
-  Working With Children Check details; attendance, check-ins, goals, messages and surveys;
+  Working With Children Check details; attendance, check-ins, training sessions, goals, messages and surveys;
   injuries and their documents; medical and emergency details; and the safeguarding records:
   concerns, stand-downs, Screening Unit notices, exemptions and consents. The user guide says who
   can see each kind, in section 11, [Who can see what](user-guide.md#11-who-can-see-what).
