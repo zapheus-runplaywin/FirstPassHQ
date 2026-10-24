@@ -1496,6 +1496,18 @@ extra access: you see the injury only as you'd see any of your athlete's injurie
 shows only once a parent or guardian has given consent.
 
 <img src="user-guide/injury-log.png" width="210" alt="A coach logging an injury for one of their athletes">
+<img src="user-guide/injury-logged.png" width="210" alt="Injury logged, with the athlete and parents told">
+
+#### Viewing proof documents
+
+**View** opens a document inside the app. A photo fills the screen: pinch to zoom in on the
+details, drag to move around, and double-tap to zoom in or back out. A PDF shows its pages one
+under the next, and you can pinch to zoom there too. There's no save or share button, and the
+document isn't kept on your phone. Each time you open a document, your name, role and the time are
+recorded and shown to the athlete, their parents or guardians and admins.
+
+<img src="user-guide/document-photo.png" width="210" alt="A photo of a clearance letter, zoomed in">
+<img src="user-guide/document-pdf.png" width="210" alt="A PDF clearance letter in the viewer">
 
 ### Medical and emergency details
 
@@ -1513,18 +1525,6 @@ its athletes' details, as with check-ins; the Head Physio sees every athlete's.
 
 <img src="user-guide/medical-team.png" width="210" alt="A squad's medical and emergency details list for its coach">
 <img src="user-guide/medical-coach.png" width="210" alt="An athlete's medical and emergency details as their coach sees them">
-<img src="user-guide/injury-logged.png" width="210" alt="Injury logged, with the athlete and parents told">
-
-#### Viewing proof documents
-
-**View** opens a document inside the app. A photo fills the screen: pinch to zoom in on the
-details, drag to move around, and double-tap to zoom in or back out. A PDF shows its pages one
-under the next, and you can pinch to zoom there too. There's no save or share button, and the
-document isn't kept on your phone. Each time you open a document, your name, role and the time are
-recorded and shown to the athlete, their parents or guardians and admins.
-
-<img src="user-guide/document-photo.png" width="210" alt="A photo of a clearance letter, zoomed in">
-<img src="user-guide/document-pdf.png" width="210" alt="A PDF clearance letter in the viewer">
 
 ### Taking attendance
 
