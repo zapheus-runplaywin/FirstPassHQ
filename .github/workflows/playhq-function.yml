@@ -16,7 +16,7 @@ jobs:
     runs-on: ubuntu-24.04
     environment: production
     steps:
-      - uses: actions/checkout@d23441a48e516b6c34aea4fa41551a30e30af803 # v6.1.0
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
       - uses: supabase/setup-cli@45a513f8c64c0bc8e0e3dfe572b5c95be85f6359 # v3.0.1
         with:
           version: 2.121.0
@@ -40,7 +40,7 @@ jobs:
           TEST_PROJECT_ID: ${{ secrets.SUPABASE_TEST_PROJECT_ID }}
         run: echo "ready=$([ -n "$TEST_PROJECT_ID" ] && echo true || echo false)" >> "$GITHUB_OUTPUT"
       - if: steps.test.outputs.ready == 'true'
-        uses: actions/checkout@d23441a48e516b6c34aea4fa41551a30e30af803 # v6.1.0
+        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
       - if: steps.test.outputs.ready == 'true'
         uses: supabase/setup-cli@45a513f8c64c0bc8e0e3dfe572b5c95be85f6359 # v3.0.1
         with:
@@ -70,7 +70,7 @@ jobs:
           CLUB_PROJECT_ID: ${{ secrets[format('SUPABASE_TEST_{0}_PROJECT_ID', matrix.club)] }}
         run: echo "ready=$([ -n "$CLUB_PROJECT_ID" ] && echo true || echo false)" >> "$GITHUB_OUTPUT"
       - if: steps.test.outputs.ready == 'true'
-        uses: actions/checkout@d23441a48e516b6c34aea4fa41551a30e30af803 # v6.1.0
+        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
       - if: steps.test.outputs.ready == 'true'
         uses: supabase/setup-cli@45a513f8c64c0bc8e0e3dfe572b5c95be85f6359 # v3.0.1
         with:
