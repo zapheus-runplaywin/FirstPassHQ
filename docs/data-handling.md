@@ -42,6 +42,19 @@ like the [user guide](user-guide.md), and summarised in its section 13,
 - **Nobody else.** FirstPass doesn't sell, share or analyse club data, and the app has no
   advertising or tracking.
 
+### When FirstPass opens your data
+
+This is a promise FirstPass keeps by hand, not something the app tracks: the app's own log of who
+opened a child's records covers members only, not FirstPass working in the Supabase project.
+
+- **What counts:** FirstPass looking at or changing a club's rows or files itself, through the
+  Supabase dashboard, its SQL editor, the service key or the export script. Automatic jobs (such
+  as the nightly removal of old records) and app updates deploying don't count.
+- **What FirstPass writes down each time:** the date, the club, why (the fault, the export, or the
+  legal request), what it looked at or changed, and when it told the admins. It keeps that log
+  for as long as it holds the club's data.
+- **What admins hear:** an email, once the work is done, saying the same things.
+
 ## If something goes wrong
 
 If FirstPass learns that a club's data may have been seen, changed or lost by someone who
