@@ -714,6 +714,13 @@ consent). Below the form you can see your last two weeks, with low scores marked
 
 Until you've checked in, "Do your daily check-in" stays in your to-do list.
 
+**If you'd like to talk to someone.** The club's **Child Safety Officer** is its welfare contact
+for athletes, whatever your age and whether or not you're in a squad or team. Under the check-in,
+**Something worrying you? Tell the club safely** raises a concern that goes to them (and the
+Complaints Manager and admins), not to your coaches or parents. You don't have to explain much: a
+line such as "I'd like to talk to someone" is enough, and you can hide your name (see [Raising a
+concern](#raising-a-concern)). Kids Helpline (1800 55 1800) is free, any time.
+
 <img src="user-guide/check-in.png" width="210" alt="Daily check-in form and history">
 <img src="user-guide/check-in-note.png" width="210" alt="Check-in note, saying who can read it">
 
@@ -3102,6 +3109,10 @@ Manager** and **WWC Registration Officer**. Search for each by name. All three m
 a current Working With Children Check (or an exemption that applies), and the Child Safety
 Officer and Complaints Manager must be two different people, so a concern about one can go to the
 other. You can't name yourself unless someone else is the other contact.
+The Child Safety Officer is also the club's welfare contact for athletes. Athletes
+who'd like to talk to someone are pointed to the check-in's **Something worrying you? Tell the club safely**,
+which reaches them as a concern, and they see every athlete's wellbeing flags. The app has no
+separate Wellbeing Officer; choose a Child Safety Officer who can take on that role.
 If a contact's check lapses or they're stood down, they stop being shown and stop seeing concerns
 until the check is recorded again or the stand-down is lifted, or you choose someone else.
 
@@ -3498,8 +3509,10 @@ Working With Children Check, and another admin must do it.
 - **Your parent or guardian joins too.** When you ask to join, you give your date of birth and a
   parent's or guardian's email. While you wait, the app shows who you can talk to if anything
   worries you.
-- **You can tell someone safely.** The check-in screen has a link to raise a concern, and you can
-  hide your name. Kids Helpline (1800 55 1800) is free, any time.
+- **You can tell someone safely.** The check-in screen has a link, **Something worrying you? Tell
+  the club safely**, that reaches the club's Child Safety Officer, its welfare contact for
+  athletes. A line such as "I'd like to talk to someone" is enough, and you can hide your name.
+  Kids Helpline (1800 55 1800) is free, any time.
 - **Everyone can agree to the same code of conduct**, coaches and parents included, every season,
   covering training, games and online, when the club asks for it in the app.
 - **No photos of your injuries.** Attach your physio's or doctor's letter instead, as a PDF or a
@@ -3795,10 +3808,19 @@ decided on its own; until then the club keeps doing it the way it does now.
   log their sessions' minutes and effort by hand under the check-in (see [Training
   sessions](#training-sessions)).
 - **Community hours**: a tracker of volunteer hours, with extra hours for AUSTEAM athletes.
+- **Qualifications**: coaching accreditation, first aid and CPR, sports trainer, umpire badges and
+  bench officials, with numbers, expiry dates and reminders, and which roles need which. Integrity
+  training tracks courses each season (see [Integrity training](#integrity-training)); the club
+  keeps other qualifications itself.
+- **KNEE warm-up tracking**: marking which sessions include Netball Australia's KNEE warm-up.
+- **Media and photo consent**: a register of whether the club may use each athlete's photo in club
+  media. The club keeps it the way it does now, under Netball WA's photography policy.
+- **Travel and tour forms**: permission, medical and travel forms for camps and tours.
 - **Microsoft Forms**: sending a form to chosen roles. [Surveys](#surveys) do this inside the app,
   with results kept with the club; a Forms link can go in a message.
-- **Asking for a response**: a sender asking members to confirm a message. Read receipts show who
-  opened it (see [Messages](#messages)), but there's no **Acknowledge** button.
+- **Asking for a response**: a sender asking members to confirm a message, or to say whether
+  they're available. Read receipts show who opened it (see [Messages](#messages)), but there's no
+  **Acknowledge** button or availability reply. A [survey](#surveys) or poll can ask instead.
 - **Overnight events**: events can't be marked as overnight, so the app doesn't warn that a parent
   volunteer's exemption doesn't cover a camp or tour. Admins check this themselves (see [Volunteer
   exemptions](#volunteer-exemptions)).
