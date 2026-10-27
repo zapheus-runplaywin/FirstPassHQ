@@ -42,6 +42,13 @@ jest.mock('@react-native-async-storage/async-storage', () =>
 jest.mock('@/global.css', () => ({}));
 jest.mock('expo-font', () => ({ ...jest.requireActual('expo-font'), useFonts: () => [true, null] }));
 
+// Each of the 2,815 tests renders the whole app, and the mocks keep every call
+// they were given. Cleared between tests, the file runs in under 1GB instead of
+// running a CI worker out of memory.
+afterEach(() => {
+  jest.clearAllMocks();
+});
+
 // Every feature on, Season KPIs and the registers included, so only the role guards decide.
 beforeEach(() => {
   resetClub();
