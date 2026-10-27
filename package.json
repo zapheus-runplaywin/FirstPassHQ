@@ -80,7 +80,8 @@
       "/node_modules/",
       "/supabase/(?!functions/[^/]+/__tests__/)",
       "/e2e/",
-      "<rootDir>/.stryker-tmp/"
+      "<rootDir>/.stryker-tmp/",
+      "<rootDir>/.claude/"
     ],
     "modulePathIgnorePatterns": [
       "<rootDir>/.stryker-tmp/"
