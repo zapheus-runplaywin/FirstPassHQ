@@ -5,13 +5,8 @@ name: Tests
 # tests for the app, the database tests in supabase/tests against every
 # migration, and browser smoke tests of the web build (e2e/). Every pull request adds tests for what it changes (AGENTS.md
 # "Tests").
-#
-# PAUSED until 1 November 2026 (Matt, 2026-10-21) to save Actions minutes:
-# Matt runs the tests locally instead (AGENTS.md "Tests" lists the commands).
-# It still runs by hand from the Actions tab ("Run workflow"). On 1 November
-# 2026 restore the automatic run by putting `push:` back above
-# `workflow_dispatch:`, and remove this note and the one in AGENTS.md.
 on:
+  push:
   workflow_dispatch:
 
 permissions:
@@ -41,7 +36,10 @@ jobs:
           npx tsc --noEmit
       - name: Unit tests
         if: ${{ !cancelled() }}
-        run: npx jest --ci --coverage
+        # The runner has 2 cores, so Jest would run every file in one process
+        # and run out of memory. Two workers, each replaced once it holds over
+        # 1GB (workerIdleMemoryLimit in package.json), fit in about 3 minutes.
+        run: npx jest --ci --coverage --maxWorkers=2
       # The edge functions run on Deno, which tsc doesn't check.
       - name: Typecheck the edge functions
         if: ${{ !cancelled() }}
