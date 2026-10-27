@@ -45,17 +45,17 @@
   },
   "devDependencies": {
     "@playwright/test": "1.64.1",
-    "@testing-library/react-native": "^14.1.0",
+    "@testing-library/react-native": "^13.3.3",
     "@types/aes-js": "^3.1.4",
     "@types/jest": "30.0.0",
     "@types/react": "~19.2.2",
-    "eslint": "^10.13.0",
+    "eslint": "^9.39.5",
     "eslint-config-expo": "^57.0.2",
     "fast-check": "4.10.2",
     "jest": "~30.5.2",
     "jest-expo": "~57.0.6",
     "react-test-renderer": "19.2.3",
-    "typescript": "~7.0.2"
+    "typescript": "~6.0.3"
   },
   "scripts": {
     "start": "expo start",
