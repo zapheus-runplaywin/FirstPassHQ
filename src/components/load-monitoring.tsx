@@ -285,7 +285,7 @@ function CoachLoadPanel({
             ? `Monotony ${variety.monotony} and strain ${variety.strain}, last 7 days. Shown for interest: no cut-off is proven, so they never flag.`
             : 'Monotony and strain: not enough variety in the last 7 days to work out.'}
         </ThemedText>
-        <WhyThisFlag sources={['foster1998', 'gabbett2016', 'murray2017']} label="About these numbers" />
+        <WhyThisFlag sources={['foster1998', 'gabbett2016', 'impellizzeri2020']} label="About these numbers" />
       </Card>
 
       {load.adult ? <FitnessChart logs={logs} /> : null}

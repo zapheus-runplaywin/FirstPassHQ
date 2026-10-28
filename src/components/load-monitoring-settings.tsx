@@ -72,7 +72,7 @@ export function LoadMonitoringSettings() {
           {chosen.detail}
         </ThemedText>
       ) : null}
-      <WhyThisFlag sources={['gabbett2016', 'murray2017', 'impellizzeri2020']} label="Sources" />
+      <WhyThisFlag sources={['gabbett2016', 'impellizzeri2020']} label="Sources" />
       <Card style={styles.row}>
         <View style={styles.text}>
           <ThemedText type="smallBold">Hours over age (under 18s)</ThemedText>

@@ -19,7 +19,6 @@ export type LoadSource = {
 
 export type SourceKey =
   | 'gabbett2016'
-  | 'murray2017'
   | 'jayanthi2015'
   | 'saw2016'
   | 'foster1998'
@@ -35,17 +34,7 @@ export const LOAD_SOURCES: Record<SourceKey, LoadSource> = {
     where: 'British Journal of Sports Medicine, 2016',
     url: 'https://doi.org/10.1136/bjsports-2015-095788',
     finding:
-      'Rapid rises in load, more than steady high load, went with soft-tissue injuries. A ratio of the last week’s load to the last month’s of 0.8 to 1.3 was called the “sweet spot”, and 1.5 or more the “danger zone”.',
-  },
-  murray2017: {
-    key: 'murray2017',
-    short: 'Murray et al. 2017',
-    title:
-      'Calculating acute:chronic workload ratios using exponentially weighted moving averages provides a more sensitive indicator of injury likelihood than rolling averages',
-    where: 'British Journal of Sports Medicine, 2017',
-    url: 'https://doi.org/10.1136/bjsports-2016-097152',
-    finding:
-      'Large spikes in load went with more injuries, and weighting recent days more heavily picked them up better than plain averages. The app weights the averages this way.',
+      'In adult professional cricket, Australian football and rugby league players, rapid rises in load, more than steady high load, went with soft-tissue injuries. With the last week’s load against a rolling average of the last 3 to 6 weeks, about 0.8 to 1.3 was called the “sweet spot” and 1.5 or more the “danger zone”. The paper notes different sports may differ, and nothing in it is about juniors or netball, so the app uses 1.5 only as a prompt to talk.',
   },
   jayanthi2015: {
     key: 'jayanthi2015',
@@ -54,7 +43,7 @@ export const LOAD_SOURCES: Record<SourceKey, LoadSource> = {
     where: 'American Journal of Sports Medicine, 2015',
     url: 'https://doi.org/10.1177/0363546514567298',
     finding:
-      'In 1,190 athletes aged 7 to 18, those who played more hours of sport a week than their age in years had about twice the odds of a serious overuse injury.',
+      'In a clinic-based case-control study of 1,190 athletes aged 7 to 18, those who played more hours of organised sport in a typical week than their age in years had about twice the odds of a serious overuse injury. The app adds up any one 7 days, gym and other sport included, so a single busy week can prompt a chat.',
   },
   saw2016: {
     key: 'saw2016',
@@ -64,7 +53,7 @@ export const LOAD_SOURCES: Record<SourceKey, LoadSource> = {
     where: 'British Journal of Sports Medicine, 2016',
     url: 'https://doi.org/10.1136/bjsports-2015-094758',
     finding:
-      'How athletes said they felt tracked changes in their training load better than commonly used objective measures, so check-ins and load are read together.',
+      'How athletes said they felt tracked changes in their training load better than commonly used objective measures, so check-ins and load are read together. The paper sets no threshold: 2 or more low check-ins in 7 days is the club’s own line.',
   },
   foster1998: {
     key: 'foster1998',
@@ -100,6 +89,6 @@ export const LOAD_SOURCES: Record<SourceKey, LoadSource> = {
     where: 'International Journal of Sports Physiology and Performance, 2020',
     url: 'https://doi.org/10.1123/ijspp.2019-0864',
     finding:
-      'No study has shown that changing this ratio changes injury rates, so it’s a reason to talk, not a prediction.',
+      'No study has shown that changing this ratio changes injury rates, and the authors call it an inaccurate and ambiguous measure for deciding training, so it’s a reason to talk, not a prediction or a cut-off.',
   },
 };

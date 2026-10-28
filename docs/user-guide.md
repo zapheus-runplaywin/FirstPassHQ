@@ -1028,7 +1028,8 @@ kinds of information about your child:
   how hard each felt), are seen by their coaches. When they score low,
   the club's Child Safety Officer sees the day and the lowest score, never their answers or notes.
   If the club uses Training load flags, the same consent lets their coaches see their load flags
-  and the Child Safety Officer see training load patterns, never their sessions.
+  and the Child Safety Officer see training load patterns, never their sessions. The prompt about
+  training while injured also needs consent for injuries.
 - **Injuries and health information**: their injuries, restrictions, physio updates and documents
   are seen by their coaches, the physios who look after them and the committee members cleared to
   work with children, who sign off
@@ -1402,17 +1403,22 @@ It lists your athletes under **Worth a chat** and **Talked with this week**, eac
 sessions and minutes in the last 7 days and their load ratio. Athletes under 18 show once a parent
 or guardian has given consent for check-ins. An athlete can be flagged for:
 
-- **Load jumped**: their last 7 days are well above the last 4 weeks. The app compares a 7-day and
-  a 28-day weighted average of their daily load (minutes times effort). The club chooses whether
+- **Load jumped**: their last 7 days are well above the last 4 weeks. The app divides the average
+  daily load (minutes times effort) of the last 7 days by the average of the last 28: steady
+  training is about 1.0, and a week at double their usual load is 1.6. The club chooses whether
   this flags at **1.5 or more** (the default) or **above 1.3**, or not at all. It starts only once
   they've logged sessions in each of the 3 weeks before the last 7 days, so a new athlete isn't
-  flagged for starting.
+  flagged for starting. The 1.5 figure comes from studies of adult professional athletes in other
+  sports, so for netball and for juniors it's a prompt to talk, nothing more.
 - **Hours over age**: an athlete under 18 did more hours of sport in 7 days than their age in
-  years. It needs their date of birth, and the club can switch it off.
+  years, gym and other sport included. The study behind it asked about a typical week, so one
+  busy tournament week can prompt it. It needs their date of birth, and the club can switch it off.
 - **Training while injured**: they logged a session while an injury with restrictions isn't
-  cleared. This comes from the club's own injury record, not a study.
+  cleared. This comes from the club's own injury record, not a study. For an athlete under 18 it
+  shows only once a parent has also given consent for injuries, as their injuries do.
 - **Low check-ins as well**: 2 or more check-ins scoring 2 or less in the same 7 days, added only
-  alongside another flag.
+  alongside another flag. The study behind it reads how athletes feel alongside their load; the
+  2 in 7 is the club's own line.
 
 Every flag has **Why this flag**, which opens the published study or website it rests on, with a
 link. Tap an athlete for their check-in page, where **Training load** shows their flags, the load
@@ -3739,9 +3745,10 @@ Working With Children Check, and another admin must do it.
   child's record views.
 - **Training load prompts a conversation, never a decision.** When the club turns on Training load
   flags, coaches get prompts from the sessions athletes log, each linked to the published study it
-  rests on: a jump on the last 4 weeks (Gabbett 2016), more hours of sport in a week than a
-  child's age (Jayanthi et al. 2015), training while an injury has restrictions, and low check-ins
-  alongside (Saw et al. 2016). The app says everywhere that load is self-reported, can't predict
+  rests on: a jump on the last 4 weeks (Gabbett 2016, from adult professional athletes), more
+  hours of sport in a week than a child's age (Jayanthi et al. 2015), training while an injury has
+  restrictions (only with a parent's consent for injuries), and low check-ins alongside (Saw et
+  al. 2016). The app says everywhere that load is self-reported, can't predict
   injury and must not be relied on for selection, medical or return-to-play decisions. Parents see
   that a coach checked in, and the Child Safety Officer sees children whose hours stay over their
   age, whose flags come with low check-ins, or whose flags no coach followed up within a week (see

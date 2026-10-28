@@ -63,7 +63,7 @@ create table if not exists public.load_flag_reviews (
   reviewer_name text not null,
   flags text[] not null,
   note text check (length(note) <= 500),
-  reviewed_on date not null default current_date,
+  reviewed_on date not null default ((now() at time zone 'Australia/Perth')::date),
   created_at timestamptz not null default now()
 );
 
@@ -74,9 +74,25 @@ alter table public.load_flag_reviews enable row level security;
 revoke all on table public.load_flag_reviews from public, anon, authenticated;
 grant all on table public.load_flag_reviews to service_role;
 
--- An athlete's load as of a day: the exponentially weighted 7-day (acute)
--- and 28-day (chronic) daily load, with lambda = 2 / (N + 1), over the 90
--- days before. Sessions logged for the day after (time zones) count on the
+-- Today at the club (Perth), so "the last 7 days", review dates and the
+-- Child Safety Officer's week follow the club's calendar, not UTC's.
+create or replace function public.load_today()
+returns date
+language sql
+stable
+set search_path = ''
+as $$
+  select (now() at time zone 'Australia/Perth')::date;
+$$;
+
+revoke execute on function public.load_today() from public, anon, authenticated;
+
+-- An athlete's load as of a day: the mean daily load (minutes times effort)
+-- of the last 7 days (acute) against the mean of the last 28 days, those 7
+-- included (chronic). Rolling averages are the method behind Gabbett 2016's
+-- 0.8 to 1.3 and 1.5 figures, so the ratio needs no warm-up: steady
+-- training is 1.0 from the first 4 weeks, and a week at double the usual
+-- load is 1.6. Sessions logged for the day after (time zones) count on the
 -- day. Closed to everyone; the functions below call it.
 create or replace function public.load_numbers(p_athlete uuid, p_on date)
 returns table (
@@ -87,44 +103,28 @@ returns table (
   minutes_7d int,
   sessions_7d int
 )
-language plpgsql
+language sql
 stable
 security definer
 set search_path = ''
 as $$
-declare
-  v_loads numeric[];
-  v_load numeric;
-  v_acute numeric := 0;
-  v_chronic numeric := 0;
-begin
-  select array_agg(coalesce(l.load, 0) order by g.d)
-  into v_loads
-  from generate_series(p_on - 89, p_on, interval '1 day') g(d)
-  left join (
-    select least(s.day, p_on) as day, sum(s.minutes * s.rpe)::numeric as load
+  with logs as (
+    select least(s.day, p_on) as day, s.minutes, s.minutes * s.rpe as load
     from public.session_logs s
-    where s.athlete_id = p_athlete and s.day between p_on - 89 and p_on + 1
-    group by least(s.day, p_on)
-  ) l on l.day = g.d::date;
-
-  foreach v_load in array v_loads loop
-    v_acute := v_load * (2.0 / 8) + v_acute * (1 - 2.0 / 8);
-    v_chronic := v_load * (2.0 / 29) + v_chronic * (1 - 2.0 / 29);
-  end loop;
-
-  return query
-    select round(v_acute, 1),
-      round(v_chronic, 1),
-      case when v_chronic > 0 then round(v_acute / v_chronic, 2) end,
-      (select count(distinct (p_on - s.day - 7) / 7)::int
-       from public.session_logs s
-       where s.athlete_id = p_athlete and s.day between p_on - 27 and p_on - 7),
-      (select coalesce(sum(s.minutes), 0)::int from public.session_logs s
-       where s.athlete_id = p_athlete and s.day between p_on - 6 and p_on + 1),
-      (select count(*)::int from public.session_logs s
-       where s.athlete_id = p_athlete and s.day between p_on - 6 and p_on + 1);
-end;
+    where s.athlete_id = p_athlete and s.day between p_on - 27 and p_on + 1
+  ),
+  means as (
+    select coalesce(sum(l.load) filter (where l.day > p_on - 7), 0) / 7.0 as acute,
+      coalesce(sum(l.load), 0) / 28.0 as chronic
+    from logs l
+  )
+  select round(m.acute, 1),
+    round(m.chronic, 1),
+    case when m.chronic > 0 then round(m.acute / m.chronic, 2) end,
+    (select count(distinct (p_on - l.day - 7) / 7)::int from logs l where l.day <= p_on - 7),
+    (select coalesce(sum(l.minutes), 0)::int from logs l where l.day > p_on - 7),
+    (select count(*)::int from logs l where l.day > p_on - 7)
+  from means m;
 $$;
 
 revoke execute on function public.load_numbers(uuid, date) from public, anon, authenticated;
@@ -160,6 +160,7 @@ declare
   v_setting text;
   v_hours_on boolean;
   v_dob date;
+  v_under_17 boolean;
   v_age int;
   n record;
   v_flags text[] := '{}';
@@ -181,13 +182,16 @@ begin
     v_flags := v_flags || 'ratio'::text;
   end if;
 
-  select p.date_of_birth into v_dob from public.profiles p where p.id = p_athlete;
+  select p.date_of_birth, p.under_17 into v_dob, v_under_17 from public.profiles p where p.id = p_athlete;
   v_age := extract(year from age(p_on, v_dob))::int;
   if v_hours_on and v_dob is not null and v_age < 18 and n.minutes_7d > v_age * 60 then
     v_flags := v_flags || 'hours'::text;
   end if;
 
-  if exists (
+  -- An under 18's injuries reach their coaches only with a parent's consent
+  -- for injuries (can_view_injury_details), so the prompt needs it too.
+  if (not public.is_minor(v_dob, v_under_17) or public.has_child_consent(p_athlete, 'health'))
+  and exists (
     select 1 from public.injuries i
     where i.athlete_id = p_athlete
       and i.status <> 'cleared'
@@ -225,7 +229,7 @@ security definer
 set search_path = ''
 as $$
   select r.* from public.load_flag_reviews r
-  where r.athlete_id = p_athlete and r.reviewed_on > current_date - 7
+  where r.athlete_id = p_athlete and r.reviewed_on > public.load_today() - 7
   order by r.created_at desc
   limit 1;
 $$;
@@ -241,6 +245,8 @@ stable
 security definer
 set search_path = ''
 as $$
+  -- The join only lists the athletes in this coach's groups; whether they
+  -- coach them (season, selections, checks) is coaches_athlete's rule.
   select distinct athlete.profile_id
   from public.team_members coach
   join public.team_members athlete on athlete.team_id = coach.team_id
@@ -320,8 +326,8 @@ begin
     select a.id, coalesce(public.member_display_name(a.id), 'Athlete'), f.flags,
       n.ratio, n.minutes_7d, n.sessions_7d, r.reviewed_on, r.reviewer_name
     from public.load_review_athletes() a(id)
-    cross join lateral (select public.load_flags_on(a.id, current_date) as flags) f
-    cross join lateral public.load_numbers(a.id, current_date) n
+    cross join lateral (select public.load_flags_on(a.id, public.load_today()) as flags) f
+    cross join lateral public.load_numbers(a.id, public.load_today()) n
     left join lateral (select * from public.recent_load_review(a.id)) r on true
     where cardinality(f.flags) > 0 or r.id is not null
     order by (r.id is null and cardinality(f.flags) > 0) desc, 2;
@@ -343,7 +349,7 @@ as $$
   select case when public.is_approved() and exists (select 1 from public.load_review_athletes()) then (
     select count(*)::int
     from public.load_review_athletes() a(id)
-    where cardinality(public.load_flags_on(a.id, current_date)) > 0
+    where cardinality(public.load_flags_on(a.id, public.load_today())) > 0
       and (select r.id from public.recent_load_review(a.id) r) is null
   ) end;
 $$;
@@ -385,10 +391,10 @@ begin
   v_self := p_athlete = auth.uid();
   v_coach := p_athlete in (select public.load_review_athletes());
   r := public.recent_load_review(p_athlete);
-  select * into n from public.load_numbers(p_athlete, current_date);
+  select * into n from public.load_numbers(p_athlete, public.load_today());
 
   return query select
-    case when v_self or v_coach then public.load_flags_on(p_athlete, current_date) end,
+    case when v_self or v_coach then public.load_flags_on(p_athlete, public.load_today()) end,
     case when v_self or v_coach then n.ratio end,
     case when v_self or v_coach then n.weeks_before end,
     r.reviewed_on,
@@ -419,7 +425,7 @@ begin
   if length(trim(coalesce(p_note, ''))) > 500 then
     raise exception 'Keep the note to 500 characters';
   end if;
-  v_flags := public.load_flags_on(p_athlete, current_date);
+  v_flags := public.load_flags_on(p_athlete, public.load_today());
   if cardinality(v_flags) = 0 then
     raise exception 'There''s no training load flag to close';
   end if;
@@ -449,28 +455,28 @@ as $$
       and (p.role = 'athlete' or 'athlete' = any (p.extra_roles))
       and public.is_minor(p.date_of_birth, p.under_17)
       and public.has_child_consent(p.id, 'data')
-      and exists (select 1 from public.session_logs s where s.athlete_id = p.id and s.day > current_date - 15)
+      and exists (select 1 from public.session_logs s where s.athlete_id = p.id and s.day > public.load_today() - 15)
   ),
   flagged as (
     select c.id,
-      public.load_flags_on(c.id, current_date) as now_flags,
-      public.load_flags_on(c.id, current_date - 7) as week_ago
+      public.load_flags_on(c.id, public.load_today()) as now_flags,
+      public.load_flags_on(c.id, public.load_today() - 7) as week_ago
     from children c
   )
   select f.id, coalesce(public.member_display_name(f.id), 'Athlete'), x.pattern, x.since
   from flagged f
   cross join lateral (
-    select 'hours_2_weeks'::text as pattern, current_date - 7 as since
+    select 'hours_2_weeks'::text as pattern, public.load_today() - 7 as since
     where 'hours' = any (f.now_flags) and 'hours' = any (f.week_ago)
     union all
-    select 'with_wellbeing', current_date
+    select 'with_wellbeing', public.load_today()
     where 'wellbeing' = any (f.now_flags)
     union all
-    select 'not_followed_up', current_date - 7
+    select 'not_followed_up', public.load_today() - 7
     where cardinality(f.week_ago) > 0
       and not exists (
         select 1 from public.load_flag_reviews r
-        where r.athlete_id = f.id and r.reviewed_on >= current_date - 7
+        where r.athlete_id = f.id and r.reviewed_on >= public.load_today() - 7
       )
   ) x;
 $$;

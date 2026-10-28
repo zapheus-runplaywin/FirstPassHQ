@@ -25,7 +25,8 @@ export const RATIO_CHOICES: { value: RatioChoice; label: string; detail: string 
   {
     value: 'above_1_3',
     label: 'Above 1.3',
-    detail: 'Above Gabbett 2016’s 0.8 to 1.3 “sweet spot”. Earlier, more frequent prompts.',
+    detail:
+      'Above the top of Gabbett 2016’s 0.8 to 1.3 “sweet spot”, a range from adult professional athletes that the paper says may differ by sport. Earlier, more frequent and noisier prompts.',
   },
   { value: 'off', label: 'Off', detail: 'No prompts for a rise in load.' },
 ];
@@ -84,7 +85,7 @@ export const FLAG_WORDS: Record<LoadFlag, FlagWords> = {
     coach: 'Load jumped: the last 7 days are well above the last 4 weeks',
     athlete: 'Your training this week is well up on the last few weeks',
     parent: 'their training was well up on the weeks before',
-    sources: ['gabbett2016', 'murray2017', 'impellizzeri2020'],
+    sources: ['gabbett2016', 'impellizzeri2020'],
   },
   hours: {
     coach: 'More hours of sport in 7 days than their age in years',

@@ -17,7 +17,7 @@ import CheckInsScreen from '@/app/check-ins/index';
 import TrainingLoadScreen from '@/app/check-ins/load';
 import ConcernsScreen from '@/app/concerns/index';
 import LoadPatternsScreen from '@/app/concerns/load';
-import type { AthleteLoad, CoachLoadRow, LoadPatternRow } from '@/lib/load-monitoring';
+import { RATIO_CHOICES, type AthleteLoad, type CoachLoadRow, type LoadPatternRow } from '@/lib/load-monitoring';
 import { LOAD_SOURCES } from '@/lib/load-sources';
 import type { SessionLog } from '@/lib/types';
 
@@ -404,7 +404,7 @@ describe('Club settings: training load flags', () => {
     expect(screen.getByText('Save training load flags')).toBeTruthy();
     expect(screen.getByText('Gabbett 2016’s “danger zone”. Fewer, clearer prompts. The default.')).toBeTruthy();
     await press('Above 1.3');
-    expect(screen.getByText('Above Gabbett 2016’s 0.8 to 1.3 “sweet spot”. Earlier, more frequent prompts.')).toBeTruthy();
+    expect(screen.getByText(RATIO_CHOICES[1].detail)).toBeTruthy();
     fireEvent(screen.getByLabelText('Hours over age (under 18s)'), 'valueChange', false);
     await press('Save training load flags');
     expect(argsOf('admin_set_load_monitoring')).toEqual([{ p_ratio_flag: 'above_1_3', p_hours_flag: false }]);

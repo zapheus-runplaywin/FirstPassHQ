@@ -55,7 +55,7 @@ describe('sources', () => {
   });
 
   it('rests every science flag on a published source; the injury flag on the club’s record', () => {
-    expect(FLAG_WORDS.ratio.sources).toEqual(['gabbett2016', 'murray2017', 'impellizzeri2020']);
+    expect(FLAG_WORDS.ratio.sources).toEqual(['gabbett2016', 'impellizzeri2020']);
     expect(FLAG_WORDS.hours.sources).toEqual(['jayanthi2015']);
     expect(FLAG_WORDS.wellbeing.sources).toEqual(['saw2016']);
     expect(FLAG_WORDS.injury.sources).toEqual([]);
@@ -65,7 +65,6 @@ describe('sources', () => {
     expect(sourcesFor(['hours', 'ratio', 'wellbeing', 'hours'])).toEqual([
       'jayanthi2015',
       'gabbett2016',
-      'murray2017',
       'impellizzeri2020',
       'saw2016',
     ]);
