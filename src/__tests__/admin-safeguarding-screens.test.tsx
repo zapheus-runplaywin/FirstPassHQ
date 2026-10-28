@@ -21,7 +21,7 @@ import type { ConductStatus } from '@/lib/conduct';
 import { supabase } from '@/lib/supabase';
 import type { Profile, VolunteerExemption } from '@/lib/types';
 
-import { openScreen, refreshControl, personas, resetClub, settle } from './helpers/harness';
+import { openScreen, personas, pressWithoutWaiting, refreshControl, resetClub, settle } from './helpers/harness';
 import { fieldGroup, flip, input, isDisabled, isOn, isSelected, pickPerson, type } from './helpers/settings-forms';
 
 jest.mock('@/lib/club', () => jest.requireActual('./helpers/harness').clubModuleMock());
@@ -354,7 +354,7 @@ describe('Safeguarding settings', () => {
         ? new Promise((resolve) => held.push(() => resolve(answer(name, args))))
         : answer(name, args),
     );
-    await fireEvent.press(screen.getByText('Save'));
+    const saving = await pressWithoutWaiting(screen.getByText('Save'));
     await settle();
     expect(callsTo('admin_set_wwc_officer')).toHaveLength(1);
     expect(screen.queryByText('Save')).toBeNull();
@@ -362,7 +362,10 @@ describe('Safeguarding settings', () => {
     await settle();
     expect(callsTo('admin_set_committee_checks_from')).toHaveLength(1);
     expect(screen.queryByText('Save')).toBeNull();
-    await act(async () => held.shift()!());
+    await act(async () => {
+      held.shift()!();
+      await saving.done;
+    });
     await settle();
     expect(callsTo('admin_set_wwc_officer')).toHaveLength(1);
     expect(callsTo('admin_set_committee_checks_from')).toHaveLength(1);

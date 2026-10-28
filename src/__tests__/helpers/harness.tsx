@@ -13,8 +13,9 @@
  */
 import type { Session } from '@supabase/supabase-js';
 import type { ComponentType, ReactNode } from 'react';
+import type { TestInstance } from 'test-renderer';
 import { Text } from 'react-native';
-import { Stack } from 'expo-router';
+import { router, Stack } from 'expo-router';
 import { act, renderRouter, screen } from 'expo-router/testing-library';
 
 import { roleCombinationProblem } from '@/lib/roles';
@@ -709,8 +710,38 @@ export async function openScreen(
 ) {
   jest.useFakeTimers({ now: TODAY });
   signInAs(typeof who === 'string' ? personas[who] : who, tables, options);
-  await renderRouter({ _layout: ScreenTestLayout, ...screens }, { initialUrl: url });
+  await keepingRouterSpies(() => renderRouter({ _layout: ScreenTestLayout, ...screens }, { initialUrl: url }));
   await settle();
+}
+
+/**
+ * Renders, keeping any jest spies already on the imperative `router`. Since
+ * SDK 58 the router binds its methods in place when a screen first renders,
+ * which would otherwise replace a spy a test set up beforehand.
+ */
+async function keepingRouterSpies(renderIt: () => Promise<unknown>) {
+  const spies = Object.entries(router).filter(([, fn]) => jest.isMockFunction(fn));
+  await renderIt();
+  Object.assign(router, Object.fromEntries(spies));
+}
+
+/**
+ * Presses an element without waiting for its handler to finish, for a test
+ * that holds the backend's answer to look at the screen meanwhile.
+ * fireEvent.press only returns once an async handler has finished, so with a
+ * held answer it would never return. `done` settles when the handler does.
+ */
+export async function pressWithoutWaiting(element: TestInstance) {
+  type Fiber = { memoizedProps?: { onPress?: unknown }; return: Fiber | null };
+  let fiber = element.unstable_fiber as Fiber | null;
+  while (fiber && typeof fiber.memoizedProps?.onPress !== 'function') fiber = fiber.return;
+  if (!fiber) throw new Error('Nothing to press there');
+  const onPress = fiber.memoizedProps!.onPress as (event: unknown) => unknown;
+  let pending: unknown;
+  await act(async () => {
+    pending = onPress({ nativeEvent: {} });
+  });
+  return { done: Promise.resolve(pending) };
 }
 
 /** Lets pending loads and effects finish. */
@@ -790,10 +821,10 @@ export const MEMBER_ROUTES = ROUTES.filter(
 let everyScreenAPlaceholder: ReturnType<typeof placeholderScreens> | null = null;
 
 export async function openRoute(who: PersonaName, url: string) {
-  everyScreenAPlaceholder ??= placeholderScreens();
+  const overrides = (everyScreenAPlaceholder ??= placeholderScreens());
   jest.useFakeTimers({ now: TODAY });
   signInAs(personas[who]);
-  await renderRouter({ appDir: 'src/app', overrides: everyScreenAPlaceholder }, { initialUrl: url });
+  await keepingRouterSpies(() => renderRouter({ appDir: 'src/app', overrides }, { initialUrl: url }));
   // Let the session and the member's rows load (the layout shows nothing until then).
   for (let i = 0; i < 5; i++) {
     await act(async () => {
@@ -802,11 +833,14 @@ export async function openRoute(who: PersonaName, url: string) {
   }
 }
 
-/** The screen's pull-to-refresh control: the one element with an onRefresh. */
-export function refreshControl() {
-  const found = screen.container.queryAll((n) => typeof n.props.onRefresh === 'function');
+/**
+ * The screen's pull-to-refresh control. It is a prop of the scroll view, not
+ * an element of its own, so this is the control as the screen passed it.
+ */
+export function refreshControl(): { props: { onRefresh(): void; refreshing: boolean } } {
+  const found = screen.container.queryAll((n) => n.props.refreshControl != null);
   expect(found).toHaveLength(1);
-  return found[0];
+  return found[0].props.refreshControl;
 }
 
 /** The route whose placeholder is showing. */

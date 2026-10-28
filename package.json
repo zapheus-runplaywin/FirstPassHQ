@@ -76,6 +76,9 @@
     "setupFiles": [
       "<rootDir>/jest.setup.ts"
     ],
+    "setupFilesAfterEnv": [
+      "<rootDir>/jest.after-env.ts"
+    ],
     "testPathIgnorePatterns": [
       "/node_modules/",
       "/supabase/(?!functions/[^/]+/__tests__/)",

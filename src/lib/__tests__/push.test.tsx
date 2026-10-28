@@ -154,7 +154,7 @@ describe('tapping a notification', () => {
     const remove = jest.fn();
     N.addNotificationResponseReceivedListener.mockReturnValueOnce({ remove });
     const { unmount } = await renderHook(() => useAdminPushNotifications(true));
-    unmount();
+    await unmount();
     expect(remove).toHaveBeenCalled();
   });
 });

@@ -247,7 +247,7 @@ describe('adding and changing training', () => {
     await type('Course', 'Safeguarding in Sport');
     await type('Details (optional)', 'About 90 minutes');
     await type('Course link (optional)', 'https://elearning.example');
-    pickDay(2026, 9, 30);
+    await pickDay(2026, 9, 30);
     await fireEvent.press(screen.getAllByText('Add training').at(-1)!);
     await settle();
     expect(callsTo('admin_save_training_requirement')).toEqual([
@@ -268,7 +268,7 @@ describe('adding and changing training', () => {
   it('offers only the season’s squads and teams, squads first, and saves the chosen ones and roles', async () => {
     await openTrainingForm('/admin/training/edit?season=2026');
     await type('Course', 'Junior course');
-    pickDay(2026, 9, 30);
+    await pickDay(2026, 9, 30);
     await fireEvent.press(screen.getByText('Coaches'));
     await fireEvent.press(screen.getByText('Guardians'));
     await flip('All squads and teams', false);
@@ -411,7 +411,7 @@ describe('Season KPI reviews', () => {
     expect(isDisabled('Add review date')).toBe(true);
     await type('Review', 'Mid-season review');
     expect(isDisabled('Add review date')).toBe(true);
-    pickDay(2026, 9, 31);
+    await pickDay(2026, 9, 31);
     expect(isDisabled('Add review date')).toBe(false);
     rpc().mockClear();
     await fireEvent.press(screen.getByText('Add review date'));
@@ -470,7 +470,7 @@ describe('Season KPI reviews', () => {
     expect(callsTo('kpi_review_points').at(-1)).toEqual({ p_season: 2025 });
     await fireEvent.press(screen.getByText('Add a review date'));
     await type('Review', 'Wrap-up');
-    pickDay(2026, 9, 20);
+    await pickDay(2026, 9, 20);
     await fireEvent.press(screen.getByText('Add review date'));
     await settle();
     expect(callsTo('admin_save_kpi_review_point')[0]).toMatchObject({ p_season: 2025 });

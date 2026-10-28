@@ -49,9 +49,14 @@ describe('useClubPolicies', () => {
       code_of_conduct_url: null,
       policy_version: '2026-1',
     };
-    answer(policies);
+    // The answer waits until the loading state has been checked: render now
+    // finishes every update it can before handing back.
+    let reply!: (value: unknown) => void;
+    const maybeSingle = jest.fn(() => new Promise((resolve) => (reply = resolve)));
+    rpc.mockReset().mockReturnValue({ maybeSingle } as never);
     const { result } = await renderHook(() => useClubPolicies());
     expect(result.current).toBeNull();
+    await act(async () => reply({ data: policies, error: null }));
     await waitFor(() => expect(result.current).toEqual(policies));
     expect(rpc).toHaveBeenCalledWith('club_policies');
   });
@@ -68,8 +73,8 @@ describe('useClubPolicies', () => {
     answer(null);
     const { rerender } = await renderHook(() => useClubPolicies());
     await act(async () => {});
-    rerender({});
-    rerender({});
+    await rerender({});
+    await rerender({});
     expect(rpc).toHaveBeenCalledTimes(1);
   });
 });

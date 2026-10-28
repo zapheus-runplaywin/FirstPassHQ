@@ -265,12 +265,12 @@ describe('loading the member', () => {
     expect(supabase.auth.getSession).not.toHaveBeenCalled();
 
     jest.mocked(useClubChoice).mockReturnValue(choice('thunder'));
-    rerender({});
+    await rerender({});
     await waitFor(() => expect(result.current.profile?.role).toBe('athlete'));
     expect(supabase.auth.onAuthStateChange).toHaveBeenCalledTimes(1);
 
     jest.mocked(useClubChoice).mockReturnValue(choice('warriors'));
-    rerender({});
+    await rerender({});
     await act(async () => {});
     expect(unsubscribe).toHaveBeenCalledTimes(1);
     expect(supabase.auth.onAuthStateChange).toHaveBeenCalledTimes(2);
@@ -325,6 +325,16 @@ describe('loading the member', () => {
       exemption: exemption(),
       committeeChecksFrom: '2027-01-11',
     };
+    // The session waits until the loading state has been checked: render now
+    // finishes every update it can before handing back.
+    const getSession = supabase.auth.getSession as jest.Mock;
+    const signedIn = getSession.getMockImplementation()!;
+    let release!: () => void;
+    const held = new Promise<void>((resolve) => (release = resolve));
+    getSession.mockImplementationOnce(async () => {
+      await held;
+      return signedIn();
+    });
     const { result } = await renderHook(() => useAuth(), { wrapper });
     expect(result.current.loading).toBe(true);
     // The club's default, the whole committee, until the member loads.
@@ -336,6 +346,7 @@ describe('loading the member', () => {
     expect(result.current.isSafeguardingOfficer).toBe(false);
     expect(result.current.exemption).toBeNull();
     expect(result.current.committeeChecksFrom).toBeNull();
+    await act(async () => release());
     await waitFor(() => expect(result.current.loading).toBe(false));
   });
 
@@ -426,7 +437,7 @@ describe('loading the member', () => {
 
   it('stops listening for sign-ins when it unmounts', async () => {
     const { unmount } = await signIn({ profile: profile('coach') });
-    unmount();
+    await unmount();
     expect(unsubscribe).toHaveBeenCalled();
   });
 

@@ -45,9 +45,13 @@ beforeEach(() => {
 
 it('loads the acceptances an approved member owes', async () => {
   const owed = [todo(), todo({ profile_id: 'me', full_name: 'Sam Sample', for_child: false })];
-  answers(owed);
+  // The answer waits until the empty list has been checked: render now
+  // finishes every update it can before handing back.
+  let reply!: (value: unknown) => void;
+  rpc.mockReset().mockReturnValueOnce(new Promise((resolve) => (reply = resolve)) as never);
   const { result } = await renderHook(() => useConductTodos());
   expect(result.current.conductTodos).toEqual([]);
+  await act(async () => reply({ data: owed, error: null }));
   await waitFor(() => expect(result.current.conductTodos).toEqual(owed));
   expect(rpc).toHaveBeenCalledWith('my_conduct_todos');
 });
@@ -81,7 +85,7 @@ it('loads once the member is approved', async () => {
   await act(async () => {});
   expect(rpc).not.toHaveBeenCalled();
   mockStatus = 'approved';
-  rerender({});
+  await rerender({});
   await waitFor(() => expect(result.current.conductTodos).toEqual([todo()]));
 });
 

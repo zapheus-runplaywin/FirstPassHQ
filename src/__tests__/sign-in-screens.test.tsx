@@ -9,7 +9,7 @@
  * connect to: an unknown code connects to nothing.
  */
 import { Stack } from 'expo-router';
-import { fireEvent, renderRouter, screen } from 'expo-router/testing-library';
+import { act, fireEvent, renderRouter, screen } from 'expo-router/testing-library';
 import { Text } from 'react-native';
 
 import AuthCallback from '@/app/auth-callback';
@@ -20,7 +20,7 @@ import { signInWithGoogle } from '@/lib/sign-in';
 import { connectToClub } from '@/lib/supabase';
 
 import { isDisabled, type } from './helpers/forms';
-import { settle } from './helpers/harness';
+import { pressWithoutWaiting, settle } from './helpers/harness';
 
 jest.mock('@/lib/club', () => jest.requireActual('./helpers/harness').clubModuleMock());
 jest.mock('@/constants/club', () => jest.requireActual('./helpers/harness').constantsClubMock());
@@ -159,7 +159,7 @@ describe('signing in', () => {
     let finish: () => void = () => {};
     google.mockImplementation(() => new Promise<void>((r) => (finish = r)));
     await open('/sign-in', { 'club-code': 'THUNDER' });
-    await fireEvent.press(screen.getByText('Continue with Google'));
+    const pressing = await pressWithoutWaiting(screen.getByText('Continue with Google'));
     await settle();
     // A spinner replaces the words, and the button is disabled.
     expect(screen.queryByText('Continue with Google')).toBeNull();
@@ -167,7 +167,10 @@ describe('signing in', () => {
     expect(button.props.accessibilityState?.disabled ?? button.props.disabled).toBe(true);
     await fireEvent.press(button);
     await settle();
-    finish();
+    await act(async () => {
+      finish();
+      await pressing.done;
+    });
     await settle();
     expect(google).toHaveBeenCalledTimes(1);
     expect(screen.getByText('Continue with Google')).toBeTruthy();

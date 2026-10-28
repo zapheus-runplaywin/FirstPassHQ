@@ -64,7 +64,8 @@ function values() {
 }
 
 async function layOut(width = 332) {
-  await fireEvent(screen.getByText(/^Averages out of 5/).parent!.parent!, 'layout', {
+  // The note's parent is the View whose onLayout sizes the charts.
+  await fireEvent(screen.getByText(/^Averages out of 5/).parent!, 'layout', {
     nativeEvent: { layout: { width, height: 600 } },
   });
 }

@@ -1,11 +1,6 @@
 {
-  "_about": "High or critical npm advisories with no fixed release yet. scripts/check-cves.py lets these through and fails on any other. Remove an entry as soon as a fix ships. Checked 2026-10-23.",
+  "_about": "High or critical npm advisories with no fixed release yet. scripts/check-cves.py lets these through and fails on any other. Remove an entry as soon as a fix ships. Checked 2026-10-28.",
   "advisories": [
-    {
-      "id": "GHSA-86w9-cpqp-85rv",
-      "package": "node-forge <=1.4.0",
-      "reason": "No fixed release (1.4.0 is the latest). Comes in through @expo/code-signing-certificates in the Expo CLI and expo-updates' build tooling, used when signing updates at build time; it isn't in the app on phones."
-    },
     {
       "id": "GHSA-mrhx-c7xc-m3w5",
       "package": "zod <4.6.6",

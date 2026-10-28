@@ -126,7 +126,7 @@ describe('useWellbeingFlagAlerts', () => {
       initialProps: { on: true },
     });
     await waitFor(() => expect(result.current.repeated).toBe(3));
-    rerender({ on: false });
+    await rerender({ on: false });
     expect(result.current).toEqual({ isOfficer: false, repeated: 0 });
   });
 
@@ -136,7 +136,7 @@ describe('useWellbeingFlagAlerts', () => {
       initialProps: { on: false },
     });
     expect(rpc).not.toHaveBeenCalled();
-    rerender({ on: true });
+    await rerender({ on: true });
     await waitFor(() => expect(result.current).toEqual({ isOfficer: true, repeated: 1 }));
   });
 });
