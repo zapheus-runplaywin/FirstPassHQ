@@ -1,9 +1,7 @@
 # Dependabot opens pull requests for newer npm packages and GitHub Actions once a
 # month, grouped so one PR covers a batch (Actions minutes are limited), and a
-# security PR as soon as an advisory has a fix. Each package PR runs the
-# Security audit workflow; run lint, typecheck, `npm test` and the SQL tests on
-# it before merging, as for any other PR (the Tests workflow is manual until
-# 1 November 2026).
+# security PR as soon as an advisory has a fix. Each package PR runs the Tests
+# and Security audit workflows, as any other PR does; don't merge one that is red.
 #
 # Not covered here: the Supabase CLI `version:` pins in the workflows are inputs,
 # not packages, so Dependabot can't see them. Keep bumping those by hand (see
@@ -53,6 +51,11 @@ updates:
         update-types: ["version-update:semver-major", "version-update:semver-minor"]
       - dependency-name: "@react-native-*/*"
         update-types: ["version-update:semver-major", "version-update:semver-minor"]
+      # ESLint 10 broke main in October 2026 (#189) and was rolled back: the
+      # plugins in eslint-config-expo (eslint-plugin-react) don't support it.
+      # Lift this when eslint-config-expo does.
+      - dependency-name: "eslint"
+        update-types: ["version-update:semver-major"]
   - package-ecosystem: github-actions
     directory: /
     schedule:
