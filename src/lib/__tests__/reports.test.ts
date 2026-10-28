@@ -54,7 +54,11 @@ jest.mock('expo-file-system', () => {
     constructor(dir: string, name: string) {
       this.uri = `${dir}/${name}`;
     }
-    write(bytes: Uint8Array) {
+    static failWrites = false;
+    // Like SDK 58's File.write(), the file is only there once the promise settles.
+    async write(bytes: Uint8Array) {
+      await Promise.resolve();
+      if (MockFile.failWrites) throw new Error('disk full');
       MockFile.written.push({ uri: this.uri, bytes });
     }
   }
@@ -141,10 +145,12 @@ describe('helpers', () => {
   });
 
   describe('sharePdf', () => {
-    const written = (File as unknown as { written: { uri: string; bytes: Uint8Array }[] }).written;
+    const MockFile = File as unknown as { written: { uri: string; bytes: Uint8Array }[]; failWrites: boolean };
+    const written = MockFile.written;
 
     beforeEach(() => {
       written.length = 0;
+      MockFile.failWrites = false;
       (Sharing.shareAsync as jest.Mock).mockClear();
     });
 
@@ -157,6 +163,21 @@ describe('helpers', () => {
         UTI: 'com.adobe.pdf',
         dialogTitle: 'sample-report.pdf',
       });
+    });
+
+    it('opens the share sheet only once the file has finished writing', async () => {
+      let writtenWhenShared = -1;
+      (Sharing.shareAsync as jest.Mock).mockImplementationOnce(async () => {
+        writtenWhenShared = written.length;
+      });
+      await sharePdf('sample-report.pdf', new Uint8Array([1]));
+      expect(writtenWhenShared).toBe(1);
+    });
+
+    it('doesn’t open the share sheet when the file can’t be written', async () => {
+      MockFile.failWrites = true;
+      await expect(sharePdf('sample-report.pdf', new Uint8Array([1]))).rejects.toThrow('disk full');
+      expect(Sharing.shareAsync).not.toHaveBeenCalled();
     });
 
     it('on the web, downloads it instead', async () => {

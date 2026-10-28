@@ -14,6 +14,7 @@ import {
   ScrollView,
   StyleSheet,
   TextInput,
+  type ScrollViewInstance,
 } from 'react-native';
 import { useFocusEffect, useIsFocused } from 'expo-router';
 import { SafeAreaView } from 'react-native-safe-area-context';
@@ -56,7 +57,7 @@ export function Screen({
   /** Children (by position) that stay pinned to the top while scrolling past them. */
   stickyHeaderIndices?: number[];
 }) {
-  const scrollRef = useRef<ScrollView>(null);
+  const scrollRef = useRef<ScrollViewInstance>(null);
   // Screens stay mounted underneath the one on top, and keyboard events reach
   // every one of them. Only the screen being looked at reacts, or a hidden
   // screen can be scrolled out of place by typing on another one.
@@ -76,12 +77,7 @@ export function Screen({
 
   const revealFocusedInput = useCallback(() => {
     const input = TextInput.State.currentlyFocusedInput();
-    // getInnerViewRef is missing from React Native's legacy type definitions.
-    const content = (
-      scrollRef.current as unknown as {
-        getInnerViewRef(): Parameters<TextInput['measureLayout']>[0];
-      } | null
-    )?.getInnerViewRef();
+    const content = scrollRef.current?.getInnerViewRef();
     if (!input || !content) return;
     input.measureLayout(content, (_x, y) => {
       scrollRef.current?.scrollTo({ y: Math.max(0, y - FOCUS_MARGIN), animated: true });

@@ -84,7 +84,7 @@ export async function sharePdf(fileName: string, bytes: Uint8Array) {
     return;
   }
   const file = new File(Paths.cache, fileName);
-  file.write(bytes);
+  await file.write(bytes);
   await Sharing.shareAsync(file.uri, {
     mimeType: 'application/pdf',
     UTI: 'com.adobe.pdf',

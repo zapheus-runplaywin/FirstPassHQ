@@ -327,7 +327,7 @@ export async function shareCsv(fileName: string, csv: string) {
     return;
   }
   const file = new File(Paths.cache, fileName);
-  file.write(csv);
+  await file.write(csv);
   await Sharing.shareAsync(file.uri, {
     mimeType: 'text/csv',
     UTI: 'public.comma-separated-values-text',
