@@ -169,7 +169,7 @@ function namesUnder(heading: string) {
     'Not approved',
   ];
   const texts = screen
-    .UNSAFE_root.findAll((n) => typeof n.type === 'string' && typeof n.props.children === 'string')
+    .container.queryAll((n) => typeof n.type === 'string' && typeof n.props.children === 'string')
     .map((n) => n.props.children as string);
   const start = texts.indexOf(heading);
   if (start < 0) return null;
@@ -267,7 +267,7 @@ describe('the Members list', () => {
   it('opens a member’s page', async () => {
     const push = jest.spyOn(router, 'push').mockImplementation(() => {});
     await openMembers();
-    fireEvent.press(screen.getByText('Casey Coach'));
+    await fireEvent.press(screen.getByText('Casey Coach'));
     expect(push).toHaveBeenCalledWith({ pathname: '/admin/[id]', params: { id: 'm-coach' } });
     push.mockRestore();
   });

@@ -355,15 +355,15 @@ describe.each(CASES)('%s', (_name, who, opens) => {
     mockClub.features = features();
   });
 
-  it.each(KEYS)('%s', (key) => {
-    const { result } = renderHook(() => useRouteAccess());
+  it.each(KEYS)('%s', async (key) => {
+    const { result } = await renderHook(() => useRouteAccess());
     expect(result.current[key]).toBe(opens.includes(key));
   });
 });
 
-it('every case names real keys', () => {
+it('every case names real keys', async () => {
   for (const [, , opens] of CASES) for (const key of opens) expect(KEYS).toContain(key);
-  const { result } = renderHook(() => {
+  const { result } = await renderHook(() => {
     mockAuth = auth(null);
     return useRouteAccess();
   });
@@ -371,10 +371,10 @@ it('every case names real keys', () => {
 });
 
 describe('feature switches', () => {
-  it('Season KPIs off closes them for everyone', () => {
+  it('Season KPIs off closes them for everyone', async () => {
     mockAuth = auth(profile('admin'));
     mockClub.features = features({ kpis: false });
-    const { result } = renderHook(() => useRouteAccess());
+    const { result } = await renderHook(() => useRouteAccess());
     expect(result.current.kpis).toBe(false);
     expect(result.current.setKpis).toBe(false);
   });
@@ -383,23 +383,23 @@ describe('feature switches', () => {
     ['an admin', auth(profile('admin'))],
     ['the committee', auth(profile('committee'))],
     ['a coach', auth(profile('coach'), { memberships: [member('coach')] })],
-  ])('Policy and conflict registers off closes them for %s', (_name, who) => {
+  ])('Policy and conflict registers off closes them for %s', async (_name, who) => {
     mockAuth = who;
     mockClub.features = features({ registers: false });
-    const { result } = renderHook(() => useRouteAccess());
+    const { result } = await renderHook(() => useRouteAccess());
     expect(result.current.registers).toBe(false);
     expect(result.current.editRegisters).toBe(false);
     expect(result.current.reviewPolicy).toBe(false);
     expect(result.current.declareConflicts).toBe(false);
   });
 
-  it('captains’ polls off: a captain can’t send polls but keeps their polls’ results', () => {
+  it('captains’ polls off: a captain can’t send polls but keeps their polls’ results', async () => {
     mockAuth = auth(profile('athlete'), {
       memberships: [member('athlete')],
       captaincies: [captainOf(TEAM)],
     });
     mockClub.features = features({ captainPolls: false });
-    const { result } = renderHook(() => useRouteAccess());
+    const { result } = await renderHook(() => useRouteAccess());
     expect(result.current.sendSurveys).toBe(false);
     expect(result.current.surveyResults).toBe(true);
     expect(result.current.answerSurveys).toBe(true);

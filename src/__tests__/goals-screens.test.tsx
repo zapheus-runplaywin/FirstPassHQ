@@ -13,7 +13,7 @@
  * features for children").
  */
 import { fireEvent, screen } from 'expo-router/testing-library';
-import { Text, TextInput } from 'react-native';
+import { Text } from 'react-native';
 
 import AthleteGoalsScreen from '@/app/goals/athlete/[id]';
 import GameGoalsScreen from '@/app/goals/game';
@@ -63,12 +63,12 @@ beforeEach(() => {
 });
 
 const press = async (text: string | RegExp, index = 0) => {
-  fireEvent.press(screen.getAllByText(text)[index]);
+  await fireEvent.press(screen.getAllByText(text)[index]);
   await settle(6);
 };
 
 const type = async (placeholder: string, value: string, index = 0) => {
-  fireEvent.changeText(screen.getAllByPlaceholderText(placeholder)[index], value);
+  await fireEvent.changeText(screen.getAllByPlaceholderText(placeholder)[index], value);
   await settle(2);
 };
 
@@ -226,7 +226,7 @@ describe('one game’s goals before the game', () => {
     expect(screen.getByText('Goal 2 · set by Coach Sample coach')).toBeTruthy();
     expect(screen.getAllByText('Edit')).toHaveLength(1);
     await press('Edit');
-    fireEvent.changeText(screen.getByDisplayValue('Win 3 centre pass receives'), 'Win 4 receives');
+    await fireEvent.changeText(screen.getByDisplayValue('Win 3 centre pass receives'), 'Win 4 receives');
     await press('Save');
     expect(onlyRpcCall('save_game_goal')).toEqual({
       p_goal_id: 'g1',
@@ -249,7 +249,7 @@ describe('one game’s goals before the game', () => {
   it('puts a goal back as it was on Cancel', async () => {
     await openGame('athlete', { goals: [goal()] });
     await press('Edit');
-    fireEvent.changeText(screen.getByDisplayValue('Win 3 centre pass receives'), 'Changed');
+    await fireEvent.changeText(screen.getByDisplayValue('Win 3 centre pass receives'), 'Changed');
     await press('Cancel');
     expect(screen.getByText('Win 3 centre pass receives')).toBeTruthy();
     expect(rpcCalls('save_game_goal')).toEqual([]);
@@ -286,7 +286,7 @@ describe('one game’s goals before the game', () => {
     expect(screen.getByText('Win 3 centre pass receives')).toBeTruthy();
     expect(screen.queryByText('Edit')).toBeNull();
     expect(screen.queryByText('Add goal')).toBeNull();
-    expect(screen.UNSAFE_queryAllByType(TextInput)).toHaveLength(0);
+    expect(screen.container.queryAll((n) => n.type === 'TextInput')).toHaveLength(0);
   });
 
   it('says a game being played is closed, with no way to change anything', async () => {
@@ -384,7 +384,7 @@ describe('one game’s goals after the game', () => {
     expect(screen.getByText('Great work')).toBeTruthy();
     expect(screen.queryByText('Comment on this goal')).toBeNull();
     expect(screen.queryByText('Save reflection')).toBeNull();
-    expect(screen.UNSAFE_queryAllByType(TextInput)).toHaveLength(0);
+    expect(screen.container.queryAll((n) => n.type === 'TextInput')).toHaveLength(0);
   });
 
   it('says when no goals were set', async () => {
@@ -681,7 +681,7 @@ describe('a coach’s team goals', () => {
     await openTeam('coach', { goals: [teamGoal()] });
     expect(screen.getByText('Team goal 1 · set by Coach Sample coach')).toBeTruthy();
     await press('Edit');
-    fireEvent.changeText(screen.getByDisplayValue('Win the third quarter'), 'Win the last quarter');
+    await fireEvent.changeText(screen.getByDisplayValue('Win the third quarter'), 'Win the last quarter');
     await press('Save');
     expect(onlyRpcCall('save_team_game_goal')).toEqual({ p_goal_id: 'tg1', p_fixture_id: 'fx1', p_body: 'Win the last quarter' });
   });

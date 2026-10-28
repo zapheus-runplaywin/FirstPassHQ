@@ -102,8 +102,8 @@ const CASES: [string, typeof mockAuth, boolean][] = [
   ['a guardian with a check', { profile: profile('guardian'), isAdmin: false, exemption: null, wwccApplication: null }, false],
 ];
 
-it.each(CASES)('%s', (_name, who, reads) => {
+it.each(CASES)('%s', async (_name, who, reads) => {
   mockAuth = who;
-  const { result } = renderHook(() => useCanReadReports());
+  const { result } = await renderHook(() => useCanReadReports());
   expect(result.current).toBe(reads);
 });

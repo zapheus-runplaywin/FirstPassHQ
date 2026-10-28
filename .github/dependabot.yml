@@ -29,7 +29,13 @@ updates:
       # matching its SDK (`npx expo-doctor` fails and native builds can break).
       - dependency-name: "react"
       - dependency-name: "react-dom"
-      - dependency-name: "react-test-renderer"
+      # test-renderer's 1.x line follows React's minor version (1.3 for React 19.3).
+      - dependency-name: "test-renderer"
+        update-types: ["version-update:semver-minor"]
+      # Expo pins TypeScript too (~6.0.3 for SDK 58). TypeScript 7 has no
+      # JavaScript API, so typescript-eslint and `npx expo lint` stop working.
+      - dependency-name: "typescript"
+        update-types: ["version-update:semver-major", "version-update:semver-minor"]
       - dependency-name: "react-native"
       - dependency-name: "expo"
         update-types: ["version-update:semver-major", "version-update:semver-minor"]

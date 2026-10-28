@@ -709,7 +709,7 @@ export async function openScreen(
 ) {
   jest.useFakeTimers({ now: TODAY });
   signInAs(typeof who === 'string' ? personas[who] : who, tables, options);
-  renderRouter({ _layout: ScreenTestLayout, ...screens }, { initialUrl: url });
+  await renderRouter({ _layout: ScreenTestLayout, ...screens }, { initialUrl: url });
   await settle();
 }
 
@@ -793,13 +793,20 @@ export async function openRoute(who: PersonaName, url: string) {
   everyScreenAPlaceholder ??= placeholderScreens();
   jest.useFakeTimers({ now: TODAY });
   signInAs(personas[who]);
-  renderRouter({ appDir: 'src/app', overrides: everyScreenAPlaceholder }, { initialUrl: url });
+  await renderRouter({ appDir: 'src/app', overrides: everyScreenAPlaceholder }, { initialUrl: url });
   // Let the session and the member's rows load (the layout shows nothing until then).
   for (let i = 0; i < 5; i++) {
     await act(async () => {
       await Promise.resolve();
     });
   }
+}
+
+/** The screen's pull-to-refresh control: the one element with an onRefresh. */
+export function refreshControl() {
+  const found = screen.container.queryAll((n) => typeof n.props.onRefresh === 'function');
+  expect(found).toHaveLength(1);
+  return found[0];
 }
 
 /** The route whose placeholder is showing. */

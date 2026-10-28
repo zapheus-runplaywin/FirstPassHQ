@@ -68,7 +68,7 @@ async function open(who: PersonaName | Persona = 'athlete', history: CheckIn[] =
   });
 }
 
-function answerAll(scores: [number, number, number, number]) {
+async function answerAll(scores: [number, number, number, number]) {
   const [sleep, soreness, stress, mood] = scores;
   const questions = [
     ['Very poorly', 'Poorly', 'OK', 'Well', 'Really well'],
@@ -76,17 +76,17 @@ function answerAll(scores: [number, number, number, number]) {
     ['Very stressed', 'Stressed', 'Normal', 'Relaxed', 'Very relaxed'],
     ['Very low', 'Low', 'OK', 'Good', 'Great'],
   ];
-  [sleep, soreness, stress, mood].forEach((score, i) => {
+  for (const [i, score] of [sleep, soreness, stress, mood].entries()) {
     // Two questions share "OK", so press by position within each scale.
     const label = `${score}: ${questions[i][score - 1]}`;
     const buttons = screen.getAllByLabelText(label);
     const nth = questions.slice(0, i).filter((q) => q[score - 1] === questions[i][score - 1]).length;
-    fireEvent.press(buttons[nth]);
-  });
+    await fireEvent.press(buttons[nth]);
+  }
 }
 
 async function save(title = 'Save check-in') {
-  fireEvent.press(screen.getByText(title));
+  await fireEvent.press(screen.getByText(title));
   await settle();
 }
 
@@ -101,9 +101,9 @@ describe('a new check-in', () => {
 
   it('needs all four questions answered, and sends nothing until they are', async () => {
     await open();
-    fireEvent.press(screen.getAllByLabelText('3: OK')[0]);
-    fireEvent.press(screen.getByLabelText('5: Fresh'));
-    fireEvent.press(screen.getByLabelText('2: Stressed'));
+    await fireEvent.press(screen.getAllByLabelText('3: OK')[0]);
+    await fireEvent.press(screen.getByLabelText('5: Fresh'));
+    await fireEvent.press(screen.getByLabelText('2: Stressed'));
     await save();
     expect(screen.getByText('Answer all four questions.')).toBeTruthy();
     expect(rpcNames()).not.toContain('save_check_in');
@@ -112,11 +112,11 @@ describe('a new check-in', () => {
 
   it('saves today’s scores and note, then goes back', async () => {
     await open();
-    answerAll([4, 2, 3, 5]);
+    await answerAll([4, 2, 3, 5]);
     expect(screen.getByLabelText('4: Well').props.accessibilityState).toEqual({ selected: true });
     expect(screen.getByLabelText('5: Really well').props.accessibilityState).toEqual({ selected: false });
     expect(screen.getByText('Well')).toBeTruthy();
-    type('Anything your coach should know? (optional)', 'Tight calves after Sunday');
+    await type('Anything your coach should know? (optional)', 'Tight calves after Sunday');
     await save();
     expect(argsOf('save_check_in')).toEqual([
       {
@@ -133,14 +133,14 @@ describe('a new check-in', () => {
 
   it('sends an empty note when there is none', async () => {
     await open();
-    answerAll([1, 1, 1, 1]);
+    await answerAll([1, 1, 1, 1]);
     await save();
     expect(argsOf('save_check_in')[0]).toMatchObject({ p_note: '' });
   });
 
   it('shows the database’s error and stays on the form', async () => {
     await open('athlete', [], { rpcErrors: { save_check_in: 'Check-ins are only for athletes.' } });
-    answerAll([3, 3, 3, 3]);
+    await answerAll([3, 3, 3, 3]);
     await save();
     expect(screen.getByText('Check-ins are only for athletes.')).toBeTruthy();
     expect(back).not.toHaveBeenCalled();
@@ -154,7 +154,7 @@ describe('today’s check-in already saved', () => {
     await open('athlete', [todays, checkIn('2026-10-16')]);
     expect(screen.getByText('Update check-in')).toBeTruthy();
     expect(field('Anything your coach should know? (optional)').props.value).toBe('Slept badly');
-    fireEvent.press(screen.getByLabelText('5: Really well'));
+    await fireEvent.press(screen.getByLabelText('5: Really well'));
     await save('Update check-in');
     expect(argsOf('save_check_in')).toEqual([
       { p_day: '2026-10-18', p_sleep: 5, p_soreness: 4, p_stress: 4, p_mood: 4, p_note: 'Slept badly' },
@@ -163,7 +163,7 @@ describe('today’s check-in already saved', () => {
 
   it('can clear the note', async () => {
     await open('athlete', [todays]);
-    type('Anything your coach should know? (optional)', '');
+    await type('Anything your coach should know? (optional)', '');
     await save('Update check-in');
     expect(argsOf('save_check_in')[0]).toMatchObject({ p_note: '' });
   });

@@ -83,8 +83,8 @@ async function open(who: Who, options: BackendOptions = {}) {
 }
 
 async function send(body = 'Training is on at 5pm') {
-  if (body) type('Message', body);
-  fireEvent.press(screen.getByText('Send'));
+  if (body) await type('Message', body);
+  await fireEvent.press(screen.getByText('Send'));
   await settle();
 }
 
@@ -101,7 +101,7 @@ describe('admins', () => {
 
   it('can send to one role, offered every role a message can go to', async () => {
     await open('admin');
-    fireEvent.press(screen.getByText('A role'));
+    await fireEvent.press(screen.getByText('A role'));
     for (const r of ['Athletes', 'Guardians', 'Coaches', 'Managers', 'Committee', 'Physios', 'Admins']) {
       expect(screen.getByText(r)).toBeTruthy();
     }
@@ -110,7 +110,7 @@ describe('admins', () => {
     await send();
     expect(screen.getByText('Choose who to send it to.')).toBeTruthy();
     expect(rpcNames()).not.toContain('send_group_message');
-    fireEvent.press(screen.getByText('Guardians'));
+    await fireEvent.press(screen.getByText('Guardians'));
     await send('');
     expect(argsOf('send_group_message')).toEqual([
       { p_body: 'Training is on at 5pm', p_audience: 'role', p_role: 'guardian', p_team_id: null },
@@ -119,13 +119,13 @@ describe('admins', () => {
 
   it('can send to any squad or team, telling same-named ones apart by season', async () => {
     await open('admin');
-    fireEvent.press(screen.getByText('A squad or team'));
+    await fireEvent.press(screen.getByText('A squad or team'));
     expect(screen.getByText('Squad or team')).toBeTruthy();
     expect(screen.getByText('Open A (2026–27)')).toBeTruthy();
     expect(screen.getByText('Open A (2025–26)')).toBeTruthy();
     await send();
     expect(screen.getByText('Choose a squad or team.')).toBeTruthy();
-    fireEvent.press(screen.getByText(TEAM_B.name));
+    await fireEvent.press(screen.getByText(TEAM_B.name));
     await send('');
     expect(argsOf('send_group_message')).toEqual([
       { p_body: 'Training is on at 5pm', p_audience: 'group', p_role: null, p_team_id: TEAM_B.id },
@@ -134,10 +134,10 @@ describe('admins', () => {
 
   it('a role picked first isn’t sent when they switch to a group', async () => {
     await open('admin');
-    fireEvent.press(screen.getByText('A role'));
-    fireEvent.press(screen.getByText('Coaches'));
-    fireEvent.press(screen.getByText('A squad or team'));
-    fireEvent.press(screen.getByText(TEAM_B.name));
+    await fireEvent.press(screen.getByText('A role'));
+    await fireEvent.press(screen.getByText('Coaches'));
+    await fireEvent.press(screen.getByText('A squad or team'));
+    await fireEvent.press(screen.getByText(TEAM_B.name));
     await send();
     expect(argsOf('send_group_message')[0]).toMatchObject({ p_audience: 'group', p_role: null, p_team_id: TEAM_B.id });
   });
@@ -159,7 +159,7 @@ describe('the committee and club captains', () => {
     await open(committeeCoach);
     expect(screen.getByText('Everyone')).toBeTruthy();
     expect(screen.queryByText('A role')).toBeNull();
-    fireEvent.press(screen.getByText('A squad or team'));
+    await fireEvent.press(screen.getByText('A squad or team'));
     expect(screen.queryByText('Open A (2026–27)')).toBeNull();
     // Leading one group, it's chosen for them.
     expect(isSelected(TEAM_B.name)).toBe(true);
@@ -232,9 +232,9 @@ describe('writing the message', () => {
 
   it('counts down the last 200 characters of 4000', async () => {
     await open('coach');
-    type('Message', 'x'.repeat(3800));
+    await type('Message', 'x'.repeat(3800));
     expect(screen.queryByText(/characters left$/)).toBeNull();
-    type('Message', 'x'.repeat(3801));
+    await type('Message', 'x'.repeat(3801));
     expect(screen.getByText('199 characters left')).toBeTruthy();
   });
 

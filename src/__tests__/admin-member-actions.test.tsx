@@ -928,7 +928,7 @@ describe('validating a coach’s card', () => {
 
     await typeInto('Name on the card', 'Sam Coach');
     await press('Card sighted');
-    fireEvent(screen.getByLabelText('Registered card with Sample Club'), 'valueChange', true);
+    await fireEvent(screen.getByLabelText('Registered card with Sample Club'), 'valueChange', true);
     await press('Record validation');
     expect(rpcsNamed('admin_validate_wwcc')).toEqual([
       [

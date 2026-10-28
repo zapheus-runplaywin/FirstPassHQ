@@ -99,7 +99,7 @@ async function openClub(
 }
 
 async function save() {
-  fireEvent.press(screen.getByText('Save club settings'));
+  await fireEvent.press(screen.getByText('Save club settings'));
   await settle();
 }
 
@@ -147,11 +147,11 @@ describe('Club settings', () => {
 
   it('saves the name, colours and logo as entered, with no feature changes when all are on their defaults', async () => {
     await openClub();
-    type('Club name', 'Sample Netball Club');
-    type('Short name', 'Sample');
-    type('Background', '#ffcd00');
-    type('Hero colour', '#000000');
-    fireEvent.press(screen.getByText('Dark text'));
+    await type('Club name', 'Sample Netball Club');
+    await type('Short name', 'Sample');
+    await type('Background', '#ffcd00');
+    await type('Hero colour', '#000000');
+    await fireEvent.press(screen.getByText('Dark text'));
     await save();
     expect(savedProfile()).toEqual([
       {
@@ -170,12 +170,12 @@ describe('Club settings', () => {
 
   it('saves Light text as white, and no text colour when the built-in text is kept', async () => {
     await openClub();
-    fireEvent.press(screen.getByText('Light text'));
+    await fireEvent.press(screen.getByText('Light text'));
     await save();
     expect(savedProfile()[0].p_text_colour).toBe('#FFFFFF');
 
     rpc().mockClear();
-    fireEvent.press(screen.getByText('Use the built-in colours'));
+    await fireEvent.press(screen.getByText('Use the built-in colours'));
     await save();
     expect(savedProfile()[0]).toMatchObject({
       p_background_colour: '',
@@ -187,7 +187,7 @@ describe('Club settings', () => {
   it('puts the built-in colours back, clearing the colour codes and text choice', async () => {
     setSavedClub({ background_colour: '#FFFFFF', hero_colour: '#2274A5', text_colour: '#000000' });
     await openClub();
-    fireEvent.press(screen.getByText('Use the built-in colours'));
+    await fireEvent.press(screen.getByText('Use the built-in colours'));
     expect(input('Background').props.value).toBe('');
     expect(input('Hero colour').props.value).toBe('');
     expect(isSelected('Light text')).toBe(true);
@@ -199,7 +199,7 @@ describe('Club settings', () => {
     ['Hero colour', '#GGGGGG', 'Hero colour must be a colour code like #F75C03.'],
   ])('refuses to save %s “%s”, saying what a colour code looks like', async (field, value, message) => {
     await openClub();
-    type(field, value);
+    await type(field, value);
     await save();
     expect(screen.getByText(message)).toBeTruthy();
     expect(savedProfile()).toEqual([]);
@@ -210,28 +210,28 @@ describe('Club settings', () => {
     await openClub();
     expect(screen.queryByText(/text and background are close in colour/)).toBeNull();
     // Dark text on the built-in deep navy.
-    fireEvent.press(screen.getByText('Dark text'));
+    await fireEvent.press(screen.getByText('Dark text'));
     expect(screen.getByText(/text and background are close in colour/)).toBeTruthy();
   });
 
   it('warns when the hero colour is close to the background', async () => {
     await openClub();
     expect(screen.queryByText(/hero colour is close to the background/)).toBeNull();
-    type('Hero colour', '#10182C');
+    await type('Hero colour', '#10182C');
     expect(screen.getByText(/hero colour is close to the background/)).toBeTruthy();
   });
 
   it('saves every feature switched away from its default, and only those', async () => {
     await openClub();
     // On by default: switching off is saved.
-    flip('Messages', false);
-    flip('Injuries', false);
-    flip('Captains’ polls', false);
+    await flip('Messages', false);
+    await flip('Injuries', false);
+    await flip('Captains’ polls', false);
     // Off by default: switching on is saved.
-    flip('Season KPIs', true);
-    flip('Affiliation records', true);
-    flip('Policy and conflict registers', true);
-    flip('Members join a squad first', false);
+    await flip('Season KPIs', true);
+    await flip('Affiliation records', true);
+    await flip('Policy and conflict registers', true);
+    await flip('Members join a squad first', false);
     await save();
     expect(savedProfile()[0].p_features).toEqual({
       messages: false,
@@ -268,9 +268,9 @@ describe('Club settings', () => {
   it('turning a switched-off feature back on stores nothing for it', async () => {
     setSavedClub({ features: { messages: false, kpis: true, registers: true } });
     await openClub();
-    flip('Messages', true);
-    flip('Season KPIs', false);
-    flip('Policy and conflict registers', false);
+    await flip('Messages', true);
+    await flip('Season KPIs', false);
+    await flip('Policy and conflict registers', false);
     await save();
     expect(savedProfile()[0].p_features).toEqual({});
   });
@@ -279,7 +279,7 @@ describe('Club settings', () => {
     await openClub();
     expect(screen.getByText(/^New members join a squad\./)).toBeTruthy();
     expect(screen.queryByText(/Squads you already have stay until the season ends/)).toBeNull();
-    flip('Members join a squad first', false);
+    await flip('Members join a squad first', false);
     expect(screen.getByText(/^Members join a team straight away/)).toBeTruthy();
     expect(screen.getByText(/Squads you already have stay until the season ends, and nobody is moved\./)).toBeTruthy();
   });
@@ -288,13 +288,13 @@ describe('Club settings', () => {
     setSavedClub({ features: { squads: false } });
     await openClub();
     expect(screen.queryByText(/From now on, new teams are named from a squad/)).toBeNull();
-    flip('Members join a squad first', true);
+    await flip('Members join a squad first', true);
     expect(screen.getByText(/From now on, new teams are named from a squad\. Teams you already have keep their members\./)).toBeTruthy();
   });
 
   it('saves the physio switch after the club settings', async () => {
     await openClub();
-    flip('Physios get club messages', true);
+    await flip('Physios get club messages', true);
     await save();
     const names = (rpc().mock.calls as [string][]).map(([n]) => n);
     expect(names.indexOf('admin_update_club_profile')).toBeLessThan(
@@ -346,7 +346,7 @@ describe('the club logo', () => {
     pickDocument.mockResolvedValue(
       asset ? { canceled: false, assets: [{ uri: 'file:///logo', name: 'logo', ...asset }] } : { canceled: true, assets: null },
     );
-    fireEvent.press(screen.getByText('Choose logo'));
+    await fireEvent.press(screen.getByText('Choose logo'));
     await settle();
   }
 
@@ -422,7 +422,7 @@ describe('the club logo', () => {
   it('goes back to the FirstPass mark, saving no logo', async () => {
     setSavedClub({ logo_path: 'logo-old.png' });
     await openClub();
-    fireEvent.press(screen.getByText('Use the FirstPass mark'));
+    await fireEvent.press(screen.getByText('Use the FirstPass mark'));
     expect(screen.queryByText('Use the FirstPass mark')).toBeNull();
     await save();
     expect(savedProfile()[0].p_logo_path).toBe('');
@@ -461,7 +461,7 @@ function chosen(period: string, choice: string) {
 }
 
 async function saveKeepPeriods() {
-  fireEvent.press(screen.getByText('Save keep periods'));
+  await fireEvent.press(screen.getByText('Save keep periods'));
   await settle();
 }
 
@@ -542,8 +542,8 @@ describe('Keeping records', () => {
     }
     expect(screen.getByText(/at least 45 years/)).toBeTruthy();
     expect(screen.getByText(/while a concern names a member nothing about them is removed/)).toBeTruthy();
-    fireEvent.press(chip('Attendance', '15 years'));
-    fireEvent.press(chip('Safeguarding records', 'Keep for good'));
+    await fireEvent.press(chip('Attendance', '15 years'));
+    await fireEvent.press(chip('Safeguarding records', 'Keep for good'));
     await saveKeepPeriods();
     expect(callsTo('admin_set_record_retention_all')[0].p_attendance_months).toBe(180);
     expect(callsTo('admin_set_more_record_retention')[0].p_safeguarding_months).toBe(0);
@@ -551,13 +551,13 @@ describe('Keeping records', () => {
 
   it('saves the removal switch and every period across the three settings, in order', async () => {
     await openRetention();
-    flip('Remove old records', true);
-    fireEvent.press(chip('Daily check-ins', '3 months'));
-    fireEvent.press(chip('Message text involving a child', '15 years'));
-    fireEvent.press(chip('Injury documents', '90 days'));
-    fireEvent.press(chip('Squad and team polls kept in the team', '1 year'));
-    fireEvent.press(chip('Awards and their results', 'Keep for good'));
-    fireEvent.press(chip('Medical and emergency details', '5 years'));
+    await flip('Remove old records', true);
+    await fireEvent.press(chip('Daily check-ins', '3 months'));
+    await fireEvent.press(chip('Message text involving a child', '15 years'));
+    await fireEvent.press(chip('Injury documents', '90 days'));
+    await fireEvent.press(chip('Squad and team polls kept in the team', '1 year'));
+    await fireEvent.press(chip('Awards and their results', 'Keep for good'));
+    await fireEvent.press(chip('Medical and emergency details', '5 years'));
     expect(isDisabled('Save keep periods')).toBe(false);
     await saveKeepPeriods();
     expect(callsTo('admin_set_record_retention_all')).toEqual([
@@ -590,7 +590,7 @@ describe('Keeping records', () => {
   it('keeps a period the club saved before it stopped being offered, so saving never shortens it', async () => {
     await openRetention({ record_retention: { ...RETENTION, attendance_months: 84 } });
     expect(chosen('Attendance', '7 years')).toBe(true);
-    flip('Remove old records', true);
+    await flip('Remove old records', true);
     await saveKeepPeriods();
     expect(callsTo('admin_set_record_retention_all')[0].p_attendance_months).toBe(84);
   });
@@ -611,7 +611,7 @@ describe('Keeping records', () => {
     await openRetention({}, {
       admin_set_record_retention_all: 'Messages involving a child must be kept at least as long as other messages',
     });
-    fireEvent.press(chip('Message text', '7 years'));
+    await fireEvent.press(chip('Message text', '7 years'));
     await saveKeepPeriods();
     expect(
       screen.getByText('Messages involving a child must be kept at least as long as other messages'),
@@ -624,7 +624,7 @@ describe('Keeping records', () => {
 
   it('doesn’t save the later periods when the survey periods are refused', async () => {
     await openRetention({}, { admin_set_survey_retention: 'Survey periods refused' });
-    flip('Remove old records', true);
+    await flip('Remove old records', true);
     await saveKeepPeriods();
     expect(screen.getByText('Survey periods refused')).toBeTruthy();
     expect(callsTo('admin_set_more_record_retention')).toEqual([]);
@@ -634,8 +634,8 @@ describe('Keeping records', () => {
     await openRetention({}, {
       admin_set_more_record_retention: 'Awards must be kept at least as long as who voted for whom',
     });
-    fireEvent.press(chip('Awards and their results', '3 years'));
-    fireEvent.press(chip('Who voted for whom in awards', '5 years'));
+    await fireEvent.press(chip('Awards and their results', '3 years'));
+    await fireEvent.press(chip('Who voted for whom in awards', '5 years'));
     await saveKeepPeriods();
     expect(screen.getByText('Awards must be kept at least as long as who voted for whom')).toBeTruthy();
     expect(callsTo('admin_set_medical_keep_months')).toEqual([]);
@@ -646,7 +646,7 @@ describe('Keeping records', () => {
     await openRetention({}, {
       admin_set_medical_keep_months: 'Medical details can be kept 2, 3, 5 or 7 years without their yearly check',
     });
-    fireEvent.press(chip('Medical and emergency details', '3 years'));
+    await fireEvent.press(chip('Medical and emergency details', '3 years'));
     await saveKeepPeriods();
     expect(screen.getByText('Medical details can be kept 2, 3, 5 or 7 years without their yearly check')).toBeTruthy();
     expect(screen.queryByText('Saved.')).toBeNull();
@@ -655,7 +655,7 @@ describe('Keeping records', () => {
   it('loads the periods again after saving and shows what the database holds', async () => {
     await openRetention();
     rpc().mockClear();
-    flip('Remove old records', true);
+    await flip('Remove old records', true);
     await saveKeepPeriods();
     expect(callsTo('record_retention')).toHaveLength(1);
     // This fake database still says off: the screen shows what was stored, not the draft.

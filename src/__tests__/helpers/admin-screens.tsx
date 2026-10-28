@@ -6,38 +6,36 @@
  * Jest treats every file under __tests__ as a suite, so this file checks its
  * own helpers at the bottom, and only when Jest runs it directly.
  */
-import { TextInput } from 'react-native';
 import { act, fireEvent, screen } from 'expo-router/testing-library';
-import type { ReactTestInstance } from 'react-test-renderer';
+import type { TestInstance } from 'test-renderer';
 
 import { supabase } from '@/lib/supabase';
 
 import { type QueryCall, type QueryInfo, type TableHandler } from './harness';
 
 /** The smallest element holding `from` and something `has` finds in it. */
-function closest(from: ReactTestInstance, has: (node: ReactTestInstance) => boolean) {
-  let node: ReactTestInstance | null = from;
+function closest(from: TestInstance, has: (node: TestInstance) => boolean) {
+  let node: TestInstance | null = from;
   while (node && !has(node)) node = node.parent;
   if (!node) throw new Error('Nothing around that element matches');
   return node;
 }
 
 /** The text box under a field's label (TextField puts them side by side). */
-export function fieldFor(label: string): ReactTestInstance {
-  return closest(screen.getByText(label), (n) => n.findAllByType(TextInput).length > 0).findAllByType(
-    TextInput,
-  )[0];
+export function fieldFor(label: string): TestInstance {
+  const inputs = (n: TestInstance) => n.queryAll((c) => c.type === 'TextInput', { includeSelf: true });
+  return inputs(closest(screen.getByText(label), (n) => inputs(n).length > 0))[0];
 }
 
 /** Types into the field with this label. */
 export async function typeInto(label: string, text: string) {
-  fireEvent.changeText(fieldFor(label), text);
+  await fireEvent.changeText(fieldFor(label), text);
   await untilQuiet();
 }
 
 /** Presses the control showing this text and lets the screen's calls finish. */
 export async function press(text: string | RegExp) {
-  fireEvent.press(screen.getByText(text));
+  await fireEvent.press(screen.getByText(text));
   await untilQuiet();
 }
 
@@ -68,11 +66,13 @@ export async function untilQuiet() {
   if (quiet < 3) throw new Error('The screen kept calling the database and never settled');
 }
 
-const texts = (n: ReactTestInstance) =>
-  n.findAll((c) => typeof c.props.children === 'string' || Array.isArray(c.props.children));
+const texts = (n: TestInstance) =>
+  n.queryAll((c) => typeof c.props.children === 'string' || Array.isArray(c.props.children), {
+    includeSelf: true,
+  });
 
 /** Whether this element shows exactly `text`. */
-function showsText(n: ReactTestInstance, text: string) {
+function showsText(n: TestInstance, text: string) {
   return texts(n).some((c) => c.props.children === text);
 }
 
@@ -80,35 +80,33 @@ function showsText(n: ReactTestInstance, text: string) {
  * A chip (or button) showing `label` inside the part of the screen headed
  * `heading`, for labels such as "Other" that more than one section offers.
  */
-export function inSection(heading: string, label: string): ReactTestInstance {
+export function inSection(heading: string, label: string): TestInstance {
   const section = closest(screen.getByText(heading), (n) => showsText(n, label));
-  const match = section.findAll(
-    (c) => typeof c.type === 'string' && c.props.children === label,
-  );
+  const match = section.queryAll((c) => c.props.children === label, { includeSelf: true });
   if (match.length === 0) throw new Error(`No "${label}" under "${heading}"`);
   return match[0];
 }
 
 export async function pressInSection(heading: string, label: string) {
-  fireEvent.press(inSection(heading, label));
+  await fireEvent.press(inSection(heading, label));
   await untilQuiet();
 }
 
 /** The labels of the chips under a chip group's label, in order. */
 export function optionsUnder(label: string): string[] {
-  const buttons = (n: ReactTestInstance) =>
-    n.findAll((c) => typeof c.type === 'string' && c.props.accessibilityRole === 'button');
+  const buttons = (n: TestInstance) =>
+    n.queryAll((c) => c.props.accessibilityRole === 'button', { includeSelf: true });
   const group = closest(screen.getByText(label), (n) => buttons(n).length > 0);
   return buttons(group).map((b) =>
     b
-      .findAll((c) => typeof c.type === 'string' && typeof c.props.children === 'string')
+      .queryAll((c) => typeof c.props.children === 'string', { includeSelf: true })
       .map((t) => t.props.children as string)
       .join(''),
   );
 }
 
 /** Whether a chip is shown as chosen. */
-export function isChosen(el: ReactTestInstance) {
+export function isChosen(el: TestInstance) {
   const pressable = closest(el, (n) => n.props.accessibilityState !== undefined);
   return !!pressable.props.accessibilityState?.selected;
 }

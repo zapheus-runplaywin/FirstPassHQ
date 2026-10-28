@@ -100,7 +100,7 @@ function stat(label: string) {
 
 /** Taps Export PDF and reads back the file it shared. */
 async function exportPdf() {
-  fireEvent.press(screen.getByText('Export PDF'));
+  await fireEvent.press(screen.getByText('Export PDF'));
   await settle();
   expect(written).toHaveLength(1);
   expect(Sharing.shareAsync).toHaveBeenCalledWith(written[0].uri, expect.objectContaining({ mimeType: 'application/pdf' }));
@@ -112,8 +112,8 @@ const recordTable = (rows: unknown) => (q: QueryInfo) => {
   return rows;
 };
 /** Taps a filter chip; chips come before the report, which may repeat the name. */
-function chip(label: string) {
-  fireEvent.press(screen.getAllByText(label)[0]);
+async function chip(label: string) {
+  await fireEvent.press(screen.getAllByText(label)[0]);
 }
 
 const argOf = (q: QueryInfo, method: string) => q.calls.find((c) => c.method === method)?.args;
@@ -167,7 +167,7 @@ describe('Reports', () => {
       { 'admin/reports/index': ReportsScreen, [target]: () => <Text>{`screen:${target}`}</Text> },
       '/admin/reports',
     );
-    fireEvent.press(screen.getByText(title));
+    await fireEvent.press(screen.getByText(title));
     await settle();
     expect(screen.getByText(`screen:${target}`)).toBeTruthy();
     expect(screen).toHavePathname(path);
@@ -271,7 +271,7 @@ describe('Working With Children Checks', () => {
   it('shows why the PDF didn’t save', async () => {
     await openWwcc();
     (Sharing.shareAsync as jest.Mock).mockRejectedValueOnce(new Error('Sharing isn’t available'));
-    fireEvent.press(screen.getByText('Export PDF'));
+    await fireEvent.press(screen.getByText('Export PDF'));
     await settle();
     expect(screen.getByText('Sharing isn’t available')).toBeTruthy();
   });
@@ -351,7 +351,7 @@ describe('Integrity training', () => {
     expect(screen.getByText('Course 2026')).toBeTruthy();
     expect(stat('Still to finish')).toBe('1');
 
-    chip('2025–26');
+    await chip('2025–26');
     await settle();
     expect(screen.getByText('Sports Integrity Australia courses for 2025–26')).toBeTruthy();
     expect(screen.getByText('Course 2025')).toBeTruthy();
@@ -392,7 +392,7 @@ describe('Season KPIs', () => {
     expect(screen.getByText('Coaches’ and managers’ KPIs and OKRs for 2026–27')).toBeTruthy();
     expect(screen.getByText('Open A 2026')).toBeTruthy();
     expect(stat('Without KPIs')).toBe('1');
-    chip('2025–26');
+    await chip('2025–26');
     await settle();
     expect(screen.getByText('Open A 2025')).toBeTruthy();
   });
@@ -517,7 +517,7 @@ describe('Award results', () => {
     // Only awards closed by now, newest first.
     expect(argOf(seen[0], 'lte')).toEqual(['closes_at', '2026-10-18T02:00:00.000Z']);
     expect(argOf(seen[0], 'order')).toEqual(['closes_at', { ascending: false }]);
-    fireEvent.press(screen.getByText('Best and Fairest'));
+    await fireEvent.press(screen.getByText('Best and Fairest'));
     await settle();
     expect(screen).toHavePathname('/admin/reports/award');
     expect(screen.getByText('Standings · Open A')).toBeTruthy();
@@ -626,7 +626,7 @@ describe('Attendance', () => {
     ['This season', '2026-05-01'],
   ])('changes the period to %s', async (label, from) => {
     await openAttendance();
-    chip(label);
+    await chip(label);
     await settle();
     expect(absenceArgs[absenceArgs.length - 1]).toEqual({ p_from: from, p_to: '2026-10-18' });
     expect(sessionWindow()[0]).toEqual(['held_at', new Date(`${from}T00:00:00`).toISOString()]);
@@ -634,7 +634,7 @@ describe('Attendance', () => {
 
   it('offers a from and to date when choosing dates', async () => {
     await openAttendance();
-    chip('Choose dates');
+    await chip('Choose dates');
     await settle();
     expect(screen.getByText('From')).toBeTruthy();
     expect(screen.getByText('To')).toBeTruthy();
@@ -643,7 +643,7 @@ describe('Attendance', () => {
 
   it('counts only the chosen team, and the absences of athletes on its register', async () => {
     await openAttendance();
-    chip('Under 12');
+    await chip('Under 12');
     await settle();
     expect(screen.getByText(`${day('2026-09-20')} to ${day('2026-10-18')} · Under 12`)).toBeTruthy();
     expect(stat('Sessions')).toBe('1');
@@ -656,33 +656,33 @@ describe('Attendance', () => {
 
   it('includes a squad’s teams, and club events only when chosen', async () => {
     await openAttendance();
-    chip('17 & Under Squad');
+    await chip('17 & Under Squad');
     await settle();
     expect(stat('Sessions')).toBe('1');
     expect(texts()).toContain('Session: Training A');
-    chip('Whole club events');
+    await chip('Whole club events');
     await settle();
     expect(stat('Sessions')).toBe('2');
     expect(texts()).toContain('Session: Club day');
     expect(screen.getByText(`${day('2026-09-20')} to ${day('2026-10-18')} · Whole club events, 17 & Under Squad`)).toBeTruthy();
     // All starts over.
-    chip('All');
+    await chip('All');
     await settle();
     expect(stat('Sessions')).toBe('3');
   });
 
   it('goes back to All when the last chosen group is turned off', async () => {
     await openAttendance();
-    chip('Under 12');
+    await chip('Under 12');
     await settle();
-    chip('Under 12');
+    await chip('Under 12');
     await settle();
     expect(stat('Sessions')).toBe('3');
   });
 
   it('exports what is shown for the chosen groups', async () => {
     await openAttendance();
-    chip('Under 12');
+    await chip('Under 12');
     await settle();
     const { name, pdf } = await exportPdf();
     expect(name).toBe('sample-attendance-2026-10-18.pdf');
@@ -740,14 +740,14 @@ describe('Session plans', () => {
 
   it('changes the period', async () => {
     await openPlans();
-    chip('Last 4 weeks');
+    await chip('Last 4 weeks');
     await settle();
     expect(planArgs[planArgs.length - 1]).toEqual({ p_from: '2026-09-20', p_to: '2026-10-18' });
   });
 
   it('includes a squad’s teams when the squad is chosen, and nothing else', async () => {
     await openPlans();
-    chip('17 & Under Squad');
+    await chip('17 & Under Squad');
     await settle();
     expect(stat('Plans')).toBe('1');
     expect(texts()).toContain('Session: Plan p1');
@@ -761,7 +761,7 @@ describe('Session plans', () => {
 
   it('opens a plan from the list', async () => {
     await openPlans();
-    fireEvent.press(screen.getByText('07/10/2026 · Under 12 · Plan p2'));
+    await fireEvent.press(screen.getByText('07/10/2026 · Under 12 · Plan p2'));
     await settle();
     expect(screen.getByText('screen:session-plan')).toBeTruthy();
     expect(screen).toHavePathname('/session-plans/p2');
@@ -828,7 +828,7 @@ describe('Medical details checks', () => {
   it('filters by squad, including the teams named from it', async () => {
     await openFiltered();
     expect(screen.getByText('Bo Overdue')).toBeTruthy();
-    chip('17 & Under Squad');
+    await chip('17 & Under Squad');
     await settle();
     expect(screen.queryByText('Bo Overdue')).toBeNull();
     expect(screen.queryByText('Ada Adult')).toBeNull();
@@ -839,14 +839,14 @@ describe('Medical details checks', () => {
 
   it('filters by a team, and goes back to everyone with All', async () => {
     await openFiltered();
-    chip('Open A');
+    await chip('Open A');
     await settle();
     expect(screen.getByText('Bo Overdue')).toBeTruthy();
     expect(screen.queryByText('Cam Child')).toBeNull();
     const { pdf } = await exportPdf();
     expect(pdf.text).toContain('Approved athletes in Open A on');
     expect(pdf.text).not.toContain('Dee New');
-    chip('All');
+    await chip('All');
     await settle();
     expect(screen.getByText('Cam Child')).toBeTruthy();
     expect(screen.queryByText(/Approved athletes in/)).toBeNull();
@@ -854,11 +854,11 @@ describe('Medical details checks', () => {
 
   it('counts only the chosen squads and teams', async () => {
     await openFiltered();
-    chip('17 & Under A');
+    await chip('17 & Under A');
     await settle();
     expect(screen.getByText('Cam Child')).toBeTruthy();
     expect(screen.queryByText('Dee New')).toBeNull();
-    chip('17 & Under A');
+    await chip('17 & Under A');
     await settle();
     expect(screen.getByText('Dee New')).toBeTruthy();
   });

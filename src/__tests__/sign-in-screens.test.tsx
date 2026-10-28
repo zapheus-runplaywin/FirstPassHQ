@@ -67,7 +67,7 @@ async function open(url: string, saved: Record<string, string> = {}) {
   await AsyncStorage.clear();
   await AsyncStorage.multiSet(Object.entries(saved));
   (connectToClub as jest.Mock).mockClear();
-  renderRouter(
+  await renderRouter(
     {
       _layout: Layout,
       'choose-club': ChooseClubScreen,
@@ -92,10 +92,10 @@ describe('finding the club', () => {
 
   it('names the club as its code is typed, ignoring case and spaces', async () => {
     await open('/choose-club');
-    type('Club code', 'thun der');
+    await type('Club code', 'thun der');
     expect(screen.getByText('West Coast Thunder')).toBeTruthy();
     expect(screen.getByText('Next, sign in with the account you use for this club.')).toBeTruthy();
-    fireEvent.press(screen.getByText('Continue to West Coast Thunder'));
+    await fireEvent.press(screen.getByText('Continue to West Coast Thunder'));
     await settle();
     expect(connected()).toBe('connected:THUNDER');
     expect(connectToClub).toHaveBeenCalledWith(
@@ -106,9 +106,9 @@ describe('finding the club', () => {
 
   it('refuses a code no club has, and connects to nothing', async () => {
     await open('/choose-club');
-    type('Club code', 'NOPE');
+    await type('Club code', 'NOPE');
     expect(isDisabled('Continue')).toBe(false);
-    fireEvent.press(screen.getByText('Continue'));
+    await fireEvent.press(screen.getByText('Continue'));
     await settle();
     expect(screen.getByText('No club has that code. Check it with your club.')).toBeTruthy();
     expect(connected()).toBe('connected:none');
@@ -117,18 +117,18 @@ describe('finding the club', () => {
 
   it('pressing go on the keyboard does the same', async () => {
     await open('/choose-club');
-    type('Club code', 'WRONG');
-    fireEvent(screen.getByLabelText('Club code'), 'submitEditing');
+    await type('Club code', 'WRONG');
+    await fireEvent(screen.getByLabelText('Club code'), 'submitEditing');
     await settle();
     expect(screen.getByText('No club has that code. Check it with your club.')).toBeTruthy();
   });
 
   it('clears the message once the code is changed', async () => {
     await open('/choose-club');
-    type('Club code', 'WRONG');
-    fireEvent.press(screen.getByText('Continue'));
+    await type('Club code', 'WRONG');
+    await fireEvent.press(screen.getByText('Continue'));
     await settle();
-    type('Club code', 'STO');
+    await type('Club code', 'STO');
     expect(screen.queryByText('No club has that code. Check it with your club.')).toBeNull();
   });
 
@@ -137,7 +137,7 @@ describe('finding the club', () => {
     expect(screen.getByText('Your clubs')).toBeTruthy();
     expect(screen.getByText('Another club')).toBeTruthy();
     expect(screen.getByText('Sample Storm')).toBeTruthy();
-    fireEvent.press(screen.getByText('Sample Storm'));
+    await fireEvent.press(screen.getByText('Sample Storm'));
     await settle();
     expect(connected()).toBe('connected:STORM');
     expect(connectToClub).toHaveBeenCalledWith(expect.objectContaining({ code: 'STORM' }));
@@ -159,13 +159,13 @@ describe('signing in', () => {
     let finish: () => void = () => {};
     google.mockImplementation(() => new Promise<void>((r) => (finish = r)));
     await open('/sign-in', { 'club-code': 'THUNDER' });
-    fireEvent.press(screen.getByText('Continue with Google'));
+    await fireEvent.press(screen.getByText('Continue with Google'));
     await settle();
     // A spinner replaces the words, and the button is disabled.
     expect(screen.queryByText('Continue with Google')).toBeNull();
     const button = screen.getAllByRole('button')[0];
     expect(button.props.accessibilityState?.disabled ?? button.props.disabled).toBe(true);
-    fireEvent.press(button);
+    await fireEvent.press(button);
     await settle();
     finish();
     await settle();
@@ -176,11 +176,11 @@ describe('signing in', () => {
   it('shows why sign-in failed, and lets them try again', async () => {
     google.mockRejectedValueOnce(new Error('The user denied access'));
     await open('/sign-in', { 'club-code': 'THUNDER' });
-    fireEvent.press(screen.getByText('Continue with Google'));
+    await fireEvent.press(screen.getByText('Continue with Google'));
     await settle();
     expect(screen.getByText('The user denied access')).toBeTruthy();
     google.mockResolvedValueOnce(undefined);
-    fireEvent.press(screen.getByText('Continue with Google'));
+    await fireEvent.press(screen.getByText('Continue with Google'));
     await settle();
     expect(screen.queryByText('The user denied access')).toBeNull();
     expect(google).toHaveBeenCalledTimes(2);
@@ -189,7 +189,7 @@ describe('signing in', () => {
   it('gives a plain message for a failure that isn’t an error', async () => {
     google.mockRejectedValueOnce('closed');
     await open('/sign-in', { 'club-code': 'THUNDER' });
-    fireEvent.press(screen.getByText('Continue with Google'));
+    await fireEvent.press(screen.getByText('Continue with Google'));
     await settle();
     expect(screen.getByText('Sign-in failed. Please try again.')).toBeTruthy();
   });
@@ -200,7 +200,7 @@ describe('signing in', () => {
       'club-codes-used': JSON.stringify(['THUNDER']),
     });
     expect(connected()).toBe('connected:THUNDER');
-    fireEvent.press(screen.getByText('Change club'));
+    await fireEvent.press(screen.getByText('Change club'));
     await settle();
     expect(connected()).toBe('connected:none');
     expect(await AsyncStorage.getItem('club-code')).toBeNull();

@@ -75,8 +75,8 @@ function transform() {
 
 const onError = jest.fn();
 
-function open() {
-  render(<ZoomableImage uri="https://example.test/signed/photo.jpg" label="Photo of the letter" onError={onError} />);
+async function open() {
+  await render(<ZoomableImage uri="https://example.test/signed/photo.jpg" label="Photo of the letter" onError={onError} />);
   // A 300 by 400 viewer: its centre is (150, 200).
   const frame = screen.getByLabelText('Photo of the letter').parent!;
   let node = frame;
@@ -100,23 +100,23 @@ const doubleTap = (x: number, y: number) => gestures().tap.onEnd({ x, y });
 
 beforeEach(() => onError.mockClear());
 
-it('shows the image from memory only, never the disk cache', () => {
-  open();
+it('shows the image from memory only, never the disk cache', async () => {
+  await open();
   const image = screen.getByLabelText('Photo of the letter');
   expect(image.props.cachePolicy ?? image.parent?.props.cachePolicy).toBe('memory');
   expect(transform()).toEqual({ x: 0, y: 0, scale: 1 });
 });
 
-it('reports an image that won’t load', () => {
-  open();
+it('reports an image that won’t load', async () => {
+  await open();
   let node = screen.getByLabelText('Photo of the letter');
   while (node && !node.props.onError) node = node.parent!;
   node.props.onError({ nativeEvent: { error: 'expired link' } });
   expect(onError).toHaveBeenCalled();
 });
 
-it('double-tapping zooms in two and a half times on the point tapped, then back out', () => {
-  open();
+it('double-tapping zooms in two and a half times on the point tapped, then back out', async () => {
+  await open();
   expect((gestures().tap.taps as unknown as () => number)()).toBe(2);
   doubleTap(250, 200);
   // The tapped point, 100 right of centre, stays under the finger.
@@ -125,16 +125,16 @@ it('double-tapping zooms in two and a half times on the point tapped, then back 
   expect(transform()).toEqual({ x: 0, y: 0, scale: 1 });
 });
 
-it('pinching zooms around the fingers, up to six times', () => {
-  open();
+it('pinching zooms around the fingers, up to six times', async () => {
+  await open();
   pinch(2, 250, 200);
   expect(transform()).toEqual({ x: -100, y: 0, scale: 2 });
   pinch(10);
   expect(transform().scale).toBe(6);
 });
 
-it('pinching out below full size springs back', () => {
-  open();
+it('pinching out below full size springs back', async () => {
+  await open();
   const p = gestures().pinch;
   p.onStart({ focalX: 150, focalY: 200 });
   p.onUpdate({ scale: 0.1 });
@@ -144,8 +144,8 @@ it('pinching out below full size springs back', () => {
   expect(transform()).toEqual({ x: 0, y: 0, scale: 1 });
 });
 
-it('dragging only moves a zoomed image', () => {
-  open();
+it('dragging only moves a zoomed image', async () => {
+  await open();
   drag(40, 30);
   expect(transform()).toEqual({ x: 0, y: 0, scale: 1 });
   doubleTap(150, 200);

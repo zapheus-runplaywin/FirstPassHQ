@@ -46,7 +46,7 @@ beforeEach(() => {
 it('loads the acceptances an approved member owes', async () => {
   const owed = [todo(), todo({ profile_id: 'me', full_name: 'Sam Sample', for_child: false })];
   answers(owed);
-  const { result } = renderHook(() => useConductTodos());
+  const { result } = await renderHook(() => useConductTodos());
   expect(result.current.conductTodos).toEqual([]);
   await waitFor(() => expect(result.current.conductTodos).toEqual(owed));
   expect(rpc).toHaveBeenCalledWith('my_conduct_todos');
@@ -54,7 +54,7 @@ it('loads the acceptances an approved member owes', async () => {
 
 it('shows none when the server sends nothing back', async () => {
   answers(null);
-  const { result } = renderHook(() => useConductTodos());
+  const { result } = await renderHook(() => useConductTodos());
   await waitFor(() => expect(rpc).toHaveBeenCalled());
   await act(async () => {});
   expect(result.current.conductTodos).toEqual([]);
@@ -65,7 +65,7 @@ it.each([['waiting for approval', 'pending'], ['turned down', 'rejected'], ['sig
   async (_label, status) => {
     mockStatus = status;
     answers([todo()]);
-    const { result } = renderHook(() => useConductTodos());
+    const { result } = await renderHook(() => useConductTodos());
     await act(async () => {});
     expect(rpc).not.toHaveBeenCalled();
     expect(result.current.conductTodos).toEqual([]);
@@ -77,7 +77,7 @@ it.each([['waiting for approval', 'pending'], ['turned down', 'rejected'], ['sig
 it('loads once the member is approved', async () => {
   mockStatus = 'pending';
   answers([todo()]);
-  const { result, rerender } = renderHook(() => useConductTodos());
+  const { result, rerender } = await renderHook(() => useConductTodos());
   await act(async () => {});
   expect(rpc).not.toHaveBeenCalled();
   mockStatus = 'approved';
@@ -87,7 +87,7 @@ it('loads once the member is approved', async () => {
 
 it('reloads on request, so an acceptance leaves the list', async () => {
   answers([todo()], []);
-  const { result } = renderHook(() => useConductTodos());
+  const { result } = await renderHook(() => useConductTodos());
   await waitFor(() => expect(result.current.conductTodos).toHaveLength(1));
   await act(() => result.current.reloadConductTodos());
   expect(result.current.conductTodos).toEqual([]);

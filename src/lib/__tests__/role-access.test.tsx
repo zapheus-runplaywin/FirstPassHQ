@@ -415,9 +415,9 @@ afterEach(() => {
   jest.useRealTimers();
 });
 
-function hookValue<T>(name: PersonaName, hook: () => T): T {
+async function hookValue<T>(name: PersonaName, hook: () => T): Promise<T> {
   as(name);
-  return renderHook(hook).result.current;
+  return (await renderHook(hook)).result.current;
 }
 
 // ---------------------------------------------------------------------------
@@ -427,65 +427,65 @@ function hookValue<T>(name: PersonaName, hook: () => T): T {
 describe('attendance and absences', () => {
   // Guide: coaches and managers review their own groups' absences; the
   // committee and admins see every absence from the attendance screen.
-  test.each(rows([...COACHES, 'manager']))('useLeadsAGroup: %s → %s', (name, expected) => {
-    expect(hookValue(name, useLeadsAGroup)).toBe(expected);
+  test.each(rows([...COACHES, 'manager']))('useLeadsAGroup: %s → %s', async (name, expected) => {
+    expect(await hookValue(name, useLeadsAGroup)).toBe(expected);
   });
 
   // Guide: Take attendance — coach, manager, committee, admin.
   test.each(rows([...ADMINS, 'committee', ...COACHES, 'manager']))(
     'useCanTakeAttendance: %s → %s',
-    (name, expected) => {
-      expect(hookValue(name, useCanTakeAttendance)).toBe(expected);
+    async (name, expected) => {
+      expect(await hookValue(name, useCanTakeAttendance)).toBe(expected);
     },
   );
 
   // Guide: See athletes' attendance history — coach, committee, admin. Managers don't.
   test.each(rows([...ADMINS, 'committee', ...COACHES]))(
     'useCanViewAttendance: %s → %s',
-    (name, expected) => {
-      expect(hookValue(name, useCanViewAttendance)).toBe(expected);
+    async (name, expected) => {
+      expect(await hookValue(name, useCanViewAttendance)).toBe(expected);
     },
   );
 });
 
 describe('daily check-ins', () => {
   // Guide: Daily check-in — athletes only.
-  test.each(rows(ATHLETES))('useIsCheckInAthlete: %s → %s', (name, expected) => {
-    expect(hookValue(name, useIsCheckInAthlete)).toBe(expected);
+  test.each(rows(ATHLETES))('useIsCheckInAthlete: %s → %s', async (name, expected) => {
+    expect(await hookValue(name, useIsCheckInAthlete)).toBe(expected);
   });
 
   // Guide: Check-ins of others — coaches, their own athletes. Not a coach whose
   // only squad has finished its squad phase, the same as the database.
-  test.each(rows(COACHES.filter((n) => n !== 'doneSquadCoach')))('useIsCheckInCoach: %s → %s', (name, expected) => {
-    expect(hookValue(name, useIsCheckInCoach)).toBe(expected);
+  test.each(rows(COACHES.filter((n) => n !== 'doneSquadCoach')))('useIsCheckInCoach: %s → %s', async (name, expected) => {
+    expect(await hookValue(name, useIsCheckInCoach)).toBe(expected);
   });
 
   // Guide: committee, physios and admins see averages only.
   test.each(rows([...ADMINS, 'committee', ...PHYSIOS]))(
     'useCanSeeCheckInOverview: %s → %s',
-    (name, expected) => {
-      expect(hookValue(name, useCanSeeCheckInOverview)).toBe(expected);
+    async (name, expected) => {
+      expect(await hookValue(name, useCanSeeCheckInOverview)).toBe(expected);
     },
   );
 
   test.each(rows([...ADMINS, 'committee', ...PHYSIOS, ...COACHES.filter((n) => n !== 'doneSquadCoach')]))(
     'useCanSeeCheckIns: %s → %s',
-    (name, expected) => {
-      expect(hookValue(name, useCanSeeCheckIns)).toBe(expected);
+    async (name, expected) => {
+      expect(await hookValue(name, useCanSeeCheckIns)).toBe(expected);
     },
   );
 });
 
 describe('game goals', () => {
-  test.each(rows(ATHLETES))('useIsGoalAthlete: %s → %s', (name, expected) => {
-    expect(hookValue(name, useIsGoalAthlete)).toBe(expected);
+  test.each(rows(ATHLETES))('useIsGoalAthlete: %s → %s', async (name, expected) => {
+    expect(await hookValue(name, useIsGoalAthlete)).toBe(expected);
   });
 
   // Coaches of a current squad or team; a completed squad's coaches stop.
   test.each(rows(COACHES.filter((n) => n !== 'doneSquadCoach')))(
     'useIsGoalCoach: %s → %s',
-    (name, expected) => {
-      expect(hookValue(name, useIsGoalCoach)).toBe(expected);
+    async (name, expected) => {
+      expect(await hookValue(name, useIsGoalCoach)).toBe(expected);
     },
   );
 
@@ -504,21 +504,21 @@ describe('game goals', () => {
       'athleteCoach',
       'minorAthleteCoach',
     ]),
-  )('useCanCommentOnTeamGoals(team A): %s → %s', (name, expected) => {
-    expect(hookValue(name, () => useCanCommentOnTeamGoals(TEAM_A.id))).toBe(expected);
+  )('useCanCommentOnTeamGoals(team A): %s → %s', async (name, expected) => {
+    expect(await hookValue(name, () => useCanCommentOnTeamGoals(TEAM_A.id))).toBe(expected);
   });
 
   test.each(rows(['athleteCoach', 'minorAthleteCoach']))(
     'useCanCommentOnTeamGoals(team B), where only these coach and the others are guardians: %s → %s',
-    (name, expected) => {
-      expect(hookValue(name, () => useCanCommentOnTeamGoals(TEAM_B.id))).toBe(expected);
+    async (name, expected) => {
+      expect(await hookValue(name, () => useCanCommentOnTeamGoals(TEAM_B.id))).toBe(expected);
     },
   );
 
-  test.each(NAMES)('useCanCommentOnTeamGoals with no team is false: %s', (name) => {
-    expect(hookValue(name, () => useCanCommentOnTeamGoals(null))).toBe(false);
-    expect(hookValue(name, () => useCanCommentOnTeamGoals(undefined))).toBe(false);
-    expect(hookValue(name, () => useCanCommentOnTeamGoals('another-team'))).toBe(false);
+  test.each(NAMES)('useCanCommentOnTeamGoals with no team is false: %s', async (name) => {
+    expect(await hookValue(name, () => useCanCommentOnTeamGoals(null))).toBe(false);
+    expect(await hookValue(name, () => useCanCommentOnTeamGoals(undefined))).toBe(false);
+    expect(await hookValue(name, () => useCanCommentOnTeamGoals('another-team'))).toBe(false);
   });
 });
 
@@ -527,8 +527,8 @@ describe('injuries', () => {
   // never managers, guests or temporary helpers. The database picks which.
   test.each(rows([...ADMINS, 'committee', ...COACHES, ...PHYSIOS, ...ATHLETES, ...GUARDIANS]))(
     'useCanSeeInjuries: %s → %s',
-    (name, expected) => {
-      expect(hookValue(name, useCanSeeInjuries)).toBe(expected);
+    async (name, expected) => {
+      expect(await hookValue(name, useCanSeeInjuries)).toBe(expected);
     },
   );
 });
@@ -537,16 +537,16 @@ describe('messages', () => {
   // Guide: admins, the committee and club captains message the whole club.
   test.each(rows([...ADMINS, 'committee', 'clubCaptain']))(
     'useCanMessageClub: %s → %s',
-    (name, expected) => {
-      expect(hookValue(name, useCanMessageClub)).toBe(expected);
+    async (name, expected) => {
+      expect(await hookValue(name, useCanMessageClub)).toBe(expected);
     },
   );
 
   // Guide: Send messages — captains, coaches, managers, committee, admin.
   test.each(rows([...ADMINS, 'committee', 'clubCaptain', 'squadCaptain', ...COACHES, 'manager']))(
     'useCanSendMessages: %s → %s',
-    (name, expected) => {
-      expect(hookValue(name, useCanSendMessages)).toBe(expected);
+    async (name, expected) => {
+      expect(await hookValue(name, useCanSendMessages)).toBe(expected);
     },
   );
 
@@ -566,37 +566,37 @@ describe('messages', () => {
           ].includes(n),
       ),
     ),
-  )('useGetsMessages: %s → %s', (name, expected) => {
-    expect(hookValue(name, useGetsMessages)).toBe(expected);
+  )('useGetsMessages: %s → %s', async (name, expected) => {
+    expect(await hookValue(name, useGetsMessages)).toBe(expected);
   });
 });
 
 describe('surveys', () => {
-  test.each(rows([...ADMINS, 'committee']))('useCanManageSurveys: %s → %s', (name, expected) => {
-    expect(hookValue(name, useCanManageSurveys)).toBe(expected);
+  test.each(rows([...ADMINS, 'committee']))('useCanManageSurveys: %s → %s', async (name, expected) => {
+    expect(await hookValue(name, useCanManageSurveys)).toBe(expected);
   });
 
   // Guide: club captains message the club but send no polls; squad captains
   // poll their own squad or team.
   test.each(rows([...ADMINS, 'committee', 'squadCaptain', ...COACHES, 'manager']))(
     'useCanSendSurveys: %s → %s',
-    (name, expected) => {
-      expect(hookValue(name, useCanSendSurveys)).toBe(expected);
+    async (name, expected) => {
+      expect(await hookValue(name, useCanSendSurveys)).toBe(expected);
     },
   );
 });
 
 describe('integrity training', () => {
   // Guide: Check training certificates — committee and admins.
-  test.each(rows([...ADMINS, 'committee']))('useCanCheckTraining: %s → %s', (name, expected) => {
-    expect(hookValue(name, useCanCheckTraining)).toBe(expected);
+  test.each(rows([...ADMINS, 'committee']))('useCanCheckTraining: %s → %s', async (name, expected) => {
+    expect(await hookValue(name, useCanCheckTraining)).toBe(expected);
   });
 });
 
 describe('season KPIs', () => {
   // The switch for the feature: approved members only; the database picks whose KPIs.
-  test.each(rows(APPROVED))('useKpisOn: %s → %s', (name, expected) => {
-    expect(hookValue(name, useKpisOn)).toBe(expected);
+  test.each(rows(APPROVED))('useKpisOn: %s → %s', async (name, expected) => {
+    expect(await hookValue(name, useKpisOn)).toBe(expected);
   });
 });
 
@@ -623,8 +623,8 @@ const ids = (teams: Team[]) => teams.map((t) => t.id);
 describe('groups a member leads', () => {
   test.each(NAMES.map((n) => [n, LED[n] ?? []] as const))(
     'useLedGroups (attendance): %s → %j',
-    (name, expected) => {
-      expect(ids(hookValue(name, () => useLedGroups(TEAMS)))).toEqual(expected);
+    async (name, expected) => {
+      expect(ids(await hookValue(name, () => useLedGroups(TEAMS)))).toEqual(expected);
     },
   );
 
@@ -632,31 +632,31 @@ describe('groups a member leads', () => {
   // Managers don't.
   test.each(NAMES.map((n) => [n, n === 'manager' ? [] : (LED[n] ?? [])] as const))(
     'usePlanGroups (session plans): %s → %j',
-    (name, expected) => {
-      expect(ids(hookValue(name, () => usePlanGroups(TEAMS)))).toEqual(expected);
+    async (name, expected) => {
+      expect(ids(await hookValue(name, () => usePlanGroups(TEAMS)))).toEqual(expected);
     },
   );
 
   // Captains message the squad or team they captain while they play in it.
   test.each(NAMES.map((n) => [n, n === 'squadCaptain' ? [TEAM_A.id] : (LED[n] ?? [])] as const))(
     'useMessageGroups: %s → %j',
-    (name, expected) => {
-      expect(ids(hookValue(name, () => useMessageGroups(TEAMS)))).toEqual(expected);
+    async (name, expected) => {
+      expect(ids(await hookValue(name, () => useMessageGroups(TEAMS)))).toEqual(expected);
     },
   );
 
   test.each(NAMES.map((n) => [n, n === 'squadCaptain' ? [TEAM_A.id] : []] as const))(
     'useCaptainedGroupIds: %s → %j',
-    (name, expected) => {
-      expect([...hookValue(name, useCaptainedGroupIds)]).toEqual(expected);
+    async (name, expected) => {
+      expect([...await hookValue(name, useCaptainedGroupIds)]).toEqual(expected);
     },
   );
 
-  it('only offers the squads and teams it was given, such as the current season', () => {
-    expect(ids(hookValue('admin', () => useLedGroups([TEAM_B])))).toEqual([TEAM_B.id]);
-    expect(ids(hookValue('headCoach', () => useLedGroups([TEAM_B])))).toEqual([]);
-    expect(ids(hookValue('admin', () => usePlanGroups([])))).toEqual([]);
-    expect(ids(hookValue('squadCaptain', () => useMessageGroups([TEAM_B])))).toEqual([]);
+  it('only offers the squads and teams it was given, such as the current season', async () => {
+    expect(ids(await hookValue('admin', () => useLedGroups([TEAM_B])))).toEqual([TEAM_B.id]);
+    expect(ids(await hookValue('headCoach', () => useLedGroups([TEAM_B])))).toEqual([]);
+    expect(ids(await hookValue('admin', () => usePlanGroups([])))).toEqual([]);
+    expect(ids(await hookValue('squadCaptain', () => useMessageGroups([TEAM_B])))).toEqual([]);
   });
 });
 
@@ -665,32 +665,32 @@ describe('groups a member leads', () => {
 // ---------------------------------------------------------------------------
 
 describe('feature switches', () => {
-  it('stops absence reviews when attendance is off', () => {
+  it('stops absence reviews when attendance is off', async () => {
     mockClub.features.attendance = false;
-    for (const name of NAMES) expect(hookValue(name, useLeadsAGroup)).toBe(false);
+    for (const name of NAMES) expect(await hookValue(name, useLeadsAGroup)).toBe(false);
   });
 
-  it('stops captains’ polls when the club turns them off, but not coaches’ surveys', () => {
+  it('stops captains’ polls when the club turns them off, but not coaches’ surveys', async () => {
     mockClub.features.captainPolls = false;
-    expect(hookValue('squadCaptain', useCanSendSurveys)).toBe(false);
-    expect([...hookValue('squadCaptain', useCaptainedPollGroupIds)]).toEqual([]);
-    expect(hookValue('headCoach', useCanSendSurveys)).toBe(true);
-    expect(hookValue('manager', useCanSendSurveys)).toBe(true);
-    expect(hookValue('committee', useCanSendSurveys)).toBe(true);
+    expect(await hookValue('squadCaptain', useCanSendSurveys)).toBe(false);
+    expect([...await hookValue('squadCaptain', useCaptainedPollGroupIds)]).toEqual([]);
+    expect(await hookValue('headCoach', useCanSendSurveys)).toBe(true);
+    expect(await hookValue('manager', useCanSendSurveys)).toBe(true);
+    expect(await hookValue('committee', useCanSendSurveys)).toBe(true);
     // Messages from captains don't depend on polls.
-    expect(hookValue('squadCaptain', useCanSendMessages)).toBe(true);
+    expect(await hookValue('squadCaptain', useCanSendMessages)).toBe(true);
   });
 
   test.each(NAMES.map((n) => [n, n === 'squadCaptain' ? [TEAM_A.id] : []] as const))(
     'useCaptainedPollGroupIds with captains’ polls on: %s → %j',
-    (name, expected) => {
-      expect([...hookValue(name, useCaptainedPollGroupIds)]).toEqual(expected);
+    async (name, expected) => {
+      expect([...await hookValue(name, useCaptainedPollGroupIds)]).toEqual(expected);
     },
   );
 
-  it('turns season KPIs off for everyone when the club hasn’t turned them on', () => {
+  it('turns season KPIs off for everyone when the club hasn’t turned them on', async () => {
     mockClub.features.kpis = false;
-    for (const name of NAMES) expect(hookValue(name, useKpisOn)).toBe(false);
+    for (const name of NAMES) expect(await hookValue(name, useKpisOn)).toBe(false);
   });
 });
 
@@ -753,7 +753,7 @@ const GATED: [string, () => unknown, Fetch, PersonaName[], PersonaName[]?][] = [
 describe.each(GATED)('%s fetches only for the members allowed it', (_hook, hook, call, yes, skip) => {
   test.each(rows(yes, skip))('%s → %s', async (name, expected) => {
     as(name);
-    renderHook(hook);
+    await renderHook(hook);
     await act(async () => {});
     expect(fetched(call)).toBe(expected);
   });
@@ -763,7 +763,7 @@ describe('feature switches stop the fetches', () => {
   it('fetches no affiliation follow-ups when the club keeps no affiliation records', async () => {
     mockClub.affiliation = false;
     as('admin');
-    renderHook(useAffiliationTodos);
+    await renderHook(useAffiliationTodos);
     await act(async () => {});
     expect(fetched({ rpc: 'admin_affiliation' })).toBe(false);
   });
@@ -780,7 +780,7 @@ describe('feature switches stop the fetches', () => {
     async (feature, hook, call) => {
       mockClub.features[feature] = false;
       as('admin');
-      renderHook(hook);
+      await renderHook(hook);
       await act(async () => {});
       expect(fetched(call)).toBe(false);
     },
@@ -788,7 +788,7 @@ describe('feature switches stop the fetches', () => {
 
   it('leaves absences to review empty unless asked for', async () => {
     as('headCoach');
-    const { result } = renderHook(() => useAbsencesToReview(false));
+    const { result } = await renderHook(() => useAbsencesToReview(false));
     await act(async () => {});
     expect(result.current.absencesToReview).toEqual([]);
   });
@@ -802,7 +802,7 @@ describe('results for members not allowed them', () => {
   it('gives no safety to-dos to anyone but admins', async () => {
     for (const name of NAMES.filter((n) => !ADMINS.includes(n))) {
       as(name);
-      const { result } = renderHook(useSafetyTodos);
+      const { result } = await renderHook(useSafetyTodos);
       await act(async () => {});
       expect(result.current.safetyTodos).toBeNull();
     }
@@ -811,7 +811,7 @@ describe('results for members not allowed them', () => {
   it('gives no check-in overview to coaches, managers, athletes or guardians', async () => {
     for (const name of ['headCoach', 'manager', 'adultAthlete', 'guardian', 'guest'] as const) {
       as(name);
-      const { result } = renderHook(() => useCheckInOverview('2026-10-18'));
+      const { result } = await renderHook(() => useCheckInOverview('2026-10-18'));
       await act(async () => {});
       expect(result.current.checkInOverview).toBeNull();
     }
@@ -820,7 +820,7 @@ describe('results for members not allowed them', () => {
   it('gives no check-in of their own to members who aren’t athletes', async () => {
     for (const name of ['headCoach', 'guardian', 'admin', 'pendingCoach'] as const) {
       as(name);
-      const { result } = renderHook(useMyCheckIn);
+      const { result } = await renderHook(useMyCheckIn);
       await act(async () => {});
       expect(result.current.myCheckIn).toBeUndefined();
     }

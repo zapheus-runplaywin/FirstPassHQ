@@ -48,7 +48,7 @@ const CLUB_TRAINING = { training_requirements: [{ id: 'req-1' }] };
 async function openHome(who: PersonaName | Persona, tables: Record<string, unknown[]> = CLUB_TRAINING) {
   jest.useFakeTimers({ now: TODAY });
   signInAs(typeof who === 'string' ? personas[who] : who, tables);
-  renderRouter({ appDir: 'src/app', overrides }, { initialUrl: '/' });
+  await renderRouter({ appDir: 'src/app', overrides }, { initialUrl: '/' });
   for (let i = 0; i < 8; i++) {
     await act(async () => {
       await Promise.resolve();
@@ -231,7 +231,7 @@ describe.each(BY_ROLE)('$who', ({ who, sees }) => {
 describe('administration and concerns', () => {
   it('only an approved admin has the Administration card, and it opens Administration', async () => {
     await openHome('admin');
-    fireEvent.press(screen.getByText(ITEMS.administration));
+    await fireEvent.press(screen.getByText(ITEMS.administration));
     await act(async () => {});
     expect(screen.getByText('screen:administration')).toBeTruthy();
     expect(screen).toHavePathname('/administration');
@@ -259,7 +259,7 @@ describe('administration and concerns', () => {
 describe('reports', () => {
   it('a committee member with a check opens Reports from home', async () => {
     await openHome('committee');
-    fireEvent.press(screen.getByText('Reports'));
+    await fireEvent.press(screen.getByText('Reports'));
     await act(async () => {});
     expect(screen.getByText('screen:admin/reports/index')).toBeTruthy();
     expect(screen).toHavePathname('/admin/reports');
@@ -572,7 +572,7 @@ describe('feature switches', () => {
   it('a committee member opens the registers from home', async () => {
     setClubFeatures({ registers: true });
     await openHome('committee');
-    fireEvent.press(screen.getByText('The club’s policies and conflicts of interest'));
+    await fireEvent.press(screen.getByText('The club’s policies and conflicts of interest'));
     await act(async () => {});
     expect(screen.getByText('screen:registers/index')).toBeTruthy();
     expect(screen).toHavePathname('/registers');

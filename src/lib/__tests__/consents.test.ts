@@ -50,7 +50,7 @@ describe('useClubPolicies', () => {
       policy_version: '2026-1',
     };
     answer(policies);
-    const { result } = renderHook(() => useClubPolicies());
+    const { result } = await renderHook(() => useClubPolicies());
     expect(result.current).toBeNull();
     await waitFor(() => expect(result.current).toEqual(policies));
     expect(rpc).toHaveBeenCalledWith('club_policies');
@@ -58,7 +58,7 @@ describe('useClubPolicies', () => {
 
   it('stays null when the club has none recorded', async () => {
     answer(null);
-    const { result } = renderHook(() => useClubPolicies());
+    const { result } = await renderHook(() => useClubPolicies());
     await waitFor(() => expect(rpc).toHaveBeenCalled());
     await act(async () => {});
     expect(result.current).toBeNull();
@@ -66,7 +66,7 @@ describe('useClubPolicies', () => {
 
   it('asks once, not on every render', async () => {
     answer(null);
-    const { rerender } = renderHook(() => useClubPolicies());
+    const { rerender } = await renderHook(() => useClubPolicies());
     await act(async () => {});
     rerender({});
     rerender({});

@@ -176,7 +176,7 @@ describe('ClubProvider', () => {
   }
 
   async function open(signedIn: boolean) {
-    const hook = renderHook(
+    const hook = await renderHook(
       () => ({ club: useClub(), injuries: useFeature('injuries'), squads: useSquads() }),
       { wrapper: wrapper(signedIn) },
     );
@@ -203,7 +203,7 @@ describe('ClubProvider', () => {
   it('before a club is picked, uses the build’s defaults and is ready at once', async () => {
     mockChosen = null;
     await AsyncStorage.setItem('club-profile:THUNDER', JSON.stringify(saved()));
-    const { result } = renderHook(() => useClub(), { wrapper: wrapper(false) });
+    const { result } = await renderHook(() => useClub(), { wrapper: wrapper(false) });
     expect(result.current.ready).toBe(true);
     await act(async () => {});
     expect(result.current.name).toBe('FirstPass HQ');
@@ -256,18 +256,18 @@ describe('ClubProvider', () => {
 });
 
 describe('outside ClubProvider', () => {
-  it('useClub refuses', () => {
+  it('useClub refuses', async () => {
     const error = jest.spyOn(console, 'error').mockImplementation(() => {});
     function Bare() {
       useClub();
       return null;
     }
-    expect(() => render(<Bare />)).toThrow('useClub must be used inside ClubProvider');
+    await expect(render(<Bare />)).rejects.toThrow('useClub must be used inside ClubProvider');
     error.mockRestore();
   });
 
-  it('useClubColors gives the build’s palette', () => {
-    const { result } = renderHook(() => useClubColors());
+  it('useClubColors gives the build’s palette', async () => {
+    const { result } = await renderHook(() => useClubColors());
     expect(result.current).toBe(Colors);
   });
 });

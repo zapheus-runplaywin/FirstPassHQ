@@ -11,7 +11,7 @@
  * ever sees totals (user guide sections 3, 5, 6 and 8).
  */
 import { fireEvent, screen } from 'expo-router/testing-library';
-import { Text, TextInput } from 'react-native';
+import { Text } from 'react-native';
 
 import SurveyScreen from '@/app/surveys/[id]';
 import SurveysScreen from '@/app/surveys/index';
@@ -86,7 +86,7 @@ const placeholder = (route: string) =>
   };
 
 const press = async (text: string | RegExp, index = 0) => {
-  fireEvent.press(screen.getAllByText(text)[index]);
+  await fireEvent.press(screen.getAllByText(text)[index]);
   await settle(4);
 };
 
@@ -423,7 +423,7 @@ describe('answering a survey', () => {
     // Tapping a picked choice again takes it off.
     await press('Gym');
     await press('4');
-    fireEvent.changeText(screen.getByPlaceholderText('Write your answer'), 'More pool sessions');
+    await fireEvent.changeText(screen.getByPlaceholderText('Write your answer'), 'More pool sessions');
     await press('Send answers');
     expect(onlyRpcCall('submit_survey_response')).toEqual({
       p_survey_id: 's1',
@@ -514,7 +514,7 @@ describe('answering a survey', () => {
     expect(screen.getByText(`Closed ${closesDay}`)).toBeTruthy();
     expect(screen.queryByText('Everyone must answer this one.')).toBeNull();
     expect(screen.queryByText('Send answers')).toBeNull();
-    expect(screen.UNSAFE_queryAllByType(TextInput)).toHaveLength(0);
+    expect(screen.container.queryAll((n) => n.type === 'TextInput')).toHaveLength(0);
     expect(screen.getByText('Tuesday · Thursday')).toBeTruthy();
     expect(screen.getByText('Rating from 1 to 5')).toBeTruthy();
     expect(screen.getByText('Written answer')).toBeTruthy();
@@ -573,7 +573,7 @@ describe('a parent’s copy of their child’s survey', () => {
       screen.getByText('Answers are anonymous, so nobody can see your child’s answers, including you.'),
     ).toBeTruthy();
     expect(screen.queryByText('Send answers')).toBeNull();
-    expect(screen.UNSAFE_queryAllByType(TextInput)).toHaveLength(0);
+    expect(screen.container.queryAll((n) => n.type === 'TextInput')).toHaveLength(0);
   });
 
   it('shows the child’s named answers once they’ve sent them', async () => {

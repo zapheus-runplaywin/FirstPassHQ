@@ -185,17 +185,17 @@ describe('the calendar list', () => {
   it('filters to the club calendar or one team’s', async () => {
     await openCalendar();
     expect(screen.getByText('All')).toBeTruthy();
-    fireEvent.press(screen.getByText('Club'));
+    await fireEvent.press(screen.getByText('Club'));
     expect(screen.getByText('Club AGM')).toBeTruthy();
     expect(screen.queryByText('Open A training')).toBeNull();
-    fireEvent.press(screen.getAllByText('Open A')[0]);
+    await fireEvent.press(screen.getAllByText('Open A')[0]);
     expect(screen.queryByText('Club AGM')).toBeNull();
     expect(screen.getByText('Open A training')).toBeTruthy();
   });
 
   it('opens an event when tapped', async () => {
     await openCalendar();
-    fireEvent.press(screen.getByText('Club AGM'));
+    await fireEvent.press(screen.getByText('Club AGM'));
     expect(push).toHaveBeenCalledWith({
       pathname: '/event/[id]',
       params: { id: 'agm:2026-10-20T10:00:00.000Z' },
@@ -243,7 +243,7 @@ describe('the calendar list', () => {
   it('Load more reaches three months further, up to 12 months ahead', async () => {
     await openCalendar();
     for (const months of [6, 9, 12]) {
-      fireEvent.press(screen.getByText('Load more'));
+      await fireEvent.press(screen.getByText('Load more'));
       await settle();
       const until = new Date(2026, 9 + months, 18);
       const suffix = months === 12 ? ', 12 months ahead.' : '.';
@@ -256,22 +256,22 @@ describe('the calendar list', () => {
 describe('the month view', () => {
   it('shows this month’s events, and a tapped day’s only', async () => {
     await openCalendar();
-    fireEvent.press(screen.getByText('Month'));
+    await fireEvent.press(screen.getByText('Month'));
     await settle();
     expect(screen.getByText('Club AGM')).toBeTruthy();
     expect(screen.getByText('Open A training')).toBeTruthy();
-    fireEvent.press(screen.getByLabelText(new Date(2026, 9, 20).toDateString()));
+    await fireEvent.press(screen.getByLabelText(new Date(2026, 9, 20).toDateString()));
     expect(screen.getByText('Club AGM')).toBeTruthy();
     expect(screen.queryByText('Open A training')).toBeNull();
-    fireEvent.press(screen.getByLabelText(new Date(2026, 9, 22).toDateString()));
+    await fireEvent.press(screen.getByLabelText(new Date(2026, 9, 22).toDateString()));
     expect(screen.getByText('Nothing on this day.')).toBeTruthy();
   });
 
   it('stepping back a month loads the past 12 months', async () => {
     await openCalendar();
-    fireEvent.press(screen.getByText('Month'));
+    await fireEvent.press(screen.getByText('Month'));
     await settle();
-    fireEvent.press(screen.getByLabelText('Previous month'));
+    await fireEvent.press(screen.getByLabelText('Previous month'));
     await settle();
     expect(screen.getByText('Last month’s quiz night')).toBeTruthy();
     expect(fixtures.queries[fixtures.queries.length - 1]).toContainEqual({
@@ -310,11 +310,11 @@ describe('one event', () => {
 
   it('opens the address in maps and copies it', async () => {
     await openEvent('fixture:f1');
-    fireEvent.press(screen.getByText('State Netball Centre, Court 4'));
+    await fireEvent.press(screen.getByText('State Netball Centre, Court 4'));
     expect(Linking.openURL).toHaveBeenCalledWith(
       'https://maps.apple.com/?q=State%20Netball%20Centre%2C%20Court%204',
     );
-    fireEvent.press(screen.getByLabelText('Copy address'));
+    await fireEvent.press(screen.getByLabelText('Copy address'));
     await settle();
     expect(Clipboard.setStringAsync).toHaveBeenCalledWith('State Netball Centre, Court 4');
     expect(screen.getByText('Copied')).toBeTruthy();
@@ -323,7 +323,7 @@ describe('one event', () => {
   it('makes web addresses in the notes tappable', async () => {
     await openEvent('training:2026-10-21T09:00:00.000Z');
     expect(screen.getByText('Notes')).toBeTruthy();
-    fireEvent.press(screen.getByText('https://example.test/drills'));
+    await fireEvent.press(screen.getByText('https://example.test/drills'));
     expect(Linking.openURL).toHaveBeenCalledWith('https://example.test/drills');
   });
 
