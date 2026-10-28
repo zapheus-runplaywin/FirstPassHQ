@@ -4,6 +4,7 @@ import { Image } from 'expo-image';
 import { useEffect, useState } from 'react';
 import { Platform, Pressable, StyleSheet, Switch, View } from 'react-native';
 
+import { LoadMonitoringSettings } from '@/components/load-monitoring-settings';
 import { RecordRetention } from '@/components/record-retention';
 import { Screen } from '@/components/screen';
 import { ThemedText } from '@/components/themed-text';
@@ -421,6 +422,8 @@ export default function ClubSettingsScreen() {
         </ThemedText>
       ) : null}
       <Button title="Save club settings" onPress={save} busy={saving} disabled={uploading} />
+
+      {club.features.checkIns && club.features.trainingLoad ? <LoadMonitoringSettings /> : null}
 
       <RecordRetention />
     </Screen>

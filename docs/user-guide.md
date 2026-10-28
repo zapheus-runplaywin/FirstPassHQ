@@ -55,7 +55,9 @@ each of their roles can.
 another as its **Complaints Manager**. They're not separate roles: each keeps their own role and also
 sees and acts on the concerns members raise (see [The concerns register](#the-concerns-register)).
 The Child Safety Officer also sees every athlete's wellbeing flags: the day and lowest score of
-each low check-in, never the answers or notes (see [Wellbeing flags](#wellbeing-flags)).
+each low check-in, never the answers or notes (see [Wellbeing flags](#wellbeing-flags)), and,
+when the club turns on Training load flags, training load patterns for children (see [Training load
+patterns](#training-load-patterns)).
 
 **Squads and teams.** Each season, members join a **squad** (at West Coast Thunder: Mixed Open
 Squad, Open Squad, 20 & Under Squad, 17 & Under Squad, Lightning Academy). At selections, admins name
@@ -106,6 +108,7 @@ What each role sees on its home screen:
 | Team goals for a game                  | See, comment |       See       | Set, review, comment |            |               |               |         |      See      |
 | Check-ins of others                    |         | Their athlete's | Own athletes |            | Averages only | Averages only |         | Averages only |
 | Training sessions of others            |         | Their athlete's | Own athletes |            |               |               |         |               |
+| Training load flags (when turned on)   | Own, gently | When a coach has talked with their athlete | Own athletes: flags, numbers, mark talked |            |               |               |         | Choose the flags |
 | Report an injury                       |   Own   | Their athlete's |              |            |               |               |         |               |
 | Log an injury when it happens          |         |                 | Own athletes | Own athletes |             |  Own athletes‡ |         |               |
 | Add physio updates                     |   Own   | Their athlete's |              |            |               |  Own athletes‡ |         |               |
@@ -188,8 +191,9 @@ cleared to help, **Raise a concern**, and the Your details, Switch club and Dele
 
 Admins can turn off Messages, Calendar, Daily check-ins, Injuries, Attendance, Session plans,
 Surveys, Captains' polls, Awards, Game goals and Integrity training for the whole club in **Club settings**. A feature that's off disappears for every role.
-**Season KPIs**, **Affiliation records** and **Policy and conflict registers** work the other way:
-they're off unless an admin turns them on. Season KPIs are for a club that sets its coaches,
+**Season KPIs**, **Training load flags**, **Affiliation records** and **Policy and conflict registers** work the other way:
+they're off unless an admin turns them on. Training load flags give coaches prompts to talk with an
+athlete from the sessions they log (see [Training load](#training-load)). Season KPIs are for a club that sets its coaches,
 managers and athletes measures for the season (see [Season KPIs](#season-kpis)); Affiliation
 records are for a club or association that reports to its association or Netball WA (see
 [Affiliation](#affiliation)); the registers keep the club's policies with their owners and review
@@ -733,9 +737,16 @@ to 10 (maximal), then **Save session**. You can log up to six sessions a day. Ta
 change it or **Delete session**.
 
 Minutes times effort is the session's load: an hour at 6 is 360. The card at the top totals your
-sessions, minutes and load for the last 7 days and each of the three weeks before, and says how
-this week compares, such as "Up 40% on the 3 weeks before". A sudden jump is worth talking about
-with your coach.
+sessions, minutes and load, with your average effort, for the last 7 days and each of the three
+weeks before, and says how this week compares, such as "Up 40% on the 3 weeks before". A sudden
+jump is worth talking about with your coach. The screen's tip: rate each session about 30 minutes
+after it ends, and log school, representative and other-club sport too, under **Other**, so your
+week adds up.
+
+**A big week.** When the club turns on Training load flags and your week stands out, a card under
+your sessions says why, such as "Your training this week is well up on the last few weeks", and
+that your coach may check in about how you're going. It's not a warning, just a chance to talk.
+Your coaches see the same flag (see [Training load](#training-load)).
 
 Your sessions are seen exactly as your check-ins are: by your coaches (if you're under 18, once a
 parent or guardian has given consent) and your parents or guardians. Your teammates, the
@@ -744,6 +755,7 @@ check-ins, after the club's period under Keeping records.
 
 <img src="user-guide/session-log.png" width="210" alt="Logging a training session with minutes and effort">
 <img src="user-guide/session-log-weeks.png" width="210" alt="Weekly training load and logged sessions">
+<img src="user-guide/session-log-big-week.png" width="210" alt="An athlete's A big week card">
 
 ### Game goals
 
@@ -1015,6 +1027,8 @@ kinds of information about your child:
 - **Daily check-ins**: their answers and notes, and the training sessions they log (minutes and
   how hard each felt), are seen by their coaches. When they score low,
   the club's Child Safety Officer sees the day and the lowest score, never their answers or notes.
+  If the club uses Training load flags, the same consent lets their coaches see their load flags
+  and the Child Safety Officer see training load patterns, never their sessions.
 - **Injuries and health information**: their injuries, restrictions, physio updates and documents
   are seen by their coaches, the physios who look after them and the committee members cleared to
   work with children, who sign off
@@ -1137,6 +1151,23 @@ A survey sent to parents and guardians themselves, for example to all guardians,
 
 If your child under 18 is a captain and sends a poll to their squad or team, you get a copy saying
 your child sent it, so you can see what they asked. You don't see their teammates' answers.
+
+### Your child's training load
+
+When the club turns on Training load flags, your child's coaches get a prompt to check in with
+them when their logged training stands out: a big jump on the weeks before, more hours of sport
+in a week than their age in years, training while an injury still has restrictions, or one of
+those alongside low check-ins. Once a coach marks that they've talked with your child, opening
+your child from **Check-ins** shows a calm card, such as "Casey Coach checked in with Sam about
+their training load. The club noticed they did more hours of sport in the week than their age in
+years. Coaches review training load as part of looking after every athlete." with the date, and
+**Why the club looks at this**, which links to the published studies behind it.
+
+You don't see the flags themselves, the numbers or the coach's note: the card is there so you know
+the club looks at load, not to worry you. Training load is a conversation starter, not a
+diagnosis. If you're worried about your child's training, talk to their coach.
+
+<img src="user-guide/training-load-parent.png" width="210" alt="A parent's card after a coach checked in about training load">
 
 ### What's changed for your child
 
@@ -1362,6 +1393,48 @@ drops out once its squad phase is complete, and if that was your only group the 
 <img src="user-guide/check-ins-trends.png" width="210" alt="Check-in trends">
 <img src="user-guide/check-ins-athlete-history.png" width="210" alt="One athlete's check-in history">
 <img src="user-guide/check-ins-athlete-sessions.png" width="210" alt="One athlete's training sessions and weekly load">
+
+### Training load
+
+When the club turns on **Training load flags**, the **Check-ins** card adds **Training load**, and
+your to-do list says **Talk with N athletes about their training load** while any have open flags.
+It lists your athletes under **Worth a chat** and **Talked with this week**, each with their
+sessions and minutes in the last 7 days and their load ratio. Athletes under 18 show once a parent
+or guardian has given consent for check-ins. An athlete can be flagged for:
+
+- **Load jumped**: their last 7 days are well above the last 4 weeks. The app compares a 7-day and
+  a 28-day weighted average of their daily load (minutes times effort). The club chooses whether
+  this flags at **1.5 or more** (the default) or **above 1.3**, or not at all. It starts only once
+  they've logged sessions in each of the 3 weeks before the last 7 days, so a new athlete isn't
+  flagged for starting.
+- **Hours over age**: an athlete under 18 did more hours of sport in 7 days than their age in
+  years. It needs their date of birth, and the club can switch it off.
+- **Training while injured**: they logged a session while an injury with restrictions isn't
+  cleared. This comes from the club's own injury record, not a study.
+- **Low check-ins as well**: 2 or more check-ins scoring 2 or less in the same 7 days, added only
+  alongside another flag.
+
+Every flag has **Why this flag**, which opens the published study or website it rests on, with a
+link. Tap an athlete for their check-in page, where **Training load** shows their flags, the load
+ratio, their average effort, and Foster's monotony and strain for the week (shown for interest:
+no cut-off is proven, so they never flag). For an athlete 18 or over it also draws a 12-week
+fitness, fatigue and form chart in the style of TrainingPeaks; under 18s don't get it.
+
+After you've talked with them, add an optional **Note for coaches** (up to 500 characters) and tap
+**Talked with them**. That closes their flags for 7 days for all their coaches. The athlete's
+parents or guardians then see that you checked in and what about, never your note (see [Your
+child's training load](#your-childs-training-load)).
+
+> **Training load is a conversation starter, not a diagnosis.** These figures come from what
+> athletes report about their own sessions. They can't predict injury or illness and must not be
+> relied on for selection, medical or return-to-play decisions. A flag means it may be worth
+> checking in with the athlete, as one part of the club's wider care for athlete welfare, alongside
+> coaches, parents, physios and the athlete's own view. If you're worried about an athlete's
+> health, talk to a qualified health professional. The app shows this wherever load is.
+
+<img src="user-guide/training-load-coach.png" width="210" alt="Training load: athletes worth a chat">
+<img src="user-guide/training-load-athlete.png" width="210" alt="One athlete's training load flags and Talked with them">
+<img src="user-guide/training-load-fitness.png" width="210" alt="Fitness, fatigue and form for an athlete 18 or over">
 
 ### Game goals
 
@@ -2887,6 +2960,15 @@ so leave them filled in.
 - **Season KPIs**: off unless you turn it on. It adds **Season KPIs** to the home screen for the
   committee, coaches, managers, athletes and parents, **Season KPI reviews** to Administration and
   the **Season KPIs** report (see [Season KPIs](#season-kpis)).
+- **Training load flags**: off unless you turn it on, and only while Daily check-ins is on. It
+  gives coaches prompts to talk with an athlete from the sessions they log (see [Training
+  load](#training-load)), parents a calm card once a coach has checked in, and the Child Safety
+  Officer patterns for under 18s (see [Training load patterns](#training-load-patterns)). Once it's
+  on, **Training load flags** below the features lets you choose when a rise in load flags:
+  **1.5 or more** (the default, Gabbett 2016's "danger zone"), **above 1.3** (above the 0.8 to 1.3
+  "sweet spot") or **Off**, and whether to flag **Hours over age (under 18s)** (on to start,
+  Jayanthi et al. 2015). Only values from published studies are offered, and **Sources** links
+  them. Tap **Save training load flags**.
 - **Affiliation records**: off unless you turn it on. For a club or association that reports to
   its association or Netball WA, it adds **Affiliation** to Administration and Reports (see
   [Affiliation](#affiliation)). Only admins see it.
@@ -2906,6 +2988,7 @@ part of the app build and don't change here.
 <img src="user-guide/club-settings-physios.png" width="210" alt="Club settings: physios get club messages">
 <img src="user-guide/club-settings-affiliation.png" width="210" alt="Club settings: the Affiliation records switch">
 <img src="user-guide/club-settings-registers.png" width="210" alt="Club settings: the Policy and conflict registers switch">
+<img src="user-guide/club-settings-training-load.png" width="210" alt="Club settings: training load flag choices">
 
 ### Policy and conflict registers
 
@@ -3021,7 +3104,7 @@ its periods starts on those.
   job can pause, for example when GitHub pauses scheduled jobs in a quiet repository, so ask
   FirstPass to check it.
 - **Daily check-ins**, counted from the day of the check-in, with the training sessions athletes
-  log beside them: 3 months, 6 months, 1 year (recommended) or 2 years.
+  log beside them and coaches' training load reviews: 3 months, 6 months, 1 year (recommended) or 2 years.
 - **Game goals, reflections and athletes' season KPIs**: game goals counted from the game, with
   their comments and the team's goals; athletes' season KPIs and reviews counted from their last
   change, once their season is archived. 1 year (recommended) to 5 years. Coaches' and managers'
@@ -3249,6 +3332,24 @@ goes when the club turns off Daily check-ins.
 
 <img src="user-guide/wellbeing-flags.png" width="210" alt="Wellbeing flags: each athlete's flagged days and lowest scores">
 
+### Training load patterns
+
+When the club turns on Training load flags, the Child Safety Officer also has **Concerns >
+Training load patterns**. It lists athletes under 18 whose logged training shows a pattern worth a
+welfare look:
+
+- more hours of sport than their age, 2 weeks running;
+- a load flag alongside 2 or more low check-ins this week;
+- a load flag a week ago that no coach has marked as talked about.
+
+You see the pattern and when it started, never their sessions, numbers or coaches' notes. A child
+shows once a parent has given consent for check-ins, and each time you open the page it's recorded
+in that child's record views. Your to-do list says **Look at N children's training load** while any
+are listed. Most patterns are simply a busy few weeks: if you're worried, talk to their coach or
+parent, or **Raise a concern** from the same page.
+
+<img src="user-guide/training-load-patterns.png" width="210" alt="Training load patterns for the Child Safety Officer">
+
 ### Club password
 
 **Club password** sets a password new members must enter to ask to join. It stops strangers who
@@ -3286,6 +3387,7 @@ once saved, only replaced or removed, and anyone who gets it wrong five times in
 | Survey totals shared with a team | When a coach, manager or captain shares a poll's results with the squad or team: everyone it went to and their parents or guardians, once results show. Only how many picked each choice and average ratings: never names, written answers or who has answered. |
 | Who has answered a survey | Named surveys: whoever can see the results sees who hasn't answered yet. Anonymous and name-optional surveys: only how many have answered. Each member sees whether they've answered themselves. |
 | Daily check-in answers, notes and training sessions | The athlete, their guardians and their coaches. For an athlete under 18, their coaches only once a parent or guardian consents, and until then their check-ins count in no average. The committee, physios and admins see only group averages of check-in answers, hidden below 3 check-ins (over three days, in Trends), and nothing of training sessions; teammates see none. |
+| Training load flags (when turned on) | The athlete (their own flags, gently worded) and their coaches, who also see the numbers and each other's notes. For an athlete under 18, coaches only once a parent or guardian consents to check-ins. Parents and guardians see only that a coach talked with their child, when and what about, never the flags, numbers or note. The Child Safety Officer sees patterns for under 18s, not numbers or notes. The committee, managers, physios and admins see none. |
 | Wellbeing flags | Only the Child Safety Officer: for every athlete, selected or not, the day and lowest score of each check-in scoring 2 or less in the last 14 days, never the answers or notes. Under 18s only once a parent or guardian consents to check-ins. |
 | Injuries and documents  | For an athlete under 18 whose parents haven't given consent for injuries: only the athlete, their guardians and admins. Otherwise the athlete, their guardians, their coaches, the physios who look after them (the Head Physio and physios in their squad or team), the committee (or only the committee members the club chose under **Injuries are seen by**) and admins. For an athlete under 18, only committee members with a current Working With Children Check or a parent volunteer exemption, and admins unless their own check has been missing or expired for over 30 days. Managers don't see injuries, including ones they log. A coach, manager or physio who logs an injury sees it only as their role already allows. Whoever takes attendance (coaches, managers, the committee and admins) sees only that an athlete is **Injured** and their expected return date, whatever the consent. While a clearance waits for the committee, any committee member or admin who could accept it can share its documents; everyone else views them in the app. |
 | Medical and emergency details | The athlete; an under 18's verified parents and guardians, who keep them (an athlete 18 or over keeps their own); and the coaches, managers and physios of the athlete's current squads and teams (the Head Physio for every athlete), for an under 18 only once a parent or guardian has given consent for injuries and health information. Not admins or the committee. Each view by a coach, manager or physio is recorded, and the athlete 18 or over, or an under 18's parents and guardians, see who and when. Checked once a year by whoever keeps them; admins see who has checked and when, but not the details. Removed when nobody has checked them for the club's chosen time (Keeping records), and deleted with the athlete's account. |
@@ -3320,7 +3422,7 @@ once saved, only replaced or removed, and anyone who gets it wrong five times in
 When someone leaves, their injury records are visible only to the committee and admins. Once an
 admin switches on **Remove old records**, they go after the club's period for cleared injuries (7
 years recommended), counted from when the athlete left, and
-check-ins, game goals, athletes' season KPIs from archived seasons, attendance, session plans and
+check-ins (with training sessions and training load reviews), game goals, athletes' season KPIs from archived seasons, attendance, session plans and
 training certificates go after 1 year, message text after 3 years (7 years when a child sent or
 received it), record views after 7 years, the files of a cleared injury 1 year after
 clearance and the injury 7 years after, medical and emergency details nobody has checked for 2 years, safeguarding records 30 years after they end, who voted
@@ -3455,6 +3557,9 @@ Working With Children Check, and another admin must do it.
   [Your child's surveys](#your-childs-surveys)).
 - **You read what the coaches share with your child.** Any session plan a coach shares with your
   child's squad or team, you can read too (see [Your child's session plans](#your-childs-session-plans)).
+- **The club keeps an eye on training load, calmly.** If the club uses Training load flags, a
+  coach gets a prompt to check in when your child's logged training stands out, and you see a card
+  once they have, never alarming numbers (see [Your child's training load](#your-childs-training-load)).
 - **You can tell the club your child will be away**, so an absence you didn't report stands out
   (see [Your child's attendance](#your-childs-attendance)).
 - **Nothing is shared without your consent.** Your child's check-ins and injuries are seen by
@@ -3490,6 +3595,9 @@ Working With Children Check, and another admin must do it.
   whole squads, teams or roles, and your parents or guardians get a copy.
 - **Session plans are read only.** Plans your coaches share can't be replied to, liked or passed
   on, and your parents or guardians can read them too.
+- **Your training sessions stay private.** Only you, your coaches and your parents or guardians
+  see them. If the club uses Training load flags and you have a big week, your coach may check in
+  with you: it's not a warning, just a chance to talk. There's no leaderboard or team total.
 - **Your season KPIs stay with your coaches and your family.** If your coaches set you KPIs, only
   you, your coaches, your parents or guardians and the club's admins see them. Your teammates
   don't, and there's nothing to like or share.
@@ -3629,6 +3737,16 @@ Working With Children Check, and another admin must do it.
   notes, and gets a to-do when the same athlete is flagged on 3 days in 7. A child's flags show
   only with the parent's consent for check-ins, which says so, and every look is recorded in the
   child's record views.
+- **Training load prompts a conversation, never a decision.** When the club turns on Training load
+  flags, coaches get prompts from the sessions athletes log, each linked to the published study it
+  rests on: a jump on the last 4 weeks (Gabbett 2016), more hours of sport in a week than a
+  child's age (Jayanthi et al. 2015), training while an injury has restrictions, and low check-ins
+  alongside (Saw et al. 2016). The app says everywhere that load is self-reported, can't predict
+  injury and must not be relied on for selection, medical or return-to-play decisions. Parents see
+  that a coach checked in, and the Child Safety Officer sees children whose hours stay over their
+  age, whose flags come with low check-ins, or whose flags no coach followed up within a week (see
+  [Training load patterns](#training-load-patterns)). Every look is recorded in the child's record
+  views. It's off unless an admin turns it on.
 - **Screens only for those who use them.** Each screen opens only for the roles it's for, even
   from a shared link or a typed web address: for example, only coaches, the committee, physios and
   admins open Check-ins, only an athlete's coaches and parents or guardians open their check-ins,

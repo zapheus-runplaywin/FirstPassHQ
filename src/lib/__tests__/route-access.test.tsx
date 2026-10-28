@@ -28,6 +28,7 @@ function features(overrides: Partial<Features> = {}): Features {
     messages: true,
     calendar: true,
     checkIns: true,
+    trainingLoad: true,
     injuries: true,
     attendance: true,
     sessionPlans: true,
@@ -152,6 +153,7 @@ const KEYS: Key[] = [
   'checkIn',
   'checkIns',
   'athleteCheckIns',
+  'trainingLoad',
   'awards',
   'gameGoals',
   'athleteGoals',
@@ -209,7 +211,7 @@ const CASES: [string, Auth, Key[]][] = [
   [
     'a coach',
     auth(profile('coach'), { memberships: [member('coach')] }),
-    ['readMessages', 'sendMessages', 'answerSurveys', 'sendSurveys', 'surveyResults', 'injuries', 'logInjury', 'attendance', 'takeAttendance', 'athleteAttendance', 'readSessionPlans', 'addSessionPlans', 'checkIns', 'athleteCheckIns', 'awards', 'gameGoals', 'athleteGoals', 'teamGoals', 'kpis', 'setKpis', 'training', 'chooseCaptains', 'medical', 'teamMedical', 'reviewPolicy', 'declareConflicts'],
+    ['readMessages', 'sendMessages', 'answerSurveys', 'sendSurveys', 'surveyResults', 'injuries', 'logInjury', 'attendance', 'takeAttendance', 'athleteAttendance', 'readSessionPlans', 'addSessionPlans', 'checkIns', 'athleteCheckIns', 'trainingLoad', 'awards', 'gameGoals', 'athleteGoals', 'teamGoals', 'kpis', 'setKpis', 'training', 'chooseCaptains', 'medical', 'teamMedical', 'reviewPolicy', 'declareConflicts'],
   ],
   [
     'a coach of only a finished squad',
@@ -313,7 +315,7 @@ const CASES: [string, Auth, Key[]][] = [
     auth(profile('athlete', { extra_roles: ['coach'] }), {
       memberships: [member('athlete'), member('coach', OTHER_TEAM)],
     }),
-    ['readMessages', 'sendMessages', 'answerSurveys', 'sendSurveys', 'surveyResults', 'injuries', 'reportInjury', 'logInjury', 'attendance', 'takeAttendance', 'athleteAttendance', 'familyAttendance', 'readSessionPlans', 'addSessionPlans', 'checkIn', 'checkIns', 'athleteCheckIns', 'awards', 'gameGoals', 'athleteGoals', 'teamGoals', 'kpis', 'setKpis', 'training', 'chooseCaptains', 'medical', 'teamMedical', 'reviewPolicy', 'declareConflicts'],
+    ['readMessages', 'sendMessages', 'answerSurveys', 'sendSurveys', 'surveyResults', 'injuries', 'reportInjury', 'logInjury', 'attendance', 'takeAttendance', 'athleteAttendance', 'familyAttendance', 'readSessionPlans', 'addSessionPlans', 'checkIn', 'checkIns', 'athleteCheckIns', 'trainingLoad', 'awards', 'gameGoals', 'athleteGoals', 'teamGoals', 'kpis', 'setKpis', 'training', 'chooseCaptains', 'medical', 'teamMedical', 'reviewPolicy', 'declareConflicts'],
   ],
   // A role opens its screens before the member is placed in a squad or team.
   [
@@ -340,7 +342,7 @@ const CASES: [string, Auth, Key[]][] = [
   [
     'a statistician placed in a team as a coach',
     auth(profile('statistician'), { memberships: [member('coach')] }),
-    ['readMessages', 'sendMessages', 'answerSurveys', 'sendSurveys', 'surveyResults', 'injuries', 'logInjury', 'attendance', 'takeAttendance', 'athleteAttendance', 'readSessionPlans', 'addSessionPlans', 'checkIns', 'athleteCheckIns', 'awards', 'gameGoals', 'athleteGoals', 'teamGoals', 'kpis', 'setKpis', 'training', 'chooseCaptains', 'medical', 'teamMedical', 'reviewPolicy', 'declareConflicts'],
+    ['readMessages', 'sendMessages', 'answerSurveys', 'sendSurveys', 'surveyResults', 'injuries', 'logInjury', 'attendance', 'takeAttendance', 'athleteAttendance', 'readSessionPlans', 'addSessionPlans', 'checkIns', 'athleteCheckIns', 'trainingLoad', 'awards', 'gameGoals', 'athleteGoals', 'teamGoals', 'kpis', 'setKpis', 'training', 'chooseCaptains', 'medical', 'teamMedical', 'reviewPolicy', 'declareConflicts'],
   ],
   [
     'a statistician placed in a team as a manager',

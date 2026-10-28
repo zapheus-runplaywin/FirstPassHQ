@@ -2,6 +2,7 @@ import { Stack, useFocusEffect, useLocalSearchParams } from 'expo-router';
 import { useCallback, useState } from 'react';
 
 import { CheckInHistory } from '@/components/check-in-history';
+import { AthleteLoadPanel } from '@/components/load-monitoring';
 import { SessionLogList, WeeklyLoad } from '@/components/session-log';
 import { Screen } from '@/components/screen';
 import { ThemedText } from '@/components/themed-text';
@@ -14,6 +15,15 @@ import type { CheckIn, SessionLog } from '@/lib/types';
 
 /** How many days of an athlete's check-ins a coach sees. */
 const HISTORY_DAYS = 28;
+/** Sessions read for the load numbers and the adults' fitness chart. */
+const LOAD_DAYS = 126;
+
+/** The sessions in the last four weeks, for the list. */
+function recent(logs: SessionLog[]) {
+  const since = new Date();
+  since.setDate(since.getDate() - HISTORY_DAYS);
+  return logs.filter((l) => l.day >= toDateString(since));
+}
 
 export default function AthleteCheckInsScreen() {
   const { id, name } = useLocalSearchParams<{ id: string; name?: string }>();
@@ -24,6 +34,8 @@ export default function AthleteCheckInsScreen() {
   const load = useCallback(async () => {
     const since = new Date();
     since.setDate(since.getDate() - HISTORY_DAYS);
+    const loadSince = new Date();
+    loadSince.setDate(loadSince.getDate() - LOAD_DAYS);
     const [checkInsResult, sessionsResult] = await Promise.all([
       supabase
         .from('check_ins')
@@ -35,7 +47,7 @@ export default function AthleteCheckInsScreen() {
         .from('session_logs')
         .select(SESSION_LOG_COLUMNS)
         .eq('athlete_id', id)
-        .gte('day', toDateString(since))
+        .gte('day', toDateString(loadSince))
         .order('day', { ascending: false })
         .order('updated_at', { ascending: false }),
     ]);
@@ -71,7 +83,8 @@ export default function AthleteCheckInsScreen() {
       {sessions ? (
         <>
           <WeeklyLoad logs={sessions} />
-          <SessionLogList logs={sessions} />
+          <SessionLogList logs={recent(sessions)} />
+          <AthleteLoadPanel athleteId={id} name={name ?? ''} logs={sessions} />
         </>
       ) : null}
     </Screen>

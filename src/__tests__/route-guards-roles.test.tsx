@@ -49,10 +49,11 @@ afterEach(() => {
   jest.clearAllMocks();
 });
 
-// Every feature on, Season KPIs and the registers included, so only the role guards decide.
+// Every feature on, Season KPIs, the registers and training load flags included, so only
+// the role guards decide.
 beforeEach(() => {
   resetClub();
-  setClubFeatures({ kpis: true, registers: true });
+  setClubFeatures({ kpis: true, registers: true, trainingLoad: true });
 });
 
 // ---------------------------------------------------------------------------
@@ -201,6 +202,7 @@ const WHO_OPENS: Record<string, PersonaName[]> = {
   'check-in': ATHLETES,
   'check-ins/index': CHECK_IN_VIEWERS,
   'check-ins/athlete/[id]': union(GROUP_COACHES, GUARDIANS),
+  'check-ins/load': GROUP_COACHES,
 
   'awards/index': AWARD_VOTERS,
   'awards/vote': AWARD_VOTERS,
@@ -225,6 +227,7 @@ const WHO_OPENS: Record<string, PersonaName[]> = {
   'concerns/[id]': union(ADMINS, ['safeguardingOfficer']),
   'concerns/report': union(ADMINS, ['safeguardingOfficer']),
   'concerns/wellbeing': union(ADMINS, ['safeguardingOfficer']),
+  'concerns/load': union(ADMINS, ['safeguardingOfficer']),
 
   'consent/[id]': union(GUARDIANS, ADMINS),
   'records/[id]': union(GUARDIANS, ADMINS),
@@ -331,6 +334,14 @@ describe('Season KPIs off', () => {
       await expectTurnedAway('coach', route, 'index');
     },
   );
+});
+
+describe('training load flags off', () => {
+  it('sends even coaches home from the training load list', async () => {
+    setClubFeatures({ kpis: true, registers: true });
+    await expectTurnedAway('coach', 'check-ins/load', 'index');
+    await expectTurnedAway('assistantCoach', 'check-ins/load', 'index');
+  });
 });
 
 describe('registers off', () => {

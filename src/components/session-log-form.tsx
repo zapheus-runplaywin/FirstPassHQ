@@ -2,6 +2,7 @@ import { useFocusEffect } from 'expo-router';
 import { useCallback, useState } from 'react';
 import { StyleSheet, View } from 'react-native';
 
+import { AthleteLoadNote } from '@/components/load-monitoring';
 import { dayLabel, EffortScale, SessionLogList, WeeklyLoad } from '@/components/session-log';
 import { ThemedText } from '@/components/themed-text';
 import { Button, ChipGroup, ErrorText, TextField } from '@/components/ui';
@@ -34,6 +35,8 @@ export function SessionLogSection({ athleteId, minor }: { athleteId: string; min
   const [draft, setDraft] = useState<Draft | null>(null);
   const [saving, setSaving] = useState(false);
   const [error, setError] = useState<string | null>(null);
+  // Bumped after each save so the load note reads the new flags.
+  const [version, setVersion] = useState(0);
 
   const load = useCallback(async () => {
     const since = new Date();
@@ -81,6 +84,7 @@ export function SessionLogSection({ athleteId, minor }: { athleteId: string; min
       return;
     }
     setDraft(null);
+    setVersion((v) => v + 1);
     await load();
   }
 
@@ -95,6 +99,7 @@ export function SessionLogSection({ athleteId, minor }: { athleteId: string; min
       return;
     }
     setDraft(null);
+    setVersion((v) => v + 1);
     await load();
   }
 
@@ -114,7 +119,12 @@ export function SessionLogSection({ athleteId, minor }: { athleteId: string; min
           : 'Your coaches see them.'}{' '}
         Your teammates never do.
       </ThemedText>
+      <ThemedText type="small" themeColor="textSecondary">
+        Rate each session about 30 minutes after it ends, and log school, representative and
+        other-club sport too, under Other, so your week adds up.
+      </ThemedText>
       {logs ? <WeeklyLoad logs={logs} /> : null}
+      <AthleteLoadNote key={version} athleteId={athleteId} />
 
       {draft ? (
         <View style={styles.section}>

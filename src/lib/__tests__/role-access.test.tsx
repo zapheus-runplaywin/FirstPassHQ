@@ -93,6 +93,7 @@ function allFeatures(): Features {
     messages: true,
     calendar: true,
     checkIns: true,
+    trainingLoad: true,
     injuries: true,
     attendance: true,
     sessionPlans: true,

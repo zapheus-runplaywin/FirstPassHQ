@@ -35,7 +35,7 @@ export function WeeklyLoad({ logs }: { logs: SessionLog[] }) {
           <ThemedText type="small" themeColor="textSecondary">
             {w.sessions === 0
               ? 'No sessions'
-              : `${w.sessions} ${w.sessions === 1 ? 'session' : 'sessions'} · ${w.minutes} min · load ${w.load}`}
+              : `${w.sessions} ${w.sessions === 1 ? 'session' : 'sessions'} · ${w.minutes} min · load ${w.load} · average effort ${w.effort}`}
           </ThemedText>
         </View>
       ))}
