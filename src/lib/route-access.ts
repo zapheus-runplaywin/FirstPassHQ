@@ -101,6 +101,8 @@ export function useRouteAccess() {
     checkIn: isCheckInAthlete,
     checkIns: canSeeCheckIns,
     athleteCheckIns: isCheckInCoach || isGuardian,
+    // Training load prompts: coaches, for their own athletes.
+    trainingLoad: isCheckInCoach,
 
     // Club awards: whoever an award can name as a voter.
     awards: canVote,

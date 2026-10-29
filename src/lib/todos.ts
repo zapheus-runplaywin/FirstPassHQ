@@ -87,6 +87,8 @@ export function buildTodos({
   applicationDeclarationWaiting = false,
   newConcerns = 0,
   wellbeingFlagAlerts = 0,
+  loadPatternAlerts = 0,
+  loadFlags = 0,
   absencesToReview = 0,
   consentsNeeded = [],
   conduct = [],
@@ -131,6 +133,10 @@ export function buildTodos({
   newConcerns?: number;
   /** Athletes flagged on 3 or more days in the last 7, for the Child Safety Officer. */
   wellbeingFlagAlerts?: number;
+  /** Children whose training load shows a pattern, for the Child Safety Officer. */
+  loadPatternAlerts?: number;
+  /** Athletes the member coaches with a training load flag nobody has talked about. */
+  loadFlags?: number;
   /** Absences reported or withdrawn for the member's squads and teams since they last looked. */
   absencesToReview?: number;
   /** A guardian's children under 18 still waiting for their consent. */
@@ -170,6 +176,15 @@ export function buildTodos({
       title: `Look at ${wellbeingFlagAlerts} ${wellbeingFlagAlerts === 1 ? 'athlete' : 'athletes'} flagged 3 times this week`,
       detail: 'Low check-in scores on 3 of the last 7 days',
       href: '/concerns/wellbeing',
+    });
+  }
+
+  if (loadPatternAlerts > 0) {
+    todos.push({
+      key: 'load-patterns',
+      title: `Look at ${loadPatternAlerts} ${loadPatternAlerts === 1 ? 'child’s' : 'children’s'} training load`,
+      detail: 'Patterns in what they log, to look into with their coach or parent',
+      href: '/concerns/load',
     });
   }
 
@@ -228,6 +243,15 @@ export function buildTodos({
       title: `Check in with ${flaggedAthletes} ${flaggedAthletes === 1 ? 'athlete' : 'athletes'}`,
       detail: 'They scored low on today’s check-in',
       href: '/check-ins',
+    });
+  }
+
+  if (loadFlags > 0) {
+    todos.push({
+      key: 'load-flags',
+      title: `Talk with ${loadFlags} ${loadFlags === 1 ? 'athlete' : 'athletes'} about their training load`,
+      detail: 'A conversation starter from the sessions they log, not a diagnosis',
+      href: '/check-ins/load',
     });
   }
 

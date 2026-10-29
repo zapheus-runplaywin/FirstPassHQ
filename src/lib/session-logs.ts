@@ -57,6 +57,8 @@ export type WeekLoad = {
   sessions: number;
   minutes: number;
   load: number;
+  /** The average effort (session RPE) of the week's sessions, to one place; null with none. */
+  effort: number | null;
 };
 
 /**
@@ -74,6 +76,10 @@ export function weeklyLoads(logs: SessionLog[], today: string, weeks = 4): WeekL
       sessions: inWeek.length,
       minutes: inWeek.reduce((n, l) => n + l.minutes, 0),
       load: inWeek.reduce((n, l) => n + sessionLoad(l), 0),
+      effort:
+        inWeek.length === 0
+          ? null
+          : Math.round((inWeek.reduce((n, l) => n + l.rpe, 0) / inWeek.length) * 10) / 10,
     };
   });
 }

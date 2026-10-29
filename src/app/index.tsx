@@ -43,6 +43,7 @@ import {
   useOpenInjuries,
 } from '@/lib/injuries';
 import { useKpiPeople, useKpiReviewTodos, type KpiPerson } from '@/lib/kpis';
+import { useCoachLoadFlagCount, useLoadPatternAlerts } from '@/lib/load-monitoring';
 import { useMyMedicalReviews } from '@/lib/medical';
 import { useGetsMessages, useUnreadCount } from '@/lib/messages';
 import {
@@ -103,6 +104,8 @@ export default function HomeScreen() {
   const { features } = club;
   // The Child Safety Officer sees athletes flagged again and again.
   const wellbeingFlags = useWellbeingFlagAlerts(handlesConcerns && features.checkIns);
+  // ...and children whose training load shows a pattern.
+  const loadPatterns = useLoadPatternAlerts(wellbeingFlags.isOfficer && features.trainingLoad);
   const [refreshing, setRefreshing] = useState(false);
   const [athletes, setAthletes] = useState<
     { id: string; name: string; data: boolean; health: boolean; canConsent: boolean }[]
@@ -140,6 +143,9 @@ export default function HomeScreen() {
   const canSeeCheckIns = useCanSeeCheckIns();
   const { checkInSummary, reloadCheckInSummary } = useCheckInSummary();
   const isCheckInCoach = useIsCheckInCoach();
+  const loadFlags = useCoachLoadFlagCount(
+    isCheckInCoach && features.checkIns && features.trainingLoad,
+  );
   const { checkInOverview, reloadCheckInOverview } = useCheckInOverview(today());
   const { awardSlots, reloadAwardSlots } = useAwardSlots();
   const { myGoals, reloadMyGoals } = useMyGoals();
@@ -175,6 +181,8 @@ export default function HomeScreen() {
       wwccApplication.status === 'waiting_for_declaration',
     newConcerns,
     wellbeingFlagAlerts: wellbeingFlags.repeated,
+    loadPatternAlerts: loadPatterns,
+    loadFlags,
     absencesToReview: absencesToReview.length,
     consentsNeeded: athletes.filter((a) => a.canConsent && (!a.data || !a.health)),
     conduct: conductTodos.map((t) => ({

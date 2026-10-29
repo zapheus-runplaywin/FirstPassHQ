@@ -9,6 +9,7 @@ import { Spacing } from '@/constants/theme';
 import { useAuth } from '@/lib/auth';
 import { useClub } from '@/lib/club';
 import { concernStatusLabels } from '@/lib/concerns';
+import { useLoadPatternAlerts } from '@/lib/load-monitoring';
 import { localDay } from '@/lib/reports';
 import { supabase } from '@/lib/supabase';
 import type { Concern } from '@/lib/types';
@@ -26,6 +27,8 @@ export default function ConcernsScreen() {
   // Only the Child Safety Officer sees athletes' check-in flags.
   const { features } = useClub();
   const wellbeing = useWellbeingFlagAlerts(handles && features.checkIns);
+  const loadOn = wellbeing.isOfficer && features.trainingLoad;
+  const loadPatterns = useLoadPatternAlerts(loadOn);
   const [concerns, setConcerns] = useState<Concern[] | null>(null);
   const [refreshing, setRefreshing] = useState(false);
 
@@ -72,6 +75,17 @@ export default function ConcernsScreen() {
               }
               variant="secondary"
               onPress={() => router.push('/concerns/wellbeing')}
+            />
+          ) : null}
+          {loadOn ? (
+            <Button
+              title={
+                loadPatterns > 0
+                  ? `Training load patterns (${loadPatterns} to look at)`
+                  : 'Training load patterns'
+              }
+              variant="secondary"
+              onPress={() => router.push('/concerns/load')}
             />
           ) : null}
         </>

@@ -8,7 +8,7 @@ import { CheckInTrends } from '@/components/trend-chart';
 import { Card, ChipGroup, PressableCard } from '@/components/ui';
 import { Spacing } from '@/constants/theme';
 import { useTheme } from '@/hooks/use-theme';
-import { useSquads } from '@/lib/club';
+import { useFeature, useSquads } from '@/lib/club';
 import {
   checkInQuestions,
   flaggedAreas,
@@ -20,6 +20,7 @@ import {
   useIsCheckInCoach,
 } from '@/lib/check-ins';
 import { toDateString } from '@/lib/injuries';
+import { useCoachLoadFlagCount } from '@/lib/load-monitoring';
 import { supabase } from '@/lib/supabase';
 import type {
   CheckInBoardRow,
@@ -59,6 +60,8 @@ export default function CheckInsScreen() {
   const teams = useTeams();
   const usesSquads = useSquads();
   const isCoach = useIsCheckInCoach();
+  const loadOn = useFeature('trainingLoad');
+  const loadFlags = useCoachLoadFlagCount(isCoach && loadOn);
   const canSeeOverview = useCanSeeCheckInOverview();
   const { checkInSummary, reloadCheckInSummary } = useCheckInSummary();
   const coached = checkInSummary.map((s) => ({ value: s.team_id, label: s.team_name }));
@@ -138,6 +141,17 @@ export default function CheckInsScreen() {
                 );
               })}
             </View>
+          ) : null}
+
+          {isCoach && loadOn ? (
+            <PressableCard onPress={() => router.push('/check-ins/load')}>
+              <ThemedText type="smallBold">Training load</ThemedText>
+              <ThemedText type="small" themeColor="textSecondary">
+                {loadFlags > 0
+                  ? `${loadFlags} ${loadFlags === 1 ? 'athlete' : 'athletes'} worth a chat about their training this week`
+                  : 'Prompts from the sessions your athletes log'}
+              </ThemedText>
+            </PressableCard>
           ) : null}
 
           {isCoach ? (

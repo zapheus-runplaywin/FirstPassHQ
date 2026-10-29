@@ -12,6 +12,13 @@ export const FEATURES = [
   { key: 'messages', label: 'Messages', detail: 'Group messages with read receipts' },
   { key: 'calendar', label: 'Calendar', detail: 'Club, squad and team calendars and fixtures' },
   { key: 'checkIns', label: 'Daily check-ins', detail: 'Athletes’ wellbeing check-ins and trends' },
+  {
+    key: 'trainingLoad',
+    label: 'Training load flags',
+    detail:
+      'Prompts for coaches from the sessions athletes log, each with its published source (needs Daily check-ins)',
+    offByDefault: true,
+  },
   { key: 'injuries', label: 'Injuries', detail: 'Injury reports, medical documents and clearances' },
   { key: 'attendance', label: 'Attendance', detail: 'Coaches take attendance at sessions' },
   {

@@ -61,10 +61,10 @@ describe('weekly loads', () => {
       today,
     );
     expect(weeks).toEqual([
-      { from: '2026-10-12', to: '2026-10-18', sessions: 2, minutes: 150, load: 840 },
-      { from: '2026-10-05', to: '2026-10-11', sessions: 2, minutes: 75, load: 240 },
-      { from: '2026-09-28', to: '2026-10-04', sessions: 0, minutes: 0, load: 0 },
-      { from: '2026-09-21', to: '2026-09-27', sessions: 1, minutes: 60, load: 480 },
+      { from: '2026-10-12', to: '2026-10-18', sessions: 2, minutes: 150, load: 840, effort: 5.5 },
+      { from: '2026-10-05', to: '2026-10-11', sessions: 2, minutes: 75, load: 240, effort: 3 },
+      { from: '2026-09-28', to: '2026-10-04', sessions: 0, minutes: 0, load: 0, effort: null },
+      { from: '2026-09-21', to: '2026-09-27', sessions: 1, minutes: 60, load: 480, effort: 8 },
     ]);
   });
 
@@ -86,7 +86,14 @@ describe('weekly loads', () => {
 });
 
 describe('load change', () => {
-  const week = (load: number, sessions = 1) => ({ from: 'x', to: 'y', sessions, minutes: 0, load });
+  const week = (load: number, sessions = 1) => ({
+    from: 'x',
+    to: 'y',
+    sessions,
+    minutes: 0,
+    load,
+    effort: null,
+  });
 
   it('compares this week with the average of earlier weeks that have sessions', () => {
     expect(loadChange([week(1400), week(1000), week(0, 0), week(1000)])).toBe('Up 40% on the 2 weeks before');

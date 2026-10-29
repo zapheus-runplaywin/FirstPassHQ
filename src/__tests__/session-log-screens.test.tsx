@@ -100,8 +100,8 @@ describe('an athlete’s training sessions', () => {
       session('2026-10-15', 60, 5, { kind: 'game' }),
       session('2026-10-09', 60, 5),
     ]);
-    expect(screen.getByText('2 sessions · 150 min · load 840')).toBeTruthy();
-    expect(screen.getByText('1 session · 60 min · load 300')).toBeTruthy();
+    expect(screen.getByText('2 sessions · 150 min · load 840 · average effort 5.5')).toBeTruthy();
+    expect(screen.getByText('1 session · 60 min · load 300 · average effort 5')).toBeTruthy();
     expect(screen.getByText('Up 180% on the week before')).toBeTruthy();
     expect(screen.getByText('Training · 90 min · effort 6 · load 540')).toBeTruthy();
     expect(screen.getByText('Game · 60 min · effort 5 · load 300')).toBeTruthy();
@@ -278,19 +278,25 @@ describe('one athlete’s training sessions', () => {
   ])('shows a %s the weekly load and each session the database returns, read only', async (_l, who) => {
     await openAthlete(who, [session('2026-10-18', 90, 6), session('2026-10-10', 60, 5)]);
     expect(screen.getByText('Training sessions')).toBeTruthy();
-    expect(screen.getByText('1 session · 90 min · load 540')).toBeTruthy();
+    expect(screen.getByText('1 session · 90 min · load 540 · average effort 6')).toBeTruthy();
     expect(screen.getByText('Up 80% on the week before')).toBeTruthy();
     expect(screen.getByText('Training · 90 min · effort 6 · load 540')).toBeTruthy();
     expect(screen.queryByLabelText(/^Change /)).toBeNull();
     expect(screen.queryByText('Log a session')).toBeNull();
   });
 
-  it('asks only for this athlete’s last 28 days', async () => {
+  it('asks for this athlete’s last 18 weeks, for the load numbers', async () => {
     await openAthlete('coach', []);
     const [filters] = sessions.queries;
     expect(filters).toContainEqual({ method: 'eq', args: ['athlete_id', 'child-1'] });
-    expect(filters).toContainEqual({ method: 'gte', args: ['day', '2026-09-20'] });
+    expect(filters).toContainEqual({ method: 'gte', args: ['day', '2026-06-14'] });
     expect(screen.getByText('No sessions logged.')).toBeTruthy();
+  });
+
+  it('lists only the last 28 days of sessions', async () => {
+    await openAthlete('coach', [session('2026-10-18', 90, 6), session('2026-09-01', 45, 4)]);
+    expect(screen.getByText('Training · 90 min · effort 6 · load 540')).toBeTruthy();
+    expect(screen.queryByText('Training · 45 min · effort 4 · load 180')).toBeNull();
   });
 
   it.each<[string, Who]>([

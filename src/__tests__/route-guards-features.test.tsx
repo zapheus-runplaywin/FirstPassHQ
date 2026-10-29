@@ -75,6 +75,7 @@ const FEATURE_ROUTES: FeatureCase[] = [
     ],
   },
   { feature: 'checkIns', routes: ['check-in', 'check-ins/index', 'check-ins/athlete/[id]'] },
+  { feature: 'trainingLoad', offByDefault: true, routes: ['check-ins/load'] },
   {
     feature: 'awards',
     routes: [
@@ -143,6 +144,7 @@ const OPENED_BY: Record<string, PersonaName> = {
   'attendance/absence': 'athlete',
   'check-in': 'athlete',
   'check-ins/athlete/[id]': 'coach',
+  'check-ins/load': 'coach',
   'goals/athlete/[id]': 'coach',
   'goals/game': 'athlete',
   'goals/team': 'coach',

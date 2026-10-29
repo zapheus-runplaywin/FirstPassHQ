@@ -186,6 +186,9 @@ function RootStack() {
             <Stack.Protected guard={can.athleteCheckIns}>
               <Stack.Screen name="check-ins/athlete/[id]" options={{ title: 'Check-ins' }} />
             </Stack.Protected>
+            <Stack.Protected guard={features.trainingLoad && can.trainingLoad}>
+              <Stack.Screen name="check-ins/load" options={{ title: 'Training load' }} />
+            </Stack.Protected>
           </Stack.Protected>
           <Stack.Protected guard={features.awards && can.awards}>
             <Stack.Screen name="awards/index" options={{ title: 'Awards' }} />
@@ -256,6 +259,7 @@ function RootStack() {
             <Stack.Screen name="concerns/[id]" options={{ title: 'Concern' }} />
             <Stack.Screen name="concerns/report" options={{ title: 'Concerns register' }} />
             <Stack.Screen name="concerns/wellbeing" options={{ title: 'Wellbeing flags' }} />
+            <Stack.Screen name="concerns/load" options={{ title: 'Training load patterns' }} />
           </Stack.Protected>
           <Stack.Screen name="tasks/index" options={{ title: 'Your tasks' }} />
           <Stack.Screen name="tasks/new" options={{ title: 'Add a task' }} />
