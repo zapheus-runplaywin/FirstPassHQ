@@ -27,7 +27,13 @@ updates:
       # matching its SDK (`npx expo-doctor` fails and native builds can break).
       - dependency-name: "react"
       - dependency-name: "react-dom"
-      - dependency-name: "react-test-renderer"
+      # test-renderer's 1.x line follows React's minor version (1.3 for React 19.3).
+      - dependency-name: "test-renderer"
+        update-types: ["version-update:semver-minor"]
+      # Expo pins TypeScript too (~6.0.3 for SDK 58). TypeScript 7 has no
+      # JavaScript API, so typescript-eslint and `npx expo lint` stop working.
+      - dependency-name: "typescript"
+        update-types: ["version-update:semver-major", "version-update:semver-minor"]
       - dependency-name: "react-native"
       - dependency-name: "expo"
         update-types: ["version-update:semver-major", "version-update:semver-minor"]
@@ -45,18 +51,10 @@ updates:
         update-types: ["version-update:semver-major", "version-update:semver-minor"]
       - dependency-name: "@react-native-*/*"
         update-types: ["version-update:semver-major", "version-update:semver-minor"]
-      # These majors broke main in October 2026 (PRs #187-#189) and were rolled
-      # back. Move them on purpose, in a PR that does the work, not by Dependabot:
-      # - ESLint 10 and TypeScript 7 crash `expo lint`: the plugins in
-      #   eslint-config-expo (eslint-plugin-react, typescript-eslint) don't
-      #   support them yet. Lift these when eslint-config-expo does.
-      # - React Native Testing Library 14 makes render, renderHook and fireEvent
-      #   async, so every screen and hook test has to be rewritten to await them.
+      # ESLint 10 broke main in October 2026 (#189) and was rolled back: the
+      # plugins in eslint-config-expo (eslint-plugin-react) don't support it.
+      # Lift this when eslint-config-expo does.
       - dependency-name: "eslint"
-        update-types: ["version-update:semver-major"]
-      - dependency-name: "typescript"
-        update-types: ["version-update:semver-major"]
-      - dependency-name: "@testing-library/react-native"
         update-types: ["version-update:semver-major"]
   - package-ecosystem: github-actions
     directory: /

@@ -11,7 +11,6 @@
  */
 import { router } from 'expo-router';
 import { fireEvent, screen } from 'expo-router/testing-library';
-import { Text } from 'react-native';
 
 import ChooseCaptainsScreen from '@/app/team/captains/[id]';
 import TeamScreen from '@/app/team/[id]';
@@ -146,7 +145,7 @@ describe('choosing captains', () => {
     ['an admin', 'admin'],
   ])('%s can open Choose captains', async (_l, who) => {
     await openTeam(who);
-    fireEvent.press(screen.getByText('Choose captains'));
+    await fireEvent.press(screen.getByText('Choose captains'));
     expect(push).toHaveBeenCalledWith({ pathname: '/team/captains/[id]', params: { id: TEAM.id } });
   });
 
@@ -236,12 +235,12 @@ describe('game goals on a team’s page', () => {
     expect(screen.queryByText('Round 3 v Elsewhere')).toBeNull();
     expect(screen.getByText('1 reflection waiting for a comment')).toBeTruthy();
     expect(screen.getByText(/^Round 3 v Sample Storm · .* · 2 goals$/)).toBeTruthy();
-    fireEvent.press(screen.getByText('Alice Athlete'));
+    await fireEvent.press(screen.getByText('Alice Athlete'));
     expect(push).toHaveBeenCalledWith({
       pathname: '/goals/athlete/[id]',
       params: { id: 'a1', name: 'Alice Athlete', team: TEAM.id },
     });
-    fireEvent.press(screen.getByText('Round 3 v Sample Storm'));
+    await fireEvent.press(screen.getByText('Round 3 v Sample Storm'));
     expect(push).toHaveBeenCalledWith({ pathname: '/goals/team', params: { fixture: 'fx1' } });
   });
 
@@ -251,7 +250,7 @@ describe('game goals on a team’s page', () => {
     expect(screen.getByText(/^The goals its coaches set for the whole team before each game/)).toBeTruthy();
     expect(screen.getByText('Round 3 v Sample Storm')).toBeTruthy();
     expect(screen.queryByText('Round 3 v Elsewhere')).toBeNull();
-    fireEvent.press(screen.getByText('Round 3 v Sample Storm'));
+    await fireEvent.press(screen.getByText('Round 3 v Sample Storm'));
     expect(push).toHaveBeenCalledWith({ pathname: '/goals/team', params: { fixture: 'fx1' } });
   });
 
@@ -298,7 +297,7 @@ describe('game goals on a team’s page', () => {
     expect(screen.queryByText('Team goals')).toBeNull();
     expect(rpcNames()).not.toContain('goal_board');
     // Athletes are plain cards, not links to goals.
-    fireEvent.press(screen.getByText('Alice Athlete'));
+    await fireEvent.press(screen.getByText('Alice Athlete'));
     expect(push).not.toHaveBeenCalled();
   });
 });
@@ -327,11 +326,11 @@ describe('the captains screen', () => {
   it('saves any number of captains and vice captains', async () => {
     await openCaptains({}, [{ team_id: TEAM.id, profile_id: 'a2', captain_role: 'vice_captain' }]);
     const [alice, bea, unnamed] = [0, 1, 2];
-    fireEvent.press(screen.getAllByText('Captain')[alice]);
-    fireEvent.press(screen.getAllByText('Captain')[unnamed]);
-    fireEvent.press(screen.getAllByText('Neither')[bea]);
-    fireEvent.press(screen.getAllByText('Vice captain')[bea]);
-    fireEvent.press(screen.getByText('Save captains'));
+    await fireEvent.press(screen.getAllByText('Captain')[alice]);
+    await fireEvent.press(screen.getAllByText('Captain')[unnamed]);
+    await fireEvent.press(screen.getAllByText('Neither')[bea]);
+    await fireEvent.press(screen.getAllByText('Vice captain')[bea]);
+    await fireEvent.press(screen.getByText('Save captains'));
     await settle();
     expect(argsOf('set_group_captains')).toEqual([
       { p_team_id: TEAM.id, p_captain_ids: ['a1', 'a3'], p_vice_captain_ids: ['a2'] },
@@ -341,15 +340,15 @@ describe('the captains screen', () => {
 
   it('Neither removes a captain', async () => {
     await openCaptains({}, [{ team_id: TEAM.id, profile_id: 'a1', captain_role: 'captain' }]);
-    fireEvent.press(screen.getAllByText('Neither')[0]);
-    fireEvent.press(screen.getByText('Save captains'));
+    await fireEvent.press(screen.getAllByText('Neither')[0]);
+    await fireEvent.press(screen.getByText('Save captains'));
     await settle();
     expect(argsOf('set_group_captains')[0]).toMatchObject({ p_captain_ids: [], p_vice_captain_ids: [] });
   });
 
   it('shows the database’s refusal and stays', async () => {
     await openCaptains({ rpcErrors: { set_group_captains: 'Only the group’s coaches can choose captains.' } });
-    fireEvent.press(screen.getByText('Save captains'));
+    await fireEvent.press(screen.getByText('Save captains'));
     await settle();
     expect(screen.getByText('Only the group’s coaches can choose captains.')).toBeTruthy();
     expect(back).not.toHaveBeenCalled();
@@ -365,7 +364,7 @@ describe('the captains screen', () => {
     const chosen = screen
       .getAllByRole('button')
       .filter((b) => b.props.accessibilityState?.selected)
-      .map((b) => b.findByType(Text).props.children);
+      .map((b) => b.queryAll((n) => n.type === 'Text')[0].props.children);
     // Alice, Bea and the unnamed athlete, in order.
     expect(chosen).toEqual(['Captain', 'Neither', 'Neither']);
   });

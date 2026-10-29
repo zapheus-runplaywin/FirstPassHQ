@@ -77,6 +77,12 @@ Scan the QR code with the Expo Go app on your phone. Your `.env` should point at
 Supabase project, so you're working with sample people, not members. See
 [Test and live](docs/environments.md).
 
+The app is on Expo SDK 58, and each Expo Go build opens one SDK only. If Expo Go says
+"Project is incompatible with this version of Expo Go", install the SDK 58 build: on
+Android from [expo.dev/go](https://expo.dev/go) (or Google Play once it has SDK 58), and on
+an iPhone with `npx eas-cli@latest go`, which puts a matching Expo Go on TestFlight. After
+the next SDK upgrade, update Expo Go the same way.
+
 Before committing, run:
 
 ```bash

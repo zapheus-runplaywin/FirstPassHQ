@@ -129,23 +129,23 @@ describe('an athlete 18 or over, their own details', () => {
   });
 
   it('calls a contact when they tap the number', async () => {
-    const open = jest.spyOn(Linking, 'openURL').mockResolvedValue(true);
+    const open = jest.spyOn(Linking, 'openURL').mockResolvedValue(undefined);
     await openMedical('athlete', medical());
-    fireEvent.press(screen.getByLabelText('Call Sam Sample'));
+    await fireEvent.press(screen.getByLabelText('Call Sam Sample'));
     expect(open).toHaveBeenCalledWith('tel:0400000001');
     open.mockRestore();
   });
 
   it('changes and saves every section, leaving out blank contacts', async () => {
     await openMedical('athlete', medical());
-    fireEvent.press(screen.getByText('Change details'));
-    fireEvent.changeText(screen.getByDisplayValue('Sam Sample'), 'Sam Sample-Smith');
-    fireEvent.press(screen.getByText('Add a contact'));
-    fireEvent.changeText(screen.getByDisplayValue('Asthma'), 'Asthma (mild)');
-    fireEvent.changeText(screen.getByDisplayValue('Peanuts (anaphylaxis)'), 'Peanuts, bee stings');
-    fireEvent.changeText(screen.getByDisplayValue('Ventolin, EpiPen'), 'Ventolin');
-    fireEvent.changeText(screen.getByDisplayValue('EpiPen in the outer pocket, then call 000'), 'Call 000');
-    fireEvent.press(screen.getByText('Save'));
+    await fireEvent.press(screen.getByText('Change details'));
+    await fireEvent.changeText(screen.getByDisplayValue('Sam Sample'), 'Sam Sample-Smith');
+    await fireEvent.press(screen.getByText('Add a contact'));
+    await fireEvent.changeText(screen.getByDisplayValue('Asthma'), 'Asthma (mild)');
+    await fireEvent.changeText(screen.getByDisplayValue('Peanuts (anaphylaxis)'), 'Peanuts, bee stings');
+    await fireEvent.changeText(screen.getByDisplayValue('Ventolin, EpiPen'), 'Ventolin');
+    await fireEvent.changeText(screen.getByDisplayValue('EpiPen in the outer pocket, then call 000'), 'Call 000');
+    await fireEvent.press(screen.getByText('Save'));
     await settle();
     expect(callsTo('save_medical_profile')).toEqual([
       {
@@ -164,27 +164,27 @@ describe('an athlete 18 or over, their own details', () => {
 
   it('adds up to three contacts, and removes one', async () => {
     await openMedical('athlete', medical());
-    fireEvent.press(screen.getByText('Change details'));
-    fireEvent.press(screen.getByText('Add a contact'));
-    fireEvent.press(screen.getByText('Add a contact'));
+    await fireEvent.press(screen.getByText('Change details'));
+    await fireEvent.press(screen.getByText('Add a contact'));
+    await fireEvent.press(screen.getByText('Add a contact'));
     expect(screen.queryByText('Add a contact')).toBeNull();
     expect(screen.getAllByText('Remove contact')).toHaveLength(3);
-    fireEvent.press(screen.getAllByText('Remove contact')[0]);
+    await fireEvent.press(screen.getAllByText('Remove contact')[0]);
     expect(screen.queryByDisplayValue('Sam Sample')).toBeNull();
     expect(screen.getByText('Add a contact')).toBeTruthy();
   });
 
   it('starts with one empty contact when there are none', async () => {
     await openMedical('athlete', medical({ emergency_contacts: [] }));
-    fireEvent.press(screen.getByText('Change details'));
+    await fireEvent.press(screen.getByText('Change details'));
     expect(screen.getAllByText('Remove contact')).toHaveLength(1);
   });
 
   it('refuses a contact with no phone number before saving', async () => {
     await openMedical('athlete', medical());
-    fireEvent.press(screen.getByText('Change details'));
-    fireEvent.changeText(screen.getByDisplayValue('0400 000 001'), '');
-    fireEvent.press(screen.getByText('Save'));
+    await fireEvent.press(screen.getByText('Change details'));
+    await fireEvent.changeText(screen.getByDisplayValue('0400 000 001'), '');
+    await fireEvent.press(screen.getByText('Save'));
     await settle();
     expect(screen.getByText('Each emergency contact needs a name and a phone number')).toBeTruthy();
     expect(callsTo('save_medical_profile')).toEqual([]);
@@ -192,8 +192,8 @@ describe('an athlete 18 or over, their own details', () => {
 
   it('shows the database’s refusal and stays editing', async () => {
     await openMedical('athlete', medical(), { rpcErrors: { save_medical_profile: 'That’s too long' } });
-    fireEvent.press(screen.getByText('Change details'));
-    fireEvent.press(screen.getByText('Save'));
+    await fireEvent.press(screen.getByText('Change details'));
+    await fireEvent.press(screen.getByText('Save'));
     await settle();
     expect(screen.getByText('That’s too long')).toBeTruthy();
     expect(screen.getByText('Save')).toBeTruthy();
@@ -201,9 +201,9 @@ describe('an athlete 18 or over, their own details', () => {
 
   it('cancels without saving', async () => {
     await openMedical('athlete', medical());
-    fireEvent.press(screen.getByText('Change details'));
-    fireEvent.changeText(screen.getByDisplayValue('Asthma'), 'Changed');
-    fireEvent.press(screen.getByText('Cancel'));
+    await fireEvent.press(screen.getByText('Change details'));
+    await fireEvent.changeText(screen.getByDisplayValue('Asthma'), 'Changed');
+    await fireEvent.press(screen.getByText('Cancel'));
     expect(callsTo('save_medical_profile')).toEqual([]);
     expect(screen.getByText('Asthma')).toBeTruthy();
   });
@@ -225,7 +225,7 @@ describe('a parent or guardian', () => {
     await openMedical('guardian', medical({ athlete_id: 'child-1', athlete_name: 'Sample Child', role: 'guardian' }));
     expect(screen.getByText('Change details')).toBeTruthy();
     expect(screen.getByText('Who has opened them')).toBeTruthy();
-    fireEvent.press(screen.getByText('Change details'));
+    await fireEvent.press(screen.getByText('Change details'));
     expect(screen.getByText(/Sample Child’s coaches, managers and physios see these once you’ve given health consent/)).toBeTruthy();
   });
 });
@@ -289,7 +289,7 @@ describe('a squad or team’s list', () => {
 
   it('opens an athlete’s details', async () => {
     await openList('coach');
-    fireEvent.press(screen.getByText('Sample Adult'));
+    await fireEvent.press(screen.getByText('Sample Adult'));
     await settle();
     expect(callsTo('medical_profile')).toEqual([{ p_athlete_id: 'a1' }]);
     expect(screen.getByText('Peanuts (anaphylaxis)')).toBeTruthy();
@@ -297,7 +297,7 @@ describe('a squad or team’s list', () => {
 
   it('doesn’t open a child without health consent', async () => {
     await openList('coach');
-    fireEvent.press(screen.getByText('Sample Child'));
+    await fireEvent.press(screen.getByText('Sample Child'));
     await settle();
     expect(callsTo('medical_profile')).toEqual([]);
   });
@@ -339,7 +339,7 @@ describe('Your details', () => {
 
   it('opens the athlete’s own', async () => {
     await openDetails('athlete');
-    fireEvent.press(screen.getByText('Medical and emergency details'));
+    await fireEvent.press(screen.getByText('Medical and emergency details'));
     await settle();
     expect(callsTo('medical_profile')).toEqual([{ p_athlete_id: personas.athlete.profile!.id }]);
   });
@@ -358,7 +358,7 @@ describe('a squad or team’s page', () => {
     await openScreen(who, { 'team/[id]': TeamScreen, 'medical/team/[id]': TeamMedicalScreen }, `/team/${TEAM.id}`, { team_members: roster, teams: [TEAM] }, {
       rpcs: { team_medical_profiles: ROWS, team_roster: roster },
     });
-    fireEvent.press(screen.getByText('Medical and emergency details'));
+    await fireEvent.press(screen.getByText('Medical and emergency details'));
     await settle();
     expect(callsTo('team_medical_profiles')).toEqual([{ p_team_id: TEAM.id }]);
   });
@@ -380,7 +380,7 @@ describe('Home for a parent or guardian', () => {
       rpcs: { medical_profile: medical({ athlete_id: 'child-1', role: 'guardian' }) },
     });
     expect(screen.getByText('Medical and emergency')).toBeTruthy();
-    fireEvent.press(screen.getByText('Emergency contacts, allergies, conditions, medications and an action plan'));
+    await fireEvent.press(screen.getByText('Emergency contacts, allergies, conditions, medications and an action plan'));
     await settle();
     expect(callsTo('medical_profile')).toEqual([{ p_athlete_id: 'child-1' }]);
   });
@@ -409,7 +409,7 @@ describe('the yearly check', () => {
       rpcs: { confirm_medical_profile: null },
     });
     expect(screen.getByText(`The yearly check ${words} ${formatDateString('2026-10-30')}.`)).toBeTruthy();
-    fireEvent.press(screen.getByText('Still correct'));
+    await fireEvent.press(screen.getByText('Still correct'));
     await settle();
     expect(callsTo('confirm_medical_profile')).toEqual([{ p_athlete_id: 'athlete' }]);
     expect(callsTo('save_medical_profile')).toEqual([]);
@@ -420,7 +420,7 @@ describe('the yearly check', () => {
     await openMedical('athlete', medical({ check_status: 'overdue', check_due_on: '2026-10-01' }), {
       rpcErrors: { confirm_medical_profile: 'Only the athlete, or a parent or guardian for an under 18, can check these details' },
     });
-    fireEvent.press(screen.getByText('Still correct'));
+    await fireEvent.press(screen.getByText('Still correct'));
     await settle();
     expect(screen.getByText(/can check these details/)).toBeTruthy();
   });
@@ -439,7 +439,7 @@ describe('the yearly check', () => {
     await openMedical('guardian', medical({ athlete_id: 'child-1', role: 'guardian', check_status: 'overdue', check_due_on: '2026-10-01' }), {
       rpcs: { confirm_medical_profile: null },
     });
-    fireEvent.press(screen.getByText('Still correct'));
+    await fireEvent.press(screen.getByText('Still correct'));
     await settle();
     expect(callsTo('confirm_medical_profile')).toEqual([{ p_athlete_id: 'child-1' }]);
   });
@@ -465,7 +465,7 @@ describe('Home to-dos for the yearly check', () => {
       rpcs: { my_medical_reviews: reviews, medical_profile: medical({ check_status: 'overdue', check_due_on: '2026-10-01' }) },
     });
     expect(callsTo('my_medical_reviews')).not.toHaveLength(0);
-    fireEvent.press(screen.getByText('Check your medical details are still right'));
+    await fireEvent.press(screen.getByText('Check your medical details are still right'));
     await settle();
     expect(callsTo('medical_profile')).toEqual([{ p_athlete_id: 'athlete' }]);
   });

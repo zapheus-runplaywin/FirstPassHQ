@@ -167,14 +167,14 @@ describe('raising a concern', () => {
   it('drops the contact questions when the member hides their name', async () => {
     await openRaise('athlete');
     expect(screen.getByText('Can they contact you about it?')).toBeTruthy();
-    fireEvent.press(screen.getByText('Don’t show my name'));
+    await fireEvent.press(screen.getByText('Don’t show my name'));
     expect(screen.queryByText('Can they contact you about it?')).toBeNull();
     expect(screen.getByText(/The people who look into it won’t see who you are/)).toBeTruthy();
   });
 
   it('needs something written before it sends', async () => {
     await openRaise('athlete');
-    fireEvent.press(screen.getByText('Send to the club'));
+    await fireEvent.press(screen.getByText('Send to the club'));
     await settle();
     expect(screen.getByText('Say what happened.')).toBeTruthy();
     expect(rpcCalls().map(([n]) => n)).not.toContain('raise_concern');
@@ -182,9 +182,9 @@ describe('raising a concern', () => {
 
   it('sends an anonymous concern without contact details, then thanks them', async () => {
     await openRaise('athlete');
-    fireEvent.changeText(screen.getByPlaceholderText('In your own words'), 'Something happened');
-    fireEvent.press(screen.getByText('Don’t show my name'));
-    fireEvent.press(screen.getByText('Send to the club'));
+    await fireEvent.changeText(screen.getByPlaceholderText('In your own words'), 'Something happened');
+    await fireEvent.press(screen.getByText('Don’t show my name'));
+    await fireEvent.press(screen.getByText('Send to the club'));
     await settle();
     const sent = rpcCalls().find(([n]) => n === 'raise_concern');
     expect(sent?.[1]).toMatchObject({
@@ -199,7 +199,7 @@ describe('raising a concern', () => {
 
   it('offers matching members to name who it’s about', async () => {
     await openRaise('athlete');
-    fireEvent.changeText(screen.getByPlaceholderText('A name, or a description'), 'sample p');
+    await fireEvent.changeText(screen.getByPlaceholderText('A name, or a description'), 'sample p');
     expect(screen.getByText('Sample Parent')).toBeTruthy();
     expect(screen.getByText('Sample Person')).toBeTruthy();
   });
@@ -356,7 +356,7 @@ describe('one concern', () => {
   it('only offers status changes away from the current one', async () => {
     await openConcern(officer, concern({ status: 'under_review' }));
     expect(screen.queryByText('Being looked into')).toBeNull();
-    fireEvent.press(screen.getByText('Closed'));
+    await fireEvent.press(screen.getByText('Closed'));
     expect(screen.getByText('Close it (the note says why)')).toBeTruthy();
   });
 

@@ -57,6 +57,8 @@ async function registerForPush() {
     await Notifications.setNotificationChannelAsync(JOIN_REQUESTS_CHANNEL, {
       name: 'Join requests',
       description: 'New requests to join the club, for admins',
+      // SDK 58 builds this enum in a way eslint-plugin-import can't read; it's exported.
+      // eslint-disable-next-line import/namespace
       importance: Notifications.AndroidImportance.HIGH,
       lightColor: Colors.accent,
     });

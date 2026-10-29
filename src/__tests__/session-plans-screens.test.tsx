@@ -107,12 +107,12 @@ const placeholder = (route: string) =>
   };
 
 const press = async (text: string | RegExp, index = 0) => {
-  fireEvent.press(screen.getAllByText(text)[index]);
+  await fireEvent.press(screen.getAllByText(text)[index]);
   await settle(6);
 };
 
 const type = async (placeholderText: string, value: string) => {
-  fireEvent.changeText(screen.getByPlaceholderText(placeholderText), value);
+  await fireEvent.changeText(screen.getByPlaceholderText(placeholderText), value);
   await settle(2);
 };
 

@@ -125,15 +125,15 @@ async function openAffiliation(
 }
 
 async function save() {
-  fireEvent.press(screen.getByText('Save'));
+  await fireEvent.press(screen.getByText('Save'));
   await settle();
 }
 
 const PICKER_1 = 'Primary contact 1';
 const PICKER_2 = 'Primary contact 2';
 
-function offered(picker: string) {
-  type(picker, 'Sample');
+async function offered(picker: string) {
+  await type(picker, 'Sample');
   return within(fieldGroup(picker))
     .queryAllByText(/^Sample/)
     .map((t) => t.props.children as string)
@@ -166,25 +166,25 @@ describe('the affiliation record', () => {
     expect(screen.getByText('✓ Registered with your member association this year')).toBeTruthy();
     expect(screen.getByText('✗ Two primary contacts')).toBeTruthy();
     expect(isOn('Follows Netball Australia and Netball WA policies')).toBe(true);
-    pickPerson(PICKER_2, 'committee', 'Sample committee');
-    flip('Plays in the member association’s competition', true);
-    flip('Members register online through PlayHQ', true);
+    await pickPerson(PICKER_2, 'committee', 'Sample committee');
+    await flip('Plays in the member association’s competition', true);
+    await flip('Members register online through PlayHQ', true);
     expect(screen.getByText('✓ Two primary contacts')).toBeTruthy();
     expect(screen.getByText('Every required item is done.')).toBeTruthy();
   });
 
   it('offers as primary contacts only adults who aren’t stood down, and never the other contact', async () => {
     await openAffiliation();
-    expect(offered(PICKER_2)).toEqual(['Sample coach', 'Sample committee']);
+    expect(await offered(PICKER_2)).toEqual(['Sample coach', 'Sample committee']);
   });
 
   it('saves the record, without the return email when it hasn’t changed', async () => {
     await openAffiliation();
-    type('Incorporation number', 'A1234567');
-    type('Last registered with them (DD/MM/YYYY)', '2/9/2026');
-    pickPerson(PICKER_2, 'coach', 'Sample coach');
-    flip('Members register online through PlayHQ', true);
-    type('Notes', 'Kept by the secretary');
+    await type('Incorporation number', 'A1234567');
+    await type('Last registered with them (DD/MM/YYYY)', '2/9/2026');
+    await pickPerson(PICKER_2, 'coach', 'Sample coach');
+    await flip('Members register online through PlayHQ', true);
+    await type('Notes', 'Kept by the secretary');
     rpc().mockClear();
     await save();
     expect(callsTo('admin_set_affiliation')).toEqual([
@@ -208,8 +208,8 @@ describe('the affiliation record', () => {
 
   it('saves a blank registration day as none, and a changed return email', async () => {
     await openAffiliation();
-    type('Last registered with them (DD/MM/YYYY)', '');
-    type('Send affiliation returns to (email)', 'new@association.example');
+    await type('Last registered with them (DD/MM/YYYY)', '');
+    await type('Send affiliation returns to (email)', 'new@association.example');
     await save();
     expect(callsTo('admin_set_affiliation')[0].p_registered_on).toBeNull();
     expect(callsTo('admin_set_affiliation_return_email')).toEqual([{ p_email: 'new@association.example' }]);
@@ -217,7 +217,7 @@ describe('the affiliation record', () => {
 
   it.each(['31/02/2026', '2026-03-01', '1/3/26'])('refuses the club registration day “%s”', async (day) => {
     await openAffiliation();
-    type('Last registered with them (DD/MM/YYYY)', day);
+    await type('Last registered with them (DD/MM/YYYY)', day);
     await save();
     expect(screen.getByText('Enter the day the club registered as DD/MM/YYYY.')).toBeTruthy();
     expect(callsTo('admin_set_affiliation')).toEqual([]);
@@ -225,7 +225,7 @@ describe('the affiliation record', () => {
 
   it('asks an association for its tier before saving', async () => {
     await openAffiliation();
-    fireEvent.press(screen.getByText('Association'));
+    await fireEvent.press(screen.getByText('Association'));
     expect(screen.getByText('Choose the tier to see the checklist.')).toBeTruthy();
     await save();
     expect(screen.getByText('Choose the association’s tier.')).toBeTruthy();
@@ -234,9 +234,9 @@ describe('the affiliation record', () => {
 
   it('words an association’s date as the annual agreement', async () => {
     await openAffiliation();
-    fireEvent.press(screen.getByText('Association'));
-    type('Annual agreement signed (DD/MM/YYYY)', 'soon');
-    fireEvent.press(screen.getByText('Tier 3 (1 to 249)'));
+    await fireEvent.press(screen.getByText('Association'));
+    await type('Annual agreement signed (DD/MM/YYYY)', 'soon');
+    await fireEvent.press(screen.getByText('Tier 3 (1 to 249)'));
     await save();
     expect(screen.getByText('Enter the day the agreement was signed as DD/MM/YYYY.')).toBeTruthy();
   });
@@ -251,8 +251,8 @@ describe('the affiliation record', () => {
     }
     expect(screen.queryByText('Another committee member')).toBeNull();
     expect(input('Induction completed (DD/MM/YYYY)').props.value).toBe('01/05/2026');
-    pickPerson('Association Development Officer', 'coach', 'Sample coach');
-    type('Induction completed (DD/MM/YYYY)', '15/06/2026', 1);
+    await pickPerson('Association Development Officer', 'coach', 'Sample coach');
+    await type('Induction completed (DD/MM/YYYY)', '15/06/2026', 1);
     await save();
     expect(callsTo('admin_set_affiliation')[0]).toMatchObject({ p_member_type: 'association', p_tier: 2 });
     expect(callsTo('admin_set_affiliation_officer')).toEqual([
@@ -276,7 +276,7 @@ describe('the affiliation record', () => {
     await openAffiliation(affiliation({ member_type: 'association', tier: 3 }), {
       officers: [{ office: 'president', profile_id: 'committee', name: 'Sample committee', inducted_on: null }],
     });
-    type('Induction completed (DD/MM/YYYY)', '99/99/2026');
+    await type('Induction completed (DD/MM/YYYY)', '99/99/2026');
     await save();
     expect(screen.getByText('Enter the President’s induction date as DD/MM/YYYY.')).toBeTruthy();
     expect(callsTo('admin_set_affiliation')).toEqual([]);
@@ -295,7 +295,7 @@ describe('the affiliation record', () => {
     await openAffiliation(affiliation({ member_type: 'association', tier: 4 }), {
       rpcErrors: { admin_set_affiliation: 'Only admins can change affiliation records' },
     });
-    type('Send affiliation returns to (email)', 'new@association.example');
+    await type('Send affiliation returns to (email)', 'new@association.example');
     await save();
     expect(screen.getByText('Only admins can change affiliation records')).toBeTruthy();
     expect(rpcNames()).not.toContain('admin_set_affiliation_return_email');
@@ -306,7 +306,7 @@ describe('the affiliation record', () => {
     await openAffiliation(affiliation({ member_type: 'association', tier: 4 }), {
       rpcErrors: { admin_set_affiliation_return_email: 'Enter an email address' },
     });
-    type('Send affiliation returns to (email)', 'not an email');
+    await type('Send affiliation returns to (email)', 'not an email');
     await save();
     expect(screen.getByText('Enter an email address')).toBeTruthy();
     expect(rpcNames()).not.toContain('admin_set_affiliation_officer');
@@ -327,12 +327,12 @@ describe('the affiliation record', () => {
 
   it('opens PlayHQ registrations and the affiliation return', async () => {
     await openAffiliation();
-    fireEvent.press(screen.getByText('PlayHQ registrations 2026–27'));
+    await fireEvent.press(screen.getByText('PlayHQ registrations 2026–27'));
     await settle();
     expect(screen).toHavePathname('/admin/affiliation/registrations');
-    act(() => router.back());
+    await act(() => router.back());
     await settle();
-    fireEvent.press(screen.getByText('Affiliation return'));
+    await fireEvent.press(screen.getByText('Affiliation return'));
     await settle();
     expect(screen).toHavePathname('/admin/affiliation/return');
   });
@@ -393,29 +393,29 @@ describe('PlayHQ registrations', () => {
 
   it('filters by Not registered, Registered and All, showing who checked', async () => {
     await openRegistrations();
-    fireEvent.press(screen.getByText('Not registered (1)'));
+    await fireEvent.press(screen.getByText('Not registered (1)'));
     expect(screen.getByText('Cat Missing')).toBeTruthy();
     expect(screen.queryByText('Ava Unchecked')).toBeNull();
     expect(screen.getByText(`Checked ${localDay('2026-10-05T02:00:00Z')} by Sample admin`)).toBeTruthy();
-    fireEvent.press(screen.getByText('Registered (1)'));
+    await fireEvent.press(screen.getByText('Registered (1)'));
     expect(screen.getByText('Dan Done')).toBeTruthy();
-    fireEvent.press(screen.getByText('All (4)'));
+    await fireEvent.press(screen.getByText('All (4)'));
     expect(screen.getAllByText(/Unchecked|Missing|Done/)).toHaveLength(4);
   });
 
   it('searches names and emails', async () => {
     await openRegistrations();
-    fireEvent.press(screen.getByText('All (4)'));
-    type('Search', 'ava.playhq');
+    await fireEvent.press(screen.getByText('All (4)'));
+    await type('Search', 'ava.playhq');
     expect(screen.getByText('Ava Unchecked')).toBeTruthy();
     expect(screen.queryByText('Ben Unchecked')).toBeNull();
-    type('Search', 'nobody');
+    await type('Search', 'nobody');
     expect(screen.getByText('Nobody here.')).toBeTruthy();
   });
 
   it('marks someone registered for the season and keeps them in view to undo', async () => {
     await openRegistrations();
-    fireEvent.press(inCard('Ava Unchecked', 'Registered'));
+    await fireEvent.press(inCard('Ava Unchecked', 'Registered'));
     await settle();
     expect(callsTo('admin_set_playhq_registration')).toEqual([
       { p_profile_id: 'r1', p_season: 2026, p_registered: true },
@@ -425,24 +425,24 @@ describe('PlayHQ registrations', () => {
     // Still shown under To check until the filter changes.
     expect(screen.getByText('Ava Unchecked')).toBeTruthy();
     expect(screen.getByText(`Checked ${localDay(new Date().toISOString())}`)).toBeTruthy();
-    fireEvent.press(inCard('Ava Unchecked', 'Not registered'));
+    await fireEvent.press(inCard('Ava Unchecked', 'Not registered'));
     await settle();
     expect(callsTo('admin_set_playhq_registration').at(-1)).toEqual({ p_profile_id: 'r1', p_season: 2026, p_registered: false });
-    fireEvent.press(screen.getByText('To check (1)'));
+    await fireEvent.press(screen.getByText('To check (1)'));
     expect(screen.queryByText('Ava Unchecked')).toBeNull();
   });
 
   it('sends nothing when the same answer is tapped again', async () => {
     await openRegistrations();
-    fireEvent.press(screen.getByText('Registered (1)'));
-    fireEvent.press(inCard('Dan Done', 'Registered'));
+    await fireEvent.press(screen.getByText('Registered (1)'));
+    await fireEvent.press(inCard('Dan Done', 'Registered'));
     await settle();
     expect(callsTo('admin_set_playhq_registration')).toEqual([]);
   });
 
   it('shows a refused mark and leaves the person unchecked', async () => {
     await openRegistrations(affiliation(), { admin_set_playhq_registration: 'Not in a squad or team this season' });
-    fireEvent.press(inCard('Ben Unchecked', 'Not registered'));
+    await fireEvent.press(inCard('Ben Unchecked', 'Not registered'));
     await settle();
     expect(screen.getByText('Not in a squad or team this season')).toBeTruthy();
     expect(screen.getByText('To check (2)')).toBeTruthy();
@@ -509,12 +509,12 @@ describe('the affiliation return', () => {
 
   it('leaves out the counts an association doesn’t ask for', async () => {
     await openReturn();
-    flip('Working With Children Check counts', false);
-    flip('Integrity training counts', false);
+    await flip('Working With Children Check counts', false);
+    await flip('Integrity training counts', false);
     expect(screen.getAllByText('Left out')).toHaveLength(2);
     expect(screen.queryByText('Working With Children Checks')).toBeNull();
     expect(screen.queryByText('Integrity training 2026–27')).toBeNull();
-    fireEvent.press(screen.getByText('Send return'));
+    await fireEvent.press(screen.getByText('Send return'));
     await settle();
     const sent = (reportPdf as jest.Mock).mock.calls[0][0] as { sections: { title: string }[] };
     expect(sent.sections.map((s) => s.title)).not.toContain('Working With Children Checks');
@@ -522,7 +522,7 @@ describe('the affiliation return', () => {
 
   it('sends the return as a PDF and records that it went', async () => {
     await openReturn();
-    fireEvent.press(screen.getByText('Send return'));
+    await fireEvent.press(screen.getByText('Send return'));
     await settle();
     expect(sharePdf).toHaveBeenCalledWith('sample-affiliation-return-2026-10-18.pdf', expect.any(Uint8Array));
     expect(callsTo('admin_log_affiliation_return')).toEqual([{ p_season: 2026 }]);
@@ -534,14 +534,14 @@ describe('the affiliation return', () => {
     expect(screen.getByText('Add where returns go')).toBeTruthy();
     expect(screen.getByText('Add the email address returns go to first.')).toBeTruthy();
     expect(isDisabled('Send return')).toBe(true);
-    fireEvent.press(screen.getByText('Add where returns go'));
+    await fireEvent.press(screen.getByText('Add where returns go'));
     await settle();
     expect(screen).toHavePathname('/admin/affiliation');
   });
 
   it('shows a refused log of the return', async () => {
     await openReturn(RETURN_INFO, { admin_log_affiliation_return: 'Only admins can send returns' });
-    fireEvent.press(screen.getByText('Send return'));
+    await fireEvent.press(screen.getByText('Send return'));
     await settle();
     expect(screen.getByText('Only admins can send returns')).toBeTruthy();
     expect(screen.queryByText(/^Make sure it went/)).toBeNull();

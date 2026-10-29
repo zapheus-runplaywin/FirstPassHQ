@@ -23,7 +23,7 @@ jest.mock('expo-file-system', () => {
     create() {
       files.set(this.uri, '');
     }
-    write(text: string, options?: { append?: boolean }) {
+    writeSync(text: string, options?: { append?: boolean }) {
       if (MockFile.failWrites) throw new Error('disk full');
       files.set(this.uri, (options?.append ? (files.get(this.uri) ?? '') : '') + text);
     }

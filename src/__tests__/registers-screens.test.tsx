@@ -65,18 +65,18 @@ const placeholder = (route: string) =>
   };
 
 const press = async (text: string | RegExp, index = 0) => {
-  fireEvent.press(screen.getAllByText(text)[index]);
+  await fireEvent.press(screen.getAllByText(text)[index]);
   await settle(6);
 };
 
 const fill = async (label: string, value: string) => {
-  fireEvent.changeText(fieldLabelled(label), value);
+  await fireEvent.changeText(fieldLabelled(label), value);
   await settle(2);
 };
 
 /** The day's square in a month calendar, such as 30 October 2026. */
 const pickDay = async (year: number, month: number, day: number) => {
-  fireEvent.press(screen.getByLabelText(new Date(year, month - 1, day).toDateString()));
+  await fireEvent.press(screen.getByLabelText(new Date(year, month - 1, day).toDateString()));
   await settle(2);
 };
 
@@ -297,7 +297,7 @@ describe('adding a policy', () => {
     await openEdit();
     await fill('Policy', 'Privacy Policy');
     await pickDay(2026, 10, 30);
-    fireEvent.changeText(screen.getByPlaceholderText('https:// on the club website or shared drive'), 'club drive');
+    await fireEvent.changeText(screen.getByPlaceholderText('https:// on the club website or shared drive'), 'club drive');
     await press('Add policy');
     expect(screen.getByText('The link must start with https://')).toBeTruthy();
     expect(rpcNames()).not.toContain('admin_save_policy');
@@ -305,12 +305,12 @@ describe('adding a policy', () => {
 
   it('offers only approved adult club officials as owner', async () => {
     await openEdit();
-    fireEvent.changeText(screen.getByPlaceholderText('Name or email'), 'Sample');
+    await fireEvent.changeText(screen.getByPlaceholderText('Name or email'), 'Sample');
     await settle(2);
     expect(screen.getByText('Sample committee')).toBeTruthy();
     expect(screen.getByText('Sample coach')).toBeTruthy();
     expect(screen.queryByText('Sample athlete')).toBeNull();
-    fireEvent.changeText(screen.getByPlaceholderText('Name or email'), 'o');
+    await fireEvent.changeText(screen.getByPlaceholderText('Name or email'), 'o');
     await settle(2);
     expect(screen.queryByText('Young Coach')).toBeNull();
     expect(screen.queryByText('Gone Committee')).toBeNull();
@@ -319,11 +319,11 @@ describe('adding a policy', () => {
   it('saves the policy with its owner and goes back', async () => {
     await openEdit();
     await fill('Policy', 'Privacy Policy');
-    fireEvent.changeText(screen.getByPlaceholderText('Name or email'), 'coach');
+    await fireEvent.changeText(screen.getByPlaceholderText('Name or email'), 'coach');
     await settle(2);
     await press('Sample coach');
     await fill('Version (optional)', '1.0');
-    fireEvent.changeText(screen.getByPlaceholderText('https:// on the club website or shared drive'), 'https://club.example/privacy');
+    await fireEvent.changeText(screen.getByPlaceholderText('https:// on the club website or shared drive'), 'https://club.example/privacy');
     await pickDay(2026, 10, 30);
     await fill('Notes (optional)', 'From the state association template');
     await press('Add policy');
@@ -420,7 +420,7 @@ describe('recording a review', () => {
 
   it('refuses a bad link before asking the database', async () => {
     await openReview('committee');
-    fireEvent.changeText(screen.getByDisplayValue('https://club.example/safeguarding.pdf'), 'www.club.example');
+    await fireEvent.changeText(screen.getByDisplayValue('https://club.example/safeguarding.pdf'), 'www.club.example');
     await settle(2);
     await press('Record review');
     expect(screen.getByText('The link must start with https://')).toBeTruthy();

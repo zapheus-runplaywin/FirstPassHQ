@@ -114,7 +114,7 @@ describe('Log an injury on the injuries list', () => {
     ['coach who is also a guardian', morePersonas.coachGuardian],
   ])('is offered to a %s', async (_label, who) => {
     await openList(who);
-    fireEvent.press(screen.getByText('Log an injury'));
+    await fireEvent.press(screen.getByText('Log an injury'));
     expect(screen).toHavePathname('/injuries/log');
   });
 
@@ -154,16 +154,16 @@ async function openLog(who: Who, athletes: unknown[] = ATHLETES, options: Backen
   });
 }
 
-function fillLog() {
-  type('Where is the injury?', 'Right knee');
-  type('What happened?', 'Landed awkwardly, iced on the bench');
+async function fillLog() {
+  await type('Where is the injury?', 'Right knee');
+  await type('What happened?', 'Landed awkwardly, iced on the bench');
 }
 
 describe('logging an injury', () => {
   it('needs an athlete chosen when there is more than one', async () => {
     await openLog('coach');
-    fillLog();
-    fireEvent.press(screen.getByText('Log injury'));
+    await fillLog();
+    await fireEvent.press(screen.getByText('Log injury'));
     await settle();
     expect(screen.getByText('Choose which athlete is injured.')).toBeTruthy();
     expect(rpcNames()).not.toContain('log_injury');
@@ -171,12 +171,12 @@ describe('logging an injury', () => {
 
   it('needs where and what happened, but not an expected return', async () => {
     await openLog('coach');
-    fireEvent.press(screen.getByText('Sample Child'));
-    fireEvent.press(screen.getByText('Log injury'));
+    await fireEvent.press(screen.getByText('Sample Child'));
+    await fireEvent.press(screen.getByText('Log injury'));
     await settle();
     expect(screen.getByText('Say where the injury is and what happened.')).toBeTruthy();
-    fillLog();
-    fireEvent.press(screen.getByText('Log injury'));
+    await fillLog();
+    await fireEvent.press(screen.getByText('Log injury'));
     await settle();
     expect(argsOf('log_injury')).toEqual([
       {
@@ -194,10 +194,10 @@ describe('logging an injury', () => {
   it('chooses the only athlete for them, and says who has been told', async () => {
     await openLog('manager', [ATHLETES[1]]);
     expect(isSelected('Sample Child')).toBe(true);
-    fillLog();
-    fireEvent(screen.getByLabelText('Possible concussion'), 'valueChange', true);
+    await fillLog();
+    await fireEvent(screen.getByLabelText('Possible concussion'), 'valueChange', true);
     expect(screen.getByText(/^If in doubt, sit them out\./)).toBeTruthy();
-    fireEvent.press(screen.getByText('Log injury'));
+    await fireEvent.press(screen.getByText('Log injury'));
     await settle();
     expect(argsOf('log_injury')[0]).toMatchObject({ p_athlete_id: 'child-1', p_concussion: true });
     expect(screen.getByText('Injury logged')).toBeTruthy();
@@ -206,11 +206,11 @@ describe('logging an injury', () => {
 
   it('can log another, starting afresh', async () => {
     await openLog('physio');
-    fireEvent.press(screen.getByText('Sample athlete'));
-    fillLog();
-    fireEvent.press(screen.getByText('Log injury'));
+    await fireEvent.press(screen.getByText('Sample athlete'));
+    await fillLog();
+    await fireEvent.press(screen.getByText('Log injury'));
     await settle();
-    fireEvent.press(screen.getByText('Log another'));
+    await fireEvent.press(screen.getByText('Log another'));
     expect(isSelected('Sample athlete')).toBe(false);
     expect(field('Where is the injury?').props.value).toBe('');
   });
@@ -219,9 +219,9 @@ describe('logging an injury', () => {
     await openLog('coach', ATHLETES, {
       rpcErrors: { log_injury: 'Only the athlete’s coaches, managers and physios can log an injury for them' },
     });
-    fireEvent.press(screen.getByText('Sample Child'));
-    fillLog();
-    fireEvent.press(screen.getByText('Log injury'));
+    await fireEvent.press(screen.getByText('Sample Child'));
+    await fillLog();
+    await fireEvent.press(screen.getByText('Log injury'));
     await settle();
     expect(
       screen.getByText('Only the athlete’s coaches, managers and physios can log an injury for them'),
@@ -238,10 +238,10 @@ describe('logging an injury', () => {
   it('goes back when done', async () => {
     const back = jest.spyOn(router, 'back').mockImplementation(() => {});
     await openLog('coach', [ATHLETES[0]]);
-    fillLog();
-    fireEvent.press(screen.getByText('Log injury'));
+    await fillLog();
+    await fireEvent.press(screen.getByText('Log injury'));
     await settle();
-    fireEvent.press(screen.getByText('Done'));
+    await fireEvent.press(screen.getByText('Done'));
     expect(back).toHaveBeenCalled();
     back.mockRestore();
   });
@@ -294,10 +294,10 @@ describe('physio updates', () => {
 
   it('lets a physio mark a possible concussion, sent once', async () => {
     await openInjury('physio', injury({ can_update: true }));
-    fireEvent.press(screen.getByText('Add physio update'));
-    type('What did the physio say?', 'Headache since the knock');
-    fireEvent(screen.getByLabelText('Possible concussion'), 'valueChange', true);
-    fireEvent.press(screen.getByText('Save update'));
+    await fireEvent.press(screen.getByText('Add physio update'));
+    await type('What did the physio say?', 'Headache since the knock');
+    await fireEvent(screen.getByLabelText('Possible concussion'), 'valueChange', true);
+    await fireEvent.press(screen.getByText('Save update'));
     await settle();
     expect(argsOf('add_injury_update')[0]).toMatchObject({
       p_injury_id: 'inj-1',
@@ -308,27 +308,27 @@ describe('physio updates', () => {
 
   it('sends no concussion change when the switch isn’t touched', async () => {
     await openInjury('athlete', injury({ athlete_id: 'athlete', can_report: true, can_update: true }));
-    fireEvent.press(screen.getByText('Add physio update'));
-    type('What did the physio say?', 'Two more weeks');
-    fireEvent.press(screen.getByText('Save update'));
+    await fireEvent.press(screen.getByText('Add physio update'));
+    await type('What did the physio say?', 'Two more weeks');
+    await fireEvent.press(screen.getByText('Save update'));
     await settle();
     expect(argsOf('add_injury_update')[0]).toMatchObject({ p_concussion: null });
   });
 
   it('lets a physio rule a concussion out', async () => {
     await openInjury('physio', injury({ concussion: true, needs_physio: true, can_update: true }));
-    fireEvent.press(screen.getByText('Add physio update'));
+    await fireEvent.press(screen.getByText('Add physio update'));
     expect(screen.getByText(/^Still a possible concussion\./)).toBeTruthy();
-    type('What did the physio say?', 'Doctor ruled out concussion');
-    fireEvent(screen.getByLabelText('Possible concussion'), 'valueChange', false);
-    fireEvent.press(screen.getByText('Save update'));
+    await type('What did the physio say?', 'Doctor ruled out concussion');
+    await fireEvent(screen.getByLabelText('Possible concussion'), 'valueChange', false);
+    await fireEvent.press(screen.getByText('Save update'));
     await settle();
     expect(argsOf('add_injury_update')[0]).toMatchObject({ p_concussion: false });
   });
 
   it('doesn’t let the athlete or a guardian rule a concussion out', async () => {
     await openInjury('guardian', injury({ concussion: true, can_report: true, can_update: true }));
-    fireEvent.press(screen.getByText('Add physio update'));
+    await fireEvent.press(screen.getByText('Add physio update'));
     expect(screen.queryByLabelText('Possible concussion')).toBeNull();
   });
 
@@ -364,8 +364,8 @@ describe('after a concussion', () => {
 
   it('refuses a clearance request before the club’s minimum days', async () => {
     await openInjury('guardian', concussed);
-    fireEvent.press(screen.getByText('Ask for clearance'));
-    fireEvent.press(screen.getAllByText('Ask for clearance').at(-1)!);
+    await fireEvent.press(screen.getByText('Ask for clearance'));
+    await fireEvent.press(screen.getAllByText('Ask for clearance').at(-1)!);
     await settle();
     expect(
       screen.getByText(`After a concussion, clearance can be asked for from ${formatDateString('2026-10-31')}.`),
@@ -375,9 +375,9 @@ describe('after a concussion', () => {
 
   it('asks for a doctor’s clearance, and needs it confirmed', async () => {
     await openInjury('guardian', { ...concussed, earliest_clearance: '2026-10-18' });
-    fireEvent.press(screen.getByText('Ask for clearance'));
+    await fireEvent.press(screen.getByText('Ask for clearance'));
     expect(screen.getByText('Doctor’s clearance')).toBeTruthy();
-    fireEvent.press(screen.getAllByText('Ask for clearance').at(-1)!);
+    await fireEvent.press(screen.getAllByText('Ask for clearance').at(-1)!);
     await settle();
     expect(screen.getByText('Attach the doctor’s clearance.')).toBeTruthy();
     expect(screen.getByLabelText('This is a doctor’s clearance').props.value).toBe(false);
@@ -397,7 +397,7 @@ describe('after a concussion', () => {
 
   it('asks for no doctor’s clearance for other injuries', async () => {
     await openInjury('guardian', injury({ can_report: true, can_update: true }));
-    fireEvent.press(screen.getByText('Ask for clearance'));
+    await fireEvent.press(screen.getByText('Ask for clearance'));
     expect(screen.getByText('Proof of clearance')).toBeTruthy();
     expect(screen.queryByLabelText('This is a doctor’s clearance')).toBeNull();
   });

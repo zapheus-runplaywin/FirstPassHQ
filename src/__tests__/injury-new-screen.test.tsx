@@ -60,14 +60,14 @@ async function open(who: Who, options: BackendOptions = {}) {
   });
 }
 
-function fill() {
-  type('Where is the injury?', 'Left ankle');
-  type('What happened?', 'Rolled it landing a rebound');
-  fireEvent.press(screen.getByText('2 weeks'));
+async function fill() {
+  await type('Where is the injury?', 'Left ankle');
+  await type('What happened?', 'Rolled it landing a rebound');
+  await fireEvent.press(screen.getByText('2 weeks'));
 }
 
 async function send() {
-  fireEvent.press(screen.getByText('Report injury'));
+  await fireEvent.press(screen.getByText('Report injury'));
   await settle();
 }
 
@@ -76,8 +76,8 @@ describe('an athlete’s own injury', () => {
     await open('athlete');
     expect(rpcNames()).not.toContain('my_athletes');
     expect(screen.getByText(formatDateString('2026-10-18'))).toBeTruthy();
-    fill();
-    type('Restrictions (optional)', 'No jumping');
+    await fill();
+    await type('Restrictions (optional)', 'No jumping');
     await send();
     expect(argsOf('report_injury')).toEqual([
       {
@@ -96,8 +96,8 @@ describe('an athlete’s own injury', () => {
   it('marks a possible concussion, and says what that means', async () => {
     await open('athlete');
     expect(screen.queryByText(/^If in doubt, sit them out\./)).toBeNull();
-    fill();
-    fireEvent(screen.getByLabelText('Possible concussion'), 'valueChange', true);
+    await fill();
+    await fireEvent(screen.getByLabelText('Possible concussion'), 'valueChange', true);
     expect(screen.getByText(/^If in doubt, sit them out\. They need to see a doctor\./)).toBeTruthy();
     await send();
     expect(argsOf('report_injury')[0]).toMatchObject({ p_concussion: true });
@@ -105,15 +105,15 @@ describe('an athlete’s own injury', () => {
 
   it('can say it happened yesterday or earlier, but never after today', async () => {
     await open('athlete');
-    fireEvent.press(screen.getByText('Yesterday'));
+    await fireEvent.press(screen.getByText('Yesterday'));
     expect(screen.getByText(formatDateString('2026-10-17'))).toBeTruthy();
-    fireEvent.press(screen.getAllByLabelText('Day before')[0]);
+    await fireEvent.press(screen.getAllByLabelText('Day before')[0]);
     expect(screen.getByText(formatDateString('2026-10-16'))).toBeTruthy();
-    fireEvent.press(screen.getAllByLabelText('Day after')[0]);
-    fireEvent.press(screen.getAllByLabelText('Day after')[0]);
-    fireEvent.press(screen.getAllByLabelText('Day after')[0]);
+    await fireEvent.press(screen.getAllByLabelText('Day after')[0]);
+    await fireEvent.press(screen.getAllByLabelText('Day after')[0]);
+    await fireEvent.press(screen.getAllByLabelText('Day after')[0]);
     expect(screen.getByText(formatDateString('2026-10-18'))).toBeTruthy();
-    fill();
+    await fill();
     await send();
     expect(argsOf('report_injury')[0]).toMatchObject({ p_injured_on: '2026-10-18' });
   });
@@ -123,9 +123,9 @@ describe('an athlete’s own injury', () => {
     ['nothing happened', 'Ankle', '   ', 'Say where the injury is and what happened.'],
   ])('refuses a report saying %s', async (_l, where, what, message) => {
     await open('athlete');
-    type('Where is the injury?', where);
-    type('What happened?', what);
-    fireEvent.press(screen.getByText('2 weeks'));
+    await type('Where is the injury?', where);
+    await type('What happened?', what);
+    await fireEvent.press(screen.getByText('2 weeks'));
     await send();
     expect(screen.getByText(message)).toBeTruthy();
     expect(rpcNames()).not.toContain('report_injury');
@@ -133,8 +133,8 @@ describe('an athlete’s own injury', () => {
 
   it('needs an expected return, which a physio can change later', async () => {
     await open('athlete');
-    type('Where is the injury?', 'Knee');
-    type('What happened?', 'Twisted');
+    await type('Where is the injury?', 'Knee');
+    await type('What happened?', 'Twisted');
     await send();
     expect(screen.getByText('Choose when you expect to be back. A physio can change it later.')).toBeTruthy();
     expect(rpcNames()).not.toContain('report_injury');
@@ -146,9 +146,9 @@ describe('an athlete’s own injury', () => {
     ['6 weeks', '2026-11-29'],
   ])('“%s” sets the return to %s', async (pick, day) => {
     await open('athlete');
-    type('Where is the injury?', 'Knee');
-    type('What happened?', 'Twisted');
-    fireEvent.press(screen.getByText(pick));
+    await type('Where is the injury?', 'Knee');
+    await type('What happened?', 'Twisted');
+    await fireEvent.press(screen.getByText(pick));
     expect(isSelected(pick)).toBe(true);
     await send();
     expect(argsOf('report_injury')[0]).toMatchObject({ p_expected_return: day });
@@ -156,7 +156,7 @@ describe('an athlete’s own injury', () => {
 
   it('shows the database’s refusal and stays', async () => {
     await open('athlete', { rpcErrors: { report_injury: 'You can only report your own injuries.' } });
-    fill();
+    await fill();
     await send();
     expect(screen.getByText('You can only report your own injuries.')).toBeTruthy();
     expect(replace).not.toHaveBeenCalled();
@@ -192,11 +192,11 @@ describe('a parent or guardian reporting for their child', () => {
     await open('guardian');
     expect(screen.getByText('Athlete')).toBeTruthy();
     expect(screen.getByText('Unnamed athlete')).toBeTruthy();
-    fill();
+    await fill();
     await send();
     expect(screen.getByText('Choose which athlete is injured.')).toBeTruthy();
     expect(rpcNames()).not.toContain('report_injury');
-    fireEvent.press(screen.getByText('Sample Child'));
+    await fireEvent.press(screen.getByText('Sample Child'));
     await send();
     expect(argsOf('report_injury')[0]).toMatchObject({ p_athlete_id: 'child-1' });
   });
@@ -204,7 +204,7 @@ describe('a parent or guardian reporting for their child', () => {
   it('with one child, reports for them without asking', async () => {
     await open('guardian', { rpcs: { my_athletes: [CHILDREN[0]] } });
     expect(screen.getByText('For Sample Child')).toBeTruthy();
-    fill();
+    await fill();
     await send();
     expect(argsOf('report_injury')[0]).toMatchObject({ p_athlete_id: 'child-1' });
   });
@@ -215,7 +215,7 @@ describe('a parent or guardian reporting for their child', () => {
   ])('%s not yet linked to a child can’t report, and never for themselves', async (_l, who) => {
     await open(who, { rpcs: { my_athletes: [] } });
     expect(screen.getByText('A club admin needs to link you to your athlete before you can report an injury for them.')).toBeTruthy();
-    fill();
+    await fill();
     await send();
     expect(screen.getByText('Choose which athlete is injured.')).toBeTruthy();
     expect(rpcNames()).not.toContain('report_injury');

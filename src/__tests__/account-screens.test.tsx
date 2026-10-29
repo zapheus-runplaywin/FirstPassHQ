@@ -82,9 +82,9 @@ describe('your details', () => {
     ['admin', 'admin'],
   ])('lets a %s set a club title, and saves it with the preferred name', async (_l, who) => {
     await open(who);
-    type('Preferred name', 'Sam');
-    type('Title', 'Treasurer');
-    fireEvent.press(screen.getByText('Save'));
+    await type('Preferred name', 'Sam');
+    await type('Title', 'Treasurer');
+    await fireEvent.press(screen.getByText('Save'));
     await settle();
     expect(argsOf('save_my_details')).toEqual([{ p_preferred_name: 'Sam', p_title: 'Treasurer' }]);
     expect(back).toHaveBeenCalledTimes(1);
@@ -99,8 +99,8 @@ describe('your details', () => {
   ])('gives a %s no club title, and sends none', async (_l, who) => {
     await open(who);
     expect(screen.queryByText('Title')).toBeNull();
-    type('Preferred name', 'Jo');
-    fireEvent.press(screen.getByText('Save'));
+    await type('Preferred name', 'Jo');
+    await fireEvent.press(screen.getByText('Save'));
     await settle();
     expect(argsOf('save_my_details')).toEqual([{ p_preferred_name: 'Jo', p_title: null }]);
   });
@@ -140,7 +140,7 @@ describe('your details', () => {
 
   it('shows the database’s error and stays', async () => {
     await open('athlete', { rpcErrors: { save_my_details: 'Preferred name is too long.' } });
-    fireEvent.press(screen.getByText('Save'));
+    await fireEvent.press(screen.getByText('Save'));
     await settle();
     expect(screen.getByText('Preferred name is too long.')).toBeTruthy();
     expect(back).not.toHaveBeenCalled();
@@ -169,9 +169,9 @@ describe('deleting the account', () => {
 
   it('asks once more before deleting, and Cancel deletes nothing', async () => {
     await open();
-    fireEvent.press(screen.getByText('Delete my account'));
+    await fireEvent.press(screen.getByText('Delete my account'));
     expect(screen.getByText('Are you sure? This can’t be undone.')).toBeTruthy();
-    fireEvent.press(screen.getByText('Cancel'));
+    await fireEvent.press(screen.getByText('Cancel'));
     await settle();
     expect(rpcNames()).not.toContain('delete_my_account');
     expect(screen.queryByText('Delete my account permanently')).toBeNull();
@@ -179,8 +179,8 @@ describe('deleting the account', () => {
 
   it('deletes the account, then signs out on this phone', async () => {
     await open();
-    fireEvent.press(screen.getByText('Delete my account'));
-    fireEvent.press(screen.getByText('Delete my account permanently'));
+    await fireEvent.press(screen.getByText('Delete my account'));
+    await fireEvent.press(screen.getByText('Delete my account permanently'));
     await settle();
     expect(argsOf('delete_my_account')).toEqual([undefined]);
     expect(signOut()).toHaveBeenCalled();
@@ -188,8 +188,8 @@ describe('deleting the account', () => {
 
   it('asks a member the club must keep to contact an admin, without saying why', async () => {
     await open({ rpcErrors: { delete_my_account: 'Your account can’t be deleted at the moment. Please contact a club admin.' } });
-    fireEvent.press(screen.getByText('Delete my account'));
-    fireEvent.press(screen.getByText('Delete my account permanently'));
+    await fireEvent.press(screen.getByText('Delete my account'));
+    await fireEvent.press(screen.getByText('Delete my account permanently'));
     await settle();
     expect(screen.getByText('Your account can’t be deleted at the moment. Please contact a club admin.')).toBeTruthy();
     expect(screen.queryByText(/concern names/i)).toBeNull();
@@ -198,8 +198,8 @@ describe('deleting the account', () => {
 
   it('when deleting fails, says why and stays signed in', async () => {
     await open({ rpcErrors: { delete_my_account: 'Admins can’t delete their own account.' } });
-    fireEvent.press(screen.getByText('Delete my account'));
-    fireEvent.press(screen.getByText('Delete my account permanently'));
+    await fireEvent.press(screen.getByText('Delete my account'));
+    await fireEvent.press(screen.getByText('Delete my account permanently'));
     await settle();
     expect(screen.getByText('Admins can’t delete their own account.')).toBeTruthy();
     expect(signOut()).not.toHaveBeenCalled();
@@ -258,7 +258,7 @@ describe('the exemption declaration', () => {
   it('accepting sends the declaration and reloads their roles', async () => {
     await open(coach(exemption()));
     clearCalls();
-    fireEvent.press(screen.getByText('I agree'));
+    await fireEvent.press(screen.getByText('I agree'));
     await settle();
     expect(argsOf('accept_volunteer_declaration')).toEqual([undefined]);
     // The member's exemption is read again, so the coach role starts.
@@ -267,7 +267,7 @@ describe('the exemption declaration', () => {
 
   it('when accepting fails, says why and keeps I agree', async () => {
     await open(coach(exemption()), { rpcErrors: { accept_volunteer_declaration: 'This exemption has ended.' } });
-    fireEvent.press(screen.getByText('I agree'));
+    await fireEvent.press(screen.getByText('I agree'));
     await settle();
     expect(screen.getByText('This exemption has ended.')).toBeTruthy();
     expect(screen.getByText('I agree')).toBeTruthy();
@@ -353,7 +353,7 @@ describe('the check application declaration', () => {
   it('accepting sends the declaration and reloads their roles', async () => {
     await open(coach(application()));
     clearCalls();
-    fireEvent.press(screen.getByText('I agree'));
+    await fireEvent.press(screen.getByText('I agree'));
     await settle();
     expect(argsOf('accept_wwcc_application_declaration')).toEqual([undefined]);
     expect(rpcNames()).toContain('my_wwcc_application');
@@ -363,7 +363,7 @@ describe('the check application declaration', () => {
     await open(coach(application()), {
       rpcErrors: { accept_wwcc_application_declaration: 'You’ve already accepted this' },
     });
-    fireEvent.press(screen.getByText('I agree'));
+    await fireEvent.press(screen.getByText('I agree'));
     await settle();
     expect(screen.getByText('You’ve already accepted this')).toBeTruthy();
     expect(screen.getByText('I agree')).toBeTruthy();
@@ -436,14 +436,14 @@ describe('your tasks', () => {
     await openScreen('athlete', { 'tasks/index': TasksScreen }, '/tasks', {}, { tableHandlers: { personal_tasks: t.handler } });
     expect(screen.getByText('Nothing to do.')).toBeTruthy();
     expect(screen.queryByText('Delete done tasks')).toBeNull();
-    fireEvent.press(screen.getByText('Add a task'));
+    await fireEvent.press(screen.getByText('Add a task'));
     expect(push).toHaveBeenCalledWith('/tasks/new');
   });
 
   it('putting a done task back clears its done date', async () => {
     const t = tasksTable(OPEN, DONE);
     await openScreen('athlete', { 'tasks/index': TasksScreen }, '/tasks', {}, { tableHandlers: { personal_tasks: t.handler } });
-    fireEvent.press(screen.getByLabelText('Put back Done task'));
+    await fireEvent.press(screen.getByLabelText('Put back Done task'));
     await settle();
     expect(t.writes('update')).toEqual([{ done_at: null }]);
     expect(t.filtersOf('update')).toEqual([[['id', 't3']]]);
@@ -453,9 +453,9 @@ describe('your tasks', () => {
   it('deletes only ticked-off tasks, after asking', async () => {
     const t = tasksTable(OPEN, DONE);
     await openScreen('athlete', { 'tasks/index': TasksScreen }, '/tasks', {}, { tableHandlers: { personal_tasks: t.handler } });
-    fireEvent.press(screen.getByText('Delete done tasks'));
+    await fireEvent.press(screen.getByText('Delete done tasks'));
     expect(screen.getByText('This deletes every task you’ve ticked off, for good.')).toBeTruthy();
-    fireEvent.press(screen.getByText('Delete them'));
+    await fireEvent.press(screen.getByText('Delete them'));
     await settle();
     const deletes = t.queries.filter((calls) => calls.some((c) => c.method === 'delete'));
     expect(deletes).toHaveLength(1);
@@ -475,8 +475,8 @@ describe('adding and changing a task', () => {
   it('needs a title', async () => {
     const t = recordTable();
     await openScreen('athlete', { 'tasks/new': NewTaskScreen }, '/tasks/new', {}, { tableHandlers: { personal_tasks: t.handler } });
-    type('Task', '   ');
-    fireEvent.press(screen.getByText('Add task'));
+    await type('Task', '   ');
+    await fireEvent.press(screen.getByText('Add task'));
     await settle();
     expect(screen.getByText('Say what the task is.')).toBeTruthy();
     expect(t.writes('insert')).toEqual([]);
@@ -486,8 +486,8 @@ describe('adding and changing a task', () => {
     const t = recordTable();
     await openScreen('athlete', { 'tasks/new': NewTaskScreen }, '/tasks/new', {}, { tableHandlers: { personal_tasks: t.handler } });
     expect(screen.getByText('No due date')).toBeTruthy();
-    type('Task', '  Wash my training kit  ');
-    fireEvent.press(screen.getByText('Add task'));
+    await type('Task', '  Wash my training kit  ');
+    await fireEvent.press(screen.getByText('Add task'));
     await settle();
     expect(t.writes('insert')).toEqual([{ title: 'Wash my training kit', due_on: null }]);
     expect(back).toHaveBeenCalled();
@@ -496,11 +496,11 @@ describe('adding and changing a task', () => {
   it('picks a due day from the week, moving a week at a time', async () => {
     const t = recordTable();
     await openScreen('athlete', { 'tasks/new': NewTaskScreen }, '/tasks/new', {}, { tableHandlers: { personal_tasks: t.handler } });
-    type('Task', 'Book a physio follow-up');
-    fireEvent.press(screen.getByLabelText('Next week'));
-    fireEvent.press(screen.getByLabelText('Wed Oct 21 2026'));
+    await type('Task', 'Book a physio follow-up');
+    await fireEvent.press(screen.getByLabelText('Next week'));
+    await fireEvent.press(screen.getByLabelText('Wed Oct 21 2026'));
     expect(screen.getByText('Remove due date')).toBeTruthy();
-    fireEvent.press(screen.getByText('Add task'));
+    await fireEvent.press(screen.getByText('Add task'));
     await settle();
     expect(t.writes('insert')).toEqual([{ title: 'Book a physio follow-up', due_on: '2026-10-21' }]);
   });
@@ -508,10 +508,10 @@ describe('adding and changing a task', () => {
   it('Remove due date takes it off', async () => {
     const t = recordTable();
     await openScreen('athlete', { 'tasks/new': NewTaskScreen }, '/tasks/new', {}, { tableHandlers: { personal_tasks: t.handler } });
-    type('Task', 'Thing');
-    fireEvent.press(screen.getByLabelText('Fri Oct 16 2026'));
-    fireEvent.press(screen.getByText('Remove due date'));
-    fireEvent.press(screen.getByText('Add task'));
+    await type('Task', 'Thing');
+    await fireEvent.press(screen.getByLabelText('Fri Oct 16 2026'));
+    await fireEvent.press(screen.getByText('Remove due date'));
+    await fireEvent.press(screen.getByText('Add task'));
     await settle();
     expect(t.writes('insert')).toEqual([{ title: 'Thing', due_on: null }]);
   });
@@ -522,8 +522,8 @@ describe('adding and changing a task', () => {
     (supabase.from as jest.Mock).mockImplementationOnce(() => ({
       insert: async () => ({ error: { message: 'You can have up to 100 tasks to do.' } }),
     }));
-    type('Task', 'One too many');
-    fireEvent.press(screen.getByText('Add task'));
+    await type('Task', 'One too many');
+    await fireEvent.press(screen.getByText('Add task'));
     await settle();
     expect(screen.getByText('You can have up to 100 tasks to do.')).toBeTruthy();
     expect(back).not.toHaveBeenCalled();
@@ -536,8 +536,8 @@ describe('adding and changing a task', () => {
     await openScreen('athlete', { 'tasks/[id]': EditTaskScreen }, '/tasks/t9', {}, { tableHandlers: { personal_tasks: t.handler } });
     expect(field('Task').props.value).toBe('Return the club bib');
     expect(screen.getByLabelText('Tue Oct 20 2026').props.accessibilityState).toEqual({ selected: true });
-    type('Task', 'Return the bib and socks');
-    fireEvent.press(screen.getByText('Save'));
+    await type('Task', 'Return the bib and socks');
+    await fireEvent.press(screen.getByText('Save'));
     await settle();
     expect(t.writes('update')).toEqual([{ title: 'Return the bib and socks', due_on: '2026-10-20' }]);
     expect(t.filtersOf('update')).toEqual([[['id', 't9']]]);
@@ -547,9 +547,9 @@ describe('adding and changing a task', () => {
   it('deletes a task after asking', async () => {
     const t = recordTable((q) => (q.calls.some((c) => c.method === 'delete') ? [] : [EXISTING]));
     await openScreen('athlete', { 'tasks/[id]': EditTaskScreen }, '/tasks/t9', {}, { tableHandlers: { personal_tasks: t.handler } });
-    fireEvent.press(screen.getByText('Delete task'));
+    await fireEvent.press(screen.getByText('Delete task'));
     expect(screen.getByText('This deletes the task for good.')).toBeTruthy();
-    fireEvent.press(screen.getByText('Delete it'));
+    await fireEvent.press(screen.getByText('Delete it'));
     await settle();
     expect(t.filtersOf('delete')).toEqual([[['id', 't9']]]);
     expect(back).toHaveBeenCalled();

@@ -212,7 +212,7 @@ async function signIn<T = ReturnType<typeof useAuth>>(
   hook: () => T = useAuth as unknown as () => T,
 ) {
   rows = given;
-  const view = renderHook(() => ({ auth: useAuth(), value: hook() }), { wrapper });
+  const view = await renderHook(() => ({ auth: useAuth(), value: hook() }), { wrapper });
   await waitFor(() => expect(view.result.current.auth.loading).toBe(false));
   return view;
 }
@@ -226,9 +226,9 @@ async function authFor(given: Rows) {
 // ---------------------------------------------------------------------------
 
 describe('loading the member', () => {
-  it('can’t be used outside AuthProvider', () => {
+  it('can’t be used outside AuthProvider', async () => {
     jest.spyOn(console, 'error').mockImplementation(() => {});
-    expect(() => renderHook(() => useAuth())).toThrow('useAuth must be used inside AuthProvider');
+    await expect(renderHook(() => useAuth())).rejects.toThrow('useAuth must be used inside AuthProvider');
     jest.mocked(console.error).mockRestore();
   });
 
@@ -240,7 +240,7 @@ describe('loading the member', () => {
       choose: jest.fn(),
       switchClub: jest.fn(),
     });
-    const { result } = renderHook(() => useAuth(), { wrapper });
+    const { result } = await renderHook(() => useAuth(), { wrapper });
     await act(async () => {});
     expect(result.current.loading).toBe(false);
     expect(result.current.session).toBeNull();
@@ -260,17 +260,17 @@ describe('loading the member', () => {
     });
     rows = { profile: profile('athlete') };
     jest.mocked(useClubChoice).mockReturnValue(choice(null));
-    const { result, rerender } = renderHook(() => useAuth(), { wrapper });
+    const { result, rerender } = await renderHook(() => useAuth(), { wrapper });
     await act(async () => {});
     expect(supabase.auth.getSession).not.toHaveBeenCalled();
 
     jest.mocked(useClubChoice).mockReturnValue(choice('thunder'));
-    rerender({});
+    await rerender({});
     await waitFor(() => expect(result.current.profile?.role).toBe('athlete'));
     expect(supabase.auth.onAuthStateChange).toHaveBeenCalledTimes(1);
 
     jest.mocked(useClubChoice).mockReturnValue(choice('warriors'));
-    rerender({});
+    await rerender({});
     await act(async () => {});
     expect(unsubscribe).toHaveBeenCalledTimes(1);
     expect(supabase.auth.onAuthStateChange).toHaveBeenCalledTimes(2);
@@ -325,7 +325,17 @@ describe('loading the member', () => {
       exemption: exemption(),
       committeeChecksFrom: '2027-01-11',
     };
-    const { result } = renderHook(() => useAuth(), { wrapper });
+    // The session waits until the loading state has been checked: render now
+    // finishes every update it can before handing back.
+    const getSession = supabase.auth.getSession as jest.Mock;
+    const signedIn = getSession.getMockImplementation()!;
+    let release!: () => void;
+    const held = new Promise<void>((resolve) => (release = resolve));
+    getSession.mockImplementationOnce(async () => {
+      await held;
+      return signedIn();
+    });
+    const { result } = await renderHook(() => useAuth(), { wrapper });
     expect(result.current.loading).toBe(true);
     // The club's default, the whole committee, until the member loads.
     expect(result.current.committeeSeesInjuries).toBe(true);
@@ -336,6 +346,7 @@ describe('loading the member', () => {
     expect(result.current.isSafeguardingOfficer).toBe(false);
     expect(result.current.exemption).toBeNull();
     expect(result.current.committeeChecksFrom).toBeNull();
+    await act(async () => release());
     await waitFor(() => expect(result.current.loading).toBe(false));
   });
 
@@ -354,7 +365,7 @@ describe('loading the member', () => {
   it('copes with no rows coming back', async () => {
     rows = { profile: null };
     jest.mocked(supabase.from).mockImplementation(() => query({ data: null }) as never);
-    const { result } = renderHook(() => useAuth(), { wrapper });
+    const { result } = await renderHook(() => useAuth(), { wrapper });
     await waitFor(() => expect(result.current.loading).toBe(false));
     expect(result.current.profile).toBeNull();
     expect(result.current.memberships).toEqual([]);
@@ -426,7 +437,7 @@ describe('loading the member', () => {
 
   it('stops listening for sign-ins when it unmounts', async () => {
     const { unmount } = await signIn({ profile: profile('coach') });
-    unmount();
+    await unmount();
     expect(unsubscribe).toHaveBeenCalled();
   });
 

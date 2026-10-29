@@ -56,9 +56,15 @@ The Jest coverage floor is set in `package.json` (`jest.coverageThreshold`): 91%
 3. **New screen:** put it behind the right guard in `src/app/_layout.tsx`. The route tests sweep every file under `src/app/admin`, so an admin screen outside the admin guard fails them. A member screen needs a rule in `useRouteAccess` and a row in `route-guards-roles.test.tsx`, which fails when a screen is missing from its table.
    - If the screen adds a Home or Administration card, add it to `home-by-role.test.tsx` or `administration-by-feature.test.tsx`.
 4. **New pure logic in `src/lib`:** add tests in `src/lib/__tests__/<module>.test.ts`.
-5. **Dates:** fix "today" in any test that depends on it (`jest.useFakeTimers().setSystemTime(...)`), because CI runs in UTC.
-6. **Bugs:** when a test finds a bug, fix it with that test, in the same pull request or the next one. The test must fail before the fix and pass after it.
-7. **Changing what a test expects:** only when the rule itself changes. Say in the pull request which expectations changed and why. Never skip, delete or weaken a test to get green.
+5. **Screen tests:** Testing Library's `render`, `renderHook`, `renderRouter`, `fireEvent` and `act` return promises, so await every one, and any helper that uses them is async and awaited too. `npx expo lint` fails on one that isn't (`no-floating-promises`, on test files only). Some consequences:
+   - `render` finishes every update it can before returning, so a test of a loading state holds the backend's answer until it has looked (`conduct.test.ts`, `consents.test.ts`).
+   - `fireEvent.press` returns only once an async handler has finished. To look at the screen while a held answer is pending, press with `pressWithoutWaiting` from `harness.tsx`.
+   - The tree holds only host elements (`View`, `Text`, `TextInput`), found with `queryAll` on a `TestInstance` from `test-renderer`, or `screen.container`.
+   - `jest.after-env.ts` unmounts each test's screen and clears the long-lived mocks (React Native's native-method and `performance.now` mocks, and the Supabase client) after every test. Without it each screen test kept about 1 MB, and the 2,815 route tests in `route-guards-roles.test.tsx` ran out of memory.
+   - Since SDK 58 the imperative `router` binds its methods when a screen first renders. `openScreen` and `openRoute` keep a `jest.spyOn(router, ...)` made before that; spy after rendering in a test that renders some other way.
+6. **Dates:** fix "today" in any test that depends on it (`jest.useFakeTimers().setSystemTime(...)`), because CI runs in UTC.
+7. **Bugs:** when a test finds a bug, fix it with that test, in the same pull request or the next one. The test must fail before the fix and pass after it.
+8. **Changing what a test expects:** only when the rule itself changes. Say in the pull request which expectations changed and why. Never skip, delete or weaken a test to get green.
 
 ## Running the tests locally
 

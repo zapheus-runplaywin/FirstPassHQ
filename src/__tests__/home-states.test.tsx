@@ -77,7 +77,7 @@ describe('asking to join', () => {
     expect(screen.queryByText('Coming up')).toBeNull();
     // The code is only shown once they've asked.
     expect(rpcNames()).not.toContain('my_verification_code');
-    fireEvent.press(screen.getByText('Request to join'));
+    await fireEvent.press(screen.getByText('Request to join'));
     expect(push).toHaveBeenCalledWith('/join');
   });
 });
@@ -89,7 +89,7 @@ describe('waiting for approval', () => {
     expect(screen.getByText('123 456')).toBeTruthy();
     expect(screen.getByLabelText('Your code is 1 2 3 4 5 6')).toBeTruthy();
     expect(screen.getByText(/Never share it with anyone else\./)).toBeTruthy();
-    fireEvent.press(screen.getByText('Edit request'));
+    await fireEvent.press(screen.getByText('Edit request'));
     expect(push).toHaveBeenCalledWith('/join');
   });
 
@@ -145,7 +145,7 @@ describe('a request turned down', () => {
     expect(screen.getByText('Request not approved')).toBeTruthy();
     expect(screen.getByText(message)).toBeTruthy();
     expect(screen.getByText('123 456')).toBeTruthy();
-    fireEvent.press(screen.getByText('Request again'));
+    await fireEvent.press(screen.getByText('Request again'));
     expect(push).toHaveBeenCalledWith('/join');
   });
 
@@ -280,7 +280,7 @@ describe('a lodged check application', () => {
         'Your coach role is paused until you accept the declaration for your Working With Children Check application. Open it from your to-do list.',
       ),
     ).toBeTruthy();
-    fireEvent.press(screen.getByText('Confirm your Working With Children Check application'));
+    await fireEvent.press(screen.getByText('Confirm your Working With Children Check application'));
     expect(push).toHaveBeenCalledWith('/wwcc-application');
   });
 
@@ -314,7 +314,7 @@ describe('a lodged check application', () => {
     });
     expect(screen.getByText('Confirm 2 check applications are still being assessed')).toBeTruthy();
     expect(screen.getByText('1 lapsed. Check online, then confirm on the member’s page.')).toBeTruthy();
-    fireEvent.press(screen.getByText('Confirm 2 check applications are still being assessed'));
+    await fireEvent.press(screen.getByText('Confirm 2 check applications are still being assessed'));
     expect(push).toHaveBeenCalledWith('/admin');
   });
 
@@ -468,7 +468,7 @@ describe('the to-do list', () => {
 
   it('opens a club item where it’s done', async () => {
     await openHome('athlete', { check_ins: [] });
-    fireEvent.press(screen.getByText('Do your daily check-in'));
+    await fireEvent.press(screen.getByText('Do your daily check-in'));
     expect(push).toHaveBeenCalledWith('/check-in');
   });
 
@@ -481,7 +481,7 @@ describe('the to-do list', () => {
     });
     expect(screen.getByText('Nobody can endorse Kai Senior’s clearance')).toBeTruthy();
     expect(screen.getByText('Make a physio Head Physio, or place a physio in their squad or team')).toBeTruthy();
-    fireEvent.press(screen.getByText('Nobody can endorse Kai Senior’s clearance'));
+    await fireEvent.press(screen.getByText('Nobody can endorse Kai Senior’s clearance'));
     expect(push).toHaveBeenCalledWith('/admin');
   });
 
@@ -495,7 +495,7 @@ describe('the to-do list', () => {
     expect(rpcNames().filter((n) => n === 'removal_run_status')).toHaveLength(1);
     expect(screen.getByText('Old records haven’t been removed yet')).toBeTruthy();
     expect(screen.getByText('The nightly removal hasn’t finished for 2 days. Ask FirstPass to check it.')).toBeTruthy();
-    fireEvent.press(screen.getByText('Old records haven’t been removed yet'));
+    await fireEvent.press(screen.getByText('Old records haven’t been removed yet'));
     expect(push).toHaveBeenCalledWith('/admin/club');
   });
 
@@ -527,13 +527,13 @@ describe('the to-do list', () => {
   it('ticking off a task saves it as done and offers Undo, which puts it back', async () => {
     const tasks = recordTable(() => [TASKS[3]]);
     await openHome('committee', {}, { tableHandlers: { personal_tasks: tasks.handler } });
-    fireEvent.press(screen.getByLabelText('Tick off Pay fees'));
+    await fireEvent.press(screen.getByLabelText('Tick off Pay fees'));
     await settle();
     expect(screen.queryByLabelText('Tick off Pay fees')).toBeNull();
     expect(screen.getByText('Ticked off Pay fees')).toBeTruthy();
     expect(tasks.writes('update')).toEqual([{ done_at: '2026-10-18T02:00:00.000Z' }]);
     expect(tasks.filtersOf('update')).toEqual([[['id', 't-soon']]]);
-    fireEvent.press(screen.getByText('Undo'));
+    await fireEvent.press(screen.getByText('Undo'));
     await settle();
     expect(tasks.writes('update')[1]).toEqual({ done_at: null });
     expect(screen.getByLabelText('Tick off Pay fees')).toBeTruthy();
@@ -546,15 +546,15 @@ describe('the to-do list', () => {
 describe('the footer', () => {
   it('opens Your details and Delete account', async () => {
     await openHome('athlete');
-    fireEvent.press(screen.getByText('Your details'));
+    await fireEvent.press(screen.getByText('Your details'));
     expect(push).toHaveBeenCalledWith('/my-details');
-    fireEvent.press(screen.getByText('Delete account'));
+    await fireEvent.press(screen.getByText('Delete account'));
     expect(push).toHaveBeenCalledWith('/delete-account');
   });
 
   it('signs out', async () => {
     await openHome('athlete');
-    fireEvent.press(screen.getByText('Sign out'));
+    await fireEvent.press(screen.getByText('Sign out'));
     await settle();
     expect((supabase.auth as unknown as { signOut: jest.Mock }).signOut).toHaveBeenCalled();
   });
@@ -581,7 +581,7 @@ describe('the footer', () => {
 
   it('every member can raise a concern, even before approval', async () => {
     await openHome('pending');
-    fireEvent.press(screen.getByText('Raise a concern'));
+    await fireEvent.press(screen.getByText('Raise a concern'));
     expect(push).toHaveBeenCalledWith('/concern/new');
     expect(argsOf('my_verification_code')).toHaveLength(1);
   });
@@ -593,7 +593,7 @@ describe('the footer', () => {
 describe('athletes flagged 3 times in a week', () => {
   it('puts them on the Child Safety Officer’s to-do list, opening the flags', async () => {
     await openHome('safeguardingOfficer', {}, { rpcs: { wellbeing_flag_alerts: 2 } });
-    fireEvent.press(screen.getByText('Look at 2 athletes flagged 3 times this week'));
+    await fireEvent.press(screen.getByText('Look at 2 athletes flagged 3 times this week'));
     expect(push).toHaveBeenCalledWith('/concerns/wellbeing');
   });
 

@@ -73,7 +73,7 @@ async function open(who: Who = 'athlete', rows: SessionLog[] = [], options: Back
 }
 
 async function press(text: string) {
-  fireEvent.press(screen.getByText(text));
+  await fireEvent.press(screen.getByText(text));
   await settle();
 }
 
@@ -145,10 +145,10 @@ describe('logging a session', () => {
     await press('Log a session');
     await press('Save session');
     expect(screen.getByText('Enter the minutes, from 1 to 300.')).toBeTruthy();
-    type('Minutes', '400');
+    await type('Minutes', '400');
     await press('Save session');
     expect(screen.getByText('Enter the minutes, from 1 to 300.')).toBeTruthy();
-    type('Minutes', '60');
+    await type('Minutes', '60');
     await press('Save session');
     expect(screen.getByText('Choose how hard it felt, from 1 to 10.')).toBeTruthy();
     expect(rpcNames()).not.toContain('save_session_log');
@@ -158,8 +158,8 @@ describe('logging a session', () => {
     await open();
     await press('Log a session');
     await press('Game');
-    type('Minutes', ' 75 ');
-    fireEvent.press(screen.getByLabelText('Effort 8: Very hard'));
+    await type('Minutes', ' 75 ');
+    await fireEvent.press(screen.getByLabelText('Effort 8: Very hard'));
     expect(screen.getByLabelText('Effort 8: Very hard').props.accessibilityState).toEqual({ selected: true });
     expect(screen.getByText('Very hard')).toBeTruthy();
     const loads = sessions.queries.length;
@@ -178,10 +178,10 @@ describe('logging a session', () => {
     await press('Log a session');
     expect(screen.getByText(dayLabel('2026-10-11'))).toBeTruthy();
     expect(screen.queryByText(dayLabel('2026-10-10'))).toBeNull();
-    fireEvent.press(screen.getByText(dayLabel('2026-10-11')));
-    fireEvent.press(screen.getByText('Gym'));
-    type('Minutes', '45');
-    fireEvent.press(screen.getByLabelText('Effort 4: Somewhat hard'));
+    await fireEvent.press(screen.getByText(dayLabel('2026-10-11')));
+    await fireEvent.press(screen.getByText('Gym'));
+    await type('Minutes', '45');
+    await fireEvent.press(screen.getByLabelText('Effort 4: Somewhat hard'));
     await press('Save session');
     expect(argsOf('save_session_log')[0]).toMatchObject({ p_day: '2026-10-11', p_kind: 'gym', p_minutes: 45, p_rpe: 4 });
   });
@@ -189,8 +189,8 @@ describe('logging a session', () => {
   it('shows the database’s refusal and keeps the form', async () => {
     await open('athlete', [], { rpcErrors: { save_session_log: 'You can log up to 6 sessions a day.' } });
     await press('Log a session');
-    type('Minutes', '30');
-    fireEvent.press(screen.getByLabelText('Effort 2: Easy'));
+    await type('Minutes', '30');
+    await fireEvent.press(screen.getByLabelText('Effort 2: Easy'));
     await press('Save session');
     expect(screen.getByText('You can log up to 6 sessions a day.')).toBeTruthy();
     expect(screen.getByText('Save session')).toBeTruthy();
@@ -199,7 +199,7 @@ describe('logging a session', () => {
   it('can cancel without saving', async () => {
     await open();
     await press('Log a session');
-    type('Minutes', '30');
+    await type('Minutes', '30');
     await press('Cancel');
     expect(screen.queryByText('Save session')).toBeNull();
     expect(rpcNames()).not.toContain('save_session_log');
@@ -212,12 +212,12 @@ describe('changing a session', () => {
   it('fills the form from the session tapped, and saves it as an update', async () => {
     await open('athlete', [logged]);
     expect(screen.getByText('Tap a session to change or delete it.')).toBeTruthy();
-    fireEvent.press(screen.getByLabelText(/^Change .*Game · 90 min · effort 6 · load 540$/));
+    await fireEvent.press(screen.getByLabelText(/^Change .*Game · 90 min · effort 6 · load 540$/));
     await settle();
     expect(field('Minutes').props.value).toBe('90');
     expect(isSelected('Game')).toBe(true);
     expect(screen.getByLabelText('Effort 6: Hard').props.accessibilityState).toEqual({ selected: true });
-    type('Minutes', '80');
+    await type('Minutes', '80');
     await press('Update session');
     expect(argsOf('save_session_log')).toEqual([
       { p_id: 'logged', p_day: '2026-10-16', p_kind: 'game', p_minutes: 80, p_rpe: 6 },
@@ -226,7 +226,7 @@ describe('changing a session', () => {
 
   it('keeps an older session’s own day among the choices', async () => {
     await open('athlete', [session('2026-09-25', 30, 3, { id: 'old' })]);
-    fireEvent.press(screen.getByLabelText(/^Change .*Training · 30 min/));
+    await fireEvent.press(screen.getByLabelText(/^Change .*Training · 30 min/));
     await settle();
     await press('Update session');
     expect(argsOf('save_session_log')[0]).toMatchObject({ p_id: 'old', p_day: '2026-09-25' });
@@ -234,7 +234,7 @@ describe('changing a session', () => {
 
   it('deletes a session', async () => {
     await open('athlete', [logged]);
-    fireEvent.press(screen.getByLabelText(/^Change .*Game · 90 min/));
+    await fireEvent.press(screen.getByLabelText(/^Change .*Game · 90 min/));
     await settle();
     await press('Delete session');
     expect(argsOf('delete_session_log')).toEqual([{ p_id: 'logged' }]);
@@ -243,7 +243,7 @@ describe('changing a session', () => {
 
   it('shows a refused delete', async () => {
     await open('athlete', [logged], { rpcErrors: { delete_session_log: 'Session not found.' } });
-    fireEvent.press(screen.getByLabelText(/^Change .*Game · 90 min/));
+    await fireEvent.press(screen.getByLabelText(/^Change .*Game · 90 min/));
     await settle();
     await press('Delete session');
     expect(screen.getByText('Session not found.')).toBeTruthy();

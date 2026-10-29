@@ -34,7 +34,7 @@ const overrides = placeholderScreens('administration');
 async function openAdministration() {
   jest.useFakeTimers({ now: TODAY });
   signInAs(personas.admin);
-  renderRouter({ appDir: 'src/app', overrides }, { initialUrl: '/administration' });
+  await renderRouter({ appDir: 'src/app', overrides }, { initialUrl: '/administration' });
   for (let i = 0; i < 5; i++) {
     await act(async () => {
       await Promise.resolve();
@@ -125,7 +125,7 @@ describe.each(TILES.filter((t) => t.needs))('$title', ({ title, needs }) => {
 it.each(TILES)('the $title tile opens $route', async ({ title, route }) => {
   setClubFeatures(EVERY_FEATURE_ON);
   await openAdministration();
-  fireEvent.press(screen.getByText(title));
+  await fireEvent.press(screen.getByText(title));
   await act(async () => {});
   expect(screen.getByText(`screen:${route}`)).toBeTruthy();
   expect(screen).toHavePathname('/' + route.replace(/\/index$/, ''));

@@ -69,7 +69,7 @@ it('shows notifications that arrive while the app is open', async () => {
 
 describe('registering', () => {
   it('an admin’s phone registers its token with the club', async () => {
-    renderHook(() => useAdminPushNotifications(true));
+    await renderHook(() => useAdminPushNotifications(true));
     await flush();
     expect(N.getExpoPushTokenAsync).toHaveBeenCalledWith({ projectId: 'project-1' });
     expect(rpc).toHaveBeenCalledWith('register_push_token', {
@@ -79,7 +79,7 @@ describe('registering', () => {
   });
 
   it('nobody else’s phone registers', async () => {
-    renderHook(() => useAdminPushNotifications(false));
+    await renderHook(() => useAdminPushNotifications(false));
     await flush();
     expect(N.getPermissionsAsync).not.toHaveBeenCalled();
     expect(rpc).not.toHaveBeenCalled();
@@ -88,7 +88,7 @@ describe('registering', () => {
   it('asks for permission first, and registers nothing when refused', async () => {
     N.getPermissionsAsync.mockResolvedValue({ status: 'undetermined' });
     N.requestPermissionsAsync.mockResolvedValue({ status: 'denied' });
-    renderHook(() => useAdminPushNotifications(true));
+    await renderHook(() => useAdminPushNotifications(true));
     await flush();
     expect(N.requestPermissionsAsync).toHaveBeenCalled();
     expect(rpc).not.toHaveBeenCalled();
@@ -96,14 +96,14 @@ describe('registering', () => {
 
   it('registers once permission is given when asked', async () => {
     N.getPermissionsAsync.mockResolvedValue({ status: 'undetermined' });
-    renderHook(() => useAdminPushNotifications(true));
+    await renderHook(() => useAdminPushNotifications(true));
     await flush();
     expect(rpc).toHaveBeenCalledWith('register_push_token', expect.objectContaining({ p_token: 'ExponentPushToken[abc]' }));
   });
 
   it('a simulator never registers', async () => {
     device.isDevice = false;
-    renderHook(() => useAdminPushNotifications(true));
+    await renderHook(() => useAdminPushNotifications(true));
     await flush();
     expect(N.getPermissionsAsync).not.toHaveBeenCalled();
     expect(rpc).not.toHaveBeenCalled();
@@ -112,7 +112,7 @@ describe('registering', () => {
   it('a failed registration only warns', async () => {
     const warn = jest.spyOn(console, 'warn').mockImplementation(() => {});
     N.getExpoPushTokenAsync.mockRejectedValueOnce(new Error('no network'));
-    renderHook(() => useAdminPushNotifications(true));
+    await renderHook(() => useAdminPushNotifications(true));
     await flush();
     expect(warn).toHaveBeenCalledWith('Push registration failed', expect.any(Error));
     warn.mockRestore();
@@ -122,39 +122,39 @@ describe('registering', () => {
 describe('tapping a notification', () => {
   const response = (data: Record<string, unknown>) => ({ notification: { request: { content: { data } } } });
 
-  it('a join request opens that member’s page', () => {
-    renderHook(() => useAdminPushNotifications(true));
+  it('a join request opens that member’s page', async () => {
+    await renderHook(() => useAdminPushNotifications(true));
     const listener = N.addNotificationResponseReceivedListener.mock.calls[0][0];
     listener(response({ memberId: 'm-1' }));
     expect(router.push).toHaveBeenCalledWith({ pathname: '/admin/[id]', params: { id: 'm-1' } });
   });
 
-  it('a shared session plan opens the plan', () => {
-    renderHook(() => useAdminPushNotifications(false));
+  it('a shared session plan opens the plan', async () => {
+    await renderHook(() => useAdminPushNotifications(false));
     const listener = N.addNotificationResponseReceivedListener.mock.calls[0][0];
     listener(response({ planId: 'plan-1' }));
     expect(router.push).toHaveBeenCalledWith({ pathname: '/session-plans/[id]', params: { id: 'plan-1' } });
   });
 
-  it('anything else opens nothing', () => {
-    renderHook(() => useAdminPushNotifications(false));
+  it('anything else opens nothing', async () => {
+    await renderHook(() => useAdminPushNotifications(false));
     const listener = N.addNotificationResponseReceivedListener.mock.calls[0][0];
     listener(response({ memberId: 42 }));
     listener(response({}));
     expect(router.push).not.toHaveBeenCalled();
   });
 
-  it('a tap that opened the app from closed is followed', () => {
+  it('a tap that opened the app from closed is followed', async () => {
     N.getLastNotificationResponse.mockReturnValueOnce(response({ memberId: 'm-2' }));
-    renderHook(() => useAdminPushNotifications(false));
+    await renderHook(() => useAdminPushNotifications(false));
     expect(router.push).toHaveBeenCalledWith({ pathname: '/admin/[id]', params: { id: 'm-2' } });
   });
 
-  it('stops listening when the screen goes', () => {
+  it('stops listening when the screen goes', async () => {
     const remove = jest.fn();
     N.addNotificationResponseReceivedListener.mockReturnValueOnce({ remove });
-    const { unmount } = renderHook(() => useAdminPushNotifications(true));
-    unmount();
+    const { unmount } = await renderHook(() => useAdminPushNotifications(true));
+    await unmount();
     expect(remove).toHaveBeenCalled();
   });
 });

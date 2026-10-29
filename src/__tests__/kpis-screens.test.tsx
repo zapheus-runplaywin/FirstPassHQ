@@ -14,7 +14,7 @@
  * admin turns them on.
  */
 import { fireEvent, screen } from 'expo-router/testing-library';
-import { Text, TextInput } from 'react-native';
+import { Text } from 'react-native';
 
 import EditKpiScreen from '@/app/kpis/edit';
 import KpisScreen from '@/app/kpis/index';
@@ -65,12 +65,12 @@ const placeholder = (route: string) =>
   };
 
 const press = async (text: string | RegExp, index = 0) => {
-  fireEvent.press(screen.getAllByText(text)[index]);
+  await fireEvent.press(screen.getAllByText(text)[index]);
   await settle(6);
 };
 
 const fill = async (label: string, value: string) => {
-  fireEvent.changeText(fieldLabelled(label), value);
+  await fireEvent.changeText(fieldLabelled(label), value);
   await settle(2);
 };
 
@@ -320,7 +320,7 @@ describe('a person’s own KPIs', () => {
 
   it('records progress on a number', async () => {
     await openPerson('athlete', sheet());
-    fireEvent.changeText(screen.getByDisplayValue('70'), '7,5');
+    await fireEvent.changeText(screen.getByDisplayValue('70'), '7,5');
     await settle();
     await press('Save');
     expect(onlyRpcCall('record_kpi_progress')).toEqual({ p_measure_id: 'm1', p_value: 7.5, p_done: false });
@@ -329,7 +329,7 @@ describe('a person’s own KPIs', () => {
 
   it('won’t save progress that isn’t a number', async () => {
     await openPerson('athlete', sheet());
-    fireEvent.changeText(screen.getByDisplayValue('70'), 'lots');
+    await fireEvent.changeText(screen.getByDisplayValue('70'), 'lots');
     await settle();
     await press('Save');
     expect(rpcCalls('record_kpi_progress')).toEqual([]);
@@ -422,7 +422,7 @@ describe('a person’s own KPIs', () => {
     expect(screen.getByText('This season is archived, so these KPIs can be read but not changed.')).toBeTruthy();
     expect(screen.queryByText('Mark as done')).toBeNull();
     expect(screen.queryByText('Confirm this review was done')).toBeNull();
-    expect(screen.UNSAFE_queryAllByType(TextInput)).toHaveLength(0);
+    expect(screen.container.queryAll((n) => n.type === 'TextInput')).toHaveLength(0);
   });
 });
 
@@ -450,7 +450,7 @@ describe('KPIs the member sets for someone', () => {
   it('records a result with a note, and clears it', async () => {
     await openPerson('coach', sheet({ ...SETTER, kpis: [kpi()] }));
     await press('Partly met');
-    fireEvent.changeText(fieldLabelled('Note on the result (optional)'), 'Close');
+    await fireEvent.changeText(fieldLabelled('Note on the result (optional)'), 'Close');
     await settle();
     await press('Save result');
     expect(onlyRpcCall('set_kpi_result')).toEqual({ p_kpi_id: 'k1', p_result: 'partly_met', p_note: 'Close' });
@@ -535,14 +535,14 @@ describe('reading someone else’s KPIs', () => {
     expect(screen.queryByText('Not written')).toBeNull();
     expect(screen.queryByText('Remove')).toBeNull();
     expect(screen.queryByText('Mark as done')).toBeNull();
-    expect(screen.UNSAFE_queryAllByType(TextInput)).toHaveLength(0);
+    expect(screen.container.queryAll((n) => n.type === 'TextInput')).toHaveLength(0);
   });
 
   it('lets an admin read an athlete’s, which only their coaches change', async () => {
     await openPerson('admin', sheet({ relation: 'viewer', can_update: false }));
     expect(screen.getByText('Set by their coaches. As an admin you can read them; only their coaches change them.')).toBeTruthy();
     expect(screen.queryByText('Add a KPI or OKR')).toBeNull();
-    expect(screen.UNSAFE_queryAllByType(TextInput)).toHaveLength(0);
+    expect(screen.container.queryAll((n) => n.type === 'TextInput')).toHaveLength(0);
   });
 
   it.each<[string, Who]>([
@@ -641,10 +641,10 @@ describe('adding a KPI or OKR', () => {
     await openEdit('');
     await press('OKR: objective and key results');
     await fill('Objective', 'Become a reliable goal shooter');
-    fireEvent.changeText(screen.getByPlaceholderText('For example, shooting percentage'), 'Shooting percentage');
+    await fireEvent.changeText(screen.getByPlaceholderText('For example, shooting percentage'), 'Shooting percentage');
     await fill('Target', '80');
     await press('Add a key result');
-    fireEvent.changeText(screen.getAllByPlaceholderText('For example, shooting percentage')[1], 'Drills done');
+    await fireEvent.changeText(screen.getAllByPlaceholderText('For example, shooting percentage')[1], 'Drills done');
     await press('Done or not done', 1);
     await press('Add OKR');
     expect(saved()).toMatchObject({
