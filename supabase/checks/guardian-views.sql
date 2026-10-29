@@ -191,8 +191,9 @@ end $$;
 -- 2. Child versus guardian, signed in as each.
 -- ---------------------------------------------------------------------------
 -- Each query lists, for the child $1 in the current squads and teams $2,
--- keys of the rows the signed-in member can read. Every key the child gets,
--- their guardian should get too.
+-- linked to this guardian at $3, keys of the rows the signed-in member can
+-- read. Every key the child gets, their guardian should get too. Squads are
+-- INFO: guardians follow their child into teams, not squads (guide, section 5).
 do $$
 declare
   checks constant text[][] := array[
@@ -203,8 +204,10 @@ declare
     ['game goals', 'select id::text from public.game_goals where athlete_id = $1'],
     ['past games with goals', 'select fixture_id::text from public.goal_past_games($1, 500, 0)'],
     ['team goals for their games', 'select g.id::text from public.team_game_goals g join public.fixtures f on f.id = g.fixture_id where f.team_id = any ($2)'],
-    ['games of their teams and squads', 'select id::text from public.fixtures where team_id = any ($2)'],
-    ['calendars of their teams and squads', 'select id::text from public.calendars where team_id = any ($2)'],
+    ['games of their teams', 'select f.id::text from public.fixtures f join public.teams t on t.id = f.team_id and t.kind = ''team'' where f.team_id = any ($2)'],
+    ['calendars of their teams', 'select c.id::text from public.calendars c join public.teams t on t.id = c.team_id and t.kind = ''team'' where c.team_id = any ($2)'],
+    ['games of their squads', 'select f.id::text from public.fixtures f join public.teams t on t.id = f.team_id and t.kind = ''squad'' where f.team_id = any ($2)'],
+    ['calendars of their squads', 'select c.id::text from public.calendars c join public.teams t on t.id = c.team_id and t.kind = ''squad'' where c.team_id = any ($2)'],
     ['attendance (last 12 months)', 'select session_id::text from public.athlete_attendance($1, current_date - 365)'],
     ['absences', 'select id::text from public.my_absences($1)'],
     ['session plans', 'select id::text from public.session_plans where team_id = any ($2)'],
@@ -212,7 +215,7 @@ declare
     ['integrity training', 'select requirement_id::text from public.my_training() where profile_id = $1'],
     ['training certificates', 'select id::text from public.training_certificates where profile_id = $1'],
     ['surveys', 'select id::text from public.my_surveys() where $1::uuid is not null and $2::uuid[] is not null'],
-    ['messages', 'select id::text from public.messages where $1::uuid is not null and $2::uuid[] is not null'],
+    ['messages since they were linked', 'select id::text from public.messages where created_at >= $3 and $1::uuid is not null and $2::uuid[] is not null'],
     ['medical and emergency details', 'select ''details'' where public.medical_profile($1) is not null']
   ];
   pairs int := 0;
@@ -227,7 +230,7 @@ declare
   missing text[];
 begin
   for p in
-    select l.guardian_id, l.athlete_id,
+    select l.guardian_id, l.athlete_id, l.created_at as linked_at,
       array(select m.team_id from public.team_members m join public.teams t on t.id = m.team_id
             where m.profile_id = l.athlete_id and m.team_role = 'athlete' and not t.archived) as teams
     from public.guardianships l
@@ -244,11 +247,11 @@ begin
         perform set_config('request.jwt.claims', json_build_object('sub', p.athlete_id, 'role', 'authenticated')::text, true);
         set local role authenticated;
         execute 'select coalesce(array_agg(distinct k), ''{}'') from (' || checks[i][2] || ') x(k)'
-          into child_keys using p.athlete_id, p.teams;
+          into child_keys using p.athlete_id, p.teams, p.linked_at;
         perform set_config('request.jwt.claim.sub', p.guardian_id::text, true);
         perform set_config('request.jwt.claims', json_build_object('sub', p.guardian_id, 'role', 'authenticated')::text, true);
         execute 'select coalesce(array_agg(distinct k), ''{}'') from (' || checks[i][2] || ') x(k)'
-          into guardian_keys using p.athlete_id, p.teams;
+          into guardian_keys using p.athlete_id, p.teams, p.linked_at;
         reset role;
         checked[i] := checked[i] + cardinality(child_keys);
         missing := array(select unnest(child_keys) except select unnest(guardian_keys));
@@ -276,7 +279,9 @@ begin
   raise notice 'INFO child versus guardian: % verified guardian and child pairs compared', pairs;
   for i in 1 .. array_length(checks, 1) loop
     raise notice '% guardian sees their child''s %: % missing of % (%)',
-      case when gaps[i] = 0 and failures[i] = 0 then 'OK  ' else 'GAP ' end,
+      case when gaps[i] = 0 and failures[i] = 0 then 'OK  '
+        when failures[i] = 0 and checks[i][1] like '%of their squads' then 'INFO'
+        else 'GAP ' end,
       checks[i][1], gaps[i], checked[i],
       case when failures[i] > 0 then failures[i] || ' errors; ' else '' end || examples[i];
   end loop;

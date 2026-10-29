@@ -2478,6 +2478,12 @@ someone has more than one squad or team role, each squad shows **Role in** so yo
 role they're there as; its teams follow the squad. Coaches, managers and physios need a current
 Working With Children Check whichever role it is, and that includes athletes under 18 who coach.
 
+A parent or guardian is in each team their child under 18 plays in, without being in its squad.
+That place comes with their child: saving their page keeps it, even if you leave the team out, and
+it goes when their child leaves the team. For a coach whose child plays in a team, choosing them as
+that team's coach makes them its coach instead. Saving a member's page changes only the squads and
+teams you changed, so their parents' **What's changed** lists only real moves.
+
 - **Remove access** stops someone using the app but keeps their account. Choose a reason first.
 - **Stand down** is for when someone must be kept away from children straight away, for example
   when the Working with Children Screening Unit sends an interim negative notice or a negative
