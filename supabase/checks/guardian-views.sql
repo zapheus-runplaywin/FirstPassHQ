@@ -21,8 +21,8 @@
 -- to five examples as guardian id -> child id.
 \set ON_ERROR_STOP 1
 \set VERBOSITY terse
-set client_min_messages = notice;
 begin transaction read only;
+set local client_min_messages = notice;
 
 -- Who is linked, and how far back the history that the checks lean on goes.
 do $$

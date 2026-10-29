@@ -5,12 +5,11 @@
 #   DATABASE_URL=postgresql://... scripts/check-guardian-views.sh
 #   PGHOST=localhost PGUSER=postgres PGPASSWORD=... PGDATABASE=... scripts/check-guardian-views.sh
 #
-# The session is read-only from the start (default_transaction_read_only), so
-# nothing in the database can change. It prints member ids and counts, never
+# The check runs in one read-only transaction that it rolls back, so nothing
+# in the database can change. It prints member ids and counts, never
 # names, notes or message text. Exits 1 when any check finds a GAP.
 set -uo pipefail
 root=$(cd "$(dirname "$0")/.." && pwd)
-export PGOPTIONS="${PGOPTIONS:-} -c default_transaction_read_only=on"
 out=$(psql -X -q ${DATABASE_URL:+"$DATABASE_URL"} -f "$root/supabase/checks/guardian-views.sql" 2>&1)
 status=$?
 printf '%s\n' "$out" | sed -n 's/^psql:[^ ]* NOTICE:  //p'
