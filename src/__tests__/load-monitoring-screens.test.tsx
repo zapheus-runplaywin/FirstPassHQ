@@ -52,9 +52,11 @@ beforeEach(() => {
   resetClub();
   setClubFeatures({ trainingLoad: true });
   clearCalls();
-  openURL = jest.spyOn(Linking, 'openURL').mockResolvedValue(true);
+  openURL = jest.spyOn(Linking, 'openURL').mockResolvedValue(undefined);
 });
-afterEach(() => openURL.mockRestore());
+afterEach(() => {
+  openURL.mockRestore();
+});
 
 const CAVEAT = /^Training load is a conversation starter, not a diagnosis\. These figures/;
 
@@ -85,7 +87,7 @@ function session(day: string, minutes: number, rpe: number): SessionLog {
 }
 
 async function press(text: string | RegExp) {
-  fireEvent.press(screen.getByText(text));
+  await fireEvent.press(screen.getByText(text));
   await settle();
 }
 
@@ -145,7 +147,7 @@ describe('the coach’s training load list', () => {
     expect(screen.getByText(LOAD_SOURCES.jayanthi2015.finding)).toBeTruthy();
     expect(screen.getByText(LOAD_SOURCES.gabbett2016.finding)).toBeTruthy();
     expect(screen.getByText(LOAD_SOURCES.saw2016.finding)).toBeTruthy();
-    fireEvent.press(screen.getByText(/^Jayanthi et al\. 2015: /));
+    await fireEvent.press(screen.getByText(/^Jayanthi et al\. 2015: /));
     expect(openURL).toHaveBeenCalledWith('https://doi.org/10.1177/0363546514567298');
   });
 
@@ -200,7 +202,7 @@ describe('an athlete’s training load, for their coach', () => {
     expect(screen.getByText(LOAD_SOURCES.gabbett2016.finding)).toBeTruthy();
     expect(screen.getByText(LOAD_SOURCES.impellizzeri2020.finding)).toBeTruthy();
 
-    fireEvent.changeText(screen.getByLabelText('Note for coaches (optional)'), '  Easing off this week  ');
+    await fireEvent.changeText(screen.getByLabelText('Note for coaches (optional)'), '  Easing off this week  ');
     await press('Talked with them');
     expect(argsOf('review_load_flag')).toEqual([{ p_athlete: 'child-1', p_note: 'Easing off this week' }]);
   });
@@ -405,7 +407,7 @@ describe('Club settings: training load flags', () => {
     expect(screen.getByText('Gabbett 2016’s “danger zone”. Fewer, clearer prompts. The default.')).toBeTruthy();
     await press('Above 1.3');
     expect(screen.getByText(RATIO_CHOICES[1].detail)).toBeTruthy();
-    fireEvent(screen.getByLabelText('Hours over age (under 18s)'), 'valueChange', false);
+    await fireEvent(screen.getByLabelText('Hours over age (under 18s)'), 'valueChange', false);
     await press('Save training load flags');
     expect(argsOf('admin_set_load_monitoring')).toEqual([{ p_ratio_flag: 'above_1_3', p_hours_flag: false }]);
     expect(screen.getByText('Training load flags saved.')).toBeTruthy();
