@@ -63,15 +63,16 @@ for f in "${files[@]}"; do
   psql -X -v ON_ERROR_STOP=1 -d "$db" -f "$f" >"$log" 2>&1
   status=$?
   psql_q -d postgres -c "drop database $db" >/dev/null
-  pass=$(grep -c '^PASS' "$log")
-  fail=$(grep -c '^FAIL' "$log")
+  # A check from supabase/checks (run with \ir) prints OK and GAP notices.
+  pass=$(grep -cE '^PASS|NOTICE:  OK ' "$log")
+  fail=$(grep -cE '^FAIL|NOTICE:  GAP ' "$log")
   errors=$(grep -c 'ERROR:' "$log")
   printed=$(grep -c 'ON_ERROR_STOP 0' "$f")
   checks=$((checks + pass))
   if [ "$fail" -gt 0 ] || [ "$errors" -gt 0 ] || [ $status -ne 0 ] || { [ "$printed" -gt 0 ] && [ "$pass" -eq 0 ]; }; then
     failed=$((failed + 1))
     echo "FAILED $name ($pass passed, $fail failed, $errors errors)"
-    grep -E '^FAIL|ERROR:' "$log" | sed 's/^/    /'
+    grep -E '^FAIL|NOTICE:  GAP |ERROR:' "$log" | sed 's/^/    /'
     echo "::error file=supabase/tests/$name.sql::$fail failed checks, $errors errors"
   elif [ "$printed" -gt 0 ]; then
     echo "ok     $name ($pass checks)"
