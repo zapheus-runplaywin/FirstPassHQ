@@ -12,7 +12,6 @@
  */
 import { router } from 'expo-router';
 import { act, fireEvent, screen, within } from 'expo-router/testing-library';
-import { RefreshControl } from 'react-native';
 
 import AdministrationScreen from '@/app/administration';
 import ConductStatusScreen from '@/app/admin/conduct';
@@ -22,8 +21,8 @@ import type { ConductStatus } from '@/lib/conduct';
 import { supabase } from '@/lib/supabase';
 import type { Profile, VolunteerExemption } from '@/lib/types';
 
-import { openScreen, personas, resetClub, settle } from './helpers/harness';
-import { fieldGroup, flip, input, isDisabled, isOn, pickPerson, type } from './helpers/settings-forms';
+import { openScreen, personas, pressWithoutWaiting, refreshControl, resetClub, settle } from './helpers/harness';
+import { fieldGroup, flip, input, isDisabled, isOn, isSelected, pickPerson, type } from './helpers/settings-forms';
 
 jest.mock('@/lib/club', () => jest.requireActual('./helpers/harness').clubModuleMock());
 jest.mock('@/lib/club-choice', () => jest.requireActual('./helpers/harness').clubChoiceModuleMock());
@@ -132,6 +131,7 @@ function Placeholder() {
 async function openSafeguarding(
   rpcs: Record<string, unknown> = {},
   rpcErrors: Record<string, string> = {},
+  people: Profile[] = PEOPLE,
 ) {
   await openScreen(
     'admin',
@@ -139,7 +139,7 @@ async function openSafeguarding(
     '/administration',
     {},
     {
-      tableHandlers: { profiles: (q) => (q.eq('status') === 'approved' ? PEOPLE : undefined) },
+      tableHandlers: { profiles: (q) => (q.eq('status') === 'approved' ? people : undefined) },
       rpcs: {
         safeguarding_contacts: SAVED_CONTACTS,
         admin_volunteer_exemptions: EXEMPTIONS,
@@ -148,24 +148,25 @@ async function openSafeguarding(
         admin_wwc_officer: { officer_id: 'admin', officer_name: 'Sample admin' },
         conduct_each_season_setting: true,
         committee_checks_from: null,
+        injury_rules: { physio_only_endorsement: false, concussion_min_days: 21 },
         ...rpcs,
       },
       rpcErrors,
     },
   );
-  act(() => router.push('/admin/safeguarding'));
+  await act(() => router.push('/admin/safeguarding'));
   await settle();
   expect(screen).toHavePathname('/admin/safeguarding');
 }
 
 async function saveSafeguarding() {
-  fireEvent.press(screen.getByText('Save'));
+  await fireEvent.press(screen.getByText('Save'));
   await settle();
 }
 
 /** The names a picker offers when searched for "Sample". */
-function offered(picker: string) {
-  type(picker, 'Sample');
+async function offered(picker: string) {
+  await type(picker, 'Sample');
   const group = fieldGroup(picker);
   return within(group)
     .getAllByRole('button')
@@ -208,30 +209,53 @@ describe('Safeguarding settings', () => {
 
   it('offers as contacts only approved adults, not stood down, with a current check or an exemption in force', async () => {
     await openSafeguarding({ safeguarding_contacts: null });
-    expect(offered('Child Safety Officer')).toEqual(
+    expect(await offered('Child Safety Officer')).toEqual(
       ['Sample admin', 'Sample coach', 'Sample committee', 'Sample exempt', 'Sample expiring'].sort(),
+    );
+  });
+
+  it('counts a lodged check application in force as a check, but not one that lapsed', async () => {
+    const application = (profile_id: string, status: string) => ({
+      id: `a-${profile_id}`,
+      profile_id,
+      status,
+      ended_at: null,
+    });
+    await openSafeguarding({
+      safeguarding_contacts: null,
+      admin_volunteer_exemptions: [],
+      admin_wwcc_applications: [
+        application('ended', 'in_force'),
+        application('invalid', 'lapsed'),
+        { ...application('athlete', 'in_force'), ended_at: '2026-10-01T00:00:00Z' },
+      ],
+    });
+    expect(await offered('Child Safety Officer')).toEqual(
+      ['Sample admin', 'Sample coach', 'Sample committee', 'Sample ended exemption', 'Sample expiring'].sort(),
     );
   });
 
   it('offers as WWC Registration Officer only eligible admins and committee members', async () => {
     await openSafeguarding({ admin_wwc_officer: null });
-    expect(offered('WWC Registration Officer')).toEqual(['Sample admin', 'Sample committee', 'Sample expiring']);
+    expect(await offered('WWC Registration Officer')).toEqual(['Sample admin', 'Sample committee', 'Sample expiring']);
   });
 
   it('saves every setting in order, then goes back', async () => {
     await openSafeguarding();
     // Swap the contacts round and change the rest.
-    fireEvent.press(screen.getByText('Sample committee  ✕'));
-    pickPerson('Child Safety Officer', 'coach', 'Sample coach');
-    type('Name', 'Netball Australia');
-    type('Phone or hotline', '1800 000 000');
-    type('Complaints form link', 'https://netball.example/report');
-    type('Child safeguarding policy (link)', 'https://club.example/child-safe');
-    type('Privacy policy (link)', 'https://club.example/privacy-2');
-    type('Code of conduct (link)', 'https://club.example/conduct-2');
-    type('Policy version', '2026-2');
-    flip('Ask every member to accept the code of conduct once a season', false);
-    flip('Allow photos of under 18s’ injuries', true);
+    await fireEvent.press(screen.getByText('Sample committee  ✕'));
+    await pickPerson('Child Safety Officer', 'coach', 'Sample coach');
+    await type('Name', 'Netball Australia');
+    await type('Phone or hotline', '1800 000 000');
+    await type('Complaints form link', 'https://netball.example/report');
+    await type('Child safeguarding policy (link)', 'https://club.example/child-safe');
+    await type('Privacy policy (link)', 'https://club.example/privacy-2');
+    await type('Code of conduct (link)', 'https://club.example/conduct-2');
+    await type('Policy version', '2026-2');
+    await flip('Ask every member to accept the code of conduct once a season', false);
+    await flip('Allow photos of under 18s’ injuries', true);
+    await flip('Only physios endorse clearances', true);
+    await fireEvent.press(screen.getByText('12 days (elite program)'));
     await saveSafeguarding();
 
     expect(callsTo('admin_set_safeguarding')).toEqual([
@@ -253,19 +277,49 @@ describe('Safeguarding settings', () => {
       },
     ]);
     expect(callsTo('admin_set_conduct_each_season')).toEqual([{ p_on: false }]);
+    expect(callsTo('admin_set_injury_rules')).toEqual([
+      { p_physio_only_endorsement: true, p_concussion_min_days: 12 },
+    ]);
     const saves = rpcNames().filter((n) => n.startsWith('admin_set_'));
     expect(saves).toEqual([
       'admin_set_safeguarding',
       'admin_set_minor_injury_photos',
       'admin_set_policies',
       'admin_set_conduct_each_season',
+      'admin_set_injury_rules',
     ]);
     expect(screen).toHavePathname('/administration');
   });
 
+  it('starts from the saved injury clearance rules', async () => {
+    await openSafeguarding({ injury_rules: { physio_only_endorsement: true, concussion_min_days: 12 } });
+    expect(isOn('Only physios endorse clearances')).toBe(true);
+    expect(isSelected('12 days (elite program)')).toBe(true);
+  });
+
+  it('defaults to coaches or physios endorsing and 21 days after a concussion', async () => {
+    await openSafeguarding({ injury_rules: null });
+    expect(isOn('Only physios endorse clearances')).toBe(false);
+    expect(isSelected('21 days')).toBe(true);
+    await saveSafeguarding();
+    expect(callsTo('admin_set_injury_rules')).toEqual([
+      { p_physio_only_endorsement: false, p_concussion_min_days: 21 },
+    ]);
+  });
+
+  it('stops at a refused injury rule, before the WWC Registration Officer', async () => {
+    await openSafeguarding({}, { admin_set_injury_rules: 'Choose 21 days, or 12 for an elite program' });
+    await fireEvent.press(within(fieldGroup('WWC Registration Officer')).getByText('Sample admin  ✕'));
+    await pickPerson('WWC Registration Officer', 'committee', 'Sample committee');
+    await saveSafeguarding();
+    expect(screen.getByText('Choose 21 days, or 12 for an elite program')).toBeTruthy();
+    expect(callsTo('admin_set_wwc_officer')).toEqual([]);
+    expect(screen).toHavePathname('/admin/safeguarding');
+  });
+
   it('can leave a contact unnamed', async () => {
     await openSafeguarding();
-    fireEvent.press(screen.getByText('Sample committee  ✕'));
+    await fireEvent.press(screen.getByText('Sample committee  ✕'));
     expect(within(fieldGroup('Child Safety Officer')).getByText('Nobody chosen.')).toBeTruthy();
     await saveSafeguarding();
     expect(callsTo('admin_set_safeguarding')[0].p_child_safety_officer_id).toBeNull();
@@ -279,8 +333,8 @@ describe('Safeguarding settings', () => {
 
   it('saves a new WWC Registration Officer last', async () => {
     await openSafeguarding();
-    fireEvent.press(within(fieldGroup('WWC Registration Officer')).getByText('Sample admin  ✕'));
-    pickPerson('WWC Registration Officer', 'committee', 'Sample committee');
+    await fireEvent.press(within(fieldGroup('WWC Registration Officer')).getByText('Sample admin  ✕'));
+    await pickPerson('WWC Registration Officer', 'committee', 'Sample committee');
     await saveSafeguarding();
     expect(callsTo('admin_set_wwc_officer')).toEqual([{ p_profile_id: 'committee' }]);
     expect(rpcNames().filter((n) => n.startsWith('admin_set_')).at(-1)).toBe('admin_set_wwc_officer');
@@ -288,9 +342,9 @@ describe('Safeguarding settings', () => {
 
   it('keeps Save busy until the last call has finished, so a second tap can’t send them twice', async () => {
     await openSafeguarding({ committee_checks_from: '2026-12-01' });
-    fireEvent.press(within(fieldGroup('WWC Registration Officer')).getByText('Sample admin  ✕'));
-    pickPerson('WWC Registration Officer', 'committee', 'Sample committee');
-    fireEvent.press(screen.getByText('Today'));
+    await fireEvent.press(within(fieldGroup('WWC Registration Officer')).getByText('Sample admin  ✕'));
+    await pickPerson('WWC Registration Officer', 'committee', 'Sample committee');
+    await fireEvent.press(screen.getByText('Today'));
     // Hold the last two calls until the test lets them answer.
     const rpc = supabase.rpc as jest.Mock;
     const answer = rpc.getMockImplementation()!;
@@ -300,7 +354,7 @@ describe('Safeguarding settings', () => {
         ? new Promise((resolve) => held.push(() => resolve(answer(name, args))))
         : answer(name, args),
     );
-    fireEvent.press(screen.getByText('Save'));
+    const saving = await pressWithoutWaiting(screen.getByText('Save'));
     await settle();
     expect(callsTo('admin_set_wwc_officer')).toHaveLength(1);
     expect(screen.queryByText('Save')).toBeNull();
@@ -308,7 +362,10 @@ describe('Safeguarding settings', () => {
     await settle();
     expect(callsTo('admin_set_committee_checks_from')).toHaveLength(1);
     expect(screen.queryByText('Save')).toBeNull();
-    await act(async () => held.shift()!());
+    await act(async () => {
+      held.shift()!();
+      await saving.done;
+    });
     await settle();
     expect(callsTo('admin_set_wwc_officer')).toHaveLength(1);
     expect(callsTo('admin_set_committee_checks_from')).toHaveLength(1);
@@ -326,7 +383,7 @@ describe('Safeguarding settings', () => {
     await openSafeguarding({ committee_checks_from: '2026-12-01' });
     expect(screen.getByText('Committee checks required from')).toBeTruthy();
     expect(screen.getByText(formatDateString('2026-12-01'))).toBeTruthy();
-    fireEvent.press(screen.getByText('Today'));
+    await fireEvent.press(screen.getByText('Today'));
     await saveSafeguarding();
     expect(callsTo('admin_set_committee_checks_from')).toEqual([{ p_date: '2026-10-18' }]);
   });
@@ -334,9 +391,9 @@ describe('Safeguarding settings', () => {
   it('never lets the committee checks date move past the saved one', async () => {
     await openSafeguarding({ committee_checks_from: '2026-12-01' });
     expect(isDisabled('›')).toBe(true);
-    fireEvent.press(screen.getByLabelText('Day before'));
+    await fireEvent.press(screen.getByLabelText('Day before'));
     expect(screen.getByText(formatDateString('2026-11-30'))).toBeTruthy();
-    fireEvent.press(screen.getByLabelText('Day after'));
+    await fireEvent.press(screen.getByLabelText('Day after'));
     expect(isDisabled('›')).toBe(true);
     await saveSafeguarding();
     // Back on the saved day, so nothing to change.
@@ -345,7 +402,7 @@ describe('Safeguarding settings', () => {
 
   it('saves an earlier committee checks date', async () => {
     await openSafeguarding({ committee_checks_from: '2026-12-01' });
-    fireEvent.press(screen.getByLabelText('Day before'));
+    await fireEvent.press(screen.getByLabelText('Day before'));
     await saveSafeguarding();
     expect(callsTo('admin_set_committee_checks_from')).toEqual([{ p_date: '2026-11-30' }]);
   });
@@ -361,8 +418,8 @@ describe('Safeguarding settings', () => {
     ],
   ])('stops at a refused %s, shows why and stays on the screen', async (name, message, before) => {
     await openSafeguarding({ committee_checks_from: '2026-12-01' }, { [name]: message });
-    fireEvent.press(within(fieldGroup('WWC Registration Officer')).getByText('Sample admin  ✕'));
-    fireEvent.press(screen.getByText('Today'));
+    await fireEvent.press(within(fieldGroup('WWC Registration Officer')).getByText('Sample admin  ✕'));
+    await fireEvent.press(screen.getByText('Today'));
     await saveSafeguarding();
     expect(screen.getByText(message)).toBeTruthy();
     expect(rpcNames().filter((n) => n.startsWith('admin_set_'))).toEqual([...before, name]);
@@ -374,8 +431,8 @@ describe('Safeguarding settings', () => {
       { committee_checks_from: '2026-12-01' },
       { admin_set_wwc_officer: 'The WWC Registration Officer must be an admin or committee member' },
     );
-    fireEvent.press(within(fieldGroup('WWC Registration Officer')).getByText('Sample admin  ✕'));
-    fireEvent.press(screen.getByText('Today'));
+    await fireEvent.press(within(fieldGroup('WWC Registration Officer')).getByText('Sample admin  ✕'));
+    await fireEvent.press(screen.getByText('Today'));
     await saveSafeguarding();
     expect(screen.getByText('The WWC Registration Officer must be an admin or committee member')).toBeTruthy();
     expect(callsTo('admin_set_committee_checks_from')).toEqual([]);
@@ -384,10 +441,78 @@ describe('Safeguarding settings', () => {
 
   it('shows a refused committee checks date', async () => {
     await openSafeguarding({ committee_checks_from: '2026-12-01' }, { admin_set_committee_checks_from: 'Not later' });
-    fireEvent.press(screen.getByText('Today'));
+    await fireEvent.press(screen.getByText('Today'));
     await saveSafeguarding();
     expect(screen.getByText('Not later')).toBeTruthy();
     expect(screen).toHavePathname('/admin/safeguarding');
+  });
+
+  it('has no statistician checks date until one is set', async () => {
+    await openSafeguarding();
+    expect(screen.queryByText('Statistician checks required from')).toBeNull();
+    await saveSafeguarding();
+    expect(callsTo('admin_set_statistician_checks_from')).toEqual([]);
+  });
+
+  it('brings the statistician checks date forward to today, and explains it', async () => {
+    await openSafeguarding({ statistician_checks_from: '2027-01-21' });
+    expect(screen.getByText('Statistician checks required from')).toBeTruthy();
+    expect(screen.getByText(formatDateString('2027-01-21'))).toBeTruthy();
+    expect(screen.getByText(/their statistician role paused, in HQ and in Vantage/)).toBeTruthy();
+    await fireEvent.press(screen.getByText('Today'));
+    await saveSafeguarding();
+    expect(callsTo('admin_set_statistician_checks_from')).toEqual([{ p_date: '2026-10-18' }]);
+    expect(callsTo('admin_set_committee_checks_from')).toEqual([]);
+  });
+
+  it('never lets the statistician checks date move past the saved one', async () => {
+    await openSafeguarding({ statistician_checks_from: '2027-01-21' });
+    expect(isDisabled('›')).toBe(true);
+    await saveSafeguarding();
+    expect(callsTo('admin_set_statistician_checks_from')).toEqual([]);
+  });
+
+  it('saves both dates, the committee one first', async () => {
+    await openSafeguarding({ committee_checks_from: '2026-12-01', statistician_checks_from: '2027-01-21' });
+    const todays = screen.getAllByText('Today');
+    expect(todays).toHaveLength(2);
+    await fireEvent.press(todays[0]);
+    await fireEvent.press(todays[1]);
+    await saveSafeguarding();
+    expect(rpcNames().filter((n) => n.endsWith('_checks_from') && n.startsWith('admin_set_'))).toEqual([
+      'admin_set_committee_checks_from',
+      'admin_set_statistician_checks_from',
+    ]);
+    expect(callsTo('admin_set_statistician_checks_from')).toEqual([{ p_date: '2026-10-18' }]);
+  });
+
+  it('doesn’t save the statistician date when the committee date is refused', async () => {
+    await openSafeguarding(
+      { committee_checks_from: '2026-12-01', statistician_checks_from: '2027-01-21' },
+      { admin_set_committee_checks_from: 'Not later' },
+    );
+    const todays = screen.getAllByText('Today');
+    await fireEvent.press(todays[0]);
+    await fireEvent.press(todays[1]);
+    await saveSafeguarding();
+    expect(screen.getByText('Not later')).toBeTruthy();
+    expect(callsTo('admin_set_statistician_checks_from')).toEqual([]);
+  });
+
+  it('shows a refused statistician checks date', async () => {
+    await openSafeguarding(
+      { statistician_checks_from: '2027-01-21' },
+      { admin_set_statistician_checks_from: 'The date can only be brought forward' },
+    );
+    await fireEvent.press(screen.getByText('Today'));
+    await saveSafeguarding();
+    expect(screen.getByText('The date can only be brought forward')).toBeTruthy();
+    expect(screen).toHavePathname('/admin/safeguarding');
+  });
+
+  it('tells admins when one without a check stops seeing under 18s’ injuries', async () => {
+    await openSafeguarding({ committee_checks_from: '2026-12-01' });
+    expect(screen.getByText(/stops seeing under 18s’ injuries 30 days after this day/)).toBeTruthy();
   });
 
   it('keeps the field limits', async () => {
@@ -396,6 +521,125 @@ describe('Safeguarding settings', () => {
     expect(input('Phone or hotline').props.maxLength).toBe(30);
     expect(input('Complaints form link').props.maxLength).toBe(500);
     expect(input('Policy version').props.maxLength).toBe(30);
+  });
+});
+
+// ---------------------------------------------------------------------------
+// Who on the committee sees injuries (customer review R7)
+
+describe('Injuries are seen by', () => {
+  const sees = (name: string) => `${name} sees injuries`;
+
+  it('starts as the whole committee, with nobody to choose, and saves nothing unchanged', async () => {
+    await openSafeguarding({ admin_injury_committee: null });
+    expect(isSelected('Whole committee')).toBe(true);
+    expect(screen.queryByLabelText(sees('Sample committee'))).toBeNull();
+    expect(screen.queryByText(/With nobody chosen/)).toBeNull();
+    await saveSafeguarding();
+    expect(callsTo('admin_set_injury_committee')).toEqual([]);
+    expect(screen).toHavePathname('/administration');
+  });
+
+  it('explains the choice, and that admins aren’t affected', async () => {
+    await openSafeguarding();
+    expect(screen.getByText(/Committee members left out don’t see injuries or sign off returns to play/)).toBeTruthy();
+    expect(screen.getByText(/Admins see injuries as admins, whatever you choose here/)).toBeTruthy();
+  });
+
+  it('lists only committee members who aren’t admins, with their titles', async () => {
+    await openSafeguarding({}, {}, [
+      ...PEOPLE,
+      person('treasurer', { full_name: 'Sample treasurer', preferred_name: 'Sam', role: 'coach', extra_roles: ['committee'], title: 'Treasurer' }),
+      person('admin-committee', { full_name: 'Sample admin committee', role: 'admin', extra_roles: ['committee'] }),
+    ]);
+    await fireEvent.press(screen.getByText('Chosen committee members'));
+    expect(screen.getByLabelText(sees('Sample committee'))).toBeTruthy();
+    expect(screen.getByLabelText(sees('Sample expiring'))).toBeTruthy();
+    expect(screen.getByLabelText(sees('Sam'))).toBeTruthy();
+    expect(screen.getByText('Sam, Treasurer')).toBeTruthy();
+    expect(screen.queryByLabelText(sees('Sample admin committee'))).toBeNull();
+    expect(screen.queryByLabelText(sees('Sample admin'))).toBeNull();
+    expect(screen.queryByLabelText(sees('Sample coach'))).toBeNull();
+  });
+
+  it('warns while nobody is chosen, and saves the members ticked after the injury rules', async () => {
+    await openSafeguarding();
+    await fireEvent.press(screen.getByText('Chosen committee members'));
+    expect(screen.getByText(/With nobody chosen, no committee member sees injuries and only admins accept/)).toBeTruthy();
+    await flip(sees('Sample committee'), true);
+    await flip(sees('Sample expiring'), true);
+    await flip(sees('Sample expiring'), false);
+    expect(screen.queryByText(/With nobody chosen/)).toBeNull();
+    await fireEvent.press(within(fieldGroup('WWC Registration Officer')).getByText('Sample admin  ✕'));
+    await pickPerson('WWC Registration Officer', 'committee', 'Sample committee');
+    await saveSafeguarding();
+    expect(callsTo('admin_set_injury_committee')).toEqual([{ p_chosen: true, p_member_ids: ['committee'] }]);
+    const saves = rpcNames().filter((n) => n.startsWith('admin_set_'));
+    expect(saves.indexOf('admin_set_injury_committee')).toBe(saves.indexOf('admin_set_injury_rules') + 1);
+    expect(saves.at(-1)).toBe('admin_set_wwc_officer');
+    expect(screen).toHavePathname('/administration');
+  });
+
+  it('can save chosen members with nobody ticked', async () => {
+    await openSafeguarding();
+    await fireEvent.press(screen.getByText('Chosen committee members'));
+    await saveSafeguarding();
+    expect(callsTo('admin_set_injury_committee')).toEqual([{ p_chosen: true, p_member_ids: [] }]);
+  });
+
+  it('starts from the saved choice', async () => {
+    await openSafeguarding({ admin_injury_committee: { chosen: true, member_ids: ['expiring'] } });
+    expect(isSelected('Chosen committee members')).toBe(true);
+    expect(isOn(sees('Sample expiring'))).toBe(true);
+    expect(isOn(sees('Sample committee'))).toBe(false);
+    expect(screen.queryByText(/With nobody chosen/)).toBeNull();
+  });
+
+  it('warns when the only one chosen has left the committee', async () => {
+    await openSafeguarding({ admin_injury_committee: { chosen: true, member_ids: ['coach'] } });
+    expect(screen.getByText(/With nobody chosen/)).toBeTruthy();
+  });
+
+  it('saves nothing when the same members end up ticked', async () => {
+    await openSafeguarding({ admin_injury_committee: { chosen: true, member_ids: ['committee', 'expiring'] } });
+    await flip(sees('Sample committee'), false);
+    await flip(sees('Sample committee'), true);
+    await saveSafeguarding();
+    expect(callsTo('admin_set_injury_committee')).toEqual([]);
+  });
+
+  it('saves a different set of the same size', async () => {
+    await openSafeguarding({ admin_injury_committee: { chosen: true, member_ids: ['committee'] } });
+    await flip(sees('Sample committee'), false);
+    await flip(sees('Sample expiring'), true);
+    await saveSafeguarding();
+    expect(callsTo('admin_set_injury_committee')).toEqual([{ p_chosen: true, p_member_ids: ['expiring'] }]);
+  });
+
+  it('keeps the list when switching back to the whole committee', async () => {
+    await openSafeguarding({ admin_injury_committee: { chosen: true, member_ids: ['committee'] } });
+    await fireEvent.press(screen.getByText('Whole committee'));
+    expect(screen.queryByLabelText(sees('Sample committee'))).toBeNull();
+    await saveSafeguarding();
+    expect(callsTo('admin_set_injury_committee')).toEqual([{ p_chosen: false, p_member_ids: ['committee'] }]);
+  });
+
+  it('stops at a refusal, before the WWC Registration Officer', async () => {
+    await openSafeguarding({}, { admin_set_injury_committee: 'Only approved committee members can be chosen to see injuries' });
+    await fireEvent.press(screen.getByText('Chosen committee members'));
+    await fireEvent.press(within(fieldGroup('WWC Registration Officer')).getByText('Sample admin  ✕'));
+    await pickPerson('WWC Registration Officer', 'committee', 'Sample committee');
+    await saveSafeguarding();
+    expect(screen.getByText('Only approved committee members can be chosen to see injuries')).toBeTruthy();
+    expect(callsTo('admin_set_wwc_officer')).toEqual([]);
+    expect(screen).toHavePathname('/admin/safeguarding');
+  });
+
+  it('isn’t saved when an injury rule is refused', async () => {
+    await openSafeguarding({}, { admin_set_injury_rules: 'Choose 21 days, or 12 for an elite program' });
+    await fireEvent.press(screen.getByText('Chosen committee members'));
+    await saveSafeguarding();
+    expect(callsTo('admin_set_injury_committee')).toEqual([]);
   });
 });
 
@@ -470,7 +714,7 @@ describe('Code of conduct', () => {
 
   it('opens a member’s acceptances', async () => {
     await openConduct(ROWS, true);
-    fireEvent.press(screen.getByText('Waiting Child'));
+    await fireEvent.press(screen.getByText('Waiting Child'));
     await settle();
     expect(screen).toHavePathname('/conduct/c3');
   });
@@ -507,10 +751,10 @@ describe('Administration', () => {
     const from = supabase.from as jest.Mock;
     const before = from.mock.calls.filter(([t]) => t === 'profiles').length;
     await act(async () => {
-      screen.UNSAFE_getByType(RefreshControl).props.onRefresh();
+      refreshControl().props.onRefresh();
     });
     await settle();
     expect(from.mock.calls.filter(([t]) => t === 'profiles').length).toBe(before + 1);
-    expect(screen.UNSAFE_getByType(RefreshControl).props.refreshing).toBe(false);
+    expect(refreshControl().props.refreshing).toBe(false);
   });
 });

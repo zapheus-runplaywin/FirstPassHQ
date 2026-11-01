@@ -9,33 +9,10 @@
 \pset tuples_only on
 \pset format unaligned
 
--- Supabase gives anon and authenticated every table by default and relies on
--- row level security; the local stubs give them nothing. Grant as Supabase
--- would, then replay every table grant and revoke in the migrations, in order,
--- so the privileges match production.
-grant select, insert, update, delete on all tables in schema public to anon, authenticated;
-grant usage, select on all sequences in schema public to anon, authenticated;
-revoke update on public.profiles from authenticated, anon;                                   -- 20261007000000_init, 20261012200000_security_hardening
-revoke all on public.former_partner_roles from public, anon, authenticated;                  -- 20261008100000_remove_partner_role
-revoke all on public.join_password_attempts from public, anon, authenticated;                -- 20261012200000_security_hardening
-revoke all on public.record_access_log from public, anon, authenticated;                     -- 20261013090000_record_access_log
-revoke all on public.attendance_absences from public, anon, authenticated;                   -- 20261013120000_family_attendance
-revoke all on public.group_membership_changes from public, anon, authenticated;              -- 20261013130000_guardian_activity
-revoke all on public.child_activity_seen from public, anon, authenticated;
-revoke all on public.conduct_acceptances from public, anon, authenticated;                   -- 20261013140000_code_of_conduct
-revoke insert, update, delete on public.games, public.game_members, public.game_events, public.game_snapshots from anon, authenticated; -- 20261015000100_game_stats
-revoke all on public.game_pair_attempts from anon, authenticated;
-revoke all on table public.personal_tasks from anon;                                         -- 20261015210000_personal_tasks
-revoke delete on public.absence_categories from anon, authenticated;                         -- 20261015220000_absence_categories
-revoke all on public.absence_reviews from public, anon, authenticated;                       -- 20261015235000_absence_reviews
-revoke all on public.season_kpis, public.season_kpi_review_points, public.season_kpi_measures, public.season_kpi_reviews from public, anon, authenticated; -- 20261016000000_season_kpis
-revoke all on table public.session_plans, public.session_plan_files, public.session_plan_shares, public.session_plan_views from public, anon, authenticated; -- 20261016010000_session_plans
-grant select on table public.session_plans, public.session_plan_files, public.session_plan_shares to authenticated;
-revoke all on table public.session_plan_notices from public, anon, authenticated;
-revoke all on public.surveys, public.survey_questions, public.survey_recipients, public.survey_responses, public.survey_answers from public, anon, authenticated; -- 20261017100000_surveys
-revoke all on public.guardian_link_codes, public.guardian_link_code_attempts from public, anon, authenticated; -- 20261020020000_parent_link_codes
-revoke all on public.guardian_link_requests from public, anon, authenticated;
-grant select on public.guardian_link_requests to authenticated;
+-- Table privileges come from the migrations themselves, as on a Supabase
+-- project created after it stopped granting new tables automatically (30
+-- October 2026): 20261021000000_explicit_table_grants and each later table's
+-- own grants. The local stubs give anon and authenticated nothing else.
 
 create or replace function pg_temp.as_member(n text) returns void language sql as
 $$ select set_config('request.jwt.claim.sub', '00000000-0000-0000-0000-0000000000' || n, false) $$;
@@ -134,6 +111,10 @@ insert into public.injury_updates (injury_id, author_id, author_name, kind, note
 select id, athlete_id, athlete_name, 'reported', 'Reported' from public.injuries;
 insert into public.check_ins (athlete_id, day, sleep, soreness, stress, mood, note)
 values ('00000000-0000-0000-0000-000000000032', current_date, 3, 3, 3, 3, 'Fine');
+-- Training sessions follow the same rule as check-ins.
+insert into public.session_logs (athlete_id, day, kind, minutes, rpe) values
+  ('00000000-0000-0000-0000-000000000031', current_date, 'training', 90, 6),
+  ('00000000-0000-0000-0000-000000000032', current_date, 'game', 60, 8);
 insert into public.fixtures (id, team_id, team_name, opponent, starts_at)
 values ('00000000-0000-0000-0000-0000000000f1', '00000000-0000-0000-0000-0000000000a1', 'Sample Squad', 'Rivals', now() + interval '2 days');
 insert into public.game_goals (athlete_id, fixture_id, body, set_by, set_by_name) values
@@ -256,6 +237,10 @@ insert into matrix (phase, label, q, counts) values
       '{0,0,0,0,0,0,0,0,1,1,1,0,0,0}'),
   (1, 'check_ins: Kai''s', $$select 1 from public.check_ins where athlete_id = pg_temp.m('32')$$,
       '{0,0,0,1,0,0,0,1,0,0,1,0,0,0}'),
+  (1, 'session_logs: Jordan''s, no consent yet', $$select 1 from public.session_logs where athlete_id = pg_temp.m('31')$$,
+      '{0,0,0,0,0,0,0,0,1,1,1,0,0,0}'),
+  (1, 'session_logs: Kai''s', $$select 1 from public.session_logs where athlete_id = pg_temp.m('32')$$,
+      '{0,0,0,1,0,0,0,1,0,0,1,0,0,0}'),
   -- Game goals: the athlete, their guardians and their coaches. Not the committee, physios or admins.
   (1, 'game_goals: Jordan''s', $$select 1 from public.game_goals where athlete_id = pg_temp.m('31')$$,
       '{0,0,0,1,0,0,0,0,1,1,1,0,0,0}'),
@@ -301,7 +286,7 @@ insert into matrix (phase, label, q, counts) values
       '{1,0,0,0,0,0,0,1,0,0,0,0,0,0}'),
   -- A coach whose check has expired loses the fixtures with the rest of the
   -- group's reads (20261017070000_manager_guide_audit.sql). The guardian
-  -- follows their child into the squad (20261020020000), so sees it too.
+  -- follows their child into the squad (20261101000000), so sees it too.
   (1, 'fixtures: Sample Squad''s game', $$select 1 from public.fixtures where id = '00000000-0000-0000-0000-0000000000f1'$$,
       '{1,0,0,1,0,1,1,1,1,1,1,0,0,0}'),
   -- Attendance: the committee and admins see every session; coaches and
@@ -323,12 +308,16 @@ insert into matrix (phase, label, q, counts) values
       '{1,0,0,1,0,0,0,1,1,1,1,0,0,0}'),
   (1, 'session_plans: shared with the squad''s coaches', $$select 1 from public.session_plans where id = '00000000-0000-0000-0000-0000000000a9'$$,
       '{1,0,0,1,0,0,0,0,0,0,1,0,0,0}'),
-  -- After Logan (a verified guardian) consents for Jordan.
+  -- After Logan (a verified guardian) consents for Jordan. The committee
+  -- member here is exempt from a check (Treasurer only), so they don't see
+  -- an under 18's injuries even with consent (20261022100000_injury_records.sql).
   (2, 'injuries: Jordan''s, with consent', $$select 1 from public.injuries where athlete_id = pg_temp.m('31')$$,
-      '{1,1,0,1,0,0,1,0,1,1,1,0,0,0}'),
+      '{1,0,0,1,0,0,1,0,1,1,1,0,0,0}'),
   (2, 'injury_updates: Jordan''s, with consent', $$select 1 from public.injury_updates u join public.injuries i on i.id = u.injury_id where i.athlete_id = pg_temp.m('31')$$,
-      '{1,1,0,1,0,0,1,0,1,1,1,0,0,0}'),
+      '{1,0,0,1,0,0,1,0,1,1,1,0,0,0}'),
   (2, 'check_ins: Jordan''s, with consent', $$select 1 from public.check_ins where athlete_id = pg_temp.m('31')$$,
+      '{0,0,0,1,0,0,0,0,1,1,1,0,0,0}'),
+  (2, 'session_logs: Jordan''s, with consent', $$select 1 from public.session_logs where athlete_id = pg_temp.m('31')$$,
       '{0,0,0,1,0,0,0,0,1,1,1,0,0,0}'),
   (2, 'game_goals: Jordan''s, with consent', $$select 1 from public.game_goals where athlete_id = pg_temp.m('31')$$,
       '{0,0,0,1,0,0,0,0,1,1,1,0,0,0}'),
@@ -336,6 +325,8 @@ insert into matrix (phase, label, q, counts) values
   (3, 'injuries: Jordan''s, at 18', $$select 1 from public.injuries where athlete_id = pg_temp.m('31')$$,
       '{1,1,0,1,0,0,1,0,1,0,1,0,0,0}'),
   (3, 'check_ins: Jordan''s, at 18', $$select 1 from public.check_ins where athlete_id = pg_temp.m('31')$$,
+      '{0,0,0,1,0,0,0,0,1,0,1,0,0,0}'),
+  (3, 'session_logs: Jordan''s, at 18', $$select 1 from public.session_logs where athlete_id = pg_temp.m('31')$$,
       '{0,0,0,1,0,0,0,0,1,0,1,0,0,0}'),
   (3, 'game_goals: Jordan''s, at 18', $$select 1 from public.game_goals where athlete_id = pg_temp.m('31')$$,
       '{0,0,0,1,0,0,0,0,1,0,1,0,0,0}'),
@@ -347,6 +338,8 @@ insert into matrix (phase, label, q, counts) values
   (4, 'injuries: Kai''s, head coach stood down', $$select 1 from public.injuries where athlete_id = pg_temp.m('32')$$,
       '{1,1,0,0,0,0,1,1,0,0,1,0,0,0}'),
   (4, 'check_ins: Kai''s, head coach stood down', $$select 1 from public.check_ins where athlete_id = pg_temp.m('32')$$,
+      '{0,0,0,0,0,0,0,1,0,0,1,0,0,0}'),
+  (4, 'session_logs: Kai''s, head coach stood down', $$select 1 from public.session_logs where athlete_id = pg_temp.m('32')$$,
       '{0,0,0,0,0,0,0,1,0,0,1,0,0,0}'),
   (4, 'game_goals: Kai''s, head coach stood down', $$select 1 from public.game_goals where athlete_id = pg_temp.m('32')$$,
       '{0,0,0,0,0,0,0,1,0,0,1,0,0,0}'),
@@ -435,8 +428,8 @@ insert into revoked_tables values
   ('child_activity_seen'), ('conduct_acceptances'), ('season_kpis'), ('season_kpi_review_points'),
   ('season_kpi_measures'), ('season_kpi_reviews'), ('session_plan_views'), ('session_plan_notices'),
   ('surveys'), ('survey_questions'), ('survey_recipients'), ('survey_responses'), ('survey_answers'),
-  ('join_password_attempts'), ('former_partner_roles'), ('game_pair_attempts'),
-  ('guardian_link_codes'), ('guardian_link_code_attempts');
+  ('join_password_attempts'), ('former_partner_roles'), ('game_pair_attempts'), ('policy_register'),
+  ('conflict_declarations'), ('guardian_link_codes'), ('guardian_link_code_attempts');
 grant select on revoked_tables to authenticated;
 select pg_temp.ok(t || ': signed-in members have no privilege on it',
   has_table_privilege('authenticated', 'public.' || t, 'select') or has_table_privilege('authenticated', 'public.' || t, 'insert')
@@ -479,6 +472,7 @@ insert into writes values
   ('injuries', $$athlete_id = '00000000-0000-0000-0000-000000000031'$$, 'description', 'rls'),
   ('injury_updates', $$true$$, 'notes', 'rls'),
   ('check_ins', $$athlete_id = '00000000-0000-0000-0000-000000000031'$$, 'note', 'rls'),
+  ('session_logs', $$athlete_id = '00000000-0000-0000-0000-000000000031'$$, 'minutes', 'select only'),
   ('messages', $$id = '00000000-0000-0000-0000-0000000000c1'$$, 'body', 'rls'),
   ('message_recipients', $$message_id = '00000000-0000-0000-0000-0000000000c1'$$, 'read_at', 'rls'),
   ('child_consents', $$athlete_id = '00000000-0000-0000-0000-000000000031'$$, 'withdrawn_at', 'rls'),

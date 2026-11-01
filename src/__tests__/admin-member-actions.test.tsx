@@ -687,6 +687,59 @@ describe('exempting a committee member or admin from the check', () => {
   });
 });
 
+describe('statisticians and the check', () => {
+  const statistician = (): Profile => ({ ...p('statistician'), role: 'statistician', extra_roles: [] });
+  const chips = () =>
+    ['Has a check', 'Parent volunteer', 'Short-term visitor', 'National event or tour', 'Needs a check', 'Exempt'].filter(
+      (l) => screen.queryByText(l),
+    );
+
+  it('asks for a statistician’s check and offers the exemptions', async () => {
+    await openMember(statistician());
+    expect(screen.getByText('Working With Children Check')).toBeTruthy();
+    expect(screen.getByText(/Coaches, managers, physios, statisticians, temporary helpers/)).toBeTruthy();
+    expect(screen.getByText(/statistician with a reason, such as a statistician who only records opens games/)).toBeTruthy();
+    expect(chips()).toEqual(['Has a check', 'Short-term visitor', 'National event or tour', 'Needs a check', 'Exempt']);
+  });
+
+  it('records the reason for a statistician who only records opens games', async () => {
+    await openMember(statistician());
+    await pressInSection('Working With Children Check', 'Exempt');
+    expect(screen.queryByText('Card number')).toBeNull();
+    await typeInto('Why they don’t need a check', 'Opens games only, from video');
+    await press('Save changes');
+    expect(writeNames()).toEqual(['admin_set_member_details', 'admin_set_wwcc_exemption', 'admin_save_member']);
+    expect(rpcsNamed('admin_set_wwcc_exemption')[0][1]).toEqual({
+      p_profile_id: 'statistician',
+      p_reason: 'Opens games only, from video',
+    });
+  });
+
+  it('offers a statistician who is a parent of a child here the parent volunteer exemption', async () => {
+    const parent: Profile = { ...morePersonas.coachGuardian.profile, role: 'guardian', extra_roles: ['statistician'] };
+    await openMember(parent, {
+      guardianships: [{ guardian_id: parent.id, athlete_id: CHILD.id }],
+      people: [CHILD],
+    });
+    expect(chips()).toContain('Parent volunteer');
+    await press('Parent volunteer');
+    await pressInSection('Their child at the club', 'Sample Child');
+    expect(screen.getByText(/statistician role starts when they do/)).toBeTruthy();
+    await press('Save changes');
+    expect(rpcsNamed('admin_set_volunteer_exemption')[0][1]).toMatchObject({
+      p_profile_id: parent.id,
+      p_basis: 'parent_volunteer',
+      p_child_id: CHILD.id,
+    });
+  });
+
+  it('never offers the reason exemption to a statistician who also manages', async () => {
+    await openMember({ ...statistician(), extra_roles: ['manager'] });
+    expect(screen.queryByText('Exempt')).toBeNull();
+    expect(screen.getByText('Has a check')).toBeTruthy();
+  });
+});
+
 describe('volunteer exemptions for coaches, managers and physios', () => {
   const chips = () =>
     ['Has a check', 'Parent volunteer', 'Under-18 volunteer', 'Short-term visitor', 'National event or tour'].filter(
@@ -890,7 +943,7 @@ describe('validating a coach’s card', () => {
 
     await typeInto('Name on the card', 'Sam Coach');
     await press('Card sighted');
-    fireEvent(screen.getByLabelText('Registered card with Sample Club'), 'valueChange', true);
+    await fireEvent(screen.getByLabelText('Registered card with Sample Club'), 'valueChange', true);
     await press('Record validation');
     expect(rpcsNamed('admin_validate_wwcc')).toEqual([
       [
@@ -1067,12 +1120,22 @@ describe('deleting a member', () => {
     await press('Delete member');
     expect(
       screen.getByText(
-        'This permanently deletes Sample coach: their account, squad and team places, guardian links and message receipts. Messages they sent stay, and their injury records are kept for 12 months. It can’t be undone. To only stop them using the app, use Remove access instead.',
+        'This permanently deletes Sample coach: their account, squad and team places, guardian links and message receipts. Messages they sent stay, and their injury records are kept for the club’s period for cleared injuries. It can’t be undone. To only stop them using the app, use Remove access instead.',
       ),
     ).toBeTruthy();
     await press('Delete permanently');
     expect(adminWrites()).toEqual([['admin_delete_member', { p_profile_id: 'coach' }]]);
     expect(back).toHaveBeenCalledTimes(1);
+  });
+
+  it('says why when a concern names the member, and stays on their page', async () => {
+    await openMember(p('coach'), {
+      rpcErrors: { admin_delete_member: 'A concern names this member, so their account and records are kept while it does.' },
+    });
+    await press('Delete member');
+    await press('Delete permanently');
+    expect(screen.getByText('A concern names this member, so their account and records are kept while it does.')).toBeTruthy();
+    expect(back).not.toHaveBeenCalled();
   });
 
   it('doesn’t mention Remove access for a request that was never approved', async () => {

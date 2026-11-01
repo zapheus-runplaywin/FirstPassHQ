@@ -17,6 +17,7 @@ import type {
   AppRole,
   GroupCaptain,
   MyVolunteerExemption,
+  MyWwccApplication,
   Profile,
   TeamMembership,
 } from '@/lib/types';
@@ -38,12 +39,18 @@ type AuthState = {
     roles: AppRole[];
     stoodDown: boolean;
     exemption: MyVolunteerExemption | null;
+    application: MyWwccApplication | null;
   } | null;
   /**
    * The member's volunteer exemption from the Working With Children Check, if
    * an admin recorded one: they accept its declaration from a to-do.
    */
   exemption: MyVolunteerExemption | null;
+  /**
+   * The member's lodged Working With Children Check application, if an admin
+   * recorded one: it counts as a check once they accept its declaration.
+   */
+  wwccApplication: MyWwccApplication | null;
   memberships: TeamMembership[];
   /** Squads and teams the member captains or vice captains, from any season. */
   captaincies: GroupCaptain[];
@@ -52,6 +59,8 @@ type AuthState = {
   isAdmin: boolean;
   /** The day from which committee members need a check, "2027-01-11" style. */
   committeeChecksFrom: string | null;
+  /** The day from which statisticians need a check, "2027-01-21" style. */
+  statisticianChecksFrom: string | null;
   /** The Child Safety Officer or Complaints Manager, able to act as one now. */
   isSafeguardingOfficer: boolean;
   /**
@@ -62,6 +71,12 @@ type AuthState = {
   waitingForGuardian: LinkCode | null;
   /** Approved, but locked until a verified parent or guardian is linked. */
   isLocked: boolean;
+  /**
+   * Whether the club's choice of who on the committee sees injuries includes
+   * this member (true unless the club chose members and left them out). Only
+   * matters while they hold the committee role; the database applies it.
+   */
+  committeeSeesInjuries: boolean;
   refresh: () => Promise<void>;
   signOut: () => Promise<void>;
 };
@@ -85,9 +100,12 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   const [captaincies, setCaptaincies] = useState<GroupCaptain[]>([]);
   const [isClubCaptain, setIsClubCaptain] = useState(false);
   const [exemption, setExemption] = useState<MyVolunteerExemption | null>(null);
+  const [wwccApplication, setWwccApplication] = useState<MyWwccApplication | null>(null);
   const [isSafeguardingOfficer, setIsSafeguardingOfficer] = useState(false);
+  const [committeeSeesInjuries, setCommitteeSeesInjuries] = useState(true);
   const [committeeChecksFrom, setCommitteeChecksFrom] = useState<string | null>(null);
   const [linkCode, setLinkCode] = useState<LinkCode | null>(null);
+  const [statisticianChecksFrom, setStatisticianChecksFrom] = useState<string | null>(null);
 
   const loadMember = useCallback(async (userId: string | undefined) => {
     if (!userId) {
@@ -96,9 +114,12 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       setCaptaincies([]);
       setIsClubCaptain(false);
       setExemption(null);
+      setWwccApplication(null);
       setIsSafeguardingOfficer(false);
+      setCommitteeSeesInjuries(true);
       setCommitteeChecksFrom(null);
       setLinkCode(null);
+      setStatisticianChecksFrom(null);
       return;
     }
     const [
@@ -110,6 +131,9 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       officerResult,
       committeeChecksResult,
       linkCodeResult,
+      applicationResult,
+      statisticianChecksResult,
+      committeeInjuriesResult,
     ] = await Promise.all([
       supabase.from('profiles').select(PROFILE_COLUMNS).eq('id', userId).single(),
       supabase
@@ -124,17 +148,26 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       supabase.rpc('is_safeguarding_officer'),
       supabase.rpc('committee_checks_from'),
       supabase.rpc('my_link_code').maybeSingle(),
+      supabase.rpc('my_wwcc_application').maybeSingle(),
+      supabase.rpc('statistician_checks_from'),
+      supabase.rpc('my_committee_sees_injuries'),
     ]);
     setProfile((profileResult.data as Profile | null) ?? null);
     setMemberships((membershipResult.data as unknown as TeamMembership[] | null) ?? []);
     setCaptaincies((captainResult.data as GroupCaptain[] | null) ?? []);
     setIsClubCaptain(clubCaptainResult.data === true);
     setExemption((exemptionResult.data as MyVolunteerExemption | null) ?? null);
+    setWwccApplication((applicationResult.data as MyWwccApplication | null) ?? null);
     setIsSafeguardingOfficer(officerResult.data === true);
+    // False only when the club chose committee members and left this one out.
+    setCommitteeSeesInjuries(committeeInjuriesResult.data !== false);
     setCommitteeChecksFrom(
       typeof committeeChecksResult.data === 'string' ? committeeChecksResult.data : null,
     );
     setLinkCode((linkCodeResult.data as LinkCode | null) ?? null);
+    setStatisticianChecksFrom(
+      typeof statisticianChecksResult.data === 'string' ? statisticianChecksResult.data : null,
+    );
   }, []);
 
   useEffect(() => {
@@ -162,8 +195,16 @@ export function AuthProvider({ children }: { children: ReactNode }) {
 
   const waitingForGuardian = linkCode?.waiting ? linkCode : null;
   const { usable, paused } = useMemo(
-    () => usableProfile(profile, !!exemption?.valid, committeeChecksFrom, !!waitingForGuardian),
-    [profile, exemption, committeeChecksFrom, waitingForGuardian],
+    () =>
+      usableProfile(
+        profile,
+        !!exemption?.valid,
+        committeeChecksFrom,
+        !!wwccApplication?.valid,
+        statisticianChecksFrom,
+        !!waitingForGuardian,
+      ),
+    [profile, exemption, committeeChecksFrom, wwccApplication, statisticianChecksFrom, waitingForGuardian],
   );
   const usableMemberships = useMemo(
     () =>
@@ -189,17 +230,25 @@ export function AuthProvider({ children }: { children: ReactNode }) {
         paused:
           paused.length > 0
             ? // Stryker disable next-line OptionalChaining: roles are only paused for a member.
-              { roles: paused, stoodDown: !!profile?.stood_down_at, exemption }
+              {
+                roles: paused,
+                stoodDown: !!profile?.stood_down_at,
+                exemption,
+                application: wwccApplication,
+              }
             : null,
         exemption,
+        wwccApplication,
         memberships: usableMemberships,
         captaincies,
         isClubCaptain,
         isAdmin,
         isSafeguardingOfficer,
+        committeeSeesInjuries,
         committeeChecksFrom,
         waitingForGuardian,
         isLocked: !!waitingForGuardian && profile?.status === 'approved',
+        statisticianChecksFrom,
         refresh,
         signOut,
       }}>
@@ -217,12 +266,16 @@ function usableProfile(
   profile: Profile | null,
   exempt: boolean,
   committeeChecksFrom: string | null,
+  applied: boolean,
+  statisticianChecksFrom: string | null,
   waitingForGuardian: boolean,
 ) {
   if (profile && waitingForGuardian && profile.status === 'approved') {
     return { usable: { ...profile, status: 'pending' as const }, paused: [] };
   }
-  const paused = profile ? pausedRoles(profile, exempt, committeeChecksFrom) : [];
+  const paused = profile
+    ? pausedRoles(profile, exempt, committeeChecksFrom, applied, statisticianChecksFrom)
+    : [];
   // Stryker disable next-line LogicalOperator,ConditionalExpression: a shortcut; nobody has nothing paused, and rebuilding with nothing paused gives the same roles.
   if (!profile || paused.length === 0) return { usable: profile, paused };
   const [main = 'guest', ...extra] = [profile.role, ...profile.extra_roles].filter(

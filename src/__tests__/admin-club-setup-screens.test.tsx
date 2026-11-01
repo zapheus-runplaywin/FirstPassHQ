@@ -158,7 +158,7 @@ describe('inviting members', () => {
   });
 
   it('shares the link and code, and never the club password', async () => {
-    const share = jest.spyOn(Share, 'share').mockResolvedValue({ action: 'sharedAction' });
+    const share = jest.spyOn(Share, 'share').mockResolvedValue({ action: 'sharedAction', activityType: undefined });
     await openInvite();
     await press('Share invite');
     expect(share).toHaveBeenCalledWith({

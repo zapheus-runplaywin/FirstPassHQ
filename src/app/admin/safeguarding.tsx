@@ -6,7 +6,7 @@ import { DateField } from '@/components/date-field';
 import { PersonPicker } from '@/components/person-picker';
 import { Screen } from '@/components/screen';
 import { ThemedText } from '@/components/themed-text';
-import { Button, Card, ErrorText, TextField } from '@/components/ui';
+import { Button, Card, ChipGroup, ErrorText, TextField } from '@/components/ui';
 import { Spacing } from '@/constants/theme';
 import { useTheme } from '@/hooks/use-theme';
 import { isMinor } from '@/lib/age';
@@ -15,7 +15,12 @@ import { hasRole } from '@/lib/roles';
 import { wwccStatus } from '@/lib/safety';
 import { supabase } from '@/lib/supabase';
 import type { ClubPolicies } from '@/lib/consents';
-import type { Profile, SafeguardingContacts, VolunteerExemption } from '@/lib/types';
+import type {
+  Profile,
+  SafeguardingContacts,
+  VolunteerExemption,
+  WwccApplication,
+} from '@/lib/types';
 
 /**
  * The club's Child Safety Officer and Complaints Manager, who see and act on
@@ -33,9 +38,17 @@ export default function SafeguardingScreen() {
   const [bodyUrl, setBodyUrl] = useState('');
   const [policyUrl, setPolicyUrl] = useState('');
   const [minorPhotos, setMinorPhotos] = useState(false);
+  const [physioOnly, setPhysioOnly] = useState(false);
+  const [concussionDays, setConcussionDays] = useState<'21' | '12'>('21');
+  const [committee, setCommittee] = useState<Profile[]>([]);
+  const [injuryCommittee, setInjuryCommittee] = useState<InjuryCommittee>(WHOLE_COMMITTEE);
+  const [savedInjuryCommittee, setSavedInjuryCommittee] =
+    useState<InjuryCommittee>(WHOLE_COMMITTEE);
   const [conductEachSeason, setConductEachSeason] = useState(false);
   const [committeeFrom, setCommitteeFrom] = useState<string | null>(null);
   const [savedCommitteeFrom, setSavedCommitteeFrom] = useState<string | null>(null);
+  const [statisticianFrom, setStatisticianFrom] = useState<string | null>(null);
+  const [savedStatisticianFrom, setSavedStatisticianFrom] = useState<string | null>(null);
   const [privacyUrl, setPrivacyUrl] = useState('');
   const [conductUrl, setConductUrl] = useState('');
   const [policyVersion, setPolicyVersion] = useState('1');
@@ -53,6 +66,10 @@ export default function SafeguardingScreen() {
       wwcOfficerResult,
       conductResult,
       committeeFromResult,
+      injuryRulesResult,
+      applicationsResult,
+      statisticianFromResult,
+      injuryCommitteeResult,
     ] = await Promise.all([
       supabase.rpc('safeguarding_contacts').maybeSingle(),
       supabase.from('profiles').select(PROFILE_COLUMNS).eq('status', 'approved').order('full_name'),
@@ -62,6 +79,10 @@ export default function SafeguardingScreen() {
       supabase.rpc('admin_wwc_officer').maybeSingle(),
       supabase.rpc('conduct_each_season_setting'),
       supabase.rpc('committee_checks_from'),
+      supabase.rpc('injury_rules').maybeSingle(),
+      supabase.rpc('admin_wwcc_applications'),
+      supabase.rpc('statistician_checks_from'),
+      supabase.rpc('admin_injury_committee').maybeSingle(),
     ]);
     const officerId = (wwcOfficerResult.data as { officer_id: string } | null)?.officer_id ?? null;
     setWwcOfficer(officerId);
@@ -71,10 +92,27 @@ export default function SafeguardingScreen() {
     setConductUrl(policies?.code_of_conduct_url ?? '');
     setPolicyVersion(policies?.policy_version ?? '1');
     setMinorPhotos(photosResult.data === true);
+    const rules = injuryRulesResult.data as {
+      physio_only_endorsement: boolean;
+      concussion_min_days: number;
+    } | null;
+    setPhysioOnly(rules?.physio_only_endorsement === true);
+    setConcussionDays(rules?.concussion_min_days === 12 ? '12' : '21');
+    const chosen = injuryCommitteeResult.data as { chosen: boolean; member_ids: string[] } | null;
+    const choice: InjuryCommittee = {
+      chosen: chosen?.chosen === true,
+      memberIds: chosen?.member_ids ?? [],
+    };
+    setInjuryCommittee(choice);
+    setSavedInjuryCommittee(choice);
     setConductEachSeason(conductResult.data === true);
     const from = typeof committeeFromResult.data === 'string' ? committeeFromResult.data : null;
     setCommitteeFrom(from);
     setSavedCommitteeFrom(from);
+    const statsFrom =
+      typeof statisticianFromResult.data === 'string' ? statisticianFromResult.data : null;
+    setStatisticianFrom(statsFrom);
+    setSavedStatisticianFrom(statsFrom);
     const contacts = contactsResult.data as SafeguardingContacts | null;
     setOfficer(contacts?.child_safety_officer_id ?? null);
     setManager(contacts?.complaints_manager_id ?? null);
@@ -87,9 +125,16 @@ export default function SafeguardingScreen() {
         .filter((e) => !e.ended_at && e.valid)
         .map((e) => e.profile_id),
     );
+    // A lodged check application in force counts as a check.
+    for (const a of (applicationsResult.data as WwccApplication[] | null) ?? []) {
+      if (!a.ended_at && a.status === 'in_force') exempt.add(a.profile_id);
+    }
+    const members = (membersResult.data as Profile[] | null) ?? [];
+    // Admins see injuries as admins, whatever the choice.
+    setCommittee(members.filter((m) => hasRole(m, 'committee') && !hasRole(m, 'admin')));
     // The same rule as the database: approved adults, not stood down, screened.
     setEligible(
-      ((membersResult.data as Profile[] | null) ?? []).filter((m) => {
+      members.filter((m) => {
         const check = wwccStatus(m).kind;
         return (
           !isMinor(m.date_of_birth, m.under_17) &&
@@ -133,8 +178,35 @@ export default function SafeguardingScreen() {
       rpcError || photosError || policiesError
         ? { error: null }
         : await supabase.rpc('admin_set_conduct_each_season', { p_on: conductEachSeason });
+    const { error: injuryError } =
+      rpcError || photosError || policiesError || conductError
+        ? { error: null }
+        : await supabase.rpc('admin_set_injury_rules', {
+            p_physio_only_endorsement: physioOnly,
+            p_concussion_min_days: Number(concussionDays),
+          });
+    const { error: injuryCommitteeError } =
+      rpcError ||
+      photosError ||
+      policiesError ||
+      conductError ||
+      injuryError ||
+      sameChoice(injuryCommittee, savedInjuryCommittee)
+        ? { error: null }
+        : await supabase.rpc('admin_set_injury_committee', {
+            p_chosen: injuryCommittee.chosen,
+            p_member_ids: injuryCommittee.memberIds,
+          });
+    // The WWC Registration Officer and committee checks date go last, as they
+    // can change who manages these settings.
     const { error: officerError } =
-      rpcError || photosError || policiesError || conductError || wwcOfficer === savedWwcOfficer
+      rpcError ||
+      photosError ||
+      policiesError ||
+      conductError ||
+      injuryError ||
+      injuryCommitteeError ||
+      wwcOfficer === savedWwcOfficer
         ? { error: null }
         : await supabase.rpc('admin_set_wwc_officer', { p_profile_id: wwcOfficer });
     const { error: committeeError } =
@@ -142,13 +214,36 @@ export default function SafeguardingScreen() {
       photosError ||
       policiesError ||
       conductError ||
+      injuryError ||
+      injuryCommitteeError ||
       officerError ||
       !committeeFrom ||
       committeeFrom === savedCommitteeFrom
         ? { error: null }
         : await supabase.rpc('admin_set_committee_checks_from', { p_date: committeeFrom });
+    const { error: statisticianError } =
+      rpcError ||
+      photosError ||
+      policiesError ||
+      conductError ||
+      injuryError ||
+      injuryCommitteeError ||
+      officerError ||
+      committeeError ||
+      !statisticianFrom ||
+      statisticianFrom === savedStatisticianFrom
+        ? { error: null }
+        : await supabase.rpc('admin_set_statistician_checks_from', { p_date: statisticianFrom });
     const failed =
-      rpcError ?? photosError ?? policiesError ?? conductError ?? officerError ?? committeeError;
+      rpcError ??
+      photosError ??
+      policiesError ??
+      conductError ??
+      injuryError ??
+      injuryCommitteeError ??
+      officerError ??
+      committeeError ??
+      statisticianError;
     setBusy(false);
     if (failed) {
       setError(failed.message);
@@ -203,7 +298,28 @@ export default function SafeguardingScreen() {
             Committee members approved before checks were needed keep their role until this day
             without one. From then, a committee member with no check and no exemption has their
             committee role paused. You can bring the date forward but not push it back; exempt
-            anyone who never works with children, with the reason, on their member page.
+            anyone who never works with children, with the reason, on their member page. An admin
+            with no check stops seeing under 18s’ injuries 30 days after this day, until a check,
+            an application or a parent volunteer exemption is recorded.
+          </ThemedText>
+        </View>
+      ) : null}
+
+      {savedStatisticianFrom ? (
+        <View style={styles.group}>
+          <DateField
+            label="Statistician checks required from"
+            value={statisticianFrom}
+            onChange={setStatisticianFrom}
+            quickPicks={[{ label: 'Today', days: 0 }]}
+            max={savedStatisticianFrom}
+          />
+          <ThemedText type="small" themeColor="textSecondary">
+            Statisticians approved before they needed a check keep their role until this day
+            without one. From then, a statistician with no check, application or exemption has
+            their statistician role paused, in HQ and in Vantage. You can bring the date forward
+            but not push it back; exempt a statistician who never works with children, such as one
+            who only records opens games, with the reason, on their member page.
           </ThemedText>
         </View>
       ) : null}
@@ -328,9 +444,111 @@ export default function SafeguardingScreen() {
           under 18 can never add a photo themselves.
         </ThemedText>
       </View>
+
+      <View style={styles.group}>
+        <ThemedText type="smallBold">Injury clearances</ThemedText>
+        <Card style={styles.switchRow}>
+          <ThemedText type="small" style={styles.grow}>
+            Only physios endorse clearances
+          </ThemedText>
+          <Switch
+            accessibilityLabel="Only physios endorse clearances"
+            value={physioOnly}
+            onValueChange={setPhysioOnly}
+            trackColor={{ true: theme.accent, false: theme.backgroundSelected }}
+            thumbColor={theme.text}
+            {...(Platform.OS === 'web' ? { activeThumbColor: theme.onAccent } : {})}
+          />
+        </Card>
+        <ThemedText type="small" themeColor="textSecondary">
+          Off by default, so an athlete’s coach or a physio endorses a return to play. Turn it on
+          only if every squad and team has a physio, or the club has a Head Physio, or clearances
+          will wait. A suspected concussion always needs a physio.
+        </ThemedText>
+        <ChipGroup
+          label="Concussion: earliest return"
+          options={[
+            { value: '21', label: '21 days' },
+            { value: '12', label: '12 days (elite program)' },
+          ]}
+          selected={[concussionDays]}
+          onToggle={(value) => setConcussionDays(value)}
+        />
+        <ThemedText type="small" themeColor="textSecondary">
+          Netball Australia sets at least 21 days before a return after concussion for community
+          and pathway netball, and 12 at elite level, with a doctor’s clearance either way.
+        </ThemedText>
+      </View>
+
+      <View style={styles.group}>
+        <ChipGroup
+          label="Injuries are seen by"
+          options={[
+            { value: 'whole', label: 'Whole committee' },
+            { value: 'chosen', label: 'Chosen committee members' },
+          ]}
+          selected={[injuryCommittee.chosen ? 'chosen' : 'whole']}
+          onToggle={(value) => setInjuryCommittee((c) => ({ ...c, chosen: value === 'chosen' }))}
+        />
+        <ThemedText type="small" themeColor="textSecondary">
+          The whole committee by default. Choose members to keep injuries to the few who need them,
+          such as the president and whoever looks after player welfare. Committee members left out
+          don’t see injuries or sign off returns to play. A chosen member sees an under 18’s
+          injuries only with a check, an application in force or an exemption. Admins see injuries
+          as admins, whatever you choose here.
+        </ThemedText>
+        {injuryCommittee.chosen ? (
+          <>
+            {committee.map((m) => {
+              const name = m.preferred_name || m.full_name;
+              return (
+                <Card key={m.id} style={styles.switchRow}>
+                  <ThemedText type="small" style={styles.grow}>
+                    {m.title ? `${name}, ${m.title}` : name}
+                  </ThemedText>
+                  <Switch
+                    accessibilityLabel={`${name} sees injuries`}
+                    value={injuryCommittee.memberIds.includes(m.id)}
+                    onValueChange={(on) =>
+                      setInjuryCommittee((c) => ({
+                        ...c,
+                        memberIds: on
+                          ? [...c.memberIds, m.id]
+                          : c.memberIds.filter((id) => id !== m.id),
+                      }))
+                    }
+                    trackColor={{ true: theme.accent, false: theme.backgroundSelected }}
+                    thumbColor={theme.text}
+                    {...(Platform.OS === 'web' ? { activeThumbColor: theme.onAccent } : {})}
+                  />
+                </Card>
+              );
+            })}
+            {!committee.some((m) => injuryCommittee.memberIds.includes(m.id)) ? (
+              <ThemedText type="smallBold">
+                With nobody chosen, no committee member sees injuries and only admins accept
+                clearances.
+              </ThemedText>
+            ) : null}
+          </>
+        ) : null}
+      </View>
       <ErrorText>{error}</ErrorText>
       <Button title="Save" onPress={save} busy={busy} />
     </Screen>
+  );
+}
+
+/** Who on the committee sees injuries (customer review R7). */
+type InjuryCommittee = { chosen: boolean; memberIds: string[] };
+
+const WHOLE_COMMITTEE: InjuryCommittee = { chosen: false, memberIds: [] };
+
+function sameChoice(a: InjuryCommittee, b: InjuryCommittee) {
+  return (
+    a.chosen === b.chosen &&
+    a.memberIds.length === b.memberIds.length &&
+    a.memberIds.every((id) => b.memberIds.includes(id))
   );
 }
 

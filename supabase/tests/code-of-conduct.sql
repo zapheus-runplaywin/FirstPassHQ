@@ -82,7 +82,7 @@ select pg_temp.ok('unverified guardian is not asked for the child',
 update public.profiles set verified_at = now() where id = '00000000-0000-0000-0000-000000000041';
 
 -- Under 18 with no guardian: locked until a verified guardian is linked
--- (20261020020000), so nothing to do yet.
+-- (20261101000000), so nothing to do yet.
 delete from public.guardianships where athlete_id = '00000000-0000-0000-0000-000000000031';
 delete from public.conduct_acceptances where profile_id = '00000000-0000-0000-0000-000000000031';
 select pg_temp.as_member('31');

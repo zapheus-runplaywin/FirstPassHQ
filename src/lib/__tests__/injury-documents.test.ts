@@ -37,7 +37,9 @@ jest.mock('expo-file-system', () => {
     async arrayBuffer() {
       return new ArrayBuffer(4);
     }
-    write(text: string) {
+    // Like SDK 58's File.write(), the file is only there once the promise settles.
+    async write(text: string) {
+      await Promise.resolve();
       this.written = text;
       MockFile.lastWritten = { uri: this.uri, text };
     }
@@ -237,5 +239,15 @@ describe('sharing a CSV', () => {
       UTI: 'public.comma-separated-values-text',
       dialogTitle: 'injuries.csv',
     });
+  });
+
+  it('opens the share sheet only once the file has finished writing', async () => {
+    MockFile.lastWritten = null;
+    let writtenWhenShared: unknown = null;
+    (Sharing.shareAsync as jest.Mock).mockImplementationOnce(async () => {
+      writtenWhenShared = MockFile.lastWritten;
+    });
+    await shareCsv('injuries.csv', '"a"');
+    expect(writtenWhenShared).toEqual({ uri: 'cache:/injuries.csv', text: '"a"' });
   });
 });

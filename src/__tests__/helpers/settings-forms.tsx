@@ -8,7 +8,7 @@
  * itself at the bottom, only when Jest runs it directly.
  */
 import type { ReactNode } from 'react';
-import type { ReactTestInstance } from 'react-test-renderer';
+import type { TestInstance } from 'test-renderer';
 import { fireEvent, screen, within } from 'expo-router/testing-library';
 
 import { supabase } from '@/lib/supabase';
@@ -17,40 +17,40 @@ import type { QueryCall, QueryInfo, TableHandler } from './harness';
 // ---------------------------------------------------------------------------
 // Form fields
 
-function hasInput(node: ReactTestInstance) {
-  return node.findAll((n) => (n.type as unknown) === 'TextInput').length > 0;
+function hasInput(node: TestInstance) {
+  return node.queryAll((n) => n.type === 'TextInput', { includeSelf: true }).length > 0;
 }
 
 /**
  * The closest part of the screen around a label (a TextField, PersonPicker or
  * ChipGroup) that holds a text box. `index` picks between labels shown twice.
  */
-export function fieldGroup(label: string | RegExp, index = 0): ReactTestInstance {
-  let node: ReactTestInstance | null = screen.getAllByText(label)[index];
+export function fieldGroup(label: string | RegExp, index = 0): TestInstance {
+  let node: TestInstance | null = screen.getAllByText(label)[index];
   while (node && !hasInput(node)) node = node.parent;
   if (!node) throw new Error(`No text box near “${String(label)}”`);
   return node;
 }
 
 /** The text box under a label. */
-export function input(label: string | RegExp, index = 0): ReactTestInstance {
-  return fieldGroup(label, index).findAll((n) => (n.type as unknown) === 'TextInput')[0];
+export function input(label: string | RegExp, index = 0): TestInstance {
+  return fieldGroup(label, index).queryAll((n) => n.type === 'TextInput', { includeSelf: true })[0];
 }
 
 /** Types into the text box under a label. */
-export function type(label: string | RegExp, text: string, index = 0) {
-  fireEvent.changeText(input(label, index), text);
+export async function type(label: string | RegExp, text: string, index = 0) {
+  await fireEvent.changeText(input(label, index), text);
 }
 
 /** Searches a PersonPicker by name and taps the match. */
-export function pickPerson(pickerLabel: string, search: string, name: string) {
-  type(pickerLabel, search);
-  fireEvent.press(within(fieldGroup(pickerLabel)).getByText(name));
+export async function pickPerson(pickerLabel: string, search: string, name: string) {
+  await type(pickerLabel, search);
+  await fireEvent.press(within(fieldGroup(pickerLabel)).getByText(name));
 }
 
 /** Flips a Switch found by its accessibility label. */
-export function flip(label: string, value: boolean) {
-  fireEvent(screen.getByLabelText(label), 'valueChange', value);
+export async function flip(label: string, value: boolean) {
+  await fireEvent(screen.getByLabelText(label), 'valueChange', value);
 }
 
 /** Whether a Switch is on. */
@@ -60,14 +60,14 @@ export function isOn(label: string) {
 
 /** Whether a chip or button is shown as selected. */
 export function isSelected(text: string | RegExp) {
-  let node: ReactTestInstance | null = screen.getByText(text);
+  let node: TestInstance | null = screen.getByText(text);
   while (node && node.props.accessibilityState === undefined) node = node.parent;
   return node?.props.accessibilityState?.selected === true;
 }
 
 /** Whether the button holding this text can't be pressed. */
 export function isDisabled(text: string) {
-  let node: ReactTestInstance | null = screen.getByText(text);
+  let node: TestInstance | null = screen.getByText(text);
   while (node && node.props.accessibilityRole !== 'button') node = node.parent;
   return node?.props.accessibilityState?.disabled === true || node?.props.disabled === true;
 }

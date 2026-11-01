@@ -18,13 +18,14 @@ import HomeScreen from '@/app/index';
 import { formatDateString } from '@/lib/injuries';
 import { taskDetail, type PersonalTask } from '@/lib/personal-tasks';
 import { supabase } from '@/lib/supabase';
-import type { MyVolunteerExemption, Profile, RejectionReason } from '@/lib/types';
+import type { MyVolunteerExemption, MyWwccApplication, Profile, RejectionReason } from '@/lib/types';
 
 import { argsOf, clearCalls, field, recordTable, rpcNames, type } from './helpers/forms';
 import {
   openScreen,
   personas,
   resetClub,
+  setClubFeatures,
   settle,
   type BackendOptions,
   type Persona,
@@ -81,7 +82,7 @@ describe('asking to join', () => {
     expect(screen.queryByText('Coming up')).toBeNull();
     // The code is only shown once they've asked.
     expect(rpcNames()).not.toContain('my_verification_code');
-    fireEvent.press(screen.getByText('Request to join'));
+    await fireEvent.press(screen.getByText('Request to join'));
     expect(push).toHaveBeenCalledWith('/join');
   });
 });
@@ -93,7 +94,7 @@ describe('waiting for approval', () => {
     expect(screen.getByText('123 456')).toBeTruthy();
     expect(screen.getByLabelText('Your code is 1 2 3 4 5 6')).toBeTruthy();
     expect(screen.getByText(/Never share it with anyone else\./)).toBeTruthy();
-    fireEvent.press(screen.getByText('Edit request'));
+    await fireEvent.press(screen.getByText('Edit request'));
     expect(push).toHaveBeenCalledWith('/join');
   });
 
@@ -150,9 +151,9 @@ describe('waiting for approval', () => {
   });
 
   it('shares the code with the child’s name, the club and the app', async () => {
-    const share = jest.spyOn(Share, 'share').mockResolvedValue({ action: 'sharedAction' });
+    const share = jest.spyOn(Share, 'share').mockResolvedValue({ action: 'sharedAction', activityType: undefined });
     await openHome(child, {}, { rpcs: { my_link_code: linkCode } });
-    fireEvent.press(screen.getByText('Share code'));
+    await fireEvent.press(screen.getByText('Share code'));
     expect(share).toHaveBeenCalledWith({
       message:
         'Sample pending is joining Sample Club on FirstPass HQ. Install the FirstPass HQ app, sign in, ' +
@@ -163,7 +164,7 @@ describe('waiting for approval', () => {
 
   it('copies the code, and says so', async () => {
     await openHome(child, {}, { rpcs: { my_link_code: linkCode } });
-    fireEvent.press(screen.getByText('Copy code'));
+    await fireEvent.press(screen.getByText('Copy code'));
     await settle();
     expect(Clipboard.setStringAsync).toHaveBeenCalledWith('7KQ-4MD');
     expect(screen.getByText('Code copied')).toBeTruthy();
@@ -180,7 +181,7 @@ describe('waiting for approval', () => {
         },
       },
     });
-    fireEvent.press(screen.getByText('Make a new code'));
+    await fireEvent.press(screen.getByText('Make a new code'));
     await settle();
     expect(rpcNames()).toContain('new_link_code');
     expect(screen.getByText('ABC-234')).toBeTruthy();
@@ -192,7 +193,7 @@ describe('waiting for approval', () => {
       rpcs: { my_link_code: linkCode },
       rpcErrors: { new_link_code: 'Only a child waiting for a parent or guardian has a link code' },
     });
-    fireEvent.press(screen.getByText('Make a new code'));
+    await fireEvent.press(screen.getByText('Make a new code'));
     await settle();
     expect(
       screen.getByText('Only a child waiting for a parent or guardian has a link code'),
@@ -239,8 +240,8 @@ describe('entering a child’s code', () => {
         },
       },
     });
-    type('Child’s code', '7kq-4md');
-    fireEvent.press(screen.getByText('Enter code'));
+    await type('Child’s code', '7kq-4md');
+    await fireEvent.press(screen.getByText('Enter code'));
     await settle();
     expect(argsOf('enter_child_code')).toEqual([{ p_code: '7kq-4md' }]);
     expect(
@@ -256,8 +257,8 @@ describe('entering a child’s code', () => {
           'That code isn’t right, or it has expired. Check it with your child, or ask them to make a new one.',
       },
     });
-    type('Child’s code', '7KQ4MD');
-    fireEvent.press(screen.getByText('Enter code'));
+    await type('Child’s code', '7KQ4MD');
+    await fireEvent.press(screen.getByText('Enter code'));
     await settle();
     expect(screen.getByText(/^That code isn’t right, or it has expired\./)).toBeTruthy();
     expect(field('Child’s code').props.value).toBe('7KQ4MD');
@@ -267,16 +268,16 @@ describe('entering a child’s code', () => {
     await openHome(guardianWaiting, {}, {
       rpcErrors: { enter_child_code: 'Ask to join as a parent or guardian first' },
     });
-    type('Child’s code', '7KQ4MD');
-    fireEvent.press(screen.getByText('Enter code'));
+    await type('Child’s code', '7KQ4MD');
+    await fireEvent.press(screen.getByText('Enter code'));
     await settle();
     expect(screen.getByText('Ask to join as a parent or guardian first')).toBeTruthy();
   });
 
   it.each(['', '7KQ4M', '7KQ-4M0'])('checks %j looks like a code before asking', async (typed) => {
     await openHome(guardianWaiting);
-    type('Child’s code', typed);
-    fireEvent.press(screen.getByText('Enter code'));
+    await type('Child’s code', typed);
+    await fireEvent.press(screen.getByText('Enter code'));
     await settle();
     expect(screen.getByText('Enter the 6-letter code from your child’s app, such as 7KQ-4MD.')).toBeTruthy();
     expect(rpcNames()).not.toContain('enter_child_code');
@@ -352,7 +353,7 @@ describe('a request turned down', () => {
     expect(screen.getByText('Request not approved')).toBeTruthy();
     expect(screen.getByText(message)).toBeTruthy();
     expect(screen.getByText('123 456')).toBeTruthy();
-    fireEvent.press(screen.getByText('Request again'));
+    await fireEvent.press(screen.getByText('Request again'));
     expect(push).toHaveBeenCalledWith('/join');
   });
 
@@ -453,6 +454,91 @@ describe('paused roles', () => {
   });
 });
 
+describe('a lodged check application', () => {
+  const application = (extra: Partial<MyWwccApplication> = {}): MyWwccApplication => ({
+    id: 'application-1',
+    application_number: 'APL 123',
+    lodged_on: '2026-10-10',
+    kind: 'new',
+    declaration_text: 'I applied for a Working With Children Check…',
+    declared_at: '2026-10-11T00:00:00Z',
+    lapses_on: '2027-01-08',
+    status: 'in_force',
+    valid: true,
+    ...extra,
+  });
+  const appliedCoach = (a: MyWwccApplication): Persona => ({
+    ...withProfile(personas.coach, { wwcc_number: null, wwcc_expires_on: null }),
+    wwccApplication: a,
+  });
+
+  it('keeps a coach coaching while their application is in force', async () => {
+    await openHome(appliedCoach(application()));
+    expect(screen.queryByText('Coach paused')).toBeNull();
+    expect(screen.getByText('Open A')).toBeTruthy();
+    expect(screen.queryByText('Confirm your Working With Children Check application')).toBeNull();
+  });
+
+  it('waits for the declaration, and opens it from the to-do list', async () => {
+    await openHome(
+      appliedCoach(application({ declared_at: null, status: 'waiting_for_declaration', valid: false })),
+    );
+    expect(
+      screen.getByText(
+        'Your coach role is paused until you accept the declaration for your Working With Children Check application. Open it from your to-do list.',
+      ),
+    ).toBeTruthy();
+    await fireEvent.press(screen.getByText('Confirm your Working With Children Check application'));
+    expect(push).toHaveBeenCalledWith('/wwcc-application');
+  });
+
+  it('says when it has lapsed, and lists nothing to accept', async () => {
+    await openHome(appliedCoach(application({ status: 'lapsed', valid: false })));
+    expect(
+      screen.getByText(
+        'Your Working With Children Check application has lapsed because nobody confirmed it’s still being assessed, so your coach role is paused. Ask a club admin to check it, or send them your card number and expiry date if it has arrived.',
+      ),
+    ).toBeTruthy();
+    expect(screen.queryByText('Confirm your Working With Children Check application')).toBeNull();
+  });
+
+  it('lists nothing to accept for a stopped application that was never accepted', async () => {
+    await openHome(
+      appliedCoach(application({ declared_at: null, status: 'stopped', valid: false })),
+    );
+    expect(screen.queryByText('Confirm your Working With Children Check application')).toBeNull();
+    expect(screen.getByText('Coach paused')).toBeTruthy();
+  });
+
+  it('asks admins to confirm applications that are due, and opens Members', async () => {
+    await openHome('admin', {}, {
+      rpcs: {
+        admin_safety_todos: {},
+        admin_wwcc_applications: [
+          { id: 'a1', profile_id: 'm1', status: 'in_force', check_due_on: '2026-10-18', ended_at: null },
+          { id: 'a2', profile_id: 'm2', status: 'lapsed', check_due_on: '2026-09-01', ended_at: null },
+        ],
+      },
+    });
+    expect(screen.getByText('Confirm 2 check applications are still being assessed')).toBeTruthy();
+    expect(screen.getByText('1 lapsed. Check online, then confirm on the member’s page.')).toBeTruthy();
+    await fireEvent.press(screen.getByText('Confirm 2 check applications are still being assessed'));
+    expect(push).toHaveBeenCalledWith('/admin');
+  });
+
+  it('asks admins nothing for applications not yet due', async () => {
+    await openHome('admin', {}, {
+      rpcs: {
+        admin_safety_todos: {},
+        admin_wwcc_applications: [
+          { id: 'a1', profile_id: 'm1', status: 'in_force', check_due_on: '2026-10-19', ended_at: null },
+        ],
+      },
+    });
+    expect(screen.queryByText(/check applications? (is|are) still being assessed/)).toBeNull();
+  });
+});
+
 describe('the committee checks date', () => {
   it('warns a committee member with no check before the date', async () => {
     await openHome({
@@ -477,6 +563,61 @@ describe('the committee checks date', () => {
   ])('doesn’t warn a committee member %s', async (_l, extra) => {
     await openHome({ ...withProfile(personas.committee, extra), rpcs: { committee_checks_from: '2026-12-01' } });
     expect(screen.queryByText(/needs a Working With Children Check from/)).toBeNull();
+  });
+});
+
+describe('the statistician checks date', () => {
+  it('warns a statistician with no check before the date', async () => {
+    await openHome('statisticianBeforeChecksDate');
+    expect(
+      screen.getByText('Your statistician role needs a Working With Children Check from 21/01/2099'),
+    ).toBeTruthy();
+    expect(screen.getByText(/pauses on that day, in HQ and in Vantage/)).toBeTruthy();
+    expect(screen.queryByText('Statistician paused')).toBeNull();
+  });
+
+  it('once the date has passed, pauses the role instead', async () => {
+    await openHome('statisticianPastChecksDate');
+    expect(screen.getByText('Statistician paused')).toBeTruthy();
+    expect(screen.queryByText(/needs a Working With Children Check from/)).toBeNull();
+  });
+
+  it.each<[string, Partial<Profile>]>([
+    ['who has a check', { wwcc_number: 'WWC1234567', wwcc_expires_on: '2028-01-01' }],
+    ['who is exempt', { wwcc_exempt_reason: 'Opens games only' }],
+  ])('doesn’t warn a statistician %s', async (_l, extra) => {
+    await openHome({
+      ...withProfile(personas.statistician, extra),
+      rpcs: { statistician_checks_from: '2099-01-21' },
+    });
+    expect(screen.queryByText(/needs a Working With Children Check from/)).toBeNull();
+  });
+
+  it('doesn’t warn a committee member about the statistician date', async () => {
+    await openHome({
+      ...withProfile(personas.committee, { wwcc_number: null, wwcc_expires_on: null }),
+      rpcs: { statistician_checks_from: '2099-01-21' },
+    });
+    expect(screen.queryByText(/statistician role needs/)).toBeNull();
+  });
+});
+
+describe('an admin whose check lapsed over 30 days ago', () => {
+  it('is told they can’t see under 18s’ injuries, and keeps the admin home', async () => {
+    await openHome('adminLapsedCheck');
+    expect(screen.getByText('You can’t see under 18s’ injuries right now')).toBeTruthy();
+    expect(screen.getByText(/You keep everything else an admin can do/)).toBeTruthy();
+    expect(screen.queryByText('Admin paused')).toBeNull();
+  });
+
+  it('says nothing to an admin who still sees them', async () => {
+    await openHome('admin');
+    expect(screen.queryByText('You can’t see under 18s’ injuries right now')).toBeNull();
+  });
+
+  it('never asks for members who aren’t admins', async () => {
+    await openHome({ ...personas.coach, rpcs: { my_admin_sees_children_injuries: false } });
+    expect(screen.queryByText('You can’t see under 18s’ injuries right now')).toBeNull();
   });
 });
 
@@ -535,8 +676,55 @@ describe('the to-do list', () => {
 
   it('opens a club item where it’s done', async () => {
     await openHome('athlete', { check_ins: [] });
-    fireEvent.press(screen.getByText('Do your daily check-in'));
+    await fireEvent.press(screen.getByText('Do your daily check-in'));
     expect(push).toHaveBeenCalledWith('/check-in');
+  });
+
+  it('tells admins when nobody can endorse an athlete’s clearance, and opens Members', async () => {
+    await openHome('admin', {}, {
+      rpcs: {
+        admin_safety_todos: {},
+        admin_unendorsable_clearances: [{ injury_id: 'i1', athlete_id: 'a1', athlete_name: 'Kai Senior', body_area: 'Knee' }],
+      },
+    });
+    expect(screen.getByText('Nobody can endorse Kai Senior’s clearance')).toBeTruthy();
+    expect(screen.getByText('Make a physio Head Physio, or place a physio in their squad or team')).toBeTruthy();
+    await fireEvent.press(screen.getByText('Nobody can endorse Kai Senior’s clearance'));
+    expect(push).toHaveBeenCalledWith('/admin');
+  });
+
+  it('warns admins when the nightly removal has stopped, and opens Club settings', async () => {
+    await openHome('admin', {}, {
+      rpcs: {
+        admin_safety_todos: {},
+        removal_run_status: { last_run_at: null, last_ok_at: null, failed_step: null, overdue: true },
+      },
+    });
+    expect(rpcNames().filter((n) => n === 'removal_run_status')).toHaveLength(1);
+    expect(screen.getByText('Old records haven’t been removed yet')).toBeTruthy();
+    expect(screen.getByText('The nightly removal hasn’t finished for 2 days. Ask FirstPass to check it.')).toBeTruthy();
+    await fireEvent.press(screen.getByText('Old records haven’t been removed yet'));
+    expect(push).toHaveBeenCalledWith('/admin/club');
+  });
+
+  it('shows no removal warning while the nightly removal runs', async () => {
+    await openHome('admin', {}, {
+      rpcs: {
+        admin_safety_todos: {},
+        removal_run_status: { last_run_at: '2026-10-22T18:17:00Z', last_ok_at: '2026-10-22T18:17:00Z', failed_step: null, overdue: false },
+      },
+    });
+    expect(screen.queryByText(/^Old records haven’t been removed/)).toBeNull();
+  });
+
+  it('never asks for the removal status for members who aren’t admins', async () => {
+    await openHome('committee');
+    expect(rpcNames()).not.toContain('removal_run_status');
+  });
+
+  it('shows no clearance tile when every clearance has someone to endorse it', async () => {
+    await openHome('admin', {}, { rpcs: { admin_safety_todos: {}, admin_unendorsable_clearances: [] } });
+    expect(screen.queryByText(/^Nobody can endorse/)).toBeNull();
   });
 
   it('says they’re caught up when there’s nothing', async () => {
@@ -547,13 +735,13 @@ describe('the to-do list', () => {
   it('ticking off a task saves it as done and offers Undo, which puts it back', async () => {
     const tasks = recordTable(() => [TASKS[3]]);
     await openHome('committee', {}, { tableHandlers: { personal_tasks: tasks.handler } });
-    fireEvent.press(screen.getByLabelText('Tick off Pay fees'));
+    await fireEvent.press(screen.getByLabelText('Tick off Pay fees'));
     await settle();
     expect(screen.queryByLabelText('Tick off Pay fees')).toBeNull();
     expect(screen.getByText('Ticked off Pay fees')).toBeTruthy();
     expect(tasks.writes('update')).toEqual([{ done_at: '2026-10-18T02:00:00.000Z' }]);
     expect(tasks.filtersOf('update')).toEqual([[['id', 't-soon']]]);
-    fireEvent.press(screen.getByText('Undo'));
+    await fireEvent.press(screen.getByText('Undo'));
     await settle();
     expect(tasks.writes('update')[1]).toEqual({ done_at: null });
     expect(screen.getByLabelText('Tick off Pay fees')).toBeTruthy();
@@ -566,15 +754,15 @@ describe('the to-do list', () => {
 describe('the footer', () => {
   it('opens Your details and Delete account', async () => {
     await openHome('athlete');
-    fireEvent.press(screen.getByText('Your details'));
+    await fireEvent.press(screen.getByText('Your details'));
     expect(push).toHaveBeenCalledWith('/my-details');
-    fireEvent.press(screen.getByText('Delete account'));
+    await fireEvent.press(screen.getByText('Delete account'));
     expect(push).toHaveBeenCalledWith('/delete-account');
   });
 
   it('signs out', async () => {
     await openHome('athlete');
-    fireEvent.press(screen.getByText('Sign out'));
+    await fireEvent.press(screen.getByText('Sign out'));
     await settle();
     expect((supabase.auth as unknown as { signOut: jest.Mock }).signOut).toHaveBeenCalled();
   });
@@ -601,8 +789,43 @@ describe('the footer', () => {
 
   it('every member can raise a concern, even before approval', async () => {
     await openHome('pending');
-    fireEvent.press(screen.getByText('Raise a concern'));
+    await fireEvent.press(screen.getByText('Raise a concern'));
     expect(push).toHaveBeenCalledWith('/concern/new');
     expect(argsOf('my_verification_code')).toHaveLength(1);
+  });
+});
+
+// ---------------------------------------------------------------------------
+// Wellbeing flags, for the Child Safety Officer
+
+describe('athletes flagged 3 times in a week', () => {
+  it('puts them on the Child Safety Officer’s to-do list, opening the flags', async () => {
+    await openHome('safeguardingOfficer', {}, { rpcs: { wellbeing_flag_alerts: 2 } });
+    await fireEvent.press(screen.getByText('Look at 2 athletes flagged 3 times this week'));
+    expect(push).toHaveBeenCalledWith('/concerns/wellbeing');
+  });
+
+  it('adds nothing when nobody was flagged 3 times', async () => {
+    await openHome('safeguardingOfficer', {}, { rpcs: { wellbeing_flag_alerts: 0 } });
+    expect(screen.queryByText(/flagged 3 times this week/)).toBeNull();
+  });
+
+  it('never asks for members who don’t handle concerns', async () => {
+    await openHome('coach', {}, { rpcs: { wellbeing_flag_alerts: 2 } });
+    expect(rpcNames()).not.toContain('wellbeing_flag_alerts');
+    expect(screen.queryByText(/flagged 3 times this week/)).toBeNull();
+  });
+
+  it('shows admins nothing, as the database gives them no count', async () => {
+    await openHome('admin', {}, { rpcs: { wellbeing_flag_alerts: null } });
+    expect(rpcNames()).toContain('wellbeing_flag_alerts');
+    expect(screen.queryByText(/flagged 3 times this week/)).toBeNull();
+  });
+
+  it('adds nothing, without asking, when the club has check-ins turned off', async () => {
+    setClubFeatures({ checkIns: false });
+    await openHome('safeguardingOfficer', {}, { rpcs: { wellbeing_flag_alerts: 2 } });
+    expect(rpcNames()).not.toContain('wellbeing_flag_alerts');
+    expect(screen.queryByText(/flagged 3 times this week/)).toBeNull();
   });
 });

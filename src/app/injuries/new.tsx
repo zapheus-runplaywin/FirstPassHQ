@@ -1,13 +1,17 @@
 import { router, useFocusEffect } from 'expo-router';
 import { useCallback, useState } from 'react';
 
-import { DateField } from '@/components/date-field';
+import {
+  emptyInjuryDraft,
+  InjuryFields,
+  injuryDraftProblem,
+  type InjuryDraft,
+} from '@/components/injury-fields';
 import { Screen } from '@/components/screen';
 import { ThemedText } from '@/components/themed-text';
-import { Button, ChipGroup, ErrorText, TextField } from '@/components/ui';
+import { Button, ChipGroup, ErrorText } from '@/components/ui';
 import { isMinor } from '@/lib/age';
 import { useAuth } from '@/lib/auth';
-import { returnQuickPicks, toDateString } from '@/lib/injuries';
 import { supabase } from '@/lib/supabase';
 import { hasRole } from '@/lib/roles';
 
@@ -16,11 +20,7 @@ export default function NewInjuryScreen() {
   const isGuardian = hasRole(profile, 'guardian');
   const [athletes, setAthletes] = useState<{ profile_id: string; full_name: string | null }[]>([]);
   const [athleteId, setAthleteId] = useState<string | null>(null);
-  const [bodyArea, setBodyArea] = useState('');
-  const [description, setDescription] = useState('');
-  const [injuredOn, setInjuredOn] = useState<string | null>(toDateString(new Date()));
-  const [restrictions, setRestrictions] = useState('');
-  const [expectedReturn, setExpectedReturn] = useState<string | null>(null);
+  const [draft, setDraft] = useState<InjuryDraft>(emptyInjuryDraft);
   const [saving, setSaving] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
@@ -46,23 +46,21 @@ export default function NewInjuryScreen() {
       setError('Choose which athlete is injured.');
       return;
     }
-    if (!bodyArea.trim() || !description.trim()) {
-      setError('Say where the injury is and what happened.');
-      return;
-    }
-    if (!expectedReturn) {
-      setError('Choose when you expect to be back. A physio can change it later.');
+    const problem = injuryDraftProblem(draft, true);
+    if (problem) {
+      setError(problem);
       return;
     }
     setSaving(true);
     setError(null);
     const { data, error: saveError } = await supabase.rpc('report_injury', {
       p_athlete_id: selectedAthleteId,
-      p_body_area: bodyArea,
-      p_description: description,
-      p_injured_on: injuredOn,
-      p_restrictions: restrictions,
-      p_expected_return: expectedReturn,
+      p_body_area: draft.bodyArea,
+      p_description: draft.description,
+      p_injured_on: draft.injuredOn,
+      p_restrictions: draft.restrictions,
+      p_expected_return: draft.expectedReturn,
+      p_concussion: draft.concussion,
     });
     setSaving(false);
     if (saveError) {
@@ -71,8 +69,6 @@ export default function NewInjuryScreen() {
     }
     router.replace({ pathname: '/injuries/[id]', params: { id: data as string } });
   }
-
-  const today = toDateString(new Date());
 
   return (
     <Screen>
@@ -96,43 +92,10 @@ export default function NewInjuryScreen() {
         )
       ) : null}
 
-      <TextField
-        label="Where is the injury?"
-        value={bodyArea}
-        onChangeText={setBodyArea}
-        placeholder="For example, left ankle"
-        maxLength={100}
-      />
-      <TextField
-        label="What happened?"
-        value={description}
-        onChangeText={setDescription}
-        placeholder="How it happened and what the doctor or physio said"
-        multiline
-        maxLength={4000}
-      />
-      <DateField
-        label="When did it happen?"
-        value={injuredOn}
-        onChange={(value) => setInjuredOn(value ?? today)}
-        quickPicks={[
-          { label: 'Today', days: 0 },
-          { label: 'Yesterday', days: -1 },
-        ]}
-        max={today}
-      />
-      <TextField
-        label="Restrictions (optional)"
-        value={restrictions}
-        onChangeText={setRestrictions}
-        placeholder="For example, no jumping or tumbling"
-        maxLength={1000}
-      />
-      <DateField
-        label="Expected back"
-        value={expectedReturn}
-        onChange={setExpectedReturn}
-        quickPicks={returnQuickPicks}
+      <InjuryFields
+        draft={draft}
+        onChange={setDraft}
+        describePlaceholder="How it happened and what the doctor or physio said"
       />
       <ThemedText type="small" themeColor="textSecondary">
         A best guess is fine. Until cleared, the athlete shows as injured when attendance is taken,
@@ -141,9 +104,9 @@ export default function NewInjuryScreen() {
 
       <ThemedText type="small" themeColor="textSecondary">
         {profile && isMinor(profile.date_of_birth, profile.under_17)
-          ? 'Your parents or guardians and the club’s admins see this. Your coaches, physios and the committee see it once a parent or guardian agrees.'
+          ? 'Your parents or guardians and the club’s admins see this. Your coaches, physios and the committee members cleared to work with children see it once a parent or guardian agrees.'
           : hasRole(profile, 'guardian') && !hasRole(profile, 'athlete')
-            ? 'Admins see this. For an athlete under 18, their coaches, physios and the committee see it once you give consent for injuries.'
+            ? 'Admins see this. For an athlete under 18, their coaches, physios and the committee members cleared to work with children see it once you give consent for injuries.'
             : 'Your coaches, physios and the committee will see this.'}{' '}
         You can add physio updates as it heals.
       </ThemedText>

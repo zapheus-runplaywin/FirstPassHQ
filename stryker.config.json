@@ -17,9 +17,11 @@
     "src/lib/age.ts",
     "src/lib/roles.ts",
     "src/lib/route-access.ts",
+    "src/lib/report-access.ts",
     "src/lib/record-access.ts",
     "src/lib/safety.ts",
     "src/lib/consents.ts",
+    "src/lib/wellbeing-flags.ts",
     "src/lib/conduct.ts",
     "src/lib/auth.tsx"
   ],

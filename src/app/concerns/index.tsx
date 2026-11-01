@@ -7,10 +7,13 @@ import { ThemedText } from '@/components/themed-text';
 import { Button, PressableCard } from '@/components/ui';
 import { Spacing } from '@/constants/theme';
 import { useAuth } from '@/lib/auth';
+import { useClub } from '@/lib/club';
 import { concernStatusLabels } from '@/lib/concerns';
+import { useLoadPatternAlerts } from '@/lib/load-monitoring';
 import { localDay } from '@/lib/reports';
 import { supabase } from '@/lib/supabase';
 import type { Concern } from '@/lib/types';
+import { useWellbeingFlagAlerts } from '@/lib/wellbeing-flags';
 
 /**
  * The concerns register, for the Child Safety Officer, the Complaints Manager
@@ -21,6 +24,11 @@ export default function ConcernsScreen() {
   // The route guard lets only these in; this keeps the register's controls
   // to them even so. The database returns no concerns to anyone else.
   const handles = isAdmin || isSafeguardingOfficer;
+  // Only the Child Safety Officer sees athletes' check-in flags.
+  const { features } = useClub();
+  const wellbeing = useWellbeingFlagAlerts(handles && features.checkIns);
+  const loadOn = wellbeing.isOfficer && features.trainingLoad;
+  const loadPatterns = useLoadPatternAlerts(loadOn);
   const [concerns, setConcerns] = useState<Concern[] | null>(null);
   const [refreshing, setRefreshing] = useState(false);
 
@@ -58,6 +66,28 @@ export default function ConcernsScreen() {
             variant="secondary"
             onPress={() => router.push('/concerns/report')}
           />
+          {wellbeing.isOfficer ? (
+            <Button
+              title={
+                wellbeing.repeated > 0
+                  ? `Wellbeing flags (${wellbeing.repeated} to look at)`
+                  : 'Wellbeing flags'
+              }
+              variant="secondary"
+              onPress={() => router.push('/concerns/wellbeing')}
+            />
+          ) : null}
+          {loadOn ? (
+            <Button
+              title={
+                loadPatterns > 0
+                  ? `Training load patterns (${loadPatterns} to look at)`
+                  : 'Training load patterns'
+              }
+              variant="secondary"
+              onPress={() => router.push('/concerns/load')}
+            />
+          ) : null}
         </>
       ) : null}
       <Section title="Open" concerns={open} empty="No open concerns." />

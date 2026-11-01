@@ -27,7 +27,7 @@ select pg_temp.ok('admin list: child not flagged',
 
 -- Neither guardian verified: waiting, for the child, a guardian and admins.
 update public.profiles set verified_at = null where id in ('00000000-0000-0000-0000-000000000041', '00000000-0000-0000-0000-000000000042');
--- With no verified guardian the child is locked (20261020020000), so they
+-- With no verified guardian the child is locked (20261101000000), so they
 -- see only their waiting screen and can't ask.
 select pg_temp.as_member('31');
 select pg_temp.ok('no verified guardian: the child is locked, so isn''t told here',
@@ -63,7 +63,7 @@ select pg_temp.as_member('01');
 select pg_temp.ok('admin list: accepted child not flagged',
   (select waiting_for_guardian from public.admin_conduct_status() where profile_id = '00000000-0000-0000-0000-000000000031'), false);
 
--- An under 18 with no guardian at all is locked (20261020020000): not
+-- An under 18 with no guardian at all is locked (20261101000000): not
 -- waiting, and nothing to do until a verified guardian is linked.
 delete from public.guardianships where athlete_id = '00000000-0000-0000-0000-000000000031';
 delete from public.conduct_acceptances where profile_id = '00000000-0000-0000-0000-000000000031';

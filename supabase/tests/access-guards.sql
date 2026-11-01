@@ -11,33 +11,10 @@
 \pset tuples_only on
 \pset format unaligned
 
--- Supabase gives anon and authenticated every table by default and relies on
--- row level security; the local stubs give them nothing. Grant as Supabase
--- would, then replay every table grant and revoke in the migrations, in order,
--- so the privileges match production.
-grant select, insert, update, delete on all tables in schema public to anon, authenticated;
-grant usage, select on all sequences in schema public to anon, authenticated;
-revoke update on public.profiles from authenticated, anon;                                   -- 20261007000000_init, 20261012200000_security_hardening
-revoke all on public.former_partner_roles from public, anon, authenticated;                  -- 20261008100000_remove_partner_role
-revoke all on public.join_password_attempts from public, anon, authenticated;                -- 20261012200000_security_hardening
-revoke all on public.record_access_log from public, anon, authenticated;                     -- 20261013090000_record_access_log
-revoke all on public.attendance_absences from public, anon, authenticated;                   -- 20261013120000_family_attendance
-revoke all on public.group_membership_changes from public, anon, authenticated;              -- 20261013130000_guardian_activity
-revoke all on public.child_activity_seen from public, anon, authenticated;
-revoke all on public.conduct_acceptances from public, anon, authenticated;                   -- 20261013140000_code_of_conduct
-revoke insert, update, delete on public.games, public.game_members, public.game_events, public.game_snapshots from anon, authenticated; -- 20261015000100_game_stats
-revoke all on public.game_pair_attempts from anon, authenticated;
-revoke all on table public.personal_tasks from anon;                                         -- 20261015210000_personal_tasks
-revoke delete on public.absence_categories from anon, authenticated;                         -- 20261015220000_absence_categories
-revoke all on public.absence_reviews from public, anon, authenticated;                       -- 20261015235000_absence_reviews
-revoke all on public.season_kpis, public.season_kpi_review_points, public.season_kpi_measures, public.season_kpi_reviews from public, anon, authenticated; -- 20261016000000_season_kpis
-revoke all on table public.session_plans, public.session_plan_files, public.session_plan_shares, public.session_plan_views from public, anon, authenticated; -- 20261016010000_session_plans
-grant select on table public.session_plans, public.session_plan_files, public.session_plan_shares to authenticated;
-revoke all on table public.session_plan_notices from public, anon, authenticated;
-revoke all on public.surveys, public.survey_questions, public.survey_recipients, public.survey_responses, public.survey_answers from public, anon, authenticated; -- 20261017100000_surveys
-revoke all on public.guardian_link_codes, public.guardian_link_code_attempts from public, anon, authenticated; -- 20261020020000_parent_link_codes
-revoke all on public.guardian_link_requests from public, anon, authenticated;
-grant select on public.guardian_link_requests to authenticated;
+-- Table privileges come from the migrations themselves, as on a Supabase
+-- project created after it stopped granting new tables automatically (30
+-- October 2026): 20261021000000_explicit_table_grants and each later table's
+-- own grants. The local stubs give anon and authenticated nothing else.
 -- Supabase's storage API reads storage.objects as the signed-in role.
 grant select, insert, update, delete on storage.objects to anon, authenticated;
 
@@ -148,7 +125,8 @@ insert into service_only values
   ('public.purge_expired_injuries()'), ('public.expired_injury_documents()'),
   ('public.purge_expired_records()'), ('public.expired_certificate_documents()'),
   ('public.cleared_injury_documents()'), ('public.mark_removed_injury_documents()'),
-  ('public.expired_session_plan_files()'), ('public.purge_expired_surveys()');
+  ('public.expired_session_plan_files()'), ('public.purge_expired_surveys()'),
+  ('public.record_purge_run(boolean, text, jsonb)');
 select pg_temp.ok(f || ': service role can run it', has_function_privilege('service_role', f, 'execute'), true) from service_only order by f;
 select pg_temp.ok(f || ': members cannot run it', has_function_privilege('authenticated', f, 'execute'), false) from service_only order by f;
 select pg_temp.ok(f || ': anon cannot run it', has_function_privilege('anon', f, 'execute'), false) from service_only order by f;
@@ -241,7 +219,7 @@ create temp table public_buckets (id text, reason text);
 insert into public_buckets values
   ('club-branding', 'the club logo and colours show on the sign-in screen, before anyone signs in');
 select pg_temp.ok(b || ' bucket exists', exists (select 1 from storage.buckets where id = b), true)
-from unnest(array['injury-documents', 'training-certificates', 'session-plans', 'club-branding']) b order by b;
+from unnest(array['injury-documents', 'training-certificates', 'session-plans', 'club-branding', 'wwcc-receipts']) b order by b;
 select pg_temp.ok(id || ' bucket is private', public, false)
 from storage.buckets where id not in (select id from public_buckets) order by id;
 select pg_temp.ok('allow-listed public bucket ' || id || ' still exists', exists (select 1 from storage.buckets b where b.id = p.id), true)
@@ -250,9 +228,9 @@ insert into storage.objects (bucket_id, name, metadata)
 select id, '00000000-0000-0000-0000-000000000031/sample/file.pdf', '{"mimetype": "application/pdf"}' from storage.buckets;
 set role anon;
 select pg_temp.ok(b.id || ': anon reads no files', pg_temp.n(format('select 1 from storage.objects where bucket_id = %L', b.id)) = 0, true)
-from (values ('injury-documents'), ('training-certificates'), ('session-plans'), ('club-branding')) b(id) order by b.id;
+from (values ('injury-documents'), ('training-certificates'), ('session-plans'), ('club-branding'), ('wwcc-receipts')) b(id) order by b.id;
 select pg_temp.refused(b.id || ': anon cannot upload', format($$insert into storage.objects (bucket_id, name) values (%L, '00000000-0000-0000-0000-000000000031/x/upload.pdf')$$, b.id))
-from (values ('injury-documents'), ('training-certificates'), ('session-plans'), ('club-branding')) b(id) order by b.id;
+from (values ('injury-documents'), ('training-certificates'), ('session-plans'), ('club-branding'), ('wwcc-receipts')) b(id) order by b.id;
 select pg_temp.ok('anon deletes no files', pg_temp.changed('delete from storage.objects') = 0, true);
 reset role;
-select pg_temp.ok('every sample file is still there', (select count(*) = 4 from storage.objects), true);
+select pg_temp.ok('every sample file is still there', (select count(*) = 5 from storage.objects), true);

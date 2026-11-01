@@ -1,5 +1,7 @@
-import { formatDateString } from '@/lib/injuries';
+import { formatDateString, type LoggedInjury } from '@/lib/injuries';
 import type { KpiReviewTodo } from '@/lib/kpis';
+import type { MedicalReview } from '@/lib/medical';
+import type { MyConflictDeclaration, PolicyReview } from '@/lib/registers';
 import type { MySurvey } from '@/lib/surveys';
 import { buildTodos, dueAlert, sortByAlert, type Todo } from '@/lib/todos';
 import type { MyTraining } from '@/lib/training';
@@ -291,6 +293,33 @@ describe('buildTodos', () => {
     expect(todos({ newConcerns: 1 })[0].title).toBe('Look at 1 new concern');
   });
 
+  it('puts athletes flagged 3 times in a week straight after new concerns, for the Child Safety Officer', () => {
+    const list = todos({ newConcerns: 1, wellbeingFlagAlerts: 2, declarationWaiting: true, needsCheckIn: true });
+    expect(keys(list)).toEqual(['concerns', 'wellbeing-flags', 'volunteer-declaration', 'check-in']);
+    expect(list[1]).toMatchObject({
+      title: 'Look at 2 athletes flagged 3 times this week',
+      detail: 'Low check-in scores on 3 of the last 7 days',
+      href: '/concerns/wellbeing',
+    });
+    expect(todos({ wellbeingFlagAlerts: 1 })[0].title).toBe('Look at 1 athlete flagged 3 times this week');
+    expect(keys(todos({ wellbeingFlagAlerts: 0 }))).toEqual([]);
+  });
+
+  it('asks the member to confirm their check application, straight after an exemption declaration', () => {
+    const list = todos({
+      declarationWaiting: true,
+      applicationDeclarationWaiting: true,
+      needsCheckIn: true,
+    });
+    expect(keys(list)).toEqual(['volunteer-declaration', 'wwcc-application-declaration', 'check-in']);
+    expect(list[1]).toEqual({
+      key: 'wwcc-application-declaration',
+      title: 'Confirm your Working With Children Check application',
+      detail: 'It counts as your check once you accept the declaration',
+      href: '/wwcc-application',
+    });
+  });
+
   it('asks for consent for each child', () => {
     const list = todos({
       consentsNeeded: [
@@ -332,6 +361,47 @@ describe('buildTodos', () => {
   });
 
   describe('injuries', () => {
+    const logged = (overrides: Partial<LoggedInjury> = {}): LoggedInjury => ({
+      injury_id: 'i9',
+      athlete_id: 'a1',
+      athlete_name: 'Sam Sample',
+      body_area: 'Knee',
+      logged_by_name: 'Casey Coach',
+      logged_by_role: 'coach',
+      logged_at: '2026-10-18T09:00:00Z',
+      ...overrides,
+    });
+
+    it('asks a guardian to look at an injury a coach logged for their child', () => {
+      expect(only(todos({ loggedInjuries: [logged()] }))).toEqual({
+        key: 'injury-logged-i9',
+        title: 'Look at the injury Casey Coach logged for Sam Sample',
+        detail: 'Knee · logged by their coach. Add the physio’s updates from there.',
+        href: { pathname: '/injuries/[id]', params: { id: 'i9' } },
+      });
+    });
+
+    it('speaks to the athlete about their own, one to-do per injury', () => {
+      const list = todos({
+        loggedInjuries: [
+          logged({ athlete_id: 'me', logged_by_role: 'physio', logged_by_name: null }),
+          logged({ injury_id: 'i10', athlete_name: null, logged_by_role: 'manager' }),
+        ],
+      });
+      expect(list.map((t) => t.title)).toEqual([
+        'Look at the injury a club member logged for you',
+        'Look at the injury Casey Coach logged for your athlete',
+      ]);
+      expect(list.map((t) => t.detail)).toEqual([
+        'Knee · logged by their physio. Add the physio’s updates from there.',
+        'Knee · logged by their manager. Add the physio’s updates from there.',
+      ]);
+    });
+
+    it('has nothing to look at by default', () => {
+      expect(todos()).toEqual([]);
+    });
+
     it('opens a single clearance waiting for the member', () => {
       const todo = only(todos({ injuries: [injury({ waiting_for_me: true })] }));
       expect(todo).toMatchObject({
@@ -606,6 +676,58 @@ describe('buildTodos', () => {
       ]);
     });
 
+    it('warns in red when the nightly removal has stopped, since it last finished', () => {
+      const todo = only(todos({ safety: safety({ records_removal_stalled: { last_ok_at: '2026-01-05T04:00:00Z' } }) }));
+      expect(todo).toMatchObject({
+        key: 'records-removal-stalled',
+        detail: 'The nightly removal hasn’t finished for 2 days. Ask FirstPass to check it.',
+        href: '/admin/club',
+        alert: { level: 'red', label: 'Stopped' },
+      });
+      expect(todo.title).toMatch(/^Old records haven’t been removed since \S.*(5.*Jan|Jan.*5)/);
+    });
+
+    it('says the nightly removal hasn’t finished yet when it never has', () => {
+      expect(only(todos({ safety: safety({ records_removal_stalled: { last_ok_at: null } }) })).title).toBe(
+        'Old records haven’t been removed yet',
+      );
+    });
+
+    it('adds no removal warning while it runs', () => {
+      expect(todos({ safety: safety({ records_removal_stalled: null }) })).toEqual([]);
+    });
+
+    it('lists a stopped removal after Remove old records, and sorts it first as a red warning', () => {
+      const list = todos({
+        safety: safety({ turning_18: 1, records_removal_stalled: { last_ok_at: null } }),
+      });
+      expect(list.map((t) => t.key)).toEqual(['turning-18', 'records-removal-stalled']);
+      expect(sortByAlert(list, (t) => t.alert, (t) => t.dueOn).map((t) => t.key)).toEqual([
+        'records-removal-stalled',
+        'turning-18',
+      ]);
+    });
+
+    it('names the athlete when one clearance has nobody to endorse it', () => {
+      expect(only(todos({ safety: safety({ unendorsable_clearances: ['Kai Senior'] }) }))).toEqual({
+        key: 'unendorsable-clearances',
+        title: 'Nobody can endorse Kai Senior’s clearance',
+        detail: 'Make a physio Head Physio, or place a physio in their squad or team',
+        href: '/admin',
+        alert: { level: 'amber', label: 'Stuck' },
+      });
+    });
+
+    it('counts clearances when several have nobody to endorse them', () => {
+      expect(only(todos({ safety: safety({ unendorsable_clearances: ['A', 'B'] }) })).title).toBe(
+        'Nobody can endorse 2 clearances',
+      );
+    });
+
+    it('adds no clearance tile when every clearance has someone to endorse it', () => {
+      expect(todos({ safety: safety({ unendorsable_clearances: [] }) })).toEqual([]);
+    });
+
     it('makes one red check tile when any card is missing or expired', () => {
       const todo = only(
         todos({ safety: safety({ wwcc_missing: 1, wwcc_expiring: 2, wwcc_to_validate: 1, wwcc_to_link: 0, wwcc_people: 3 }) }),
@@ -622,6 +744,47 @@ describe('buildTodos', () => {
       expect(only(todos({ safety: safety({ wwcc_expiring: 1, wwcc_to_link: 2 }) })).title).toBe(
         'Sort out 3 Working With Children Checks',
       );
+    });
+
+    it('asks admins to confirm check applications are still being assessed', () => {
+      expect(only(todos({ safety: safety({ wwcc_applications_due: 1 }) }))).toEqual({
+        key: 'wwcc-applications',
+        title: 'Confirm 1 check application is still being assessed',
+        detail: 'Check online, then confirm on the member’s page',
+        href: '/admin',
+        alert: { level: 'amber', label: 'Confirm' },
+      });
+    });
+
+    it('turns the applications tile red, counting lapsed ones too, once any has lapsed', () => {
+      expect(
+        only(todos({ safety: safety({ wwcc_applications_due: 1, wwcc_applications_lapsed: 2 }) })),
+      ).toEqual({
+        key: 'wwcc-applications',
+        title: 'Confirm 3 check applications are still being assessed',
+        detail: '2 lapsed. Check online, then confirm on the member’s page.',
+        href: '/admin',
+        alert: { level: 'red', label: 'Lapsed' },
+      });
+      expect(only(todos({ safety: safety({ wwcc_applications_lapsed: 1 }) })).title).toBe(
+        'Confirm 1 check application is still being assessed',
+      );
+    });
+
+    it('adds no applications tile when none is due', () => {
+      expect(
+        todos({ safety: safety({ wwcc_applications_due: 0, wwcc_applications_lapsed: 0 }) }),
+      ).toEqual([]);
+    });
+
+    it('puts the applications tile after the checks tile and before notices', () => {
+      expect(
+        keys(
+          todos({
+            safety: safety({ wwcc_missing: 1, wwcc_applications_due: 1, notices_to_report: 1 }),
+          }),
+        ),
+      ).toEqual(['wwcc', 'wwcc-applications', 'notices-to-report']);
     });
 
     it('makes the check tile amber, naming the most urgent kind', () => {
@@ -744,5 +907,112 @@ describe('buildTodos', () => {
       'join-requests',
       'minors-without-guardian',
     ]);
+  });
+});
+
+describe('medical details', () => {
+  const review = (extra: Partial<MedicalReview>): MedicalReview => ({
+    athlete_id: 'me',
+    athlete_name: 'Sample Me',
+    status: 'due_soon',
+    due_on: '2026-11-10',
+    ...extra,
+  });
+
+  it('asks an athlete to check their own once a year, by the day it’s due', () => {
+    const todo = only(todos({ medicalReviews: [review({})] }));
+    expect(todo).toEqual({
+      key: 'medical-me',
+      title: 'Check your medical details are still right',
+      detail: `Once a year. Due ${formatDateString('2026-11-10')}`,
+      href: { pathname: '/medical/[id]', params: { id: 'me' } },
+      dueOn: '2026-11-10',
+    });
+  });
+
+  it('names the child for a guardian', () => {
+    expect(only(todos({ medicalReviews: [review({ athlete_id: 'kid', athlete_name: 'Kit Child' })] })).title).toBe(
+      'Check Kit Child’s medical details are still right',
+    );
+  });
+
+  it('warns amber in the last three days and red once overdue', () => {
+    expect(only(todos({ medicalReviews: [review({ due_on: '2026-10-20' })] })).alert).toEqual({ level: 'amber', label: 'Due soon' });
+    expect(only(todos({ medicalReviews: [review({ status: 'overdue', due_on: '2026-10-01' })] })).alert).toEqual({ level: 'red', label: 'Overdue' });
+    expect(only(todos({ medicalReviews: [review({})] })).alert).toBeUndefined();
+  });
+
+  it('asks for them to be added when nothing is saved, with no due day', () => {
+    const own = only(todos({ medicalReviews: [review({ status: 'missing', due_on: null })] }));
+    expect(own.title).toBe('Add your medical and emergency details');
+    expect(own.dueOn).toBeUndefined();
+    expect(own.alert).toBeUndefined();
+    expect(only(todos({ medicalReviews: [review({ athlete_id: 'kid', athlete_name: 'Kit Child', status: 'missing', due_on: null })] })).title).toBe(
+      'Add Kit Child’s medical and emergency details',
+    );
+  });
+
+  it('has one to-do per athlete, and none without reviews', () => {
+    expect(keys(todos({ medicalReviews: [review({}), review({ athlete_id: 'kid', athlete_name: 'Kit' })] }))).toEqual(['medical-me', 'medical-kid']);
+    expect(todos()).toEqual([]);
+  });
+});
+
+describe('policy reviews and conflicts of interest', () => {
+  const policy = (extra: Partial<PolicyReview> = {}): PolicyReview => ({
+    id: 'p1',
+    title: 'Child Safeguarding Policy',
+    review_on: '2026-11-10',
+    ...extra,
+  });
+  const declaration = (extra: Partial<MyConflictDeclaration> = {}): MyConflictDeclaration => ({
+    required: true,
+    season: 2026,
+    has_conflict: null,
+    details: null,
+    declared_at: null,
+    ...extra,
+  });
+
+  it('asks a policy’s owner to review it by its review date', () => {
+    expect(only(todos({ policyReviews: [policy()] }))).toEqual({
+      key: 'policy-p1',
+      title: 'Review the Child Safeguarding Policy',
+      detail: `Due ${formatDateString('2026-11-10')}`,
+      href: { pathname: '/registers/review', params: { id: 'p1' } },
+      dueOn: '2026-11-10',
+    });
+  });
+
+  it('says a review was due once its day has passed, in red, and amber in the last three days', () => {
+    const overdue = only(todos({ policyReviews: [policy({ review_on: '2026-10-01' })] }));
+    expect(overdue.detail).toBe(`Was due ${formatDateString('2026-10-01')}`);
+    expect(overdue.alert).toEqual({ level: 'red', label: 'Overdue' });
+    const today = only(todos({ policyReviews: [policy({ review_on: '2026-10-18' })] }));
+    expect(today.detail).toBe(`Due ${formatDateString('2026-10-18')}`);
+    expect(today.alert).toEqual({ level: 'amber', label: 'Due soon' });
+    expect(only(todos({ policyReviews: [policy()] })).alert).toBeUndefined();
+  });
+
+  it('has one to-do per policy', () => {
+    expect(keys(todos({ policyReviews: [policy(), policy({ id: 'p2', title: 'Privacy Policy' })] }))).toEqual([
+      'policy-p1',
+      'policy-p2',
+    ]);
+  });
+
+  it('asks committee members and coaches to declare once a season, even with none', () => {
+    expect(only(todos({ conflictDeclaration: declaration() }))).toEqual({
+      key: 'conflicts',
+      title: 'Declare any conflicts of interest',
+      detail: 'Once a season, for the 2026–27 season, even if you have none',
+      href: '/declare-conflicts',
+    });
+  });
+
+  it('stops asking once they declare, and never asks someone who doesn’t declare', () => {
+    expect(todos({ conflictDeclaration: declaration({ declared_at: '2026-10-01T00:00:00Z', has_conflict: false }) })).toEqual([]);
+    expect(todos({ conflictDeclaration: declaration({ required: false }) })).toEqual([]);
+    expect(todos({ conflictDeclaration: null })).toEqual([]);
   });
 });

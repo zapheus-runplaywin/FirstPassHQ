@@ -52,7 +52,7 @@ async function openWith(saved: Record<string, string> = {}) {
   await AsyncStorage.clear();
   if (Object.keys(saved).length > 0) await AsyncStorage.multiSet(Object.entries(saved));
   (connectToClub as jest.Mock).mockClear();
-  const hook = renderHook(() => useClubChoice(), { wrapper });
+  const hook = await renderHook(() => useClubChoice(), { wrapper });
   await act(async () => {});
   return hook;
 }
@@ -109,7 +109,7 @@ describe('a club picked before on this device', () => {
     (AsyncStorage.multiGet as jest.Mock).mockImplementationOnce(() =>
       Promise.reject(new Error('disk')),
     );
-    const { result } = renderHook(() => useClubChoice(), { wrapper });
+    const { result } = await renderHook(() => useClubChoice(), { wrapper });
     await act(async () => {});
     expect(result.current.ready).toBe(true);
     expect(result.current.club).toBeNull();
@@ -179,12 +179,12 @@ describe('switching club', () => {
   });
 });
 
-it('is only usable inside ClubChoiceProvider', () => {
+it('is only usable inside ClubChoiceProvider', async () => {
   const error = jest.spyOn(console, 'error').mockImplementation(() => {});
   function Bare() {
     useClubChoice();
     return null;
   }
-  expect(() => render(<Bare />)).toThrow('useClubChoice must be used inside ClubChoiceProvider');
+  await expect(render(<Bare />)).rejects.toThrow('useClubChoice must be used inside ClubChoiceProvider');
   error.mockRestore();
 });

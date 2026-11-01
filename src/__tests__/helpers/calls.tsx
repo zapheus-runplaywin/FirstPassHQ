@@ -8,7 +8,6 @@
  */
 import { router } from 'expo-router';
 import { act, screen, within } from 'expo-router/testing-library';
-import { TextInput } from 'react-native';
 
 import { supabase } from '@/lib/supabase';
 
@@ -72,11 +71,11 @@ export async function pushTo(url: string) {
  * closest box whose own field holds that label and no other box.
  */
 export function fieldLabelled(label: string) {
-  const inputs = screen.UNSAFE_getAllByType(TextInput);
+  const inputs = screen.container.queryAll((n) => n.type === 'TextInput');
   const found = inputs.filter((input) => {
     let node = input.parent;
     for (let up = 0; node && up < 6; up++, node = node.parent) {
-      if (within(node).UNSAFE_queryAllByType(TextInput).length > 1) return false;
+      if (node.queryAll((n) => n.type === 'TextInput', { includeSelf: true }).length > 1) return false;
       if (within(node).queryAllByText(label).length > 0) return true;
     }
     return false;

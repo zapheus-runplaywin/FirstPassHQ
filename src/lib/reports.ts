@@ -28,11 +28,14 @@ import {
   type KpiResult,
 } from '@/lib/kpis';
 import { rolesLabel, teamPositionLabel } from '@/lib/labels';
+import { checkStatusLabels, type MedicalCheckStatus, type MedicalComplianceRow } from '@/lib/medical';
 import type { Report, ReportRow, ReportSection } from '@/lib/pdf';
 import { hasRole, rolesOf } from '@/lib/roles';
 import {
+  applicationStatus,
   barringNotices,
   committeeChecksDue,
+  exemptableRoles,
   exemptionStatus,
   needsWwcc,
   screeningNoticeLabels,
@@ -40,6 +43,7 @@ import {
   volunteerExemptionLabels,
   volunteerTimeOff,
   WWCC_WARNING_DAYS,
+  wwccApplicationEndLabels,
   wwccRecordIssues,
   wwccStatus,
   wwccValidationLabels,
@@ -54,8 +58,14 @@ import type {
   Team,
   TeamRole,
   VolunteerExemption,
+  WwccApplication,
 } from '@/lib/types';
 import { seasonLabel, teamLabel } from '@/lib/use-teams';
+import {
+  APPLICATION_CHECK_DAYS,
+  APPLICATION_LAPSE_DAYS,
+  applicationKindLabels,
+} from '@/lib/wwcc-applications';
 
 /** "West Coast Thunder" -> "west-coast-thunder", for file names. */
 export function fileSlug(name: string) {
@@ -74,7 +84,7 @@ export async function sharePdf(fileName: string, bytes: Uint8Array) {
     return;
   }
   const file = new File(Paths.cache, fileName);
-  file.write(bytes);
+  await file.write(bytes);
   await Sharing.shareAsync(file.uri, {
     mimeType: 'application/pdf',
     UTI: 'com.adobe.pdf',
@@ -164,6 +174,10 @@ export function wwccReport(
   acknowledgements: Acknowledgement[] = [],
   /** The day from which committee members need a check, if the club has one. */
   committeeChecksFrom: string | null = null,
+  /** Lodged check applications, open or ended in the last year. */
+  applications: WwccApplication[] = [],
+  /** The day from which statisticians need a check, if the club has one. */
+  statisticianChecksFrom: string | null = null,
 ): Report {
   const approved = members.filter((m) => m.status === 'approved');
   // Temporary helpers outside their dates need nothing, and are listed on their own.
@@ -177,13 +191,27 @@ export function wwccReport(
     const kind = wwccStatus(m).kind;
     return openExemption.has(m.id) && kind !== 'current' && kind !== 'expiring';
   };
+  // So does a lodged application in force, until their card is recorded.
+  const applied = new Set(
+    applications.filter((a) => !a.ended_at && a.status === 'in_force').map((a) => a.profile_id),
+  );
+  const screenedByApplication = (m: Profile) => {
+    const kind = wwccStatus(m).kind;
+    return applied.has(m.id) && kind !== 'current' && kind !== 'expiring' && !screenedByExemption(m);
+  };
   const people = approved
-    .filter((m) => needsWwcc(m) && !screenedByExemption(m) && !volunteerTimeOff(m))
+    .filter(
+      (m) =>
+        needsWwcc(m) &&
+        !screenedByExemption(m) &&
+        !screenedByApplication(m) &&
+        !volunteerTimeOff(m),
+    )
     .map((m) => ({ member: m, name: memberName(m), status: wwccStatus(m) }))
     .sort(byName);
-  // Committee members and admins another admin excused from the check, with the reason.
+  // Committee members, admins and statisticians another admin excused from the check, with the reason.
   const exempt = approved
-    .filter((m) => hasRole(m, 'committee', 'admin') && !needsWwcc(m))
+    .filter((m) => hasRole(m, ...exemptableRoles) && !needsWwcc(m))
     .map((m) => ({ member: m, name: memberName(m) }))
     .sort(byName);
   const nameOf = (id: string | null) => {
@@ -237,7 +265,7 @@ export function wwccReport(
 
   return {
     title: 'Working With Children Checks',
-    subtitle: `Approved coaches, managers, physios, temporary helpers, committee members and admins. WWC Registration Officer: ${officerName ?? 'not named yet'}`,
+    subtitle: `Approved coaches, managers, physios, statisticians, temporary helpers, committee members and admins. WWC Registration Officer: ${officerName ?? 'not named yet'}`,
     landscape: true,
     stats: [
       { label: 'Need a check', value: people.length },
@@ -245,10 +273,14 @@ export function wwccReport(
       { label: `Expire within ${WWCC_WARNING_DAYS} days`, value: count('expiring') },
       { label: 'Expired', value: count('expired') },
       { label: 'Missing', value: count('missing') },
-      { label: 'Committee and admins exempt', value: exempt.length },
+      { label: 'Exempt with a reason', value: exempt.length },
       {
         label: 'Exempt from a check',
         value: approved.filter((m) => needsWwcc(m) && screenedByExemption(m)).length,
+      },
+      {
+        label: 'Check applied for',
+        value: approved.filter((m) => needsWwcc(m) && screenedByApplication(m)).length,
       },
       {
         label: 'To validate',
@@ -269,7 +301,11 @@ export function wwccReport(
           committeeChecksFrom && !committeeChecksDue(committeeChecksFrom)
             ? `from ${formatDateString(committeeChecksFrom)}`
             : 'too'
-        }. Admin roles are not paused, so the club is never locked out, but an admin can be stood down.`,
+        }, and statistician roles ${
+          statisticianChecksFrom && !committeeChecksDue(statisticianChecksFrom)
+            ? `from ${formatDateString(statisticianChecksFrom)}`
+            : 'too'
+        }. Admin roles are not paused, so the club is never locked out, but an admin can be stood down, and one whose check has been missing or expired for over 30 days doesn’t see under 18s’ injuries.`,
         columns,
         rows: people
           .filter((p) => p.status.problem || (current(p.status) && wwccRecordIssues(p.member).length > 0))
@@ -285,7 +321,7 @@ export function wwccReport(
         empty: 'No current checks recorded.',
       },
       {
-        title: 'Committee members and admins exempted',
+        title: 'Exempted with a reason',
         note: 'Excused from the check by another admin, with the reason they gave.',
         columns: exemptColumns,
         rows: exempt.map(({ member, name }) => ({
@@ -328,6 +364,35 @@ export function wwccReport(
             };
           }),
         empty: 'No volunteer exemptions recorded.',
+      },
+      {
+        title: 'Checks applied for',
+        note: `Someone who has applied for a check, new or a renewal, can start or keep doing child-related work in WA while it’s assessed, with the receipt, unless they’ve had a negative or interim negative notice, been charged with or convicted of a Class 1 offence as an adult, or withdrawn it. Each accepts a declaration saying so in the app. An admin confirms it’s still being assessed every ${APPLICATION_CHECK_DAYS} days, and it lapses after ${APPLICATION_LAPSE_DAYS} days without that. Recording their card ends it. Applications that ended in the last year are listed after open ones.`,
+        columns: [
+          { label: 'Name', width: 1.3 },
+          { label: 'Application', width: 1.4 },
+          { label: 'Recorded', width: 1.3 },
+          { label: 'Declaration', width: 1.0 },
+          { label: 'Last confirmed', width: 1.2 },
+          { label: 'Status', width: 2.0 },
+        ],
+        rows: applications.map((a) => {
+          const status = applicationStatus(a);
+          return {
+            cells: [
+              a.member_name,
+              `${a.application_number}, ${applicationKindLabels[a.kind].toLowerCase()}, lodged ${formatDate(a.lodged_on)}`,
+              `${localDay(a.recorded_at)} by ${a.recorded_by_name ?? 'a former admin'}`,
+              a.declared_at ? `Accepted ${localDay(a.declared_at)}` : 'Waiting',
+              a.checked_at ? `${localDay(a.checked_at)} by ${a.checked_by_name ?? 'a former admin'}` : '',
+              a.ended_at
+                ? `Ended ${localDay(a.ended_at)}${a.ended_reason ? `, ${wwccApplicationEndLabels[a.ended_reason]}` : ''}${a.end_note ? ` (${a.end_note})` : ''}`
+                : status.label,
+            ],
+            flag: !a.ended_at && status.problem,
+          };
+        }),
+        empty: 'No check applications recorded.',
       },
       {
         title: 'Temporary helpers',
@@ -1643,5 +1708,90 @@ export function kpiReport(seasonName: string, rows: KpiReportRow[], today: strin
     })),
     footnote:
       'Results are recorded by whoever sets the KPIs: the committee and admins for coaches and managers, and head coaches for their assistants. Athletes’ KPIs aren’t in this report. Coaches and managers who have deleted their account stay on it, with the day they left.',
+  };
+}
+
+// ---------------------------------------------------------------------------
+// Medical details checks
+// ---------------------------------------------------------------------------
+
+/**
+ * Who has checked their medical and emergency details in the last year.
+ * Athletes 18 or over keep their own; an under 18's verified parents and
+ * guardians keep theirs. Lists no medical details, only whether emergency
+ * contacts are saved.
+ */
+export function medicalCheckReport(
+  rows: MedicalComplianceRow[],
+  today = new Date(),
+  /** The chosen squads and teams, when not the whole club. */
+  groups?: string,
+): Report {
+  const sorted = [...rows].sort((a, b) => a.athlete_name.localeCompare(b.athlete_name));
+  const noKeeper = (r: MedicalComplianceRow) => r.minor && !r.has_verified_guardian;
+  const of = (status: MedicalCheckStatus) => sorted.filter((r) => r.status === status);
+  const checkedInYear = sorted.filter((r) => r.status === 'current' || r.status === 'due_soon').length;
+
+  const columns = [
+    { label: 'Athlete', width: 1.3 },
+    { label: 'Squad or team', width: 1.3 },
+    { label: 'Kept by', width: 1.2 },
+    { label: 'Emergency contacts', width: 0.9 },
+    { label: 'Last checked', width: 1.4 },
+    { label: 'Next check due', width: 1 },
+  ];
+  const row = (r: MedicalComplianceRow): ReportRow => ({
+    cells: [
+      r.athlete_name,
+      r.teams ?? 'None',
+      r.minor
+        ? r.has_verified_guardian
+          ? 'Parent or guardian'
+          : 'No verified parent or guardian'
+        : 'Athlete',
+      r.has_contacts ? 'Yes' : 'None',
+      r.checked_at
+        ? `${formatDateString(toDateString(new Date(r.checked_at)))}\n${r.checked_by_name ?? 'Former member'}`
+        : 'Never',
+      r.due_on ? formatDateString(r.due_on) : 'Now',
+    ],
+    flag: r.status === 'overdue' || r.status === 'missing' || noKeeper(r),
+  });
+  const section = (status: MedicalCheckStatus, note: string, empty: string): ReportSection => ({
+    title: checkStatusLabels[status],
+    note,
+    columns,
+    rows: of(status).map(row),
+    empty,
+  });
+
+  return {
+    title: 'Medical details checks',
+    subtitle: `Approved athletes${groups ? ` in ${groups}` : ''} on ${formatDateString(toDateString(today))}`,
+    landscape: true,
+    stats: [
+      { label: 'Athletes', value: sorted.length },
+      {
+        label: 'Checked in the last year',
+        value: sorted.length ? `${Math.round((checkedInYear / sorted.length) * 100)}%` : '0%',
+      },
+      { label: checkStatusLabels.overdue, value: of('overdue').length },
+      { label: checkStatusLabels.missing, value: of('missing').length },
+      { label: checkStatusLabels.due_soon, value: of('due_soon').length },
+      { label: 'No emergency contacts', value: sorted.filter((r) => !r.has_contacts).length },
+      { label: 'Under 18s with no verified parent', value: sorted.filter(noKeeper).length },
+    ],
+    sections: [
+      section(
+        'overdue',
+        'More than a year since the athlete or a parent last saved or confirmed them.',
+        'Nobody is overdue.',
+      ),
+      section('missing', 'No medical and emergency details saved yet.', 'Every athlete has details saved.'),
+      section('due_soon', 'The yearly check falls due in the next 30 days.', 'Nobody is due in the next 30 days.'),
+      section('current', 'Saved or confirmed in the last 11 months.', 'Nobody is up to date yet.'),
+    ],
+    footnote:
+      'Athletes 18 or over check their own details once a year, and a verified parent or guardian checks an under 18’s. Saving the details or tapping “Still correct” counts as the check, and the app reminds them from 30 days before it’s due. This report shows no medical details. Under 18s with no verified parent or guardian can’t be checked until one is verified.',
   };
 }

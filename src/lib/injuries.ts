@@ -7,7 +7,13 @@ import { Platform } from 'react-native';
 
 import { useAuth } from '@/lib/auth';
 import { supabase } from '@/lib/supabase';
-import type { Injury, InjuryStatus, InjuryUpdateKind } from '@/lib/types';
+import type {
+  Injury,
+  InjuryLoggerRole,
+  InjuryStatus,
+  InjuryUpdate,
+  InjuryUpdateKind,
+} from '@/lib/types';
 import { hasRole } from '@/lib/roles';
 
 export const INJURY_BUCKET = 'injury-documents';
@@ -44,11 +50,27 @@ export const injuryUpdateLabels: Record<InjuryUpdateKind, string> = {
  * screen. The database decides which injuries each of them sees.
  */
 export function useCanSeeInjuries() {
+  const { profile, memberships, committeeSeesInjuries } = useAuth();
+  if (profile?.status !== 'approved') return false;
+  return (
+    hasRole(profile, 'athlete', 'guardian', 'physio', 'admin') ||
+    // A club can choose which committee members see injuries.
+    (hasRole(profile, 'committee') && committeeSeesInjuries) ||
+    memberships.some((m) => m.team_role === 'coach')
+  );
+}
+
+/**
+ * Coaches, managers and physios of a squad or team, and every physio, can log
+ * an injury for one of their athletes at the time it happens. The database
+ * decides which athletes (`injury_loggable_athletes`).
+ */
+export function useCanLogInjuries() {
   const { profile, memberships } = useAuth();
   if (profile?.status !== 'approved') return false;
   return (
-    hasRole(profile, 'athlete', 'guardian', 'committee', 'physio', 'admin') ||
-    memberships.some((m) => m.team_role === 'coach')
+    hasRole(profile, 'physio') ||
+    memberships.some((m) => m.team_role === 'coach' || m.team_role === 'manager' || m.team_role === 'physio')
   );
 }
 
@@ -72,6 +94,38 @@ export function useOpenInjuries() {
   return { openInjuries: injuries, reloadInjuries: load };
 }
 
+/** An injury a coach, manager or physio logged that the family hasn't opened yet. */
+export type LoggedInjury = {
+  injury_id: string;
+  athlete_id: string;
+  athlete_name: string | null;
+  body_area: string;
+  logged_by_name: string | null;
+  logged_by_role: InjuryLoggerRole;
+  logged_at: string;
+};
+
+/** For athletes and guardians: injuries logged for them that they haven't opened. */
+export function useLoggedInjuries() {
+  const { profile } = useAuth();
+  const reports = profile?.status === 'approved' && hasRole(profile, 'athlete', 'guardian');
+  const [logged, setLogged] = useState<LoggedInjury[]>([]);
+
+  const load = useCallback(async () => {
+    if (!reports) return;
+    const { data } = await supabase.rpc('my_logged_injuries');
+    setLogged((data as LoggedInjury[] | null) ?? []);
+  }, [reports]);
+
+  useFocusEffect(
+    useCallback(() => {
+      load();
+    }, [load]),
+  );
+
+  return { loggedInjuries: logged, reloadLoggedInjuries: load };
+}
+
 /** A summary for the home card, such as "2 injured · 1 waiting for you". */
 export function injuriesSummary(injuries: Injury[]) {
   const waiting = injuries.filter((i) => i.waiting_for_me).length;
@@ -82,6 +136,43 @@ export function injuriesSummary(injuries: Injury[]) {
   ];
   if (waiting > 0) parts.push(`${waiting} waiting for you`);
   return parts.join(' · ');
+}
+
+const loggerLabels: Record<InjuryLoggerRole, string> = {
+  coach: 'coach',
+  manager: 'manager',
+  physio: 'physio',
+};
+
+/** Who wrote an update, such as "Finley Physio (physio)". */
+export function injuryAuthor(update: Pick<InjuryUpdate, 'author_name' | 'author_role'>) {
+  const name = update.author_name ?? 'Former member';
+  return update.author_role ? `${name} (${loggerLabels[update.author_role]})` : name;
+}
+
+/** The heading of an update in the history. */
+export function injuryUpdateTitle(update: Pick<InjuryUpdate, 'kind' | 'concussion' | 'author_role'>) {
+  if (update.kind === 'reported' && update.author_role) return 'Logged the injury';
+  if (update.kind === 'physio_update' && update.concussion === true) {
+    return 'Marked as a possible concussion';
+  }
+  if (update.kind === 'physio_update' && update.concussion === false) {
+    return 'Concussion ruled out';
+  }
+  return injuryUpdateLabels[update.kind];
+}
+
+/**
+ * Whether clearance can be asked for today. After a suspected concussion it
+ * can't before the club's minimum days (`earliest_clearance`).
+ */
+export function clearanceOpen(injury: Pick<Injury, 'earliest_clearance'>, today: Date) {
+  return !injury.earliest_clearance || injury.earliest_clearance <= toDateString(today);
+}
+
+/** What the concussion rules are, in the words the screens use. */
+export function concussionRules(minDays: number) {
+  return `After a concussion, clearance can’t be asked for until ${minDays} days after it happened, needs a doctor’s clearance, and only a physio can endorse it.`;
 }
 
 // ---------------------------------------------------------------------------
@@ -236,7 +327,7 @@ export async function shareCsv(fileName: string, csv: string) {
     return;
   }
   const file = new File(Paths.cache, fileName);
-  file.write(csv);
+  await file.write(csv);
   await Sharing.shareAsync(file.uri, {
     mimeType: 'text/csv',
     UTI: 'public.comma-separated-values-text',

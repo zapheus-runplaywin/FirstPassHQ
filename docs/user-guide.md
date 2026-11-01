@@ -23,11 +23,13 @@ children, for parents, committees, boards and the sport's governing body.
 6. [Coaches](#6-coaches)
 7. [Managers](#7-managers)
 8. [Committee](#8-committee)
-9. [Physios, guests and temporary helpers](#9-physios-guests-and-temporary-helpers)
+9. [Physios, statisticians, guests and temporary helpers](#9-physios-statisticians-guests-and-temporary-helpers)
 10. [Admins](#10-admins)
 11. [Who can see what](#11-who-can-see-what)
 12. [Child safety and safeguarding](#12-child-safety-and-safeguarding)
-13. [Keeping this guide up to date](#13-keeping-this-guide-up-to-date)
+13. [Your club's data](#13-your-clubs-data)
+14. [Not in the app yet](#14-not-in-the-app-yet)
+15. [Keeping this guide up to date](#15-keeping-this-guide-up-to-date)
 
 ## 1. Roles at a glance
 
@@ -40,18 +42,22 @@ each of their roles can.
 | ------------- | ---------------------------------------------------------------------------------------------------- |
 | **Athlete**   | Registered players. Some are club captains, or captains or vice captains of a squad or team. They see their own attendance and can report an absence. An athlete under 18 can't use the app until a verified parent or guardian is linked to them: until then they see only a link code to share with one (see [Ask to join the club](#ask-to-join-the-club)). |
 | **Guardian**  | Parents and guardians of athletes under 18. They ask to be linked to their child by entering the link code from their child's app, and follow their children into and out of their squads and teams. They see their child's attendance and can report an absence for them, and see what has changed around their child. If the club asks, they accept the club's code of conduct for their child each season. |
-| **Coach**     | Head coaches and assistant coaches. Both have the same permissions, except that a head coach sets Season KPIs for the group's assistant coaches; otherwise the title only shows who is who. The app gives each coach a title from their team, or their squad until they're in a team, such as "Head Coach, Open A". Need a current Working With Children Check; the role pauses while it's expired. A parent volunteering at their child's club, a volunteer under 18, or a short-term visitor or national event helper from outside WA has an exemption instead (see [Volunteer exemptions](#volunteer-exemptions)). |
-| **Manager**   | Squad and team managers. The app gives each manager a title from their team, or their squad until they're in a team, such as "Manager, 17 & Under". Need a current Working With Children Check; the role pauses while it's expired. A parent volunteering at their child's club, a volunteer under 18, or a short-term visitor or national event helper from outside WA has an exemption instead (see [Volunteer exemptions](#volunteer-exemptions)). |
-| **Committee** | Club committee members. Each can add a title, such as President or Secretary, shown with their role. Only committee members and admins can add their own title. Need a current Working With Children Check unless an admin exempts them with a reason (not if they also coach, manage or physio); the role pauses if a recorded check expires or was recorded without an expiry date. Committee members approved before checks were needed keep the role without one only until the club's **committee checks date**. |
-| **Physio**    | The club's physiotherapists. A physio can be placed in squads or teams to look after their athletes, and one can be the **Head Physio**, who looks after every athlete. Need a current Working With Children Check; the role pauses while it's expired. A parent volunteering at their child's club, a volunteer under 18, or a short-term visitor or national event helper from outside WA has an exemption instead (see [Volunteer exemptions](#volunteer-exemptions)). |
+| **Coach**     | Head coaches and assistant coaches. Both have the same permissions, except that a head coach sets Season KPIs for the group's assistant coaches; otherwise the title only shows who is who. The app gives each coach a title from their team, or their squad until they're in a team, such as "Head Coach, Open A". Need a current Working With Children Check; the role pauses while it's expired. Someone who has applied for one, new or a renewal, can work while it's assessed (see [Checks applied for](#checks-applied-for)). A parent volunteering at their child's club, a volunteer under 18, or a short-term visitor or national event helper from outside WA has an exemption instead (see [Volunteer exemptions](#volunteer-exemptions)). |
+| **Manager**   | Squad and team managers. The app gives each manager a title from their team, or their squad until they're in a team, such as "Manager, 17 & Under". Need a current Working With Children Check; the role pauses while it's expired. Someone who has applied for one, new or a renewal, can work while it's assessed (see [Checks applied for](#checks-applied-for)). A parent volunteering at their child's club, a volunteer under 18, or a short-term visitor or national event helper from outside WA has an exemption instead (see [Volunteer exemptions](#volunteer-exemptions)). |
+| **Committee** | Club committee members. Each can add a title, such as President or Secretary, shown with their role. Only committee members and admins can add their own title. Need a current Working With Children Check, or an application being assessed, unless an admin exempts them with a reason (not if they also coach, manage or physio); the role pauses if a recorded check expires or was recorded without an expiry date. Committee members approved before checks were needed keep the role without one only until the club's **committee checks date**. Those with a current check, an application in force or a volunteer exemption also read most of the club's governance reports. |
+| **Physio**    | The club's physiotherapists. A physio can be placed in squads or teams to look after their athletes, and one can be the **Head Physio**, who looks after every athlete. Need a current Working With Children Check; the role pauses while it's expired. Someone who has applied for one, new or a renewal, can work while it's assessed (see [Checks applied for](#checks-applied-for)). A parent volunteering at their child's club, a volunteer under 18, or a short-term visitor or national event helper from outside WA has an exemption instead (see [Volunteer exemptions](#volunteer-exemptions)). |
 | **Guest**     | Anyone else the club lets in, such as partners and sponsors. Guests must be 18 or over. They see only the club calendar, keep their own tasks and can raise a concern. They aren't in squads or teams, get no messages, don't vote and aren't asked for a Working With Children Check or the code of conduct. |
-| **Statistician** | The people who record live game stats on a tablet in FirstPass Vantage, which coaches watch live in FirstPass Vision. Statisticians see every game the club records; a game's coaches and managers see their own squad's or team's. Any member can hold it alongside another role, such as a manager or an athlete who isn't playing. The role pauses while a member is stood down. |
+| **Statistician** | The people who record live game stats on a tablet in FirstPass Vantage, which coaches watch live in FirstPass Vision. Statisticians see every game the club records; a game's coaches and managers see their own squad's or team's. Any member can hold it alongside another role, such as a manager or an athlete who isn't playing. Need a current Working With Children Check, an application being assessed, or a volunteer exemption such as a parent at their child's games, unless an admin exempts them with a reason, such as only recording opens games; the role pauses if a recorded check expires. Statisticians approved before checks were needed keep the role without one only until the club's **statistician checks date**. The role pauses while a member is stood down. |
 | **Temporary helper** | Someone helping for a day or a short time, such as at a carnival, clinic or tournament, paid or unpaid. Not necessarily a member of the club: this is only a role so the app can onboard them. The app screens them: a Working With Children Check or an exemption covering every day they help, and the club's code of conduct and safeguarding policy accepted. They see none of the club's features or messages, and their time ends by itself after their last day (see [Temporary helpers](#temporary-helpers)). |
-| **Admin**     | The people who run the app. Admin is granted by another admin, never requested. Admins can add a title too. Need a current Working With Children Check unless another admin exempts them. An expired check doesn't pause the admin role, so the club is never locked out, but it stays on the admins' to-do list until it's renewed. Admins set how long the club keeps records. |
+| **Admin**     | The people who run the app. Admin is granted by another admin, never requested. Admins can add a title too. Need a current Working With Children Check, or an application being assessed, unless another admin exempts them. An expired check doesn't pause the admin role, so the club is never locked out, but it stays on the admins' to-do list until it's renewed, and 30 days after it expired (or after the club's committee checks date, if none is recorded) the admin stops seeing under 18s' injuries until a check, an application or a parent volunteer exemption is recorded. Admins set how long the club keeps records, and are warned when the nightly removal of old records stops. |
 
 **Safeguarding contacts.** An admin names one member as the club's **Child Safety Officer** and
 another as its **Complaints Manager**. They're not separate roles: each keeps their own role and also
 sees and acts on the concerns members raise (see [The concerns register](#the-concerns-register)).
+The Child Safety Officer also sees every athlete's wellbeing flags: the day and lowest score of
+each low check-in, never the answers or notes (see [Wellbeing flags](#wellbeing-flags)), and,
+when the club turns on Training load flags, training load patterns for children (see [Training load
+patterns](#training-load-patterns)).
 
 **Squads and teams.** Each season, members join a **squad** (at West Coast Thunder: Mixed Open
 Squad, Open Squad, 20 & Under Squad, 17 & Under Squad, Lightning Academy). At selections, admins name
@@ -97,13 +103,20 @@ What each role sees on its home screen:
 | Team totals of a shared poll           |    ✓    | Their athlete's |      ✓       |     ✓      |  If sent one  |  If sent one  |         |  If sent one  |
 | Send surveys and polls, see results    | Captains' polls† |                 |  Own groups  | Own groups |    Anyone     |               |         |    Anyone     |
 | Daily check-in                         |    ✓    |                 |              |            |               |               |         |               |
+| Log training sessions (minutes, effort) |    ✓    |                 |              |            |               |               |         |               |
 | Game goals and reflections             |   Own   |  See athlete's  | Own athletes |            |               |               |         |               |
 | Team goals for a game                  | See, comment |       See       | Set, review, comment |            |               |               |         |      See      |
 | Check-ins of others                    |         | Their athlete's | Own athletes |            | Averages only | Averages only |         | Averages only |
+| Training sessions of others            |         | Their athlete's | Own athletes |            |               |               |         |               |
+| Training load flags (when turned on)   | Own, gently | When a coach has talked with their athlete | Own athletes: flags, numbers, mark talked |            |               |               |         | Choose the flags |
 | Report an injury                       |   Own   | Their athlete's |              |            |               |               |         |               |
+| Log an injury when it happens          |         |                 | Own athletes | Own athletes |             |  Own athletes‡ |         |               |
+| Add physio updates                     |   Own   | Their athlete's |              |            |               |  Own athletes‡ |         |               |
 | See injuries                           |   Own   | Their athlete's | Own athletes |            |     All¶      |  Own athletes‡ |         |      All      |
-| Sign off injury clearances             |         |                 |   Endorse    |            | Accept, send back |   Endorse‡    |         | Accept, send back |
+| Sign off injury clearances             |         |                 | Endorse, not concussions◊ |            | Accept, send back¶ |   Endorse‡    |         | Accept, send back |
 | See who opened injury documents        |   Own   | Their athlete's |              |            |               |               |         |       ✓       |
+| Medical and emergency details          | Own; keep if 18 or over | Keep their athlete's | Own athletes‖ | Own athletes‖ |               | Own athletes‡‖ |         |               |
+| Check medical details once a year      | Own, if 18 or over | Their athlete's |              |            | See who has (report), if checked |               |         | See who has (report) |
 | Consent for a child's check-ins and injuries |         |        ✓        |              |            |               |               |         |  See status   |
 | Accept the code of conduct each season (if the club asks) | Own§ | Own, and their athlete's | Own | Own | Own | Own | | Own, see who has |
 | Take attendance                        |         |                 |      ✓       |     ✓      |       ✓       |               |         |       ✓       |
@@ -111,12 +124,12 @@ What each role sees on its home screen:
 | Review reported absences               | Report own | Report their athlete's | Own groups | Own groups |   See all    |               |         |    See all    |
 | Session plans                          | Read shared |  Read their athlete's shared | Add, share, read shared |            |               |               |         | Add, read all, report |
 | Vote in club awards                    |    ✓    |                 |      ✓       |     ✓      |       ✓       |               |         |       ✓       |
-| Set up awards and see results          |         |                 |              |            |               |               |         |       ✓       |
+| Set up awards and see results          |         |                 |              |            | See results once closed (report), if checked |               |         |       ✓       |
 | Season KPIs (when turned on)           |   Own   |  See athlete's  | Own; set for own athletes, and assistants if head coach | Own | Set for coaches and managers |  |  | Set for coaches and managers, read athletes', set review dates |
 | Complete integrity training            |   Own   | Own, and their athlete's |     Own      |    Own     |      Own      |      Own      |         |      Own      |
 | Check training certificates            |         |                 |              |            |       ✓       |               |         |       ✓       |
 | Set integrity training                 |         |                 |              |            |               |               |         |       ✓       |
-| Governance reports as PDFs             |         |                 |              |            | Concerns register, if an officer |               |         |       ✓       |
+| Governance reports as PDFs             |         |                 |              |            | Checks, medical details checks, training, attendance and award results, if checked; concerns register, if an officer |               |         |       ✓       |
 | Import fixtures from PlayHQ            |         |                 |              |            |               |               |         |       ✓       |
 | Preferred name                         |    ✓    |        ✓        |      ✓       |     ✓      |       ✓       |       ✓       |    ✓    |       ✓       |
 | Title, such as President               |         |                 |              |            |       ✓       |               |         |       ✓       |
@@ -125,6 +138,7 @@ What each role sees on its home screen:
 | Manage absence reasons                 |         |                 |              |            |               |               |         |       ✓       |
 | Invite members (QR code and link)      |         |                 |              |            |               |               |         |       ✓       |
 | Affiliation records (when turned on)   |         |                 |              |            |               |               |         |       ✓       |
+| Policy and conflict registers (when turned on) |  |                 | Declare conflicts; review policies they own | Review policies they own | Read both; declare conflicts; review policies they own | Review policies they own |  | Read and change both; record any review |
 | Administration                         |         |                 |              |            |               |               |         |       ✓       |
 
 † Athletes who are captains: club captains can message the whole club, and squad and team
@@ -145,6 +159,17 @@ after every athlete. A physio who isn't in any squad or team sees no athletes un
 them or makes them Head Physio.
 
 ¶ Except athletes under 18 whose parents haven't given consent for injuries, whom only admins see.
+Committee members see an under 18's injuries, and accept or send back their clearances, only with a
+current Working With Children Check or a parent volunteer exemption. A club can choose which committee
+members see injuries under **Injuries are seen by** in Safeguarding settings; the rest see none and
+sign off none.
+
+‖ For an athlete under 18, only once a parent or guardian has given consent for injuries and
+health information. Each time a coach, manager or physio opens them it's recorded, and the athlete
+(18 or over) or their parents see who did. Admins and the committee don't see them.
+
+◊ Only a physio endorses a suspected concussion's clearance, and only a physio endorses any
+clearance when an admin turns on **Only physios endorse clearances** in Safeguarding settings.
 
 "Own groups" and "own athletes" mean the squads and teams you're listed in as a coach or manager.
 Club awards are voted on by the roles, squads and teams each award names, so not every award is
@@ -154,6 +179,10 @@ coach, and then they vote in that role.
 Integrity training applies to the roles, squads and teams an admin chooses for each course, so not
 everyone has training to complete. A course limited to particular squads or teams never reaches
 committee members, who aren't in a squad or team as committee; only courses for every group do.
+
+Statisticians have no column of their own: on its own the role gives what every member has, plus
+every match the club imports from PlayHQ in their calendar and messages to the Statistician role
+(see [Statisticians](#statisticians)).
 
 Temporary helpers see none of these but a preferred name. They aren't necessarily club members,
 and they use the app only to complete onboarding: their home screen shows only the steps to be
@@ -167,10 +196,14 @@ club and Delete account links (see [Ask to join the club](#ask-to-join-the-club)
 
 Admins can turn off Messages, Calendar, Daily check-ins, Injuries, Attendance, Session plans,
 Surveys, Captains' polls, Awards, Game goals and Integrity training for the whole club in **Club settings**. A feature that's off disappears for every role.
-**Season KPIs** and **Affiliation records** work the other way: they're off unless an admin turns
-them on. Season KPIs are for a club that sets its coaches, managers and athletes measures for the
-season (see [Season KPIs](#season-kpis)); Affiliation records are for a club or association that
-reports to its association or Netball WA (see [Affiliation](#affiliation)).
+**Season KPIs**, **Training load flags**, **Affiliation records** and **Policy and conflict registers** work the other way:
+they're off unless an admin turns them on. Training load flags give coaches prompts to talk with an
+athlete from the sessions they log (see [Training load](#training-load)). Season KPIs are for a club that sets its coaches,
+managers and athletes measures for the season (see [Season KPIs](#season-kpis)); Affiliation
+records are for a club or association that reports to its association or Netball WA (see
+[Affiliation](#affiliation)); the registers keep the club's policies with their owners and review
+dates, and each season's conflict-of-interest declarations (see [Policy and conflict
+registers](#policy-and-conflict-registers)).
 
 <div style="page-break-before: always"></div>
 
@@ -317,7 +350,7 @@ Once you're approved, the home screen is where everything starts. From the top:
 
 - **To do**: things you need to do, such as your daily check-in, the code of conduct to accept, an
   award vote, integrity training due, goals to set or reflect on for a game, an injury past its
-  expected return date, a KPI review to confirm or, for coaches, physios and the committee, an
+  expected return date, an injury a coach, manager or physio logged for you or your child, a KPI review to confirm or, for coaches, physios and the committee, an
   injury clearance to sign off, and, for coaches and managers, new or changed absences to review.
   Tap an item to go straight to it. Each item disappears once it's done. When there's nothing,
   it says "✓ You're all caught up." Your own [personal tasks](#your-own-tasks) come after the
@@ -330,12 +363,13 @@ Once you're approved, the home screen is where everything starts. From the top:
   Children Checks work the same way (see [Admins](#10-admins)).
 - **Cards** for the features your role uses: Messages, Daily check-in, Check-ins,
   Injuries, Attendance, Session plans, My attendance, Awards, Integrity training, Season KPIs,
-  Concerns and Administration. Athletes fill in their own check-in from **Daily check-in**.
+  Concerns, Reports and Administration. Athletes fill in their own check-in from **Daily check-in**.
   Coaches read their athletes' check-ins from **Check-ins**, and committee members, physios and
   admins see the club's averages there. Parents and guardians see their child's check-ins from
   the cards for each child instead (see [Parents and guardians](#5-parents-and-guardians)). The
   Awards card shows while an award vote is open to you, and Session plans once a coach has shared
-  one with you. A number in the club's colour means something new or waiting for you.
+  one with you. **Reports** is for committee members with a current check (admins find Reports in
+  Administration). A number in the club's colour means something new or waiting for you.
 - **Coming up**: the next six events from your calendars, when the club uses the calendar. Tap
   **Full calendar** to see them all.
 - **My squads and teams** (**My teams** in a club without squads): tap one to see who's in it. A
@@ -667,11 +701,13 @@ shows each one and where it's up to: Received, Referred, Being looked into or Cl
 you're in: your profile, your squad and team places, guardian links, your personal tasks and your
 messages inbox. Messages you sent to a group stay with the people who received them. Tap
 **Delete my account**, then **Delete my account permanently** to confirm. If you sign in again
-later, you'll need to ask to join again.
+later, you'll need to ask to join again. Now and then the club has to keep an account for a legal
+matter; then the app says it can't be deleted at the moment and asks you to contact a club admin.
 
-The club keeps your injury records for 12 months after you leave, where only the committee and
-admins can see them, and then deletes them. Clearance documents may go sooner, after the club's
-keep period for injury documents. It also keeps, under your name, your code of conduct acceptances,
+The club keeps your injury records after you leave, where only the committee and admins can see
+them, for its keep period for injuries (7 years unless the club chose 3, 5 or 10), counted from
+when you leave, and then deletes them. Nothing is deleted while the club has **Remove old records**
+switched off. Clearance documents may go sooner, after the club's keep period for injury documents. It also keeps, under your name, your code of conduct acceptances,
 any concerns you raised (unless you hid your name) and, if you coach or manage, your season KPIs
 and their reviews. If you're a parent or guardian and the only verified one linked to a child
 under 18, the screen tells you that your child's app locks again until another parent or guardian
@@ -709,13 +745,51 @@ the day with **Update check-in**.
 
 Your coaches see your answers so they can adjust training (if you're under 18, once a parent or
 guardian has given consent). A score of 2 or less on any question
-flags you so a coach knows to check in with you. Below the form you can see your last two weeks,
-with low scores marked.
+flags you so a coach knows to check in with you. The club's Child Safety Officer also sees that
+you were flagged, the day and your lowest score, but never your answers or note, so someone still
+notices if you're not in a squad or team (if you're under 18, once a parent or guardian has given
+consent). Below the form you can see your last two weeks, with low scores marked.
 
 Until you've checked in, "Do your daily check-in" stays in your to-do list.
 
+**If you'd like to talk to someone.** The club's **Child Safety Officer** is its welfare contact
+for athletes, whatever your age and whether or not you're in a squad or team. Under the check-in,
+**Something worrying you? Tell the club safely** raises a concern that goes to them (and the
+Complaints Manager and admins), not to your coaches or parents. You don't have to explain much: a
+line such as "I'd like to talk to someone" is enough, and you can hide your name (see [Raising a
+concern](#raising-a-concern)). Kids Helpline (1800 55 1800) is free, any time.
+
 <img src="user-guide/check-in.png" width="210" alt="Daily check-in form and history">
 <img src="user-guide/check-in-note.png" width="210" alt="Check-in note, saying who can read it">
+
+### Training sessions
+
+Under your check-in, **Training sessions** keeps a log of each training, game or gym session. Tap
+**Log a session**, pick the day (today or any day in the past week), **Training**, **Game**,
+**Gym** or **Other**, the minutes (up to 300) and **How hard did it feel?** from 1 (very easy)
+to 10 (maximal), then **Save session**. You can log up to six sessions a day. Tap a session to
+change it or **Delete session**.
+
+Minutes times effort is the session's load: an hour at 6 is 360. The card at the top totals your
+sessions, minutes and load, with your average effort, for the last 7 days and each of the three
+weeks before, and says how this week compares, such as "Up 40% on the 3 weeks before". A sudden
+jump is worth talking about with your coach. The screen's tip: rate each session about 30 minutes
+after it ends, and log school, representative and other-club sport too, under **Other**, so your
+week adds up.
+
+**A big week.** When the club turns on Training load flags and your week stands out, a card under
+your sessions says why, such as "Your training this week is well up on the last few weeks", and
+that your coach may check in about how you're going. It's not a warning, just a chance to talk.
+Your coaches see the same flag (see [Training load](#training-load)).
+
+Your sessions are seen exactly as your check-ins are: by your coaches (if you're under 18, once a
+parent or guardian has given consent) and your parents or guardians. Your teammates, the
+committee, physios and admins never see them, and the screen says so. They're removed with
+check-ins, after the club's period under Keeping records.
+
+<img src="user-guide/session-log.png" width="210" alt="Logging a training session with minutes and effort">
+<img src="user-guide/session-log-weeks.png" width="210" alt="Weekly training load and logged sessions">
+<img src="user-guide/session-log-big-week.png" width="210" alt="An athlete's A big week card">
 
 ### Game goals
 
@@ -745,8 +819,8 @@ left out.
 above your own goals. After the game you'll see how the coaches think the team went on each one.
 Everyone in the team has a say: tap **Comment** under a team goal, write what you think or what
 you'll do to help, and tap **Add comment**. You can comment before or after the game. Your name
-shows on your comment, and everyone in the team (including its manager or physio), their parents
-or guardians, the coaches and the club's admins can read it. Tap **Remove** on your own comment to
+shows on your comment, and the team's athletes and coaches, the athletes' parents or guardians and
+the club's admins can read it. The team's manager and physio can't. Tap **Remove** on your own comment to
 take it down; your coaches can remove any comment.
 
 <img src="user-guide/goals-athlete.png" width="210" alt="Game goals: the next game and played games">
@@ -770,17 +844,30 @@ guardians. Your teammates can't.
 2. Say where the injury is, what happened and when.
 3. Add any restrictions (for example "no jumping") and choose when you expect to be back. It's
    required, but a best guess is fine; a physio update can change it.
-4. Tap **Report injury**.
+4. If it might be a concussion (a knock to the head, face or neck, or any sign of concussion),
+   switch on **Possible concussion**. See [Concussion](#concussion).
+5. Tap **Report injury**.
 
 Your coaches, the physios who look after you and the committee can see it straight away. If
-you're under 18, they see it only once a parent or guardian has given consent for injuries; until
-then only your parents or guardians and the club's admins see it, and only an admin can clear you.
+you're under 18, they see it only once a parent or guardian has given consent for injuries, and
+only committee members cleared to work with children see it; until
+then only your parents or guardians and the club's admins see it, and nobody can clear you to play,
+because a coach or physio has to see the injury to endorse your clearance. So ask a parent or
+guardian to give consent for injuries.
 An injury isn't an absence: injured
 athletes are still expected at training to support the team. Until you're cleared, whoever takes
 attendance sees **Injured** and your expected return date next to your name, and nothing else about
 the injury.
 
 <img src="user-guide/injury-report-new.png" width="210" alt="Report an injury form">
+
+### When a coach, manager or physio logs your injury
+
+If you're hurt at training or a game, one of your coaches, managers or physios may log the injury
+there and then. You and your parents or guardians are told straight away: your to-do list shows
+**Look at the injury Casey Coach logged for you** until you open it. The injury is then yours like
+any other: you add the physio's updates and ask for clearance. The history shows who logged it and
+their role, for example "Casey Coach (coach)". Logging it doesn't change who sees it.
 
 ### Updating an injury
 
@@ -791,6 +878,8 @@ Open the injury to see its details and history. While you're injured:
   If you're under 18, attach the letter or report as a PDF or a photo of the letter, and switch
   on **This is a photo of the letter** before sending a photo. Never send a photo of the injury
   itself (see [Injury documents and photos](#injury-documents-and-photos)).
+- A physio who looks after you can add their own updates too, shown with "(physio)" after their
+  name.
 - If your expected return date passes, your to-do list reminds you to ask for clearance or change
   the date.
 
@@ -807,7 +896,10 @@ Two people then sign off, in order:
 1. **One of your coaches, or a physio who looks after your squad or team (or the Head Physio),
    endorses it** (status "Waiting for a coach or physio").
 2. **A committee member accepts it** (status "Waiting for the committee"). It must be someone other
-   than the person who endorsed it.
+   than the person who endorsed it. For an athlete under 18, it must be a committee member with a
+   current Working With Children Check or a parent volunteer exemption.
+
+If the club has turned on **Only physios endorse clearances**, only a physio endorses it.
 
 Nobody signs off their own clearance or their own child's, so a coach or committee member who is
 also your parent or guardian leaves it to someone else.
@@ -828,6 +920,26 @@ same list.
 <img src="user-guide/ask-for-clearance.png" width="210" alt="Ask for clearance with proof attached">
 <img src="user-guide/injury-document-log.png" width="210" alt="An injury document with the list of who viewed and shared it">
 <img src="user-guide/injury-document-removed.png" width="210" alt="A cleared injury whose letter was removed after the club's keep period">
+
+### Concussion
+
+Any knock to the head, face or neck, or any sign of concussion, is treated as a possible
+concussion: **if in doubt, sit them out**. Whoever reports or logs it switches on **Possible
+concussion**, and a physio can mark it later in an update. The injury then shows **Possible
+concussion** at the top, and follows
+[Netball Australia's concussion policy](https://netball.com.au/news/update-netball-australias-concussion-protocols):
+
+- **See a doctor.** The athlete doesn't train or play until they're cleared.
+- **Clearance waits.** You can't ask for clearance until 21 days after the injury (12 days if the
+  club runs an elite program and chose 12). The injury shows **Clearance from** with the first day.
+- **A doctor's clearance.** Attach the doctor's clearance and switch on **This is a doctor's
+  clearance**. The history shows "Confirmed as a doctor's clearance".
+- **Only a physio endorses it**, never a coach. A committee member then accepts it as usual.
+- **Only a physio can rule it out**, by switching **Possible concussion** off in an update once a
+  doctor has said it isn't one. The athlete and their parents or guardians can mark a concussion but
+  can't unmark one.
+
+<img src="user-guide/injury-concussion.png" width="210" alt="A possible concussion with its earliest clearance date">
 
 ### Captains
 
@@ -886,6 +998,39 @@ them or react to them. If you're under 18, your parents or guardians can read th
 
 <img src="user-guide/session-plans-athlete.png" width="210" alt="Session plans shared with an athlete">
 
+### Medical and emergency details
+
+**Your details** (from the home screen) has **Medical and emergency details**: up to three
+emergency contacts, and your allergies, conditions, medications and action plan, such as what to do
+if you have an asthma attack or a reaction. They're for your safety at training and games. Tap a
+contact's phone number to call them.
+
+If you're 18 or over you keep them yourself: tap **Change details**, fill in what's needed, and
+tap **Save**. Each contact needs a name and a phone number. If you're under 18 your parents or
+guardians keep them, and you can read them.
+
+The coaches, managers and physios of your squads and teams can open them; if you're under 18,
+only once a parent or guardian has given consent for injuries and health information. Admins and
+the committee can't. Each time one of them opens your details it's recorded, and **Who has opened
+them** shows you (or, if you're under 18, your parents) who and when. Your details go when your
+account is deleted.
+
+**Check them once a year.** If you're 18 or over, the club asks you to check your details are
+still right once a year. If the club removes old records, details nobody has checked for a while
+(2 years unless the club chose longer) are removed, and the date shows under them once the check
+is due. Saving them counts as the check. From 30 days before it's due your to-do
+list says **Check your medical details are still right**, in amber in the last three days and red
+once overdue: open them and tap **Still correct**, or **Change details** if something has changed.
+Until you've saved any, your to-do list says **Add your medical and emergency details**. Under the
+details you'll see who checked them last and when the next check is due. Admins can see whether
+you've checked (but not what your details say) in the [Medical details checks](#reports) report.
+
+<img src="user-guide/medical-todo.png" width="210" alt="Check your medical details are still right in an athlete's to-do list">
+<img src="user-guide/medical-check.png" width="210" alt="Still correct under an athlete's medical details when the yearly check is due">
+
+<img src="user-guide/medical-details.png" width="210" alt="An athlete's medical and emergency details, with who has opened them">
+<img src="user-guide/medical-edit.png" width="210" alt="Changing emergency contacts and an action plan">
+
 <div style="page-break-before: always"></div>
 
 ## 5. Parents and guardians
@@ -921,10 +1066,17 @@ Once you're linked and verified, **Consent** on your home screen lists each chil
 your to-do list says **Give consent for** them until you have. Open it to choose who else sees two
 kinds of information about your child:
 
-- **Daily check-ins**: their answers and notes are seen by their coaches.
+- **Daily check-ins**: their answers and notes, and the training sessions they log (minutes and
+  how hard each felt), are seen by their coaches. When they score low,
+  the club's Child Safety Officer sees the day and the lowest score, never their answers or notes.
+  If the club uses Training load flags, the same consent lets their coaches see their load flags
+  and the Child Safety Officer see training load patterns, never their sessions. The prompt about
+  training while injured also needs consent for injuries.
 - **Injuries and health information**: their injuries, restrictions, physio updates and documents
-  are seen by their coaches, the physios who look after them and the committee, who sign off
-  clearances.
+  are seen by their coaches, the physios who look after them and the committee members cleared to
+  work with children, who sign off
+  clearances. The medical and emergency details you keep for your child are seen by their coaches,
+  managers and physios (see [Your child's medical and emergency details](#your-childs-medical-and-emergency-details)).
 
 Until you give a consent, only your child and you see their check-ins, and only your child, you
 and the club's admins see their injuries. Their coaches, physios and the committee don't see your
@@ -941,6 +1093,28 @@ you're asked each time (see [Injury documents and photos](#injury-documents-and-
 
 <img src="user-guide/consent.png" width="210" alt="A parent giving consent for their child's check-ins and injuries">
 <img src="user-guide/consent-home.png" width="210" alt="Home screen with Give consent in the to-do list">
+
+### Your child's medical and emergency details
+
+Once you're verified, **Medical and emergency** on your home screen lists each child under 18.
+Open one and tap **Change details** to add up to three emergency contacts and your child's
+allergies, conditions, medications and action plan, then **Save**. Any of your child's verified
+parents or guardians can change them, and your child can read them. Their coaches, managers and
+physios see them once you've given consent for injuries and health information; admins and the
+committee don't. **Who has opened them** lists each time a coach, manager or physio opened them.
+When your child turns 18 they keep their own and you no longer see them.
+
+**Check them once a year.** One of your child's verified parents or guardians checks their
+details are still right once a year; saving them counts. From 30 days before it's due, every one
+of you has **Check …'s medical details are still right** on your to-do list until one of you opens
+them and taps **Still correct** (or changes and saves them). Until anything is saved it says
+**Add …'s medical and emergency details**. If the club removes old records, details nobody has
+checked for a while (2 years unless the club chose longer) are removed, and the date shows under
+them once the check is due. Admins see whether each child's details have been
+checked, but not what they say.
+
+<img src="user-guide/medical-home.png" width="210" alt="Medical and emergency on a parent's home screen">
+<img src="user-guide/medical-edit.png" width="210" alt="A parent changing their child's emergency contacts">
 
 ### The code of conduct for your child
 
@@ -963,7 +1137,7 @@ for yourself as well.
 
 Once you're verified, **Who has viewed their records** on your home screen lists each child under
 18. Open it to see everyone at the club who opened your child's injuries, injury documents,
-check-ins, game goals, season KPIs, named survey answers or member record in the app: their name, their role (coach, physio, admin,
+check-ins, game goals, season KPIs, named survey answers, medical and emergency details or member record in the app: their name, their role (coach, manager, physio, admin,
 committee or safeguarding contact, or member for anyone else, such as a manager reading named
 survey answers), what they opened and when, newest first. Sharing an injury
 document is listed too. Your child's own views and those of their parents and guardians aren't
@@ -1021,6 +1195,23 @@ A survey sent to parents and guardians themselves, for example to all guardians,
 If your child under 18 is a captain and sends a poll to their squad or team, you get a copy saying
 your child sent it, so you can see what they asked. You don't see their teammates' answers.
 
+### Your child's training load
+
+When the club turns on Training load flags, your child's coaches get a prompt to check in with
+them when their logged training stands out: a big jump on the weeks before, more hours of sport
+in a week than their age in years, training while an injury still has restrictions, or one of
+those alongside low check-ins. Once a coach marks that they've talked with your child, opening
+your child from **Check-ins** shows a calm card, such as "Casey Coach checked in with Sam about
+their training load. The club noticed they did more hours of sport in the week than their age in
+years. Coaches review training load as part of looking after every athlete." with the date, and
+**Why the club looks at this**, which links to the published studies behind it.
+
+You don't see the flags themselves, the numbers or the coach's note: the card is there so you know
+the club looks at load, not to worry you. Training load is a conversation starter, not a
+diagnosis. If you're worried about your child's training, talk to their coach.
+
+<img src="user-guide/training-load-parent.png" width="210" alt="A parent's card after a coach checked in about training load">
+
 ### What's changed for your child
 
 **What's changed** on your home screen lists each child under 18, with a number when something has
@@ -1032,6 +1223,7 @@ happened since you last looked. Open it to see, newest first:
 - a parent or guardian linked or unlinked, and by which admin
 - a consent given or withdrawn, and by whom
 - one of your child's injury documents shared out of the app, and by whom
+- an injury a coach, manager or physio logged for your child, and who logged it
 
 If an adult is stood down, you see only that they're no longer in the group; the reason stays with
 the club's admins. Ordinary views of your child's records are under
@@ -1049,9 +1241,9 @@ As a guardian you:
 - **Receive a copy of every message your athlete sends** if they're a captain, so you see what
   they send to their squad, team or the club. These copies say "Copied to you because Jordan sent
   it".
-- **See your athlete's daily check-ins**, including any note they write. Tap your athlete under
-  **Check-ins** on the home screen to see the last four weeks. Your athlete is told that you can
-  read their notes.
+- **See your athlete's daily check-ins**, including any note they write, and the training
+  sessions they log with their weekly load. Tap your athlete under **Check-ins** on the home
+  screen to see the last four weeks. Your athlete is told that you can read their notes.
 - **See the calendar and matches** of your child's squads and teams. You follow your child into
   and out of them by yourself: when an admin puts your child in a squad or team you join it, and
   when your child leaves it you leave too, unless another of your children is still in it.
@@ -1065,6 +1257,11 @@ As a guardian you:
   a photo you confirm it shows the letter, not the injury. If the club allows photos of injuries and
   your identity has been verified, you can choose **The injury** and add one after switching on
   **I consent**; your consent is kept with the photo. Your child can't add photos of injuries.
+- **Hear straight away when staff log an injury**: if a coach, manager or physio logs an injury for
+  your child at training or a game, your to-do list shows **Look at the injury Casey Coach logged
+  for Jordan** until you open it, and it shows under **What's changed**. You then add the physio's
+  updates and ask for clearance as usual (see
+  [When a coach, manager or physio logs your injury](#when-a-coach-manager-or-physio-logs-your-injury)).
 - **See who opened your athlete's injury documents**: under each document, every view and share,
   by whom and when, and what was confirmed about each photo.
 - **See your athlete's attendance and report absences** (see
@@ -1096,8 +1293,8 @@ until you're in a team (see [Your preferred name](#your-preferred-name)); more t
 role joins up, like "Head Coach, Open A and Open" or "Head Coach, Open A · Manager, 17 & Under".
 
 Coaches and managers need a current Working With Children Check, recorded by an admin, before
-they're approved (or an exemption recorded for them; the role stays paused until they accept its
-declaration). The check is looked at every time you use the app: once the expiry date has
+they're approved (or an exemption or a lodged application recorded for them; the role stays paused
+until they accept its declaration). The check is looked at every time you use the app: once the expiry date has
 passed, your coach or manager role pauses and your home screen says so. You keep your squad and
 team places, though they're hidden from your home screen until the role comes back, along with
 the Messages, Attendance and Check-ins cards, so you can't read messages while paused; the
@@ -1106,6 +1303,22 @@ returns as soon as an admin records the renewed check. Renew it well before it e
 reminded 60 days ahead, and 60 days before a parent or under-18 exemption ends.
 
 <img src="user-guide/role-paused.png" width="210" alt="Home screen of a coach whose check has expired, saying the coach role is paused">
+
+### Declaring conflicts of interest
+
+If the club uses the [policy and conflict registers](#policy-and-conflict-registers), each season
+every coach (and every committee member) declares any conflict of interest: anything that could
+affect, or look like it affects, a decision you make for the club, such as your child trialling
+for a team you coach or select. A to-do, **Declare any conflicts of interest**, stays on your list
+until you do, even if you have none. Tap it, choose **No conflicts of interest** or **A conflict
+to declare** (and say what it is and how it's managed), and tap **Declare**. You can change it
+during the season from the same screen. The committee and admins read what you declare; other
+coaches, athletes and parents don't. Declaring a conflict doesn't stop you coaching.
+
+<img src="user-guide/declare-conflicts.png" width="210" alt="Declaring conflicts of interest for the season">
+
+If an admin makes you the owner of a club policy, you also get a to-do 30 days before its review
+date (see [Reviewing a policy you own](#reviewing-a-policy-you-own)).
 
 ### Volunteer exemptions
 
@@ -1124,7 +1337,7 @@ or physio role starts once you agree, and the club keeps the words you agreed to
 The exemption ends by itself when your child turns 18, stops being an athlete at the club or is
 no longer linked to you, or, for a volunteer under 18, on your 18th birthday. Your role then pauses
 and your home screen asks you to apply for a check. A parent's exemption doesn't cover overnight
-camps.
+camps or trips, such as a tour or state championships: you need a check for those.
 
 Someone who doesn't normally live in WA, such as a visiting interstate or national coach, has two
 more exemptions, and can use only one of them, once, in any 12 months before or after anywhere in WA:
@@ -1142,6 +1355,26 @@ had started. Being supervised by someone
 with a check is not an exemption in WA.
 
 <img src="user-guide/volunteer-declaration.png" width="210" alt="The volunteer declaration a parent volunteer accepts">
+
+### Checks applied for
+
+In WA you can start or keep doing child-related work while your Working With Children Check
+application, new or a renewal, is being assessed, as long as you have the receipt. That stops if
+you get a negative notice or an interim negative notice, if you're charged with or convicted of a
+Class 1 offence as an adult, or if you withdraw the application. Show a club admin the receipt and
+they record the application, and you get a to-do: **Confirm your Working With Children Check
+application**. It opens a declaration naming the application and the day you lodged it, which
+says none of those things applies and that you'll tell a club admin straight away if that
+changes, and when your card arrives. Tap **I agree** if it's true; if it isn't, don't agree and
+talk to a club admin. Your coach, manager, physio or committee role starts, or carries on, once
+you agree, and the club keeps the words you agreed to.
+
+It counts as your check until an admin records your card, which ends it. An admin confirms with
+the Screening Unit every 30 days that it's still being assessed; if nobody does for 90 days it
+lapses, your role pauses and your home screen says so. A notice from the Screening Unit stops it
+straight away.
+
+<img src="user-guide/wwcc-application-declaration.png" width="210" alt="The declaration a coach accepts for their lodged Working With Children Check application">
 
 After an admin marks a squad's **squad phase complete**, coaches look after only the
 athletes in their named teams. Before that, they look after everyone in the squad.
@@ -1187,7 +1420,11 @@ drops out once its squad phase is complete, and if that was your only group the 
 
 - **Day by day** lists today's (or yesterday's) check-ins for a squad or team: athletes to check
   in with first, with what scored low and any note, then those feeling good, then who hasn't
-  checked in. Tap any athlete, including one who hasn't checked in, to see their last four weeks.
+  checked in. Tap any athlete, including one who hasn't checked in, to see their last four weeks,
+  with the training sessions they logged: each session's minutes and effort (1 to 10), and the
+  load (minutes times effort) for each week and how this week compares with the weeks before.
+  Only you, their other coaches and their parents or guardians see an athlete's sessions; there's
+  no team total.
 - **Trends** graphs the group's average sleep, soreness, stress and mood over 2 weeks, 4 weeks or
   3 months, with the number who checked in each day. Each day's score averages that day and the
   two before it, so a small group whose athletes don't check in every day still gets a line. A day
@@ -1198,6 +1435,54 @@ drops out once its squad phase is complete, and if that was your only group the 
 <img src="user-guide/check-ins-coach.png" width="210" alt="Coach's day-by-day check-ins">
 <img src="user-guide/check-ins-trends.png" width="210" alt="Check-in trends">
 <img src="user-guide/check-ins-athlete-history.png" width="210" alt="One athlete's check-in history">
+<img src="user-guide/check-ins-athlete-sessions.png" width="210" alt="One athlete's training sessions and weekly load">
+
+### Training load
+
+When the club turns on **Training load flags**, the **Check-ins** card adds **Training load**, and
+your to-do list says **Talk with N athletes about their training load** while any have open flags.
+It lists your athletes under **Worth a chat** and **Talked with this week**, each with their
+sessions and minutes in the last 7 days and their load ratio. Athletes under 18 show once a parent
+or guardian has given consent for check-ins. An athlete can be flagged for:
+
+- **Load jumped**: their last 7 days are well above the last 4 weeks. The app divides the average
+  daily load (minutes times effort) of the last 7 days by the average of the last 28: steady
+  training is about 1.0, and a week at double their usual load is 1.6. The club chooses whether
+  this flags at **1.5 or more** (the default) or **above 1.3**, or not at all. It starts only once
+  they've logged sessions in each of the 3 weeks before the last 7 days, so a new athlete isn't
+  flagged for starting. The 1.5 figure comes from studies of adult professional athletes in other
+  sports, so for netball and for juniors it's a prompt to talk, nothing more.
+- **Hours over age**: an athlete under 18 did more hours of sport in 7 days than their age in
+  years, gym and other sport included. The study behind it asked about a typical week, so one
+  busy tournament week can prompt it. It needs their date of birth, and the club can switch it off.
+- **Training while injured**: they logged a session while an injury with restrictions isn't
+  cleared. This comes from the club's own injury record, not a study. For an athlete under 18 it
+  shows only once a parent has also given consent for injuries, as their injuries do.
+- **Low check-ins as well**: 2 or more check-ins scoring 2 or less in the same 7 days, added only
+  alongside another flag. The study behind it reads how athletes feel alongside their load; the
+  2 in 7 is the club's own line.
+
+Every flag has **Why this flag**, which opens the published study or website it rests on, with a
+link. Tap an athlete for their check-in page, where **Training load** shows their flags, the load
+ratio, their average effort, and Foster's monotony and strain for the week (shown for interest:
+no cut-off is proven, so they never flag). For an athlete 18 or over it also draws a 12-week
+fitness, fatigue and form chart in the style of TrainingPeaks; under 18s don't get it.
+
+After you've talked with them, add an optional **Note for coaches** (up to 500 characters) and tap
+**Talked with them**. That closes their flags for 7 days for all their coaches. The athlete's
+parents or guardians then see that you checked in and what about, never your note (see [Your
+child's training load](#your-childs-training-load)).
+
+> **Training load is a conversation starter, not a diagnosis.** These figures come from what
+> athletes report about their own sessions. They can't predict injury or illness and must not be
+> relied on for selection, medical or return-to-play decisions. A flag means it may be worth
+> checking in with the athlete, as one part of the club's wider care for athlete welfare, alongside
+> coaches, parents, physios and the athlete's own view. If you're worried about an athlete's
+> health, talk to a qualified health professional. The app shows this wherever load is.
+
+<img src="user-guide/training-load-coach.png" width="210" alt="Training load: athletes worth a chat">
+<img src="user-guide/training-load-athlete.png" width="210" alt="One athlete's training load flags and Talked with them">
+<img src="user-guide/training-load-fitness.png" width="210" alt="Fitness, fatigue and form for an athlete 18 or over">
 
 ### Game goals
 
@@ -1306,10 +1591,33 @@ your to-do list. Open it, check the proof in the history (tap **View**), then:
 
 A physio who looks after the athlete can endorse a clearance too. Admins can't endorse a clearance unless
 they're also the athlete's coach or a physio; they accept it like the committee. You can't endorse a
-clearance for your own child: another coach or a physio does it.
+clearance for your own child: another coach or a physio does it. You can't endorse a suspected
+concussion's clearance either: only a physio can (see [Concussion](#concussion)). If the club has
+turned on **Only physios endorse clearances**, every clearance waits for a physio.
 
 <img src="user-guide/injuries-coach.png" width="210" alt="Coach's injuries list">
 <img src="user-guide/endorse-clearance.png" width="210" alt="Endorse or send back a clearance">
+
+#### Logging an injury at training or a game
+
+When one of your athletes is hurt at training or a game, log it there and then:
+
+1. Tap **Injuries**, then **Log an injury**.
+2. Choose the athlete. Only athletes in the squads and teams you coach, manage or look after as a
+   physio are listed.
+3. Say where the injury is and what happened, including any first aid, and when. Restrictions and
+   an expected return are optional.
+4. For a knock to the head, face or neck, or any sign of concussion, switch on **Possible
+   concussion**. If in doubt, sit them out.
+5. Tap **Log injury**.
+
+The athlete and their parents or guardians are told straight away, and it goes on the athlete's
+injury record, where they add the physio's updates and ask for clearance. Logging it gives you no
+extra access: you see the injury only as you'd see any of your athlete's injuries, so an under 18's
+shows only once a parent or guardian has given consent.
+
+<img src="user-guide/injury-log.png" width="210" alt="A coach logging an injury for one of their athletes">
+<img src="user-guide/injury-logged.png" width="210" alt="Injury logged, with the athlete and parents told">
 
 #### Viewing proof documents
 
@@ -1321,6 +1629,23 @@ recorded and shown to the athlete, their parents or guardians and admins.
 
 <img src="user-guide/document-photo.png" width="210" alt="A photo of a clearance letter, zoomed in">
 <img src="user-guide/document-pdf.png" width="210" alt="A PDF clearance letter in the viewer">
+
+### Medical and emergency details
+
+Coaches, managers and physios open their athletes' emergency contacts, allergies, conditions,
+medications and action plans from the squad or team's page: tap **Medical and emergency details**
+for its list, then an athlete. Tap a contact's phone number to call them. Each athlete keeps their
+own (a parent or guardian for an under 18); you can't change them.
+
+The list says whether each athlete has added emergency contacts. An under 18 opens only once a
+parent or guardian has given consent for injuries and health information, and shows **Waiting for
+a parent's health consent** until then. Opening the list shows nobody's details. Each time you open
+an athlete's details it's recorded with your name, and the athlete (18 or over) or their parents
+can see that you did. A coach or manager of a squad whose selections are complete no longer sees
+its athletes' details, as with check-ins; the Head Physio sees every athlete's.
+
+<img src="user-guide/medical-team.png" width="210" alt="A squad's medical and emergency details list for its coach">
+<img src="user-guide/medical-coach.png" width="210" alt="An athlete's medical and emergency details as their coach sees them">
 
 ### Taking attendance
 
@@ -1476,11 +1801,18 @@ and title together, like "Manager · Manager, 17 & Under". As a manager you can:
   own groups' sessions, every whole-club session and any session you took yourself (see
   [Taking attendance](#taking-attendance)). With a manager role but no squad or team yet, you can
   still take whole-squad and whole-club attendance.
+- **Open your athletes' medical and emergency details** from the squad or team's page, each view
+  recorded (see [Medical and emergency details](#medical-and-emergency-details-1)).
 - **Work on your season KPIs**, if the club uses them: the committee and admins set them, and you
   record your progress, add a note on the result and confirm your reviews (see
   [Season KPIs](#season-kpis)). The card shows once you're in a current squad or team.
 - **Vote in club awards** that name managers, or every member, as voters, and be nominated in
   awards open to any member (see [Club awards](#club-awards)).
+- **Log an injury** when one of your athletes is hurt at training or a game: the **Injuries** card
+  reads "Log an injury at training or a game". The athlete and their parents or guardians are told
+  straight away and keep the record from there (see
+  [Logging an injury at training or a game](#logging-an-injury-at-training-or-a-game)). You don't
+  see injury records, including the ones you log.
 
 Managers see the absences reported for their groups, on the register and under **Away in the next 4
 weeks**. Like coaches, they get a **To do** item when an absence is reported or withdrawn for one
@@ -1488,7 +1820,7 @@ of their groups, and clear it with **Mark as reviewed** under **New or changed a
 [Attendance records](#attendance-records)). The register also shows who took each session, each
 absence's reason, and **Injured, back** with the date for an injured athlete, whatever the consent
 choices, and nothing else about the injury. Managers don't see athletes' attendance histories,
-check-ins, injuries, game goals, team goals or session plans.
+check-ins, injury records, game goals, team goals or session plans.
 
 While your check has expired, or an exemption has ended or hasn't been accepted yet, your home
 screen says **Manager (paused)** and the Messages, Attendance and My squads and teams cards are
@@ -1521,8 +1853,8 @@ title later under **Your details** (such as President, Secretary or Treasurer), 
 it on your member page. The home screen header lists every role you hold, then your title, then
 any coach or manager title, such as "Coach, Committee · President · Head Coach, Open A". While the
 committee role is paused the header reads "Committee (paused)" without the title (the title is
-kept), and the Messages, Check-ins, Injuries, Attendance, Season KPIs and certificate-checking
-cards, the committee calendar and club-wide messaging go until an admin records a check or an
+kept), and the Messages, Check-ins, Injuries, Attendance, Season KPIs, certificate-checking and
+Reports cards, the committee calendar and club-wide messaging go until an admin records a check or an
 exemption. The code of conduct, your own integrity training, award votes, personal tasks and
 **Raise a concern** stay.
 
@@ -1534,7 +1866,9 @@ Registration Officer. If you're the Child Safety Officer or Complaints Manager, 
 also has **Concerns** (see [The concerns register](#the-concerns-register)): the register, each
 concern's notes and steps (**Referred to** the governing body or Police, **Being looked into**,
 **Closed** with a note), and **Export the register as a PDF**. A concern about you is never shown
-to you. If your check lapses, Concerns and its to-do go until a renewed check is recorded.
+to you. The Child Safety Officer also has **Wellbeing flags** (see [Wellbeing
+flags](#wellbeing-flags)). If your check lapses, Concerns, wellbeing flags and their to-dos go
+until a renewed check is recorded.
 
 <img src="user-guide/committee-home.png" width="210" alt="Committee home screen">
 
@@ -1634,11 +1968,22 @@ Individual answers are only for the athlete, their guardians and their coaches.
 
 ### Accepting clearances
 
+Your club may choose which committee members see injuries, under **Injuries are seen by** in
+Safeguarding settings (see [Safeguarding contacts](#safeguarding-contacts)). If it has and you
+aren't one of them, you have no **Injuries** card or screen, no clearance to-dos, and can't accept,
+send back or share a clearance. Everything below is for committee members who see injuries, which is
+the whole committee unless the club has chosen.
+
 The committee sees every athlete's injuries, except an athlete under 18 whose parents haven't yet
 given consent for injuries (admins can see those, but nobody can endorse or accept a clearance
-until a parent gives consent). Athletes who have left the club stay listed under **Including
+until a parent gives consent). An under 18's injuries, and accepting or sending back their
+clearances, are only for committee members cleared to work with children: a current Working With
+Children Check, or a parent volunteer exemption. A committee member with any other exemption, or
+with no check yet before the club's **Committee checks required from** date, sees adults' injuries
+only. Admins see every injury, unless their own check has been missing or expired for over 30
+days (see [Approving members](#approving-members)): then they see adults' injuries only. Athletes who have left the club stay listed under **Including
 cleared** for 12 months. When a coach or physio endorses a clearance, it appears under **Waiting
-for your sign-off** and in the to-do list of every committee member and admin except the person
+for your sign-off** and in the to-do list of every committee member who sees injuries and every admin, except the person
 who endorsed it and the athlete's own parents or guardians. Open it, check the proof, then:
 
 - **Accept clearance** clears the athlete to train and play, or
@@ -1700,12 +2045,62 @@ its coaches and managers. Tap one to add a KPI or OKR, follow their progress, wr
 and record the results, the same way coaches do for athletes (see [Setting season
 KPIs](#setting-season-kpis)); never for yourself. That includes each assistant coach's development
 plan set by their head coach: you see its KPIs, progress and reviews, and can add to, change or
-remove them. The **Write {name}'s KPI review** to-do comes for the people whose KPIs you set.
+remove them. A to-do such as **Write Alex's KPI review** comes for each person whose KPIs you set.
 Your review note is separate from the head coach's; the person sees both.
 You don't see athletes' KPIs. Admins can save every coach's and
 manager's KPIs as a PDF for the board (see [Reports](#reports)).
 
 <img src="user-guide/kpis-committee.png" width="210" alt="Season KPIs for a squad's coaches and manager">
+
+### Reports for the committee
+
+A committee member with a current check, a check application in force or a volunteer exemption has
+**Reports** on the home screen. It opens the same reports admins use (see [Reports](#reports)), to
+read and save as PDFs for a committee or board meeting:
+
+- **Working With Children Checks**, with exemptions, check applications (never the receipts),
+  Screening Unit notices and stand-downs
+- **Medical details checks** (who has checked, never the details themselves)
+- **Integrity training**, **Attendance** and **Award results**, when those features are on
+
+They're read only: nothing in them changes a member, a check or a setting, and admins still make
+every change. **Under 18s and their guardians**, **Injuries**, **Session plans**, **Season KPIs** and
+**Affiliation** stay with admins. The reports name children and hold adults' dates of birth and
+card numbers, so a committee member exempted with a reason (such as a treasurer who never works
+with children), one still to get a check before the committee checks date, and one whose role is
+paused or stood down sees no Reports card. The reports give names, not email addresses.
+
+<img src="user-guide/committee-home-reports.png" width="210" alt="The Reports card on a committee member's home screen">
+<img src="user-guide/committee-reports.png" width="210" alt="Reports for a committee member with a current check">
+
+### The registers
+
+If the club turns on the policy and conflict registers, committee members have **Registers** on
+the home screen. **Policies** lists each club policy with its owner, version and next review date,
+soonest first, marked **Overdue for review** or **Review due within 30 days**, with **Open** for
+its link. **Conflicts of interest** shows this season's declarations from the committee and
+coaches: who declared a conflict and what it is, who declared none, and who still has to declare.
+Earlier seasons are kept and chosen at the top. Both are read only for the committee; admins make
+the changes (see [Policy and conflict registers](#policy-and-conflict-registers)). Like coaches,
+you declare your own conflicts of interest each season from your to-do list (see [Declaring
+conflicts of interest](#declaring-conflicts-of-interest)). A paused committee member has no
+Registers card.
+
+<img src="user-guide/registers.png" width="210" alt="The registers: policies and conflicts of interest">
+<img src="user-guide/registers-policies.png" width="210" alt="The policy register with review dates">
+<img src="user-guide/registers-conflicts.png" width="210" alt="This season's conflict-of-interest register">
+
+### Reviewing a policy you own
+
+An admin can make any adult club official (a committee member, coach, manager, physio,
+statistician or admin) the **owner** of a policy. Thirty days before its review date, the owner
+gets a to-do, **Review the** (policy's name), which turns amber in the last three days and red once
+it's overdue. Read the policy, update it if needed, then tap the to-do (or **Record a review** on
+the policy), check the version and link, choose when it's next reviewed (a year ahead is
+suggested) and tap **Record review**. The register shows when and by whom it was last reviewed,
+and the to-do goes.
+
+<img src="user-guide/registers-review.png" width="210" alt="Recording a policy review">
 
 ### Committee calendar
 
@@ -1714,7 +2109,7 @@ with their own colour and filter in the calendar. A paused committee member does
 
 <div style="page-break-before: always"></div>
 
-## 9. Physios, guests and temporary helpers
+## 9. Physios, statisticians, guests and temporary helpers
 
 Physios see the squads and teams they're placed in and the club calendar; guests see the club
 calendar only. Neither votes in club awards, so their home screen has no **Awards** card. Guests don't get messages. Physios have a **Messages**
@@ -1741,6 +2136,9 @@ as **Head Physio**. Which athletes a physio looks after:
   squad yet." A club with one physio should mark them **Head Physio**; otherwise place them in
   the squads and teams they look after.
 
+Physios open the medical and emergency details of the athletes in their squads and teams the same
+way as coaches (see [Medical and emergency details](#medical-and-emergency-details-1)).
+
 While the physio role is paused the header reads "Physio (paused)" and a **Physio paused** card
 says what to do. Messages a physio gets are labelled "To Physios", "To {squad or team}" or "To
 Everyone in the club". On a roster the Head Physio shows as **Physio**; "Head Physio" appears on
@@ -1751,12 +2149,23 @@ their own home screen and the Members list.
   [Check-in averages](#check-in-averages)). Physios never see an individual athlete's answers.
 - **Injuries** lists, under **Injured athletes**, the injuries, restrictions and proof documents
   of the current athletes they look after (an athlete under 18 only once a parent or guardian has
-  given consent); the card reads "N current injuries · N waiting for you". A physio's own notes
-  reach the app through the athlete or their guardian, who add them with **Add physio update**.
-  When an athlete asks for clearance, it appears under **Waiting for your sign-off** and as
-  **Review {name}'s clearance** in the physio's to-do list. Open it, check the proof, then **Endorse clearance** to pass it to the committee, or
-  **Send back** with a note. A committee member other than the physio then accepts it. Physios
-  also endorse clearances for athletes who have no coach. A physio who is also on the committee
+  given consent); the card reads "N current injuries · N waiting for you".
+- **Add physio update** on an injury of an athlete you look after records your notes, restrictions,
+  expected return date and a report (a PDF or photo for adults; for an under 18, the letter or
+  report, never a photo of the injury). It shows in the history as "Your name (physio)". The athlete
+  and their parents or guardians can still add updates, but only they ask for clearance. You can
+  mark a **Possible concussion** in an update, and you're the only one who can switch it off once a
+  doctor has ruled it out (see [Concussion](#concussion)).
+- **Log an injury** for an athlete you look after when it happens (see
+  [Logging an injury at training or a game](#logging-an-injury-at-training-or-a-game)).
+- When an athlete asks for clearance, it appears under **Waiting for your sign-off** and as
+  a to-do such as **Review Jordan's clearance** in the physio's to-do list. Open it, check the proof, then **Endorse clearance** to pass it to the committee, or
+  **Send back** with a note. A committee member other than the physio then accepts it. A physio
+  endorses for the athletes they look after whether or not the athlete has a coach, so once a squad's
+  phase is complete the squad's physio (or the Head Physio) is the only one who can endorse for an
+  athlete not picked for a team. Only a physio endorses a suspected concussion's clearance, and
+  then only with a doctor's clearance attached; if the club turns on **Only physios endorse
+  clearances**, every clearance waits for a physio. A physio who is also on the committee
   can accept clearances, but never one they endorsed.
 
 <img src="user-guide/physio-home.png" width="210" alt="Physio home screen">
@@ -1772,6 +2181,39 @@ not in a squad yet." Their to-do list holds only their own tasks, and Your detai
 preferred name. Guests can't be stood down and need no Working With Children Check.
 
 <img src="user-guide/guest-home.png" width="210" alt="Guest home screen">
+
+### Statisticians
+
+Statisticians record live game stats on a tablet in FirstPass Vantage, and the game's coaches
+watch them live in FirstPass Vision. This guide covers only what the role means in FirstPass HQ;
+recording a game happens in Vantage.
+
+- **Who.** Anyone but a guest or temporary helper can be a statistician. Choose **Statistician**
+  when you ask to join, or an admin adds it to another role from your member page, such as a
+  manager or an athlete 18 or over helping at a game they aren't playing in.
+- **What you see in HQ.** Everything in [Things everyone can do](#3-things-everyone-can-do), plus
+  every match the club imports from PlayHQ in your calendar, because you may record any of the
+  club's games. You get messages sent to the whole club and to the Statistician role. Being a
+  statistician doesn't put you in a squad or team, so on its own it shows you no check-ins,
+  injuries, attendance, game goals or session plans.
+- **Games and stats.** Statisticians see every game the club records, in Vantage. A game's
+  coaches and managers see their own squad's or team's games; athletes, guardians, physios and the
+  committee don't (see [Who can see what](#11-who-can-see-what)).
+- **Checks.** Statisticians often sit courtside at junior games, so the role needs a current
+  Working With Children Check, an application being assessed (see [Checks applied
+  for](#checks-applied-for)), or a volunteer exemption, such as a parent recording their child's
+  games. If you only record opens games, or code from video and never work with children, an admin
+  can exempt you with the reason instead. A new statistician isn't approved without one of these.
+  Statisticians approved before checks were needed keep the role until the club's **Statistician
+  checks required from** date (90 days after the rule came in, unless an admin brings it forward);
+  until then your home screen says when it will pause. From that day, or the day after a recorded
+  check expires, the statistician role pauses, in HQ and in Vantage, until an admin records a
+  check, an application or an exemption.
+
+  <img src="user-guide/statistician-check-due.png" width="210" alt="A statistician's home screen saying when their role needs a check">
+- **Awards.** Statisticians don't vote in club awards, unless they also hold a role that votes.
+- **Stand-downs.** An admin can stand a statistician down like a coach or manager. The role stops
+  at once, in HQ and in Vantage, and comes back only when the stand-down is lifted.
 
 ### Temporary helpers
 
@@ -1827,13 +2269,18 @@ screen. Admins' to-do lists include join requests waiting for approval and clear
 sign-off, plus child-safety follow-ups: new concerns, athletes with no date of birth, athletes under 18
 locked out because no verified parent or guardian is linked, Working With Children Checks to sort out, volunteer exemptions that end within
 60 days, athletes turning 18 within 30 days, Screening Unit notices still to report to the
-governing body, and no WWC Registration Officer, Child Safety Officer or Complaints Manager. Every card problem shares one to-do, **Sort out Working With Children
+governing body, no WWC Registration Officer, Child Safety Officer or Complaints Manager, and a
+clearance nobody can endorse. Every card problem shares one to-do, **Sort out Working With Children
 Checks**, which counts each person once and says underneath how many are missing or expired,
 expiring within 60 days, waiting to be validated and waiting to be registered with the club. It
 is marked like an overdue to-do: red (**Missing**) and at the top of the list when anyone's check
 is missing or expired, otherwise amber (**Expiring**, **Validate** or **Register**). Tapping a
 child-safety to-do opens **Members**, where the people behind it are listed
-first under **Needs checking**. While **Remove old records** is off, the list also shows **Old
+first under **Needs checking**. **Nobody can endorse Jordan's clearance** (or **Nobody can endorse
+2 clearances**) is amber, marked **Stuck**: the athlete has asked to be cleared, but their squad's
+phase is complete so its coaches no longer look after them, and the club has no Head Physio and no
+physio in their squad or team. Make a physio Head Physio, or place a physio in the athlete's squad
+or team, and it goes. Nobody's access changes on its own. While **Remove old records** is off, the list also shows **Old
 records are kept forever**, which opens Club settings so you can switch it on (see [Keeping
 records](#keeping-records)), and **Members have had no team or role for 2 years** when anyone
 has (see [Approving members](#approving-members)). When Affiliation records are on, the list also has affiliation
@@ -1869,7 +2316,7 @@ entered another child's link code, such as for a younger brother or sister: open
 
 **No team or role for 2 years** lists members who may have left the club: they have no place in
 this season's squads and teams, aren't a guardian of anyone who has, hold no club-wide role
-(admin, committee, partner, temporary helper or Head Physio), and haven't signed in or changed groups for 2 years.
+(admin, committee, temporary helper or Head Physio), and haven't signed in or changed groups for 2 years.
 Each shows when they were last active. Open them and tap **Delete member** if they've left; the
 app never deletes them by itself. Once **Remove old records** is on, join requests are removed 90
 days after they're turned down or if nobody answers them for 90 days, people who signed in but
@@ -1878,7 +2325,8 @@ never asked to join after 90 days, and temporary helpers a year after their last
 **Needs checking**, at the top, lists the members behind the child-safety to-dos on your home
 screen, with the reason under each name: no Working With Children Check recorded, one that has
 expired or expires within 60 days, a volunteer exemption waiting for the declaration, ending within
-60 days or no longer applying (a visitor or national event exemption is short by design, so it only
+60 days or no longer applying, a check application waiting for the declaration, due to be
+confirmed, lapsed or stopped by a notice (a visitor or national event exemption is short by design, so it only
 shows once it has ended; a temporary helper shows only between their first and last day), someone who is stood down, an athlete under 18 locked out
 because no verified parent or guardian is linked ("Locked: no verified parent or guardian
 linked"), an athlete with no date of birth, an athlete about to turn 18, a card never validated or
@@ -1928,7 +2376,9 @@ Check them against PlayHQ, then:
    A coach, manager or physio who is a parent volunteering at their child's club, or is under 18,
    doesn't need a check in WA. Choose **Parent volunteer** (and their child, who must be an
    athlete under 18 they're linked to as a guardian) or **Under-18 volunteer** (which needs their
-   date of birth) instead of **Has a check**. A temporary helper can't be linked as a guardian, so
+   date of birth) instead of **Has a check**. A parent's exemption doesn't cover overnight camps or
+   trips, and the app doesn't mark events as overnight, so a parent volunteer going on a tour or
+   state championships needs a check: record it before they go. A temporary helper can't be linked as a guardian, so
    for them you search for and name their child from the club's athletes under 18 instead. Once you save, they get a to-do to accept the
    exemption declaration (a temporary helper sees **Read the declaration** in their steps), and
    their role starts when they do. The page shows where it's up to and
@@ -1943,7 +2393,25 @@ Check them against PlayHQ, then:
    counting from when they accepted it and it started; one replaced before its first day doesn't
    count. **Read the rules at the source** links to the Working with Children (Screening) Act, the
    Screening Unit's guide to who needs a check, and its fact sheets on national events and tours,
-   parent volunteers, who can't use an exemption, and sport and recreation.
+   parent volunteers, who can't use an exemption, and sport and recreation, and to its page on
+   applying, and working while an application is assessed.
+
+   Someone who has applied for a check, new or a renewal, and has the receipt, can start or keep
+   working while it's assessed. Under **Check applied for**, tap **Record an application**, enter
+   the **Application number** and the **Day it was lodged** from the receipt (within the last 90
+   days), choose **New check** or **Renewal**, tap **Attach the receipt** (a PDF or photo, kept
+   where only admins can open it) and tap **Save application**. They get a to-do to accept a
+   declaration that they've had no negative or interim negative notice, aren't charged with or
+   convicted of a Class 1 offence as an adult and haven't withdrawn it, and their role starts when
+   they do. It then counts as their check: you can approve them, and they can be a safeguarding
+   contact. Every 30 days you get a to-do to look it up (**Check its status online** opens the
+   Screening Unit's online services, which need the application number and family name) and tap
+   **Still being assessed**. If nobody does for 90 days it lapses and their role pauses until
+   someone does. Recording their card ends it by itself; if it's withdrawn or refused, tap **It's
+   ended**, choose why and add what happened. A Screening Unit notice stops it, and you can't
+   record an application lodged before the notice. **Open the receipt** shows it in the app. You
+   can't record or confirm your own; ask another admin. Ended applications stay listed under
+   **Earlier** and in the report.
 5. For a **Temporary helper**, check **What they'll help with** and their **First day** and
    **Last day**. The page shows what they said about their check, the card number they gave and
    when they accepted the club's policies. Tap **Save for now** to record their card or exemption
@@ -1957,14 +2425,21 @@ The app won't approve or save:
 - a new parent or guardian who isn't verified, or who hasn't entered the link code of an approved
   child under 18 (approve the child first). Parents and guardians approved before link codes keep
   their approval;
-- a coach, manager or physio without a current Working With Children Check or a volunteer
-  exemption;
-- a new committee member without a current Working With Children Check or an exemption. Committee
+- a coach, manager or physio without a current Working With Children Check, a check application
+  that hasn't ended, lapsed or been stopped, or a volunteer exemption. One still waiting for their
+  declaration lets you approve them, but their role waits for them to accept it;
+- a new committee member without a current Working With Children Check, an application like that,
+  or an exemption. Committee
   members approved before checks were needed keep their access until the club's committee checks
   date (see [Safeguarding contacts](#safeguarding-contacts)), and show under **Needs checking**
   until you record a check or exempt them;
-- a new admin without a current Working With Children Check or an exemption. Admins approved
+- a new admin without a current Working With Children Check, an application like that, or an
+  exemption. Admins approved
   before checks were needed keep their access and show under **Needs checking** in the same way;
+- a new statistician without a current Working With Children Check, an application like that, a
+  volunteer exemption, or an exemption with a reason, such as one who only records opens games.
+  Statisticians approved before checks were needed keep the role until the club's statistician
+  checks date, and show under **Needs checking** until you record a check or exempt them;
 - a temporary helper without their task and dates, whose last day has passed, who hasn't
   accepted the club's policies, or whose card doesn't last to their last day and who has no
   exemption they've accepted covering every day they help. Changing an approved helper's dates
@@ -1974,10 +2449,18 @@ Approval isn't the only time the check counts. A coach's, manager's or physio's 
 after their check expires, and so does a committee member's when a check you recorded for them
 expires. They keep their squad and team places and see a note on their home screen; the role
 comes back as soon as you record the renewed check. A volunteer exemption works the same way: the
-role pauses when it ends by itself, and **Needs checking** lists them 60 days before. An admin's
+role pauses when it ends by itself, and **Needs checking** lists them 60 days before. So does a
+check application: the role pauses if it lapses or a notice stops it. An admin's
 role doesn't pause when their check expires, so the club can never be locked out of its own app;
 they show under **Needs checking** and on every admin's to-do list until the renewed card is
-recorded, and they can still be stood down.
+recorded, and they can still be stood down. But 30 days after their card expired, or 30 days after
+the club's committee checks date if they have none, they stop seeing under 18s' injuries and
+accepting their clearances, and their home screen says so. Everything else an admin does still
+works. A current check, an application in force or a parent volunteer exemption brings it back; an
+exemption with a reason doesn't. A statistician's role pauses the same way as a committee
+member's: the day after a recorded check expires, or from the club's statistician checks date.
+
+<img src="user-guide/admin-children-injuries-closed.png" width="210" alt="An admin's home screen saying they can't see under 18s' injuries until their check is recorded">
 
 **Verifying someone.** Guardians must be verified before they can be approved or linked to a child. Get the
 6-digit code from their home screen yourself (it shows while they wait for approval, and for a
@@ -2038,6 +2521,8 @@ club** or **Other**) and tap **Don't approve**. They see the reason and can requ
 <img src="user-guide/member-volunteer-exempt.png" width="210" alt="A manager recorded as a parent volunteer, waiting to accept the declaration">
 <img src="user-guide/member-volunteer.png" width="210" alt="A temporary helper waiting for approval: their task, dates and what they said">
 <img src="user-guide/member-visitor-exempt.png" width="210" alt="Recording a national event exemption, with the links to the rules at the source">
+<img src="user-guide/member-wwcc-application.png" width="210" alt="Recording a coach's lodged Working With Children Check application with its receipt">
+<img src="user-guide/member-wwcc-application-open.png" width="210" alt="A coach's application in force, with Still being assessed and It's ended">
 <img src="user-guide/member-physio.png" width="210" alt="A physio placed in two squads">
 <img src="user-guide/member-head-physio.png" width="210" alt="The Head Physio, who looks after every athlete">
 
@@ -2059,6 +2544,12 @@ juniors, or Guardian for a coach whose child plays. The rules in
 someone has more than one squad or team role, each squad shows **Role in** so you can pick which
 role they're there as; its teams follow the squad. Coaches, managers and physios need a current
 Working With Children Check whichever role it is, and that includes athletes under 18 who coach.
+
+A parent or guardian is in each team their child under 18 plays in, without being in its squad.
+That place comes with their child: saving their page keeps it, even if you leave the team out, and
+it goes when their child leaves the team. For a coach whose child plays in a team, choosing them as
+that team's coach makes them its coach instead. Saving a member's page changes only the squads and
+teams you changed, so their parents' **What's changed** lists only real moves.
 
 - **Remove access** stops someone using the app but keeps their account. Choose a reason first.
 - **Stand down** is for when someone must be kept away from children straight away, for example
@@ -2088,8 +2579,10 @@ Working With Children Check whichever role it is, and that includes athletes und
   attendance, training certificates, message receipts, consents, code of conduct acceptances,
   policy acknowledgements, exemptions (ended on the day), stand-downs, Screening Unit notices, and
   who viewed their records. Each goes when its own keep period ends (see [Keeping
-  records](#keeping-records)). Messages they sent stay, and their injury records are kept for 12
-  months. In the attendance report and a message's read receipts they show with "(deleted)" after
+  records](#keeping-records)). Messages they sent stay, and their injury records are kept for the
+  club's period for cleared injuries, counted from when they left. You can't delete a member a
+  concern names: the app says so, and their account and records stay while the concern names
+  them. The member is only told to contact an admin. In the attendance report and a message's read receipts they show with "(deleted)" after
   their name.
 
 <img src="user-guide/member-title.png" width="210" alt="A committee member's page with their preferred name and title">
@@ -2165,9 +2658,11 @@ With squads on:
   screens and coaches' to-dos; its attendance and other records are kept and you can **Bring
   back** it later.
 - **Mark squad phase complete** when a squad's teams are named. From then on, coaches only
-  look after their own team's athletes, and clearances for athletes left only in the squad fall to
-  admins. Physios are unchanged: one left in the squad still looks after everyone in it. You can
-  **Undo** it.
+  look after their own team's athletes. Physios are unchanged: one left in the squad still looks
+  after everyone in it. So only the squad's physio or the Head Physio can endorse the clearance of an
+  athlete left only in the squad; admins can't. If neither exists, every admin's to-do list shows
+  **Nobody can endorse Jordan's clearance** until you make a physio Head Physio or place one in the
+  squad. You can **Undo** it.
 
 <img src="user-guide/squads-and-teams.png" width="210" alt="Squads and teams">
 <img src="user-guide/name-team.png" width="210" alt="Naming a team from a squad">
@@ -2309,7 +2804,8 @@ events in the app. **Edit name or link** and **Delete** change or remove one.
 
 **Absence reasons** (when Attendance is on) is the list athletes and parents choose from when they
 report an absence. It starts with **Planned holidays**, **Personal illness**, **Caring duties**,
-**Planned event**, **National team**, **Volunteering**, **West Coast Fever**, **School or uni exam**,
+**Planned event**, **National team**, **Volunteering**, **West Coast Fever** (Western Australia's
+Super Netball team; switch it off if it isn't yours), **Representative or elite program**, **School or uni exam**,
 **Work commitment** and **Other**. Switch off any your club doesn't use, and add your own under **Add
 a reason**. Reasons can't be deleted, so an absence reported with a reason you later switch off keeps
 it. If every reason is off, members report absences without one. The **Attendance** report counts
@@ -2411,23 +2907,31 @@ for everyone, for example one added by mistake. It can't be undone.
 
 ### Reports
 
-**Reports** in Administration has governance and compliance reports. Each one shows on screen
-with its totals, and **Export PDF** saves the same report as a PDF through the share sheet (on a
+**Reports** in Administration has governance and compliance reports. Committee members with a
+current check, a check application in force or a volunteer exemption read the Working With
+Children Checks, Medical details checks, Integrity training, Attendance and Award results reports
+too, from **Reports** on their home screen, read only (see [Reports for the
+committee](#reports-for-the-committee)). Each one shows on screen with its totals, and **Export PDF** saves the same report as a PDF through the share sheet (on a
 computer it downloads), ready for the committee, an audit or OneDrive. The PDF has the club's
 name, the date it was made and page numbers, and anything that needs attention is in red.
 
 - **Working With Children Checks**: printed across the page, with the WWC Registration Officer
-  at the top. Every approved coach, manager, physio, temporary helper (while helping), committee member and admin with their name on the
+  at the top. Every approved coach, manager, physio, statistician, temporary helper (while helping), committee member and admin with their name on the
   card, date of birth, roles, squads and teams, card number, expiry date, when and how the card was
   last validated and by whom, when it was registered with the club, and status. Checks that
   are missing, have no expiry date, have expired, expire within 60 days, were never validated or
   were validated over a year ago, or aren't registered with the club are listed first under
-  **Needs attention**, then the rest under **Current**. Committee members and admins who are exempt are listed next, with the reason, who
+  **Needs attention**, then the rest under **Current**. Committee members, admins and statisticians exempted with a reason are listed next, under **Exempted with a reason**, with the reason, who
   exempted them and when. **Exempt from a check** lists every exemption of an approved member, and every ended one,
 current ones first, with the child, or the event, organiser and dates, who recorded it, when the declaration was accepted and where
 it's up to, then ended ones with who ended them. An exemption only counts in place of a check while it
 applies: until the declaration is accepted, after the child turns 18 or is unlinked, or outside its dates, the
-person is counted and listed as needing a check. **Temporary helpers** lists everyone approved
+person is counted and listed as needing a check. **Checks applied for** lists every lodged
+application, open ones first, then ones that ended in the last year, with the number, new or
+renewal, the day it was lodged, who recorded it, when the declaration was accepted, who last
+confirmed it's still being assessed, and where it's up to or how it ended. Like an exemption, an
+application only counts in place of a check while it's in force; the totals count those as
+**Check applied for**. **Temporary helpers** lists everyone approved
 as one, newest first, with what they helped with, their dates, the card or exemption that covered
 them, when they accepted the club's policies, and whether they're upcoming, helping now, finished
 or stood down. **Screening Unit notices** lists every notice,
@@ -2444,6 +2948,16 @@ everyone ever stood down, newest first, with the
   included. **Still to finish**
   lists everyone with a course not yet approved, in red if a due date has passed, then each course
   lists who must complete it, where they're up to, when they completed it and who checked it.
+- **Medical details checks**: every approved athlete and where their yearly medical details
+  check is up to, printed across the page. Pick **Squads and teams** to see only those athletes (a
+  squad includes the teams named from it); the PDF says which you chose. Athletes 18 or over check their own, and a verified parent
+  or guardian checks an under 18's. **Overdue** (more than a year since they were last saved or
+  confirmed) and **Nothing saved** come first, in red, then **Due within 30 days** and **Up to
+  date**, each with their squads and teams, who keeps the details, whether emergency contacts are
+  saved, when they were last checked and by whom, and when the next check is due. The totals give
+  the share checked in the last year. Under 18s with no verified parent or guardian are in red,
+  because nobody can check theirs until one is verified. It never shows the medical details
+  themselves.
 - **Injuries** (when Injuries is on): opens the [Injury report](#injury-report).
 - **Attendance** (when Attendance is on): pick the **Period** (last 4 weeks, last 3 months, this
   season, or **Choose dates** for a from and to date) and the **Squads and teams**: **All**,
@@ -2482,6 +2996,8 @@ addresses, so keep them somewhere only the committee can reach.
 <img src="user-guide/report-wwcc.png" width="210" alt="Working With Children Checks report">
 <img src="user-guide/report-pdf.png" width="210" alt="The Working With Children Checks report saved as a PDF">
 <img src="user-guide/report-under-18s.png" width="210" alt="Under 18s and their guardians report">
+<img src="user-guide/report-medical.png" width="210" alt="The Medical details checks report">
+<img src="user-guide/report-medical-squad.png" width="210" alt="The Medical details checks report for the 17 &amp; Under Squad">
 <img src="user-guide/report-attendance.png" width="210" alt="Attendance report for the 17 &amp; Under Squad over the last 4 weeks">
 <img src="user-guide/report-attendance-absences.png" width="210" alt="Reported absences by reason in the Attendance report">
 <img src="user-guide/report-award-results.png" width="210" alt="Full results of a closed match award">
@@ -2509,8 +3025,8 @@ so leave them filled in.
   how they look together and warns when text or buttons would be hard to read. **Use the built-in
   colours** goes back to deep navy, white and blaze orange.
 - **Features**: switch off any of Messages, Calendar, Daily check-ins, Injuries, Attendance,
-  Session plans, Surveys, Captains' polls, Awards, Game goals, Integrity training and Season KPIs
-  (see below). Switching
+  Session plans, Surveys, Captains' polls, Awards, Game goals, Integrity training, Season KPIs and
+  the policy and conflict registers (see below). Switching
   off **Captains' polls** stops captains sending new polls and leaves the rest of Surveys on; polls
   already sent stay readable. A switched-off feature disappears from every member's home screen, to-do list and menus,
   and its Administration pages are hidden. Nothing is deleted, so switching it back on brings
@@ -2524,9 +3040,22 @@ so leave them filled in.
 - **Season KPIs**: off unless you turn it on. It adds **Season KPIs** to the home screen for the
   committee, coaches, managers, athletes and parents, **Season KPI reviews** to Administration and
   the **Season KPIs** report (see [Season KPIs](#season-kpis)).
+- **Training load flags**: off unless you turn it on, and only while Daily check-ins is on. It
+  gives coaches prompts to talk with an athlete from the sessions they log (see [Training
+  load](#training-load)), parents a calm card once a coach has checked in, and the Child Safety
+  Officer patterns for under 18s (see [Training load patterns](#training-load-patterns)). Once it's
+  on, **Training load flags** below the features lets you choose when a rise in load flags:
+  **1.5 or more** (the default, Gabbett 2016's "danger zone"), **above 1.3** (above the 0.8 to 1.3
+  "sweet spot") or **Off**, and whether to flag **Hours over age (under 18s)** (on to start,
+  Jayanthi et al. 2015). Only values from published studies are offered, and **Sources** links
+  them. Tap **Save training load flags**.
 - **Affiliation records**: off unless you turn it on. For a club or association that reports to
   its association or Netball WA, it adds **Affiliation** to Administration and Reports (see
   [Affiliation](#affiliation)). Only admins see it.
+- **Policy and conflict registers**: off unless you turn it on. It adds **Registers** to the home
+  screen for the committee and admins, policy review to-dos for policy owners, and a to-do each
+  season for the committee and coaches to declare conflicts of interest (see [Policy and conflict
+  registers](#policy-and-conflict-registers)).
 
 Tap **Save club settings**. Members see the changes the next time they open the app. Someone
 who has just installed the app sees the FirstPass look on the sign-in screen until they sign in.
@@ -2538,6 +3067,38 @@ part of the app build and don't change here.
 <img src="user-guide/club-settings-features.png" width="210" alt="Club settings: turning features on and off">
 <img src="user-guide/club-settings-physios.png" width="210" alt="Club settings: physios get club messages">
 <img src="user-guide/club-settings-affiliation.png" width="210" alt="Club settings: the Affiliation records switch">
+<img src="user-guide/club-settings-registers.png" width="210" alt="Club settings: the Policy and conflict registers switch">
+<img src="user-guide/club-settings-training-load.png" width="210" alt="Club settings: training load flag choices">
+
+### Policy and conflict registers
+
+Turned on in [Club settings](#club-settings), **Registers** on the home screen holds two
+governance registers for the committee, the board and an audit. Admins change both; the committee
+reads them.
+
+**Policies.** Tap **Add a policy** and give its name (such as Child Safeguarding Policy), its
+**owner** (search for any adult club official: a committee member, coach, manager, physio,
+statistician or admin), its version, a link to the document on the club's website or shared drive
+(the app doesn't store the file), its **next review** date (within 5 years) and any notes, then
+**Add policy**. **Change** a policy to update any of these, or **Remove** it. The owner gets a
+to-do 30 days before the review date and records the review (see [Reviewing a policy you
+own](#reviewing-a-policy-you-own)); admins can record a review for any policy. A policy with no
+owner gets no to-do, so give every policy one.
+
+<img src="user-guide/registers-policy.png" width="210" alt="Adding a policy to the register">
+
+**Conflicts of interest.** Each season, every committee member and coach (including coaches in a
+squad or team who don't hold the club Coach role) is asked to declare. The app has no selector
+role: selectors are covered as coaches or committee members. The register lists who declared a
+conflict and what it is, who declared none, and who still has to. Admins don't declare unless they
+also coach or sit on the committee. Tap someone to correct their entry or to record a declaration
+given on paper; the register then shows that you changed it. Earlier seasons stay in the register.
+A member's declarations go if they delete their account.
+
+<img src="user-guide/registers-conflict.png" width="210" alt="An admin changing a conflict-of-interest entry">
+
+Risk and incident registers and the AGM pack aren't in the app yet (see [Not in the app
+yet](#14-not-in-the-app-yet)).
 
 ### Affiliation
 
@@ -2615,8 +3176,15 @@ its periods starts on those.
   every admin's to-do list shows **Old records are kept forever**. When it's on, each night (a scheduled job at about 2 am Perth time) the app permanently
   removes records older than their keep period. They can't be brought back, so
   save a report first if the club needs a copy.
-- **Daily check-ins**, counted from the day of the check-in: 3 months, 6 months, 1 year
-  (recommended) or 2 years.
+- Under the switch, the app says when the nightly removal last ran (**Last run** and the time), or
+  where the latest run stopped, such as **stopped while removing documents**; the next run carries
+  on from there. If **Remove old records** is on and the removal hasn't finished for 2 days (or
+  hasn't finished once in the 2 days after you switched it on), the line turns red and every admin's
+  to-do list shows a red **Old records haven't been removed since …** (or **… yet**). The scheduled
+  job can pause, for example when GitHub pauses scheduled jobs in a quiet repository, so ask
+  FirstPass to check it.
+- **Daily check-ins**, counted from the day of the check-in, with the training sessions athletes
+  log beside them and coaches' training load reviews: 3 months, 6 months, 1 year (recommended) or 2 years.
 - **Game goals, reflections and athletes' season KPIs**: game goals counted from the game, with
   their comments and the team's goals; athletes' season KPIs and reviews counted from their last
   change, once their season is archived. 1 year (recommended) to 5 years. Coaches' and managers'
@@ -2626,8 +3194,10 @@ its periods starts on those.
 - **Message text involving a child**: messages sent by or to anyone who was under 18 when they
   were sent. 3, 5, 7 (recommended), 10 or 15 years, and never less than **Message text**.
 - **Attendance** (with absences and session plans and their files, counted from the day of the
-  session) and **Training certificates** (with their files, counted from when they were added):
-  1 year (recommended) to 5 years.
+  session): 1 year (recommended) to 5 years, 10 years or 15 years. Keep it longer if your insurer
+  or governing body asks for proof of who was at training.
+- **Training certificates** (with their files, counted from when they were added): 1 year
+  (recommended) to 5 years.
 - **Surveys**, counted from when each survey closes, with its questions, answers and who it went
   to. There are three periods:
   - **Surveys from the committee and admins**: 1, 2, 3 (recommended), 5 or 7 years.
@@ -2643,15 +3213,26 @@ its periods starts on those.
   (recommended) or 3 years after it was cleared. The injury, its sign-offs, each document's name,
   who added it and who viewed or shared it stay. Documents of injuries that aren't cleared yet
   stay.
+- **Medical and emergency details**: an athlete's emergency contacts, allergies, conditions,
+  medications and action plan go when nobody has done their yearly check for 2 (recommended), 3, 5
+  or 7 years. Once the check is due, the athlete (or their parents, for an under 18) see the day
+  they'll be removed under the details. Details nobody has checked can't be relied on in an
+  emergency, so 2 years is a year after the check falls overdue. Who opened them stays in the
+  record views. After removal the athlete or their parents are asked to add them again.
 - **Cleared injuries**: the injury itself, with its updates, sign-offs and who viewed its
   documents, goes 3, 5, 7 (recommended) or 10 years after it was cleared, once its documents have
   gone. 7 years covers the time limits for injury claims, including for children. Injuries that
-  aren't cleared stay.
+  aren't cleared stay. When an athlete leaves the club, the same period counts from the day they
+  leave instead, for every one of their injuries, cleared or not; files of an injury that was never
+  cleared stay until the injury goes.
 - **Safeguarding records**: stand-downs, Screening Unit notices, volunteer exemptions, parents'
   consents, code of conduct acceptances, policy acknowledgements and guardian link history go 7,
-  10, 15, 20 or 30 (recommended) years after each one ended: when a stand-down was lifted, a notice
-  arrived, an exemption or consent ended, or a code of conduct or link change was recorded.
-  Anything still in force stays, including a member's latest policy acknowledgement.
+  10, 15, 20, 30 (recommended) or 45 years after each one ended, or are kept for good: when a
+  stand-down was lifted, a notice arrived, an exemption or consent ended, or a code of conduct or
+  link change was recorded. Anything still in force stays, including a member's latest policy
+  acknowledgement. The Royal Commission into Institutional Responses to Child Sexual Abuse
+  recommended keeping these records at least 45 years, because survivors often come forward
+  decades later.
 - **Who voted for whom in awards**: 1 (recommended), 2, 3 or 5 years after the award closes. Only
   who cast each vote goes; the points and results stay.
 - **Awards and their results**: the award with all its votes goes 3, 5, 10 (recommended) or 20
@@ -2660,18 +3241,27 @@ its periods starts on those.
 A period the club saved before these choices changed (such as 7 years for attendance) stays as it
 is, shown as its own choice, until an admin picks another.
 
-Concerns are never removed. Injury records keep their own rule: removed 12 months after an
-athlete leaves, with any documents still left. Once **Remove old records** is on, join requests go 90 days after they're turned down or left
+Concerns are never removed. While a concern names a member (open or closed), nothing about them
+is removed either, whatever these periods say: their attendance and the sessions they were at, messages they
+sent or received, check-ins, game goals, season KPIs, absences, training certificates, injuries
+and their documents, safeguarding records, who viewed their records and who viewed what with
+them, award votes, survey answers given by name, and a join request that's still waiting. Their
+squad and team places and roles are never removed by the clean-up anyway. This legal hold lasts as
+long as the concern names them, so the club can still answer an investigation, insurer or court.
+Nothing at all is removed while **Remove old records** is off,
+including the injuries of athletes who have left. Once it's on, join requests go 90 days after they're turned down or left
 unanswered, and temporary helpers with no other role a year after their last day; their
 safeguarding records stay for their own periods. Members who stop coming are never removed automatically:
 admins see them under **No team or role for 2 years** (see [Approving
 members](#approving-members)). **Last changed by** shows which admin last saved the periods, and when.
 Tap **Save keep periods** to save.
 
-<img src="user-guide/club-settings-records.png" width="210" alt="Club settings: keeping records">
+<img src="user-guide/club-settings-records.png" width="210" alt="Club settings: keeping records, with when the nightly removal last ran">
+<img src="user-guide/records-removal-stalled.png" width="210" alt="An admin's to-do list: old records haven't been removed, in red">
 <img src="user-guide/club-settings-records-safety.png" width="210" alt="Club settings: keep periods for message text, messages involving a child and attendance">
 <img src="user-guide/club-settings-records-surveys.png" width="210" alt="Club settings: keep periods for training certificates and surveys">
 <img src="user-guide/club-settings-records-injury.png" width="210" alt="Club settings: keep periods for team polls, record views and injury documents">
+<img src="user-guide/club-settings-records-medical.png" width="210" alt="Club settings: how long medical and emergency details are kept without their yearly check">
 <img src="user-guide/club-settings-records-more.png" width="210" alt="Club settings: keep periods for cleared injuries and safeguarding records">
 <img src="user-guide/club-settings-records-awards.png" width="210" alt="Club settings: keep periods for who voted for whom and for awards and their results, with Keep for good">
 
@@ -2682,6 +3272,10 @@ Manager** and **WWC Registration Officer**. Search for each by name. All three m
 a current Working With Children Check (or an exemption that applies), and the Child Safety
 Officer and Complaints Manager must be two different people, so a concern about one can go to the
 other. You can't name yourself unless someone else is the other contact.
+The Child Safety Officer is also the club's welfare contact for athletes. Athletes
+who'd like to talk to someone are pointed to the check-in's **Something worrying you? Tell the club safely**,
+which reaches them as a concern, and they see every athlete's wellbeing flags. The app has no
+separate Wellbeing Officer; choose a Child Safety Officer who can take on that role.
 If a contact's check lapses or they're stood down, they stop being shown and stop seeing concerns
 until the check is recorded again or the stand-down is lifted, or you choose someone else.
 
@@ -2698,6 +3292,15 @@ today, but not push it back, so the club can't keep putting it off. Exempt anyon
 with children, such as a treasurer who works from home, with the reason, on their member page.
 
 <img src="user-guide/admin-committee-checks.png" width="210" alt="Safeguarding settings: committee checks required from">
+
+An admin with no check recorded stops seeing under 18s' injuries 30 days after the committee
+checks date, until a check, an application or a parent volunteer exemption is recorded.
+
+**Statistician checks required from** works the same way for statisticians. It starts 90 days
+after statisticians first needed a check. Statisticians without one keep their role until then;
+from that day their statistician role pauses, in HQ and in Vantage, until you record a check, an
+application or a volunteer exemption, or exempt them with a reason, such as one who only records
+opens games. You can bring the date forward but not push it back.
 
 Add the sport's **governing body**: its name, phone or hotline, and complaints form link. Add the
 club's **safeguarding policy** link too. Everyone sees these on **Raise a concern**. Links must
@@ -2723,6 +3326,35 @@ one, after confirming their consent, and athletes under 18 can never add one the
 
 <img src="user-guide/admin-safeguarding-photos.png" width="210" alt="Safeguarding settings: club policies and photos of under 18s' injuries">
 <img src="user-guide/admin-safeguarding-conduct.png" width="210" alt="Safeguarding settings: Code of conduct each season switched on">
+
+Under **Injury clearances**:
+
+- **Only physios endorse clearances** is off by default, so one of the athlete's coaches or a
+  physio who looks after them endorses a return to play. Turn it on only if every squad and team
+  has a physio, or the club has a Head Physio, or clearances will wait with nobody to endorse them.
+  A suspected concussion always needs a physio, whatever this says. Clearances already waiting
+  when you turn it on that no physio can endorse show on your to-do list, as they do whenever a
+  clearance has nobody to endorse it.
+- **Concussion: earliest return** is **21 days**, Netball Australia's minimum for community and
+  pathway netball. Choose **12 days (elite program)** only for an elite program, where Netball
+  Australia allows 12. Either way, the athlete needs a doctor's clearance and a physio's
+  endorsement (see [Concussion](#concussion)).
+
+<img src="user-guide/admin-injury-clearances.png" width="210" alt="Safeguarding settings: injury clearances">
+
+**Injuries are seen by** is **Whole committee** by default, so every committee member sees
+injuries and accepts clearances as [Accepting clearances](#accepting-clearances) describes. Choose
+**Chosen committee members** to keep injuries to the few who need them, such as the president and
+whoever looks after player welfare, then switch on each one. Only committee members who aren't
+admins are listed. Committee members left out see no injuries, get no clearance to-dos and can't
+accept, send back or share a clearance. A chosen member still sees an under 18's injuries only with
+a current check, an application in force or a parent volunteer exemption. Admins aren't affected:
+they see injuries as admins. With nobody switched on, no committee member sees injuries and only
+admins accept clearances; the screen warns you. Going back to **Whole committee** keeps your list,
+so choosing again brings the same people back. Someone who leaves the committee stops seeing
+injuries straight away.
+
+<img src="user-guide/admin-injury-committee.png" width="210" alt="Safeguarding settings: injuries seen by chosen committee members">
 
 **Code of conduct** in Administration lists who still has to accept the code of conduct this
 season and who has, with the date and, for an under 18, the parent or guardian who accepted. An
@@ -2750,7 +3382,9 @@ governing body straight away and not to resolve it within the club. Then record 
 - **Add note** for anything else: who you spoke to and what was decided.
 - **Change status** to Being looked into, or **Closed** with a note saying why.
 - **Who it's about**: name the member it's about. From then on they can't see it, even if they're
-  an admin or handle concerns.
+  an admin or handle concerns. Nothing about them is removed under [Keeping
+  records](#keeping-records) while the concern names them, even once it's closed: their
+  attendance, messages, check-ins, injuries and safeguarding records are kept as a legal hold.
 
 Every step is kept with who did it and when. **Export the register as a PDF** gives the whole
 register with every step, except any concern about you, for the committee, the governing body or
@@ -2758,6 +3392,43 @@ an auditor.
 
 <img src="user-guide/concerns-register.png" width="210" alt="The concerns register">
 <img src="user-guide/concern.png" width="210" alt="A concern with the referral prompt and what's been done">
+
+### Wellbeing flags
+
+A score of 2 or less on any daily check-in question flags the athlete to their coaches. Once a
+squad's selections are done, athletes who weren't selected drop out of every coach's check-ins, so
+the club's **Child Safety Officer** also sees every athlete's flags, selected or not. Only the Child
+Safety Officer does: not the Complaints Manager, and not admins unless one of them is the Child
+Safety Officer.
+
+**Concerns > Wellbeing flags** lists the last 14 days, one card per athlete, with the day and the
+lowest score of each flagged check-in. The four answers and the athlete's note are never shown.
+Anyone flagged on 3 days in the last 7 is listed first, and the to-do list says **Look at N
+athletes flagged 3 times this week** until the run of low scores stops. An athlete under 18 shows
+only once a parent or guardian has given consent for check-ins, the same consent their coaches
+need, and each time you open the page it's recorded in that child's record views. If you're
+worried, talk to the athlete or their parent, or **Raise a concern** from the same page. The page
+goes when the club turns off Daily check-ins.
+
+<img src="user-guide/wellbeing-flags.png" width="210" alt="Wellbeing flags: each athlete's flagged days and lowest scores">
+
+### Training load patterns
+
+When the club turns on Training load flags, the Child Safety Officer also has **Concerns >
+Training load patterns**. It lists athletes under 18 whose logged training shows a pattern worth a
+welfare look:
+
+- more hours of sport than their age, 2 weeks running;
+- a load flag alongside 2 or more low check-ins this week;
+- a load flag a week ago that no coach has marked as talked about.
+
+You see the pattern and when it started, never their sessions, numbers or coaches' notes. A child
+shows once a parent has given consent for check-ins, and each time you open the page it's recorded
+in that child's record views. Your to-do list says **Look at N children's training load** while any
+are listed. Most patterns are simply a busy few weeks: if you're worried, talk to their coach or
+parent, or **Raise a concern** from the same page.
+
+<img src="user-guide/training-load-patterns.png" width="210" alt="Training load patterns for the Child Safety Officer">
 
 ### Club password
 
@@ -2778,15 +3449,16 @@ once saved, only replaced or removed, and anyone who gets it wrong five times in
 | Preferred name and title | You and admins; your preferred name then shows wherever your name does.                                                 |
 | Your own personal tasks | Only you. Not your parents or guardians, coaches, the committee or admins. They can't be shared or sent to anyone. |
 | Captains                | Club captains: every member. A squad or team's captains: the people in it, and admins.                                     |
-| Date of birth, Working With Children Check and exemption | You and admins. Awards with an age limit use it to decide who can be voted for, without showing it.   |
+| Date of birth, Working With Children Check and exemption | You and admins. Committee members with a current check also read them, for everyone who needs a check, in the Working With Children Checks report. Awards with an age limit use it to decide who can be voted for, without showing it. |
 | Date of birth given at Join, and a child's parent or guardian email | You and admins. Admins also see who recorded your checked date of birth and when. |
 | How a member was verified | You and admins: the method, and what the admin checked. |
 | Guardian link history   | Admins only: every link and unlink, by whom, when and the reason. The child's guardians, and the child from 13, get a message about each change, without the reason. |
 | A child's link code     | Only the child, in their own app. Nobody else can read it, admins included. It works once, for 7 days, and a new one stops the old one working. |
 | Who entered a child's code | The parent or guardian who entered it, and admins. The child sees the names of parents and guardians who entered their code. |
-| Stand-downs             | Admins only. The member sees that their role is paused, not the reason.                                                     |
-| Screening Unit notices and card validations | Admins only.                                                                                            |
-| Volunteer exemptions and declarations | The volunteer (their own) and admins. Kept under the member's name if they delete their account; the exemption ends that day. |
+| Stand-downs             | Admins, and committee members with a current check in the Working With Children Checks report (read only). The member sees that their role is paused, not the reason. |
+| Screening Unit notices and card validations | Admins, and committee members with a current check in the Working With Children Checks report (read only). |
+| Check applications, receipts and declarations | The member (their own application and declaration, not the receipt) and admins. Committee members with a current check read the applications in the Working With Children Checks report, never the receipts. Kept, with the receipt, if the member deletes their account. |
+| Volunteer exemptions and declarations | The volunteer (their own) and admins, and committee members with a current check in the Working With Children Checks report (read only). Kept under the member's name if they delete their account; the exemption ends that day. |
 | Temporary helpers' task, dates and policy acceptance | The volunteer and admins. Temporary helpers see nothing of the club's members, squads, calendar or messages. If a helper deletes their account, their policy acceptance and any exemption declaration are kept under their name; their task and dates go with the account. |
 | Concerns                | The Child Safety Officer, the Complaints Manager and admins, never the person a concern is about when they were named from the list (a concern that only describes someone in words is not hidden from anyone who handles concerns). Whoever raised it sees its status. A hidden name is never shown to them. |
 | Safeguarding contacts   | Everyone signed in, including guests and people waiting for approval.                                                       |
@@ -2796,8 +3468,11 @@ once saved, only replaced or removed, and anyone who gets it wrong five times in
 | Survey answers          | Whoever sent the survey. The committee and admins for their own surveys and ones a coach or manager shared with them. A coach or manager's survey to their own squad or team is seen by them while they still coach or manage it, by admins unless it's a quick poll (up to 5 questions with choices or ratings), and by the committee if they shared it. A captain's poll is seen by the captain while they're captain, and by the squad or team's coaches and managers. Named answers show the member's name; parents and guardians of an athlete under 18 also read their child's named answers. Anonymous answers, and name-optional answers given without a name, are kept with no name, no member and no time, so nobody can see who gave them, admins included; their results show only once the survey has closed, or everyone has answered, and at least 3 people have answered. Named results show once 3 people have answered, a club survey's chosen 20%, 50% or 80%, or everyone when everyone must answer; every survey's results show once it closes. Members never see each other's answers. Whoever sees the results can download them as a PDF or spreadsheet, except captains. |
 | Survey totals shared with a team | When a coach, manager or captain shares a poll's results with the squad or team: everyone it went to and their parents or guardians, once results show. Only how many picked each choice and average ratings: never names, written answers or who has answered. |
 | Who has answered a survey | Named surveys: whoever can see the results sees who hasn't answered yet. Anonymous and name-optional surveys: only how many have answered. Each member sees whether they've answered themselves. |
-| Daily check-in answers and notes | The athlete, their guardians and their coaches. For an athlete under 18, their coaches only once a parent or guardian consents, and until then their check-ins count in no average. The committee, physios and admins see only group averages, hidden below 3 check-ins (over three days, in Trends). |
-| Injuries and documents  | For an athlete under 18 whose parents haven't given consent for injuries: only the athlete, their guardians and admins. Otherwise the athlete, their guardians, their coaches, the physios who look after them (the Head Physio and physios in their squad or team), the committee and admins. Managers don't see injuries. Whoever takes attendance (coaches, managers, the committee and admins) sees only that an athlete is **Injured** and their expected return date, whatever the consent. While a clearance waits for the committee, any committee member or admin who could accept it can share its documents; everyone else views them in the app. |
+| Daily check-in answers, notes and training sessions | The athlete, their guardians and their coaches. For an athlete under 18, their coaches only once a parent or guardian consents, and until then their check-ins count in no average. The committee, physios and admins see only group averages of check-in answers, hidden below 3 check-ins (over three days, in Trends), and nothing of training sessions; teammates see none. |
+| Training load flags (when turned on) | The athlete (their own flags, gently worded) and their coaches, who also see the numbers and each other's notes. For an athlete under 18, coaches only once a parent or guardian consents to check-ins. Parents and guardians see only that a coach talked with their child, when and what about, never the flags, numbers or note. The Child Safety Officer sees patterns for under 18s, not numbers or notes. The committee, managers, physios and admins see none. |
+| Wellbeing flags | Only the Child Safety Officer: for every athlete, selected or not, the day and lowest score of each check-in scoring 2 or less in the last 14 days, never the answers or notes. Under 18s only once a parent or guardian consents to check-ins. |
+| Injuries and documents  | For an athlete under 18 whose parents haven't given consent for injuries: only the athlete, their guardians and admins. Otherwise the athlete, their guardians, their coaches, the physios who look after them (the Head Physio and physios in their squad or team), the committee (or only the committee members the club chose under **Injuries are seen by**) and admins. For an athlete under 18, only committee members with a current Working With Children Check or a parent volunteer exemption, and admins unless their own check has been missing or expired for over 30 days. Managers don't see injuries, including ones they log. A coach, manager or physio who logs an injury sees it only as their role already allows. Whoever takes attendance (coaches, managers, the committee and admins) sees only that an athlete is **Injured** and their expected return date, whatever the consent. While a clearance waits for the committee, any committee member or admin who could accept it can share its documents; everyone else views them in the app. |
+| Medical and emergency details | The athlete; an under 18's verified parents and guardians, who keep them (an athlete 18 or over keeps their own); and the coaches, managers and physios of the athlete's current squads and teams (the Head Physio for every athlete), for an under 18 only once a parent or guardian has given consent for injuries and health information. Not admins or the committee. Each view by a coach, manager or physio is recorded, and the athlete 18 or over, or an under 18's parents and guardians, see who and when. Checked once a year by whoever keeps them; admins see who has checked and when, but not the details. Removed when nobody has checked them for the club's chosen time (Keeping records), and deleted with the athlete's account. |
 | Who opened injury documents | The athlete, their guardians and admins: every view and share, by whom, their role and when, and each photo consent. |
 | Who has viewed a child's records | For an athlete under 18: their verified parents or guardians (until the athlete turns 18) and admins. Lists every time someone other than the athlete or their guardians opened the athlete's injuries, injury documents, check-ins, game goals, season KPIs, named survey answers or member record. Opening a child's records is recorded whoever you are; nobody can switch it off or delete entries by hand, and old entries are removed only under the club's Keeping records settings. |
 | Consents for a child    | The athlete, their parents or guardians and admins, with every consent given and withdrawn. Only a verified parent or guardian can give or withdraw one. |
@@ -2805,7 +3480,7 @@ once saved, only replaced or removed, and anyone who gets it wrong five times in
 | Code of conduct acceptances | The member, their parents or guardians and admins: each season's acceptance, who accepted it, when, the words and the policy version. Kept under the member's name if they delete their account. |
 | Game goals and reflections | The athlete, their guardians and their coaches. Only the athlete and their coaches set goals, and only the athlete reflects; guardians just read them. The committee, managers, physios and admins don't see them. |
 | Season KPIs, progress and reviews | An athlete's: the athlete, their coaches in that squad or team, their parents or guardians (read only, until 18) and admins (read only). Not teammates, the committee or physios. A coach's or manager's: them, the committee and admins, and an assistant coach's head coach. Only those who set KPIs change them, record results and write reviews; the person records progress, confirms reviews and adds their own view. A coach's or manager's KPIs and reviews are kept under their name if they delete their account, and stay on the admin report. |
-| Live game stats         | Admins and statisticians: every game the club records. The coaches and managers of the game's squad or team see the team's games at every stage and who has paired with each, and the stats once they pair with its code in FirstPass Vision. Athletes, guardians, physios and the committee don't see them. |
+| Live game stats         | Admins and statisticians (while their statistician role isn't paused for a check): every game the club records. The coaches and managers of the game's squad or team see the team's games at every stage and who has paired with each, and the stats once they pair with its code in FirstPass Vision. Athletes, guardians, physios and the committee don't see them. |
 | Team goals              | The team's athletes, their guardians, its coaches and admins. Only its coaches set and review them. Athletes and coaches in the team can comment; guardians and admins read the comments. Managers and physios placed in the team don't see them. |
 | Integrity training certificates | The member, their parents or guardians, the committee and admins. Coaches, managers and physios don't see them. Certificates can't be changed or removed once sent. |
 | Attendance records      | The committee and admins see every session. Coaches and managers see their own groups' sessions, whole-club sessions and any they took themselves, while their check is current and they aren't stood down. An athlete sees their own marks, and their parents or guardians see them until the athlete turns 18; neither sees other athletes on the register. |
@@ -2815,25 +3490,29 @@ once saved, only replaced or removed, and anyone who gets it wrong five times in
 | Absence reasons         | Every approved member sees the list. Only admins switch reasons off or add them.                                             |
 | Committee calendar      | Committee members and admins.                                                                                               |
 | Award votes             | Only the voter sees their own ballot. Nobody, admins included, can see who someone voted for. Who cast each vote is removed after the club's keep period (1 year recommended). |
-| Award results           | Admins only: standings and how many people have voted, and once voting closes, how many votes each nominee got at each place. |
+| Award results           | Admins: standings and how many people have voted, and once voting closes, how many votes each nominee got at each place. Committee members with a current check read the same results once voting closes. |
 | Affiliation records and PlayHQ registration checks | Admins only. |
+| Policy register         | The committee and admins, when the club turns the registers on. A policy's owner also sees the policies they own. Only admins add, change or remove policies; the owner or an admin records a review. |
+| Conflict-of-interest declarations | The member (their own), the committee and admins, when the club turns the registers on. Coaches, athletes and parents don't see anyone else's. Only the member declares; admins can correct an entry, and the register shows they did. |
 | Affiliation returns     | Admins only, until an admin sends one. A sent return goes to the email address the club entered and holds club facts and counts, naming no member under 18. |
-| Reports and their PDFs  | Admins only. A saved PDF is a copy outside the app, so whoever it's shared with can read it.                                |
+| Reports and their PDFs  | Admins read every report. Committee members with a current check, a check application in force or a volunteer exemption read the Working With Children Checks, Medical details checks, Integrity training, Attendance and Award results reports, read only; never Under 18s and their guardians, Injuries, Session plans, Season KPIs or Affiliation, and none if they're exempted with a reason or have no check yet. A saved PDF is a copy outside the app, so whoever it's shared with can read it. |
 | Match fixtures          | The members of each squad or team, statisticians and admins.                                                                |
-| How long records are kept | Admins: the keep periods, whether old records are removed and who last changed them. |
+| How long records are kept | Admins: the keep periods, whether old records are removed, who last changed them, and when the nightly removal last ran or where it stopped. |
 | Club name, colours and logo | Every signed-in member. The logo file is public so it can show before sign-in. Only admins can change them.            |
 | Other clubs' members and records | Nobody in this club. Each club's members, messages, injuries and documents are kept in that club's own database, which other clubs can't reach. |
 
-When someone leaves, injury records and proof documents are kept for 12 months, visible only to the
-committee and admins, then deleted automatically. Once an admin switches on **Remove old records**,
-check-ins, game goals, athletes' season KPIs from archived seasons, attendance, session plans and
+When someone leaves, their injury records are visible only to the committee and admins. Once an
+admin switches on **Remove old records**, they go after the club's period for cleared injuries (7
+years recommended), counted from when the athlete left, and
+check-ins (with training sessions and training load reviews), game goals, athletes' season KPIs from archived seasons, attendance, session plans and
 training certificates go after 1 year, message text after 3 years (7 years when a child sent or
 received it), record views after 7 years, the files of a cleared injury 1 year after
-clearance and the injury 7 years after, safeguarding records 30 years after they end, who voted
+clearance and the injury 7 years after, medical and emergency details nobody has checked for 2 years, safeguarding records 30 years after they end, who voted
 for whom in awards after 1 year and awards with their results after 10 years, unless the club
 chooses other periods (see [Keeping records](#keeping-records)). Join requests then go 90 days after they're turned down or left unanswered, and temporary
 helpers with no other role a year after their last day. Deleting a member keeps the club's safeguarding records about them for their own periods.
-Concerns are never removed.
+Concerns are never removed, and nothing about a member a concern names is removed while it names
+them.
 
 <div style="page-break-before: always"></div>
 
@@ -2866,7 +3545,7 @@ shown a link code to give that parent or guardian and who they can talk to.
 An athlete under 18 can't use the app until a verified parent or guardian is linked to them. The
 lock is kept by the club's database, not just the app's screens, so a locked child can't read or
 change any club information however they try: no squads or teams, calendar, messages, surveys,
-check-ins, injuries, goals or attendance. Until then they see only their link code, the club's
+check-ins, logged training, medical details, injuries, goals or attendance. Until then they see only their link code, the club's
 safeguarding contacts and helplines, **Raise a concern**, and how to sign out or delete their
 account. Coaches, managers, admins and parents still see the child on registers and rosters as
 before.
@@ -2914,6 +3593,10 @@ images to stay inside the club. So for athletes under 18:
 - **Physios see only their own athletes.** A physio sees the injuries of the athletes in their own
   squads and teams. Only the Head Physio sees every athlete; a physio in no squad or team sees none
   until an admin places them.
+- **A clearance can't wait unseen.** If an athlete asks to be cleared and nobody can endorse it
+  (their squad's phase is complete, and the club has no Head Physio and no physio in their squad or
+  team), every admin's to-do list says so until an admin names a Head Physio or places a physio.
+  Admins still can't endorse it themselves, and nobody's access to the injury changes.
 
 Athletes who are 18 or over attach a PDF or a photo, and see who opened their documents too.
 
@@ -2922,6 +3605,38 @@ Working With Children Check, and another admin must do it.
 
 <img src="user-guide/injury-letter-photo.png" width="210" alt="An athlete under 18 confirming a photo shows the physio's letter">
 <img src="user-guide/injury-photo-consent.png" width="210" alt="A guardian choosing The injury and confirming consent before adding a photo">
+
+### Injuries, concussion and return to play
+
+- **Parents hear about an injury straight away.** When a coach, manager or physio logs an injury
+  at training or a game, the athlete and their parents or guardians get a to-do until they open it,
+  and it shows under **What's changed** with who logged it. Logging an injury gives the person who
+  logged it no extra access: a manager never sees injury records, and an under 18's injury still
+  shows to their coaches and physios only once a parent has consented.
+- **Physios write their own updates.** A physio who looks after the athlete adds updates directly,
+  labelled with their role, so the record is the physio's own words. Only the athlete or a parent
+  or guardian asks for clearance.
+- **A concussion pathway.** A suspected concussion follows
+  [Netball Australia's concussion policy](https://netball.com.au/news/update-netball-australias-concussion-protocols): if in doubt, sit them
+  out; no clearance can be asked for until 21 days after the injury (12 for an elite program, if the
+  club chooses); clearance needs a doctor's clearance, confirmed by whoever sends it; and only a
+  physio can endorse it. Only a physio can say it isn't a concussion. See [Concussion](#concussion).
+- **Physio-only clearances, if the club wants.** An admin can turn on **Only physios endorse
+  clearances**, so no coach signs off a return to play. A clearance that nobody can endorse shows
+  on every admin's to-do list.
+- **Only screened committee members handle children's injuries.** A committee member sees an under
+  18's injuries, and accepts or sends back their clearances, only with a current Working With
+  Children Check or a parent volunteer exemption. A committee member exempted for another reason,
+  such as a treasurer who never works with children, or one with no check before the club's
+  **Committee checks required from** date, sees adults' injuries only.
+- **Fewer people see injuries, if the club wants.** An admin can choose which committee members see
+  injuries and sign off returns to play, such as the president and whoever looks after player
+  welfare. The rest of the committee then sees no injury at all, adult or child.
+- **Admins lose children's injuries when their check lapses.** An admin keeps every admin power
+  when their check expires, so the club is never locked out, but 30 days after it expired, or after
+  the committee checks date if none is recorded, they stop seeing under 18s' injuries and
+  accepting their clearances until a check, an application or a parent volunteer exemption is
+  recorded. An exemption with a reason doesn't count.
 
 ### For parents and guardians
 
@@ -2950,10 +3665,13 @@ Working With Children Check, and another admin must do it.
   [Your child's surveys](#your-childs-surveys)).
 - **You read what the coaches share with your child.** Any session plan a coach shares with your
   child's squad or team, you can read too (see [Your child's session plans](#your-childs-session-plans)).
+- **The club keeps an eye on training load, calmly.** If the club uses Training load flags, a
+  coach gets a prompt to check in when your child's logged training stands out, and you see a card
+  once they have, never alarming numbers (see [Your child's training load](#your-childs-training-load)).
 - **You can tell the club your child will be away**, so an absence you didn't report stands out
   (see [Your child's attendance](#your-childs-attendance)).
 - **Nothing is shared without your consent.** Your child's check-ins and injuries are seen by
-  their coaches, physios and the committee only after you consent in the app (see [Giving
+  their coaches, physios and the committee members cleared to work with children only after you consent in the app (see [Giving
   consent](#giving-consent)), and until then none of them can endorse, accept or send back your
   child's clearance. The one exception is the attendance register: whoever takes
   attendance sees that your child is injured and when they're expected back, and nothing else, so
@@ -2963,6 +3681,12 @@ Working With Children Check, and another admin must do it.
   conduct with your child and accept it for both of you (see [The code of conduct for your
   child](#the-code-of-conduct-for-your-child)).
 - **Your access ends at 18.** Guardian access ends on your child's 18th birthday.
+- **You keep your child's medical and emergency details.** Emergency contacts, allergies,
+  conditions, medications and an action plan, written by you. Their coaches, managers and physios
+  read them only once you've given consent for injuries and health information; admins and the
+  committee never do. Every time one of them opens them it's recorded, and you see who and when.
+  You're reminded to check they're still right once a year, and admins can see who has checked
+  without seeing the details. Details nobody checks for the club's chosen time are removed.
 - **Injury photos need your consent.** Injury proof for under 18s is the letter or report, as a PDF
   or a photo confirmed to show the letter. Only if the club allows it can you, as a verified
   guardian, add a photo of your child's injury, and only after confirming your consent, which is
@@ -2979,6 +3703,9 @@ Working With Children Check, and another admin must do it.
   whole squads, teams or roles, and your parents or guardians get a copy.
 - **Session plans are read only.** Plans your coaches share can't be replied to, liked or passed
   on, and your parents or guardians can read them too.
+- **Your training sessions stay private.** Only you, your coaches and your parents or guardians
+  see them. If the club uses Training load flags and you have a big week, your coach may check in
+  with you: it's not a warning, just a chance to talk. There's no leaderboard or team total.
 - **Your season KPIs stay with your coaches and your family.** If your coaches set you KPIs, only
   you, your coaches, your parents or guardians and the club's admins see them. Your teammates
   don't, and there's nothing to like or share.
@@ -2999,26 +3726,41 @@ Working With Children Check, and another admin must do it.
   parent's or guardian's email. Then you get a link code to share with them. Until a club admin
   links a parent or guardian to you, the app shows only your code and who you can talk to if
   anything worries you. Only give your code to your parent or guardian.
-- **You can tell someone safely.** The check-in screen has a link to raise a concern, and you can
-  hide your name. Kids Helpline (1800 55 1800) is free, any time.
+- **You can tell someone safely.** The check-in screen has a link, **Something worrying you? Tell
+  the club safely**, that reaches the club's Child Safety Officer, its welfare contact for
+  athletes. A line such as "I'd like to talk to someone" is enough, and you can hide your name.
+  Kids Helpline (1800 55 1800) is free, any time.
 - **Everyone can agree to the same code of conduct**, coaches and parents included, every season,
   covering training, games and online, when the club asks for it in the app.
 - **No photos of your injuries.** Attach your physio's or doctor's letter instead, as a PDF or a
   photo of the letter. Only a verified parent or guardian can add a photo of the injury itself,
   with their consent recorded, and only if the club allows it. You can see everyone who has
   opened it.
+- **Your medical details are for your safety.** Your parents keep your emergency contacts,
+  allergies and action plan until you're 18, and you can read them. Only your coaches, managers and
+  physios see them, and only with your parents' consent. Your parents check they're still right
+  once a year.
 
 ### For coaches, managers, physios and volunteers
 
 - **A check before you start.** Coaches, managers and physios need a current Working With Children
-  Check before they're approved, and new committee members and admins need one or an exemption
-  with a reason. An admin validates the card, online or by
+  Check before they're approved, and new committee members, admins and statisticians need one or
+  an exemption with a reason (a statistician who only records opens games, for example). An admin validates the card, online or by
   sighting it, at least once a year and whenever it's renewed, and registers it with the club
   through the Screening Unit, so the club hears if the card's status changes.
+- **Applied, and waiting for the card.** In WA someone who has applied for a check, new or a
+  renewal, can work while it's assessed, with the receipt, unless they've had a negative or
+  interim negative notice, been charged with or convicted of a Class 1 offence as an adult, or
+  withdrawn it. An admin records the application and the receipt, the person accepts a
+  declaration saying so, and an admin confirms with the Screening Unit every 30 days that it's
+  still being assessed. Without that it lapses after 90 days and the role pauses. A Screening Unit
+  notice stops it at once, and recording the card ends it (see [Checks applied
+  for](#checks-applied-for)).
 - **Parent and under-18 volunteers.** In WA a parent volunteering at their child's club, or a
   volunteer under 18, is exempt instead and accepts a declaration in the app (see [Volunteer
   exemptions](#volunteer-exemptions)). The exemption ends by itself when the child or volunteer
-  turns 18.
+  turns 18. A parent's exemption doesn't cover overnight camps or trips, and the app doesn't mark
+  events as overnight, so the club makes sure a parent volunteer has a check before a tour.
 - **Your role pauses the day after your check expires**, and comes back when an admin records the
   renewed check. While it's paused the database closes your groups' rosters, calendars, fixtures,
   attendance and plans; they aren't only hidden on the screen. Messages are hidden from the screen
@@ -3036,8 +3778,9 @@ Working With Children Check, and another admin must do it.
   what each squad or team did and who ran it (see [Session plans](#session-plans)). Photos are of
   the plan, not of athletes.
 - **Opening a child's records is recorded.** If your role lets you open an under 18's injuries,
-  injury documents, check-ins, game goals or season KPIs, the app records it when you do, and their verified parents
-  and guardians can see who looked and when.
+  injury documents, check-ins, game goals, season KPIs or medical and emergency details, the app records it when you do, and their verified parents
+  and guardians can see who looked and when. Opening an adult athlete's medical and emergency
+  details is recorded too, and they see it.
 - **Visitors from outside WA.** The short-term visitor exemption (two weeks from arrival) and the
   national event or tour exemption (up to 30 days at the event) each record their dates, end by
   themselves, and can be used only once between them in any 12 months; the app refuses a second.
@@ -3060,14 +3803,32 @@ Working With Children Check, and another admin must do it.
   kept (see [Changing or removing members](#changing-or-removing-members)).
 - **Committee checks have a deadline.** Committee members approved before checks were needed
   keep their role without one only until the club's committee checks date. From that day their
-  committee role pauses unless a check is recorded or an admin exempts them with a reason. Admins
-  can bring the date forward but never push it back.
+  committee role pauses unless a check is recorded, an application they've lodged is in force, or
+  an admin exempts them with a reason. Admins
+  can bring the date forward but never push it back. Statisticians, who often sit courtside at
+  junior games, have their own date that works the same way; from it, their role pauses in HQ and
+  in Vantage without a check, an application, a volunteer exemption or an exemption with a reason.
+- **Only screened committee members read the reports.** Committee members read the Working With
+  Children Checks, Medical details checks, Integrity training, Attendance and Award results
+  reports only while they have a current check, a check application in force or a volunteer
+  exemption, and aren't stood down. A committee member exempted with a reason, or still without a
+  check before the committee checks date, reads none of them. The reports are read only, give no
+  email addresses or check receipts, and the reports about under 18s' guardians, injuries, session
+  plans, Season KPIs and affiliation stay with admins.
+- **Policies stay current, and conflicts are declared.** When the club uses the registers, each
+  policy, the child safeguarding policy included, has an owner who gets a to-do 30 days before
+  its review date, and the committee sees which reviews are overdue. Every committee member and
+  coach declares any conflict of interest each season, such as a child in a team they select,
+  and the committee sees who still has to (see [Policy and conflict
+  registers](#policy-and-conflict-registers)).
 - **Admins are screened too.** Admins can read every child's records, so they need a current
-  check, or an exemption with a reason that another admin records; nobody exempts themselves. An
+  check (or an application being assessed), or an exemption with a reason that another admin records; nobody exempts themselves. An
   admin's role doesn't pause when the check expires, so the club can't be locked out of its own
-  app, but it stays on every admin's to-do list until renewed, and an admin can be stood down.
+  app, but it stays on every admin's to-do list until renewed, and an admin can be stood down. After
+  30 days without one they stop seeing under 18s' injuries.
 - **Safeguarding contacts.** Name a Child Safety Officer and a Complaints Manager, two different
-  adults with a current check or a volunteer exemption (an exemption with a reason doesn't count;
+  adults with a current check, a check application in force or a volunteer exemption (an exemption
+  with a reason doesn't count;
   an officer whose check lapses loses the register until it's renewed), and add the governing body's contacts and the club's policy (see
   [Safeguarding contacts](#safeguarding-contacts)). Name a WWC Registration Officer to keep the
   club's check records.
@@ -3076,7 +3837,26 @@ Working With Children Check, and another admin must do it.
   stays on your to-do list until you record telling the governing body in writing.
 - **Check-ins are only ever averages.** The committee, physios and admins never see who checked in
   or any one athlete's answers, only a group's average scores, and only once at least 3 athletes in
-  the group have checked in.
+  the group have checked in. The one exception is below. The training sessions athletes log beside
+  their check-ins follow the same rules, and nobody but their coaches and parents sees them, not
+  even as an average.
+- **The Child Safety Officer sees repeated low check-ins.** A low score flags an athlete to their
+  coaches, but athletes who aren't selected drop out of every coach's check-ins. So the Child
+  Safety Officer sees every athlete's flags, the day and lowest score only, never answers or
+  notes, and gets a to-do when the same athlete is flagged on 3 days in 7. A child's flags show
+  only with the parent's consent for check-ins, which says so, and every look is recorded in the
+  child's record views.
+- **Training load prompts a conversation, never a decision.** When the club turns on Training load
+  flags, coaches get prompts from the sessions athletes log, each linked to the published study it
+  rests on: a jump on the last 4 weeks (Gabbett 2016, from adult professional athletes), more
+  hours of sport in a week than a child's age (Jayanthi et al. 2015), training while an injury has
+  restrictions (only with a parent's consent for injuries), and low check-ins alongside (Saw et
+  al. 2016). The app says everywhere that load is self-reported, can't predict
+  injury and must not be relied on for selection, medical or return-to-play decisions. Parents see
+  that a coach checked in, and the Child Safety Officer sees children whose hours stay over their
+  age, whose flags come with low check-ins, or whose flags no coach followed up within a week (see
+  [Training load patterns](#training-load-patterns)). Every look is recorded in the child's record
+  views. It's off unless an admin turns it on.
 - **Screens only for those who use them.** Each screen opens only for the roles it's for, even
   from a shared link or a typed web address: for example, only coaches, the committee, physios and
   admins open Check-ins, only an athlete's coaches and parents or guardians open their check-ins,
@@ -3087,6 +3867,12 @@ Working With Children Check, and another admin must do it.
 - **Record views are logged.** Every time someone other than a child or their guardians opens an
   under 18's injuries, injury documents, check-ins, game goals, season KPIs, named survey answers or member record, it's recorded.
   Admins see the list on the child's member page, and parents and guardians on their home screen.
+- **Medical details are checked every year.** Each athlete 18 or over, and a verified parent or
+  guardian for each under 18, is reminded to check their medical and emergency details once a year.
+  The **Medical details checks** report shows admins who is up to date, due, overdue or has nothing
+  saved, and which under 18s have no verified parent to keep them, without showing the details.
+  Details nobody checks for the club's chosen time (2 years recommended) are removed under
+  Keeping records, so stale emergency contacts aren't relied on.
 - **Admins see what coaches ask children.** Only a coach or manager's quick poll, up to 5
   questions with choices or ratings, can stay within the team. Any longer survey, or any survey
   with a written answer, is always seen by admins too.
@@ -3102,8 +3888,8 @@ Working With Children Check, and another admin must do it.
   under 18's parents or guardians get a copy. Surveys and their answers are removed under
   Keeping records, with their own periods.
 - **Records aren't kept forever.** Set how long the club keeps check-ins, game goals, message text,
-  surveys, attendance, training certificates, record views, injury documents, cleared injuries,
-  safeguarding records and award votes under [Keeping records](#keeping-records), and switch on
+  surveys, attendance, training certificates, record views, injury documents, medical details
+  nobody checks, cleared injuries, safeguarding records and award votes under [Keeping records](#keeping-records), and switch on
   **Remove old records**. The text of messages
   sent by or to a child is kept at least 3 years (7 recommended) and never less than other
   messages, and who viewed a child's records at least 3 years (7 recommended); concerns are never
@@ -3149,25 +3935,36 @@ Working With Children Check, and another admin must do it.
   checked, every guardian link and unlink with the admin and the reason, who recorded each date of birth, checks and
   who validated each card and how, Screening Unit notices and when the governing body was told,
   exemptions and the declarations accepted (with the dates and event for visitor and national event
-  exemptions), temporary helpers' tasks, dates and acceptance of the club's policies,
+  exemptions), check applications with their receipts, declarations and each confirmation that
+  they're still being assessed, temporary helpers' tasks, dates and acceptance of the club's policies,
   stand-downs, every concern with each referral, note and status, every view and share of an
   injury document, every time someone other than a child or their guardians opened an under 18's
   injuries, check-ins, game goals, season KPIs, named survey answers or member record, every parent's consent with the policy version they agreed to, and each season's code of conduct
   acceptance with who accepted it, the words and the policy version. A document can't be opened without the view being recorded first.
 - **Records are kept as long as they're needed, then removed.** Each club sets its keep periods
-  and the app removes older records each night once the club switches it on. Concerns are never
+  and the app removes older records each night once the club switches it on. Each run is
+  recorded, and if the removal hasn't finished for 2 days every admin gets a red warning, so a
+  paused job can't quietly keep records past their periods. Concerns are never
   removed. The text of messages sent by or to a child is kept at least 3 years (7 recommended)
   and never less than other messages, and the record of who viewed a child's records at least 3
   years (7 recommended); a removed message keeps who sent it, who it went to and who read it. A
   child's injury letters and photos go a set time after they're cleared (1 year recommended, or
-  90 days or 3 years), while the record that they were checked and who viewed them stays.
-  Safeguarding records (stand-downs, Screening Unit notices, exemptions, consents, code of conduct
-  acceptances, policy acknowledgements and guardian link history) are kept 7 to 30 years after
-  they end (30 recommended), and anything still in force stays.
+  90 days or 3 years), while the record that they were checked and who viewed them stays. The
+  injury itself, with who endorsed and accepted its clearance, is kept 7 years (or the club's 3, 5
+  or 10), counted from its clearance or, for a child who has left the club, from when they left,
+  so the club can still answer a claim made years later. Nothing is removed until the club
+  switches on **Remove old records**. Safeguarding records (stand-downs, Screening Unit notices, exemptions, consents, code of conduct
+  acceptances, policy acknowledgements and guardian link history) are kept 7 to 45 years after
+  they end (30 recommended), or for good, and anything still in force stays. While a concern names
+  a member, a legal hold keeps everything about them, whatever the periods say: attendance,
+  messages, check-ins, injuries, safeguarding records and the rest.
 - **Deleting a member doesn't delete the safeguarding trail.** Their attendance, training
   certificates, message receipts, consents, code of conduct acceptances, exemptions and who viewed
   their records stay under the name they had, until each one's own keep period ends, so the club
   can still show who was with which children and that its people were trained and screened.
+  A member a concern names can't be deleted at all, by an admin or by themselves, so nothing
+  about them is lost while the concern stands; they're only asked to contact an admin, so the
+  concern isn't given away.
 - **Child abuse and serious crimes go out, not in.** The register prompts the club to refer them to
   Police and the governing body straight away, and records that it did.
 - **Each club's data is kept apart**, in that club's own database.
@@ -3193,7 +3990,74 @@ Working With Children Check, and another admin must do it.
 
 <div style="page-break-before: always"></div>
 
-## 13. Keeping this guide up to date
+## 13. Your club's data
+
+For boards and committees: where the club's data is, who can read it, what happens if something
+goes wrong, and how the club gets it all back. The full statement is in
+[data-handling.md](data-handling.md).
+
+- **Its own database, in Sydney.** Each club has its own Supabase project, hosted on Amazon Web
+  Services in Sydney, encrypted on disk and on the way to and from the app. No other club's data
+  is in it.
+- **No automatic backups yet.** The projects are on Supabase's free plan, which keeps no backups
+  FirstPass can restore. A record that is deleted, or removed under [Keeping
+  records](#keeping-records), can't be brought back. The club can ask for a full copy at any time
+  and keep it as its own backup.
+- **Who can read it.** Members see only what their roles allow (see section 11), checked by the
+  database. FirstPass, which runs the app, owns each club's project and so can read everything in
+  it; it opens a club's data only to fix a fault, make a copy the club asked for, or when the law
+  requires it, and tells the club's admins when it has. Supabase staff only under Supabase's own
+  terms. Nobody else, and the app has no advertising or tracking.
+- **If something goes wrong**, FirstPass tells the club's admins within 72 hours of finding out
+  what happened and whose data it affected, and helps the club decide who else to tell.
+- **Getting all your data.** An admin asks FirstPass in writing, and within 14 days gets a full
+  copy, every table as a spreadsheet and a database file plus every stored file, through an
+  encrypted link. There's no download button in the app, because one would let any single admin
+  take every child's records at once. When a club leaves, FirstPass deletes the club's project and
+  its own copies once the club has its copy.
+
+<div style="page-break-before: always"></div>
+
+## 14. Not in the app yet
+
+Things clubs have asked for that FirstPass HQ doesn't do today, so nobody expects them. Each is
+decided on its own; until then the club keeps doing it the way it does now.
+
+- **Selection records**: published selection criteria, the selection panel, when athletes were
+  told, and appeals. Admins name teams in the app (see [Squads, teams and
+  selections](#squads-teams-and-selections)), and coaches and the committee declare conflicts of
+  interest each season when the club uses the registers (see [Policy and conflict
+  registers](#policy-and-conflict-registers)); the rest stays with the club's own selection policy
+  and the governing body's complaints process.
+- **Risk and incident registers, and the AGM pack**: the club's risk register, a register of
+  incidents that aren't injuries or concerns, and an annual general meeting pack. The [policy and
+  conflict registers](#policy-and-conflict-registers) are in the app; these stay with the club.
+- **Strava and testing results**: linking Strava or a watch, and fitness testing results. Athletes
+  log their sessions' minutes and effort by hand under the check-in (see [Training
+  sessions](#training-sessions)).
+- **Community hours**: a tracker of volunteer hours, with extra hours for AUSTEAM athletes.
+- **Qualifications**: coaching accreditation, first aid and CPR, sports trainer, umpire badges and
+  bench officials, with numbers, expiry dates and reminders, and which roles need which. Integrity
+  training tracks courses each season (see [Integrity training](#integrity-training)); the club
+  keeps other qualifications itself.
+- **KNEE warm-up tracking**: marking which sessions include Netball Australia's KNEE warm-up.
+- **Media and photo consent**: a register of whether the club may use each athlete's photo in club
+  media. The club keeps it the way it does now, under Netball WA's photography policy.
+- **Travel and tour forms**: permission, medical and travel forms for camps and tours.
+- **Microsoft Forms**: sending a form to chosen roles. [Surveys](#surveys) do this inside the app,
+  with results kept with the club; a Forms link can go in a message.
+- **Asking for a response**: a sender asking members to confirm a message, or to say whether
+  they're available. Read receipts show who opened it (see [Messages](#messages)), but there's no
+  **Acknowledge** button or availability reply. A [survey](#surveys) or poll can ask instead.
+- **Overnight events**: events can't be marked as overnight, so the app doesn't warn that a parent
+  volunteer's exemption doesn't cover a camp or tour. Admins check this themselves (see [Volunteer
+  exemptions](#volunteer-exemptions)).
+- **Sign in with Apple**: members sign in with Google only (see [Sign in with
+  Google](#sign-in-with-google)).
+
+<div style="page-break-before: always"></div>
+
+## 15. Keeping this guide up to date
 
 This guide lives in the app's repository at `docs/user-guide.md`, with its screenshots in
 `docs/user-guide/`. Any change that adds, removes or changes something a member can see or do must

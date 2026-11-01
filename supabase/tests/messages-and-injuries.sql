@@ -55,7 +55,7 @@ $$ begin
 
 select pg_temp.ok('anon cannot mark messages read', has_function_privilege('anon', 'public.mark_message_read(uuid)', 'execute'), false);
 select pg_temp.ok('anon cannot list sent messages', has_function_privilege('anon', 'public.my_sent_messages()', 'execute'), false);
-select pg_temp.ok('anon cannot report injuries', has_function_privilege('anon', 'public.report_injury(uuid, text, text, date, text, date)', 'execute'), false);
+select pg_temp.ok('anon cannot report injuries', has_function_privilege('anon', 'public.report_injury(uuid, text, text, date, text, date, boolean)', 'execute'), false);
 select pg_temp.ok('anon cannot read the injury report', has_function_privilege('anon', 'public.injury_report(date)', 'execute'), false);
 select pg_temp.ok('anon cannot send back clearances', has_function_privilege('anon', 'public.send_back_clearance(uuid, text)', 'execute'), false);
 

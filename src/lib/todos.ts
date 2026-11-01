@@ -4,8 +4,10 @@ import type { AffiliationTodos } from '@/lib/affiliation';
 import { slotTitle } from '@/lib/awards';
 import { formatShortDay } from '@/lib/format';
 import { gamePhase, gameTitle } from '@/lib/goals';
-import { formatDateString, toDateString } from '@/lib/injuries';
+import { formatDateString, type LoggedInjury, toDateString } from '@/lib/injuries';
 import type { KpiReviewTodo } from '@/lib/kpis';
+import type { MedicalReview } from '@/lib/medical';
+import type { MyConflictDeclaration, PolicyReview } from '@/lib/registers';
 import { closingDay, surveysToAnswer, type MySurvey } from '@/lib/surveys';
 import { WWCC_WARNING_DAYS } from '@/lib/safety';
 import { dueLabel, isOutstanding, type MyTraining } from '@/lib/training';
@@ -69,6 +71,7 @@ export function sortByAlert<T>(
 export function buildTodos({
   userId,
   injuries,
+  loggedInjuries = [],
   pendingCount,
   needsCheckIn,
   flaggedAthletes,
@@ -81,17 +84,26 @@ export function buildTodos({
   training = [],
   certificatesToCheck = 0,
   declarationWaiting = false,
+  applicationDeclarationWaiting = false,
   newConcerns = 0,
+  wellbeingFlagAlerts = 0,
+  loadPatternAlerts = 0,
+  loadFlags = 0,
   absencesToReview = 0,
   consentsNeeded = [],
   conduct = [],
   affiliation = null,
   kpiReviews = [],
   surveys = [],
+  medicalReviews = [],
+  policyReviews = [],
+  conflictDeclaration = null,
   today = new Date(),
 }: {
   userId: string | undefined;
   injuries: Injury[];
+  /** Injuries a coach, manager or physio logged for the member or their child, not yet opened. */
+  loggedInjuries?: LoggedInjury[];
   pendingCount: number;
   /** An athlete who hasn't done today's check-in. */
   needsCheckIn: boolean;
@@ -115,8 +127,16 @@ export function buildTodos({
   certificatesToCheck?: number;
   /** An admin recorded a volunteer exemption the member hasn't accepted yet. */
   declarationWaiting?: boolean;
+  /** An admin recorded the member's check application, and they haven't accepted its declaration. */
+  applicationDeclarationWaiting?: boolean;
   /** Concerns nobody has acted on yet, for the people who handle them. */
   newConcerns?: number;
+  /** Athletes flagged on 3 or more days in the last 7, for the Child Safety Officer. */
+  wellbeingFlagAlerts?: number;
+  /** Children whose training load shows a pattern, for the Child Safety Officer. */
+  loadPatternAlerts?: number;
+  /** Athletes the member coaches with a training load flag nobody has talked about. */
+  loadFlags?: number;
   /** Absences reported or withdrawn for the member's squads and teams since they last looked. */
   absencesToReview?: number;
   /** A guardian's children under 18 still waiting for their consent. */
@@ -129,6 +149,12 @@ export function buildTodos({
   kpiReviews?: KpiReviewTodo[];
   /** Surveys sent to the member, including ones already answered. */
   surveys?: MySurvey[];
+  /** Medical details the member keeps that need adding or their yearly check. */
+  medicalReviews?: MedicalReview[];
+  /** Policies the member owns whose review is due within 30 days or overdue. */
+  policyReviews?: PolicyReview[];
+  /** The member's conflict-of-interest declaration this season, if they make one. */
+  conflictDeclaration?: MyConflictDeclaration | null;
   today?: Date;
 }): Todo[] {
   const todos: Todo[] = [];
@@ -143,6 +169,25 @@ export function buildTodos({
     });
   }
 
+  // A run of low check-ins can be the first sign something is wrong.
+  if (wellbeingFlagAlerts > 0) {
+    todos.push({
+      key: 'wellbeing-flags',
+      title: `Look at ${wellbeingFlagAlerts} ${wellbeingFlagAlerts === 1 ? 'athlete' : 'athletes'} flagged 3 times this week`,
+      detail: 'Low check-in scores on 3 of the last 7 days',
+      href: '/concerns/wellbeing',
+    });
+  }
+
+  if (loadPatternAlerts > 0) {
+    todos.push({
+      key: 'load-patterns',
+      title: `Look at ${loadPatternAlerts} ${loadPatternAlerts === 1 ? 'child’s' : 'children’s'} training load`,
+      detail: 'Patterns in what they log, to look into with their coach or parent',
+      href: '/concerns/load',
+    });
+  }
+
   // Their club role stays paused until they accept, so it comes first.
   if (declarationWaiting) {
     todos.push({
@@ -150,6 +195,14 @@ export function buildTodos({
       title: 'Accept the exemption declaration',
       detail: 'Your club role starts once you do',
       href: '/declaration',
+    });
+  }
+  if (applicationDeclarationWaiting) {
+    todos.push({
+      key: 'wwcc-application-declaration',
+      title: 'Confirm your Working With Children Check application',
+      detail: 'It counts as your check once you accept the declaration',
+      href: '/wwcc-application',
     });
   }
 
@@ -193,12 +246,33 @@ export function buildTodos({
     });
   }
 
+  if (loadFlags > 0) {
+    todos.push({
+      key: 'load-flags',
+      title: `Talk with ${loadFlags} ${loadFlags === 1 ? 'athlete' : 'athletes'} about their training load`,
+      detail: 'A conversation starter from the sessions they log, not a diagnosis',
+      href: '/check-ins/load',
+    });
+  }
+
   if (absencesToReview > 0) {
     todos.push({
       key: 'absences-to-review',
       title: `Review ${absencesToReview} new or changed ${absencesToReview === 1 ? 'absence' : 'absences'}`,
       detail: 'Athletes in your squads and teams reported or withdrew an absence',
       href: '/attendance',
+    });
+  }
+
+  // A coach, manager or physio logged an injury at training or a game.
+  for (const logged of loggedInjuries) {
+    const whose =
+      logged.athlete_id === userId ? 'you' : (logged.athlete_name ?? 'your athlete');
+    todos.push({
+      key: `injury-logged-${logged.injury_id}`,
+      title: `Look at the injury ${logged.logged_by_name ?? 'a club member'} logged for ${whose}`,
+      detail: `${logged.body_area} · logged by their ${logged.logged_by_role}. Add the physio’s updates from there.`,
+      href: { pathname: '/injuries/[id]', params: { id: logged.injury_id } },
     });
   }
 
@@ -428,6 +502,24 @@ export function buildTodos({
               },
       });
     }
+    const applicationsDue = safety.wwcc_applications_due ?? 0;
+    const applicationsLapsed = safety.wwcc_applications_lapsed ?? 0;
+    if (applicationsDue + applicationsLapsed > 0) {
+      const count = applicationsDue + applicationsLapsed;
+      todos.push({
+        key: 'wwcc-applications',
+        title: `Confirm ${plural(count, 'check application is', 'check applications are')} still being assessed`,
+        detail:
+          applicationsLapsed > 0
+            ? `${applicationsLapsed} lapsed. Check online, then confirm on the member’s page.`
+            : 'Check online, then confirm on the member’s page',
+        href: '/admin',
+        alert:
+          applicationsLapsed > 0
+            ? { level: 'red', label: 'Lapsed' }
+            : { level: 'amber', label: 'Confirm' },
+      });
+    }
     if (safety.notices_to_report > 0) {
       todos.push({
         key: 'notices-to-report',
@@ -460,6 +552,19 @@ export function buildTodos({
         href: '/admin/safeguarding',
       });
     }
+    const unendorsable = safety.unendorsable_clearances ?? [];
+    if (unendorsable.length > 0) {
+      todos.push({
+        key: 'unendorsable-clearances',
+        title:
+          unendorsable.length === 1
+            ? `Nobody can endorse ${unendorsable[0]}’s clearance`
+            : `Nobody can endorse ${unendorsable.length} clearances`,
+        detail: 'Make a physio Head Physio, or place a physio in their squad or team',
+        href: '/admin',
+        alert: { level: 'amber', label: 'Stuck' },
+      });
+    }
     if (safety.exemptions_ending > 0) {
       todos.push({
         key: 'exemptions-ending',
@@ -482,6 +587,18 @@ export function buildTodos({
         title: 'Old records are kept forever',
         detail: 'Switch on Remove old records in Club settings, under Keeping records',
         href: '/admin/club',
+      });
+    }
+    if (safety.records_removal_stalled) {
+      const since = safety.records_removal_stalled.last_ok_at;
+      todos.push({
+        key: 'records-removal-stalled',
+        title: since
+          ? `Old records haven’t been removed since ${formatShortDay(new Date(since))}`
+          : 'Old records haven’t been removed yet',
+        detail: 'The nightly removal hasn’t finished for 2 days. Ask FirstPass to check it.',
+        href: '/admin/club',
+        alert: { level: 'red', label: 'Stopped' },
       });
     }
     if ((safety.inactive_members ?? 0) > 0) {
@@ -539,6 +656,48 @@ export function buildTodos({
       detail: `${survey.everyone_answers ? 'Everyone must answer. ' : ''}Open until ${formatDateString(closes)}`,
       href: { pathname: '/surveys/[id]', params: { id: survey.id } },
       dueOn: closes,
+    });
+  }
+
+  for (const review of medicalReviews) {
+    const own = review.athlete_id === userId;
+    const whose = own ? 'your' : `${review.athlete_name}’s`;
+    const href: Href = { pathname: '/medical/[id]', params: { id: review.athlete_id } };
+    if (review.status === 'missing' || !review.due_on) {
+      todos.push({
+        key: `medical-${review.athlete_id}`,
+        title: `Add ${whose} medical and emergency details`,
+        detail: 'Emergency contacts, allergies, conditions and medications, for training and games',
+        href,
+      });
+    } else {
+      todos.push({
+        key: `medical-${review.athlete_id}`,
+        title: `Check ${whose} medical details are still right`,
+        detail: `Once a year. Due ${formatDateString(review.due_on)}`,
+        href,
+        dueOn: review.due_on,
+      });
+    }
+  }
+
+  // Policy owners review each policy by its review date.
+  for (const policy of policyReviews) {
+    todos.push({
+      key: `policy-${policy.id}`,
+      title: `Review the ${policy.title}`,
+      detail: `${policy.review_on < toDateString(today) ? 'Was due' : 'Due'} ${formatDateString(policy.review_on)}`,
+      href: { pathname: '/registers/review', params: { id: policy.id } },
+      dueOn: policy.review_on,
+    });
+  }
+
+  if (conflictDeclaration?.required && !conflictDeclaration.declared_at) {
+    todos.push({
+      key: 'conflicts',
+      title: 'Declare any conflicts of interest',
+      detail: `Once a season, for the ${seasonLabel(conflictDeclaration.season)} season, even if you have none`,
+      href: '/declare-conflicts',
     });
   }
 

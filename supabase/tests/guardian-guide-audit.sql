@@ -22,7 +22,7 @@ create temp table ids (k text primary key, v uuid);
 -- roster), with no Working With Children Check. Logan Parent (41) is Jordan's
 -- (31) guardian; Sample Squad (a1) holds Jordan and Kai (32).
 -- ---------------------------------------------------------------------------
--- Logan follows Jordan into the squad (20261020020000); taken out of it
+-- Logan follows Jordan into the squad (20261101000000); taken out of it
 -- here to start from a guardian in no squad.
 select pg_temp.ok('the guardian was placed in their child''s squad', exists (select 1 from public.team_members where team_id = '00000000-0000-0000-0000-0000000000a1' and profile_id = '00000000-0000-0000-0000-000000000041' and team_role::text = 'guardian'), true);
 delete from public.team_members where team_id = '00000000-0000-0000-0000-0000000000a1' and profile_id = '00000000-0000-0000-0000-000000000041';

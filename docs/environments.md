@@ -91,6 +91,9 @@ names the project, so no code changes:
    [step 4](#4-point-the-installed-apps-at-the-live-project), with Google sign-in on (same client)
    and the Email provider off. Add its `https://<new-ref>.supabase.co/auth/v1/callback` to the
    Google client and remove the old project's.
+   Leave **Automatically expose new tables** unticked: since 30 October 2026 Supabase gives new
+   tables no access, and the migrations grant each table what the app needs
+   (`20261021000000_explicit_table_grants.sql`, then each new table's own grants).
 2. Update the GitHub secrets `SUPABASE_PROJECT_ID` and `SUPABASE_DB_PASSWORD` (and
    `SUPABASE_ACCESS_TOKEN` if it's in another organisation), and the EAS `preview` and
    `production` values of `EXPO_PUBLIC_SUPABASE_URL` and `EXPO_PUBLIC_SUPABASE_ANON_KEY`.
@@ -105,6 +108,15 @@ names the project, so no code changes:
 
 To try switching clubs, Expo Go can have up to two more test clubs, each with its own free project.
 They only exist on your computer: installed builds and updates never include them.
+
+**Off for now (1 November 2026).** Test clubs 2 and 3 were taken out while Supabase's free plan
+kept pausing club 2; they'll come back once FirstPass moves to Supabase Pro. No workflow touches
+them unless the `TEST_CLUBS` repository variable lists them, and the app only shows them when your
+`.env` has their values. To bring them back, set up the projects and secrets below, then add the
+repository variable `TEST_CLUBS` with the value `[2, 3]` (or `[2]` for one) under **Settings >
+Secrets and variables > Actions > Variables**, and run the three workflows once each.
+`scripts/test-workflow-test-clubs.py` checks in CI that every workflow keeps them behind that
+variable.
 
 ### 1. Create the projects
 
@@ -123,8 +135,9 @@ Add these repository secrets, with `2` for the first project and `3` for the sec
 - `SUPABASE_TEST_2_PROJECT_ID`, `SUPABASE_TEST_2_DB_PASSWORD`, `SUPABASE_TEST_2_ACCESS_TOKEN`
 - `SUPABASE_TEST_3_PROJECT_ID`, `SUPABASE_TEST_3_DB_PASSWORD`, `SUPABASE_TEST_3_ACCESS_TOKEN`
 
-Both access tokens can be the same token. Then run **Deploy migrations**, **Deploy PlayHQ
-function** and **Purge expired injury records** once each with **Run workflow**. Database changes
+Both access tokens can be the same token. Add the repository variable `TEST_CLUBS` set to
+`[2, 3]`, then run **Deploy migrations**, **Deploy PlayHQ function** and **Purge expired injury
+records** once each with **Run workflow**. Database changes
 reach the test clubs after the test project. The live deploy doesn't wait for them, so a paused
 test club never holds it up; its job fails and says so.
 
@@ -184,3 +197,33 @@ who can't sign in. To see a screen as an athlete, coach or guardian:
 Accounts you have approved with a role other than admin keep it when you run the script again.
 Sample games and goals need the game goals migration, so they appear once its pull request has
 merged and the migration has reached the test project.
+
+## A full copy of a club's data
+
+When a club asks for all its data, or leaves, FirstPass makes the copy with
+`scripts/export-club-data.sh` (what the club is promised is in [data-handling.md](data-handling.md)).
+It runs on your computer, never in GitHub Actions, so the copy doesn't sit in a workflow's logs or
+artifacts.
+
+1. In the club's Supabase project, open **Connect** and copy the **Session pooler** connection
+   string, with the database password filled in. Copy the project ref and, under **Project
+   Settings > API keys**, the secret (service role) key.
+2. Use a `pg_dump` of the same major version as the project's Postgres or newer (the dashboard
+   shows the version under **Project Settings > Infrastructure**).
+3. Run it into a new folder:
+
+   ```bash
+   CLUB_DB_URL='postgresql://...' CLUB_PROJECT_REF=abcd... CLUB_SERVICE_KEY=sb_secret_... \
+     scripts/export-club-data.sh ~/club-export-THUNDER-2026-10-23
+   ```
+
+   It refuses a folder that already exists, makes the folder readable only by you, and stops at
+   the first file it can't download. `manifest.txt` lists rows per table and files per bucket:
+   check it against the dashboard.
+4. Zip the folder with a password, send it to the admin the club names through an encrypted link,
+   and send the password another way (a phone call or text).
+5. Once the club confirms it has the copy, delete every copy you hold. For a club that's leaving,
+   delete its Supabase project too, and tell the club in writing.
+
+`scripts/test-export-club-data.sh` tests the script against a local Postgres; the "Tests" workflow
+runs it.

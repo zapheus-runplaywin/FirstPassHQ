@@ -36,12 +36,12 @@ export const consentText: Record<ConsentKind, { title: string; detail: string }>
   data: {
     title: 'Daily check-ins',
     detail:
-      'Your child’s answers about sleep, soreness, stress and mood, and any note they write, are seen by their coaches. Without this, their coaches don’t see their check-ins at all.',
+      'Your child’s answers about sleep, soreness, stress and mood, any note they write, and the training sessions they log (minutes and how hard each felt), are seen by their coaches. When they score low, the club’s Child Safety Officer sees the day and the lowest score, never their answers or note. Without this, neither sees their check-ins or sessions at all.',
   },
   health: {
     title: 'Injuries and health information',
     detail:
-      'Their injuries, restrictions, physio updates and the letters or reports you attach are seen by their coaches, the physios who look after them and the committee, who sign off clearances. Without this, none of them see your child’s injuries, and an injury can’t be cleared to play, because a coach or physio has to endorse the clearance first. Either way, whoever takes attendance sees that your child is injured and when they’re expected back, and nothing more.',
+      'Their injuries, restrictions, physio updates and the letters or reports you attach are seen by their coaches, the physios who look after them and the committee members cleared to work with children, who sign off clearances. The medical and emergency details you keep for them (emergency contacts, allergies, conditions, medications and an action plan) are seen by their coaches, managers and physios, and you see each time one of them opens them. Without this, none of them see your child’s injuries or medical details, and an injury can’t be cleared to play, because a coach or physio has to endorse the clearance first. Either way, whoever takes attendance sees that your child is injured and when they’re expected back, and nothing more.',
   },
 };
 

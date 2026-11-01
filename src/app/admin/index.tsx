@@ -13,7 +13,14 @@ import { athletesWithVerifiedGuardian } from '@/lib/guardian-links';
 import { rejectionReasonLabels, roleLabels, rolesLabel, staffTitle } from '@/lib/labels';
 import { safetyIssues } from '@/lib/safety';
 import { supabase } from '@/lib/supabase';
-import type { CoachTitle, Profile, Team, TeamRole, VolunteerExemption } from '@/lib/types';
+import type {
+  CoachTitle,
+  Profile,
+  Team,
+  TeamRole,
+  VolunteerExemption,
+  WwccApplication,
+} from '@/lib/types';
 import { rolesOf } from '@/lib/roles';
 
 /** One squad or team a coach or manager is in. */
@@ -29,6 +36,7 @@ export default function MembersScreen() {
   const [links, setLinks] = useState<Pair[]>([]);
   const [requests, setRequests] = useState<Pair[]>([]);
   const [exemptions, setExemptions] = useState<Map<string, VolunteerExemption>>(new Map());
+  const [applications, setApplications] = useState<Map<string, WwccApplication>>(new Map());
   const [groupTitles, setGroupTitles] = useState<Map<string, string>>(new Map());
   const [inactive, setInactive] = useState<Map<string, string>>(new Map());
   const [search, setSearch] = useState('');
@@ -41,6 +49,7 @@ export default function MembersScreen() {
       exemptionsResult,
       staffResult,
       inactiveResult,
+      applicationsResult,
       requestsResult,
     ] = await Promise.all([
       supabase.from('profiles').select(PROFILE_COLUMNS).order('full_name', { nullsFirst: false }),
@@ -54,6 +63,7 @@ export default function MembersScreen() {
         .eq('team.archived', false),
       // Members with no squad, team or club role for 2 years.
       supabase.rpc('admin_inactive_members'),
+      supabase.rpc('admin_wwcc_applications'),
       // Parents and guardians who entered a child's link code.
       supabase.from('guardian_link_requests').select('guardian_id, athlete_id'),
     ]);
@@ -72,6 +82,10 @@ export default function MembersScreen() {
       (e) => !e.ended_at,
     );
     setExemptions(new Map(open.map((e) => [e.profile_id, e])));
+    const openApplications = (
+      (applicationsResult.data as WwccApplication[] | null) ?? []
+    ).filter((a) => !a.ended_at);
+    setApplications(new Map(openApplications.map((a) => [a.profile_id, a])));
     setMembers((profilesResult.data as Profile[] | null) ?? []);
     setLinks((guardiansResult.data as Pair[] | null) ?? []);
     setRequests((requestsResult.data as Pair[] | null) ?? []);
@@ -112,7 +126,7 @@ export default function MembersScreen() {
   const askingToLink = approved.filter((m) => requests.some((r) => r.guardian_id === m.id));
   // The people behind the child-safety to-dos on the home screen, with why.
   const issues = new Map(
-    approved.map((m) => [m.id, safetyIssues(m, withGuardian.has(m.id), exemptions.get(m.id))]),
+    approved.map((m) => [m.id, safetyIssues(m, withGuardian.has(m.id), exemptions.get(m.id), applications.get(m.id))]),
   );
   const needsChecking = approved.filter((m) => issues.get(m.id)?.length);
   const gone = approved.filter((m) => inactive.has(m.id));

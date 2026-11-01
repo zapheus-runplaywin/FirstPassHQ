@@ -18,7 +18,7 @@ $$ select row(t.wwcc_missing, t.exemptions_ending) from public.admin_safety_todo
 reset role;
 update public.profiles set extra_roles = '{manager}' where id = '00000000-0000-0000-0000-000000000041';
 -- Logan is in Sample Squad already as Jordan's guardian (guardians follow
--- their child into squads, 20261020020000); the manager place takes over.
+-- their child into squads, 20261101000000); the manager place takes over.
 insert into public.team_members (team_id, profile_id, team_role)
 values ('00000000-0000-0000-0000-0000000000a1', '00000000-0000-0000-0000-000000000041', 'manager')
 on conflict (team_id, profile_id) do update set team_role = excluded.team_role;

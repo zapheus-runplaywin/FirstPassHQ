@@ -9,7 +9,6 @@
  * box or a way to message someone back (AGENTS.md, "No social media features
  * for children"). Every message offers a way to report it.
  */
-import { TextInput } from 'react-native';
 import { fireEvent, screen } from 'expo-router/testing-library';
 
 import MessageScreen from '@/app/messages/[id]';
@@ -92,7 +91,7 @@ const NOT_SENDERS: [string, Who][] = [
 ];
 
 function noTextBoxes() {
-  expect(screen.UNSAFE_queryAllByType(TextInput)).toHaveLength(0);
+  expect(screen.container.queryAll((n) => n.type === 'TextInput')).toHaveLength(0);
   expect(screen.queryByText(/^Reply/)).toBeNull();
 }
 
@@ -127,7 +126,7 @@ describe('the messages list', () => {
     await openList(who);
     expect(screen.getByText('New message')).toBeTruthy();
     expect(screen.getByText('Inbox')).toBeTruthy();
-    fireEvent.press(screen.getByText('Sent'));
+    await fireEvent.press(screen.getByText('Sent'));
     await settle();
     expect(screen.getByText('Bring a water bottle')).toBeTruthy();
     expect(screen.getByText('Read by 9 of 12')).toBeTruthy();

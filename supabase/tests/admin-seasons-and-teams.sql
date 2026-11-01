@@ -325,7 +325,7 @@ select pg_temp.fails('placing into a team in a squad refused', format('select pu
 select pg_temp.fails('placing into a missing squad refused', format('select public.admin_place_members(%L, %L)', pg_temp.m('ee'), array[pg_temp.m('31')]));
 select pg_temp.ok('admin places three, a pending member is skipped', public.admin_place_members(pg_temp.team('Sample Squad', 2027), array[pg_temp.m('31'), pg_temp.m('11'), pg_temp.m('14'), pg_temp.m('34')]) = 3, true);
 -- The junior's guardians (Logan, and Morgan, who coached only last season)
--- follow them into the new squad as guardians (20261020020000).
+-- follow them into the new squad as guardians (20261101000000).
 select pg_temp.ok('placed with last season''s roles and coach title, the junior''s guardians with them', (select array_agg(profile_id::text || ':' || team_role || ':' || coalesce(coach_title::text, '-') order by profile_id) = array[pg_temp.m('11') || ':coach:head_coach', pg_temp.m('14') || ':physio:-', pg_temp.m('31') || ':athlete:-', pg_temp.m('41') || ':guardian:-', pg_temp.m('42') || ':guardian:-'] from public.team_members where team_id = pg_temp.team('Sample Squad', 2027)), true);
 select pg_temp.ok('placing again adds nobody', public.admin_place_members(pg_temp.team('Sample Squad', 2027), array[pg_temp.m('31')]) = 0, true);
 select pg_temp.ok('placed members, and the guardians placed with them, are no longer returning', (select count(*) = 3 from public.returning_members(pg_temp.team('Sample Squad', 2027))), true);

@@ -76,7 +76,7 @@ jobs:
           fi
           echo "ready=true" >> "$GITHUB_OUTPUT"
       - if: steps.test.outputs.ready == 'true'
-        uses: actions/checkout@d23441a48e516b6c34aea4fa41551a30e30af803 # v6.1.0
+        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
         with:
           fetch-depth: 0 # to find the pull request that added each migration
       - if: steps.test.outputs.ready == 'true'
@@ -106,15 +106,17 @@ jobs:
 
   # The extra test clubs in the development setup (docs/environments.md), each
   # with its own project. They follow the test project, and the live deploy
-  # doesn't wait for them, so a paused one never holds it up.
+  # doesn't wait for them, so a paused one never holds it up. Off for now: they
+  # only run when the TEST_CLUBS repository variable lists them, such as [2, 3].
   deploy-test-clubs:
     needs: [approve-data-loss, deploy-test]
-    if: ${{ !cancelled() && (needs.approve-data-loss.result == 'success' || needs.approve-data-loss.result == 'skipped') && needs.deploy-test.result == 'success' }}
+    if: ${{ vars.TEST_CLUBS != '' && !cancelled() && (needs.approve-data-loss.result == 'success' || needs.approve-data-loss.result == 'skipped') && needs.deploy-test.result == 'success' }}
     runs-on: ubuntu-24.04
     strategy:
       fail-fast: false
       matrix:
-        club: [2, 3]
+        # The fallback is never used: without TEST_CLUBS the job is skipped.
+        club: ${{ fromJSON(vars.TEST_CLUBS || '["off"]') }}
     name: deploy-test-club-${{ matrix.club }}
     steps:
       - name: Check test club ${{ matrix.club }} is set up
@@ -140,7 +142,7 @@ jobs:
           fi
           echo "ready=true" >> "$GITHUB_OUTPUT"
       - if: steps.test.outputs.ready == 'true'
-        uses: actions/checkout@d23441a48e516b6c34aea4fa41551a30e30af803 # v6.1.0
+        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
         with:
           fetch-depth: 0 # to find the pull request that added each migration
       - if: steps.test.outputs.ready == 'true'
@@ -185,7 +187,7 @@ jobs:
             echo "::error::Only Matt can run this with New live project ticked. This run was started by $ACTOR."
             exit 1
           fi
-      - uses: actions/checkout@d23441a48e516b6c34aea4fa41551a30e30af803 # v6.1.0
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
         with:
           fetch-depth: 0 # to find the pull request that added each migration
       - uses: supabase/setup-cli@45a513f8c64c0bc8e0e3dfe572b5c95be85f6359 # v3.0.1

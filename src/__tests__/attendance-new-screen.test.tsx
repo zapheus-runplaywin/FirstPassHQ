@@ -113,14 +113,14 @@ async function open(
   await settle();
 }
 
-function markAll(present: boolean[]) {
+async function markAll(present: boolean[]) {
   const label = (p: boolean) => (p ? 'Present' : 'Absent');
   const buttons = (p: boolean) => screen.getAllByRole('radio').filter((r) => within(r).queryByText(label(p)));
-  present.forEach((p, i) => fireEvent.press(buttons(p)[i]));
+  for (const [i, p] of present.entries()) await fireEvent.press(buttons(p)[i]);
 }
 
 async function save() {
-  fireEvent.press(screen.getByText('Save attendance'));
+  await fireEvent.press(screen.getByText('Save attendance'));
   await settle();
 }
 
@@ -157,7 +157,7 @@ describe('who the attendance is for', () => {
     expect(screen.getByText('Who is it for?')).toBeTruthy();
     expect(screen.queryByText('Save attendance')).toBeNull();
     expect(rpcNames()).not.toContain('attendance_roster');
-    fireEvent.press(screen.getByText('Whole club'));
+    await fireEvent.press(screen.getByText('Whole club'));
     await settle();
     // The whole club is no squad or team.
     expect(argsOf('attendance_roster')).toEqual([{ p_team_id: null }]);
@@ -168,15 +168,15 @@ describe('who the attendance is for', () => {
     expect(screen.getByText('Your squads and teams')).toBeTruthy();
     expect(screen.getByText(TEAM_B.name)).toBeTruthy();
     expect(rpcNames()).not.toContain('attendance_roster');
-    fireEvent.press(screen.getByText(TEAM_B.name));
+    await fireEvent.press(screen.getByText(TEAM_B.name));
     await settle();
     expect(argsOf('attendance_roster')).toEqual([{ p_team_id: TEAM_B.id }]);
   });
 
   it('changing the group starts a fresh register', async () => {
     await open('coach');
-    markAll([true]);
-    fireEvent.press(screen.getByText(SQUAD.name));
+    await markAll([true]);
+    await fireEvent.press(screen.getByText(SQUAD.name));
     await settle();
     expect(argsOf('attendance_roster').pop()).toEqual({ p_team_id: SQUAD.id });
     expect(screen.getByText('0 of 3 present · 3 not marked')).toBeTruthy();
@@ -186,7 +186,7 @@ describe('who the attendance is for', () => {
 describe('marking and saving', () => {
   it('needs a session name', async () => {
     await open('coach');
-    markAll([true, false, true]);
+    await markAll([true, false, true]);
     await save();
     expect(screen.getByText('Name the session, for example Tuesday training.')).toBeTruthy();
     expect(rpcNames()).not.toContain('save_attendance');
@@ -194,8 +194,8 @@ describe('marking and saving', () => {
 
   it('needs everyone marked', async () => {
     await open('coach');
-    type('Session', 'Tuesday training');
-    markAll([true]);
+    await type('Session', 'Tuesday training');
+    await markAll([true]);
     await save();
     expect(screen.getByText('Mark everyone present or absent first.')).toBeTruthy();
     expect(rpcNames()).not.toContain('save_attendance');
@@ -203,8 +203,8 @@ describe('marking and saving', () => {
 
   it('saves the marks with the time it was taken, then opens the record', async () => {
     await open('coach');
-    type('Session', 'Tuesday training');
-    markAll([true, false, true]);
+    await type('Session', 'Tuesday training');
+    await markAll([true, false, true]);
     expect(screen.getByText('2 of 3 present')).toBeTruthy();
     await save();
     expect(argsOf('save_attendance')).toEqual([
@@ -225,9 +225,9 @@ describe('marking and saving', () => {
 
   it('Mark the rest present keeps the absent ones', async () => {
     await open('coach');
-    type('Session', 'Training');
-    markAll([false]);
-    fireEvent.press(screen.getByText('Mark the rest present'));
+    await type('Session', 'Training');
+    await markAll([false]);
+    await fireEvent.press(screen.getByText('Mark the rest present'));
     expect(screen.queryByText('Mark the rest present')).toBeNull();
     await save();
     expect(argsOf('save_attendance')[0]?.p_marks).toEqual([
@@ -239,18 +239,18 @@ describe('marking and saving', () => {
 
   it('a club-wide session is saved with no squad or team', async () => {
     await open('coach');
-    fireEvent.press(screen.getByText('Whole club'));
+    await fireEvent.press(screen.getByText('Whole club'));
     await settle();
-    type('Session', 'Club clinic');
-    fireEvent.press(screen.getByText('Mark the rest present'));
+    await type('Session', 'Club clinic');
+    await fireEvent.press(screen.getByText('Mark the rest present'));
     await save();
     expect(argsOf('save_attendance')[0]).toMatchObject({ p_team_id: null, p_name: 'Club clinic' });
   });
 
   it('shows the database’s refusal and stays', async () => {
     await open('coach', { rpcErrors: { save_attendance: 'Only the group’s coaches and managers can take its attendance.' } });
-    type('Session', 'Training');
-    fireEvent.press(screen.getByText('Mark the rest present'));
+    await type('Session', 'Training');
+    await fireEvent.press(screen.getByText('Mark the rest present'));
     await save();
     expect(screen.getByText('Only the group’s coaches and managers can take its attendance.')).toBeTruthy();
     expect(replace).not.toHaveBeenCalled();
@@ -286,14 +286,14 @@ describe('attendance already taken nearby', () => {
         `Sample manager took attendance for “Morning session” at ${formatSentAt(new Date('2026-10-18T00:30:00Z'))}. Two sessions within 3 hours of each other is unusual.`,
       ),
     ).toBeTruthy();
-    fireEvent.press(screen.getByText('Open that record'));
+    await fireEvent.press(screen.getByText('Open that record'));
     expect(replace).toHaveBeenCalledWith({ pathname: '/attendance/[id]', params: { id: 'sess-earlier' } });
   });
 
   it('still lets them save a different session', async () => {
     await open('coach', { rpcs: { nearby_attendance_sessions: NEARBY } });
-    type('Session', 'Afternoon session');
-    fireEvent.press(screen.getByText('Mark the rest present'));
+    await type('Session', 'Afternoon session');
+    await fireEvent.press(screen.getByText('Mark the rest present'));
     expect(isDisabled('Save attendance')).toBe(false);
     await save();
     expect(argsOf('save_attendance')).toHaveLength(1);
@@ -321,7 +321,7 @@ describe('today’s calendar', () => {
     expect(screen.getByText('From today’s calendar')).toBeTruthy();
     expect(screen.queryByText(/^Monday training/)).toBeNull();
     await settle();
-    markAll([true, true, true]);
+    await markAll([true, true, true]);
     await save();
     expect(argsOf('save_attendance')[0]).toMatchObject({
       p_name: 'Sunday training',
@@ -331,11 +331,11 @@ describe('today’s calendar', () => {
 
   it('picking another of today’s events uses its name and time', async () => {
     await open('coach', { calendars: CALENDARS, feeds });
-    fireEvent.press(screen.getByText(new RegExp('^Presentation night · ')));
+    await fireEvent.press(screen.getByText(new RegExp('^Presentation night · ')));
     await settle();
     expect(field('Session').props.value).toBe('Presentation night');
     expect(screen.queryByText(/^Suggested from the calendar/)).toBeNull();
-    fireEvent.press(screen.getByText('Mark the rest present'));
+    await fireEvent.press(screen.getByText('Mark the rest present'));
     await save();
     expect(argsOf('save_attendance')[0]).toMatchObject({
       p_name: 'Presentation night',
@@ -345,9 +345,9 @@ describe('today’s calendar', () => {
 
   it('a typed name replaces the suggestion, keeping the event’s time', async () => {
     await open('coach', { calendars: CALENDARS, feeds });
-    type('Session', 'Extra shooting');
+    await type('Session', 'Extra shooting');
     expect(screen.queryByText(/^Suggested from the calendar/)).toBeNull();
-    fireEvent.press(screen.getByText('Mark the rest present'));
+    await fireEvent.press(screen.getByText('Mark the rest present'));
     await save();
     expect(argsOf('save_attendance')[0]).toMatchObject({
       p_name: 'Extra shooting',
@@ -357,7 +357,7 @@ describe('today’s calendar', () => {
 
   it('for the whole club, only club events are suggested', async () => {
     await open('coach', { calendars: CALENDARS, feeds });
-    fireEvent.press(screen.getByText('Whole club'));
+    await fireEvent.press(screen.getByText('Whole club'));
     await settle();
     expect(field('Session').props.value).toBe('Umpiring clinic');
     expect(screen.queryByText(/^Sunday training · /)).toBeNull();

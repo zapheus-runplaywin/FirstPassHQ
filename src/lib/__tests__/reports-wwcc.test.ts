@@ -11,7 +11,13 @@
 import { formatDateString } from '@/lib/injuries';
 import type { Acknowledgement, Placement } from '@/lib/reports';
 import { wwccReport } from '@/lib/reports';
-import type { Profile, ScreeningNotice, StandDown, VolunteerExemption } from '@/lib/types';
+import type {
+  Profile,
+  ScreeningNotice,
+  StandDown,
+  VolunteerExemption,
+  WwccApplication,
+} from '@/lib/types';
 
 import { NO_CHECK, noon, person, REPORT_DAY, team } from '../../__tests__/helpers/report-fixtures';
 
@@ -213,17 +219,58 @@ describe('wwccReport', () => {
     const note = (from: string | null) =>
       wwccReport(MEMBERS, PLACEMENTS, TEAMS, STAND_DOWNS, EXEMPTIONS, NOTICES, 'Sample admin', ACKS, from)
         .sections[0].note;
-    expect(note(null)).toContain('coach, manager and physio roles are paused while a check is missing or expired, and committee roles too.');
-    expect(note('2020-01-01')).toContain('and committee roles too.');
-    expect(note('2099-01-01')).toContain(`and committee roles from ${formatDateString('2099-01-01')}.`);
+    expect(note(null)).toContain('coach, manager and physio roles are paused while a check is missing or expired, and committee roles too,');
+    expect(note('2020-01-01')).toContain('and committee roles too,');
+    expect(note('2099-01-01')).toContain(`and committee roles from ${formatDateString('2099-01-01')},`);
+  });
+
+  it('says statistician roles pause too, or only from the club’s statistician checks date', () => {
+    const note = (from: string | null) =>
+      wwccReport(MEMBERS, PLACEMENTS, TEAMS, STAND_DOWNS, EXEMPTIONS, NOTICES, 'Sample admin', ACKS, null, [], from)
+        .sections[0].note;
+    expect(note(null)).toContain('and committee roles too, and statistician roles too.');
+    expect(note('2020-01-01')).toContain('and statistician roles too.');
+    expect(note('2099-01-21')).toContain(`and statistician roles from ${formatDateString('2099-01-21')}.`);
+    expect(note(null)).toContain(
+      'one whose check has been missing or expired for over 30 days doesn’t see under 18s’ injuries.',
+    );
+  });
+
+  it('names statisticians among who it covers', () => {
+    expect(full().subtitle).toMatch(/^Approved coaches, managers, physios, statisticians, temporary helpers/);
+  });
+
+  it('asks for a statistician’s check, and lists one exempted with a reason', () => {
+    const stats = (id: string, name: string, extra: Partial<Profile>): Profile =>
+      ({ ...MEMBERS[0], id, full_name: name, role: 'statistician', extra_roles: [], ...extra }) as Profile;
+    const report = wwccReport(
+      [
+        stats('s1', 'Sam Statsnone', { wwcc_number: null, wwcc_expires_on: null }),
+        stats('s2', 'Sky Opens', {
+          wwcc_number: null,
+          wwcc_expires_on: null,
+          wwcc_exempt_reason: 'Opens games only, from video',
+          wwcc_exempted_by: null,
+          wwcc_exempted_at: '2026-10-01T00:00:00Z',
+        }),
+      ],
+      [],
+      [],
+    );
+    expect(names(report, 'Needs attention')).toEqual(['Sam Statsnone']);
+    expect(sectionOf(report, 'Exempted with a reason').rows.map((r) => r.cells.slice(0, 3))).toEqual([
+      ['Sky Opens', 'Statistician', 'Opens games only, from video'],
+    ]);
+    expect(report.stats!.find((st) => st.label === 'Exempt with a reason')!.value).toBe(1);
   });
 
   it('has its sections in order', () => {
     expect(full().sections.map((s) => s.title)).toEqual([
       'Needs attention',
       'Current',
-      'Committee members and admins exempted',
+      'Exempted with a reason',
       'Exempt from a check',
+      'Checks applied for',
       'Temporary helpers',
       'Screening Unit notices',
       'Stand-downs',
@@ -319,8 +366,9 @@ describe('wwccReport', () => {
       'Expire within 60 days': 1,
       Expired: 1,
       Missing: 3,
-      'Committee and admins exempt': 1,
+      'Exempt with a reason': 1,
       'Exempt from a check': 1,
+      'Check applied for': 0,
       'To validate': 2,
       'Stood down now': 1,
       'Temporary helpers helping now': 2,
@@ -335,6 +383,7 @@ describe('wwccReport', () => {
       [0, 'No current checks recorded.'],
       [0, 'Nobody is exempt.'],
       [0, 'No volunteer exemptions recorded.'],
+      [0, 'No check applications recorded.'],
       [0, 'No temporary helpers.'],
       [0, 'No notices recorded.'],
       [0, 'Nobody has been stood down.'],
@@ -342,7 +391,7 @@ describe('wwccReport', () => {
   });
 
   it('lists committee members and admins another admin exempted, with the reason, who and when', () => {
-    const exempt = sectionOf(full(), 'Committee members and admins exempted');
+    const exempt = sectionOf(full(), 'Exempted with a reason');
     expect(exempt.rows.map((r) => r.cells)).toEqual([
       ['Ivy Exempt', 'Admin', 'Board member who never works with children', 'Sample admin', day('2026-02-01')],
     ]);
@@ -361,7 +410,7 @@ describe('wwccReport', () => {
     const report = wwccReport([coachToo], [], []);
     expect(names(report, 'Needs attention')).toEqual(['Coach Committee']);
     expect(sectionOf(report, 'Needs attention').rows[0].cells[3]).toBe('Committee, Coach');
-    expect(sectionOf(report, 'Committee members and admins exempted').rows).toHaveLength(0);
+    expect(sectionOf(report, 'Exempted with a reason').rows).toHaveLength(0);
   });
 
   it('keeps someone with an exemption on the list when their own card is current', () => {
@@ -569,5 +618,133 @@ describe('wwccReport', () => {
     const old = team('t-old', 'Open A', { season: 2025, sort_order: 1 });
     const report = wwccReport([alex], [{ team_id: old.id, profile_id: alex.id, team_role: 'coach' }], [OPEN_A, old]);
     expect(sectionOf(report, 'Current').rows[0].cells[4]).toBe('Open A (2025–26)');
+  });
+
+  describe('checks applied for', () => {
+    const applied = (overrides: Partial<WwccApplication> = {}): WwccApplication => ({
+      id: 'a1',
+      profile_id: blair.id,
+      member_name: 'Blair Missing',
+      application_number: 'APL 1',
+      lodged_on: '2026-10-01',
+      kind: 'new',
+      receipt_path: `${blair.id}/r/receipt.pdf`,
+      receipt_name: 'receipt.pdf',
+      recorded_at: noon('2026-10-02'),
+      recorded_by_name: 'Sample admin',
+      declared_at: noon('2026-10-03'),
+      checked_at: null,
+      checked_by_name: null,
+      check_due_on: '2026-11-01',
+      lapses_on: '2026-12-31',
+      status: 'in_force',
+      ended_at: null,
+      ended_reason: null,
+      ended_by_name: null,
+      end_note: null,
+      ...overrides,
+    });
+    const withApplications = (applications: WwccApplication[], members: Profile[] = [blair]) =>
+      wwccReport(members, [], [], [], [], [], null, [], null, applications);
+    const stat = (report: ReturnType<typeof full>, label: string) =>
+      report.stats!.find((s) => s.label === label)?.value;
+
+    it('counts an application in force as screening, not as a missing check', () => {
+      const report = withApplications([applied()]);
+      expect(stat(report, 'Check applied for')).toBe(1);
+      expect(stat(report, 'Need a check')).toBe(0);
+      expect(stat(report, 'Missing')).toBe(0);
+      expect(names(report, 'Needs attention')).toEqual([]);
+      const row = sectionOf(report, 'Checks applied for').rows[0];
+      expect(row.cells).toEqual([
+        'Blair Missing',
+        `APL 1, new check, lodged 01/10/2026`,
+        `${day('2026-10-02')} by Sample admin`,
+        `Accepted ${day('2026-10-03')}`,
+        '',
+        `Check applied for 01/10/2026, counts until 31/12/2026`,
+      ]);
+      expect(row.flag).toBe(false);
+    });
+
+    it.each([
+      ['waiting for the declaration', { status: 'waiting_for_declaration', declared_at: null }, 'waiting for them to accept the declaration'],
+      ['lapsed', { status: 'lapsed' }, 'lapsed, nobody confirmed it’s still being assessed'],
+      ['stopped by a notice', { status: 'stopped' }, 'stopped by a Screening Unit notice'],
+    ] as const)('keeps a member whose application is %s under Needs attention, and flags it', (_what, overrides, label) => {
+      const report = withApplications([applied(overrides)]);
+      expect(names(report, 'Needs attention')).toEqual(['Blair Missing']);
+      expect(stat(report, 'Check applied for')).toBe(0);
+      const row = sectionOf(report, 'Checks applied for').rows[0];
+      expect(row.cells[5]).toBe(`Check applied for 01/10/2026: ${label}`);
+      expect(row.flag).toBe(true);
+    });
+
+    it('flags one due to be confirmed, and shows who last confirmed it', () => {
+      const report = withApplications([
+        applied({ check_due_on: '2026-10-18', checked_at: noon('2026-09-18'), checked_by_name: null }),
+      ]);
+      const row = sectionOf(report, 'Checks applied for').rows[0];
+      expect(row.cells[4]).toBe(`${day('2026-09-18')} by a former admin`);
+      expect(row.cells[5]).toBe(
+        `Check applied for 01/10/2026: confirm it’s still being assessed by 31/12/2026`,
+      );
+      expect(row.flag).toBe(true);
+    });
+
+    it('lists ended ones with why, unflagged, and doesn’t count them', () => {
+      const report = withApplications([
+        applied({
+          kind: 'renewal',
+          recorded_by_name: null,
+          declared_at: null,
+          status: 'ended',
+          ended_at: noon('2026-10-10'),
+          ended_reason: 'withdrawn',
+          end_note: 'Moved away',
+        }),
+        applied({ id: 'a2', status: 'ended', ended_at: noon('2026-10-11'), ended_reason: null }),
+      ]);
+      const [first, second] = sectionOf(report, 'Checks applied for').rows;
+      expect(first.cells[1]).toBe(`APL 1, renewal, lodged 01/10/2026`);
+      expect(first.cells[2]).toBe(`${day('2026-10-02')} by a former admin`);
+      expect(first.cells[3]).toBe('Waiting');
+      expect(first.cells[5]).toBe(`Ended ${day('2026-10-10')}, withdrawn (Moved away)`);
+      expect(first.flag).toBe(false);
+      expect(second.cells[5]).toBe(`Ended ${day('2026-10-11')}`);
+      expect(stat(report, 'Check applied for')).toBe(0);
+      expect(names(report, 'Needs attention')).toEqual(['Blair Missing']);
+    });
+
+    it('lists a current card under Current even with an application still open', () => {
+      const report = withApplications([applied({ profile_id: alex.id })], [alex]);
+      expect(names(report, 'Current')).toEqual(['Alex Current']);
+      expect(stat(report, 'Check applied for')).toBe(0);
+    });
+
+    it('counts a volunteer exemption before an application', () => {
+      const report = wwccReport(
+        [blair],
+        [],
+        [],
+        [],
+        [{ ...EXEMPTIONS[0], profile_id: blair.id, ended_at: null, valid: true }],
+        [],
+        null,
+        [],
+        null,
+        [applied()],
+      );
+      expect(stat(report, 'Exempt from a check')).toBe(1);
+      expect(stat(report, 'Check applied for')).toBe(0);
+    });
+
+    it('says what lets an application count, and when it lapses', () => {
+      const note = sectionOf(withApplications([]), 'Checks applied for').note!;
+      expect(note).toContain('negative or interim negative notice');
+      expect(note).toContain('Class 1 offence as an adult');
+      expect(note).toContain('every 30 days');
+      expect(note).toContain('lapses after 90 days');
+    });
   });
 });

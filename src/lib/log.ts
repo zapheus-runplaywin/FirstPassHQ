@@ -89,7 +89,7 @@ function flush() {
     // file a little past the limit.
     if (currentSize > 0 && currentSize + text.length > MAX_FILE_BYTES) rotate();
     if (!file.exists) file.create();
-    file.write(text, { append: true });
+    file.writeSync(text, { append: true });
     currentSize += text.length;
   } catch (e) {
     // A full disk shouldn't break the app; the console still has the lines.

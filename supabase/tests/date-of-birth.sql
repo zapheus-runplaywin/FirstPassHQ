@@ -84,7 +84,7 @@ select pg_temp.ok('saving the same date keeps the first record',
   (select p.date_of_birth_recorded_by = '00000000-0000-0000-0000-000000000001' and p.date_of_birth_recorded_at = f.at
    from public.profiles p, first_record f where p.id = '00000000-0000-0000-0000-000000000051'), true);
 select pg_temp.as_member('01');
--- Since 20261020020000 a child can be approved before a guardian is linked;
+-- Since 20261101000000 a child can be approved before a guardian is linked;
 -- they're under 18 by their date of birth whatever the admin ticks, so
 -- they're locked until a verified guardian is linked.
 select pg_temp.works('a child is approved with no guardian, whatever the admin ticks',

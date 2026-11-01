@@ -48,7 +48,7 @@ const CLUB_TRAINING = { training_requirements: [{ id: 'req-1' }] };
 async function openHome(who: PersonaName | Persona, tables: Record<string, unknown[]> = CLUB_TRAINING) {
   jest.useFakeTimers({ now: TODAY });
   signInAs(typeof who === 'string' ? personas[who] : who, tables);
-  renderRouter({ appDir: 'src/app', overrides }, { initialUrl: '/' });
+  await renderRouter({ appDir: 'src/app', overrides }, { initialUrl: '/' });
   for (let i = 0; i < 8; i++) {
     await act(async () => {
       await Promise.resolve();
@@ -64,10 +64,12 @@ const ITEMS = {
   dailyCheckIn: 'Not done yet today',
   checkIns: 'See how squads and teams are feeling',
   injuries: 'No current injuries',
+  logInjuries: 'Log an injury at training or a game',
   takeAttendance: 'Take attendance and see past sessions',
   myAttendance: 'My attendance',
   integrity: 'Certificates and everyone’s progress',
   concerns: 'The concerns register',
+  reports: 'The club’s checks, medical details checks, training, attendance and award results',
   administration: 'Administration',
   comingUp: 'Coming up',
   guardianOf: 'Guardian of',
@@ -131,9 +133,9 @@ const BY_ROLE: { who: PersonaName; sees: Item[] }[] = [
     ],
   },
   {
-    // Managers don't see injuries (section 11), and only take attendance.
+    // Managers don't see injuries (section 11), only log them, and only take attendance.
     who: 'manager',
-    sees: ['messages', 'sendSurveys', 'takeAttendance', 'comingUp', 'groups', 'raiseConcern'],
+    sees: ['messages', 'sendSurveys', 'logInjuries', 'takeAttendance', 'comingUp', 'groups', 'raiseConcern'],
   },
   {
     // Averages only; no surveys to send, no attendance.
@@ -150,9 +152,30 @@ const BY_ROLE: { who: PersonaName; sees: Item[] }[] = [
       'injuries',
       'takeAttendance',
       'integrity',
+      'reports',
       'comingUp',
       'raiseConcern',
     ],
+  },
+  {
+    // The reports name children: a committee member exempted with a reason
+    // has no Reports card (customer review C14).
+    who: 'committeeExempt',
+    sees: ['messages', 'sendSurveys', 'checkIns', 'injuries', 'takeAttendance', 'integrity', 'comingUp', 'raiseConcern'],
+  },
+  {
+    who: 'committeeBeforeChecksDate',
+    sees: ['messages', 'sendSurveys', 'checkIns', 'injuries', 'takeAttendance', 'integrity', 'comingUp', 'raiseConcern'],
+  },
+  {
+    // The club chose who on the committee sees injuries and left them out
+    // (customer review R7): no Injuries card.
+    who: 'committeeNotChosen',
+    sees: ['messages', 'sendSurveys', 'checkIns', 'takeAttendance', 'integrity', 'reports', 'comingUp', 'raiseConcern'],
+  },
+  {
+    who: 'committeeVolunteerExempt',
+    sees: ['messages', 'sendSurveys', 'checkIns', 'injuries', 'takeAttendance', 'integrity', 'reports', 'comingUp', 'raiseConcern'],
   },
   {
     who: 'admin',
@@ -208,7 +231,7 @@ describe.each(BY_ROLE)('$who', ({ who, sees }) => {
 describe('administration and concerns', () => {
   it('only an approved admin has the Administration card, and it opens Administration', async () => {
     await openHome('admin');
-    fireEvent.press(screen.getByText(ITEMS.administration));
+    await fireEvent.press(screen.getByText(ITEMS.administration));
     await act(async () => {});
     expect(screen.getByText('screen:administration')).toBeTruthy();
     expect(screen).toHavePathname('/administration');
@@ -230,6 +253,21 @@ describe('administration and concerns', () => {
     expect(screen.getByText(ITEMS.groups)).toBeTruthy();
     expect(screen.getByText(ITEMS.takeAttendance)).toBeTruthy();
     expect(screen.getByText('Admin, Coach · Head Coach, Open A')).toBeTruthy();
+  });
+});
+
+describe('reports', () => {
+  it('a committee member with a check opens Reports from home', async () => {
+    await openHome('committee');
+    await fireEvent.press(screen.getByText('Reports'));
+    await act(async () => {});
+    expect(screen.getByText('screen:admin/reports/index')).toBeTruthy();
+    expect(screen).toHavePathname('/admin/reports');
+  });
+
+  it('an admin reaches Reports from Administration, so has no Reports card on home', async () => {
+    await openHome('admin');
+    expect(screen.queryByText(ITEMS.reports)).toBeNull();
   });
 });
 
@@ -392,6 +430,34 @@ describe('cards that need something from the club', () => {
     });
     expect(screen.getByText('Add a plan before or after a session')).toBeTruthy();
   });
+
+  it('a guardian has a to-do for an injury a coach logged for their child, until they open it', async () => {
+    const LOGGED = {
+      injury_id: 'inj-9',
+      athlete_id: 'child-1',
+      athlete_name: 'Sample Child',
+      body_area: 'Knee',
+      logged_by_name: 'Sample coach',
+      logged_by_role: 'coach',
+      logged_at: '2026-10-18T01:00:00Z',
+    };
+    await openHome({ ...personas.guardian, rpcs: { ...personas.guardian.rpcs, my_logged_injuries: [LOGGED] } });
+    expect(screen.getByText('Look at the injury Sample coach logged for Sample Child')).toBeTruthy();
+  });
+
+  it('injuries off leaves no logged-injury to-do', async () => {
+    setClubFeatures({ injuries: false });
+    await openHome({
+      ...personas.guardian,
+      rpcs: {
+        ...personas.guardian.rpcs,
+        my_logged_injuries: [
+          { injury_id: 'inj-9', athlete_id: 'child-1', athlete_name: 'Sample Child', body_area: 'Knee', logged_by_name: 'Sample coach', logged_by_role: 'coach', logged_at: '2026-10-18T01:00:00Z' },
+        ],
+      },
+    });
+    expect(screen.queryByText(/^Look at the injury/)).toBeNull();
+  });
 });
 
 // ---------------------------------------------------------------------------
@@ -409,6 +475,7 @@ describe('feature switches', () => {
     { feature: 'checkIns', who: 'guardian', item: 'childCheckIns' },
     { feature: 'injuries', who: 'admin', item: 'injuries' },
     { feature: 'injuries', who: 'athlete', item: 'injuries' },
+    { feature: 'injuries', who: 'manager', item: 'logInjuries' },
     { feature: 'attendance', who: 'admin', item: 'takeAttendance' },
     { feature: 'attendance', who: 'coach', item: 'takeAttendance' },
     { feature: 'attendance', who: 'athlete', item: 'myAttendance' },
@@ -494,5 +561,51 @@ describe('feature switches', () => {
     await openHome(withKpis);
     expect(screen.getByText('Season KPIs')).toBeTruthy();
     expect(screen.getByText('2 of yours')).toBeTruthy();
+  });
+
+  it('the registers stay hidden until an admin turns them on', async () => {
+    setClubFeatures({});
+    await openHome('committee');
+    expect(screen.queryByText('The club’s policies and conflicts of interest')).toBeNull();
+    setClubFeatures({ registers: true });
+    await openHome('admin');
+    expect(screen.getByText('The club’s policies and conflicts of interest')).toBeTruthy();
+  });
+
+  it('a committee member opens the registers from home', async () => {
+    setClubFeatures({ registers: true });
+    await openHome('committee');
+    await fireEvent.press(screen.getByText('The club’s policies and conflicts of interest'));
+    await act(async () => {});
+    expect(screen.getByText('screen:registers/index')).toBeTruthy();
+    expect(screen).toHavePathname('/registers');
+  });
+
+  it('coaches, athletes and parents have no registers card', async () => {
+    setClubFeatures({ registers: true });
+    for (const who of ['coach', 'athlete', 'guardian'] as const) {
+      await openHome(who);
+      expect(screen.queryByText('The club’s policies and conflicts of interest')).toBeNull();
+    }
+  }, 20000);
+
+  it('a coach is asked to declare conflicts of interest, and a policy owner to review their policy, only while the registers are on', async () => {
+    const asked: Persona = {
+      ...personas.coach,
+      rpcs: {
+        my_conflict_declaration: [
+          { required: true, season: 2026, has_conflict: null, details: null, declared_at: null },
+        ],
+        my_policy_reviews: [{ id: 'p1', title: 'Privacy Policy', review_on: '2026-11-01' }],
+      },
+    };
+    setClubFeatures({});
+    await openHome(asked);
+    expect(screen.queryByText('Declare any conflicts of interest')).toBeNull();
+    expect(screen.queryByText('Review the Privacy Policy')).toBeNull();
+    setClubFeatures({ registers: true });
+    await openHome(asked);
+    expect(screen.getByText('Declare any conflicts of interest')).toBeTruthy();
+    expect(screen.getByText('Review the Privacy Policy')).toBeTruthy();
   });
 });

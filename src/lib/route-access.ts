@@ -2,9 +2,11 @@ import { useCanTakeAttendance, useCanViewAttendance } from '@/lib/attendance';
 import { useAuth } from '@/lib/auth';
 import { useCanSeeCheckIns, useIsCheckInAthlete, useIsCheckInCoach } from '@/lib/check-ins';
 import { useIsGoalAthlete, useIsGoalCoach } from '@/lib/goals';
-import { useCanSeeInjuries } from '@/lib/injuries';
+import { useCanLogInjuries, useCanSeeInjuries } from '@/lib/injuries';
+import { useFeature } from '@/lib/club';
 import { useKpisOn } from '@/lib/kpis';
 import { useCaptainedGroupIds, useCanSendMessages, useGetsMessages } from '@/lib/messages';
+import { useCanReadReports } from '@/lib/report-access';
 import { hasRole, rolesOf } from '@/lib/roles';
 import { useCanSendSurveys } from '@/lib/surveys';
 import { useCanCheckTraining } from '@/lib/training';
@@ -35,6 +37,7 @@ export function useRouteAccess() {
   const canSendSurveys = useCanSendSurveys();
   const captained = useCaptainedGroupIds();
   const canSeeInjuries = useCanSeeInjuries();
+  const canLogInjuries = useCanLogInjuries();
   const canTakeAttendance = useCanTakeAttendance();
   const canViewAttendance = useCanViewAttendance();
   const isCheckInAthlete = useIsCheckInAthlete();
@@ -44,6 +47,8 @@ export function useRouteAccess() {
   const isGoalCoach = useIsGoalCoach();
   const kpisOn = useKpisOn();
   const canCheckTraining = useCanCheckTraining();
+  const canReadReports = useCanReadReports();
+  const registersOn = useFeature('registers');
 
   const isGuardian = holds('guardian');
   const isAthlete = holds('athlete') || inGroupAs('athlete');
@@ -72,10 +77,13 @@ export function useRouteAccess() {
     // even once captains' polls are switched off), and the committee and admins.
     surveyResults: canSendSurveys || captained.size > 0,
 
-    // Injuries: athletes, guardians, coaches, physios, the committee and admins.
-    injuries: canSeeInjuries,
+    // Injuries: athletes, guardians, coaches, physios, the committee and admins
+    // see them; managers only log them.
+    injuries: canSeeInjuries || canLogInjuries,
     // Athletes report their own, and guardians their child's.
     reportInjury: holds('athlete', 'guardian'),
+    // Coaches, managers and physios log one for an athlete when it happens.
+    logInjury: canLogInjuries,
 
     // Attendance: those who take it or see athletes' records.
     attendance: canTakeAttendance || canViewAttendance,
@@ -94,6 +102,8 @@ export function useRouteAccess() {
     checkIn: isCheckInAthlete,
     checkIns: canSeeCheckIns,
     athleteCheckIns: isCheckInCoach || isGuardian,
+    // Training load prompts: coaches, for their own athletes.
+    trainingLoad: isCheckInCoach,
 
     // Club awards: whoever an award can name as a voter.
     awards: canVote,
@@ -118,6 +128,10 @@ export function useRouteAccess() {
     training: isClubMember,
     checkTraining: canCheckTraining,
 
+    // Governance reports, read only: admins, and committee members with a
+    // current check, volunteer exemption or application (report-access.ts).
+    reports: canReadReports,
+
     // The concerns register: admins, the Child Safety Officer and the
     // Complaints Manager.
     concerns: isAdmin || isSafeguardingOfficer,
@@ -125,6 +139,12 @@ export function useRouteAccess() {
     // A child's consents, what's changed around them and who has viewed their
     // records: their parents and guardians, and admins.
     family: isGuardian || isAdmin,
+
+    // Medical and emergency details: an athlete's own, a guardian's child's,
+    // and the athletes of a squad or team's coaches, managers and physios.
+    // Not admins or the committee.
+    medical: isAthlete || isGuardian || inGroupAs('coach', 'manager', 'physio'),
+    teamMedical: inGroupAs('coach', 'manager', 'physio'),
 
     // Choosing a squad or team's captains: admins and its coaches.
     chooseCaptains: isAdmin || inGroupAs('coach'),
@@ -135,6 +155,14 @@ export function useRouteAccess() {
     open: !waitingForGuardian,
     // Asking to join, or changing the request: not once approved and locked.
     join: !isLocked,
+    // Policy and conflict registers, when the club turns them on: read by the
+    // committee and admins and changed by admins; a policy's owner (a club
+    // official) records its review; committee members and coaches declare
+    // their conflicts of interest each season.
+    registers: registersOn && holds('committee', 'admin'),
+    editRegisters: registersOn && isAdmin,
+    reviewPolicy: registersOn && holds('admin', 'committee', 'coach', 'manager', 'physio', 'statistician'),
+    declareConflicts: registersOn && (holds('committee', 'coach') || inGroupAs('coach')),
   };
 }
 

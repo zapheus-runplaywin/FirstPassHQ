@@ -1,4 +1,4 @@
--- Tests for 20261020020000_parent_link_codes.sql: a child's link code, a
+-- Tests for 20261101000000_parent_link_codes.sql: a child's link code, a
 -- parent or guardian entering it, approving them, the lock on a child with no
 -- verified guardian (refused across the club's features, and lifted again),
 -- the notice to admins when a child is locked again, and guardians following
@@ -225,6 +225,7 @@ insert into public.message_recipients (message_id, profile_id) values
 insert into public.fixtures (id, team_id, team_name, opponent, starts_at) values
   ('00000000-0000-0000-0000-0000000000f1', pg_temp.m('a1'), 'Sample Squad', 'Rockets', now() + interval '3 days');
 insert into public.calendars (team_id, name, url) values (pg_temp.m('a1'), 'Squad calendar', 'https://example.test/squad.ics');
+insert into public.session_logs (athlete_id, day, kind, minutes, rpe) values (pg_temp.m('31'), current_date - 1, 'training', 60, 5);
 select pg_temp.as_member('01');
 create temp table survey as select public.create_survey('Training nights', null, 'named', 'group', null,
   '00000000-0000-0000-0000-0000000000a1', null, now() + interval '7 days',
@@ -247,7 +248,9 @@ insert into jordan_can values
   ('reads the squad''s calendar', $$select 1 from public.calendars where team_id = '00000000-0000-0000-0000-0000000000a1'$$),
   ('sees the squad roster', $$select 1 from public.team_roster('00000000-0000-0000-0000-0000000000a1')$$),
   ('sees the squad survey', $$select 1 from public.my_surveys() where id = (select id from survey)$$),
-  ('may report their own absences and injuries', $$select 1 where public.can_report_for('00000000-0000-0000-0000-000000000031')$$);
+  ('may report their own absences and injuries', $$select 1 where public.can_report_for('00000000-0000-0000-0000-000000000031')$$),
+  ('reads their own training session', $$select 1 from public.session_logs where athlete_id = '00000000-0000-0000-0000-000000000031'$$),
+  ('reads the training load settings', $$select 1 from public.load_monitoring_settings()$$);
 grant select on jordan_can to authenticated;
 
 -- Unlocked first.
@@ -280,6 +283,11 @@ select pg_temp.fails('locked Jordan can''t report an injury', $$select public.re
 select pg_temp.fails('locked Jordan can''t report an absence', $$select public.report_absence('00000000-0000-0000-0000-000000000031', current_date + 1, current_date + 1, 'Exam')$$);
 select pg_temp.fails('locked Jordan can''t answer the survey', format('select public.submit_survey_response(%L, %L, false)', (select id from survey), (select answer from survey_answer)));
 select pg_temp.fails('locked Jordan can''t accept the code of conduct', $$select public.accept_code_of_conduct('00000000-0000-0000-0000-000000000031')$$);
+select pg_temp.fails('locked Jordan can''t log a training session', $$select public.save_session_log(null, current_date, 'training', 60, 5)$$);
+select pg_temp.fails('locked Jordan can''t delete a training session', $$select public.delete_session_log((select id from public.session_logs where athlete_id = '00000000-0000-0000-0000-000000000031' limit 1))$$);
+select pg_temp.fails('locked Jordan can''t see their training load', $$select public.athlete_load('00000000-0000-0000-0000-000000000031')$$);
+select pg_temp.fails('locked Jordan can''t open their medical details', $$select public.medical_profile('00000000-0000-0000-0000-000000000031')$$);
+select pg_temp.ok('locked Jordan has no medical check to do', pg_temp.n('select 1 from public.my_medical_reviews()') = 0, true);
 set role authenticated;
 select pg_temp.fails('locked Jordan can''t add a personal task', $$insert into public.personal_tasks (profile_id, title) values ('00000000-0000-0000-0000-000000000031', 'Stretch')$$);
 reset role;
@@ -319,6 +327,9 @@ select pg_temp.as_member('31');
 select pg_temp.works('unlocked Jordan does a check-in', $$select public.save_check_in(current_date, 4, 3, 2, 4, 'x')$$);
 select pg_temp.works('unlocked Jordan reports an absence', $$select public.report_absence('00000000-0000-0000-0000-000000000031', current_date + 1, current_date + 1, 'Exam')$$);
 select pg_temp.works('unlocked Jordan answers the survey', format('select public.submit_survey_response(%L, %L, false)', (select id from survey), (select answer from survey_answer)));
+select pg_temp.works('unlocked Jordan logs a training session', $$select public.save_session_log(null, current_date, 'training', 60, 5)$$);
+select pg_temp.works('unlocked Jordan sees their training load', $$select public.athlete_load('00000000-0000-0000-0000-000000000031')$$);
+select pg_temp.works('unlocked Jordan opens their medical details', $$select public.medical_profile('00000000-0000-0000-0000-000000000031')$$);
 
 -- Turning 18 ends the lock; the day before, it holds.
 reset role;
@@ -373,6 +384,8 @@ select pg_temp.as_member('01');
 select pg_temp.ok('Robin is in the squad and team with Sam and Jordan', (select count(*) = 2 from public.team_members where profile_id = pg_temp.m('62') and team_role = 'guardian'), true);
 select pg_temp.works('saving Robin with no squads or teams', $$select public.admin_save_member('00000000-0000-0000-0000-000000000062', 'guardian', 'approved', '[]')$$);
 select pg_temp.ok('keeps Robin''s places with their children', (select count(*) = 2 from public.team_members where profile_id = pg_temp.m('62') and team_role = 'guardian'), true);
+select pg_temp.works('an admin links the coach-parent back to Jordan', $$select public.admin_save_member('00000000-0000-0000-0000-000000000031', 'athlete', 'approved', '[{"team_id": "00000000-0000-0000-0000-0000000000a1"}, {"team_id": "00000000-0000-0000-0000-0000000000a2", "selection": "touring"}]', true, '{00000000-0000-0000-0000-000000000041,00000000-0000-0000-0000-000000000042,00000000-0000-0000-0000-000000000062}')$$);
+select pg_temp.ok('the coach-parent coaches the squad and follows Jordan into the team', exists (select 1 from public.team_members where team_id = pg_temp.m('a1') and profile_id = pg_temp.m('42') and team_role = 'coach') and exists (select 1 from public.team_members where team_id = pg_temp.m('a2') and profile_id = pg_temp.m('42') and team_role = 'guardian'), true);
 select pg_temp.works('saving the coach-parent with the places the app shows (coach in the squad, guardian in the team)',
   $$select public.admin_save_member('00000000-0000-0000-0000-000000000042', 'coach', 'approved', '[{"team_id": "00000000-0000-0000-0000-0000000000a1", "team_role": "coach", "coach_title": "assistant_coach"}, {"team_id": "00000000-0000-0000-0000-0000000000a2", "team_role": "guardian"}]', false, '{}', null, '{guardian}')$$);
 select pg_temp.ok('the coach-parent still coaches the squad', exists (select 1 from public.team_members where team_id = pg_temp.m('a1') and profile_id = pg_temp.m('42') and team_role = 'coach'), true);

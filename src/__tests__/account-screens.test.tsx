@@ -1,7 +1,8 @@
 /**
  * The member's own screens: Your details (src/app/my-details.tsx), Delete
  * account (delete-account.tsx), the volunteer exemption declaration
- * (declaration.tsx) and their personal tasks (tasks/index.tsx, new.tsx,
+ * (declaration.tsx), the declaration for a lodged Working With Children
+ * Check application (wwcc-application.tsx) and their personal tasks (tasks/index.tsx, new.tsx,
  * [id].tsx with components/task-form.tsx). From "Your preferred name", "Your
  * own tasks" and "Deleting your account" in section 3, and "Volunteer
  * exemptions" in section 6 of docs/user-guide.md.
@@ -20,11 +21,12 @@ import MyDetailsScreen from '@/app/my-details';
 import EditTaskScreen from '@/app/tasks/[id]';
 import TasksScreen from '@/app/tasks/index';
 import NewTaskScreen from '@/app/tasks/new';
+import WwccApplicationScreen from '@/app/wwcc-application';
 import { formatDate } from '@/lib/age';
 import type { PersonalTask } from '@/lib/personal-tasks';
 import { localDay } from '@/lib/reports';
 import { supabase } from '@/lib/supabase';
-import type { MyVolunteerExemption } from '@/lib/types';
+import type { MyVolunteerExemption, MyWwccApplication } from '@/lib/types';
 
 import { argsOf, clearCalls, field, recordTable, rpcNames, type } from './helpers/forms';
 import {
@@ -80,9 +82,9 @@ describe('your details', () => {
     ['admin', 'admin'],
   ])('lets a %s set a club title, and saves it with the preferred name', async (_l, who) => {
     await open(who);
-    type('Preferred name', 'Sam');
-    type('Title', 'Treasurer');
-    fireEvent.press(screen.getByText('Save'));
+    await type('Preferred name', 'Sam');
+    await type('Title', 'Treasurer');
+    await fireEvent.press(screen.getByText('Save'));
     await settle();
     expect(argsOf('save_my_details')).toEqual([{ p_preferred_name: 'Sam', p_title: 'Treasurer' }]);
     expect(back).toHaveBeenCalledTimes(1);
@@ -97,8 +99,8 @@ describe('your details', () => {
   ])('gives a %s no club title, and sends none', async (_l, who) => {
     await open(who);
     expect(screen.queryByText('Title')).toBeNull();
-    type('Preferred name', 'Jo');
-    fireEvent.press(screen.getByText('Save'));
+    await type('Preferred name', 'Jo');
+    await fireEvent.press(screen.getByText('Save'));
     await settle();
     expect(argsOf('save_my_details')).toEqual([{ p_preferred_name: 'Jo', p_title: null }]);
   });
@@ -138,7 +140,7 @@ describe('your details', () => {
 
   it('shows the database’s error and stays', async () => {
     await open('athlete', { rpcErrors: { save_my_details: 'Preferred name is too long.' } });
-    fireEvent.press(screen.getByText('Save'));
+    await fireEvent.press(screen.getByText('Save'));
     await settle();
     expect(screen.getByText('Preferred name is too long.')).toBeTruthy();
     expect(back).not.toHaveBeenCalled();
@@ -156,7 +158,12 @@ describe('deleting the account', () => {
   it('explains what goes and what the club keeps, naming the club', async () => {
     await open();
     expect(screen.getByText('Delete your Sample Club account')).toBeTruthy();
-    expect(screen.getByText(/The club keeps your injury records for 12 months after you leave/)).toBeTruthy();
+    expect(
+      screen.getByText(
+        /The club keeps your injury records after you leave, .* for its keep period for injuries \(7 years unless the club chose 3, 5 or 10\), counted from when you leave, and then deletes them\. Nothing is deleted while the club has removing old records switched off\./,
+      ),
+    ).toBeTruthy();
+    expect(screen.queryByText(/12 months after you leave/)).toBeNull();
     expect(screen.getByText(/you’ll need to ask to join again\./)).toBeTruthy();
     // Only a parent or guardian is told about their child's app locking.
     expect(screen.queryByText(/their app locks\s+again/)).toBeNull();
@@ -172,9 +179,9 @@ describe('deleting the account', () => {
 
   it('asks once more before deleting, and Cancel deletes nothing', async () => {
     await open();
-    fireEvent.press(screen.getByText('Delete my account'));
+    await fireEvent.press(screen.getByText('Delete my account'));
     expect(screen.getByText('Are you sure? This can’t be undone.')).toBeTruthy();
-    fireEvent.press(screen.getByText('Cancel'));
+    await fireEvent.press(screen.getByText('Cancel'));
     await settle();
     expect(rpcNames()).not.toContain('delete_my_account');
     expect(screen.queryByText('Delete my account permanently')).toBeNull();
@@ -182,17 +189,27 @@ describe('deleting the account', () => {
 
   it('deletes the account, then signs out on this phone', async () => {
     await open();
-    fireEvent.press(screen.getByText('Delete my account'));
-    fireEvent.press(screen.getByText('Delete my account permanently'));
+    await fireEvent.press(screen.getByText('Delete my account'));
+    await fireEvent.press(screen.getByText('Delete my account permanently'));
     await settle();
     expect(argsOf('delete_my_account')).toEqual([undefined]);
     expect(signOut()).toHaveBeenCalled();
   });
 
+  it('asks a member the club must keep to contact an admin, without saying why', async () => {
+    await open({ rpcErrors: { delete_my_account: 'Your account can’t be deleted at the moment. Please contact a club admin.' } });
+    await fireEvent.press(screen.getByText('Delete my account'));
+    await fireEvent.press(screen.getByText('Delete my account permanently'));
+    await settle();
+    expect(screen.getByText('Your account can’t be deleted at the moment. Please contact a club admin.')).toBeTruthy();
+    expect(screen.queryByText(/concern names/i)).toBeNull();
+    expect(signOut()).not.toHaveBeenCalled();
+  });
+
   it('when deleting fails, says why and stays signed in', async () => {
     await open({ rpcErrors: { delete_my_account: 'Admins can’t delete their own account.' } });
-    fireEvent.press(screen.getByText('Delete my account'));
-    fireEvent.press(screen.getByText('Delete my account permanently'));
+    await fireEvent.press(screen.getByText('Delete my account'));
+    await fireEvent.press(screen.getByText('Delete my account permanently'));
     await settle();
     expect(screen.getByText('Admins can’t delete their own account.')).toBeTruthy();
     expect(signOut()).not.toHaveBeenCalled();
@@ -251,7 +268,7 @@ describe('the exemption declaration', () => {
   it('accepting sends the declaration and reloads their roles', async () => {
     await open(coach(exemption()));
     clearCalls();
-    fireEvent.press(screen.getByText('I agree'));
+    await fireEvent.press(screen.getByText('I agree'));
     await settle();
     expect(argsOf('accept_volunteer_declaration')).toEqual([undefined]);
     // The member's exemption is read again, so the coach role starts.
@@ -260,7 +277,7 @@ describe('the exemption declaration', () => {
 
   it('when accepting fails, says why and keeps I agree', async () => {
     await open(coach(exemption()), { rpcErrors: { accept_volunteer_declaration: 'This exemption has ended.' } });
-    fireEvent.press(screen.getByText('I agree'));
+    await fireEvent.press(screen.getByText('I agree'));
     await settle();
     expect(screen.getByText('This exemption has ended.')).toBeTruthy();
     expect(screen.getByText('I agree')).toBeTruthy();
@@ -298,6 +315,95 @@ describe('the exemption declaration', () => {
   it('one that has ended says they now need a check', async () => {
     await open(coach(exemption({ declared_at: '2026-01-10T03:00:00Z', valid: false })));
     expect(screen.getByText(/It no longer applies, so you need a Working With Children Check\.$/)).toBeTruthy();
+  });
+});
+
+// ---------------------------------------------------------------------------
+// The declaration for a lodged check application
+
+describe('the check application declaration', () => {
+  const application = (extra: Partial<MyWwccApplication> = {}): MyWwccApplication => ({
+    id: 'application-1',
+    application_number: 'APL 123',
+    lodged_on: '2026-10-10',
+    kind: 'new',
+    declaration_text: 'I applied for a Working With Children Check on 10 October 2026 (application APL 123)…',
+    declared_at: null,
+    lapses_on: '2027-01-08',
+    status: 'waiting_for_declaration',
+    valid: false,
+    ...extra,
+  });
+  /** A coach waiting for their card. */
+  const coach = (a: MyWwccApplication | null): Persona => ({
+    ...personas.coach,
+    profile: { ...personas.coach.profile!, wwcc_number: null, wwcc_expires_on: null },
+    wwccApplication: a,
+  });
+
+  async function open(who: Persona, options: BackendOptions = {}) {
+    await openScreen(who, { 'wwcc-application': WwccApplicationScreen }, '/wwcc-application', {}, options);
+  }
+
+  it('says so when no application is recorded, with nothing to agree to', async () => {
+    await open(coach(null));
+    expect(screen.getByText(/^You don’t have a Working With Children Check application recorded\./)).toBeTruthy();
+    expect(screen.queryByText('I agree')).toBeNull();
+  });
+
+  it('explains the rule, names the application and shows the words to accept', async () => {
+    await open(coach(application()));
+    expect(screen.getByText('Working With Children Check application')).toBeTruthy();
+    expect(screen.getByText(/A club admin has recorded your application APL 123, lodged 10\/10\/2026\./)).toBeTruthy();
+    expect(screen.getByText(/^I applied for a Working With Children Check on 10 October 2026/)).toBeTruthy();
+    expect(screen.getByText('I agree')).toBeTruthy();
+    expect(screen.getByText('If any of this isn’t true, don’t agree. Talk to a club admin instead.')).toBeTruthy();
+  });
+
+  it('accepting sends the declaration and reloads their roles', async () => {
+    await open(coach(application()));
+    clearCalls();
+    await fireEvent.press(screen.getByText('I agree'));
+    await settle();
+    expect(argsOf('accept_wwcc_application_declaration')).toEqual([undefined]);
+    expect(rpcNames()).toContain('my_wwcc_application');
+  });
+
+  it('when accepting fails, says why and keeps I agree', async () => {
+    await open(coach(application()), {
+      rpcErrors: { accept_wwcc_application_declaration: 'You’ve already accepted this' },
+    });
+    await fireEvent.press(screen.getByText('I agree'));
+    await settle();
+    expect(screen.getByText('You’ve already accepted this')).toBeTruthy();
+    expect(screen.getByText('I agree')).toBeTruthy();
+    expect(back).not.toHaveBeenCalled();
+  });
+
+  it.each<[string, Partial<MyWwccApplication>, string]>([
+    [
+      'in force',
+      { status: 'in_force', valid: true },
+      ' It counts as your check until your card arrives. Send a club admin the card number and expiry date as soon as it does.',
+    ],
+    [
+      'lapsed',
+      { status: 'lapsed' },
+      ' It has lapsed because nobody at the club confirmed it’s still being assessed. Ask a club admin to check it.',
+    ],
+    ['stopped', { status: 'stopped' }, ' It no longer counts. Talk to a club admin.'],
+  ])('once accepted and %s, says when and where it’s up to', async (_what, extra, words) => {
+    await open(coach(application({ declared_at: '2026-10-11T03:00:00Z', ...extra })));
+    expect(screen.queryByText('I agree')).toBeNull();
+    expect(screen.getByText(`You accepted this on ${localDay('2026-10-11T03:00:00Z')}.${words}`)).toBeTruthy();
+  });
+
+  it('one stopped by a notice before it was accepted can’t be accepted', async () => {
+    await open(coach(application({ status: 'stopped' })));
+    expect(screen.queryByText('I agree')).toBeNull();
+    expect(
+      screen.getByText('A notice from the Screening Unit means this application doesn’t count. Talk to a club admin.'),
+    ).toBeTruthy();
   });
 });
 
@@ -340,14 +446,14 @@ describe('your tasks', () => {
     await openScreen('athlete', { 'tasks/index': TasksScreen }, '/tasks', {}, { tableHandlers: { personal_tasks: t.handler } });
     expect(screen.getByText('Nothing to do.')).toBeTruthy();
     expect(screen.queryByText('Delete done tasks')).toBeNull();
-    fireEvent.press(screen.getByText('Add a task'));
+    await fireEvent.press(screen.getByText('Add a task'));
     expect(push).toHaveBeenCalledWith('/tasks/new');
   });
 
   it('putting a done task back clears its done date', async () => {
     const t = tasksTable(OPEN, DONE);
     await openScreen('athlete', { 'tasks/index': TasksScreen }, '/tasks', {}, { tableHandlers: { personal_tasks: t.handler } });
-    fireEvent.press(screen.getByLabelText('Put back Done task'));
+    await fireEvent.press(screen.getByLabelText('Put back Done task'));
     await settle();
     expect(t.writes('update')).toEqual([{ done_at: null }]);
     expect(t.filtersOf('update')).toEqual([[['id', 't3']]]);
@@ -357,9 +463,9 @@ describe('your tasks', () => {
   it('deletes only ticked-off tasks, after asking', async () => {
     const t = tasksTable(OPEN, DONE);
     await openScreen('athlete', { 'tasks/index': TasksScreen }, '/tasks', {}, { tableHandlers: { personal_tasks: t.handler } });
-    fireEvent.press(screen.getByText('Delete done tasks'));
+    await fireEvent.press(screen.getByText('Delete done tasks'));
     expect(screen.getByText('This deletes every task you’ve ticked off, for good.')).toBeTruthy();
-    fireEvent.press(screen.getByText('Delete them'));
+    await fireEvent.press(screen.getByText('Delete them'));
     await settle();
     const deletes = t.queries.filter((calls) => calls.some((c) => c.method === 'delete'));
     expect(deletes).toHaveLength(1);
@@ -379,8 +485,8 @@ describe('adding and changing a task', () => {
   it('needs a title', async () => {
     const t = recordTable();
     await openScreen('athlete', { 'tasks/new': NewTaskScreen }, '/tasks/new', {}, { tableHandlers: { personal_tasks: t.handler } });
-    type('Task', '   ');
-    fireEvent.press(screen.getByText('Add task'));
+    await type('Task', '   ');
+    await fireEvent.press(screen.getByText('Add task'));
     await settle();
     expect(screen.getByText('Say what the task is.')).toBeTruthy();
     expect(t.writes('insert')).toEqual([]);
@@ -390,8 +496,8 @@ describe('adding and changing a task', () => {
     const t = recordTable();
     await openScreen('athlete', { 'tasks/new': NewTaskScreen }, '/tasks/new', {}, { tableHandlers: { personal_tasks: t.handler } });
     expect(screen.getByText('No due date')).toBeTruthy();
-    type('Task', '  Wash my training kit  ');
-    fireEvent.press(screen.getByText('Add task'));
+    await type('Task', '  Wash my training kit  ');
+    await fireEvent.press(screen.getByText('Add task'));
     await settle();
     expect(t.writes('insert')).toEqual([{ title: 'Wash my training kit', due_on: null }]);
     expect(back).toHaveBeenCalled();
@@ -400,11 +506,11 @@ describe('adding and changing a task', () => {
   it('picks a due day from the week, moving a week at a time', async () => {
     const t = recordTable();
     await openScreen('athlete', { 'tasks/new': NewTaskScreen }, '/tasks/new', {}, { tableHandlers: { personal_tasks: t.handler } });
-    type('Task', 'Book a physio follow-up');
-    fireEvent.press(screen.getByLabelText('Next week'));
-    fireEvent.press(screen.getByLabelText('Wed Oct 21 2026'));
+    await type('Task', 'Book a physio follow-up');
+    await fireEvent.press(screen.getByLabelText('Next week'));
+    await fireEvent.press(screen.getByLabelText('Wed Oct 21 2026'));
     expect(screen.getByText('Remove due date')).toBeTruthy();
-    fireEvent.press(screen.getByText('Add task'));
+    await fireEvent.press(screen.getByText('Add task'));
     await settle();
     expect(t.writes('insert')).toEqual([{ title: 'Book a physio follow-up', due_on: '2026-10-21' }]);
   });
@@ -412,10 +518,10 @@ describe('adding and changing a task', () => {
   it('Remove due date takes it off', async () => {
     const t = recordTable();
     await openScreen('athlete', { 'tasks/new': NewTaskScreen }, '/tasks/new', {}, { tableHandlers: { personal_tasks: t.handler } });
-    type('Task', 'Thing');
-    fireEvent.press(screen.getByLabelText('Fri Oct 16 2026'));
-    fireEvent.press(screen.getByText('Remove due date'));
-    fireEvent.press(screen.getByText('Add task'));
+    await type('Task', 'Thing');
+    await fireEvent.press(screen.getByLabelText('Fri Oct 16 2026'));
+    await fireEvent.press(screen.getByText('Remove due date'));
+    await fireEvent.press(screen.getByText('Add task'));
     await settle();
     expect(t.writes('insert')).toEqual([{ title: 'Thing', due_on: null }]);
   });
@@ -426,8 +532,8 @@ describe('adding and changing a task', () => {
     (supabase.from as jest.Mock).mockImplementationOnce(() => ({
       insert: async () => ({ error: { message: 'You can have up to 100 tasks to do.' } }),
     }));
-    type('Task', 'One too many');
-    fireEvent.press(screen.getByText('Add task'));
+    await type('Task', 'One too many');
+    await fireEvent.press(screen.getByText('Add task'));
     await settle();
     expect(screen.getByText('You can have up to 100 tasks to do.')).toBeTruthy();
     expect(back).not.toHaveBeenCalled();
@@ -440,8 +546,8 @@ describe('adding and changing a task', () => {
     await openScreen('athlete', { 'tasks/[id]': EditTaskScreen }, '/tasks/t9', {}, { tableHandlers: { personal_tasks: t.handler } });
     expect(field('Task').props.value).toBe('Return the club bib');
     expect(screen.getByLabelText('Tue Oct 20 2026').props.accessibilityState).toEqual({ selected: true });
-    type('Task', 'Return the bib and socks');
-    fireEvent.press(screen.getByText('Save'));
+    await type('Task', 'Return the bib and socks');
+    await fireEvent.press(screen.getByText('Save'));
     await settle();
     expect(t.writes('update')).toEqual([{ title: 'Return the bib and socks', due_on: '2026-10-20' }]);
     expect(t.filtersOf('update')).toEqual([[['id', 't9']]]);
@@ -451,9 +557,9 @@ describe('adding and changing a task', () => {
   it('deletes a task after asking', async () => {
     const t = recordTable((q) => (q.calls.some((c) => c.method === 'delete') ? [] : [EXISTING]));
     await openScreen('athlete', { 'tasks/[id]': EditTaskScreen }, '/tasks/t9', {}, { tableHandlers: { personal_tasks: t.handler } });
-    fireEvent.press(screen.getByText('Delete task'));
+    await fireEvent.press(screen.getByText('Delete task'));
     expect(screen.getByText('This deletes the task for good.')).toBeTruthy();
-    fireEvent.press(screen.getByText('Delete it'));
+    await fireEvent.press(screen.getByText('Delete it'));
     await settle();
     expect(t.filtersOf('delete')).toEqual([[['id', 't9']]]);
     expect(back).toHaveBeenCalled();

@@ -31,7 +31,7 @@ $$ select exists (select 1 from public.team_members where team_id = pg_temp.m(n)
 -- (31) is in Sample Team (a2), so Logan Parent (41) and the coach-parent
 -- Morgan (42, a coach of the squad only) are in it as guardians.
 select pg_temp.ok('the migration placed the junior''s guardians in the team', pg_temp.in_team('a2', '41', 'guardian') and pg_temp.in_team('a2', '42', 'guardian'), true);
--- Since 20261020020000 guardians follow their child into squads too: Logan
+-- Since 20261101000000 guardians follow their child into squads too: Logan
 -- is in Sample Squad as a guardian, and Morgan stays in it as a coach.
 select pg_temp.ok('the junior''s guardian was placed in the squad too', pg_temp.in_team('a1', '41', 'guardian') and pg_temp.in_team('a1', '42', 'coach'), true);
 select pg_temp.ok('only that guardian was placed in the squad', (select count(*) = 1 from public.team_members where team_id = pg_temp.m('a1') and team_role = 'guardian'), true);

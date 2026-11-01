@@ -3,7 +3,8 @@
  */
 // The nightly purge deletes children's injury records and files, which can't
 // be undone. These tests pin its order (files before records), that it stops
-// at the first error, its batching and buckets, and its secret check.
+// at the first error, its batching and buckets, its secret check, and that
+// every run records itself so admins can see when it last ran.
 
 import {
   allowed,
@@ -28,9 +29,11 @@ function fakeClient(script: Script = {}) {
   const calls: string[] = [];
   const removed: { bucket: string; paths: string[] }[] = [];
   const counts: Record<string, number> = {};
+  const args: Record<string, unknown>[] = [];
   const client: PurgeClient = {
-    rpc: jest.fn(async (fn: string) => {
+    rpc: jest.fn(async (fn: string, given?: Record<string, unknown>) => {
       calls.push(`rpc:${fn}`);
+      if (fn === 'record_purge_run') args.push(given ?? {});
       const r = script.rpc?.[fn];
       return { data: r?.data ?? null, error: r?.error ?? null };
     }),
@@ -47,7 +50,7 @@ function fakeClient(script: Script = {}) {
       }),
     },
   };
-  return { client, calls, removed };
+  return { client, calls, removed, recorded: args };
 }
 
 function fakeLogger() {
@@ -72,6 +75,9 @@ const ALL_STEPS = [
   'rpc:purge_expired_records',
   'rpc:purge_expired_surveys',
 ];
+
+/** A whole run: every step, then the run recording itself. */
+const RUN = [...ALL_STEPS, 'rpc:record_purge_run'];
 
 describe('handlePurge: method and secret', () => {
   function request(method: string, key?: string) {
@@ -122,7 +128,7 @@ describe('handlePurge: method and secret', () => {
     });
     expect(response.status).toBe(200);
     expect(await response.json()).toEqual({ ok: true });
-    expect(calls).toEqual(ALL_STEPS);
+    expect(calls).toEqual(RUN);
     expect(logger.warn).not.toHaveBeenCalled();
   });
 
@@ -131,7 +137,7 @@ describe('handlePurge: method and secret', () => {
     const logger = fakeLogger();
     const response = await handlePurge(request('POST'), { env: env({}), logger, makeClient: () => client });
     expect(response.status).toBe(200);
-    expect(calls).toEqual(ALL_STEPS);
+    expect(calls).toEqual(RUN);
     expect(logger.warn).toHaveBeenCalledWith(
       'PURGE_SECRET is not set, so anyone can run the purge. Set it with supabase secrets set.',
     );
@@ -221,6 +227,7 @@ describe('runPurge: order', () => {
       'remove:session-plans',
       'rpc:purge_expired_records',
       'rpc:purge_expired_surveys',
+      'rpc:record_purge_run',
     ]);
   });
 
@@ -248,7 +255,7 @@ describe('runPurge: order', () => {
     });
     const response = await runPurge(client, fakeLogger());
     expect(response.status).toBe(200);
-    expect(calls).toEqual(ALL_STEPS);
+    expect(calls).toEqual(RUN);
   });
 });
 
@@ -283,8 +290,9 @@ describe('runPurge: batching', () => {
 });
 
 describe('runPurge: stops at the first error', () => {
+  /** The calls before the failed run recorded itself, which is always last. */
   async function failsAt(script: Script, step: string, detail: string) {
-    const { client, calls } = fakeClient(script);
+    const { client, calls, recorded } = fakeClient(script);
     const logger = fakeLogger();
     const response = await runPurge(client, logger);
     expect(response.status).toBe(500);
@@ -292,7 +300,10 @@ describe('runPurge: stops at the first error', () => {
     expect(await response.json()).toEqual({ error: `Failed while ${step}` });
     expect(logger.error).toHaveBeenCalledWith(`Purge failed while ${step}: ${detail}`);
     expect(logger.log).not.toHaveBeenCalled();
-    return calls;
+    // The failed run is recorded with the step it stopped at, never the detail.
+    expect(calls[calls.length - 1]).toBe('rpc:record_purge_run');
+    expect(recorded).toEqual([{ p_ok: false, p_failed_step: step, p_counts: null }]);
+    return calls.slice(0, -1);
   }
 
   const rpcSteps: [string, string][] = [
@@ -391,7 +402,7 @@ describe('runPurge: projects without session plans yet', () => {
     const logger = fakeLogger();
     const response = await runPurge(client, logger);
     expect(response.status).toBe(200);
-    expect(calls).toEqual(ALL_STEPS);
+    expect(calls).toEqual(RUN);
     expect(calls).not.toContain('remove:session-plans');
     expect(logger.error).not.toHaveBeenCalled();
   });
@@ -412,7 +423,7 @@ describe('runPurge: projects without session plans yet', () => {
     });
     const response = await runPurge(client, fakeLogger());
     expect(response.status).toBe(500);
-    expect(calls).toEqual(['rpc:expired_injury_documents']);
+    expect(calls).toEqual(['rpc:expired_injury_documents', 'rpc:record_purge_run']);
   });
 });
 
@@ -442,5 +453,84 @@ describe('runPurge: success', () => {
     ]);
     const logged = JSON.stringify([logger.log.mock.calls, logger.warn.mock.calls, logger.error.mock.calls]);
     expect(logged).not.toMatch(/jane|sam|alex|athlete|coach|\.pdf|club\//i);
+  });
+});
+
+describe('runPurge: recording the run', () => {
+  it('records a finished run with what it removed', async () => {
+    const { client, recorded } = fakeClient({
+      rpc: {
+        expired_injury_documents: { data: paths('a', 3) },
+        purge_expired_injuries: { data: 2 },
+        cleared_injury_documents: { data: paths('b', 1) },
+        mark_removed_injury_documents: { data: 1 },
+        expired_certificate_documents: { data: paths('c', 4) },
+        expired_session_plan_files: { data: paths('d', 5) },
+        purge_expired_records: { data: { check_ins: 7 } },
+        purge_expired_surveys: { data: { surveys: 1 } },
+      },
+    });
+    const response = await runPurge(client, fakeLogger());
+    expect(response.status).toBe(200);
+    expect(recorded).toEqual([
+      {
+        p_ok: true,
+        p_failed_step: null,
+        p_counts: {
+          documents: 3,
+          injuries: 2,
+          cleared_injury_files: 1,
+          marked_documents: 1,
+          certificates: 4,
+          session_plan_files: 5,
+          records: { check_ins: 7 },
+          surveys: { surveys: 1 },
+        },
+      },
+    ]);
+  });
+
+  it('records a finished run that removed nothing', async () => {
+    const { client, recorded } = fakeClient();
+    await runPurge(client, fakeLogger());
+    expect(recorded).toHaveLength(1);
+    expect(recorded[0]).toMatchObject({ p_ok: true, p_failed_step: null });
+    expect(recorded[0].p_counts).toMatchObject({ documents: 0, certificates: 0, session_plan_files: 0 });
+  });
+
+  it('fails a finished run it could not record, so the workflow shows it', async () => {
+    const { client, calls } = fakeClient({ rpc: { record_purge_run: { error: { message: 'no table' } } } });
+    const logger = fakeLogger();
+    const response = await runPurge(client, logger);
+    expect(response.status).toBe(500);
+    expect(await response.json()).toEqual({ error: 'Failed while recording the run' });
+    expect(logger.error).toHaveBeenCalledWith("Couldn't record the purge run: no table");
+    expect(calls).toEqual(RUN);
+  });
+
+  it('still reports the first error when a failed run could not be recorded either', async () => {
+    const { client, calls } = fakeClient({
+      rpc: {
+        purge_expired_records: { error: { message: 'boom' } },
+        record_purge_run: { error: { message: 'database down' } },
+      },
+    });
+    const logger = fakeLogger();
+    const response = await runPurge(client, logger);
+    expect(response.status).toBe(500);
+    expect(await response.json()).toEqual({ error: 'Failed while removing old records' });
+    expect(logger.error).toHaveBeenCalledWith('Purge failed while removing old records: boom');
+    expect(logger.error).toHaveBeenCalledWith("Couldn't record the purge run: database down");
+    expect(calls[calls.length - 1]).toBe('rpc:record_purge_run');
+    expect(calls).not.toContain('rpc:purge_expired_surveys');
+  });
+
+  it('records a run only once', async () => {
+    const ok = fakeClient();
+    await runPurge(ok.client, fakeLogger());
+    expect(ok.calls.filter((c) => c === 'rpc:record_purge_run')).toHaveLength(1);
+    const bad = fakeClient({ rpc: { purge_expired_injuries: { error: { message: 'x' } } } });
+    await runPurge(bad.client, fakeLogger());
+    expect(bad.calls.filter((c) => c === 'rpc:record_purge_run')).toHaveLength(1);
   });
 });

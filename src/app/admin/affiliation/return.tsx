@@ -9,7 +9,7 @@ import { Card, ErrorText, PressableCard } from '@/components/ui';
 import { Spacing } from '@/constants/theme';
 import { useTheme } from '@/hooks/use-theme';
 import { type Affiliation, type Officer, type ReturnInfo } from '@/lib/affiliation';
-import { useAuth } from '@/lib/auth';
+import { PROFILE_COLUMNS, useAuth } from '@/lib/auth';
 import { useClub } from '@/lib/club';
 import type { ClubPolicies } from '@/lib/consents';
 import { toDateString } from '@/lib/injuries';
@@ -25,7 +25,7 @@ import {
 } from '@/lib/reports';
 import { supabase } from '@/lib/supabase';
 import { currentSeason } from '@/lib/training';
-import type { SafeguardingContacts } from '@/lib/types';
+import type { Profile, SafeguardingContacts } from '@/lib/types';
 import { seasonLabel, useTeams } from '@/lib/use-teams';
 
 type Data = {
@@ -43,7 +43,7 @@ type Data = {
  * shown as it will be sent, with a button that sends it as a PDF.
  */
 export default function AffiliationReturnScreen() {
-  const { committeeChecksFrom } = useAuth();
+  const { committeeChecksFrom, statisticianChecksFrom } = useAuth();
   const club = useClub();
   const teams = useTeams();
   const [data, setData] = useState<Data | null>(null);
@@ -69,8 +69,18 @@ export default function AffiliationReturnScreen() {
         ]);
       if (settings.error) throw new Error(settings.error.message);
       const affiliation = settings.data as Affiliation;
-      const contacts = [affiliation.primary_contact_1_id, affiliation.primary_contact_2_id]
-        .map((id) => wwccData.members.find((m) => m.id === id))
+      // The report's member list leaves out emails, so the two contacts'
+      // emails come from their own profiles (admins read every profile).
+      const contactIds = [affiliation.primary_contact_1_id, affiliation.primary_contact_2_id].filter(
+        (id): id is string => !!id,
+      );
+      const people = contactIds.length
+        ? await supabase.from('profiles').select(PROFILE_COLUMNS).in('id', contactIds)
+        : { data: [], error: null };
+      if (people.error) throw new Error(people.error.message);
+      const contactRows = (people.data as Profile[] | null) ?? [];
+      const contacts = contactIds
+        .map((id) => contactRows.find((m) => m.id === id))
         .filter((m) => !!m)
         .map((m) => ({ name: memberName(m), email: m.email }));
       setData({
@@ -93,6 +103,8 @@ export default function AffiliationReturnScreen() {
           wwccData.officerName,
           wwccData.acknowledgements,
           committeeChecksFrom,
+          wwccData.applications,
+          statisticianChecksFrom,
         ).stats,
         training: {
           season: seasonLabel(trainingSeason),
@@ -107,7 +119,7 @@ export default function AffiliationReturnScreen() {
     } catch (e) {
       setError(e instanceof Error ? e.message : 'The return didn’t load. Try again.');
     }
-  }, [committeeChecksFrom, teams, trainingSeason]);
+  }, [committeeChecksFrom, statisticianChecksFrom, teams, trainingSeason]);
 
   useFocusEffect(
     useCallback(() => {

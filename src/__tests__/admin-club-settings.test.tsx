@@ -85,6 +85,7 @@ const RETENTION_RPCS = {
   injury_documents_keep_days: 365,
   survey_retention: SURVEYS,
   more_record_retention: MORE,
+  medical_keep_months: 24,
 };
 
 async function openClub(
@@ -98,7 +99,7 @@ async function openClub(
 }
 
 async function save() {
-  fireEvent.press(screen.getByText('Save club settings'));
+  await fireEvent.press(screen.getByText('Save club settings'));
   await settle();
 }
 
@@ -146,11 +147,11 @@ describe('Club settings', () => {
 
   it('saves the name, colours and logo as entered, with no feature changes when all are on their defaults', async () => {
     await openClub();
-    type('Club name', 'Sample Netball Club');
-    type('Short name', 'Sample');
-    type('Background', '#ffcd00');
-    type('Hero colour', '#000000');
-    fireEvent.press(screen.getByText('Dark text'));
+    await type('Club name', 'Sample Netball Club');
+    await type('Short name', 'Sample');
+    await type('Background', '#ffcd00');
+    await type('Hero colour', '#000000');
+    await fireEvent.press(screen.getByText('Dark text'));
     await save();
     expect(savedProfile()).toEqual([
       {
@@ -169,12 +170,12 @@ describe('Club settings', () => {
 
   it('saves Light text as white, and no text colour when the built-in text is kept', async () => {
     await openClub();
-    fireEvent.press(screen.getByText('Light text'));
+    await fireEvent.press(screen.getByText('Light text'));
     await save();
     expect(savedProfile()[0].p_text_colour).toBe('#FFFFFF');
 
     rpc().mockClear();
-    fireEvent.press(screen.getByText('Use the built-in colours'));
+    await fireEvent.press(screen.getByText('Use the built-in colours'));
     await save();
     expect(savedProfile()[0]).toMatchObject({
       p_background_colour: '',
@@ -186,7 +187,7 @@ describe('Club settings', () => {
   it('puts the built-in colours back, clearing the colour codes and text choice', async () => {
     setSavedClub({ background_colour: '#FFFFFF', hero_colour: '#2274A5', text_colour: '#000000' });
     await openClub();
-    fireEvent.press(screen.getByText('Use the built-in colours'));
+    await fireEvent.press(screen.getByText('Use the built-in colours'));
     expect(input('Background').props.value).toBe('');
     expect(input('Hero colour').props.value).toBe('');
     expect(isSelected('Light text')).toBe(true);
@@ -198,7 +199,7 @@ describe('Club settings', () => {
     ['Hero colour', '#GGGGGG', 'Hero colour must be a colour code like #F75C03.'],
   ])('refuses to save %s “%s”, saying what a colour code looks like', async (field, value, message) => {
     await openClub();
-    type(field, value);
+    await type(field, value);
     await save();
     expect(screen.getByText(message)).toBeTruthy();
     expect(savedProfile()).toEqual([]);
@@ -209,33 +210,35 @@ describe('Club settings', () => {
     await openClub();
     expect(screen.queryByText(/text and background are close in colour/)).toBeNull();
     // Dark text on the built-in deep navy.
-    fireEvent.press(screen.getByText('Dark text'));
+    await fireEvent.press(screen.getByText('Dark text'));
     expect(screen.getByText(/text and background are close in colour/)).toBeTruthy();
   });
 
   it('warns when the hero colour is close to the background', async () => {
     await openClub();
     expect(screen.queryByText(/hero colour is close to the background/)).toBeNull();
-    type('Hero colour', '#10182C');
+    await type('Hero colour', '#10182C');
     expect(screen.getByText(/hero colour is close to the background/)).toBeTruthy();
   });
 
   it('saves every feature switched away from its default, and only those', async () => {
     await openClub();
     // On by default: switching off is saved.
-    flip('Messages', false);
-    flip('Injuries', false);
-    flip('Captains’ polls', false);
+    await flip('Messages', false);
+    await flip('Injuries', false);
+    await flip('Captains’ polls', false);
     // Off by default: switching on is saved.
-    flip('Season KPIs', true);
-    flip('Affiliation records', true);
-    flip('Members join a squad first', false);
+    await flip('Season KPIs', true);
+    await flip('Affiliation records', true);
+    await flip('Policy and conflict registers', true);
+    await flip('Members join a squad first', false);
     await save();
     expect(savedProfile()[0].p_features).toEqual({
       messages: false,
       injuries: false,
       captainPolls: false,
       kpis: true,
+      registers: true,
       squads: false,
       affiliation: true,
     });
@@ -263,10 +266,11 @@ describe('Club settings', () => {
   });
 
   it('turning a switched-off feature back on stores nothing for it', async () => {
-    setSavedClub({ features: { messages: false, kpis: true } });
+    setSavedClub({ features: { messages: false, kpis: true, registers: true } });
     await openClub();
-    flip('Messages', true);
-    flip('Season KPIs', false);
+    await flip('Messages', true);
+    await flip('Season KPIs', false);
+    await flip('Policy and conflict registers', false);
     await save();
     expect(savedProfile()[0].p_features).toEqual({});
   });
@@ -275,7 +279,7 @@ describe('Club settings', () => {
     await openClub();
     expect(screen.getByText(/^New members join a squad\./)).toBeTruthy();
     expect(screen.queryByText(/Squads you already have stay until the season ends/)).toBeNull();
-    flip('Members join a squad first', false);
+    await flip('Members join a squad first', false);
     expect(screen.getByText(/^Members join a team straight away/)).toBeTruthy();
     expect(screen.getByText(/Squads you already have stay until the season ends, and nobody is moved\./)).toBeTruthy();
   });
@@ -284,13 +288,13 @@ describe('Club settings', () => {
     setSavedClub({ features: { squads: false } });
     await openClub();
     expect(screen.queryByText(/From now on, new teams are named from a squad/)).toBeNull();
-    flip('Members join a squad first', true);
+    await flip('Members join a squad first', true);
     expect(screen.getByText(/From now on, new teams are named from a squad\. Teams you already have keep their members\./)).toBeTruthy();
   });
 
   it('saves the physio switch after the club settings', async () => {
     await openClub();
-    flip('Physios get club messages', true);
+    await flip('Physios get club messages', true);
     await save();
     const names = (rpc().mock.calls as [string][]).map(([n]) => n);
     expect(names.indexOf('admin_update_club_profile')).toBeLessThan(
@@ -342,7 +346,7 @@ describe('the club logo', () => {
     pickDocument.mockResolvedValue(
       asset ? { canceled: false, assets: [{ uri: 'file:///logo', name: 'logo', ...asset }] } : { canceled: true, assets: null },
     );
-    fireEvent.press(screen.getByText('Choose logo'));
+    await fireEvent.press(screen.getByText('Choose logo'));
     await settle();
   }
 
@@ -418,7 +422,7 @@ describe('the club logo', () => {
   it('goes back to the FirstPass mark, saving no logo', async () => {
     setSavedClub({ logo_path: 'logo-old.png' });
     await openClub();
-    fireEvent.press(screen.getByText('Use the FirstPass mark'));
+    await fireEvent.press(screen.getByText('Use the FirstPass mark'));
     expect(screen.queryByText('Use the FirstPass mark')).toBeNull();
     await save();
     expect(savedProfile()[0].p_logo_path).toBe('');
@@ -457,11 +461,20 @@ function chosen(period: string, choice: string) {
 }
 
 async function saveKeepPeriods() {
-  fireEvent.press(screen.getByText('Save keep periods'));
+  await fireEvent.press(screen.getByText('Save keep periods'));
   await settle();
 }
 
 describe('Keeping records', () => {
+  it('says injuries of athletes who left follow the Cleared injuries period, not 12 months', async () => {
+    await openRetention();
+    expect(
+      screen.getByText(/Injuries of athletes who have left follow Cleared injuries below, counted from\s+when they left\./),
+    ).toBeTruthy();
+    expect(screen.queryByText(/12 months after an athlete leaves/)).toBeNull();
+    expect(screen.getByText(/for an athlete who has left, each of their injuries goes this long after they left/)).toBeTruthy();
+  });
+
   it('shows the saved periods, the removal switch and who last changed them', async () => {
     await openRetention();
     expect(isOn('Remove old records')).toBe(false);
@@ -469,6 +482,7 @@ describe('Keeping records', () => {
     expect(chosen('Message text', '3 years')).toBe(true);
     expect(chosen('Message text involving a child', '7 years')).toBe(true);
     expect(chosen('Injury documents', '1 year')).toBe(true);
+    expect(chosen('Medical and emergency details', '2 years')).toBe(true);
     expect(chosen('Cleared injuries', '7 years')).toBe(true);
     expect(chosen('Safeguarding records', '30 years')).toBe(true);
     expect(chosen('Awards and their results', '10 years')).toBe(true);
@@ -484,8 +498,10 @@ describe('Keeping records', () => {
       injury_documents_keep_days: null,
       survey_retention: null,
       more_record_retention: null,
+      medical_keep_months: null,
     });
     expect(chosen('Message text involving a child', '7 years')).toBe(true);
+    expect(chosen('Medical and emergency details', '2 years')).toBe(true);
     expect(chosen('Injury documents', '1 year')).toBe(true);
     expect(chosen('Surveys from the committee and admins', '3 years')).toBe(true);
     expect(chosen('Squad and team surveys shared with admins or the committee', '2 years')).toBe(true);
@@ -509,19 +525,39 @@ describe('Keeping records', () => {
       expect(chip('Daily check-ins', choice)).toBeTruthy();
     }
     for (const choice of ['90 days', '1 year', '3 years']) expect(chip('Injury documents', choice)).toBeTruthy();
+    for (const choice of ['2 years', '3 years', '5 years', '7 years']) {
+      expect(chip('Medical and emergency details', choice)).toBeTruthy();
+    }
+    expect(screen.getByText(/when nobody has done their yearly check for this long/)).toBeTruthy();
     for (const choice of ['3 years', '5 years', '10 years', '20 years', 'Keep for good']) {
       expect(chip('Awards and their results', choice)).toBeTruthy();
     }
   });
 
+  it('offers attendance for 10 or 15 years and safeguarding for 45 years or for good', async () => {
+    await openRetention();
+    for (const choice of ['1 year', '5 years', '10 years', '15 years']) expect(chip('Attendance', choice)).toBeTruthy();
+    for (const choice of ['7 years', '30 years', '45 years', 'Keep for good']) {
+      expect(chip('Safeguarding records', choice)).toBeTruthy();
+    }
+    expect(screen.getByText(/at least 45 years/)).toBeTruthy();
+    expect(screen.getByText(/while a concern names a member nothing about them is removed/)).toBeTruthy();
+    await fireEvent.press(chip('Attendance', '15 years'));
+    await fireEvent.press(chip('Safeguarding records', 'Keep for good'));
+    await saveKeepPeriods();
+    expect(callsTo('admin_set_record_retention_all')[0].p_attendance_months).toBe(180);
+    expect(callsTo('admin_set_more_record_retention')[0].p_safeguarding_months).toBe(0);
+  });
+
   it('saves the removal switch and every period across the three settings, in order', async () => {
     await openRetention();
-    flip('Remove old records', true);
-    fireEvent.press(chip('Daily check-ins', '3 months'));
-    fireEvent.press(chip('Message text involving a child', '15 years'));
-    fireEvent.press(chip('Injury documents', '90 days'));
-    fireEvent.press(chip('Squad and team polls kept in the team', '1 year'));
-    fireEvent.press(chip('Awards and their results', 'Keep for good'));
+    await flip('Remove old records', true);
+    await fireEvent.press(chip('Daily check-ins', '3 months'));
+    await fireEvent.press(chip('Message text involving a child', '15 years'));
+    await fireEvent.press(chip('Injury documents', '90 days'));
+    await fireEvent.press(chip('Squad and team polls kept in the team', '1 year'));
+    await fireEvent.press(chip('Awards and their results', 'Keep for good'));
+    await fireEvent.press(chip('Medical and emergency details', '5 years'));
     expect(isDisabled('Save keep periods')).toBe(false);
     await saveKeepPeriods();
     expect(callsTo('admin_set_record_retention_all')).toEqual([
@@ -546,13 +582,15 @@ describe('Keeping records', () => {
     const names = (rpc().mock.calls as [string][]).map(([n]) => n);
     expect(names.indexOf('admin_set_record_retention_all')).toBeLessThan(names.indexOf('admin_set_survey_retention'));
     expect(names.indexOf('admin_set_survey_retention')).toBeLessThan(names.indexOf('admin_set_more_record_retention'));
+    expect(callsTo('admin_set_medical_keep_months')).toEqual([{ p_months: 60 }]);
+    expect(names.indexOf('admin_set_more_record_retention')).toBeLessThan(names.indexOf('admin_set_medical_keep_months'));
     expect(screen.getByText('Saved.')).toBeTruthy();
   });
 
   it('keeps a period the club saved before it stopped being offered, so saving never shortens it', async () => {
     await openRetention({ record_retention: { ...RETENTION, attendance_months: 84 } });
     expect(chosen('Attendance', '7 years')).toBe(true);
-    flip('Remove old records', true);
+    await flip('Remove old records', true);
     await saveKeepPeriods();
     expect(callsTo('admin_set_record_retention_all')[0].p_attendance_months).toBe(84);
   });
@@ -573,19 +611,20 @@ describe('Keeping records', () => {
     await openRetention({}, {
       admin_set_record_retention_all: 'Messages involving a child must be kept at least as long as other messages',
     });
-    fireEvent.press(chip('Message text', '7 years'));
+    await fireEvent.press(chip('Message text', '7 years'));
     await saveKeepPeriods();
     expect(
       screen.getByText('Messages involving a child must be kept at least as long as other messages'),
     ).toBeTruthy();
     expect(callsTo('admin_set_survey_retention')).toEqual([]);
     expect(callsTo('admin_set_more_record_retention')).toEqual([]);
+    expect(callsTo('admin_set_medical_keep_months')).toEqual([]);
     expect(screen.queryByText('Saved.')).toBeNull();
   });
 
   it('doesn’t save the later periods when the survey periods are refused', async () => {
     await openRetention({}, { admin_set_survey_retention: 'Survey periods refused' });
-    flip('Remove old records', true);
+    await flip('Remove old records', true);
     await saveKeepPeriods();
     expect(screen.getByText('Survey periods refused')).toBeTruthy();
     expect(callsTo('admin_set_more_record_retention')).toEqual([]);
@@ -595,21 +634,81 @@ describe('Keeping records', () => {
     await openRetention({}, {
       admin_set_more_record_retention: 'Awards must be kept at least as long as who voted for whom',
     });
-    fireEvent.press(chip('Awards and their results', '3 years'));
-    fireEvent.press(chip('Who voted for whom in awards', '5 years'));
+    await fireEvent.press(chip('Awards and their results', '3 years'));
+    await fireEvent.press(chip('Who voted for whom in awards', '5 years'));
     await saveKeepPeriods();
     expect(screen.getByText('Awards must be kept at least as long as who voted for whom')).toBeTruthy();
+    expect(callsTo('admin_set_medical_keep_months')).toEqual([]);
+    expect(screen.queryByText('Saved.')).toBeNull();
+  });
+
+  it('shows a refusal of the medical details period', async () => {
+    await openRetention({}, {
+      admin_set_medical_keep_months: 'Medical details can be kept 2, 3, 5 or 7 years without their yearly check',
+    });
+    await fireEvent.press(chip('Medical and emergency details', '3 years'));
+    await saveKeepPeriods();
+    expect(screen.getByText('Medical details can be kept 2, 3, 5 or 7 years without their yearly check')).toBeTruthy();
     expect(screen.queryByText('Saved.')).toBeNull();
   });
 
   it('loads the periods again after saving and shows what the database holds', async () => {
     await openRetention();
     rpc().mockClear();
-    flip('Remove old records', true);
+    await flip('Remove old records', true);
     await saveKeepPeriods();
     expect(callsTo('record_retention')).toHaveLength(1);
     // This fake database still says off: the screen shows what was stored, not the draft.
     expect(isOn('Remove old records')).toBe(false);
     expect(isDisabled('Save keep periods')).toBe(true);
+  });
+});
+
+describe('Keeping records: the nightly removal', () => {
+  const RUN = {
+    last_run_at: '2026-10-22T18:17:00Z',
+    last_ok_at: '2026-10-22T18:17:00Z',
+    failed_step: null,
+    overdue: false,
+  };
+
+  it('shows when it last ran', async () => {
+    await openRetention({ removal_run_status: RUN });
+    expect(callsTo('removal_run_status')).toHaveLength(1);
+    expect(screen.getByText(/^Last run .+\.$/)).toBeTruthy();
+    expect(screen.queryByText(/Ask FirstPass/)).toBeNull();
+  });
+
+  it('says it hasn’t run yet', async () => {
+    await openRetention({ removal_run_status: { ...RUN, last_run_at: null, last_ok_at: null } });
+    expect(screen.getByText('The nightly removal hasn’t run yet.')).toBeTruthy();
+  });
+
+  it('says where the last run stopped, and that the next one carries on', async () => {
+    await openRetention({
+      removal_run_status: { ...RUN, last_run_at: '2026-10-23T18:17:00Z', failed_step: 'removing documents' },
+    });
+    expect(screen.getByText(/^The last run, .+, stopped while removing documents\. The next run carries on from there\.$/)).toBeTruthy();
+    expect(screen.queryByText(/Ask FirstPass/)).toBeNull();
+  });
+
+  it('warns when it is overdue, since the last time it finished', async () => {
+    await openRetention({ removal_run_status: { ...RUN, overdue: true } });
+    expect(screen.getByText(/^Old records haven’t been removed since .+\. Ask FirstPass to check the nightly removal\.$/)).toBeTruthy();
+  });
+
+  it('warns when it is overdue and has never finished, with where it stopped', async () => {
+    await openRetention({
+      removal_run_status: { last_run_at: '2026-10-21T18:17:00Z', last_ok_at: null, failed_step: 'removing old records', overdue: true },
+    });
+    expect(
+      screen.getByText(/^Old records haven’t been removed yet\. The last run, .+, stopped while removing old records\. Ask FirstPass to check the nightly removal\.$/),
+    ).toBeTruthy();
+  });
+
+  it('shows no line when the status can’t be read', async () => {
+    await openRetention({ removal_run_status: null });
+    expect(screen.getByText('Keeping records')).toBeTruthy();
+    expect(screen.queryByText(/^Last run|nightly removal|haven’t been removed/)).toBeNull();
   });
 });

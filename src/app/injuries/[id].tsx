@@ -14,11 +14,13 @@ import { useTheme } from '@/hooks/use-theme';
 import { useAuth } from '@/lib/auth';
 import { formatDateTime } from '@/lib/format';
 import {
+  clearanceOpen,
   DOCUMENT_TYPES,
   type DocumentRule,
   formatDateString,
+  injuryAuthor,
+  injuryUpdateTitle,
   type PhotoShows,
-  injuryUpdateLabels,
   returnQuickPicks,
   shareInjuryDocument,
   uploadInjuryDocument,
@@ -29,7 +31,7 @@ import { supabase } from '@/lib/supabase';
 import type { Injury, InjuryDocumentEvent, InjuryUpdate } from '@/lib/types';
 
 const UPDATE_COLUMNS =
-  'id, author_name, kind, notes, restrictions, expected_return, document_path, document_name, document_removed_at, created_at';
+  'id, author_name, author_role, kind, notes, restrictions, expected_return, concussion, doctor_clearance, document_path, document_name, document_removed_at, created_at';
 
 /** What the member is doing on this screen, if anything. */
 type Action = 'update' | 'clearance' | 'endorse' | 'accept' | 'send_back';
@@ -59,6 +61,10 @@ export default function InjuryScreen() {
     const shown = ((injuryResult.data as Injury[] | null) ?? [])[0] ?? null;
     setInjury(shown);
     if (shown) logRecordView(shown.athlete_id, 'injury', shown.id);
+    // Opening an injury a coach, manager or physio logged clears the family's to-do.
+    if (shown?.logged_by_role && shown.can_report) {
+      supabase.rpc('mark_logged_injury_seen', { p_injury_id: shown.id });
+    }
     setUpdates((updatesResult.data as InjuryUpdate[] | null) ?? []);
     setCanShare(shareResult.data === true);
     setLog(logResult.error ? null : ((logResult.data as InjuryDocumentEvent[] | null) ?? []));
@@ -108,8 +114,22 @@ export default function InjuryScreen() {
         </View>
       </View>
 
+      {injury.concussion ? (
+        <Card>
+          <ThemedText type="smallBold">Possible concussion</ThemedText>
+          <ThemedText type="small">
+            If in doubt, sit them out. They need to see a doctor, and they can’t train or play
+            until they’re cleared. Clearance needs a doctor’s clearance and only a physio can
+            endorse it.
+          </ThemedText>
+        </Card>
+      ) : null}
+
       <Card>
         <Detail label="Injured" value={formatDateString(injury.injured_on)} />
+        {injury.earliest_clearance ? (
+          <Detail label="Clearance from" value={formatDateString(injury.earliest_clearance)} />
+        ) : null}
         <Detail label="Restrictions" value={injury.restrictions ?? 'None'} />
         <Detail
           label="Expected back"
@@ -181,18 +201,28 @@ function Actions({
   isCommittee: boolean;
   onChoose: (action: Action) => void;
 }) {
-  if (injury.can_report && injury.status === 'injured') {
+  // The athlete, a guardian or one of the athlete's physios adds updates; only
+  // the athlete or a guardian asks for clearance.
+  const canUpdate = injury.can_update ?? injury.can_report;
+  if ((canUpdate || injury.can_report) && injury.status === 'injured') {
     return (
       <View style={styles.actions}>
-        <Button title="Add physio update" onPress={() => onChoose('update')} />
-        <Button
-          title="Ask for clearance"
-          variant="secondary"
-          onPress={() => onChoose('clearance')}
-        />
+        {canUpdate ? (
+          <Button title="Add physio update" onPress={() => onChoose('update')} />
+        ) : null}
+        {injury.can_report ? (
+          <Button
+            title="Ask for clearance"
+            variant="secondary"
+            onPress={() => onChoose('clearance')}
+          />
+        ) : null}
       </View>
     );
   }
+  const endorser = injury.needs_physio
+    ? 'Waiting for one of the athlete’s physios to endorse it.'
+    : 'Waiting for one of the athlete’s coaches or a physio to endorse it.';
   if (injury.waiting_for_me && injury.status === 'clearance_requested') {
     return (
       <View style={styles.actions}>
@@ -215,13 +245,13 @@ function Actions({
   if (isCommittee && !injury.can_report && injury.status === 'clearance_requested') {
     return (
       <View style={styles.actions}>
-        <Waiting text="Waiting for one of the athlete’s coaches or a physio to endorse it." />
+        <Waiting text={endorser} />
         <Button title="Send back" variant="secondary" onPress={() => onChoose('send_back')} />
       </View>
     );
   }
   if (injury.status === 'clearance_requested') {
-    return <Waiting text="Waiting for one of the athlete’s coaches or a physio to endorse it." />;
+    return <Waiting text={endorser} />;
   }
   if (injury.status === 'coach_endorsed') {
     return (
@@ -294,10 +324,16 @@ function ActionForm({
   const [rule, setRule] = useState<DocumentRule>('letter');
   const [shows, setShows] = useState<PhotoShows>('letter');
   const [confirmed, setConfirmed] = useState(false);
+  const [concussion, setConcussion] = useState(!!injury.concussion);
+  const [fromDoctor, setFromDoctor] = useState(false);
   const [saving, setSaving] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const allowsDocument = action === 'update' || action === 'clearance';
   const isPhoto = !!attachment && attachment.mimeType !== 'application/pdf';
+  // Anyone who adds updates can mark a possible concussion; only a physio
+  // (who adds updates but doesn't report for the athlete) can rule one out.
+  const showConcussion = action === 'update' && (!injury.concussion || !injury.can_report);
+  const concussionClearance = action === 'clearance' && !!injury.concussion;
 
   useEffect(() => {
     if (!allowsDocument) return;
@@ -330,8 +366,22 @@ function ActionForm({
       setError('Choose when they’re expected back.');
       return;
     }
+    if (action === 'clearance' && !clearanceOpen(injury, new Date())) {
+      setError(
+        `After a concussion, clearance can be asked for from ${formatDateString(injury.earliest_clearance!)}.`,
+      );
+      return;
+    }
     if (action === 'clearance' && !attachment) {
-      setError('Attach proof of clearance, such as a letter from the physio.');
+      setError(
+        concussionClearance
+          ? 'Attach the doctor’s clearance.'
+          : 'Attach proof of clearance, such as a letter from the physio.',
+      );
+      return;
+    }
+    if (concussionClearance && !fromDoctor) {
+      setError('After a concussion, confirm the clearance is from a doctor.');
       return;
     }
     setSaving(true);
@@ -361,6 +411,8 @@ function ActionForm({
           p_expected_return: expectedReturn,
           p_document_path: path,
           p_document_name: attachment?.name ?? null,
+          // Only sent when it changes, so an update doesn't repeat it.
+          p_concussion: concussion === !!injury.concussion ? null : concussion,
         });
       case 'clearance':
         return supabase.rpc('request_clearance', {
@@ -368,6 +420,7 @@ function ActionForm({
           p_notes: notes,
           p_document_path: path,
           p_document_name: attachment?.name ?? null,
+          p_doctor_clearance: concussionClearance && fromDoctor,
         });
       case 'endorse':
         return supabase.rpc('endorse_clearance', { p_injury_id, p_notes: notes });
@@ -406,10 +459,34 @@ function ActionForm({
           />
         </>
       ) : null}
+      {showConcussion ? (
+        <ToggleRow
+          label={
+            injury.concussion
+              ? 'Still a possible concussion. Turn off only if a doctor has ruled it out.'
+              : 'Possible concussion: a knock to the head, face or neck, or any sign of concussion'
+          }
+          accessibilityLabel="Possible concussion"
+          value={concussion}
+          onChange={setConcussion}
+        />
+      ) : null}
+      {concussionClearance ? (
+        <ToggleRow
+          label="This is a doctor’s clearance to return to training and play."
+          accessibilityLabel="This is a doctor’s clearance"
+          value={fromDoctor}
+          onChange={setFromDoctor}
+        />
+      ) : null}
       {allowsDocument ? (
         <View style={styles.document}>
           <ThemedText type="smallBold">
-            {action === 'clearance' ? 'Proof of clearance' : 'Physio report (optional)'}
+            {concussionClearance
+              ? 'Doctor’s clearance'
+              : action === 'clearance'
+                ? 'Proof of clearance'
+                : 'Physio report (optional)'}
           </ThemedText>
           {attachment ? (
             <ThemedText type="small" numberOfLines={1}>
@@ -449,6 +526,35 @@ function ActionForm({
       <Button title={text.submit} onPress={submit} busy={saving} />
       <Button title="Cancel" variant="secondary" onPress={onCancel} disabled={saving} />
     </View>
+  );
+}
+
+function ToggleRow({
+  label,
+  accessibilityLabel,
+  value,
+  onChange,
+}: {
+  label: string;
+  accessibilityLabel: string;
+  value: boolean;
+  onChange: (value: boolean) => void;
+}) {
+  const theme = useTheme();
+  return (
+    <Card style={styles.consent}>
+      <ThemedText type="small" style={styles.grow}>
+        {label}
+      </ThemedText>
+      <Switch
+        accessibilityLabel={accessibilityLabel}
+        value={value}
+        onValueChange={onChange}
+        trackColor={{ true: theme.accent, false: theme.backgroundSelected }}
+        thumbColor={theme.text}
+        {...(Platform.OS === 'web' ? { activeThumbColor: theme.onAccent } : {})}
+      />
+    </Card>
   );
 }
 
@@ -496,7 +602,7 @@ function PhotoDeclaration({
       <Card style={styles.consent}>
         <ThemedText type="small" style={styles.grow}>
           {shows === 'injury'
-            ? `I’m ${athleteName}’s parent or guardian. I consent to the club keeping this photo with their injury record, where their coaches, physios, the committee and admins can view it in the app. Every view is recorded.`
+            ? `I’m ${athleteName}’s parent or guardian. I consent to the club keeping this photo with their injury record, where their coaches, physios, the committee members cleared to work with children and admins can view it in the app. Every view is recorded.`
             : 'This is a photo of the physio’s or doctor’s letter or report, not of the injury.'}
         </ThemedText>
         <Switch
@@ -567,10 +673,10 @@ function UpdateCard({
         <ThemedText
           type="smallBold"
           style={[styles.grow, update.kind === 'cleared' ? { color: theme.tint } : undefined]}>
-          {injuryUpdateLabels[update.kind]}
+          {injuryUpdateTitle(update)}
         </ThemedText>
         <ThemedText type="small" themeColor="textSecondary">
-          {update.author_name ?? 'Former member'}
+          {injuryAuthor(update)}
         </ThemedText>
       </View>
       <ThemedText type="small" themeColor="textSecondary">
@@ -579,6 +685,11 @@ function UpdateCard({
       {update.notes ? (
         <ThemedText type="small" selectable>
           {update.notes}
+        </ThemedText>
+      ) : null}
+      {update.doctor_clearance ? (
+        <ThemedText type="small" themeColor="textSecondary">
+          Confirmed as a doctor’s clearance.
         </ThemedText>
       ) : null}
       {update.kind === 'physio_update' ? (

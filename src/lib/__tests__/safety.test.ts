@@ -1,18 +1,23 @@
 import {
+  applicationStatus,
   canBeExempt,
   canWorkWithChildren,
   committeeCheckDue,
   committeeChecksDue,
+  exemptableRoles,
   exemptionStatus,
   isDatedExemption,
   needsWwcc,
   pausedRoles,
   safetyIssues,
+  statisticianCheckDue,
   volunteerTimeOff,
+  wwccApplicationEndLabels,
   wwccRecordIssues,
   wwccStatus,
+  wwcSources,
 } from '@/lib/safety';
-import type { MyVolunteerExemption, Profile } from '@/lib/types';
+import type { MyVolunteerExemption, Profile, WwccApplication } from '@/lib/types';
 
 // Today is Sunday 18 October 2026, local time.
 beforeEach(() => {
@@ -81,16 +86,20 @@ function exemption(overrides: Partial<Exemption> = {}): Exemption {
 }
 
 describe('canBeExempt', () => {
-  it('lets committee members and admins be exempt', () => {
+  it('lets committee members, admins and statisticians be exempt', () => {
     expect(canBeExempt(['committee'])).toBe(true);
     expect(canBeExempt(['admin'])).toBe(true);
     expect(canBeExempt(['admin', 'guardian'])).toBe(true);
+    expect(canBeExempt(['statistician'])).toBe(true);
+    expect(canBeExempt(['athlete', 'statistician'])).toBe(true);
+    expect(exemptableRoles).toEqual(['committee', 'admin', 'statistician']);
   });
 
   it('never exempts someone who also coaches, manages or is a physio', () => {
     expect(canBeExempt(['committee', 'coach'])).toBe(false);
     expect(canBeExempt(['admin', 'manager'])).toBe(false);
     expect(canBeExempt(['admin', 'physio'])).toBe(false);
+    expect(canBeExempt(['statistician', 'manager'])).toBe(false);
   });
 
   it('is false for other roles', () => {
@@ -129,11 +138,17 @@ describe('needsWwcc', () => {
     expect(needsWwcc(member('committee', [], '   '))).toBe(true);
   });
 
-  it('is false for athletes, guardians, guests and statisticians', () => {
+  it('needs one for statisticians unless exempt', () => {
+    expect(needsWwcc(member('statistician'))).toBe(true);
+    expect(needsWwcc(member('athlete', ['statistician']))).toBe(true);
+    expect(needsWwcc(member('statistician', [], 'Opens games only'))).toBe(false);
+    expect(needsWwcc(member('statistician', [], '  '))).toBe(true);
+  });
+
+  it('is false for athletes, guardians and guests', () => {
     expect(needsWwcc(member('athlete'))).toBe(false);
     expect(needsWwcc(member('guardian'))).toBe(false);
     expect(needsWwcc(member('guest'))).toBe(false);
-    expect(needsWwcc(member('statistician'))).toBe(false);
   });
 });
 
@@ -431,6 +446,115 @@ describe('committeeCheckDue', () => {
   });
 });
 
+describe('statisticianCheckDue', () => {
+  const statistician = (overrides: Partial<Profile> = {}) =>
+    profile({ role: 'statistician', ...overrides });
+
+  it('is true for a statistician with no check before the date', () => {
+    expect(statisticianCheckDue(statistician(), '2027-01-21')).toBe(true);
+    expect(
+      statisticianCheckDue(statistician({ role: 'athlete', extra_roles: ['statistician'] }), '2027-01-21'),
+    ).toBe(true);
+  });
+
+  it('is false once the date has come', () => {
+    expect(statisticianCheckDue(statistician(), '2026-10-18')).toBe(false);
+  });
+
+  it('is false with no date set', () => {
+    expect(statisticianCheckDue(statistician(), null)).toBe(false);
+  });
+
+  it('is false with a check or an exemption recorded', () => {
+    expect(statisticianCheckDue(statistician({ wwcc_number: '123' }), '2027-01-21')).toBe(false);
+    expect(statisticianCheckDue(statistician({ wwcc_exempt_reason: 'Opens only' }), '2027-01-21')).toBe(
+      false,
+    );
+  });
+
+  it('does not count a blank check number or exemption reason', () => {
+    expect(statisticianCheckDue(statistician({ wwcc_number: '  ' }), '2027-01-21')).toBe(true);
+    expect(statisticianCheckDue(statistician({ wwcc_exempt_reason: '  ' }), '2027-01-21')).toBe(true);
+  });
+
+  it('is false for members who are not approved statisticians', () => {
+    expect(statisticianCheckDue(statistician({ status: 'pending' }), '2027-01-21')).toBe(false);
+    expect(statisticianCheckDue(profile({ role: 'committee' }), '2027-01-21')).toBe(false);
+  });
+});
+
+describe('pausedRoles for statisticians', () => {
+  const noCheck = { role: 'statistician' as const, wwcc_number: null, wwcc_expires_on: null };
+
+  it('keeps a statistician with no check before the date or with no date', () => {
+    expect(pausedRoles(profile(noCheck), false, null, false, '2027-01-21')).toEqual([]);
+    expect(pausedRoles(profile(noCheck), false, null, false, null)).toEqual([]);
+  });
+
+  it('pauses a statistician with no check from the date', () => {
+    expect(pausedRoles(profile(noCheck), false, null, false, '2026-10-18')).toEqual(['statistician']);
+    expect(pausedRoles(profile(noCheck), false, null, false, '2026-09-01')).toEqual(['statistician']);
+  });
+
+  it('uses its own date, not the committee date', () => {
+    expect(pausedRoles(profile(noCheck), false, '2026-09-01', false, '2027-01-21')).toEqual([]);
+    expect(
+      pausedRoles(profile({ ...noCheck, extra_roles: ['committee'] }), false, '2026-09-01', false, '2027-01-21'),
+    ).toEqual(['committee']);
+  });
+
+  it('pauses one whose recorded check expired, even before the date', () => {
+    expect(
+      pausedRoles(
+        profile({ role: 'statistician', wwcc_number: '123', wwcc_expires_on: '2026-10-17' }),
+        false,
+        null,
+        false,
+        '2027-01-21',
+      ),
+    ).toEqual(['statistician']);
+  });
+
+  it('keeps one with a current or expiring check, an exemption, an application or a reason', () => {
+    expect(pausedRoles(profile({ role: 'statistician', ...goodCard }), false, null, false, '2026-09-01')).toEqual([]);
+    expect(
+      pausedRoles(
+        profile({ role: 'statistician', wwcc_number: '123', wwcc_expires_on: '2026-10-18' }),
+        false,
+        null,
+        false,
+        '2026-09-01',
+      ),
+    ).toEqual([]);
+    expect(pausedRoles(profile(noCheck), true, null, false, '2026-09-01')).toEqual([]);
+    expect(pausedRoles(profile(noCheck), false, null, true, '2026-09-01')).toEqual([]);
+    expect(
+      pausedRoles(profile({ ...noCheck, wwcc_exempt_reason: 'Opens only' }), false, null, false, '2026-09-01'),
+    ).toEqual([]);
+  });
+
+  it('does not count a blank check number or reason', () => {
+    expect(
+      pausedRoles(profile({ ...noCheck, wwcc_number: '  ', wwcc_exempt_reason: '  ' }), false, null, false, '2027-01-21'),
+    ).toEqual([]);
+    expect(
+      pausedRoles(profile({ ...noCheck, wwcc_exempt_reason: '  ' }), false, null, false, '2026-09-01'),
+    ).toEqual(['statistician']);
+  });
+
+  it('pauses a stood-down statistician whatever the check says', () => {
+    expect(
+      pausedRoles(
+        profile({ role: 'statistician', ...goodCard, stood_down_at: '2026-10-01T00:00:00Z' }),
+        true,
+        null,
+        true,
+        null,
+      ),
+    ).toEqual(['statistician']);
+  });
+});
+
 describe('pausedRoles', () => {
   it('pauses nothing for members who are not approved', () => {
     expect(pausedRoles(profile({ role: 'coach', status: 'pending' }))).toEqual([]);
@@ -463,7 +587,7 @@ describe('pausedRoles', () => {
     expect(pausedRoles(profile({ role: 'guest' }))).toEqual([]);
   });
 
-  it('keeps admin and statistician without a check', () => {
+  it('keeps admin, and a statistician with no statistician checks date, without a check', () => {
     expect(pausedRoles(profile({ role: 'admin', extra_roles: ['statistician'] }))).toEqual([]);
   });
 
@@ -499,6 +623,49 @@ describe('pausedRoles', () => {
     expect(
       pausedRoles(profile({ role: 'committee', wwcc_exempt_reason: '  ' }), false, '2026-01-01'),
     ).toEqual(['committee']);
+  });
+
+  it('keeps coaching roles with a lodged check application in force', () => {
+    expect(
+      pausedRoles(profile({ role: 'coach', extra_roles: ['manager', 'physio'] }), false, null, true),
+    ).toEqual([]);
+    expect(
+      pausedRoles(
+        profile({ role: 'coach', wwcc_number: '123', wwcc_expires_on: '2026-01-01' }),
+        false,
+        null,
+        true,
+      ),
+    ).toEqual([]);
+  });
+
+  it('keeps committee after the committee checks date with an application in force', () => {
+    expect(pausedRoles(profile({ role: 'committee' }), false, '2026-01-01', true)).toEqual([]);
+    expect(
+      pausedRoles(
+        profile({ role: 'committee', wwcc_number: '123', wwcc_expires_on: '2026-01-01' }),
+        false,
+        null,
+        true,
+      ),
+    ).toEqual([]);
+  });
+
+  it('pauses committee after the date when nothing but a lapsed application is held', () => {
+    expect(pausedRoles(profile({ role: 'committee' }), false, '2026-01-01', false)).toEqual([
+      'committee',
+    ]);
+  });
+
+  it('an application doesn’t lift a stand-down', () => {
+    expect(
+      pausedRoles(
+        profile({ role: 'coach', extra_roles: ['committee'], stood_down_at: '2026-10-01T00:00:00Z' }),
+        false,
+        '2026-01-01',
+        true,
+      ),
+    ).toEqual(['coach', 'committee']);
   });
 
   it('pauses every stand-down role while stood down, even with a current check', () => {
@@ -662,5 +829,101 @@ describe('canWorkWithChildren', () => {
 
   it('counts no exemption unless one is passed', () => {
     expect(canWorkWithChildren(profile({ wwcc_number: null, wwcc_expires_on: null }))).toBe(false);
+  });
+});
+
+type Application = Pick<WwccApplication, 'lodged_on' | 'status' | 'lapses_on' | 'check_due_on'>;
+
+function application(overrides: Partial<Application> = {}): Application {
+  return {
+    lodged_on: '2026-10-01',
+    status: 'in_force',
+    lapses_on: '2026-12-30',
+    check_due_on: '2026-10-31',
+    ...overrides,
+  };
+}
+
+describe('applicationStatus', () => {
+  it('says an application in force counts until it lapses', () => {
+    expect(applicationStatus(application())).toEqual({
+      label: 'Check applied for 01/10/2026, counts until 30/12/2026',
+      problem: false,
+    });
+  });
+
+  it('asks for it to be confirmed from the day it’s due', () => {
+    expect(applicationStatus(application({ check_due_on: '2026-10-19' })).problem).toBe(false);
+    expect(applicationStatus(application({ check_due_on: '2026-10-18' }))).toEqual({
+      label: 'Check applied for 01/10/2026: confirm it’s still being assessed by 30/12/2026',
+      problem: true,
+    });
+    expect(applicationStatus(application({ check_due_on: '2026-10-01' })).problem).toBe(true);
+  });
+
+  it('works from the member’s own view, which has no confirm date', () => {
+    expect(applicationStatus(application({ check_due_on: undefined })).problem).toBe(false);
+  });
+
+  it.each([
+    ['waiting_for_declaration', 'waiting for them to accept the declaration'],
+    ['lapsed', 'lapsed, nobody confirmed it’s still being assessed'],
+    ['stopped', 'stopped by a Screening Unit notice'],
+  ] as const)('flags one %s', (status, words) => {
+    expect(applicationStatus(application({ status }))).toEqual({
+      label: `Check applied for 01/10/2026: ${words}`,
+      problem: true,
+    });
+  });
+
+  it('doesn’t flag an ended one', () => {
+    expect(applicationStatus(application({ status: 'ended' }))).toEqual({
+      label: 'Check applied for 01/10/2026: ended',
+      problem: false,
+    });
+  });
+
+  it('names every way an application ends', () => {
+    expect(wwccApplicationEndLabels).toEqual({
+      card_recorded: 'their card was recorded',
+      withdrawn: 'withdrawn',
+      refused: 'refused',
+      replaced: 'replaced by a later application',
+      other: 'ended',
+    });
+  });
+
+  it('links admins to the WA rule on working while an application is assessed', () => {
+    expect(wwcSources).toContainEqual({
+      label: 'Applying, and working while an application is assessed',
+      url: 'https://www.wa.gov.au/organisation/department-of-communities/working-children-check-application-and-renewal-process',
+    });
+  });
+});
+
+describe('safetyIssues with a check application', () => {
+  it('leaves out a coach whose application is in force and not yet due', () => {
+    expect(safetyIssues(profile({ role: 'coach' }), false, null, application())).toEqual([]);
+  });
+
+  it('says what an application still needs', () => {
+    expect(
+      safetyIssues(profile({ role: 'coach' }), false, null, application({ status: 'lapsed' })),
+    ).toEqual(['Check applied for 01/10/2026: lapsed, nobody confirmed it’s still being assessed']);
+    expect(
+      safetyIssues(profile({ role: 'committee' }), false, null, application({ check_due_on: '2026-10-18' })),
+    ).toEqual(['Check applied for 01/10/2026: confirm it’s still being assessed by 30/12/2026']);
+  });
+
+  it('goes by the card once a current one is recorded', () => {
+    expect(
+      safetyIssues(profile({ role: 'coach', ...goodCard }), false, null, application({ status: 'lapsed' })),
+    ).toEqual([]);
+  });
+
+  it('goes by a volunteer exemption first', () => {
+    expect(
+      safetyIssues(profile({ role: 'coach' }), false, exemption(), application({ status: 'lapsed' })),
+    ).toEqual([]);
   });
 });

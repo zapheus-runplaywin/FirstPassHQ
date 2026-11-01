@@ -79,7 +79,7 @@ select pg_temp.ok('admins read the link history', (select count(*) = 3 from publ
 reset role;
 
 -- An admin who is one of the child's guardians.
--- Since 20261020020000 a parent or guardian is approved once they've entered
+-- Since 20261101000000 a parent or guardian is approved once they've entered
 -- an approved child's link code, and approving them links them: Blair entered
 -- Jordan's.
 insert into public.guardian_link_requests (guardian_id, athlete_id)

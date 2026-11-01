@@ -11,7 +11,7 @@ import { wwccReport } from '@/lib/reports';
 import { useTeams } from '@/lib/use-teams';
 
 export default function WwccReportScreen() {
-  const { committeeChecksFrom } = useAuth();
+  const { committeeChecksFrom, statisticianChecksFrom } = useAuth();
   const teams = useTeams();
   const [data, setData] = useState<WwccData | null>(null);
   const [error, setError] = useState<string | null>(null);
@@ -49,6 +49,8 @@ export default function WwccReportScreen() {
         data.officerName,
         data.acknowledgements,
         committeeChecksFrom,
+        data.applications,
+        statisticianChecksFrom,
       )
     : null;
 

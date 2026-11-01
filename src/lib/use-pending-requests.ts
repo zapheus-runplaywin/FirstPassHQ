@@ -2,7 +2,11 @@ import { useFocusEffect } from 'expo-router';
 import { useCallback, useState } from 'react';
 
 import { useAuth } from '@/lib/auth';
+import { toDateString } from '@/lib/injuries';
+import { toPurgeRunStatus } from '@/lib/purge-runs';
 import { supabase } from '@/lib/supabase';
+import type { WwccApplication } from '@/lib/types';
+import { applicationsToConfirm } from '@/lib/wwcc-applications';
 
 /** How many join requests are waiting for an admin, refreshed when the screen is shown. */
 export function usePendingRequests() {
@@ -60,8 +64,25 @@ export type SafetyTodos = {
   wwcc_people?: number;
   /** Club settings' "Remove old records" is off, so nothing past its keep period is removed. */
   records_removal_off?: boolean;
+  /**
+   * Remove old records is on but the nightly removal hasn't finished for 2
+   * days, from `removal_run_status`: when it last finished, or null if never.
+   */
+  records_removal_stalled?: { last_ok_at: string | null } | null;
   /** Members with no squad, team or club role for 2 years, from `admin_inactive_members`. */
   inactive_members?: number;
+  /**
+   * Athletes asking for clearance whom nobody in the club can endorse (no
+   * coach after selections, no Head Physio, no physio in their groups), from
+   * `admin_unendorsable_clearances`, oldest first.
+   */
+  unendorsable_clearances?: string[];
+  /**
+   * Lodged check applications due to be confirmed as still being assessed,
+   * and ones that lapsed because nobody did, from `admin_wwcc_applications`.
+   */
+  wwcc_applications_due?: number;
+  wwcc_applications_lapsed?: number;
 };
 
 /** Child-safety follow-ups for admins, refreshed when the screen is shown. */
@@ -71,18 +92,41 @@ export function useSafetyTodos() {
 
   const load = useCallback(async () => {
     if (!isAdmin) return;
-    const [{ data }, { data: retention }, { data: inactive }] = await Promise.all([
+    const [
+      { data },
+      { data: retention },
+      { data: inactive },
+      { data: unendorsable },
+      { data: applications },
+      { data: purgeRun },
+    ] = await Promise.all([
       supabase.rpc('admin_safety_todos').maybeSingle(),
       supabase.rpc('record_retention').maybeSingle(),
       supabase.rpc('admin_inactive_members'),
+      supabase.rpc('admin_unendorsable_clearances'),
+      supabase.rpc('admin_wwcc_applications'),
+      supabase.rpc('removal_run_status').maybeSingle(),
     ]);
+    const run = toPurgeRunStatus(purgeRun);
+    const toConfirm = applicationsToConfirm(
+      Array.isArray(applications) ? (applications as WwccApplication[]) : [],
+      toDateString(new Date()),
+    );
     const todos = (data as SafetyTodos | null) ?? null;
     const removalOn = (retention as { enabled?: unknown } | null)?.enabled;
     setSafety(
       todos && {
         ...todos,
         records_removal_off: retention != null && removalOn === false,
+        records_removal_stalled: run?.overdue ? { last_ok_at: run.last_ok_at } : null,
         inactive_members: Array.isArray(inactive) ? inactive.length : 0,
+        unendorsable_clearances: Array.isArray(unendorsable)
+          ? (unendorsable as { athlete_name: string | null }[]).map(
+              (row) => row.athlete_name ?? 'An athlete',
+            )
+          : [],
+        wwcc_applications_due: toConfirm.due,
+        wwcc_applications_lapsed: toConfirm.lapsed,
       },
     );
   }, [isAdmin]);

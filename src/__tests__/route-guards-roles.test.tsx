@@ -42,10 +42,18 @@ jest.mock('@react-native-async-storage/async-storage', () =>
 jest.mock('@/global.css', () => ({}));
 jest.mock('expo-font', () => ({ ...jest.requireActual('expo-font'), useFonts: () => [true, null] }));
 
-// Every feature on, Season KPIs included, so only the role guards decide.
+// Each of the 2,815 tests renders the whole app, and the mocks keep every call
+// they were given. Cleared between tests, the file runs in under 1GB instead of
+// running a CI worker out of memory.
+afterEach(() => {
+  jest.clearAllMocks();
+});
+
+// Every feature on, Season KPIs, the registers and training load flags included, so only
+// the role guards decide.
 beforeEach(() => {
   resetClub();
-  setClubFeatures({ kpis: true });
+  setClubFeatures({ kpis: true, registers: true, trainingLoad: true });
 });
 
 // ---------------------------------------------------------------------------
@@ -67,9 +75,33 @@ const GROUP_COACHES: PersonaName[] = ['coach', 'assistantCoach', 'coachGuardian'
 const COACHES: PersonaName[] = [...GROUP_COACHES, 'doneSquadCoach'];
 const MANAGERS: PersonaName[] = ['manager', 'safeguardingOfficer'];
 const PHYSIOS: PersonaName[] = ['physio', 'headPhysio'];
-const COMMITTEE: PersonaName[] = ['committee'];
+/**
+ * The committee, including one exempted with a reason, one with no check
+ * before the committee checks date and one cleared by a volunteer exemption:
+ * the same member screens. (Only those screened to work with children also
+ * read the reports, in route-guards.test.tsx.)
+ */
+const COMMITTEE: PersonaName[] = [
+  'committee',
+  'committeeExempt',
+  'committeeBeforeChecksDate',
+  'committeeVolunteerExempt',
+  // The same screens, but no injuries: the club chose who on the committee
+  // sees them and left this one out (customer review R7).
+  'committeeNotChosen',
+];
+const COMMITTEE_SEEING_INJURIES = COMMITTEE.filter((p) => p !== 'committeeNotChosen');
 // An expired check never pauses the admin role; a lapsed admin's coaching pauses.
-const ADMINS: PersonaName[] = ['admin', 'adminExpiredCheck', 'adminGuardian', 'adminLapsedCoach'];
+const ADMINS: PersonaName[] = [
+  'admin',
+  'adminExpiredCheck',
+  'adminGuardian',
+  'adminLapsedCoach',
+  // Over 30 days without a check: no under 18s' injuries, every admin screen still.
+  'adminLapsedCheck',
+];
+/** Statisticians, including one with no check before the club's statistician checks date. */
+const STATISTICIANS: PersonaName[] = ['statistician', 'statisticianBeforeChecksDate'];
 const CAPTAINS: PersonaName[] = ['captain', 'clubCaptain'];
 
 /** Approved, holding a role they can use other than guest or temporary helper. */
@@ -81,7 +113,7 @@ const CLUB_MEMBERS: PersonaName[] = [
   ...PHYSIOS,
   ...COMMITTEE,
   ...ADMINS,
-  'statistician',
+  ...STATISTICIANS,
 ];
 
 /**
@@ -100,6 +132,7 @@ const NO_ROLE_SCREENS: PersonaName[] = [
   'stoodDownCoach',
   'committeeExpiredCheck',
   'committeePastChecksDate',
+  'statisticianPastChecksDate',
   'physioExpiredCheck',
   'waitingChild',
   'lockedChild',
@@ -120,17 +153,31 @@ const union = (...groups: PersonaName[][]) => [...new Set(groups.flat())];
 
 const MESSAGE_SENDERS = union(ADMINS, COMMITTEE, COACHES, MANAGERS, CAPTAINS);
 const SURVEY_SENDERS = union(ADMINS, COMMITTEE, COACHES, MANAGERS, ['captain']);
-const INJURIES = union(ATHLETES, GUARDIANS, COACHES, PHYSIOS, COMMITTEE, ADMINS);
+// Coaches, managers and physios log injuries; managers open the injury
+// screens only to do that, and see no records there.
+const INJURY_LOGGERS = union(COACHES, MANAGERS, PHYSIOS);
+const INJURIES = union(ATHLETES, GUARDIANS, COACHES, PHYSIOS, COMMITTEE_SEEING_INJURIES, ADMINS, INJURY_LOGGERS);
 const FAMILY_OF_ATHLETES = union(ATHLETES, GUARDIANS);
 const ATTENDANCE_TAKERS = union(COACHES, MANAGERS, COMMITTEE, ADMINS);
 const ATTENDANCE_VIEWERS = union(COACHES, COMMITTEE, ADMINS);
 const PLAN_READERS = union(ADMINS, COACHES, ATHLETES, GUARDIANS);
 const PLAN_AUTHORS = union(ADMINS, COACHES);
 const CHECK_IN_VIEWERS = union(GROUP_COACHES, COMMITTEE, PHYSIOS, ADMINS);
-const AWARD_VOTERS = union(ATHLETES, COACHES, MANAGERS, COMMITTEE, ADMINS, ['statistician']);
+const AWARD_VOTERS = union(ATHLETES, COACHES, MANAGERS, COMMITTEE, ADMINS, STATISTICIANS);
 const KPI_READERS = union(ATHLETES, COACHES, MANAGERS, GUARDIANS, COMMITTEE, ADMINS);
 const KPI_SETTERS = union(COMMITTEE, ADMINS, COACHES);
 const CERTIFICATE_CHECKERS = union(COMMITTEE, ADMINS);
+// Medical and emergency details: an athlete's own, a guardian's child's, and
+// the coaches, managers and physios of a squad or team (a Head Physio in no
+// group reaches them only from a link). Never admins or the committee as such.
+const MEDICAL_READERS = union(ATHLETES, GUARDIANS, COACHES, MANAGERS, ['physio']);
+const GROUP_STAFF = union(COACHES, MANAGERS, ['physio']);
+// The policy and conflict registers: the committee and admins read them, a
+// policy's owner (a club official) records its review, and committee members
+// and coaches declare their conflicts of interest.
+const REGISTER_READERS = union(COMMITTEE, ADMINS);
+const POLICY_REVIEWERS = union(ADMINS, COMMITTEE, COACHES, MANAGERS, PHYSIOS, STATISTICIANS);
+const CONFLICT_DECLARERS = union(COMMITTEE, COACHES);
 
 const WHO_OPENS: Record<string, PersonaName[]> = {
   'messages/index': CLUB_MEMBERS,
@@ -146,6 +193,7 @@ const WHO_OPENS: Record<string, PersonaName[]> = {
   'injuries/[id]': INJURIES,
   'injuries/document': INJURIES,
   'injuries/new': FAMILY_OF_ATHLETES,
+  'injuries/log': INJURY_LOGGERS,
 
   'attendance/index': ATTENDANCE_TAKERS,
   'attendance/[id]': ATTENDANCE_TAKERS,
@@ -162,6 +210,7 @@ const WHO_OPENS: Record<string, PersonaName[]> = {
   'check-in': ATHLETES,
   'check-ins/index': CHECK_IN_VIEWERS,
   'check-ins/athlete/[id]': union(GROUP_COACHES, GUARDIANS),
+  'check-ins/load': GROUP_COACHES,
 
   'awards/index': AWARD_VOTERS,
   'awards/vote': AWARD_VOTERS,
@@ -185,12 +234,24 @@ const WHO_OPENS: Record<string, PersonaName[]> = {
   'concerns/index': union(ADMINS, ['safeguardingOfficer']),
   'concerns/[id]': union(ADMINS, ['safeguardingOfficer']),
   'concerns/report': union(ADMINS, ['safeguardingOfficer']),
+  'concerns/wellbeing': union(ADMINS, ['safeguardingOfficer']),
+  'concerns/load': union(ADMINS, ['safeguardingOfficer']),
 
   'consent/[id]': union(GUARDIANS, ADMINS),
   'records/[id]': union(GUARDIANS, ADMINS),
+  'medical/[id]': MEDICAL_READERS,
+  'medical/team/[id]': GROUP_STAFF,
   'activity/[id]': union(GUARDIANS, ADMINS),
 
   'team/captains/[id]': union(ADMINS, COACHES),
+
+  'registers/index': REGISTER_READERS,
+  'registers/conflicts': REGISTER_READERS,
+  'registers/policies': union(REGISTER_READERS, POLICY_REVIEWERS),
+  'registers/review': POLICY_REVIEWERS,
+  'registers/policy': ADMINS,
+  'registers/conflict': ADMINS,
+  'declare-conflicts': CONFLICT_DECLARERS,
 };
 
 /**
@@ -204,6 +265,7 @@ const EVERYONE_SIGNED_IN = [
   'calendar',
   'event/[id]',
   'declaration',
+  'wwcc-application',
   'concern/new',
   'conduct/[id]',
   'tasks/index',
@@ -256,7 +318,7 @@ describe('the route table', () => {
         ...COMMITTEE,
         ...ADMINS,
         ...NO_ROLE_SCREENS,
-        'statistician',
+        ...STATISTICIANS,
       ]),
     );
   });
@@ -305,9 +367,34 @@ describe('Season KPIs off', () => {
   );
 });
 
+describe('training load flags off', () => {
+  it('sends even coaches home from the training load list', async () => {
+    setClubFeatures({ kpis: true, registers: true });
+    await expectTurnedAway('coach', 'check-ins/load', 'index');
+    await expectTurnedAway('assistantCoach', 'check-ins/load', 'index');
+  });
+});
+
+describe('registers off', () => {
+  it.each([
+    'registers/index',
+    'registers/conflicts',
+    'registers/policies',
+    'registers/review',
+    'registers/policy',
+    'registers/conflict',
+    'declare-conflicts',
+  ])('sends even admins, the committee and coaches home from %s', async (route) => {
+    setClubFeatures({ kpis: true });
+    await expectTurnedAway('admin', route, 'index');
+    await expectTurnedAway('committee', route, 'index');
+    await expectTurnedAway('coach', route, 'index');
+  }, 20000);
+});
+
 describe('captains’ polls off', () => {
   it('a captain can no longer send polls, but keeps their polls’ results and still answers surveys', async () => {
-    setClubFeatures({ kpis: true, captainPolls: false });
+    setClubFeatures({ kpis: true, registers: true, captainPolls: false });
     await expectTurnedAway('captain', 'surveys/new', 'index');
     await expectReaches('captain', 'surveys/results');
     await expectReaches('captain', 'surveys/index');

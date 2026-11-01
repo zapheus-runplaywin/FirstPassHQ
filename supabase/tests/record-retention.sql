@@ -82,7 +82,9 @@ select pg_temp.as_member('01');
 select pg_temp.ok('admin reads the approved defaults', (select not enabled and check_ins_months = 12 and goals_months = 12 and messages_months = 36 and attendance_months = 12 and certificates_months = 12 and access_log_months = 84 from public.record_retention()), true);
 select pg_temp.fails('check-ins for 1 month refused', $$select public.admin_set_record_retention(true, 1, 12, 36, 12, 12, 84)$$);
 select pg_temp.fails('messages over 7 years refused', $$select public.admin_set_record_retention(true, 12, 12, 121, 12, 12, 84)$$);
-select pg_temp.fails('attendance for 10 years refused', $$select public.admin_set_record_retention(true, 12, 12, 36, 120, 12, 84)$$);
+-- Since 20261023130000 (C7) attendance can also be kept 10 or 15 years.
+select pg_temp.fails('attendance for 6 years refused', $$select public.admin_set_record_retention(true, 12, 12, 36, 72, 12, 84)$$);
+select pg_temp.fails('attendance for 20 years refused', $$select public.admin_set_record_retention(true, 12, 12, 36, 240, 12, 84)$$);
 select pg_temp.fails('record views under 3 years refused', $$select public.admin_set_record_retention(true, 12, 12, 36, 12, 12, 12)$$);
 select pg_temp.fails('missing period refused', $$select public.admin_set_record_retention(true, null, 12, 36, 12, 12, 84)$$);
 select pg_temp.works('admin switches removal on', $$select public.admin_set_record_retention(true, 12, 12, 36, 12, 12, 84)$$);

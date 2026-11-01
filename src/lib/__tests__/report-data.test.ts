@@ -34,26 +34,28 @@ describe('loadWwccData', () => {
   const standDowns = [{ id: 's1' }];
   const exemptions = [{ id: 'e1' }];
   const notices = [{ id: 'n1' }];
+  const applications = [{ id: 'a1' }];
   const acks = [{ profile_id: 'm1', policy_version: '2', acknowledged_at: 'x' }];
 
   function backend(officer: unknown = { officer_name: 'Sample officer' }, rpcErrors: Record<string, string> = {}) {
     signInAs(personas.admin, {}, {
       tableHandlers: {
-        profiles: record(members),
         team_members: record(placements),
         stand_downs: record(standDowns),
         screening_notices: record(notices),
         policy_acknowledgements: record(acks),
       },
       rpcHandlers: {
+        report_members: recordRpc(members),
         admin_volunteer_exemptions: recordRpc(exemptions),
+        admin_wwcc_applications: recordRpc(applications),
         admin_wwc_officer: recordRpc(officer ? [officer] : []),
       },
       rpcErrors,
     });
   }
 
-  it('loads approved members, child-related places, stand-downs, exemptions, notices, the officer and acknowledgements', async () => {
+  it('loads approved members, child-related places, stand-downs, exemptions, notices, the officer, acknowledgements and check applications', async () => {
     backend();
     await expect(loadWwccData()).resolves.toEqual({
       members,
@@ -63,12 +65,12 @@ describe('loadWwccData', () => {
       notices,
       officerName: 'Sample officer',
       acknowledgements: acks,
+      applications,
     });
-    expect(methods(callsTo('profiles')[0])).toEqual([
-      ['select', 'PROFILE_COLUMNS'],
-      ['eq', 'status', 'approved'],
-      ['range', 0, 999],
-    ]);
+    // Members come from report_members, which leaves out contact details, so
+    // checked committee members read the report too; profiles isn't read.
+    expect(methods(callsTo('report_members')[0])).toEqual([['range', 0, 999]]);
+    expect(callsTo('profiles')).toEqual([]);
     expect(methods(callsTo('team_members')[0])).toEqual([
       ['select', 'team_id, profile_id, team_role'],
       ['in', 'team_role', ['coach', 'manager', 'physio']],
@@ -94,8 +96,8 @@ describe('loadWwccData', () => {
   it('fetches every page of a long member list', async () => {
     const page = (from: number, n: number) => Array.from({ length: n }, (_, i) => ({ id: `m${from + i}` }));
     signInAs(personas.admin, {}, {
-      tableHandlers: {
-        profiles: (q) => {
+      rpcHandlers: {
+        report_members: (_args, q) => {
           seen.push(q);
           const range = q.calls.find((c) => c.method === 'range')!.args as [number, number];
           return range[0] === 0 ? page(0, 1000) : page(1000, 5);
@@ -104,7 +106,7 @@ describe('loadWwccData', () => {
     });
     const { members: loaded } = await loadWwccData();
     expect(loaded).toHaveLength(1005);
-    expect(callsTo('profiles').map((q) => q.calls.find((c) => c.method === 'range')!.args)).toEqual([
+    expect(callsTo('report_members').map((q) => q.calls.find((c) => c.method === 'range')!.args)).toEqual([
       [0, 999],
       [1000, 1999],
     ]);

@@ -52,6 +52,19 @@ it('finds the app’s screens on disk', () => {
   expect(MEMBER_ROUTES.length).toBeGreaterThan(50);
 });
 
+// The reports a committee member screened to work with children reads, and
+// nothing else under admin (customer review C14). Under 18s, injuries,
+// session plans, Season KPIs and affiliation stay with admins.
+const COMMITTEE_REPORTS = [
+  'admin/reports/index',
+  'admin/reports/wwcc',
+  'admin/reports/medical',
+  'admin/reports/integrity',
+  'admin/reports/attendance',
+  'admin/reports/awards',
+  'admin/reports/award',
+];
+
 describe('admin screens', () => {
   const REPRESENTATIVE = [
     'administration',
@@ -78,7 +91,9 @@ describe('admin screens', () => {
     'coach',
     'manager',
     'physio',
-    'committee',
+    'committeeExempt',
+    'committeeBeforeChecksDate',
+    'committeeExpiredCheck',
     'stoodDownAdmin',
     'waitingChild',
     'lockedChild',
@@ -107,9 +122,12 @@ describe('admin screens', () => {
   describe('every admin screen on disk', () => {
     beforeEach(() => setClubFeatures({ kpis: true, affiliation: true }));
 
-    it.each(ADMIN_ROUTES)('the committee can’t open %s', async (route) => {
-      await expectTurnedAway('committee', route, 'index');
-    });
+    it.each(ADMIN_ROUTES.filter((r) => !COMMITTEE_REPORTS.includes(r)))(
+      'the committee can’t open %s',
+      async (route) => {
+        await expectTurnedAway('committee', route, 'index');
+      },
+    );
 
     it.each(ADMIN_ROUTES)('a stood-down admin can’t open %s', async (route) => {
       await expectTurnedAway('stoodDownAdmin', route, 'index');
@@ -118,6 +136,45 @@ describe('admin screens', () => {
     it.each(ADMIN_ROUTES)('an admin opens %s with every feature on', async (route) => {
       await expectReaches('admin', route);
     });
+  });
+});
+
+describe('committee reports', () => {
+  beforeEach(() => setClubFeatures({ kpis: true, affiliation: true }));
+
+  it('names real screens', () => {
+    for (const route of COMMITTEE_REPORTS) expect(ADMIN_ROUTES).toContain(route);
+  });
+
+  describe.each(['committee', 'committeeVolunteerExempt', 'committeeNotChosen'] as PersonaName[])('%s', (who) => {
+    it.each(COMMITTEE_REPORTS)('opens %s', async (route) => {
+      await expectReaches(who, route);
+    });
+
+    it.each(['admin/reports/under-18s', 'admin/injuries', 'admin/reports/session-plans', 'admin/reports/kpis', 'admin/reports/affiliation', 'admin/index', 'admin/club'])(
+      'never lands on %s, and is sent home',
+      async (route) => {
+        await expectTurnedAway(who, route, 'index');
+      },
+    );
+  });
+
+  // The reports name children: no check, no reports.
+  describe.each(['committeeExempt', 'committeeBeforeChecksDate', 'committeeExpiredCheck', 'committeePastChecksDate', 'coach', 'guardian'] as PersonaName[])(
+    '%s',
+    (who) => {
+      it.each(COMMITTEE_REPORTS)('never lands on %s, and is sent home', async (route) => {
+        await expectTurnedAway(who, route, 'index');
+      });
+    },
+  );
+
+  it('a committee member reads a report only while its feature is on', async () => {
+    setClubFeatures({ attendance: false, awards: false, integrity: false });
+    for (const route of ['admin/reports/attendance', 'admin/reports/awards', 'admin/reports/integrity']) {
+      await expectTurnedAway('committee', route, 'index');
+    }
+    await expectReaches('committee', 'admin/reports/wwcc');
   });
 });
 
