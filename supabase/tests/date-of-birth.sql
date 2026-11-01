@@ -84,11 +84,16 @@ select pg_temp.ok('saving the same date keeps the first record',
   (select p.date_of_birth_recorded_by = '00000000-0000-0000-0000-000000000001' and p.date_of_birth_recorded_at = f.at
    from public.profiles p, first_record f where p.id = '00000000-0000-0000-0000-000000000051'), true);
 select pg_temp.as_member('01');
-select pg_temp.fails('a child still needs a verified guardian, whatever the admin ticks',
+-- Since 20261101000000 a child can be approved before a guardian is linked;
+-- they're under 18 by their date of birth whatever the admin ticks, so
+-- they're locked until a verified guardian is linked.
+select pg_temp.works('a child is approved with no guardian, whatever the admin ticks',
   $s$ select public.admin_save_member('00000000-0000-0000-0000-000000000051', 'athlete', 'approved', '[]', false, '{}') $s$);
+select pg_temp.ok('and is under 18 and locked',
+  (select under_17 and public.is_locked_child(id) from public.profiles where id = '00000000-0000-0000-0000-000000000051'), true);
 select pg_temp.works('the child is approved with a guardian',
   $s$ select public.admin_save_member('00000000-0000-0000-0000-000000000051', 'athlete', 'approved', '[]', false, '{00000000-0000-0000-0000-000000000041}') $s$);
-select pg_temp.ok('and is under 18 by their date of birth',
+select pg_temp.ok('and is under 18 by their date of birth, no longer locked',
   (select under_17 from public.profiles where id = '00000000-0000-0000-0000-000000000051'), true);
 
 select pg_temp.works('admin records the adult''s date of birth',

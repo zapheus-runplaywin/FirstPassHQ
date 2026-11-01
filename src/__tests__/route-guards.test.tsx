@@ -95,6 +95,8 @@ describe('admin screens', () => {
     'committeeBeforeChecksDate',
     'committeeExpiredCheck',
     'stoodDownAdmin',
+    'waitingChild',
+    'lockedChild',
   ];
 
   describe.each(turnedAway)('%s', (who) => {

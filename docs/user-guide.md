@@ -40,8 +40,8 @@ each of their roles can.
 
 | Role          | Who it's for                                                                                         |
 | ------------- | ---------------------------------------------------------------------------------------------------- |
-| **Athlete**   | Registered players. Some are club captains, or captains or vice captains of a squad or team. They see their own attendance and can report an absence. |
-| **Guardian**  | Parents and guardians of athletes under 18. They see their child's attendance and can report an absence for them, and see what has changed around their child. If the club asks, they accept the club's code of conduct for their child each season. |
+| **Athlete**   | Registered players. Some are club captains, or captains or vice captains of a squad or team. They see their own attendance and can report an absence. An athlete under 18 can't use the app until a verified parent or guardian is linked to them: until then they see only a link code to share with one (see [Ask to join the club](#ask-to-join-the-club)). |
+| **Guardian**  | Parents and guardians of athletes under 18. They ask to be linked to their child by entering the link code from their child's app, and follow their children into and out of their squads and teams. They see their child's attendance and can report an absence for them, and see what has changed around their child. If the club asks, they accept the club's code of conduct for their child each season. |
 | **Coach**     | Head coaches and assistant coaches. Both have the same permissions, except that a head coach sets Season KPIs for the group's assistant coaches; otherwise the title only shows who is who. The app gives each coach a title from their team, or their squad until they're in a team, such as "Head Coach, Open A". Need a current Working With Children Check; the role pauses while it's expired. Someone who has applied for one, new or a renewal, can work while it's assessed (see [Checks applied for](#checks-applied-for)). A parent volunteering at their child's club, a volunteer under 18, or a short-term visitor or national event helper from outside WA has an exemption instead (see [Volunteer exemptions](#volunteer-exemptions)). |
 | **Manager**   | Squad and team managers. The app gives each manager a title from their team, or their squad until they're in a team, such as "Manager, 17 & Under". Need a current Working With Children Check; the role pauses while it's expired. Someone who has applied for one, new or a renewal, can work while it's assessed (see [Checks applied for](#checks-applied-for)). A parent volunteering at their child's club, a volunteer under 18, or a short-term visitor or national event helper from outside WA has an exemption instead (see [Volunteer exemptions](#volunteer-exemptions)). |
 | **Committee** | Club committee members. Each can add a title, such as President or Secretary, shown with their role. Only committee members and admins can add their own title. Need a current Working With Children Check, or an application being assessed, unless an admin exempts them with a reason (not if they also coach, manage or physio); the role pauses if a recorded check expires or was recorded without an expiry date. Committee members approved before checks were needed keep the role without one only until the club's **committee checks date**. Those with a current check, an application in force or a volunteer exemption also read most of the club's governance reports. |
@@ -150,8 +150,8 @@ their parents or guardians.
 messages sent to everyone in the club only when an admin turns on **Physios get club messages** in
 Club settings.
 
-§ Athletes under 18 don't accept it themselves when a parent or guardian is linked: a verified
-parent or guardian accepts it for them. Guests and temporary helpers aren't asked (temporary helpers
+§ Athletes under 18 don't accept it themselves: a verified parent or guardian accepts it for
+them. Guests and temporary helpers aren't asked (temporary helpers
 accept it when they join).
 
 ‡ A physio placed in squads or teams looks after the athletes in them. Only the Head Physio looks
@@ -188,6 +188,11 @@ Temporary helpers see none of these but a preferred name. They aren't necessaril
 and they use the app only to complete onboarding: their home screen shows only the steps to be
 cleared to help, **Raise a concern**, and the Your details, Switch club and Delete account links
 (see [Temporary helpers](#temporary-helpers)).
+
+Athletes under 18 waiting for a parent or guardian see none of these either. Until an admin links
+a verified parent or guardian to them, their home screen shows only their **link code** to share
+with a parent or guardian, the people who can help, **Raise a concern**, and the Sign out, Switch
+club and Delete account links (see [Ask to join the club](#ask-to-join-the-club)).
 
 Admins can turn off Messages, Calendar, Daily check-ins, Injuries, Attendance, Session plans,
 Surveys, Captains' polls, Awards, Game goals and Integrity training for the whole club in **Club settings**. A feature that's off disappears for every role.
@@ -261,11 +266,15 @@ and fill in:
   under 18s apply. For athletes, an admin checks it against PlayHQ or ID before approving them.
 - **PlayHQ email**: only if you registered with PlayHQ using a different email to the Google account
   you signed in with. Parents and guardians must enter the email they used to register their
-  athlete, so the club can confirm who they are. An admin must verify a guardian before linking
-  them to a child.
+  athlete, so the club can confirm who they are. An admin must verify a guardian before approving
+  them or linking them to a child.
 - **I am a**: the role that best describes you.
-- **Squad**: athletes, coaches, managers, physios and guardians pick their squad (guardians pick
-  their athlete's squad). In a club without squads this is **Team**.
+- **Squad**: athletes, coaches, managers and physios pick their squad. In a club without squads
+  this is **Team**. Parents and guardians don't pick one: they follow their children into their
+  squads and teams.
+- **Your child's link code**: parents and guardians only. Your child under 18 sees a 6-letter code,
+  such as 7KQ-4MD, in their app once they've asked to join. Enter it here, or leave it blank and
+  enter it from your home screen later.
 - **Club password**: if the club has set one, ask a club admin for it. Five wrong tries in a row
   lock you out of asking for 15 minutes.
 
@@ -277,15 +286,17 @@ member, chooses **Temporary helper** and also gives what they'll help with, thei
 day, and how they're screened to work with children (see [Temporary helpers](#temporary-helpers)).
 
 An athlete under 18 also gives a **Parent or guardian's email**: the email their parent or guardian
-will sign in with. A parent or guardian needs to join the club in the app too, and an admin links
-them to the child before the child can be approved.
+will sign in with. A parent or guardian needs to join the club in the app too. Once the child has
+sent their request, the app gives them a link code to share with that parent or guardian, and the
+app stays locked for the child until an admin links a verified parent or guardian to them.
 
-Tap **Send request**.
+Tap **Send request**. A parent or guardian who entered a code that didn't work is told so: the
+request is still sent, and they can enter the code again from their home screen.
 
 <img src="user-guide/new-member-home.png" width="210" alt="Home screen before asking to join">
 <img src="user-guide/join.png" width="210" alt="Request to join form">
 <img src="user-guide/join-under-18.png" width="210" alt="Asking to join as an athlete under 18, with a date of birth and a parent's email">
-<img src="user-guide/join-guardian.png" width="210" alt="Request to join as a guardian">
+<img src="user-guide/join-guardian.png" width="210" alt="Request to join as a guardian, with the child's link code and no squad to pick">
 
 ### Wait for approval
 
@@ -298,15 +309,35 @@ your home screen. The code proves who you are, so the admin needs to get it from
 over a channel they already trust. Only ever give it to a club admin, and never share it with
 anyone else.
 
-An athlete under 18 also sees **Ask your parent or guardian to join**, with the email they gave,
-and the people they can talk to if anything worries them: the club's Child Safety Officer and
-Complaints Manager, the governing body and helplines.
+**Athletes under 18: your link code.** An athlete under 18 also sees **Waiting for your parent or
+guardian**, with their **link code**, such as 7KQ-4MD, and the people they can talk to if anything
+worries them: the club's Child Safety Officer and Complaints Manager, the governing body and
+helplines. Tap **Share code** to send your parent or guardian a message with the code and how to
+use it, or **Copy code**. They sign in, ask to join as a parent or guardian and enter it. Each code
+works once, for 7 days; **Make a new code** gives you a new one and stops the old one working, and
+a new code is made by itself when the old one runs out. Once a parent or guardian has entered it,
+the card says so. Only share it with your parent or guardian.
+
+Until an admin approves you and links a verified parent or guardian to you, the app is locked: it
+shows only your link code, the people who can help, **Raise a concern**, and **Sign out**, **Switch
+club** and **Delete account**. That stays true after an admin approves you, and again later if your
+last verified parent or guardian leaves the club or is unlinked: you get a new code to share. It
+opens as soon as a verified parent or guardian is linked, or on your 18th birthday.
+
+**Parents and guardians: your child's code.** While you wait, your home screen has **Enter your
+child's code**. Type the code from your child's app and tap **Enter code**. The card then lists
+each child whose code you've entered, until an admin links you. After five wrong codes in an hour,
+you have to wait before trying again. An admin verifies who you are, checks you're the child's
+parent or guardian and approves you once your child is approved, and approving you links you to
+the child whose code you entered.
 
 If your request isn't approved, the home screen says why and you can tap **Request again** after
 fixing your details.
 
 <img src="user-guide/waiting-for-approval.png" width="210" alt="Waiting for approval with a verification code">
-<img src="user-guide/waiting-under-18.png" width="210" alt="An athlete under 18 waiting for approval, asked to have a parent or guardian join">
+<img src="user-guide/waiting-under-18.png" width="210" alt="An athlete under 18 waiting for approval, with their link code to share with a parent or guardian">
+<img src="user-guide/locked-child.png" width="210" alt="An approved athlete under 18 with no verified parent or guardian linked yet: only their link code, who can help and the links to leave">
+<img src="user-guide/guardian-enter-code.png" width="210" alt="A parent waiting for approval, who has entered their child's code">
 <img src="user-guide/not-approved.png" width="210" alt="Request not approved, with the reason">
 
 <div style="page-break-before: always"></div>
@@ -345,7 +376,8 @@ Once you're approved, the home screen is where everything starts. From the top:
   team's page also has its [game goals](#game-goals) for its athletes and coaches. Committee
   members and admins only see this when they're in a squad or team, for example as a coach too.
 - **Raise a concern**, for anyone signed in (see [Raising a concern](#raising-a-concern)).
-- **Your details**, **Sign out**, **Switch club** and **Delete account** at the bottom.
+- **Your details**, **Sign out**, **Switch club** and **Delete account** at the bottom. An athlete
+  under 18 waiting for a parent or guardian doesn't have Your details.
 
 Pull down on the home screen, the calendar and most lists to refresh them.
 
@@ -677,7 +709,9 @@ them, for its keep period for injuries (7 years unless the club chose 3, 5 or 10
 when you leave, and then deletes them. Nothing is deleted while the club has **Remove old records**
 switched off. Clearance documents may go sooner, after the club's keep period for injury documents. It also keeps, under your name, your code of conduct acceptances,
 any concerns you raised (unless you hid your name) and, if you coach or manage, your season KPIs
-and their reviews. Deleting your account doesn't
+and their reviews. If you're a parent or guardian and the only verified one linked to a child
+under 18, the screen tells you that your child's app locks again until another parent or guardian
+is linked: they see only a new link code to share, and every admin is told. Deleting your account doesn't
 change your PlayHQ registration or club membership, or your account at any other club in
 FirstPass HQ.
 
@@ -1002,12 +1036,19 @@ you've checked (but not what your details say) in the [Medical details checks](#
 ## 5. Parents and guardians
 
 Parents and guardians of athletes under 18 sign in with their own Google account and ask to join
-as **Guardian**, entering the email they used to register their athlete with PlayHQ. An admin
-verifies who you are (against PlayHQ, by sighting your ID, or with the 6-digit code on your home
-screen, shown under **Confirm who you are** until you're verified) and then links you to your
-athlete. Every athlete under 18 must have at least one verified guardian before they're
-approved. A guardian can be linked to more than one athlete, and an athlete can
-have more than one guardian.
+as **Guardian**, entering the email they used to register their athlete with PlayHQ and, if you
+have it, your child's **link code**: the 6-letter code your child's app shows them once they've
+asked to join (see [Ask to join the club](#ask-to-join-the-club)). An admin verifies who you are
+(against PlayHQ, by sighting your ID, or with the 6-digit code on your home screen, shown under
+**Confirm who you are** until you're verified), checks you're the parent or guardian of the child
+whose code you entered, and approves you, which links you to them. An admin can't approve you
+until you've entered the code of a child under 18 who has been approved. Your child's app
+stays locked until a verified parent or guardian is linked to them. A guardian can be linked to
+more than one athlete, and an athlete can have more than one guardian.
+
+To add another child later, enter their code under **Add another child** on your home screen
+(**Enter your child's code** until you have a child linked). An admin then links you from your
+page or the child's.
 
 Whenever a guardian is linked to or unlinked from your child, you and your child's other guardians
 get a message from **Club safeguarding** in **Messages**, naming the guardian and the admin who made
@@ -1016,7 +1057,8 @@ Safety Officer or an admin.
 
 <img src="user-guide/message-guardian-notice.png" width="210" alt="The message guardians get when another guardian is unlinked">
 
-The home screen shows who you're the guardian of. Until an admin links you, it says so.
+The home screen shows who you're the guardian of. Until an admin links you, it says "Nobody yet"
+and asks for your child's link code.
 
 ### Giving consent
 
@@ -1202,9 +1244,9 @@ As a guardian you:
 - **See your athlete's daily check-ins**, including any note they write, and the training
   sessions they log with their weekly load. Tap your athlete under **Check-ins** on the home
   screen to see the last four weeks. Your athlete is told that you can read their notes.
-- **See the calendar and matches** of the squad or team you're placed in: the squad you chose when
-  you joined, or any an admin adds you to from your member page. While your child is under 18 you
-  join each team they're put in, and leave it when they do, so you see its matches without asking.
+- **See the calendar and matches** of your child's squads and teams. You follow your child into
+  and out of them by yourself: when an admin puts your child in a squad or team you join it, and
+  when your child leaves it you leave too, unless another of your children is still in it.
 - **See your athlete's game goals and reflections**: the goals they and their coaches set for
   each game, how your athlete thinks each one went, their coaches' comments and the team goals (see
   [Game goals](#game-goals)). Tap your athlete under **Guardian of** on the home screen to see all
@@ -2224,8 +2266,8 @@ Admins can do everything above except endorse injury clearances (they accept the
 committee, and endorse only if they're also a coach or physio), read athletes' check-in answers or
 set their game goals (unless they also coach them), plus run the club's set-up from **Administration** on the home
 screen. Admins' to-do lists include join requests waiting for approval and clearances waiting for
-sign-off, plus child-safety follow-ups: new concerns, athletes with no date of birth, athletes under 18 with
-no guardian linked, Working With Children Checks to sort out, volunteer exemptions that end within
+sign-off, plus child-safety follow-ups: new concerns, athletes with no date of birth, athletes under 18
+locked out because no verified parent or guardian is linked, Working With Children Checks to sort out, volunteer exemptions that end within
 60 days, athletes turning 18 within 30 days, Screening Unit notices still to report to the
 governing body, no WWC Registration Officer, Child Safety Officer or Complaints Manager, and a
 clearance nobody can endorse. Every card problem shares one to-do, **Sort out Working With Children
@@ -2252,7 +2294,7 @@ or an exemption with a reason that another admin records, like committee members
 
 <img src="user-guide/admin-home.png" width="210" alt="Admin home screen">
 <img src="user-guide/administration.png" width="210" alt="Administration menu">
-<img src="user-guide/admin-safety-todos.png" width="210" alt="Admin to-dos with one Working With Children Checks to-do in red at the top, then guardians, athletes turning 18, old records kept forever and a member with no team or role for 2 years">
+<img src="user-guide/admin-safety-todos.png" width="210" alt="Admin to-dos with one Working With Children Checks to-do in red at the top, then athletes under 18 locked out, athletes turning 18, old records kept forever and a member with no team or role for 2 years">
 
 ### Inviting members
 
@@ -2267,8 +2309,10 @@ isn't part of the invite, so share it separately.
 
 ### Approving members
 
-**Members** lists everyone, grouped into **Waiting for approval**, **Members**, **No team or role
-for 2 years**, **Signed in, no request yet** and **Not approved**. Search by name or email.
+**Members** lists everyone, grouped into **Waiting for approval**, **Parents asking to be linked**,
+**Members**, **No team or role for 2 years**, **Signed in, no request yet** and **Not approved**.
+Search by name or email. **Parents asking to be linked** lists approved parents and guardians who
+entered another child's link code, such as for a younger brother or sister: open them to link them.
 
 **No team or role for 2 years** lists members who may have left the club: they have no place in
 this season's squads and teams, aren't a guardian of anyone who has, hold no club-wide role
@@ -2283,14 +2327,17 @@ screen, with the reason under each name: no Working With Children Check recorded
 expired or expires within 60 days, a volunteer exemption waiting for the declaration, ending within
 60 days or no longer applying, a check application waiting for the declaration, due to be
 confirmed, lapsed or stopped by a notice (a visitor or national event exemption is short by design, so it only
-shows once it has ended; a temporary helper shows only between their first and last day), someone who is stood down, an athlete under 18 with no guardian
-linked, an athlete with no date of birth, an athlete about to turn 18, a card never validated or
+shows once it has ended; a temporary helper shows only between their first and last day), someone who is stood down, an athlete under 18 locked out
+because no verified parent or guardian is linked ("Locked: no verified parent or guardian
+linked"), an athlete with no date of birth, an athlete about to turn 18, a card never validated or
 validated over a year ago, or a card not registered with the club. They also show "Needs checking" in the main list. Open someone to fix it; once saved,
 they drop off the list.
 
 Open a request to see the person's sign-in email, PlayHQ email, the date of birth they gave and
 what they asked for. An athlete under 18 also shows the guardian email they gave. In the
-waiting list, "Says they're under 18" marks an athlete whose date of birth makes them a child.
+waiting list, "Says they're under 18" marks an athlete whose date of birth makes them a child, and
+each request says who entered whose link code: "Sam Lee entered their code" under a child,
+"Entered Riley Lee's code" under a parent, or that nobody has yet.
 Check them against PlayHQ, then:
 
 1. Choose their **Role**.
@@ -2302,9 +2349,15 @@ Check them against PlayHQ, then:
 3. For athletes, check their date of birth against PlayHQ or ID and enter it under **Date of
    birth** (DD/MM/YYYY). If it matches what they gave, tap **I've checked it: use** that date. If
    you enter a different date, the page notes the one they gave. The page shows who recorded the
-   date and when. Anyone under 18 gets a **Parents and guardians** section, with the search
-   started from the email the child gave: tap a guardian to link them (tap ✕ to unlink). Only
-   verified guardians can be linked; unverified ones show "(not verified)".
+   date and when. Anyone under 18 gets a **Parents and guardians** section. You can approve a child
+   before a parent or guardian is linked: their app stays locked, showing only their link code,
+   until a verified one is, and the section says **Locked** while it is. Each parent or guardian
+   who entered the child's code is listed there: tap **Link them** once they're approved and
+   verified, or **Not their parent** to turn the request down. A parent still waiting for approval
+   is linked when you approve them. You can also link a parent or guardian by hand, with the
+   search started from the email the child gave: tap a guardian to link them (tap ✕ to unlink).
+   Each match shows their email, to tell apart two parents with the same name. Only verified
+   guardians can be linked; unverified ones show "(not verified)".
 4. For coaches, managers, physios, temporary helpers, committee members and admins, enter their **Working With Children
    Check** card number and expiry date. Cards last three years, so a later expiry is refused. Once
    the card is saved, **Validation** records checking it: enter the **Name on the card**, choose
@@ -2369,7 +2422,9 @@ The app won't approve or save:
 
 - an athlete without a date of birth. Athletes approved before this was needed keep their access,
   show "No date of birth" under **Needs checking**, and need one the next time you save them;
-- an athlete under 18 without at least one verified guardian;
+- a new parent or guardian who isn't verified, or who hasn't entered the link code of an approved
+  child under 18 (approve the child first). Parents and guardians approved before link codes keep
+  their approval;
 - a coach, manager or physio without a current Working With Children Check, a check application
   that hasn't ended, lapsed or been stopped, or a volunteer exemption. One still waiting for their
   declaration lets you approve them, but their role waits for them to accept it;
@@ -2407,7 +2462,7 @@ member's: the day after a recorded check expires, or from the club's statisticia
 
 <img src="user-guide/admin-children-injuries-closed.png" width="210" alt="An admin's home screen saying they can't see under 18s' injuries until their check is recorded">
 
-**Verifying someone.** Guardians must be verified before they can be linked to a child. Get the
+**Verifying someone.** Guardians must be verified before they can be approved or linked to a child. Get the
 6-digit code from their home screen yourself (it shows while they wait for approval, and for a
 guardian until they're verified), in person or over a channel you already trust, enter
 it under **Their code** and tap **Check code**. Or, under **How you checked**, choose **Matched to
@@ -2420,7 +2475,17 @@ the change** if there is one, such as a parenting order you've seen; only admins
 save, the child's guardians, and the child if they're 13 or over, get a message naming the
 guardian and you, without the reason. **Guardian link history** on the child's page, and on the
 guardian's, lists every link and unlink with who made it, when and why. If you're one of the
-child's guardians, another admin has to change who their guardians are.
+child's guardians, or you entered the child's code yourself, another admin has to change who their
+guardians are or answer your request.
+
+A parent or guardian's page lists their children under **Guardian of**, each with their date of
+birth and squads and teams, and under **Children whose code they entered** each child waiting to be
+linked, with **Link them** (once the parent is approved and verified) and **Not their parent**.
+
+**When a child is locked again.** If a child's last verified parent or guardian is unlinked, loses
+their access or deletes their account, the child's app locks again and they get a new link code.
+Every admin gets a **Club safeguarding** message naming the child and the parent who was the last,
+and the child shows under **Needs checking** until another verified parent or guardian is linked.
 
 **Who has viewed their records.** An approved athlete under 18's page has **Who has viewed their
 records**: everyone other than the athlete and their guardians who opened their injuries, injury
@@ -2444,6 +2509,8 @@ club** or **Other**) and tap **Don't approve**. They see the reason and can requ
 <img src="user-guide/member-date-of-birth.png" width="210" alt="An admin checking the date of birth a child gave">
 <img src="user-guide/member-date-checked.png" width="210" alt="The checked date of birth, with the guardian search started from the email the child gave">
 <img src="user-guide/member-under-18.png" width="210" alt="Athlete under 18 with date of birth and guardians linked">
+<img src="user-guide/member-link-request.png" width="210" alt="A locked child's page, with the parent who entered their code waiting for approval">
+<img src="user-guide/member-link-parent.png" width="210" alt="A parent's page, with the child whose code they entered, their date of birth and squad">
 <img src="user-guide/member-guardian.png" width="210" alt="Guardian showing their athlete, waiting to be verified">
 <img src="user-guide/member-verify-id.png" width="210" alt="Recording that you sighted a guardian's ID, with what you checked">
 <img src="user-guide/member-guardian-history.png" width="210" alt="Unlinking a guardian with a reason, and the guardian link history">
@@ -2583,9 +2650,10 @@ With squads on:
   into it (a physio left in the squad looks after the athletes in all its teams); they can be in
   several of the squad's teams, and other squads and teams they're in are untouched. Once they're
   selected for none of the squad's teams they go back into the squad. The parents and guardians of
-  an athlete under 18 follow them, joining the team when the athlete is put in it and leaving when
-  the athlete does (unless another of their children is in it), so they see its calendar, matches
-  and people.
+  an athlete under 18 follow them into and out of their squads and teams by themselves, joining a
+  squad or team when the athlete is put in it and leaving when the athlete does (unless another of
+  their children is in it), so they see its calendar, matches and people. You don't place parents
+  and guardians yourself.
 - **Rename** or **Remove** a squad or team. Removing it takes it off this season's lists, home
   screens and coaches' to-dos; its attendance and other records are kept and you can **Bring
   back** it later.
@@ -3385,6 +3453,8 @@ once saved, only replaced or removed, and anyone who gets it wrong five times in
 | Date of birth given at Join, and a child's parent or guardian email | You and admins. Admins also see who recorded your checked date of birth and when. |
 | How a member was verified | You and admins: the method, and what the admin checked. |
 | Guardian link history   | Admins only: every link and unlink, by whom, when and the reason. The child's guardians, and the child from 13, get a message about each change, without the reason. |
+| A child's link code     | Only the child, in their own app. Nobody else can read it, admins included. It works once, for 7 days, and a new one stops the old one working. |
+| Who entered a child's code | The parent or guardian who entered it, and admins. The child sees the names of parents and guardians who entered their code. |
 | Stand-downs             | Admins, and committee members with a current check in the Working With Children Checks report (read only). The member sees that their role is paused, not the reason. |
 | Screening Unit notices and card validations | Admins, and committee members with a current check in the Working With Children Checks report (read only). |
 | Check applications, receipts and declarations | The member (their own application and declaration, not the receipt) and admins. Committee members with a current check read the applications in the Working With Children Checks report, never the receipts. Kept, with the receipt, if the member deletes their account. |
@@ -3468,11 +3538,35 @@ Everyone gives their date of birth when they ask to join. It's never taken on tr
 checks it against PlayHQ or ID and records it, and the app keeps who recorded it and when. An
 athlete can't be approved without a checked date of birth, so a missed field can never approve a
 child as an adult. A child also gives a parent's or guardian's email, and while they wait they're
-asked to have that parent or guardian join and shown who they can talk to. Athletes approved before
+shown a link code to give that parent or guardian and who they can talk to.
+
+### Locked until a parent or guardian is linked
+
+An athlete under 18 can't use the app until a verified parent or guardian is linked to them. The
+lock is kept by the club's database, not just the app's screens, so a locked child can't read or
+change any club information however they try: no squads or teams, calendar, messages, surveys,
+check-ins, logged training, medical details, injuries, goals or attendance. Until then they see only their link code, the club's
+safeguarding contacts and helplines, **Raise a concern**, and how to sign out or delete their
+account. Coaches, managers, admins and parents still see the child on registers and rosters as
+before.
+
+- **The parent links with the child's code.** The child shares a 6-letter code from their app. It
+  works once, for 7 days; a new code stops the old one, and five wrong codes in an hour stop a
+  parent trying for a while, so codes can't be guessed. Entering a code only asks to be linked.
+- **An admin checks every link.** The admin verifies who the parent is and approves them, or links
+  an approved, verified parent from the child's page. Only then does the child's app open. An admin
+  can't link themselves to a child.
+- **It locks again if the last parent goes.** If a child's last verified parent or guardian is
+  unlinked, loses access or deletes their account, the child is locked again with a new code, and
+  every admin gets a **Club safeguarding** message.
+- **It opens at 18.** On their 18th birthday a child no longer needs a parent or guardian linked.
+- **Parents follow their children.** A linked parent or guardian joins and leaves their child's
+  squads and teams with them, so they see the same calendar and people. Athletes approved before
 dates of birth were needed show under **Needs checking** until an admin adds one.
 
 <img src="user-guide/join-under-18.png" width="210" alt="Asking to join as an athlete under 18, with a date of birth and a parent's email">
 <img src="user-guide/member-date-of-birth.png" width="210" alt="An admin checking the date of birth a child gave">
+<img src="user-guide/locked-child.png" width="210" alt="An approved athlete under 18 with no verified parent or guardian linked yet: only their link code, who can help and the links to leave">
 
 ### Injury documents and photos
 
@@ -3554,9 +3648,11 @@ Working With Children Check, and another admin must do it.
 - **You're told when another guardian is added or removed.** You get a message naming the guardian
   and the admin who made the change, and every link and unlink is kept. An admin who is also your
   child's parent can't change who your child's guardians are.
-- **No child is approved without you.** Every athlete under 18 needs a date of birth checked by an
-  admin and at least one verified guardian before an admin can approve them. Your child gives your
-  email when they ask to join, so the admin knows who to look for.
+- **Your child's app stays locked until you're linked.** Every athlete under 18 needs a date of
+  birth checked by an admin, and their app stays locked until an admin links at least one verified
+  parent or guardian to them. Your child gives your email when they ask to join and shares a link
+  code with you; you enter it, and an admin checks who you are before linking you (see [Locked
+  until a parent or guardian is linked](#locked-until-a-parent-or-guardian-is-linked)).
 - **You see what your child sees.** You get a copy of every message sent to your child, and of every
   message your child sends as a captain, and each copy names the child it's for. You can read their daily check-ins and notes, their game
   goals, their season KPIs and reviews, and their injuries, and whether they were at each session.
@@ -3627,8 +3723,9 @@ Working With Children Check, and another admin must do it.
 - **You're told who your guardians are.** From 13, you get the same message as your parents when a
   parent or guardian is added or removed.
 - **Your parent or guardian joins too.** When you ask to join, you give your date of birth and a
-  parent's or guardian's email. While you wait, the app shows who you can talk to if anything
-  worries you.
+  parent's or guardian's email. Then you get a link code to share with them. Until a club admin
+  links a parent or guardian to you, the app shows only your code and who you can talk to if
+  anything worries you. Only give your code to your parent or guardian.
 - **You can tell someone safely.** The check-in screen has a link, **Something worrying you? Tell
   the club safely**, that reaches the club's Child Safety Officer, its welfare contact for
   athletes. A line such as "I'd like to talk to someone" is enough, and you can hide your name.
@@ -3819,7 +3916,7 @@ Working With Children Check, and another admin must do it.
   expired checks in red at the top, checks to validate, register or renew in amber), volunteer
   exemptions ending, declarations not yet accepted (counted with missing checks), cards to validate
   or register with the club, notices to report to the governing body, no WWC Registration Officer,
-  no cleared Child Safety Officer or Complaints Manager, athletes with no date of birth, athletes under 18 without a guardian, athletes turning 18 in the
+  no cleared Child Safety Officer or Complaints Manager, athletes with no date of birth, athletes under 18 locked out with no verified parent or guardian, athletes turning 18 in the
   next 30 days, and old records kept
   forever while **Remove old records** is off.
 - **Session plans for every session.** The Session plans report shows which squads and teams have

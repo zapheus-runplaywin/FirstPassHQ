@@ -144,13 +144,17 @@ describe('a member’s page for an admin', () => {
   it('records notices for a guardian, but has no stand-down for them', async () => {
     await openMember(GUARDIAN);
     expect(shown()).toEqual(['notices', 'removeAccess', 'deleteMember', 'removalReason', 'saveChanges', 'guardianOf']);
-    expect(screen.getByText("No athletes yet. Link them from the athlete's page.")).toBeTruthy();
+    expect(
+      screen.getByText(/^No children yet\. They enter their child’s link code, or you link them from the\s+child’s page\.$/),
+    ).toBeTruthy();
   });
 
   it('asks for an unverified guardian to be verified before they’re linked to a child', async () => {
     await openMember({ ...GUARDIAN, verified_at: null });
     expect(shown()).toContain('verify');
-    expect(screen.getByText(/^Guardians must be verified before you link them to a child\./)).toBeTruthy();
+    expect(
+      screen.getByText(/^Parents and guardians must be verified before you approve them or link them to a child\./),
+    ).toBeTruthy();
   });
 
   it('has no stand-down or notices for an adult athlete', async () => {
@@ -166,7 +170,9 @@ describe('a member’s page for an admin', () => {
     expect(shown()).toEqual(['removeAccess', 'deleteMember', 'removalReason', 'saveChanges', 'guardians', 'recordViews']);
     expect(screen.getByText('Sample guardian  ✕')).toBeTruthy();
     expect(screen.getByText('Add a guardian')).toBeTruthy();
-    expect(screen.getByText('Under 18, so needs a parent or guardian.')).toBeTruthy();
+    expect(
+      screen.getByText('Under 18, so their app stays locked until a verified parent or guardian is linked.'),
+    ).toBeTruthy();
   });
 
   it('leaves a child’s guardians to another admin when the admin is one of them', async () => {

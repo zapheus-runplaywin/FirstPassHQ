@@ -1,14 +1,18 @@
 /**
  * The Home screen's states that home-by-role.test.tsx doesn't cover
  * (src/app/index.tsx): asking to join, waiting for approval (with the
- * verification code, and an under-18 athlete's ask for a parent), a request
+ * verification code, an under-18 athlete's link code for a parent, and a
+ * parent's box for their child's code), a locked child, a request
  * turned down for each reason, roles paused for each reason, the committee
  * checks date, the order of the to-do list, and the footer links. From "Ask to
  * join the club", "Wait for approval" and "The home screen" in sections 2 and
  * 3 of docs/user-guide.md.
  */
+import * as Clipboard from 'expo-clipboard';
 import { router } from 'expo-router';
 import { fireEvent, screen, within } from 'expo-router/testing-library';
+
+import { Share } from 'react-native';
 
 import HomeScreen from '@/app/index';
 import { formatDateString } from '@/lib/injuries';
@@ -16,7 +20,7 @@ import { taskDetail, type PersonalTask } from '@/lib/personal-tasks';
 import { supabase } from '@/lib/supabase';
 import type { MyVolunteerExemption, MyWwccApplication, Profile, RejectionReason } from '@/lib/types';
 
-import { argsOf, clearCalls, recordTable, rpcNames } from './helpers/forms';
+import { argsOf, clearCalls, field, recordTable, rpcNames, type } from './helpers/forms';
 import {
   openScreen,
   personas,
@@ -40,6 +44,7 @@ jest.mock('@react-native-async-storage/async-storage', () =>
   jest.requireActual('@react-native-async-storage/async-storage/jest/async-storage-mock'),
 );
 jest.mock('@/global.css', () => ({}));
+jest.mock('expo-clipboard', () => ({ setStringAsync: jest.fn(async () => true) }));
 
 let push: jest.SpyInstance;
 
@@ -112,26 +117,229 @@ describe('waiting for approval', () => {
     guardian_email: 'parent@example.test',
   });
 
-  it('asks an athlete under 18 to have the parent they named join, and who can help', async () => {
-    await openHome(child, {}, { rpcs: { safeguarding_contacts: null } });
-    expect(screen.getByText('Ask your parent or guardian to join')).toBeTruthy();
-    expect(screen.getByText(/, signing in with parent@example\.test\./)).toBeTruthy();
+  const linkCode = {
+    waiting: true,
+    code: '7KQ4MD',
+    expires_at: '2026-10-25T12:00:00Z',
+    parents_waiting: [] as string[],
+  };
+
+  it('shows an athlete under 18 their link code to share with a parent, and who can help', async () => {
+    await openHome(child, {}, { rpcs: { safeguarding_contacts: null, my_link_code: linkCode } });
+    expect(screen.getByText('Waiting for approval')).toBeTruthy();
+    expect(screen.getByText('Waiting for your parent or guardian')).toBeTruthy();
+    expect(screen.getByText('7KQ-4MD')).toBeTruthy();
+    expect(screen.getByLabelText('Your link code is 7 K Q 4 M D')).toBeTruthy();
+    expect(screen.getByText(`Works once, until ${formatDateString('2026-10-25')}`)).toBeTruthy();
+    expect(screen.getByText(/needs to join the club in the app too\. Share this code/)).toBeTruthy();
+    expect(screen.getByText(/links you before approving you\./)).toBeTruthy();
     expect(screen.getByText('If anything worries you, these people can help:')).toBeTruthy();
+    // They can still change their request.
+    expect(screen.getByText('Edit request')).toBeTruthy();
   });
 
-  it('leaves the email out when the child gave none', async () => {
-    await openHome(withProfile(child, { guardian_email: null }));
-    expect(screen.getByText(/needs to join the club in the app too\. A club admin/)).toBeTruthy();
+  it('says which parents have entered the code', async () => {
+    await openHome(child, {}, {
+      rpcs: { my_link_code: { ...linkCode, parents_waiting: ['Pat Parent', 'Sam Parent'] } },
+    });
+    expect(
+      screen.getByText('✓ Pat Parent has entered your code. A club admin will check and link them.'),
+    ).toBeTruthy();
+    expect(
+      screen.getByText('✓ Sam Parent has entered your code. A club admin will check and link them.'),
+    ).toBeTruthy();
+  });
+
+  it('shares the code with the child’s name, the club and the app', async () => {
+    const share = jest.spyOn(Share, 'share').mockResolvedValue({ action: 'sharedAction', activityType: undefined });
+    await openHome(child, {}, { rpcs: { my_link_code: linkCode } });
+    await fireEvent.press(screen.getByText('Share code'));
+    expect(share).toHaveBeenCalledWith({
+      message:
+        'Sample pending is joining Sample Club on FirstPass HQ. Install the FirstPass HQ app, sign in, ' +
+        'ask to join as a parent or guardian and enter this code: 7KQ-4MD. It works once, for 7 days.',
+    });
+    share.mockRestore();
+  });
+
+  it('copies the code, and says so', async () => {
+    await openHome(child, {}, { rpcs: { my_link_code: linkCode } });
+    await fireEvent.press(screen.getByText('Copy code'));
+    await settle();
+    expect(Clipboard.setStringAsync).toHaveBeenCalledWith('7KQ-4MD');
+    expect(screen.getByText('Code copied')).toBeTruthy();
+  });
+
+  it('makes a new code, and shows it', async () => {
+    let current = linkCode;
+    await openHome(child, {}, {
+      rpcHandlers: {
+        my_link_code: () => current,
+        new_link_code: () => {
+          current = { ...linkCode, code: 'ABC234' };
+          return [current];
+        },
+      },
+    });
+    await fireEvent.press(screen.getByText('Make a new code'));
+    await settle();
+    expect(rpcNames()).toContain('new_link_code');
+    expect(screen.getByText('ABC-234')).toBeTruthy();
+    expect(screen.queryByText('7KQ-4MD')).toBeNull();
+  });
+
+  it('says why a new code couldn’t be made', async () => {
+    await openHome(child, {}, {
+      rpcs: { my_link_code: linkCode },
+      rpcErrors: { new_link_code: 'Only a child waiting for a parent or guardian has a link code' },
+    });
+    await fireEvent.press(screen.getByText('Make a new code'));
+    await settle();
+    expect(
+      screen.getByText('Only a child waiting for a parent or guardian has a link code'),
+    ).toBeTruthy();
   });
 
   it.each<[string, Partial<Profile>]>([
     ['an adult athlete', { requested_role: 'athlete', declared_date_of_birth: '1990-05-05' }],
     ['a child asking to be a guest', { requested_role: 'guest', declared_date_of_birth: '2011-03-02' }],
     ['an athlete with no date of birth', { requested_role: 'athlete', declared_date_of_birth: null }],
-  ])('asks %s for no parent', async (_l, extra) => {
-    await openHome(withProfile(personas.pending, extra));
+  ])('asks %s for no parent: the database says they aren’t waiting for one', async (_l, extra) => {
+    await openHome(withProfile(personas.pending, extra), {}, {
+      rpcs: { my_link_code: { waiting: false, code: null, expires_at: null, parents_waiting: [] } },
+    });
     expect(screen.getByText('Waiting for approval')).toBeTruthy();
-    expect(screen.queryByText('Ask your parent or guardian to join')).toBeNull();
+    expect(screen.queryByText('Waiting for your parent or guardian')).toBeNull();
+    expect(screen.queryByText('If anything worries you, these people can help:')).toBeNull();
+  });
+
+  it('asks a parent or guardian for their child’s code', async () => {
+    await openHome(withProfile(personas.pending, { requested_role: 'guardian' }));
+    expect(screen.getByText(/then approves you, which links you to them\./)).toBeTruthy();
+    expect(screen.getByText('Enter your child’s code')).toBeTruthy();
+    expect(screen.queryByText('Waiting for your parent or guardian')).toBeNull();
+  });
+});
+
+// ---------------------------------------------------------------------------
+// A parent or guardian entering their child's link code
+
+describe('entering a child’s code', () => {
+  const guardianWaiting = withProfile(personas.pending, { requested_role: 'guardian' });
+
+  it('sends the code as typed, and shows the child once it’s taken', async () => {
+    let requests: unknown[] = [];
+    await openHome(guardianWaiting, {}, {
+      rpcHandlers: {
+        my_link_requests: () => requests,
+        enter_child_code: () => {
+          requests = [
+            { athlete_id: 'kid', athlete_name: 'Jordan Sample', requested_at: '2026-10-18T01:00:00Z' },
+          ];
+          return null;
+        },
+      },
+    });
+    await type('Child’s code', '7kq-4md');
+    await fireEvent.press(screen.getByText('Enter code'));
+    await settle();
+    expect(argsOf('enter_child_code')).toEqual([{ p_code: '7kq-4md' }]);
+    expect(
+      screen.getByText('✓ You’ve entered Jordan Sample’s code. A club admin will check and link you.'),
+    ).toBeTruthy();
+    expect(field('Child’s code').props.value).toBe('');
+  });
+
+  it('says why the database turned a code down, and keeps it to fix', async () => {
+    await openHome(guardianWaiting, {}, {
+      rpcHandlers: {
+        enter_child_code: () =>
+          'That code isn’t right, or it has expired. Check it with your child, or ask them to make a new one.',
+      },
+    });
+    await type('Child’s code', '7KQ4MD');
+    await fireEvent.press(screen.getByText('Enter code'));
+    await settle();
+    expect(screen.getByText(/^That code isn’t right, or it has expired\./)).toBeTruthy();
+    expect(field('Child’s code').props.value).toBe('7KQ4MD');
+  });
+
+  it('shows a refusal that comes back as an error', async () => {
+    await openHome(guardianWaiting, {}, {
+      rpcErrors: { enter_child_code: 'Ask to join as a parent or guardian first' },
+    });
+    await type('Child’s code', '7KQ4MD');
+    await fireEvent.press(screen.getByText('Enter code'));
+    await settle();
+    expect(screen.getByText('Ask to join as a parent or guardian first')).toBeTruthy();
+  });
+
+  it.each(['', '7KQ4M', '7KQ-4M0'])('checks %j looks like a code before asking', async (typed) => {
+    await openHome(guardianWaiting);
+    await type('Child’s code', typed);
+    await fireEvent.press(screen.getByText('Enter code'));
+    await settle();
+    expect(screen.getByText('Enter the 6-letter code from your child’s app, such as 7KQ-4MD.')).toBeTruthy();
+    expect(rpcNames()).not.toContain('enter_child_code');
+  });
+
+  it('lists the children whose code they already entered', async () => {
+    await openHome(guardianWaiting, {}, {
+      rpcs: {
+        my_link_requests: [
+          { athlete_id: 'a', athlete_name: 'Jordan Sample', requested_at: '2026-10-18T01:00:00Z' },
+          { athlete_id: 'b', athlete_name: null, requested_at: '2026-10-18T02:00:00Z' },
+        ],
+      },
+    });
+    expect(screen.getByText(/You’ve entered Jordan Sample’s code\./)).toBeTruthy();
+    expect(screen.getByText(/You’ve entered your child’s code\./)).toBeTruthy();
+  });
+});
+
+// ---------------------------------------------------------------------------
+// A child under 18 with no verified parent or guardian linked: locked
+
+describe('a locked child', () => {
+  const linkCode = { waiting: true, code: '7KQ4MD', expires_at: null, parents_waiting: [] };
+  const locked: Persona = {
+    ...personas.minorAthlete,
+    rpcs: { ...personas.minorAthlete.rpcs, my_link_code: linkCode },
+  };
+
+  it('sees only their link code, who can help, Raise a concern and how to leave', async () => {
+    await openHome(locked);
+    expect(screen.getByText('Waiting for your parent or guardian')).toBeTruthy();
+    expect(screen.getByText('7KQ-4MD')).toBeTruthy();
+    expect(screen.getByText(/the app stays locked until a parent or guardian is linked to you\./)).toBeTruthy();
+    expect(screen.getByText(/and then the app opens for you\./)).toBeTruthy();
+    expect(screen.getByText('If anything worries you, these people can help:')).toBeTruthy();
+    expect(screen.getByText('Raise a concern')).toBeTruthy();
+    expect(screen.getByText('Sign out')).toBeTruthy();
+    expect(screen.getByText('Switch club')).toBeTruthy();
+    expect(screen.getByText('Delete account')).toBeTruthy();
+    // Nothing of the club, and no request to change.
+    for (const hidden of [
+      'Waiting for approval',
+      'Edit request',
+      'To do',
+      'Coming up',
+      'My squads and teams',
+      'Messages',
+      'Your details',
+    ]) {
+      expect(screen.queryByText(hidden)).toBeNull();
+    }
+    // The header doesn't call them an athlete yet.
+    expect(screen.queryByText('Athlete')).toBeNull();
+  });
+
+  it('is unlocked once the database says a verified parent is linked', async () => {
+    await openHome(personas.minorAthlete, {}, {
+      rpcs: { my_link_code: { waiting: false, code: null, expires_at: null, parents_waiting: [] } },
+    });
+    expect(screen.queryByText('Waiting for your parent or guardian')).toBeNull();
+    expect(screen.getByText('Your details')).toBeTruthy();
   });
 });
 

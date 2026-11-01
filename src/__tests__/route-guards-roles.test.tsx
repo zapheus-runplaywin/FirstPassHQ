@@ -134,7 +134,15 @@ const NO_ROLE_SCREENS: PersonaName[] = [
   'committeePastChecksDate',
   'statisticianPastChecksDate',
   'physioExpiredCheck',
+  'waitingChild',
+  'lockedChild',
 ];
+
+/**
+ * Children under 18 waiting for a parent or guardian: asking to join, or
+ * approved and locked until a verified one is linked.
+ */
+const WAITING_FOR_GUARDIAN: PersonaName[] = ['waitingChild', 'lockedChild'];
 
 const SIGNED_IN = (Object.keys(personas) as PersonaName[]).filter((p) => p !== 'signedOut');
 
@@ -246,7 +254,10 @@ const WHO_OPENS: Record<string, PersonaName[]> = {
   'declare-conflicts': CONFLICT_DECLARERS,
 };
 
-/** Screens every signed-in member has, including those waiting for approval. */
+/**
+ * Screens every signed-in member has, including those waiting for approval.
+ * A child waiting for a parent or guardian only has those in OPEN_WHILE_WAITING.
+ */
 const EVERYONE_SIGNED_IN = [
   'index',
   'join',
@@ -263,6 +274,15 @@ const EVERYONE_SIGNED_IN = [
   'my-details',
   'delete-account',
 ];
+
+/** What a child waiting for a parent or guardian can open: their link code, help, and leaving. */
+const OPEN_WHILE_WAITING: Record<string, PersonaName[]> = {
+  index: WAITING_FOR_GUARDIAN,
+  'concern/new': WAITING_FOR_GUARDIAN,
+  'delete-account': WAITING_FOR_GUARDIAN,
+  // Changing the request, until they're approved.
+  join: ['waitingChild'],
+};
 
 // ---------------------------------------------------------------------------
 
@@ -320,9 +340,20 @@ describe.each(Object.entries(WHO_OPENS))('%s', (route, who) => {
 });
 
 describe.each(EVERYONE_SIGNED_IN)('%s', (route) => {
-  it.each(SIGNED_IN)('opens for %s', async (p) => {
+  const reaches = SIGNED_IN.filter(
+    (p) => !WAITING_FOR_GUARDIAN.includes(p) || (OPEN_WHILE_WAITING[route] ?? []).includes(p),
+  );
+  const turnedAway = SIGNED_IN.filter((p) => !reaches.includes(p));
+
+  it.each(reaches)('opens for %s', async (p) => {
     await expectReaches(p, route);
   });
+
+  if (turnedAway.length > 0) {
+    it.each(turnedAway)('sends %s home', async (p) => {
+      await expectTurnedAway(p, route, 'index');
+    });
+  }
 });
 
 describe('Season KPIs off', () => {

@@ -118,6 +118,11 @@ async function openMember(
     dobRecord = null as { recorded_by_name: string | null; recorded_at: string | null } | null,
     acknowledgedAt = null as string | null,
     rpcErrors = {} as BackendOptions['rpcErrors'],
+    // Link codes entered, the people on the other side whatever their status,
+    // and the children's squad and team places.
+    requests = [] as { guardian_id: string; athlete_id: string }[],
+    others = [] as Profile[],
+    childPlaces = [] as { profile_id: string; team_id: string }[],
   } = {},
 ) {
   await openScreen(
@@ -127,6 +132,7 @@ async function openMember(
     {
       teams: [SQUAD, SQUAD_TEAM],
       guardianships,
+      guardian_link_requests: requests,
       stand_downs: standDowns,
       screening_notices: notices,
       guardianship_history: [],
@@ -137,9 +143,15 @@ async function openMember(
         profiles: (q) => {
           if (q.eq('id') === target.id) return [target];
           if (q.eq('status') === 'approved') return people;
+          const ids = q.calls.find((c) => c.method === 'in')?.args[1] as string[] | undefined;
+          if (ids) return [...people, ...others].filter((o) => ids.includes(o.id));
           return undefined;
         },
-        team_members: (q) => (q.eq('profile_id') === target.id ? placements : undefined),
+        team_members: (q) => {
+          if (q.eq('profile_id') === target.id) return placements;
+          if (q.calls.some((c) => c.method === 'in')) return childPlaces;
+          return undefined;
+        },
       },
       rpcs: { admin_volunteer_exemptions: exemptions, admin_date_of_birth_record: dobRecord },
       rpcErrors,
@@ -429,11 +441,14 @@ describe('approving a request', () => {
 
     await press('I’ve checked it: use 01/04/2012');
     expect(fieldFor('Date of birth').props.value).toBe('01/04/2012');
-    expect(screen.getByText('Under 18, so needs a parent or guardian.')).toBeTruthy();
+    expect(
+      screen.getByText('Under 18, so their app stays locked until a verified parent or guardian is linked.'),
+    ).toBeTruthy();
     // The search starts from the email the child gave, so only that guardian matches.
     expect(fieldFor('Add a guardian').props.value).toBe('parent@example.test');
-    expect(screen.queryByText('Unverified Parent (not verified)')).toBeNull();
-    await press('Sample guardian');
+    expect(screen.queryByText('Unverified Parent · parent2@example.test (not verified)')).toBeNull();
+    // Each match shows their email, to tell apart parents with the same name.
+    await press('Sample guardian · parent@example.test');
     expect(screen.getByText('Sample guardian  ✕')).toBeTruthy();
     expect(screen.getByText('Reason for the change (optional)')).toBeTruthy();
 
@@ -472,7 +487,7 @@ describe('approving a request', () => {
     await openMember(PENDING_CHILD, { people: [UNVERIFIED_GUARDIAN] });
     await press('I’ve checked it: use 01/04/2012');
     await typeInto('Add a guardian', 'unverified');
-    await press('Unverified Parent (not verified)');
+    await press('Unverified Parent · parent2@example.test (not verified)');
     expect(
       screen.getByText(
         'Verify Unverified Parent first, with their code in person or against PlayHQ, from their own page.',
@@ -1052,7 +1067,7 @@ describe('changing a child’s guardians', () => {
     await press('Sample guardian  ✕');
     expect(screen.getByText('No guardians linked yet.')).toBeTruthy();
     await typeInto('Add a guardian', 'other');
-    await press('Other Parent');
+    await press('Other Parent · other@example.test');
     await typeInto('Reason for the change (optional)', 'Parenting order seen 12/10/2026');
     expect(screen.getByText(/^Only admins see the reason\./)).toBeTruthy();
     await press('Save changes');
@@ -1352,5 +1367,124 @@ describe('Screening Unit notices', () => {
     });
     await press('Governing body told: negative notice');
     expect(screen.getByText('That date is before the notice arrived')).toBeTruthy();
+  });
+});
+
+// ---------------------------------------------------------------------------
+// Link codes: parents who entered a child's code, and children locked out
+
+describe('link codes', () => {
+  const PENDING_PARENT: Profile = {
+    ...p('guardian'),
+    id: 'pending-parent',
+    full_name: 'Pending Parent',
+    role: 'guest',
+    status: 'pending',
+    requested_role: 'guardian',
+    join_requested_at: '2026-10-17T00:00:00Z',
+    verified_at: null,
+  };
+  const request = (guardian: Profile) => ({ guardian_id: guardian.id, athlete_id: CHILD.id });
+
+  it('says a child with no verified parent linked is locked', async () => {
+    await openMember(CHILD, {
+      guardianships: [{ guardian_id: UNVERIFIED_GUARDIAN.id, athlete_id: CHILD.id }],
+      people: [UNVERIFIED_GUARDIAN],
+    });
+    expect(screen.getByText(/^Locked: no verified parent or guardian is linked/)).toBeTruthy();
+  });
+
+  it('doesn’t call a child with a verified parent linked locked', async () => {
+    await openMember(CHILD, {
+      guardianships: [{ guardian_id: GUARDIAN.id, athlete_id: CHILD.id }],
+      people: [GUARDIAN],
+    });
+    expect(screen.queryByText(/^Locked:/)).toBeNull();
+  });
+
+  it('links a verified parent who entered the child’s code, from the child’s page', async () => {
+    await openMember(CHILD, { requests: [request(GUARDIAN)], people: [GUARDIAN] });
+    expect(screen.getByText('Sample guardian entered their code')).toBeTruthy();
+    expect(screen.getByText('Check they’re this child’s parent or guardian, then link them.')).toBeTruthy();
+    await press('Link them');
+    expect(adminWrites()).toEqual([
+      ['admin_accept_guardian_link', { p_guardian_id: GUARDIAN.id, p_athlete_id: CHILD.id }],
+    ]);
+    // The page reloads, rather than going back.
+    expect(back).not.toHaveBeenCalled();
+  });
+
+  it('turns down a request from someone who isn’t the child’s parent', async () => {
+    await openMember(CHILD, { requests: [request(GUARDIAN)], people: [GUARDIAN] });
+    await press('Not their parent');
+    expect(adminWrites()).toEqual([
+      ['admin_decline_guardian_link', { p_guardian_id: GUARDIAN.id, p_athlete_id: CHILD.id }],
+    ]);
+  });
+
+  it('says why the database wouldn’t link them', async () => {
+    await openMember(CHILD, {
+      requests: [request(GUARDIAN)],
+      people: [GUARDIAN],
+      rpcErrors: { admin_accept_guardian_link: 'Approve the child first' },
+    });
+    await press('Link them');
+    expect(screen.getByText('Approve the child first')).toBeTruthy();
+  });
+
+  test.each<[string, Profile, string]>([
+    ['waiting for approval', PENDING_PARENT, 'Verify them and approve them as a parent or guardian, and they’re linked to this child.'],
+    ['not verified', UNVERIFIED_GUARDIAN, 'Verify who they are first, from their page.'],
+    ['not a parent or guardian', { ...p('coach'), id: 'a-coach', full_name: 'A Coach' }, 'They can’t be linked until they’re an approved parent or guardian.'],
+  ])('offers no Link for a parent %s, only turning them down', async (_, parent, next) => {
+    await openMember(CHILD, { requests: [request(parent)], others: [parent] });
+    expect(screen.getByText(`${parent.full_name} entered their code`)).toBeTruthy();
+    expect(screen.getByText(next)).toBeTruthy();
+    expect(screen.queryByText('Link them')).toBeNull();
+    expect(screen.getByText('Not their parent')).toBeTruthy();
+  });
+
+  it('leaves a request to another admin when the admin entered the code', async () => {
+    await openMember(CHILD, {
+      viewer: morePersonas.adminGuardian,
+      requests: [{ guardian_id: 'admin-guardian', athlete_id: CHILD.id }],
+      people: [morePersonas.adminGuardian.profile],
+    });
+    expect(screen.getByText('You entered this code, so another admin decides.')).toBeTruthy();
+    expect(screen.queryByText('Link them')).toBeNull();
+    expect(screen.queryByText('Not their parent')).toBeNull();
+  });
+
+  it('shows a parent’s children with their date of birth, squads and teams', async () => {
+    await openMember(GUARDIAN, {
+      guardianships: [{ guardian_id: GUARDIAN.id, athlete_id: CHILD.id }],
+      others: [CHILD],
+      childPlaces: [
+        { profile_id: CHILD.id, team_id: SQUAD.id },
+        { profile_id: CHILD.id, team_id: SQUAD_TEAM.id },
+      ],
+    });
+    expect(screen.getByText('Sample Child · born 03/03/2010 (16) · Open Squad, Open A')).toBeTruthy();
+  });
+
+  it('lists the children whose code a parent entered, with how to tell them apart', async () => {
+    await openMember(PENDING_PARENT, { requests: [request(PENDING_PARENT)], others: [CHILD] });
+    expect(screen.getByText('Children whose code they entered')).toBeTruthy();
+    expect(screen.getByText('Sample Child · born 03/03/2010 (16) · no squad yet')).toBeTruthy();
+    expect(
+      screen.getByText('Verify them and approve them as a parent or guardian, and they’re linked to this child.'),
+    ).toBeTruthy();
+    await press('Not their parent');
+    expect(adminWrites()).toEqual([
+      ['admin_decline_guardian_link', { p_guardian_id: PENDING_PARENT.id, p_athlete_id: CHILD.id }],
+    ]);
+  });
+
+  it('links an approved, verified parent to the child whose code they entered, from their page', async () => {
+    await openMember(GUARDIAN, { requests: [request(GUARDIAN)], others: [CHILD] });
+    await press('Link them');
+    expect(adminWrites()).toEqual([
+      ['admin_accept_guardian_link', { p_guardian_id: GUARDIAN.id, p_athlete_id: CHILD.id }],
+    ]);
   });
 });

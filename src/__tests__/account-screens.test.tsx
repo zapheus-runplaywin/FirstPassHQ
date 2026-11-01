@@ -165,6 +165,16 @@ describe('deleting the account', () => {
     ).toBeTruthy();
     expect(screen.queryByText(/12 months after you leave/)).toBeNull();
     expect(screen.getByText(/you’ll need to ask to join again\./)).toBeTruthy();
+    // Only a parent or guardian is told about their child's app locking.
+    expect(screen.queryByText(/their app locks\s+again/)).toBeNull();
+  });
+
+  it('tells a parent or guardian their child’s app locks if they were the last verified one', async () => {
+    await openScreen('guardian', { 'delete-account': DeleteAccountScreen }, '/delete-account');
+    expect(
+      screen.getByText(/^If you’re the only verified parent or guardian linked to a child under 18, their app locks\s+again/),
+    ).toBeTruthy();
+    expect(screen.getByText(/the club’s admins are told\.$/)).toBeTruthy();
   });
 
   it('asks once more before deleting, and Cancel deletes nothing', async () => {

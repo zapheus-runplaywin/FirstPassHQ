@@ -17,8 +17,11 @@ $$ select row(t.wwcc_missing, t.exemptions_ending) from public.admin_safety_todo
 -- Logan Parent (guardian of Jordan Junior, 14) becomes a team manager with no check.
 reset role;
 update public.profiles set extra_roles = '{manager}' where id = '00000000-0000-0000-0000-000000000041';
+-- Logan is in Sample Squad already as Jordan's guardian (guardians follow
+-- their child into squads, 20261101000000); the manager place takes over.
 insert into public.team_members (team_id, profile_id, team_role)
-values ('00000000-0000-0000-0000-0000000000a1', '00000000-0000-0000-0000-000000000041', 'manager');
+values ('00000000-0000-0000-0000-0000000000a1', '00000000-0000-0000-0000-000000000041', 'manager')
+on conflict (team_id, profile_id) do update set team_role = excluded.team_role;
 
 select pg_temp.as_member('02');
 select 'INFO todos before: ' || (select wwcc_missing from public.admin_safety_todos());

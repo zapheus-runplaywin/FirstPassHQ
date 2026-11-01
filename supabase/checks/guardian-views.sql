@@ -68,31 +68,19 @@ begin
       where public.is_minor(c.date_of_birth, c.under_17)
     ),
     results as (
-      -- An approved guardian joins every current team their child is an
-      -- athlete in (guide, section 5: "you join each team they're put in").
-      select 'GAP' as level, 'placed in each team their child plays in' as label,
+      -- An approved guardian joins every current squad and team their child
+      -- is an athlete in (guide, section 5: "when an admin puts your child in
+      -- a squad or team you join it"; 20261101000000).
+      select 'GAP' as level, 'placed in each squad and team their child is in' as label,
         (select count(*) from links l join public.team_members m on m.profile_id = l.athlete_id and m.team_role = 'athlete'
-           join public.teams t on t.id = m.team_id and t.kind = 'team' and not t.archived
+           join public.teams t on t.id = m.team_id and not t.archived
            where l.guardian_status = 'approved' and l.guardian_role) as checked,
-        array(select l.guardian_id || ' -> ' || l.athlete_id || ' (team ' || m.team_id || ')'
+        array(select l.guardian_id || ' -> ' || l.athlete_id || ' (' || t.kind || ' ' || m.team_id || ')'
           from links l join public.team_members m on m.profile_id = l.athlete_id and m.team_role = 'athlete'
-          join public.teams t on t.id = m.team_id and t.kind = 'team' and not t.archived
+          join public.teams t on t.id = m.team_id and not t.archived
           where l.guardian_status = 'approved' and l.guardian_role
             and not exists (select 1 from public.team_members x where x.team_id = m.team_id and x.profile_id = l.guardian_id)
           order by 1) as missing
-      union all
-      -- Squads aren't followed: a guardian sees a squad's calendar and games
-      -- only when they chose it or an admin placed them there.
-      select 'INFO', 'placed in each squad their child is in (not automatic today)',
-        (select count(*) from links l join public.team_members m on m.profile_id = l.athlete_id and m.team_role = 'athlete'
-           join public.teams t on t.id = m.team_id and t.kind = 'squad' and not t.archived
-           where l.guardian_status = 'approved' and l.guardian_role),
-        array(select l.guardian_id || ' -> ' || l.athlete_id || ' (squad ' || m.team_id || ')'
-          from links l join public.team_members m on m.profile_id = l.athlete_id and m.team_role = 'athlete'
-          join public.teams t on t.id = m.team_id and t.kind = 'squad' and not t.archived
-          where l.guardian_status = 'approved' and l.guardian_role
-            and not exists (select 1 from public.team_members x where x.team_id = m.team_id and x.profile_id = l.guardian_id)
-          order by 1)
       union all
       -- The other way: a guardian placement with no child of theirs under 18
       -- left in the team gives them its games and calendar for nothing.
@@ -158,15 +146,18 @@ begin
             and not exists (select 1 from public.survey_recipients x where x.survey_id = s.id and x.profile_id = l.guardian_id)
           order by 1)
       union all
-      -- Every approved child under 18 has at least one verified guardian.
-      select 'GAP', 'approved children under 18 have a verified guardian',
+      -- An approved child under 18 with no approved, verified guardian is
+      -- locked out of the app until one is linked (20261101000000), and is on
+      -- the admin's to-do list.
+      select 'INFO', 'approved children under 18 locked: no verified guardian linked',
         (select count(*) from public.profiles c where c.status = 'approved' and public.is_minor(c.date_of_birth, c.under_17)
            and (c.role = 'athlete' or 'athlete' = any (c.extra_roles))),
         array(select c.id::text from public.profiles c
           where c.status = 'approved' and public.is_minor(c.date_of_birth, c.under_17)
             and (c.role = 'athlete' or 'athlete' = any (c.extra_roles))
             and not exists (select 1 from public.guardianships l join public.profiles g on g.id = l.guardian_id
-                            where l.athlete_id = c.id and g.status = 'approved' and g.verified_at is not null)
+                            where l.athlete_id = c.id and g.status = 'approved' and g.verified_at is not null
+                              and 'guardian' = any (public.roles_of(g.role, g.extra_roles)))
           order by 1)
       union all
       select 'INFO', 'linked guardians not yet verified (miss consents, medical details, record views)',
@@ -192,8 +183,9 @@ end $$;
 -- ---------------------------------------------------------------------------
 -- Each query lists, for the child $1 in the current squads and teams $2,
 -- linked to this guardian at $3, keys of the rows the signed-in member can
--- read. Every key the child gets, their guardian should get too. Squads are
--- INFO: guardians follow their child into teams, not squads (guide, section 5).
+-- read. Every key the child gets, their guardian should get too, squads'
+-- included: guardians follow their child into squads and teams (guide,
+-- section 5).
 do $$
 declare
   checks constant text[][] := array[
@@ -280,7 +272,6 @@ begin
   for i in 1 .. array_length(checks, 1) loop
     raise notice '% guardian sees their child''s %: % missing of % (%)',
       case when gaps[i] = 0 and failures[i] = 0 then 'OK  '
-        when failures[i] = 0 and checks[i][1] like '%of their squads' then 'INFO'
         else 'GAP ' end,
       checks[i][1], gaps[i], checked[i],
       case when failures[i] > 0 then failures[i] || ' errors; ' else '' end || examples[i];

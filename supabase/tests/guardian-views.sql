@@ -1,12 +1,13 @@
--- Tests for 20261029100000_guardian_placements_on_save.sql and the read-only
+-- Tests for 20261029100000_guardian_placements_on_save.sql (with squads
+-- followed too since 20261101000000_parent_link_codes.sql) and the read-only
 -- guardian check, supabase/checks/guardian-views.sql (guardian data audit,
 -- 29 October 2026). Run on a fresh database with the migrations and
 -- seed-members.sql loaded. Prints one line per check; the guardian check at
 -- the end prints OK, GAP and INFO notices, and any GAP fails the run.
 --
 -- The sample family: Jordan (31, under 18) is an athlete in Sample Squad and
--- Sample Team; Logan (41) is a guardian placed in Sample Team only because
--- Jordan plays in it; Morgan (42) coaches Sample Squad and is also Jordan's
+-- Sample Team; Logan (41) is a guardian placed in both only because Jordan
+-- is in them; Morgan (42) coaches Sample Squad and is also Jordan's
 -- guardian. Everything below goes through the app's own functions, signed in
 -- as the member who would do it, the way the admin member page sends it.
 \set ON_ERROR_STOP 0
@@ -42,30 +43,35 @@ insert into public.teams (id, name, kind, squad_id, sort_order) values
 insert into public.fixtures (team_id, team_name, starts_at) values (pg_temp.id('a2'), 'Sample Team', now() + interval '4 days');
 insert into public.calendars (name, url, team_id) values ('Sample Team games', 'https://example.test/team.ics', pg_temp.id('a2'));
 
-select pg_temp.ok('to start, Logan is placed in Sample Team as a guardian, not in the squad',
-  pg_temp.placed('41', 'a2', 'guardian') and not exists (
-    select 1 from public.team_members where profile_id = pg_temp.id('41') and team_id = pg_temp.id('a1')), true);
+select pg_temp.ok('to start, Logan follows Jordan: placed in Sample Squad and Sample Team as a guardian',
+  pg_temp.placed('41', 'a1', 'guardian') and pg_temp.placed('41', 'a2', 'guardian'), true);
 
 -- ---------------------------------------------------------------------------
 -- Saving a guardian's member page.
 -- ---------------------------------------------------------------------------
 select pg_temp.as_member('01');
-select pg_temp.works('admin saves Logan unchanged (their placement sent back without the squad)',
+create temp table logan_mark as select clock_timestamp() as at;
+select pg_temp.works('admin saves Logan unchanged (their placements sent back)',
   $s$ select public.admin_save_member(pg_temp.id('41'), 'guardian', 'approved', pg_temp.page_teams('41'), false, '{}') $s$);
-select pg_temp.ok('Logan is still placed in Sample Team', pg_temp.placed('41', 'a2', 'guardian'), true);
+select pg_temp.ok('Logan is still placed in Sample Squad and Sample Team',
+  pg_temp.placed('41', 'a1', 'guardian') and pg_temp.placed('41', 'a2', 'guardian'), true);
 select pg_temp.works('admin saves Logan with no squads or teams',
   $s$ select public.admin_save_member(pg_temp.id('41'), 'guardian', 'approved', '[]', false, '{}') $s$);
-select pg_temp.ok('the placement Logan has because Jordan plays there stays',
-  pg_temp.placed('41', 'a2', 'guardian'), true);
-select pg_temp.works('admin places Logan in the squad they chose',
+select pg_temp.ok('the placements Logan has because Jordan is there stay',
+  pg_temp.placed('41', 'a1', 'guardian') and pg_temp.placed('41', 'a2', 'guardian'), true);
+select pg_temp.works('admin saves Logan with only the squad',
   $s$ select public.admin_save_member(pg_temp.id('41'), 'guardian', 'approved',
        '[{"team_id":"00000000-0000-0000-0000-0000000000a1","team_role":"guardian"}]', false, '{}') $s$);
 select pg_temp.ok('Logan is in the squad and still in Sample Team',
   pg_temp.placed('41', 'a1', 'guardian') and pg_temp.placed('41', 'a2', 'guardian'), true);
-select pg_temp.works('admin takes Logan out of the squad',
-  $s$ select public.admin_save_member(pg_temp.id('41'), 'guardian', 'approved', '[]', false, '{}') $s$);
-select pg_temp.ok('a squad they chose goes when the admin leaves it out',
-  pg_temp.placed('41', 'a1', 'guardian'), false);
+select pg_temp.works('admin saves Logan with only the team',
+  $s$ select public.admin_save_member(pg_temp.id('41'), 'guardian', 'approved',
+       '[{"team_id":"00000000-0000-0000-0000-0000000000a2","team_role":"guardian"}]', false, '{}') $s$);
+select pg_temp.ok('the squad Logan follows Jordan into stays when the admin leaves it out',
+  pg_temp.placed('41', 'a1', 'guardian') and pg_temp.placed('41', 'a2', 'guardian'), true);
+select pg_temp.ok('saving Logan recorded no group changes for Logan',
+  not exists (select 1 from public.group_membership_changes where profile_id = pg_temp.id('41')
+    and changed_at > (select at from logan_mark)), true);
 select pg_temp.fails('the squad rules still apply to placements the admin chooses',
   $s$ select public.admin_save_member(pg_temp.id('41'), 'guardian', 'approved',
        '[{"team_id":"00000000-0000-0000-0000-0000000000a3","team_role":"guardian"}]', false, '{}') $s$);
@@ -189,6 +195,10 @@ delete from public.team_members where profile_id = pg_temp.id('41') and team_id 
 \setenv PGDATABASE :DBNAME
 \! scripts/check-guardian-views.sh > /dev/null 2>&1; if [ $? -eq 1 ]; then echo 'PASS the guardian check reports a guardian missing from their child''s team'; else echo 'FAIL the guardian check missed a guardian missing from their child''s team'; fi
 insert into public.team_members (team_id, profile_id, team_role) values (pg_temp.id('a2'), pg_temp.id('41'), 'guardian');
+-- And from their child's squad, which guardians follow too (20261101000000).
+delete from public.team_members where profile_id = pg_temp.id('41') and team_id = pg_temp.id('a1');
+\! scripts/check-guardian-views.sh > /dev/null 2>&1; if [ $? -eq 1 ]; then echo 'PASS the guardian check reports a guardian missing from their child''s squad'; else echo 'FAIL the guardian check missed a guardian missing from their child''s squad'; fi
+insert into public.team_members (team_id, profile_id, team_role) values (pg_temp.id('a1'), pg_temp.id('41'), 'guardian');
 
 -- Then the whole guardian check: every guardian sees what their child sees.
 \ir ../checks/guardian-views.sql

@@ -455,8 +455,8 @@ export function buildTodos({
     if (safety.minors_without_guardian > 0) {
       todos.push({
         key: 'minors-without-guardian',
-        title: `Link guardians for ${plural(safety.minors_without_guardian, 'athlete', 'athletes')} under 18`,
-        detail: 'Every athlete under 18 needs a verified guardian',
+        title: `${plural(safety.minors_without_guardian, 'athlete', 'athletes')} under 18 locked out`,
+        detail: 'Their app is locked until a verified parent or guardian is linked',
         href: '/admin',
       });
     }

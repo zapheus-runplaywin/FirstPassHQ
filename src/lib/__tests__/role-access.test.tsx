@@ -194,6 +194,8 @@ type PersonaInput = {
   isClubCaptain?: boolean;
   /** Roles AuthProvider left out of `profile`, and whether it was a stand-down. */
   paused?: { roles: AppRole[]; stoodDown: boolean };
+  /** A child under 18 approved with no verified parent or guardian linked. */
+  locked?: boolean;
 };
 
 function persona({
@@ -202,6 +204,7 @@ function persona({
   captaincies = [],
   isClubCaptain = false,
   paused,
+  locked = false,
 }: PersonaInput): Auth {
   const roles = p ? [p.role, ...p.extra_roles] : [];
   return {
@@ -219,6 +222,10 @@ function persona({
     committeeChecksFrom: null,
     statisticianChecksFrom: null,
     isSafeguardingOfficer: false,
+    waitingForGuardian: locked
+      ? { waiting: true, code: '7KQ4MD', expires_at: null, parents_waiting: [] }
+      : null,
+    isLocked: locked,
     committeeSeesInjuries: true,
     refresh: jest.fn(),
     signOut: jest.fn(),
@@ -319,6 +326,20 @@ const PERSONAS = {
     memberships: [member(TEAM_A, 'coach', 'head_coach')],
   }),
   pendingAdmin: persona({ profile: profile('admin', { status: 'pending' }) }),
+  /**
+   * Approved, under 18, with no verified parent or guardian linked: as
+   * AuthProvider gives them, shown as waiting with no squads or teams.
+   */
+  lockedChild: persona({
+    profile: profile('athlete', {
+      status: 'pending',
+      date_of_birth: CHILD,
+      under_17: true,
+      wwcc_number: null,
+      wwcc_expires_on: null,
+    }),
+    locked: true,
+  }),
 
   /** Coaches team A, parent of an athlete in team B. */
   coachGuardian: persona({
@@ -376,7 +397,7 @@ const ATHLETES: PersonaName[] = [
 const PHYSIOS: PersonaName[] = ['squadPhysio', 'headPhysio'];
 const GUARDIANS: PersonaName[] = ['guardian', 'guardianOfAdult', 'coachGuardian', 'adminGuardian'];
 /** Approved and holding at least one role they can use, other than guest or temporary helper. */
-const NOT_APPROVED: PersonaName[] = ['signedOut', 'pendingCoach', 'pendingAdmin'];
+const NOT_APPROVED: PersonaName[] = ['signedOut', 'pendingCoach', 'pendingAdmin', 'lockedChild'];
 const APPROVED = NAMES.filter((n) => !NOT_APPROVED.includes(n));
 
 const mockedUseAuth = jest.mocked(useAuth);

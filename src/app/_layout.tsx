@@ -112,12 +112,16 @@ function RootStack() {
         screenOptions={{ headerBackButtonDisplayMode: 'minimal' }}>
         <Stack.Protected guard={!!session}>
           <Stack.Screen name="index" options={{ headerShown: false }} />
-          <Stack.Screen name="join" options={{ title: 'Request to join' }} />
-          <Stack.Screen name="team/[id]" options={{ title: 'Team' }} />
+          <Stack.Protected guard={can.join}>
+            <Stack.Screen name="join" options={{ title: 'Request to join' }} />
+          </Stack.Protected>
+          <Stack.Protected guard={can.open}>
+            <Stack.Screen name="team/[id]" options={{ title: 'Team' }} />
+          </Stack.Protected>
           <Stack.Protected guard={can.chooseCaptains}>
             <Stack.Screen name="team/captains/[id]" options={{ title: 'Captains' }} />
           </Stack.Protected>
-          <Stack.Protected guard={features.calendar}>
+          <Stack.Protected guard={features.calendar && can.open}>
             <Stack.Screen name="calendar" options={{ title: 'Calendar' }} />
             <Stack.Screen name="event/[id]" options={{ title: 'Event' }} />
           </Stack.Protected>
@@ -239,10 +243,12 @@ function RootStack() {
           <Stack.Protected guard={can.declareConflicts}>
             <Stack.Screen name="declare-conflicts" options={{ title: 'Conflicts of interest' }} />
           </Stack.Protected>
-          <Stack.Screen name="declaration" options={{ title: 'Exemption declaration' }} />
-          <Stack.Screen name="wwcc-application" options={{ title: 'Check application' }} />
+          <Stack.Protected guard={can.open}>
+            <Stack.Screen name="declaration" options={{ title: 'Exemption declaration' }} />
+            <Stack.Screen name="wwcc-application" options={{ title: 'Check application' }} />
+            <Stack.Screen name="conduct/[id]" options={{ title: 'Code of conduct' }} />
+          </Stack.Protected>
           <Stack.Screen name="concern/new" options={{ title: 'Raise a concern' }} />
-          <Stack.Screen name="conduct/[id]" options={{ title: 'Code of conduct' }} />
           <Stack.Protected guard={can.family}>
             <Stack.Screen name="consent/[id]" options={{ title: 'Consent' }} />
             <Stack.Screen name="records/[id]" options={{ title: 'Who has viewed their records' }} />
@@ -261,10 +267,12 @@ function RootStack() {
             <Stack.Screen name="concerns/wellbeing" options={{ title: 'Wellbeing flags' }} />
             <Stack.Screen name="concerns/load" options={{ title: 'Training load patterns' }} />
           </Stack.Protected>
-          <Stack.Screen name="tasks/index" options={{ title: 'Your tasks' }} />
-          <Stack.Screen name="tasks/new" options={{ title: 'Add a task' }} />
-          <Stack.Screen name="tasks/[id]" options={{ title: 'Task' }} />
-          <Stack.Screen name="my-details" options={{ title: 'Your details' }} />
+          <Stack.Protected guard={can.open}>
+            <Stack.Screen name="tasks/index" options={{ title: 'Your tasks' }} />
+            <Stack.Screen name="tasks/new" options={{ title: 'Add a task' }} />
+            <Stack.Screen name="tasks/[id]" options={{ title: 'Task' }} />
+            <Stack.Screen name="my-details" options={{ title: 'Your details' }} />
+          </Stack.Protected>
           <Stack.Screen name="delete-account" options={{ title: 'Delete account' }} />
           {/* Reports admins share with committee members who have a current check, read only. */}
           <Stack.Protected guard={can.reports}>

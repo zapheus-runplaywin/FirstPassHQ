@@ -323,14 +323,17 @@ describe('members waiting for approval', () => {
 describe('parents and guardians', () => {
   it('get a consent card for each child, and the consent to-do', async () => {
     await openHome('guardian');
+    // And can add another child with their code.
+    expect(screen.getByText('Add another child')).toBeTruthy();
     expect(screen.getByText(ITEMS.consent)).toBeTruthy();
     expect(screen.getByText('Check-ins: not given · Injuries: not given')).toBeTruthy();
     expect(screen.getByText('Give consent for Sample Child')).toBeTruthy();
   });
 
-  it('with no child linked yet, see only the note that an admin will link them', async () => {
+  it('with no child linked yet, are asked for their child’s link code, and see nothing of a child', async () => {
     await openHome({ ...personas.guardian, rpcs: { my_child_consents: [] } });
-    expect(screen.getByText(/A club admin will link you to your athlete/)).toBeTruthy();
+    expect(screen.getByText(/^Nobody yet\. Enter your child’s link code below/)).toBeTruthy();
+    expect(screen.getByText('Enter your child’s code')).toBeTruthy();
     for (const item of ['consent', 'whatsChanged', 'recordViews', 'childAttendance'] as Item[]) {
       expect(screen.queryByText(ITEMS[item])).toBeNull();
     }
