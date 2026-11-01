@@ -106,15 +106,17 @@ jobs:
 
   # The extra test clubs in the development setup (docs/environments.md), each
   # with its own project. They follow the test project, and the live deploy
-  # doesn't wait for them, so a paused one never holds it up.
+  # doesn't wait for them, so a paused one never holds it up. Off for now: they
+  # only run when the TEST_CLUBS repository variable lists them, such as [2, 3].
   deploy-test-clubs:
     needs: [approve-data-loss, deploy-test]
-    if: ${{ !cancelled() && (needs.approve-data-loss.result == 'success' || needs.approve-data-loss.result == 'skipped') && needs.deploy-test.result == 'success' }}
+    if: ${{ vars.TEST_CLUBS != '' && !cancelled() && (needs.approve-data-loss.result == 'success' || needs.approve-data-loss.result == 'skipped') && needs.deploy-test.result == 'success' }}
     runs-on: ubuntu-24.04
     strategy:
       fail-fast: false
       matrix:
-        club: [2, 3]
+        # The fallback is never used: without TEST_CLUBS the job is skipped.
+        club: ${{ fromJSON(vars.TEST_CLUBS || '["off"]') }}
     name: deploy-test-club-${{ matrix.club }}
     steps:
       - name: Check test club ${{ matrix.club }} is set up

@@ -109,6 +109,15 @@ names the project, so no code changes:
 To try switching clubs, Expo Go can have up to two more test clubs, each with its own free project.
 They only exist on your computer: installed builds and updates never include them.
 
+**Off for now (1 November 2026).** Test clubs 2 and 3 were taken out while Supabase's free plan
+kept pausing club 2; they'll come back once FirstPass moves to Supabase Pro. No workflow touches
+them unless the `TEST_CLUBS` repository variable lists them, and the app only shows them when your
+`.env` has their values. To bring them back, set up the projects and secrets below, then add the
+repository variable `TEST_CLUBS` with the value `[2, 3]` (or `[2]` for one) under **Settings >
+Secrets and variables > Actions > Variables**, and run the three workflows once each.
+`scripts/test-workflow-test-clubs.py` checks in CI that every workflow keeps them behind that
+variable.
+
 ### 1. Create the projects
 
 1. A Supabase account has two free projects, so use another account (for example a second email).
@@ -126,8 +135,9 @@ Add these repository secrets, with `2` for the first project and `3` for the sec
 - `SUPABASE_TEST_2_PROJECT_ID`, `SUPABASE_TEST_2_DB_PASSWORD`, `SUPABASE_TEST_2_ACCESS_TOKEN`
 - `SUPABASE_TEST_3_PROJECT_ID`, `SUPABASE_TEST_3_DB_PASSWORD`, `SUPABASE_TEST_3_ACCESS_TOKEN`
 
-Both access tokens can be the same token. Then run **Deploy migrations**, **Deploy PlayHQ
-function** and **Purge expired injury records** once each with **Run workflow**. Database changes
+Both access tokens can be the same token. Add the repository variable `TEST_CLUBS` set to
+`[2, 3]`, then run **Deploy migrations**, **Deploy PlayHQ function** and **Purge expired injury
+records** once each with **Run workflow**. Database changes
 reach the test clubs after the test project. The live deploy doesn't wait for them, so a paused
 test club never holds it up; its job fails and says so.
 
