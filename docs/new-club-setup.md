@@ -1,8 +1,8 @@
-# Adding another club
+# Adding another club or association
 
-There is one FirstPass HQ app in the stores, and every club gets **its own Supabase project**
-(database, sign-in and file storage), so clubs never share member data. The app connects to one
-club at a time, picked by its **club code**:
+There is one FirstPass HQ app in the stores, and every club and every association gets **its own
+Supabase project** (database, sign-in and file storage), so they never share member data. The app
+connects to one at a time, picked by its **club code**:
 
 - The first open shows **Find your club**, where members type their club's code. A link such as
   `firstpasshq://club/HAWKS` fills it in. The app remembers the club after that.
@@ -15,7 +15,19 @@ club at a time, picked by its **club code**:
 The club the build is made with comes from the build's Supabase settings
 (`EXPO_PUBLIC_SUPABASE_URL` and `EXPO_PUBLIC_SUPABASE_ANON_KEY`), with code `THUNDER` and name
 West Coast Thunder unless `EXPO_PUBLIC_CLUB_CODE` and `EXPO_PUBLIC_CLUB_NAME` say otherwise.
-Every other club is listed in `src/constants/clubs.ts`.
+Up to two more, live clubs or associations, come from the EAS environment
+(`EXPO_PUBLIC_CLUB_2_*` and `EXPO_PUBLIC_CLUB_3_*`, read by `src/constants/clubs.ts`).
+
+**An association is set up exactly like a club.** It has its own members, eight roles, squads and
+teams (for example its state or representative teams), and everything else a club has. Being a
+member, committee member or admin of an association gives no access to any club, and the other way
+round: each sign-in only reaches its own project. Someone in both joins each one and is approved by
+each one's admin. After setup, the association's admin turns on **Affiliation records** in Club
+settings and chooses **Association** and its tier under **Administration > Affiliation**.
+
+For example, WCMMNA (West Coast Men's & Mixed Netball Association) is set up this way as club 2,
+with code `WCMMNA`, and West Coast Thunder stays the club the build is made with, keeping its
+squads and teams.
 
 ## 1. Create the club's Supabase project
 
@@ -32,13 +44,10 @@ as the other clubs, and add this project's callback address to it.
 
 ## 2. Bring its database up to date
 
-The **Deploy migrations** workflow only deploys to West Coast Thunder's projects so far. For a new
-club, apply the migrations with the Supabase CLI from a copy of the repository:
-
-```bash
-supabase link --project-ref <the club's project id>
-FIRST_RUN_OK=true scripts/deploy-migrations.sh
-```
+Follow [More clubs and associations](environments.md#more-clubs-and-associations): add its GitHub
+secrets as club `2` (or `3`), list it in the `LIVE_CLUBS` repository variable, and run **Deploy
+migrations** by hand with **New live project** ticked. From then on every database change and
+function deploys to it after the test project, like West Coast Thunder's.
 
 A new club starts with no squads or teams. The first time the club's admin opens **Squads and
 teams** (step 5), they choose a starting setup: **AMMNA State Teams** (West Coast Thunder's five
@@ -47,20 +56,21 @@ squads, squads on), **WA Netball League** (Mens, Opens, 21 & Under and Futures t
 
 ## 3. Add the club to the app
 
-In `src/constants/clubs.ts`, add the club to `OtherClubs`:
+Give the EAS `preview` and `production` environments its code, name, URL and public key, with `2`
+for the first extra club and `3` for the second:
 
-```ts
-{
-  code: 'HAWKS', // what members type: capitals and digits
-  name: 'Hawks Netball Club',
-  supabaseUrl: 'https://<project id>.supabase.co',
-  anonKey: '<Project Settings > API: the anon public key>',
-},
+```bash
+for name in CODE:WCMMNA "NAME:West Coast Men's & Mixed Netball Association" \
+    URL:https://<project id>.supabase.co "ANON_KEY:<Project Settings > API: the anon public key>"; do
+  npx eas-cli@latest env:set --environment preview --environment production \
+    --name "EXPO_PUBLIC_CLUB_2_${name%%:*}" --value "${name#*:}" --visibility plaintext
+done
 ```
 
-The public key is meant to be public: it only reaches what the database's security rules allow.
-Merge it and publish an update (`scripts/publish-update.sh production "Add Hawks"`). No new store
-build is needed.
+The code is what members type (capitals and digits). The public key is meant to be public: it only
+reaches what the database's security rules allow. Then publish an update
+(`scripts/publish-update.sh production "Add WCMMNA"`), which builds these values in and refuses to
+publish if one is missing from the result. No code change or new store build is needed.
 
 ## 4. Make the first admin
 

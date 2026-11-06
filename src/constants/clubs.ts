@@ -1,7 +1,8 @@
 /**
- * The clubs this app can connect to. Every club has its own Supabase project, so
- * clubs never share a database: the app connects to one club at a time, picked by
- * its club code. See docs/new-club-setup.md.
+ * The clubs and associations this app can connect to. Each has its own Supabase
+ * project, so they never share a database: the app connects to one at a time,
+ * picked by its code, and a sign-in to one never reaches another. An association
+ * is set up exactly like a club. See docs/new-club-setup.md.
  */
 export type ClubEntry = {
   /** What members type to find the club, and the end of its join link. Capitals and digits. */
@@ -36,8 +37,29 @@ const HomeClub: ClubEntry = {
   anonKey: homeKey,
 };
 
-/** Every other club, each with its own Supabase project. */
-const OtherClubs: ClubEntry[] = [];
+/**
+ * Every other club or association, each with its own Supabase project, from
+ * the EAS environment (docs/environments.md "More clubs and associations").
+ * Installed builds and updates take the live projects from the production
+ * environment and the test ones from preview. Each value is read by name so
+ * Expo can build it in.
+ */
+const OtherClubs = [
+  {
+    code: process.env.EXPO_PUBLIC_CLUB_2_CODE,
+    name: process.env.EXPO_PUBLIC_CLUB_2_NAME,
+    supabaseUrl: process.env.EXPO_PUBLIC_CLUB_2_URL,
+    anonKey: process.env.EXPO_PUBLIC_CLUB_2_ANON_KEY,
+  },
+  {
+    code: process.env.EXPO_PUBLIC_CLUB_3_CODE,
+    name: process.env.EXPO_PUBLIC_CLUB_3_NAME,
+    supabaseUrl: process.env.EXPO_PUBLIC_CLUB_3_URL,
+    anonKey: process.env.EXPO_PUBLIC_CLUB_3_ANON_KEY,
+  },
+].filter(
+  (club): club is ClubEntry => !!(club.code && club.name && club.supabaseUrl && club.anonKey),
+);
 
 /**
  * Extra test clubs for development, from .env only (docs/environments.md). Each

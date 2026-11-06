@@ -235,6 +235,10 @@ picked. The app remembers your club after that. If the app is already set up for
 another club's link, it asks **Switch to (that club)?** first; tap **Stay with** your club if you
 didn't expect it. A link for a club the app doesn't know shows **Club not found**.
 
+An association that uses FirstPass HQ, such as WCMMNA (West Coast Men's & Mixed Netball
+Association), has its own code too and works the same way: it has its own members, squads and
+teams, kept apart from every club's.
+
 <img src="user-guide/club-code.png" width="210" alt="Find your club: the club code screen">
 
 ### Sign in with Google
@@ -248,9 +252,10 @@ If you picked the wrong club, tap **Change club** under the button.
 
 ### Belonging to more than one club
 
-If you're in two clubs that both use FirstPass HQ, tap **Switch club** at the foot of the home
-screen and enter the other club's code. You ask to join each club separately, and each club only
-sees what you do in that club. After that, **Switch club** lists **Your clubs**: tap one to go
+If you're in two clubs that both use FirstPass HQ, or in a club and its association (for example
+a West Coast Thunder coach who also coaches a WCMMNA team), tap **Switch club** at the foot of the
+home screen and enter the other code. You ask to join each one separately, and each only sees what
+you do there: being in an association gives no access to any club, and the other way round. After that, **Switch club** lists **Your clubs**: tap one to go
 straight back to it. The app stays signed in to each club, so switching doesn't need another
 sign-in.
 
@@ -3106,7 +3111,8 @@ yet](#14-not-in-the-app-yet)).
 When **Affiliation records** is on in Club settings, **Administration > Affiliation** keeps what
 your association or Netball WA asks for each year. The checklist follows Netball WA's Membership
 Policy (NWA-POL-07): section 4 for affiliated clubs and section 3 for associations. Only admins see
-it.
+it. An association uses its own code and keeps its own records in FirstPass HQ, separate from its
+clubs' (see [Find your club](#find-your-club)), and sends its own return to Netball WA.
 
 1. Under **This club is**, choose **Affiliated club** (a club whose teams play in a member
    association's competition) or **Association** (a member association or member entity of
@@ -3936,6 +3942,10 @@ Working With Children Check, and another admin must do it.
 
 ### For the governing body and auditors
 
+- **Every club and association keeps its own records.** Each has its own database, members and
+  admins. An association's admins and committee can't see any club's members or children's
+  records, and a club can't see the association's. The yearly affiliation return holds club facts
+  and counts only.
 - **Two-deep messaging is enforced by the app**, not just by policy: no direct messages or replies,
   guardians copied on everything to and from a child, and admins can see every message.
 - **Records are kept with who did what and when**: how each guardian was verified and what was

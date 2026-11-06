@@ -104,6 +104,29 @@ names the project, so no code changes:
 5. Installed apps keep the old address until they get an update (`scripts/publish-update.sh`) or a
    new build.
 
+## More clubs and associations
+
+Every live club or association other than West Coast Thunder has its own Supabase project, listed
+as club `2` or `3` (WCMMNA is club 2). The steps to create the project and make its first admin are
+in [Adding another club or association](new-club-setup.md). For GitHub to deploy to it:
+
+1. Add these repository secrets, with `2` for the first extra club and `3` for the second:
+   - `SUPABASE_CLUB_2_PROJECT_ID` and `SUPABASE_CLUB_2_DB_PASSWORD`
+   - `SUPABASE_CLUB_2_ACCESS_TOKEN`, only when the project is in another Supabase organisation
+     (otherwise `SUPABASE_ACCESS_TOKEN` is used)
+   - `SUPABASE_CLUB_2_PURGE_SECRET`: a long random value, also set on the project with
+     `npx supabase secrets set --project-ref <ref> PURGE_SECRET=<value>`
+2. Add the repository variable `LIVE_CLUBS` under **Settings > Secrets and variables > Actions >
+   Variables**, set to `[2]` (or `[2, 3]`).
+3. Run **Deploy migrations** by hand with **New live project** ticked, then **Deploy PlayHQ
+   function** and **Purge expired injury records** once each.
+
+After that, database changes reach every club listed in `LIVE_CLUBS` after the test project, at
+the same time as West Coast Thunder's, and the daily purge runs in each. Each club is its own job:
+one that fails or is paused never holds up another. `scripts/test-workflow-live-clubs.py` checks in
+CI that every deploy workflow includes them. The **Data checks** workflow only checks West Coast
+Thunder's test and live databases so far.
+
 ## More test clubs
 
 To try switching clubs, Expo Go can have up to two more test clubs, each with its own free project.
