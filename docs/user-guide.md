@@ -1516,7 +1516,8 @@ last played game.
   team can. Until a team goal is set, "Set team goals for …" stays in your to-do list.
 - The team's athletes and their parents or guardians see the team goals above each
   athlete's own goals. Team goals are for the team's coaches and athletes: its managers and
-  physios don't see them. Admins can read them and the comments, from the team's page.
+  physios don't see them. Admins can read them and the comments, from the team's page. A coach
+  sees and comments on team goals only while their check is current and they aren't stood down.
 - The team's athletes and coaches can comment on a team goal, before or after the game, so every
   athlete has a say. Their comments show under each goal, and you can add your own with
   **Comment**. Coaches can **Remove** any comment on their team's goals; athletes can remove only
@@ -3481,7 +3482,7 @@ once saved, only replaced or removed, and anyone who gets it wrong five times in
 | Game goals and reflections | The athlete, their guardians and their coaches. Only the athlete and their coaches set goals, and only the athlete reflects; guardians just read them. The committee, managers, physios and admins don't see them. |
 | Season KPIs, progress and reviews | An athlete's: the athlete, their coaches in that squad or team, their parents or guardians (read only, until 18) and admins (read only). Not teammates, the committee or physios. A coach's or manager's: them, the committee and admins, and an assistant coach's head coach. Only those who set KPIs change them, record results and write reviews; the person records progress, confirms reviews and adds their own view. A coach's or manager's KPIs and reviews are kept under their name if they delete their account, and stay on the admin report. |
 | Live game stats         | Admins and statisticians (while their statistician role isn't paused for a check): every game the club records. The coaches and managers of the game's squad or team see the team's games at every stage and who has paired with each, and the stats once they pair with its code in FirstPass Vision. Athletes, guardians, physios and the committee don't see them. |
-| Team goals              | The team's athletes, their guardians, its coaches and admins. Only its coaches set and review them. Athletes and coaches in the team can comment; guardians and admins read the comments. Managers and physios placed in the team don't see them. |
+| Team goals              | The team's athletes, their guardians, its coaches (while their check is current and they aren't stood down) and admins. Only its coaches set and review them. Athletes and coaches in the team can comment; guardians and admins read the comments. Managers and physios placed in the team don't see them. |
 | Integrity training certificates | The member, their parents or guardians, the committee and admins. Coaches, managers and physios don't see them. Certificates can't be changed or removed once sent. |
 | Attendance records      | The committee and admins see every session. Coaches and managers see their own groups' sessions, whole-club sessions and any they took themselves, while their check is current and they aren't stood down. An athlete sees their own marks, and their parents or guardians see them until the athlete turns 18; neither sees other athletes on the register. |
 | What's changed for a child | Their parents or guardians (until the child turns 18) and admins: adults joining or leaving the child's squads and teams, the child's own group changes, guardian links, consents and shared injury documents. A stand-down shows only as the adult leaving. |
@@ -3637,6 +3638,11 @@ Working With Children Check, and another admin must do it.
   the committee checks date if none is recorded, they stop seeing under 18s' injuries and
   accepting their clearances until a check, an application or a parent volunteer exemption is
   recorded. An exemption with a reason doesn't count.
+- **A child's injuries stay protected after they leave.** When a child's account is deleted,
+  their injury records are kept for the club's period, and their date of birth is kept with them.
+  The same rules still apply: only screened committee members and admins with a current check see
+  them, and coaches and physios don't. If the app can't tell how old a departed athlete was, it
+  treats them as under 18.
 
 ### For parents and guardians
 
@@ -3763,7 +3769,8 @@ Working With Children Check, and another admin must do it.
   events as overnight, so the club makes sure a parent volunteer has a check before a tour.
 - **Your role pauses the day after your check expires**, and comes back when an admin records the
   renewed check. While it's paused the database closes your groups' rosters, calendars, fixtures,
-  attendance and plans; they aren't only hidden on the screen. Messages are hidden from the screen
+  attendance, plans, team goals and the athletes' comments on them; they aren't only hidden on the
+  screen. Messages are hidden from the screen
   while your check has lapsed, and closed at the database too while you're stood down. Admins are
   reminded 60 days ahead, and 60 days before a parent or under-18 exemption ends.
 - **Helping for a day still needs a check.** WA has no exemption for a few hours or a day, and
