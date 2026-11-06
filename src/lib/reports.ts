@@ -5,13 +5,8 @@ import { Platform } from 'react-native';
 import {
   affiliationCriteria,
   isThisYear,
-  memberTypeLabels,
-  officeLabels,
-  officesFor,
   registrationsToCheck,
-  tierLabels,
   type Affiliation,
-  type Officer,
   type Registration,
 } from '@/lib/affiliation';
 import { formatDate, isMinor } from '@/lib/age';
@@ -1148,40 +1143,11 @@ function checklistSection(criteria: ReturnType<typeof affiliationCriteria>): Rep
       ],
       flag: c.need === 'required' && !c.met,
     })),
-    empty: 'Choose the association’s tier to see the checklist.',
   };
 }
 
-function officersSection(affiliation: Affiliation, officers: Officer[]): ReportSection {
-  return {
-    title: 'Officers and safeguarding induction',
-    columns: [
-      { label: 'Office', width: 1.6 },
-      { label: 'Name', width: 1.2 },
-      { label: 'Induction completed', width: 1 },
-    ],
-    rows: officesFor(affiliation.tier).map((office) => {
-      const officer = officers.find((o) => o.office === office);
-      return {
-        cells: [
-          officeLabels[office],
-          officer?.name ?? 'Nobody named',
-          officer?.inducted_on ? formatDateString(officer.inducted_on) : 'Not recorded',
-        ],
-        flag: !officer?.inducted_on,
-      };
-    }),
-    empty: 'Choose the association’s tier to see its officers.',
-  };
-}
-
-export function affiliationReport(
-  affiliation: Affiliation,
-  officers: Officer[],
-  registrations: Registration[],
-): Report {
-  const criteria = affiliationCriteria(affiliation, officers);
-  const isClub = affiliation.member_type === 'club';
+export function affiliationReport(affiliation: Affiliation, registrations: Registration[]): Report {
+  const criteria = affiliationCriteria(affiliation);
   const season = affiliation.season;
   const contacts = [affiliation.primary_contact_1_name, affiliation.primary_contact_2_name].filter(
     Boolean,
@@ -1193,9 +1159,7 @@ export function affiliationReport(
 
   return {
     title: 'Affiliation',
-    subtitle: `${memberTypeLabels[affiliation.member_type]}${
-      affiliation.tier && !isClub ? `, ${tierLabels[affiliation.tier]}` : ''
-    }. Criteria from Netball WA’s Membership Policy (NWA-POL-07).`,
+    subtitle: 'Affiliated club. Criteria from Netball WA’s Membership Policy (NWA-POL-07).',
     stats: [
       { label: 'Required items done', value: `${criteria.filter((c) => c.need === 'required' && c.met).length} of ${criteria.filter((c) => c.need === 'required').length}` },
       ...(season !== null
@@ -1215,14 +1179,14 @@ export function affiliationReport(
           { cells: ['Affiliated with', affiliation.affiliated_with ?? 'Not recorded'] },
           {
             cells: [
-              isClub ? 'Last registered' : 'Annual agreement signed',
+              'Last registered',
               affiliation.registered_on ? formatDateString(affiliation.registered_on) : 'Not recorded',
             ],
             flag: !isThisYear(affiliation.registered_on),
           },
           {
             cells: ['Primary contacts', contacts.length ? contacts.join('\n') : 'None named'],
-            flag: isClub && contacts.length < 2,
+            flag: contacts.length < 2,
           },
           ...(season !== null
             ? [{ cells: ['Teams this season', `${affiliation.team_count} in ${seasonLabel(season)}`] }]
@@ -1231,7 +1195,6 @@ export function affiliationReport(
         ],
       },
       checklistSection(criteria),
-      ...(!isClub ? [officersSection(affiliation, officers)] : []),
       {
         title: season !== null ? `PlayHQ registrations ${seasonLabel(season)}` : 'PlayHQ registrations',
         columns: [
@@ -1276,7 +1239,6 @@ export type ReturnSafeguarding = {
 export function affiliationReturn({
   clubName,
   affiliation,
-  officers,
   contacts,
   safeguarding,
   wwcc,
@@ -1285,7 +1247,6 @@ export function affiliationReturn({
 }: {
   clubName: string;
   affiliation: Affiliation;
-  officers: Officer[];
   /** The primary contacts, in order, with the email the association can use. */
   contacts: { name: string; email: string | null }[];
   safeguarding: ReturnSafeguarding;
@@ -1295,8 +1256,7 @@ export function affiliationReturn({
   training: { season: string; stats: Report['stats'] } | null;
   today?: Date;
 }): Report {
-  const criteria = affiliationCriteria(affiliation, officers, today);
-  const isClub = affiliation.member_type === 'club';
+  const criteria = affiliationCriteria(affiliation, today);
   const season = affiliation.season;
   const required = criteria.filter((c) => c.need === 'required');
   const done = required.filter((c) => c.met).length;
@@ -1311,9 +1271,7 @@ export function affiliationReturn({
 
   return {
     title: 'Affiliation return',
-    subtitle: `${clubName}: ${memberTypeLabels[affiliation.member_type].toLowerCase()}${
-      affiliation.tier && !isClub ? `, ${tierLabels[affiliation.tier]}` : ''
-    }, as at ${formatDateString(toDateString(today))}. Criteria from Netball WA’s Membership Policy (NWA-POL-07).`,
+    subtitle: `${clubName}: affiliated club, as at ${formatDateString(toDateString(today))}. Criteria from Netball WA’s Membership Policy (NWA-POL-07).`,
     stats: [
       { label: 'Required items done', value: `${done} of ${required.length}` },
       ...(season !== null
@@ -1338,7 +1296,7 @@ export function affiliationReturn({
           { cells: ['Affiliated with', affiliation.affiliated_with ?? 'Not recorded'] },
           {
             cells: [
-              isClub ? 'Last registered' : 'Annual agreement signed',
+              'Last registered',
               affiliation.registered_on ? formatDateString(affiliation.registered_on) : 'Not recorded',
             ],
             flag: !isThisYear(affiliation.registered_on, today),
@@ -1355,7 +1313,6 @@ export function affiliationReturn({
         empty: 'None named.',
       },
       checklistSection(criteria),
-      ...(!isClub ? [officersSection(affiliation, officers)] : []),
       {
         title: season !== null ? `PlayHQ registrations ${seasonLabel(season)}` : 'PlayHQ registrations',
         note: 'Athletes, coaches and managers in the season’s squads and teams, checked against PlayHQ by an admin.',

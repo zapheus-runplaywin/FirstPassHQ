@@ -8,7 +8,7 @@ import { ThemedText } from '@/components/themed-text';
 import { Card, ErrorText, PressableCard } from '@/components/ui';
 import { Spacing } from '@/constants/theme';
 import { useTheme } from '@/hooks/use-theme';
-import { type Affiliation, type Officer, type ReturnInfo } from '@/lib/affiliation';
+import { type Affiliation, type ReturnInfo } from '@/lib/affiliation';
 import { PROFILE_COLUMNS, useAuth } from '@/lib/auth';
 import { useClub } from '@/lib/club';
 import type { ClubPolicies } from '@/lib/consents';
@@ -30,7 +30,6 @@ import { seasonLabel, useTeams } from '@/lib/use-teams';
 
 type Data = {
   affiliation: Affiliation;
-  officers: Officer[];
   info: ReturnInfo | null;
   contacts: { name: string; email: string | null }[];
   safeguarding: ReturnSafeguarding;
@@ -57,10 +56,9 @@ export default function AffiliationReturnScreen() {
 
   const load = useCallback(async () => {
     try {
-      const [settings, officers, info, safeguarding, policies, wwccData, training] =
+      const [settings, info, safeguarding, policies, wwccData, training] =
         await Promise.all([
           supabase.rpc('admin_affiliation').maybeSingle(),
-          supabase.rpc('admin_affiliation_officers'),
           supabase.rpc('admin_affiliation_return').maybeSingle(),
           supabase.rpc('safeguarding_contacts').maybeSingle(),
           supabase.rpc('club_policies').maybeSingle(),
@@ -85,7 +83,6 @@ export default function AffiliationReturnScreen() {
         .map((m) => ({ name: memberName(m), email: m.email }));
       setData({
         affiliation,
-        officers: (officers.data as Officer[] | null) ?? [],
         info: info.data as ReturnInfo | null,
         contacts,
         safeguarding: {
@@ -216,7 +213,6 @@ export default function AffiliationReturnScreen() {
           report={affiliationReturn({
             clubName: club.name,
             affiliation: data.affiliation,
-            officers: data.officers,
             contacts: data.contacts,
             safeguarding: data.safeguarding,
             wwcc: includeWwcc ? data.wwcc : null,

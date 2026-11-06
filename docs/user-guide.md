@@ -200,7 +200,7 @@ Surveys, Captains' polls, Awards, Game goals and Integrity training for the whol
 they're off unless an admin turns them on. Training load flags give coaches prompts to talk with an
 athlete from the sessions they log (see [Training load](#training-load)). Season KPIs are for a club that sets its coaches,
 managers and athletes measures for the season (see [Season KPIs](#season-kpis)); Affiliation
-records are for a club or association that reports to its association or Netball WA (see
+records are for a club that reports to its member association and Netball WA (see
 [Affiliation](#affiliation)); the registers keep the club's policies with their owners and review
 dates, and each season's conflict-of-interest declarations (see [Policy and conflict
 registers](#policy-and-conflict-registers)).
@@ -2970,8 +2970,7 @@ everyone ever stood down, newest first, with the
   teams it counts the athletes marked on their registers in the period. It shows reasons only, never the details
   people typed.
 - **Affiliation** (when Affiliation records are on): the club's affiliation details, the
-  checklist with required items not done in red, an association's officers and when each
-  completed the safeguarding induction, and every athlete, coach and manager's PlayHQ
+  checklist with required items not done in red, and every athlete, coach and manager's PlayHQ
   registration this season, not registered and still to check first.
 - **Session plans** (when Session plans are on): pick the **Period** (last 3 months to start, last
   4 weeks, this season or **Choose dates**) and the **Squads and teams**. **By squad or team** shows
@@ -3050,8 +3049,8 @@ so leave them filled in.
   "sweet spot") or **Off**, and whether to flag **Hours over age (under 18s)** (on to start,
   Jayanthi et al. 2015). Only values from published studies are offered, and **Sources** links
   them. Tap **Save training load flags**.
-- **Affiliation records**: off unless you turn it on. For a club or association that reports to
-  its association or Netball WA, it adds **Affiliation** to Administration and Reports (see
+- **Affiliation records**: off unless you turn it on. For a club that reports to its member
+  association and Netball WA, it adds **Affiliation** to Administration and Reports (see
   [Affiliation](#affiliation)). Only admins see it.
 - **Policy and conflict registers**: off unless you turn it on. It adds **Registers** to the home
   screen for the committee and admins, policy review to-dos for policy owners, and a to-do each
@@ -3104,33 +3103,23 @@ yet](#14-not-in-the-app-yet)).
 ### Affiliation
 
 When **Affiliation records** is on in Club settings, **Administration > Affiliation** keeps what
-your association or Netball WA asks for each year. The checklist follows Netball WA's Membership
-Policy (NWA-POL-07): section 4 for affiliated clubs and section 3 for associations. Only admins see
-it.
+your member association and Netball WA ask of an affiliated club each year. The checklist follows
+section 4 of Netball WA's Membership Policy (NWA-POL-07), for affiliated clubs. Only admins see it.
 
-1. Under **This club is**, choose **Affiliated club** (a club whose teams play in a member
-   association's competition) or **Association** (a member association or member entity of
-   Netball WA). An association also picks its **Tier**, from Tier 1 (450 or more members) to Tier 4
-   (a member entity).
-2. Fill in the **Details**: the **Incorporation number** (blank if not incorporated), who the club
-   is **Affiliated with**, and the day it **last registered with them** (for a club) or **signed
-   the annual agreement** (for an association), as DD/MM/YYYY. The number of teams this season is
-   shown, because a club with 5 or more teams must be incorporated. Under **Send affiliation
-   returns to**, enter the email address your association (or Netball WA) uses for affiliations.
-3. Choose two **Primary contacts**, two different adults the association and Netball WA can
+1. Fill in the **Details**: the **Incorporation number** (blank if not incorporated), the
+   association the club is **Affiliated with**, and the day it **last registered with them**, as
+   DD/MM/YYYY. The number of teams this season is shown, because a club with 5 or more teams must
+   be incorporated. Under **Send affiliation returns to**, enter the email address your
+   association uses for affiliations.
+2. Choose two **Primary contacts**, two different adults the association and Netball WA can
    contact. Their names and emails go in the affiliation return, so let them know.
-4. An association names its **Officers**: the President, the Association Development Officer and
-   the Association Umpire Development Officer, another committee member, or a single representative
-   for Tier 4, as its tier needs. Enter the day each completed Sport Integrity Australia's
-   **Safeguarding Children and Young People in Sport Induction**, and keep their certificates.
-5. The **Checklist** shows each criterion for your club or tier, marked **Required** or
+3. The **Checklist** shows each criterion for an affiliated club, marked **Required** or
    **Recommended**. Items the app can work out from what you've recorded show ✓ or ✗; tick the
-   rest yourself, such as following Netball Australia and Netball WA policies. Criteria that
-   don't apply to your tier aren't listed.
-6. Add any **Notes**, such as where the evidence is kept, and tap **Save**. The screen shows who
+   rest yourself, such as following Netball Australia and Netball WA policies.
+4. Add any **Notes**, such as where the evidence is kept, and tap **Save**. The screen shows who
    saved it last and when.
 
-A registration or agreement counts for a year, so it comes back on the checklist 12 months after
+A registration counts for a year, so it comes back on the checklist 12 months after
 the date you entered. Until every required item is done, your to-do list shows **Finish N
 affiliation items**.
 
@@ -3144,7 +3133,7 @@ so you can ask them to register.
 
 **Affiliation return.** Once a year, send your association a summary from **Affiliation >
 Affiliation return**. It shows exactly what will be sent: the details, the primary contacts and
-their emails, the checklist, an association's officers and inductions, PlayHQ registration counts,
+their emails, the checklist, PlayHQ registration counts,
 the club's safeguarding contacts and policy links, and counts from the Working With Children
 Checks and Integrity training reports. It names no member under 18 and has nothing about any
 child. Turn off **Working With Children Check counts** or **Integrity training counts** if your
@@ -3155,12 +3144,11 @@ or the download starts, and shows it on the Affiliation screen. Once you've ente
 return** whenever none has gone in the last year.
 
 The **Affiliation** report in Reports puts the details, the checklist (required items not done in
-red), the officers and their inductions, and the season's PlayHQ registrations into one PDF to
+red) and the season's PlayHQ registrations into one PDF to
 send to the association or keep for an audit.
 
-<img src="user-guide/affiliation-club.png" width="210" alt="Affiliation for an affiliated club: what kind of member it is and its details">
+<img src="user-guide/affiliation-club.png" width="210" alt="Affiliation for an affiliated club: its details">
 <img src="user-guide/affiliation-checklist.png" width="210" alt="An affiliated club's checklist, with one required item still to do">
-<img src="user-guide/affiliation-association.png" width="210" alt="Affiliation for a Tier 2 association: officers and their safeguarding induction">
 <img src="user-guide/affiliation-registrations.png" width="210" alt="PlayHQ registrations to check for the season">
 <img src="user-guide/admin-affiliation-todos.png" width="210" alt="Affiliation items and PlayHQ checks in an admin's to-do list">
 <img src="user-guide/affiliation-return.png" width="210" alt="The affiliation return, ready to send to the association">
@@ -3983,11 +3971,9 @@ Working With Children Check, and another admin must do it.
   legal advice on this** and treat injury records as covered until it has; the app is built to the
   Act's standards either way. Both assessments, with their reasons, are kept with the app's code
   and reviewed each year.
-- **Affiliation evidence in one place.** A club or association that turns on Affiliation records
-  keeps its primary contacts, incorporation, registration with its association and each season's
-  PlayHQ registrations, and an association records when its President and other officers
-  completed the Safeguarding Children and Young People in Sport Induction (see
-  [Affiliation](#affiliation)).
+- **Affiliation evidence in one place.** A club that turns on Affiliation records keeps its
+  primary contacts, incorporation, registration with its association and each season's PlayHQ
+  registrations (see [Affiliation](#affiliation)).
 - **Nothing about a child goes up to the association.** The yearly affiliation return holds the
   club's records and counts only (for example how many people need a Working With Children Check
   and how many are current). The app builds it, an admin sees exactly what it holds before sending

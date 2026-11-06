@@ -407,8 +407,6 @@ describe('Season KPIs', () => {
 
 describe('Affiliation', () => {
   const affiliation: Affiliation = {
-    member_type: 'club',
-    tier: null,
     incorporation_number: null,
     affiliated_with: 'Sample Association',
     registered_on: '2026-03-01',
@@ -430,7 +428,7 @@ describe('Affiliation', () => {
   it('loads this season’s registrations and exports the report', async () => {
     let asked: unknown = null;
     await open('admin/reports/affiliation', AffiliationReportScreen, {}, {
-      rpcs: { admin_affiliation: [affiliation], admin_affiliation_officers: [] },
+      rpcs: { admin_affiliation: [affiliation] },
       rpcHandlers: {
         admin_playhq_registrations: (args) => {
           asked = args;
@@ -453,7 +451,7 @@ describe('Affiliation', () => {
   it('doesn’t ask for registrations without a season', async () => {
     const asked = jest.fn(() => []);
     await open('admin/reports/affiliation', AffiliationReportScreen, {}, {
-      rpcs: { admin_affiliation: [{ ...affiliation, season: null }], admin_affiliation_officers: [] },
+      rpcs: { admin_affiliation: [{ ...affiliation, season: null }] },
       rpcHandlers: { admin_playhq_registrations: asked },
     });
     expect(asked).not.toHaveBeenCalled();
@@ -462,7 +460,7 @@ describe('Affiliation', () => {
 
   it('shows why the report didn’t load', async () => {
     await open('admin/reports/affiliation', AffiliationReportScreen, {}, {
-      rpcs: { admin_affiliation: [], admin_affiliation_officers: [] },
+      rpcs: { admin_affiliation: [] },
     });
     expect(screen.getByText('The report didn’t load. Try again.')).toBeTruthy();
     expect(screen.queryByText('Export PDF')).toBeNull();

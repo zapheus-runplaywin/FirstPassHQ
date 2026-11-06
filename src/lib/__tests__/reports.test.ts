@@ -10,7 +10,7 @@ import { File } from 'expo-file-system';
 import * as Sharing from 'expo-sharing';
 import { Platform } from 'react-native';
 
-import type { Affiliation, Officer, Registration } from '@/lib/affiliation';
+import type { Affiliation, Registration } from '@/lib/affiliation';
 import { formatDateString } from '@/lib/injuries';
 import {
   absenceBreakdown,
@@ -641,8 +641,6 @@ describe('award results', () => {
 describe('affiliation', () => {
   function affiliation(overrides: Partial<Affiliation> = {}): Affiliation {
     return {
-      member_type: 'club',
-      tier: null,
       incorporation_number: 'A1234567X',
       affiliated_with: 'Sample Netball Association',
       registered_on: '2026-03-01',
@@ -682,7 +680,7 @@ describe('affiliation', () => {
   ];
 
   describe('affiliationReport', () => {
-    const report = affiliationReport(affiliation(), [], registrations);
+    const report = affiliationReport(affiliation(), registrations);
 
     it('describes the club and the policy the criteria come from', () => {
       expect(report.title).toBe('Affiliation');
@@ -711,7 +709,6 @@ describe('affiliation', () => {
       const details = affiliationReport(
         affiliation({ registered_on: '2025-10-17', incorporation_number: null, affiliated_with: null, primary_contact_1_name: null, notes: 'Evidence in the shared drive' }),
         [],
-        [],
       ).sections[0];
       expect(cellsOf(details)).toEqual([
         ['Incorporation number', 'Not recorded'],
@@ -724,7 +721,7 @@ describe('affiliation', () => {
       expect(details.rows[2].flag).toBe(true);
     });
 
-    it('shows the checklist with required items not done in red, and no officers for a club', () => {
+    it('shows the checklist with required items not done in red, and no officers', () => {
       const checklist = report.sections[1];
       expect(checklist.title).toBe('Checklist');
       expect(checklist.columns.map((c) => c.label)).toEqual(['Item', 'Need', 'Done', 'How it’s known']);
@@ -748,27 +745,16 @@ describe('affiliation', () => {
       expect(regs.rows.map((r) => r.flag)).toEqual([true, true, false, false]);
     });
 
-    it('for an association, names its tier and lists its officers and their induction', () => {
-      const officers: Officer[] = [
-        { office: 'president', profile_id: 'p', name: 'Pres Sample', inducted_on: '2026-05-01' },
-        { office: 'ado', profile_id: 'a', name: 'Ado Sample', inducted_on: null },
-      ];
-      const assoc = affiliationReport(affiliation({ member_type: 'association', tier: 2 }), officers, []);
-      expect(assoc.subtitle).toBe('Association, Tier 2 (250 to 449). Criteria from Netball WA’s Membership Policy (NWA-POL-07).');
-      expect(cellsOf(assoc.sections[0])[2][0]).toBe('Annual agreement signed');
-      // An association isn't flagged for primary contacts.
-      expect(assoc.sections[0].rows[3].flag).toBe(false);
-      const officerSection = assoc.sections.find((s) => s.title === 'Officers and safeguarding induction')!;
-      expect(cellsOf(officerSection)).toEqual([
-        ['President', 'Pres Sample', day('2026-05-01')],
-        ['Association Development Officer', 'Ado Sample', 'Not recorded'],
-        ['Association Umpire Development Officer', 'Nobody named', 'Not recorded'],
-      ]);
-      expect(officerSection.rows.map((r) => r.flag)).toEqual([false, true, true]);
+    it('reports a record saved as an association earlier as a club, with no officers', () => {
+      // Association records were taken out on 6 November 2026.
+      const old = affiliationReport({ ...affiliation(), member_type: 'association', tier: 2 } as Affiliation, []);
+      expect(old.subtitle).toBe('Affiliated club. Criteria from Netball WA’s Membership Policy (NWA-POL-07).');
+      expect(cellsOf(old.sections[0])[2][0]).toBe('Last registered');
+      expect(old.sections.map((s) => s.title)).toEqual(['Details', 'Checklist', 'PlayHQ registrations 2026–27']);
     });
 
     it('has no season figures when there are no squads or teams', () => {
-      const none = affiliationReport(affiliation({ season: null }), [], []);
+      const none = affiliationReport(affiliation({ season: null }), []);
       expect(Object.keys(stats(none))).toEqual(['Required items done']);
       expect(none.sections[none.sections.length - 1].title).toBe('PlayHQ registrations');
       expect(none.sections[none.sections.length - 1].empty).toBe('Nobody is in a squad or team this season.');
@@ -783,7 +769,6 @@ describe('affiliation', () => {
     const ret = affiliationReturn({
       clubName: 'Sample Club',
       affiliation: affiliation({ primary_contact_2_name: 'Sam Contact', primary_contact_2_id: 'p2' }),
-      officers: [],
       contacts: [
         { name: 'Pat Contact', email: 'pat@example.test' },
         { name: 'Sam Contact', email: null },
@@ -866,8 +851,7 @@ describe('affiliation', () => {
       const without = affiliationReturn({
         clubName: 'Sample Club',
         affiliation: affiliation({ incorporation_number: null }),
-        officers: [],
-        contacts: [],
+          contacts: [],
         safeguarding: { contacts: null, policies: null, wwcOfficerName: 'Wes Officer' },
         wwcc: null,
         training: null,

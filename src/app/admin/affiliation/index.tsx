@@ -5,23 +5,15 @@ import { Platform, StyleSheet, Switch, View } from 'react-native';
 import { PersonPicker } from '@/components/person-picker';
 import { Screen } from '@/components/screen';
 import { ThemedText } from '@/components/themed-text';
-import { Button, Card, ChipGroup, ErrorText, PressableCard, TextField } from '@/components/ui';
+import { Button, Card, ErrorText, PressableCard, TextField } from '@/components/ui';
 import { Spacing } from '@/constants/theme';
 import { useTheme } from '@/hooks/use-theme';
 import { formatDate, isMinor, parseDate } from '@/lib/age';
 import {
   affiliationCriteria,
-  memberTypeLabels,
-  officeLabels,
-  officesFor,
   registrationsToCheck,
-  tierLabels,
   type Affiliation,
-  type MemberType,
-  type Office,
-  type Officer,
   type ReturnInfo,
-  type Tier,
 } from '@/lib/affiliation';
 import { PROFILE_COLUMNS } from '@/lib/auth';
 import { localDay } from '@/lib/reports';
@@ -29,19 +21,15 @@ import { supabase } from '@/lib/supabase';
 import type { Profile } from '@/lib/types';
 import { seasonLabel } from '@/lib/use-teams';
 
-type OfficerForm = { profileId: string | null; inductedOn: string };
-
 /**
- * The club's affiliation record for its association or Netball WA: what kind
- * of member it is, its details, primary contacts, officers and a checklist
- * of the governing body's criteria.
+ * The club's affiliation record for its member association: its details,
+ * primary contacts and a checklist of Netball WA's criteria for affiliated
+ * clubs.
  */
 export default function AffiliationScreen() {
   const theme = useTheme();
   const [saved, setSaved] = useState<Affiliation | null>(null);
   const [people, setPeople] = useState<Profile[]>([]);
-  const [memberType, setMemberType] = useState<MemberType>('club');
-  const [tier, setTier] = useState<Tier | null>(null);
   const [incorporation, setIncorporation] = useState('');
   const [affiliatedWith, setAffiliatedWith] = useState('');
   const [registeredOn, setRegisteredOn] = useState('');
@@ -51,15 +39,13 @@ export default function AffiliationScreen() {
   const [notes, setNotes] = useState('');
   const [returnInfo, setReturnInfo] = useState<ReturnInfo | null>(null);
   const [returnEmail, setReturnEmail] = useState('');
-  const [officers, setOfficers] = useState<Partial<Record<Office, OfficerForm>>>({});
   const [busy, setBusy] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [notice, setNotice] = useState<string | null>(null);
 
   const load = useCallback(async () => {
-    const [settingsResult, officersResult, peopleResult, returnResult] = await Promise.all([
+    const [settingsResult, peopleResult, returnResult] = await Promise.all([
       supabase.rpc('admin_affiliation').maybeSingle(),
-      supabase.rpc('admin_affiliation_officers'),
       supabase.from('profiles').select(PROFILE_COLUMNS).eq('status', 'approved').order('full_name'),
       supabase.rpc('admin_affiliation_return').maybeSingle(),
     ]);
@@ -69,8 +55,6 @@ export default function AffiliationScreen() {
     }
     const a = settingsResult.data as Affiliation | null;
     setSaved(a);
-    setMemberType(a?.member_type ?? 'club');
-    setTier(a?.tier ?? null);
     setIncorporation(a?.incorporation_number ?? '');
     setAffiliatedWith(a?.affiliated_with ?? '');
     setRegisteredOn(formatDate(a?.registered_on));
@@ -81,14 +65,6 @@ export default function AffiliationScreen() {
     const info = returnResult.data as ReturnInfo | null;
     setReturnInfo(info);
     setReturnEmail(info?.return_email ?? '');
-    setOfficers(
-      Object.fromEntries(
-        ((officersResult.data as Officer[] | null) ?? []).map((o) => [
-          o.office,
-          { profileId: o.profile_id, inductedOn: formatDate(o.inducted_on) },
-        ]),
-      ),
-    );
     // The same rule as the database: approved adults who aren't stood down.
     setPeople(
       ((peopleResult.data as Profile[] | null) ?? []).filter(
@@ -103,13 +79,10 @@ export default function AffiliationScreen() {
     }, [load]),
   );
 
-  const offices = memberType === 'association' ? officesFor(tier) : [];
   // The checklist follows what's on screen, so it updates before saving.
   const criteria = saved
     ? affiliationCriteria(
         {
-          member_type: memberType,
-          tier,
           incorporation_number: incorporation,
           affiliated_with: affiliatedWith,
           registered_on: parseDate(registeredOn) ?? null,
@@ -118,50 +91,20 @@ export default function AffiliationScreen() {
           checks,
           team_count: saved.team_count,
         },
-        offices
-          .map((office) => ({ office, form: officers[office] }))
-          .filter(({ form }) => !!form?.profileId)
-          .map(({ office, form }) => ({
-            office,
-            profile_id: form!.profileId!,
-            name: '',
-            inducted_on: parseDate(form!.inductedOn) ?? null,
-          })),
       )
     : [];
   const missing = criteria.filter((c) => c.need === 'required' && !c.met).length;
-
-  function setOfficer(office: Office, change: Partial<OfficerForm>) {
-    const current = officers[office] ?? { profileId: null, inductedOn: '' };
-    setOfficers({ ...officers, [office]: { ...current, ...change } });
-  }
 
   async function save() {
     setError(null);
     setNotice(null);
     const registered = parseDate(registeredOn);
     if (registered === undefined) {
-      setError(
-        memberType === 'club'
-          ? 'Enter the day the club registered as DD/MM/YYYY.'
-          : 'Enter the day the agreement was signed as DD/MM/YYYY.',
-      );
-      return;
-    }
-    for (const office of offices) {
-      if (parseDate(officers[office]?.inductedOn ?? '') === undefined) {
-        setError(`Enter the ${officeLabels[office]}’s induction date as DD/MM/YYYY.`);
-        return;
-      }
-    }
-    if (memberType === 'association' && !tier) {
-      setError('Choose the association’s tier.');
+      setError('Enter the day the club registered as DD/MM/YYYY.');
       return;
     }
     setBusy(true);
     const { error: saveError } = await supabase.rpc('admin_set_affiliation', {
-      p_member_type: memberType,
-      p_tier: tier,
       p_incorporation_number: incorporation,
       p_affiliated_with: affiliatedWith,
       p_registered_on: registered,
@@ -177,18 +120,6 @@ export default function AffiliationScreen() {
       });
       failed = emailError?.message ?? null;
     }
-    for (const office of failed ? [] : offices) {
-      const form = officers[office];
-      const { error: officerError } = await supabase.rpc('admin_set_affiliation_officer', {
-        p_office: office,
-        p_profile_id: form?.profileId ?? null,
-        p_inducted_on: form?.profileId ? (parseDate(form.inductedOn) ?? null) : null,
-      });
-      if (officerError) {
-        failed = `${officeLabels[office]}: ${officerError.message}`;
-        break;
-      }
-    }
     setBusy(false);
     if (failed) {
       setError(failed);
@@ -203,35 +134,10 @@ export default function AffiliationScreen() {
   return (
     <Screen>
       <ThemedText type="small" themeColor="textSecondary">
-        Keep the records your association or Netball WA asks for each year. The checklist follows
-        Netball WA’s Membership Policy. Only admins see this.
+        Keep the records your member association and Netball WA ask for each year. The checklist
+        follows Netball WA’s Membership Policy for affiliated clubs. Only admins see this.
       </ThemedText>
 
-      <ChipGroup
-        label="This club is"
-        options={(['club', 'association'] as MemberType[]).map((value) => ({
-          value,
-          label: memberTypeLabels[value],
-        }))}
-        selected={[memberType]}
-        onToggle={setMemberType}
-      />
-      <ThemedText type="small" themeColor="textSecondary">
-        {memberType === 'club'
-          ? 'A club whose teams play in a member association’s competition.'
-          : 'A member association or member entity of Netball WA, with affiliated clubs.'}
-      </ThemedText>
-      {memberType === 'association' ? (
-        <ChipGroup
-          label="Tier"
-          options={([1, 2, 3, 4] as Tier[]).map((value) => ({
-            value: String(value),
-            label: tierLabels[value],
-          }))}
-          selected={tier ? [String(tier)] : []}
-          onToggle={(value) => setTier(Number(value) as Tier)}
-        />
-      ) : null}
 
       <View style={styles.group}>
         <ThemedText type="smallBold">Details</ThemedText>
@@ -247,15 +153,11 @@ export default function AffiliationScreen() {
           label="Affiliated with"
           value={affiliatedWith}
           onChangeText={setAffiliatedWith}
-          placeholder={memberType === 'club' ? 'Your member association' : 'Netball WA'}
+          placeholder="Your member association"
           maxLength={120}
         />
         <TextField
-          label={
-            memberType === 'club'
-              ? 'Last registered with them (DD/MM/YYYY)'
-              : 'Annual agreement signed (DD/MM/YYYY)'
-          }
+          label="Last registered with them (DD/MM/YYYY)"
           value={registeredOn}
           onChangeText={setRegisteredOn}
           placeholder="DD/MM/YYYY"
@@ -300,45 +202,13 @@ export default function AffiliationScreen() {
         />
       </View>
 
-      {offices.length > 0 ? (
-        <View style={styles.group}>
-          <ThemedText type="smallBold">Officers</ThemedText>
-          <ThemedText type="small" themeColor="textSecondary">
-            Who holds each office, and the day they completed Sport Integrity Australia’s
-            Safeguarding Children and Young People in Sport Induction.
-          </ThemedText>
-          {offices.map((office) => (
-            <View key={office} style={styles.group}>
-              <PersonPicker
-                label={officeLabels[office]}
-                people={people}
-                selected={officers[office]?.profileId ?? null}
-                onChange={(id) => setOfficer(office, { profileId: id })}
-              />
-              {officers[office]?.profileId ? (
-                <TextField
-                  label="Induction completed (DD/MM/YYYY)"
-                  value={officers[office]?.inductedOn ?? ''}
-                  onChangeText={(value) => setOfficer(office, { inductedOn: value })}
-                  placeholder="Blank if not yet"
-                  keyboardType="numbers-and-punctuation"
-                  maxLength={10}
-                />
-              ) : null}
-            </View>
-          ))}
-        </View>
-      ) : null}
-
       {saved ? (
         <View style={styles.group}>
           <ThemedText type="smallBold">Checklist</ThemedText>
           <ThemedText type="small" themeColor="textSecondary">
-            {criteria.length === 0
-              ? 'Choose the tier to see the checklist.'
-              : missing === 0
-                ? 'Every required item is done.'
-                : `${missing} required ${missing === 1 ? 'item' : 'items'} still to do. Tick the ones the app can’t see.`}
+            {missing === 0
+              ? 'Every required item is done.'
+              : `${missing} required ${missing === 1 ? 'item' : 'items'} still to do. Tick the ones the app can’t see.`}
           </ThemedText>
           {criteria.map((c) => (
             <Card key={c.key} style={styles.row}>

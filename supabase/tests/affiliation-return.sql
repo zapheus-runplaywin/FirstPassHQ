@@ -36,7 +36,7 @@ select pg_temp.works('a blank email clears it', $s$ select public.admin_set_affi
 select pg_temp.ok('cleared, the last return is still kept',
   (select return_email is null and last_sent_to = 'affiliations@coastal.org.au' from public.admin_affiliation_return()), true);
 select pg_temp.ok('the rest of the affiliation record is untouched',
-  (select member_type = 'club' from public.admin_affiliation()), true);
+  (select count(*) = 1 and bool_and(incorporation_number is null) from public.admin_affiliation()), true);
 select pg_temp.ok('anon can''t run the functions',
   (select not has_function_privilege('anon', 'public.admin_affiliation_return()', 'execute')
       and not has_function_privilege('anon', 'public.admin_log_affiliation_return(int)', 'execute')), true);

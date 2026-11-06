@@ -5,9 +5,9 @@
  * "Affiliation").
  *
  * The rules: primary contacts are two different approved adults who aren't
- * stood down; dates are DD/MM/YYYY; an association picks its tier and names
- * the officers its tier needs, each with their induction date; the checklist
- * follows what's on screen before saving. The return names no member under
+ * stood down; dates are DD/MM/YYYY; the checklist is Netball WA's for
+ * affiliated clubs (association records were taken out on 6 November 2026)
+ * and follows what's on screen before saving. The return names no member under
  * 18 and records who sent it.
  */
 import { router } from 'expo-router';
@@ -23,7 +23,7 @@ import { supabase } from '@/lib/supabase';
 import type { Profile } from '@/lib/types';
 
 import { openScreen, personas, resetClub, setClubFeatures, settle, TEAM } from './helpers/harness';
-import { fieldGroup, flip, input, isDisabled, isOn, isSelected, pickPerson, type } from './helpers/settings-forms';
+import { fieldGroup, flip, input, isDisabled, isOn, pickPerson, type } from './helpers/settings-forms';
 
 jest.mock('@/lib/club', () => jest.requireActual('./helpers/harness').clubModuleMock());
 jest.mock('@/lib/club-choice', () => jest.requireActual('./helpers/harness').clubChoiceModuleMock());
@@ -71,8 +71,6 @@ const PEOPLE: Profile[] = [ADMIN, COMMITTEE, COACH, MINOR, STOOD_DOWN];
 
 function affiliation(extra: Partial<Affiliation> = {}): Affiliation {
   return {
-    member_type: 'club',
-    tier: null,
     incorporation_number: null,
     affiliated_with: 'Sample Netball Association',
     registered_on: '2026-03-01',
@@ -105,7 +103,7 @@ const RETURN_INFO = {
 
 async function openAffiliation(
   a: Affiliation | null = affiliation(),
-  { officers = [] as unknown[], info = RETURN_INFO as unknown, rpcErrors = {} as Record<string, string> } = {},
+  { info = RETURN_INFO as unknown, rpcErrors = {} as Record<string, string> } = {},
 ) {
   await openScreen(
     'admin',
@@ -118,7 +116,7 @@ async function openAffiliation(
     {},
     {
       tableHandlers: { profiles: (q) => (q.eq('status') === 'approved' ? PEOPLE : undefined) },
-      rpcs: { admin_affiliation: a, admin_affiliation_officers: officers, admin_affiliation_return: info },
+      rpcs: { admin_affiliation: a, admin_affiliation_return: info },
       rpcErrors,
     },
   );
@@ -144,7 +142,6 @@ async function offered(picker: string) {
 describe('the affiliation record', () => {
   it('starts from the saved record, with this season’s teams, registrations and last return', async () => {
     await openAffiliation();
-    expect(isSelected('Affiliated club')).toBe(true);
     expect(input('Affiliated with').props.value).toBe('Sample Netball Association');
     expect(input('Last registered with them (DD/MM/YYYY)').props.value).toBe('01/03/2026');
     expect(input('Send affiliation returns to (email)').props.value).toBe('affiliations@association.example');
@@ -189,8 +186,6 @@ describe('the affiliation record', () => {
     await save();
     expect(callsTo('admin_set_affiliation')).toEqual([
       {
-        p_member_type: 'club',
-        p_tier: null,
         p_incorporation_number: 'A1234567',
         p_affiliated_with: 'Sample Netball Association',
         p_registered_on: '2026-09-02',
@@ -201,7 +196,6 @@ describe('the affiliation record', () => {
       },
     ]);
     expect(callsTo('admin_set_affiliation_return_email')).toEqual([]);
-    expect(callsTo('admin_set_affiliation_officer')).toEqual([]);
     expect(callsTo('admin_affiliation')).toHaveLength(1);
     expect(screen.getByText('Saved.')).toBeTruthy();
   });
@@ -223,93 +217,46 @@ describe('the affiliation record', () => {
     expect(callsTo('admin_set_affiliation')).toEqual([]);
   });
 
-  it('asks an association for its tier before saving', async () => {
+  it('has no association choice, tier or officers', async () => {
     await openAffiliation();
-    await fireEvent.press(screen.getByText('Association'));
-    expect(screen.getByText('Choose the tier to see the checklist.')).toBeTruthy();
-    await save();
-    expect(screen.getByText('Choose the association’s tier.')).toBeTruthy();
-    expect(callsTo('admin_set_affiliation')).toEqual([]);
-  });
-
-  it('words an association’s date as the annual agreement', async () => {
-    await openAffiliation();
-    await fireEvent.press(screen.getByText('Association'));
-    await type('Annual agreement signed (DD/MM/YYYY)', 'soon');
-    await fireEvent.press(screen.getByText('Tier 3 (1 to 249)'));
-    await save();
-    expect(screen.getByText('Enter the day the agreement was signed as DD/MM/YYYY.')).toBeTruthy();
-  });
-
-  it('names a Tier 2 association’s officers and saves each with its induction day', async () => {
-    await openAffiliation(affiliation({ member_type: 'association', tier: 2 }), {
-      officers: [{ office: 'president', profile_id: 'committee', name: 'Sample committee', inducted_on: '2026-05-01' }],
-    });
-    expect(screen.getByText('Officers')).toBeTruthy();
-    for (const office of ['President', 'Association Development Officer', 'Association Umpire Development Officer']) {
-      expect(screen.getByText(office)).toBeTruthy();
+    for (const gone of ['This club is', 'Association', 'Tier', 'Officers', 'Annual agreement signed (DD/MM/YYYY)']) {
+      expect(screen.queryByText(gone)).toBeNull();
     }
-    expect(screen.queryByText('Another committee member')).toBeNull();
-    expect(input('Induction completed (DD/MM/YYYY)').props.value).toBe('01/05/2026');
-    await pickPerson('Association Development Officer', 'coach', 'Sample coach');
-    await type('Induction completed (DD/MM/YYYY)', '15/06/2026', 1);
-    await save();
-    expect(callsTo('admin_set_affiliation')[0]).toMatchObject({ p_member_type: 'association', p_tier: 2 });
-    expect(callsTo('admin_set_affiliation_officer')).toEqual([
-      { p_office: 'president', p_profile_id: 'committee', p_inducted_on: '2026-05-01' },
-      { p_office: 'ado', p_profile_id: 'coach', p_inducted_on: '2026-06-15' },
-      { p_office: 'audo', p_profile_id: null, p_inducted_on: null },
-    ]);
+    expect(rpcNames()).not.toContain('admin_affiliation_officers');
   });
 
-  it('names only a representative for a Tier 4 member entity', async () => {
-    await openAffiliation(affiliation({ member_type: 'association', tier: 4 }));
-    expect(screen.getByText('Representative')).toBeTruthy();
-    expect(screen.queryByText('President')).toBeNull();
+  it('shows the club checklist and saves as a club for a record saved as an association earlier', async () => {
+    // Association records were taken out on 6 November 2026; a saved type and
+    // tier are left in the database but not shown or changed.
+    await openAffiliation({ ...affiliation(), member_type: 'association', tier: 2 } as Affiliation);
+    expect(screen.getByText(/Registered with your member association this year/)).toBeTruthy();
+    expect(screen.queryByText(/Annual Affiliation Membership Agreement/)).toBeNull();
     await save();
-    expect(callsTo('admin_set_affiliation_officer')).toEqual([
-      { p_office: 'representative', p_profile_id: null, p_inducted_on: null },
-    ]);
+    const sent = Object.keys(callsTo('admin_set_affiliation')[0]);
+    expect(sent).not.toContain('p_member_type');
+    expect(sent).not.toContain('p_tier');
+    expect(rpcNames()).not.toContain('admin_set_affiliation_officer');
+    expect(screen.getByText('Saved.')).toBeTruthy();
   });
 
-  it('refuses an induction day that isn’t a date, naming the office', async () => {
-    await openAffiliation(affiliation({ member_type: 'association', tier: 3 }), {
-      officers: [{ office: 'president', profile_id: 'committee', name: 'Sample committee', inducted_on: null }],
-    });
-    await type('Induction completed (DD/MM/YYYY)', '99/99/2026');
-    await save();
-    expect(screen.getByText('Enter the President’s induction date as DD/MM/YYYY.')).toBeTruthy();
-    expect(callsTo('admin_set_affiliation')).toEqual([]);
-  });
-
-  it('shows a refused officer with the office, and doesn’t say it saved', async () => {
-    await openAffiliation(affiliation({ member_type: 'association', tier: 4 }), {
-      rpcErrors: { admin_set_affiliation_officer: 'Officers must be approved adults' },
-    });
-    await save();
-    expect(screen.getByText('Representative: Officers must be approved adults')).toBeTruthy();
-    expect(screen.queryByText('Saved.')).toBeNull();
-  });
-
-  it('stops at a refused record before the email and officers', async () => {
-    await openAffiliation(affiliation({ member_type: 'association', tier: 4 }), {
+  it('stops at a refused record before the email', async () => {
+    await openAffiliation(affiliation(), {
       rpcErrors: { admin_set_affiliation: 'Only admins can change affiliation records' },
     });
     await type('Send affiliation returns to (email)', 'new@association.example');
     await save();
     expect(screen.getByText('Only admins can change affiliation records')).toBeTruthy();
     expect(rpcNames()).not.toContain('admin_set_affiliation_return_email');
-    expect(rpcNames()).not.toContain('admin_set_affiliation_officer');
   });
 
-  it('stops at a refused return email before the officers', async () => {
-    await openAffiliation(affiliation({ member_type: 'association', tier: 4 }), {
+  it('shows a refused return email, and doesn’t say it saved', async () => {
+    await openAffiliation(affiliation(), {
       rpcErrors: { admin_set_affiliation_return_email: 'Enter an email address' },
     });
     await type('Send affiliation returns to (email)', 'not an email');
     await save();
     expect(screen.getByText('Enter an email address')).toBeTruthy();
-    expect(rpcNames()).not.toContain('admin_set_affiliation_officer');
+    expect(screen.queryByText('Saved.')).toBeNull();
   });
 
   it('shows why the record didn’t load', async () => {
@@ -479,7 +426,6 @@ async function openReturn(info: unknown = RETURN_INFO, rpcErrors: Record<string,
       rpcs: {
         report_members: PEOPLE.map((p) => ({ ...p, email: null, guardian_email: null })),
         admin_affiliation: affiliation({ primary_contact_2_id: 'committee' }),
-        admin_affiliation_officers: [],
         admin_affiliation_return: info,
         safeguarding_contacts: { child_safety_officer_name: 'Sample committee', complaints_manager_name: null, policy_url: 'https://club.example/safe' },
         club_policies: null,
