@@ -30,23 +30,10 @@ if [ -z "$url" ] || [ -z "$key" ]; then
   exit 1
 fi
 
-# The other clubs and associations (docs/environments.md "More clubs and
-# associations") also come from the EAS environment, never from .env: a value
-# the environment doesn't have is blanked.
-others=()
-for n in 2 3; do
-  for part in CODE NAME URL ANON_KEY; do
-    name="EXPO_PUBLIC_CLUB_${n}_${part}"
-    value=$(sed -n "s/^${name}=//p" "$work/env" | tr -d "\"'")
-    others+=("${name}=${value}")
-  done
-done
-
 # Values already in the environment win over .env, so the build uses these.
 # The extra test clubs in .env are blanked, so they're never in an update.
 rm -rf dist
-env EXPO_PUBLIC_SUPABASE_URL="$url" EXPO_PUBLIC_SUPABASE_ANON_KEY="$key" \
-  "${others[@]}" \
+EXPO_PUBLIC_SUPABASE_URL=$url EXPO_PUBLIC_SUPABASE_ANON_KEY=$key \
   EXPO_PUBLIC_TEST_CLUB_2_URL= EXPO_PUBLIC_TEST_CLUB_2_ANON_KEY= \
   EXPO_PUBLIC_TEST_CLUB_3_URL= EXPO_PUBLIC_TEST_CLUB_3_ANON_KEY= \
   npx expo export --platform all --clear --output-dir dist
@@ -66,17 +53,6 @@ for n in 2 3; do
     echo "The update includes test club $n ($test_url), so it wasn't published."
     exit 1
   fi
-done
-
-for entry in "${others[@]}"; do
-  case "$entry" in
-    EXPO_PUBLIC_CLUB_*_URL=?*)
-      if ! grep -rqF "${entry#*=}" dist/_expo/static/js; then
-        echo "The update doesn't include ${entry%%=*} (${entry#*=}), so it wasn't published."
-        exit 1
-      fi
-      ;;
-  esac
 done
 
 echo "Publishing to the $channel channel, using $url"

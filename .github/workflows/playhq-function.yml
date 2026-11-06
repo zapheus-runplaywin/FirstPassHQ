@@ -84,28 +84,3 @@ jobs:
         env:
           SUPABASE_ACCESS_TOKEN: ${{ secrets[format('SUPABASE_TEST_{0}_ACCESS_TOKEN', matrix.club)] }}
           SUPABASE_PROJECT_ID: ${{ secrets[format('SUPABASE_TEST_{0}_PROJECT_ID', matrix.club)] }}
-
-  # Every other live club or association (docs/environments.md "More clubs
-  # and associations"). Off until the LIVE_CLUBS repository variable lists
-  # them, such as [2].
-  deploy-live-clubs:
-    if: ${{ vars.LIVE_CLUBS != '' && github.event_name != 'schedule' }}
-    runs-on: ubuntu-24.04
-    environment: production
-    strategy:
-      fail-fast: false
-      matrix:
-        # The fallback is never used: without LIVE_CLUBS the job is skipped.
-        club: ${{ fromJSON(vars.LIVE_CLUBS || '["off"]') }}
-    name: deploy-live-club-${{ matrix.club }}
-    steps:
-      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
-      - uses: supabase/setup-cli@45a513f8c64c0bc8e0e3dfe572b5c95be85f6359 # v3.0.1
-        with:
-          version: 2.121.0
-      - run: >
-          supabase functions deploy playhq
-          --project-ref "$SUPABASE_PROJECT_ID" --use-api
-        env:
-          SUPABASE_ACCESS_TOKEN: ${{ secrets[format('SUPABASE_CLUB_{0}_ACCESS_TOKEN', matrix.club)] || secrets.SUPABASE_ACCESS_TOKEN }}
-          SUPABASE_PROJECT_ID: ${{ secrets[format('SUPABASE_CLUB_{0}_PROJECT_ID', matrix.club)] }}
