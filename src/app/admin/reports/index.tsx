@@ -12,7 +12,7 @@ import { useClub } from '@/lib/club';
  * development records; admins read them all.
  */
 export default function ReportsScreen() {
-  const { features, affiliation } = useClub();
+  const { features } = useClub();
   const { isAdmin } = useAuth();
   return (
     <Screen>
@@ -95,15 +95,6 @@ export default function ReportsScreen() {
           <ThemedText type="smallBold">Season KPIs</ThemedText>
           <ThemedText type="small" themeColor="textSecondary">
             Coaches’ and managers’ KPIs and OKRs for a season, with progress, results and reviews
-          </ThemedText>
-        </PressableCard>
-      ) : null}
-
-      {isAdmin && affiliation ? (
-        <PressableCard onPress={() => router.push('/admin/reports/affiliation')}>
-          <ThemedText type="smallBold">Affiliation</ThemedText>
-          <ThemedText type="small" themeColor="textSecondary">
-            The affiliation checklist, officers and this season’s PlayHQ registrations
           </ThemedText>
         </PressableCard>
       ) : null}

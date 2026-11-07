@@ -85,7 +85,7 @@ function ClubTheme({ children }: { children: ReactNode }) {
 
 function RootStack() {
   const { loading: authLoading, session, isAdmin } = useAuth();
-  const { ready, features, affiliation } = useClub();
+  const { ready, features } = useClub();
   const { club } = useClubChoice();
   // Who can open each member screen: see src/lib/route-access.ts.
   const can = useRouteAccess();
@@ -341,18 +341,6 @@ function RootStack() {
             <Stack.Protected guard={features.kpis}>
               <Stack.Screen name="admin/reports/kpis" options={{ title: 'Season KPIs report' }} />
               <Stack.Screen name="admin/kpi-reviews" options={{ title: 'Season KPI reviews' }} />
-            </Stack.Protected>
-            <Stack.Protected guard={affiliation}>
-              <Stack.Screen name="admin/affiliation/index" options={{ title: 'Affiliation' }} />
-              <Stack.Screen
-                name="admin/affiliation/registrations"
-                options={{ title: 'PlayHQ registrations' }}
-              />
-              <Stack.Screen name="admin/reports/affiliation" options={{ title: 'Affiliation' }} />
-              <Stack.Screen
-                name="admin/affiliation/return"
-                options={{ title: 'Affiliation return' }}
-              />
             </Stack.Protected>
             <Stack.Protected guard={features.calendar || features.awards || features.goals}>
               <Stack.Screen name="admin/fixtures" options={{ title: 'Fixtures' }} />

@@ -7,7 +7,7 @@
  * tests cover that.
  *
  * Features are saved as switches away from their defaults only: most start
- * on, Season KPIs and Affiliation records start off, and the database
+ * on, a few (such as Season KPIs) start off, and the database
  * replaces the whole list on each save, so every change must be in it.
  */
 import { fireEvent, screen, within } from 'expo-router/testing-library';
@@ -229,7 +229,6 @@ describe('Club settings', () => {
     await flip('Captains’ polls', false);
     // Off by default: switching on is saved.
     await flip('Season KPIs', true);
-    await flip('Affiliation records', true);
     await flip('Policy and conflict registers', true);
     await flip('Members join a squad first', false);
     await save();
@@ -240,11 +239,10 @@ describe('Club settings', () => {
       kpis: true,
       registers: true,
       squads: false,
-      affiliation: true,
     });
   });
 
-  it('shows the club’s saved switches and keeps them when saved again', async () => {
+  it('shows the club’s saved switches and keeps them when saved again, dropping the old Affiliation switch', async () => {
     setSavedClub({
       features: { calendar: false, awards: false, kpis: true, affiliation: true, squads: false },
     });
@@ -253,7 +251,9 @@ describe('Club settings', () => {
     expect(isOn('Awards')).toBe(false);
     expect(isOn('Messages')).toBe(true);
     expect(isOn('Season KPIs')).toBe(true);
-    expect(isOn('Affiliation records')).toBe(true);
+    // Affiliation was removed on 7 November 2026: no switch, and saving clears it.
+    expect(screen.queryByText('Affiliation records')).toBeNull();
+    expect(screen.queryByText(/association/i)).toBeNull();
     expect(isOn('Members join a squad first')).toBe(false);
     await save();
     expect(savedProfile()[0].p_features).toEqual({
@@ -261,7 +261,6 @@ describe('Club settings', () => {
       awards: false,
       kpis: true,
       squads: false,
-      affiliation: true,
     });
   });
 

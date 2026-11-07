@@ -13,7 +13,6 @@
 import { act, renderHook } from '@testing-library/react-native';
 
 import { useAbsencesToReview, useLeadsAGroup } from '@/lib/absences';
-import { useAffiliationTodos } from '@/lib/affiliation';
 import { useCanTakeAttendance, useCanViewAttendance } from '@/lib/attendance';
 import { useAuth } from '@/lib/auth';
 import { useAwardSlots } from '@/lib/awards';
@@ -69,9 +68,8 @@ import { usePendingRequests, useSafetyTodos } from '@/lib/use-pending-requests';
 jest.mock('@/lib/auth', () => ({ useAuth: jest.fn() }));
 
 // Club settings: every feature on unless a test turns one off.
-const mockClub: { features: Features; affiliation: boolean } = {
+const mockClub: { features: Features } = {
   features: allFeatures(),
-  affiliation: true,
 };
 jest.mock('@/lib/club', () => ({
   useClub: () => mockClub,
@@ -428,7 +426,6 @@ beforeEach(() => {
   // Sunday 18 October 2026, local time.
   jest.useFakeTimers({ now: new Date(2026, 9, 18, 12) });
   mockClub.features = allFeatures();
-  mockClub.affiliation = true;
   jest.mocked(supabase.rpc).mockReset().mockImplementation(() => query() as never);
   jest.mocked(supabase.from).mockReset().mockImplementation(() => query() as never);
 });
@@ -733,7 +730,6 @@ const GATED: [string, () => unknown, Fetch, PersonaName[], PersonaName[]?][] = [
   ['useSafetyTodos', useSafetyTodos, { rpc: 'admin_safety_todos' }, ADMINS],
   ['useSafetyTodos (clearances nobody can endorse)', useSafetyTodos, { rpc: 'admin_unendorsable_clearances' }, ADMINS],
   ['useSafetyTodos (check applications to confirm)', useSafetyTodos, { rpc: 'admin_wwcc_applications' }, ADMINS],
-  ['useAffiliationTodos', useAffiliationTodos, { rpc: 'admin_affiliation' }, ADMINS],
   // The committee and admins.
   ['useTrainingToReview', useTrainingToReview, { rpc: 'training_to_review' }, [...ADMINS, 'committee']],
   ['useClubHasTraining', useClubHasTraining, { from: 'training_requirements' }, [...ADMINS, 'committee']],
@@ -782,14 +778,6 @@ describe.each(GATED)('%s fetches only for the members allowed it', (_hook, hook,
 });
 
 describe('feature switches stop the fetches', () => {
-  it('fetches no affiliation follow-ups when the club keeps no affiliation records', async () => {
-    mockClub.affiliation = false;
-    as('admin');
-    await renderHook(useAffiliationTodos);
-    await act(async () => {});
-    expect(fetched({ rpc: 'admin_affiliation' })).toBe(false);
-  });
-
   it.each([
     ['integrity', useTrainingToReview, { rpc: 'training_to_review' }],
     ['integrity', useClubHasTraining, { from: 'training_requirements' }],

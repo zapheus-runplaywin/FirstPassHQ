@@ -90,8 +90,6 @@ type ClubState = {
   features: Features;
   /** Whether members join a squad before teams are named from it. */
   squads: boolean;
-  /** Whether admins keep affiliation records for the governing body. Off unless turned on. */
-  affiliation: boolean;
   reload: () => Promise<void>;
 };
 
@@ -144,8 +142,6 @@ export function resolveClub(profile: ClubProfile | null) {
     ) as Features,
     // Stored with the features, but it shapes the club rather than adding a screen.
     squads: profile?.features?.squads !== false,
-    // Most clubs don't report to a governing body this way, so it starts off.
-    affiliation: profile?.features?.affiliation === true,
   };
 }
 

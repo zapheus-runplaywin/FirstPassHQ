@@ -2,8 +2,8 @@
  * The club's name, colours, logo and feature switches (src/lib/club.tsx),
  * from "Club settings" in section 10 of docs/user-guide.md.
  *
- * Features an admin hasn't touched take the app's default: on, except Season
- * KPIs and Affiliation records, which start off. Signed-out screens show
+ * Features an admin hasn't touched take the app's default: on, except
+ * training load flags, Season KPIs and the registers, which start off. Signed-out screens show
  * what this device saw last time for the club it's connected to, never
  * another club's look; once signed in, the latest settings load and are
  * saved for next time.
@@ -87,7 +87,6 @@ describe('resolveClub', () => {
     // The FirstPass mark that reads on the navy background.
     expect(club.logo).toBe(MARK_ON_DARK);
     expect(club.squads).toBe(true);
-    expect(club.affiliation).toBe(false);
   });
 
   it('starts every feature on except training load flags, Season KPIs and the registers', () => {
@@ -116,10 +115,17 @@ describe('resolveClub', () => {
     expect(resolveClub(saved({ features })).features.kpis).toBe(on);
   });
 
-  it('uses squads unless turned off, and affiliation only once turned on', () => {
+  it('uses squads unless turned off', () => {
     expect(resolveClub(saved({ features: { squads: false } })).squads).toBe(false);
-    expect(resolveClub(saved({ features: { affiliation: true } })).affiliation).toBe(true);
-    expect(resolveClub(saved({ features: { affiliation: false } })).affiliation).toBe(false);
+    expect(resolveClub(saved({ features: { squads: true } })).squads).toBe(true);
+  });
+
+  it('ignores the old Affiliation records switch a club may still have saved', () => {
+    // Affiliation was removed on 7 November 2026: the app is for clubs only.
+    const club = resolveClub(saved({ features: { affiliation: true } as never }));
+    expect(club).not.toHaveProperty('affiliation');
+    expect(club.features).not.toHaveProperty('affiliation');
+    expect(FEATURES.map((f) => f.key)).not.toContain('affiliation');
   });
 
   it('uses the saved name, and the colours in capitals', () => {

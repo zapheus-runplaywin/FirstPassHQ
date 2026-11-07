@@ -109,16 +109,6 @@ const FEATURE_ROUTES: FeatureCase[] = [
     ],
   },
   {
-    feature: 'affiliation',
-    offByDefault: true,
-    routes: [
-      'admin/affiliation/index',
-      'admin/affiliation/registrations',
-      'admin/affiliation/return',
-      'admin/reports/affiliation',
-    ],
-  },
-  {
     feature: 'registers',
     offByDefault: true,
     routes: [

@@ -137,7 +137,6 @@ What each role sees on its home screen:
 | Club name, colours, logo and features  |         |                 |              |            |               |               |         |       ✓       |
 | Manage absence reasons                 |         |                 |              |            |               |               |         |       ✓       |
 | Invite members (QR code and link)      |         |                 |              |            |               |               |         |       ✓       |
-| Affiliation records (when turned on)   |         |                 |              |            |               |               |         |       ✓       |
 | Policy and conflict registers (when turned on) |  |                 | Declare conflicts; review policies they own | Review policies they own | Read both; declare conflicts; review policies they own | Review policies they own |  | Read and change both; record any review |
 | Administration                         |         |                 |              |            |               |               |         |       ✓       |
 
@@ -196,12 +195,10 @@ club and Delete account links (see [Ask to join the club](#ask-to-join-the-club)
 
 Admins can turn off Messages, Calendar, Daily check-ins, Injuries, Attendance, Session plans,
 Surveys, Captains' polls, Awards, Game goals and Integrity training for the whole club in **Club settings**. A feature that's off disappears for every role.
-**Season KPIs**, **Training load flags**, **Affiliation records** and **Policy and conflict registers** work the other way:
+**Season KPIs**, **Training load flags** and **Policy and conflict registers** work the other way:
 they're off unless an admin turns them on. Training load flags give coaches prompts to talk with an
 athlete from the sessions they log (see [Training load](#training-load)). Season KPIs are for a club that sets its coaches,
-managers and athletes measures for the season (see [Season KPIs](#season-kpis)); Affiliation
-records are for a club or association that reports to its association or Netball WA (see
-[Affiliation](#affiliation)); the registers keep the club's policies with their owners and review
+managers and athletes measures for the season (see [Season KPIs](#season-kpis)); the registers keep the club's policies with their owners and review
 dates, and each season's conflict-of-interest declarations (see [Policy and conflict
 registers](#policy-and-conflict-registers)).
 
@@ -2065,8 +2062,8 @@ read and save as PDFs for a committee or board meeting:
 - **Integrity training**, **Attendance** and **Award results**, when those features are on
 
 They're read only: nothing in them changes a member, a check or a setting, and admins still make
-every change. **Under 18s and their guardians**, **Injuries**, **Session plans**, **Season KPIs** and
-**Affiliation** stay with admins. The reports name children and hold adults' dates of birth and
+every change. **Under 18s and their guardians**, **Injuries**, **Session plans** and **Season KPIs**
+stay with admins. The reports name children and hold adults' dates of birth and
 card numbers, so a committee member exempted with a reason (such as a treasurer who never works
 with children), one still to get a check before the committee checks date, and one whose role is
 paused or stood down sees no Reports card. The reports give names, not email addresses.
@@ -2284,9 +2281,7 @@ physio in their squad or team. Make a physio Head Physio, or place a physio in t
 or team, and it goes. Nobody's access changes on its own. While **Remove old records** is off, the list also shows **Old
 records are kept forever**, which opens Club settings so you can switch it on (see [Keeping
 records](#keeping-records)), and **Members have had no team or role for 2 years** when anyone
-has (see [Approving members](#approving-members)). When Affiliation records are on, the list also has affiliation
-items still to do, members to check in PlayHQ, members not registered in PlayHQ and a reminder
-when the yearly affiliation return is due (see [Affiliation](#affiliation)). On an installed app, admins also get a push notification for each
+has (see [Approving members](#approving-members)). On an installed app, admins also get a push notification for each
 new join request.
 
 Because admins can read every child's records, they need a current Working With Children Check,
@@ -2969,10 +2964,6 @@ everyone ever stood down, newest first, with the
   so on): how many, for how many athletes, and the days away inside the period. For chosen squads and
   teams it counts the athletes marked on their registers in the period. It shows reasons only, never the details
   people typed.
-- **Affiliation** (when Affiliation records are on): the club's affiliation details, the
-  checklist with required items not done in red, an association's officers and when each
-  completed the safeguarding induction, and every athlete, coach and manager's PlayHQ
-  registration this season, not registered and still to check first.
 - **Session plans** (when Session plans are on): pick the **Period** (last 3 months to start, last
   4 weeks, this season or **Choose dates**) and the **Squads and teams**. **By squad or team** shows
   how many plans each has, on how many days, and its latest session, with groups that have none in
@@ -3002,7 +2993,6 @@ addresses, so keep them somewhere only the committee can reach.
 <img src="user-guide/report-attendance.png" width="210" alt="Attendance report for the 17 &amp; Under Squad over the last 4 weeks">
 <img src="user-guide/report-attendance-absences.png" width="210" alt="Reported absences by reason in the Attendance report">
 <img src="user-guide/report-award-results.png" width="210" alt="Full results of a closed match award">
-<img src="user-guide/report-affiliation.png" width="210" alt="The Affiliation report">
 <img src="user-guide/report-session-plans.png" width="210" alt="The Session plans report">
 <img src="user-guide/report-kpis.png" width="210" alt="The Season KPIs report">
 
@@ -3050,9 +3040,6 @@ so leave them filled in.
   "sweet spot") or **Off**, and whether to flag **Hours over age (under 18s)** (on to start,
   Jayanthi et al. 2015). Only values from published studies are offered, and **Sources** links
   them. Tap **Save training load flags**.
-- **Affiliation records**: off unless you turn it on. For a club or association that reports to
-  its association or Netball WA, it adds **Affiliation** to Administration and Reports (see
-  [Affiliation](#affiliation)). Only admins see it.
 - **Policy and conflict registers**: off unless you turn it on. It adds **Registers** to the home
   screen for the committee and admins, policy review to-dos for policy owners, and a to-do each
   season for the committee and coaches to declare conflicts of interest (see [Policy and conflict
@@ -3067,7 +3054,6 @@ part of the app build and don't change here.
 <img src="user-guide/club-settings-squads.png" width="210" alt="Club settings: switching squads off">
 <img src="user-guide/club-settings-features.png" width="210" alt="Club settings: turning features on and off">
 <img src="user-guide/club-settings-physios.png" width="210" alt="Club settings: physios get club messages">
-<img src="user-guide/club-settings-affiliation.png" width="210" alt="Club settings: the Affiliation records switch">
 <img src="user-guide/club-settings-registers.png" width="210" alt="Club settings: the Policy and conflict registers switch">
 <img src="user-guide/club-settings-training-load.png" width="210" alt="Club settings: training load flag choices">
 
@@ -3101,72 +3087,7 @@ A member's declarations go if they delete their account.
 Risk and incident registers and the AGM pack aren't in the app yet (see [Not in the app
 yet](#14-not-in-the-app-yet)).
 
-### Affiliation
-
-When **Affiliation records** is on in Club settings, **Administration > Affiliation** keeps what
-your association or Netball WA asks for each year. The checklist follows Netball WA's Membership
-Policy (NWA-POL-07): section 4 for affiliated clubs and section 3 for associations. Only admins see
-it.
-
-1. Under **This club is**, choose **Affiliated club** (a club whose teams play in a member
-   association's competition) or **Association** (a member association or member entity of
-   Netball WA). An association also picks its **Tier**, from Tier 1 (450 or more members) to Tier 4
-   (a member entity).
-2. Fill in the **Details**: the **Incorporation number** (blank if not incorporated), who the club
-   is **Affiliated with**, and the day it **last registered with them** (for a club) or **signed
-   the annual agreement** (for an association), as DD/MM/YYYY. The number of teams this season is
-   shown, because a club with 5 or more teams must be incorporated. Under **Send affiliation
-   returns to**, enter the email address your association (or Netball WA) uses for affiliations.
-3. Choose two **Primary contacts**, two different adults the association and Netball WA can
-   contact. Their names and emails go in the affiliation return, so let them know.
-4. An association names its **Officers**: the President, the Association Development Officer and
-   the Association Umpire Development Officer, another committee member, or a single representative
-   for Tier 4, as its tier needs. Enter the day each completed Sport Integrity Australia's
-   **Safeguarding Children and Young People in Sport Induction**, and keep their certificates.
-5. The **Checklist** shows each criterion for your club or tier, marked **Required** or
-   **Recommended**. Items the app can work out from what you've recorded show ✓ or ✗; tick the
-   rest yourself, such as following Netball Australia and Netball WA policies. Criteria that
-   don't apply to your tier aren't listed.
-6. Add any **Notes**, such as where the evidence is kept, and tap **Save**. The screen shows who
-   saved it last and when.
-
-A registration or agreement counts for a year, so it comes back on the checklist 12 months after
-the date you entered. Until every required item is done, your to-do list shows **Finish N
-affiliation items**.
-
-**PlayHQ registrations.** Every member must register through PlayHQ each season. **PlayHQ
-registrations** lists every approved athlete, coach and manager in the newest season that isn't
-archived.
-Look each one up in PlayHQ and tap **Registered** or **Not registered**; the app keeps who checked
-and when. Filter by **To check**, **Not registered**, **Registered** or **All**, or search by
-name or email. Your to-do list shows how many are still to check, and how many aren't registered
-so you can ask them to register.
-
-**Affiliation return.** Once a year, send your association a summary from **Affiliation >
-Affiliation return**. It shows exactly what will be sent: the details, the primary contacts and
-their emails, the checklist, an association's officers and inductions, PlayHQ registration counts,
-the club's safeguarding contacts and policy links, and counts from the Working With Children
-Checks and Integrity training reports. It names no member under 18 and has nothing about any
-child. Turn off **Working With Children Check counts** or **Integrity training counts** if your
-association doesn't ask for them. Tap **Send return**: on a phone the share sheet opens, so choose Mail and send the PDF to
-the address shown; on the web the PDF downloads and an email to that address opens, so attach the
-PDF and send it. The app records who sent it, when and the address it was for, as soon as the share sheet closes
-or the download starts, and shows it on the Affiliation screen. Once you've entered the email address, your to-do list shows **Send the affiliation
-return** whenever none has gone in the last year.
-
-The **Affiliation** report in Reports puts the details, the checklist (required items not done in
-red), the officers and their inductions, and the season's PlayHQ registrations into one PDF to
-send to the association or keep for an audit.
-
-<img src="user-guide/affiliation-club.png" width="210" alt="Affiliation for an affiliated club: what kind of member it is and its details">
-<img src="user-guide/affiliation-checklist.png" width="210" alt="An affiliated club's checklist, with one required item still to do">
-<img src="user-guide/affiliation-association.png" width="210" alt="Affiliation for a Tier 2 association: officers and their safeguarding induction">
-<img src="user-guide/affiliation-registrations.png" width="210" alt="PlayHQ registrations to check for the season">
-<img src="user-guide/admin-affiliation-todos.png" width="210" alt="Affiliation items and PlayHQ checks in an admin's to-do list">
-<img src="user-guide/affiliation-return.png" width="210" alt="The affiliation return, ready to send to the association">
-<img src="user-guide/affiliation-return-counts.png" width="210" alt="The return's safeguarding set-up and counts">
-
-#### Keeping records
+### Keeping records
 
 A club should keep personal information only while it needs it. **Keeping records**, at the
 bottom of Club settings, sets how long the club keeps each kind of record, for everyone, adults
@@ -3492,11 +3413,9 @@ once saved, only replaced or removed, and anyone who gets it wrong five times in
 | Committee calendar      | Committee members and admins.                                                                                               |
 | Award votes             | Only the voter sees their own ballot. Nobody, admins included, can see who someone voted for. Who cast each vote is removed after the club's keep period (1 year recommended). |
 | Award results           | Admins: standings and how many people have voted, and once voting closes, how many votes each nominee got at each place. Committee members with a current check read the same results once voting closes. |
-| Affiliation records and PlayHQ registration checks | Admins only. |
 | Policy register         | The committee and admins, when the club turns the registers on. A policy's owner also sees the policies they own. Only admins add, change or remove policies; the owner or an admin records a review. |
 | Conflict-of-interest declarations | The member (their own), the committee and admins, when the club turns the registers on. Coaches, athletes and parents don't see anyone else's. Only the member declares; admins can correct an entry, and the register shows they did. |
-| Affiliation returns     | Admins only, until an admin sends one. A sent return goes to the email address the club entered and holds club facts and counts, naming no member under 18. |
-| Reports and their PDFs  | Admins read every report. Committee members with a current check, a check application in force or a volunteer exemption read the Working With Children Checks, Medical details checks, Integrity training, Attendance and Award results reports, read only; never Under 18s and their guardians, Injuries, Session plans, Season KPIs or Affiliation, and none if they're exempted with a reason or have no check yet. A saved PDF is a copy outside the app, so whoever it's shared with can read it. |
+| Reports and their PDFs  | Admins read every report. Committee members with a current check, a check application in force or a volunteer exemption read the Working With Children Checks, Medical details checks, Integrity training, Attendance and Award results reports, read only; never Under 18s and their guardians, Injuries, Session plans or Season KPIs, and none if they're exempted with a reason or have no check yet. A saved PDF is a copy outside the app, so whoever it's shared with can read it. |
 | Match fixtures          | The members of each squad or team, statisticians and admins.                                                                |
 | How long records are kept | Admins: the keep periods, whether old records are removed, who last changed them, and when the nightly removal last ran or where it stopped. |
 | Club name, colours and logo | Every signed-in member. The logo file is public so it can show before sign-in. Only admins can change them.            |
@@ -3821,7 +3740,7 @@ Working With Children Check, and another admin must do it.
   exemption, and aren't stood down. A committee member exempted with a reason, or still without a
   check before the committee checks date, reads none of them. The reports are read only, give no
   email addresses or check receipts, and the reports about under 18s' guardians, injuries, session
-  plans, Season KPIs and affiliation stay with admins.
+  plans and Season KPIs stay with admins.
 - **Policies stay current, and conflicts are declared.** When the club uses the registers, each
   policy, the child safeguarding policy included, has an owner who gets a to-do 30 days before
   its review date, and the committee sees which reviews are overdue. Every committee member and
@@ -3983,15 +3902,6 @@ Working With Children Check, and another admin must do it.
   legal advice on this** and treat injury records as covered until it has; the app is built to the
   Act's standards either way. Both assessments, with their reasons, are kept with the app's code
   and reviewed each year.
-- **Affiliation evidence in one place.** A club or association that turns on Affiliation records
-  keeps its primary contacts, incorporation, registration with its association and each season's
-  PlayHQ registrations, and an association records when its President and other officers
-  completed the Safeguarding Children and Young People in Sport Induction (see
-  [Affiliation](#affiliation)).
-- **Nothing about a child goes up to the association.** The yearly affiliation return holds the
-  club's records and counts only (for example how many people need a Working With Children Check
-  and how many are current). The app builds it, an admin sees exactly what it holds before sending
-  it, and every return sent is recorded with who sent it and when.
 
 <img src="user-guide/safeguarding-home.png" width="210" alt="Raise a concern on the home screen">
 

@@ -56,7 +56,6 @@ const TILES: Tile[] = [
   { title: 'Invite members', route: 'admin/invite' },
   { title: 'Safeguarding', route: 'admin/safeguarding' },
   { title: 'Code of conduct', route: 'admin/conduct' },
-  { title: 'Affiliation', route: 'admin/affiliation/index', needs: ['affiliation'] },
   { title: 'Club settings', route: 'admin/club' },
   { title: 'Squads and teams', route: 'admin/squads' },
   { title: 'Seasons', route: 'admin/seasons' },
@@ -71,7 +70,7 @@ const TILES: Tile[] = [
   { title: 'Club password', route: 'admin/club-password' },
 ];
 
-const EVERY_FEATURE_ON = { kpis: true, affiliation: true };
+const EVERY_FEATURE_ON = { kpis: true };
 const SWITCHES = [
   'messages',
   'calendar',
@@ -85,7 +84,6 @@ const SWITCHES = [
   'goals',
   'integrity',
   'kpis',
-  'affiliation',
 ];
 const EVERY_FEATURE_OFF = Object.fromEntries(SWITCHES.map((f) => [f, false]));
 
@@ -106,12 +104,19 @@ it('shows only the tiles no switch controls with every feature off', async () =>
   }
 });
 
-it('hides Season KPI reviews and Affiliation until an admin turns them on', async () => {
+it('hides Season KPI reviews until an admin turns them on', async () => {
   setClubFeatures({});
   await openAdministration();
   expect(screen.queryByText('Season KPI reviews')).toBeNull();
-  expect(screen.queryByText('Affiliation')).toBeNull();
   expect(screen.getByText('Awards')).toBeTruthy();
+});
+
+it('has no Affiliation tile, even for a club that turned the old switch on', async () => {
+  // Affiliation was removed on 7 November 2026: the app is for clubs only.
+  setClubFeatures({ ...EVERY_FEATURE_ON, affiliation: true });
+  await openAdministration();
+  expect(screen.queryByText('Affiliation')).toBeNull();
+  expect(screen.queryByText(/association/i)).toBeNull();
 });
 
 describe.each(TILES.filter((t) => t.needs))('$title', ({ title, needs }) => {

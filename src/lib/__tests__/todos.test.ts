@@ -795,35 +795,6 @@ describe('buildTodos', () => {
     });
   });
 
-  describe('affiliation', () => {
-    const affiliation = { missing: 0, toCheck: 0, notRegistered: 0, season: 2026, returnDue: false };
-
-    it('adds nothing when all is done', () => {
-      expect(todos({ affiliation })).toEqual([]);
-    });
-
-    it('lists each follow-up', () => {
-      const list = todos({
-        affiliation: { missing: 1, toCheck: 2, notRegistered: 1, season: 2026, returnDue: true },
-      });
-      expect(list.map((t) => [t.title, t.detail])).toEqual([
-        ['Finish 1 affiliation item', 'Required by your association or Netball WA'],
-        ['Check 2 members in PlayHQ', 'Whether they’re registered for 2026–27'],
-        ['1 member isn’t registered in PlayHQ', 'Ask them to register, then mark them registered'],
-        ['Send the affiliation return', 'None sent in the last year'],
-      ]);
-    });
-
-    it('uses plurals and copes with no season', () => {
-      const list = todos({ affiliation: { ...affiliation, missing: 2, toCheck: 1, notRegistered: 2, season: null } });
-      expect(list.map((t) => [t.title, t.detail])).toEqual([
-        ['Finish 2 affiliation items', 'Required by your association or Netball WA'],
-        ['Check 1 member in PlayHQ', 'Whether they’re registered for this season'],
-        ['2 members aren’t registered in PlayHQ', 'Ask them to register, then mark them registered'],
-      ]);
-    });
-  });
-
   describe('KPI reviews', () => {
     it('goes straight to the person when there is one review to write', () => {
       expect(only(todos({ kpiReviews: [review()] }))).toEqual({
