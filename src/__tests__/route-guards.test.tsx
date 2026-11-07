@@ -52,9 +52,15 @@ it('finds the app’s screens on disk', () => {
   expect(MEMBER_ROUTES.length).toBeGreaterThan(50);
 });
 
+// Affiliation was removed on 7 November 2026: the app is for clubs only, with
+// no screens for reporting up to an association.
+it('has no affiliation or association screens', () => {
+  expect(ROUTES.filter((r) => /affiliation|association/i.test(r))).toEqual([]);
+});
+
 // The reports a committee member screened to work with children reads, and
 // nothing else under admin (customer review C14). Under 18s, injuries,
-// session plans, Season KPIs and affiliation stay with admins.
+// session plans and Season KPIs stay with admins.
 const COMMITTEE_REPORTS = [
   'admin/reports/index',
   'admin/reports/wwcc',
@@ -120,7 +126,7 @@ describe('admin screens', () => {
   // Every admin screen, not just the sample above: a new admin screen that
   // isn't inside the isAdmin guard fails here.
   describe('every admin screen on disk', () => {
-    beforeEach(() => setClubFeatures({ kpis: true, affiliation: true }));
+    beforeEach(() => setClubFeatures({ kpis: true }));
 
     it.each(ADMIN_ROUTES.filter((r) => !COMMITTEE_REPORTS.includes(r)))(
       'the committee can’t open %s',
@@ -140,7 +146,7 @@ describe('admin screens', () => {
 });
 
 describe('committee reports', () => {
-  beforeEach(() => setClubFeatures({ kpis: true, affiliation: true }));
+  beforeEach(() => setClubFeatures({ kpis: true }));
 
   it('names real screens', () => {
     for (const route of COMMITTEE_REPORTS) expect(ADMIN_ROUTES).toContain(route);
@@ -151,7 +157,7 @@ describe('committee reports', () => {
       await expectReaches(who, route);
     });
 
-    it.each(['admin/reports/under-18s', 'admin/injuries', 'admin/reports/session-plans', 'admin/reports/kpis', 'admin/reports/affiliation', 'admin/index', 'admin/club'])(
+    it.each(['admin/reports/under-18s', 'admin/injuries', 'admin/reports/session-plans', 'admin/reports/kpis', 'admin/index', 'admin/club'])(
       'never lands on %s, and is sent home',
       async (route) => {
         await expectTurnedAway(who, route, 'index');

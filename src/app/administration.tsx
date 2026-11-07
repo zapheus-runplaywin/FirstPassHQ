@@ -9,7 +9,7 @@ import { pendingRequestsLabel, usePendingRequests } from '@/lib/use-pending-requ
 
 export default function AdministrationScreen() {
   const { pendingCount, reloadPending } = usePendingRequests();
-  const { features, squads, affiliation } = useClub();
+  const { features, squads } = useClub();
   const [refreshing, setRefreshing] = useState(false);
 
   async function onRefresh() {
@@ -54,15 +54,6 @@ export default function AdministrationScreen() {
           Who has accepted it this season and who still has to
         </ThemedText>
       </PressableCard>
-
-      {affiliation ? (
-        <PressableCard onPress={() => router.push('/admin/affiliation')}>
-          <ThemedText type="smallBold">Affiliation</ThemedText>
-          <ThemedText type="small" themeColor="textSecondary">
-            Checklist, primary contacts and PlayHQ registrations for your association
-          </ThemedText>
-        </PressableCard>
-      ) : null}
 
       <PressableCard onPress={() => router.push('/admin/club')}>
         <ThemedText type="smallBold">Club settings</ThemedText>

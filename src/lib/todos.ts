@@ -1,6 +1,5 @@
 import type { Href } from 'expo-router';
 
-import type { AffiliationTodos } from '@/lib/affiliation';
 import { slotTitle } from '@/lib/awards';
 import { formatShortDay } from '@/lib/format';
 import { gamePhase, gameTitle } from '@/lib/goals';
@@ -92,7 +91,6 @@ export function buildTodos({
   absencesToReview = 0,
   consentsNeeded = [],
   conduct = [],
-  affiliation = null,
   kpiReviews = [],
   surveys = [],
   medicalReviews = [],
@@ -143,8 +141,6 @@ export function buildTodos({
   consentsNeeded?: { id: string; name: string }[];
   /** Code of conduct acceptances still owed this season, for the member and their children. */
   conduct?: { id: string; name: string; forChild: boolean }[];
-  /** Affiliation follow-ups, for admins of clubs that keep affiliation records. */
-  affiliation?: AffiliationTodos | null;
   /** Season KPI reviews to write, and the member's own to confirm. */
   kpiReviews?: KpiReviewTodo[];
   /** Surveys sent to the member, including ones already answered. */
@@ -607,41 +603,6 @@ export function buildTodos({
         title: `${plural(safety.inactive_members ?? 0, 'member has', 'members have')} had no team or role for 2 years`,
         detail: 'Delete them if they’ve left the club. Their safeguarding records stay.',
         href: '/admin',
-      });
-    }
-  }
-
-  if (affiliation) {
-    if (affiliation.missing > 0) {
-      todos.push({
-        key: 'affiliation-checklist',
-        title: `Finish ${affiliation.missing} affiliation ${affiliation.missing === 1 ? 'item' : 'items'}`,
-        detail: 'Required by your association or Netball WA',
-        href: '/admin/affiliation',
-      });
-    }
-    if (affiliation.toCheck > 0) {
-      todos.push({
-        key: 'playhq-registrations',
-        title: `Check ${affiliation.toCheck} ${affiliation.toCheck === 1 ? 'member' : 'members'} in PlayHQ`,
-        detail: `Whether they’re registered for ${affiliation.season ? seasonLabel(affiliation.season) : 'this season'}`,
-        href: '/admin/affiliation/registrations',
-      });
-    }
-    if (affiliation.notRegistered > 0) {
-      todos.push({
-        key: 'playhq-not-registered',
-        title: `${affiliation.notRegistered} ${affiliation.notRegistered === 1 ? 'member isn’t' : 'members aren’t'} registered in PlayHQ`,
-        detail: 'Ask them to register, then mark them registered',
-        href: '/admin/affiliation/registrations',
-      });
-    }
-    if (affiliation.returnDue) {
-      todos.push({
-        key: 'affiliation-return',
-        title: 'Send the affiliation return',
-        detail: 'None sent in the last year',
-        href: '/admin/affiliation/return',
       });
     }
   }

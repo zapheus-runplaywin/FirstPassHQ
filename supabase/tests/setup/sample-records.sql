@@ -75,8 +75,6 @@ insert into public.push_tokens (token, profile_id) values ('kai-token', '0000000
 insert into public.personal_tasks (profile_id, title) values ('00000000-0000-0000-0000-000000000011', 'Plan pre-season');
 insert into public.verification_codes (profile_id, code, expires_at)
 values ('00000000-0000-0000-0000-000000000052', '123456', now() + interval '10 minutes');
-insert into public.playhq_registrations (profile_id, season, registered)
-values ('00000000-0000-0000-0000-000000000032', 2026, true);
 insert into public.concerns (raised_by, raised_by_name, about_member_id, about_member_name, body)
 values ('00000000-0000-0000-0000-000000000031', 'Jordan Junior', '00000000-0000-0000-0000-000000000012', 'Drew Lapsed', 'Something worried me');
 insert into public.concern_events (concern_id, by_name, kind, note)

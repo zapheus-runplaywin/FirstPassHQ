@@ -165,8 +165,6 @@ insert into public.push_tokens (token, profile_id) values ('kai-token', '0000000
 insert into public.personal_tasks (profile_id, title) values ('00000000-0000-0000-0000-000000000011', 'Plan pre-season');
 insert into public.verification_codes (profile_id, code, expires_at)
 values ('00000000-0000-0000-0000-000000000052', '123456', now() + interval '10 minutes');
-insert into public.playhq_registrations (profile_id, season, registered)
-values ('00000000-0000-0000-0000-000000000032', 2026, true);
 insert into public.concerns (raised_by, raised_by_name, about_member_id, about_member_name, body)
 values ('00000000-0000-0000-0000-000000000031', 'Jordan Junior', '00000000-0000-0000-0000-000000000012', 'Drew Lapsed', 'Something worried me');
 insert into public.concern_events (concern_id, by_name, kind, note)
@@ -444,7 +442,7 @@ reset role;
 create temp table policy_free_tables (t text);
 insert into policy_free_tables values
   ('child_consents'), ('concerns'), ('concern_events'), ('injury_document_events'),
-  ('verification_codes'), ('playhq_registrations'), ('club_settings'), ('safeguarding_settings');
+  ('verification_codes'), ('club_settings'), ('safeguarding_settings');
 grant select on policy_free_tables to authenticated;
 select pg_temp.ok(t || ': has rows to find', pg_temp.n(format('select 1 from public.%I', t)) > 0, true) from policy_free_tables order by t;
 select pg_temp.ok(t || ': no policy lets anyone select it',

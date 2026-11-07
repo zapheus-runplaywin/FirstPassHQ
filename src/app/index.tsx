@@ -14,7 +14,6 @@ import { Button, Card, PressableCard } from '@/components/ui';
 import { Spacing } from '@/constants/theme';
 import { useTheme } from '@/hooks/use-theme';
 import { useAbsencesToReview, useLeadsAGroup } from '@/lib/absences';
-import { useAffiliationTodos } from '@/lib/affiliation';
 import { useConductTodos } from '@/lib/conduct';
 import { committeeCheckDue, isDatedExemption, statisticianCheckDue } from '@/lib/safety';
 import { formatDate } from '@/lib/age';
@@ -117,7 +116,6 @@ export default function HomeScreen() {
   const { unreadCount, reloadUnread } = useUnreadCount();
   const { pendingCount, reloadPending } = usePendingRequests();
   const { safetyTodos, reloadSafetyTodos } = useSafetyTodos();
-  const { affiliationTodos, reloadAffiliationTodos } = useAffiliationTodos();
   const { conductTodos, reloadConductTodos } = useConductTodos();
   const { personalTasks, reloadPersonalTasks, setTaskDone } = usePersonalTasks();
   const plans = useSessionPlanSummary();
@@ -193,7 +191,6 @@ export default function HomeScreen() {
       name: t.full_name ?? 'your child',
       forChild: t.for_child,
     })),
-    affiliation: affiliationTodos,
     kpiReviews: kpiReviewTodos,
     surveys: features.surveys ? mySurveys : [],
     medicalReviews,
@@ -241,7 +238,6 @@ export default function HomeScreen() {
       refresh(),
       reloadPending(),
       reloadSafetyTodos(),
-      reloadAffiliationTodos(),
       reloadConductTodos(),
       reloadPersonalTasks(),
       plans.reloadSummary(),

@@ -605,8 +605,8 @@ let clubFeatures: Partial<Record<string, boolean>> = {};
 
 /**
  * The club's saved feature switches, as an admin set them in Club settings.
- * Anything left out takes the app's default (on, except Season KPIs and
- * Affiliation records).
+ * Anything left out takes the app's default (on, except training load flags,
+ * Season KPIs and the registers).
  */
 export function setClubFeatures(features: Partial<Record<string, boolean>> = {}) {
   clubFeatures = features;
