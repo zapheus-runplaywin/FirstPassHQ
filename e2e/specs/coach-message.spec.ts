@@ -47,7 +47,10 @@ test('a coach messages their squad, and sees who has read it', async ({ page }) 
 
   await expect(page.getByText(`Hi ${coach.full_name}`)).toBeVisible();
   await page.getByRole('button', { name: 'Messages No new messages' }).click();
-  await page.getByRole('button', { name: 'New message' }).click();
+  // Exact: "New message" is also part of the Home card's name ("Messages No new
+  // messages"), which can still be showing when the click starts. Playwright then
+  // picks the card, which Home hides a moment later, and waits for it until timeout.
+  await page.getByRole('button', { name: 'New message', exact: true }).click();
 
   // Their one squad is chosen for them; coaches can't message the club or a role.
   await expect(page.getByRole('button', { name: openSquad.name, exact: true })).toBeVisible();
@@ -117,7 +120,7 @@ test('an athlete has no New message button, and /messages/new sends them Home', 
   await expect(page.getByText(`Hi ${athlete.full_name}`)).toBeVisible();
   await page.getByRole('button', { name: 'Messages No new messages' }).click();
   await expect(page.getByText('No messages yet.', { exact: false })).toBeVisible();
-  await expect(page.getByRole('button', { name: 'New message' })).toHaveCount(0);
+  await expect(page.getByRole('button', { name: 'New message', exact: true })).toHaveCount(0);
   await expect(page.getByRole('button', { name: 'Sent', exact: true })).toHaveCount(0);
   expect(backend.called('rpc/my_sent_messages')).toBe(false);
 

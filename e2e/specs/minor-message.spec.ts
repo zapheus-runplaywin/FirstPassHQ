@@ -42,7 +42,7 @@ test('an athlete under 18 reads a message, with no way to reply', async ({ page 
   await expect(page.getByText(`Hi ${minor.full_name}`)).toBeVisible();
   await page.getByRole('button', { name: 'Messages 1 1 new message' }).click();
   // Athletes can't send messages, so the inbox has no New message button.
-  await expect(page.getByRole('button', { name: 'New message' })).toHaveCount(0);
+  await expect(page.getByRole('button', { name: 'New message', exact: true })).toHaveCount(0);
   await page.getByRole('button', { name: `Unread ${message.sender_name} 7:05 am To ${u17Squad.name} ${message.body}` }).click();
 
   await expect(page).toHaveURL(new RegExp(`/messages/${message.id}$`));
