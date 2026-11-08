@@ -140,7 +140,7 @@ test('a guardian reads the copy of a message to their child, with no way to repl
   await page.getByRole('button', { name: 'Messages 1 1 new message' }).click();
   // Guardians can't send messages.
   await expect(page.getByText(`Copied to you as ${minor.full_name}’s parent or guardian`)).toBeVisible();
-  await expect(page.getByRole('button', { name: 'New message' })).toHaveCount(0);
+  await expect(page.getByRole('button', { name: 'New message', exact: true })).toHaveCount(0);
   expect(backend.called('rpc/my_sent_messages')).toBe(false);
   await page.getByRole('button', { name: new RegExp(`^Unread ${message.sender_name}`) }).click();
 
