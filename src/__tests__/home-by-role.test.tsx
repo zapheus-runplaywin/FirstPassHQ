@@ -228,6 +228,133 @@ describe.each(BY_ROLE)('$who', ({ who, sees }) => {
   });
 });
 
+// ---------------------------------------------------------------------------
+// The order of the home screen (Matt, 2026-11-12): To do, Coming up, Messages,
+// check-ins, attendance, Injuries, Session plans, Concerns, Administration
+// (Reports for the committee), then the cards outside that list in their
+// earlier order, the guardian and squad sections, and Raise a concern last.
+
+/** Every piece of text on the screen, top to bottom. */
+function textsInOrder(): string[] {
+  const texts: string[] = [];
+  const walk = (node: unknown): void => {
+    if (node == null) return;
+    if (typeof node === 'string') {
+      texts.push(node);
+    } else if (Array.isArray(node)) {
+      node.forEach(walk);
+    } else if (typeof node === 'object' && 'children' in node) {
+      walk((node as { children: unknown }).children);
+    }
+  };
+  walk(screen.toJSON());
+  return texts;
+}
+
+/** Each heading is on the screen, and they come in this order. */
+function expectInOrder(headings: string[]) {
+  const texts = textsInOrder();
+  const found = headings.map((h) => [h, texts.indexOf(h)] as const);
+  expect(found.filter(([, i]) => i < 0).map(([h]) => h)).toEqual([]);
+  const sorted = [...found].sort((a, b) => a[1] - b[1]).map(([h]) => h);
+  expect(sorted).toEqual(headings);
+}
+
+describe('home screen order', () => {
+  it('an athlete: To do, calendar, messages, check-in, attendance, injuries, then squads', async () => {
+    await openHome('athlete');
+    expectInOrder([
+      'To do',
+      'Coming up',
+      'Messages',
+      'Daily check-in',
+      'My attendance',
+      'Injuries',
+      'My squads and teams',
+      'Raise a concern',
+    ]);
+  });
+
+  it('a coach: session plans after injuries, surveys after the main list', async () => {
+    await openHome({
+      ...personas.coach,
+      rpcs: { session_plan_summary: [{ can_add: true, shared: 0, new_shared: 0 }] },
+    });
+    expectInOrder([
+      'To do',
+      'Coming up',
+      'Messages',
+      'Check-ins',
+      'Attendance',
+      'Injuries',
+      'Session plans',
+      'Surveys',
+      'My squads and teams',
+      'Raise a concern',
+    ]);
+  });
+
+  it('an admin: Concerns then Administration, then surveys and integrity training', async () => {
+    await openHome('admin');
+    expectInOrder([
+      'To do',
+      'Coming up',
+      'Messages',
+      'Check-ins',
+      'Attendance',
+      'Injuries',
+      'Concerns',
+      'Administration',
+      'Surveys',
+      'Integrity training',
+      'Raise a concern',
+    ]);
+  });
+
+  it('a committee member: Reports where Administration would be', async () => {
+    await openHome('committee');
+    expectInOrder([
+      'To do',
+      'Coming up',
+      'Messages',
+      'Check-ins',
+      'Attendance',
+      'Injuries',
+      'Reports',
+      'Surveys',
+      'Integrity training',
+      'Raise a concern',
+    ]);
+  });
+
+  it('an athlete who checks in and sees others’ check-ins has both together', async () => {
+    const athleteCoach: Persona = {
+      ...personas.coach,
+      profile: { ...personas.coach.profile!, extra_roles: ['athlete'] },
+    };
+    await openHome(athleteCoach);
+    const texts = textsInOrder();
+    expect(texts.indexOf('Check-ins')).toBe(texts.indexOf('Daily check-in') + 2);
+  });
+
+  it('a guardian: the main cards, then their children, then squads', async () => {
+    await openHome('guardian');
+    expectInOrder([
+      'To do',
+      'Coming up',
+      'Messages',
+      'Injuries',
+      'Guardian of',
+      'Consent',
+      'Attendance',
+      'Check-ins',
+      'What’s changed',
+      'My squads and teams',
+      'Raise a concern',
+    ]);
+  });
+});
+
 describe('administration and concerns', () => {
   it('only an approved admin has the Administration card, and it opens Administration', async () => {
     await openHome('admin');

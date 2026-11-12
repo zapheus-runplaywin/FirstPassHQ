@@ -331,8 +331,30 @@ export default function HomeScreen() {
 
         {approved ? <AdminChildInjuriesClosed /> : null}
 
+        {/* Main order: To do, Coming up, Messages, check-ins, attendance, Injuries, Session
+            plans, Concerns, Reports or Administration. Raise a concern stays last. */}
         {approved ? (
           <TodoList todos={todos} personalTasks={personalTasks} onToggleTask={setTaskDone} />
+        ) : null}
+
+        {approved && features.calendar ? (
+          <View style={styles.section}>
+            <View style={styles.sectionHeader}>
+              <ThemedText type="smallBold">Coming up</ThemedText>
+              <Pressable accessibilityRole="button" onPress={() => router.push('/calendar')}>
+                <ThemedText type="small" style={{ color: theme.tint }}>
+                  Full calendar
+                </ThemedText>
+              </Pressable>
+            </View>
+            {events === null ? null : events.length === 0 ? (
+              <ThemedText type="small" themeColor="textSecondary">
+                Nothing on the calendar yet.
+              </ThemedText>
+            ) : (
+              <EventGrid events={events.slice(0, UPCOMING_COUNT)} showDay />
+            )}
+          </View>
         ) : null}
 
         {getsMessages && features.messages ? (
@@ -351,28 +373,6 @@ export default function HomeScreen() {
               {unreadCount === 0
                 ? 'No new messages'
                 : `${unreadCount} new ${unreadCount === 1 ? 'message' : 'messages'}`}
-            </ThemedText>
-          </PressableCard>
-        ) : null}
-
-        {features.surveys && (canSendSurveys || mySurveys.length > 0) ? (
-          <PressableCard onPress={() => router.push('/surveys')}>
-            <View style={styles.cardTitleRow}>
-              <ThemedText type="smallBold">Surveys</ThemedText>
-              {surveysWaiting > 0 ? (
-                <View style={[styles.badge, { backgroundColor: theme.accent }]}>
-                  <ThemedText type="smallBold" style={{ color: theme.onAccent }}>
-                    {surveysWaiting}
-                  </ThemedText>
-                </View>
-              ) : null}
-            </View>
-            <ThemedText type="small" themeColor="textSecondary">
-              {surveysWaiting > 0
-                ? `${surveysWaiting} to answer`
-                : canSendSurveys
-                  ? 'Send a survey and see results'
-                  : 'Nothing to answer'}
             </ThemedText>
           </PressableCard>
         ) : null}
@@ -397,6 +397,29 @@ export default function HomeScreen() {
           </PressableCard>
         ) : null}
 
+        {features.attendance && (canTakeAttendance || canViewAttendance) ? (
+          <PressableCard onPress={() => router.push('/attendance')}>
+            <ThemedText type="smallBold">Attendance</ThemedText>
+            <ThemedText type="small" themeColor="textSecondary">
+              {canTakeAttendance
+                ? 'Take attendance and see past sessions'
+                : 'See athletes’ attendance'}
+            </ThemedText>
+          </PressableCard>
+        ) : null}
+
+        {features.attendance && isAthlete && session ? (
+          <PressableCard
+            onPress={() =>
+              router.push({ pathname: '/attendance/family/[id]', params: { id: session.user.id } })
+            }>
+            <ThemedText type="smallBold">My attendance</ThemedText>
+            <ThemedText type="small" themeColor="textSecondary">
+              Your sessions, and tell your coaches if you’ll be away
+            </ThemedText>
+          </PressableCard>
+        ) : null}
+
         {features.injuries && (canSeeInjuries || canLogInjuries) ? (
           <PressableCard onPress={() => router.push('/injuries')}>
             <View style={styles.cardTitleRow}>
@@ -413,17 +436,6 @@ export default function HomeScreen() {
               {canSeeInjuries
                 ? injuriesSummary(openInjuries)
                 : 'Log an injury at training or a game'}
-            </ThemedText>
-          </PressableCard>
-        ) : null}
-
-        {features.attendance && (canTakeAttendance || canViewAttendance) ? (
-          <PressableCard onPress={() => router.push('/attendance')}>
-            <ThemedText type="smallBold">Attendance</ThemedText>
-            <ThemedText type="small" themeColor="textSecondary">
-              {canTakeAttendance
-                ? 'Take attendance and see past sessions'
-                : 'See athletes’ attendance'}
             </ThemedText>
           </PressableCard>
         ) : null}
@@ -450,14 +462,55 @@ export default function HomeScreen() {
           </PressableCard>
         ) : null}
 
-        {features.attendance && isAthlete && session ? (
-          <PressableCard
-            onPress={() =>
-              router.push({ pathname: '/attendance/family/[id]', params: { id: session.user.id } })
-            }>
-            <ThemedText type="smallBold">My attendance</ThemedText>
+        {handlesConcerns ? (
+          <PressableCard onPress={() => router.push('/concerns')}>
+            <ThemedText type="smallBold">Concerns</ThemedText>
             <ThemedText type="small" themeColor="textSecondary">
-              Your sessions, and tell your coaches if you’ll be away
+              {newConcerns > 0
+                ? `${newConcerns} new ${newConcerns === 1 ? 'concern' : 'concerns'} to look at`
+                : 'The concerns register'}
+            </ThemedText>
+          </PressableCard>
+        ) : null}
+
+        {canReadReports && !isAdmin ? (
+          <PressableCard onPress={() => router.push('/admin/reports')}>
+            <ThemedText type="smallBold">Reports</ThemedText>
+            <ThemedText type="small" themeColor="textSecondary">
+              The club’s checks, medical details checks, training, attendance and award results
+            </ThemedText>
+          </PressableCard>
+        ) : null}
+
+        {isAdmin ? (
+          <PressableCard onPress={() => router.push('/administration')}>
+            <ThemedText type="smallBold">Administration</ThemedText>
+            <ThemedText type="small" themeColor="textSecondary">
+              {pendingRequestsLabel(pendingCount)}
+            </ThemedText>
+          </PressableCard>
+        ) : null}
+
+        {/* Cards outside the main order, in their earlier order. */}
+
+        {features.surveys && (canSendSurveys || mySurveys.length > 0) ? (
+          <PressableCard onPress={() => router.push('/surveys')}>
+            <View style={styles.cardTitleRow}>
+              <ThemedText type="smallBold">Surveys</ThemedText>
+              {surveysWaiting > 0 ? (
+                <View style={[styles.badge, { backgroundColor: theme.accent }]}>
+                  <ThemedText type="smallBold" style={{ color: theme.onAccent }}>
+                    {surveysWaiting}
+                  </ThemedText>
+                </View>
+              ) : null}
+            </View>
+            <ThemedText type="small" themeColor="textSecondary">
+              {surveysWaiting > 0
+                ? `${surveysWaiting} to answer`
+                : canSendSurveys
+                  ? 'Send a survey and see results'
+                  : 'Nothing to answer'}
             </ThemedText>
           </PressableCard>
         ) : null}
@@ -498,17 +551,6 @@ export default function HomeScreen() {
           </PressableCard>
         ) : null}
 
-        {handlesConcerns ? (
-          <PressableCard onPress={() => router.push('/concerns')}>
-            <ThemedText type="smallBold">Concerns</ThemedText>
-            <ThemedText type="small" themeColor="textSecondary">
-              {newConcerns > 0
-                ? `${newConcerns} new ${newConcerns === 1 ? 'concern' : 'concerns'} to look at`
-                : 'The concerns register'}
-            </ThemedText>
-          </PressableCard>
-        ) : null}
-
         {canReadRegisters ? (
           <PressableCard onPress={() => router.push('/registers')}>
             <ThemedText type="smallBold">Registers</ThemedText>
@@ -516,44 +558,6 @@ export default function HomeScreen() {
               The club’s policies and conflicts of interest
             </ThemedText>
           </PressableCard>
-        ) : null}
-
-        {canReadReports && !isAdmin ? (
-          <PressableCard onPress={() => router.push('/admin/reports')}>
-            <ThemedText type="smallBold">Reports</ThemedText>
-            <ThemedText type="small" themeColor="textSecondary">
-              The club’s checks, medical details checks, training, attendance and award results
-            </ThemedText>
-          </PressableCard>
-        ) : null}
-
-        {isAdmin ? (
-          <PressableCard onPress={() => router.push('/administration')}>
-            <ThemedText type="smallBold">Administration</ThemedText>
-            <ThemedText type="small" themeColor="textSecondary">
-              {pendingRequestsLabel(pendingCount)}
-            </ThemedText>
-          </PressableCard>
-        ) : null}
-
-        {approved && features.calendar ? (
-          <View style={styles.section}>
-            <View style={styles.sectionHeader}>
-              <ThemedText type="smallBold">Coming up</ThemedText>
-              <Pressable accessibilityRole="button" onPress={() => router.push('/calendar')}>
-                <ThemedText type="small" style={{ color: theme.tint }}>
-                  Full calendar
-                </ThemedText>
-              </Pressable>
-            </View>
-            {events === null ? null : events.length === 0 ? (
-              <ThemedText type="small" themeColor="textSecondary">
-                Nothing on the calendar yet.
-              </ThemedText>
-            ) : (
-              <EventGrid events={events.slice(0, UPCOMING_COUNT)} showDay />
-            )}
-          </View>
         ) : null}
 
         {isGuardian && !profile?.verified_at ? (

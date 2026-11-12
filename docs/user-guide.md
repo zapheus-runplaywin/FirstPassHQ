@@ -358,17 +358,21 @@ Once you're approved, the home screen is where everything starts. From the top:
   covers every to-do with a due date: your own tasks, integrity training, KPI reviews you write, game
   goals (due on game day) and an injury past its expected return date. For admins, Working With
   Children Checks work the same way (see [Admins](#10-admins)).
-- **Cards** for the features your role uses: Messages, Daily check-in, Check-ins,
-  Injuries, Attendance, Session plans, My attendance, Awards, Integrity training, Season KPIs,
-  Concerns, Reports and Administration. Athletes fill in their own check-in from **Daily check-in**.
+- **Coming up**: the next six events from your calendars, when the club uses the calendar. Tap
+  **Full calendar** to see them all.
+- **Cards** for the features your role uses, in this order: Messages, Daily check-in, Check-ins,
+  Attendance, My attendance, Injuries, Session plans, Concerns, and Reports or Administration.
+  After those come Surveys, Awards, Integrity training, Season KPIs and Registers. Athletes fill
+  in their own check-in from **Daily check-in**.
   Coaches read their athletes' check-ins from **Check-ins**, and committee members, physios and
   admins see the club's averages there. Parents and guardians see their child's check-ins from
   the cards for each child instead (see [Parents and guardians](#5-parents-and-guardians)). The
   Awards card shows while an award vote is open to you, and Session plans once a coach has shared
   one with you. **Reports** is for committee members with a current check (admins find Reports in
   Administration). A number in the club's colour means something new or waiting for you.
-- **Coming up**: the next six events from your calendars, when the club uses the calendar. Tap
-  **Full calendar** to see them all.
+- **Parents and guardians** then see who they're the guardian of and a card for each child under
+  **Consent**, **Medical and emergency**, **Attendance**, **Check-ins**, **What's changed** and
+  **Who has viewed their records** (see [Parents and guardians](#5-parents-and-guardians)).
 - **My squads and teams** (**My teams** in a club without squads): tap one to see who's in it. A
   team's page also has its [game goals](#game-goals) for its athletes and coaches. Committee
   members and admins only see this when they're in a squad or team, for example as a coach too.
@@ -718,7 +722,7 @@ FirstPass HQ.
 
 ## 4. Athletes
 
-Athletes see Messages, Daily check-in, Injuries and My attendance on their home screen, plus
+Athletes see Messages, Daily check-in, My attendance and Injuries on their home screen, plus
 Session plans once a coach has shared one, Awards while a vote is open, Integrity training and
 Season KPIs when the club uses them, their calendar and squads. Game goals are on each team's
 page.
