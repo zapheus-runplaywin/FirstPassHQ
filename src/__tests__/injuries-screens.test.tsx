@@ -188,7 +188,7 @@ describe('the injuries list', () => {
   it('asks the database for cleared injuries only when chosen', async () => {
     await openList('committee', []);
     expect(rpcCalls()).toContainEqual(['visible_injuries', { p_include_cleared: false }]);
-    fireEvent.press(screen.getByText('Including cleared'));
+    await fireEvent.press(screen.getByText('Including cleared'));
     await settle();
     expect(rpcCalls()).toContainEqual(['visible_injuries', { p_include_cleared: true }]);
     expect(screen.getByText('No injuries have been reported.')).toBeTruthy();
@@ -347,9 +347,9 @@ describe('one injury', () => {
 
     it('opens the send-back form, which needs a reason', async () => {
       await openInjury('committee', requested);
-      fireEvent.press(screen.getByText('Send back'));
+      await fireEvent.press(screen.getByText('Send back'));
       expect(screen.getByText('Why is it being sent back?')).toBeTruthy();
-      fireEvent.press(screen.getAllByText('Send back').at(-1)!);
+      await fireEvent.press(screen.getAllByText('Send back').at(-1)!);
       await settle();
       expect(screen.getByText('Say why it’s being sent back.')).toBeTruthy();
       expect(rpcCalls().map(([name]) => name)).not.toContain('send_back_clearance');
@@ -387,7 +387,7 @@ describe('one injury', () => {
 
     it('warns before accepting that it clears the athlete to play', async () => {
       await openInjury('committee', { ...endorsed, waiting_for_me: true });
-      fireEvent.press(screen.getByText('Accept clearance'));
+      await fireEvent.press(screen.getByText('Accept clearance'));
       expect(screen.getByText('Accept and clear to play')).toBeTruthy();
       expect(
         screen.getByText(

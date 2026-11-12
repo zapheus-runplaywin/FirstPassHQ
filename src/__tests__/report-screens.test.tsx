@@ -12,7 +12,6 @@ import { fireEvent, screen } from 'expo-router/testing-library';
 import { Text } from 'react-native';
 import * as Sharing from 'expo-sharing';
 
-import AffiliationReportScreen from '@/app/admin/reports/affiliation';
 import AttendanceReportScreen from '@/app/admin/reports/attendance';
 import AwardReportScreen from '@/app/admin/reports/award';
 import AwardResultsScreen from '@/app/admin/reports/awards';
@@ -23,7 +22,6 @@ import MedicalCheckReportScreen from '@/app/admin/reports/medical';
 import SessionPlanReportScreen from '@/app/admin/reports/session-plans';
 import Under18sReportScreen from '@/app/admin/reports/under-18s';
 import WwccReportScreen from '@/app/admin/reports/wwcc';
-import type { Affiliation } from '@/lib/affiliation';
 import { formatDateString } from '@/lib/injuries';
 import type { MedicalComplianceRow } from '@/lib/medical';
 import { supabase } from '@/lib/supabase';
@@ -102,7 +100,7 @@ function stat(label: string) {
 
 /** Taps Export PDF and reads back the file it shared. */
 async function exportPdf() {
-  fireEvent.press(screen.getByText('Export PDF'));
+  await fireEvent.press(screen.getByText('Export PDF'));
   await settle();
   expect(written).toHaveLength(1);
   expect(Sharing.shareAsync).toHaveBeenCalledWith(written[0].uri, expect.objectContaining({ mimeType: 'application/pdf' }));
@@ -114,8 +112,8 @@ const recordTable = (rows: unknown) => (q: QueryInfo) => {
   return rows;
 };
 /** Taps a filter chip; chips come before the report, which may repeat the name. */
-function chip(label: string) {
-  fireEvent.press(screen.getAllByText(label)[0]);
+async function chip(label: string) {
+  await fireEvent.press(screen.getAllByText(label)[0]);
 }
 
 const argOf = (q: QueryInfo, method: string) => q.calls.find((c) => c.method === method)?.args;
@@ -131,8 +129,8 @@ function PlanPlaceholder() {
 // ---------------------------------------------------------------------------
 
 describe('Reports', () => {
-  it('lists every report whose feature is on, and Affiliation only when its records are on', async () => {
-    setClubFeatures({ kpis: true, affiliation: true });
+  it('lists every report whose feature is on', async () => {
+    setClubFeatures({ kpis: true });
     await open('admin/reports/index', ReportsScreen, {}, {}, '/admin/reports');
     for (const title of [
       'Working With Children Checks',
@@ -144,10 +142,18 @@ describe('Reports', () => {
       'Session plans',
       'Award results',
       'Season KPIs',
-      'Affiliation',
     ]) {
       expect(screen.getByText(title)).toBeTruthy();
     }
+  });
+
+  it('has no Affiliation report, even for a club that turned the old switch on', async () => {
+    // Affiliation was removed on 7 November 2026: the app is for clubs only.
+    setClubFeatures({ kpis: true, affiliation: true });
+    await open('admin/reports/index', ReportsScreen, {}, {}, '/admin/reports');
+    expect(screen.getByText('Season KPIs')).toBeTruthy();
+    expect(screen.queryByText('Affiliation')).toBeNull();
+    expect(screen.queryByText(/affiliation/i)).toBeNull();
   });
 
   it.each([
@@ -160,16 +166,15 @@ describe('Reports', () => {
     ['Session plans', '/admin/reports/session-plans'],
     ['Award results', '/admin/reports/awards'],
     ['Season KPIs', '/admin/reports/kpis'],
-    ['Affiliation', '/admin/reports/affiliation'],
   ])('opens %s', async (title, path) => {
-    setClubFeatures({ kpis: true, affiliation: true });
+    setClubFeatures({ kpis: true });
     const target = path.slice(1);
     await openScreen(
       'admin',
       { 'admin/reports/index': ReportsScreen, [target]: () => <Text>{`screen:${target}`}</Text> },
       '/admin/reports',
     );
-    fireEvent.press(screen.getByText(title));
+    await fireEvent.press(screen.getByText(title));
     await settle();
     expect(screen.getByText(`screen:${target}`)).toBeTruthy();
     expect(screen).toHavePathname(path);
@@ -181,9 +186,28 @@ describe('Reports', () => {
     expect(screen.getByText('Working With Children Checks')).toBeTruthy();
     expect(screen.getByText('Under 18s and their guardians')).toBeTruthy();
     expect(screen.getByText('Medical details checks')).toBeTruthy();
-    for (const title of ['Integrity training', 'Injuries', 'Attendance', 'Session plans', 'Award results', 'Season KPIs', 'Affiliation']) {
+    for (const title of ['Integrity training', 'Injuries', 'Attendance', 'Session plans', 'Award results', 'Season KPIs']) {
       expect(screen.queryByText(title)).toBeNull();
     }
+  });
+});
+
+describe('Reports for a committee member with a check', () => {
+  it('lists the reports they read, read only, and leaves out the admin-only ones', async () => {
+    setClubFeatures({ kpis: true });
+    await openScreen('committee', { 'admin/reports/index': ReportsScreen }, '/admin/reports');
+    expect(screen.getByText('Each report shows on screen and saves as a PDF. You can read them; admins make the changes.')).toBeTruthy();
+    for (const title of ['Working With Children Checks', 'Medical details checks', 'Integrity training', 'Attendance', 'Award results']) {
+      expect(screen.getByText(title)).toBeTruthy();
+    }
+    for (const title of ['Under 18s and their guardians', 'Injuries', 'Session plans', 'Season KPIs']) {
+      expect(screen.queryByText(title)).toBeNull();
+    }
+  });
+
+  it('admins keep their own intro', async () => {
+    await open('admin/reports/index', ReportsScreen, {}, {}, '/admin/reports');
+    expect(screen.getByText('Each report shows on screen and saves as a PDF for the committee or an audit.')).toBeTruthy();
   });
 });
 
@@ -203,12 +227,16 @@ describe('Working With Children Checks', () => {
       {
         ...options,
         tableHandlers: {
-          profiles: (q) => (q.eq('status') === 'approved' ? [coach, manager, athlete] : undefined),
           team_members: (q) =>
             q.eq('profile_id') === undefined ? [{ team_id: 't1', profile_id: 'c1', team_role: 'coach' }] : undefined,
           ...options.tableHandlers,
         },
-        rpcs: { admin_volunteer_exemptions: [], admin_wwc_officer: [{ officer_name: 'Wren Officer' }], ...options.rpcs },
+        rpcs: {
+          report_members: [coach, manager, athlete],
+          admin_volunteer_exemptions: [],
+          admin_wwc_officer: [{ officer_name: 'Wren Officer' }],
+          ...options.rpcs,
+        },
       },
     );
   }
@@ -250,7 +278,7 @@ describe('Working With Children Checks', () => {
   it('shows why the PDF didn’t save', async () => {
     await openWwcc();
     (Sharing.shareAsync as jest.Mock).mockRejectedValueOnce(new Error('Sharing isn’t available'));
-    fireEvent.press(screen.getByText('Export PDF'));
+    await fireEvent.press(screen.getByText('Export PDF'));
     await settle();
     expect(screen.getByText('Sharing isn’t available')).toBeTruthy();
   });
@@ -330,7 +358,7 @@ describe('Integrity training', () => {
     expect(screen.getByText('Course 2026')).toBeTruthy();
     expect(stat('Still to finish')).toBe('1');
 
-    chip('2025–26');
+    await chip('2025–26');
     await settle();
     expect(screen.getByText('Sports Integrity Australia courses for 2025–26')).toBeTruthy();
     expect(screen.getByText('Course 2025')).toBeTruthy();
@@ -371,7 +399,7 @@ describe('Season KPIs', () => {
     expect(screen.getByText('Coaches’ and managers’ KPIs and OKRs for 2026–27')).toBeTruthy();
     expect(screen.getByText('Open A 2026')).toBeTruthy();
     expect(stat('Without KPIs')).toBe('1');
-    chip('2025–26');
+    await chip('2025–26');
     await settle();
     expect(screen.getByText('Open A 2025')).toBeTruthy();
   });
@@ -379,72 +407,6 @@ describe('Season KPIs', () => {
   it('shows the database’s message', async () => {
     await open('admin/reports/kpis', KpiReportScreen, { teams: [] }, { rpcErrors: { season_kpi_report: 'Admins only' } });
     expect(screen.getByText('Admins only')).toBeTruthy();
-  });
-});
-
-// ---------------------------------------------------------------------------
-
-describe('Affiliation', () => {
-  const affiliation: Affiliation = {
-    member_type: 'club',
-    tier: null,
-    incorporation_number: null,
-    affiliated_with: 'Sample Association',
-    registered_on: '2026-03-01',
-    primary_contact_1_id: null,
-    primary_contact_1_name: null,
-    primary_contact_2_id: null,
-    primary_contact_2_name: null,
-    checks: {},
-    notes: null,
-    updated_at: null,
-    updated_by_name: null,
-    season: 2026,
-    team_count: 2,
-    registrations_total: 2,
-    registered: 1,
-    not_registered: 0,
-  };
-
-  it('loads this season’s registrations and exports the report', async () => {
-    let asked: unknown = null;
-    await open('admin/reports/affiliation', AffiliationReportScreen, {}, {
-      rpcs: { admin_affiliation: [affiliation], admin_affiliation_officers: [] },
-      rpcHandlers: {
-        admin_playhq_registrations: (args) => {
-          asked = args;
-          return [
-            { profile_id: 'p', name: 'Reg Sample', playhq_email: null, email: null, team_roles: ['athlete'], groups: ['Open A'], registered: null, checked_at: null, checked_by_name: null },
-          ];
-        },
-      },
-    });
-    expect(asked).toEqual({ p_season: 2026 });
-    expect(stat('Registered in PlayHQ 2026–27')).toBe('1 of 2');
-    expect(stat('Still to check')).toBe('1');
-    expect(screen.getByText('Reg Sample')).toBeTruthy();
-    const { name, pdf } = await exportPdf();
-    expect(name).toBe('sample-affiliation-2026-10-18.pdf');
-    expect(pdf.text).toContain('Reg Sample');
-    expect(pdf.text).toContain('Sample Association');
-  });
-
-  it('doesn’t ask for registrations without a season', async () => {
-    const asked = jest.fn(() => []);
-    await open('admin/reports/affiliation', AffiliationReportScreen, {}, {
-      rpcs: { admin_affiliation: [{ ...affiliation, season: null }], admin_affiliation_officers: [] },
-      rpcHandlers: { admin_playhq_registrations: asked },
-    });
-    expect(asked).not.toHaveBeenCalled();
-    expect(screen.getByText('Nobody is in a squad or team this season.')).toBeTruthy();
-  });
-
-  it('shows why the report didn’t load', async () => {
-    await open('admin/reports/affiliation', AffiliationReportScreen, {}, {
-      rpcs: { admin_affiliation: [], admin_affiliation_officers: [] },
-    });
-    expect(screen.getByText('The report didn’t load. Try again.')).toBeTruthy();
-    expect(screen.queryByText('Export PDF')).toBeNull();
   });
 });
 
@@ -496,7 +458,7 @@ describe('Award results', () => {
     // Only awards closed by now, newest first.
     expect(argOf(seen[0], 'lte')).toEqual(['closes_at', '2026-10-18T02:00:00.000Z']);
     expect(argOf(seen[0], 'order')).toEqual(['closes_at', { ascending: false }]);
-    fireEvent.press(screen.getByText('Best and Fairest'));
+    await fireEvent.press(screen.getByText('Best and Fairest'));
     await settle();
     expect(screen).toHavePathname('/admin/reports/award');
     expect(screen.getByText('Standings · Open A')).toBeTruthy();
@@ -544,7 +506,7 @@ describe('Attendance', () => {
   ];
   const marks = [
     { session_id: 's1', profile_id: 'amy', present: true, member_name: null },
-    { session_id: 's1', profile_id: 'ben', present: false, member_name: null },
+    { session_id: 's1', profile_id: 'ben', present: false, member_name: 'Ben Sample' },
     { session_id: 's2', profile_id: 'cal', present: true, member_name: null },
     { session_id: 'c1', profile_id: 'amy', present: true, member_name: null },
   ];
@@ -559,16 +521,14 @@ describe('Attendance', () => {
     await open('admin/reports/attendance', AttendanceReportScreen, { teams: [SQUAD, TEAM_A, U12], attendance_marks: marks }, {
       tableHandlers: {
         attendance_sessions: recordTable(sessions),
-        profiles: (q) =>
-          q.eq('id') === undefined
-            ? [
-                { id: 'amy', full_name: 'Amy Sample', email: null },
-                { id: 'ben', full_name: null, email: 'ben@example.test' },
-                { id: 'cal', full_name: 'Cal Sample', email: null },
-              ]
-            : undefined,
+        profiles: recordTable([]),
       },
       rpcHandlers: {
+        // Ben has left the club, so report_members no longer lists him.
+        report_members: () => [
+          { id: 'amy', full_name: 'Amy Sample' },
+          { id: 'cal', full_name: 'Cal Sample' },
+        ],
         absence_report: (args) => {
           absenceArgs.push(args);
           return absences;
@@ -595,8 +555,11 @@ describe('Attendance', () => {
     expect(stat('Times present')).toBe('3');
     expect(stat('Attendance')).toBe('75%');
     expect(stat('Reported absences')).toBe('2');
-    // A member with no name is shown by their email.
-    expect(texts()).toContain('ben@example.test');
+    // A member who has left is shown by the name kept on their mark.
+    expect(texts()).toContain('Ben Sample');
+    // Names come from report_members, never from other members' profiles
+    // (which the committee can't read in full); only the signed-in member's own.
+    expect(seen.filter((q) => q.name === 'profiles' && q.eq('id') === undefined)).toEqual([]);
   });
 
   it.each([
@@ -604,7 +567,7 @@ describe('Attendance', () => {
     ['This season', '2026-05-01'],
   ])('changes the period to %s', async (label, from) => {
     await openAttendance();
-    chip(label);
+    await chip(label);
     await settle();
     expect(absenceArgs[absenceArgs.length - 1]).toEqual({ p_from: from, p_to: '2026-10-18' });
     expect(sessionWindow()[0]).toEqual(['held_at', new Date(`${from}T00:00:00`).toISOString()]);
@@ -612,7 +575,7 @@ describe('Attendance', () => {
 
   it('offers a from and to date when choosing dates', async () => {
     await openAttendance();
-    chip('Choose dates');
+    await chip('Choose dates');
     await settle();
     expect(screen.getByText('From')).toBeTruthy();
     expect(screen.getByText('To')).toBeTruthy();
@@ -621,7 +584,7 @@ describe('Attendance', () => {
 
   it('counts only the chosen team, and the absences of athletes on its register', async () => {
     await openAttendance();
-    chip('Under 12');
+    await chip('Under 12');
     await settle();
     expect(screen.getByText(`${day('2026-09-20')} to ${day('2026-10-18')} · Under 12`)).toBeTruthy();
     expect(stat('Sessions')).toBe('1');
@@ -634,33 +597,33 @@ describe('Attendance', () => {
 
   it('includes a squad’s teams, and club events only when chosen', async () => {
     await openAttendance();
-    chip('17 & Under Squad');
+    await chip('17 & Under Squad');
     await settle();
     expect(stat('Sessions')).toBe('1');
     expect(texts()).toContain('Session: Training A');
-    chip('Whole club events');
+    await chip('Whole club events');
     await settle();
     expect(stat('Sessions')).toBe('2');
     expect(texts()).toContain('Session: Club day');
     expect(screen.getByText(`${day('2026-09-20')} to ${day('2026-10-18')} · Whole club events, 17 & Under Squad`)).toBeTruthy();
     // All starts over.
-    chip('All');
+    await chip('All');
     await settle();
     expect(stat('Sessions')).toBe('3');
   });
 
   it('goes back to All when the last chosen group is turned off', async () => {
     await openAttendance();
-    chip('Under 12');
+    await chip('Under 12');
     await settle();
-    chip('Under 12');
+    await chip('Under 12');
     await settle();
     expect(stat('Sessions')).toBe('3');
   });
 
   it('exports what is shown for the chosen groups', async () => {
     await openAttendance();
-    chip('Under 12');
+    await chip('Under 12');
     await settle();
     const { name, pdf } = await exportPdf();
     expect(name).toBe('sample-attendance-2026-10-18.pdf');
@@ -718,14 +681,14 @@ describe('Session plans', () => {
 
   it('changes the period', async () => {
     await openPlans();
-    chip('Last 4 weeks');
+    await chip('Last 4 weeks');
     await settle();
     expect(planArgs[planArgs.length - 1]).toEqual({ p_from: '2026-09-20', p_to: '2026-10-18' });
   });
 
   it('includes a squad’s teams when the squad is chosen, and nothing else', async () => {
     await openPlans();
-    chip('17 & Under Squad');
+    await chip('17 & Under Squad');
     await settle();
     expect(stat('Plans')).toBe('1');
     expect(texts()).toContain('Session: Plan p1');
@@ -739,7 +702,7 @@ describe('Session plans', () => {
 
   it('opens a plan from the list', async () => {
     await openPlans();
-    fireEvent.press(screen.getByText('07/10/2026 · Under 12 · Plan p2'));
+    await fireEvent.press(screen.getByText('07/10/2026 · Under 12 · Plan p2'));
     await settle();
     expect(screen.getByText('screen:session-plan')).toBeTruthy();
     expect(screen).toHavePathname('/session-plans/p2');
@@ -786,6 +749,59 @@ describe('Medical details checks', () => {
     expect(pdf.text).toContain('50%');
     expect(pdf.text).toContain(formatDateString('2026-09-01'));
     expect(pdf.text).toContain('This report shows no medical details');
+  });
+
+  const SQUAD = team('sq', '17 & Under Squad', { kind: 'squad', sort_order: 1 });
+  const TEAM_A = team('ta', '17 & Under A', { squad_id: 'sq', sort_order: 2 });
+  const OPEN = team('op', 'Open A', { sort_order: 3 });
+  const PLACES = [
+    { team_id: 'ta', profile_id: 'Cam Child', team_role: 'athlete' },
+    { team_id: 'sq', profile_id: 'Dee New', team_role: 'athlete' },
+    { team_id: 'op', profile_id: 'Ada Adult', team_role: 'athlete' },
+    { team_id: 'op', profile_id: 'Bo Overdue', team_role: 'athlete' },
+  ];
+  const openFiltered = () =>
+    open('admin/reports/medical', MedicalCheckReportScreen, { teams: [SQUAD, TEAM_A, OPEN] }, {
+      tableHandlers: { team_members: (q) => (q.eq('team_role') === 'athlete' ? PLACES : undefined) },
+      rpcs: { medical_review_compliance: ROWS },
+    });
+
+  it('filters by squad, including the teams named from it', async () => {
+    await openFiltered();
+    expect(screen.getByText('Bo Overdue')).toBeTruthy();
+    await chip('17 & Under Squad');
+    await settle();
+    expect(screen.queryByText('Bo Overdue')).toBeNull();
+    expect(screen.queryByText('Ada Adult')).toBeNull();
+    expect(screen.getByText('Cam Child')).toBeTruthy();
+    expect(screen.getByText('Dee New')).toBeTruthy();
+    expect(screen.getByText(/Approved athletes in 17 & Under Squad on/)).toBeTruthy();
+  });
+
+  it('filters by a team, and goes back to everyone with All', async () => {
+    await openFiltered();
+    await chip('Open A');
+    await settle();
+    expect(screen.getByText('Bo Overdue')).toBeTruthy();
+    expect(screen.queryByText('Cam Child')).toBeNull();
+    const { pdf } = await exportPdf();
+    expect(pdf.text).toContain('Approved athletes in Open A on');
+    expect(pdf.text).not.toContain('Dee New');
+    await chip('All');
+    await settle();
+    expect(screen.getByText('Cam Child')).toBeTruthy();
+    expect(screen.queryByText(/Approved athletes in/)).toBeNull();
+  });
+
+  it('counts only the chosen squads and teams', async () => {
+    await openFiltered();
+    await chip('17 & Under A');
+    await settle();
+    expect(screen.getByText('Cam Child')).toBeTruthy();
+    expect(screen.queryByText('Dee New')).toBeNull();
+    await chip('17 & Under A');
+    await settle();
+    expect(screen.getByText('Dee New')).toBeTruthy();
   });
 
   it('shows the database’s refusal', async () => {

@@ -5,11 +5,12 @@ import { ThemedText } from '@/components/themed-text';
 import { ConfirmDelete, ErrorText } from '@/components/ui';
 import { useAuth } from '@/lib/auth';
 import { useClub } from '@/lib/club';
+import { hasRole } from '@/lib/roles';
 import { supabase } from '@/lib/supabase';
 
 export default function DeleteAccountScreen() {
   const club = useClub();
-  const { signOut } = useAuth();
+  const { profile, signOut } = useAuth();
   const [deleting, setDeleting] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
@@ -43,6 +44,13 @@ export default function DeleteAccountScreen() {
         your code of conduct acceptances, any concerns you raised (unless you hid your name) and,
         if you coach or manage, your season KPIs and their reviews.
       </ThemedText>
+      {profile && hasRole(profile, 'guardian') ? (
+        <ThemedText type="small" themeColor="textSecondary">
+          If you’re the only verified parent or guardian linked to a child under 18, their app locks
+          again until another parent or guardian is linked: they’ll see only a new link code to
+          share, and the club’s admins are told.
+        </ThemedText>
+      ) : null}
       <ThemedText type="small" themeColor="textSecondary">
         It doesn’t change your PlayHQ registration or club membership, or your account at any other
         club in FirstPass HQ. If you sign in again later, you’ll need to ask to join again.

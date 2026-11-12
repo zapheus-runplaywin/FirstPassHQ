@@ -79,9 +79,14 @@ select pg_temp.ok('admins read the link history', (select count(*) = 3 from publ
 reset role;
 
 -- An admin who is one of the child's guardians.
-select pg_temp.works('Blair, an admin, also becomes a guardian',
+-- Since 20261101000000 a parent or guardian is approved once they've entered
+-- an approved child's link code, and approving them links them: Blair entered
+-- Jordan's.
+insert into public.guardian_link_requests (guardian_id, athlete_id)
+values ('00000000-0000-0000-0000-000000000002', '00000000-0000-0000-0000-000000000031');
+select pg_temp.works('Blair, an admin, also becomes a guardian, linked to Jordan by the code',
   $s$ select public.admin_save_member('00000000-0000-0000-0000-000000000002', 'admin', 'approved', '[]', false, '{}', null, '{guardian}') $s$);
-select pg_temp.works('another admin links Blair to Jordan',
+select pg_temp.works('another admin keeps Blair linked to Jordan',
   $s$ select public.admin_save_member('00000000-0000-0000-0000-000000000031', 'athlete', 'approved',
       '[]', true, '{00000000-0000-0000-0000-000000000041,00000000-0000-0000-0000-000000000002}') $s$);
 select pg_temp.ok('the link notice goes to both guardians and Jordan', pg_temp.last_notice_to() = '02,31,41', true);

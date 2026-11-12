@@ -12,6 +12,13 @@ export const FEATURES = [
   { key: 'messages', label: 'Messages', detail: 'Group messages with read receipts' },
   { key: 'calendar', label: 'Calendar', detail: 'Club, squad and team calendars and fixtures' },
   { key: 'checkIns', label: 'Daily check-ins', detail: 'Athletes’ wellbeing check-ins and trends' },
+  {
+    key: 'trainingLoad',
+    label: 'Training load flags',
+    detail:
+      'Prompts for coaches from the sessions athletes log, each with its published source (needs Daily check-ins)',
+    offByDefault: true,
+  },
   { key: 'injuries', label: 'Injuries', detail: 'Injury reports, medical documents and clearances' },
   { key: 'attendance', label: 'Attendance', detail: 'Coaches take attendance at sessions' },
   {
@@ -40,6 +47,12 @@ export const FEATURES = [
     key: 'kpis',
     label: 'Season KPIs',
     detail: 'KPIs and OKRs for coaches, managers and athletes, with season reviews',
+    offByDefault: true,
+  },
+  {
+    key: 'registers',
+    label: 'Policy and conflict registers',
+    detail: 'Policy review dates and owners, and conflict-of-interest declarations each season',
     offByDefault: true,
   },
 ] as const;
@@ -77,8 +90,6 @@ type ClubState = {
   features: Features;
   /** Whether members join a squad before teams are named from it. */
   squads: boolean;
-  /** Whether admins keep affiliation records for the governing body. Off unless turned on. */
-  affiliation: boolean;
   reload: () => Promise<void>;
 };
 
@@ -131,8 +142,6 @@ export function resolveClub(profile: ClubProfile | null) {
     ) as Features,
     // Stored with the features, but it shapes the club rather than adding a screen.
     squads: profile?.features?.squads !== false,
-    // Most clubs don't report to a governing body this way, so it starts off.
-    affiliation: profile?.features?.affiliation === true,
   };
 }
 

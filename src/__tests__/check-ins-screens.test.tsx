@@ -258,14 +258,14 @@ describe('the check-ins screen', () => {
 
   it('offers the whole club in Trends only to those who see the overview', async () => {
     await openCheckIns('committee');
-    fireEvent.press(screen.getByText('Trends'));
+    await fireEvent.press(screen.getByText('Trends'));
     await settle();
     expect(screen.getByText('Whole club')).toBeTruthy();
   });
 
   it('offers a coach only their own groups in Trends', async () => {
     await openCheckIns('coach', { check_in_overview: OVERVIEW });
-    fireEvent.press(screen.getByText('Trends'));
+    await fireEvent.press(screen.getByText('Trends'));
     await settle();
     expect(screen.queryByText('Whole club')).toBeNull();
     expect(screen.getByText(TEAM.name)).toBeTruthy();
@@ -274,7 +274,7 @@ describe('the check-ins screen', () => {
 
   it('tells a member with no groups there’s nothing to trend', async () => {
     await openCheckIns('manager');
-    fireEvent.press(screen.getByText('Trends'));
+    await fireEvent.press(screen.getByText('Trends'));
     await settle();
     expect(screen.getByText('There’s no squad or team to show yet.')).toBeTruthy();
   });

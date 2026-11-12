@@ -135,9 +135,9 @@ describe('Squads and teams, for a club with squads', () => {
     const push = jest.spyOn(router, 'push').mockImplementation(() => {});
     await openSquads();
     // The squad's card comes before the Named from squad choice.
-    fireEvent.press(screen.getAllByText('Open Squad')[0]);
+    await fireEvent.press(screen.getAllByText('Open Squad')[0]);
     expect(push).toHaveBeenLastCalledWith({ pathname: '/team/[id]', params: { id: SQUAD.id } });
-    fireEvent.press(screen.getByText('Open A'));
+    await fireEvent.press(screen.getByText('Open A'));
     expect(push).toHaveBeenLastCalledWith({ pathname: '/admin/team/[id]', params: { id: TEAM_A.id } });
     push.mockRestore();
   });
@@ -573,7 +573,7 @@ describe('choosing who is in a team without a squad', () => {
       screen.getByText('Choosing from everyone approved as an athlete, coach or manager. Add guardians from their member page.'),
     ).toBeTruthy();
     const labels = screen
-      .UNSAFE_root.findAll((n) => typeof n.type === 'string' && typeof n.props.children === 'string')
+      .container.queryAll((n) => typeof n.type === 'string' && typeof n.props.children === 'string')
       .map((n) => n.props.children as string)
       .filter((t) => / · /.test(t));
     expect(labels).toEqual([
@@ -635,7 +635,7 @@ describe('placing returning members', () => {
 
   it('places the members picked, one by one or a whole squad at once', async () => {
     await openPlace();
-    fireEvent.press(screen.getAllByText('Pick all')[0]);
+    await fireEvent.press(screen.getAllByText('Pick all')[0]);
     await press('Remy Return');
     expect(screen.getAllByText('Clear')).toHaveLength(2);
     await press('Add 3 to Open Squad');
@@ -647,7 +647,7 @@ describe('placing returning members', () => {
 
   it('clears a squad picked by mistake', async () => {
     await openPlace();
-    fireEvent.press(screen.getAllByText('Pick all')[0]);
+    await fireEvent.press(screen.getAllByText('Pick all')[0]);
     await press('Clear');
     expect(screen.getByText('Pick who is coming back')).toBeTruthy();
     await press('Remy Return');
@@ -720,7 +720,7 @@ describe('Seasons', () => {
     await press('Archive 2025–26');
     expect(screen.getByText('Archive 2025–26?')).toBeTruthy();
     expect(screen.getByText(/Attendance, injuries and check-ins are kept/)).toBeTruthy();
-    fireEvent.press(screen.getAllByText('Archive 2025–26').at(-1)!);
+    await fireEvent.press(screen.getAllByText('Archive 2025–26').at(-1)!);
     await settle();
     expect(screen.queryByText('Archive 2025–26?')).toBeNull();
     expect(rpcsNamed('admin_set_season_archived')).toEqual([
@@ -752,7 +752,7 @@ describe('Seasons', () => {
     );
     // Squads only: teams are named from them later.
     expect(screen.getAllByText('Place returning members')).toHaveLength(1);
-    fireEvent.press(screen.getByText('Place returning members'));
+    await fireEvent.press(screen.getByText('Place returning members'));
     expect(push).toHaveBeenCalledWith({ pathname: '/admin/place/[id]', params: { id: NEW_SQUAD.id } });
     push.mockRestore();
   });

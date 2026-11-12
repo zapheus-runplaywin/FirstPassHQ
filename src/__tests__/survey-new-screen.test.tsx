@@ -73,12 +73,12 @@ async function openNew(who: Who, options: { error?: string } = {}) {
 }
 
 const press = async (text: string | RegExp, index = 0) => {
-  fireEvent.press(screen.getAllByText(text)[index]);
+  await fireEvent.press(screen.getAllByText(text)[index]);
   await settle(3);
 };
 
 const type = async (placeholder: string, value: string, index = 0) => {
-  fireEvent.changeText(screen.getAllByPlaceholderText(placeholder)[index], value);
+  await fireEvent.changeText(screen.getAllByPlaceholderText(placeholder)[index], value);
   await settle(2);
 };
 
@@ -328,7 +328,7 @@ describe('the checks before a survey is sent', () => {
     await press('In 1 week');
     // Closes: step back from 1 Nov to 24 Oct, a day before it opens.
     const closesBack = () => screen.getAllByLabelText('Day before')[1];
-    for (let i = 0; i < 8; i++) fireEvent.press(closesBack());
+    for (let i = 0; i < 8; i++) await fireEvent.press(closesBack());
     await settle();
     await expectRefused('Choose a closing day on or after the opening day.');
   });

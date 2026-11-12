@@ -1,4 +1,4 @@
--- Tests for 20261023150000_todo_push_notifications.sql. Run on a fresh
+-- Tests for 20261112050000_todo_push_notifications.sql. Run on a fresh
 -- database with the migrations and seed-members.sql loaded. Prints one line
 -- per check.
 \set ON_ERROR_STOP 0
@@ -149,6 +149,87 @@ select pg_temp.ok('a verified parent is asked for their child''s', exists (
   where m.todo_key = 'medical:' || pg_temp.id('31') || ':missing'
     and m.title = 'Add Jordan Junior’s medical and emergency details'), true);
 select pg_temp.ok('a coach who isn''t an athlete or parent has no medical to-do', pg_temp.has('11', 'medical:'), false);
+
+-- A child under 18 locked until a verified parent is linked gets nothing:
+-- their home screen shows no to-do list.
+insert into auth.users (id, email, email_confirmed_at) values ('00000000-0000-0000-0000-0000000000e2', 'locked.child@example.test', now());
+update public.profiles set status = 'approved', role = 'athlete', full_name = 'Lee Locked',
+  date_of_birth = current_date - interval '14 years', verified_at = now()
+where id = '00000000-0000-0000-0000-0000000000e2';
+select pg_temp.ok('a locked child has no list, not even the check-in', (select count(*) = 0 from public.member_todos('00000000-0000-0000-0000-0000000000e2')), true);
+select pg_temp.ok('admin is told the child is locked out', exists (
+  select 1 from public.member_todos(pg_temp.id('01')) m
+  where m.todo_key like 'minors-without-guardian:%' and m.title like '% under 18 locked out'
+    and m.detail = 'Their app is locked until a verified parent or guardian is linked'), true);
+
+-- Training load flags (off by default): a coach's athletes with a flag, and
+-- children's patterns for the Child Safety Officer.
+insert into public.session_logs (athlete_id, day, kind, minutes, rpe)
+select pg_temp.id('32'), public.load_today() - d, 'training', 60, case when d < 7 then 7 else 5 end
+from generate_series(0, 27) d where d < 7 or d % 2 = 0;
+insert into public.session_logs (athlete_id, day, kind, minutes, rpe)
+select pg_temp.id('31'), public.load_today() - d, 'training', 180, 3 from generate_series(0, 13) d;
+do $$ begin
+  perform set_config('request.jwt.claim.sub', '00000000-0000-0000-0000-000000000041', false);
+  perform public.set_child_consent('00000000-0000-0000-0000-000000000031', true, true);
+  perform set_config('request.jwt.claim.sub', '', false);
+end $$;
+update public.safeguarding_settings set child_safety_officer_id = pg_temp.id('13') where id;
+select pg_temp.ok('while it''s off, the coach has no load to-do', pg_temp.has('11', 'load-flags:'), false);
+select pg_temp.ok('nor the officer', pg_temp.has('13', 'load-patterns:'), false);
+update public.club_settings set features = features || '{"trainingLoad": true}' where id;
+select pg_temp.ok('the coach is asked to talk with their flagged athletes', exists (
+  select 1 from public.member_todos(pg_temp.id('11')) m
+  where m.todo_key like 'load-flags:%' and m.title like 'Talk with % about their training load'
+    and m.href = '/check-ins/load'), true);
+select pg_temp.ok('the athlete isn''t', pg_temp.has('32', 'load-flags:'), false);
+select pg_temp.ok('the officer is told about the child''s training load', exists (
+  select 1 from public.member_todos(pg_temp.id('13')) m
+  where m.todo_key like 'load-patterns:%' and m.title = 'Look at 1 child’s training load'
+    and m.href = '/concerns/load'), true);
+select pg_temp.ok('an admin who isn''t the officer isn''t', pg_temp.has('01', 'load-patterns:'), false);
+update public.club_settings set features = features || '{"trainingLoad": true, "checkIns": false}' where id;
+select pg_temp.ok('with Daily check-ins off, the coach has no load to-do', pg_temp.has('11', 'load-flags:'), false);
+update public.club_settings set features = features - 'trainingLoad' - 'checkIns' where id;
+update public.safeguarding_settings set child_safety_officer_id = null where id;
+
+-- Registers (off by default): policy owners' reviews and conflict
+-- declarations for committee members and coaches.
+insert into public.policy_register (title, owner_id, review_on)
+values ('Child Safe Policy', pg_temp.id('21'), current_date - 1),
+  ('Privacy Policy', pg_temp.id('21'), current_date + 90);
+select pg_temp.ok('while Registers is off, no policy to-do', pg_temp.has('21', 'policy:'), false);
+select pg_temp.ok('nor a conflicts to-do', pg_temp.has('11', 'conflicts:'), false);
+update public.club_settings set features = features || '{"registers": true}' where id;
+select pg_temp.ok('the owner is asked to review the overdue policy', exists (
+  select 1 from public.member_todos(pg_temp.id('21')) m
+  where m.todo_key like 'policy:%:overdue' and m.title = 'Review the Child Safe Policy'
+    and m.detail like 'Was due %' and m.href like '/registers/review?id=%'), true);
+select pg_temp.ok('not one due in 90 days', exists (
+  select 1 from public.member_todos(pg_temp.id('21')) m where m.title = 'Review the Privacy Policy'), false);
+select pg_temp.ok('nobody else is asked to review it', pg_temp.has('01', 'policy:'), false);
+select pg_temp.ok('a coach is asked to declare conflicts of interest', exists (
+  select 1 from public.member_todos(pg_temp.id('11')) m
+  where m.todo_key = 'conflicts:' || public.conduct_season() and m.href = '/declare-conflicts'), true);
+select pg_temp.ok('a committee member is too', pg_temp.has('21', 'conflicts:'), true);
+select pg_temp.ok('an athlete isn''t', pg_temp.has('32', 'conflicts:'), false);
+select pg_temp.as_member('11');
+select pg_temp.works('the coach declares none', $$select public.declare_conflicts(false, null)$$);
+select set_config('request.jwt.claim.sub', '', false);
+select pg_temp.ok('once declared, the to-do goes', pg_temp.has('11', 'conflicts:'), false);
+update public.club_settings set features = features - 'registers' where id;
+
+-- The nightly removal stuck for 2 days reaches admins.
+update public.club_settings set retention_enabled = true, retention_updated_at = now() - interval '10 days' where id;
+insert into public.purge_runs (ok, ran_at) values (true, now() - interval '3 days');
+select pg_temp.ok('admin is told old records haven''t been removed', exists (
+  select 1 from public.member_todos(pg_temp.id('01')) m
+  where m.todo_key like 'records-removal-stalled:%' and m.title like 'Old records haven’t been removed since %'
+    and m.href = '/admin/club'), true);
+select pg_temp.ok('a coach isn''t', pg_temp.has('11', 'records-removal-stalled:'), false);
+insert into public.purge_runs (ok, ran_at) values (true, now());
+select pg_temp.ok('a finished run clears it', pg_temp.has('01', 'records-removal-stalled:'), false);
+update public.club_settings set retention_enabled = false where id;
 
 -- Injury details never go in a notification: they can show on a locked phone.
 insert into public.injuries (athlete_id, reported_by, body_area, description, injured_on, expected_return, athlete_name)

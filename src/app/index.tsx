@@ -4,6 +4,7 @@ import { useCallback, useEffect, useState } from 'react';
 import { Pressable, StyleSheet, View } from 'react-native';
 
 import { EventGrid } from '@/components/event-card';
+import { ChildCodeCard, WaitingForGuardian } from '@/components/guardian-link';
 import { SafeguardingContactsCard } from '@/components/safeguarding';
 import { Screen } from '@/components/screen';
 import { TodoList } from '@/components/todo-list';
@@ -13,10 +14,9 @@ import { Button, Card, PressableCard } from '@/components/ui';
 import { Spacing } from '@/constants/theme';
 import { useTheme } from '@/hooks/use-theme';
 import { useAbsencesToReview, useLeadsAGroup } from '@/lib/absences';
-import { useAffiliationTodos } from '@/lib/affiliation';
 import { useConductTodos } from '@/lib/conduct';
 import { committeeCheckDue, isDatedExemption, statisticianCheckDue } from '@/lib/safety';
-import { formatDate, isMinor } from '@/lib/age';
+import { formatDate } from '@/lib/age';
 import { useAuth } from '@/lib/auth';
 import { useCanTakeAttendance, useCanViewAttendance } from '@/lib/attendance';
 import { useAwardSlots } from '@/lib/awards';
@@ -43,6 +43,7 @@ import {
   useOpenInjuries,
 } from '@/lib/injuries';
 import { useKpiPeople, useKpiReviewTodos, type KpiPerson } from '@/lib/kpis';
+import { useCoachLoadFlagCount, useLoadPatternAlerts } from '@/lib/load-monitoring';
 import { useMyMedicalReviews } from '@/lib/medical';
 import { useGetsMessages, useUnreadCount } from '@/lib/messages';
 import {
@@ -53,9 +54,15 @@ import {
 import { rejectionReasonMessages, rolesLabel, staffTitle, teamPositionLabel } from '@/lib/labels';
 import { supabase } from '@/lib/supabase';
 import { useNewConcerns } from '@/lib/concerns';
+import { useCanReadReports } from '@/lib/report-access';
 import { usePersonalTasks } from '@/lib/personal-tasks';
 import { useSessionPlanSummary } from '@/lib/session-plans';
 import { useCanSendSurveys, useMySurveys, surveysToAnswer } from '@/lib/surveys';
+import {
+  useCanReadRegisters,
+  useMyConflictDeclaration,
+  useMyPolicyReviews,
+} from '@/lib/registers';
 import { buildTodos } from '@/lib/todos';
 import type { ChildConsent } from '@/lib/consents';
 import {
@@ -84,9 +91,13 @@ export default function HomeScreen() {
     memberships,
     isAdmin,
     isSafeguardingOfficer,
+    waitingForGuardian,
+    isLocked,
     refresh,
     signOut,
   } = useAuth();
+  // Admins reach Reports from Administration; checked committee members from here.
+  const canReadReports = useCanReadReports();
   // Admins and the two safeguarding officers handle concerns members raise.
   const handlesConcerns = isAdmin || isSafeguardingOfficer;
   const newConcerns = useNewConcerns(handlesConcerns);
@@ -95,6 +106,8 @@ export default function HomeScreen() {
   const { features } = club;
   // The Child Safety Officer sees athletes flagged again and again.
   const wellbeingFlags = useWellbeingFlagAlerts(handlesConcerns && features.checkIns);
+  // ...and children whose training load shows a pattern.
+  const loadPatterns = useLoadPatternAlerts(wellbeingFlags.isOfficer && features.trainingLoad);
   const [refreshing, setRefreshing] = useState(false);
   const [athletes, setAthletes] = useState<
     { id: string; name: string; data: boolean; health: boolean; canConsent: boolean }[]
@@ -103,7 +116,6 @@ export default function HomeScreen() {
   const { unreadCount, reloadUnread } = useUnreadCount();
   const { pendingCount, reloadPending } = usePendingRequests();
   const { safetyTodos, reloadSafetyTodos } = useSafetyTodos();
-  const { affiliationTodos, reloadAffiliationTodos } = useAffiliationTodos();
   const { conductTodos, reloadConductTodos } = useConductTodos();
   const { personalTasks, reloadPersonalTasks, setTaskDone } = usePersonalTasks();
   const plans = useSessionPlanSummary();
@@ -115,6 +127,9 @@ export default function HomeScreen() {
       (hasRole(profile, 'athlete') || (hasRole(profile, 'guardian') && !!profile.verified_at)),
   );
   const { mySurveys, reloadMySurveys } = useMySurveys();
+  const { policyReviews, reloadPolicyReviews } = useMyPolicyReviews();
+  const { conflictDeclaration, reloadConflictDeclaration } = useMyConflictDeclaration();
+  const canReadRegisters = useCanReadRegisters() && features.registers;
   const canSendSurveys = useCanSendSurveys();
   const surveysWaiting = surveysToAnswer(mySurveys).length;
   const { absencesToReview, reloadAbsencesToReview } = useAbsencesToReview(useLeadsAGroup());
@@ -129,6 +144,9 @@ export default function HomeScreen() {
   const canSeeCheckIns = useCanSeeCheckIns();
   const { checkInSummary, reloadCheckInSummary } = useCheckInSummary();
   const isCheckInCoach = useIsCheckInCoach();
+  const loadFlags = useCoachLoadFlagCount(
+    isCheckInCoach && features.checkIns && features.trainingLoad,
+  );
   const { checkInOverview, reloadCheckInOverview } = useCheckInOverview(today());
   const { awardSlots, reloadAwardSlots } = useAwardSlots();
   const { myGoals, reloadMyGoals } = useMyGoals();
@@ -164,6 +182,8 @@ export default function HomeScreen() {
       wwccApplication.status === 'waiting_for_declaration',
     newConcerns,
     wellbeingFlagAlerts: wellbeingFlags.repeated,
+    loadPatternAlerts: loadPatterns,
+    loadFlags,
     absencesToReview: absencesToReview.length,
     consentsNeeded: athletes.filter((a) => a.canConsent && (!a.data || !a.health)),
     conduct: conductTodos.map((t) => ({
@@ -171,10 +191,11 @@ export default function HomeScreen() {
       name: t.full_name ?? 'your child',
       forChild: t.for_child,
     })),
-    affiliation: affiliationTodos,
     kpiReviews: kpiReviewTodos,
     surveys: features.surveys ? mySurveys : [],
     medicalReviews,
+    policyReviews,
+    conflictDeclaration,
   });
 
   const isGuardian = profile?.status === 'approved' && hasRole(profile, 'guardian');
@@ -217,13 +238,14 @@ export default function HomeScreen() {
       refresh(),
       reloadPending(),
       reloadSafetyTodos(),
-      reloadAffiliationTodos(),
       reloadConductTodos(),
       reloadPersonalTasks(),
       plans.reloadSummary(),
       reloadKpiPeople(),
       reloadKpiReviewTodos(),
       reloadMedicalReviews(),
+      reloadPolicyReviews(),
+      reloadConflictDeclaration(),
       reloadMySurveys(),
       reloadAbsencesToReview(),
       loadAthletes(),
@@ -285,11 +307,20 @@ export default function HomeScreen() {
 
       {volunteer ? (
         <VolunteerOnboarding verificationCode={<VerificationCode />} />
+      ) : isLocked ? (
+        // Approved, but locked until a verified parent or guardian is linked.
+        <>
+          <WaitingForGuardian />
+          <ThemedText type="small" themeColor="textSecondary">
+            If anything worries you, these people can help:
+          </ThemedText>
+          <SafeguardingContactsCard />
+        </>
       ) : !approved ? (
         <JoinStatus />
       ) : null}
 
-      {volunteer ? null : (
+      {volunteer || waitingForGuardian ? null : (
         <>
 
         {approved ? <PausedRoles /> : null}
@@ -478,6 +509,24 @@ export default function HomeScreen() {
           </PressableCard>
         ) : null}
 
+        {canReadRegisters ? (
+          <PressableCard onPress={() => router.push('/registers')}>
+            <ThemedText type="smallBold">Registers</ThemedText>
+            <ThemedText type="small" themeColor="textSecondary">
+              The club’s policies and conflicts of interest
+            </ThemedText>
+          </PressableCard>
+        ) : null}
+
+        {canReadReports && !isAdmin ? (
+          <PressableCard onPress={() => router.push('/admin/reports')}>
+            <ThemedText type="smallBold">Reports</ThemedText>
+            <ThemedText type="small" themeColor="textSecondary">
+              The club’s checks, medical details checks, training, attendance and award results
+            </ThemedText>
+          </PressableCard>
+        ) : null}
+
         {isAdmin ? (
           <PressableCard onPress={() => router.push('/administration')}>
             <ThemedText type="smallBold">Administration</ThemedText>
@@ -546,9 +595,15 @@ export default function HomeScreen() {
             <ThemedText type="small" themeColor="textSecondary">
               {athletes.length > 0
                 ? athletes.map((a) => a.name).join(', ')
-                : 'A club admin will link you to your athlete once they have checked your PlayHQ registration.'}
+                : 'Nobody yet. Enter your child’s link code below, and a club admin links you once they have checked who you are.'}
             </ThemedText>
           </Card>
+        ) : null}
+
+        {isGuardian ? (
+          <ChildCodeCard
+            title={athletes.length > 0 ? 'Add another child' : 'Enter your child’s code'}
+          />
         ) : null}
 
         {isGuardian && athletes.length > 0 ? (
@@ -706,14 +761,16 @@ export default function HomeScreen() {
       </PressableCard>
 
       <View style={styles.footer}>
-        <Pressable
-          accessibilityRole="button"
-          onPress={() => router.push('/my-details')}
-          style={styles.footerLink}>
-          <ThemedText type="small" style={{ color: theme.tint }}>
-            Your details
-          </ThemedText>
-        </Pressable>
+        {waitingForGuardian ? null : (
+          <Pressable
+            accessibilityRole="button"
+            onPress={() => router.push('/my-details')}
+            style={styles.footerLink}>
+            <ThemedText type="small" style={{ color: theme.tint }}>
+              Your details
+            </ThemedText>
+          </Pressable>
+        )}
         <Pressable accessibilityRole="button" onPress={signOut} style={styles.footerLink}>
           <ThemedText type="small" style={{ color: theme.tint }}>
             Sign out
@@ -924,7 +981,7 @@ function AdminChildInjuriesClosed() {
 }
 
 function JoinStatus() {
-  const { profile } = useAuth();
+  const { profile, waitingForGuardian } = useAuth();
 
   if (profile?.status === 'rejected') {
     return (
@@ -958,20 +1015,20 @@ function JoinStatus() {
     );
   }
 
-  // What they said at Join; the admin checks it before approving them.
-  const child =
-    profile.requested_role === 'athlete' &&
-    !!profile.declared_date_of_birth &&
-    isMinor(profile.declared_date_of_birth, false);
+  // A child under 18 asking to join, with a link code for their parent or guardian.
+  const child = !!waitingForGuardian;
+  const guardian = profile.requested_role === 'guardian';
 
   return (
     <>
       <Card>
         <ThemedText type="smallBold">Waiting for approval</ThemedText>
         <ThemedText type="small" themeColor="textSecondary">
-          {profile.requested_role === 'committee' || profile.requested_role === 'guest'
-            ? 'A club admin will approve your request. Pull down to check again.'
-            : 'A club admin will approve your request and add you to your squad or team. Pull down to check again.'}
+          {guardian
+            ? 'A club admin checks who you are and that you’re your child’s parent or guardian, then approves you, which links you to them. Pull down to check again.'
+            : profile.requested_role === 'committee' || profile.requested_role === 'guest'
+              ? 'A club admin will approve your request. Pull down to check again.'
+              : 'A club admin will approve your request and add you to your squad or team. Pull down to check again.'}
         </ThemedText>
         {profile.verified_at ? (
           <ThemedText type="small" themeColor="textSecondary">
@@ -990,18 +1047,12 @@ function JoinStatus() {
           <Button title="Edit request" variant="secondary" onPress={() => router.push('/join')} />
         </View>
       </Card>
+      {guardian ? <ChildCodeCard /> : null}
+      {child ? <WaitingForGuardian /> : null}
       {child ? (
-        <Card>
-          <ThemedText type="smallBold">Ask your parent or guardian to join</ThemedText>
-          <ThemedText type="small" themeColor="textSecondary">
-            You’re under 18, so a parent or guardian needs to join the club in the app too
-            {profile.guardian_email ? `, signing in with ${profile.guardian_email}` : ''}. A club
-            admin checks who they are and links them to you, and then you can be approved.
-          </ThemedText>
-          <ThemedText type="small" themeColor="textSecondary">
-            If anything worries you, these people can help:
-          </ThemedText>
-        </Card>
+        <ThemedText type="small" themeColor="textSecondary">
+          If anything worries you, these people can help:
+        </ThemedText>
       ) : null}
       {child ? <SafeguardingContactsCard /> : null}
     </>

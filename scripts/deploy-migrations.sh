@@ -43,7 +43,9 @@ if [ -z "$pending" ]; then
   exit 0
 fi
 
-first=$(ls supabase/migrations | sort | head -1)
+# sed rather than head: head exits after one line, and with pipefail the
+# broken pipe it leaves sort can fail the deploy (it did after PR #177).
+first=$(ls supabase/migrations | sort | sed -n 1p)
 if grep -qx "$first" <<<"$pending"; then
   # FIRST_RUN_OK is set for the test project, which starts empty, and for the
   # live project only when Matt ticks "New live project" on a manual run. When

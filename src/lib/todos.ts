@@ -1,12 +1,12 @@
 import type { Href } from 'expo-router';
 
-import type { AffiliationTodos } from '@/lib/affiliation';
 import { slotTitle } from '@/lib/awards';
 import { formatShortDay } from '@/lib/format';
 import { gamePhase, gameTitle } from '@/lib/goals';
 import { formatDateString, type LoggedInjury, toDateString } from '@/lib/injuries';
 import type { KpiReviewTodo } from '@/lib/kpis';
 import type { MedicalReview } from '@/lib/medical';
+import type { MyConflictDeclaration, PolicyReview } from '@/lib/registers';
 import { closingDay, surveysToAnswer, type MySurvey } from '@/lib/surveys';
 import { WWCC_WARNING_DAYS } from '@/lib/safety';
 import { dueLabel, isOutstanding, type MyTraining } from '@/lib/training';
@@ -68,7 +68,7 @@ export function sortByAlert<T>(
  * screen has already loaded. Each item disappears once it's done.
  *
  * `member_todos` in the database works out the same list for push
- * notifications (supabase/migrations/20261023150000_todo_push_notifications.sql).
+ * notifications (supabase/migrations/20261112050000_todo_push_notifications.sql).
  * When an item is added or changed here, change it there too, in a new migration.
  */
 export function buildTodos({
@@ -90,13 +90,16 @@ export function buildTodos({
   applicationDeclarationWaiting = false,
   newConcerns = 0,
   wellbeingFlagAlerts = 0,
+  loadPatternAlerts = 0,
+  loadFlags = 0,
   absencesToReview = 0,
   consentsNeeded = [],
   conduct = [],
-  affiliation = null,
   kpiReviews = [],
   surveys = [],
   medicalReviews = [],
+  policyReviews = [],
+  conflictDeclaration = null,
   today = new Date(),
 }: {
   userId: string | undefined;
@@ -132,20 +135,26 @@ export function buildTodos({
   newConcerns?: number;
   /** Athletes flagged on 3 or more days in the last 7, for the Child Safety Officer. */
   wellbeingFlagAlerts?: number;
+  /** Children whose training load shows a pattern, for the Child Safety Officer. */
+  loadPatternAlerts?: number;
+  /** Athletes the member coaches with a training load flag nobody has talked about. */
+  loadFlags?: number;
   /** Absences reported or withdrawn for the member's squads and teams since they last looked. */
   absencesToReview?: number;
   /** A guardian's children under 18 still waiting for their consent. */
   consentsNeeded?: { id: string; name: string }[];
   /** Code of conduct acceptances still owed this season, for the member and their children. */
   conduct?: { id: string; name: string; forChild: boolean }[];
-  /** Affiliation follow-ups, for admins of clubs that keep affiliation records. */
-  affiliation?: AffiliationTodos | null;
   /** Season KPI reviews to write, and the member's own to confirm. */
   kpiReviews?: KpiReviewTodo[];
   /** Surveys sent to the member, including ones already answered. */
   surveys?: MySurvey[];
   /** Medical details the member keeps that need adding or their yearly check. */
   medicalReviews?: MedicalReview[];
+  /** Policies the member owns whose review is due within 30 days or overdue. */
+  policyReviews?: PolicyReview[];
+  /** The member's conflict-of-interest declaration this season, if they make one. */
+  conflictDeclaration?: MyConflictDeclaration | null;
   today?: Date;
 }): Todo[] {
   const todos: Todo[] = [];
@@ -167,6 +176,15 @@ export function buildTodos({
       title: `Look at ${wellbeingFlagAlerts} ${wellbeingFlagAlerts === 1 ? 'athlete' : 'athletes'} flagged 3 times this week`,
       detail: 'Low check-in scores on 3 of the last 7 days',
       href: '/concerns/wellbeing',
+    });
+  }
+
+  if (loadPatternAlerts > 0) {
+    todos.push({
+      key: 'load-patterns',
+      title: `Look at ${loadPatternAlerts} ${loadPatternAlerts === 1 ? 'child’s' : 'children’s'} training load`,
+      detail: 'Patterns in what they log, to look into with their coach or parent',
+      href: '/concerns/load',
     });
   }
 
@@ -225,6 +243,15 @@ export function buildTodos({
       title: `Check in with ${flaggedAthletes} ${flaggedAthletes === 1 ? 'athlete' : 'athletes'}`,
       detail: 'They scored low on today’s check-in',
       href: '/check-ins',
+    });
+  }
+
+  if (loadFlags > 0) {
+    todos.push({
+      key: 'load-flags',
+      title: `Talk with ${loadFlags} ${loadFlags === 1 ? 'athlete' : 'athletes'} about their training load`,
+      detail: 'A conversation starter from the sessions they log, not a diagnosis',
+      href: '/check-ins/load',
     });
   }
 
@@ -428,8 +455,8 @@ export function buildTodos({
     if (safety.minors_without_guardian > 0) {
       todos.push({
         key: 'minors-without-guardian',
-        title: `Link guardians for ${plural(safety.minors_without_guardian, 'athlete', 'athletes')} under 18`,
-        detail: 'Every athlete under 18 needs a verified guardian',
+        title: `${plural(safety.minors_without_guardian, 'athlete', 'athletes')} under 18 locked out`,
+        detail: 'Their app is locked until a verified parent or guardian is linked',
         href: '/admin',
       });
     }
@@ -562,47 +589,24 @@ export function buildTodos({
         href: '/admin/club',
       });
     }
+    if (safety.records_removal_stalled) {
+      const since = safety.records_removal_stalled.last_ok_at;
+      todos.push({
+        key: 'records-removal-stalled',
+        title: since
+          ? `Old records haven’t been removed since ${formatShortDay(new Date(since))}`
+          : 'Old records haven’t been removed yet',
+        detail: 'The nightly removal hasn’t finished for 2 days. Ask FirstPass to check it.',
+        href: '/admin/club',
+        alert: { level: 'red', label: 'Stopped' },
+      });
+    }
     if ((safety.inactive_members ?? 0) > 0) {
       todos.push({
         key: 'inactive-members',
         title: `${plural(safety.inactive_members ?? 0, 'member has', 'members have')} had no team or role for 2 years`,
         detail: 'Delete them if they’ve left the club. Their safeguarding records stay.',
         href: '/admin',
-      });
-    }
-  }
-
-  if (affiliation) {
-    if (affiliation.missing > 0) {
-      todos.push({
-        key: 'affiliation-checklist',
-        title: `Finish ${affiliation.missing} affiliation ${affiliation.missing === 1 ? 'item' : 'items'}`,
-        detail: 'Required by your association or Netball WA',
-        href: '/admin/affiliation',
-      });
-    }
-    if (affiliation.toCheck > 0) {
-      todos.push({
-        key: 'playhq-registrations',
-        title: `Check ${affiliation.toCheck} ${affiliation.toCheck === 1 ? 'member' : 'members'} in PlayHQ`,
-        detail: `Whether they’re registered for ${affiliation.season ? seasonLabel(affiliation.season) : 'this season'}`,
-        href: '/admin/affiliation/registrations',
-      });
-    }
-    if (affiliation.notRegistered > 0) {
-      todos.push({
-        key: 'playhq-not-registered',
-        title: `${affiliation.notRegistered} ${affiliation.notRegistered === 1 ? 'member isn’t' : 'members aren’t'} registered in PlayHQ`,
-        detail: 'Ask them to register, then mark them registered',
-        href: '/admin/affiliation/registrations',
-      });
-    }
-    if (affiliation.returnDue) {
-      todos.push({
-        key: 'affiliation-return',
-        title: 'Send the affiliation return',
-        detail: 'None sent in the last year',
-        href: '/admin/affiliation/return',
       });
     }
   }
@@ -640,6 +644,26 @@ export function buildTodos({
         dueOn: review.due_on,
       });
     }
+  }
+
+  // Policy owners review each policy by its review date.
+  for (const policy of policyReviews) {
+    todos.push({
+      key: `policy-${policy.id}`,
+      title: `Review the ${policy.title}`,
+      detail: `${policy.review_on < toDateString(today) ? 'Was due' : 'Due'} ${formatDateString(policy.review_on)}`,
+      href: { pathname: '/registers/review', params: { id: policy.id } },
+      dueOn: policy.review_on,
+    });
+  }
+
+  if (conflictDeclaration?.required && !conflictDeclaration.declared_at) {
+    todos.push({
+      key: 'conflicts',
+      title: 'Declare any conflicts of interest',
+      detail: `Once a season, for the ${seasonLabel(conflictDeclaration.season)} season, even if you have none`,
+      href: '/declare-conflicts',
+    });
   }
 
   return todos.map((todo) =>

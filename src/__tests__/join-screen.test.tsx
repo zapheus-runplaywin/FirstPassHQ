@@ -4,7 +4,7 @@
  *
  * Everyone gives their name and date of birth and picks a role. An athlete
  * under 18 also gives a parent or guardian's email, a guardian gives their
- * PlayHQ email, a temporary helper says what they'll help with, when, and how
+ * PlayHQ email and, if they have it, their child's link code, a temporary helper says what they'll help with, when, and how
  * they're screened, and the club password is asked for only when the club has
  * set one. The database counts wrong passwords, so a refusal comes back as
  * the RPC's message, not an error: the screen shows it and stays put.
@@ -93,13 +93,13 @@ async function openJoin(who: Persona = newcomer, options: BackendOptions = {}) {
 }
 
 async function send() {
-  fireEvent.press(screen.getByText('Send request'));
+  await fireEvent.press(screen.getByText('Send request'));
   await settle();
 }
 
-function fillBasics(name = 'Sample Newcomer', dob = '05/05/1990') {
-  type('Your name', name);
-  type('Date of birth', dob);
+async function fillBasics(name = 'Sample Newcomer', dob = '05/05/1990') {
+  await type('Your name', name);
+  await type('Date of birth', dob);
 }
 
 describe('what everyone must give', () => {
@@ -111,9 +111,9 @@ describe('what everyone must give', () => {
     ['no role', 'Sample Newcomer', '05/05/1990', null, 'Please choose what best describes you.'],
   ])('refuses %s, and sends nothing', async (_l, name, dob, role, message) => {
     await openJoin();
-    type('Your name', name);
-    type('Date of birth', dob);
-    if (role) fireEvent.press(screen.getByText(role));
+    await type('Your name', name);
+    await type('Date of birth', dob);
+    if (role) await fireEvent.press(screen.getByText(role));
     await send();
     expect(screen.getByText(message)).toBeTruthy();
     expect(rpcNames()).not.toContain('submit_join_request');
@@ -140,10 +140,10 @@ describe('what everyone must give', () => {
 
   it('sends an adult athlete’s request with their squad and goes back', async () => {
     await openJoin();
-    fillBasics();
-    type('PlayHQ email', 'me@playhq.test');
-    fireEvent.press(screen.getByText('Athlete'));
-    fireEvent.press(screen.getByText(TEAM.name));
+    await fillBasics();
+    await type('PlayHQ email', 'me@playhq.test');
+    await fireEvent.press(screen.getByText('Athlete'));
+    await fireEvent.press(screen.getByText(TEAM.name));
     await send();
     expect(argsOf('submit_join_request')).toEqual([
       {
@@ -163,7 +163,7 @@ describe('what everyone must give', () => {
 
   it('only offers this season’s squads, never last season’s or a team inside a squad', async () => {
     await openJoin();
-    fireEvent.press(screen.getByText('Coach'));
+    await fireEvent.press(screen.getByText('Coach'));
     expect(screen.getByText('Squad')).toBeTruthy();
     expect(screen.getByText(TEAM.name)).toBeTruthy();
     expect(screen.getByText(TEAM_B.name)).toBeTruthy();
@@ -174,7 +174,7 @@ describe('what everyone must give', () => {
   it('calls it Team in a club without squads', async () => {
     setClubFeatures({ squads: false });
     await openJoin();
-    fireEvent.press(screen.getByText('Manager'));
+    await fireEvent.press(screen.getByText('Manager'));
     expect(screen.getByText('Team')).toBeTruthy();
     expect(screen.queryByText('Squad')).toBeNull();
   });
@@ -183,10 +183,10 @@ describe('what everyone must give', () => {
     'asks a %s for no squad, and sends none even if one was picked first',
     async (role) => {
       await openJoin();
-      fillBasics();
-      fireEvent.press(screen.getByText('Coach'));
-      fireEvent.press(screen.getByText(TEAM.name));
-      fireEvent.press(screen.getByText(role));
+      await fillBasics();
+      await fireEvent.press(screen.getByText('Coach'));
+      await fireEvent.press(screen.getByText(TEAM.name));
+      await fireEvent.press(screen.getByText(role));
       expect(screen.queryByText(TEAM.name)).toBeNull();
       await send();
       expect(argsOf('submit_join_request')[0]).toMatchObject({ p_requested_team_id: null });
@@ -195,11 +195,11 @@ describe('what everyone must give', () => {
 
   it('tapping the chosen squad again unpicks it', async () => {
     await openJoin();
-    fillBasics();
-    fireEvent.press(screen.getByText('Physio'));
-    fireEvent.press(screen.getByText(TEAM.name));
+    await fillBasics();
+    await fireEvent.press(screen.getByText('Physio'));
+    await fireEvent.press(screen.getByText(TEAM.name));
     expect(isSelected(TEAM.name)).toBe(true);
-    fireEvent.press(screen.getByText(TEAM.name));
+    await fireEvent.press(screen.getByText(TEAM.name));
     expect(isSelected(TEAM.name)).toBe(false);
     await send();
     expect(argsOf('submit_join_request')[0]).toMatchObject({
@@ -212,29 +212,30 @@ describe('what everyone must give', () => {
 describe('athletes under 18', () => {
   it('asks for a parent or guardian’s email once the date of birth is under 18', async () => {
     await openJoin();
-    fireEvent.press(screen.getByText('Athlete'));
-    type('Date of birth', '05/05/1990');
+    await fireEvent.press(screen.getByText('Athlete'));
+    await type('Date of birth', '05/05/1990');
     expect(screen.queryByText('Parent or guardian’s email')).toBeNull();
-    type('Date of birth', '02/03/2011');
+    await type('Date of birth', '02/03/2011');
     expect(screen.getByText('Parent or guardian’s email')).toBeTruthy();
     expect(screen.getByText(/^You’re under 18, so a parent or guardian needs to join/)).toBeTruthy();
+    expect(screen.getByText(/you’ll see a link code to share with them\. The app stays\s+locked/)).toBeTruthy();
   });
 
   it('turns 18 on their birthday, so needs no guardian that day', async () => {
     await openJoin();
-    fireEvent.press(screen.getByText('Athlete'));
+    await fireEvent.press(screen.getByText('Athlete'));
     // Today is 18 October 2026.
-    type('Date of birth', '18/10/2008');
+    await type('Date of birth', '18/10/2008');
     expect(screen.queryByText('Parent or guardian’s email')).toBeNull();
-    type('Date of birth', '19/10/2008');
+    await type('Date of birth', '19/10/2008');
     expect(screen.getByText('Parent or guardian’s email')).toBeTruthy();
   });
 
   it('refuses to send without the parent or guardian’s email', async () => {
     await openJoin();
-    fillBasics('Sample Child', '02/03/2011');
-    fireEvent.press(screen.getByText('Athlete'));
-    type('Parent or guardian’s email', '   ');
+    await fillBasics('Sample Child', '02/03/2011');
+    await fireEvent.press(screen.getByText('Athlete'));
+    await type('Parent or guardian’s email', '   ');
     await send();
     expect(screen.getByText('Please enter the email of a parent or guardian.')).toBeTruthy();
     expect(rpcNames()).not.toContain('submit_join_request');
@@ -242,9 +243,9 @@ describe('athletes under 18', () => {
 
   it('sends the parent or guardian’s email with the request', async () => {
     await openJoin();
-    fillBasics('Sample Child', '02/03/2011');
-    fireEvent.press(screen.getByText('Athlete'));
-    type('Parent or guardian’s email', 'parent@example.test');
+    await fillBasics('Sample Child', '02/03/2011');
+    await fireEvent.press(screen.getByText('Athlete'));
+    await type('Parent or guardian’s email', 'parent@example.test');
     await send();
     expect(argsOf('submit_join_request')[0]).toMatchObject({
       p_requested_role: 'athlete',
@@ -256,10 +257,10 @@ describe('athletes under 18', () => {
 
   it('a child who isn’t an athlete is asked for no guardian’s email, and sends none', async () => {
     await openJoin();
-    fillBasics('Sample Child', '02/03/2011');
-    fireEvent.press(screen.getByText('Athlete'));
-    type('Parent or guardian’s email', 'parent@example.test');
-    fireEvent.press(screen.getByText('Guest'));
+    await fillBasics('Sample Child', '02/03/2011');
+    await fireEvent.press(screen.getByText('Athlete'));
+    await type('Parent or guardian’s email', 'parent@example.test');
+    await fireEvent.press(screen.getByText('Guest'));
     expect(screen.queryByText('Parent or guardian’s email')).toBeNull();
     await send();
     expect(argsOf('submit_join_request')[0]).toMatchObject({
@@ -270,9 +271,9 @@ describe('athletes under 18', () => {
 
   it('tells an athlete what the club keeps about under 18s, and only an athlete', async () => {
     await openJoin();
-    fireEvent.press(screen.getByText('Coach'));
+    await fireEvent.press(screen.getByText('Coach'));
     expect(screen.queryByText(/^If you’re under 18: the club keeps/)).toBeNull();
-    fireEvent.press(screen.getByText('Athlete'));
+    await fireEvent.press(screen.getByText('Athlete'));
     expect(
       screen.getByText(/Your coaches see your check-ins and injuries once a parent or guardian agrees\./),
     ).toBeTruthy();
@@ -280,37 +281,87 @@ describe('athletes under 18', () => {
 });
 
 describe('parents and guardians', () => {
-  it('must give the email they registered their athlete with', async () => {
+  it('must give the email they registered their athlete with, and pick no squad', async () => {
     await openJoin();
-    fillBasics();
-    fireEvent.press(screen.getByText('Guardian'));
+    await fillBasics();
+    await fireEvent.press(screen.getByText('Guardian'));
     expect(screen.getByPlaceholderText('Email used to register with PlayHQ')).toBeTruthy();
     expect(screen.getByText(/^Parents and guardians: enter the email you used/)).toBeTruthy();
-    expect(screen.getByText('Your athlete\'s squad')).toBeTruthy();
+    // They follow their children into squads and teams.
+    expect(screen.queryByText('Squad')).toBeNull();
+    expect(screen.queryByText(TEAM_B.name)).toBeNull();
+    expect(screen.getByText('Your child’s link code')).toBeTruthy();
+    expect(screen.getByText(/you’ll follow them into their squads\.$/)).toBeTruthy();
     await send();
     expect(screen.getByText('Please enter the email you used to register with PlayHQ.')).toBeTruthy();
     expect(rpcNames()).not.toContain('submit_join_request');
   });
 
-  it('sends the guardian’s PlayHQ email and their athlete’s squad', async () => {
+  it('sends the guardian’s PlayHQ email and no squad, and no code when left blank', async () => {
     await openJoin();
-    fillBasics();
-    fireEvent.press(screen.getByText('Guardian'));
-    type('PlayHQ email', 'parent@playhq.test');
-    fireEvent.press(screen.getByText(TEAM_B.name));
+    await fillBasics();
+    await fireEvent.press(screen.getByText('Guardian'));
+    await type('PlayHQ email', 'parent@playhq.test');
     await send();
     expect(argsOf('submit_join_request')[0]).toMatchObject({
       p_playhq_email: 'parent@playhq.test',
       p_requested_role: 'guardian',
-      p_requested_team_id: TEAM_B.id,
+      p_requested_team_id: null,
       p_guardian_email: null,
     });
+    expect(rpcNames()).not.toContain('enter_child_code');
+    expect(back).toHaveBeenCalled();
+  });
+
+  it('enters the child’s code after sending the request', async () => {
+    await openJoin(newcomer, { rpcs: { enter_child_code: null } });
+    await fillBasics();
+    await fireEvent.press(screen.getByText('Guardian'));
+    await type('PlayHQ email', 'parent@playhq.test');
+    await type('Your child’s link code', '7kq-4md');
+    await send();
+    expect(rpcNames()).toEqual(expect.arrayContaining(['submit_join_request', 'enter_child_code']));
+    expect(rpcNames().indexOf('submit_join_request')).toBeLessThan(rpcNames().indexOf('enter_child_code'));
+    expect(argsOf('enter_child_code')).toEqual([{ p_code: '7kq-4md' }]);
+    expect(back).toHaveBeenCalled();
+  });
+
+  it('checks the code looks right before sending anything', async () => {
+    await openJoin();
+    await fillBasics();
+    await fireEvent.press(screen.getByText('Guardian'));
+    await type('PlayHQ email', 'parent@playhq.test');
+    await type('Your child’s link code', '7KQ-4M0');
+    await send();
+    expect(
+      screen.getByText('Enter the 6-letter code from your child’s app, such as 7KQ-4MD, or leave it blank.'),
+    ).toBeTruthy();
+    expect(rpcNames()).not.toContain('submit_join_request');
+  });
+
+  test.each([
+    ['comes back as a message', { rpcs: { enter_child_code: 'Too many wrong codes. Try again in 40 minutes.' } }],
+    ['fails', { rpcErrors: { enter_child_code: 'Too many wrong codes. Try again in 40 minutes.' } }],
+  ])('says the request is sent when the code %s, and stays put', async (_, options) => {
+    await openJoin(newcomer, options);
+    await fillBasics();
+    await fireEvent.press(screen.getByText('Guardian'));
+    await type('PlayHQ email', 'parent@playhq.test');
+    await type('Your child’s link code', '7KQ4MD');
+    await send();
+    expect(rpcNames()).toContain('submit_join_request');
+    expect(
+      screen.getByText(
+        'Your request is sent, but the code didn’t work: Too many wrong codes. Try again in 40 minutes. You can enter it again from Home.',
+      ),
+    ).toBeTruthy();
+    expect(back).not.toHaveBeenCalled();
   });
 
   it('other roles may leave the PlayHQ email blank, defaulting to their sign-in email', async () => {
     await openJoin();
-    fillBasics();
-    fireEvent.press(screen.getByText('Coach'));
+    await fillBasics();
+    await fireEvent.press(screen.getByText('Coach'));
     expect(screen.getByPlaceholderText('pending@example.test')).toBeTruthy();
     await send();
     expect(argsOf('submit_join_request')[0]).toMatchObject({ p_playhq_email: '' });
@@ -332,8 +383,8 @@ describe('the club password', () => {
 
   it('must be given before sending', async () => {
     await openJoin(newcomer, { rpcs: { join_password_required: true } });
-    fillBasics();
-    fireEvent.press(screen.getByText('Guest'));
+    await fillBasics();
+    await fireEvent.press(screen.getByText('Guest'));
     await send();
     expect(
       screen.getByText('Please enter the club password. A club admin can give it to you.'),
@@ -343,9 +394,9 @@ describe('the club password', () => {
 
   it('goes with the request', async () => {
     await openJoin(newcomer, { rpcs: { join_password_required: true } });
-    fillBasics();
-    fireEvent.press(screen.getByText('Guest'));
-    type('Club password', 'netball42');
+    await fillBasics();
+    await fireEvent.press(screen.getByText('Guest'));
+    await type('Club password', 'netball42');
     await send();
     expect(argsOf('submit_join_request')[0]).toMatchObject({ p_join_password: 'netball42' });
     expect(back).toHaveBeenCalled();
@@ -356,9 +407,9 @@ describe('the club password', () => {
     await openJoin(newcomer, {
       rpcs: { join_password_required: true, submit_join_request: refused },
     });
-    fillBasics();
-    fireEvent.press(screen.getByText('Guest'));
-    type('Club password', 'wrong');
+    await fillBasics();
+    await fireEvent.press(screen.getByText('Guest'));
+    await type('Club password', 'wrong');
     await send();
     expect(screen.getByText(refused)).toBeTruthy();
     expect(back).not.toHaveBeenCalled();
@@ -368,8 +419,8 @@ describe('the club password', () => {
 
   it('an error from the database shows its message and stays on the form', async () => {
     await openJoin(newcomer, { rpcErrors: { submit_join_request: 'Too many tries. Wait 15 minutes.' } });
-    fillBasics();
-    fireEvent.press(screen.getByText('Guest'));
+    await fillBasics();
+    await fireEvent.press(screen.getByText('Guest'));
     await send();
     expect(screen.getByText('Too many tries. Wait 15 minutes.')).toBeTruthy();
     expect(back).not.toHaveBeenCalled();
@@ -379,8 +430,8 @@ describe('the club password', () => {
 describe('temporary helpers', () => {
   async function asHelper() {
     await openJoin();
-    fillBasics();
-    fireEvent.press(screen.getByText('Temporary helper'));
+    await fillBasics();
+    await fireEvent.press(screen.getByText('Temporary helper'));
   }
 
   it('explain the app only onboards them, and ask for no squad', async () => {
@@ -403,10 +454,10 @@ describe('temporary helpers', () => {
     'refuse to send with %p missing: %s',
     async (given, message) => {
       await asHelper();
-      if (given.task) type('What you’ll help with', given.task);
-      if (given.from) type('First day', given.from);
-      if (given.until) type('Last day', given.until);
-      if (given.screening) fireEvent.press(screen.getByText(given.screening));
+      if (given.task) await type('What you’ll help with', given.task);
+      if (given.from) await type('First day', given.from);
+      if (given.until) await type('Last day', given.until);
+      if (given.screening) await fireEvent.press(screen.getByText(given.screening));
       await send();
       expect(screen.getByText(message)).toBeTruthy();
       expect(rpcNames()).not.toContain('submit_join_request');
@@ -416,12 +467,12 @@ describe('temporary helpers', () => {
 
   it('send the request, then their task, days, screening and card number', async () => {
     await asHelper();
-    type('What you’ll help with', 'Bench helper at the State carnival');
-    type('First day', '24/10/2026');
-    type('Last day', '25/10/2026');
-    fireEvent.press(screen.getByText(CARD));
+    await type('What you’ll help with', 'Bench helper at the State carnival');
+    await type('First day', '24/10/2026');
+    await type('Last day', '25/10/2026');
+    await fireEvent.press(screen.getByText(CARD));
     expect(screen.getByText('A club admin checks your card online before you help.')).toBeTruthy();
-    type('Card number', 'WWC1234567');
+    await type('Card number', 'WWC1234567');
     await send();
     // The request first, so the details attach to it.
     expect(rpcNames().indexOf('submit_join_request')).toBeLessThan(
@@ -445,12 +496,12 @@ describe('temporary helpers', () => {
 
   it('send no card number when they’re screened another way, even one typed first', async () => {
     await asHelper();
-    type('What you’ll help with', 'Canteen');
-    type('First day', '24/10/2026');
-    type('Last day', '24/10/2026');
-    fireEvent.press(screen.getByText(CARD));
-    type('Card number', 'WWC1234567');
-    fireEvent.press(screen.getByText('I’m a parent of an athlete at the club'));
+    await type('What you’ll help with', 'Canteen');
+    await type('First day', '24/10/2026');
+    await type('Last day', '24/10/2026');
+    await fireEvent.press(screen.getByText(CARD));
+    await type('Card number', 'WWC1234567');
+    await fireEvent.press(screen.getByText('I’m a parent of an athlete at the club'));
     expect(screen.queryByText('Card number')).toBeNull();
     await send();
     expect(argsOf('set_my_volunteer_details')[0]).toMatchObject({
@@ -461,13 +512,13 @@ describe('temporary helpers', () => {
 
   it('a refused request sends no volunteer details', async () => {
     await openJoin(newcomer, { rpcs: { submit_join_request: 'Not accepting helpers today.' } });
-    fillBasics();
-    fireEvent.press(screen.getByText('Temporary helper'));
-    type('What you’ll help with', 'Canteen');
-    type('First day', '24/10/2026');
-    type('Last day', '24/10/2026');
-    fireEvent.press(screen.getByText(CARD));
-    type('Card number', 'WWC1');
+    await fillBasics();
+    await fireEvent.press(screen.getByText('Temporary helper'));
+    await type('What you’ll help with', 'Canteen');
+    await type('First day', '24/10/2026');
+    await type('Last day', '24/10/2026');
+    await fireEvent.press(screen.getByText(CARD));
+    await type('Card number', 'WWC1');
     await send();
     expect(screen.getByText('Not accepting helpers today.')).toBeTruthy();
     expect(rpcNames()).not.toContain('set_my_volunteer_details');
@@ -475,13 +526,13 @@ describe('temporary helpers', () => {
 
   it('when the details fail to save, shows why and stays on the form', async () => {
     await openJoin(newcomer, { rpcErrors: { set_my_volunteer_details: 'Last day is before the first.' } });
-    fillBasics();
-    fireEvent.press(screen.getByText('Temporary helper'));
-    type('What you’ll help with', 'Canteen');
-    type('First day', '25/10/2026');
-    type('Last day', '24/10/2026');
-    fireEvent.press(screen.getByText(CARD));
-    type('Card number', 'WWC1');
+    await fillBasics();
+    await fireEvent.press(screen.getByText('Temporary helper'));
+    await type('What you’ll help with', 'Canteen');
+    await type('First day', '25/10/2026');
+    await type('Last day', '24/10/2026');
+    await fireEvent.press(screen.getByText(CARD));
+    await type('Card number', 'WWC1');
     await send();
     expect(screen.getByText('Last day is before the first.')).toBeTruthy();
     expect(back).not.toHaveBeenCalled();
@@ -501,7 +552,7 @@ describe('editing a request', () => {
 
   it('sends the changed request', async () => {
     await openJoin(childWhoAsked);
-    type('Parent or guardian’s email', 'other.parent@example.test');
+    await type('Parent or guardian’s email', 'other.parent@example.test');
     await send();
     expect(argsOf('submit_join_request')).toEqual([
       {

@@ -59,7 +59,7 @@ const placeholder = (route: string) =>
   };
 
 const press = async (text: string | RegExp, index = 0) => {
-  fireEvent.press(screen.getAllByText(text)[index]);
+  await fireEvent.press(screen.getAllByText(text)[index]);
   await settle(6);
 };
 

@@ -11,7 +11,6 @@
  */
 import { router } from 'expo-router';
 import { act, fireEvent, screen, within } from 'expo-router/testing-library';
-import { RefreshControl } from 'react-native';
 
 import AbsenceReasonsScreen from '@/app/admin/absence-reasons';
 import InjuryReportScreen from '@/app/admin/injuries';
@@ -25,7 +24,7 @@ import { supabase } from '@/lib/supabase';
 import type { TrainingRequirement } from '@/lib/training';
 import type { InjuryReportRow, Team } from '@/lib/types';
 
-import { openScreen, resetClub, settle, TEAM, TEAM_B } from './helpers/harness';
+import { openScreen, refreshControl, resetClub, settle, TEAM, TEAM_B } from './helpers/harness';
 import {
   failTableWrite,
   flip,
@@ -144,7 +143,7 @@ describe('Integrity training', () => {
 
   it('adds the safeguarding induction for the season in one tap', async () => {
     await openTraining([]);
-    fireEvent.press(screen.getByText('Add the safeguarding induction'));
+    await fireEvent.press(screen.getByText('Add the safeguarding induction'));
     await settle();
     expect(callsTo('admin_add_safeguarding_induction')).toEqual([{ p_season: 2026 }]);
     expect(screen.getByText(/^Added the Child Safeguarding in Sport Induction for coaches, managers, physios and the committee, due in 3 months\./)).toBeTruthy();
@@ -162,7 +161,7 @@ describe('Integrity training', () => {
 
   it('shows a refused induction', async () => {
     await openTraining([], { rpcErrors: { admin_add_safeguarding_induction: 'Only admins can set training' } });
-    fireEvent.press(screen.getByText('Add the safeguarding induction'));
+    await fireEvent.press(screen.getByText('Add the safeguarding induction'));
     await settle();
     expect(screen.getByText('Only admins can set training')).toBeTruthy();
   });
@@ -175,7 +174,7 @@ describe('Integrity training', () => {
       requirement({ id: 'r1', name: 'safeguarding in sport' }),
     ]);
     expect(screen.getByText('2025–26 had 1 course 2026–27 doesn’t: Anti-doping.')).toBeTruthy();
-    fireEvent.press(screen.getByText('Copy 2025–26 training'));
+    await fireEvent.press(screen.getByText('Copy 2025–26 training'));
     await settle();
     expect(callsTo('admin_copy_training_requirements')).toEqual([{ p_from: 2025, p_to: 2026 }]);
     expect(screen.getByText('Copied 2 courses with due dates a year on. Check each one’s squads and teams.')).toBeTruthy();
@@ -183,14 +182,14 @@ describe('Integrity training', () => {
 
   it('shows a refused copy', async () => {
     await openTraining([requirement({ id: 'old', season: 2025 })], { rpcErrors: { admin_copy_training_requirements: 'Copy refused' } });
-    fireEvent.press(screen.getByText('Copy 2025–26 training'));
+    await fireEvent.press(screen.getByText('Copy 2025–26 training'));
     await settle();
     expect(screen.getByText('Copy refused')).toBeTruthy();
   });
 
   it('switches to last season, offering no copy into it', async () => {
     await openTraining([requirement({ id: 'old', season: 2025, name: 'Old course' })]);
-    fireEvent.press(screen.getByText('2025–26'));
+    await fireEvent.press(screen.getByText('2025–26'));
     await settle();
     expect(screen.getByText('Old course')).toBeTruthy();
     expect(callsTo('training_overview').at(-1)).toEqual({ p_season: 2025 });
@@ -199,12 +198,12 @@ describe('Integrity training', () => {
 
   it('opens Add training for the season shown, and a course’s page', async () => {
     await openTraining([requirement({})]);
-    fireEvent.press(screen.getByText('Add training'));
+    await fireEvent.press(screen.getByText('Add training'));
     await settle();
     expect(screen).toHavePathnameWithParams('/admin/training/edit?season=2026');
-    act(() => router.back());
+    await act(() => router.back());
     await settle();
-    fireEvent.press(screen.getByText('Safeguarding in Sport'));
+    await fireEvent.press(screen.getByText('Safeguarding in Sport'));
     await settle();
     expect(screen).toHavePathname('/training/requirement/r1');
   });
@@ -222,7 +221,7 @@ async function openTrainingForm(url: string, saved: TrainingRequirement | null =
       rpcErrors,
     },
   );
-  act(() => router.push(url));
+  await act(() => router.push(url));
   await settle();
 }
 
@@ -232,10 +231,10 @@ const pickDay = (y: number, m: number, d: number) =>
 describe('adding and changing training', () => {
   it('says what is missing before saving anything', async () => {
     await openTrainingForm('/admin/training/edit?season=2026');
-    fireEvent.press(screen.getByText('Athletes'));
-    fireEvent.press(screen.getByText('Coaches'));
-    flip('All squads and teams', false);
-    fireEvent.press(screen.getAllByText('Add training').at(-1)!);
+    await fireEvent.press(screen.getByText('Athletes'));
+    await fireEvent.press(screen.getByText('Coaches'));
+    await flip('All squads and teams', false);
+    await fireEvent.press(screen.getAllByText('Add training').at(-1)!);
     await settle();
     expect(screen.getByText('Add a name, a due date, who must complete it, squads or teams.')).toBeTruthy();
     expect(callsTo('admin_save_training_requirement')).toEqual([]);
@@ -247,11 +246,11 @@ describe('adding and changing training', () => {
     expect(isSelected('Athletes')).toBe(true);
     expect(isSelected('Coaches')).toBe(true);
     expect(isOn('All squads and teams')).toBe(true);
-    type('Course', 'Safeguarding in Sport');
-    type('Details (optional)', 'About 90 minutes');
-    type('Course link (optional)', 'https://elearning.example');
-    pickDay(2026, 9, 30);
-    fireEvent.press(screen.getAllByText('Add training').at(-1)!);
+    await type('Course', 'Safeguarding in Sport');
+    await type('Details (optional)', 'About 90 minutes');
+    await type('Course link (optional)', 'https://elearning.example');
+    await pickDay(2026, 9, 30);
+    await fireEvent.press(screen.getAllByText('Add training').at(-1)!);
     await settle();
     expect(callsTo('admin_save_training_requirement')).toEqual([
       {
@@ -270,17 +269,17 @@ describe('adding and changing training', () => {
 
   it('offers only the season’s squads and teams, squads first, and saves the chosen ones and roles', async () => {
     await openTrainingForm('/admin/training/edit?season=2026');
-    type('Course', 'Junior course');
-    pickDay(2026, 9, 30);
-    fireEvent.press(screen.getByText('Coaches'));
-    fireEvent.press(screen.getByText('Guardians'));
-    flip('All squads and teams', false);
+    await type('Course', 'Junior course');
+    await pickDay(2026, 9, 30);
+    await fireEvent.press(screen.getByText('Coaches'));
+    await fireEvent.press(screen.getByText('Guardians'));
+    await flip('All squads and teams', false);
     expect(screen.queryByText('Old team')).toBeNull();
     const chips = ['Open Squad', 'Open A', '17 & Under A'].map((n) => screen.getByText(n));
     expect(chips).toHaveLength(3);
-    fireEvent.press(screen.getByText('Open Squad'));
-    fireEvent.press(screen.getByText('17 & Under A'));
-    fireEvent.press(screen.getAllByText('Add training').at(-1)!);
+    await fireEvent.press(screen.getByText('Open Squad'));
+    await fireEvent.press(screen.getByText('17 & Under A'));
+    await fireEvent.press(screen.getAllByText('Add training').at(-1)!);
     await settle();
     expect(callsTo('admin_save_training_requirement')[0]).toMatchObject({
       p_roles: ['athlete', 'guardian'],
@@ -298,7 +297,7 @@ describe('adding and changing training', () => {
 
   it('says when the season has no squads or teams to choose', async () => {
     await openTrainingForm('/admin/training/edit?season=2027');
-    flip('All squads and teams', false);
+    await flip('All squads and teams', false);
     expect(screen.getByText('2027–28 has no squads or teams yet.')).toBeTruthy();
   });
 
@@ -308,7 +307,7 @@ describe('adding and changing training', () => {
     expect(input('Course').props.value).toBe('Safeguarding in Sport');
     expect(isOn('All squads and teams')).toBe(false);
     expect(isSelected('Open A')).toBe(true);
-    fireEvent.press(screen.getByText('Save'));
+    await fireEvent.press(screen.getByText('Save'));
     await settle();
     expect(callsTo('admin_save_training_requirement')).toEqual([
       {
@@ -326,7 +325,7 @@ describe('adding and changing training', () => {
 
   it('shows a refused save and stays', async () => {
     await openTrainingForm('/admin/training/edit?id=r1', requirement({}), { admin_save_training_requirement: 'Choose roles' });
-    fireEvent.press(screen.getByText('Save'));
+    await fireEvent.press(screen.getByText('Save'));
     await settle();
     expect(screen.getByText('Choose roles')).toBeTruthy();
     expect(screen).toHavePathname('/admin/training/edit');
@@ -334,18 +333,18 @@ describe('adding and changing training', () => {
 
   it('archives training and brings it back', async () => {
     await openTrainingForm('/admin/training/edit?id=r1', requirement({}));
-    fireEvent.press(screen.getByText('Archive'));
+    await fireEvent.press(screen.getByText('Archive'));
     await settle();
     expect(callsTo('admin_set_training_archived')).toEqual([{ p_id: 'r1', p_archived: true }]);
     expect(screen.getByText('2026–27 season · archived')).toBeTruthy();
-    fireEvent.press(screen.getByText('Bring it back'));
+    await fireEvent.press(screen.getByText('Bring it back'));
     await settle();
     expect(callsTo('admin_set_training_archived').at(-1)).toEqual({ p_id: 'r1', p_archived: false });
   });
 
   it('shows a refused archive and keeps it as it was', async () => {
     await openTrainingForm('/admin/training/edit?id=r1', requirement({}), { admin_set_training_archived: 'Not allowed' });
-    fireEvent.press(screen.getByText('Archive'));
+    await fireEvent.press(screen.getByText('Archive'));
     await settle();
     expect(screen.getByText('Not allowed')).toBeTruthy();
     expect(screen.getByText('Archive')).toBeTruthy();
@@ -353,9 +352,9 @@ describe('adding and changing training', () => {
 
   it('removes training after asking, then goes back to the list', async () => {
     await openTrainingForm('/admin/training/edit?id=r1', requirement({}));
-    fireEvent.press(screen.getByText('Remove'));
+    await fireEvent.press(screen.getByText('Remove'));
     expect(screen.getByText('This removes the training for everyone. Training with certificates can only be archived.')).toBeTruthy();
-    fireEvent.press(screen.getByText('Remove training'));
+    await fireEvent.press(screen.getByText('Remove training'));
     await settle();
     expect(callsTo('admin_delete_training_requirement')).toEqual([{ p_id: 'r1' }]);
     expect(screen).toHavePathname('/admin/training');
@@ -365,8 +364,8 @@ describe('adding and changing training', () => {
     await openTrainingForm('/admin/training/edit?id=r1', requirement({}), {
       admin_delete_training_requirement: 'Training with certificates can only be archived',
     });
-    fireEvent.press(screen.getByText('Remove'));
-    fireEvent.press(screen.getByText('Remove training'));
+    await fireEvent.press(screen.getByText('Remove'));
+    await fireEvent.press(screen.getByText('Remove training'));
     await settle();
     expect(screen.getByText('Training with certificates can only be archived')).toBeTruthy();
     expect(screen).toHavePathname('/admin/training/edit');
@@ -410,14 +409,14 @@ describe('Season KPI reviews', () => {
 
   it('needs a name and a date, then adds the review date to the season shown', async () => {
     await openKpis({ points: [] });
-    fireEvent.press(screen.getByText('Add a review date'));
+    await fireEvent.press(screen.getByText('Add a review date'));
     expect(isDisabled('Add review date')).toBe(true);
-    type('Review', 'Mid-season review');
+    await type('Review', 'Mid-season review');
     expect(isDisabled('Add review date')).toBe(true);
-    pickDay(2026, 9, 31);
+    await pickDay(2026, 9, 31);
     expect(isDisabled('Add review date')).toBe(false);
     rpc().mockClear();
-    fireEvent.press(screen.getByText('Add review date'));
+    await fireEvent.press(screen.getByText('Add review date'));
     await settle();
     expect(callsTo('admin_save_kpi_review_point')).toEqual([
       { p_id: null, p_season: 2026, p_name: 'Mid-season review', p_due_on: '2026-10-31' },
@@ -429,9 +428,9 @@ describe('Season KPI reviews', () => {
 
   it('changes a review date under its id', async () => {
     await openKpis();
-    fireEvent.press(screen.getByText('Mid-season review'));
-    type('Review', 'Mid-season check');
-    fireEvent.press(screen.getByText('Save'));
+    await fireEvent.press(screen.getByText('Mid-season review'));
+    await type('Review', 'Mid-season check');
+    await fireEvent.press(screen.getByText('Save'));
     await settle();
     expect(callsTo('admin_save_kpi_review_point')).toEqual([
       { p_id: 'k1', p_season: 2026, p_name: 'Mid-season check', p_due_on: '2027-01-15' },
@@ -440,19 +439,19 @@ describe('Season KPI reviews', () => {
 
   it('removes a review date after asking', async () => {
     await openKpis();
-    fireEvent.press(screen.getByText('End of season'));
-    fireEvent.press(screen.getByText('Remove review date'));
+    await fireEvent.press(screen.getByText('End of season'));
+    await fireEvent.press(screen.getByText('Remove review date'));
     expect(screen.getByText(/You can only remove it while no reviews have been written for it\./)).toBeTruthy();
-    fireEvent.press(screen.getByText('Remove it'));
+    await fireEvent.press(screen.getByText('Remove it'));
     await settle();
     expect(callsTo('admin_delete_kpi_review_point')).toEqual([{ p_id: 'k2' }]);
   });
 
   it('shows why a review date can’t be removed and keeps the form open', async () => {
     await openKpis({ rpcErrors: { admin_delete_kpi_review_point: 'Reviews have been written for this date' } });
-    fireEvent.press(screen.getByText('End of season'));
-    fireEvent.press(screen.getByText('Remove review date'));
-    fireEvent.press(screen.getByText('Remove it'));
+    await fireEvent.press(screen.getByText('End of season'));
+    await fireEvent.press(screen.getByText('Remove review date'));
+    await fireEvent.press(screen.getByText('Remove it'));
     await settle();
     expect(screen.getByText('Reviews have been written for this date')).toBeTruthy();
     expect(screen.getByText('Save')).toBeTruthy();
@@ -460,21 +459,21 @@ describe('Season KPI reviews', () => {
 
   it('cancelling saves nothing', async () => {
     await openKpis();
-    fireEvent.press(screen.getByText('Mid-season review'));
-    fireEvent.press(screen.getByText('Cancel'));
+    await fireEvent.press(screen.getByText('Mid-season review'));
+    await fireEvent.press(screen.getByText('Cancel'));
     expect(callsTo('admin_save_kpi_review_point')).toEqual([]);
     expect(screen.getByText('Mid-season review')).toBeTruthy();
   });
 
   it('switches season and adds dates to that season', async () => {
     await openKpis({ teams: [...TEAMS, OLD_TEAM], points: [] });
-    fireEvent.press(screen.getByText('2025–26'));
+    await fireEvent.press(screen.getByText('2025–26'));
     await settle();
     expect(callsTo('kpi_review_points').at(-1)).toEqual({ p_season: 2025 });
-    fireEvent.press(screen.getByText('Add a review date'));
-    type('Review', 'Wrap-up');
-    pickDay(2026, 9, 20);
-    fireEvent.press(screen.getByText('Add review date'));
+    await fireEvent.press(screen.getByText('Add a review date'));
+    await type('Review', 'Wrap-up');
+    await pickDay(2026, 9, 20);
+    await fireEvent.press(screen.getByText('Add review date'));
     await settle();
     expect(callsTo('admin_save_kpi_review_point')[0]).toMatchObject({ p_season: 2025 });
   });
@@ -483,7 +482,7 @@ describe('Season KPI reviews', () => {
     await openKpis();
     rpc().mockClear();
     await act(async () => {
-      screen.UNSAFE_getByType(RefreshControl).props.onRefresh();
+      refreshControl().props.onRefresh();
     });
     await settle();
     expect(callsTo('kpi_review_points')).toEqual([{ p_season: 2026 }]);
@@ -510,8 +509,8 @@ async function openReasons(reasons = REASONS) {
 }
 
 async function addReason(name: string) {
-  type('Reason', name);
-  fireEvent.press(screen.getByText('Add reason'));
+  await type('Reason', name);
+  await fireEvent.press(screen.getByText('Add reason'));
   await settle();
 }
 
@@ -528,7 +527,7 @@ describe('Absence reasons', () => {
 
   it('switches a reason off without deleting it', async () => {
     await openReasons();
-    flip('Planned holidays', false);
+    await flip('Planned holidays', false);
     await settle();
     expect(writes(reasonLog, 'absence_categories')).toEqual([
       { method: 'update', values: { active: false }, filters: [['id', 'ar1']] },
@@ -537,7 +536,7 @@ describe('Absence reasons', () => {
 
   it('switches a reason back on', async () => {
     await openReasons();
-    flip('West Coast Fever', true);
+    await flip('West Coast Fever', true);
     await settle();
     expect(writes(reasonLog, 'absence_categories')).toEqual([
       { method: 'update', values: { active: true }, filters: [['id', 'ar2']] },
@@ -547,7 +546,7 @@ describe('Absence reasons', () => {
   it('shows a refused switch', async () => {
     await openReasons();
     failTableWrite('absence_categories', 'update', 'Only admins can change absence reasons');
-    flip('Other', false);
+    await flip('Other', false);
     await settle();
     expect(screen.getByText('Only admins can change absence reasons')).toBeTruthy();
   });
@@ -672,24 +671,24 @@ describe('Injury report', () => {
   ])('asks for “%s” months from %s, between 1 and 120 months', async (months, since) => {
     await openInjuries();
     rpc().mockClear();
-    type('Months to include', months);
+    await type('Months to include', months);
     await settle();
     expect(callsTo('injury_report').at(-1)).toEqual({ p_since: since });
   });
 
   it.each(['0', ''])('falls back to 3 months for “%s”', async (months) => {
     await openInjuries();
-    type('Months to include', '12');
+    await type('Months to include', '12');
     await settle();
     rpc().mockClear();
-    type('Months to include', months);
+    await type('Months to include', months);
     await settle();
     expect(callsTo('injury_report')).toEqual([{ p_since: '2026-07-18' }]);
   });
 
   it('keeps only digits in the months', async () => {
     await openInjuries();
-    type('Months to include', '1a2');
+    await type('Months to include', '1a2');
     expect(input('Months to include').props.value).toBe('12');
   });
 
@@ -707,7 +706,7 @@ describe('Injury report', () => {
 
   it('exports a CSV of every injury, with counts of documents rather than the documents', async () => {
     await openInjuries();
-    fireEvent.press(screen.getByText('Export CSV'));
+    await fireEvent.press(screen.getByText('Export CSV'));
     await settle();
     expect(shareCsv).toHaveBeenCalledTimes(1);
     const [name, csv] = (shareCsv as jest.Mock).mock.calls[0] as [string, string];
@@ -727,7 +726,7 @@ describe('Injury report', () => {
 
   it('exports the PDF under the club’s name', async () => {
     await openInjuries();
-    fireEvent.press(screen.getByText('Export PDF'));
+    await fireEvent.press(screen.getByText('Export PDF'));
     await settle();
     expect(reportPdf).toHaveBeenCalledWith(expect.objectContaining({ title: expect.any(String) }), {
       clubName: 'Sample Club',
@@ -739,14 +738,14 @@ describe('Injury report', () => {
   it('shows why an export failed', async () => {
     await openInjuries();
     (shareCsv as jest.Mock).mockRejectedValueOnce(new Error('Sharing isn’t available'));
-    fireEvent.press(screen.getByText('Export CSV'));
+    await fireEvent.press(screen.getByText('Export CSV'));
     await settle();
     expect(screen.getByText('Sharing isn’t available')).toBeTruthy();
   });
 
   it('opens an injury', async () => {
     await openInjuries();
-    fireEvent.press(screen.getByText('Sample athlete · Left ankle'));
+    await fireEvent.press(screen.getByText('Sample athlete · Left ankle'));
     await settle();
     expect(screen).toHavePathname('/injuries/i1');
   });

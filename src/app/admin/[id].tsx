@@ -22,6 +22,7 @@ import { Spacing } from '@/constants/theme';
 import { useTheme } from '@/hooks/use-theme';
 import { formatDate, isMinor, parseDate } from '@/lib/age';
 import { PROFILE_COLUMNS, useAuth } from '@/lib/auth';
+import { unlocksChild } from '@/lib/guardian-links';
 import { useSquads } from '@/lib/club';
 import {
   canHoldTitle,
@@ -94,6 +95,12 @@ type Person = {
   under_17: boolean;
 };
 
+/** A parent or guardian and a child: linked, or asked to be with the child's code. */
+type Pair = { guardian_id: string; athlete_id: string };
+
+/** Someone on either side of a link or request, whatever their status. */
+type LinkPerson = Person & { status: MemberStatus };
+
 /** How many guardians to offer while searching. */
 const GUARDIAN_MATCHES = 6;
 
@@ -131,6 +138,14 @@ export default function MemberScreen() {
   const [savedGuardianIds, setSavedGuardianIds] = useState<string[]>([]);
   const [guardianReason, setGuardianReason] = useState('');
   const [guardianOf, setGuardianOf] = useState<string[]>([]);
+  // Link codes entered by or for this member, the people on both sides, and
+  // each child's current squads and teams.
+  const [requests, setRequests] = useState<Pair[]>([]);
+  const [linkPeople, setLinkPeople] = useState<LinkPerson[]>([]);
+  const [childGroups, setChildGroups] = useState<Record<string, string[]>>({});
+  const [linking, setLinking] = useState<string | null>(null);
+  const [linkError, setLinkError] = useState<string | null>(null);
+  const [reloads, setReloads] = useState(0);
   const [people, setPeople] = useState<Person[]>([]);
   const [guardianSearch, setGuardianSearch] = useState('');
   const [childSearch, setChildSearch] = useState('');
@@ -147,8 +162,15 @@ export default function MemberScreen() {
 
   useEffect(() => {
     (async () => {
-      const [profileResult, teamsResult, linksResult, peopleResult, exemptionsResult, dobResult] =
-        await Promise.all([
+      const [
+        profileResult,
+        teamsResult,
+        linksResult,
+        peopleResult,
+        exemptionsResult,
+        dobResult,
+        requestsResult,
+      ] = await Promise.all([
         supabase.from('profiles').select(PROFILE_COLUMNS).eq('id', id).single(),
         supabase
           .from('team_members')
@@ -167,6 +189,10 @@ export default function MemberScreen() {
           .order('full_name'),
         supabase.rpc('admin_volunteer_exemptions'),
         supabase.rpc('admin_date_of_birth_record', { p_profile_id: id }).maybeSingle(),
+        supabase
+          .from('guardian_link_requests')
+          .select('guardian_id, athlete_id')
+          .or(`guardian_id.eq.${id},athlete_id.eq.${id}`),
       ]);
       const profile = profileResult.data as Profile | null;
       if (!profile) {
@@ -215,6 +241,39 @@ export default function MemberScreen() {
       if (!links.some((l) => l.athlete_id === id)) setGuardianSearch(profile.guardian_email ?? '');
       setGuardianOf(links.filter((l) => l.guardian_id === id).map((l) => l.athlete_id));
       setPeople((peopleResult.data as Person[] | null) ?? []);
+      const asked = (requestsResult.data as Pair[] | null) ?? [];
+      setRequests(asked);
+      // Who is on the other side, even before they're approved, and where
+      // each child plays.
+      const pairs = [...links, ...asked];
+      const others = [...new Set(pairs.flatMap((p) => [p.guardian_id, p.athlete_id]))].filter(
+        (other) => other !== id,
+      );
+      const children = [...new Set(pairs.map((p) => p.athlete_id))];
+      const [othersResult, groupsResult] = await Promise.all([
+        others.length > 0
+          ? supabase
+              .from('profiles')
+              .select(
+                'id, full_name, email, status, role, extra_roles, verified_at, date_of_birth, under_17',
+              )
+              .in('id', others)
+          : { data: [] },
+        children.length > 0
+          ? supabase
+              .from('team_members')
+              .select('profile_id, team_id')
+              .eq('team_role', 'athlete')
+              .in('profile_id', children)
+          : { data: [] },
+      ]);
+      setLinkPeople((othersResult.data as LinkPerson[] | null) ?? []);
+      const groupsOf: Record<string, string[]> = {};
+      for (const row of (groupsResult.data as { profile_id: string; team_id: string }[] | null) ??
+        []) {
+        groupsOf[row.profile_id] = [...(groupsOf[row.profile_id] ?? []), row.team_id];
+      }
+      setChildGroups(groupsOf);
 
       const existing = teamsResult.data ?? [];
       if (profile.status === 'approved' || existing.length > 0) {
@@ -243,7 +302,7 @@ export default function MemberScreen() {
         }
       }
     })();
-  }, [id]);
+  }, [id, reloads]);
 
   // Every role they'll hold, main role first, and the ones that put them in squads and teams.
   const roles = [role, ...extraRoles.filter((r) => r !== role)];
@@ -608,6 +667,22 @@ export default function MemberScreen() {
     return endError?.message ?? null;
   }
 
+  /** Links a parent to the child whose code they entered, or turns the request down. */
+  async function answerRequest(pair: Pair, link: boolean) {
+    setLinking(`${pair.guardian_id}:${pair.athlete_id}:${link}`);
+    setLinkError(null);
+    const { error: rpcError } = await supabase.rpc(
+      link ? 'admin_accept_guardian_link' : 'admin_decline_guardian_link',
+      { p_guardian_id: pair.guardian_id, p_athlete_id: pair.athlete_id },
+    );
+    setLinking(null);
+    if (rpcError) {
+      setLinkError(rpcError.message);
+      return;
+    }
+    setReloads((n) => n + 1);
+  }
+
   async function deleteMember() {
     setDeleting(true);
     setError(null);
@@ -633,6 +708,44 @@ export default function MemberScreen() {
     const person = people.find((p) => p.id === personId);
     return person?.full_name || person?.email || 'Unnamed member';
   };
+  const personOf = (personId: string): LinkPerson | undefined =>
+    personId === member.id
+      ? member
+      : (linkPeople.find((p) => p.id === personId) ??
+        (() => {
+          const person = people.find((p) => p.id === personId);
+          return person && { ...person, status: 'approved' as const };
+        })());
+  const linkName = (personId: string) => {
+    const person = personOf(personId);
+    return person?.full_name || person?.email || 'Unnamed member';
+  };
+  // A child's name with what tells them apart: date of birth, squads and teams.
+  const childLabel = (childId: string) => {
+    const child = personOf(childId);
+    const groups = (childGroups[childId] ?? [])
+      .map((teamId) => teams.find((t) => t.id === teamId))
+      .filter((t) => !!t)
+      .map((t) => teamLabel(t, teams));
+    return [
+      linkName(childId),
+      child?.date_of_birth
+        ? `born ${formatDate(child.date_of_birth)} (${ageOn(child.date_of_birth)})`
+        : null,
+      groups.length > 0 ? groups.join(', ') : `no ${usesSquads ? 'squad' : 'team'} yet`,
+    ]
+      .filter(Boolean)
+      .join(' · ');
+  };
+  // An approved athlete under 18 with no approved, verified parent linked:
+  // their app is locked (public.is_locked_child).
+  const locked =
+    member.status === 'approved' &&
+    hasRole(member, 'athlete') &&
+    isMinor(member.date_of_birth, member.under_17) &&
+    !savedGuardianIds.some((g) => unlocksChild(personOf(g)));
+  const requestsForChild = requests.filter((r) => r.athlete_id === id);
+  const requestsByParent = requests.filter((r) => r.guardian_id === id);
   const search = guardianSearch.trim().toLowerCase();
   const isVerified = (personId: string) => !!people.find((p) => p.id === personId)?.verified_at;
   const guardianMatches = people
@@ -918,7 +1031,9 @@ export default function MemberScreen() {
           />
           {dob ? (
             <ThemedText type="small" themeColor="textSecondary">
-              {minor ? 'Under 18, so needs a parent or guardian.' : '18 or over.'}
+              {minor
+                ? 'Under 18, so their app stays locked until a verified parent or guardian is linked.'
+                : '18 or over.'}
             </ThemedText>
           ) : dob === null ? (
             <ThemedText type="small" themeColor="textSecondary">
@@ -1185,6 +1300,24 @@ export default function MemberScreen() {
       {hasGuardians ? (
         <View style={styles.group}>
           <ThemedText type="smallBold">Parents and guardians</ThemedText>
+          {locked ? (
+            <ThemedText type="small" themeColor="tint">
+              Locked: no verified parent or guardian is linked, so their app shows only a link code
+              to share with one. Approve the parent who enters it, or link one here.
+            </ThemedText>
+          ) : null}
+          {requestsForChild.map((r) => (
+            <LinkRequest
+              key={r.guardian_id}
+              title={`${linkName(r.guardian_id)} entered their code`}
+              parent={personOf(r.guardian_id)}
+              busy={linking}
+              pair={r}
+              onAnswer={answerRequest}
+              mine={!!session && r.guardian_id === session.user.id}
+            />
+          ))}
+          {requestsForChild.length > 0 ? <ErrorText>{linkError}</ErrorText> : null}
           {myChild ? (
             <ThemedText type="small" themeColor="textSecondary">
               {guardianIds.map(nameOf).join(', ')}. You’re one of their guardians, so another admin
@@ -1213,7 +1346,8 @@ export default function MemberScreen() {
               <ChipGroup
                 options={guardianMatches.map((p) => ({
                   value: p.id,
-                  label: p.verified_at ? nameOf(p.id) : `${nameOf(p.id)} (not verified)`,
+                  // The email tells apart two parents with the same name.
+                  label: `${nameOf(p.id)}${p.email && p.full_name ? ` · ${p.email}` : ''}${p.verified_at ? '' : ' (not verified)'}`,
                 }))}
                 selected={[]}
                 onToggle={(g) => {
@@ -1271,13 +1405,38 @@ export default function MemberScreen() {
       {isGuardian && member.status === 'approved' ? (
         <Card>
           <ThemedText type="smallBold">Guardian of</ThemedText>
-          <ThemedText type="small" themeColor="textSecondary">
-            {guardianOf.length > 0
-              ? guardianOf.map(nameOf).join(', ')
-              : "No athletes yet. Link them from the athlete's page."}
-          </ThemedText>
+          {guardianOf.length > 0 ? (
+            guardianOf.map((c) => (
+              <ThemedText key={c} type="small" themeColor="textSecondary">
+                {childLabel(c)}
+              </ThemedText>
+            ))
+          ) : (
+            <ThemedText type="small" themeColor="textSecondary">
+              No children yet. They enter their child’s link code, or you link them from the
+              child’s page.
+            </ThemedText>
+          )}
           <GuardianHistory memberId={id} />
         </Card>
+      ) : null}
+
+      {isGuardian && requestsByParent.length > 0 ? (
+        <View style={styles.group}>
+          <ThemedText type="smallBold">Children whose code they entered</ThemedText>
+          {requestsByParent.map((r) => (
+            <LinkRequest
+              key={r.athlete_id}
+              title={childLabel(r.athlete_id)}
+              parent={member}
+              busy={linking}
+              pair={r}
+              onAnswer={answerRequest}
+              mine={isSelf}
+            />
+          ))}
+          <ErrorText>{linkError}</ErrorText>
+        </View>
       ) : null}
 
       {(member.status !== 'approved' || isGuardian) && !member.verified_at ? (
@@ -1285,7 +1444,7 @@ export default function MemberScreen() {
           <ThemedText type="smallBold">Verify who they are</ThemedText>
           <ThemedText type="small" themeColor="textSecondary">
             {isGuardian
-              ? 'Guardians must be verified before you link them to a child. '
+              ? 'Parents and guardians must be verified before you approve them or link them to a child. '
               : ''}
             Ask them to open the app and read you their 6-digit code, in person or over a channel
             you already trust. Or, if their PlayHQ email matches the parent or member on the PlayHQ
@@ -1426,6 +1585,65 @@ function WwcSources() {
 
 /** Who recorded a member's checked date of birth, and when. */
 type DobRecord = { recorded_by_name: string | null; recorded_at: string | null };
+
+/**
+ * A parent or guardian who entered a child's link code. An approved, verified
+ * parent is linked here; one waiting for approval is linked by approving them.
+ */
+function LinkRequest({
+  title,
+  parent,
+  pair,
+  busy,
+  mine,
+  onAnswer,
+}: {
+  title: string;
+  parent: LinkPerson | undefined;
+  pair: Pair;
+  busy: string | null;
+  /** The admin is the parent: another admin decides. */
+  mine: boolean;
+  onAnswer: (pair: Pair, link: boolean) => void;
+}) {
+  const key = `${pair.guardian_id}:${pair.athlete_id}`;
+  const canLink = unlocksChild(parent);
+  const next = mine
+    ? 'You entered this code, so another admin decides.'
+    : canLink
+      ? 'Check they’re this child’s parent or guardian, then link them.'
+      : parent?.status === 'pending'
+        ? 'Verify them and approve them as a parent or guardian, and they’re linked to this child.'
+        : parent?.status === 'approved' && !parent.verified_at
+          ? 'Verify who they are first, from their page.'
+          : 'They can’t be linked until they’re an approved parent or guardian.';
+  return (
+    <Card>
+      <ThemedText type="small">{title}</ThemedText>
+      <ThemedText type="small" themeColor="textSecondary">
+        {next}
+      </ThemedText>
+      {mine ? null : (
+        <View style={styles.group}>
+          {canLink ? (
+            <Button
+              title="Link them"
+              variant="secondary"
+              onPress={() => onAnswer(pair, true)}
+              busy={busy === `${key}:true`}
+            />
+          ) : null}
+          <Button
+            title="Not their parent"
+            variant="secondary"
+            onPress={() => onAnswer(pair, false)}
+            busy={busy === `${key}:false`}
+          />
+        </View>
+      )}
+    </Card>
+  );
+}
 
 function Detail({ label, value }: { label: string; value: string | null | undefined }) {
   return (

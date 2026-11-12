@@ -44,10 +44,18 @@ jest.mock('@react-native-async-storage/async-storage', () =>
 jest.mock('@/global.css', () => ({}));
 jest.mock('expo-font', () => ({ ...jest.requireActual('expo-font'), useFonts: () => [true, null] }));
 
-// Every feature on, Season KPIs included, so only the role guards decide.
+// Each of the 2,815 tests renders the whole app, and the mocks keep every call
+// they were given. Cleared between tests, the file runs in under 1GB instead of
+// running a CI worker out of memory.
+afterEach(() => {
+  jest.clearAllMocks();
+});
+
+// Every feature on, Season KPIs, the registers and training load flags included, so only
+// the role guards decide.
 beforeEach(() => {
   resetClub();
-  setClubFeatures({ kpis: true });
+  setClubFeatures({ kpis: true, registers: true, trainingLoad: true });
 });
 
 // ---------------------------------------------------------------------------
@@ -69,7 +77,22 @@ const GROUP_COACHES: PersonaName[] = ['coach', 'assistantCoach', 'coachGuardian'
 const COACHES: PersonaName[] = [...GROUP_COACHES, 'doneSquadCoach'];
 const MANAGERS: PersonaName[] = ['manager', 'safeguardingOfficer'];
 const PHYSIOS: PersonaName[] = ['physio', 'headPhysio'];
-const COMMITTEE: PersonaName[] = ['committee'];
+/**
+ * The committee, including one exempted with a reason, one with no check
+ * before the committee checks date and one cleared by a volunteer exemption:
+ * the same member screens. (Only those screened to work with children also
+ * read the reports, in route-guards.test.tsx.)
+ */
+const COMMITTEE: PersonaName[] = [
+  'committee',
+  'committeeExempt',
+  'committeeBeforeChecksDate',
+  'committeeVolunteerExempt',
+  // The same screens, but no injuries: the club chose who on the committee
+  // sees them and left this one out (customer review R7).
+  'committeeNotChosen',
+];
+const COMMITTEE_SEEING_INJURIES = COMMITTEE.filter((p) => p !== 'committeeNotChosen');
 // An expired check never pauses the admin role; a lapsed admin's coaching pauses.
 const ADMINS: PersonaName[] = [
   'admin',
@@ -113,7 +136,15 @@ const NO_ROLE_SCREENS: PersonaName[] = [
   'committeePastChecksDate',
   'statisticianPastChecksDate',
   'physioExpiredCheck',
+  'waitingChild',
+  'lockedChild',
 ];
+
+/**
+ * Children under 18 waiting for a parent or guardian: asking to join, or
+ * approved and locked until a verified one is linked.
+ */
+const WAITING_FOR_GUARDIAN: PersonaName[] = ['waitingChild', 'lockedChild'];
 
 const SIGNED_IN = (Object.keys(personas) as PersonaName[]).filter((p) => p !== 'signedOut');
 
@@ -127,7 +158,7 @@ const SURVEY_SENDERS = union(ADMINS, COMMITTEE, COACHES, MANAGERS, ['captain']);
 // Coaches, managers and physios log injuries; managers open the injury
 // screens only to do that, and see no records there.
 const INJURY_LOGGERS = union(COACHES, MANAGERS, PHYSIOS);
-const INJURIES = union(ATHLETES, GUARDIANS, COACHES, PHYSIOS, COMMITTEE, ADMINS, INJURY_LOGGERS);
+const INJURIES = union(ATHLETES, GUARDIANS, COACHES, PHYSIOS, COMMITTEE_SEEING_INJURIES, ADMINS, INJURY_LOGGERS);
 const FAMILY_OF_ATHLETES = union(ATHLETES, GUARDIANS);
 const ATTENDANCE_TAKERS = union(COACHES, MANAGERS, COMMITTEE, ADMINS);
 const ATTENDANCE_VIEWERS = union(COACHES, COMMITTEE, ADMINS);
@@ -143,6 +174,12 @@ const CERTIFICATE_CHECKERS = union(COMMITTEE, ADMINS);
 // group reaches them only from a link). Never admins or the committee as such.
 const MEDICAL_READERS = union(ATHLETES, GUARDIANS, COACHES, MANAGERS, ['physio']);
 const GROUP_STAFF = union(COACHES, MANAGERS, ['physio']);
+// The policy and conflict registers: the committee and admins read them, a
+// policy's owner (a club official) records its review, and committee members
+// and coaches declare their conflicts of interest.
+const REGISTER_READERS = union(COMMITTEE, ADMINS);
+const POLICY_REVIEWERS = union(ADMINS, COMMITTEE, COACHES, MANAGERS, PHYSIOS, STATISTICIANS);
+const CONFLICT_DECLARERS = union(COMMITTEE, COACHES);
 
 const WHO_OPENS: Record<string, PersonaName[]> = {
   'messages/index': CLUB_MEMBERS,
@@ -175,6 +212,7 @@ const WHO_OPENS: Record<string, PersonaName[]> = {
   'check-in': ATHLETES,
   'check-ins/index': CHECK_IN_VIEWERS,
   'check-ins/athlete/[id]': union(GROUP_COACHES, GUARDIANS),
+  'check-ins/load': GROUP_COACHES,
 
   'awards/index': AWARD_VOTERS,
   'awards/vote': AWARD_VOTERS,
@@ -199,6 +237,7 @@ const WHO_OPENS: Record<string, PersonaName[]> = {
   'concerns/[id]': union(ADMINS, ['safeguardingOfficer']),
   'concerns/report': union(ADMINS, ['safeguardingOfficer']),
   'concerns/wellbeing': union(ADMINS, ['safeguardingOfficer']),
+  'concerns/load': union(ADMINS, ['safeguardingOfficer']),
 
   'consent/[id]': union(GUARDIANS, ADMINS),
   'records/[id]': union(GUARDIANS, ADMINS),
@@ -207,9 +246,20 @@ const WHO_OPENS: Record<string, PersonaName[]> = {
   'activity/[id]': union(GUARDIANS, ADMINS),
 
   'team/captains/[id]': union(ADMINS, COACHES),
+
+  'registers/index': REGISTER_READERS,
+  'registers/conflicts': REGISTER_READERS,
+  'registers/policies': union(REGISTER_READERS, POLICY_REVIEWERS),
+  'registers/review': POLICY_REVIEWERS,
+  'registers/policy': ADMINS,
+  'registers/conflict': ADMINS,
+  'declare-conflicts': CONFLICT_DECLARERS,
 };
 
-/** Screens every signed-in member has, including those waiting for approval. */
+/**
+ * Screens every signed-in member has, including those waiting for approval.
+ * A child waiting for a parent or guardian only has those in OPEN_WHILE_WAITING.
+ */
 const EVERYONE_SIGNED_IN = [
   'index',
   'join',
@@ -226,6 +276,15 @@ const EVERYONE_SIGNED_IN = [
   'my-details',
   'delete-account',
 ];
+
+/** What a child waiting for a parent or guardian can open: their link code, help, and leaving. */
+const OPEN_WHILE_WAITING: Record<string, PersonaName[]> = {
+  index: WAITING_FOR_GUARDIAN,
+  'concern/new': WAITING_FOR_GUARDIAN,
+  'delete-account': WAITING_FOR_GUARDIAN,
+  // Changing the request, until they're approved.
+  join: ['waitingChild'],
+};
 
 // ---------------------------------------------------------------------------
 
@@ -283,9 +342,20 @@ describe.each(Object.entries(WHO_OPENS))('%s', (route, who) => {
 });
 
 describe.each(EVERYONE_SIGNED_IN)('%s', (route) => {
-  it.each(SIGNED_IN)('opens for %s', async (p) => {
+  const reaches = SIGNED_IN.filter(
+    (p) => !WAITING_FOR_GUARDIAN.includes(p) || (OPEN_WHILE_WAITING[route] ?? []).includes(p),
+  );
+  const turnedAway = SIGNED_IN.filter((p) => !reaches.includes(p));
+
+  it.each(reaches)('opens for %s', async (p) => {
     await expectReaches(p, route);
   });
+
+  if (turnedAway.length > 0) {
+    it.each(turnedAway)('sends %s home', async (p) => {
+      await expectTurnedAway(p, route, 'index');
+    });
+  }
 });
 
 describe('Season KPIs off', () => {
@@ -299,9 +369,34 @@ describe('Season KPIs off', () => {
   );
 });
 
+describe('training load flags off', () => {
+  it('sends even coaches home from the training load list', async () => {
+    setClubFeatures({ kpis: true, registers: true });
+    await expectTurnedAway('coach', 'check-ins/load', 'index');
+    await expectTurnedAway('assistantCoach', 'check-ins/load', 'index');
+  });
+});
+
+describe('registers off', () => {
+  it.each([
+    'registers/index',
+    'registers/conflicts',
+    'registers/policies',
+    'registers/review',
+    'registers/policy',
+    'registers/conflict',
+    'declare-conflicts',
+  ])('sends even admins, the committee and coaches home from %s', async (route) => {
+    setClubFeatures({ kpis: true });
+    await expectTurnedAway('admin', route, 'index');
+    await expectTurnedAway('committee', route, 'index');
+    await expectTurnedAway('coach', route, 'index');
+  }, 20000);
+});
+
 describe('captains’ polls off', () => {
   it('a captain can no longer send polls, but keeps their polls’ results and still answers surveys', async () => {
-    setClubFeatures({ kpis: true, captainPolls: false });
+    setClubFeatures({ kpis: true, registers: true, captainPolls: false });
     await expectTurnedAway('captain', 'surveys/new', 'index');
     await expectReaches('captain', 'surveys/results');
     await expectReaches('captain', 'surveys/index');

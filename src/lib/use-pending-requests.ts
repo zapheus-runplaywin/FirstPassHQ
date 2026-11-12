@@ -3,6 +3,7 @@ import { useCallback, useState } from 'react';
 
 import { useAuth } from '@/lib/auth';
 import { toDateString } from '@/lib/injuries';
+import { toPurgeRunStatus } from '@/lib/purge-runs';
 import { supabase } from '@/lib/supabase';
 import type { WwccApplication } from '@/lib/types';
 import { applicationsToConfirm } from '@/lib/wwcc-applications';
@@ -41,6 +42,7 @@ export function pendingRequestsLabel(count: number) {
 export type SafetyTodos = {
   wwcc_missing: number;
   wwcc_expiring: number;
+  /** Approved athletes under 18 locked out: no approved, verified parent or guardian linked. */
   minors_without_guardian: number;
   turning_18: number;
   /** Volunteer exemptions that end by themselves within 60 days. */
@@ -62,6 +64,11 @@ export type SafetyTodos = {
   wwcc_people?: number;
   /** Club settings' "Remove old records" is off, so nothing past its keep period is removed. */
   records_removal_off?: boolean;
+  /**
+   * Remove old records is on but the nightly removal hasn't finished for 2
+   * days, from `removal_run_status`: when it last finished, or null if never.
+   */
+  records_removal_stalled?: { last_ok_at: string | null } | null;
   /** Members with no squad, team or club role for 2 years, from `admin_inactive_members`. */
   inactive_members?: number;
   /**
@@ -91,13 +98,16 @@ export function useSafetyTodos() {
       { data: inactive },
       { data: unendorsable },
       { data: applications },
+      { data: purgeRun },
     ] = await Promise.all([
       supabase.rpc('admin_safety_todos').maybeSingle(),
       supabase.rpc('record_retention').maybeSingle(),
       supabase.rpc('admin_inactive_members'),
       supabase.rpc('admin_unendorsable_clearances'),
       supabase.rpc('admin_wwcc_applications'),
+      supabase.rpc('removal_run_status').maybeSingle(),
     ]);
+    const run = toPurgeRunStatus(purgeRun);
     const toConfirm = applicationsToConfirm(
       Array.isArray(applications) ? (applications as WwccApplication[]) : [],
       toDateString(new Date()),
@@ -108,6 +118,7 @@ export function useSafetyTodos() {
       todos && {
         ...todos,
         records_removal_off: retention != null && removalOn === false,
+        records_removal_stalled: run?.overdue ? { last_ok_at: run.last_ok_at } : null,
         inactive_members: Array.isArray(inactive) ? inactive.length : 0,
         unendorsable_clearances: Array.isArray(unendorsable)
           ? (unendorsable as { athlete_name: string | null }[]).map(

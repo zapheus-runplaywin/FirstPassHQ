@@ -90,8 +90,10 @@ async function openSurvey(page: Page, detail: ReturnType<typeof survey>) {
   await expect(page.getByText(`Hi ${athlete.full_name}`)).toBeVisible();
   await page.getByRole('button', { name: 'Surveys 1 1 to answer' }).click();
   await page.getByRole('button', { name: new RegExp(`^${detail.title}`) }).click();
-  await expect(page.getByText(detail.title, { exact: true }).filter({ visible: true })).toBeVisible();
-  expect(backend.rpcCalls('survey_detail')).toEqual([{ p_survey_id: detail.id }]);
+  // The list behind it also shows the title, so wait for the survey itself:
+  // it asks for the survey when the screen comes into focus.
+  await expect.poll(() => backend.rpcCalls('survey_detail')).toEqual([{ p_survey_id: detail.id }]);
+  await expect(page.getByText(questions[0].prompt).filter({ visible: true })).toBeVisible();
   return { backend, athlete };
 }
 

@@ -210,7 +210,7 @@ export async function shareXlsx(fileName: string, bytes: Uint8Array) {
     return;
   }
   const file = new File(Paths.cache, fileName);
-  file.write(bytes);
+  await file.write(bytes);
   await Sharing.shareAsync(file.uri, {
     mimeType,
     UTI: 'org.openxmlformats.spreadsheetml.sheet',

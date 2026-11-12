@@ -91,7 +91,7 @@ const placeholder = (route: string) =>
   };
 
 const press = async (text: string | RegExp, index = 0) => {
-  fireEvent.press(screen.getAllByText(text)[index]);
+  await fireEvent.press(screen.getAllByText(text)[index]);
   await settle(6);
 };
 
@@ -291,7 +291,7 @@ describe('sending a certificate', () => {
     attach();
     await press('Attach the certificate');
     expect(screen.getByText('📎 cert.pdf')).toBeTruthy();
-    fireEvent.changeText(screen.getByPlaceholderText('Anything the committee should know'), 'Both on one PDF');
+    await fireEvent.changeText(screen.getByPlaceholderText('Anything the committee should know'), 'Both on one PDF');
     await press('Send for checking');
     expect(storage.upload).toHaveBeenCalledWith('athlete/uuid-1/cert.pdf', expect.any(ArrayBuffer), {
       contentType: 'application/pdf',
@@ -337,7 +337,7 @@ describe('sending a certificate', () => {
 
   it('won’t take a completion day after today', async () => {
     await openSubmit('athlete', two);
-    fireEvent.press(screen.getByLabelText('Day after'));
+    await fireEvent.press(screen.getByLabelText('Day after'));
     await settle();
     expect(screen.getByText(formatDateString('2026-10-18'))).toBeTruthy();
   });
@@ -449,7 +449,7 @@ describe('checking certificates', () => {
     await press('Send back');
     expect(screen.getByText('Say what needs fixing, such as “The name is cut off”.')).toBeTruthy();
     expect(rpcCalls('review_training_certificate')).toEqual([]);
-    fireEvent.changeText(screen.getByPlaceholderText('The member sees this note'), 'The name is cut off');
+    await fireEvent.changeText(screen.getByPlaceholderText('The member sees this note'), 'The name is cut off');
     await press('Send back');
     expect(onlyRpcCall('review_training_certificate')).toEqual({
       p_certificate_id: 'c1',
@@ -625,7 +625,7 @@ describe('one course’s members', () => {
 
   it('opens a member’s certificate', async () => {
     await openRequirement('committee');
-    fireEvent.press(screen.getByLabelText('Amy Athlete’s certificate'));
+    await fireEvent.press(screen.getByLabelText('Amy Athlete’s certificate'));
     await settle();
     expect(screen).toHaveSearchParams({ path: 'm1/x/cert.pdf', name: 'cert.pdf' });
   });

@@ -125,7 +125,8 @@ insert into service_only values
   ('public.purge_expired_injuries()'), ('public.expired_injury_documents()'),
   ('public.purge_expired_records()'), ('public.expired_certificate_documents()'),
   ('public.cleared_injury_documents()'), ('public.mark_removed_injury_documents()'),
-  ('public.expired_session_plan_files()'), ('public.purge_expired_surveys()');
+  ('public.expired_session_plan_files()'), ('public.purge_expired_surveys()'),
+  ('public.record_purge_run(boolean, text, jsonb)');
 select pg_temp.ok(f || ': service role can run it', has_function_privilege('service_role', f, 'execute'), true) from service_only order by f;
 select pg_temp.ok(f || ': members cannot run it', has_function_privilege('authenticated', f, 'execute'), false) from service_only order by f;
 select pg_temp.ok(f || ': anon cannot run it', has_function_privilege('anon', f, 'execute'), false) from service_only order by f;

@@ -122,6 +122,13 @@ describe('checkLine', () => {
     expect(line('due_soon')).toBe(`The yearly check is due ${formatDateString('2027-03-01')}.`);
     expect(line('overdue')).toBe(`The yearly check was due ${formatDateString('2027-03-01')}.`);
   });
+  it('adds the removal date when the club removes unchecked details', () => {
+    const at = { check_due_on: '2027-03-01', checked_by_name: 'Pia Parent', removal_on: '2028-03-01' };
+    const removal = `If nobody checks them by ${formatDateString('2028-03-01')}, they’ll be removed.`;
+    expect(checkLine({ ...at, check_status: 'overdue' })).toBe(`The yearly check was due ${formatDateString('2027-03-01')}. ${removal}`);
+    expect(checkLine({ ...at, check_status: 'due_soon' })).toBe(`The yearly check is due ${formatDateString('2027-03-01')}. ${removal}`);
+    expect(checkLine({ ...at, check_status: 'current' })).not.toContain('removed');
+  });
   it('says nothing is saved yet', () => {
     expect(line('missing')).toBe('Nothing saved yet. They’re checked once a year.');
   });

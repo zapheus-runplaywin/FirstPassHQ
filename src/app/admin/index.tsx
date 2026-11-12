@@ -9,6 +9,7 @@ import { Spacing } from '@/constants/theme';
 import { isMinor } from '@/lib/age';
 import { formatMonth } from '@/lib/format';
 import { PROFILE_COLUMNS } from '@/lib/auth';
+import { athletesWithVerifiedGuardian } from '@/lib/guardian-links';
 import { rejectionReasonLabels, roleLabels, rolesLabel, staffTitle } from '@/lib/labels';
 import { safetyIssues } from '@/lib/safety';
 import { supabase } from '@/lib/supabase';
@@ -32,7 +33,8 @@ type StaffRow = {
 
 export default function MembersScreen() {
   const [members, setMembers] = useState<Profile[]>([]);
-  const [withGuardian, setWithGuardian] = useState<Set<string>>(new Set());
+  const [links, setLinks] = useState<Pair[]>([]);
+  const [requests, setRequests] = useState<Pair[]>([]);
   const [exemptions, setExemptions] = useState<Map<string, VolunteerExemption>>(new Map());
   const [applications, setApplications] = useState<Map<string, WwccApplication>>(new Map());
   const [groupTitles, setGroupTitles] = useState<Map<string, string>>(new Map());
@@ -48,9 +50,10 @@ export default function MembersScreen() {
       staffResult,
       inactiveResult,
       applicationsResult,
+      requestsResult,
     ] = await Promise.all([
       supabase.from('profiles').select(PROFILE_COLUMNS).order('full_name', { nullsFirst: false }),
-      supabase.from('guardianships').select('athlete_id'),
+      supabase.from('guardianships').select('guardian_id, athlete_id'),
       supabase.rpc('admin_volunteer_exemptions'),
       // Coaches and managers in this season's squads and teams, for their titles.
       supabase
@@ -61,6 +64,8 @@ export default function MembersScreen() {
       // Members with no squad, team or club role for 2 years.
       supabase.rpc('admin_inactive_members'),
       supabase.rpc('admin_wwcc_applications'),
+      // Parents and guardians who entered a child's link code.
+      supabase.from('guardian_link_requests').select('guardian_id, athlete_id'),
     ]);
     setInactive(
       new Map(
@@ -82,11 +87,8 @@ export default function MembersScreen() {
     ).filter((a) => !a.ended_at);
     setApplications(new Map(openApplications.map((a) => [a.profile_id, a])));
     setMembers((profilesResult.data as Profile[] | null) ?? []);
-    setWithGuardian(
-      new Set(
-        ((guardiansResult.data as { athlete_id: string }[] | null) ?? []).map((g) => g.athlete_id),
-      ),
-    );
+    setLinks((guardiansResult.data as Pair[] | null) ?? []);
+    setRequests((requestsResult.data as Pair[] | null) ?? []);
   }, []);
 
   useFocusEffect(
@@ -101,6 +103,15 @@ export default function MembersScreen() {
     setRefreshing(false);
   }
 
+  const byId = new Map(members.map((m) => [m.id, m]));
+  const nameOf = (id: string) => byId.get(id)?.full_name || 'someone';
+  // Children with an approved, verified parent or guardian: the rest are locked.
+  const withGuardian = athletesWithVerifiedGuardian(links, (id) => byId.get(id));
+  const codeEnteredFor = (guardianId: string) =>
+    requests.filter((r) => r.guardian_id === guardianId).map((r) => nameOf(r.athlete_id));
+  const codeEnteredBy = (athleteId: string) =>
+    requests.filter((r) => r.athlete_id === athleteId).map((r) => nameOf(r.guardian_id));
+
   const query = search.trim().toLowerCase();
   const matching = members.filter(
     (m) =>
@@ -111,6 +122,8 @@ export default function MembersScreen() {
     .filter((m) => m.status === 'pending' && m.join_requested_at)
     .sort((a, b) => (a.join_requested_at ?? '').localeCompare(b.join_requested_at ?? ''));
   const approved = matching.filter((m) => m.status === 'approved');
+  // Approved parents and guardians who entered another child's code.
+  const askingToLink = approved.filter((m) => requests.some((r) => r.guardian_id === m.id));
   // The people behind the child-safety to-dos on the home screen, with why.
   const issues = new Map(
     approved.map((m) => [m.id, safetyIssues(m, withGuardian.has(m.id), exemptions.get(m.id), applications.get(m.id))]),
@@ -140,8 +153,14 @@ export default function MembersScreen() {
         empty="No requests waiting."
         members={waiting}
         describe={(m) =>
-          `Asked to join as ${m.requested_role ? roleLabels[m.requested_role] : 'a member'}${saysUnder18(m) ? ' · Says they’re under 18' : ''}${m.verified_at ? ' · Verified in person' : ''}`
+          `Asked to join as ${m.requested_role ? roleLabels[m.requested_role] : 'a member'}${saysUnder18(m) ? ' · Says they’re under 18' : ''}${m.verified_at ? ' · Verified in person' : ''}${linkLabel(m, codeEnteredFor(m.id), codeEnteredBy(m.id))}`
         }
+      />
+      <Section
+        title="Parents asking to be linked"
+        members={askingToLink}
+        describe={(m) => `Entered ${codeEnteredFor(m.id).join(' and ')}’s code · Link them on their page`}
+        warn
       />
       <Section
         title="Members"
@@ -219,6 +238,20 @@ const styles = StyleSheet.create({
     gap: Spacing.two,
   },
 });
+
+/** A parent or guardian and the child they are linked to, or asked to be. */
+type Pair = { guardian_id: string; athlete_id: string };
+
+/** Who entered whose link code, for a request waiting for approval. */
+function linkLabel(m: Profile, children: string[], parents: string[]) {
+  if (m.requested_role === 'guardian') {
+    return children.length > 0
+      ? ` · Entered ${children.join(' and ')}’s code`
+      : ' · Hasn’t entered a child’s code yet';
+  }
+  if (parents.length > 0) return ` · ${parents.join(' and ')} entered their code`;
+  return saysUnder18(m) ? ' · No parent has entered their code yet' : '';
+}
 
 /** An athlete whose date of birth at Join makes them under 18. Not checked yet. */
 function saysUnder18(m: Profile) {

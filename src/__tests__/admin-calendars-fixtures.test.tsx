@@ -109,7 +109,7 @@ const calendarReads = () =>
   log.filter((q) => q.table === 'calendars' && q.calls.some((c) => c.method === 'select')).length;
 
 async function add() {
-  fireEvent.press(screen.getByText('Add calendar'));
+  await fireEvent.press(screen.getByText('Add calendar'));
   await settle();
 }
 
@@ -141,7 +141,7 @@ describe('Calendars', () => {
     'refuses the link “%s”, which isn’t an https:// or webcal:// link',
     async (link) => {
       await openCalendars();
-      type('ICS link', link);
+      await type('ICS link', link);
       await add();
       expect(screen.getByText('Paste the ICS link from Outlook. It starts with https://')).toBeTruthy();
       expect(writes(log, 'calendars')).toEqual([]);
@@ -150,7 +150,7 @@ describe('Calendars', () => {
 
   it('adds the club calendar under its default name, trimming the link', async () => {
     await openCalendars();
-    type('ICS link', '  https://outlook.example/club.ics  ');
+    await type('ICS link', '  https://outlook.example/club.ics  ');
     await add();
     expect(writes(log, 'calendars')).toEqual([
       {
@@ -169,8 +169,8 @@ describe('Calendars', () => {
 
   it('adds a committee calendar from a webcal:// link', async () => {
     await openCalendars();
-    type('ICS link', 'WEBCAL://outlook.example/committee.ics');
-    fireEvent.press(screen.getByText('Committee'));
+    await type('ICS link', 'WEBCAL://outlook.example/committee.ics');
+    await fireEvent.press(screen.getByText('Committee'));
     await add();
     expect(writes(log, 'calendars')[0].values).toEqual({
       name: 'Committee calendar',
@@ -184,10 +184,10 @@ describe('Calendars', () => {
   it('adds a team calendar with its own name and colour, then clears the form and reloads', async () => {
     await openCalendars();
     const readsBefore = calendarReads();
-    type('ICS link', 'https://outlook.example/open-a.ics');
-    type('Name (optional)', '  Open A games  ');
-    fireEvent.press(screen.getByText('Open A'));
-    fireEvent.press(screen.getByLabelText('Violet'));
+    await type('ICS link', 'https://outlook.example/open-a.ics');
+    await type('Name (optional)', '  Open A games  ');
+    await fireEvent.press(screen.getByText('Open A'));
+    await fireEvent.press(screen.getByLabelText('Violet'));
     await add();
     expect(writes(log, 'calendars')[0].values).toEqual({
       name: 'Open A games',
@@ -203,8 +203,8 @@ describe('Calendars', () => {
 
   it('names a team calendar after the team when left unnamed', async () => {
     await openCalendars();
-    type('ICS link', 'https://outlook.example/u17.ics');
-    fireEvent.press(screen.getByText('17 & Under A'));
+    await type('ICS link', 'https://outlook.example/u17.ics');
+    await fireEvent.press(screen.getByText('17 & Under A'));
     await add();
     expect(writes(log, 'calendars')[0].values).toMatchObject({ name: '17 & Under A calendar', team_id: TEAM_B.id });
   });
@@ -216,18 +216,18 @@ describe('Calendars', () => {
         (c) => screen.getByLabelText(c).props.accessibilityState?.selected,
       );
     expect(selected()).toEqual(['Yellow']);
-    fireEvent.press(screen.getByText('Committee'));
+    await fireEvent.press(screen.getByText('Committee'));
     expect(selected()).toEqual(['Pink']);
-    fireEvent.press(screen.getByText('Open Squad'));
+    await fireEvent.press(screen.getByText('Open Squad'));
     expect(selected()).toEqual(['Blue']);
-    fireEvent.press(screen.getByText('Open A'));
+    await fireEvent.press(screen.getByText('Open A'));
     expect(selected()).toEqual(['Green']);
   });
 
   it('shows why the database refused a new calendar and keeps what was typed', async () => {
     await openCalendars();
     failTableWrite('calendars', 'insert', 'new row violates row-level security policy');
-    type('ICS link', 'https://outlook.example/club.ics');
+    await type('ICS link', 'https://outlook.example/club.ics');
     await add();
     expect(screen.getByText('new row violates row-level security policy')).toBeTruthy();
     expect(input('ICS link').props.value).toBe('https://outlook.example/club.ics');
@@ -235,10 +235,10 @@ describe('Calendars', () => {
 
   it('changes a calendar’s name and link', async () => {
     await openCalendars([CLUB_CAL]);
-    fireEvent.press(screen.getByText('Edit name or link'));
-    type('Name', 'Thunder club');
-    type('ICS link', ' https://outlook.example/new.ics ', 0);
-    fireEvent.press(screen.getByText('Save'));
+    await fireEvent.press(screen.getByText('Edit name or link'));
+    await type('Name', 'Thunder club');
+    await type('ICS link', ' https://outlook.example/new.ics ', 0);
+    await fireEvent.press(screen.getByText('Save'));
     await settle();
     expect(writes(log, 'calendars')).toEqual([
       {
@@ -252,18 +252,18 @@ describe('Calendars', () => {
 
   it('keeps the old name when the new one is left empty', async () => {
     await openCalendars([CLUB_CAL]);
-    fireEvent.press(screen.getByText('Edit name or link'));
-    type('Name', '   ');
-    fireEvent.press(screen.getByText('Save'));
+    await fireEvent.press(screen.getByText('Edit name or link'));
+    await type('Name', '   ');
+    await fireEvent.press(screen.getByText('Save'));
     await settle();
     expect(writes(log, 'calendars')[0].values).toEqual({ name: 'Club calendar', url: CLUB_CAL.url });
   });
 
   it('refuses a changed link that isn’t an ICS link', async () => {
     await openCalendars([CLUB_CAL]);
-    fireEvent.press(screen.getByText('Edit name or link'));
-    type('ICS link', 'outlook.example', 0);
-    fireEvent.press(screen.getByText('Save'));
+    await fireEvent.press(screen.getByText('Edit name or link'));
+    await type('ICS link', 'outlook.example', 0);
+    await fireEvent.press(screen.getByText('Save'));
     await settle();
     expect(screen.getAllByText('Paste the ICS link from Outlook. It starts with https://')).toHaveLength(1);
     expect(writes(log, 'calendars')).toEqual([]);
@@ -271,10 +271,10 @@ describe('Calendars', () => {
 
   it('cancelling an edit puts the saved name and link back', async () => {
     await openCalendars([CLUB_CAL]);
-    fireEvent.press(screen.getByText('Edit name or link'));
-    type('Name', 'Something else');
-    fireEvent.press(screen.getByText('Cancel'));
-    fireEvent.press(screen.getByText('Edit name or link'));
+    await fireEvent.press(screen.getByText('Edit name or link'));
+    await type('Name', 'Something else');
+    await fireEvent.press(screen.getByText('Cancel'));
+    await fireEvent.press(screen.getByText('Edit name or link'));
     expect(input('Name').props.value).toBe('Club calendar');
     expect(writes(log, 'calendars')).toEqual([]);
   });
@@ -282,8 +282,8 @@ describe('Calendars', () => {
   it('shows a refused change on the calendar and stays editing', async () => {
     await openCalendars([CLUB_CAL]);
     failTableWrite('calendars', 'update', 'Only admins can change calendars');
-    fireEvent.press(screen.getByText('Edit name or link'));
-    fireEvent.press(screen.getByText('Save'));
+    await fireEvent.press(screen.getByText('Edit name or link'));
+    await fireEvent.press(screen.getByText('Save'));
     await settle();
     expect(screen.getByText('Only admins can change calendars')).toBeTruthy();
     expect(screen.getByText('Save')).toBeTruthy();
@@ -292,7 +292,7 @@ describe('Calendars', () => {
   it('changes a calendar’s colour straight away', async () => {
     await openCalendars([CLUB_CAL]);
     // The card's swatches come before the new calendar's.
-    fireEvent.press(screen.getAllByLabelText('Pink')[0]);
+    await fireEvent.press(screen.getAllByLabelText('Pink')[0]);
     await settle();
     expect(writes(log, 'calendars')).toEqual([
       { method: 'update', values: { color: 'pink' }, filters: [['id', 'cal-club']] },
@@ -301,18 +301,18 @@ describe('Calendars', () => {
 
   it('asks again before deleting, and Keep it cancels', async () => {
     await openCalendars([CLUB_CAL]);
-    fireEvent.press(screen.getByText('Delete'));
+    await fireEvent.press(screen.getByText('Delete'));
     expect(screen.getByText('Tap again to delete')).toBeTruthy();
     expect(writes(log, 'calendars')).toEqual([]);
-    fireEvent.press(screen.getByText('Keep it'));
+    await fireEvent.press(screen.getByText('Keep it'));
     expect(screen.getByText('Delete')).toBeTruthy();
     expect(writes(log, 'calendars')).toEqual([]);
   });
 
   it('deletes only that calendar on the second tap', async () => {
     await openCalendars([CLUB_CAL, TEAM_CAL]);
-    fireEvent.press(screen.getAllByText('Delete')[1]);
-    fireEvent.press(screen.getByText('Tap again to delete'));
+    await fireEvent.press(screen.getAllByText('Delete')[1]);
+    await fireEvent.press(screen.getByText('Tap again to delete'));
     await settle();
     expect(writes(log, 'calendars')).toEqual([
       { method: 'delete', values: undefined, filters: [['id', 'cal-team']] },
@@ -322,8 +322,8 @@ describe('Calendars', () => {
   it('shows a refused delete', async () => {
     await openCalendars([CLUB_CAL]);
     failTableWrite('calendars', 'delete', 'Not allowed');
-    fireEvent.press(screen.getByText('Delete'));
-    fireEvent.press(screen.getByText('Tap again to delete'));
+    await fireEvent.press(screen.getByText('Delete'));
+    await fireEvent.press(screen.getByText('Tap again to delete'));
     await settle();
     expect(screen.getByText('Not allowed')).toBeTruthy();
   });
@@ -430,21 +430,21 @@ async function openFixtures(
 }
 
 async function lookUp(link = LINK) {
-  type('Add a PlayHQ competition', link);
-  fireEvent.press(screen.getByText('Look up'));
+  await type('Add a PlayHQ competition', link);
+  await fireEvent.press(screen.getByText('Look up'));
   await settle();
 }
 
 /** Links a PlayHQ team to one of ours. */
-function link(playhqName: string, ours: string) {
-  fireEvent.press(screen.getByText(playhqName));
+async function link(playhqName: string, ours: string) {
+  await fireEvent.press(screen.getByText(playhqName));
   let card = screen.getByText(playhqName).parent;
   while (card && within(card).queryAllByText(ours).length === 0) card = card.parent;
-  fireEvent.press(within(card!).getAllByText(ours).at(-1)!);
+  await fireEvent.press(within(card!).getAllByText(ours).at(-1)!);
 }
 
 async function importGames(label: RegExp = /^Import games for/) {
-  fireEvent.press(screen.getByText(label));
+  await fireEvent.press(screen.getByText(label));
   await settle();
 }
 
@@ -481,10 +481,10 @@ describe('Fixtures', () => {
     expect(screen.getByText('Sample Thunder')).toBeTruthy();
     expect(screen.getByText('Sample Lightning')).toBeTruthy();
     expect(screen.queryByText('Rockets')).toBeNull();
-    type('Find a team', 'rock');
+    await type('Find a team', 'rock');
     expect(screen.getByText('Rockets')).toBeTruthy();
     expect(screen.queryByText('Sample Thunder')).toBeNull();
-    type('Find a team', 'zzz');
+    await type('Find a team', 'zzz');
     expect(screen.getByText('No teams match.')).toBeTruthy();
   });
 
@@ -527,11 +527,11 @@ describe('Fixtures', () => {
     await openFixtures();
     answerWith(COMPETITION);
     await lookUp();
-    fireEvent.press(screen.getByText('Sample Thunder'));
+    await fireEvent.press(screen.getByText('Sample Thunder'));
     for (const name of ['Not one of ours', 'Open Squad', 'Open A', '17 & Under A']) {
       expect(screen.getAllByText(name).length).toBeGreaterThan(0);
     }
-    fireEvent.press(screen.getAllByText('Open A').at(-1)!);
+    await fireEvent.press(screen.getAllByText('Open A').at(-1)!);
     expect(screen.getByText('Import games for 1 team')).toBeTruthy();
     expect(screen.getByText('Our teams: 1 game in the last 12 months, 1 in the next 12 months.')).toBeTruthy();
   });
@@ -540,7 +540,7 @@ describe('Fixtures', () => {
     await openFixtures();
     answerWith(COMPETITION);
     await lookUp();
-    link('Sample Thunder', 'Open A');
+    await link('Sample Thunder', 'Open A');
     await importGames();
     expect(callsTo('admin_save_playhq_season')).toEqual([
       {
@@ -569,9 +569,9 @@ describe('Fixtures', () => {
     await openFixtures();
     answerWith(COMPETITION);
     await lookUp();
-    link('Sample Thunder', 'Open A');
-    link('Sample Lightning', '17 & Under A');
-    link('Sample Lightning', 'Not one of ours');
+    await link('Sample Thunder', 'Open A');
+    await link('Sample Lightning', '17 & Under A');
+    await link('Sample Lightning', 'Not one of ours');
     await importGames(/^Import games for 1 team$/);
     expect(callsTo('admin_save_playhq_season')[0].p_teams).toEqual([
       { playhq_team_id: 'ph-1', playhq_name: 'Sample Thunder', team_id: TEAM.id },
@@ -584,7 +584,7 @@ describe('Fixtures', () => {
     await openFixtures();
     answerWith(COMPETITION);
     await lookUp();
-    link('Sample Lightning', 'Open A');
+    await link('Sample Lightning', 'Open A');
     await importGames();
     expect(callsTo('save_playhq_fixtures')[0].p_games).toEqual([
       expect.objectContaining({ id: 'g3', status: 'BYE', opponent: null, is_home: null }),
@@ -596,7 +596,7 @@ describe('Fixtures', () => {
     await openFixtures({}, { rpcErrors: { admin_save_playhq_season: 'Only admins can import fixtures' } });
     answerWith(COMPETITION);
     await lookUp();
-    link('Sample Thunder', 'Open A');
+    await link('Sample Thunder', 'Open A');
     await importGames();
     expect(screen.getByText('Only admins can import fixtures')).toBeTruthy();
     expect(callsTo('save_playhq_fixtures')).toEqual([]);
@@ -607,7 +607,7 @@ describe('Fixtures', () => {
     await openFixtures({}, { rpcErrors: { save_playhq_fixtures: 'Team not found' } });
     answerWith(COMPETITION);
     await lookUp();
-    link('Sample Thunder', 'Open A');
+    await link('Sample Thunder', 'Open A');
     await importGames();
     expect(screen.getByText('Team not found')).toBeTruthy();
     expect(screen.queryByText(/^Saved /)).toBeNull();
@@ -619,8 +619,8 @@ describe('Fixtures', () => {
     answerWith(COMPETITION);
     await lookUp();
     expect(isSelected('2027–28')).toBe(true);
-    fireEvent.press(screen.getByText('2026–27'));
-    link('Sample Thunder', 'Open A (2026–27)');
+    await fireEvent.press(screen.getByText('2026–27'));
+    await link('Sample Thunder', 'Open A (2026–27)');
     await importGames();
     expect(callsTo('admin_save_playhq_season')[0]).toMatchObject({
       p_season: 2026,
@@ -632,7 +632,7 @@ describe('Fixtures', () => {
     await openFixtures();
     answerWith(COMPETITION);
     await lookUp();
-    fireEvent.press(screen.getByText('Cancel'));
+    await fireEvent.press(screen.getByText('Cancel'));
     expect(screen.queryByText('Winter League 2026')).toBeNull();
     expect(screen.getByText('Look up')).toBeTruthy();
     expect(callsTo('admin_save_playhq_season')).toEqual([]);
@@ -656,7 +656,7 @@ describe('Fixtures', () => {
   it('refreshes a saved competition’s linked teams only, and shows the PlayHQ check on it', async () => {
     await openFixtures({ saved: [SAVED] });
     answerWith(COMPETITION);
-    fireEvent.press(screen.getByText('Refresh from PlayHQ'));
+    await fireEvent.press(screen.getByText('Refresh from PlayHQ'));
     await settle();
     expect(invoke()).toHaveBeenCalledWith('playhq', {
       body: { tenant: 'netball-australia', seasonCode: 'ec69e46d' },
@@ -671,7 +671,7 @@ describe('Fixtures', () => {
   it('shows why a refresh failed', async () => {
     await openFixtures({ saved: [SAVED] });
     answerWith(null, { name: 'FunctionsFetchError', message: 'offline' });
-    fireEvent.press(screen.getByText('Refresh from PlayHQ'));
+    await fireEvent.press(screen.getByText('Refresh from PlayHQ'));
     await settle();
     expect(screen.getByText('Couldn’t reach the club’s server. Check your connection and try again.')).toBeTruthy();
     expect(callsTo('save_playhq_fixtures')).toEqual([]);
@@ -680,7 +680,7 @@ describe('Fixtures', () => {
   it('Change teams opens the saved competition with its links and season', async () => {
     await openFixtures({ saved: [{ ...SAVED, season: 2026 }] });
     answerWith(COMPETITION);
-    fireEvent.press(screen.getByText('Change teams'));
+    await fireEvent.press(screen.getByText('Change teams'));
     await settle();
     expect(screen.getByText('Import games for 1 team')).toBeTruthy();
     expect(screen.getByText('Open · Open A')).toBeTruthy();

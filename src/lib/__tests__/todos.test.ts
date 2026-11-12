@@ -1,6 +1,7 @@
 import { formatDateString, type LoggedInjury } from '@/lib/injuries';
 import type { KpiReviewTodo } from '@/lib/kpis';
 import type { MedicalReview } from '@/lib/medical';
+import type { MyConflictDeclaration, PolicyReview } from '@/lib/registers';
 import type { MySurvey } from '@/lib/surveys';
 import { buildTodos, dueAlert, sortByAlert, type Todo } from '@/lib/todos';
 import type { MyTraining } from '@/lib/training';
@@ -663,7 +664,7 @@ describe('buildTodos', () => {
         }),
       });
       expect(list.map((t) => t.title)).toEqual([
-        'Link guardians for 1 athlete under 18',
+        '1 athlete under 18 locked out',
         'Add a date of birth for 2 athletes',
         'Sort out 1 Working With Children Check',
         'Tell the governing body about 1 Screening Unit notice',
@@ -672,6 +673,38 @@ describe('buildTodos', () => {
         '1 athlete turns 18 this month',
         'Old records are kept forever',
         '3 members have had no team or role for 2 years',
+      ]);
+    });
+
+    it('warns in red when the nightly removal has stopped, since it last finished', () => {
+      const todo = only(todos({ safety: safety({ records_removal_stalled: { last_ok_at: '2026-01-05T04:00:00Z' } }) }));
+      expect(todo).toMatchObject({
+        key: 'records-removal-stalled',
+        detail: 'The nightly removal hasn’t finished for 2 days. Ask FirstPass to check it.',
+        href: '/admin/club',
+        alert: { level: 'red', label: 'Stopped' },
+      });
+      expect(todo.title).toMatch(/^Old records haven’t been removed since \S.*(5.*Jan|Jan.*5)/);
+    });
+
+    it('says the nightly removal hasn’t finished yet when it never has', () => {
+      expect(only(todos({ safety: safety({ records_removal_stalled: { last_ok_at: null } }) })).title).toBe(
+        'Old records haven’t been removed yet',
+      );
+    });
+
+    it('adds no removal warning while it runs', () => {
+      expect(todos({ safety: safety({ records_removal_stalled: null }) })).toEqual([]);
+    });
+
+    it('lists a stopped removal after Remove old records, and sorts it first as a red warning', () => {
+      const list = todos({
+        safety: safety({ turning_18: 1, records_removal_stalled: { last_ok_at: null } }),
+      });
+      expect(list.map((t) => t.key)).toEqual(['turning-18', 'records-removal-stalled']);
+      expect(sortByAlert(list, (t) => t.alert, (t) => t.dueOn).map((t) => t.key)).toEqual([
+        'records-removal-stalled',
+        'turning-18',
       ]);
     });
 
@@ -759,35 +792,6 @@ describe('buildTodos', () => {
       expect(alert({ wwcc_expiring: 1, wwcc_to_validate: 1 })).toEqual({ level: 'amber', label: 'Expiring' });
       expect(alert({ wwcc_to_validate: 1, wwcc_to_link: 1 })).toEqual({ level: 'amber', label: 'Validate' });
       expect(alert({ wwcc_to_link: 1 })).toEqual({ level: 'amber', label: 'Register' });
-    });
-  });
-
-  describe('affiliation', () => {
-    const affiliation = { missing: 0, toCheck: 0, notRegistered: 0, season: 2026, returnDue: false };
-
-    it('adds nothing when all is done', () => {
-      expect(todos({ affiliation })).toEqual([]);
-    });
-
-    it('lists each follow-up', () => {
-      const list = todos({
-        affiliation: { missing: 1, toCheck: 2, notRegistered: 1, season: 2026, returnDue: true },
-      });
-      expect(list.map((t) => [t.title, t.detail])).toEqual([
-        ['Finish 1 affiliation item', 'Required by your association or Netball WA'],
-        ['Check 2 members in PlayHQ', 'Whether they’re registered for 2026–27'],
-        ['1 member isn’t registered in PlayHQ', 'Ask them to register, then mark them registered'],
-        ['Send the affiliation return', 'None sent in the last year'],
-      ]);
-    });
-
-    it('uses plurals and copes with no season', () => {
-      const list = todos({ affiliation: { ...affiliation, missing: 2, toCheck: 1, notRegistered: 2, season: null } });
-      expect(list.map((t) => [t.title, t.detail])).toEqual([
-        ['Finish 2 affiliation items', 'Required by your association or Netball WA'],
-        ['Check 1 member in PlayHQ', 'Whether they’re registered for this season'],
-        ['2 members aren’t registered in PlayHQ', 'Ask them to register, then mark them registered'],
-      ]);
     });
   });
 
@@ -922,5 +926,64 @@ describe('medical details', () => {
   it('has one to-do per athlete, and none without reviews', () => {
     expect(keys(todos({ medicalReviews: [review({}), review({ athlete_id: 'kid', athlete_name: 'Kit' })] }))).toEqual(['medical-me', 'medical-kid']);
     expect(todos()).toEqual([]);
+  });
+});
+
+describe('policy reviews and conflicts of interest', () => {
+  const policy = (extra: Partial<PolicyReview> = {}): PolicyReview => ({
+    id: 'p1',
+    title: 'Child Safeguarding Policy',
+    review_on: '2026-11-10',
+    ...extra,
+  });
+  const declaration = (extra: Partial<MyConflictDeclaration> = {}): MyConflictDeclaration => ({
+    required: true,
+    season: 2026,
+    has_conflict: null,
+    details: null,
+    declared_at: null,
+    ...extra,
+  });
+
+  it('asks a policy’s owner to review it by its review date', () => {
+    expect(only(todos({ policyReviews: [policy()] }))).toEqual({
+      key: 'policy-p1',
+      title: 'Review the Child Safeguarding Policy',
+      detail: `Due ${formatDateString('2026-11-10')}`,
+      href: { pathname: '/registers/review', params: { id: 'p1' } },
+      dueOn: '2026-11-10',
+    });
+  });
+
+  it('says a review was due once its day has passed, in red, and amber in the last three days', () => {
+    const overdue = only(todos({ policyReviews: [policy({ review_on: '2026-10-01' })] }));
+    expect(overdue.detail).toBe(`Was due ${formatDateString('2026-10-01')}`);
+    expect(overdue.alert).toEqual({ level: 'red', label: 'Overdue' });
+    const today = only(todos({ policyReviews: [policy({ review_on: '2026-10-18' })] }));
+    expect(today.detail).toBe(`Due ${formatDateString('2026-10-18')}`);
+    expect(today.alert).toEqual({ level: 'amber', label: 'Due soon' });
+    expect(only(todos({ policyReviews: [policy()] })).alert).toBeUndefined();
+  });
+
+  it('has one to-do per policy', () => {
+    expect(keys(todos({ policyReviews: [policy(), policy({ id: 'p2', title: 'Privacy Policy' })] }))).toEqual([
+      'policy-p1',
+      'policy-p2',
+    ]);
+  });
+
+  it('asks committee members and coaches to declare once a season, even with none', () => {
+    expect(only(todos({ conflictDeclaration: declaration() }))).toEqual({
+      key: 'conflicts',
+      title: 'Declare any conflicts of interest',
+      detail: 'Once a season, for the 2026–27 season, even if you have none',
+      href: '/declare-conflicts',
+    });
+  });
+
+  it('stops asking once they declare, and never asks someone who doesn’t declare', () => {
+    expect(todos({ conflictDeclaration: declaration({ declared_at: '2026-10-01T00:00:00Z', has_conflict: false }) })).toEqual([]);
+    expect(todos({ conflictDeclaration: declaration({ required: false }) })).toEqual([]);
+    expect(todos({ conflictDeclaration: null })).toEqual([]);
   });
 });

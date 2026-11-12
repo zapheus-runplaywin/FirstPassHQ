@@ -1,14 +1,18 @@
 /**
  * The Home screen's states that home-by-role.test.tsx doesn't cover
  * (src/app/index.tsx): asking to join, waiting for approval (with the
- * verification code, and an under-18 athlete's ask for a parent), a request
+ * verification code, an under-18 athlete's link code for a parent, and a
+ * parent's box for their child's code), a locked child, a request
  * turned down for each reason, roles paused for each reason, the committee
  * checks date, the order of the to-do list, and the footer links. From "Ask to
  * join the club", "Wait for approval" and "The home screen" in sections 2 and
  * 3 of docs/user-guide.md.
  */
+import * as Clipboard from 'expo-clipboard';
 import { router } from 'expo-router';
 import { fireEvent, screen, within } from 'expo-router/testing-library';
+
+import { Share } from 'react-native';
 
 import HomeScreen from '@/app/index';
 import { formatDateString } from '@/lib/injuries';
@@ -16,7 +20,7 @@ import { taskDetail, type PersonalTask } from '@/lib/personal-tasks';
 import { supabase } from '@/lib/supabase';
 import type { MyVolunteerExemption, MyWwccApplication, Profile, RejectionReason } from '@/lib/types';
 
-import { argsOf, clearCalls, recordTable, rpcNames } from './helpers/forms';
+import { argsOf, clearCalls, field, recordTable, rpcNames, type } from './helpers/forms';
 import {
   openScreen,
   personas,
@@ -42,6 +46,7 @@ jest.mock('@react-native-async-storage/async-storage', () =>
   jest.requireActual('@react-native-async-storage/async-storage/jest/async-storage-mock'),
 );
 jest.mock('@/global.css', () => ({}));
+jest.mock('expo-clipboard', () => ({ setStringAsync: jest.fn(async () => true) }));
 
 let push: jest.SpyInstance;
 
@@ -79,7 +84,7 @@ describe('asking to join', () => {
     expect(screen.queryByText('Coming up')).toBeNull();
     // The code is only shown once they've asked.
     expect(rpcNames()).not.toContain('my_verification_code');
-    fireEvent.press(screen.getByText('Request to join'));
+    await fireEvent.press(screen.getByText('Request to join'));
     expect(push).toHaveBeenCalledWith('/join');
   });
 });
@@ -91,7 +96,7 @@ describe('waiting for approval', () => {
     expect(screen.getByText('123 456')).toBeTruthy();
     expect(screen.getByLabelText('Your code is 1 2 3 4 5 6')).toBeTruthy();
     expect(screen.getByText(/Never share it with anyone else\./)).toBeTruthy();
-    fireEvent.press(screen.getByText('Edit request'));
+    await fireEvent.press(screen.getByText('Edit request'));
     expect(push).toHaveBeenCalledWith('/join');
   });
 
@@ -114,26 +119,229 @@ describe('waiting for approval', () => {
     guardian_email: 'parent@example.test',
   });
 
-  it('asks an athlete under 18 to have the parent they named join, and who can help', async () => {
-    await openHome(child, {}, { rpcs: { safeguarding_contacts: null } });
-    expect(screen.getByText('Ask your parent or guardian to join')).toBeTruthy();
-    expect(screen.getByText(/, signing in with parent@example\.test\./)).toBeTruthy();
+  const linkCode = {
+    waiting: true,
+    code: '7KQ4MD',
+    expires_at: '2026-10-25T12:00:00Z',
+    parents_waiting: [] as string[],
+  };
+
+  it('shows an athlete under 18 their link code to share with a parent, and who can help', async () => {
+    await openHome(child, {}, { rpcs: { safeguarding_contacts: null, my_link_code: linkCode } });
+    expect(screen.getByText('Waiting for approval')).toBeTruthy();
+    expect(screen.getByText('Waiting for your parent or guardian')).toBeTruthy();
+    expect(screen.getByText('7KQ-4MD')).toBeTruthy();
+    expect(screen.getByLabelText('Your link code is 7 K Q 4 M D')).toBeTruthy();
+    expect(screen.getByText(`Works once, until ${formatDateString('2026-10-25')}`)).toBeTruthy();
+    expect(screen.getByText(/needs to join the club in the app too\. Share this code/)).toBeTruthy();
+    expect(screen.getByText(/links you before approving you\./)).toBeTruthy();
     expect(screen.getByText('If anything worries you, these people can help:')).toBeTruthy();
+    // They can still change their request.
+    expect(screen.getByText('Edit request')).toBeTruthy();
   });
 
-  it('leaves the email out when the child gave none', async () => {
-    await openHome(withProfile(child, { guardian_email: null }));
-    expect(screen.getByText(/needs to join the club in the app too\. A club admin/)).toBeTruthy();
+  it('says which parents have entered the code', async () => {
+    await openHome(child, {}, {
+      rpcs: { my_link_code: { ...linkCode, parents_waiting: ['Pat Parent', 'Sam Parent'] } },
+    });
+    expect(
+      screen.getByText('✓ Pat Parent has entered your code. A club admin will check and link them.'),
+    ).toBeTruthy();
+    expect(
+      screen.getByText('✓ Sam Parent has entered your code. A club admin will check and link them.'),
+    ).toBeTruthy();
+  });
+
+  it('shares the code with the child’s name, the club and the app', async () => {
+    const share = jest.spyOn(Share, 'share').mockResolvedValue({ action: 'sharedAction', activityType: undefined });
+    await openHome(child, {}, { rpcs: { my_link_code: linkCode } });
+    await fireEvent.press(screen.getByText('Share code'));
+    expect(share).toHaveBeenCalledWith({
+      message:
+        'Sample pending is joining Sample Club on FirstPass HQ. Install the FirstPass HQ app, sign in, ' +
+        'ask to join as a parent or guardian and enter this code: 7KQ-4MD. It works once, for 7 days.',
+    });
+    share.mockRestore();
+  });
+
+  it('copies the code, and says so', async () => {
+    await openHome(child, {}, { rpcs: { my_link_code: linkCode } });
+    await fireEvent.press(screen.getByText('Copy code'));
+    await settle();
+    expect(Clipboard.setStringAsync).toHaveBeenCalledWith('7KQ-4MD');
+    expect(screen.getByText('Code copied')).toBeTruthy();
+  });
+
+  it('makes a new code, and shows it', async () => {
+    let current = linkCode;
+    await openHome(child, {}, {
+      rpcHandlers: {
+        my_link_code: () => current,
+        new_link_code: () => {
+          current = { ...linkCode, code: 'ABC234' };
+          return [current];
+        },
+      },
+    });
+    await fireEvent.press(screen.getByText('Make a new code'));
+    await settle();
+    expect(rpcNames()).toContain('new_link_code');
+    expect(screen.getByText('ABC-234')).toBeTruthy();
+    expect(screen.queryByText('7KQ-4MD')).toBeNull();
+  });
+
+  it('says why a new code couldn’t be made', async () => {
+    await openHome(child, {}, {
+      rpcs: { my_link_code: linkCode },
+      rpcErrors: { new_link_code: 'Only a child waiting for a parent or guardian has a link code' },
+    });
+    await fireEvent.press(screen.getByText('Make a new code'));
+    await settle();
+    expect(
+      screen.getByText('Only a child waiting for a parent or guardian has a link code'),
+    ).toBeTruthy();
   });
 
   it.each<[string, Partial<Profile>]>([
     ['an adult athlete', { requested_role: 'athlete', declared_date_of_birth: '1990-05-05' }],
     ['a child asking to be a guest', { requested_role: 'guest', declared_date_of_birth: '2011-03-02' }],
     ['an athlete with no date of birth', { requested_role: 'athlete', declared_date_of_birth: null }],
-  ])('asks %s for no parent', async (_l, extra) => {
-    await openHome(withProfile(personas.pending, extra));
+  ])('asks %s for no parent: the database says they aren’t waiting for one', async (_l, extra) => {
+    await openHome(withProfile(personas.pending, extra), {}, {
+      rpcs: { my_link_code: { waiting: false, code: null, expires_at: null, parents_waiting: [] } },
+    });
     expect(screen.getByText('Waiting for approval')).toBeTruthy();
-    expect(screen.queryByText('Ask your parent or guardian to join')).toBeNull();
+    expect(screen.queryByText('Waiting for your parent or guardian')).toBeNull();
+    expect(screen.queryByText('If anything worries you, these people can help:')).toBeNull();
+  });
+
+  it('asks a parent or guardian for their child’s code', async () => {
+    await openHome(withProfile(personas.pending, { requested_role: 'guardian' }));
+    expect(screen.getByText(/then approves you, which links you to them\./)).toBeTruthy();
+    expect(screen.getByText('Enter your child’s code')).toBeTruthy();
+    expect(screen.queryByText('Waiting for your parent or guardian')).toBeNull();
+  });
+});
+
+// ---------------------------------------------------------------------------
+// A parent or guardian entering their child's link code
+
+describe('entering a child’s code', () => {
+  const guardianWaiting = withProfile(personas.pending, { requested_role: 'guardian' });
+
+  it('sends the code as typed, and shows the child once it’s taken', async () => {
+    let requests: unknown[] = [];
+    await openHome(guardianWaiting, {}, {
+      rpcHandlers: {
+        my_link_requests: () => requests,
+        enter_child_code: () => {
+          requests = [
+            { athlete_id: 'kid', athlete_name: 'Jordan Sample', requested_at: '2026-10-18T01:00:00Z' },
+          ];
+          return null;
+        },
+      },
+    });
+    await type('Child’s code', '7kq-4md');
+    await fireEvent.press(screen.getByText('Enter code'));
+    await settle();
+    expect(argsOf('enter_child_code')).toEqual([{ p_code: '7kq-4md' }]);
+    expect(
+      screen.getByText('✓ You’ve entered Jordan Sample’s code. A club admin will check and link you.'),
+    ).toBeTruthy();
+    expect(field('Child’s code').props.value).toBe('');
+  });
+
+  it('says why the database turned a code down, and keeps it to fix', async () => {
+    await openHome(guardianWaiting, {}, {
+      rpcHandlers: {
+        enter_child_code: () =>
+          'That code isn’t right, or it has expired. Check it with your child, or ask them to make a new one.',
+      },
+    });
+    await type('Child’s code', '7KQ4MD');
+    await fireEvent.press(screen.getByText('Enter code'));
+    await settle();
+    expect(screen.getByText(/^That code isn’t right, or it has expired\./)).toBeTruthy();
+    expect(field('Child’s code').props.value).toBe('7KQ4MD');
+  });
+
+  it('shows a refusal that comes back as an error', async () => {
+    await openHome(guardianWaiting, {}, {
+      rpcErrors: { enter_child_code: 'Ask to join as a parent or guardian first' },
+    });
+    await type('Child’s code', '7KQ4MD');
+    await fireEvent.press(screen.getByText('Enter code'));
+    await settle();
+    expect(screen.getByText('Ask to join as a parent or guardian first')).toBeTruthy();
+  });
+
+  it.each(['', '7KQ4M', '7KQ-4M0'])('checks %j looks like a code before asking', async (typed) => {
+    await openHome(guardianWaiting);
+    await type('Child’s code', typed);
+    await fireEvent.press(screen.getByText('Enter code'));
+    await settle();
+    expect(screen.getByText('Enter the 6-letter code from your child’s app, such as 7KQ-4MD.')).toBeTruthy();
+    expect(rpcNames()).not.toContain('enter_child_code');
+  });
+
+  it('lists the children whose code they already entered', async () => {
+    await openHome(guardianWaiting, {}, {
+      rpcs: {
+        my_link_requests: [
+          { athlete_id: 'a', athlete_name: 'Jordan Sample', requested_at: '2026-10-18T01:00:00Z' },
+          { athlete_id: 'b', athlete_name: null, requested_at: '2026-10-18T02:00:00Z' },
+        ],
+      },
+    });
+    expect(screen.getByText(/You’ve entered Jordan Sample’s code\./)).toBeTruthy();
+    expect(screen.getByText(/You’ve entered your child’s code\./)).toBeTruthy();
+  });
+});
+
+// ---------------------------------------------------------------------------
+// A child under 18 with no verified parent or guardian linked: locked
+
+describe('a locked child', () => {
+  const linkCode = { waiting: true, code: '7KQ4MD', expires_at: null, parents_waiting: [] };
+  const locked: Persona = {
+    ...personas.minorAthlete,
+    rpcs: { ...personas.minorAthlete.rpcs, my_link_code: linkCode },
+  };
+
+  it('sees only their link code, who can help, Raise a concern and how to leave', async () => {
+    await openHome(locked);
+    expect(screen.getByText('Waiting for your parent or guardian')).toBeTruthy();
+    expect(screen.getByText('7KQ-4MD')).toBeTruthy();
+    expect(screen.getByText(/the app stays locked until a parent or guardian is linked to you\./)).toBeTruthy();
+    expect(screen.getByText(/and then the app opens for you\./)).toBeTruthy();
+    expect(screen.getByText('If anything worries you, these people can help:')).toBeTruthy();
+    expect(screen.getByText('Raise a concern')).toBeTruthy();
+    expect(screen.getByText('Sign out')).toBeTruthy();
+    expect(screen.getByText('Switch club')).toBeTruthy();
+    expect(screen.getByText('Delete account')).toBeTruthy();
+    // Nothing of the club, and no request to change.
+    for (const hidden of [
+      'Waiting for approval',
+      'Edit request',
+      'To do',
+      'Coming up',
+      'My squads and teams',
+      'Messages',
+      'Your details',
+    ]) {
+      expect(screen.queryByText(hidden)).toBeNull();
+    }
+    // The header doesn't call them an athlete yet.
+    expect(screen.queryByText('Athlete')).toBeNull();
+  });
+
+  it('is unlocked once the database says a verified parent is linked', async () => {
+    await openHome(personas.minorAthlete, {}, {
+      rpcs: { my_link_code: { waiting: false, code: null, expires_at: null, parents_waiting: [] } },
+    });
+    expect(screen.queryByText('Waiting for your parent or guardian')).toBeNull();
+    expect(screen.getByText('Your details')).toBeTruthy();
   });
 });
 
@@ -147,7 +355,7 @@ describe('a request turned down', () => {
     expect(screen.getByText('Request not approved')).toBeTruthy();
     expect(screen.getByText(message)).toBeTruthy();
     expect(screen.getByText('123 456')).toBeTruthy();
-    fireEvent.press(screen.getByText('Request again'));
+    await fireEvent.press(screen.getByText('Request again'));
     expect(push).toHaveBeenCalledWith('/join');
   });
 
@@ -282,7 +490,7 @@ describe('a lodged check application', () => {
         'Your coach role is paused until you accept the declaration for your Working With Children Check application. Open it from your to-do list.',
       ),
     ).toBeTruthy();
-    fireEvent.press(screen.getByText('Confirm your Working With Children Check application'));
+    await fireEvent.press(screen.getByText('Confirm your Working With Children Check application'));
     expect(push).toHaveBeenCalledWith('/wwcc-application');
   });
 
@@ -316,7 +524,7 @@ describe('a lodged check application', () => {
     });
     expect(screen.getByText('Confirm 2 check applications are still being assessed')).toBeTruthy();
     expect(screen.getByText('1 lapsed. Check online, then confirm on the member’s page.')).toBeTruthy();
-    fireEvent.press(screen.getByText('Confirm 2 check applications are still being assessed'));
+    await fireEvent.press(screen.getByText('Confirm 2 check applications are still being assessed'));
     expect(push).toHaveBeenCalledWith('/admin');
   });
 
@@ -470,7 +678,7 @@ describe('the to-do list', () => {
 
   it('opens a club item where it’s done', async () => {
     await openHome('athlete', { check_ins: [] });
-    fireEvent.press(screen.getByText('Do your daily check-in'));
+    await fireEvent.press(screen.getByText('Do your daily check-in'));
     expect(push).toHaveBeenCalledWith('/check-in');
   });
 
@@ -483,8 +691,37 @@ describe('the to-do list', () => {
     });
     expect(screen.getByText('Nobody can endorse Kai Senior’s clearance')).toBeTruthy();
     expect(screen.getByText('Make a physio Head Physio, or place a physio in their squad or team')).toBeTruthy();
-    fireEvent.press(screen.getByText('Nobody can endorse Kai Senior’s clearance'));
+    await fireEvent.press(screen.getByText('Nobody can endorse Kai Senior’s clearance'));
     expect(push).toHaveBeenCalledWith('/admin');
+  });
+
+  it('warns admins when the nightly removal has stopped, and opens Club settings', async () => {
+    await openHome('admin', {}, {
+      rpcs: {
+        admin_safety_todos: {},
+        removal_run_status: { last_run_at: null, last_ok_at: null, failed_step: null, overdue: true },
+      },
+    });
+    expect(rpcNames().filter((n) => n === 'removal_run_status')).toHaveLength(1);
+    expect(screen.getByText('Old records haven’t been removed yet')).toBeTruthy();
+    expect(screen.getByText('The nightly removal hasn’t finished for 2 days. Ask FirstPass to check it.')).toBeTruthy();
+    await fireEvent.press(screen.getByText('Old records haven’t been removed yet'));
+    expect(push).toHaveBeenCalledWith('/admin/club');
+  });
+
+  it('shows no removal warning while the nightly removal runs', async () => {
+    await openHome('admin', {}, {
+      rpcs: {
+        admin_safety_todos: {},
+        removal_run_status: { last_run_at: '2026-10-22T18:17:00Z', last_ok_at: '2026-10-22T18:17:00Z', failed_step: null, overdue: false },
+      },
+    });
+    expect(screen.queryByText(/^Old records haven’t been removed/)).toBeNull();
+  });
+
+  it('never asks for the removal status for members who aren’t admins', async () => {
+    await openHome('committee');
+    expect(rpcNames()).not.toContain('removal_run_status');
   });
 
   it('shows no clearance tile when every clearance has someone to endorse it', async () => {
@@ -500,13 +737,13 @@ describe('the to-do list', () => {
   it('ticking off a task saves it as done and offers Undo, which puts it back', async () => {
     const tasks = recordTable(() => [TASKS[3]]);
     await openHome('committee', {}, { tableHandlers: { personal_tasks: tasks.handler } });
-    fireEvent.press(screen.getByLabelText('Tick off Pay fees'));
+    await fireEvent.press(screen.getByLabelText('Tick off Pay fees'));
     await settle();
     expect(screen.queryByLabelText('Tick off Pay fees')).toBeNull();
     expect(screen.getByText('Ticked off Pay fees')).toBeTruthy();
     expect(tasks.writes('update')).toEqual([{ done_at: '2026-10-18T02:00:00.000Z' }]);
     expect(tasks.filtersOf('update')).toEqual([[['id', 't-soon']]]);
-    fireEvent.press(screen.getByText('Undo'));
+    await fireEvent.press(screen.getByText('Undo'));
     await settle();
     expect(tasks.writes('update')[1]).toEqual({ done_at: null });
     expect(screen.getByLabelText('Tick off Pay fees')).toBeTruthy();
@@ -519,15 +756,15 @@ describe('the to-do list', () => {
 describe('the footer', () => {
   it('opens Your details and Delete account', async () => {
     await openHome('athlete');
-    fireEvent.press(screen.getByText('Your details'));
+    await fireEvent.press(screen.getByText('Your details'));
     expect(push).toHaveBeenCalledWith('/my-details');
-    fireEvent.press(screen.getByText('Delete account'));
+    await fireEvent.press(screen.getByText('Delete account'));
     expect(push).toHaveBeenCalledWith('/delete-account');
   });
 
   it('signs out', async () => {
     await openHome('athlete');
-    fireEvent.press(screen.getByText('Sign out'));
+    await fireEvent.press(screen.getByText('Sign out'));
     await settle();
     expect((supabase.auth as unknown as { signOut: jest.Mock }).signOut).toHaveBeenCalled();
   });
@@ -554,7 +791,7 @@ describe('the footer', () => {
 
   it('every member can raise a concern, even before approval', async () => {
     await openHome('pending');
-    fireEvent.press(screen.getByText('Raise a concern'));
+    await fireEvent.press(screen.getByText('Raise a concern'));
     expect(push).toHaveBeenCalledWith('/concern/new');
     expect(argsOf('my_verification_code')).toHaveLength(1);
   });
@@ -566,7 +803,7 @@ describe('the footer', () => {
 describe('athletes flagged 3 times in a week', () => {
   it('puts them on the Child Safety Officer’s to-do list, opening the flags', async () => {
     await openHome('safeguardingOfficer', {}, { rpcs: { wellbeing_flag_alerts: 2 } });
-    fireEvent.press(screen.getByText('Look at 2 athletes flagged 3 times this week'));
+    await fireEvent.press(screen.getByText('Look at 2 athletes flagged 3 times this week'));
     expect(push).toHaveBeenCalledWith('/concerns/wellbeing');
   });
 

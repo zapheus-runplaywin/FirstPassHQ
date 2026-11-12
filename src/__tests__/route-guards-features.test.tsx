@@ -77,6 +77,7 @@ const FEATURE_ROUTES: FeatureCase[] = [
     ],
   },
   { feature: 'checkIns', routes: ['check-in', 'check-ins/index', 'check-ins/athlete/[id]'] },
+  { feature: 'trainingLoad', offByDefault: true, routes: ['check-ins/load'] },
   {
     feature: 'awards',
     routes: [
@@ -110,13 +111,16 @@ const FEATURE_ROUTES: FeatureCase[] = [
     ],
   },
   {
-    feature: 'affiliation',
+    feature: 'registers',
     offByDefault: true,
     routes: [
-      'admin/affiliation/index',
-      'admin/affiliation/registrations',
-      'admin/affiliation/return',
-      'admin/reports/affiliation',
+      'registers/index',
+      'registers/policies',
+      'registers/policy',
+      'registers/review',
+      'registers/conflicts',
+      'registers/conflict',
+      'declare-conflicts',
     ],
   },
 ];
@@ -132,9 +136,11 @@ const OPENED_BY: Record<string, PersonaName> = {
   'attendance/absence': 'athlete',
   'check-in': 'athlete',
   'check-ins/athlete/[id]': 'coach',
+  'check-ins/load': 'coach',
   'goals/athlete/[id]': 'coach',
   'goals/game': 'athlete',
   'goals/team': 'coach',
+  'declare-conflicts': 'committee',
 };
 const openerOf = (route: string): PersonaName => OPENED_BY[route] ?? 'admin';
 

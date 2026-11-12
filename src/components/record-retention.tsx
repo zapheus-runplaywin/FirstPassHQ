@@ -6,6 +6,7 @@ import { Button, Card, ChipGroup, ErrorText } from '@/components/ui';
 import { Spacing } from '@/constants/theme';
 import { useTheme } from '@/hooks/use-theme';
 import { formatDateTime } from '@/lib/format';
+import { purgeRunLine, toPurgeRunStatus, type PurgeRunStatus } from '@/lib/purge-runs';
 import { supabase } from '@/lib/supabase';
 
 type Retention = {
@@ -22,6 +23,8 @@ type Retention = {
   child_messages_months: number;
   /** Days after clearance an injury's files are kept. */
   injury_documents_days: number;
+  /** Months medical and emergency details are kept without their yearly check. */
+  medical_months: number;
   /** Months after closing a survey is kept, by who it's from and who sees it. */
   surveys_months: number;
   shared_surveys_months: number;
@@ -49,24 +52,36 @@ type PeriodKey = Exclude<
 >;
 
 async function loadRetention() {
-  const [{ data }, { data: childMonths }, { data: days }, { data: surveys }, { data: moreData }] =
-    await Promise.all([
-      supabase.rpc('record_retention').maybeSingle(),
-      supabase.rpc('child_messages_keep_months'),
-      supabase.rpc('injury_documents_keep_days'),
-      supabase.rpc('survey_retention').maybeSingle(),
-      supabase.rpc('more_record_retention').maybeSingle(),
-    ]);
+  const [
+    { data },
+    { data: childMonths },
+    { data: days },
+    { data: surveys },
+    { data: moreData },
+    { data: medicalMonths },
+  ] = await Promise.all([
+    supabase.rpc('record_retention').maybeSingle(),
+    supabase.rpc('child_messages_keep_months'),
+    supabase.rpc('injury_documents_keep_days'),
+    supabase.rpc('survey_retention').maybeSingle(),
+    supabase.rpc('more_record_retention').maybeSingle(),
+    supabase.rpc('medical_keep_months'),
+  ]);
   if (!data) return null;
   const survey = surveys as SurveyRetention | null;
   const more = moreData as MoreRetention | null;
   return {
     ...(data as Omit<
       Retention,
-      'child_messages_months' | 'injury_documents_days' | keyof SurveyRetention | keyof MoreRetention
+      | 'child_messages_months'
+      | 'injury_documents_days'
+      | 'medical_months'
+      | keyof SurveyRetention
+      | keyof MoreRetention
     >),
     child_messages_months: typeof childMonths === 'number' ? childMonths : 84,
     injury_documents_days: typeof days === 'number' ? days : 365,
+    medical_months: typeof medicalMonths === 'number' ? medicalMonths : 24,
     surveys_months: survey?.surveys_months ?? 36,
     shared_surveys_months: survey?.shared_surveys_months ?? 24,
     team_polls_months: survey?.team_polls_months ?? 6,
@@ -84,7 +99,7 @@ const periods: { key: PeriodKey; label: string; note: string; choices: number[] 
   {
     key: 'check_ins_months',
     label: 'Daily check-ins',
-    note: 'From the day of the check-in. Coaches use recent weeks, so 1 year is enough for most clubs. If a check-in worries you, raise a concern: concerns are never removed.',
+    note: 'From the day of the check-in, with the training sessions athletes log beside them. Coaches use recent weeks, so 1 year is enough for most clubs. If a check-in worries you, raise a concern: concerns are never removed.',
     choices: [3, 6, 12, 24],
   },
   {
@@ -144,6 +159,14 @@ const periods: { key: PeriodKey; label: string; note: string; choices: number[] 
 ];
 
 const injuryDocumentDays = [90, 365, 1095];
+
+/** Medical details go when nobody has done their yearly check for this long. */
+const medicalPeriod: (typeof periods)[number] = {
+  key: 'medical_months',
+  label: 'Medical and emergency details',
+  note: 'Emergency contacts, allergies, conditions, medications and action plans, when nobody has done their yearly check for this long. The athlete or their parents see the date before it happens. Recommended: 2 years, a year after the check falls overdue, because details nobody has checked can’t be relied on in an emergency.',
+  choices: [24, 36, 60, 84],
+};
 
 /** Shown after injury documents. An awards period of 0 keeps them for good. */
 const laterPeriods: { key: PeriodKey; label: string; note: string; choices: number[] }[] = [
@@ -209,13 +232,19 @@ export function RecordRetention() {
   const [busy, setBusy] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [notice, setNotice] = useState<string | null>(null);
+  const [run, setRun] = useState<PurgeRunStatus | null>(null);
 
   useEffect(() => {
     loadRetention().then((row) => {
       setSaved(row);
       setDraft(row);
     });
+    supabase
+      .rpc('removal_run_status')
+      .maybeSingle()
+      .then(({ data }) => setRun(toPurgeRunStatus(data)));
   }, []);
+  const runLine = purgeRunLine(run);
 
   if (!draft) return null;
 
@@ -251,7 +280,10 @@ export function RecordRetention() {
           p_awards_months: draft.awards_months,
         });
     setBusy(false);
-    const rpcError = firstError ?? surveyError ?? moreError;
+    const { error: medicalError } = firstError || surveyError || moreError
+      ? { error: null }
+      : await supabase.rpc('admin_set_medical_keep_months', { p_months: draft.medical_months });
+    const rpcError = firstError ?? surveyError ?? moreError ?? medicalError;
     if (rpcError) {
       setError(rpcError.message ?? 'That didn’t save. Try again.');
       return;
@@ -311,6 +343,15 @@ export function RecordRetention() {
           {...(Platform.OS === 'web' ? { activeThumbColor: theme.onAccent } : {})}
         />
       </Card>
+      {runLine ? (
+        runLine.warning ? (
+          <ErrorText>{runLine.text}</ErrorText>
+        ) : (
+          <ThemedText type="small" themeColor="textSecondary">
+            {runLine.text}
+          </ThemedText>
+        )
+      ) : null}
       {periods.map(period)}
       <View style={styles.period}>
         <ChipGroup
@@ -327,6 +368,7 @@ export function RecordRetention() {
           sign-offs and who added and viewed each document stay. Recommended: 1 year.
         </ThemedText>
       </View>
+      {period(medicalPeriod)}
       {laterPeriods.map(period)}
       {saved?.updated_at ? (
         <ThemedText type="small" themeColor="textSecondary">

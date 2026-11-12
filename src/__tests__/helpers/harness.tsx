@@ -13,8 +13,9 @@
  */
 import type { Session } from '@supabase/supabase-js';
 import type { ComponentType, ReactNode } from 'react';
+import type { TestInstance } from 'test-renderer';
 import { Text } from 'react-native';
-import { Stack } from 'expo-router';
+import { router, Stack } from 'expo-router';
 import { act, renderRouter, screen } from 'expo-router/testing-library';
 
 import { roleCombinationProblem } from '@/lib/roles';
@@ -65,6 +66,10 @@ export type PersonaName =
   | 'safeguardingOfficer'
   | 'committeeExpiredCheck'
   | 'committeePastChecksDate'
+  | 'committeeBeforeChecksDate'
+  | 'committeeExempt'
+  | 'committeeVolunteerExempt'
+  | 'committeeNotChosen'
   | 'statisticianPastChecksDate'
   | 'statisticianBeforeChecksDate'
   | 'adminLapsedCheck'
@@ -73,7 +78,9 @@ export type PersonaName =
   | 'coachGuardian'
   | 'athleteCoach'
   | 'adminGuardian'
-  | 'adminLapsedCoach';
+  | 'adminLapsedCoach'
+  | 'waitingChild'
+  | 'lockedChild';
 
 export type Persona = {
   session: Session | null;
@@ -193,6 +200,14 @@ export const CHILD_CONSENTS = [
   },
 ];
 
+/** What `my_link_code` gives a child waiting for a parent or guardian. */
+export const WAITING_LINK_CODE = {
+  waiting: true,
+  code: '7KQ4MD',
+  expires_at: '2026-10-25T04:00:00Z',
+  parents_waiting: [] as string[],
+};
+
 export const personas: Record<PersonaName, Persona> = {
   signedOut: { session: null, profile: null, memberships: [] },
   pending: {
@@ -278,6 +293,41 @@ export const personas: Record<PersonaName, Persona> = {
     ...member('committee-no-check', 'committee', { wwcc_number: null, wwcc_expires_on: null }),
     rpcs: { committee_checks_from: '2026-10-01' },
   },
+  /** No check yet, before the club's committee checks date. */
+  committeeBeforeChecksDate: {
+    ...member('committee-due', 'committee', { wwcc_number: null, wwcc_expires_on: null }),
+    rpcs: { committee_checks_from: '2099-01-21' },
+  },
+  /** Exempted from a check with a reason (a treasurer who never works with children). */
+  committeeExempt: member('committee-exempt', 'committee', {
+    wwcc_number: null,
+    wwcc_expires_on: null,
+    wwcc_exempt_reason: 'Treasurer, no contact with children',
+  }),
+  /** No check of their own, cleared by a parent volunteer exemption, before the committee checks date. */
+  committeeVolunteerExempt: {
+    ...member('committee-parent', 'committee', { wwcc_number: null, wwcc_expires_on: null }),
+    rpcs: {
+      committee_checks_from: '2099-01-21',
+      my_volunteer_exemption: {
+        basis: 'parent_volunteer',
+        child_name: 'Sample Child',
+        declared_at: '2026-09-01T00:00:00Z',
+        declaration_text: 'Declared',
+        valid: true,
+        ends_on: null,
+        starts_on: null,
+      },
+    },
+  },
+  /**
+   * Checked, but the club chose which committee members see injuries and left
+   * this one out (customer review R7).
+   */
+  committeeNotChosen: {
+    ...member('committee-not-chosen', 'committee'),
+    rpcs: { my_committee_sees_injuries: false },
+  },
   /** No check, and the club's statistician checks date has passed. */
   statisticianPastChecksDate: {
     ...member('statistician-no-check', 'statistician', { wwcc_number: null, wwcc_expires_on: null }),
@@ -321,6 +371,31 @@ export const personas: Record<PersonaName, Persona> = {
     { extra_roles: ['coach'], wwcc_expires_on: '2025-01-01' },
     ['coach'],
   ),
+  /** Under 18, asking to join: sees only their link code for a parent. */
+  waitingChild: {
+    ...member('waiting-child', 'guest', {
+      status: 'pending',
+      requested_role: 'athlete',
+      declared_date_of_birth: '2012-04-01',
+      verified_at: null,
+      wwcc_number: null,
+      wwcc_expires_on: null,
+    }),
+    rpcs: { my_link_code: WAITING_LINK_CODE },
+  },
+  /**
+   * Approved and under 18 with no verified parent or guardian linked: locked
+   * out until one is, even though they are in a squad.
+   */
+  lockedChild: {
+    ...member(
+      'locked-child',
+      'athlete',
+      { date_of_birth: '2011-03-02', under_17: true, wwcc_number: null, wwcc_expires_on: null },
+      ['athlete'],
+    ),
+    rpcs: { my_link_code: WAITING_LINK_CODE },
+  },
 };
 
 /**
@@ -530,8 +605,8 @@ let clubFeatures: Partial<Record<string, boolean>> = {};
 
 /**
  * The club's saved feature switches, as an admin set them in Club settings.
- * Anything left out takes the app's default (on, except Season KPIs and
- * Affiliation records).
+ * Anything left out takes the app's default (on, except training load flags,
+ * Season KPIs and the registers).
  */
 export function setClubFeatures(features: Partial<Record<string, boolean>> = {}) {
   clubFeatures = features;
@@ -670,8 +745,38 @@ export async function openScreen(
 ) {
   jest.useFakeTimers({ now: TODAY });
   signInAs(typeof who === 'string' ? personas[who] : who, tables, options);
-  renderRouter({ _layout: ScreenTestLayout, ...screens }, { initialUrl: url });
+  await keepingRouterSpies(() => renderRouter({ _layout: ScreenTestLayout, ...screens }, { initialUrl: url }));
   await settle();
+}
+
+/**
+ * Renders, keeping any jest spies already on the imperative `router`. Since
+ * SDK 58 the router binds its methods in place when a screen first renders,
+ * which would otherwise replace a spy a test set up beforehand.
+ */
+async function keepingRouterSpies(renderIt: () => Promise<unknown>) {
+  const spies = Object.entries(router).filter(([, fn]) => jest.isMockFunction(fn));
+  await renderIt();
+  Object.assign(router, Object.fromEntries(spies));
+}
+
+/**
+ * Presses an element without waiting for its handler to finish, for a test
+ * that holds the backend's answer to look at the screen meanwhile.
+ * fireEvent.press only returns once an async handler has finished, so with a
+ * held answer it would never return. `done` settles when the handler does.
+ */
+export async function pressWithoutWaiting(element: TestInstance) {
+  type Fiber = { memoizedProps?: { onPress?: unknown }; return: Fiber | null };
+  let fiber = element.unstable_fiber as Fiber | null;
+  while (fiber && typeof fiber.memoizedProps?.onPress !== 'function') fiber = fiber.return;
+  if (!fiber) throw new Error('Nothing to press there');
+  const onPress = fiber.memoizedProps!.onPress as (event: unknown) => unknown;
+  let pending: unknown;
+  await act(async () => {
+    pending = onPress({ nativeEvent: {} });
+  });
+  return { done: Promise.resolve(pending) };
 }
 
 /** Lets pending loads and effects finish. */
@@ -751,16 +856,26 @@ export const MEMBER_ROUTES = ROUTES.filter(
 let everyScreenAPlaceholder: ReturnType<typeof placeholderScreens> | null = null;
 
 export async function openRoute(who: PersonaName, url: string) {
-  everyScreenAPlaceholder ??= placeholderScreens();
+  const overrides = (everyScreenAPlaceholder ??= placeholderScreens());
   jest.useFakeTimers({ now: TODAY });
   signInAs(personas[who]);
-  renderRouter({ appDir: 'src/app', overrides: everyScreenAPlaceholder }, { initialUrl: url });
+  await keepingRouterSpies(() => renderRouter({ appDir: 'src/app', overrides }, { initialUrl: url }));
   // Let the session and the member's rows load (the layout shows nothing until then).
   for (let i = 0; i < 5; i++) {
     await act(async () => {
       await Promise.resolve();
     });
   }
+}
+
+/**
+ * The screen's pull-to-refresh control. It is a prop of the scroll view, not
+ * an element of its own, so this is the control as the screen passed it.
+ */
+export function refreshControl(): { props: { onRefresh(): void; refreshing: boolean } } {
+  const found = screen.container.queryAll((n) => n.props.refreshControl != null);
+  expect(found).toHaveLength(1);
+  return found[0].props.refreshControl;
 }
 
 /** The route whose placeholder is showing. */

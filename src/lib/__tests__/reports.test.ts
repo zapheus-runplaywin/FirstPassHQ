@@ -1,21 +1,17 @@
 /**
  * The other governance reports in src/lib/reports.ts, and its helpers:
  * Integrity training, Attendance (with reported absences), Award results,
- * Affiliation and the affiliation return, Injuries, Session plans and Season
- * KPIs. What each must hold is in section 10 of the user guide ("Reports",
- * "Injury report" and "Affiliation"). The Working With Children Checks and
- * Under 18s reports have their own files.
+ * Injuries, Session plans and Season KPIs. What each must hold is in section
+ * 10 of the user guide ("Reports" and "Injury report"). The Working With
+ * Children Checks and Under 18s reports have their own files.
  */
 import { File } from 'expo-file-system';
 import * as Sharing from 'expo-sharing';
 import { Platform } from 'react-native';
 
-import type { Affiliation, Officer, Registration } from '@/lib/affiliation';
 import { formatDateString } from '@/lib/injuries';
 import {
   absenceBreakdown,
-  affiliationReport,
-  affiliationReturn,
   attendanceReport,
   awardReport,
   chunk,
@@ -54,7 +50,11 @@ jest.mock('expo-file-system', () => {
     constructor(dir: string, name: string) {
       this.uri = `${dir}/${name}`;
     }
-    write(bytes: Uint8Array) {
+    static failWrites = false;
+    // Like SDK 58's File.write(), the file is only there once the promise settles.
+    async write(bytes: Uint8Array) {
+      await Promise.resolve();
+      if (MockFile.failWrites) throw new Error('disk full');
       MockFile.written.push({ uri: this.uri, bytes });
     }
   }
@@ -141,10 +141,12 @@ describe('helpers', () => {
   });
 
   describe('sharePdf', () => {
-    const written = (File as unknown as { written: { uri: string; bytes: Uint8Array }[] }).written;
+    const MockFile = File as unknown as { written: { uri: string; bytes: Uint8Array }[]; failWrites: boolean };
+    const written = MockFile.written;
 
     beforeEach(() => {
       written.length = 0;
+      MockFile.failWrites = false;
       (Sharing.shareAsync as jest.Mock).mockClear();
     });
 
@@ -157,6 +159,21 @@ describe('helpers', () => {
         UTI: 'com.adobe.pdf',
         dialogTitle: 'sample-report.pdf',
       });
+    });
+
+    it('opens the share sheet only once the file has finished writing', async () => {
+      let writtenWhenShared = -1;
+      (Sharing.shareAsync as jest.Mock).mockImplementationOnce(async () => {
+        writtenWhenShared = written.length;
+      });
+      await sharePdf('sample-report.pdf', new Uint8Array([1]));
+      expect(writtenWhenShared).toBe(1);
+    });
+
+    it('doesn’t open the share sheet when the file can’t be written', async () => {
+      MockFile.failWrites = true;
+      await expect(sharePdf('sample-report.pdf', new Uint8Array([1]))).rejects.toThrow('disk full');
+      expect(Sharing.shareAsync).not.toHaveBeenCalled();
     });
 
     it('on the web, downloads it instead', async () => {
@@ -617,260 +634,6 @@ describe('award results', () => {
 
 // ---------------------------------------------------------------------------
 
-describe('affiliation', () => {
-  function affiliation(overrides: Partial<Affiliation> = {}): Affiliation {
-    return {
-      member_type: 'club',
-      tier: null,
-      incorporation_number: 'A1234567X',
-      affiliated_with: 'Sample Netball Association',
-      registered_on: '2026-03-01',
-      primary_contact_1_id: 'p1',
-      primary_contact_1_name: 'Pat Contact',
-      primary_contact_2_id: null,
-      primary_contact_2_name: null,
-      checks: {},
-      notes: null,
-      updated_at: null,
-      updated_by_name: null,
-      season: 2026,
-      team_count: 3,
-      registrations_total: 5,
-      registered: 2,
-      not_registered: 1,
-      ...overrides,
-    };
-  }
-  const registration = (name: string, registered: boolean | null, extra: Partial<Registration> = {}): Registration => ({
-    profile_id: name,
-    name,
-    playhq_email: null,
-    email: null,
-    team_roles: ['athlete'],
-    groups: ['Open A'],
-    registered,
-    checked_at: null,
-    checked_by_name: null,
-    ...extra,
-  });
-  const registrations = [
-    registration('Zed Registered', true, { checked_at: noon('2026-10-01'), checked_by_name: 'Sample admin' }),
-    registration('Amy ToCheck', null, { team_roles: ['coach', 'manager'], groups: ['Open A', '17 & Under A'] }),
-    registration('Bea Registered', true, { checked_at: noon('2026-10-02') }),
-    registration('Cy NotRegistered', false, { team_roles: ['umpire'] }),
-  ];
-
-  describe('affiliationReport', () => {
-    const report = affiliationReport(affiliation(), [], registrations);
-
-    it('describes the club and the policy the criteria come from', () => {
-      expect(report.title).toBe('Affiliation');
-      expect(report.subtitle).toBe('Affiliated club. Criteria from Netball WA’s Membership Policy (NWA-POL-07).');
-    });
-
-    it('counts required items done and this season’s registrations', () => {
-      const s = stats(report);
-      expect(s['Required items done']).toMatch(/^\d+ of \d+$/);
-      expect(s).toMatchObject({ 'Registered in PlayHQ 2026–27': '2 of 5', 'Not registered': 1, 'Still to check': 2 });
-    });
-
-    it('lists the details, flagging fewer than two primary contacts for a club', () => {
-      const details = report.sections[0];
-      expect(cellsOf(details)).toEqual([
-        ['Incorporation number', 'A1234567X'],
-        ['Affiliated with', 'Sample Netball Association'],
-        ['Last registered', day('2026-03-01')],
-        ['Primary contacts', 'Pat Contact'],
-        ['Teams this season', '3 in 2026–27'],
-      ]);
-      expect(details.rows.map((r) => !!r.flag)).toEqual([false, false, false, true, false]);
-    });
-
-    it('flags a registration more than a year old, and records nothing as Not recorded', () => {
-      const details = affiliationReport(
-        affiliation({ registered_on: '2025-10-17', incorporation_number: null, affiliated_with: null, primary_contact_1_name: null, notes: 'Evidence in the shared drive' }),
-        [],
-        [],
-      ).sections[0];
-      expect(cellsOf(details)).toEqual([
-        ['Incorporation number', 'Not recorded'],
-        ['Affiliated with', 'Not recorded'],
-        ['Last registered', day('2025-10-17')],
-        ['Primary contacts', 'None named'],
-        ['Teams this season', '3 in 2026–27'],
-        ['Notes', 'Evidence in the shared drive'],
-      ]);
-      expect(details.rows[2].flag).toBe(true);
-    });
-
-    it('shows the checklist with required items not done in red, and no officers for a club', () => {
-      const checklist = report.sections[1];
-      expect(checklist.title).toBe('Checklist');
-      expect(checklist.columns.map((c) => c.label)).toEqual(['Item', 'Need', 'Done', 'How it’s known']);
-      for (const row of checklist.rows) {
-        expect(row.flag).toBe(row.cells[1] === 'Required' && row.cells[2] === 'No');
-        expect(['Ticked by an admin', 'From the app’s records']).toContain(row.cells[3]);
-      }
-      const missing = checklist.rows.filter((r) => r.flag).length;
-      expect(checklist.note).toBe(missing ? `${missing} required ${missing === 1 ? 'item' : 'items'} not done yet, shown in red.` : undefined);
-      expect(report.sections.map((s) => s.title)).toEqual(['Details', 'Checklist', 'PlayHQ registrations 2026–27']);
-    });
-
-    it('lists registrations not registered first, then to check, then registered, each by name', () => {
-      const regs = report.sections[2];
-      expect(cellsOf(regs)).toEqual([
-        ['Cy NotRegistered', 'umpire', 'Open A', 'Not registered', ''],
-        ['Amy ToCheck', 'Coach, Manager', 'Open A\n17 & Under A', 'To check', ''],
-        ['Bea Registered', 'Athlete', 'Open A', 'Registered', day('2026-10-02')],
-        ['Zed Registered', 'Athlete', 'Open A', 'Registered', `${day('2026-10-01')}\nSample admin`],
-      ]);
-      expect(regs.rows.map((r) => r.flag)).toEqual([true, true, false, false]);
-    });
-
-    it('for an association, names its tier and lists its officers and their induction', () => {
-      const officers: Officer[] = [
-        { office: 'president', profile_id: 'p', name: 'Pres Sample', inducted_on: '2026-05-01' },
-        { office: 'ado', profile_id: 'a', name: 'Ado Sample', inducted_on: null },
-      ];
-      const assoc = affiliationReport(affiliation({ member_type: 'association', tier: 2 }), officers, []);
-      expect(assoc.subtitle).toBe('Association, Tier 2 (250 to 449). Criteria from Netball WA’s Membership Policy (NWA-POL-07).');
-      expect(cellsOf(assoc.sections[0])[2][0]).toBe('Annual agreement signed');
-      // An association isn't flagged for primary contacts.
-      expect(assoc.sections[0].rows[3].flag).toBe(false);
-      const officerSection = assoc.sections.find((s) => s.title === 'Officers and safeguarding induction')!;
-      expect(cellsOf(officerSection)).toEqual([
-        ['President', 'Pres Sample', day('2026-05-01')],
-        ['Association Development Officer', 'Ado Sample', 'Not recorded'],
-        ['Association Umpire Development Officer', 'Nobody named', 'Not recorded'],
-      ]);
-      expect(officerSection.rows.map((r) => r.flag)).toEqual([false, true, true]);
-    });
-
-    it('has no season figures when there are no squads or teams', () => {
-      const none = affiliationReport(affiliation({ season: null }), [], []);
-      expect(Object.keys(stats(none))).toEqual(['Required items done']);
-      expect(none.sections[none.sections.length - 1].title).toBe('PlayHQ registrations');
-      expect(none.sections[none.sections.length - 1].empty).toBe('Nobody is in a squad or team this season.');
-    });
-  });
-
-  describe('affiliationReturn', () => {
-    const wwcc = [
-      { label: 'Need a check', value: 12 },
-      { label: 'Expired', value: 1 },
-    ];
-    const ret = affiliationReturn({
-      clubName: 'Sample Club',
-      affiliation: affiliation({ primary_contact_2_name: 'Sam Contact', primary_contact_2_id: 'p2' }),
-      officers: [],
-      contacts: [
-        { name: 'Pat Contact', email: 'pat@example.test' },
-        { name: 'Sam Contact', email: null },
-      ],
-      safeguarding: {
-        contacts: {
-          child_safety_officer_name: 'Cass Officer',
-          complaints_manager_name: null,
-          policy_url: 'https://example.test/old-policy',
-        } as never,
-        policies: { safeguarding_policy_url: null, code_of_conduct_url: 'https://example.test/conduct', privacy_policy_url: null, policy_version: '3' } as never,
-        wwcOfficerName: null,
-      },
-      wwcc,
-      training: { season: '2026–27', stats: [{ label: 'Courses', value: 2 }] },
-      today: new Date(2026, 9, 18, 12),
-    });
-
-    it('names the club and the day, and says it holds counts only', () => {
-      expect(ret.title).toBe('Affiliation return');
-      expect(ret.subtitle).toBe(
-        `Sample Club: affiliated club, as at ${day('2026-10-18')}. Criteria from Netball WA’s Membership Policy (NWA-POL-07).`,
-      );
-      expect(ret.footnote).toContain('It names no member under 18 and has no details about any child.');
-    });
-
-    it('holds the sections the guide lists, in order', () => {
-      expect(ret.sections.map((s) => s.title)).toEqual([
-        'Details',
-        'Primary contacts',
-        'Checklist',
-        'PlayHQ registrations 2026–27',
-        'Safeguarding',
-        'Working With Children Checks',
-        'Integrity training 2026–27',
-      ]);
-      expect(stats(ret)).toMatchObject({ 'Teams in 2026–27': 3, 'Registered in PlayHQ 2026–27': '2 of 5' });
-    });
-
-    it('lists the primary contacts with their emails', () => {
-      expect(cellsOf(ret.sections[1])).toEqual([
-        ['Pat Contact', 'pat@example.test'],
-        ['Sam Contact', ''],
-      ]);
-    });
-
-    it('gives registration figures only, never names', () => {
-      const regs = ret.sections[3];
-      expect(cellsOf(regs)).toEqual([
-        ['People', '5'],
-        ['Registered', '2'],
-        ['Not registered', '1'],
-        ['Still to check', '2'],
-      ]);
-      expect(regs.rows.map((r) => !!r.flag)).toEqual([false, false, true, false]);
-    });
-
-    it('shows the safeguarding set-up, flagging anything missing, using the older policy link when needed', () => {
-      expect(cellsOf(ret.sections[4])).toEqual([
-        ['Child Safety Officer', 'Cass Officer'],
-        ['Complaints manager', 'Not named'],
-        ['WWC Registration Officer', 'Not named'],
-        ['Safeguarding policy', 'https://example.test/old-policy'],
-        ['Code of conduct', 'https://example.test/conduct'],
-        ['Privacy policy', 'Not linked'],
-        ['Policy version members accept', '3'],
-      ]);
-      expect(ret.sections[4].rows.map((r) => !!r.flag)).toEqual([false, true, false, false, false, false, false]);
-    });
-
-    it('carries the check and training figures as counts only', () => {
-      expect(cellsOf(ret.sections[5])).toEqual([
-        ['Need a check', '12'],
-        ['Expired', '1'],
-      ]);
-      expect(cellsOf(ret.sections[6])).toEqual([['Courses', '2']]);
-    });
-
-    it('leaves out the check and training counts when the admin turns them off', () => {
-      const without = affiliationReturn({
-        clubName: 'Sample Club',
-        affiliation: affiliation({ incorporation_number: null }),
-        officers: [],
-        contacts: [],
-        safeguarding: { contacts: null, policies: null, wwcOfficerName: 'Wes Officer' },
-        wwcc: null,
-        training: null,
-        today: new Date(2026, 9, 18, 12),
-      });
-      expect(without.sections.map((s) => s.title)).not.toContain('Working With Children Checks');
-      expect(without.sections.map((s) => s.title).join()).not.toContain('Integrity training');
-      expect(cellsOf(without.sections[0])[0]).toEqual(['Incorporation number', 'Not incorporated']);
-      expect(without.sections[1].empty).toBe('None named.');
-      expect(cellsOf(without.sections[4])).toEqual([
-        ['Child Safety Officer', 'Not named'],
-        ['Complaints manager', 'Not named'],
-        ['WWC Registration Officer', 'Wes Officer'],
-        ['Safeguarding policy', 'Not linked'],
-        ['Code of conduct', 'Not linked'],
-        ['Privacy policy', 'Not linked'],
-        ['Policy version members accept', '1'],
-      ]);
-    });
-  });
-});
-
-// ---------------------------------------------------------------------------
-
 describe('injuryReport', () => {
   const injury = (id: string, extra: Partial<InjuryReportRow> = {}): InjuryReportRow => ({
     id,
@@ -1169,6 +932,13 @@ describe('medicalCheckReport', () => {
     ]);
     expect(only.flag).toBe(false);
     expect(stat(report, 'Checked in the last year')).toBe('100%');
+  });
+
+  it('names the chosen squads and teams in the subtitle', () => {
+    expect(medicalCheckReport([], REPORT_DAY, '17 & Under Squad, Open A').subtitle).toBe(
+      `Approved athletes in 17 & Under Squad, Open A on ${formatDateString('2026-10-18')}`,
+    );
+    expect(medicalCheckReport([], REPORT_DAY).subtitle).toBe(`Approved athletes on ${formatDateString('2026-10-18')}`);
   });
 
   it('copes with no athletes', () => {

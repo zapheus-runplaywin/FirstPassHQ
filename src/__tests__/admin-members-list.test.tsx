@@ -5,7 +5,9 @@
  * The rules (section 10 of the user guide, "Approving members"): Needs
  * checking lists the people behind the child-safety to-dos with why; Waiting
  * for approval lists requests oldest first, marking an athlete who says
- * they're under 18; No team or role for 2 years lists who the database says
+ * they're under 18 and who entered whose link code; Parents asking to be
+ * linked lists approved parents who entered another child's code; a child
+ * under 18 with no approved, verified parent linked is locked; No team or role for 2 years lists who the database says
  * may have left; and members never asked to join or turned down are listed
  * apart. Only admins reach this screen (the route tests cover that).
  */
@@ -76,6 +78,12 @@ const MEMBERS = {
   }),
   exempted: member('m-exempt', 'Pat Parent', { role: 'manager', wwcc_number: null, wwcc_expires_on: null }),
   inactive: member('m-gone', 'Gina Gone', { preferred_name: 'Gigi' }),
+  guardian: member('m-guardian', 'Gwen Guardian', { role: 'guardian', date_of_birth: '1980-01-01' }),
+  unverifiedGuardian: member('m-unverified', 'Uma Unverified', {
+    role: 'guardian',
+    date_of_birth: '1980-01-01',
+    verified_at: null,
+  }),
   newChild: member('m-new-child', 'Nico New', {
     status: 'pending',
     role: 'guest',
@@ -130,7 +138,17 @@ async function openMembers(members: Profile[] = Object.values(MEMBERS)) {
     'admin',
     { 'admin/index': MembersScreen },
     '/admin',
-    { guardianships: [{ athlete_id: 'm-linked' }] },
+    {
+      guardianships: [
+        { guardian_id: 'm-guardian', athlete_id: 'm-linked' },
+        // An unverified parent doesn't unlock a child.
+        { guardian_id: 'm-unverified', athlete_id: 'm-child' },
+      ],
+      guardian_link_requests: [
+        { guardian_id: 'm-new-parent', athlete_id: 'm-new-child' },
+        { guardian_id: 'm-guardian', athlete_id: 'm-child' },
+      ],
+    },
     {
       tableHandlers: {
         // The admin's own row for sign-in; everyone for the list.
@@ -165,13 +183,14 @@ function namesUnder(heading: string) {
   const headings = [
     'Needs checking',
     'Waiting for approval',
+    'Parents asking to be linked',
     'Members',
     'No team or role for 2 years',
     'Signed in, no request yet',
     'Not approved',
   ];
   const texts = screen
-    .UNSAFE_root.findAll((n) => typeof n.type === 'string' && typeof n.props.children === 'string')
+    .container.queryAll((n) => typeof n.type === 'string' && typeof n.props.children === 'string')
     .map((n) => n.props.children as string);
   const start = texts.indexOf(heading);
   if (start < 0) return null;
@@ -190,8 +209,11 @@ describe('the Members list', () => {
       'Sid Stood',
       'Pat Parent',
     ]);
-    expect(screen.getByText('Athlete · Under 18 with no guardian linked')).toBeTruthy();
-    expect(screen.getByText('Athlete · Under 18 with no guardian linked · Turns 18 on 01/11/2026')).toBeTruthy();
+    // Charlie's only parent isn't verified, so Charlie is locked.
+    expect(screen.getByText('Athlete · Locked: no verified parent or guardian linked')).toBeTruthy();
+    expect(
+      screen.getByText('Athlete · Locked: no verified parent or guardian linked · Turns 18 on 01/11/2026'),
+    ).toBeTruthy();
     expect(screen.getByText('Athlete · No date of birth')).toBeTruthy();
     expect(screen.getByText('Coach · Stood down')).toBeTruthy();
     expect(
@@ -211,10 +233,12 @@ describe('the Members list', () => {
       'Sid Stood',
       'Pat Parent',
       'Gina Gone',
+      'Gwen Guardian',
+      'Uma Unverified',
     ]);
     expect(screen.getByText('Coach · Head Coach, Open A')).toBeTruthy();
     expect(screen.getByText('Committee · Treasurer')).toBeTruthy();
-    // A child with a guardian linked needs nothing.
+    // A child with a verified guardian linked needs nothing.
     expect(screen.getAllByText('Athlete').length).toBeGreaterThanOrEqual(2);
     expect(screen.getAllByText('Athlete · Needs checking')).toHaveLength(3);
     expect(screen.getByText('Coach · Needs checking')).toBeTruthy();
@@ -224,8 +248,31 @@ describe('the Members list', () => {
   it('lists requests oldest first, marking a child and someone already verified', async () => {
     await openMembers();
     expect(namesUnder('Waiting for approval')).toEqual(['Pia Parent', 'Nico New']);
-    expect(screen.getByText('Asked to join as Guardian · Verified in person')).toBeTruthy();
-    expect(screen.getByText('Asked to join as Athlete · Says they’re under 18')).toBeTruthy();
+    expect(
+      screen.getByText('Asked to join as Guardian · Verified in person · Entered Nico New’s code'),
+    ).toBeTruthy();
+    expect(
+      screen.getByText('Asked to join as Athlete · Says they’re under 18 · Pia Parent entered their code'),
+    ).toBeTruthy();
+  });
+
+  it('says when nobody has entered a child’s code, or a parent hasn’t entered one', async () => {
+    await openMembers([
+      { ...MEMBERS.newChild, id: 'm-other-child' },
+      { ...MEMBERS.newParent, id: 'm-other-parent' },
+    ]);
+    expect(
+      screen.getByText('Asked to join as Athlete · Says they’re under 18 · No parent has entered their code yet'),
+    ).toBeTruthy();
+    expect(
+      screen.getByText('Asked to join as Guardian · Verified in person · Hasn’t entered a child’s code yet'),
+    ).toBeTruthy();
+  });
+
+  it('lists approved parents who entered another child’s code, to link from their page', async () => {
+    await openMembers();
+    expect(namesUnder('Parents asking to be linked')).toEqual(['Gwen Guardian']);
+    expect(screen.getByText('Entered Charlie Child’s code · Link them on their page')).toBeTruthy();
   });
 
   it('lists members with no team or role for 2 years, from the database, with when they were last active', async () => {
@@ -269,7 +316,7 @@ describe('the Members list', () => {
   it('opens a member’s page', async () => {
     const push = jest.spyOn(router, 'push').mockImplementation(() => {});
     await openMembers();
-    fireEvent.press(screen.getByText('Casey Coach'));
+    await fireEvent.press(screen.getByText('Casey Coach'));
     expect(push).toHaveBeenCalledWith({ pathname: '/admin/[id]', params: { id: 'm-coach' } });
     push.mockRestore();
   });
@@ -289,5 +336,6 @@ describe('the Members list', () => {
     expect(names).toContain('admin_volunteer_exemptions');
     expect(names).toContain('admin_inactive_members');
     expect(supabase.from).toHaveBeenCalledWith('guardianships');
+    expect(supabase.from).toHaveBeenCalledWith('guardian_link_requests');
   });
 });

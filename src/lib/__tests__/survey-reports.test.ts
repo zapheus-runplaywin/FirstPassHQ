@@ -1,11 +1,29 @@
+import * as Sharing from 'expo-sharing';
+
 import { formatDateString } from '@/lib/injuries';
-import { surveyReport, surveyWorkbook, type SurveyExport } from '@/lib/survey-reports';
+import { shareXlsx, surveyReport, surveyWorkbook, type SurveyExport } from '@/lib/survey-reports';
 import type { SurveyResults, SurveySummary } from '@/lib/surveys';
 
 // The modules load auth and club context, which need native storage.
 jest.mock('@/lib/auth', () => ({ useAuth: jest.fn() }));
 jest.mock('@/lib/club', () => ({ useClub: jest.fn() }));
 jest.mock('@/lib/messages', () => ({ useCaptainedGroupIds: jest.fn() }));
+jest.mock('expo-sharing', () => ({ shareAsync: jest.fn(async () => {}) }));
+jest.mock('expo-file-system', () => {
+  class MockFile {
+    static written: { uri: string; bytes: Uint8Array }[] = [];
+    uri: string;
+    constructor(dir: string, name: string) {
+      this.uri = `${dir}/${name}`;
+    }
+    // Like SDK 58's File.write(), the file is only there once the promise settles.
+    async write(bytes: Uint8Array) {
+      await Promise.resolve();
+      MockFile.written.push({ uri: this.uri, bytes });
+    }
+  }
+  return { File: MockFile, Paths: { cache: 'file:///cache' } };
+});
 
 function summary(overrides: Partial<SurveySummary> = {}): SurveySummary {
   return {
@@ -229,5 +247,25 @@ describe('surveyWorkbook', () => {
     );
     expect(sheets[1].rows[0][0]).toBe('Name');
     expect(sheets[1].rows.map((r) => r[0])).toEqual(['Name', 'Sam', 'Not given']);
+  });
+});
+
+describe('shareXlsx', () => {
+  it('on a phone, writes the file and only then opens the share sheet as Excel', async () => {
+    const { File } = jest.requireMock('expo-file-system') as { File: { written: { uri: string; bytes: Uint8Array }[] } };
+    File.written.length = 0;
+    let writtenWhenShared = -1;
+    (Sharing.shareAsync as jest.Mock).mockImplementationOnce(async () => {
+      writtenWhenShared = File.written.length;
+    });
+    const bytes = new Uint8Array([80, 75]);
+    await shareXlsx('survey.xlsx', bytes);
+    expect(File.written).toEqual([{ uri: 'file:///cache/survey.xlsx', bytes }]);
+    expect(writtenWhenShared).toBe(1);
+    expect(Sharing.shareAsync).toHaveBeenCalledWith('file:///cache/survey.xlsx', {
+      mimeType: 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet',
+      UTI: 'org.openxmlformats.spreadsheetml.sheet',
+      dialogTitle: 'survey.xlsx',
+    });
   });
 });

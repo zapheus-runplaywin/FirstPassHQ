@@ -7,7 +7,7 @@
  * itself at the bottom, only when Jest runs it directly.
  */
 import { fireEvent, screen } from 'expo-router/testing-library';
-import type { ReactTestInstance } from 'react-test-renderer';
+import type { TestInstance } from 'test-renderer';
 
 import { supabase } from '@/lib/supabase';
 
@@ -62,23 +62,23 @@ export function recordTable(rows?: (q: QueryInfo) => unknown) {
 }
 
 /** The text input under a field's label (TextField in components/ui.tsx). */
-export function field(label: string | RegExp): ReactTestInstance {
-  let node: ReactTestInstance | null = screen.getByText(label);
+export function field(label: string | RegExp): TestInstance {
+  let node: TestInstance | null = screen.getByText(label);
   while (node) {
-    const inputs = node.findAll((n) => (n.type as unknown) === 'TextInput', { deep: true });
+    const inputs = node.queryAll((n) => n.type === 'TextInput', { includeSelf: true });
     if (inputs.length > 0) return inputs[0];
     node = node.parent;
   }
   throw new Error(`No text field labelled ${String(label)}`);
 }
 
-export function type(label: string | RegExp, value: string) {
-  fireEvent.changeText(field(label), value);
+export async function type(label: string | RegExp, value: string) {
+  await fireEvent.changeText(field(label), value);
 }
 
 /** Whether a chip or toggle (accessibilityState.selected) is chosen. */
 export function isSelected(label: string | RegExp) {
-  let node: ReactTestInstance | null = screen.getByText(label);
+  let node: TestInstance | null = screen.getByText(label);
   while (node) {
     const state = node.props.accessibilityState as { selected?: boolean } | undefined;
     if (state && 'selected' in state) return !!state.selected;
@@ -89,7 +89,7 @@ export function isSelected(label: string | RegExp) {
 
 /** Whether the Pressable around this text is disabled. */
 export function isDisabled(label: string | RegExp) {
-  let node: ReactTestInstance | null = screen.getByText(label);
+  let node: TestInstance | null = screen.getByText(label);
   while (node) {
     if (node.props.accessibilityRole === 'button' || node.props.role === 'button') {
       return !!(node.props.disabled || node.props.accessibilityState?.disabled);

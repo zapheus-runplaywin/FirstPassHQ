@@ -3,8 +3,10 @@ import { useAuth } from '@/lib/auth';
 import { useCanSeeCheckIns, useIsCheckInAthlete, useIsCheckInCoach } from '@/lib/check-ins';
 import { useIsGoalAthlete, useIsGoalCoach } from '@/lib/goals';
 import { useCanLogInjuries, useCanSeeInjuries } from '@/lib/injuries';
+import { useFeature } from '@/lib/club';
 import { useKpisOn } from '@/lib/kpis';
 import { useCaptainedGroupIds, useCanSendMessages, useGetsMessages } from '@/lib/messages';
+import { useCanReadReports } from '@/lib/report-access';
 import { hasRole, rolesOf } from '@/lib/roles';
 import { useCanSendSurveys } from '@/lib/surveys';
 import { useCanCheckTraining } from '@/lib/training';
@@ -23,7 +25,8 @@ import type { AppRole, TeamRole } from '@/lib/types';
  * leads to the screen, and the user guide's role tables.
  */
 export function useRouteAccess() {
-  const { profile, memberships, isAdmin, isSafeguardingOfficer } = useAuth();
+  const { profile, memberships, isAdmin, isSafeguardingOfficer, waitingForGuardian, isLocked } =
+    useAuth();
   const approved = profile?.status === 'approved';
   const inGroupAs = (...roles: TeamRole[]) =>
     approved && memberships.some((m) => roles.includes(m.team_role));
@@ -44,6 +47,8 @@ export function useRouteAccess() {
   const isGoalCoach = useIsGoalCoach();
   const kpisOn = useKpisOn();
   const canCheckTraining = useCanCheckTraining();
+  const canReadReports = useCanReadReports();
+  const registersOn = useFeature('registers');
 
   const isGuardian = holds('guardian');
   const isAthlete = holds('athlete') || inGroupAs('athlete');
@@ -97,6 +102,8 @@ export function useRouteAccess() {
     checkIn: isCheckInAthlete,
     checkIns: canSeeCheckIns,
     athleteCheckIns: isCheckInCoach || isGuardian,
+    // Training load prompts: coaches, for their own athletes.
+    trainingLoad: isCheckInCoach,
 
     // Club awards: whoever an award can name as a voter.
     awards: canVote,
@@ -121,6 +128,10 @@ export function useRouteAccess() {
     training: isClubMember,
     checkTraining: canCheckTraining,
 
+    // Governance reports, read only: admins, and committee members with a
+    // current check, volunteer exemption or application (report-access.ts).
+    reports: canReadReports,
+
     // The concerns register: admins, the Child Safety Officer and the
     // Complaints Manager.
     concerns: isAdmin || isSafeguardingOfficer,
@@ -137,6 +148,21 @@ export function useRouteAccess() {
 
     // Choosing a squad or team's captains: admins and its coaches.
     chooseCaptains: isAdmin || inGroupAs('coach'),
+
+    // Screens every signed-in member can open, except a child waiting for a
+    // parent or guardian: they only see their link code on Home, Raise a
+    // concern and Delete account (Matt, 20 October 2026).
+    open: !waitingForGuardian,
+    // Asking to join, or changing the request: not once approved and locked.
+    join: !isLocked,
+    // Policy and conflict registers, when the club turns them on: read by the
+    // committee and admins and changed by admins; a policy's owner (a club
+    // official) records its review; committee members and coaches declare
+    // their conflicts of interest each season.
+    registers: registersOn && holds('committee', 'admin'),
+    editRegisters: registersOn && isAdmin,
+    reviewPolicy: registersOn && holds('admin', 'committee', 'coach', 'manager', 'physio', 'statistician'),
+    declareConflicts: registersOn && (holds('committee', 'coach') || inGroupAs('coach')),
   };
 }
 

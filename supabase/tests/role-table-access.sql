@@ -111,6 +111,10 @@ insert into public.injury_updates (injury_id, author_id, author_name, kind, note
 select id, athlete_id, athlete_name, 'reported', 'Reported' from public.injuries;
 insert into public.check_ins (athlete_id, day, sleep, soreness, stress, mood, note)
 values ('00000000-0000-0000-0000-000000000032', current_date, 3, 3, 3, 3, 'Fine');
+-- Training sessions follow the same rule as check-ins.
+insert into public.session_logs (athlete_id, day, kind, minutes, rpe) values
+  ('00000000-0000-0000-0000-000000000031', current_date, 'training', 90, 6),
+  ('00000000-0000-0000-0000-000000000032', current_date, 'game', 60, 8);
 insert into public.fixtures (id, team_id, team_name, opponent, starts_at)
 values ('00000000-0000-0000-0000-0000000000f1', '00000000-0000-0000-0000-0000000000a1', 'Sample Squad', 'Rivals', now() + interval '2 days');
 insert into public.game_goals (athlete_id, fixture_id, body, set_by, set_by_name) values
@@ -129,6 +133,10 @@ from unnest(array['12', '13', '14', '31', '32', '41', '42', '51']) n;
 insert into public.message_recipients (message_id, profile_id)
 select '00000000-0000-0000-0000-0000000000c2'::uuid, ('00000000-0000-0000-0000-0000000000' || n)::uuid
 from unnest(array['14', '23', '32', '51']) n;
+
+-- Pat (waiting for approval) entered Jordan's link code, as a parent would.
+insert into public.guardian_link_requests (guardian_id, athlete_id)
+values ('00000000-0000-0000-0000-000000000052', '00000000-0000-0000-0000-000000000031');
 
 insert into public.training_requirements (id, season, name, due_on, roles)
 values ('00000000-0000-0000-0000-0000000000d1', 2026, 'Integrity course', current_date + 30, '{athlete,coach}');
@@ -157,8 +165,6 @@ insert into public.push_tokens (token, profile_id) values ('kai-token', '0000000
 insert into public.personal_tasks (profile_id, title) values ('00000000-0000-0000-0000-000000000011', 'Plan pre-season');
 insert into public.verification_codes (profile_id, code, expires_at)
 values ('00000000-0000-0000-0000-000000000052', '123456', now() + interval '10 minutes');
-insert into public.playhq_registrations (profile_id, season, registered)
-values ('00000000-0000-0000-0000-000000000032', 2026, true);
 insert into public.concerns (raised_by, raised_by_name, about_member_id, about_member_name, body)
 values ('00000000-0000-0000-0000-000000000031', 'Jordan Junior', '00000000-0000-0000-0000-000000000012', 'Drew Lapsed', 'Something worried me');
 insert into public.concern_events (concern_id, by_name, kind, note)
@@ -207,6 +213,10 @@ insert into matrix (phase, label, q, counts) values
       '{2,0,0,0,0,0,0,0,2,1,1,0,0,0}'),
   (1, 'guardianship_history: every link and unlink', $$select 1 from public.guardianship_history$$,
       '{2,0,0,0,0,0,0,0,0,0,0,0,0,0}'),
+  -- Link requests: admins, and the parent or guardian who entered the code.
+  -- Not the child, who sees only the names through my_link_code.
+  (1, 'guardian_link_requests: Pat''s request for Jordan', $$select 1 from public.guardian_link_requests$$,
+      '{1,0,0,0,0,0,0,0,0,0,0,0,0,1}'),
   -- Under 18 with no consent: only the athlete, their guardians and admins.
   (1, 'injuries: Jordan''s, no consent yet', $$select 1 from public.injuries where athlete_id = pg_temp.m('31')$$,
       '{1,0,0,0,0,0,0,0,1,1,1,0,0,0}'),
@@ -224,6 +234,10 @@ insert into matrix (phase, label, q, counts) values
   (1, 'check_ins: Jordan''s, no consent yet', $$select 1 from public.check_ins where athlete_id = pg_temp.m('31')$$,
       '{0,0,0,0,0,0,0,0,1,1,1,0,0,0}'),
   (1, 'check_ins: Kai''s', $$select 1 from public.check_ins where athlete_id = pg_temp.m('32')$$,
+      '{0,0,0,1,0,0,0,1,0,0,1,0,0,0}'),
+  (1, 'session_logs: Jordan''s, no consent yet', $$select 1 from public.session_logs where athlete_id = pg_temp.m('31')$$,
+      '{0,0,0,0,0,0,0,0,1,1,1,0,0,0}'),
+  (1, 'session_logs: Kai''s', $$select 1 from public.session_logs where athlete_id = pg_temp.m('32')$$,
       '{0,0,0,1,0,0,0,1,0,0,1,0,0,0}'),
   -- Game goals: the athlete, their guardians and their coaches. Not the committee, physios or admins.
   (1, 'game_goals: Jordan''s', $$select 1 from public.game_goals where athlete_id = pg_temp.m('31')$$,
@@ -269,9 +283,10 @@ insert into matrix (phase, label, q, counts) values
   (1, 'team_members: Kai''s squad places', $$select 1 from public.team_members where profile_id = pg_temp.m('32')$$,
       '{1,0,0,0,0,0,0,1,0,0,0,0,0,0}'),
   -- A coach whose check has expired loses the fixtures with the rest of the
-  -- group's reads (20261017070000_manager_guide_audit.sql).
+  -- group's reads (20261017070000_manager_guide_audit.sql). The guardian
+  -- follows their child into the squad (20261101000000), so sees it too.
   (1, 'fixtures: Sample Squad''s game', $$select 1 from public.fixtures where id = '00000000-0000-0000-0000-0000000000f1'$$,
-      '{1,0,0,1,0,1,1,1,1,0,1,0,0,0}'),
+      '{1,0,0,1,0,1,1,1,1,1,1,0,0,0}'),
   -- Attendance: the committee and admins see every session; coaches and
   -- managers their own groups', whole-club ones and any they took. Athletes
   -- and guardians read marks through functions, never the register.
@@ -300,12 +315,16 @@ insert into matrix (phase, label, q, counts) values
       '{1,0,0,1,0,0,1,0,1,1,1,0,0,0}'),
   (2, 'check_ins: Jordan''s, with consent', $$select 1 from public.check_ins where athlete_id = pg_temp.m('31')$$,
       '{0,0,0,1,0,0,0,0,1,1,1,0,0,0}'),
+  (2, 'session_logs: Jordan''s, with consent', $$select 1 from public.session_logs where athlete_id = pg_temp.m('31')$$,
+      '{0,0,0,1,0,0,0,0,1,1,1,0,0,0}'),
   (2, 'game_goals: Jordan''s, with consent', $$select 1 from public.game_goals where athlete_id = pg_temp.m('31')$$,
       '{0,0,0,1,0,0,0,0,1,1,1,0,0,0}'),
   -- Once Jordan turns 18 the guardians' access ends.
   (3, 'injuries: Jordan''s, at 18', $$select 1 from public.injuries where athlete_id = pg_temp.m('31')$$,
       '{1,1,0,1,0,0,1,0,1,0,1,0,0,0}'),
   (3, 'check_ins: Jordan''s, at 18', $$select 1 from public.check_ins where athlete_id = pg_temp.m('31')$$,
+      '{0,0,0,1,0,0,0,0,1,0,1,0,0,0}'),
+  (3, 'session_logs: Jordan''s, at 18', $$select 1 from public.session_logs where athlete_id = pg_temp.m('31')$$,
       '{0,0,0,1,0,0,0,0,1,0,1,0,0,0}'),
   (3, 'game_goals: Jordan''s, at 18', $$select 1 from public.game_goals where athlete_id = pg_temp.m('31')$$,
       '{0,0,0,1,0,0,0,0,1,0,1,0,0,0}'),
@@ -317,6 +336,8 @@ insert into matrix (phase, label, q, counts) values
   (4, 'injuries: Kai''s, head coach stood down', $$select 1 from public.injuries where athlete_id = pg_temp.m('32')$$,
       '{1,1,0,0,0,0,1,1,0,0,1,0,0,0}'),
   (4, 'check_ins: Kai''s, head coach stood down', $$select 1 from public.check_ins where athlete_id = pg_temp.m('32')$$,
+      '{0,0,0,0,0,0,0,1,0,0,1,0,0,0}'),
+  (4, 'session_logs: Kai''s, head coach stood down', $$select 1 from public.session_logs where athlete_id = pg_temp.m('32')$$,
       '{0,0,0,0,0,0,0,1,0,0,1,0,0,0}'),
   (4, 'game_goals: Kai''s, head coach stood down', $$select 1 from public.game_goals where athlete_id = pg_temp.m('32')$$,
       '{0,0,0,0,0,0,0,1,0,0,1,0,0,0}'),
@@ -405,7 +426,8 @@ insert into revoked_tables values
   ('child_activity_seen'), ('conduct_acceptances'), ('season_kpis'), ('season_kpi_review_points'),
   ('season_kpi_measures'), ('season_kpi_reviews'), ('session_plan_views'), ('session_plan_notices'),
   ('surveys'), ('survey_questions'), ('survey_recipients'), ('survey_responses'), ('survey_answers'),
-  ('join_password_attempts'), ('former_partner_roles'), ('game_pair_attempts');
+  ('join_password_attempts'), ('former_partner_roles'), ('game_pair_attempts'), ('policy_register'),
+  ('conflict_declarations'), ('guardian_link_codes'), ('guardian_link_code_attempts');
 grant select on revoked_tables to authenticated;
 select pg_temp.ok(t || ': signed-in members have no privilege on it',
   has_table_privilege('authenticated', 'public.' || t, 'select') or has_table_privilege('authenticated', 'public.' || t, 'insert')
@@ -420,7 +442,7 @@ reset role;
 create temp table policy_free_tables (t text);
 insert into policy_free_tables values
   ('child_consents'), ('concerns'), ('concern_events'), ('injury_document_events'),
-  ('verification_codes'), ('playhq_registrations'), ('club_settings'), ('safeguarding_settings');
+  ('verification_codes'), ('club_settings'), ('safeguarding_settings');
 grant select on policy_free_tables to authenticated;
 select pg_temp.ok(t || ': has rows to find', pg_temp.n(format('select 1 from public.%I', t)) > 0, true) from policy_free_tables order by t;
 select pg_temp.ok(t || ': no policy lets anyone select it',
@@ -448,6 +470,7 @@ insert into writes values
   ('injuries', $$athlete_id = '00000000-0000-0000-0000-000000000031'$$, 'description', 'rls'),
   ('injury_updates', $$true$$, 'notes', 'rls'),
   ('check_ins', $$athlete_id = '00000000-0000-0000-0000-000000000031'$$, 'note', 'rls'),
+  ('session_logs', $$athlete_id = '00000000-0000-0000-0000-000000000031'$$, 'minutes', 'select only'),
   ('messages', $$id = '00000000-0000-0000-0000-0000000000c1'$$, 'body', 'rls'),
   ('message_recipients', $$message_id = '00000000-0000-0000-0000-0000000000c1'$$, 'read_at', 'rls'),
   ('child_consents', $$athlete_id = '00000000-0000-0000-0000-000000000031'$$, 'withdrawn_at', 'rls'),
@@ -467,6 +490,7 @@ insert into writes values
   ('fixtures', $$true$$, 'venue', 'rls'),
   ('push_tokens', $$true$$, 'platform', 'rls'),
   ('verification_codes', $$true$$, 'code', 'rls'),
+  ('guardian_link_requests', $$true$$, 'created_at', 'select only'),
   ('injury_document_events', $$true$$, 'kind', 'rls'),
   ('club_settings', $$true$$, 'features', 'rls'),
   ('safeguarding_settings', $$true$$, 'policy_version', 'rls');
@@ -508,5 +532,6 @@ select pg_temp.as_member('01');
 select pg_temp.ok('teams: admin renames a squad', pg_temp.changed($$update public.teams set name = 'Sample Squad' where id = '00000000-0000-0000-0000-0000000000a1'$$) = 1, true);
 select pg_temp.works('team_members: admin places a member', $$insert into public.team_members (team_id, profile_id, team_role) values ('00000000-0000-0000-0000-0000000000b1', '00000000-0000-0000-0000-000000000032', 'athlete')$$);
 reset role;
-select pg_temp.ok('squad places and groups unchanged', (select count(*) from public.team_members where team_id = '00000000-0000-0000-0000-0000000000a1') = 7
+-- Eight places: the seven seeded and the guardian placed with their child.
+select pg_temp.ok('squad places and groups unchanged', (select count(*) from public.team_members where team_id = '00000000-0000-0000-0000-0000000000a1') = 8
   and (select count(*) from public.teams) = 3, true);

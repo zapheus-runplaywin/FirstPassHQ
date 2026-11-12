@@ -285,7 +285,7 @@ describe('an open application', () => {
       ),
     ).toBeTruthy();
     expect(screen.queryByText('Record an application')).toBeNull();
-    fireEvent.press(screen.getByText('Open the receipt'));
+    await fireEvent.press(screen.getByText('Open the receipt'));
     expect(push).toHaveBeenCalledWith({
       pathname: '/admin/wwcc-receipt',
       params: { path: 'coach-applied/uuid-1/receipt.pdf', name: 'receipt.pdf' },
@@ -294,9 +294,9 @@ describe('an open application', () => {
   });
 
   it('links to the Screening Unit’s online status check', async () => {
-    const open = jest.spyOn(Linking, 'openURL').mockResolvedValue(true);
+    const open = jest.spyOn(Linking, 'openURL').mockResolvedValue(undefined);
     await openMember(coach(), [application()]);
-    fireEvent.press(screen.getByText('Check its status online'));
+    await fireEvent.press(screen.getByText('Check its status online'));
     expect(open).toHaveBeenCalledWith('https://workingwithchildren.wa.gov.au/online-services');
     open.mockRestore();
   });

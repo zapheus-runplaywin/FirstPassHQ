@@ -25,7 +25,9 @@ export default function ReportAbsenceScreen() {
   const self = id === session?.user.id;
 
   async function save() {
-    if (!category && reasons?.length) {
+    // Until the club's reasons have loaded, it isn't known whether one is needed.
+    if (reasons === null) return;
+    if (!category && reasons.length) {
       setError('Choose a reason.');
       return;
     }
@@ -100,7 +102,8 @@ export default function ReportAbsenceScreen() {
         along to support the team.
       </ThemedText>
       <ErrorText>{error}</ErrorText>
-      <Button title="Report absence" onPress={save} busy={saving} />
+      {/* Waits for the club's reasons, so a quick tap can't save without one. */}
+      <Button title="Report absence" onPress={save} busy={saving || reasons === null} />
     </Screen>
   );
 }

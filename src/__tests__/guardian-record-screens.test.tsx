@@ -124,9 +124,9 @@ describe('consent for a child', () => {
 
   it('saves both choices for the child, then goes back', async () => {
     await openConsent('guardian', [CHILD]);
-    fireEvent(toggle('Daily check-ins'), 'valueChange', true);
-    fireEvent(toggle('Injuries and health information'), 'valueChange', false);
-    fireEvent.press(screen.getByText('Save'));
+    await fireEvent(toggle('Daily check-ins'), 'valueChange', true);
+    await fireEvent(toggle('Injuries and health information'), 'valueChange', false);
+    await fireEvent.press(screen.getByText('Save'));
     await settle();
     expect(argsOf('set_child_consent')).toEqual([
       { p_athlete_id: 'child-1', p_data: true, p_health: false },
@@ -136,7 +136,7 @@ describe('consent for a child', () => {
 
   it('shows the database’s refusal and stays', async () => {
     await openConsent('guardian', [CHILD], { rpcErrors: { set_child_consent: 'Only a verified guardian can consent.' } });
-    fireEvent.press(screen.getByText('Save'));
+    await fireEvent.press(screen.getByText('Save'));
     await settle();
     expect(screen.getByText('Only a verified guardian can consent.')).toBeTruthy();
     expect(back).not.toHaveBeenCalled();
@@ -231,16 +231,16 @@ describe('the code of conduct', () => {
     await openConduct('athlete', 'athlete', { todos: [todo()] });
     expect(screen.getByText('Each season every member accepts the club’s code of conduct. Read it, then agree below.')).toBeTruthy();
     expect(screen.getByText(STATEMENT)).toBeTruthy();
-    fireEvent.press(screen.getByText('I agree'));
+    await fireEvent.press(screen.getByText('I agree'));
     await settle();
     expect(argsOf('accept_code_of_conduct')).toEqual([{ p_profile_id: 'athlete' }]);
     expect(back).toHaveBeenCalled();
   });
 
   it('opens the club’s code of conduct document', async () => {
-    const open = jest.spyOn(Linking, 'openURL').mockResolvedValue(true);
+    const open = jest.spyOn(Linking, 'openURL').mockResolvedValue(undefined);
     await openConduct('athlete', 'athlete', { todos: [todo()] });
-    fireEvent.press(screen.getByText('Read the code of conduct'));
+    await fireEvent.press(screen.getByText('Read the code of conduct'));
     expect(open).toHaveBeenCalledWith('https://example.test/conduct.pdf');
     open.mockRestore();
   });
@@ -251,7 +251,7 @@ describe('the code of conduct', () => {
     });
     expect(screen.getByText(/accepts the club’s code of conduct for Sample Child\. Read it, go through it with them/)).toBeTruthy();
     expect(screen.queryByText('Read the code of conduct')).toBeNull();
-    fireEvent.press(screen.getByText('I agree'));
+    await fireEvent.press(screen.getByText('I agree'));
     await settle();
     expect(argsOf('accept_code_of_conduct')).toEqual([{ p_profile_id: 'child-1' }]);
   });
@@ -295,7 +295,7 @@ describe('the code of conduct', () => {
     await openConduct('athlete', 'athlete', { todos: [todo()] }, {
       rpcErrors: { accept_code_of_conduct: 'Already accepted this season.' },
     });
-    fireEvent.press(screen.getByText('I agree'));
+    await fireEvent.press(screen.getByText('I agree'));
     await settle();
     expect(screen.getByText('Already accepted this season.')).toBeTruthy();
     expect(back).not.toHaveBeenCalled();
@@ -305,7 +305,7 @@ describe('the code of conduct', () => {
     canGoBack.mockReturnValue(false);
     await openConduct('athlete', 'athlete', { todos: [todo()] });
     clearCalls();
-    fireEvent.press(screen.getByText('I agree'));
+    await fireEvent.press(screen.getByText('I agree'));
     await settle();
     expect(back).not.toHaveBeenCalled();
     expect(rpcNames()).toEqual(

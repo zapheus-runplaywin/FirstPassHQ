@@ -143,7 +143,7 @@ describe('the attendance list', () => {
 
   it('shows an athlete’s record on the Athletes tab', async () => {
     await openList('committee');
-    fireEvent.press(screen.getByText('Athletes'));
+    await fireEvent.press(screen.getByText('Athletes'));
     await settle();
     expect(screen.getByText('Sample Child')).toBeTruthy();
     expect(screen.getByText('75%')).toBeTruthy();
@@ -219,7 +219,7 @@ describe('one register', () => {
   ])('lets a %s who can correct it change the marks', async (_l, who) => {
     await openRegister(who, session({ can_edit: true }));
     expect(screen.queryByText('Present')).toBeTruthy(); // read-only marks first
-    fireEvent.press(screen.getByText('Change attendance'));
+    await fireEvent.press(screen.getByText('Change attendance'));
     expect(screen.getByText('Save changes')).toBeTruthy();
     expect(screen.getByText('Cancel')).toBeTruthy();
     expect(screen.getAllByRole('radio')).toHaveLength(REGISTER.length * 2);

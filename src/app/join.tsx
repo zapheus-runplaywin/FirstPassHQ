@@ -6,6 +6,7 @@ import { Screen } from '@/components/screen';
 import { ThemedText } from '@/components/themed-text';
 import { Button, ChipGroup, ErrorText, TextField } from '@/components/ui';
 import { formatDate, isMinor, parseDate } from '@/lib/age';
+import { looksLikeLinkCode } from '@/lib/guardian-links';
 import { useAuth } from '@/lib/auth';
 import { useSquads } from '@/lib/club';
 import { isTeamRole, requestableRoles, roleLabels } from '@/lib/labels';
@@ -31,14 +32,17 @@ export default function JoinScreen() {
     profile?.volunteer_screening ?? null,
   );
   const [cardNumber, setCardNumber] = useState(profile?.declared_wwcc_number ?? '');
+  const [childCode, setChildCode] = useState('');
   const [password, setPassword] = useState('');
   const [needsPassword, setNeedsPassword] = useState(false);
   const [saving, setSaving] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
-  const showTeams = role !== null && isTeamRole(role);
+  // Parents and guardians follow their children into squads and teams.
+  const showTeams = role !== null && role !== 'guardian' && isTeamRole(role);
   const dob = parseDate(dateOfBirth);
-  // A child athlete needs a parent or guardian linked before they're approved.
+  const guardian = role === 'guardian';
+  // A child athlete needs a parent or guardian linked before the app opens for them.
   const child = role === 'athlete' && !!dob && isMinor(dob, false);
   const volunteer = role === 'volunteer';
   const fromDay = parseDate(from);
@@ -65,8 +69,12 @@ export default function JoinScreen() {
       setError('Please enter the email of a parent or guardian.');
       return;
     }
-    if (role === 'guardian' && !playhqEmail.trim()) {
+    if (guardian && !playhqEmail.trim()) {
       setError('Please enter the email you used to register with PlayHQ.');
+      return;
+    }
+    if (guardian && childCode.trim() && !looksLikeLinkCode(childCode)) {
+      setError('Enter the 6-letter code from your child’s app, such as 7KQ-4MD, or leave it blank.');
       return;
     }
     if (volunteer && !task.trim()) {
@@ -119,6 +127,21 @@ export default function JoinScreen() {
         setSaving(false);
         await refresh();
         setError(detailsError.message);
+        return;
+      }
+    }
+    if (guardian && childCode.trim()) {
+      // A wrong code comes back as a message: the request is sent, so they
+      // can try the code again from Home.
+      const { data: codeRefused, error: codeError } = await supabase.rpc('enter_child_code', {
+        p_code: childCode,
+      });
+      if (codeError || codeRefused) {
+        setSaving(false);
+        await refresh();
+        setError(
+          `Your request is sent, but the code didn’t work: ${codeError?.message ?? String(codeRefused)} You can enter it again from Home.`,
+        );
         return;
       }
     }
@@ -179,7 +202,7 @@ export default function JoinScreen() {
 
       {showTeams ? (
         <ChipGroup
-          label={role === 'guardian' ? `Your athlete's ${word}` : word === 'squad' ? 'Squad' : 'Team'}
+          label={word === 'squad' ? 'Squad' : 'Team'}
           options={groups.map((t) => ({ value: t.id, label: t.name }))}
           selected={teamId ? [teamId] : []}
           onToggle={(id) => setTeamId(id === teamId ? null : id)}
@@ -254,6 +277,26 @@ export default function JoinScreen() {
         />
       ) : null}
 
+      {guardian ? (
+        <>
+          <TextField
+            label="Your child’s link code"
+            value={childCode}
+            onChangeText={setChildCode}
+            placeholder="7KQ-4MD"
+            autoCapitalize="characters"
+            autoCorrect={false}
+            autoComplete="off"
+            maxLength={9}
+          />
+          <ThemedText type="small" themeColor="textSecondary">
+            Your child under 18 sees this code in their app when they ask to join. If they haven’t
+            yet, leave it blank and enter it from Home later. A club admin checks who you are and
+            links you to the child whose code you enter, and you’ll follow them into their {word}s.
+          </ThemedText>
+        </>
+      ) : null}
+
       {child ? (
         <>
           <TextField
@@ -266,8 +309,9 @@ export default function JoinScreen() {
             keyboardType="email-address"
           />
           <ThemedText type="small" themeColor="textSecondary">
-            You’re under 18, so a parent or guardian needs to join the club in the app too. A club
-            admin links them to you before you can be approved.
+            You’re under 18, so a parent or guardian needs to join the club in the app too. Once
+            you’ve sent your request you’ll see a link code to share with them. The app stays
+            locked until a club admin links them to you.
           </ThemedText>
         </>
       ) : null}

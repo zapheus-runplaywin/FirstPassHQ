@@ -36,7 +36,7 @@ export const consentText: Record<ConsentKind, { title: string; detail: string }>
   data: {
     title: 'Daily check-ins',
     detail:
-      'Your child’s answers about sleep, soreness, stress and mood, and any note they write, are seen by their coaches. When they score low, the club’s Child Safety Officer sees the day and the lowest score, never their answers or note. Without this, neither sees their check-ins at all.',
+      'Your child’s answers about sleep, soreness, stress and mood, any note they write, and the training sessions they log (minutes and how hard each felt), are seen by their coaches. When they score low, the club’s Child Safety Officer sees the day and the lowest score, never their answers or note. Without this, neither sees their check-ins or sessions at all.',
   },
   health: {
     title: 'Injuries and health information',
