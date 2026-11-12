@@ -34,7 +34,9 @@ jest.mock('@/lib/club', () => jest.requireActual('./helpers/settings-forms').sav
 jest.mock('@/lib/club-choice', () => jest.requireActual('./helpers/harness').clubChoiceModuleMock());
 jest.mock('@/constants/club', () => jest.requireActual('./helpers/harness').constantsClubMock());
 jest.mock('@/lib/push', () => ({
-  useAdminPushNotifications: jest.fn(),
+  usePushNotifications: jest.fn(),
+  useTodoNotifications: jest.fn(() => ({ on: true, permission: 'granted', save: jest.fn() })),
+  openNotificationSettings: jest.fn(),
   unregisterForPush: jest.fn(async () => {}),
 }));
 jest.mock('@react-native-async-storage/async-storage', () =>

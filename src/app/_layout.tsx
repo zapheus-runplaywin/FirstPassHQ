@@ -15,7 +15,7 @@ import { AuthProvider, useAuth } from '@/lib/auth';
 import { ClubProvider, useClub } from '@/lib/club';
 import { ClubChoiceProvider, useClubChoice } from '@/lib/club-choice';
 import { startAppLog } from '@/lib/log';
-import { useAdminPushNotifications } from '@/lib/push';
+import { usePushNotifications } from '@/lib/push';
 import { useRouteAccess } from '@/lib/route-access';
 
 SplashScreen.preventAutoHideAsync();
@@ -98,7 +98,7 @@ function RootStack() {
   const loading = authLoading || !ready || !(fontsLoaded || fontError);
   const [introDone, setIntroDone] = useState(false);
   const finishIntro = useCallback(() => setIntroDone(true), []);
-  useAdminPushNotifications(isAdmin);
+  usePushNotifications(!loading);
 
   useEffect(() => {
     if (!loading) SplashScreen.hideAsync();

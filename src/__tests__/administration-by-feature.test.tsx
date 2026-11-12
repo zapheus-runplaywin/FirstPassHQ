@@ -18,7 +18,9 @@ jest.mock('@/lib/club', () => jest.requireActual('./helpers/harness').clubModule
 jest.mock('@/lib/club-choice', () => jest.requireActual('./helpers/harness').clubChoiceModuleMock());
 jest.mock('@/constants/club', () => jest.requireActual('./helpers/harness').constantsClubMock());
 jest.mock('@/lib/push', () => ({
-  useAdminPushNotifications: jest.fn(),
+  usePushNotifications: jest.fn(),
+  useTodoNotifications: jest.fn(() => ({ on: true, permission: 'granted', save: jest.fn() })),
+  openNotificationSettings: jest.fn(),
   unregisterForPush: jest.fn(async () => {}),
 }));
 jest.mock('@/lib/log', () => ({ ...jest.requireActual('@/lib/log'), startAppLog: jest.fn() }));

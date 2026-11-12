@@ -1,14 +1,16 @@
 import { router } from 'expo-router';
 import { useState } from 'react';
-import { StyleSheet, View } from 'react-native';
+import { Platform, StyleSheet, Switch, View } from 'react-native';
 
 import { PolicyLinks } from '@/components/policy-links';
 import { Screen } from '@/components/screen';
 import { ThemedText } from '@/components/themed-text';
-import { Button, ErrorText, PressableCard, TextField } from '@/components/ui';
+import { Button, Card, ErrorText, PressableCard, TextField } from '@/components/ui';
 import { Spacing } from '@/constants/theme';
+import { useTheme } from '@/hooks/use-theme';
 import { useAuth } from '@/lib/auth';
 import { canHoldTitle, staffTitle } from '@/lib/labels';
+import { openNotificationSettings, useTodoNotifications } from '@/lib/push';
 import { supabase } from '@/lib/supabase';
 import { hasRole, rolesOf } from '@/lib/roles';
 
@@ -99,12 +101,76 @@ export default function MyDetailsScreen() {
           </ThemedText>
         </PressableCard>
       ) : null}
+      {profile?.status === 'approved' ? <Notifications /> : null}
       <PolicyLinks intro="The club’s policies:" />
     </Screen>
   );
 }
 
+/** The to-do notification switch. It saves as soon as it's changed. */
+function Notifications() {
+  const theme = useTheme();
+  const { on, permission, save } = useTodoNotifications();
+  const [error, setError] = useState<string | null>(null);
+
+  async function change(next: boolean) {
+    setError(null);
+    try {
+      await save(next);
+    } catch (e) {
+      setError(e instanceof Error ? e.message : 'Couldn’t save that. Try again.');
+    }
+  }
+
+  return (
+    <View style={styles.section}>
+      <ThemedText type="smallBold">Notifications</ThemedText>
+      <Card style={styles.row}>
+        <View style={styles.rowText}>
+          <ThemedText type="smallBold">To-do notifications</ThemedText>
+          <ThemedText type="small" themeColor="textSecondary">
+            A notification on your phone when something new is on your to-do list. None are sent
+            between 8 pm and 7 am.
+          </ThemedText>
+        </View>
+        <Switch
+          accessibilityLabel="To-do notifications"
+          value={on ?? true}
+          disabled={on === null}
+          onValueChange={change}
+          trackColor={{ true: theme.accent, false: theme.backgroundSelected }}
+          thumbColor={theme.text}
+          {...(Platform.OS === 'web' ? { activeThumbColor: theme.onAccent } : {})}
+        />
+      </Card>
+      {on && permission === 'denied' ? (
+        <>
+          <ThemedText type="small" themeColor="textSecondary">
+            Your phone is blocking notifications from this app. Allow them in your phone’s
+            settings.
+          </ThemedText>
+          <Button title="Open phone settings" variant="secondary" onPress={openNotificationSettings} />
+        </>
+      ) : null}
+      <ErrorText>{error}</ErrorText>
+    </View>
+  );
+}
+
 const styles = StyleSheet.create({
+  section: {
+    gap: Spacing.two,
+    marginTop: Spacing.four,
+  },
+  row: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: Spacing.three,
+  },
+  rowText: {
+    flex: 1,
+    gap: Spacing.one,
+  },
   groupTitle: {
     gap: Spacing.half,
   },

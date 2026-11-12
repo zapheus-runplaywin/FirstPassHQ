@@ -96,6 +96,7 @@ What each role sees on its home screen:
 | -------------------------------------- | :-----: | :-------------: | :----------: | :--------: | :-----------: | :-----------: | :-----: | :-----------: |
 | To-do list and calendar                |    ✓    |        ✓        |      ✓       |     ✓      |       ✓       |       ✓       |    ✓    |       ✓       |
 | Your own personal tasks                |    ✓    |        ✓        |      ✓       |     ✓      |       ✓       |       ✓       |    ✓    |       ✓       |
+| To-do notifications on your phone      |    ✓    |        ✓        |      ✓       |     ✓      |       ✓       |       ✓       |    ✓    |       ✓       |
 | My squads and teams                    |    ✓    |        ✓        |      ✓       |     ✓      |  If in one    |       ✓       | Heading only |   If in one   |
 | Read messages                          |    ✓    |        ✓        |      ✓       |     ✓      |       ✓       |       ✓*      |         |       ✓       |
 | Send messages                          | Captains† |                 |  Own groups  | Own groups |   Whole club  |               |         |     Anyone    |
@@ -428,8 +429,30 @@ coach or manage. Until you're in a team, it names your squad. If you coach more 
 lists them all, like "Assistant Coach, Open A and Open". Only an admin can change whether you're a
 head or assistant coach.
 
-<img src="user-guide/your-details.png" width="210" alt="Your details: preferred name and title">
+<img src="user-guide/your-details.png" width="210" alt="Your details: preferred name, title and to-do notifications">
 <img src="user-guide/your-details-coach.png" width="210" alt="Your details for a coach: the title the app sets from their teams">
+
+### To-do notifications
+
+On an installed app, your phone gets a notification when something new appears on your
+[to-do list](#the-home-screen), such as a clearance to sign off, a survey to answer, an award vote opening, training
+to complete or, for athletes, the day's check-in. Tap the notification to go straight to it. The
+first time, your phone asks whether the app may send notifications: tap **Allow**.
+
+- Notifications aren't sent between 8 pm and 7 am. Anything still on your list at 7 am arrives
+  then, with several to-dos in one notification.
+- Each to-do is sent once. Daily items, such as the check-in, come once a day while they're
+  still to do; admins' child-safety and records follow-ups come once a month. A new concern or
+  a newly reported absence sends again even if the earlier one is still on your list.
+- Your own [personal tasks](#your-own-tasks) stay on the home screen and aren't sent.
+- Notifications can show on a locked phone, so they never include injury details or reviewers'
+  notes. Open the app to see those.
+- If you belong to more than one club, tapping a notification opens the club it came from.
+
+To stop them, tap **Your details** at the bottom of the home screen and turn off **To-do
+notifications**. It saves straight away and only changes your own notifications. If your phone is
+blocking notifications from the app, Your details says so and **Open phone settings** takes you
+there to allow them.
 
 ### Messages
 
@@ -2286,7 +2309,7 @@ or team, and it goes. Nobody's access changes on its own. While **Remove old rec
 records are kept forever**, which opens Club settings so you can switch it on (see [Keeping
 records](#keeping-records)), and **Members have had no team or role for 2 years** when anyone
 has (see [Approving members](#approving-members)). On an installed app, admins also get a push notification for each
-new join request.
+new join request, unless they have turned off [to-do notifications](#to-do-notifications).
 
 Because admins can read every child's records, they need a current Working With Children Check,
 or an exemption with a reason that another admin records, like committee members (see
@@ -3373,6 +3396,7 @@ once saved, only replaced or removed, and anyone who gets it wrong five times in
 | ----------------------- | --------------------------------------------------------------------------------------------------------------------------- |
 | Your profile and squads | You, the people in your squads and teams (names and positions only), and admins. Your name also shows to anyone choosing who a concern is about if you're a coach, manager, physio, committee member, admin or temporary helper, and on absences you report. The committee and admins see every athlete's name on the whole-club register, attendance histories and absences, every coach's and manager's name under Season KPIs, and the name of everyone who must complete a training course. |
 | Preferred name and title | You and admins; your preferred name then shows wherever your name does.                                                 |
+| To-do notifications     | Only you, on the phones you're signed in on. They name the to-do but never injury details or reviewers' notes. Your on/off choice is yours alone. |
 | Your own personal tasks | Only you. Not your parents or guardians, coaches, the committee or admins. They can't be shared or sent to anyone. |
 | Captains                | Club captains: every member. A squad or team's captains: the people in it, and admins.                                     |
 | Date of birth, Working With Children Check and exemption | You and admins. Committee members with a current check also read them, for everyone who needs a check, in the Working With Children Checks report. Awards with an age limit use it to decide who can be voted for, without showing it. |
