@@ -291,6 +291,8 @@ const PERSONAS = {
   }),
 
   guest: persona({ profile: profile('guest', { wwcc_number: null, wwcc_expires_on: null }) }),
+  /** Runs the club's live streams in FirstPass Studio: no club features in HQ. */
+  studio: persona({ profile: profile('studio', { wwcc_number: null, wwcc_expires_on: null }) }),
   volunteer: persona({
     profile: profile('volunteer', {
       volunteer_task: 'Bench helper at the carnival',
@@ -569,8 +571,8 @@ describe('messages', () => {
     },
   );
 
-  // Guide: guests and temporary helpers don't get messages; a member whose
-  // only role is paused shows as a guest.
+  // Guide: guests, temporary helpers and Studio on its own don't get messages;
+  // a member whose only role is paused shows as a guest.
   test.each(
     rows(
       APPROVED.filter(
@@ -578,6 +580,7 @@ describe('messages', () => {
           ![
             'guest',
             'volunteer',
+            'studio',
             'lapsedCoach',
             'stoodDownCoach',
             'stoodDownAdmin',

@@ -48,6 +48,7 @@ each of their roles can.
 | **Physio**    | The club's physiotherapists. A physio can be placed in squads or teams to look after their athletes, and one can be the **Head Physio**, who looks after every athlete. Need a current Working With Children Check; the role pauses while it's expired. Someone who has applied for one, new or a renewal, can work while it's assessed (see [Checks applied for](#checks-applied-for)). A parent volunteering at their child's club, a volunteer under 18, or a short-term visitor or national event helper from outside WA has an exemption instead (see [Volunteer exemptions](#volunteer-exemptions)). |
 | **Guest**     | Anyone else the club lets in, such as partners and sponsors. Guests must be 18 or over. They see only the club calendar, keep their own tasks and can raise a concern. They aren't in squads or teams, get no messages, don't vote and aren't asked for a Working With Children Check or the code of conduct. |
 | **Statistician** | The people who record live game stats on a tablet in FirstPass Vantage, which coaches watch live in FirstPass Vision. Statisticians see every game the club records; a game's coaches and managers see their own squad's or team's. Any member can hold it alongside another role, such as a manager or an athlete who isn't playing. Need a current Working With Children Check, an application being assessed, or a volunteer exemption such as a parent at their child's games, unless an admin exempts them with a reason, such as only recording opens games; the role pauses if a recorded check expires. Statisticians approved before checks were needed keep the role without one only until the club's **statistician checks date**. The role pauses while a member is stood down. |
+| **Studio** | The people who run the club's live streams in FirstPass Studio, which shows the club's live game stats on screen. Studio signs in to the club with this person's own Google account and reads only the stats the club records for its PlayHQ games, live and finished, and the line-ups for them; it can't change anything. Someone whose only role is Studio, such as a streamer from outside the club, isn't a club member: they see none of the club's features, members or messages. A member can also hold it alongside their own roles. No Working With Children Check is needed, because a Studio operator isn't with the team and never sees contact details, injuries or anything else sensitive. The role pauses while a member is stood down (see [Studio](#studio)). |
 | **Temporary helper** | Someone helping for a day or a short time, such as at a carnival, clinic or tournament, paid or unpaid. Not necessarily a member of the club: this is only a role so the app can onboard them. The app screens them: a Working With Children Check or an exemption covering every day they help, and the club's code of conduct and safeguarding policy accepted. They see none of the club's features or messages, and their time ends by itself after their last day (see [Temporary helpers](#temporary-helpers)). |
 | **Admin**     | The people who run the app. Admin is granted by another admin, never requested. Admins can add a title too. Need a current Working With Children Check, or an application being assessed, unless another admin exempts them. An expired check doesn't pause the admin role, so the club is never locked out, but it stays on the admins' to-do list until it's renewed, and 30 days after it expired (or after the club's committee checks date, if none is recorded) the admin stops seeing under 18s' injuries until a check, an application or a parent volunteer exemption is recorded. Admins set how long the club keeps records, and are warned when the nightly removal of old records stops. |
 
@@ -72,7 +73,7 @@ together:
 - **Guests** and **temporary helpers** can't have any other role.
 - **Admins** can also be a coach, manager, physio, committee member or guardian, but not an athlete.
 - **Athletes** can't also be a manager or a physio. An athlete can coach, but not the squad they
-  play in, a team named from it, or the squad a team they play in belongs to. Anyone but a guest or temporary helper can also be a statistician, including an athlete 18 or over helping at a game they aren't playing in.
+  play in, a team named from it, or the squad a team they play in belongs to. Anyone but a guest or temporary helper can also be a statistician, including an athlete 18 or over helping at a game they aren't playing in, or hold Studio.
 - **Athletes under 18** can only add Coach. Parents and guardians must be 18 or over, by their date
   of birth or, when none is recorded, by whether an admin marked them under 18.
 - **Who is under 18** is decided by the date of birth an admin checks against PlayHQ or ID. An
@@ -118,7 +119,7 @@ What each role sees on its home screen:
 | See who opened injury documents        |   Own   | Their athlete's |              |            |               |               |         |       ✓       |
 | Medical and emergency details          | Own; keep if 18 or over | Keep their athlete's | Own athletes‖ | Own athletes‖ |               | Own athletes‡‖ |         |               |
 | Check medical details once a year      | Own, if 18 or over | Their athlete's |              |            | See who has (report), if checked |               |         | See who has (report) |
-| Consent for a child's check-ins and injuries |         |        ✓        |              |            |               |               |         |  See status   |
+| Consent for a child's check-ins, injuries and stats on live streams |         |        ✓        |              |            |               |               |         |  See status   |
 | Accept the code of conduct each season (if the club asks) | Own§ | Own, and their athlete's | Own | Own | Own | Own | | Own, see who has |
 | Take attendance                        |         |                 |      ✓       |     ✓      |       ✓       |               |         |       ✓       |
 | See athletes' attendance history       |         |                 |      ✓       |            |       ✓       |               |         |       ✓       |
@@ -183,6 +184,10 @@ committee members, who aren't in a squad or team as committee; only courses for 
 Statisticians have no column of their own: on its own the role gives what every member has, plus
 every match the club imports from PlayHQ in their calendar and messages to the Statistician role
 (see [Statisticians](#statisticians)).
+
+Studio has no column either. Studio on its own shows none of these but a preferred name: the home
+screen says what the role is for, with **Raise a concern** and the Your details, Switch club and
+Delete account links. Added to another role, it changes nothing in HQ (see [Studio](#studio)).
 
 Temporary helpers see none of these but a preferred name. They aren't necessarily club members,
 and they use the app only to complete onboarding: their home screen shows only the steps to be
@@ -282,6 +287,10 @@ The club's policies are linked above **Send request**: by joining you agree to t
 Someone helping for a day or a short time, paid or unpaid, who isn't necessarily a club
 member, chooses **Temporary helper** and also gives what they'll help with, their first and last
 day, and how they're screened to work with children (see [Temporary helpers](#temporary-helpers)).
+
+Someone who runs the club's live streams in FirstPass Studio, and isn't otherwise a member,
+chooses **Studio**. A note explains that it only lets Studio read the club's game stats, and that
+they won't see the club's members, squads, calendar or messages (see [Studio](#studio)).
 
 An athlete under 18 also gives a **Parent or guardian's email**: the email their parent or guardian
 will sign in with. A parent or guardian needs to join the club in the app too. Once the child has
@@ -1087,8 +1096,9 @@ and asks for your child's link code.
 ### Giving consent
 
 Once you're linked and verified, **Consent** on your home screen lists each child under 18, and
-your to-do list says **Give consent for** them until you have. Open it to choose who else sees two
-kinds of information about your child:
+your to-do list says **Give consent for** them until you have check-ins and injuries. Open it to
+choose who else sees two kinds of information about your child, and whether live streams may
+name them with their own stats:
 
 - **Daily check-ins**: their answers and notes, and the training sessions they log (minutes and
   how hard each felt), are seen by their coaches. When they score low,
@@ -1101,6 +1111,11 @@ kinds of information about your child:
   work with children, who sign off
   clearances. The medical and emergency details you keep for your child are seen by their coaches,
   managers and physios (see [Your child's medical and emergency details](#your-childs-medical-and-emergency-details)).
+- **Stats on live streams**: when the club's games are streamed with FirstPass Studio, your child
+  can be named with their own game stats, such as goals, intercepts or Net Points, on screen and by
+  the commentators. Without it, streams show only team totals, never your child's own stats; their
+  name can still be in the team list, as it is on PlayHQ. This one is optional: your to-do list
+  never asks for it.
 
 Until you give a consent, only your child and you see their check-ins, and only your child, you
 and the club's admins see their injuries. Their coaches, physios and the committee don't see your
@@ -2239,6 +2254,38 @@ recording a game happens in Vantage.
 - **Awards.** Statisticians don't vote in club awards, unless they also hold a role that votes.
 - **Stand-downs.** An admin can stand a statistician down like a coach or manager. The role stops
   at once, in HQ and in Vantage, and comes back only when the stand-down is lifted.
+
+### Studio
+
+FirstPass Studio makes the graphics for live streams of games. It can show the stats the club
+records in FirstPass Vantage, such as the score, shooting and Net Points, as they happen. Because
+those stats are about athletes, many of them under 18, Studio reads them only by signing in to
+the club, and only as someone the club has given the **Studio** role.
+
+- **Who.** Usually the person who runs the club's streams. Choose **Studio** when you ask to
+  join, or an admin adds it to another role from your member page. Someone whose only role is
+  Studio isn't a club member.
+- **Signing in.** In Studio, choose the club and sign in with the Google account the club approved.
+  A stream showing games of several clubs signs in to each of them. Signing in comes with a
+  FirstPass Studio update that isn't out yet; until then the role is ready in HQ but Studio can't
+  use it.
+- **What Studio reads.** The club's games that have a PlayHQ game and are live or finished: each
+  game's setup and the stats recorded for it, live as each one is entered, and the athletes of the
+  game's squad or team, with whether each may be named with their own stats. An athlete under 18
+  is named with their own stats only when a parent or guardian has given consent for **Stats on
+  live streams** (see [Giving consent](#giving-consent)); otherwise Studio shows team totals.
+- **What it never reads.** Practice games and games without a PlayHQ game, games still being set
+  up, a shadow statistician's stats, pair codes, who recorded or followed a game, and anything else
+  in HQ: members' details, guardians, injuries, check-ins, attendance or messages. Studio can't
+  change anything.
+- **What you see in HQ.** Studio on its own shows only a card saying what the role is for, and
+  **Raise a concern**. You get no messages or surveys, aren't in squads or teams, aren't nominated
+  for awards and aren't asked to accept the code of conduct.
+- **Checks.** No Working With Children Check is needed: a Studio operator isn't with the team, and
+  the role never reads sensitive information.
+- **Stand-downs.** An admin can stand a Studio operator down. Studio stops reading the club's stats
+  at once, and the home screen says the role is paused, until the stand-down is lifted. Removing
+  the role cuts Studio off the same way.
 
 ### Temporary helpers
 
@@ -3425,12 +3472,12 @@ once saved, only replaced or removed, and anyone who gets it wrong five times in
 | Medical and emergency details | The athlete; an under 18's verified parents and guardians, who keep them (an athlete 18 or over keeps their own); and the coaches, managers and physios of the athlete's current squads and teams (the Head Physio for every athlete), for an under 18 only once a parent or guardian has given consent for injuries and health information. Not admins or the committee. Each view by a coach, manager or physio is recorded, and the athlete 18 or over, or an under 18's parents and guardians, see who and when. Checked once a year by whoever keeps them; admins see who has checked and when, but not the details. Removed when nobody has checked them for the club's chosen time (Keeping records), and deleted with the athlete's account. |
 | Who opened injury documents | The athlete, their guardians and admins: every view and share, by whom, their role and when, and each photo consent. |
 | Who has viewed a child's records | For an athlete under 18: their verified parents or guardians (until the athlete turns 18) and admins. Lists every time someone other than the athlete or their guardians opened the athlete's injuries, injury documents, check-ins, game goals, season KPIs, named survey answers or member record. Opening a child's records is recorded whoever you are; nobody can switch it off or delete entries by hand, and old entries are removed only under the club's Keeping records settings. |
-| Consents for a child    | The athlete, their parents or guardians and admins, with every consent given and withdrawn. Only a verified parent or guardian can give or withdraw one. |
+| Consents for a child    | The athlete, their parents or guardians and admins, with every consent given and withdrawn. Only a verified parent or guardian can give or withdraw one. FirstPass Studio sees only whether an athlete of a streamed game may be named with their own stats. |
 | Club policies           | Everyone signed in, including people asking to join.                                                                        |
 | Code of conduct acceptances | The member, their parents or guardians and admins: each season's acceptance, who accepted it, when, the words and the policy version. Kept under the member's name if they delete their account. |
 | Game goals and reflections | The athlete, their guardians and their coaches. Only the athlete and their coaches set goals, and only the athlete reflects; guardians just read them. The committee, managers, physios and admins don't see them. |
 | Season KPIs, progress and reviews | An athlete's: the athlete, their coaches in that squad or team, their parents or guardians (read only, until 18) and admins (read only). Not teammates, the committee or physios. A coach's or manager's: them, the committee and admins, and an assistant coach's head coach. Only those who set KPIs change them, record results and write reviews; the person records progress, confirms reviews and adds their own view. A coach's or manager's KPIs and reviews are kept under their name if they delete their account, and stay on the admin report. |
-| Live game stats         | Admins and statisticians (while their statistician role isn't paused for a check): every game the club records. The coaches and managers of the game's squad or team see the team's games at every stage and who has paired with each, and the stats once they pair with its code in FirstPass Vision. Athletes, guardians, physios and the committee don't see them. |
+| Live game stats         | Admins and statisticians (while their statistician role isn't paused for a check): every game the club records. The coaches and managers of the game's squad or team see the team's games at every stage and who has paired with each, and the stats once they pair with its code in FirstPass Vision. Members with the Studio role (while not stood down), through FirstPass Studio: games with a PlayHQ game that are live or finished, their setup, the recorded stats and the athletes of the game's squad or team, never a shadow statistician's stats, pair codes or who paired. Athletes, guardians, physios and the committee don't see them. |
 | Team goals              | The team's athletes, their guardians, its coaches (while their check is current and they aren't stood down) and admins. Only its coaches set and review them. Athletes and coaches in the team can comment; guardians and admins read the comments. Managers and physios placed in the team don't see them. |
 | Integrity training certificates | The member, their parents or guardians, the committee and admins. Coaches, managers and physios don't see them. Certificates can't be changed or removed once sent. |
 | Attendance records      | The committee and admins see every session. Coaches and managers see their own groups' sessions, whole-club sessions and any they took themselves, while their check is current and they aren't stood down. An athlete sees their own marks, and their parents or guardians see them until the athlete turns 18; neither sees other athletes on the register. |
@@ -3623,6 +3670,10 @@ Working With Children Check, and another admin must do it.
   once they have, never alarming numbers (see [Your child's training load](#your-childs-training-load)).
 - **You can tell the club your child will be away**, so an absence you didn't report stands out
   (see [Your child's attendance](#your-childs-attendance)).
+- **Your child's stats go on a stream only if you agree.** When the club streams its games with
+  FirstPass Studio, your child is named with their own game stats only once you've given consent
+  for **Stats on live streams**; otherwise the stream shows team totals. You can withdraw it at any
+  time, and every change is kept (see [Giving consent](#giving-consent)).
 - **Nothing is shared without your consent.** Your child's check-ins and injuries are seen by
   their coaches, physios and the committee members cleared to work with children only after you consent in the app (see [Giving
   consent](#giving-consent)), and until then none of them can endorse, accept or send back your
@@ -3751,10 +3802,15 @@ Working With Children Check, and another admin must do it.
 
 - **Stand-downs.** An admin can stand someone down straight away, for example on an interim
   negative notice from the Working with Children Screening Unit. Their coach, manager, physio,
-  committee, admin, statistician and temporary helper roles stop and they leave the squads and teams they lead. They no longer
+  committee, admin, statistician, Studio and temporary helper roles stop and they leave the squads and teams they lead. They no longer
   see attendance they took, their session plans, the messages they sent or the messages they got in
   those roles. Every stand-down is
   kept (see [Changing or removing members](#changing-or-removing-members)).
+- **Streams read only what they show.** FirstPass Studio signs in to the club with the Studio role,
+  given by an admin to a named person, and reads only the stats of live and finished PlayHQ games
+  and their line-ups, never members' details, injuries, practice games or a shadow statistician's
+  stats. An admin can stand the person down or remove the role to cut Studio off at once. Children
+  are named with their own stats only with a parent's consent (see [Studio](#studio)).
 - **Committee checks have a deadline.** Committee members approved before checks were needed
   keep their role without one only until the club's committee checks date. From that day their
   committee role pauses unless a check is recorded, an application they've lodged is in force, or

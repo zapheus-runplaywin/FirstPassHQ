@@ -57,10 +57,13 @@ export function useRouteAccess() {
    * who get messages and surveys and can be set integrity training.
    */
   const isClubMember = getsMessages;
-  // Guests, physios and temporary helpers only look (is_view_only_member), and
-  // parents and guardians don't vote: award_voters in the database.
+  // Guests, physios, temporary helpers and Studio only look
+  // (is_view_only_member), and parents and guardians don't vote: award_voters
+  // in the database.
   const roles = approved && profile ? rolesOf(profile) : [];
-  const viewOnly = roles.every((r) => r === 'guest' || r === 'physio' || r === 'volunteer');
+  const viewOnly = roles.every(
+    (r) => r === 'guest' || r === 'physio' || r === 'volunteer' || r === 'studio',
+  );
   const canVote = !viewOnly && roles.some((r) => r !== 'guardian');
 
   return {

@@ -209,6 +209,15 @@ export default function JoinScreen() {
         />
       ) : null}
 
+      {role === 'studio' ? (
+        <ThemedText type="small" themeColor="textSecondary">
+          For someone who runs the club’s live streams in FirstPass Studio. It doesn’t make you a
+          member of the club: it lets Studio read the stats the club records for its games, to show
+          on streams, and nothing else. You won’t see the club’s members, squads, calendar or
+          messages.
+        </ThemedText>
+      ) : null}
+
       {volunteer ? (
         <>
           <ThemedText type="small" themeColor="textSecondary">

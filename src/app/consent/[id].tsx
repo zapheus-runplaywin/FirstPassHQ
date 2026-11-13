@@ -21,7 +21,8 @@ import { supabase } from '@/lib/supabase';
 
 /**
  * A parent or guardian's consent for their child under 18: who sees the
- * child's daily check-ins and injury details. Each consent can be given or
+ * child's daily check-ins and injury details, and whether live streams may
+ * name them with their own game stats. Each consent can be given or
  * withdrawn at any time, and every change is kept.
  */
 export default function ConsentScreen() {
@@ -30,7 +31,11 @@ export default function ConsentScreen() {
   const theme = useTheme();
   const [child, setChild] = useState<ChildConsent | null | undefined>(undefined);
   const [history, setHistory] = useState<ConsentRecord[]>([]);
-  const [choice, setChoice] = useState<Record<ConsentKind, boolean>>({ data: false, health: false });
+  const [choice, setChoice] = useState<Record<ConsentKind, boolean>>({
+    data: false,
+    health: false,
+    publish: false,
+  });
   const [busy, setBusy] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
@@ -43,7 +48,7 @@ export default function ConsentScreen() {
       ((childrenResult.data as ChildConsent[] | null) ?? []).find((c) => c.athlete_id === id) ??
       null;
     setChild(found);
-    if (found) setChoice({ data: found.data, health: found.health });
+    if (found) setChoice({ data: found.data, health: found.health, publish: found.publish });
     setHistory((historyResult.data as ConsentRecord[] | null) ?? []);
   }, [id]);
 
@@ -56,11 +61,17 @@ export default function ConsentScreen() {
   async function save() {
     setBusy(true);
     setError(null);
-    const { error: rpcError } = await supabase.rpc('set_child_consent', {
+    let { error: rpcError } = await supabase.rpc('set_child_consent', {
       p_athlete_id: id,
       p_data: choice.data,
       p_health: choice.health,
     });
+    if (!rpcError && child && choice.publish !== child.publish) {
+      ({ error: rpcError } = await supabase.rpc('set_child_publish_consent', {
+        p_athlete_id: id,
+        p_publish: choice.publish,
+      }));
+    }
     setBusy(false);
     if (rpcError) {
       setError(rpcError.message);
@@ -99,7 +110,7 @@ export default function ConsentScreen() {
         </Card>
       ) : (
         <>
-          {(['data', 'health'] as const).map((kind) => (
+          {(['data', 'health', 'publish'] as const).map((kind) => (
             <Card key={kind} style={styles.row}>
               <View style={styles.grow}>
                 <ThemedText type="smallBold">{consentText[kind].title}</ThemedText>

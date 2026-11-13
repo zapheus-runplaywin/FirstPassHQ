@@ -16,11 +16,13 @@ export type ChildConsent = {
   full_name: string | null;
   data: boolean;
   health: boolean;
+  /** Whether live streams may name them with their own game stats. */
+  publish: boolean;
   /** False until the guardian's identity has been verified. */
   can_consent: boolean;
 };
 
-export type ConsentKind = 'data' | 'health';
+export type ConsentKind = 'data' | 'health' | 'publish';
 
 export type ConsentRecord = {
   kind: ConsentKind;
@@ -43,11 +45,17 @@ export const consentText: Record<ConsentKind, { title: string; detail: string }>
     detail:
       'Their injuries, restrictions, physio updates and the letters or reports you attach are seen by their coaches, the physios who look after them and the committee members cleared to work with children, who sign off clearances. The medical and emergency details you keep for them (emergency contacts, allergies, conditions, medications and an action plan) are seen by their coaches, managers and physios, and you see each time one of them opens them. Without this, none of them see your child’s injuries or medical details, and an injury can’t be cleared to play, because a coach or physio has to endorse the clearance first. Either way, whoever takes attendance sees that your child is injured and when they’re expected back, and nothing more.',
   },
+  publish: {
+    title: 'Stats on live streams',
+    detail:
+      'When the club’s games are streamed with FirstPass Studio, your child can be named with their own game stats, such as goals, intercepts or Net Points, on screen and by the commentators. Without this, streams show only team totals, never your child’s own stats. Their name can still be in the team list, as it is on PlayHQ.',
+  },
 };
 
 export const consentKindLabels: Record<ConsentKind, string> = {
   data: 'Daily check-ins',
   health: 'Injuries and health information',
+  publish: 'Stats on live streams',
 };
 
 /** The club's policy links, or null until they've loaded. */

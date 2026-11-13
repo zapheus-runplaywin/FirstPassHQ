@@ -9,6 +9,7 @@ function child(overrides: Partial<ChildConsent>): ChildConsent {
     full_name: 'Sam Sample',
     data: false,
     health: false,
+    publish: false,
     can_consent: true,
     ...overrides,
   };
@@ -24,6 +25,12 @@ describe('consentsNeeded', () => {
 
   it('leaves out children with both consents', () => {
     expect(consentsNeeded([child({ data: true, health: true })])).toEqual([]);
+  });
+
+  it('never asks for the live stream consent, which is optional', () => {
+    expect(consentsNeeded([child({ data: true, health: true, publish: false })])).toEqual([]);
+    const missing = child({ publish: true });
+    expect(consentsNeeded([missing])).toEqual([missing]);
   });
 
   it('leaves out children while the guardian is not verified', () => {
