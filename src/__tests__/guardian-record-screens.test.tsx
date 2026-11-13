@@ -73,6 +73,7 @@ const CHILD: ChildConsent = {
   full_name: 'Sample Child',
   data: false,
   health: true,
+  publish: false,
   can_consent: true,
 };
 
@@ -132,6 +133,52 @@ describe('consent for a child', () => {
       { p_athlete_id: 'child-1', p_data: true, p_health: false },
     ]);
     expect(back).toHaveBeenCalled();
+  });
+
+  it('leaves the live stream consent alone when it isn’t changed', async () => {
+    await openConsent('guardian', [CHILD]);
+    expect(toggle('Stats on live streams').props.value).toBe(false);
+    expect(screen.getByText(/Without this, streams show only team totals/)).toBeTruthy();
+    await fireEvent.press(screen.getByText('Save'));
+    await settle();
+    expect(argsOf('set_child_publish_consent')).toEqual([]);
+    expect(back).toHaveBeenCalled();
+  });
+
+  it('gives the live stream consent', async () => {
+    await openConsent('guardian', [CHILD]);
+    await fireEvent(toggle('Stats on live streams'), 'valueChange', true);
+    await fireEvent.press(screen.getByText('Save'));
+    await settle();
+    expect(argsOf('set_child_consent')).toEqual([
+      { p_athlete_id: 'child-1', p_data: false, p_health: true },
+    ]);
+    expect(argsOf('set_child_publish_consent')).toEqual([
+      { p_athlete_id: 'child-1', p_publish: true },
+    ]);
+    expect(back).toHaveBeenCalled();
+  });
+
+  it('withdraws the live stream consent', async () => {
+    await openConsent('guardian', [{ ...CHILD, publish: true }]);
+    expect(toggle('Stats on live streams').props.value).toBe(true);
+    await fireEvent(toggle('Stats on live streams'), 'valueChange', false);
+    await fireEvent.press(screen.getByText('Save'));
+    await settle();
+    expect(argsOf('set_child_publish_consent')).toEqual([
+      { p_athlete_id: 'child-1', p_publish: false },
+    ]);
+  });
+
+  it('shows a refusal of the live stream consent and stays', async () => {
+    await openConsent('guardian', [CHILD], {
+      rpcErrors: { set_child_publish_consent: 'Only a verified parent or guardian can give consent.' },
+    });
+    await fireEvent(toggle('Stats on live streams'), 'valueChange', true);
+    await fireEvent.press(screen.getByText('Save'));
+    await settle();
+    expect(screen.getByText('Only a verified parent or guardian can give consent.')).toBeTruthy();
+    expect(back).not.toHaveBeenCalled();
   });
 
   it('shows the database’s refusal and stays', async () => {

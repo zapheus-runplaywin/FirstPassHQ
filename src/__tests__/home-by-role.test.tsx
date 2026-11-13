@@ -218,6 +218,9 @@ const BY_ROLE: { who: PersonaName; sees: Item[] }[] = [
   { who: 'coachExpiredCheck', sees: ['comingUp', 'groups', 'raiseConcern'] },
   // Temporary helpers see only their onboarding steps and Raise a concern.
   { who: 'volunteer', sees: ['raiseConcern'] },
+  // Studio on its own isn't a club member: what the role is for, and Raise a concern.
+  { who: 'studio', sees: ['raiseConcern'] },
+  { who: 'stoodDownStudio', sees: ['raiseConcern'] },
   { who: 'pending', sees: ['waiting', 'raiseConcern'] },
   { who: 'pendingAdmin', sees: ['waiting', 'raiseConcern'] },
   { who: 'rejected', sees: ['raiseConcern'] },
@@ -431,6 +434,29 @@ describe('temporary helpers', () => {
     expect(screen.getByText('You’re approved to help')).toBeTruthy();
     expect(screen.queryByText(/^To do$/)).toBeNull();
     expect(screen.queryByText(ITEMS.groups)).toBeNull();
+  });
+});
+
+describe('Studio operators', () => {
+  it('see what the role is for, none of the club’s features or members', async () => {
+    await openHome('studio');
+    expect(screen.getByText('You can show this club’s live game stats')).toBeTruthy();
+    expect(screen.getByText(/Sign in to this club from FirstPass Studio/)).toBeTruthy();
+    expect(screen.queryByText(/^To do$/)).toBeNull();
+    expect(screen.queryByText(ITEMS.groups)).toBeNull();
+    expect(screen.queryByText(ITEMS.comingUp)).toBeNull();
+  });
+
+  it('see that the role is paused while stood down', async () => {
+    await openHome('stoodDownStudio');
+    expect(screen.getByText('Your Studio role is paused')).toBeTruthy();
+    expect(screen.queryByText('You can show this club’s live game stats')).toBeNull();
+  });
+
+  it('a manager who also runs Studio keeps their own Home', async () => {
+    await openHome('managerStudio');
+    expect(screen.queryByText('You can show this club’s live game stats')).toBeNull();
+    expect(screen.getByText(ITEMS.comingUp)).toBeTruthy();
   });
 });
 

@@ -285,6 +285,17 @@ export default function HomeScreen() {
     (approved
       ? hasRole(profile, 'volunteer') || !!paused?.roles.includes('volunteer')
       : !!profile?.join_requested_at && profile.requested_role === 'volunteer');
+  // Studio on its own (someone who runs the club's live streams) isn't a club
+  // member: they only see what the role is for, and Raise a concern. Checked
+  // on the roles held, so a stood-down operator (shown as a guest) still only
+  // sees this.
+  const heldRoles =
+    approved && profile
+      ? paused?.roles.length
+        ? [...rolesOf(profile).filter((r) => r !== 'guest'), ...paused.roles]
+        : rolesOf(profile)
+      : [];
+  const studioOnly = heldRoles.length > 0 && heldRoles.every((r) => r === 'studio');
 
   return (
     <Screen withTopInset refreshing={refreshing} onRefresh={onRefresh}>
@@ -318,9 +329,11 @@ export default function HomeScreen() {
         </>
       ) : !approved ? (
         <JoinStatus />
+      ) : studioOnly ? (
+        <StudioOnly paused={!!paused?.roles.includes('studio')} />
       ) : null}
 
-      {volunteer || waitingForGuardian ? null : (
+      {volunteer || waitingForGuardian || studioOnly ? null : (
         <>
 
         {approved ? <PausedRoles /> : null}
@@ -927,6 +940,25 @@ function CommitteeCheckDue() {
         Your committee role pauses on that day unless a check is recorded. Apply for one, then send
         a club admin the card number and expiry date. If you never work with children, ask an admin
         to exempt you with the reason.
+      </ThemedText>
+    </Card>
+  );
+}
+
+/**
+ * Home for someone whose only role is Studio: what the role does, and that
+ * HQ has nothing else for them.
+ */
+function StudioOnly({ paused }: { paused: boolean }) {
+  return (
+    <Card>
+      <ThemedText type="smallBold">
+        {paused ? 'Your Studio role is paused' : 'You can show this club’s live game stats'}
+      </ThemedText>
+      <ThemedText type="small" themeColor="textSecondary">
+        {paused
+          ? 'A club admin has stood you down, so FirstPass Studio can’t read this club’s stats until they lift it.'
+          : 'Sign in to this club from FirstPass Studio with this Google account. Studio can then read the stats the club records for its PlayHQ games, live and finished, to show on streams. Athletes under 18 are only named with their own stats when a parent or guardian has agreed; otherwise Studio shows team totals. Studio can’t change anything, and you won’t see the club’s members, squads, calendar or messages.'}
       </ThemedText>
     </Card>
   );

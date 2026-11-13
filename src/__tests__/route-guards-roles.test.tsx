@@ -75,7 +75,7 @@ const GUARDIANS: PersonaName[] = ['guardian', 'guardianOfAdult', 'coachGuardian'
 const GROUP_COACHES: PersonaName[] = ['coach', 'assistantCoach', 'coachGuardian', 'athleteCoach'];
 /** Also a coach whose only squad has finished its squad phase. */
 const COACHES: PersonaName[] = [...GROUP_COACHES, 'doneSquadCoach'];
-const MANAGERS: PersonaName[] = ['manager', 'safeguardingOfficer'];
+const MANAGERS: PersonaName[] = ['manager', 'safeguardingOfficer', 'managerStudio'];
 const PHYSIOS: PersonaName[] = ['physio', 'headPhysio'];
 /**
  * The committee, including one exempted with a reason, one with no check
@@ -129,6 +129,8 @@ const NO_ROLE_SCREENS: PersonaName[] = [
   'pendingAdmin',
   'guest',
   'volunteer',
+  'studio',
+  'stoodDownStudio',
   'stoodDownAdmin',
   'coachExpiredCheck',
   'stoodDownCoach',

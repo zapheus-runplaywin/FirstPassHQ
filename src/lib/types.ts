@@ -10,7 +10,8 @@ export type AppRole =
   | 'guardian'
   | 'guest'
   | 'volunteer'
-  | 'statistician';
+  | 'statistician'
+  | 'studio';
 
 export type MemberStatus = 'pending' | 'approved' | 'rejected';
 

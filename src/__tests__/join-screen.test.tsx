@@ -130,6 +130,7 @@ describe('what everyone must give', () => {
       'Committee',
       'Physio',
       'Statistician',
+      'Studio',
       'Guest',
       'Temporary helper',
     ]) {
@@ -179,7 +180,7 @@ describe('what everyone must give', () => {
     expect(screen.queryByText('Squad')).toBeNull();
   });
 
-  it.each(['Committee', 'Statistician', 'Guest'])(
+  it.each(['Committee', 'Statistician', 'Studio', 'Guest'])(
     'asks a %s for no squad, and sends none even if one was picked first',
     async (role) => {
       await openJoin();
@@ -206,6 +207,29 @@ describe('what everyone must give', () => {
       p_requested_role: 'physio',
       p_requested_team_id: null,
     });
+  });
+});
+
+describe('Studio operators', () => {
+  it('explain Studio only reads game stats, and only for Studio', async () => {
+    await openJoin();
+    expect(screen.queryByText(/runs the club’s live streams in FirstPass Studio/)).toBeNull();
+    await fireEvent.press(screen.getByText('Studio'));
+    expect(screen.getByText(/runs the club’s live streams in FirstPass Studio/)).toBeTruthy();
+    expect(screen.getByText(/You won’t see the club’s members, squads, calendar or\s+messages\./)).toBeTruthy();
+  });
+
+  it('send the request for the Studio role, with no squad', async () => {
+    await openJoin();
+    await fillBasics();
+    await fireEvent.press(screen.getByText('Studio'));
+    await send();
+    expect(argsOf('submit_join_request')[0]).toMatchObject({
+      p_requested_role: 'studio',
+      p_requested_team_id: null,
+      p_guardian_email: null,
+    });
+    expect(rpcNames()).not.toContain('set_my_volunteer_details');
   });
 });
 

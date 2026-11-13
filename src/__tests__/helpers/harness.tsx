@@ -44,6 +44,9 @@ export type PersonaName =
   | 'guardian'
   | 'guest'
   | 'volunteer'
+  | 'studio'
+  | 'stoodDownStudio'
+  | 'managerStudio'
   | 'coach'
   | 'manager'
   | 'physio'
@@ -196,6 +199,7 @@ export const CHILD_CONSENTS = [
     full_name: 'Sample Child',
     data: false,
     health: false,
+    publish: false,
     can_consent: true,
   },
 ];
@@ -233,6 +237,15 @@ export const personas: Record<PersonaName, Persona> = {
     volunteer_from: '2026-10-01',
     volunteer_until: '2026-10-31',
   }),
+  /** Runs the club's live streams in FirstPass Studio, and holds no other role. */
+  studio: member('studio', 'studio', { wwcc_number: null, wwcc_expires_on: null }),
+  stoodDownStudio: member('stood-down-studio', 'studio', {
+    wwcc_number: null,
+    wwcc_expires_on: null,
+    stood_down_at: '2026-10-01T00:00:00Z',
+  }),
+  /** A manager who also runs the stream: Studio adds nothing in HQ. */
+  managerStudio: member('manager-studio', 'manager', { extra_roles: ['studio'] }, ['manager']),
   coach: member('coach', 'coach', {}, ['coach']),
   manager: member('manager', 'manager', {}, ['manager']),
   physio: member('physio', 'physio', {}, ['physio']),

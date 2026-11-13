@@ -96,13 +96,18 @@ export function useCanMessageClub() {
 }
 
 /**
- * Guests never get messages. Physios always get messages sent to the Physio
+ * Guests, temporary helpers and Studio on its own never get messages. Physios always get messages sent to the Physio
  * role, and messages to the whole club when an admin turns that on. The
  * database applies the same rules.
  */
 export function useGetsMessages() {
   const { profile } = useAuth();
-  return profile?.status === 'approved' && profile.role !== 'guest' && profile.role !== 'volunteer';
+  return (
+    profile?.status === 'approved' &&
+    profile.role !== 'guest' &&
+    profile.role !== 'volunteer' &&
+    profile.role !== 'studio'
+  );
 }
 
 /** Admins, the committee, coaches, managers and captains can send messages. */
