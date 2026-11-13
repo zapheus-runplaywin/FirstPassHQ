@@ -9,6 +9,7 @@ import { StatusBar } from 'expo-status-bar';
 import { useCallback, useEffect, useMemo, useState, type ReactNode } from 'react';
 
 import { BrandIntro } from '@/components/brand-intro';
+import { rootStackOptions } from '@/constants/navigation';
 import { BrandFonts, contrastRatio } from '@/constants/theme';
 import { useTheme } from '@/hooks/use-theme';
 import { AuthProvider, useAuth } from '@/lib/auth';
@@ -108,8 +109,7 @@ function RootStack() {
 
   return (
     <>
-      <Stack
-        screenOptions={{ headerBackButtonDisplayMode: 'minimal' }}>
+      <Stack screenOptions={rootStackOptions}>
         <Stack.Protected guard={!!session}>
           <Stack.Screen name="index" options={{ headerShown: false }} />
           <Stack.Protected guard={can.join}>
