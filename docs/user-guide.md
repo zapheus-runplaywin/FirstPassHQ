@@ -2253,7 +2253,12 @@ recording a game happens in Vantage.
   <img src="user-guide/statistician-check-due.png" width="210" alt="A statistician's home screen saying when their role needs a check">
 - **Awards.** Statisticians don't vote in club awards, unless they also hold a role that votes.
 - **Stand-downs.** An admin can stand a statistician down like a coach or manager. The role stops
-  at once, in HQ and in Vantage, and comes back only when the stand-down is lifted.
+  at once, in HQ and in Vantage, and comes back only when the stand-down is lifted. That includes a
+  game they're recording or shadowing: from that moment the tablet can't save another stat, a
+  break snapshot or a change to the game, such as full time, and Vantage says "Only statisticians
+  and admins can record games". The stats saved before the stand-down stay with the game, and an
+  admin can finish it. The same happens if an admin removes the role or a recorded check expires
+  during a game.
 
 ### Studio
 
@@ -3802,7 +3807,8 @@ Working With Children Check, and another admin must do it.
 
 - **Stand-downs.** An admin can stand someone down straight away, for example on an interim
   negative notice from the Working with Children Screening Unit. Their coach, manager, physio,
-  committee, admin, statistician, Studio and temporary helper roles stop and they leave the squads and teams they lead. They no longer
+  committee, admin, statistician, Studio and temporary helper roles stop and they leave the squads and teams they lead. A
+  statistician stood down in the middle of a game can't save another stat to it. They no longer
   see attendance they took, their session plans, the messages they sent or the messages they got in
   those roles. Every stand-down is
   kept (see [Changing or removing members](#changing-or-removing-members)).
