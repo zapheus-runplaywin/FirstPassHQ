@@ -1115,7 +1115,9 @@ name them with their own stats:
   can be named with their own game stats, such as goals, intercepts or Net Points, on screen and by
   the commentators. Without it, streams show only team totals, never your child's own stats; their
   name can still be in the team list, as it is on PlayHQ. This one is optional: your to-do list
-  never asks for it.
+  never asks for it. It counts only while your child has at least one verified parent or guardian
+  in the app: if none is left, streams go back to team totals until one is verified again, even
+  though the consent itself stays on record.
 
 Until you give a consent, only your child and you see their check-ins, and only your child, you
 and the club's admins see their injuries. Their coaches, physios and the committee don't see your
@@ -2281,7 +2283,8 @@ the club, and only as someone the club has given the **Studio** role.
   game's setup and the stats recorded for it, live as each one is entered, and the athletes of the
   game's squad or team, with whether each may be named with their own stats. An athlete under 18
   is named with their own stats only when a parent or guardian has given consent for **Stats on
-  live streams** (see [Giving consent](#giving-consent)); otherwise Studio shows team totals.
+  live streams** and the athlete still has at least one verified parent or guardian (see [Giving
+  consent](#giving-consent)); otherwise Studio shows team totals.
 - **What it never reads.** Practice games and games without a PlayHQ game, games still being set
   up, a shadow statistician's stats, pair codes, who recorded or followed a game, and anything else
   in HQ: members' details, guardians, injuries, check-ins, attendance or messages. Studio can't
@@ -3681,7 +3684,9 @@ Working With Children Check, and another admin must do it.
 - **Your child's stats go on a stream only if you agree.** When the club streams its games with
   FirstPass Studio, your child is named with their own game stats only once you've given consent
   for **Stats on live streams**; otherwise the stream shows team totals. You can withdraw it at any
-  time, and every change is kept (see [Giving consent](#giving-consent)).
+  time, and every change is kept (see [Giving consent](#giving-consent)). The consent counts only
+  while your child has at least one verified parent or guardian, so if every guardian leaves the
+  club or loses verification, the stream goes back to team totals straight away.
 - **Nothing is shared without your consent.** Your child's check-ins and injuries are seen by
   their coaches, physios and the committee members cleared to work with children only after you consent in the app (see [Giving
   consent](#giving-consent)), and until then none of them can endorse, accept or send back your
@@ -3819,7 +3824,8 @@ Working With Children Check, and another admin must do it.
   given by an admin to a named person, and reads only the stats of live and finished PlayHQ games
   and their line-ups, never members' details, injuries, practice games or a shadow statistician's
   stats. An admin can stand the person down or remove the role to cut Studio off at once. Children
-  are named with their own stats only with a parent's consent (see [Studio](#studio)).
+  are named with their own stats only with a parent's consent, and only while they still have a
+  verified parent or guardian (see [Studio](#studio)).
 - **Committee checks have a deadline.** Committee members approved before checks were needed
   keep their role without one only until the club's committee checks date. From that day their
   committee role pauses unless a check is recorded, an application they've lodged is in force, or
