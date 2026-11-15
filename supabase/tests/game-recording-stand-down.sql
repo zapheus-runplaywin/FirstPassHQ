@@ -221,11 +221,11 @@ select pg_temp.works('lifted: Alex records on G4 again', $$select pg_temp.append
 --    they can see or have paired with
 -- ---------------------------------------------------------------------------
 select pg_temp.as_member('11');
-select pg_temp.works('Casey (head coach of Sample Team) pairs with G1 as a viewer',
-  $$select public.pair_game((select pair_code from public.games where id = (select g1 from t)), false)$$);
+select pg_temp.works('Casey (head coach of Sample Team) follows G1 as a viewer',
+  $$select public.follow_game((select g1 from t))$$);
 create temp table others (n text, who text);
 insert into others values
-  ('11', 'head coach (paired viewer)'), ('12', 'coach whose check lapsed'), ('13', 'manager'),
+  ('11', 'head coach (following as a viewer)'), ('12', 'coach whose check lapsed'), ('13', 'manager'),
   ('14', 'physio'), ('21', 'committee, check expired'), ('22', 'committee, no check'),
   ('23', 'committee, exempt'), ('31', 'athlete under 18'), ('32', 'adult athlete'),
   ('41', 'guardian'), ('42', 'coach who is also a guardian'), ('65', 'guest'),

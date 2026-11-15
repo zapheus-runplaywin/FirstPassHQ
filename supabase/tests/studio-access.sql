@@ -229,7 +229,8 @@ select pg_temp.fails('Studio can''t write a shadow stream',
   format($$select public.append_game_events(%L, %L, '[{"seq":1,"id":"%s","type":"x","recordedAt":"2026-11-13T00:00:00Z"}]')$$, pg_temp.g(1), 'shadow:' || pg_temp.m('51'), gen_random_uuid()));
 select pg_temp.fails('Studio can''t save a snapshot', format($$select public.save_game_snapshot(%L, 3, '1', '{}')$$, pg_temp.g(1)));
 select pg_temp.fails('Studio can''t end a game', format($$select public.set_game_status(%L, 'final')$$, pg_temp.g(1)));
-select pg_temp.ok('Studio can''t pair with a game''s code', (select g.id is null from public.pair_game('111111') g), true);
+select pg_temp.ok('Studio can''t pair with a game''s code', (select g.id is null from public.pair_game('111111', true) g), true);
+select pg_temp.fails('Studio can''t follow a game', format($$select public.follow_game(%L)$$, pg_temp.g(1)));
 set role authenticated;
 select pg_temp.refused('Studio can''t insert events directly',
   format($$insert into public.game_events (game_id, stream, seq, id, type, payload, recorded_at) values (%L, 'primary', 9, gen_random_uuid(), 'x', '{}', now())$$, pg_temp.g(1)));

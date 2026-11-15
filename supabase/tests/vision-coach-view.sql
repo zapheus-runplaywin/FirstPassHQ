@@ -1,7 +1,8 @@
 -- Tests for what FirstPass Vision, the coach's live view, reads from the
 -- live game stats tables (20261015000100_game_stats.sql). Vision runs these
--- exact steps: list recent games (with the team's name), pair with a game's
--- code, read the primary stream after a seq in pages, and follow the
+-- exact steps: list recent games (with the team's name), follow a game by
+-- its id (follow_game, 20261115000400_follow_game.sql; no pair code since
+-- then), read the primary stream after a seq in pages, and follow the
 -- private Realtime topic game:<id>. Coaches and managers of the game's team
 -- may; physios, athletes, guardians, other teams' coaches and signed-out
 -- visitors may not. Run on a fresh database with the migrations and
@@ -28,9 +29,11 @@ $$ declare r bigint; begin
      select count(*) into r from realtime.messages;
      return r;
    end $$;
--- The game's id when pairing worked, null when it didn't.
-create or replace function pg_temp.pair(code text) returns uuid language sql as
-$$ select g.id from public.pair_game(code) g $$;
+-- The game's id when following worked, null when it was refused.
+create or replace function pg_temp.follow(p_game uuid) returns uuid language plpgsql as
+$$ declare r uuid;
+   begin select g.id into r from public.follow_game(p_game) g; return r;
+   exception when others then return null; end $$;
 
 -- Games: 1 is the Sample Team's live game (code 314159), 2 the Sample
 -- Squad's (code 271828), 3 a finished game whose code has expired. Alex the
@@ -65,11 +68,11 @@ select pg_temp.ok('coach lists the games of their teams', (select count(*) = 3 f
 select pg_temp.ok('coach sees the team''s name with each game',
   (select count(*) = 3 from public.games g join public.teams t on t.id = g.team_id), true);
 select pg_temp.ok('coach reads the setup Vantage saved', (select config->>'them' = 'Storm' from public.games where id = pg_temp.g(1)), true);
-select pg_temp.ok('before pairing: no events', (select count(*) = 0 from public.game_events where game_id = pg_temp.g(1)), true);
-select pg_temp.ok('before pairing: can''t follow on Realtime', pg_temp.topic_rows(1) = 0, true);
-select pg_temp.ok('pairs with the code typed with a space', pg_temp.pair('314 159') = pg_temp.g(1), true);
-select pg_temp.ok('pairing again is harmless', pg_temp.pair('314159') = pg_temp.g(1), true);
-select pg_temp.ok('paired as a viewer',
+select pg_temp.ok('before following: no events', (select count(*) = 0 from public.game_events where game_id = pg_temp.g(1)), true);
+select pg_temp.ok('before following: can''t follow on Realtime', pg_temp.topic_rows(1) = 0, true);
+select pg_temp.ok('follows the game by its id', pg_temp.follow(pg_temp.g(1)) = pg_temp.g(1), true);
+select pg_temp.ok('following again is harmless', pg_temp.follow(pg_temp.g(1)) = pg_temp.g(1), true);
+select pg_temp.ok('follows as a viewer',
   (select game_role = 'viewer' from public.game_members where game_id = pg_temp.g(1) and profile_id = pg_temp.m('11')), true);
 select pg_temp.ok('first page: 1000 events in seq order',
   (select count(*) = 1000 and min(seq) = 1 and max(seq) = 1000 from (
@@ -79,12 +82,13 @@ select pg_temp.ok('next page carries on after the last seq',
      select seq from public.game_events where game_id = pg_temp.g(1) and stream = 'primary' and seq > 1000 order by seq limit 1000) p), true);
 select pg_temp.ok('coach never reads the shadow stream',
   (select count(*) = 0 from public.game_events where game_id = pg_temp.g(1) and stream <> 'primary'), true);
-select pg_temp.ok('follows the game on Realtime once paired', pg_temp.topic_rows(1) > 0, true);
-select pg_temp.ok('pairing one game opens only that game',
+select pg_temp.ok('follows the game on Realtime once following', pg_temp.topic_rows(1) > 0, true);
+select pg_temp.ok('following one game opens only that game',
   (select count(*) = 0 from public.game_events where game_id <> pg_temp.g(1)), true);
 select pg_temp.ok('and only that game''s topic', pg_temp.topic_rows(2) = 0, true);
-select pg_temp.ok('an expired code doesn''t pair', pg_temp.pair('161803') is null, true);
-select pg_temp.ok('a wrong code doesn''t pair', pg_temp.pair('000000') is null, true);
+select pg_temp.ok('a game that doesn''t exist can''t be followed', pg_temp.follow(gen_random_uuid()) is null, true);
+select pg_temp.ok('the pair code no longer works for coaches',
+  (select pg_temp.fails_with('x', $$select public.pair_game('314159')$$, '%Open the game from your games list%') like 'PASS%'), true);
 select pg_temp.ok('coach can''t write events',
   (select pg_temp.fails_with('x', format($$insert into public.game_events (game_id, stream, seq, id, type, payload, recorded_at) values (%L, 'primary', 9999, gen_random_uuid(), 'x', '{}', now())$$, pg_temp.g(1)), '%permission denied%') like 'PASS%'), true);
 select pg_temp.ok('coach can''t add to the stream through the function',
@@ -94,19 +98,23 @@ reset role;
 -- Emery (13) manages the Sample Squad, whose game is game 2.
 select pg_temp.as_member('13');
 set role authenticated;
-select pg_temp.ok('manager pairs with the squad''s game', pg_temp.pair('271828') = pg_temp.g(2), true);
+select pg_temp.ok('manager follows the squad''s game', pg_temp.follow(pg_temp.g(2)) = pg_temp.g(2), true);
 select pg_temp.ok('manager reads its primary stream', (select count(*) = 1 from public.game_events where game_id = pg_temp.g(2)), true);
 select pg_temp.ok('manager follows it on Realtime', pg_temp.topic_rows(2) > 0, true);
-select pg_temp.ok('manager can''t pair with another team''s game', pg_temp.pair('314159') is null, true);
+select pg_temp.ok('manager can''t follow another team''s game', pg_temp.follow(pg_temp.g(1)) is null, true);
 reset role;
 
--- Five wrong codes in ten minutes lock pairing, even with the right code.
--- Casey already missed twice above (the expired and the wrong code).
+-- A finished game whose old pair code expired still opens, and no number
+-- of taps locks a coach out (revocation test section 5).
 select pg_temp.as_member('11');
 set role authenticated;
-select pg_temp.pair('999991'), pg_temp.pair('999992'), pg_temp.pair('999993');
-select pg_temp.fails_with('after five misses, even the right code waits ten minutes', $$select public.pair_game('314159')$$, '%Too many tries%');
+select pg_temp.ok('a finished game opens after its code expired', pg_temp.follow(pg_temp.g(3)) = pg_temp.g(3), true);
+select pg_temp.ok('ten more taps all open it',
+  (select bool_and(pg_temp.follow(pg_temp.g(3)) = pg_temp.g(3)) from generate_series(1, 10)), true);
+select pg_temp.ok('it reads the finished game''s events', (select count(*) = 1 from public.game_events where game_id = pg_temp.g(3)), true);
 reset role;
+select pg_temp.ok('no failed attempts recorded for the coach',
+  (select count(*) = 0 from public.game_pair_attempts where profile_id = pg_temp.m('11')), true);
 
 -- ---------------------------------------------------------------------------
 -- Members who may not follow the game
@@ -116,7 +124,7 @@ select pg_temp.as_member('42');
 set role authenticated;
 select pg_temp.ok('another team''s coach doesn''t list the game', (select count(*) = 0 from public.games where id = pg_temp.g(1)), true);
 select pg_temp.ok('another team''s coach lists their own team''s game', (select count(*) = 1 from public.games where id = pg_temp.g(2)), true);
-select pg_temp.ok('another team''s coach can''t pair with its code', pg_temp.pair('314159') is null, true);
+select pg_temp.ok('another team''s coach can''t follow it', pg_temp.follow(pg_temp.g(1)) is null, true);
 select pg_temp.ok('another team''s coach reads none of its events', (select count(*) = 0 from public.game_events where game_id = pg_temp.g(1)), true);
 select pg_temp.ok('another team''s coach can''t follow it on Realtime', pg_temp.topic_rows(1) = 0, true);
 reset role;
@@ -132,18 +140,18 @@ begin
     perform pg_temp.as_member(who);
     set local role authenticated;
     if (select count(*) from public.games) <> 0 then insert into let_in values (who, 'list'); end if;
-    if pg_temp.pair('271828') is not null then insert into let_in values (who, 'pair'); end if;
+    if pg_temp.follow(pg_temp.g(2)) is not null then insert into let_in values (who, 'follow_game'); end if;
     if (select count(*) from public.game_events) <> 0 then insert into let_in values (who, 'read'); end if;
     if pg_temp.topic_rows(2) <> 0 then insert into let_in values (who, 'follow'); end if;
     reset role;
   end loop;
 end $$;
-select pg_temp.ok('physio, athletes and parents can''t list, pair, read or follow: ' || coalesce((select string_agg(who || ' ' || what, ', ') from let_in), 'none let in'),
+select pg_temp.ok('physio, athletes and parents can''t list, follow_game, read or follow: ' || coalesce((select string_agg(who || ' ' || what, ', ') from let_in), 'none let in'),
   (select count(*) = 0 from let_in), true);
-select pg_temp.ok('and none of them was paired',
+select pg_temp.ok('and none of them became a game member',
   (select count(*) = 0 from public.game_members where profile_id in (pg_temp.m('14'), pg_temp.m('31'), pg_temp.m('32'), pg_temp.m('41'))), true);
 
--- A coach who leaves the team keeps their pairing row but loses the game.
+-- A coach who leaves the team keeps their member row but loses the game.
 delete from public.team_members where team_id = '00000000-0000-0000-0000-0000000000a2' and profile_id = pg_temp.m('11');
 select pg_temp.as_member('11');
 set role authenticated;
@@ -157,5 +165,6 @@ select set_config('request.jwt.claim.sub', '', false);
 set role anon;
 select pg_temp.ok('signed out: no games', (select pg_temp.fails_with('x', 'select count(*) from public.games', '%permission denied%') like 'PASS%'), true);
 select pg_temp.ok('signed out: no events', (select pg_temp.fails_with('x', 'select count(*) from public.game_events', '%permission denied%') like 'PASS%'), true);
-select pg_temp.ok('signed out: can''t pair', (select pg_temp.fails_with('x', $$select public.pair_game('314159')$$, '%permission denied%') like 'PASS%'), true);
+select pg_temp.ok('signed out: can''t pair', (select pg_temp.fails_with('x', $$select public.pair_game('314159', true)$$, '%permission denied%') like 'PASS%'), true);
+select pg_temp.ok('signed out: can''t follow', (select pg_temp.fails_with('x', format('select public.follow_game(%L)', pg_temp.g(1)), '%permission denied%') like 'PASS%'), true);
 reset role;
