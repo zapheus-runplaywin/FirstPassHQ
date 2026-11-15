@@ -1,5 +1,7 @@
 This is an Expo/React Native mobile application. Prioritize mobile-first patterns, performance, and cross-platform compatibility.
 
+Building a new FirstPass app, or changing how sign-in, club lookup or access works across products? Follow `docs/new-app-conventions.md`, the one copy of the conventions guideline for every FirstPass repo.
+
 ## Expo has changed — do not trust your training data
 
 Expo ships breaking changes every SDK release. APIs you remember are likely renamed, moved, or removed. Before writing any code that touches an Expo, EAS, or React Native API:
