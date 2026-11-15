@@ -101,7 +101,9 @@ set role authenticated;
 select pg_temp.ok('manager follows the squad''s game', pg_temp.follow(pg_temp.g(2)) = pg_temp.g(2), true);
 select pg_temp.ok('manager reads its primary stream', (select count(*) = 1 from public.game_events where game_id = pg_temp.g(2)), true);
 select pg_temp.ok('manager follows it on Realtime', pg_temp.topic_rows(2) > 0, true);
-select pg_temp.ok('manager can''t follow another team''s game', pg_temp.follow(pg_temp.g(1)) is null, true);
+-- Since 20261115000500_squad_staff_see_team_games.sql a squad's staff also
+-- follow the games of the teams in their squad (this was refused before).
+select pg_temp.ok('squad manager follows the game of a team in the squad', pg_temp.follow(pg_temp.g(1)) = pg_temp.g(1), true);
 reset role;
 
 -- A finished game whose old pair code expired still opens, and no number
@@ -116,18 +118,23 @@ reset role;
 select pg_temp.ok('no failed attempts recorded for the coach',
   (select count(*) = 0 from public.game_pair_attempts where profile_id = pg_temp.m('11')), true);
 
+-- Morgan (42) coaches the Sample Squad only. Since
+-- 20261115000500_squad_staff_see_team_games.sql that includes the games of
+-- Sample Team, which is in the squad (before, Morgan saw none of them).
+-- Another squad's games stay hidden: see squad-staff-games.sql.
+select pg_temp.as_member('42');
+set role authenticated;
+select pg_temp.ok('squad coach lists the game of a team in the squad', (select count(*) = 1 from public.games where id = pg_temp.g(1)), true);
+select pg_temp.ok('squad coach lists the squad''s own game', (select count(*) = 1 from public.games where id = pg_temp.g(2)), true);
+select pg_temp.ok('squad coach reads none of its events before following', (select count(*) = 0 from public.game_events where game_id = pg_temp.g(1)), true);
+select pg_temp.ok('squad coach follows it', pg_temp.follow(pg_temp.g(1)) = pg_temp.g(1), true);
+select pg_temp.ok('squad coach reads its primary stream', (select count(*) = 1205 from public.game_events where game_id = pg_temp.g(1)), true);
+select pg_temp.ok('squad coach follows it on Realtime', pg_temp.topic_rows(1) > 0, true);
+reset role;
+
 -- ---------------------------------------------------------------------------
 -- Members who may not follow the game
 -- ---------------------------------------------------------------------------
--- Morgan (42) coaches the Sample Squad only.
-select pg_temp.as_member('42');
-set role authenticated;
-select pg_temp.ok('another team''s coach doesn''t list the game', (select count(*) = 0 from public.games where id = pg_temp.g(1)), true);
-select pg_temp.ok('another team''s coach lists their own team''s game', (select count(*) = 1 from public.games where id = pg_temp.g(2)), true);
-select pg_temp.ok('another team''s coach can''t follow it', pg_temp.follow(pg_temp.g(1)) is null, true);
-select pg_temp.ok('another team''s coach reads none of its events', (select count(*) = 0 from public.game_events where game_id = pg_temp.g(1)), true);
-select pg_temp.ok('another team''s coach can''t follow it on Realtime', pg_temp.topic_rows(1) = 0, true);
-reset role;
 
 -- Finley the physio (14), Jordan the junior athlete (31), Kai the adult
 -- athlete (32), Logan the parent (41): none of them see games.
@@ -151,8 +158,9 @@ select pg_temp.ok('physio, athletes and parents can''t list, follow_game, read o
 select pg_temp.ok('and none of them became a game member',
   (select count(*) = 0 from public.game_members where profile_id in (pg_temp.m('14'), pg_temp.m('31'), pg_temp.m('32'), pg_temp.m('41'))), true);
 
--- A coach who leaves the team keeps their member row but loses the game.
-delete from public.team_members where team_id = '00000000-0000-0000-0000-0000000000a2' and profile_id = pg_temp.m('11');
+-- A coach who leaves the team (and its squad, whose staff also see the
+-- team's games) keeps their member row but loses the game.
+delete from public.team_members where team_id in ('00000000-0000-0000-0000-0000000000a1', '00000000-0000-0000-0000-0000000000a2') and profile_id = pg_temp.m('11');
 select pg_temp.as_member('11');
 set role authenticated;
 select pg_temp.ok('coach who left the team no longer lists its game', (select count(*) = 0 from public.games where id = pg_temp.g(1)), true);
