@@ -127,11 +127,11 @@ select pg_temp.follow_refused('coach whose check lapsed refused game 2', pg_temp
 -- Manager of Sample Squad
 select pg_temp.as_member('13');
 select pg_temp.works('squad manager follows the squad''s game 2', format('select public.follow_game(%L)', pg_temp.g(2)));
-select pg_temp.follow_refused('squad manager refused the team''s game 1 (not on the team)', pg_temp.g(1));
+select pg_temp.works('squad manager follows game 1 of a team in the squad (20261115000500)', format('select public.follow_game(%L)', pg_temp.g(1)));
 -- Assistant coach of Sample Squad who is also a guardian
 select pg_temp.as_member('42');
 select pg_temp.works('squad assistant coach follows game 2', format('select public.follow_game(%L)', pg_temp.g(2)));
-select pg_temp.follow_refused('squad assistant coach refused the team''s game 1', pg_temp.g(1));
+select pg_temp.works('squad assistant coach follows game 1 of a team in the squad (20261115000500)', format('select public.follow_game(%L)', pg_temp.g(1)));
 -- Everyone else, for both games
 create temp table others (n text, who text);
 insert into others values
@@ -186,6 +186,7 @@ select pg_temp.as_member('01');
 select pg_temp.works('admin lifts it', $$select public.admin_lift_stand_down(pg_temp.m('11'), 'Cleared')$$);
 select pg_temp.as_member('11');
 select pg_temp.ok('lifted: reads the game again', pg_temp.reads_events(pg_temp.g(1)) = 1, true);
-delete from public.team_members where team_id = '00000000-0000-0000-0000-0000000000a2' and profile_id = pg_temp.m('11');
+-- Leaving the team and its squad (squad staff see the squad's team games).
+delete from public.team_members where team_id in ('00000000-0000-0000-0000-0000000000a1', '00000000-0000-0000-0000-0000000000a2') and profile_id = pg_temp.m('11');
 select pg_temp.ok('coach who left the team reads none of its game', pg_temp.reads_events(pg_temp.g(1)) = 0, true);
 select pg_temp.follow_refused('coach who left the team can''t follow it again', pg_temp.g(1));
