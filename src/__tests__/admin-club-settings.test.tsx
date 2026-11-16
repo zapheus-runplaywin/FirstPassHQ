@@ -93,8 +93,9 @@ const RETENTION_RPCS = {
 async function openClub(
   rpcs: Record<string, unknown> = {},
   rpcErrors: Record<string, string> = {},
+  tables: Record<string, unknown[]> = {},
 ) {
-  await openScreen('admin', { 'admin/club': ClubSettingsScreen }, '/admin/club', {}, {
+  await openScreen('admin', { 'admin/club': ClubSettingsScreen }, '/admin/club', tables, {
     rpcs: { physios_get_club_messages: false, ...RETENTION_RPCS, ...rpcs },
     rpcErrors,
   });
@@ -325,6 +326,146 @@ describe('Club settings', () => {
     await openClub();
     expect(screen.getByText('Keeping records')).toBeTruthy();
     expect(screen.getByLabelText('Remove old records')).toBeTruthy();
+  });
+});
+
+// ---------------------------------------------------------------------------
+// Team pilot: a feature on for pilot teams only (Matt, 2026-11-16)
+
+const group = (id: string, name: string, kind: 'squad' | 'team', squad_id: string | null, sort_order: number) => ({
+  id,
+  name,
+  kind,
+  squad_id,
+  sort_order,
+  season: 2026,
+  archived: false,
+  selections_completed_at: null,
+});
+const TEAMS = {
+  teams: [
+    group('sq-20', '20 & Under', 'squad', null, 1),
+    group('t-20a', '20 & Under A', 'team', 'sq-20', 2),
+    group('sq-open', 'Open', 'squad', null, 3),
+  ],
+};
+const audience = (feature: string) => within(screen.getByLabelText(`Who sees ${feature}`));
+const audienceIs = (feature: string, label: string) => {
+  let node: ReturnType<typeof screen.getByText> | null = audience(feature).getByText(label);
+  while (node && node.props.accessibilityState === undefined) node = node.parent;
+  return node?.props.accessibilityState?.selected === true;
+};
+async function choose(feature: string, label: string) {
+  await fireEvent.press(audience(feature).getByText(label));
+  await settle();
+}
+async function pickGroup(label: string) {
+  await fireEvent.press(screen.getByText(label));
+  await settle();
+}
+const savedPilot = () => callsTo('admin_set_pilot');
+
+describe('Team pilot', () => {
+  it('starts every feature that’s on as shown to everyone, and offers no choice for one that’s off', async () => {
+    setSavedClub({ features: { awards: false } });
+    await openClub({}, {}, TEAMS);
+    expect(audienceIs('Injuries', 'Everyone')).toBe(true);
+    expect(audienceIs('Injuries', 'Pilot teams only')).toBe(false);
+    expect(screen.queryByLabelText('Who sees Awards')).toBeNull();
+    expect(screen.queryByLabelText('Who sees Season KPIs')).toBeNull();
+    expect(callsTo('admin_pilot_settings')).toHaveLength(1);
+  });
+
+  it('lists squads before their teams, marked as squad or team', async () => {
+    await openClub({}, {}, TEAMS);
+    const labels = ['20 & Under (squad)', '20 & Under A (team)', 'Open (squad)'];
+    for (const label of labels) expect(screen.getByText(label)).toBeTruthy();
+    const all = screen.getAllByText(/\((squad|team)\)$/).map((n) => n.props.children);
+    expect(all).toEqual(labels);
+  });
+
+  it('saves the pilot-only features and pilot teams after the club settings, leaving the on and off switches alone', async () => {
+    await openClub({}, {}, TEAMS);
+    await choose('Injuries', 'Pilot teams only');
+    await choose('Surveys', 'Pilot teams only');
+    await pickGroup('20 & Under (squad)');
+    await save();
+    expect(savedProfile()[0].p_features).toEqual({});
+    expect(savedPilot()).toEqual([{ p_features: ['injuries', 'surveys'], p_team_ids: ['sq-20'] }]);
+    const names = (rpc().mock.calls as [string][]).map(([n]) => n);
+    expect(names.indexOf('admin_update_club_profile')).toBeLessThan(names.indexOf('admin_set_pilot'));
+    expect(names.indexOf('admin_set_pilot')).toBeLessThan(names.indexOf('admin_set_physios_get_club_messages'));
+    expect(screen.getByText(/^Saved\./)).toBeTruthy();
+  });
+
+  it('shows the saved pilot and keeps it when saved again', async () => {
+    await openClub(
+      { admin_pilot_settings: [{ pilot_features: ['messages'], pilot_team_ids: ['t-20a'] }] },
+      {},
+      TEAMS,
+    );
+    expect(audienceIs('Messages', 'Pilot teams only')).toBe(true);
+    expect(audienceIs('Calendar', 'Everyone')).toBe(true);
+    expect(isSelected('20 & Under A (team)')).toBe(true);
+    expect(isSelected('20 & Under (squad)')).toBe(false);
+    await save();
+    expect(savedPilot()).toEqual([{ p_features: ['messages'], p_team_ids: ['t-20a'] }]);
+  });
+
+  it('puts a feature back to everyone and takes a team out of the pilot', async () => {
+    await openClub(
+      { admin_pilot_settings: [{ pilot_features: ['messages', 'injuries'], pilot_team_ids: ['t-20a', 'sq-open'] }] },
+      {},
+      TEAMS,
+    );
+    await choose('Messages', 'Everyone');
+    await pickGroup('Open (squad)');
+    await save();
+    expect(savedPilot()).toEqual([{ p_features: ['injuries'], p_team_ids: ['t-20a'] }]);
+  });
+
+  it('drops a pilot-only feature that is switched off, since off is off for everyone', async () => {
+    await openClub(
+      { admin_pilot_settings: [{ pilot_features: ['injuries'], pilot_team_ids: ['t-20a'] }] },
+      {},
+      TEAMS,
+    );
+    await flip('Injuries', false);
+    expect(screen.queryByLabelText('Who sees Injuries')).toBeNull();
+    await save();
+    expect(savedProfile()[0].p_features).toEqual({ injuries: false });
+    expect(savedPilot()).toEqual([{ p_features: [], p_team_ids: ['t-20a'] }]);
+  });
+
+  it('says who sees pilot features, and warns when no squad or team is in the pilot', async () => {
+    await openClub({}, {}, TEAMS);
+    expect(screen.queryByText(/Features for pilot teams only show/)).toBeNull();
+    await choose('Attendance', 'Pilot teams only');
+    expect(screen.getByText(/No squads or teams are in the pilot yet/)).toBeTruthy();
+    await pickGroup('20 & Under A (team)');
+    expect(screen.queryByText(/No squads or teams are in the pilot yet/)).toBeNull();
+    expect(screen.getByText(/parents of their athletes, admins and committee/)).toBeTruthy();
+  });
+
+  it('asks for squads or teams first when the club has none', async () => {
+    await openClub();
+    expect(screen.getByText('Add squads or teams in Administration first.')).toBeTruthy();
+  });
+
+  it('shows a refused pilot save, saves nothing after it and doesn’t say it saved', async () => {
+    await openClub({}, { admin_set_pilot: 'A squad or team in the pilot no longer exists' }, TEAMS);
+    await choose('Injuries', 'Pilot teams only');
+    await save();
+    expect(screen.getByText('A squad or team in the pilot no longer exists')).toBeTruthy();
+    expect(callsTo('admin_set_physios_get_club_messages')).toEqual([]);
+    expect(screen.queryByText(/^Saved\./)).toBeNull();
+  });
+
+  it('starts with no pilot when the pilot can’t be read', async () => {
+    await openClub({}, { admin_pilot_settings: 'Only admins can see the pilot settings' }, TEAMS);
+    expect(audienceIs('Injuries', 'Everyone')).toBe(true);
+    await save();
+    expect(savedPilot()).toEqual([{ p_features: [], p_team_ids: [] }]);
   });
 });
 
