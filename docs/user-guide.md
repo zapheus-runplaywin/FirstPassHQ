@@ -136,7 +136,7 @@ What each role sees on its home screen:
 | Preferred name                         |    ✓    |        ✓        |      ✓       |     ✓      |       ✓       |       ✓       |    ✓    |       ✓       |
 | Title, such as President               |         |                 |              |            |       ✓       |               |         |       ✓       |
 | Team title, set by the app             |         |                 |      ✓       |     ✓      |               |               |         |               |
-| Club name, colours, logo and features  |         |                 |              |            |               |               |         |       ✓       |
+| Club name, colours, logo, features and pilot teams |         |                 |              |            |               |               |         |       ✓       |
 | Manage absence reasons                 |         |                 |              |            |               |               |         |       ✓       |
 | Invite members (QR code and link)      |         |                 |              |            |               |               |         |       ✓       |
 | Policy and conflict registers (when turned on) |  |                 | Declare conflicts; review policies they own | Review policies they own | Read both; declare conflicts; review policies they own | Review policies they own |  | Read and change both; record any review |
@@ -201,6 +201,10 @@ club and Delete account links (see [Ask to join the club](#ask-to-join-the-club)
 
 Admins can turn off Messages, Calendar, Daily check-ins, Injuries, Attendance, Session plans,
 Surveys, Captains' polls, Awards, Game goals and Integrity training for the whole club in **Club settings**. A feature that's off disappears for every role.
+A feature that's on can also be on for **pilot teams only**, to try it with one squad or team
+first: it then shows for the people in the pilot squads and teams (and the teams of a pilot squad),
+the parents and guardians of their athletes, admins and committee, and for nobody else (see
+[Club settings](#club-settings)).
 **Season KPIs**, **Training load flags** and **Policy and conflict registers** work the other way:
 they're off unless an admin turns them on. Training load flags give coaches prompts to talk with an
 athlete from the sessions they log (see [Training load](#training-load)). Season KPIs are for a club that sets its coaches,
@@ -3107,6 +3111,20 @@ so leave them filled in.
   already sent stay readable. A switched-off feature disappears from every member's home screen, to-do list and menus,
   and its Administration pages are hidden. Nothing is deleted, so switching it back on brings
   everything back.
+- **Who sees it**: under each feature that's on, choose **Everyone** (the default) or **Pilot
+  teams only**. A pilot-only feature shows just for the members of the squads and teams under
+  **Pilot squads and teams**, whatever their role there (coaches, managers, physios, athletes), the
+  parents and guardians of those athletes, and every admin and committee member, so they can help.
+  For everyone else it's as if it were switched off: it isn't on their home screen, menus or to-do
+  list, and the app refuses it for them. Use it to start small and turn features on one team at a
+  time, then switch a feature to **Everyone** when the club is ready. A feature that's switched off
+  is off for everyone, pilot or not.
+- **Pilot squads and teams**: tap the squads and teams trying the pilot features. A squad brings
+  its teams with it. Until you pick one, pilot-only features show only for admins and committee,
+  and the screen says so. Ending the pilot (no squads or teams, every feature back to
+  **Everyone**) changes nothing else: nobody is moved and no records are touched. Something sent
+  to the whole club, such as a message or survey, still reaches people outside the pilot, but they
+  can't open it while the feature is pilot-only, so keep pilot sends to the pilot teams.
 - **Squads**: **Members join a squad first** is on unless the club switches it off. Switched off,
   members join a team straight away, admins add teams without squads and choose their athletes from
   the whole club, attendance takers can take attendance for any team, and each new season copies
@@ -3137,7 +3155,8 @@ part of the app build and don't change here.
 
 <img src="user-guide/club-settings.png" width="210" alt="Club settings: name, logo and colours">
 <img src="user-guide/club-settings-squads.png" width="210" alt="Club settings: switching squads off">
-<img src="user-guide/club-settings-features.png" width="210" alt="Club settings: turning features on and off">
+<img src="user-guide/club-settings-features.png" width="210" alt="Club settings: turning features on and off, and who sees each">
+<img src="user-guide/club-settings-pilot.png" width="210" alt="Club settings: pilot squads and teams">
 <img src="user-guide/club-settings-physios.png" width="210" alt="Club settings: physios get club messages">
 <img src="user-guide/club-settings-registers.png" width="210" alt="Club settings: the Policy and conflict registers switch">
 <img src="user-guide/club-settings-training-load.png" width="210" alt="Club settings: training load flag choices">
@@ -3457,6 +3476,7 @@ once saved, only replaced or removed, and anyone who gets it wrong five times in
 | To-do notifications     | Only you, on the phones you're signed in on. They name the to-do but never injury details or reviewers' notes. Your on/off choice is yours alone. |
 | Your own personal tasks | Only you. Not your parents or guardians, coaches, the committee or admins. They can't be shared or sent to anyone. |
 | Captains                | Club captains: every member. A squad or team's captains: the people in it, and admins.                                     |
+| Pilot features and pilot squads and teams | Admins only, in Club settings. Members just see whether a feature is in their app. |
 | Date of birth, Working With Children Check and exemption | You and admins. Committee members with a current check also read them, for everyone who needs a check, in the Working With Children Checks report. Awards with an age limit use it to decide who can be voted for, without showing it. |
 | Date of birth given at Join, and a child's parent or guardian email | You and admins. Admins also see who recorded your checked date of birth and when. |
 | How a member was verified | You and admins: the method, and what the admin checked. |
