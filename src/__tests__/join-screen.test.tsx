@@ -392,6 +392,68 @@ describe('parents and guardians', () => {
   });
 });
 
+describe('signed in with Apple and Hide My Email', () => {
+  /** Apple gave the app a relay address an admin can't match to PlayHQ. */
+  const hidden: Persona = {
+    ...newcomer,
+    session: {
+      ...newcomer.session!,
+      user: { ...newcomer.session!.user, email: 'x7q2k9@privaterelay.appleid.com' },
+    },
+  };
+
+  it.each(['Athlete', 'Coach', 'Committee', 'Guest'])(
+    'a %s must give their PlayHQ email, and is told why',
+    async (role) => {
+      await openJoin(hidden);
+      await fillBasics();
+      await fireEvent.press(screen.getByText(role));
+      expect(screen.getByPlaceholderText('Email used to register with PlayHQ')).toBeTruthy();
+      expect(screen.queryByPlaceholderText('x7q2k9@privaterelay.appleid.com')).toBeNull();
+      expect(screen.getByText(/^You signed in with Apple and chose to hide your email/)).toBeTruthy();
+      await type('PlayHQ email', '   ');
+      await send();
+      expect(screen.getByText('Please enter the email you used to register with PlayHQ.')).toBeTruthy();
+      expect(rpcNames()).not.toContain('submit_join_request');
+      expect(back).not.toHaveBeenCalled();
+    },
+  );
+
+  it('sends the request once the PlayHQ email is given', async () => {
+    await openJoin(hidden);
+    await fillBasics();
+    await fireEvent.press(screen.getByText('Coach'));
+    await type('PlayHQ email', 'me@playhq.test');
+    await send();
+    expect(argsOf('submit_join_request')[0]).toMatchObject({
+      p_playhq_email: 'me@playhq.test',
+      p_requested_role: 'coach',
+    });
+    expect(back).toHaveBeenCalledTimes(1);
+  });
+
+  it('a guardian still sees the guardian wording', async () => {
+    await openJoin(hidden);
+    await fillBasics();
+    await fireEvent.press(screen.getByText('Guardian'));
+    expect(screen.getByText(/^Parents and guardians: enter the email you used/)).toBeTruthy();
+    expect(screen.queryByText(/^You signed in with Apple/)).toBeNull();
+  });
+
+  it('an Apple member who shared their real email may leave it blank, like Google members', async () => {
+    const shared: Persona = {
+      ...newcomer,
+      session: { ...newcomer.session!, user: { ...newcomer.session!.user, email: 'sample@icloud.com' } },
+    };
+    await openJoin(shared);
+    await fillBasics();
+    await fireEvent.press(screen.getByText('Coach'));
+    expect(screen.getByPlaceholderText('sample@icloud.com')).toBeTruthy();
+    await send();
+    expect(argsOf('submit_join_request')[0]).toMatchObject({ p_playhq_email: '' });
+  });
+});
+
 describe('the club password', () => {
   it('isn’t asked for when the club has none', async () => {
     await openJoin();

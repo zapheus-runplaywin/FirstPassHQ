@@ -9,7 +9,11 @@
     "userInterfaceStyle": "dark",
     "ios": {
       "icon": "./assets/images/icon.png",
-      "bundleIdentifier": "au.pivt.firstpass.hq"
+      "bundleIdentifier": "au.pivt.firstpass.hq",
+      "usesAppleSignIn": true,
+      "config": {
+        "usesNonExemptEncryption": false
+      }
     },
     "android": {
       "adaptiveIcon": {
@@ -46,6 +50,7 @@
       ],
       "expo-sharing",
       "expo-secure-store",
+      "expo-apple-authentication",
       [
         "expo-image-picker",
         {

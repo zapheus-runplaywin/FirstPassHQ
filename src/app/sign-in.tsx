@@ -1,5 +1,10 @@
+import {
+  AppleAuthenticationButton,
+  AppleAuthenticationButtonStyle,
+  AppleAuthenticationButtonType,
+} from "expo-apple-authentication";
 import { Image } from "expo-image";
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { ActivityIndicator, Pressable, StyleSheet, View } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
 
@@ -10,26 +15,43 @@ import { MaxContentWidth, Spacing } from "@/constants/theme";
 import { useTheme } from "@/hooks/use-theme";
 import { useClub } from "@/lib/club";
 import { useClubChoice } from "@/lib/club-choice";
-import { signInWithGoogle } from "@/lib/sign-in";
+import {
+  appleSignInAvailable,
+  signInWithApple,
+  signInWithGoogle,
+} from "@/lib/sign-in";
 
 export default function SignInScreen() {
   const theme = useTheme();
   const club = useClub();
   const { club: chosen, switchClub } = useClubChoice();
-  const [busy, setBusy] = useState(false);
+  const [busy, setBusy] = useState<"apple" | "google" | null>(null);
   const [error, setError] = useState<string | null>(null);
+  // Apple's button shows only on an iPhone or iPad where Apple offers it.
+  const [apple, setApple] = useState(false);
 
-  async function handleGoogle() {
-    setBusy(true);
+  useEffect(() => {
+    let live = true;
+    appleSignInAvailable().then((available) => {
+      if (live) setApple(available);
+    });
+    return () => {
+      live = false;
+    };
+  }, []);
+
+  async function run(which: "apple" | "google", signIn: () => Promise<void>) {
+    if (busy) return;
+    setBusy(which);
     setError(null);
     try {
-      await signInWithGoogle();
+      await signIn();
     } catch (e) {
       setError(
         e instanceof Error ? e.message : "Sign-in failed. Please try again.",
       );
     } finally {
-      setBusy(false);
+      setBusy(null);
     }
   }
 
@@ -51,10 +73,23 @@ export default function SignInScreen() {
           </View>
 
           <View style={styles.buttons}>
+            {apple ? (
+              // Apple's own button, unstyled, as App Review expects. White
+              // stands out on the club's dark background.
+              <AppleAuthenticationButton
+                testID="apple-sign-in"
+                buttonType={AppleAuthenticationButtonType.CONTINUE}
+                buttonStyle={AppleAuthenticationButtonStyle.WHITE}
+                cornerRadius={12}
+                onPress={() => run("apple", signInWithApple)}
+                style={styles.appleButton}
+              />
+            ) : null}
+
             <Pressable
               accessibilityRole="button"
-              disabled={busy}
-              onPress={handleGoogle}
+              disabled={busy !== null}
+              onPress={() => run("google", signInWithGoogle)}
               style={({ pressed }) => [
                 styles.button,
                 {
@@ -63,7 +98,7 @@ export default function SignInScreen() {
                 },
               ]}
             >
-              {busy ? (
+              {busy === "google" ? (
                 <ActivityIndicator />
               ) : (
                 <ThemedText type="smallBold">Continue with Google</ThemedText>
@@ -136,6 +171,12 @@ const styles = StyleSheet.create({
     borderRadius: 12,
     alignItems: "center",
     justifyContent: "center",
+  },
+  // Apple's button takes its colour and corners from its own props, never
+  // from style, and needs a height and width to show at all.
+  appleButton: {
+    height: 52,
+    width: "100%",
   },
   error: {
     color: "#DC2626",

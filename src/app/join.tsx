@@ -10,6 +10,7 @@ import { looksLikeLinkCode } from '@/lib/guardian-links';
 import { useAuth } from '@/lib/auth';
 import { useSquads } from '@/lib/club';
 import { isTeamRole, requestableRoles, roleLabels } from '@/lib/labels';
+import { isHiddenAppleEmail } from '@/lib/sign-in';
 import { supabase } from '@/lib/supabase';
 import { volunteerScreeningLabels } from '@/lib/safety';
 import type { AppRole, VolunteerScreening } from '@/lib/types';
@@ -45,6 +46,9 @@ export default function JoinScreen() {
   // A child athlete needs a parent or guardian linked before the app opens for them.
   const child = role === 'athlete' && !!dob && isMinor(dob, false);
   const volunteer = role === 'volunteer';
+  // Apple's "Hide My Email" signs in with a relay address an admin can't
+  // match to PlayHQ, so the PlayHQ email is then needed from everyone.
+  const hiddenEmail = isHiddenAppleEmail(session?.user.email);
   const fromDay = parseDate(from);
   const untilDay = parseDate(until);
 
@@ -69,7 +73,7 @@ export default function JoinScreen() {
       setError('Please enter the email of a parent or guardian.');
       return;
     }
-    if (guardian && !playhqEmail.trim()) {
+    if ((guardian || hiddenEmail) && !playhqEmail.trim()) {
       setError('Please enter the email you used to register with PlayHQ.');
       return;
     }
@@ -178,7 +182,7 @@ export default function JoinScreen() {
         value={playhqEmail}
         onChangeText={setPlayhqEmail}
         placeholder={
-          role === 'guardian'
+          role === 'guardian' || hiddenEmail
             ? 'Email used to register with PlayHQ'
             : (session?.user.email ?? 'Only if different to your sign-in email')
         }
@@ -190,7 +194,9 @@ export default function JoinScreen() {
       <ThemedText type="small" themeColor="textSecondary">
         {role === 'guardian'
           ? 'Parents and guardians: enter the email you used to register your athlete with PlayHQ, so we can confirm who you are.'
-          : 'Only needed if you registered with PlayHQ using a different email to the one you signed in with.'}
+          : hiddenEmail
+            ? 'You signed in with Apple and chose to hide your email, so please enter the email you registered with PlayHQ. The club uses it to confirm who you are.'
+            : 'Only needed if you registered with PlayHQ using a different email to the one you signed in with.'}
       </ThemedText>
 
       <ChipGroup

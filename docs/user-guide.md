@@ -244,14 +244,31 @@ didn't expect it. A link for a club the app doesn't know shows **Club not found*
 
 <img src="user-guide/club-code.png" width="210" alt="Find your club: the club code screen">
 
-### Sign in with Google
+### Signing in
 
-Tap **Continue with Google** and choose your Google account. There are no passwords to remember:
-Google sign-in is the only way in. The same button is used whether you're new or coming back.
+There are no passwords to remember: you sign in with an account you already have. The same
+buttons are used whether you're new or coming back.
 
-If you picked the wrong club, tap **Change club** under the button.
+- **On Android**, tap **Continue with Google** and choose your Google account.
+- **On iPhone or iPad**, you can also tap **Continue with Apple**, above the Google button, and
+  confirm with Face ID, Touch ID or your passcode. Apple asks whether to share your email or
+  **Hide My Email**. Either works.
 
-<img src="user-guide/sign-in.png" width="210" alt="Sign-in screen">
+**Use the same one every time.** If you sign in with Google on one phone and with Apple's
+**Hide My Email** on another, the club sees two different people and you'd have to ask to join
+twice. A member who joined with Apple can't sign in on an Android phone, so pick Google if you
+might use one.
+
+If you choose **Hide My Email**, the club sees a private Apple address instead of yours, which it
+can't match to PlayHQ. The join form then asks for your PlayHQ email (see
+[Ask to join the club](#ask-to-join-the-club)).
+
+If you picked the wrong club, tap **Change club** under the buttons.
+
+<img src="user-guide/sign-in.png" width="210" alt="Sign-in screen on Android, with Continue with Google">
+
+The picture shows the Android screen; on iPhone, Apple's white **Continue with Apple** button sits
+above **Continue with Google**.
 
 ### Belonging to more than one club
 
@@ -271,8 +288,9 @@ and fill in:
 - **Your name.**
 - **Date of birth** (DD/MM/YYYY): everyone gives it, and it decides whether the club's rules for
   under 18s apply. For athletes, an admin checks it against PlayHQ or ID before approving them.
-- **PlayHQ email**: only if you registered with PlayHQ using a different email to the Google account
-  you signed in with. Parents and guardians must enter the email they used to register their
+- **PlayHQ email**: only if you registered with PlayHQ using a different email to the account
+  you signed in with. If you signed in with Apple and chose **Hide My Email**, everyone must enter
+  it, and the form says why. Parents and guardians must enter the email they used to register their
   athlete, so the club can confirm who they are. An admin must verify a guardian before approving
   them or linking them to a child.
 - **I am a**: the role that best describes you.
@@ -308,6 +326,7 @@ request is still sent, and they can enter the code again from their home screen.
 <img src="user-guide/join.png" width="210" alt="Request to join form">
 <img src="user-guide/join-under-18.png" width="210" alt="Asking to join as an athlete under 18, with a date of birth and a parent's email">
 <img src="user-guide/join-guardian.png" width="210" alt="Request to join as a guardian, with the child's link code and no squad to pick">
+<img src="user-guide/join-hidden-email.png" width="210" alt="Request to join after signing in with Apple and Hide My Email: the PlayHQ email is needed, and the form says why">
 
 ### Wait for approval
 
@@ -1072,7 +1091,8 @@ you've checked (but not what your details say) in the [Medical details checks](#
 
 ## 5. Parents and guardians
 
-Parents and guardians of athletes under 18 sign in with their own Google account and ask to join
+Parents and guardians of athletes under 18 sign in with their own Google account (or Apple
+account, on iPhone) and ask to join
 as **Guardian**, entering the email they used to register their athlete with PlayHQ and, if you
 have it, your child's **link code**: the 6-letter code your child's app shows them once they've
 asked to join (see [Ask to join the club](#ask-to-join-the-club)). An admin verifies who you are
@@ -4088,8 +4108,8 @@ decided on its own; until then the club keeps doing it the way it does now.
 - **Overnight events**: events can't be marked as overnight, so the app doesn't warn that a parent
   volunteer's exemption doesn't cover a camp or tour. Admins check this themselves (see [Volunteer
   exemptions](#volunteer-exemptions)).
-- **Sign in with Apple**: members sign in with Google only (see [Sign in with
-  Google](#sign-in-with-google)).
+- **Sign in with Apple on Android or the web**: Apple is offered on iPhone and iPad only (see
+  [Signing in](#signing-in)).
 
 <div style="page-break-before: always"></div>
 
