@@ -218,8 +218,11 @@ registers](#policy-and-conflict-registers)).
 
 ### Install the app
 
-The club sends a link to install the app on iPhone (TestFlight) or Android. The app is called
-FirstPass HQ, made by FirstPass. Its icon is the FirstPass 1P HQ mark on deep navy, and it opens on
+The club sends a link to install the app. On iPhone it comes through TestFlight. On Android the
+club either adds your Google account to its test group in the Google Play Store, and sends a
+link where you tap **Become a tester** and then install from the Play Store, or sends a link to
+install the app directly. Use the Google account that's signed in to the Play Store on your
+phone. The app is called FirstPass HQ, made by FirstPass. Its icon is the FirstPass 1P HQ mark on deep navy, and it opens on
 the same mark. The first time, before it knows which club you're in, it asks for your club and then
 shows the sign-in screen.
 Once you pick your club and sign in it switches to West Coast Thunder's logo and colours and

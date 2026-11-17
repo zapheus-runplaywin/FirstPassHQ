@@ -3,10 +3,15 @@
 The **Beta build** workflow starts the app builds for testers on Expo's build servers. Nothing needs
 to be installed on your computer once the one-time setup below is done.
 
-| Platform | What it builds                                              | How testers get it                                     |
-| -------- | ----------------------------------------------------------- | ------------------------------------------------------ |
-| Android  | An installable APK (`preview` profile)                      | Open the build page link on their phone and install it |
-| iOS      | A store build (`production` profile), sent on to TestFlight | The TestFlight app, after you add them as testers      |
+| Platform | Choice                     | What it builds                                                                     | How testers get it                                           |
+| -------- | -------------------------- | ---------------------------------------------------------------------------------- | ------------------------------------------------------------ |
+| Android  | `link`                     | An installable APK (`preview` profile)                                             | Open the build page link on their phone and install it       |
+| Android  | `play-closed-test`         | A store bundle, `.aab` (`production` profile), sent to the Play closed test as a draft | The Play Store, once you roll the draft out in Play Console  |
+| Android  | `play-closed-test-rollout` | The same store bundle, rolled out to closed testers straight away                  | The Play Store, after joining the closed test                |
+| iOS      |                            | A store build (`production` profile), sent on to TestFlight                        | The TestFlight app, after you add them as testers            |
+
+The Google Play choices need the one-time Play Console setup in
+[Google Play closed testing](play-closed-testing.md) first.
 
 Both use the live Supabase project (see [Test and live](environments.md)). Each build counts towards
 the Expo plan's monthly builds, so the workflow only runs when you start it.
@@ -23,7 +28,7 @@ the Expo plan's monthly builds, so the workflow only runs when you start it.
    first build of each platform has to be started by hand, where EAS asks to create and keep the
    signing keys:
    - Android: `npx eas-cli@latest build --platform android --profile preview`, and let EAS generate
-     a new keystore.
+     a new keystore. The Play closed test builds use the same keystore, as the upload key.
    - iOS (needs a paid Apple Developer account):
      `npx eas-cli@latest build --platform ios --profile production --auto-submit`. Sign in with your
      Apple ID when asked. EAS creates the certificates and the app in App Store Connect, and saves
@@ -38,11 +43,15 @@ the Expo plan's monthly builds, so the workflow only runs when you start it.
 ## Making a build
 
 1. In GitHub, open **Actions > Beta build > Run workflow**.
-2. Pick **android**, **ios** or **both**. For iOS you can add a note on what testers should try.
+2. Pick **android**, **ios** or **both**. For Android, pick how testers get it (the table above);
+   it starts on `link`. For iOS you can add a note on what testers should try.
 3. When the run finishes, its summary has a link to each build on expo.dev.
 
-- **Android:** when the build is done, share its expo.dev page with testers. It has an install link
-  and a QR code. Testers may need to allow installs from their browser.
+- **Android, `link`:** when the build is done, share its expo.dev page with testers. It has an
+  install link and a QR code. Testers may need to allow installs from their browser.
+- **Android, Play closed test:** the build page shows the submission to Google Play once the build
+  is done. A draft waits in **Closed testing - Alpha** until you roll it out. Testers update from
+  the Play Store. See [Google Play closed testing](play-closed-testing.md).
 - **iOS:** Apple processes the build before it appears in TestFlight. Add testers in App Store
   Connect under **TestFlight**. People in your Apple team can test straight away; anyone else needs
   Apple's beta review the first time.

@@ -15,14 +15,24 @@
     "production": {
       "autoIncrement": true,
       "channel": "production",
-      "environment": "production"
+      "environment": "production",
+      "android": {
+        "buildType": "app-bundle"
+      }
     }
   },
   "submit": {
     "production": {
       "android": {
-        "track": "internal",
+        "track": "alpha",
         "releaseStatus": "draft"
+      }
+    },
+    "closed-test-rollout": {
+      "extends": "production",
+      "android": {
+        "track": "alpha",
+        "releaseStatus": "completed"
       }
     }
   }

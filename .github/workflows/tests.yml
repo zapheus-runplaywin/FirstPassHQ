@@ -80,6 +80,9 @@ jobs:
       - name: Test clubs stay off without TEST_CLUBS
         if: ${{ !cancelled() }}
         run: python3 scripts/test-workflow-test-clubs.py
+      - name: Store builds go to the Google Play closed test
+        if: ${{ !cancelled() }}
+        run: python3 scripts/test-store-build.py
 
   # The real web build driven through key flows in Chromium at phone size, with
   # Supabase answered by e2e/support/fake-supabase.ts, so a broken build or a
