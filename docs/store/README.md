@@ -1,0 +1,60 @@
+# Store listing pack
+
+Everything Google Play and the App Store ask about FirstPass HQ, each answer checked against the
+code, plus the text of the three public pages the stores link to. Design: tab D4 of the year-end
+launch plan (work item W3). Nothing outside `docs/store/` changes for this pack, and the user
+guide doesn't change, because nothing a member sees or does changes.
+
+## Files
+
+| File | What it holds | Step |
+| --- | --- | --- |
+| [data-inventory.md](data-inventory.md) | The single source: every kind of data, where in the code, why, who sees it, how long, whether it leaves the club's project | 1 |
+| [play-data-safety.md](play-data-safety.md) | Google's Data safety form, question by question | 1 |
+| [play-app-content.md](play-app-content.md) | App access, ads, content rating, target audience, health, advertising ID, privacy and deletion links | 1 |
+| [play-listing.md](play-listing.md) | Name, descriptions, category, contact details, countries | 1 |
+| [review-notes.md](review-notes.md) | What reviewers need: the DEMO club, which account shows which role, what the app is for. Never the password | 1 |
+| [public-pages/privacy.md](public-pages/privacy.md) | Privacy policy page | 1 |
+| [public-pages/support.md](public-pages/support.md) | Support page | 1 |
+| [public-pages/delete-account.md](public-pages/delete-account.md) | Delete-my-account page | 1 |
+| `apple-privacy-labels.md`, `apple-listing.md` | Apple's privacy questions and listing, age rating, export compliance | 2, Fri 27 Nov |
+| `screenshots/` | Store screenshots and Google's feature graphic, sample people only | 3, Fri 4 Dec |
+
+The public pages are published by the small site in the Vantage and Vision repo (`apps/site`,
+work item W9), which copies these Markdown files word for word. They are plain Markdown on
+purpose: one `# Title` line, then headings, paragraphs, lists, bold and links only, and links
+between pages as `/privacy`, `/support` and `/delete-account`. Keep it that way when editing.
+Change the words here, then the site copies them again.
+
+## To confirm before any form is filled
+
+| What | Who | Needed by | Where it is used |
+| --- | --- | --- | --- |
+| The youngest person who signs in themselves | Matt | Thu 19 Nov | Target audience, content rating, Families Policy box |
+| A support email address you're happy to show in public | Matt | Thu 19 Nov | `[SUPPORT EMAIL]` in the three pages, Play contact details, IARC, TestFlight feedback |
+| The name the pages give as the app's operator (your own name, as on the App Store, or PiVT) | Matt | Thu 19 Nov | `[OPERATOR NAME]` in the privacy page |
+| A read of the privacy, support and delete pages, including the 14-day reply promised on the delete page | Matt | Thu 19 Nov | Before W9 publishes them |
+| The demo club sign-in and its account addresses | W7, after Matt's yes to tab D2 | Thu 19 Nov | App access, review notes |
+| The public page addresses (planned `https://firstpass-hq.expo.app/...`) | W9 | Thu 19 Nov | Privacy policy and deletion links in Play |
+| No `AD_ID` permission in the first store build's merged manifest | W8 | First upload | Advertising ID answer |
+| The test project's region (the demo club holds sample people only) | Matt | Step 2 | Data inventory |
+| Whether the record of who opened a child's records stays after the child's account is deleted (open from security audit run 1; today it is deleted) | Matt | Step 2 | Data inventory, delete page |
+| The app's name on each store, if not "FirstPass HQ" | Matt | Thu 19 Nov | Listing |
+
+`[DATE PUBLISHED]` at the top of the privacy page is filled in when it goes live.
+
+## Checks before anything is submitted
+
+There is no code here, so the check is consistency. Before a form is filled or a link is given
+to a store:
+
+- the privacy page, the Data safety answers and (step 2) Apple's privacy labels are compared row
+  by row against `data-inventory.md`;
+- the delete page is compared with `src/app/delete-account.tsx` and `delete_member_now`;
+- the review notes are compared with the demo accounts W7 actually creates;
+- every screenshot is checked for real names (there must be none) and the current brand kit;
+- the published pages are compared with the files here.
+
+When a pull request changes what the app collects, who sees it, how long it's kept or how
+deletion works, it updates `data-inventory.md` and the files that quote it in the same pull
+request.
