@@ -3,8 +3,14 @@ name: Beta build
 # Starts the app builds for beta testers on Expo's build servers (EAS), so no
 # computer with Xcode or Android Studio is needed. Run it by hand from Actions.
 #
-# - Android: an installable APK (the preview profile). Testers open the link
-#   on the build page to install it.
+# - Android, one of:
+#   - link: an installable APK (the preview profile). Testers open the link on
+#     the build page to install it.
+#   - play-closed-test: a store bundle (.aab, the production profile) sent to
+#     Google Play's closed testing track as a draft release, which you roll out
+#     in Play Console.
+#   - play-closed-test-rollout: the same, rolled out to testers straight away.
+#     Only works once a closed-test release has been rolled out by hand.
 # - iOS: a store build (the production profile) sent on to TestFlight.
 #
 # Builds use the live Supabase project, from the EAS environment named after
@@ -18,6 +24,11 @@ on:
         type: choice
         options: [android, ios, both]
         default: android
+      android_build:
+        description: 'Android only: an install link, or a store bundle sent to the Google Play closed test'
+        type: choice
+        options: [link, play-closed-test, play-closed-test-rollout]
+        default: link
       what_to_test:
         description: 'iOS only: what testers should try, shown in TestFlight (optional)'
         type: string
@@ -55,8 +66,15 @@ jobs:
         if: inputs.platform != 'ios'
         env:
           EXPO_TOKEN: ${{ secrets.EXPO_TOKEN }}
+          ANDROID_BUILD: ${{ inputs.android_build }}
         run: |
-          npx --yes eas-cli@24.12.0 build --platform android --profile preview \
+          case "$ANDROID_BUILD" in
+            link) args=(--profile preview) ;;
+            play-closed-test) args=(--profile production --auto-submit-with-profile production) ;;
+            play-closed-test-rollout) args=(--profile production --auto-submit-with-profile closed-test-rollout) ;;
+            *) echo "::error::Unknown Android build: $ANDROID_BUILD"; exit 1 ;;
+          esac
+          npx --yes eas-cli@24.12.0 build --platform android "${args[@]}" \
             --non-interactive --no-wait | tee android.log
       - name: Build for iOS and send it to TestFlight
         if: inputs.platform != 'android'
