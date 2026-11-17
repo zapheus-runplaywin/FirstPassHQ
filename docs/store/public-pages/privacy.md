@@ -54,7 +54,7 @@ These services help us run the app:
 - **Google** signs you in when you choose Continue with Google. The app receives your Google account's email.
 - **Expo, Apple and Google** deliver notifications to your phone. Each notification's title and text (which can include a person's name, never injury details) and your phone's notification token pass through them.
 
-Google sign-in and the notification services are run from outside Australia, so your Google account's email at sign-in, and each notification's title, text and token, are handled by those companies outside Australia under their own privacy terms. Everything else stays in your club's database in Sydney.
+Google sign-in and the notification services are run from outside Australia, so your Google account's email at sign-in, and each notification's title, text and token, are handled by those companies outside Australia under their own privacy terms. The records your club keeps are stored in its database and files in Sydney.
 
 ## How long it is kept
 
