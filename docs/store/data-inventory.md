@@ -5,9 +5,9 @@ data is, where it lives in the code, why the app keeps it, who can see it, how l
 whether it leaves the club's own Supabase project. The other files in `docs/store/` quote from
 this one. If they disagree, this file wins, and this file must match the code.
 
-Checked against `main` at commit `7ceb1aa` (17 Nov 2026, after #217). Rows for the Apple sign-in
-identifier (W1) and crash reports (W2) are added only after those merge, because the pack
-describes what is merged.
+Checked against `main` at commit `7ceb1aa` (17 Nov 2026, after #217), and row 1 again at
+`ba4c638` (18 Nov, after Sign in with Apple #219 and its revoke on delete #221). A row for crash
+reports (W2) is added only after it merges, because the pack describes what is merged.
 
 ## Where the data is
 
@@ -39,10 +39,10 @@ about a member named in a concern is removed while it names them (legal hold,
 
 | # | Data | Where in the code | Why | Who can see it | Kept for (default) | Leaves the club's project? |
 | --- | --- | --- | --- | --- | --- | --- |
-| 1 | Sign-in account: Google account email and Supabase user id | Supabase Auth, `profiles.email` (`20261007000000_init.sql`), `src/lib/sign-in.ts` | Sign in | The member; admins | Until the account is deleted | Google handles the sign-in itself. Nothing else |
+| 1 | Sign-in account: the Google or Apple account's email (with Apple's Hide My Email, a private relay address), the name Apple gives on the first sign-in, and the Supabase user id | Supabase Auth, `profiles.email` (`20261007000000_init.sql`), `src/lib/sign-in.ts` (#219) | Sign in | The member; admins | Until the account is deleted | Google or Apple handles the sign-in itself. When a member who used Apple deletes their account, the `revoke-apple` edge function sends Apple a one-time code to revoke the app's access, and stores nothing (#221) |
 | 2 | Name, preferred name, role, title, squads and teams | `profiles` (`init`, `20261009100000_preferred_name_and_title.sql`, `20261009110000_multiple_roles.sql`), `team_members` | Run the club, address messages | Club members, by role (user guide section 11) | Until the account is deleted | Names can appear in push notification text (row 19) |
 | 3 | Date of birth | `profiles.date_of_birth` (`20261013020000_date_of_birth_at_join.sql`) | Decide whether the under-18 rules apply | The member, their guardians, admins | Until the account is deleted | No |
-| 4 | PlayHQ email (when it differs from the sign-in email) | `profiles.playhq_email` (`init`) | Match the member to the club's PlayHQ registrations | The member, admins | Until the account is deleted | No |
+| 4 | PlayHQ email (when it differs from the sign-in email; optional after Hide My Email, except for parents and guardians) | `profiles.playhq_email` (`init`) | Match the member to the club's PlayHQ registrations | The member, admins | Until the account is deleted | No |
 | 5 | Guardian links, link codes and their history | `guardianships`, `guardian_link_codes`, `guardianship_history` (`20261007060000_guardians.sql`, `20261101000000_parent_link_codes.sql`, `20261013050000_guardian_history.sql`) | Let a verified parent see and approve their child's use | The child, their guardians, admins | Links: until deleted. History: safeguarding period, 30 years | No |
 | 6 | Working With Children Check number, card name, expiry, application receipts, exemptions | `profiles.wwcc_*` (`20261013030000_wwcc_records.sql`), `wwcc_applications` and the `wwcc-receipts` bucket (`20261023100000_wwcc_applications.sql`), `volunteer_exemptions` | WA law requires screening of people working with children | The member, admins, the club's WWC officer | Until the account is deleted; exemptions and notices for the safeguarding period, 30 years | No (admins check cards on the Screening Unit's own site) |
 | 7 | Injury records, physio updates, clearances, and injury documents (letters, reports, photos of letters) | `injuries`, `injury_updates`, `injury_document_events` (`20261007120000_injuries.sql`, `20261013000000_injury_documents.sql`, `20261022100000_injury_records.sql`) | Keep injured athletes safe and clear them to play | The athlete, their guardians, their coaches and physios (for under 18s only with a verified parent's consent), admins | Documents: 1 year after clearance. Injuries: 7 years after clearance, or after the athlete leaves | No |
@@ -108,10 +108,10 @@ should stay after the child's account is deleted. Today it is deleted with the a
 
 ## Ages
 
-- The join flow asks everyone for a date of birth and has **no minimum age**
-  (`src/app/join.tsx`).
+- The join flow asks everyone for a date of birth (`src/app/join.tsx`).
 - An athlete under 18 stays locked, seeing only a link code, until an admin links a verified
   parent or guardian (`20261101000000_parent_link_codes.sql`, #201).
 - Guests must be 18 or over (user guide section 1).
-- **To confirm with Matt:** the youngest person who signs in themselves. The store age and
-  audience answers depend on it (see [play-app-content.md](play-app-content.md)).
+- **13 and over this year** (Matt, 18 Nov). The join step refuses a date of birth under 13 and
+  saves nothing, and admins can't approve anyone under 13 (#225,
+  `20261118100000_join_age_13.sql`). Members approved before it are unchanged.

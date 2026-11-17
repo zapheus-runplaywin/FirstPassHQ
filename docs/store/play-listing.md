@@ -66,7 +66,7 @@ price claims in these fields; the text has none.
 
 ## Contact details
 
-- **Email:** the public support address, **to confirm with Matt**.
+- **Email:** pivtmedia@gmail.com.
 - **Website:** the support page, **to confirm** when W9 publishes it (planned
   `https://firstpass-hq.expo.app/support`).
 - **Phone:** leave blank.

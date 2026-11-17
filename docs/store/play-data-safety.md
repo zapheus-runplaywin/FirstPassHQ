@@ -16,10 +16,10 @@ thread so the file is updated.
 | --- | --- | --- |
 | Does your app collect or share any of the required user data types? | **Yes** | Rows 1 to 20 |
 | Is all of the user data collected by your app encrypted in transit? | **Yes** | HTTPS/TLS to Supabase and to Expo's push service |
-| Which of the following methods of account creation does your app support? | **OAuth** (Sign in with Google). Add Sign in with Apple when W1 merges | `src/lib/sign-in.ts` |
+| Which of the following methods of account creation does your app support? | **OAuth** (Sign in with Google; Sign in with Apple on iPhone, #219) | `src/lib/sign-in.ts` |
 | Delete account URL | The public delete page, **to confirm** when W9 publishes it (planned `https://firstpass-hq.expo.app/delete-account`) | [public-pages/delete-account.md](public-pages/delete-account.md) |
 | Do you provide a way for users to request that some or all of their data is deleted, without requiring them to delete their account? | **No** | The app deletes the whole account; other requests go to the club's admin, which is not a self-serve path. Answer Yes only if you want to offer it by email |
-| Committed to the Play Families Policy | Only if the target audience includes children under 13. **To confirm** with the age answer in [play-app-content.md](play-app-content.md) | |
+| Committed to the Play Families Policy | **No** | The app is 13 and over (Matt, 18 Nov). See [play-app-content.md](play-app-content.md#target-audience-and-content) |
 | Independent security review | **No** (optional) | |
 
 ## Data types
