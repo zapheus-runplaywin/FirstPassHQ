@@ -34,10 +34,13 @@ never in this repository (`scripts/test-store-build.py` refuses a key file in `e
    download its JSON key.
 2. In Play Console, **Users and permissions > Invite new users**, add the service account's email,
    and give it **Release apps to testing tracks** for FirstPass HQ (and **View app information**).
-3. Upload the key to EAS from your computer:
+3. Give the key to EAS. The easiest way needs no command line: on [expo.dev](https://expo.dev), open
+   the project, then **Credentials > Android >** `au.pivt.firstpass.hq` **> Service credentials >
+   Add a Google service account key**, and upload the JSON file. From a computer instead:
    `npx eas-cli@latest credentials --platform android`, choose the **production** profile, then
-   **Google Service Account > Upload a Google Service Account Key**. Delete the downloaded JSON file
-   afterwards.
+   **Google Service Account > Manage your Google Service Account Key for Play Store Submissions >
+   Set up a Google Service Account Key for Play Store Submissions**. Either way, delete the
+   downloaded JSON file afterwards.
 
 Without this the Android build still finishes, but its submission fails with a message about the
 missing key.
@@ -61,20 +64,21 @@ People on the list who haven't opened the link and joined don't count towards th
 ## 4. Fill in the App content forms
 
 Under **Monitor and improve > Policy and programs > App content** (also listed on the **Dashboard**
-as setup tasks), Google wants these before any reviewed release. Answers must match what the app
-really does.
+as setup tasks), Google wants these before any reviewed release. The answers, checked against the
+code, are in the store listing pack: [play-app-content.md](store/play-app-content.md) for every form
+and [play-data-safety.md](store/play-data-safety.md) for Data safety. Keep them there, so there is
+one source.
 
-| Form | What to give |
-| --- | --- |
-| Privacy policy | The public privacy policy address. The club template in `docs/policies/` is not a public page |
-| App access | "All or some functionality is restricted", with sign-in instructions a reviewer can follow without a personal Google account |
-| Ads | No ads |
-| Content rating | Fill in the questionnaire: a club administration app with messages between club members, no user-generated public content |
-| Target audience and content | The age groups who sign in themselves. Pick only ages that really sign in, because choosing under 13 brings the Families policy |
-| Data safety | What the app collects and why: names, emails, dates of birth, health information (injuries, check-ins), messages, photos of session plans. Nothing sold or used for ads; data encrypted in transit; members can delete their account in the app |
-| Account deletion | A public web page where members can ask for their account and data to be deleted, plus a note that **Delete account** at the bottom of the home screen does it in the app. Say what the club keeps afterwards (injury records for its keep period, code of conduct acceptances, concerns), as the user guide's "Deleting your account" does |
-| Government apps, financial features, news | No |
-| Health apps | Declare it if asked: it records injuries and wellbeing check-ins for club members |
+The forms:
+
+- Privacy policy
+- App access
+- Ads
+- Content rating
+- Target audience and content
+- Data safety
+- Account deletion
+- Government apps, financial features, news and health apps declarations
 
 ## 5. The first upload
 

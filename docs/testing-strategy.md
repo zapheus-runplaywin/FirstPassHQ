@@ -65,6 +65,7 @@ The Jest coverage floor is set in `package.json` (`jest.coverageThreshold`): 91%
    - `jest.after-env.ts` unmounts each test's screen and clears the long-lived mocks (React Native's native-method and `performance.now` mocks, and the Supabase client) after every test. Without it each screen test kept about 1 MB, and the 2,815 route tests in `route-guards-roles.test.tsx` ran out of memory.
    - Since SDK 58 the imperative `router` binds its methods when a screen first renders. `openScreen` and `openRoute` keep a `jest.spyOn(router, ...)` made before that; spy after rendering in a test that renders some other way.
 6. **Dates:** fix "today" in any test that depends on it (`jest.useFakeTimers().setSystemTime(...)`), because CI runs in UTC.
+   Database tests can't fix the clock, so they work from "today" in the database (UTC in CI). The migrations and sample members fill in dates from today too, so `scripts/run-sql-tests.sh` rebuilds the test database if the date changes during a run (a run that crosses midnight UTC, 8 am in Perth); `scripts/test-run-sql-tests.sh` checks it does. To see a database test's behaviour on another day or time, run Postgres under `faketime`.
 7. **Bugs:** when a test finds a bug, fix it with that test, in the same pull request or the next one. The test must fail before the fix and pass after it.
 8. **Changing what a test expects:** only when the rule itself changes. Say in the pull request which expectations changed and why. Never skip, delete or weaken a test to get green.
 
