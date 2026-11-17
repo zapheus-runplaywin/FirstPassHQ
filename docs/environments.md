@@ -100,7 +100,10 @@ names the project, so no code changes:
 3. In **Actions**, run **Deploy migrations** by hand with **New live project** ticked. The live
    deploy normally refuses a database with no record of any migrations; this lets an empty one take
    them all. Only Matt can tick it, and it does nothing on a project that already has migrations.
-4. Run **Deploy PlayHQ function** and **Purge expired injury records** once each.
+4. Run **Deploy PlayHQ function** and **Purge expired injury records** once each. Set the
+   `revoke-apple` function's `APPLE_TEAM_ID`, `APPLE_KEY_ID` and `APPLE_PRIVATE_KEY` secrets on the
+   new project ([docs/new-club-setup.md](new-club-setup.md#1-create-the-clubs-supabase-project))
+   and run **Deploy Apple revoke function**, so deleting an Apple member's account revokes their Apple sign-in.
 5. Installed apps keep the old address until they get an update (`scripts/publish-update.sh`) or a
    new build.
 
@@ -137,7 +140,10 @@ Add these repository secrets, with `2` for the first project and `3` for the sec
 
 Both access tokens can be the same token. Add the repository variable `TEST_CLUBS` set to
 `[2, 3]`, then run **Deploy migrations**, **Deploy PlayHQ function** and **Purge expired injury
-records** once each with **Run workflow**. Database changes
+records** once each with **Run workflow**. For Sign in with Apple, turn on the Apple provider on
+each (Client IDs `au.pivt.firstpass.hq` and `host.exp.Exponent`) and give the `revoke-apple`
+function its three Apple secrets, then run **Deploy Apple revoke function**, as for the test
+project. Database changes
 reach the test clubs after the test project. The live deploy doesn't wait for them, so a paused
 test club never holds it up; its job fails and says so.
 

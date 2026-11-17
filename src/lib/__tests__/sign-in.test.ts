@@ -20,8 +20,11 @@ import {
   appleSignInAvailable,
   isHiddenAppleEmail,
   nameFromSignIn,
+  REVOKE_TIMEOUT_MS,
+  revokeAppleSignIn,
   signInWithApple,
   signInWithGoogle,
+  usesAppleSignIn,
 } from '@/lib/sign-in';
 import { supabase } from '@/lib/supabase';
 
@@ -308,5 +311,76 @@ describe('names from a sign-in', () => {
     [undefined, null],
   ])('the sign-in’s %j is %p', (metadata, expected) => {
     expect(nameFromSignIn(metadata as never)).toBe(expected);
+  });
+});
+
+describe('revoking Sign in with Apple when the account is deleted', () => {
+  const realOS = Platform.OS;
+  const functions = supabase as unknown as { functions: { invoke: jest.Mock } };
+
+  beforeEach(() => {
+    Object.defineProperty(Platform, 'OS', { configurable: true, get: () => 'ios' });
+    appleAvailable.mockReset().mockResolvedValue(true);
+    appleSignIn.mockReset().mockResolvedValue({ user: 'apple-user-1', authorizationCode: 'fresh-code', identityToken: 'x' });
+    functions.functions = { invoke: jest.fn(async () => ({ data: { revoked: true }, error: null })) };
+  });
+  afterAll(() => Object.defineProperty(Platform, 'OS', { configurable: true, get: () => realOS }));
+
+  it('asks Apple to confirm, asking for nothing about the person, and sends the fresh code to revoke-apple', async () => {
+    await expect(revokeAppleSignIn()).resolves.toBe('revoked');
+    expect(appleSignIn).toHaveBeenCalledWith({ requestedScopes: [] });
+    expect(functions.functions.invoke).toHaveBeenCalledWith('revoke-apple', {
+      body: { authorization_code: 'fresh-code' },
+      // Bounded, so the delete button is never held for long.
+      timeout: REVOKE_TIMEOUT_MS,
+    });
+    expect(REVOKE_TIMEOUT_MS).toBe(15_000);
+  });
+
+  it('says cancelled, and calls nothing, when the member cancels Apple’s sheet', async () => {
+    appleSignIn.mockRejectedValue(Object.assign(new Error('canceled'), { code: 'ERR_REQUEST_CANCELED' }));
+    await expect(revokeAppleSignIn()).resolves.toBe('cancelled');
+    expect(functions.functions.invoke).not.toHaveBeenCalled();
+  });
+
+  it.each([
+    ['Apple fails', () => appleSignIn.mockRejectedValue(Object.assign(new Error('x'), { code: 'ERR_REQUEST_FAILED' }))],
+    ['Apple fails with no code', () => appleSignIn.mockRejectedValue(null)],
+    ['Apple returns no code', () => appleSignIn.mockResolvedValue({ user: 'u', authorizationCode: null })],
+  ])('says failed, and calls nothing, when %s', async (_label, arrange) => {
+    arrange();
+    await expect(revokeAppleSignIn()).resolves.toBe('failed');
+    expect(functions.functions.invoke).not.toHaveBeenCalled();
+  });
+
+  it.each([
+    ['the club’s Apple key isn’t set', { name: 'FunctionsHttpError', context: new Response('{}', { status: 503 }) }],
+    ['the function can’t be reached', { name: 'FunctionsFetchError', context: undefined }],
+    ['the call times out', { name: 'FunctionsFetchError', context: new DOMException('aborted', 'AbortError') }],
+  ])('says failed when %s', async (_label, error) => {
+    functions.functions.invoke.mockResolvedValue({ data: null, error });
+    await expect(revokeAppleSignIn()).resolves.toBe('failed');
+  });
+
+  it('says failed without asking Apple where Apple sign-in isn’t available', async () => {
+    Object.defineProperty(Platform, 'OS', { configurable: true, get: () => 'android' });
+    await expect(revokeAppleSignIn()).resolves.toBe('failed');
+    expect(appleSignIn).not.toHaveBeenCalled();
+  });
+});
+
+describe('who signed in with Apple', () => {
+  it.each([
+    [{ app_metadata: { provider: 'apple', providers: ['apple'] } }, true],
+    [{ app_metadata: { provider: 'google', providers: ['google', 'apple'] } }, true],
+    [{ app_metadata: { provider: 'apple' } }, true],
+    [{ app_metadata: { provider: 'google', providers: ['google'] } }, false],
+    [{ app_metadata: { provider: 'google', providers: 'apple' } }, false],
+    [{ app_metadata: {} }, false],
+    [{}, false],
+    [null, false],
+    [undefined, false],
+  ])('%j: %p', (user, expected) => {
+    expect(usesAppleSignIn(user as never)).toBe(expected);
   });
 });

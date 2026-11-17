@@ -76,7 +76,7 @@ The test strategy, layers and the kinds of member every access test considers ar
 
 RULE: always run the newest Supabase CLI release (Matt, 2026-10-15).
 
-- The workflows pin the CLI with `version:` on each `supabase/setup-cli` step (Deploy migrations, PlayHQ function, Purge expired injuries). When a newer release is out (the CLI prints "A new version of Supabase CLI is available", or check https://github.com/supabase/cli/releases), bump every pin to it in one pull request.
+- The workflows pin the CLI with `version:` on each `supabase/setup-cli` step (Deploy migrations, PlayHQ function, Purge expired injuries, Apple revoke function). When a newer release is out (the CLI prints "A new version of Supabase CLI is available", or check https://github.com/supabase/cli/releases), bump every pin to it in one pull request.
 - `scripts/deploy-migrations.sh` reads the JSON from `supabase db push --dry-run --output-format json`. Before bumping, run that dry run with the new version against a local Postgres and confirm it still lists `migrations`.
 - Update any local or session copy of the CLI to the same release before using it.
 

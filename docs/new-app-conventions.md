@@ -25,7 +25,7 @@ _Rewritten for design C on 15 November 2026. The rules marked "after the proof" 
 
 - **Sign in through the central FirstPass sign-in, using the shared sign-in package.** Never write sign-in inside an app. There are four hand-written versions today.
 - **Google and Apple are set up once, on the central sign-in** (after the proof). A club project has no sign-in providers of its own.
-- **Until then, HQ turns on Apple per club,** for iPhones only, natively with no secret key (added 17 November 2026 for Apple's login rule 4.8). This is temporary: the central sign-in takes it over, and Apple's id for a person is the same for every app from one developer team, so it recognises the same people.
+- **Until then, HQ turns on Apple per club,** for iPhones only, natively with no secret key for signing in; the revoke on account deletion uses the team's Sign in with Apple key as a function secret (added 17 November 2026 for Apple's login rule 4.8). This is temporary: the central sign-in takes it over, and Apple's id for a person is the same for every app from one developer team, so it recognises the same people.
 - **A club project accepts tokens only from the central sign-in** (after the proof). Every access rule keeps that check.
 - **Keep tokens encrypted on the device,** as HQ does and Vantage and Vision do not.
 - **Sign out on this device only,** so one product does not sign the person out of another.
