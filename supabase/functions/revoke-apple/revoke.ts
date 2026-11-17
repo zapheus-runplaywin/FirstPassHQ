@@ -168,6 +168,12 @@ export async function handleRevoke(request: Request, deps: Deps): Promise<Respon
   const member = await deps.member(request.headers.get('authorization') ?? '');
   if (!member) return json(401, { error: 'Sign in first.' });
 
+  // Nothing to revoke for someone who never signed in with Apple, so Apple
+  // isn't asked at all.
+  if (!member.identities.some((i) => i.provider === 'apple')) {
+    return json(403, { error: 'That Apple sign-in isn’t yours.' });
+  }
+
   let code: unknown;
   try {
     code = ((await request.json()) as { authorization_code?: unknown }).authorization_code;

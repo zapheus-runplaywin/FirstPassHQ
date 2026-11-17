@@ -760,11 +760,13 @@ shows each one and where it's up to: Received, Referred, Being looked into or Cl
 you're in: your profile, your squad and team places, guardian links, your personal tasks and your
 messages inbox. Messages you sent to a group stay with the people who received them. Tap
 **Delete my account**, then **Delete my account permanently** to confirm. If you signed in with
-Apple, Apple asks you to confirm once more with Face ID, Touch ID or your passcode; that also stops
+Apple and you're on an iPhone or iPad, Apple asks you to confirm once more with Face ID, Touch ID or your passcode; that also stops
 the app using your Apple sign-in (your Apple Account itself isn't changed). Apple's permission is
 for the whole app, so if you belong to another club in FirstPass HQ, your account there stays and
 Apple just asks you to agree again next time you sign in there. Cancelling Apple's sheet keeps
-your account. If Apple can't be reached, your account is still deleted. If you sign in again
+your account. If Apple can't be reached, your account is still deleted. If the club then can't
+delete your account (see below), your Apple sign-in still works: Apple just asks you to agree again
+next time. If you sign in again
 later, you'll need to ask to join again. Now and then the club has to keep an account for a legal
 matter; then the app says it can't be deleted at the moment and asks you to contact a club admin.
 

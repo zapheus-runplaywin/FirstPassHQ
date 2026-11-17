@@ -134,6 +134,9 @@ export function usesAppleSignIn(
   return meta.provider === 'apple' || (Array.isArray(meta.providers) && meta.providers.includes('apple'));
 }
 
+/** How long the delete screen waits for the revoke before deleting anyway. */
+export const REVOKE_TIMEOUT_MS = 15_000;
+
 /** How revoking went: only "cancelled" stops the account being deleted. */
 export type AppleRevokeResult = 'revoked' | 'cancelled' | 'failed';
 
@@ -166,8 +169,11 @@ export async function revokeAppleSignIn(): Promise<AppleRevokeResult> {
     log.warn('Apple revoke: Apple returned no authorization code');
     return 'failed';
   }
+  // Bounded, so a slow network or Apple never holds the delete button for
+  // long: a timeout counts as failed and the deletion goes ahead.
   const { error } = await supabase.functions.invoke('revoke-apple', {
     body: { authorization_code: code },
+    timeout: REVOKE_TIMEOUT_MS,
   });
   if (error) {
     const context = (error as { context?: unknown }).context;

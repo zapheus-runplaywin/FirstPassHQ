@@ -230,7 +230,6 @@ describe('never revokes someone else’s Apple sign-in', () => {
     ['a different Apple user', { body: { refresh_token: 'r', id_token: idToken('apple-sub-OTHER') } }, appleMember],
     ['no id token', { body: { refresh_token: 'r' } }, appleMember],
     ['an id token that can’t be read', { body: { refresh_token: 'r', id_token: 'a.%%%.c' } }, appleMember],
-    ['a member who never signed in with Apple', undefined, { id: 'member-2', identities: [{ provider: 'google', ids: ['apple-sub-1'] }] }],
   ])('refuses %s', async (_label, token, member) => {
     const { deps, calls } = setup({ token, member });
     expect(await answer(await handleRevoke(request(), deps))).toEqual({
@@ -239,6 +238,15 @@ describe('never revokes someone else’s Apple sign-in', () => {
     });
     expect(calls.map((c) => c.url)).toEqual([`${APPLE}/auth/token`]);
   });
+});
+
+it('refuses a member who never signed in with Apple without asking Apple, even with a code', async () => {
+  const { deps, calls } = setup({ member: { id: 'member-2', identities: [{ provider: 'google', ids: ['apple-sub-1'] }] } });
+  expect(await answer(await handleRevoke(request(), deps))).toEqual({
+    status: 403,
+    body: { error: 'That Apple sign-in isn’t yours.' },
+  });
+  expect(calls).toEqual([]);
 });
 
 describe('finding Apple’s id on the member’s identities', () => {

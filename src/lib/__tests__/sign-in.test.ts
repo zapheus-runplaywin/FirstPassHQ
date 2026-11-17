@@ -20,6 +20,7 @@ import {
   appleSignInAvailable,
   isHiddenAppleEmail,
   nameFromSignIn,
+  REVOKE_TIMEOUT_MS,
   revokeAppleSignIn,
   signInWithApple,
   signInWithGoogle,
@@ -330,7 +331,10 @@ describe('revoking Sign in with Apple when the account is deleted', () => {
     expect(appleSignIn).toHaveBeenCalledWith({ requestedScopes: [] });
     expect(functions.functions.invoke).toHaveBeenCalledWith('revoke-apple', {
       body: { authorization_code: 'fresh-code' },
+      // Bounded, so the delete button is never held for long.
+      timeout: REVOKE_TIMEOUT_MS,
     });
+    expect(REVOKE_TIMEOUT_MS).toBe(15_000);
   });
 
   it('says cancelled, and calls nothing, when the member cancels Apple’s sheet', async () => {
@@ -352,6 +356,7 @@ describe('revoking Sign in with Apple when the account is deleted', () => {
   it.each([
     ['the club’s Apple key isn’t set', { name: 'FunctionsHttpError', context: new Response('{}', { status: 503 }) }],
     ['the function can’t be reached', { name: 'FunctionsFetchError', context: undefined }],
+    ['the call times out', { name: 'FunctionsFetchError', context: new DOMException('aborted', 'AbortError') }],
   ])('says failed when %s', async (_label, error) => {
     functions.functions.invoke.mockResolvedValue({ data: null, error });
     await expect(revokeAppleSignIn()).resolves.toBe('failed');

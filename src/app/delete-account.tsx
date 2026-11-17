@@ -1,4 +1,5 @@
 import { useState } from 'react';
+import { Platform } from 'react-native';
 
 import { Screen } from '@/components/screen';
 import { ThemedText } from '@/components/themed-text';
@@ -12,7 +13,9 @@ import { supabase } from '@/lib/supabase';
 export default function DeleteAccountScreen() {
   const club = useClub();
   const { session, profile, signOut } = useAuth();
-  const apple = usesAppleSignIn(session?.user);
+  // Apple can only be asked on an iPhone or iPad; elsewhere the revoke is
+  // skipped and the note would be wrong.
+  const apple = Platform.OS === 'ios' && usesAppleSignIn(session?.user);
   const [deleting, setDeleting] = useState(false);
   const [error, setError] = useState<string | null>(null);
 

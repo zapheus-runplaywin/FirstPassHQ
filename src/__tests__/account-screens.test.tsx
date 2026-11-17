@@ -13,6 +13,7 @@
  * database's row security keeps them theirs).
  */
 import { router } from 'expo-router';
+import { Platform } from 'react-native';
 import { fireEvent, screen } from 'expo-router/testing-library';
 
 import DeclarationScreen from '@/app/declaration';
@@ -288,6 +289,22 @@ describe('deleting the account', () => {
       expect(revoke).toHaveBeenCalledTimes(2);
       expect(argsOf('delete_my_account')).toEqual([undefined]);
     });
+
+    it.each(['android', 'web'] as const)(
+      'on %s, where Apple can’t be asked, shows no Apple note and deletes without revoking',
+      async (os) => {
+        const realOS = Platform.OS;
+        Object.defineProperty(Platform, 'OS', { configurable: true, get: () => os });
+        try {
+          await deleteAs(appleAthlete);
+          expect(screen.queryByText(/You signed in with Apple/)).toBeNull();
+          expect(revoke).not.toHaveBeenCalled();
+          expect(argsOf('delete_my_account')).toEqual([undefined]);
+        } finally {
+          Object.defineProperty(Platform, 'OS', { configurable: true, get: () => realOS });
+        }
+      },
+    );
 
     it('a Google member is never asked about Apple', async () => {
       await deleteAs(athlete);

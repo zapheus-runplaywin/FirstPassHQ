@@ -46,7 +46,9 @@ npx supabase functions deploy revoke-apple --project-ref <the club's project id>
 The key comes from the Apple Developer site: **Certificates, Identifiers & Profiles > Keys**, a new
 key with **Sign in with Apple** ticked and the app's App ID chosen as its primary App ID. Apple
 lets you download the `.p8` file once, so keep it somewhere safe. Until the secrets are set the
-function answers 503 and the account is still deleted; only the Apple revoke is skipped.
+function answers 503 and the account is still deleted; only the Apple revoke is skipped. The revoke
+can't succeed in Expo Go, because Apple issues the code to Expo Go (`host.exp.Exponent`) rather
+than the app, so test it on a signed build.
 
 ## 2. Bring its database up to date
 
