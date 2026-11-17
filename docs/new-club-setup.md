@@ -43,6 +43,9 @@ npx supabase secrets set --project-ref <the club's project id> \
 npx supabase functions deploy revoke-apple --project-ref <the club's project id> --use-api
 ```
 
+West Coast Thunder's own test and live projects are deployed by pressing **Actions > Deploy Apple
+revoke function** instead; like **Deploy migrations**, it doesn't reach other clubs yet.
+
 The key comes from the Apple Developer site: **Certificates, Identifiers & Profiles > Keys**, a new
 key with **Sign in with Apple** ticked and the app's App ID chosen as its primary App ID. Apple
 lets you download the `.p8` file once, so keep it somewhere safe. Until the secrets are set the

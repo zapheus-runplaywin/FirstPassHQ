@@ -58,9 +58,10 @@ Google only. Apple per club is temporary until the central sign-in in
 
 Revoking Apple's sign-in when a member deletes their account does need the developer team's Sign
 in with Apple key: set `APPLE_TEAM_ID`, `APPLE_KEY_ID` and `APPLE_PRIVATE_KEY` as secrets on the
-`revoke-apple` function and deploy it, on both the test and live projects
-([docs/new-club-setup.md](docs/new-club-setup.md#1-create-the-clubs-supabase-project) has the
-commands and where to make the key). Until then accounts are still deleted, only the revoke is
+`revoke-apple` function on both the test and live projects, then run **Actions > Deploy Apple
+revoke function** ([docs/new-club-setup.md](docs/new-club-setup.md#1-create-the-clubs-supabase-project)
+has the commands and where to make the key). That workflow only runs when pressed, so run it again
+after a merge that changes the function. Until then accounts are still deleted, only the revoke is
 skipped. The revoke can't succeed in Expo Go, because Apple issues the code to Expo Go
 (`host.exp.Exponent`), not to the app, so it is tested on a signed build.
 
