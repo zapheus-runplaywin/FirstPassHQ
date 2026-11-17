@@ -19,14 +19,14 @@ each store form yourself.
 | Account (placeholder) | Signs in as | What to look at |
 | --- | --- | --- |
 | `admin@demo.firstpass.example` | Admin | Administration: approving members, squads and teams, club settings, keep periods |
-| `coach@demo.firstpass.example` | Head coach with a current Working With Children Check | Messages to the team, attendance, injured athletes and restrictions, session plans |
-| `athlete@demo.firstpass.example` | Athlete, 18 or over | Home screen to-do list, calendar, daily check-in, reporting an injury or absence |
-| `parent@demo.firstpass.example` | Parent of an under 18 athlete | Only their own child's records; who opened them; consents |
-| `child@demo.firstpass.example` | Athlete under 18, linked to a verified parent | The under 18 rules |
+| `headcoach@demo.firstpass.example` | Head coach of the 20 & Under team, current Working With Children Check | Messages to the team, attendance, injured athletes and restrictions, session plans |
+| `athlete19@demo.firstpass.example` | Athlete aged 19 | Home screen to-do list, calendar, daily check-in, reporting an injury or absence |
+| `guardian@demo.firstpass.example` | Verified parent of `athlete16@` | Only their own child's records; who opened them; consents |
+| `athlete16@demo.firstpass.example` | Athlete aged 16, linked to a verified parent | The under 18 rules |
 
-D2 lists more demo accounts (assistant coach, manager, committee, physio, statistician, guest, a
-coach with an expired check, an unlinked child, a member outside the pilot team). They are for our
-own testers; give reviewers the five above so the form stays short.
+These names follow the shared list in project files `thunder/pilot/demo-accounts.md`, which W7, the
+pilot test scripts and these notes all use; it lists more accounts for our own testers. Give
+reviewers the five above so the form stays short.
 
 ## Google Play: App access instructions
 
@@ -39,8 +39,8 @@ boxes for username, password and other instructions.
 - **Any other information:**
 
 > Enter the club code DEMO on the first screen, then sign in with the email and password. This is
-> a demo club with sample people only. Other roles use the same password: coach@, athlete@,
-> parent@ and child@demo.firstpass.example. Each club using FirstPass HQ has its own code and
+> a demo club with sample people only. Other roles use the same password: headcoach@,
+> athlete19@, guardian@ and athlete16@demo.firstpass.example. Each club using FirstPass HQ has its own code and
 > signs in with Google.
 
 ## TestFlight: beta app review and "What to test"

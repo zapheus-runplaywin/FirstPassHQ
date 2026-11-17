@@ -49,7 +49,7 @@ name.
 > • Parents see who opened their child's records
 > • Anyone can raise a concern with the club's Child Safety Officer
 >
-> No ads, no tracking. Your club's data stays in your club's own database in Australia.
+> No ads, no tracking. Each club's data is kept in its own database in Australia.
 >
 > FirstPass HQ needs a club code from your club. To bring FirstPass HQ to your club, contact us
 > through the support page.

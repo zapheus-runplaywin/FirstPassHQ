@@ -33,7 +33,7 @@ Change the words here, then the site copies them again.
 | The youngest person who signs in themselves | Matt | Thu 19 Nov | Target audience, content rating, Families Policy box |
 | A support email address you're happy to show in public | Matt | Thu 19 Nov | `[SUPPORT EMAIL]` in the three pages, Play contact details, IARC, TestFlight feedback |
 | The name the pages give as the app's operator (your own name, as on the App Store, or PiVT) | Matt | Thu 19 Nov | `[OPERATOR NAME]` in the privacy page |
-| A read of the privacy, support and delete pages, including the 14-day reply promised on the delete page | Matt | Thu 19 Nov | Before W9 publishes them |
+| A read of the privacy, support and delete pages, including the 14-day reply promised on the delete page, and the privacy page's statement that Google sign-in and the notification services (Expo, Apple, Google) are run from outside Australia | Matt | Thu 19 Nov | Before W9 publishes them |
 | The demo club sign-in and its account addresses | W7, after Matt's yes to tab D2 | Thu 19 Nov | App access, review notes |
 | The public page addresses (planned `https://firstpass-hq.expo.app/...`) | W9 | Thu 19 Nov | Privacy policy and deletion links in Play |
 | No `AD_ID` permission in the first store build's merged manifest | W8 | First upload | Advertising ID answer |
