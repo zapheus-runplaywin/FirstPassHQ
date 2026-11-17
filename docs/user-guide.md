@@ -259,9 +259,10 @@ buttons are used whether you're new or coming back.
 twice. A member who joined with Apple can't sign in on an Android phone, so pick Google if you
 might use one.
 
-If you choose **Hide My Email**, the club sees a private Apple address instead of yours, which it
-can't match to PlayHQ. The join form then asks for your PlayHQ email (see
-[Ask to join the club](#ask-to-join-the-club)).
+If you choose **Hide My Email**, the club sees a private Apple address instead of yours. That's
+fine: the club matches you by your name and date of birth. You can also add your PlayHQ email on
+the join form if you like (see [Ask to join the club](#ask-to-join-the-club)). The first time you
+sign in with Apple, the app keeps the name Apple shares and fills it in on the join form for you.
 
 If you picked the wrong club, tap **Change club** under the buttons.
 
@@ -285,12 +286,14 @@ sign-in.
 The first time you sign in, the home screen asks you to request to join. Tap **Request to join**
 and fill in:
 
-- **Your name.**
+- **Your name** is filled in from your Google account, or from the name Apple shared the first
+  time you signed in with Apple; change it if it isn't the name the club knows.
 - **Date of birth** (DD/MM/YYYY): everyone gives it, and it decides whether the club's rules for
   under 18s apply. For athletes, an admin checks it against PlayHQ or ID before approving them.
 - **PlayHQ email**: only if you registered with PlayHQ using a different email to the account
-  you signed in with. If you signed in with Apple and chose **Hide My Email**, everyone must enter
-  it, and the form says why. Parents and guardians must enter the email they used to register their
+  you signed in with. If you signed in with Apple and chose **Hide My Email**, it's optional: the
+  form says adding it helps an admin confirm who you are, and without it they use your name and
+  date of birth. Parents and guardians must enter the email they used to register their
   athlete, so the club can confirm who they are. An admin must verify a guardian before approving
   them or linking them to a child.
 - **I am a**: the role that best describes you.
@@ -326,7 +329,7 @@ request is still sent, and they can enter the code again from their home screen.
 <img src="user-guide/join.png" width="210" alt="Request to join form">
 <img src="user-guide/join-under-18.png" width="210" alt="Asking to join as an athlete under 18, with a date of birth and a parent's email">
 <img src="user-guide/join-guardian.png" width="210" alt="Request to join as a guardian, with the child's link code and no squad to pick">
-<img src="user-guide/join-hidden-email.png" width="210" alt="Request to join after signing in with Apple and Hide My Email: the PlayHQ email is needed, and the form says why">
+<img src="user-guide/join-hidden-email.png" width="210" alt="Request to join after signing in with Apple and Hide My Email: the PlayHQ email is optional, and the form says how it helps">
 
 ### Wait for approval
 
@@ -2416,7 +2419,9 @@ isn't part of the invite, so share it separately.
 
 **Members** lists everyone, grouped into **Waiting for approval**, **Parents asking to be linked**,
 **Members**, **No team or role for 2 years**, **Signed in, no request yet** and **Not approved**.
-Search by name or email. **Parents asking to be linked** lists approved parents and guardians who
+Search by name or email. A member who signed in with Apple and chose **Hide My Email** shows a
+private address ending in `privaterelay.appleid.com`: match them by name and date of birth, or by
+their PlayHQ email if they gave one. **Parents asking to be linked** lists approved parents and guardians who
 entered another child's link code, such as for a younger brother or sister: open them to link them.
 
 **No team or role for 2 years** lists members who may have left the club: they have no place in

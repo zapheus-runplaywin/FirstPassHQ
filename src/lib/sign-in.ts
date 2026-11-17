@@ -4,7 +4,10 @@ import * as Linking from 'expo-linking';
 import * as WebBrowser from 'expo-web-browser';
 import { Platform } from 'react-native';
 
+import { logger } from '@/lib/log';
 import { supabase } from '@/lib/supabase';
+
+const log = logger('sign-in');
 
 WebBrowser.maybeCompleteAuthSession();
 
@@ -88,6 +91,38 @@ export async function signInWithApple() {
     nonce,
   });
   if (error) throw error;
+
+  // Apple gives the name only on the first sign-in, and never in the token,
+  // so it's saved to the sign-in's details for the join form, as Supabase's
+  // Apple guide recommends. A failed save never stops the sign-in.
+  const fullName = appleFullName(credential.fullName);
+  if (fullName) {
+    try {
+      const { error: saveError } = await supabase.auth.updateUser({ data: { full_name: fullName } });
+      if (saveError) log.warn('Could not save the name Apple gave', { kind: saveError.name });
+    } catch (e) {
+      log.warn('Could not save the name Apple gave', { kind: (e as Error | null)?.name ?? 'unknown' });
+    }
+  }
+}
+
+/** "Given Middle Family" from Apple's name parts, or null when Apple sent none. */
+export function appleFullName(
+  name: AppleAuthentication.AppleAuthenticationFullName | null | undefined,
+): string | null {
+  const parts = [name?.givenName, name?.middleName, name?.familyName]
+    .map((part) => part?.trim())
+    .filter((part): part is string => !!part);
+  return parts.length ? parts.join(' ') : null;
+}
+
+/** The name a sign-in carries (Google's, or the one saved from Apple), if any. */
+export function nameFromSignIn(metadata: Record<string, unknown> | null | undefined): string | null {
+  for (const key of ['full_name', 'name']) {
+    const value = metadata?.[key];
+    if (typeof value === 'string' && value.trim()) return value.trim();
+  }
+  return null;
 }
 
 /**

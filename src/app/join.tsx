@@ -10,7 +10,7 @@ import { looksLikeLinkCode } from '@/lib/guardian-links';
 import { useAuth } from '@/lib/auth';
 import { useSquads } from '@/lib/club';
 import { isTeamRole, requestableRoles, roleLabels } from '@/lib/labels';
-import { isHiddenAppleEmail } from '@/lib/sign-in';
+import { isHiddenAppleEmail, nameFromSignIn } from '@/lib/sign-in';
 import { supabase } from '@/lib/supabase';
 import { volunteerScreeningLabels } from '@/lib/safety';
 import type { AppRole, VolunteerScreening } from '@/lib/types';
@@ -20,7 +20,11 @@ export default function JoinScreen() {
   const { session, profile, refresh } = useAuth();
   const groups = newestGroups(useTeams());
   const word = useSquads() ? 'squad' : 'team';
-  const [fullName, setFullName] = useState(profile?.full_name ?? '');
+  // Apple gives a name only on the first sign-in, and the app saves it to the
+  // sign-in's own details (signInWithApple), after the profile was made.
+  const [fullName, setFullName] = useState(
+    profile?.full_name || nameFromSignIn(session?.user.user_metadata) || '',
+  );
   const [playhqEmail, setPlayhqEmail] = useState(profile?.playhq_email ?? '');
   const [role, setRole] = useState<AppRole | null>(profile?.requested_role ?? null);
   const [teamId, setTeamId] = useState<string | null>(profile?.requested_team_id ?? null);
@@ -47,7 +51,8 @@ export default function JoinScreen() {
   const child = role === 'athlete' && !!dob && isMinor(dob, false);
   const volunteer = role === 'volunteer';
   // Apple's "Hide My Email" signs in with a relay address an admin can't
-  // match to PlayHQ, so the PlayHQ email is then needed from everyone.
+  // match to PlayHQ. Apple's guidelines say not to then insist on a personal
+  // email, so the PlayHQ email stays optional and the form says how it helps.
   const hiddenEmail = isHiddenAppleEmail(session?.user.email);
   const fromDay = parseDate(from);
   const untilDay = parseDate(until);
@@ -73,7 +78,7 @@ export default function JoinScreen() {
       setError('Please enter the email of a parent or guardian.');
       return;
     }
-    if ((guardian || hiddenEmail) && !playhqEmail.trim()) {
+    if (guardian && !playhqEmail.trim()) {
       setError('Please enter the email you used to register with PlayHQ.');
       return;
     }
@@ -182,9 +187,11 @@ export default function JoinScreen() {
         value={playhqEmail}
         onChangeText={setPlayhqEmail}
         placeholder={
-          role === 'guardian' || hiddenEmail
+          role === 'guardian'
             ? 'Email used to register with PlayHQ'
-            : (session?.user.email ?? 'Only if different to your sign-in email')
+            : hiddenEmail
+              ? 'Optional'
+              : (session?.user.email ?? 'Only if different to your sign-in email')
         }
         autoCapitalize="none"
         autoComplete="email"
@@ -195,7 +202,7 @@ export default function JoinScreen() {
         {role === 'guardian'
           ? 'Parents and guardians: enter the email you used to register your athlete with PlayHQ, so we can confirm who you are.'
           : hiddenEmail
-            ? 'You signed in with Apple and chose to hide your email, so please enter the email you registered with PlayHQ. The club uses it to confirm who you are.'
+            ? 'Optional. You hid your email with Apple, so the club can’t see the email you registered with PlayHQ. Adding it helps a club admin confirm who you are; without it they use your name and date of birth.'
             : 'Only needed if you registered with PlayHQ using a different email to the one you signed in with.'}
       </ThemedText>
 

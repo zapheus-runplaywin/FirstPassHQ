@@ -49,3 +49,22 @@ the Expo plan's monthly builds, so the workflow only runs when you start it.
 
 Small fixes that don't add a native library don't need a new build: publish them over the air with
 `scripts/publish-update.sh` (see [Test and live](environments.md#day-to-day)).
+
+## Sign in with Apple and iPhone signing
+
+The app has the **Sign in with Apple** capability (`ios.usesAppleSignIn` in `app.json`). Expo's
+[iOS capabilities](https://docs.expo.dev/build-reference/ios-capabilities/) page (read 17 November
+2026) says `eas build` compares the app's entitlements with the App ID on the Apple Developer site
+and turns on any capability it supports that is missing; Sign in with Apple is on its list. The
+same page says that when a capability is turned on by hand instead, any existing provisioning
+profiles for the store id must be regenerated before they can sign a store build.
+
+So the first signed iPhone build after Sign in with Apple merged needs EAS to change things on
+Apple's side:
+
+- If you haven't made your first iPhone build yet (step 3 above), make it after the Sign in with
+  Apple change is on main. Nothing extra is needed.
+- If you made iPhone builds before it, start the next one from your computer with the step 3
+  command, so EAS can sign in to Apple, turn the capability on and make a new profile. The page
+  doesn't say a GitHub build can do this without you, so don't rely on it. After that, GitHub builds
+  work as before.

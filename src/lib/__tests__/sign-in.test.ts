@@ -16,8 +16,10 @@ import * as WebBrowser from 'expo-web-browser';
 import { Platform } from 'react-native';
 
 import {
+  appleFullName,
   appleSignInAvailable,
   isHiddenAppleEmail,
+  nameFromSignIn,
   signInWithApple,
   signInWithGoogle,
 } from '@/lib/sign-in';
@@ -45,6 +47,7 @@ const auth = supabase.auth as unknown as {
   signInWithOAuth: jest.Mock;
   exchangeCodeForSession: jest.Mock;
   signInWithIdToken: jest.Mock;
+  updateUser: jest.Mock;
 };
 const openAuthSession = WebBrowser.openAuthSessionAsync as jest.Mock;
 const appleAvailable = AppleAuthentication.isAvailableAsync as jest.Mock;
@@ -142,6 +145,7 @@ describe('Sign in with Apple', () => {
       state: null,
     });
     auth.signInWithIdToken = jest.fn(async () => ({ data: {}, error: null }));
+    auth.updateUser = jest.fn(async () => ({ data: {}, error: null }));
     (Crypto.randomUUID as jest.Mock).mockClear();
   });
 
@@ -182,6 +186,45 @@ describe('Sign in with Apple', () => {
       provider: 'apple',
       token: 'apple.identity.token',
       nonce: 'one-time-value',
+    });
+  });
+
+  describe('the name Apple gives on the first sign-in', () => {
+    const name = { givenName: 'Sample', middleName: null, familyName: 'Member', namePrefix: null, nameSuffix: null, nickname: null };
+
+    it('is saved to the sign-in after signing in, for the join form', async () => {
+      appleSignIn.mockResolvedValue({ identityToken: 'apple.identity.token', fullName: name });
+      await signInWithApple();
+      expect(auth.updateUser).toHaveBeenCalledWith({ data: { full_name: 'Sample Member' } });
+      expect(auth.signInWithIdToken.mock.invocationCallOrder[0]).toBeLessThan(
+        auth.updateUser.mock.invocationCallOrder[0],
+      );
+    });
+
+    it.each([
+      ['no name (every sign-in after the first)', null],
+      ['an empty name', { givenName: null, middleName: null, familyName: '  ' }],
+    ])('saves nothing when Apple sends %s', async (_label, fullName) => {
+      appleSignIn.mockResolvedValue({ identityToken: 'apple.identity.token', fullName });
+      await signInWithApple();
+      expect(auth.updateUser).not.toHaveBeenCalled();
+    });
+
+    it('is never saved when the sign-in fails', async () => {
+      appleSignIn.mockResolvedValue({ identityToken: 'apple.identity.token', fullName: name });
+      auth.signInWithIdToken.mockResolvedValue({ data: null, error: new Error('refused') });
+      await expect(signInWithApple()).rejects.toThrow('refused');
+      expect(auth.updateUser).not.toHaveBeenCalled();
+    });
+
+    it.each([
+      ['refuses', () => auth.updateUser.mockResolvedValue({ data: null, error: new Error('nope') })],
+      ['throws', () => auth.updateUser.mockRejectedValue(new Error('offline'))],
+      ['throws something odd', () => auth.updateUser.mockRejectedValue(null)],
+    ])('still signs in when saving it %s', async (_label, arrange) => {
+      arrange();
+      appleSignIn.mockResolvedValue({ identityToken: 'apple.identity.token', fullName: name });
+      await expect(signInWithApple()).resolves.toBeUndefined();
     });
   });
 
@@ -240,5 +283,30 @@ describe('Apple’s hidden email', () => {
     [undefined, false],
   ])('%p is hidden: %p', (email, hidden) => {
     expect(isHiddenAppleEmail(email)).toBe(hidden);
+  });
+});
+
+describe('names from a sign-in', () => {
+  it.each([
+    [{ givenName: 'Sample', middleName: 'Middle', familyName: 'Member' }, 'Sample Middle Member'],
+    [{ givenName: ' Sample ', middleName: null, familyName: 'Member' }, 'Sample Member'],
+    [{ givenName: null, middleName: null, familyName: 'Member' }, 'Member'],
+    [{ givenName: '', middleName: '', familyName: '' }, null],
+    [null, null],
+    [undefined, null],
+  ])('Apple’s %j is %p', (parts, expected) => {
+    expect(appleFullName(parts as never)).toBe(expected);
+  });
+
+  it.each([
+    [{ full_name: 'Sample Member', name: 'Other' }, 'Sample Member'],
+    [{ name: ' Sample Google ' }, 'Sample Google'],
+    [{ full_name: '  ', name: 'Fallback' }, 'Fallback'],
+    [{ full_name: 7 }, null],
+    [{}, null],
+    [null, null],
+    [undefined, null],
+  ])('the sign-in’s %j is %p', (metadata, expected) => {
+    expect(nameFromSignIn(metadata as never)).toBe(expected);
   });
 });
