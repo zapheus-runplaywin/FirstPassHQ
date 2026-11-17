@@ -65,6 +65,9 @@ jobs:
       - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
       - name: Database tests
         run: scripts/run-sql-tests.sh
+      - name: Database tests survive a run across midnight
+        if: ${{ !cancelled() }}
+        run: scripts/test-run-sql-tests.sh
       - name: Row count check catches lost rows
         if: ${{ !cancelled() }}
         run: scripts/test-check-row-counts.sh
