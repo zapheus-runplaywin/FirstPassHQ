@@ -1,6 +1,6 @@
 # FirstPass HQ
 
-FirstPass HQ, FirstPass's sports club app for iOS and Android, first built for West Coast Thunder. Members sign in with Google, an admin approves them
+FirstPass HQ, FirstPass's sports club app for iOS and Android, first built for West Coast Thunder. Members sign in with Google (or Apple on iPhone), an admin approves them
 and adds them to a team, and the home screen shows their team.
 
 Built with [Expo](https://expo.dev) (React Native) and [Supabase](https://supabase.com) on the
@@ -48,6 +48,13 @@ phone. Expo Go uses a separate test project whose Site URL is your computer's `e
    client of type **Web application**.
 2. Add `https://<your-project-ref>.supabase.co/auth/v1/callback` as an authorised redirect URI.
 3. In Supabase **Authentication > Providers > Google**, enable it and paste the client ID and secret.
+
+Then turn on Sign in with Apple, which iPhones offer above Google. In Supabase **Authentication >
+Providers > Apple**, enable it and put `au.pivt.firstpass.hq` in **Client IDs**. On a test project
+only, also add `host.exp.Exponent`, so it works in Expo Go. No secret key or Services ID is
+needed: the app signs in natively and Supabase only checks Apple's token. Android and the web stay
+Google only. Apple per club is temporary until the central sign-in in
+[docs/new-app-conventions.md](docs/new-app-conventions.md#sign-in) takes it over.
 
 ### 4. Make yourself an admin
 

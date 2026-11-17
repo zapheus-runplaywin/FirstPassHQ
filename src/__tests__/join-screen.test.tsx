@@ -392,6 +392,101 @@ describe('parents and guardians', () => {
   });
 });
 
+describe('signed in with Apple', () => {
+  /** Apple gave the app a relay address an admin can't match to PlayHQ. */
+  const hidden: Persona = {
+    ...newcomer,
+    session: {
+      ...newcomer.session!,
+      user: { ...newcomer.session!.user, email: 'x7q2k9@privaterelay.appleid.com' },
+    },
+  };
+
+  // Apple's guidelines: don't insist on a personal email from someone who
+  // chose a private relay address. So it stays optional, as for Google.
+  it.each(['Athlete', 'Coach', 'Committee', 'Guest'])(
+    'with Hide My Email, a %s may leave the PlayHQ email blank, and is told how it helps',
+    async (role) => {
+      await openJoin(hidden);
+      await fillBasics();
+      await fireEvent.press(screen.getByText(role));
+      expect(screen.getByPlaceholderText('Optional')).toBeTruthy();
+      // The private address is never shown back as if it were theirs.
+      expect(screen.queryByPlaceholderText('x7q2k9@privaterelay.appleid.com')).toBeNull();
+      expect(screen.getByText(/^Optional\. You hid your email with Apple/)).toBeTruthy();
+      expect(screen.getByText(/without it they use your name and date of birth\.$/)).toBeTruthy();
+      await send();
+      expect(screen.queryByText('Please enter the email you used to register with PlayHQ.')).toBeNull();
+      expect(argsOf('submit_join_request')[0]).toMatchObject({ p_playhq_email: '' });
+      expect(back).toHaveBeenCalledTimes(1);
+    },
+  );
+
+  it('with Hide My Email, sends the PlayHQ email when one is given', async () => {
+    await openJoin(hidden);
+    await fillBasics();
+    await fireEvent.press(screen.getByText('Coach'));
+    await type('PlayHQ email', 'me@playhq.test');
+    await send();
+    expect(argsOf('submit_join_request')[0]).toMatchObject({
+      p_playhq_email: 'me@playhq.test',
+      p_requested_role: 'coach',
+    });
+  });
+
+  it('with Hide My Email, a guardian must still give their PlayHQ email, with the guardian wording', async () => {
+    await openJoin(hidden);
+    await fillBasics();
+    await fireEvent.press(screen.getByText('Guardian'));
+    expect(screen.getByPlaceholderText('Email used to register with PlayHQ')).toBeTruthy();
+    expect(screen.getByText(/^Parents and guardians: enter the email you used/)).toBeTruthy();
+    expect(screen.queryByText(/You hid your email with Apple/)).toBeNull();
+    await send();
+    expect(screen.getByText('Please enter the email you used to register with PlayHQ.')).toBeTruthy();
+    expect(rpcNames()).not.toContain('submit_join_request');
+  });
+
+  it('an Apple member who shared their real email sees it, like Google members', async () => {
+    const shared: Persona = {
+      ...newcomer,
+      session: { ...newcomer.session!, user: { ...newcomer.session!.user, email: 'sample@icloud.com' } },
+    };
+    await openJoin(shared);
+    await fillBasics();
+    await fireEvent.press(screen.getByText('Coach'));
+    expect(screen.getByPlaceholderText('sample@icloud.com')).toBeTruthy();
+    expect(screen.queryByText(/You hid your email with Apple/)).toBeNull();
+  });
+
+  describe('your name', () => {
+    const named = (user_metadata: Record<string, unknown>, full_name: string | null = null): Persona => ({
+      ...newcomer,
+      profile: { ...newcomer.profile!, full_name: full_name as string },
+      session: { ...newcomer.session!, user: { ...newcomer.session!.user, user_metadata } },
+    });
+
+    it('starts with the name Apple gave on first sign-in when the profile has none', async () => {
+      await openJoin(named({ full_name: 'Sample Apple Member' }, ''));
+      expect(field('Your name').props.value).toBe('Sample Apple Member');
+    });
+
+    it('also reads a sign-in’s plain name', async () => {
+      await openJoin(named({ name: 'Sample Google Member' }));
+      expect(field('Your name').props.value).toBe('Sample Google Member');
+    });
+
+    it('prefers the profile’s name', async () => {
+      await openJoin(named({ full_name: 'From Apple' }, 'From Profile'));
+      expect(field('Your name').props.value).toBe('From Profile');
+    });
+
+    it('starts empty when nobody gave a name', async () => {
+      await openJoin(named({ full_name: '  ' }, null));
+      expect(field('Your name').props.value).toBe('');
+    });
+  });
+});
+
 describe('the club password', () => {
   it('isn’t asked for when the club has none', async () => {
     await openJoin();

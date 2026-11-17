@@ -28,7 +28,10 @@ live). So either:
 
 Then follow steps 1 to 3 of the [README's one-time setup](../README.md#one-time-setup): pick the
 Sydney region, allow the sign-in redirects and turn on Google sign-in. Use the same Google client
-as the other clubs, and add this project's callback address to it.
+as the other clubs, and add this project's callback address to it. Then turn on Sign in with Apple
+as step 3 describes: **Authentication > Providers > Apple**, enabled, with `au.pivt.firstpass.hq` in
+**Client IDs** (and `host.exp.Exponent` too on a test project). It needs no secret key. Without it,
+iPhone members who tap **Continue with Apple** see an error.
 
 ## 2. Bring its database up to date
 

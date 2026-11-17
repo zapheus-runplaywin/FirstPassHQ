@@ -1,22 +1,22 @@
 /**
  * The screens before anyone is signed in: finding the club by its code
- * (src/app/choose-club.tsx), signing in with Google (sign-in.tsx), and the
- * address the browser returns to (auth-callback.tsx). From "Find your club",
- * "Sign in with Google" and "Belonging to more than one club" in section 2
- * of docs/user-guide.md.
+ * (src/app/choose-club.tsx), signing in with Google or, on an iPhone, Apple
+ * (sign-in.tsx), and the address the browser returns to (auth-callback.tsx).
+ * From "Find your club", "Signing in" and "Belonging to more than one club"
+ * in section 2 of docs/user-guide.md.
  *
  * The real ClubChoiceProvider runs, so these check which club the app would
  * connect to: an unknown code connects to nothing.
  */
 import { Stack } from 'expo-router';
 import { act, fireEvent, renderRouter, screen } from 'expo-router/testing-library';
-import { Text } from 'react-native';
+import { StyleSheet, Text } from 'react-native';
 
 import AuthCallback from '@/app/auth-callback';
 import ChooseClubScreen from '@/app/choose-club';
 import SignInScreen from '@/app/sign-in';
 import { ClubChoiceProvider, useClubChoice } from '@/lib/club-choice';
-import { signInWithGoogle } from '@/lib/sign-in';
+import { appleSignInAvailable, signInWithApple, signInWithGoogle } from '@/lib/sign-in';
 import { connectToClub } from '@/lib/supabase';
 
 import { isDisabled, type } from './helpers/forms';
@@ -28,7 +28,30 @@ jest.mock('@react-native-async-storage/async-storage', () =>
   jest.requireActual('@react-native-async-storage/async-storage/jest/async-storage-mock'),
 );
 jest.mock('@/global.css', () => ({}));
-jest.mock('@/lib/sign-in', () => ({ signInWithGoogle: jest.fn() }));
+jest.mock('@/lib/sign-in', () => ({
+  signInWithGoogle: jest.fn(),
+  signInWithApple: jest.fn(),
+  appleSignInAvailable: jest.fn(async () => false),
+}));
+// Apple's native button, drawn as a plain button so the tests can press it
+// and read the props the screen gives it.
+jest.mock('expo-apple-authentication', () => {
+  const { Pressable, Text } = jest.requireActual('react-native');
+  const seen: Record<string, unknown>[] = [];
+  return {
+    seen,
+    AppleAuthenticationButtonType: { SIGN_IN: 0, CONTINUE: 1, SIGN_UP: 2 },
+    AppleAuthenticationButtonStyle: { WHITE: 0, WHITE_OUTLINE: 1, BLACK: 2 },
+    AppleAuthenticationButton: (props: { onPress(): void; testID?: string }) => {
+      seen.push(props);
+      return (
+      <Pressable accessibilityRole="button" onPress={props.onPress} testID={props.testID}>
+        <Text>Continue with Apple</Text>
+      </Pressable>
+      );
+    },
+  };
+});
 // This build knows two clubs.
 jest.mock('@/constants/clubs', () => {
   process.env.EXPO_PUBLIC_SUPABASE_URL = 'https://thunder.example.test';
@@ -148,10 +171,11 @@ describe('signing in', () => {
   const google = signInWithGoogle as jest.Mock;
   beforeEach(() => google.mockReset());
 
-  it('names the club and offers Google, the only way in', async () => {
+  it('names the club and offers Google, and no Apple button where Apple isn’t offered', async () => {
     await open('/sign-in', { 'club-code': 'THUNDER' });
     expect(screen.getByText('Sign in / Register')).toBeTruthy();
     expect(screen.getByText('Continue with Google')).toBeTruthy();
+    expect(screen.queryByText('Continue with Apple')).toBeNull();
     expect(screen.getByText(/^Not West Coast Thunder\?/)).toBeTruthy();
   });
 
@@ -208,6 +232,76 @@ describe('signing in', () => {
     expect(connected()).toBe('connected:none');
     expect(await AsyncStorage.getItem('club-code')).toBeNull();
     expect(await AsyncStorage.getItem('club-codes-used')).toBe(JSON.stringify(['THUNDER']));
+  });
+});
+
+describe('signing in with Apple on an iPhone', () => {
+  const available = appleSignInAvailable as jest.Mock;
+  const apple = signInWithApple as jest.Mock;
+  const google = signInWithGoogle as jest.Mock;
+  beforeEach(() => {
+    available.mockReset().mockResolvedValue(true);
+    apple.mockReset().mockResolvedValue(undefined);
+    google.mockReset();
+  });
+  afterAll(() => available.mockReset().mockResolvedValue(false));
+
+  it('shows Apple’s button above Google’s', async () => {
+    await open('/sign-in', { 'club-code': 'THUNDER' });
+    const buttons = screen.getAllByRole('button').map((b) => b.props.testID ?? null);
+    expect(screen.getByText('Continue with Apple')).toBeTruthy();
+    expect(screen.getByText('Continue with Google')).toBeTruthy();
+    expect(buttons[0]).toBe('apple-sign-in');
+  });
+
+  it('uses Apple’s own white “Continue with Apple” button, styled only by its props', async () => {
+    const { seen } = jest.requireMock('expo-apple-authentication') as { seen: Record<string, unknown>[] };
+    await open('/sign-in', { 'club-code': 'THUNDER' });
+    const props = seen[seen.length - 1];
+    expect(props).toMatchObject({ buttonType: 1, buttonStyle: 0, cornerRadius: 12 });
+    // Colour and corners from style break Apple's rules; the size must be set.
+    const style = StyleSheet.flatten(props.style as object) as Record<string, unknown>;
+    expect(style).toEqual({ height: 52, width: '100%' });
+  });
+
+  it('signs in with Apple, not Google, when it is tapped', async () => {
+    await open('/sign-in', { 'club-code': 'THUNDER' });
+    await fireEvent.press(screen.getByText('Continue with Apple'));
+    await settle();
+    expect(apple).toHaveBeenCalledTimes(1);
+    expect(google).not.toHaveBeenCalled();
+  });
+
+  it('shows why Apple sign-in failed, and lets them try again', async () => {
+    apple.mockRejectedValueOnce(new Error('Apple didn’t return a sign-in. Please try again.'));
+    await open('/sign-in', { 'club-code': 'THUNDER' });
+    await fireEvent.press(screen.getByText('Continue with Apple'));
+    await settle();
+    expect(screen.getByText('Apple didn’t return a sign-in. Please try again.')).toBeTruthy();
+    await fireEvent.press(screen.getByText('Continue with Apple'));
+    await settle();
+    expect(screen.queryByText('Apple didn’t return a sign-in. Please try again.')).toBeNull();
+    expect(apple).toHaveBeenCalledTimes(2);
+  });
+
+  it('starts nothing else while Apple sign-in is still going, and keeps Google’s words', async () => {
+    let finish: () => void = () => {};
+    apple.mockImplementation(() => new Promise<void>((r) => (finish = r)));
+    await open('/sign-in', { 'club-code': 'THUNDER' });
+    const pressing = await pressWithoutWaiting(screen.getByText('Continue with Apple'));
+    await settle();
+    // Google's button shows no spinner for Apple's sign-in, but is disabled.
+    expect(screen.getByText('Continue with Google')).toBeTruthy();
+    await fireEvent.press(screen.getByText('Continue with Apple'));
+    await fireEvent.press(screen.getByText('Continue with Google'));
+    await settle();
+    await act(async () => {
+      finish();
+      await pressing.done;
+    });
+    await settle();
+    expect(apple).toHaveBeenCalledTimes(1);
+    expect(google).not.toHaveBeenCalled();
   });
 });
 
