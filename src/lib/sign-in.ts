@@ -125,6 +125,60 @@ export function nameFromSignIn(metadata: Record<string, unknown> | null | undefi
   return null;
 }
 
+/** Whether this member has ever signed in to the club with Apple. */
+export function usesAppleSignIn(
+  user: { app_metadata?: { provider?: string; providers?: unknown } } | null | undefined,
+): boolean {
+  const meta = user?.app_metadata;
+  if (!meta) return false;
+  return meta.provider === 'apple' || (Array.isArray(meta.providers) && meta.providers.includes('apple'));
+}
+
+/** How revoking went: only "cancelled" stops the account being deleted. */
+export type AppleRevokeResult = 'revoked' | 'cancelled' | 'failed';
+
+/**
+ * When a member who signed in with Apple deletes their account, Apple asks
+ * apps to revoke the sign-in too. The member confirms with Apple once more,
+ * which gives a fresh, short-lived code; the revoke-apple function swaps it
+ * for a token and revokes that with Apple straight away. Nothing is stored.
+ *
+ * Cancelling Apple's sheet means the member changed their mind, so the
+ * account is kept. Any other failure is logged and the deletion goes ahead:
+ * the account must be deletable even when Apple or the club's Apple key
+ * isn't working.
+ */
+export async function revokeAppleSignIn(): Promise<AppleRevokeResult> {
+  if (!(await appleSignInAvailable())) {
+    log.warn('Apple revoke skipped: Apple sign-in is not available on this device');
+    return 'failed';
+  }
+  let code: string | null;
+  try {
+    const credential = await AppleAuthentication.signInAsync({ requestedScopes: [] });
+    code = credential.authorizationCode;
+  } catch (e) {
+    if ((e as { code?: unknown } | null)?.code === 'ERR_REQUEST_CANCELED') return 'cancelled';
+    log.warn('Apple revoke: Apple did not confirm', { kind: (e as { code?: string } | null)?.code ?? 'unknown' });
+    return 'failed';
+  }
+  if (!code) {
+    log.warn('Apple revoke: Apple returned no authorization code');
+    return 'failed';
+  }
+  const { error } = await supabase.functions.invoke('revoke-apple', {
+    body: { authorization_code: code },
+  });
+  if (error) {
+    const context = (error as { context?: unknown }).context;
+    const status = context instanceof Response ? context.status : null;
+    log.warn('Apple revoke failed; deleting the account anyway', { status, kind: error.name });
+    return 'failed';
+  }
+  log.info('Apple sign-in revoked');
+  return 'revoked';
+}
+
 /**
  * Apple's "Hide My Email" gives the app a relay address instead of the real
  * one. An admin can't match that to PlayHQ, so the join form then asks for

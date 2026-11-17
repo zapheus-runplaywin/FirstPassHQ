@@ -33,6 +33,21 @@ as step 3 describes: **Authentication > Providers > Apple**, enabled, with `au.p
 **Client IDs** (and `host.exp.Exponent` too on a test project). It needs no secret key. Without it,
 iPhone members who tap **Continue with Apple** see an error.
 
+When a member who signed in with Apple deletes their account, the app also revokes their Apple
+sign-in through the `revoke-apple` edge function, as Apple asks. Give that function the developer
+team's Sign in with Apple key (the same key serves every club) and deploy it:
+
+```bash
+npx supabase secrets set --project-ref <the club's project id> \
+  APPLE_TEAM_ID=<Team ID> APPLE_KEY_ID=<Key ID> APPLE_PRIVATE_KEY="$(cat AuthKey_<Key ID>.p8)"
+npx supabase functions deploy revoke-apple --project-ref <the club's project id> --use-api
+```
+
+The key comes from the Apple Developer site: **Certificates, Identifiers & Profiles > Keys**, a new
+key with **Sign in with Apple** ticked and the app's App ID chosen as its primary App ID. Apple
+lets you download the `.p8` file once, so keep it somewhere safe. Until the secrets are set the
+function answers 503 and the account is still deleted; only the Apple revoke is skipped.
+
 ## 2. Bring its database up to date
 
 The **Deploy migrations** workflow only deploys to West Coast Thunder's projects so far. For a new

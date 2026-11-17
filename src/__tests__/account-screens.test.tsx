@@ -25,6 +25,7 @@ import WwccApplicationScreen from '@/app/wwcc-application';
 import { formatDate } from '@/lib/age';
 import type { PersonalTask } from '@/lib/personal-tasks';
 import { localDay } from '@/lib/reports';
+import { revokeAppleSignIn } from '@/lib/sign-in';
 import { supabase } from '@/lib/supabase';
 import type { MyVolunteerExemption, MyWwccApplication } from '@/lib/types';
 
@@ -53,6 +54,12 @@ jest.mock('@react-native-async-storage/async-storage', () =>
   jest.requireActual('@react-native-async-storage/async-storage/jest/async-storage-mock'),
 );
 jest.mock('@/global.css', () => ({}));
+// Revoking with Apple is tested in src/lib/__tests__/sign-in.test.ts; here
+// only what the delete screen does with each answer.
+jest.mock('@/lib/sign-in', () => ({
+  ...jest.requireActual('@/lib/sign-in'),
+  revokeAppleSignIn: jest.fn(),
+}));
 
 type Who = PersonaName | Persona;
 
@@ -215,6 +222,79 @@ describe('deleting the account', () => {
     await settle();
     expect(screen.getByText('Admins can’t delete their own account.')).toBeTruthy();
     expect(signOut()).not.toHaveBeenCalled();
+  });
+
+  describe('a member who signed in with Apple', () => {
+    const revoke = revokeAppleSignIn as jest.Mock;
+    const athlete = personas.athlete;
+    const withApple = (app_metadata: Record<string, unknown>): Persona => ({
+      ...athlete,
+      session: { ...athlete.session!, user: { ...athlete.session!.user, app_metadata } },
+    });
+    const appleAthlete = withApple({ provider: 'apple', providers: ['apple'] });
+    let rpcsWhenRevoking: string[] | null;
+
+    beforeEach(() => {
+      rpcsWhenRevoking = null;
+      revoke.mockReset().mockImplementation(async () => {
+        rpcsWhenRevoking = [...rpcNames()];
+        return 'revoked';
+      });
+    });
+
+    async function deleteAs(who: Persona, options: BackendOptions = {}) {
+      await openScreen(who, { 'delete-account': DeleteAccountScreen }, '/delete-account', {}, options);
+      await fireEvent.press(screen.getByText('Delete my account'));
+      await fireEvent.press(screen.getByText('Delete my account permanently'));
+      await settle();
+    }
+
+    it('is told Apple asks them to confirm once more', async () => {
+      await openScreen(appleAthlete, { 'delete-account': DeleteAccountScreen }, '/delete-account');
+      expect(screen.getByText(/^You signed in with Apple, so Apple asks you to confirm once more\./)).toBeTruthy();
+      // Apple's permission is for the whole app, so other clubs are named.
+      expect(screen.getByText(/your account there stays: Apple just asks you to agree\s+again next time you sign in there\.$/)).toBeTruthy();
+    });
+
+    it('revokes with Apple first, then deletes the account and signs out', async () => {
+      await deleteAs(appleAthlete);
+      expect(revoke).toHaveBeenCalledTimes(1);
+      expect(rpcsWhenRevoking).not.toContain('delete_my_account');
+      expect(argsOf('delete_my_account')).toEqual([undefined]);
+      expect(signOut()).toHaveBeenCalled();
+    });
+
+    it('also when Apple was added to a Google account', async () => {
+      await deleteAs(withApple({ provider: 'google', providers: ['google', 'apple'] }));
+      expect(revoke).toHaveBeenCalledTimes(1);
+      expect(argsOf('delete_my_account')).toEqual([undefined]);
+    });
+
+    it('still deletes the account when revoking fails', async () => {
+      revoke.mockResolvedValue('failed');
+      await deleteAs(appleAthlete);
+      expect(argsOf('delete_my_account')).toEqual([undefined]);
+      expect(signOut()).toHaveBeenCalled();
+    });
+
+    it('keeps the account when they cancel Apple’s sheet, and they can try again', async () => {
+      revoke.mockResolvedValueOnce('cancelled');
+      await deleteAs(appleAthlete);
+      expect(rpcNames()).not.toContain('delete_my_account');
+      expect(signOut()).not.toHaveBeenCalled();
+      // Still asking to confirm, so one more tap tries again.
+      await fireEvent.press(screen.getByText('Delete my account permanently'));
+      await settle();
+      expect(revoke).toHaveBeenCalledTimes(2);
+      expect(argsOf('delete_my_account')).toEqual([undefined]);
+    });
+
+    it('a Google member is never asked about Apple', async () => {
+      await deleteAs(athlete);
+      expect(revoke).not.toHaveBeenCalled();
+      expect(screen.queryByText(/You signed in with Apple/)).toBeNull();
+      expect(argsOf('delete_my_account')).toEqual([undefined]);
+    });
   });
 });
 

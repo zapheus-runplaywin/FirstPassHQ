@@ -6,17 +6,25 @@ import { ConfirmDelete, ErrorText } from '@/components/ui';
 import { useAuth } from '@/lib/auth';
 import { useClub } from '@/lib/club';
 import { hasRole } from '@/lib/roles';
+import { revokeAppleSignIn, usesAppleSignIn } from '@/lib/sign-in';
 import { supabase } from '@/lib/supabase';
 
 export default function DeleteAccountScreen() {
   const club = useClub();
-  const { profile, signOut } = useAuth();
+  const { session, profile, signOut } = useAuth();
+  const apple = usesAppleSignIn(session?.user);
   const [deleting, setDeleting] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
   async function deleteAccount() {
     setDeleting(true);
     setError(null);
+    // Apple asks apps to revoke Sign in with Apple when an account is
+    // deleted. Only cancelling Apple's sheet stops the deletion.
+    if (apple && (await revokeAppleSignIn()) === 'cancelled') {
+      setDeleting(false);
+      return;
+    }
     const { error: rpcError } = await supabase.rpc('delete_my_account');
     if (rpcError) {
       setDeleting(false);
@@ -55,6 +63,14 @@ export default function DeleteAccountScreen() {
         It doesn’t change your PlayHQ registration or club membership, or your account at any other
         club in FirstPass HQ. If you sign in again later, you’ll need to ask to join again.
       </ThemedText>
+      {apple ? (
+        <ThemedText type="small" themeColor="textSecondary">
+          You signed in with Apple, so Apple asks you to confirm once more. That also stops this
+          app using your Apple sign-in. Your Apple Account itself isn’t changed. If you belong to
+          another club in FirstPass HQ, your account there stays: Apple just asks you to agree
+          again next time you sign in there.
+        </ThemedText>
+      ) : null}
       <ErrorText>{error}</ErrorText>
       <ConfirmDelete
         title="Delete my account"
