@@ -76,6 +76,9 @@ Until these secrets exist the workflows only warn and carry on updating the live
    ```
 
    Or add them on [expo.dev](https://expo.dev) under the project's **Environment variables**.
+   Every build checks both are there, and are the right kind, before it starts
+   ([What a build checks first](beta-builds.md#what-a-build-checks-first)). Without them the app
+   stops the moment it opens.
 3. Protect the daily injury purge. Make up a long random value, set it on the live project's
    function (`npx supabase secrets set --project-ref <live-project-ref> PURGE_SECRET=<value>`), and
    add the same value as the GitHub repository secret `PURGE_SECRET`. The purge then refuses any
@@ -232,6 +235,9 @@ demo_password=... -f supabase/demo-club.sql <local database url>`.
 club a build is made for never gets it, even with the code `DEMO`, and a demo entry pointing at
 that club's own project is dropped. `scripts/publish-update.sh` keeps the demo club in an update
 only when the channel's EAS environment has it, and refuses one pointing at the live project.
+A build stops before it starts (`scripts/check-build-settings.js`) when only one of the two
+variables is set, when the key is a secret or `service_role` key, or when the demo club is the
+live club's own project.
 
 ## Trying a feature as another role
 

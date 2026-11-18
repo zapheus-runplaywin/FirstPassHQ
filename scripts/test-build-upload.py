@@ -11,7 +11,8 @@ Before a build, EAS copies the project folder to its build servers. When an
   guides, PDFs and screenshots were 470 MB of a 473 MB upload;
 - nothing a build reads is left out: app.json, eas.json, package.json,
   package-lock.json, tsconfig.json, .gitignore (it is part of the runtime
-  version's fingerprint) and everything under src/ and assets/;
+  version's fingerprint), scripts/check-build-settings.js (the build's first
+  step runs it) and everything under src/ and assets/;
 - nothing in src/ or app.json loads a file from a folder that is left out;
 - what is left stays small, so the next large folder is noticed.
 
@@ -31,7 +32,11 @@ EASIGNORE = ROOT / '.easignore'
 GITIGNORE = ROOT / '.gitignore'
 
 # What a build reads from outside src/ and assets/.
-NEEDED_FILES = ['app.json', 'eas.json', 'package.json', 'package-lock.json', 'tsconfig.json', '.gitignore']
+NEEDED_FILES = [
+    'app.json', 'eas.json', 'package.json', 'package-lock.json', 'tsconfig.json', '.gitignore',
+    # package.json's eas-build-pre-install script: without the file every build fails.
+    'scripts/check-build-settings.js',
+]
 NEEDED_FOLDERS = ['src/', 'assets/']
 # Folders no build uses. EAS warns above 150 MiB; the upload is about 10 MB.
 LEFT_OUT_FOLDERS = ['docs/']
@@ -155,6 +160,7 @@ def main() -> int:
         'the lockfile left out': easignore + 'package-lock.json\n',
         'app.json left out': easignore + '*.json\n',
         '.gitignore left out': easignore + '.gitignore\n',
+        "the build's settings check left out": easignore + '/scripts\n',
     }
     for name, broken in cases.items():
         if rules(broken) == rules(easignore):

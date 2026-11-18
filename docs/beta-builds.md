@@ -23,7 +23,8 @@ the Expo plan's monthly builds, so the workflow only runs when you start it.
    variables > Actions**, add it as a repository secret called `EXPO_TOKEN`.
 2. **Live Supabase settings in EAS.** Do step 4 of
    [Test and live](environments.md#4-point-the-installed-apps-at-the-live-project) if you haven't,
-   so builds know which database to use.
+   so builds know which database to use. Every build checks them before it starts: see
+   [What a build checks first](#what-a-build-checks-first).
 3. **Signing keys, once per platform, from your computer.** GitHub can't answer questions, so the
    first build of each platform has to be started by hand, where EAS asks to create and keep the
    signing keys:
@@ -58,6 +59,44 @@ the Expo plan's monthly builds, so the workflow only runs when you start it.
 
 Small fixes that don't add a native library don't need a new build: publish them over the air with
 `scripts/publish-update.sh` (see [Test and live](environments.md#day-to-day)).
+
+## What a build checks first
+
+The club's address and key are built into the app from the EAS environment named after the build's
+profile (`preview` or `production`): the **Environment variables** page on expo.dev. A build can't
+read them from GitHub or from the `.env` on your computer. An app built without them stops the
+moment it opens, and nothing else says so: the build is green, it is signed, and the store accepts
+it. That is what happened to the first signed builds, on 18 November 2026.
+
+So the first thing a build does on Expo's servers is run `scripts/check-build-settings.js` (the
+`eas-build-pre-install` script in `package.json`). The build stops in its first minute, and the
+top of the log on its expo.dev page says why, when:
+
+- `EXPO_PUBLIC_SUPABASE_URL` or `EXPO_PUBLIC_SUPABASE_ANON_KEY`, the live club's address and key,
+  is missing;
+- an address isn't `https://` and the project's address alone, such as
+  `https://abcd1234.supabase.co`, with no slash at the end;
+- a key is a secret or `service_role` key (those give full access to a club's data and must never
+  be in an app), has expired, or belongs to another project than its address;
+- only one of `EXPO_PUBLIC_DEMO_CLUB_URL` and `EXPO_PUBLIC_DEMO_CLUB_ANON_KEY` is set, or the demo
+  club is the live club's own project. With neither set the build goes ahead without a demo club.
+
+Before that, when a build is started, EAS prints which variables it found:
+
+```
+Environment variables with visibility "Plain text" and "Sensitive" loaded from the "production"
+environment on EAS: EXPO_PUBLIC_DEMO_CLUB_ANON_KEY, EXPO_PUBLIC_DEMO_CLUB_URL,
+EXPO_PUBLIC_SUPABASE_ANON_KEY, EXPO_PUBLIC_SUPABASE_URL.
+```
+
+If it says `No environment variables ... found` instead, the variables aren't where this project
+reads them. Add them on the project's own page (expo.dev, the `thunderapp` project,
+**Environment variables**) with **Preview** and **Production** ticked. Variables added on the
+account's page are marked **Global** and reach every project in the account, this one included.
+
+If an installed build ever closes the moment it opens, look here first: the iPhone's crash report
+names `ErrorRecovery.crash()` from expo-updates, which only means the app's own code stopped
+before the first screen.
 
 ## What goes up to Expo
 
