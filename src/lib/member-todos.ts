@@ -156,7 +156,8 @@ export type MemberTodoContext = {
 /**
  * Whether a member is one of the people a to-do is about. Same rules as the
  * counts in `public.admin_safety_todos`, so the list a to-do opens has the
- * people it counted.
+ * people it counted. A change to those counts changes this in the same pull
+ * request.
  */
 export function memberMatchesTodo(
   kind: MemberTodoKind,
