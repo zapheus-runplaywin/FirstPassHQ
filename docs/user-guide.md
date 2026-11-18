@@ -2279,8 +2279,17 @@ recording a game happens in Vantage.
   coaches and managers see their own squad's or team's games, including the games of the teams in
   a squad they coach or manage, and open one in FirstPass Vision by
   tapping it, with no pair code, even days after full time. The six-digit pair code is only for a
-  second statistician shadowing a game in Vantage. Athletes, guardians, physios and the committee
-  don't see games (see [Who can see what](#11-who-can-see-what)).
+  second statistician shadowing or helping with a game in Vantage. Athletes, guardians, physios
+  and the committee don't see games (see [Who can see what](#11-who-can-see-what)).
+- **A helper.** A game can have a second statistician as its **helper**. The statistician
+  recording the game turns the helper on for that game (it is off unless they do) and gives the
+  helper the game's pair code. The helper does two jobs only, so the recorder can keep their eyes
+  on the play: substitutions as they happen, and corrections to what was recorded. They can't
+  record play, the clock or the quarters. Their changes count at once in the stats the coaches
+  see, and the tablet recording the game shows a note for each one. A game has one helper at a
+  time: a new helper joining takes over, and turning the helper off, full time or a stand-down
+  stops them. Only statisticians and admins can help. Helping comes with a FirstPass Vantage
+  update that isn't out yet; until then HQ is ready for it but Vantage can't use it.
 - **Checks.** Statisticians often sit courtside at junior games, so the role needs a current
   Working With Children Check, an application being assessed (see [Checks applied
   for](#checks-applied-for)), or a volunteer exemption, such as a parent recording their child's
@@ -2296,7 +2305,7 @@ recording a game happens in Vantage.
 - **Awards.** Statisticians don't vote in club awards, unless they also hold a role that votes.
 - **Stand-downs.** An admin can stand a statistician down like a coach or manager. The role stops
   at once, in HQ and in Vantage, and comes back only when the stand-down is lifted. That includes a
-  game they're recording or shadowing: from that moment the tablet can't save another stat, a
+  game they're recording, helping with or shadowing: from that moment the tablet can't save another stat, a
   break snapshot or a change to the game, such as full time, and Vantage says "Only statisticians
   and admins can record games". The stats saved before the stand-down stay with the game, and an
   admin can finish it. The same happens if an admin removes the role or a recorded check expires
@@ -2317,7 +2326,8 @@ the club, and only as someone the club has given the **Studio** role.
   FirstPass Studio update that isn't out yet; until then the role is ready in HQ but Studio can't
   use it.
 - **What Studio reads.** The club's games that have a PlayHQ game and are live or finished: each
-  game's setup and the stats recorded for it, live as each one is entered, and the athletes of the
+  game's setup and the stats recorded for it, live as each one is entered, with a helper's
+  substitutions and corrections, and the athletes of the
   game's squad or team, with whether each may be named with their own stats. An athlete under 18
   is named with their own stats only when a parent or guardian has given consent for **Stats on
   live streams** and the athlete still has at least one verified parent or guardian (see [Giving
