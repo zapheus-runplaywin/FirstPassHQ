@@ -29,14 +29,34 @@ export function parseDate(text: string): string | null | undefined {
   return date.toISOString().slice(0, 10);
 }
 
+/** Whether someone born on this date is younger than `years` today, by the device's date. */
+function isYoungerThan(dateOfBirth: string, years: number) {
+  const [year, month, day] = dateOfBirth.split('-').map(Number);
+  const today = new Date();
+  const birthday = new Date(year + years, month - 1, day);
+  return birthday > new Date(today.getFullYear(), today.getMonth(), today.getDate());
+}
+
 /**
  * Whether someone is under 18 today: by date of birth when recorded, otherwise
  * by the admin's choice. Same rule as `public.is_minor` in the database.
  */
 export function isMinor(dateOfBirth: string | null | undefined, under18: boolean) {
   if (!dateOfBirth) return under18;
-  const [year, month, day] = dateOfBirth.split('-').map(Number);
-  const today = new Date();
-  const eighteenth = new Date(year + 18, month - 1, day);
-  return eighteenth > new Date(today.getFullYear(), today.getMonth(), today.getDate());
+  return isYoungerThan(dateOfBirth, 18);
 }
+
+/**
+ * Whether a date of birth makes someone under 13 today, too young to join
+ * this year (Matt, 18 November 2026). No date: not known, so no. Same rule as
+ * `public.is_under_13` in the database, which has the final say by its own
+ * date (UTC).
+ */
+export function isUnder13(dateOfBirth: string | null | undefined) {
+  if (!dateOfBirth) return false;
+  return isYoungerThan(dateOfBirth, 13);
+}
+
+/** What someone under 13 is told when they ask to join. The database sends the same words. */
+export const under13Message =
+  'FirstPass HQ is for members aged 13 and over. If you’re a parent or guardian, enter your own date of birth.';

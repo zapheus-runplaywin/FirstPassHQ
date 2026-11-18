@@ -3,7 +3,7 @@
 // checked against a small calendar written here from scratch.
 import * as fc from 'fast-check';
 
-import { formatDate, isMinor, parseDate } from '@/lib/age';
+import { formatDate, isMinor, isUnder13, parseDate } from '@/lib/age';
 
 // Fixed seed so a failure shows the same counterexample on every run.
 fc.configureGlobal({ seed: 20261019, numRuns: 2000 });
@@ -222,6 +222,48 @@ describe('isMinor, randomised', () => {
         expect(isMinor(dob, under18)).toBe(under18);
       }),
       { numRuns: 100 },
+    );
+  });
+});
+
+// ---- isUnder13 ----
+
+/** The 13th birthday: 29 February becomes 1 March when that year has none. */
+function thirteenth({ y, m, d }: { y: number; m: number; d: number }) {
+  if (m === 2 && d === 29 && !isLeap(y + 13)) return iso(y + 13, 3, 1);
+  return iso(y + 13, m, d);
+}
+
+describe('isUnder13, randomised', () => {
+  const dateOfBirth = realDate(1900, 2100);
+  const today = realDate(1950, 2100);
+
+  it('is under 13 exactly until the 13th birthday, at any time of day', () => {
+    fc.assert(
+      fc.property(dateOfBirth, today, msIntoDay, (dob, now, ms) => {
+        setToday(now, ms);
+        expect(isUnder13(iso(dob.y, dob.m, dob.d))).toBe(iso(now.y, now.m, now.d) < thirteenth(dob));
+      }),
+    );
+  });
+
+  it('is never under 13 when not under 18', () => {
+    fc.assert(
+      fc.property(dateOfBirth, today, msIntoDay, (dob, now, ms) => {
+        setToday(now, ms);
+        const born = iso(dob.y, dob.m, dob.d);
+        if (isUnder13(born)) expect(isMinor(born, false)).toBe(true);
+      }),
+    );
+  });
+
+  it('is never under 13 without a date of birth', () => {
+    fc.assert(
+      fc.property(fc.constantFrom(null, undefined, ''), today, (dob, now) => {
+        setToday(now, 0);
+        expect(isUnder13(dob)).toBe(false);
+      }),
+      { numRuns: 50 },
     );
   });
 });

@@ -40,7 +40,7 @@ each of their roles can.
 
 | Role          | Who it's for                                                                                         |
 | ------------- | ---------------------------------------------------------------------------------------------------- |
-| **Athlete**   | Registered players. Some are club captains, or captains or vice captains of a squad or team. They see their own attendance and can report an absence. An athlete under 18 can't use the app until a verified parent or guardian is linked to them: until then they see only a link code to share with one (see [Ask to join the club](#ask-to-join-the-club)). |
+| **Athlete**   | Registered players aged 13 and over (nobody under 13 signs in to the app this year). Some are club captains, or captains or vice captains of a squad or team. They see their own attendance and can report an absence. An athlete under 18 can't use the app until a verified parent or guardian is linked to them: until then they see only a link code to share with one (see [Ask to join the club](#ask-to-join-the-club)). |
 | **Guardian**  | Parents and guardians of athletes under 18. They ask to be linked to their child by entering the link code from their child's app, and follow their children into and out of their squads and teams. They see their child's attendance and can report an absence for them, and see what has changed around their child. If the club asks, they accept the club's code of conduct for their child each season. |
 | **Coach**     | Head coaches and assistant coaches. Both have the same permissions, except that a head coach sets Season KPIs for the group's assistant coaches; otherwise the title only shows who is who. The app gives each coach a title from their team, or their squad until they're in a team, such as "Head Coach, Open A". Need a current Working With Children Check; the role pauses while it's expired. Someone who has applied for one, new or a renewal, can work while it's assessed (see [Checks applied for](#checks-applied-for)). A parent volunteering at their child's club, a volunteer under 18, or a short-term visitor or national event helper from outside WA has an exemption instead (see [Volunteer exemptions](#volunteer-exemptions)). |
 | **Manager**   | Squad and team managers. The app gives each manager a title from their team, or their squad until they're in a team, such as "Manager, 17 & Under". Need a current Working With Children Check; the role pauses while it's expired. Someone who has applied for one, new or a renewal, can work while it's assessed (see [Checks applied for](#checks-applied-for)). A parent volunteering at their child's club, a volunteer under 18, or a short-term visitor or national event helper from outside WA has an exemption instead (see [Volunteer exemptions](#volunteer-exemptions)). |
@@ -293,6 +293,7 @@ and fill in:
   time you signed in with Apple; change it if it isn't the name the club knows.
 - **Date of birth** (DD/MM/YYYY): everyone gives it, and it decides whether the club's rules for
   under 18s apply. For athletes, an admin checks it against PlayHQ or ID before approving them.
+  You need to be 13 or over to join (see [Under 13](#under-13) below).
 - **PlayHQ email**: only if you registered with PlayHQ using a different email to the account
   you signed in with. If you signed in with Apple and chose **Hide My Email**, it's optional: the
   form says adding it helps an admin confirm who you are, and without it they use your name and
@@ -328,11 +329,28 @@ app stays locked for the child until an admin links a verified parent or guardia
 Tap **Send request**. A parent or guardian who entered a code that didn't work is told so: the
 request is still sent, and they can enter the code again from their home screen.
 
+#### Under 13
+
+FirstPass HQ is for members aged 13 and over this year. If the date of birth makes you under 13
+today, whatever role you choose, the request isn't sent and the form says: "FirstPass HQ is for
+members aged 13 and over. If you're a parent or guardian, enter your own date of birth." Nothing
+you typed is saved by the club. You can join from your 13th birthday.
+
+- **A parent or guardian who typed their child's date of birth**: everything else you typed stays
+  on the form. Change the date to your own and tap **Send request** again.
+- **A child under 13**: tap **Not joining? Delete account** under the message to remove the
+  sign-in you just made (see [Deleting your account](#deleting-your-account)). Until then it's an
+  empty account that sees nothing.
+
+The club checks too, so the same message comes back if the app's date and the club's differ. The
+club's date changes at 8 am Perth time, so on your 13th birthday you can join from 8 am.
+
 <img src="user-guide/new-member-home.png" width="210" alt="Home screen before asking to join">
 <img src="user-guide/join.png" width="210" alt="Request to join form">
 <img src="user-guide/join-under-18.png" width="210" alt="Asking to join as an athlete under 18, with a date of birth and a parent's email">
 <img src="user-guide/join-guardian.png" width="210" alt="Request to join as a guardian, with the child's link code and no squad to pick">
 <img src="user-guide/join-hidden-email.png" width="210" alt="Request to join after signing in with Apple and Hide My Email: the PlayHQ email is optional, and the form says how it helps">
+<img src="user-guide/join-under-13.png" width="210" alt="Request to join with a date of birth under 13: the request isn't sent, the form says the app is for members aged 13 and over and links to Delete account">
 
 ### Wait for approval
 
@@ -2470,6 +2488,13 @@ each request says who entered whose link code: "Sam Lee entered their code" unde
 "Entered Riley Lee's code" under a parent, or that nobody has yet.
 Check them against PlayHQ, then:
 
+Nobody under 13 can be approved this year, whatever role they asked for. The app turns away a
+date of birth under 13 when someone asks to join, but if either the date they gave or the date
+you check makes them under 13 today, **Approve** says "They're under 13. FirstPass HQ is for
+members aged 13 and over, so decline their request." Decline it (choose **Other** as the reason)
+and let their family know. Members approved before this rule keep their approval. From their 13th
+birthday they can ask again.
+
 1. Choose their **Role**.
 2. Choose their **Squads** and, once teams are named, **Teams**. For coaches, choose **Head Coach**
    or **Assistant Coach** for each group. For athletes in a team, choose **Final team athlete** or
@@ -3611,6 +3636,26 @@ athlete can't be approved without a checked date of birth, so a missed field can
 child as an adult. A child also gives a parent's or guardian's email, and while they wait they're
 shown a link code to give that parent or guardian and who they can talk to.
 
+### Nobody under 13 signs in
+
+Children under 13 hold no account in FirstPass HQ this year. Apple's sign-in isn't open to under
+13s, and the app stores' rules for apps used by young children don't fit an app whose only ways in
+are Google and Apple sign-in, so both stores are told the app is for people aged 13 and over.
+
+- **At join.** A date of birth under 13 is turned away, whatever role is asked for, and the club
+  saves nothing from the request: no name, date of birth or parent's email. The club's own
+  database makes the check, after the club password, so it can't be stepped around. The form
+  stays, so a parent who typed their child's date by mistake can enter their own, and links to
+  **Delete account** so a child can remove the sign-in they made.
+- **At approval.** An admin can't approve anyone the date they gave or the date the admin checked
+  makes under 13; the app tells them to decline the request.
+- **Dates can be typed falsely**, so the second check is the one approval already has: an admin
+  checks every athlete's date of birth against PlayHQ or ID before approving them.
+- **Nobody already approved is removed.** A person can join from their 13th birthday.
+
+A way for athletes under 13 to be in the app through a parent, with no sign-in of their own, is
+planned for a later year.
+
 ### Locked until a parent or guardian is linked
 
 An athlete under 18 can't use the app until a verified parent or guardian is linked to them. The
@@ -4135,6 +4180,9 @@ decided on its own; until then the club keeps doing it the way it does now.
   exemptions](#volunteer-exemptions)).
 - **Sign in with Apple on Android or the web**: Apple is offered on iPhone and iPad only (see
   [Signing in](#signing-in)).
+- **Athletes under 13**: nobody under 13 signs in this year (see [Nobody under 13 signs
+  in](#nobody-under-13-signs-in)). A profile a parent runs for a younger athlete, with no sign-in
+  for the child, is planned for a later year.
 
 <div style="page-break-before: always"></div>
 

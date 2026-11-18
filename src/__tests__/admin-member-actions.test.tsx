@@ -518,6 +518,16 @@ describe('approving a request', () => {
     expect(back).not.toHaveBeenCalled();
   });
 
+  it('shows the database’s refusal for someone under 13, and stays on the page to decline them', async () => {
+    const UNDER_13 = { ...PENDING_CHILD, id: 'under-13', declared_date_of_birth: '2014-04-01' };
+    const refusal = "They're under 13. FirstPass HQ is for members aged 13 and over, so decline their request";
+    await openMember(UNDER_13, { rpcErrors: { admin_save_member: refusal } });
+    await press('I’ve checked it: use 01/04/2014');
+    await press('Approve');
+    expect(screen.getByText(refusal)).toBeTruthy();
+    expect(back).not.toHaveBeenCalled();
+  });
+
   it('shows who recorded a checked date of birth', async () => {
     await openMember(p('athlete'), {
       dobRecord: { recorded_by_name: 'Other admin', recorded_at: '2026-09-01T00:00:00Z' },

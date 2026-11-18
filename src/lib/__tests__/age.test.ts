@@ -1,4 +1,4 @@
-import { formatDate, isMinor, parseDate } from '@/lib/age';
+import { formatDate, isMinor, isUnder13, parseDate, under13Message } from '@/lib/age';
 
 // Local-time "now" so the tests mean the same in any time zone.
 function setToday(year: number, month: number, day: number) {
@@ -127,5 +127,59 @@ describe('isMinor', () => {
     expect(isMinor('2008-10-18', false)).toBe(false);
     jest.setSystemTime(new Date(2026, 9, 17, 23, 59, 59));
     expect(isMinor('2008-10-18', false)).toBe(true);
+  });
+});
+
+describe('isUnder13', () => {
+  it('is false with no date of birth: not known, so no', () => {
+    expect(isUnder13(null)).toBe(false);
+    expect(isUnder13(undefined)).toBe(false);
+    expect(isUnder13('')).toBe(false);
+  });
+
+  it('is true the day before the 13th birthday', () => {
+    setToday(2026, 11, 17);
+    expect(isUnder13('2013-11-18')).toBe(true);
+  });
+
+  it('is false on the 13th birthday', () => {
+    setToday(2026, 11, 18);
+    expect(isUnder13('2013-11-18')).toBe(false);
+  });
+
+  it('is false for teenagers and adults, true for young children', () => {
+    setToday(2026, 11, 18);
+    expect(isUnder13('2010-01-01')).toBe(false);
+    expect(isUnder13('1980-06-30')).toBe(false);
+    expect(isUnder13('2019-05-01')).toBe(true);
+    expect(isUnder13('2026-11-18')).toBe(true);
+  });
+
+  it('counts a 29 February birthday as 1 March in other years', () => {
+    // Same as the database: date of birth > current_date - 13 years.
+    setToday(2025, 2, 28);
+    expect(isUnder13('2012-02-29')).toBe(true);
+    setToday(2025, 3, 1);
+    expect(isUnder13('2012-02-29')).toBe(false);
+  });
+
+  it('turns over at the start of the day, not part way through it', () => {
+    jest.useFakeTimers().setSystemTime(new Date(2026, 10, 18, 0, 0, 1));
+    expect(isUnder13('2013-11-18')).toBe(false);
+    jest.setSystemTime(new Date(2026, 10, 17, 23, 59, 59));
+    expect(isUnder13('2013-11-18')).toBe(true);
+  });
+
+  it('is under 18 too, whenever it is under 13', () => {
+    setToday(2026, 11, 18);
+    expect(isMinor('2013-11-19', false)).toBe(true);
+  });
+});
+
+describe('under13Message', () => {
+  it('is the words the database sends, so the join screen knows them', () => {
+    expect(under13Message).toBe(
+      'FirstPass HQ is for members aged 13 and over. If you’re a parent or guardian, enter your own date of birth.',
+    );
   });
 });
