@@ -43,12 +43,21 @@ q "alter table auth.users add column instance_id uuid, add column aud text, add 
      provider text not null, last_sign_in_at timestamptz, created_at timestamptz, updated_at timestamptz,
      unique (provider_id, provider));" || exit 1
 
-# Refused without a usable password, changing nothing.
+# Refused without a usable password, or anywhere but the test project,
+# changing nothing.
 reset ''
 check 'no password is refused' "$?:$(grep -c 'Set the demo password' "$log")" '3:1'
 reset 'short'
 check 'a short password is refused' "$(grep -c 'at least 12 characters' "$log")" 1
 check 'nothing is made when refused' "$(q "select count(*) from auth.users")" 0
+reset "$password"
+check 'an empty database is refused: it is not known to be the test project' \
+  "$?:$(grep -c 'Run supabase/test-data.sql on the test project first; never run this on the live database' "$log")" '3:1'
+check 'nothing is made on an empty database' "$(q "select count(*) from auth.users")" 0
+
+# The test project holds test-data.sql's sample people (which need a squad).
+q "insert into public.teams (name, kind, season, sort_order) values ('Open Squad', 'squad', extract(year from now())::int, 50)" >/dev/null
+psql -X -q -v ON_ERROR_STOP=1 -d "$db" -f "$root/supabase/test-data.sql" >"$log" 2>&1 || { cat "$log"; exit 1; }
 
 # The first reset.
 reset "$password"
@@ -58,8 +67,8 @@ check '20 demo accounts' "$(q "select count(*) from auth.users where email like 
 check 'every account signs in with the shared password' \
   "$(q "select count(*) from auth.users where encrypted_password = extensions.crypt('$password', encrypted_password)")" 20
 check 'every account has an email identity' "$(q "select count(*) from auth.identities where provider = 'email'")" 20
-check 'every address is confirmed' "$(q "select count(*) from auth.users where email_confirmed_at is null")" 0
-check '18 approved members' "$(q "select count(*) from public.profiles where status = 'approved'")" 18
+check 'every demo address is confirmed' "$(q "select count(*) from auth.users where email like '%@demo.firstpass.example' and email_confirmed_at is null")" 0
+check '18 approved demo members' "$(q "select count(*) from public.profiles where email like '%@demo.firstpass.example' and status = 'approved'")" 18
 check 'newcomer and newparent have signed in but not asked to join' \
   "$(q "select string_agg(email, ',' order by email) from public.profiles where status = 'pending' and requested_role is null and join_requested_at is null")" \
   'newcomer@demo.firstpass.example,newparent@demo.firstpass.example'
@@ -127,11 +136,20 @@ check 'and makes no demo account an admin' \
 reset "$password"
 check 'the demo club resets after test-data.sql' "$?" 0
 
-# A database with real people in it looks live: refused, nothing changed.
-q "insert into auth.users (email) values ('a@gmail.com'), ('b@gmail.com'), ('c@gmail.com'), ('d@gmail.com')" >/dev/null
+# Real people signing in to the test project don't stop it.
+q "insert into auth.users (email) select 'tester' || n || '@gmail.com' from generate_series(1, 10) n" >/dev/null
+check 'ten real accounts sit beside the sample people' \
+  "$(q "select count(*) from public.profiles where email like '%@gmail.com'")" 10
+reset "$password"
+check 'the reset still runs with ten real accounts on the test project' "$?" 0
+
+# A database with members but none of the sample people, like the live club:
+# refused, nothing changed.
+q "delete from auth.users where email like '%@example.com'" >/dev/null
 q "update auth.users set encrypted_password = 'unchanged' where id = '$(id 1)'" >/dev/null
 reset "$password"
-check 'a database that looks live is refused' "$?:$(grep -c 'looks like the live club' "$log")" '3:1'
+check 'a database with real members and no sample people is refused' \
+  "$?:$(grep -c 'never run this on the live database' "$log")" '3:1'
 check 'nothing changes on a refused run' "$(q "select encrypted_password from auth.users where id = '$(id 1)'")" unchanged
 
 # The workflow: by hand only, the test project's secrets only, and it stops

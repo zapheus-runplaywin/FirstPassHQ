@@ -1,5 +1,5 @@
 -- The DEMO club's sample people, on the TEST Supabase project only. Never run
--- this on the live database: it refuses one that looks live.
+-- this on the live database: it runs only where test-data.sql's sample people are.
 --
 -- Store reviewers and our own testers sign in to the club code DEMO with an
 -- email and password (docs/environments.md, "The demo club"). This script
@@ -25,9 +25,11 @@
 --   - one upcoming sample PlayHQ game each for 20 & Under and Open A.
 -- Calendars aren't touched: their links are Outlook calendars an admin adds.
 --
--- It stops without changing anything if the database has more than three
--- accounts that aren't sample people, because that looks like the live club
--- (the same guard as test-data.sql), or if the password is missing or short.
+-- It stops without changing anything unless the database is positively the
+-- test project, which holds test-data.sql's sample people (approved
+-- @example.com profiles; the live club never has them, however few members it
+-- has), or if the password is missing or short. Real people signing in to the
+-- test project don't stop it.
 
 \set ON_ERROR_STOP on
 -- Kept in a setting for this session only, so it never appears in a query
@@ -39,7 +41,6 @@ begin;
 do $$
 declare
   v_password text := current_setting('demo.password', true);
-  v_real int;
   v_season int;
   v_u20_squad uuid;
   v_u20 uuid;
@@ -52,12 +53,11 @@ begin
     raise exception 'Set the demo password (DEMO_PASSWORD), at least 12 characters.';
   end if;
 
-  select count(*) into v_real
-  from public.profiles
-  where coalesce(email, '') not like '%@example.com'
-    and coalesce(email, '') not like '%@demo.firstpass.example';
-  if v_real > 3 then
-    raise exception 'This database has % real accounts, so it looks like the live club. Run this on the test project only.', v_real;
+  if not exists (
+    select 1 from public.profiles
+    where status = 'approved' and email like '%@example.com'
+  ) then
+    raise exception 'This database has none of the sample people from supabase/test-data.sql. Run supabase/test-data.sql on the test project first; never run this on the live database.';
   end if;
 
   -- The accounts. Ages are on the day this runs; checks are current unless

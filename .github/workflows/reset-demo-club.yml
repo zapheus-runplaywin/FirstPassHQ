@@ -3,13 +3,15 @@ name: Reset demo club
 # Puts the DEMO club's sample people back on the TEST Supabase project
 # (supabase/demo-club.sql): the 20 demo accounts with the shared password from
 # the DEMO_PASSWORD secret, their roles, squads, teams and guardian links, and
-# the 20 & Under pilot. Run it after setting DEMO_PASSWORD, after each review
+# the 20 & Under pilot. Then it signs in once as admin@ through the test
+# project's Auth API (scripts/check-demo-sign-in.sh), so a reset proves a demo
+# account really signs in. Run it after setting DEMO_PASSWORD, after each review
 # round or test pass, or when a reviewer has deleted an account. See
 # docs/environments.md, "The demo club".
 #
 # By hand only: it never runs on its own. It only ever reads the test
 # project's secrets, refuses when they name the live project, and the script
-# itself refuses a database that looks live.
+# itself runs only where test-data.sql's sample people are.
 on:
   workflow_dispatch:
 
@@ -62,3 +64,5 @@ jobs:
           url=$(sed -E 's/:6543\//:5432\//' supabase/.temp/pooler-url)
           PGPASSWORD="$SUPABASE_DB_PASSWORD" psql -X -q -v ON_ERROR_STOP=1 \
             -v demo_password="$DEMO_PASSWORD" -f supabase/demo-club.sql "$url"
+      - name: Sign in as a demo account
+        run: scripts/check-demo-sign-in.sh

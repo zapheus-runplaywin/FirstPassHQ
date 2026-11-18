@@ -201,12 +201,17 @@ feature is off.
 
 **Setting it up (once):**
 
-1. In the test project only, turn on **Authentication > Sign In / Providers > Email**, with
-   **Allow new users to sign up** off. Leave Email **off** in the live project: that's what keeps
-   password sign-in away from real members, whatever a build contains.
+1. In the test project only, turn on **Authentication > Sign In / Providers > Email**. Leave
+   **Allow new users to sign up** and **Confirm email** as they are: sign-ups is a switch for the
+   whole project, so turning it off would stop every first Google or Apple sign-in there, and the
+   demo accounts are made already confirmed. Leave Email **off** in the live project: that's what
+   keeps password sign-in away from real members, whatever a build contains.
 2. Add a `DEMO_PASSWORD` repository secret of at least 12 characters (GitHub > Settings > Secrets
    and variables > Actions).
-3. Run **Reset demo club** (Actions > Reset demo club > Run workflow).
+3. Run **Reset demo club** (Actions > Reset demo club > Run workflow). It ends by signing in as
+   `admin@demo.firstpass.example`, so a green run proves a demo account signs in; if the Email
+   provider is still off it says so. If it says to run `supabase/test-data.sql` first, run that in
+   the test project's **SQL Editor** and try again.
 4. Add `EXPO_PUBLIC_DEMO_CLUB_URL` and `EXPO_PUBLIC_DEMO_CLUB_ANON_KEY` (the **test** project's
    address and public key) to the EAS environments whose builds should list the demo club,
    usually `preview` and `production`. A build without them has no demo club.
@@ -215,10 +220,13 @@ feature is off.
 `DEMO_PASSWORD`, or when an account was deleted. It puts back every account, password, role,
 squad and team place, guardian link and link code, the pilot and the feature switches; removes
 messages the demo accounts sent; and returns `newcomer` and `newparent` to signed in with no join
-request. Calendars are left alone. It runs by hand only, reads only the test project's secrets,
-stops if the test project id is the live one, and the script itself refuses a database with more
-than three real accounts. To run it on another database: `psql -v demo_password=... -f
-supabase/demo-club.sql <database url>`.
+request. Calendars are left alone. Then it signs in once as `admin@` through the test project's
+Auth API (`scripts/check-demo-sign-in.sh`), never printing the key or the password. It runs by
+hand only, reads only the test project's secrets, and stops if the test project id is the live
+one. The script itself runs only where `supabase/test-data.sql`'s sample people are (approved
+`@example.com` profiles), which the live club never has, however few members it has; real people
+signing in to the test project don't stop it. To run it on a local database: `psql -v
+demo_password=... -f supabase/demo-club.sql <local database url>`.
 
 **The guards.** The password box shows only for the entry built from the two EAS variables. The
 club a build is made for never gets it, even with the code `DEMO`, and a demo entry pointing at
