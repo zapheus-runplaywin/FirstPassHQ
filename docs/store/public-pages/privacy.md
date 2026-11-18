@@ -6,7 +6,7 @@ FirstPass HQ is an app that netball clubs use to run the club: messages, attenda
 
 ## Who we are
 
-FirstPass HQ is made and run by [OPERATOR NAME] ("FirstPass", "we"). You can reach us at pivtmedia@gmail.com.
+FirstPass HQ is made and run by Matthew Brown ("FirstPass", "we"). You can reach us at pivtmedia@gmail.com.
 
 Each club that uses FirstPass HQ decides who may join it and what it records, and may have its own privacy policy for its members. FirstPass runs the app and each club's database for the club. Questions about what your club records go to your club first. Questions about the app go to us.
 

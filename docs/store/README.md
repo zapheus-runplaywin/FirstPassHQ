@@ -30,13 +30,13 @@ Change the words here, then the site copies them again.
 
 - **13 and over this year** (Matt, 18 Nov). Play target audience 13 to 15, 16 to 17 and 18 and over; no Families Policy. The join rule that turns away under 13s merged in #225.
 - **Demo club sign-in: build it now** (Matt, 18 Nov). Merged in #224; the review notes' accounts are checked against `supabase/demo-club.sql`.
+- **Operator name on the privacy page: Matthew Brown** (Matt, 18 Nov), matching the App Store seller.
 - **Support email: pivtmedia@gmail.com** (Matt, 18 Nov). Used in the three pages, Play contact details, IARC and TestFlight feedback.
 
 ## To confirm before any form is filled
 
 | What | Who | Needed by | Where it is used |
 | --- | --- | --- | --- |
-| The name the pages give as the app's operator (your own name, as on the App Store, or PiVT) | Matt | Thu 19 Nov | `[OPERATOR NAME]` in the privacy page |
 | A read of the privacy, support and delete pages, including the 14-day reply promised on the delete page, and the privacy page's statements that Google and Apple sign-in and the notification services (Expo, Apple, Google) are run from outside Australia | Matt | Thu 19 Nov | Before W9 publishes them |
 | The public page addresses (planned `https://firstpass-hq.expo.app/...`) | W9 | Thu 19 Nov | Privacy policy and deletion links in Play |
 | No `AD_ID` permission in the first store build's merged manifest | W8 | First upload | Advertising ID answer |
