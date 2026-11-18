@@ -50,7 +50,7 @@ describe('a build with the two demo variables', () => {
   it('finds DEMO by its code, ignoring case and spaces, pointing at the test project', () => {
     expect(clubs.findClub(' de mo ')).toEqual({
       code: 'DEMO',
-      name: 'FirstPass Demo Club',
+      name: 'Perth Pumpkins',
       supabaseUrl: 'https://test.example.test',
       anonKey: 'test-key',
       demo: true,

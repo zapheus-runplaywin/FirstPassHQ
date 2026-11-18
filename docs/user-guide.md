@@ -1,7 +1,8 @@
 # West Coast Thunder app: user guide
 
-This guide explains what the club's FirstPass HQ app does and how to use it, role by role. Every screen
-shown is from the app itself, filled with made-up sample people.
+This guide explains what the club's FirstPass HQ app does and how to use it, role by role, and how
+statisticians and coaches use FirstPass Vantage and FirstPass Vision on game day (section 14).
+Every screen shown is from the apps themselves, filled with made-up sample people.
 
 **Printing:** open this file in any Markdown viewer (GitHub, VS Code, Typora) and print to PDF.
 Each role starts on a new page when the viewer supports page breaks.
@@ -28,8 +29,9 @@ children, for parents, committees, boards and the sport's governing body.
 11. [Who can see what](#11-who-can-see-what)
 12. [Child safety and safeguarding](#12-child-safety-and-safeguarding)
 13. [Your club's data](#13-your-clubs-data)
-14. [Not in the app yet](#14-not-in-the-app-yet)
-15. [Keeping this guide up to date](#15-keeping-this-guide-up-to-date)
+14. [Game day: FirstPass Vantage and Vision](#14-game-day-firstpass-vantage-and-vision)
+15. [Not in the app yet](#15-not-in-the-app-yet)
+16. [Keeping this guide up to date](#16-keeping-this-guide-up-to-date)
 
 ## 1. Roles at a glance
 
@@ -247,7 +249,7 @@ didn't expect it. A link for a club the app doesn't know shows **Club not found*
 
 <img src="user-guide/club-code.png" width="210" alt="Find your club: the club code screen">
 
-Builds made for app store review and for testers also know the code `DEMO`, the **FirstPass Demo Club**. It holds sample people
+Builds made for app store review and for testers also know the code `DEMO`, the **Perth Pumpkins**, a made-up demo club. It holds sample people
 only, kept apart from every real club, for app store reviewers and testers trying the app in
 different roles. It's the one club that signs in with an email and password, which the club
 gives each tester; every other club uses the buttons below. If you're joining a real club, use
@@ -1688,7 +1690,8 @@ follow it live in FirstPass Vision. Managers can too. On your phone, open
 You see a game only while you're a coach or manager of its squad or team with a current check;
 if your role pauses or you're stood down, Vision stops showing it within about a minute. Use your
 own phone, not a shared one: you stay signed in in that browser until you tap **Sign out**, and
-signing out of Vision doesn't sign you out of HQ.
+signing out of Vision doesn't sign you out of HQ. What each of Vision's tabs shows is in [Game
+day](#following-a-game-in-vision).
 
 ### Injuries and clearances
 
@@ -2306,8 +2309,8 @@ preferred name. Guests can't be stood down and need no Working With Children Che
 ### Statisticians
 
 Statisticians record live game stats on a tablet in FirstPass Vantage, and the game's coaches
-watch them live in FirstPass Vision. This guide covers only what the role means in FirstPass HQ;
-recording a game happens in Vantage.
+watch them live in FirstPass Vision. This section covers what the role means in FirstPass HQ; how
+to record a game in Vantage is in [Game day](#14-game-day-firstpass-vantage-and-vision).
 
 - **Who.** Anyone but a guest or temporary helper can be a statistician. Choose **Statistician**
   when you ask to join, or an admin adds it to another role from your member page, such as a
@@ -3284,7 +3287,7 @@ A member's declarations go if they delete their account.
 <img src="user-guide/registers-conflict.png" width="210" alt="An admin changing a conflict-of-interest entry">
 
 Risk and incident registers and the AGM pack aren't in the app yet (see [Not in the app
-yet](#14-not-in-the-app-yet)).
+yet](#15-not-in-the-app-yet)).
 
 ### Keeping records
 
@@ -4169,7 +4172,178 @@ goes wrong, and how the club gets it all back. The full statement is in
 
 <div style="page-break-before: always"></div>
 
-## 14. Not in the app yet
+## 14. Game day: FirstPass Vantage and Vision
+
+FirstPass HQ runs the club. Two other FirstPass apps cover what happens on court during a game, and
+they use the same club, the same sign-in and the same roles as HQ:
+
+- **FirstPass Vantage** is the statistician's app. One person with a tablet records the game as it
+  happens: where on the court, who, and what.
+- **FirstPass Vision** is the coach's live view of those stats, on a phone in the browser. It shows
+  the score, how well the team is turning possession into goals, and when something is changing.
+
+The stats are kept in the club's own database, next to its HQ records, and HQ decides who may
+record a game and who may see it (see [Statisticians](#statisticians) and [Who can see
+what](#11-who-can-see-what)). A third app, **FirstPass Studio**, makes the graphics for the club's
+live streams and can put these stats on screen; it's a separate product with its own guide, and
+what it may read from the club is in [Studio](#studio).
+
+The screens below show a made-up game, Hawks v Kestrels.
+
+### Who uses them
+
+| | Vantage | Vision |
+| --- | --- | --- |
+| **Statisticians** | Record games, or help with a game someone else records | Can open any game the club records |
+| **Coaches and managers** | | Follow their squad's or team's games, and the games of the teams in a squad they coach or manage |
+| **Admins** | Can record and help, like a statistician | Can open any game the club records |
+| **Everyone else** | | No access: athletes, parents and guardians, physios, the committee, guests and temporary helpers don't see game stats |
+
+A statistician needs a current Working With Children Check, an application being assessed or an
+exemption, and a coach or manager needs the checks their role already needs. A paused role or a
+stand-down stops Vantage saving at once and Vision showing the game within about a minute (see
+[Statisticians](#statisticians) and [Watching live game stats](#watching-live-game-stats)).
+
+### Recording a game in Vantage
+
+Vantage runs on a tablet held in landscape: an Android tablet, or an iPad. The club installs it on
+its tablets by invitation; it isn't in the public app stores yet.
+
+<img src="user-guide/vantage-home.png" width="420" alt="Vantage's home screen: the club code, New game and the Stream Deck switch">
+
+1. **Choose the club and sign in.** On the home screen, type the club's code (the same one as HQ),
+   tap **Find your club**, then **Sign in with Google** with the account you use for HQ. Vantage
+   checks with the club that you're a statistician or an admin. Without the role, or without
+   signing in, you can still record, but the game stays on the tablet and nobody else sees it.
+2. **Set up the game.** Tap **New game**. Pick the team you're recording for; Vantage then offers
+   the team's coming PlayHQ games, fills in the opposition and puts the team's athletes into the
+   starting seven and the bench, ready to change. Set the quarter length, which end your team
+   attacks in the first quarter as you see the court, who takes the first centre pass, and the
+   entry mode: **Core**, or **Full Net Points**, which adds Feed, Touch and Penalty. Tap **Start
+   game**.
+3. **Record each event in three taps**: where it happened on the court, who (one of your seven, or
+   the other team), and what: Goal, Miss, Won it, Lost it or Receive, and in Full Net Points also
+   Feed, Touch and Penalty. After **Won it** and **Lost it** Vantage asks how (an intercept, a bad
+   pass, a held ball and so on), and after a miss who got the rebound. That detail is optional:
+   tap the court for the next event and it's marked to fill in at the break.
+4. **Run the clock** with **Start** and **Stop**; tap the clock to set it if it's out. At 0:00 the
+   clock stops but the quarter stays open for the last events, and you tap **End quarter**.
+
+<img src="user-guide/vantage-setup.png" width="420" alt="Vantage's game setup: teams, quarter length, entry mode, direction, first centre pass and the starting seven">
+
+<img src="user-guide/vantage-game.png" width="420" alt="Vantage's game screen: the court, who and what, with Lost it asking how the ball was lost">
+
+The game screen also has:
+
+- **Last events**, under the court: tap one to change it, or **Delete**. **Undo** takes back the
+  last thing you entered.
+- **Flag**, to mark a moment to look at later, such as a call you weren't sure of.
+- **Subs**, to change who's on court. A change in a break counts from the next quarter.
+- **Stats**, the game so far: each quarter's score, centre pass to goal, shooting, gains and
+  unforced turnovers, each shooter's goals, time on court and rebounds.
+- **Export**, to save or send the whole game as one file, to Drive, email or another app, as a
+  backup that doesn't need signal.
+- **Helper**, to let a second statistician help (see below).
+
+<img src="user-guide/vantage-stats.png" width="420" alt="Vantage's Game so far: score, conversions, shooters, time on court and rebounds">
+
+**At each break** Vantage shows the score and a check before the next quarter: which end your team
+attacks and who takes the centre pass, each with **Flip**, and the mode for the next quarter.
+**To check** lists what may need fixing, each with **Fix**: flags, events with their detail still to
+fill in, two turnovers in a row by one team (a missed possession change?), two centre pass receives
+in a row (a missed goal?) and long gaps. At full time the same list becomes the **post-game
+audit** for the whole game, with each item's time from the first clock start so it can be found
+in the game video.
+
+<img src="user-guide/vantage-break.png" width="420" alt="Vantage at the end of the first quarter: next quarter check and the list to check">
+
+**Signal.** Everything is saved on the tablet as it's entered, with or without signal, and sent to
+the club as soon as it can be. The top of the screen says **Synced**, how many events are queued,
+or **Offline**. If another tablet takes the game over, Vantage says so and stops sending.
+
+**The pair code.** Once a game reaches the club, the top of the screen shows its six-digit **pair
+code**. It's only for a second statistician; coaches don't need it.
+
+#### Helping with a game
+
+A second statistician can help the one recording: they do the substitutions as they happen and fix
+mistakes, so the recorder can keep their eyes on the play. The recorder taps **Helper** on the game
+screen and turns it on, and the helper, in Vantage on their own tablet or phone, chooses **Help
+with a game** on the home screen and types the pair code. The helper's changes count straight away
+in what coaches see, and the recording tablet shows a note for each one. There's one helper at a
+time, only statisticians and admins can help, and it ends when the recorder turns it off, at full
+time or if the helper is stood down. Helping needs a Vantage update that isn't out yet (see
+[Statisticians](#statisticians)).
+
+#### Stream Deck keys
+
+On a Mac with Apple silicon, Vantage can take its who, what and detail from a 32-key Stream Deck
+XL with the FirstPass Vantage plugin, while you tap where on the court. Turn on **Use Stream Deck
+keys** on the home screen; leave it off on a tablet or phone. Every key keeps its place for the
+whole game, only the detail row changes to answer the action just pressed, and **End quarter**
+takes two presses.
+
+### Following a game in Vision
+
+Vision opens in the browser on your phone, at **https://firstpass-vision.expo.app**; there's
+nothing to install.
+
+1. Type the club code, the same one you use for HQ.
+2. Tap **Sign in with Google** and choose the Google account you use for HQ.
+3. Tap a game in the list. Games stay in the list for three days, so you can look back after full
+   time.
+
+<img src="user-guide/vision-sign-in.png" width="210" alt="Vision's sign-in: the club, Sign in with Google and a reminder not to use a shared phone"> <img src="user-guide/vision-games.png" width="210" alt="Vision's games list: a live game and two finished ones">
+
+Use your own phone or computer, not a shared one: you stay signed in in that browser until you tap
+**Sign out**, and signing out of Vision doesn't sign you out of HQ.
+
+A game has five tabs along the bottom:
+
+- **Live**: the score, quarter and clock, the most important alert card, and five conversion
+  tiles: centre pass to goal, gain to goal, turnover to goal, shooting and unforced turnovers.
+  Each tile shows the game figure and the last eight, with an arrow when the last eight are well
+  away from the game. Below them, where the team lost the ball this quarter on a small court, and
+  who's on court, marked hot or cold.
+- **Court**: where each team loses the ball and wins it, and its shots by sector, for the whole
+  game or one quarter.
+- **On court**: each of your seven against the player they line up on, with when they came on.
+- **Changes**: each lineup change, by either team, gets a verdict once there have been eight
+  possessions on each side of it: whether it helped, hurt or had no clear effect.
+- **Alerts**: every alert card this game. A card appears only when a trend is clear, such as
+  gain to goal rising or a shooter going cold, and says what it's measured from. **You can act**
+  cards are about something the bench can change. Star a card to keep it for later, or dismiss it
+  for the quarter.
+
+<img src="user-guide/vision-live.png" width="210" alt="Vision's Live tab: score, an alert card and the conversion tiles"> <img src="user-guide/vision-alerts.png" width="210" alt="Vision's Alerts tab: a You can act card about a lineup change, and trend cards">
+
+At each quarter break and at full time Vision opens the **break view** by itself: the quarter's
+score and up to three **Say this** points for the huddle, ranked by what you can change, with the
+lineup as the tablet has it.
+
+<img src="user-guide/vision-break.png" width="210" alt="Vision's break view: Say this points for the huddle"> <img src="user-guide/vision-changes.png" width="210" alt="Vision's Changes tab: a verdict on a goal attack change">
+
+The chip at the top says **Live** while updates arrive as they happen. If they stop, Vision checks
+every few seconds and says when the numbers may be behind, for example when the tablet has lost
+signal.
+
+### What stays private
+
+- **Only the people who need it.** Game stats are about athletes, many of them under 18, so only
+  the people in the table above see them, each only while their role is current. Athletes,
+  parents and guardians, physios and the committee don't.
+- **Nothing else from HQ.** Vantage reads only what a game needs: the teams, the team's PlayHQ
+  games and its athletes' names. Vision reads only the games a coach or manager may see. Neither
+  shows contact details, injuries, check-ins or anything else in HQ.
+- **Streams ask first.** FirstPass Studio names an athlete under 18 with their own stats on a live
+  stream only with a parent's or guardian's consent (see [Giving consent](#giving-consent));
+  otherwise it shows team totals.
+- **Stand-downs act at once.** A stood-down statistician can't save another stat, and a stood-down
+  coach or manager stops seeing the team's games.
+
+<div style="page-break-before: always"></div>
+
+## 15. Not in the app yet
 
 Things clubs have asked for that FirstPass HQ doesn't do today, so nobody expects them. Each is
 decided on its own; until then the club keeps doing it the way it does now.
@@ -4211,7 +4385,7 @@ decided on its own; until then the club keeps doing it the way it does now.
 
 <div style="page-break-before: always"></div>
 
-## 15. Keeping this guide up to date
+## 16. Keeping this guide up to date
 
 This guide lives in the app's repository at `docs/user-guide.md`, with its screenshots in
 `docs/user-guide/`. Any change that adds, removes or changes something a member can see or do must
@@ -4222,3 +4396,9 @@ Screenshots are taken from the web build with sample data (no real club data), a
 phone screen at 2× scale. The tooling (`shoot.mjs`, `serve.py` and the fixtures, including
 `user-guide.mjs` for screens only this guide uses) is kept in the project's shared files under
 `thunder/screenshots/`.
+
+Section 14's screens come from the web builds of Vantage (a 1180 × 760 tablet in landscape) and
+Vision (a 390 × 844 phone) in the FirstPassVisionVantage repository, with a made-up game, Hawks v
+Kestrels, and no club database. The scripts are in the project's shared files under
+`thunder/screenshots/game-day/`. When Vantage or Vision changes what a coach or statistician sees,
+update section 14 and its screens too.

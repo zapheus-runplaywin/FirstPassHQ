@@ -327,8 +327,8 @@ describe('the demo club', () => {
   it('is found by the code DEMO and connects to the test project', async () => {
     await open('/choose-club');
     await type('Club code', 'demo');
-    expect(screen.getByText('FirstPass Demo Club')).toBeTruthy();
-    await fireEvent.press(screen.getByText('Continue to FirstPass Demo Club'));
+    expect(screen.getByText('Perth Pumpkins')).toBeTruthy();
+    await fireEvent.press(screen.getByText('Continue to Perth Pumpkins'));
     await settle();
     expect(connected()).toBe('connected:DEMO');
     expect(connectToClub).toHaveBeenCalledWith(
@@ -342,7 +342,7 @@ describe('the demo club', () => {
     expect(screen.getByLabelText('Email')).toBeTruthy();
     expect(screen.getByLabelText('Password').props.secureTextEntry).toBe(true);
     expect(screen.getByText('Sign in')).toBeTruthy();
-    expect(screen.getByText(/^Not FirstPass Demo Club\?/)).toBeTruthy();
+    expect(screen.getByText(/^Not Perth Pumpkins\?/)).toBeTruthy();
   });
 
   it('shows no Google or Apple button, even where Apple is offered', async () => {
