@@ -608,6 +608,85 @@ describe('signed in with Apple', () => {
   });
 });
 
+describe('setting up a new club', () => {
+  const CODE = '7kq4 md2p xy9z';
+
+  async function openSetup(rpcs: BackendOptions['rpcs'] = {}) {
+    await openJoin(newcomer, { rpcs: { first_admin_setup_open: true, claim_first_admin: null, ...rpcs } });
+  }
+
+  async function become() {
+    await fireEvent.press(screen.getByText('Become the club’s admin'));
+    await settle();
+  }
+
+  it('isn’t offered in a club that has an admin', async () => {
+    await openJoin();
+    expect(rpcNames()).toContain('first_admin_setup_open');
+    expect(screen.queryByText('Setting up this club?')).toBeNull();
+    expect(screen.queryByText('Setup code')).toBeNull();
+    expect(screen.queryByText('Become the club’s admin')).toBeNull();
+  });
+
+  it('is offered while the club has no admin and a code is waiting, beside the usual request', async () => {
+    await openSetup();
+    expect(screen.getByText('Setting up this club?')).toBeTruthy();
+    expect(screen.getByText('Setup code')).toBeTruthy();
+    expect(screen.getByText('Send request')).toBeTruthy();
+    // Still never a role someone can ask for.
+    expect(screen.queryByText('Admin')).toBeNull();
+  });
+
+  it('sends the name and code, and goes back to a home that now has Administration', async () => {
+    await openSetup();
+    await type('Your name', 'Sam First');
+    await type('Setup code', CODE);
+    await become();
+    expect(argsOf('claim_first_admin')).toEqual([{ p_code: CODE, p_full_name: 'Sam First' }]);
+    expect(rpcNames()).not.toContain('submit_join_request');
+    expect(back).toHaveBeenCalledTimes(1);
+  });
+
+  it.each([
+    ['no name', '  ', CODE, 'Please enter your name above first.'],
+    ['no code', 'Sam First', '', 'Enter the 12-character setup code from FirstPass, such as 7KQ4-MD2P-XY9Z.'],
+    ['a code that is too short', 'Sam First', '7KQ4-MD2P', 'Enter the 12-character setup code from FirstPass, such as 7KQ4-MD2P-XY9Z.'],
+    ['a child’s link code', 'Sam First', '7KQ-4MD', 'Enter the 12-character setup code from FirstPass, such as 7KQ4-MD2P-XY9Z.'],
+  ])('refuses %s, and asks the database nothing', async (_l, name, code, message) => {
+    await openSetup();
+    await type('Your name', name);
+    await type('Setup code', code);
+    await become();
+    expect(screen.getByText(message)).toBeTruthy();
+    expect(rpcNames()).not.toContain('claim_first_admin');
+    expect(back).not.toHaveBeenCalled();
+  });
+
+  it.each([
+    'That setup code isn’t right, or it has expired. Check it with FirstPass.',
+    'Too many wrong codes. Try again in 42 minutes.',
+    'This club already has an admin. Ask to join below and they’ll approve you.',
+  ])('shows the database’s refusal and stays put: %s', async (message) => {
+    await openSetup({ claim_first_admin: message });
+    await type('Your name', 'Sam First');
+    await type('Setup code', CODE);
+    await become();
+    expect(screen.getByText(message)).toBeTruthy();
+    expect(back).not.toHaveBeenCalled();
+  });
+
+  it('a wrong setup code doesn’t stop someone asking to join the usual way', async () => {
+    await openSetup({ claim_first_admin: 'That setup code isn’t right, or it has expired. Check it with FirstPass.' });
+    await fillBasics();
+    await type('Setup code', CODE);
+    await become();
+    await fireEvent.press(screen.getByText('Guest'));
+    await send();
+    expect(argsOf('submit_join_request')[0]).toMatchObject({ p_requested_role: 'guest' });
+    expect(back).toHaveBeenCalledTimes(1);
+  });
+});
+
 describe('the club password', () => {
   it('isn’t asked for when the club has none', async () => {
     await openJoin();

@@ -5,9 +5,10 @@ import { Pressable } from 'react-native';
 import { PolicyLinks } from '@/components/policy-links';
 import { Screen } from '@/components/screen';
 import { ThemedText } from '@/components/themed-text';
-import { Button, ChipGroup, ErrorText, TextField } from '@/components/ui';
+import { Button, Card, ChipGroup, ErrorText, TextField } from '@/components/ui';
 import { useTheme } from '@/hooks/use-theme';
 import { formatDate, isMinor, isUnder13, parseDate, under13Message } from '@/lib/age';
+import { looksLikeSetupCode } from '@/lib/first-admin';
 import { looksLikeLinkCode } from '@/lib/guardian-links';
 import { useAuth } from '@/lib/auth';
 import { useSquads } from '@/lib/club';
@@ -42,6 +43,12 @@ export default function JoinScreen() {
   const [childCode, setChildCode] = useState('');
   const [password, setPassword] = useState('');
   const [needsPassword, setNeedsPassword] = useState(false);
+  // A new club with no admin yet, and a setup code waiting to be used: the
+  // person setting the club up becomes its first admin here.
+  const [setupOpen, setSetupOpen] = useState(false);
+  const [setupCode, setSetupCode] = useState('');
+  const [settingUp, setSettingUp] = useState(false);
+  const [setupError, setSetupError] = useState<string | null>(null);
   const [saving, setSaving] = useState(false);
   const [error, setError] = useState<string | null>(null);
   // Turned away for being under 13: the form stays, so a parent who typed
@@ -66,7 +73,34 @@ export default function JoinScreen() {
 
   useEffect(() => {
     supabase.rpc('join_password_required').then(({ data }) => setNeedsPassword(data === true));
+    supabase.rpc('first_admin_setup_open').then(({ data }) => setSetupOpen(data === true));
   }, []);
+
+  async function becomeFirstAdmin() {
+    if (!fullName.trim()) {
+      setSetupError('Please enter your name above first.');
+      return;
+    }
+    if (!looksLikeSetupCode(setupCode)) {
+      setSetupError('Enter the 12-character setup code from FirstPass, such as 7KQ4-MD2P-XY9Z.');
+      return;
+    }
+    setSettingUp(true);
+    setSetupError(null);
+    // A wrong code comes back as a message, not an error, so the database
+    // can keep count of wrong tries.
+    const { data: refused, error: rpcError } = await supabase.rpc('claim_first_admin', {
+      p_code: setupCode,
+      p_full_name: fullName,
+    });
+    setSettingUp(false);
+    if (rpcError || refused) {
+      setSetupError(rpcError?.message ?? String(refused));
+      return;
+    }
+    await refresh();
+    router.back();
+  }
 
   async function submit() {
     if (!fullName.trim()) {
@@ -188,6 +222,34 @@ export default function JoinScreen() {
         autoComplete="name"
         textContentType="name"
       />
+
+      {setupOpen ? (
+        <Card>
+          <ThemedText type="smallBold">Setting up this club?</ThemedText>
+          <ThemedText type="small" themeColor="textSecondary">
+            This club has no admin yet. If FirstPass gave you a setup code, enter your name above
+            and the code here to become the club’s first admin. The code works once. Everyone else
+            asks to join below.
+          </ThemedText>
+          <TextField
+            label="Setup code"
+            value={setupCode}
+            onChangeText={setSetupCode}
+            placeholder="7KQ4-MD2P-XY9Z"
+            autoCapitalize="characters"
+            autoCorrect={false}
+            autoComplete="off"
+            maxLength={20}
+          />
+          <ErrorText>{setupError}</ErrorText>
+          <Button
+            title="Become the club’s admin"
+            variant="secondary"
+            onPress={becomeFirstAdmin}
+            busy={settingUp}
+          />
+        </Card>
+      ) : null}
 
       <TextField
         label="Date of birth"
