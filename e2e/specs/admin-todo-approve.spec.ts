@@ -33,8 +33,10 @@ test('an admin taps the join request to-do and lands on that member’s approval
   await page.getByText('Approve 1 join request', { exact: true }).click();
 
   // Straight to their page, saying what to do, with the approval on it.
-  await expect(page.getByText('To do', { exact: true })).toBeVisible();
-  await expect(page.getByText(/^Check who they are, choose their role/)).toBeVisible();
+  // The home screen's own To do heading stays mounted underneath, so look in the card.
+  const card = page.getByTestId('todo-banner');
+  await expect(card.getByText('To do', { exact: true })).toBeVisible();
+  await expect(card.getByText(/^Check who they are, choose their role/)).toBeVisible();
   await expect(page.getByText('Waiting for approval', { exact: true })).toHaveCount(0);
   expect(new URL(page.url()).pathname).toBe(`/admin/${pending.id}`);
 
