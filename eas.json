@@ -26,6 +26,9 @@
       "android": {
         "track": "alpha",
         "releaseStatus": "draft"
+      },
+      "ios": {
+        "ascAppId": "6836314611"
       }
     },
     "closed-test-rollout": {
