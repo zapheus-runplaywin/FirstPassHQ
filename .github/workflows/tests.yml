@@ -99,6 +99,9 @@ jobs:
       - name: Reset demo club signs in as a demo account
         if: ${{ !cancelled() }}
         run: scripts/test-check-demo-sign-in.sh
+      - name: Reset demo club gives the club its logo
+        if: ${{ !cancelled() }}
+        run: scripts/test-demo-club-logo.sh
       - name: Updates keep the demo club off the live project
         if: ${{ !cancelled() }}
         run: scripts/test-publish-update.sh

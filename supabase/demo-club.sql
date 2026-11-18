@@ -1,20 +1,31 @@
--- The DEMO club's sample people, on the TEST Supabase project only. Never run
--- this on the live database: it runs only where test-data.sql's sample people are.
+-- The DEMO club, the Perth Pumpkins, and its sample people, on the TEST
+-- Supabase project only. Never run this on the live database: it runs only
+-- where test-data.sql's sample people are.
 --
 -- Store reviewers and our own testers sign in to the club code DEMO with an
 -- email and password (docs/environments.md, "The demo club"). This script
--- puts back every demo account with its role, squads and teams, guardian
--- link and the pilot, so the role scripts start the same every time. Run it
--- with the "Reset demo club" workflow, which passes the shared password from
--- the DEMO_PASSWORD secret:
+-- puts back the club's own name and look, and every demo account with its
+-- role, squads and teams, guardian link and the pilot, so the role scripts
+-- start the same every time. Run it with the "Reset demo club" workflow,
+-- which passes the shared password from the DEMO_PASSWORD secret and the name
+-- the club's logo is stored under (scripts/demo-club-logo.sh):
 --
---   psql -v ON_ERROR_STOP=1 -v demo_password="$DEMO_PASSWORD" -f supabase/demo-club.sql
+--   psql -v ON_ERROR_STOP=1 -v demo_password="$DEMO_PASSWORD" \
+--     -v demo_logo="$(scripts/demo-club-logo.sh name)" -f supabase/demo-club.sql
+--
+-- Without demo_logo, as on a local database, the club has the app's built-in
+-- mark for a logo.
 --
 -- The password is never written in the repo. Every account is
 -- <name>@demo.firstpass.example, a domain nobody can receive mail at. The
 -- list matches thunder/pilot/demo-accounts.md and docs/store/review-notes.md.
 --
 -- What it changes, all on the test project:
+--   - the club's saved settings: the name Perth Pumpkins, the short name
+--     Pumpkins, pumpkin orange on a dark green, and the logo. A made-up club,
+--     so the demo never shows a real club's name, colours or logo. The test
+--     project is the demo club, so everything that signs in to the test
+--     project shows this look;
 --   - the 20 demo accounts: made again if deleted, password reset, and their
 --     roles, checks, dates of birth, squads, teams and guardian links set back;
 --   - messages sent by demo accounts are removed, so read counts start at 0;
@@ -35,12 +46,19 @@
 -- Kept in a setting for this session only, so it never appears in a query
 -- the script prints.
 select set_config('demo.password', :'demo_password', false) is not null as password_set \gset
+-- The logo's name in the club-branding bucket, when the workflow gives one.
+\if :{?demo_logo}
+\else
+  \set demo_logo ''
+\endif
+select set_config('demo.logo', :'demo_logo', false) is not null as logo_set \gset
 
 begin;
 
 do $$
 declare
   v_password text := current_setting('demo.password', true);
+  v_logo text := nullif(trim(current_setting('demo.logo', true)), '');
   v_season int;
   v_u20_squad uuid;
   v_u20 uuid;
@@ -239,6 +257,20 @@ begin
       pilot_features = '{"messages": true, "calendar": true}'::jsonb
   where id;
 
+  -- The club itself: the Perth Pumpkins, a made-up club, so the demo never
+  -- shows a real club's name, colours or logo. Pumpkin orange on a dark
+  -- green, with light text. The logo is the file "Reset demo club" uploads after this
+  -- (scripts/demo-club-logo.sh); with none named, the app's built-in mark.
+  update public.club_settings
+  set club_name = 'Perth Pumpkins',
+      short_name = 'Pumpkins',
+      background_colour = '#0F2A1B',
+      text_colour = '#FFFFFF',
+      hero_colour = '#FF7518',
+      logo_path = v_logo,
+      updated_at = now()
+  where id;
+
   -- One upcoming sample PlayHQ game for each team, at 10am Perth time.
   insert into public.fixtures as f (
     playhq_game_id, playhq_team_id, team_id, team_name, opponent, round_name, grade_name,
@@ -259,4 +291,4 @@ $$;
 commit;
 
 select set_config('demo.password', '', false) is not null as password_cleared \gset
-\echo The demo club is reset: 20 accounts, the 20 & Under pilot, Messages and Calendar on.
+\echo The demo club is reset: the Perth Pumpkins, 20 accounts, the 20 & Under pilot, Messages and Calendar on.

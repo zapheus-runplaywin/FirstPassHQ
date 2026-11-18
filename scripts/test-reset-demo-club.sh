@@ -1,8 +1,10 @@
 #!/usr/bin/env bash
 # Tests supabase/demo-club.sql, the "Reset demo club" script, on a local
 # Postgres with the app's migrations: it makes all 20 demo accounts with the
-# shared password, puts back what reviewers and testers change, never prints
-# the password, and refuses a database that looks live or a missing password.
+# shared password, makes the club the Perth Pumpkins (never a real club's
+# name, colours or logo), puts back what reviewers and testers change, never
+# prints the password, and refuses a database that looks live or a missing
+# password.
 # Run by the "Tests" workflow, with the same Postgres settings as
 # run-sql-tests.sh.
 set -uo pipefail
@@ -16,7 +18,13 @@ export PGOPTIONS="${PGOPTIONS:-} -c client_min_messages=warning"
 failed=0
 
 q() { psql -X -qAt -v ON_ERROR_STOP=1 -d "$db" -c "$1"; }
-reset() { psql -X -q -v ON_ERROR_STOP=1 -d "$db" -v demo_password="$1" -f "$root/supabase/demo-club.sql" >"$log" 2>&1; }
+logo='demo-club-logo-0123456789ab.png'
+# reset <password> [the logo's name]: without a name, as on a local database.
+reset() {
+  psql -X -q -v ON_ERROR_STOP=1 -d "$db" -v demo_password="$1" ${2:+-v demo_logo="$2"} \
+    -f "$root/supabase/demo-club.sql" >"$log" 2>&1
+}
+look() { q "select concat_ws('|', club_name, short_name, background_colour, text_colour, hero_colour, coalesce(logo_path, 'no logo')) from public.club_settings where id"; }
 check() {
   local label=$1 got=$2 want=$3
   if [ "$got" = "$want" ]; then echo "PASS $label"; else echo "FAIL $label (got '$got', want '$want')"; failed=1; fi
@@ -59,9 +67,22 @@ check 'nothing is made on an empty database' "$(q "select count(*) from auth.use
 q "insert into public.teams (name, kind, season, sort_order) values ('Open Squad', 'squad', extract(year from now())::int, 50)" >/dev/null
 psql -X -q -v ON_ERROR_STOP=1 -d "$db" -f "$root/supabase/test-data.sql" >"$log" 2>&1 || { cat "$log"; exit 1; }
 
+# The test project began as a copy of a real club, with that club's look.
+real_club="update public.club_settings set club_name = 'West Coast Thunder', short_name = 'Thunder',
+  background_colour = '#000000', text_colour = '#FFFFFF', hero_colour = '#02CCFE', logo_path = 'logo-1759900000000.png' where id"
+q "$real_club" >/dev/null
+reset 'short' "$logo"
+check "a refused run leaves the club's look alone" "$(look)" 'West Coast Thunder|Thunder|#000000|#FFFFFF|#02CCFE|logo-1759900000000.png'
+
 # The first reset.
-reset "$password"
+reset "$password" "$logo"
 check 'the reset runs' "$?" 0
+check 'the club is the Perth Pumpkins: its name, colours and logo, and nothing of the real club' \
+  "$(look)" "Perth Pumpkins|Pumpkins|#0F2A1B|#FFFFFF|#FF7518|$logo"
+check 'the app gets that look for a signed-in demo member' \
+  "$(as "$(id 8)" "select concat_ws('|', club_name, short_name, background_colour, text_colour, hero_colour, logo_path) from public.club_profile()")" \
+  "Perth Pumpkins|Pumpkins|#0F2A1B|#FFFFFF|#FF7518|$logo"
+check 'the reset says which club it made' "$(grep -c 'The demo club is reset: the Perth Pumpkins' "$log")" 1
 check 'the password is never printed' "$(grep -c -- "$password" "$log")" 0
 check '20 demo accounts' "$(q "select count(*) from auth.users where email like '%@demo.firstpass.example'")" 20
 check 'every account signs in with the shared password' \
@@ -107,10 +128,13 @@ setup "insert into public.guardianships (guardian_id, athlete_id) values ('$(id 
 setup "update public.teams set pilot = true where name = 'Open A'; update public.club_settings set features = features || '{\"injuries\": true}' where id"
 setup "insert into auth.users (id, email) values ('11111111-1111-4111-8111-111111111111', 'squatter@demo.firstpass.example')"
 setup "delete from auth.users where id = '$(id 4)'; insert into auth.users (id, email) values ('22222222-2222-4222-8222-222222222222', 'asstcoach@demo.firstpass.example')"
+setup "$real_club"
 
 check 'a demo message was sent before the reset' "$(q "select count(*) from public.messages where sender_id = '$(id 3)'")" 1
-reset "$password"
+reset "$password" "$logo"
 check 'the second reset runs' "$?" 0
+check "a look changed in Club settings goes back to the Perth Pumpkins'" \
+  "$(look)" "Perth Pumpkins|Pumpkins|#0F2A1B|#FFFFFF|#FF7518|$logo"
 check 'demo messages are gone' "$(q "select count(*) from public.messages where sender_id = '$(id 3)'")" 0
 check 'a changed password is put back' \
   "$(q "select encrypted_password = extensions.crypt('$password', encrypted_password) from auth.users where id = '$(id 1)'")" t
@@ -133,8 +157,11 @@ psql -X -q -v ON_ERROR_STOP=1 -d "$db" -f "$root/supabase/test-data.sql" >"$log"
 check 'test-data.sql still runs beside the demo club' "$?" 0
 check 'and makes no demo account an admin' \
   "$(q "select count(*) from public.profiles where email like '%@demo.firstpass.example' and role = 'admin'")" 1
+setup "$real_club"
 reset "$password"
 check 'the demo club resets after test-data.sql' "$?" 0
+check "a reset with no logo named, as on a local database, shows the app's own mark, never the real club's logo" \
+  "$(look)" 'Perth Pumpkins|Pumpkins|#0F2A1B|#FFFFFF|#FF7518|no logo'
 
 # Real people signing in to the test project don't stop it.
 q "insert into auth.users (email) select 'tester' || n || '@gmail.com' from generate_series(1, 10) n" >/dev/null
@@ -161,5 +188,10 @@ check 'the workflow never reads the live database password' \
   "$(grep -c 'secrets.SUPABASE_DB_PASSWORD' "$wf")" 0
 check 'the workflow links the test project' "$(grep -c 'SUPABASE_PROJECT_ID: ${{ secrets.SUPABASE_TEST_PROJECT_ID }}' "$wf")" 1
 check 'the workflow refuses the live project id' "$(grep -c '"$SUPABASE_PROJECT_ID" = "$LIVE_PROJECT_ID"' "$wf")" 1
+check "the workflow names the club's logo for the reset" \
+  "$(grep -c 'logo=$(scripts/demo-club-logo.sh name)' "$wf"):$(grep -c -- '-v demo_logo="$logo"' "$wf")" '1:1'
+check 'the workflow uploads the logo after the reset and the sign-in' \
+  "$(awk '/^    steps:/{on=1} on' "$wf" | grep -e '-f supabase/demo-club.sql' -e 'run: scripts/check-demo-sign-in.sh' -e 'run: scripts/demo-club-logo.sh upload' | sed -E 's/.*(demo-club.sql|check-demo-sign-in.sh|logo.sh upload).*/\1/' | tr '\n' ' ')" \
+  'demo-club.sql check-demo-sign-in.sh logo.sh upload '
 
 [ $failed -eq 0 ]

@@ -1,7 +1,8 @@
 name: Reset demo club
 
-# Puts the DEMO club's sample people back on the TEST Supabase project
-# (supabase/demo-club.sql): the 20 demo accounts with the shared password from
+# Puts the DEMO club back on the TEST Supabase project (supabase/demo-club.sql):
+# the club's own name, colours and logo (the Perth Pumpkins, a made-up club),
+# the 20 demo accounts with the shared password from
 # the DEMO_PASSWORD secret, their roles, squads, teams and guardian links, and
 # the 20 & Under pilot. Then it signs in once as admin@ through the test
 # project's Auth API (scripts/check-demo-sign-in.sh), so a reset proves a demo
@@ -62,7 +63,14 @@ jobs:
           # supabase link saves the project's connection pooler address. Use
           # its session mode (port 5432) so the script's settings stay with it.
           url=$(sed -E 's/:6543\//:5432\//' supabase/.temp/pooler-url)
+          # The name the club's logo is stored under, made from the file.
+          logo=$(scripts/demo-club-logo.sh name)
           PGPASSWORD="$SUPABASE_DB_PASSWORD" psql -X -q -v ON_ERROR_STOP=1 \
-            -v demo_password="$DEMO_PASSWORD" -f supabase/demo-club.sql "$url"
+            -v demo_password="$DEMO_PASSWORD" -v demo_logo="$logo" \
+            -f supabase/demo-club.sql "$url"
       - name: Sign in as a demo account
         run: scripts/check-demo-sign-in.sh
+      - name: Give the demo club its logo
+        # Uploaded as the demo club's admin, the way Club settings does, when
+        # the test project doesn't have this logo yet.
+        run: scripts/demo-club-logo.sh upload

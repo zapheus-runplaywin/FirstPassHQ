@@ -1,0 +1,32 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1024 1024" width="1024" height="1024">
+  <!-- Perth Pumpkins: the demo club's logo. A made-up club, for the DEMO club only. -->
+  <g stroke-linejoin="round" stroke-linecap="round">
+    <!-- leaf and tendril -->
+    <path d="M456 292 C404 214 312 196 246 238 C300 250 344 304 456 304 Z" fill="#2E8B4A" stroke="#0F3D21" stroke-width="12"/>
+    <path d="M452 296 C392 264 330 248 272 242" fill="none" stroke="#0F3D21" stroke-width="7"/>
+    <path d="M580 264 C640 214 744 212 750 268 C754 306 710 314 700 286" fill="none" stroke="#1F6B3A" stroke-width="22"/>
+    <!-- the pumpkin, back lobes first -->
+    <g stroke="#B04600" stroke-width="12">
+      <ellipse cx="252" cy="606" rx="168" ry="246" fill="#DD5E0B"/>
+      <ellipse cx="772" cy="606" rx="168" ry="246" fill="#DD5E0B"/>
+      <ellipse cx="376" cy="596" rx="190" ry="284" fill="#F06A10"/>
+      <ellipse cx="648" cy="596" rx="190" ry="284" fill="#F06A10"/>
+      <ellipse cx="512" cy="590" rx="176" ry="300" fill="#FF7518"/>
+    </g>
+    <!-- stem -->
+    <path d="M456 312 C460 252 484 216 528 166 C548 144 602 148 630 178 C592 216 574 256 572 312 Q514 292 456 312 Z" fill="#1F6B3A" stroke="#0F3D21" stroke-width="12"/>
+    <!-- face -->
+    <g fill="#0B120D">
+      <path d="M316 478 L454 548 L344 596 Z"/>
+      <path d="M708 478 L570 548 L680 596 Z"/>
+      <path d="M512 590 L482 642 L542 642 Z"/>
+      <path d="M286 676 Q512 772 738 676 Q694 806 512 834 Q330 806 286 676 Z"/>
+    </g>
+    <!-- teeth -->
+    <g fill="#FF7518">
+      <path d="M392 712 L458 726 L428 776 Z"/>
+      <path d="M632 712 L566 726 L596 776 Z"/>
+      <path d="M478 840 L546 840 L512 774 Z"/>
+    </g>
+  </g>
+</svg>
