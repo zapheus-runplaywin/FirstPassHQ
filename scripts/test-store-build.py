@@ -11,7 +11,11 @@ eas.json
 - closed-test-rollout is the only profile that rolls out straight away, and it
   goes to the same closed testing track, never production;
 - no submit profile names a key file: the Google service account key lives on
-  Expo's servers, never in the repository.
+  Expo's servers, never in the repository;
+- the production submit profile names the app in App Store Connect
+  (ascAppId). With nobody at a keyboard, EAS refuses to send an iPhone build
+  to TestFlight without it. The App Store Connect API key stays on Expo's
+  servers too.
 
 .github/workflows/beta-build.yml
 - it only runs when started by hand (Expo's free plan counts every build);
@@ -87,6 +91,15 @@ def eas_problems(eas: dict) -> list[str]:
         found.append(f'closed-test-rollout submits to {rollout.get("track")!r}, not the closed test')
     if rollout.get('releaseStatus') != 'completed':
         found.append('closed-test-rollout must roll the release out')
+
+    ios = profiles.get('production', {}).get('ios', {})
+    if not re.fullmatch(r'\d{6,}', str(ios.get('ascAppId', ''))):
+        found.append('production must name the app in App Store Connect (ascAppId), or the '
+                     'Beta build workflow cannot send an iPhone build to TestFlight')
+    for name, profile in profiles.items():
+        if any(key.startswith('ascApiKey') or key in ('appleId', 'appleTeamId')
+               for key in profile.get('ios', {})):
+            found.append(f"{name} holds Apple sign-in details; keep the API key on Expo's servers")
 
     for name in profiles:
         android = submit_android(eas, name)
@@ -172,6 +185,9 @@ def main() -> int:
         'rollout profile missing': lambda e: e['submit'].pop('closed-test-rollout'),
         'key file in the repo': lambda e: e['submit']['production']['android'].update(serviceAccountKeyPath='./key.json'),
         'preview no longer an APK': lambda e: e['build']['preview']['android'].update(buildType='app-bundle'),
+        'no App Store Connect app id': lambda e: e['submit']['production'].pop('ios'),
+        'an App Store Connect app id that is not a number': lambda e: e['submit']['production']['ios'].update(ascAppId='au.pivt.firstpass.hq'),
+        'an Apple API key file in the repo': lambda e: e['submit']['production']['ios'].update(ascApiKeyPath='./AuthKey.p8'),
     }
     for name, change in eas_cases.items():
         if eas_problems(broken_eas(change)):

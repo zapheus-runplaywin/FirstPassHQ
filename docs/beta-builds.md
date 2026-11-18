@@ -34,6 +34,12 @@ the Expo plan's monthly builds, so the workflow only runs when you start it.
      `npx eas-cli@latest build --platform ios --profile production --auto-submit`. Sign in with your
      Apple ID when asked. EAS creates the certificates and the app in App Store Connect, and saves
      an App Store Connect API key so later builds can go to TestFlight without you.
+     To check the key is saved: `npx eas-cli@latest credentials --platform ios`, pick `production`,
+     then **App Store Connect: Manage your API Key**. If none is set up, choose **Set up your
+     project to use an API Key for Expo Submit**. Without it the workflow's iPhone build still
+     builds, but stops at sending with "App Store Connect API Keys cannot be set up in
+     --non-interactive mode". The app's number in App Store Connect is in `eas.json`
+     (`ascAppId`), which the workflow also needs.
 
    The app's store id is `au.pivt.firstpass.hq` (it was `au.com.wcmmna.thunder` until October
    2026). Signing keys belong to a store id, so after that change both platforms need this step
