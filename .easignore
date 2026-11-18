@@ -1,0 +1,83 @@
+# What a build leaves behind when EAS copies this folder up to Expo's build
+# servers (docs/beta-builds.md, "What goes up to Expo").
+#
+# EAS reads this file INSTEAD of .gitignore, so everything in .gitignore is
+# repeated in the first part below: without those lines a build would upload
+# .env, signing keys and generated folders. Add every new .gitignore line here
+# too. scripts/test-build-upload.py checks both parts.
+
+# ---- 1. The same as .gitignore ----
+
+# dependencies
+node_modules/
+
+# Expo
+.expo/
+dist/
+web-build/
+expo-env.d.ts
+
+# Native
+.kotlin/
+*.orig.*
+*.jks
+*.p8
+*.p12
+*.key
+*.mobileprovision
+
+# Metro
+.metro-health-check*
+
+# debug
+npm-debug.*
+yarn-debug.*
+yarn-error.*
+
+# macOS
+.DS_Store
+*.pem
+
+# local env files
+.env*.local
+
+# typescript
+*.tsbuildinfo
+
+example
+
+# generated native folders
+/ios
+/android
+
+# Supabase keys
+.env
+__pycache__/
+
+# application logs (the app writes app.log, app.1.log … in a logs folder)
+logs/
+*.log
+*.log.[0-9]*
+
+# test coverage
+coverage/
+
+# browser smoke tests (e2e/): the web export and Playwright's output
+e2e/web-build/
+e2e/test-results/
+e2e/playwright-report/
+
+# Stryker mutation tests
+.stryker-tmp/
+reports/mutation/
+reports/stryker-incremental.json
+
+# ---- 2. Not needed to build the app ----
+
+# EAS adds a copy of the latest commit's history, which holds every tracked
+# file a second time. Nothing in the build reads it.
+.git
+
+# The guides, PDFs, screenshots and branding files: about 320 MB that no
+# build uses. The app reads nothing from docs/.
+/docs

@@ -38,6 +38,10 @@ Run lint, typecheck and the tests before declaring any task done.
 Use EAS to build, sign, and submit the app in the cloud (`eas build`, `eas submit`) and to ship over-the-air updates (`eas update`) — no local Xcode or Android Studio required. Run EAS CLI as `bunx eas-cli <command>` in Bun projects, or `npx eas-cli@latest <command>` otherwise; substitute that for bare `eas` in docs examples.
 Docs: https://docs.expo.dev/eas/index.md
 
+`.easignore` decides what a build copies up to Expo, and EAS reads it instead of `.gitignore`: repeat every new `.gitignore` line in it, and keep `.git` and `/docs` in it so builds stay small (`scripts/test-build-upload.py`; `docs/beta-builds.md`, "What goes up to Expo").
+
+Every EAS build first runs `scripts/check-build-settings.js` (the `eas-build-pre-install` script in `package.json`). It stops a build whose EAS environment lacks the live club's address and key, or has a wrong one: an app built without them stops the moment it opens, and the build stays green. It runs before packages are installed, so keep it to Node's own modules, and keep it in the upload (`scripts/test-check-build-settings.py`; `docs/beta-builds.md`, "What a build checks first").
+
 ## Rules
 
 - If `ios/` and `android/` directories do not exist, they are generated (Continuous Native Generation). Never create or edit them by hand — configure native behavior in `app.json` and config plugins.

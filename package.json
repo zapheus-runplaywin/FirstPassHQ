@@ -69,7 +69,8 @@
     "test:sql": "scripts/run-sql-tests.sh",
     "test:mutation": "stryker run",
     "e2e:build": "EXPO_PUBLIC_SUPABASE_URL=https://example.supabase.co EXPO_PUBLIC_SUPABASE_ANON_KEY=x EXPO_OFFLINE=1 expo export -p web --clear --output-dir e2e/web-build",
-    "e2e": "playwright test -c e2e/playwright.config.ts"
+    "e2e": "playwright test -c e2e/playwright.config.ts",
+    "eas-build-pre-install": "node scripts/check-build-settings.js"
   },
   "private": true,
   "jest": {
