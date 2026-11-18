@@ -39,7 +39,8 @@ OK='{"access_token":"a.b.c","refresh_token":"r"}'
 # run <keys> <keys http code> <answer> <answer http code>
 run() {
   rm -f "$work"/headers-* "$work/body" "$work/urls"
-  STUB_DIR=$work STUB_KEYS=$1 STUB_KEYS_CODE=$2 STUB_ANSWER=$3 STUB_CODE=$4 PATH="$work/bin:$PATH" \
+  env -u GITHUB_ACTIONS ${ACTIONS:+GITHUB_ACTIONS=true} \
+    STUB_DIR="$work" STUB_KEYS="$1" STUB_KEYS_CODE="$2" STUB_ANSWER="$3" STUB_CODE="$4" PATH="$work/bin:$PATH" \
     SUPABASE_PROJECT_ID=testref SUPABASE_ACCESS_TOKEN=token-456 DEMO_PASSWORD='Pw s3cret "quoted"' \
     "$root/scripts/check-demo-sign-in.sh" >"$work/out" 2>&1
   status=$?
@@ -59,6 +60,13 @@ check 'with the anon key, never the service key' \
 check 'the key is read with the access token' "$(grep -c '^Authorization: Bearer token-456$' "$work/headers-api-keys")" 1
 check 'never prints the password, key or token' \
   "$(grep -c -e 's3cret' -e anon-key -e token-456 -e a.b.c "$work/out")" 0
+
+# On GitHub Actions the key is masked in the log, and that's the only line
+# that names it.
+ACTIONS=1 run "$KEYS" 200 "$OK" 200
+check 'on GitHub Actions the key is masked' "$(grep -c '^::add-mask::anon-key-123$' "$work/out")" 1
+check 'and nothing else names the password, key or token' \
+  "$(grep -v '^::add-mask::' "$work/out" | grep -c -e 's3cret' -e anon-key -e token-456 -e a.b.c)" 0
 
 run '[{"name":"default","type":"publishable","api_key":"sb_publishable_x"},{"name":"default","type":"secret","api_key":"sb_secret_y"}]' 200 "$OK" 200
 check 'a project with only new keys uses the publishable one' \
