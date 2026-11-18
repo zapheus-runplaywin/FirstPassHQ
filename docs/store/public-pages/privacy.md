@@ -1,6 +1,6 @@
 # FirstPass HQ privacy policy
 
-Last updated: [DATE PUBLISHED]
+Last updated: 18 November 2026
 
 FirstPass HQ is an app that netball clubs use to run the club: messages, attendance, injuries, Working With Children Checks and child safety. This policy explains what the app keeps about you, why, who can see it, how long it is kept, and how to have it deleted.
 

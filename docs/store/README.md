@@ -44,7 +44,7 @@ Change the words here, then the site copies them again.
 | Whether the record of who opened a child's records stays after the child's account is deleted (open from security audit run 1; today it is deleted) | Matt | Step 2 | Data inventory, delete page |
 | The app's name on each store, if not "FirstPass HQ" | Matt | Thu 19 Nov | Listing |
 
-`[DATE PUBLISHED]` at the top of the privacy page is filled in when it goes live.
+The "Last updated" date at the top of the privacy page changes whenever its words change.
 
 ## Checks before anything is submitted
 
