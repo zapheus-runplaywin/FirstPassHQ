@@ -1674,6 +1674,22 @@ the result.
 
 <img src="user-guide/awards-coach.png" width="210" alt="A coach's match and preseason votes">
 
+### Watching live game stats
+
+When a statistician records one of your squad's or team's games in FirstPass Vantage, you can
+follow it live in FirstPass Vision. Managers can too. On your phone, open
+**https://firstpass-vision.expo.app** in the browser; there's nothing to install.
+
+1. Type the club code, the same one you use for HQ.
+2. Tap **Sign in with Google** and choose the Google account you use for HQ.
+3. Tap a game in the list to follow it. Games stay in the list for three days, so you can look
+   back after full time.
+
+You see a game only while you're a coach or manager of its squad or team with a current check;
+if your role pauses or you're stood down, Vision stops showing it within about a minute. Use your
+own phone, not a shared one: you stay signed in in that browser until you tap **Sign out**, and
+signing out of Vision doesn't sign you out of HQ.
+
 ### Injuries and clearances
 
 **Injuries** lists your athletes' current injuries with their restrictions and expected return
@@ -1909,6 +1925,8 @@ and title together, like "Manager · Manager, 17 & Under". As a manager you can:
 - **Work on your season KPIs**, if the club uses them: the committee and admins set them, and you
   record your progress, add a note on the result and confirm your reviews (see
   [Season KPIs](#season-kpis)). The card shows once you're in a current squad or team.
+- **Follow your groups' games live** in FirstPass Vision, in your phone's browser, the same way as
+  coaches (see [Watching live game stats](#watching-live-game-stats)).
 - **Vote in club awards** that name managers, or every member, as voters, and be nominated in
   awards open to any member (see [Club awards](#club-awards)).
 - **Log an injury** when one of your athletes is hurt at training or a game: the **Injuries** card
@@ -2301,7 +2319,8 @@ recording a game happens in Vantage.
   injuries, attendance, game goals or session plans.
 - **Games and stats.** Statisticians see every game the club records, in Vantage. A game's
   coaches and managers see their own squad's or team's games, including the games of the teams in
-  a squad they coach or manage, and open one in FirstPass Vision by
+  a squad they coach or manage, and open one in FirstPass Vision (in a phone's browser at
+  https://firstpass-vision.expo.app, see [Watching live game stats](#watching-live-game-stats)) by
   tapping it, with no pair code, even days after full time. The six-digit pair code is only for a
   second statistician shadowing or helping with a game in Vantage. Athletes, guardians, physios
   and the committee don't see games (see [Who can see what](#11-who-can-see-what)).
