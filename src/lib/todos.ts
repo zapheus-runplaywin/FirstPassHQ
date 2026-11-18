@@ -6,6 +6,7 @@ import { gamePhase, gameTitle } from '@/lib/goals';
 import { formatDateString, type LoggedInjury, toDateString } from '@/lib/injuries';
 import type { KpiReviewTodo } from '@/lib/kpis';
 import type { MedicalReview } from '@/lib/medical';
+import { memberTodoHref } from '@/lib/member-todos';
 import type { MyConflictDeclaration, PolicyReview } from '@/lib/registers';
 import { closingDay, surveysToAnswer, type MySurvey } from '@/lib/surveys';
 import { WWCC_WARNING_DAYS } from '@/lib/safety';
@@ -446,7 +447,7 @@ export function buildTodos({
       key: 'join-requests',
       title: `Approve ${pendingCount} join ${pendingCount === 1 ? 'request' : 'requests'}`,
       detail: 'New members are waiting for you to approve them',
-      href: '/admin',
+      href: memberTodoHref('join'),
     });
   }
 
@@ -457,7 +458,7 @@ export function buildTodos({
         key: 'minors-without-guardian',
         title: `${plural(safety.minors_without_guardian, 'athlete', 'athletes')} under 18 locked out`,
         detail: 'Their app is locked until a verified parent or guardian is linked',
-        href: '/admin',
+        href: memberTodoHref('locked'),
       });
     }
     if (safety.athletes_without_date_of_birth > 0) {
@@ -465,7 +466,7 @@ export function buildTodos({
         key: 'no-date-of-birth',
         title: `Add a date of birth for ${plural(safety.athletes_without_date_of_birth, 'athlete', 'athletes')}`,
         detail: 'Check it against PlayHQ or ID. It decides whether the under 18 rules apply.',
-        href: '/admin',
+        href: memberTodoHref('dob'),
       });
     }
     // One tile for every card problem. wwcc_people counts each member once;
@@ -486,7 +487,7 @@ export function buildTodos({
           .filter(([count]) => count > 0)
           .map(([count, label]) => `${count} ${label}`)
           .join(', '),
-        href: '/admin',
+        href: memberTodoHref('wwcc'),
         // Red when anyone's check is missing or expired, otherwise amber.
         alert:
           (safety.wwcc_missing ?? 0) > 0
@@ -513,7 +514,7 @@ export function buildTodos({
           applicationsLapsed > 0
             ? `${applicationsLapsed} lapsed. Check online, then confirm on the member’s page.`
             : 'Check online, then confirm on the member’s page',
-        href: '/admin',
+        href: memberTodoHref('wwcc-application'),
         alert:
           applicationsLapsed > 0
             ? { level: 'red', label: 'Lapsed' }
@@ -525,7 +526,7 @@ export function buildTodos({
         key: 'notices-to-report',
         title: `Tell the governing body about ${plural(safety.notices_to_report, 'Screening Unit notice', 'Screening Unit notices')}`,
         detail: 'In writing, then record the date on the member’s page',
-        href: '/admin',
+        href: memberTodoHref('notice'),
       });
     }
     if (safety.wwc_officer_missing > 0) {
@@ -561,7 +562,7 @@ export function buildTodos({
             ? `Nobody can endorse ${unendorsable[0]}’s clearance`
             : `Nobody can endorse ${unendorsable.length} clearances`,
         detail: 'Make a physio Head Physio, or place a physio in their squad or team',
-        href: '/admin',
+        href: memberTodoHref('unendorsable'),
         alert: { level: 'amber', label: 'Stuck' },
       });
     }
@@ -570,7 +571,7 @@ export function buildTodos({
         key: 'exemptions-ending',
         title: `${plural(safety.exemptions_ending, 'volunteer exemption ends', 'volunteer exemptions end')} soon`,
         detail: `Within ${WWCC_WARNING_DAYS} days. They’ll need a Working With Children Check to keep their role.`,
-        href: '/admin',
+        href: memberTodoHref('exemption-ending'),
       });
     }
     if (safety.turning_18 > 0) {
@@ -578,7 +579,7 @@ export function buildTodos({
         key: 'turning-18',
         title: `${plural(safety.turning_18, 'athlete turns', 'athletes turn')} 18 this month`,
         detail: 'Their guardian links end when you next save them',
-        href: '/admin',
+        href: memberTodoHref('turning-18'),
       });
     }
     if (safety.records_removal_off) {
@@ -606,7 +607,7 @@ export function buildTodos({
         key: 'inactive-members',
         title: `${plural(safety.inactive_members ?? 0, 'member has', 'members have')} had no team or role for 2 years`,
         detail: 'Delete them if they’ve left the club. Their safeguarding records stay.',
-        href: '/admin',
+        href: memberTodoHref('inactive'),
       });
     }
   }

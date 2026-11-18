@@ -2,6 +2,7 @@ import { router, Stack, useLocalSearchParams } from 'expo-router';
 import { useEffect, useState } from 'react';
 import { Linking, Pressable, StyleSheet, View } from 'react-native';
 
+import { FocusAnchor } from '@/components/focus-anchor';
 import { GuardianHistory } from '@/components/guardian-history';
 import { Screen } from '@/components/screen';
 import { ScreeningNotices } from '@/components/screening-notices';
@@ -36,6 +37,11 @@ import {
   statusLabels,
   teamRoleLabels,
 } from '@/lib/labels';
+import {
+  isMemberTodoKind,
+  memberTodoCopy,
+  memberTodoDone,
+} from '@/lib/member-todos';
 import { logRecordView } from '@/lib/record-access';
 import { ageOn, localDay } from '@/lib/reports';
 import { hasRole, roleCombinationProblem } from '@/lib/roles';
@@ -104,8 +110,14 @@ type LinkPerson = Person & { status: MemberStatus };
 /** How many guardians to offer while searching. */
 const GUARDIAN_MATCHES = 6;
 
+const MEMBER_NOT_FOUND = 'Member not found.';
+
 export default function MemberScreen() {
-  const { id } = useLocalSearchParams<{ id: string }>();
+  const params = useLocalSearchParams<{ id: string; todo?: string }>();
+  const { id } = params;
+  // Opened from a home screen to-do: say what it needs, and show that part first.
+  const todo = isMemberTodoKind(params.todo) ? params.todo : null;
+  const section = todo ? memberTodoCopy[todo].section : null;
   const { session, refresh } = useAuth();
   const teams = useTeams();
   const usesSquads = useSquads();
@@ -196,7 +208,7 @@ export default function MemberScreen() {
       ]);
       const profile = profileResult.data as Profile | null;
       if (!profile) {
-        setError('Member not found.');
+        setError(MEMBER_NOT_FOUND);
         return;
       }
       setMember(profile);
@@ -698,7 +710,11 @@ export default function MemberScreen() {
   if (!member) {
     return (
       <Screen>
-        <ErrorText>{error}</ErrorText>
+        <ErrorText>
+          {error === MEMBER_NOT_FOUND && todo
+            ? 'This member isn’t in the club any more, so there’s nothing left to do here.'
+            : error}
+        </ErrorText>
       </Screen>
     );
   }
@@ -744,6 +760,20 @@ export default function MemberScreen() {
     hasRole(member, 'athlete') &&
     isMinor(member.date_of_birth, member.under_17) &&
     !savedGuardianIds.some((g) => unlocksChild(personOf(g)));
+  const todoDone =
+    todo &&
+    memberTodoDone(todo, member, {
+      hasVerifiedGuardian: savedGuardianIds.some((g) => unlocksChild(personOf(g))),
+    });
+  // What the to-do that opened the page needs, shown just above that part.
+  const todoCard = todo ? (
+    <Card testID="todo-banner">
+      <ThemedText type="smallBold">{todoDone ? 'Done' : 'To do'}</ThemedText>
+      <ThemedText type="small" themeColor={todoDone ? 'textSecondary' : 'tint'}>
+        {todoDone ?? memberTodoCopy[todo].action}
+      </ThemedText>
+    </Card>
+  ) : null;
   const requestsForChild = requests.filter((r) => r.athlete_id === id);
   const requestsByParent = requests.filter((r) => r.guardian_id === id);
   const search = guardianSearch.trim().toLowerCase();
@@ -786,6 +816,8 @@ export default function MemberScreen() {
   return (
     <Screen>
       <Stack.Screen options={{ title: member.full_name || member.email || 'Member' }} />
+
+      {section === 'approve' ? todoCard : null}
 
       <Card>
         <Detail label="Status" value={statusLabels[member.status]} />
@@ -912,6 +944,8 @@ export default function MemberScreen() {
         />
       ) : null}
 
+      <FocusAnchor active={section === 'physio'}>{todoCard}</FocusAnchor>
+
       {isPhysio ? (
         <View style={styles.group}>
           <ChipGroup
@@ -1019,6 +1053,8 @@ export default function MemberScreen() {
             ))
         : null}
 
+      <FocusAnchor active={section === 'date-of-birth'}>{todoCard}</FocusAnchor>
+
       {isAthlete ? (
         <View style={styles.group}>
           <TextField
@@ -1060,6 +1096,8 @@ export default function MemberScreen() {
           ) : null}
         </View>
       ) : null}
+
+      <FocusAnchor active={section === 'wwcc'}>{todoCard}</FocusAnchor>
 
       {needsWwcc ? (
         <View style={styles.group}>
@@ -1281,6 +1319,8 @@ export default function MemberScreen() {
         </View>
       ) : null}
 
+      <FocusAnchor active={section === 'notices'}>{todoCard}</FocusAnchor>
+
       {member.status === 'approved' &&
       !isSelf &&
       (member.stood_down_at || hasRole(member, ...standDownRoles, 'guardian')) ? (
@@ -1296,6 +1336,8 @@ export default function MemberScreen() {
           onChange={() => router.back()}
         />
       ) : null}
+
+      <FocusAnchor active={section === 'guardians'}>{todoCard}</FocusAnchor>
 
       {hasGuardians ? (
         <View style={styles.group}>
@@ -1547,6 +1589,8 @@ export default function MemberScreen() {
           </>
         )}
       </View>
+
+      <FocusAnchor active={section === 'delete'}>{todoCard}</FocusAnchor>
 
       {!isSelf ? (
         <ConfirmDelete

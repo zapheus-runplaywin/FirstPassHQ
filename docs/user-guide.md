@@ -414,7 +414,8 @@ Once you're approved, the home screen is where everything starts. From the top:
   award vote, integrity training due, goals to set or reflect on for a game, an injury past its
   expected return date, an injury a coach, manager or physio logged for you or your child, a KPI review to confirm or, for coaches, physios and the committee, an
   injury clearance to sign off, and, for coaches and managers, new or changed absences to review.
-  Tap an item to go straight to it. Each item disappears once it's done. When there's nothing,
+  Tap an item to go straight to it: a to-do about a member opens that member's page at the job
+  (see [Admins](#10-admins)). Each item disappears once it's done. When there's nothing,
   it says "✓ You're all caught up." Your own [personal tasks](#your-own-tasks) come after the
   club's items.
   Anything overdue has a **red circle with !**, a red **Overdue** label and a red bar down its
@@ -2450,13 +2451,30 @@ clearance nobody can endorse. Every card problem shares one to-do, **Sort out Wo
 Checks**, which counts each person once and says underneath how many are missing or expired,
 expiring within 60 days, waiting to be validated and waiting to be registered with the club. It
 is marked like an overdue to-do: red (**Missing**) and at the top of the list when anyone's check
-is missing or expired, otherwise amber (**Expiring**, **Validate** or **Register**). Tapping a
-child-safety to-do opens **Members**, where the people behind it are listed
-first under **Needs checking**. **Nobody can endorse Jordan's clearance** (or **Nobody can endorse
+is missing or expired, otherwise amber (**Expiring**, **Validate** or **Register**).
+
+Tapping a to-do about members takes you to the job, not the whole member list. When it's about one
+person, such as one join request or one athlete with no date of birth, their page opens straight
+away with a **To do** card at the top saying what to do, scrolled to the part you need: the date of
+birth, the Working With Children Check, Screening Unit notices, parents and guardians, the physio
+title or **Delete member**. A join request opens at the top, since the whole page is the approval.
+When it's about several people, it opens a list of just them, with why each is there; tap one to
+open their page the same way, and come back for the next. **Show all members** opens the full
+list. If someone has already dealt with it, the list says **All done**, and a page opened from an
+old to-do says **Done** (for example "Already approved") instead of asking again, or that the
+member isn't in the club any more.
+
+<img src="user-guide/todo-members-list.png" width="210" alt="Approve 2 join requests opens just the two people waiting, with what to do">
+<img src="user-guide/todo-member-join.png" width="210" alt="One join request opens that member's page with a To do card above the approval">
+<img src="user-guide/todo-member-dob.png" width="210" alt="A to-do to add one athlete's date of birth opens their page at Date of birth, with the To do card just above it">
+<img src="user-guide/todo-member-done.png" width="210" alt="An old join request to-do for someone already approved says Done">
+<img src="user-guide/todo-members-all-done.png" width="210" alt="Checks to sort out after someone else sorted them says All done">
+
+**Nobody can endorse Jordan's clearance** (or **Nobody can endorse
 2 clearances**) is amber, marked **Stuck**: the athlete has asked to be cleared, but their squad's
 phase is complete so its coaches no longer look after them, and the club has no Head Physio and no
 physio in their squad or team. Make a physio Head Physio, or place a physio in the athlete's squad
-or team, and it goes. Nobody's access changes on its own. While **Remove old records** is off, the list also shows **Old
+or team, and it goes: tapping it lists the club's physios, opening each at the physio title. Nobody's access changes on its own. While **Remove old records** is off, the list also shows **Old
 records are kept forever**, which opens Club settings so you can switch it on (see [Keeping
 records](#keeping-records)), and **Members have had no team or role for 2 years** when anyone
 has (see [Approving members](#approving-members)). On an installed app, admins also get a push notification for each
@@ -4075,7 +4093,8 @@ Working With Children Check, and another admin must do it.
   and policy acceptance are recorded before an admin can approve them, and the Working With Children
   Checks report lists them all. The admin's member page links to the Act and the Screening Unit's
   fact sheets so exemptions can be checked at the source.
-- **Your to-do list does the chasing**: new concerns, missing or expiring checks (missing or
+- **Your to-do list does the chasing**, and each to-do about a member opens that member's page
+  at the job, or a list of just the people it's about: new concerns, missing or expiring checks (missing or
   expired checks in red at the top, checks to validate, register or renew in amber), volunteer
   exemptions ending, declarations not yet accepted (counted with missing checks), cards to validate
   or register with the club, notices to report to the governing body, no WWC Registration Officer,
