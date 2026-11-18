@@ -183,10 +183,56 @@ Free projects pause after a week with nobody using them. If the test project is 
 migration deploy stops before the live project and says so: restore the test project in the Supabase
 dashboard and run **Deploy migrations** again.
 
+## The demo club
+
+The code `DEMO` opens the **FirstPass Demo Club**: 20 sample accounts on the **test** project, one
+for each kind of member, for app store reviewers and for anyone trying a screen as another role.
+It's the only club that signs in with an email and password. Every account uses the same password,
+which lives in the `DEMO_PASSWORD` repository secret and nowhere in the repo.
+
+The accounts are `<name>@demo.firstpass.example`, listed with what each one is for in
+`supabase/demo-club.sql`: `admin`, `committee` (the Secretary), `headcoach` (Head Coach of the
+20 & Under team), `asstcoach`, `manager`, `physio`, `headphysio`, `athlete19`, `athlete16` (two
+verified guardians), `locked15` (locked, with a fresh link code), `guardian`, `openathlete`,
+`lapsedcoach` (check expired yesterday), `coachparent`, `guest`, `helper` (temporary helper for
+this week), `stats`, `studio`, and `newcomer` and `newparent` (signed in, not yet asked to join).
+The 20 & Under team is the pilot: Messages and Calendar are on for the pilot only, and every other
+feature is off.
+
+**Setting it up (once):**
+
+1. In the test project only, turn on **Authentication > Sign In / Providers > Email**, with
+   **Allow new users to sign up** off. Leave Email **off** in the live project: that's what keeps
+   password sign-in away from real members, whatever a build contains.
+2. Add a `DEMO_PASSWORD` repository secret of at least 12 characters (GitHub > Settings > Secrets
+   and variables > Actions).
+3. Run **Reset demo club** (Actions > Reset demo club > Run workflow).
+4. Add `EXPO_PUBLIC_DEMO_CLUB_URL` and `EXPO_PUBLIC_DEMO_CLUB_ANON_KEY` (the **test** project's
+   address and public key) to the EAS environments whose builds should list the demo club,
+   usually `preview` and `production`. A build without them has no demo club.
+
+**Resetting it.** Run **Reset demo club** after each review round or test pass, after changing
+`DEMO_PASSWORD`, or when an account was deleted. It puts back every account, password, role,
+squad and team place, guardian link and link code, the pilot and the feature switches; removes
+messages the demo accounts sent; and returns `newcomer` and `newparent` to signed in with no join
+request. Calendars are left alone. It runs by hand only, reads only the test project's secrets,
+stops if the test project id is the live one, and the script itself refuses a database with more
+than three real accounts. To run it on another database: `psql -v demo_password=... -f
+supabase/demo-club.sql <database url>`.
+
+**The guards.** The password box shows only for the entry built from the two EAS variables. The
+club a build is made for never gets it, even with the code `DEMO`, and a demo entry pointing at
+that club's own project is dropped. `scripts/publish-update.sh` keeps the demo club in an update
+only when the channel's EAS environment has it, and refuses one pointing at the live project.
+
 ## Trying a feature as another role
 
+Use the demo club: sign in to `DEMO` in a preview build as the account for that role, and run
+**Reset demo club** afterwards to put things back. In Expo Go, where the home club is the test
+project, the demo club isn't listed, so use the steps below.
+
 `supabase/test-data.sql` makes your own accounts admins and fills the squads with sample people
-who can't sign in. To see a screen as an athlete, coach or guardian:
+who can't sign in. To see a screen as an athlete, coach or guardian in Expo Go:
 
 1. Run `supabase/test-data.sql` in the test project's **SQL Editor** (again, if you ran it before).
    Your admin account becomes an assistant coach of the **Open Squad** and its **Open A** team, and

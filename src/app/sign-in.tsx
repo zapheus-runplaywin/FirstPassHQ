@@ -5,16 +5,24 @@ import {
 } from "expo-apple-authentication";
 import { Image } from "expo-image";
 import { useEffect, useState } from "react";
-import { ActivityIndicator, Pressable, StyleSheet, View } from "react-native";
+import {
+  ActivityIndicator,
+  Pressable,
+  StyleSheet,
+  TextInput,
+  View,
+} from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
 
 import { PoweredByFirstPass } from "@/components/firstpass-logo";
 import { ThemedText } from "@/components/themed-text";
 import { ThemedView } from "@/components/themed-view";
+import { isDemoClub } from "@/constants/clubs";
 import { MaxContentWidth, Spacing } from "@/constants/theme";
 import { useTheme } from "@/hooks/use-theme";
 import { useClub } from "@/lib/club";
 import { useClubChoice } from "@/lib/club-choice";
+import { signInToDemoClub } from "@/lib/demo-sign-in";
 import {
   appleSignInAvailable,
   signInWithApple,
@@ -25,10 +33,14 @@ export default function SignInScreen() {
   const theme = useTheme();
   const club = useClub();
   const { club: chosen, switchClub } = useClubChoice();
-  const [busy, setBusy] = useState<"apple" | "google" | null>(null);
+  const [busy, setBusy] = useState<"apple" | "google" | "demo" | null>(null);
   const [error, setError] = useState<string | null>(null);
   // Apple's button shows only on an iPhone or iPad where Apple offers it.
   const [apple, setApple] = useState(false);
+  // The demo club, and only the demo club, signs in with a password.
+  const demo = isDemoClub(chosen);
+  const [email, setEmail] = useState("");
+  const [password, setPassword] = useState("");
 
   useEffect(() => {
     let live = true;
@@ -40,7 +52,10 @@ export default function SignInScreen() {
     };
   }, []);
 
-  async function run(which: "apple" | "google", signIn: () => Promise<void>) {
+  async function run(
+    which: "apple" | "google" | "demo",
+    signIn: () => Promise<void>,
+  ) {
     if (busy) return;
     setBusy(which);
     setError(null);
@@ -73,37 +88,107 @@ export default function SignInScreen() {
           </View>
 
           <View style={styles.buttons}>
-            {apple ? (
-              // Apple's own button, unstyled, as App Review expects. White
-              // stands out on the club's dark background.
-              <AppleAuthenticationButton
-                testID="apple-sign-in"
-                buttonType={AppleAuthenticationButtonType.CONTINUE}
-                buttonStyle={AppleAuthenticationButtonStyle.WHITE}
-                cornerRadius={12}
-                onPress={() => run("apple", signInWithApple)}
-                style={styles.appleButton}
-              />
-            ) : null}
+            {demo ? (
+              <>
+                <ThemedText
+                  type="small"
+                  themeColor="textSecondary"
+                  style={styles.title}
+                >
+                  Demo club. Sample people only.
+                </ThemedText>
+                <TextInput
+                  testID="demo-email"
+                  accessibilityLabel="Email"
+                  placeholder="Email"
+                  placeholderTextColor={theme.textSecondary}
+                  value={email}
+                  onChangeText={setEmail}
+                  autoCapitalize="none"
+                  autoCorrect={false}
+                  autoComplete="email"
+                  keyboardType="email-address"
+                  textContentType="username"
+                  style={[
+                    styles.input,
+                    { backgroundColor: theme.backgroundElement, color: theme.text },
+                  ]}
+                />
+                <TextInput
+                  testID="demo-password"
+                  accessibilityLabel="Password"
+                  placeholder="Password"
+                  placeholderTextColor={theme.textSecondary}
+                  value={password}
+                  onChangeText={setPassword}
+                  secureTextEntry
+                  autoCapitalize="none"
+                  autoCorrect={false}
+                  textContentType="password"
+                  onSubmitEditing={() =>
+                    run("demo", () => signInToDemoClub(chosen, email, password))
+                  }
+                  style={[
+                    styles.input,
+                    { backgroundColor: theme.backgroundElement, color: theme.text },
+                  ]}
+                />
+                <Pressable
+                  accessibilityRole="button"
+                  disabled={busy !== null}
+                  onPress={() =>
+                    run("demo", () => signInToDemoClub(chosen, email, password))
+                  }
+                  style={({ pressed }) => [
+                    styles.button,
+                    {
+                      backgroundColor: theme.backgroundElement,
+                      opacity: pressed ? 0.7 : 1,
+                    },
+                  ]}
+                >
+                  {busy === "demo" ? (
+                    <ActivityIndicator />
+                  ) : (
+                    <ThemedText type="smallBold">Sign in</ThemedText>
+                  )}
+                </Pressable>
+              </>
+            ) : (
+              <>
+                {apple ? (
+                  // Apple's own button, unstyled, as App Review expects. White
+                  // stands out on the club's dark background.
+                  <AppleAuthenticationButton
+                    testID="apple-sign-in"
+                    buttonType={AppleAuthenticationButtonType.CONTINUE}
+                    buttonStyle={AppleAuthenticationButtonStyle.WHITE}
+                    cornerRadius={12}
+                    onPress={() => run("apple", signInWithApple)}
+                    style={styles.appleButton}
+                  />
+                ) : null}
 
-            <Pressable
-              accessibilityRole="button"
-              disabled={busy !== null}
-              onPress={() => run("google", signInWithGoogle)}
-              style={({ pressed }) => [
-                styles.button,
-                {
-                  backgroundColor: theme.backgroundElement,
-                  opacity: pressed ? 0.7 : 1,
-                },
-              ]}
-            >
-              {busy === "google" ? (
-                <ActivityIndicator />
-              ) : (
-                <ThemedText type="smallBold">Continue with Google</ThemedText>
-              )}
-            </Pressable>
+                <Pressable
+                  accessibilityRole="button"
+                  disabled={busy !== null}
+                  onPress={() => run("google", signInWithGoogle)}
+                  style={({ pressed }) => [
+                    styles.button,
+                    {
+                      backgroundColor: theme.backgroundElement,
+                      opacity: pressed ? 0.7 : 1,
+                    },
+                  ]}
+                >
+                  {busy === "google" ? (
+                    <ActivityIndicator />
+                  ) : (
+                    <ThemedText type="smallBold">Continue with Google</ThemedText>
+                  )}
+                </Pressable>
+              </>
+            )}
 
             {error ? (
               <ThemedText type="small" style={styles.error}>
@@ -177,6 +262,12 @@ const styles = StyleSheet.create({
   appleButton: {
     height: 52,
     width: "100%",
+  },
+  input: {
+    height: 52,
+    borderRadius: 12,
+    paddingHorizontal: Spacing.three,
+    fontSize: 16,
   },
   error: {
     color: "#DC2626",

@@ -1,7 +1,7 @@
 /**
  * The screens before anyone is signed in: finding the club by its code
  * (src/app/choose-club.tsx), signing in with Google or, on an iPhone, Apple
- * (sign-in.tsx), and the address the browser returns to (auth-callback.tsx).
+ * (sign-in.tsx), the demo club's email and password form, and the address the browser returns to (auth-callback.tsx).
  * From "Find your club", "Signing in" and "Belonging to more than one club"
  * in section 2 of docs/user-guide.md.
  *
@@ -16,6 +16,7 @@ import AuthCallback from '@/app/auth-callback';
 import ChooseClubScreen from '@/app/choose-club';
 import SignInScreen from '@/app/sign-in';
 import { ClubChoiceProvider, useClubChoice } from '@/lib/club-choice';
+import { signInToDemoClub } from '@/lib/demo-sign-in';
 import { appleSignInAvailable, signInWithApple, signInWithGoogle } from '@/lib/sign-in';
 import { connectToClub } from '@/lib/supabase';
 
@@ -28,6 +29,7 @@ jest.mock('@react-native-async-storage/async-storage', () =>
   jest.requireActual('@react-native-async-storage/async-storage/jest/async-storage-mock'),
 );
 jest.mock('@/global.css', () => ({}));
+jest.mock('@/lib/demo-sign-in', () => ({ signInToDemoClub: jest.fn() }));
 jest.mock('@/lib/sign-in', () => ({
   signInWithGoogle: jest.fn(),
   signInWithApple: jest.fn(),
@@ -52,7 +54,7 @@ jest.mock('expo-apple-authentication', () => {
     },
   };
 });
-// This build knows two clubs.
+// This build knows two clubs, and was given the demo club's variables.
 jest.mock('@/constants/clubs', () => {
   process.env.EXPO_PUBLIC_SUPABASE_URL = 'https://thunder.example.test';
   process.env.EXPO_PUBLIC_SUPABASE_ANON_KEY = 'thunder-key';
@@ -62,6 +64,8 @@ jest.mock('@/constants/clubs', () => {
   process.env.EXPO_PUBLIC_TEST_CLUB_2_NAME = 'Sample Storm';
   process.env.EXPO_PUBLIC_TEST_CLUB_2_URL = 'https://storm.example.test';
   process.env.EXPO_PUBLIC_TEST_CLUB_2_ANON_KEY = 'storm-key';
+  process.env.EXPO_PUBLIC_DEMO_CLUB_URL = 'https://test-project.example.test';
+  process.env.EXPO_PUBLIC_DEMO_CLUB_ANON_KEY = 'test-project-key';
   return jest.requireActual('@/constants/clubs');
 });
 
@@ -302,6 +306,117 @@ describe('signing in with Apple on an iPhone', () => {
     await settle();
     expect(apple).toHaveBeenCalledTimes(1);
     expect(google).not.toHaveBeenCalled();
+  });
+});
+
+/** Types into one of the demo form's fields, found by its label. */
+async function enter(label: string, value: string) {
+  await fireEvent.changeText(screen.getByLabelText(label), value);
+}
+
+describe('the demo club', () => {
+  const demo = signInToDemoClub as jest.Mock;
+  const google = signInWithGoogle as jest.Mock;
+  const available = appleSignInAvailable as jest.Mock;
+  beforeEach(() => {
+    demo.mockReset().mockResolvedValue(undefined);
+    google.mockReset();
+  });
+  afterEach(() => available.mockReset().mockResolvedValue(false));
+
+  it('is found by the code DEMO and connects to the test project', async () => {
+    await open('/choose-club');
+    await type('Club code', 'demo');
+    expect(screen.getByText('FirstPass Demo Club')).toBeTruthy();
+    await fireEvent.press(screen.getByText('Continue to FirstPass Demo Club'));
+    await settle();
+    expect(connected()).toBe('connected:DEMO');
+    expect(connectToClub).toHaveBeenCalledWith(
+      expect.objectContaining({ code: 'DEMO', supabaseUrl: 'https://test-project.example.test' }),
+    );
+  });
+
+  it('shows an email and password form saying it holds sample people only', async () => {
+    await open('/sign-in', { 'club-code': 'DEMO' });
+    expect(screen.getByText('Demo club. Sample people only.')).toBeTruthy();
+    expect(screen.getByLabelText('Email')).toBeTruthy();
+    expect(screen.getByLabelText('Password').props.secureTextEntry).toBe(true);
+    expect(screen.getByText('Sign in')).toBeTruthy();
+    expect(screen.getByText(/^Not FirstPass Demo Club\?/)).toBeTruthy();
+  });
+
+  it('shows no Google or Apple button, even where Apple is offered', async () => {
+    available.mockResolvedValue(true);
+    await open('/sign-in', { 'club-code': 'DEMO' });
+    expect(screen.queryByText('Continue with Google')).toBeNull();
+    expect(screen.queryByText('Continue with Apple')).toBeNull();
+  });
+
+  it.each(['THUNDER', 'STORM'])('a real club (%s) never shows the password form', async (code) => {
+    available.mockResolvedValue(true);
+    await open('/sign-in', { 'club-code': code });
+    expect(screen.queryByLabelText('Password')).toBeNull();
+    expect(screen.queryByLabelText('Email')).toBeNull();
+    expect(screen.queryByText('Demo club. Sample people only.')).toBeNull();
+    expect(screen.getByText('Continue with Google')).toBeTruthy();
+    expect(screen.getByText('Continue with Apple')).toBeTruthy();
+  });
+
+  it('signs in to the demo club with what was typed', async () => {
+    await open('/sign-in', { 'club-code': 'DEMO' });
+    await enter('Email', 'coach@demo.firstpass.example');
+    await enter('Password', 'the-shared-password');
+    await fireEvent.press(screen.getByText('Sign in'));
+    await settle();
+    expect(demo).toHaveBeenCalledTimes(1);
+    expect(demo).toHaveBeenCalledWith(
+      expect.objectContaining({ code: 'DEMO', demo: true }),
+      'coach@demo.firstpass.example',
+      'the-shared-password',
+    );
+    expect(google).not.toHaveBeenCalled();
+  });
+
+  it('pressing go on the password does the same', async () => {
+    await open('/sign-in', { 'club-code': 'DEMO' });
+    await enter('Email', 'guest@demo.firstpass.example');
+    await enter('Password', 'pw');
+    await fireEvent(screen.getByLabelText('Password'), 'submitEditing');
+    await settle();
+    expect(demo).toHaveBeenCalledWith(expect.anything(), 'guest@demo.firstpass.example', 'pw');
+  });
+
+  it('a wrong password shows the plain message, and they can try again', async () => {
+    demo.mockRejectedValueOnce(new Error('That email and password don’t match a demo account.'));
+    await open('/sign-in', { 'club-code': 'DEMO' });
+    await enter('Email', 'coach@demo.firstpass.example');
+    await enter('Password', 'wrong');
+    await fireEvent.press(screen.getByText('Sign in'));
+    await settle();
+    expect(screen.getByText('That email and password don’t match a demo account.')).toBeTruthy();
+    await enter('Password', 'right');
+    await fireEvent.press(screen.getByText('Sign in'));
+    await settle();
+    expect(screen.queryByText('That email and password don’t match a demo account.')).toBeNull();
+    expect(demo).toHaveBeenCalledTimes(2);
+  });
+
+  it('signs in once, however often it’s tapped while busy', async () => {
+    let finish: () => void = () => {};
+    demo.mockImplementation(() => new Promise<void>((r) => (finish = r)));
+    await open('/sign-in', { 'club-code': 'DEMO' });
+    const pressing = await pressWithoutWaiting(screen.getByText('Sign in'));
+    await settle();
+    expect(screen.queryByText('Sign in')).toBeNull();
+    const button = screen.getAllByRole('button')[0];
+    await fireEvent.press(button);
+    await settle();
+    await act(async () => {
+      finish();
+      await pressing.done;
+    });
+    await settle();
+    expect(demo).toHaveBeenCalledTimes(1);
   });
 });
 
