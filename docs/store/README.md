@@ -26,22 +26,25 @@ purpose: one `# Title` line, then headings, paragraphs, lists, bold and links on
 between pages as `/privacy`, `/support` and `/delete-account`. Keep it that way when editing.
 Change the words here, then the site copies them again.
 
+## Answered
+
+- **13 and over this year** (Matt, 18 Nov). Play target audience 13 to 15, 16 to 17 and 18 and over; no Families Policy. The join rule that turns away under 13s merged in #225.
+- **Demo club sign-in: build it now** (Matt, 18 Nov). Merged in #224; the review notes' accounts are checked against `supabase/demo-club.sql`.
+- **Operator name on the privacy page: Matthew Brown** (Matt, 18 Nov), matching the App Store seller.
+- **Support email: pivtmedia@gmail.com** (Matt, 18 Nov). Used in the three pages, Play contact details, IARC and TestFlight feedback.
+
 ## To confirm before any form is filled
 
 | What | Who | Needed by | Where it is used |
 | --- | --- | --- | --- |
-| The youngest person who signs in themselves | Matt | Thu 19 Nov | Target audience, content rating, Families Policy box |
-| A support email address you're happy to show in public | Matt | Thu 19 Nov | `[SUPPORT EMAIL]` in the three pages, Play contact details, IARC, TestFlight feedback |
-| The name the pages give as the app's operator (your own name, as on the App Store, or PiVT) | Matt | Thu 19 Nov | `[OPERATOR NAME]` in the privacy page |
-| A read of the privacy, support and delete pages, including the 14-day reply promised on the delete page, and the privacy page's statement that Google sign-in and the notification services (Expo, Apple, Google) are run from outside Australia | Matt | Thu 19 Nov | Before W9 publishes them |
-| The demo club sign-in and its account addresses | W7, after Matt's yes to tab D2 | Thu 19 Nov | App access, review notes |
+| A read of the privacy, support and delete pages, including the 14-day reply promised on the delete page, and the privacy page's statements that Google and Apple sign-in and the notification services (Expo, Apple, Google) are run from outside Australia | Matt | Thu 19 Nov | Before W9 publishes them |
 | The public page addresses (planned `https://firstpass-hq.expo.app/...`) | W9 | Thu 19 Nov | Privacy policy and deletion links in Play |
 | No `AD_ID` permission in the first store build's merged manifest | W8 | First upload | Advertising ID answer |
 | The test project's region (the demo club holds sample people only) | Matt | Step 2 | Data inventory |
 | Whether the record of who opened a child's records stays after the child's account is deleted (open from security audit run 1; today it is deleted) | Matt | Step 2 | Data inventory, delete page |
 | The app's name on each store, if not "FirstPass HQ" | Matt | Thu 19 Nov | Listing |
 
-`[DATE PUBLISHED]` at the top of the privacy page is filled in when it goes live.
+The "Last updated" date at the top of the privacy page changes whenever its words change.
 
 ## Checks before anything is submitted
 
@@ -51,7 +54,7 @@ to a store:
 - the privacy page, the Data safety answers and (step 2) Apple's privacy labels are compared row
   by row against `data-inventory.md`;
 - the delete page is compared with `src/app/delete-account.tsx` and `delete_member_now`;
-- the review notes are compared with the demo accounts W7 actually creates;
+- the review notes are compared with `supabase/demo-club.sql`;
 - every screenshot is checked for real names (there must be none) and the current brand kit;
 - the published pages are compared with the files here.
 

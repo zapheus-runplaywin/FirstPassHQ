@@ -16,8 +16,9 @@ safety form has its own file, [play-data-safety.md](play-data-safety.md).
 - Add one set of instructions. Name: **Demo club**. The details are in
   [review-notes.md](review-notes.md); the password is never written in the repo, so you type it
   into the form yourself.
-- **To confirm:** depends on the demo club sign-in (W7), which waits on your yes to tab D2.
-  Without it, Google's reviewers have no way in, and the closed test can't be reviewed.
+- The demo club sign-in is merged (#224). It works only in a build that has the demo club's two
+  EAS variables (`docs/environments.md`, "The demo club"), so build A must be made after they're
+  set.
 
 ## Ads
 
@@ -28,7 +29,7 @@ safety form has its own file, [play-data-safety.md](play-data-safety.md).
 The IARC questionnaire. The category and answers are below; the exact question wording is
 **to confirm** when you open it, as it changes by category.
 
-- **Email address for IARC:** the support address, **to confirm** (see below).
+- **Email address for IARC:** pivtmedia@gmail.com.
 - **Category:** All other app types (utility, productivity, communication). Not a game, not
   social networking: HQ is a club administration tool with group messages only.
 - **Violence, fear, sexuality, language, controlled substances, crude humour, gambling:** No to
@@ -45,20 +46,26 @@ The IARC questionnaire. The category and answers are below; the exact question w
 
 ## Target audience and content
 
-**To confirm with Matt by Thu 19 Nov: who is the youngest person who signs in themselves?** The
-join flow has no minimum age today, and under 18s stay locked until a verified parent approves
-(#201). The answer here follows from it:
+**13 and over this year** (Matt, 18 Nov, on the lead thread's card).
 
-| If the youngest is | Tick these age groups | What follows |
-| --- | --- | --- |
-| 18 or over (children never sign in) | 18 and over | Simplest. Under 18 athletes are then reached only through their parents, which is not how the app works today |
-| 13 to 17 (recommended reading of today's teams, if no one under 13 signs in) | 13 to 15, 16 to 17, 18 and over | Google says these groups "may be considered to include children in some locales". Play shows extra questions; the app's design (no ads, no direct messages, parent approval, parent copies of messages) answers them |
-| under 13 | Add the matching younger groups | The app becomes subject to the Families Policy: Families-certified libraries only, a teacher-approved style review, and the Data safety "committed to Families Policy" box. Not recommended for this year |
-
-- **Store listing appeals to children?** **No.** Plain club administration screens, no
-  cartoons or games.
-- A minimum-age rule inside the app would be a new access rule with its own yes, tests and user
-  guide change. It is not part of this work.
+- **Target age groups:** tick **13 to 15, 16 to 17, and 18 and over**. Leave every group under 13
+  unticked. Google says the 13 to 17 groups "may be considered to include children in some
+  locales", and Play asks extra questions; the app's design (no ads, no direct messages, parent
+  approval, parent copies of messages) answers them.
+- **No Families Policy.** With no group under 13, the "committed to the Play Families Policy"
+  box in the Data safety form stays unticked.
+- **Why not 12-year-olds this year:** Google's
+  [Families Policy](https://support.google.com/googleplay/android-developer/answer/9893335)
+  doesn't let an app for children and older users require sign-in through an OAuth service
+  such as Google sign-in, which is HQ's only way in, and
+  [Sign in with Apple](https://support.apple.com/en-au/102609) isn't available to children under
+  13 (both read 18 Nov).
+- **The app turns away under 13s** (#225): the join step refuses a date of birth under 13 and
+  saves nothing, and admins can't approve anyone under 13
+  (`20261118100000_join_age_13.sql`, `src/app/join.tsx`). Members approved before it are
+  unchanged.
+- **Store listing appeals to children?** **No.** Plain club administration screens, no cartoons
+  or games.
 
 ## News apps
 
@@ -97,5 +104,4 @@ publishes it (planned `https://firstpass-hq.expo.app/delete-account`). Text:
 
 ## Support email for the store
 
-The listing and the IARC questionnaire need a contact email shown in public. **To confirm with
-Matt:** which address.
+pivtmedia@gmail.com (Matt, 18 Nov), for the listing, the IARC questionnaire and the public pages.
