@@ -87,6 +87,12 @@ jobs:
       - name: Store builds go to the Google Play closed test
         if: ${{ !cancelled() }}
         run: python3 scripts/test-store-build.py
+      - name: Reset demo club puts the demo accounts back
+        if: ${{ !cancelled() }}
+        run: scripts/test-reset-demo-club.sh
+      - name: Updates keep the demo club off the live project
+        if: ${{ !cancelled() }}
+        run: scripts/test-publish-update.sh
 
   # The real web build driven through key flows in Chromium at phone size, with
   # Supabase answered by e2e/support/fake-supabase.ts, so a broken build or a

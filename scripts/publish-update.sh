@@ -30,10 +30,21 @@ if [ -z "$url" ] || [ -z "$key" ]; then
   exit 1
 fi
 
+# The demo club (docs/environments.md, "The demo club") comes from the same EAS
+# environment, so an update keeps it in builds that have it and leaves it out
+# of builds that don't. It's the test project, never the live one.
+demo_url=$(sed -n 's/^EXPO_PUBLIC_DEMO_CLUB_URL=//p' "$work/env" | tr -d "\"'")
+demo_key=$(sed -n 's/^EXPO_PUBLIC_DEMO_CLUB_ANON_KEY=//p' "$work/env" | tr -d "\"'")
+if [ -n "$demo_url" ] && [ "$demo_url" = "$url" ]; then
+  echo "The EAS '$channel' demo club points at the live project, so nothing was published."
+  exit 1
+fi
+
 # Values already in the environment win over .env, so the build uses these.
 # The extra test clubs in .env are blanked, so they're never in an update.
 rm -rf dist
 EXPO_PUBLIC_SUPABASE_URL=$url EXPO_PUBLIC_SUPABASE_ANON_KEY=$key \
+  EXPO_PUBLIC_DEMO_CLUB_URL=$demo_url EXPO_PUBLIC_DEMO_CLUB_ANON_KEY=$demo_key \
   EXPO_PUBLIC_TEST_CLUB_2_URL= EXPO_PUBLIC_TEST_CLUB_2_ANON_KEY= \
   EXPO_PUBLIC_TEST_CLUB_3_URL= EXPO_PUBLIC_TEST_CLUB_3_ANON_KEY= \
   npx expo export --platform all --clear --output-dir dist
@@ -43,7 +54,8 @@ if ! grep -rqF "$url" dist/_expo/static/js; then
   echo "The update doesn't use $url, so it wasn't published."
   exit 1
 fi
-if [ -n "$local_url" ] && [ "$local_url" != "$url" ] && grep -rqF "$local_url" dist/_expo/static/js; then
+# Your .env address is the test project, which the demo club may use too.
+if [ -n "$local_url" ] && [ "$local_url" != "$url" ] && [ "$local_url" != "$demo_url" ] && grep -rqF "$local_url" dist/_expo/static/js; then
   echo "The update still uses your .env address ($local_url), so it wasn't published."
   exit 1
 fi

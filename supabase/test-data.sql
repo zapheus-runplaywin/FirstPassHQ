@@ -35,7 +35,8 @@ declare
 begin
   select count(*) into v_real
   from public.profiles
-  where coalesce(email, '') not like '%@example.com';
+  where coalesce(email, '') not like '%@example.com'
+    and coalesce(email, '') not like '%@demo.firstpass.example';
   if v_real > 3 then
     raise exception 'This database has % real accounts, so it looks like the live club. Run this on the test project only.', v_real;
   end if;
@@ -45,6 +46,7 @@ begin
   update public.profiles
   set role = 'admin', status = 'approved'
   where coalesce(email, '') not like '%@example.com'
+    and coalesce(email, '') not like '%@demo.firstpass.example'
     and not (status = 'approved' and role <> 'admin');
 
   insert into auth.users (id, instance_id, aud, role, email, raw_user_meta_data)

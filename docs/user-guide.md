@@ -247,10 +247,16 @@ didn't expect it. A link for a club the app doesn't know shows **Club not found*
 
 <img src="user-guide/club-code.png" width="210" alt="Find your club: the club code screen">
 
+Builds made for app store review and for testers also know the code `DEMO`, the **FirstPass Demo Club**. It holds sample people
+only, kept apart from every real club, for app store reviewers and testers trying the app in
+different roles. It's the one club that signs in with an email and password, which the club
+gives each tester; every other club uses the buttons below. If you're joining a real club, use
+its own code.
+
 ### Signing in
 
 There are no passwords to remember: you sign in with an account you already have. The same
-buttons are used whether you're new or coming back.
+buttons are used whether you're new or coming back. (The demo club above is the one exception.)
 
 - **On Android**, tap **Continue with Google** and choose your Google account.
 - **On iPhone or iPad**, you can also tap **Continue with Apple**, above the Google button, and

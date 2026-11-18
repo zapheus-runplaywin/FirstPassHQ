@@ -36,7 +36,7 @@ _Rewritten for design C on 15 November 2026. The rules marked "after the proof" 
 ## Club lookup
 
 - **Read clubs from the one club directory,** which sits beside the central sign-in. No project address or key is typed into an app's code or config.
-- **Every entry is marked test or live.** A store build lists live clubs only. A preview build lists test clubs only. Studio's shipped list breaks this today.
+- **Every entry is marked test or live.** A store build lists live clubs only. A preview build lists test clubs only. Studio's shipped list breaks this today. The one exception is HQ's demo club (`DEMO`, sample people on the test project, for store reviewers): it is marked demo, signs in with a password only because the live project's Email provider is off, and can never be the club a build is made for (HQ `docs/environments.md`, "The demo club").
 - **A club code means the same project in every product.** THUNDER does not today.
 - **The directory lists clubs, not people.** Which clubs a person belongs to is answered by each club's own profiles.
 
