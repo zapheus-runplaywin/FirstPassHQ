@@ -52,7 +52,7 @@ each of their roles can.
 | **Statistician** | The people who record live game stats on a tablet in FirstPass Vantage, which coaches watch live in FirstPass Vision. Statisticians see every game the club records; a game's coaches and managers see their own squad's or team's, and a squad's coaches and managers also see the games of its teams. Any member can hold it alongside another role, such as a manager or an athlete who isn't playing. Need a current Working With Children Check, an application being assessed, or a volunteer exemption such as a parent at their child's games, unless an admin exempts them with a reason, such as only recording opens games; the role pauses if a recorded check expires. Statisticians approved before checks were needed keep the role without one only until the club's **statistician checks date**. The role pauses while a member is stood down. |
 | **Studio** | The people who run the club's live streams in FirstPass Studio, which shows the club's live game stats on screen. Studio signs in to the club with this person's own Google account and reads only the stats the club records for its PlayHQ games, live and finished, and the line-ups for them; it can't change anything. Someone whose only role is Studio, such as a streamer from outside the club, isn't a club member: they see none of the club's features, members or messages. A member can also hold it alongside their own roles. No Working With Children Check is needed, because a Studio operator isn't with the team and never sees contact details, injuries or anything else sensitive. The role pauses while a member is stood down (see [Studio](#studio)). |
 | **Temporary helper** | Someone helping for a day or a short time, such as at a carnival, clinic or tournament, paid or unpaid. Not necessarily a member of the club: this is only a role so the app can onboard them. The app screens them: a Working With Children Check or an exemption covering every day they help, and the club's code of conduct and safeguarding policy accepted. They see none of the club's features or messages, and their time ends by itself after their last day (see [Temporary helpers](#temporary-helpers)). |
-| **Admin**     | The people who run the app. Admin is granted by another admin, never requested. Admins can add a title too. Need a current Working With Children Check, or an application being assessed, unless another admin exempts them. An expired check doesn't pause the admin role, so the club is never locked out, but it stays on the admins' to-do list until it's renewed, and 30 days after it expired (or after the club's committee checks date, if none is recorded) the admin stops seeing under 18s' injuries until a check, an application or a parent volunteer exemption is recorded. Admins set how long the club keeps records, and are warned when the nightly removal of old records stops. |
+| **Admin**     | The people who run the app. Admin is granted by another admin, never requested; only a new club's first admin is made with a one-time setup code from FirstPass (see [Setting up a new club](#setting-up-a-new-club)). Admins can add a title too. Need a current Working With Children Check, or an application being assessed, unless another admin exempts them. An expired check doesn't pause the admin role, so the club is never locked out, but it stays on the admins' to-do list until it's renewed, and 30 days after it expired (or after the club's committee checks date, if none is recorded) the admin stops seeing under 18s' injuries until a check, an application or a parent volunteer exemption is recorded. Admins set how long the club keeps records, and are warned when the nightly removal of old records stops. |
 
 **Safeguarding contacts.** An admin names one member as the club's **Child Safety Officer** and
 another as its **Complaints Manager**. They're not separate roles: each keeps their own role and also
@@ -359,6 +359,23 @@ club's date changes at 8 am Perth time, so on your 13th birthday you can join fr
 <img src="user-guide/join-guardian.png" width="210" alt="Request to join as a guardian, with the child's link code and no squad to pick">
 <img src="user-guide/join-hidden-email.png" width="210" alt="Request to join after signing in with Apple and Hide My Email: the PlayHQ email is optional, and the form says how it helps">
 <img src="user-guide/join-under-13.png" width="210" alt="Request to join with a date of birth under 13: the request isn't sent, the form says the app is for members aged 13 and over and links to Delete account">
+
+#### Setting up a new club
+
+A brand-new club has no admin to approve anyone, so FirstPass gives the person setting the club
+up a one-time **setup code**. While the club has no admin and a code is waiting, **Request to
+join** shows **Setting up this club?** under your name. Enter your name and the 12-character code,
+such as 7KQ4-MD2P-XY9Z, and tap **Become the club's admin**. You go back to the home screen as an
+approved admin, with **Administration** on it, and approve everyone else from there, including
+other admins.
+
+The code works once, lasts 7 days unless FirstPass says otherwise, and stops working the moment
+the club has an admin. After that the box is gone and nobody can become an admin with a code:
+admin is only ever granted by an admin. Five wrong codes in an hour and the app asks you to wait
+before trying again. If your code has run out, ask FirstPass for a new one. Everyone else ignores
+the box and asks to join as usual.
+
+<img src="user-guide/join-first-admin.png" width="210" alt="Request to join in a new club with no admin: Setting up this club?, with a setup code typed in and Become the club's admin">
 
 ### Wait for approval
 
@@ -3681,6 +3698,15 @@ checks it against PlayHQ or ID and records it, and the app keeps who recorded it
 athlete can't be approved without a checked date of birth, so a missed field can never approve a
 child as an adult. A child also gives a parent's or guardian's email, and while they wait they're
 shown a link code to give that parent or guardian and who they can talk to.
+
+### Who can become an admin
+
+Admins see and decide the most about children, so the app never lets anyone ask for the role.
+An admin grants it to another member. The one exception is a brand-new club, which has nobody to
+grant it: FirstPass gives the person setting the club up a one-time setup code (see [Setting up a
+new club](#setting-up-a-new-club)). The club's own database checks it. It works once, runs out
+after 7 days, locks out guessing after five wrong tries in an hour, and can't be made or used
+once the club has an admin, so a code that leaks later can never add an admin to a running club.
 
 ### Nobody under 13 signs in
 

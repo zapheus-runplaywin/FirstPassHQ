@@ -87,20 +87,29 @@ build is needed.
 
 ## 4. Make the first admin
 
-Nobody can approve the first admin from inside the app, so this one step is done in the database.
+Nobody can approve the first admin from inside the app, so the club's database hands out a
+one-time **setup code** instead. Nothing is typed into the SQL editor.
 
-1. The admin opens the app, enters the club code and signs in once with Google. That creates
-   their profile.
-2. In the club's Supabase dashboard, open **SQL Editor** and run this with their sign-in email:
+1. Make the code, with the club's database connection string (Supabase dashboard, **Connect**,
+   session pooler, with the database password):
 
-   ```sql
-   update public.profiles set role = 'admin', status = 'approved'
-   where email = 'admin@yourclub.com';
+   ```bash
+   CLUB_DB_URL='postgresql://...' scripts/first-admin-code.sh
    ```
 
-3. Pull down on the home screen. **Administration** appears.
+   It prints a code such as `7KQ4-MD2P-XY9Z`, once. Only a hash is kept, so it can't be read
+   back. It lasts 7 days; `scripts/first-admin-code.sh 14` makes one that lasts 14 (1 to 30).
+   Running it again makes a new code and cancels the last.
+2. Send the code privately to the person setting the club up.
+3. They open the app, enter the club code, sign in with Google or Apple, tap **Request to join**,
+   and enter their name and the code under **Setting up this club?**. **Administration** appears
+   on their home screen.
 
-From then on the admin approves everyone else, including other admins, from **Members**.
+The code works once, and only while the club has no approved admin. Once it has one, the script
+refuses and the box is gone from the app: the admin approves everyone else, including other
+admins, from **Members**. Five wrong codes in an hour lock that sign-in out for the rest of the
+hour. `scripts/test-first-admin-code.sh` and `supabase/tests/first-admin-setup.sql` test it, and
+the "Tests" workflow runs both.
 
 ## 5. Set up the club in the app
 

@@ -78,6 +78,9 @@ jobs:
       - name: Club data export copies everything
         if: ${{ !cancelled() }}
         run: scripts/test-export-club-data.sh
+      - name: First admin setup code works once, in a club with no admin
+        if: ${{ !cancelled() }}
+        run: scripts/test-first-admin-code.sh
       - name: Deploy script pushes new migrations every time
         if: ${{ !cancelled() }}
         run: scripts/test-deploy-migrations.sh

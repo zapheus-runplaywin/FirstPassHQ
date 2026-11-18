@@ -67,13 +67,14 @@ skipped. The revoke can't succeed in Expo Go, because Apple issues the code to E
 
 ### 4. Make yourself an admin
 
-The first admin has to be set by hand. Sign in to the app once, then run this in the SQL Editor
-with your sign-in email. After that you can approve everyone else, including other admins, from
-**Members** on the home screen.
+A club's first admin uses a one-time setup code. Make one with the project's database connection
+string, then sign in to the app, tap **Request to join** and enter your name and the code under
+**Setting up this club?**. After that you approve everyone else, including other admins, from
+**Members** on the home screen. The code works once, and only while the club has no admin
+([docs/new-club-setup.md](docs/new-club-setup.md#4-make-the-first-admin)).
 
-```sql
-update public.profiles set role = 'admin', status = 'approved'
-where email = 'you@example.com';
+```bash
+CLUB_DB_URL='postgresql://...' scripts/first-admin-code.sh
 ```
 
 ### 5. Add the club calendar
