@@ -233,6 +233,127 @@ describe('Studio operators', () => {
   });
 });
 
+describe('nobody under 13', () => {
+  const TOO_YOUNG =
+    'FirstPass HQ is for members aged 13 and over. If you’re a parent or guardian, enter your own date of birth.';
+  let push: jest.SpyInstance;
+  beforeEach(() => {
+    push = jest.spyOn(router, 'push').mockImplementation(() => {});
+  });
+  afterEach(() => push.mockRestore());
+
+  it.each([
+    'Athlete',
+    'Guardian',
+    'Coach',
+    'Manager',
+    'Committee',
+    'Physio',
+    'Statistician',
+    'Studio',
+    'Guest',
+    'Temporary helper',
+  ])('turns away a %s the day before their 13th birthday, and sends nothing', async (role) => {
+    await openJoin();
+    // Today is 18 October 2026.
+    await fillBasics('Sample Child', '19/10/2013');
+    await fireEvent.press(screen.getByText(role));
+    await send();
+    expect(screen.getByText(TOO_YOUNG)).toBeTruthy();
+    expect(screen.getByText('Not joining? Delete account')).toBeTruthy();
+    expect(rpcNames()).not.toContain('submit_join_request');
+    expect(back).not.toHaveBeenCalled();
+  });
+
+  it('turns them away before asking for a parent’s email or the club password', async () => {
+    await openJoin(newcomer, { rpcs: { join_password_required: true } });
+    await fillBasics('Sample Child', '01/01/2016');
+    await fireEvent.press(screen.getByText('Athlete'));
+    await send();
+    expect(screen.getByText(TOO_YOUNG)).toBeTruthy();
+    expect(screen.queryByText('Please enter the email of a parent or guardian.')).toBeNull();
+    expect(screen.queryByText(/Please enter the club password/)).toBeNull();
+    expect(rpcNames()).not.toContain('submit_join_request');
+  });
+
+  it('doesn’t ask someone under 13 for a parent’s email, since they can’t join', async () => {
+    await openJoin();
+    await fireEvent.press(screen.getByText('Athlete'));
+    await type('Date of birth', '19/10/2013');
+    expect(screen.queryByText('Parent or guardian’s email')).toBeNull();
+    await type('Date of birth', '18/10/2013');
+    expect(screen.getByText('Parent or guardian’s email')).toBeTruthy();
+  });
+
+  it('lets them in on their 13th birthday', async () => {
+    await openJoin();
+    await fillBasics('Sample Teen', '18/10/2013');
+    await fireEvent.press(screen.getByText('Athlete'));
+    await type('Parent or guardian’s email', 'parent@example.test');
+    await send();
+    expect(screen.queryByText(TOO_YOUNG)).toBeNull();
+    expect(argsOf('submit_join_request')[0]).toMatchObject({
+      p_date_of_birth: '2013-10-18',
+      p_guardian_email: 'parent@example.test',
+    });
+    expect(back).toHaveBeenCalledTimes(1);
+  });
+
+  it('keeps the form, so a parent who typed their child’s date can correct it and join', async () => {
+    await openJoin();
+    await fillBasics('Sample Parent', '02/03/2015');
+    await type('PlayHQ email', 'parent@playhq.test');
+    await fireEvent.press(screen.getByText('Guardian'));
+    await send();
+    expect(screen.getByText(TOO_YOUNG)).toBeTruthy();
+    // Everything they typed is still there.
+    expect(field('Your name').props.value).toBe('Sample Parent');
+    expect(field('PlayHQ email').props.value).toBe('parent@playhq.test');
+    expect(isSelected('Guardian')).toBe(true);
+    // Changing the date clears the message.
+    await type('Date of birth', '02/03/1985');
+    expect(screen.queryByText(TOO_YOUNG)).toBeNull();
+    expect(screen.queryByText('Not joining? Delete account')).toBeNull();
+    await send();
+    expect(argsOf('submit_join_request')).toEqual([
+      expect.objectContaining({ p_requested_role: 'guardian', p_date_of_birth: '1985-03-02' }),
+    ]);
+    expect(back).toHaveBeenCalledTimes(1);
+  });
+
+  it('links to Delete account, so a child can remove the sign-in they just made', async () => {
+    await openJoin();
+    await fillBasics('Sample Child', '19/10/2013');
+    await fireEvent.press(screen.getByText('Athlete'));
+    await send();
+    await fireEvent.press(screen.getByText('Not joining? Delete account'));
+    expect(push).toHaveBeenCalledWith('/delete-account');
+  });
+
+  it('shows the same message and link when the database turns them away', async () => {
+    // The phone's date can be a day ahead of the database's (UTC), so the
+    // database has the final say.
+    await openJoin(newcomer, { rpcs: { submit_join_request: TOO_YOUNG } });
+    await fillBasics('Sample Teen', '18/10/2013');
+    await fireEvent.press(screen.getByText('Athlete'));
+    await type('Parent or guardian’s email', 'parent@example.test');
+    await send();
+    expect(argsOf('submit_join_request')).toHaveLength(1);
+    expect(screen.getAllByText(TOO_YOUNG)).toHaveLength(1);
+    expect(screen.getByText('Not joining? Delete account')).toBeTruthy();
+    expect(back).not.toHaveBeenCalled();
+  });
+
+  it('another refusal from the database shows no Delete account link', async () => {
+    await openJoin(newcomer, { rpcs: { submit_join_request: 'That club password is not right. Ask a club admin for it.' } });
+    await fillBasics();
+    await fireEvent.press(screen.getByText('Guest'));
+    await send();
+    expect(screen.getByText('That club password is not right. Ask a club admin for it.')).toBeTruthy();
+    expect(screen.queryByText('Not joining? Delete account')).toBeNull();
+  });
+});
+
 describe('athletes under 18', () => {
   it('asks for a parent or guardian’s email once the date of birth is under 18', async () => {
     await openJoin();

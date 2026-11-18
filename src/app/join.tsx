@@ -1,11 +1,13 @@
 import { router } from 'expo-router';
 import { useEffect, useState } from 'react';
+import { Pressable } from 'react-native';
 
 import { PolicyLinks } from '@/components/policy-links';
 import { Screen } from '@/components/screen';
 import { ThemedText } from '@/components/themed-text';
 import { Button, ChipGroup, ErrorText, TextField } from '@/components/ui';
-import { formatDate, isMinor, parseDate } from '@/lib/age';
+import { useTheme } from '@/hooks/use-theme';
+import { formatDate, isMinor, isUnder13, parseDate, under13Message } from '@/lib/age';
 import { looksLikeLinkCode } from '@/lib/guardian-links';
 import { useAuth } from '@/lib/auth';
 import { useSquads } from '@/lib/club';
@@ -42,13 +44,18 @@ export default function JoinScreen() {
   const [needsPassword, setNeedsPassword] = useState(false);
   const [saving, setSaving] = useState(false);
   const [error, setError] = useState<string | null>(null);
+  // Turned away for being under 13: the form stays, so a parent who typed
+  // their child's date can correct it, and a child can delete the sign-in.
+  const [tooYoung, setTooYoung] = useState(false);
+  const theme = useTheme();
 
   // Parents and guardians follow their children into squads and teams.
   const showTeams = role !== null && role !== 'guardian' && isTeamRole(role);
   const dob = parseDate(dateOfBirth);
   const guardian = role === 'guardian';
-  // A child athlete needs a parent or guardian linked before the app opens for them.
-  const child = role === 'athlete' && !!dob && isMinor(dob, false);
+  // A child athlete needs a parent or guardian linked before the app opens for
+  // them. Under 13 they can't join at all, so they aren't asked for a parent.
+  const child = role === 'athlete' && !!dob && isMinor(dob, false) && !isUnder13(dob);
   const volunteer = role === 'volunteer';
   // Apple's "Hide My Email" signs in with a relay address an admin can't
   // match to PlayHQ. Apple's guidelines say not to then insist on a personal
@@ -68,6 +75,13 @@ export default function JoinScreen() {
     }
     if (!dob) {
       setError('Please enter your date of birth as DD/MM/YYYY.');
+      return;
+    }
+    // Nobody under 13 joins this year (Matt, 18 November 2026). The database
+    // checks again and has the final say.
+    if (isUnder13(dob)) {
+      setError(null);
+      setTooYoung(true);
       return;
     }
     if (!role) {
@@ -108,6 +122,7 @@ export default function JoinScreen() {
     }
     setSaving(true);
     setError(null);
+    setTooYoung(false);
     // A wrong club password comes back as a message, not an error, so the
     // database can keep count of wrong tries.
     const { data: refused, error: rpcError } = await supabase.rpc('submit_join_request', {
@@ -119,6 +134,11 @@ export default function JoinScreen() {
       p_date_of_birth: dob,
       p_guardian_email: child ? guardianEmail : null,
     });
+    if (refused === under13Message) {
+      setSaving(false);
+      setTooYoung(true);
+      return;
+    }
     if (rpcError || refused) {
       setSaving(false);
       setError(rpcError?.message ?? String(refused));
@@ -172,7 +192,10 @@ export default function JoinScreen() {
       <TextField
         label="Date of birth"
         value={dateOfBirth}
-        onChangeText={setDateOfBirth}
+        onChangeText={(text) => {
+          setDateOfBirth(text);
+          setTooYoung(false);
+        }}
         placeholder="DD/MM/YYYY"
         keyboardType="numbers-and-punctuation"
         maxLength={10}
@@ -347,6 +370,16 @@ export default function JoinScreen() {
       ) : null}
       <PolicyLinks intro="By joining you agree to the club’s policies:" />
       <ErrorText>{error}</ErrorText>
+      {tooYoung ? (
+        <>
+          <ErrorText>{under13Message}</ErrorText>
+          <Pressable accessibilityRole="link" onPress={() => router.push('/delete-account')}>
+            <ThemedText type="small" style={{ color: theme.tint }}>
+              Not joining? Delete account
+            </ThemedText>
+          </Pressable>
+        </>
+      ) : null}
       <Button title="Send request" onPress={submit} busy={saving} />
     </Screen>
   );
