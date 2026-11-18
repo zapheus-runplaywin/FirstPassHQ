@@ -676,6 +676,38 @@ describe('buildTodos', () => {
       ]);
     });
 
+    it('opens the people each member to-do is about, never the whole member list', () => {
+      const list = todos({
+        pendingCount: 2,
+        safety: safety({
+          minors_without_guardian: 1,
+          athletes_without_date_of_birth: 1,
+          wwcc_missing: 1,
+          wwcc_applications_due: 1,
+          notices_to_report: 1,
+          unendorsable_clearances: ['Kai Senior'],
+          exemptions_ending: 1,
+          turning_18: 1,
+          inactive_members: 1,
+        }),
+      });
+      const opens = Object.fromEntries(list.map((t) => [t.key, t.href]));
+      const members = (todo: string) => ({ pathname: '/admin', params: { todo } });
+      expect(opens).toEqual({
+        'join-requests': members('join'),
+        'minors-without-guardian': members('locked'),
+        'no-date-of-birth': members('dob'),
+        wwcc: members('wwcc'),
+        'wwcc-applications': members('wwcc-application'),
+        'notices-to-report': members('notice'),
+        'unendorsable-clearances': members('unendorsable'),
+        'exemptions-ending': members('exemption-ending'),
+        'turning-18': members('turning-18'),
+        'inactive-members': members('inactive'),
+      });
+      expect(list.map((t) => t.href)).not.toContain('/admin');
+    });
+
     it('warns in red when the nightly removal has stopped, since it last finished', () => {
       const todo = only(todos({ safety: safety({ records_removal_stalled: { last_ok_at: '2026-01-05T04:00:00Z' } }) }));
       expect(todo).toMatchObject({
@@ -713,7 +745,7 @@ describe('buildTodos', () => {
         key: 'unendorsable-clearances',
         title: 'Nobody can endorse Kai Senior’s clearance',
         detail: 'Make a physio Head Physio, or place a physio in their squad or team',
-        href: '/admin',
+        href: { pathname: '/admin', params: { todo: 'unendorsable' } },
         alert: { level: 'amber', label: 'Stuck' },
       });
     });
@@ -751,7 +783,7 @@ describe('buildTodos', () => {
         key: 'wwcc-applications',
         title: 'Confirm 1 check application is still being assessed',
         detail: 'Check online, then confirm on the member’s page',
-        href: '/admin',
+        href: { pathname: '/admin', params: { todo: 'wwcc-application' } },
         alert: { level: 'amber', label: 'Confirm' },
       });
     });
@@ -763,7 +795,7 @@ describe('buildTodos', () => {
         key: 'wwcc-applications',
         title: 'Confirm 3 check applications are still being assessed',
         detail: '2 lapsed. Check online, then confirm on the member’s page.',
-        href: '/admin',
+        href: { pathname: '/admin', params: { todo: 'wwcc-application' } },
         alert: { level: 'red', label: 'Lapsed' },
       });
       expect(only(todos({ safety: safety({ wwcc_applications_lapsed: 1 }) })).title).toBe(

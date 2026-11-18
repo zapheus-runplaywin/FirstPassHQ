@@ -1,17 +1,25 @@
-import { router, useFocusEffect } from 'expo-router';
-import { useCallback, useState } from 'react';
+import { router, Stack, useFocusEffect, useLocalSearchParams } from 'expo-router';
+import { useCallback, useEffect, useRef, useState } from 'react';
 import { View, StyleSheet } from 'react-native';
 
 import { Screen } from '@/components/screen';
 import { ThemedText } from '@/components/themed-text';
-import { PressableCard, TextField } from '@/components/ui';
+import { Button, Card, PressableCard, TextField } from '@/components/ui';
 import { Spacing } from '@/constants/theme';
 import { isMinor } from '@/lib/age';
 import { formatMonth } from '@/lib/format';
+import { toDateString } from '@/lib/injuries';
 import { PROFILE_COLUMNS } from '@/lib/auth';
 import { athletesWithVerifiedGuardian } from '@/lib/guardian-links';
 import { rejectionReasonLabels, roleLabels, rolesLabel, staffTitle } from '@/lib/labels';
-import { safetyIssues } from '@/lib/safety';
+import {
+  isMemberTodoKind,
+  memberMatchesTodo,
+  memberPageHref,
+  memberTodoCopy,
+  type MemberTodoKind,
+} from '@/lib/member-todos';
+import { barringNotices, safetyIssues } from '@/lib/safety';
 import { supabase } from '@/lib/supabase';
 import type {
   CoachTitle,
@@ -32,6 +40,12 @@ type StaffRow = {
 };
 
 export default function MembersScreen() {
+  // Opened from a home screen to-do: only the people it is about.
+  const params = useLocalSearchParams<{ todo?: string }>();
+  const todo = isMemberTodoKind(params.todo) ? params.todo : null;
+  const [loaded, setLoaded] = useState(false);
+  const [notices, setNotices] = useState<Set<string>>(new Set());
+  const [stuckAthletes, setStuckAthletes] = useState<string[]>([]);
   const [members, setMembers] = useState<Profile[]>([]);
   const [links, setLinks] = useState<Pair[]>([]);
   const [requests, setRequests] = useState<Pair[]>([]);
@@ -51,6 +65,8 @@ export default function MembersScreen() {
       inactiveResult,
       applicationsResult,
       requestsResult,
+      noticesResult,
+      unendorsableResult,
     ] = await Promise.all([
       supabase.from('profiles').select(PROFILE_COLUMNS).order('full_name', { nullsFirst: false }),
       supabase.from('guardianships').select('guardian_id, athlete_id'),
@@ -66,7 +82,27 @@ export default function MembersScreen() {
       supabase.rpc('admin_wwcc_applications'),
       // Parents and guardians who entered a child's link code.
       supabase.from('guardian_link_requests').select('guardian_id, athlete_id'),
+      // Barring notices the governing body hasn't been told about yet.
+      supabase
+        .from('screening_notices')
+        .select('profile_id')
+        .in('kind', barringNotices)
+        .is('governing_body_told_on', null),
+      // Athletes asking for clearance whom nobody can endorse, for that to-do.
+      todo === 'unendorsable'
+        ? supabase.rpc('admin_unendorsable_clearances')
+        : Promise.resolve({ data: null }),
     ]);
+    setNotices(
+      new Set(
+        ((noticesResult.data as { profile_id: string }[] | null) ?? []).map((n) => n.profile_id),
+      ),
+    );
+    setStuckAthletes(
+      ((unendorsableResult.data as { athlete_name: string | null }[] | null) ?? []).map(
+        (row) => row.athlete_name ?? 'An athlete',
+      ),
+    );
     setInactive(
       new Map(
         ((inactiveResult.data as { profile_id: string; last_active: string }[] | null) ?? []).map(
@@ -89,7 +125,8 @@ export default function MembersScreen() {
     setMembers((profilesResult.data as Profile[] | null) ?? []);
     setLinks((guardiansResult.data as Pair[] | null) ?? []);
     setRequests((requestsResult.data as Pair[] | null) ?? []);
-  }, []);
+    setLoaded(true);
+  }, [todo]);
 
   useFocusEffect(
     useCallback(() => {
@@ -132,6 +169,53 @@ export default function MembersScreen() {
   const gone = approved.filter((m) => inactive.has(m.id));
   const notRequested = matching.filter((m) => m.status === 'pending' && !m.join_requested_at);
   const rejected = matching.filter((m) => m.status === 'rejected');
+
+  const today = toDateString(new Date());
+  const focused = todo
+    ? members
+        .filter((m) =>
+          memberMatchesTodo(todo, m, {
+            hasVerifiedGuardian: withGuardian.has(m.id),
+            exemption: exemptions.get(m.id),
+            application: applications.get(m.id),
+            noticeToReport: notices.has(m.id),
+            inactive: inactive.has(m.id),
+            today,
+          }),
+        )
+        .sort((a, b) =>
+          todo === 'join'
+            ? (a.join_requested_at ?? '').localeCompare(b.join_requested_at ?? '')
+            : 0,
+        )
+    : [];
+
+  if (todo) {
+    return (
+      <TodoMembers
+        kind={todo}
+        loaded={loaded}
+        members={focused}
+        stuckAthletes={stuckAthletes}
+        refreshing={refreshing}
+        onRefresh={onRefresh}
+        describe={(m) => {
+          if (todo === 'join') {
+            return `Asked to join as ${m.requested_role ? roleLabels[m.requested_role] : 'a member'}${saysUnder18(m) ? ' · Says they’re under 18' : ''}${m.verified_at ? ' · Verified in person' : ''}${linkLabel(m, codeEnteredFor(m.id), codeEnteredBy(m.id))}`;
+          }
+          if (todo === 'inactive') {
+            return `${rolesLabel(rolesOf(m))} · Last active ${formatMonth(new Date(inactive.get(m.id) ?? ''))}`;
+          }
+          if (todo === 'unendorsable') {
+            return rolesLabel(rolesOf(m), m.title, m.head_physio, groupTitles.get(m.id));
+          }
+          if (todo === 'notice') return `${rolesLabel(rolesOf(m))} · Notice not reported yet`;
+          const why = issues.get(m.id) ?? [];
+          return [rolesLabel(rolesOf(m)), ...why].join(' · ');
+        }}
+      />
+    );
+  }
 
   return (
     <Screen refreshing={refreshing} onRefresh={onRefresh}>
@@ -190,6 +274,81 @@ export default function MembersScreen() {
         describe={(m) =>
           m.rejection_reason ? rejectionReasonLabels[m.rejection_reason] : (m.email ?? '')
         }
+      />
+    </Screen>
+  );
+}
+
+/**
+ * The people a home screen to-do is about. With only one, their page opens
+ * straight away at the action; with none left, it says so.
+ */
+function TodoMembers({
+  kind,
+  loaded,
+  members,
+  stuckAthletes,
+  refreshing,
+  onRefresh,
+  describe,
+}: {
+  kind: MemberTodoKind;
+  loaded: boolean;
+  members: Profile[];
+  stuckAthletes: string[];
+  refreshing: boolean;
+  onRefresh: () => void;
+  describe: (member: Profile) => string;
+}) {
+  const copy = memberTodoCopy[kind];
+  // Opens the only person once. Coming back here afterwards shows the list.
+  const checked = useRef(false);
+  useEffect(() => {
+    if (!loaded || checked.current) return;
+    checked.current = true;
+    if (members.length === 1) router.replace(memberPageHref(members[0].id, kind));
+  }, [loaded, members, kind]);
+
+  const intro =
+    kind === 'unendorsable' && stuckAthletes.length > 0
+      ? `Nobody can endorse the clearance for ${stuckAthletes.join(', ')}. ${copy.action}`
+      : copy.action;
+
+  return (
+    <Screen refreshing={refreshing} onRefresh={onRefresh}>
+      <Stack.Screen options={{ title: copy.heading }} />
+      {!loaded ? (
+        <ThemedText type="small" themeColor="textSecondary">
+          Loading…
+        </ThemedText>
+      ) : members.length === 0 ? (
+        <Card>
+          <ThemedText type="smallBold">All done</ThemedText>
+          <ThemedText type="small" themeColor="textSecondary">
+            {copy.empty}
+          </ThemedText>
+        </Card>
+      ) : (
+        <>
+          <ThemedText type="small" themeColor="textSecondary">
+            {intro}
+          </ThemedText>
+          <View style={styles.section}>
+            {members.map((m) => (
+              <PressableCard key={m.id} onPress={() => router.push(memberPageHref(m.id, kind))}>
+                <ThemedText type="smallBold">{m.full_name || m.email || 'Unnamed member'}</ThemedText>
+                <ThemedText type="small" themeColor="tint">
+                  {describe(m)}
+                </ThemedText>
+              </PressableCard>
+            ))}
+          </View>
+        </>
+      )}
+      <Button
+        title="Show all members"
+        variant="secondary"
+        onPress={() => router.replace('/admin')}
       />
     </Screen>
   );

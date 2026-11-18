@@ -512,7 +512,7 @@ describe('a lodged check application', () => {
     expect(screen.getByText('Coach paused')).toBeTruthy();
   });
 
-  it('asks admins to confirm applications that are due, and opens Members', async () => {
+  it('asks admins to confirm applications that are due, and opens the members whose are due', async () => {
     await openHome('admin', {}, {
       rpcs: {
         admin_safety_todos: {},
@@ -525,7 +525,7 @@ describe('a lodged check application', () => {
     expect(screen.getByText('Confirm 2 check applications are still being assessed')).toBeTruthy();
     expect(screen.getByText('1 lapsed. Check online, then confirm on the member’s page.')).toBeTruthy();
     await fireEvent.press(screen.getByText('Confirm 2 check applications are still being assessed'));
-    expect(push).toHaveBeenCalledWith('/admin');
+    expect(push).toHaveBeenCalledWith({ pathname: '/admin', params: { todo: 'wwcc-application' } });
   });
 
   it('asks admins nothing for applications not yet due', async () => {
@@ -682,7 +682,7 @@ describe('the to-do list', () => {
     expect(push).toHaveBeenCalledWith('/check-in');
   });
 
-  it('tells admins when nobody can endorse an athlete’s clearance, and opens Members', async () => {
+  it('tells admins when nobody can endorse an athlete’s clearance, and opens the club’s physios', async () => {
     await openHome('admin', {}, {
       rpcs: {
         admin_safety_todos: {},
@@ -692,7 +692,7 @@ describe('the to-do list', () => {
     expect(screen.getByText('Nobody can endorse Kai Senior’s clearance')).toBeTruthy();
     expect(screen.getByText('Make a physio Head Physio, or place a physio in their squad or team')).toBeTruthy();
     await fireEvent.press(screen.getByText('Nobody can endorse Kai Senior’s clearance'));
-    expect(push).toHaveBeenCalledWith('/admin');
+    expect(push).toHaveBeenCalledWith({ pathname: '/admin', params: { todo: 'unendorsable' } });
   });
 
   it('warns admins when the nightly removal has stopped, and opens Club settings', async () => {
