@@ -12,7 +12,7 @@ workflow, and check the test project isn't paused, the day before each submissio
 
 - **Club code:** `DEMO` (FirstPass Demo Club). It holds sample people only, never a real member.
 - **How:** open the app, enter `DEMO`, tap the button to continue, then sign in with an email
-  and password on the next screen. Real clubs show "Continue with Google", and "Sign in with Apple" on iPhone.
+  and password on the next screen. Real clubs show "Continue with Google", and "Continue with Apple" on iPhone and iPad.
 - **Password:** the same for every demo account. You paste it into the store form.
 
 | Account | Signs in as | What to look at |
@@ -84,5 +84,5 @@ App Store Connect > TestFlight > Test information.
 | Why is a club's app public? | It serves any netball club; the club code picks the club, and DEMO shows it working. Not verified with Apple. If Apple objects, unlisted distribution is the fallback (tab D4) | `src/constants/clubs.ts`, `src/app/choose-club.tsx` |
 | How is user content moderated? | Only coaches, managers, the committee and admins send messages, to whole groups, and admins can remove anyone's access. There are no replies or direct messages. Anyone can raise a concern with the club's Child Safety Officer from Raise a concern | User guide: Messages, Raise a concern, Approving members |
 | Can I delete my account? | Yes: Delete account at the bottom of the home screen, then Delete my account permanently | `src/app/delete-account.tsx` |
-| Which sign-in methods are there? | Continue with Google, and Sign in with Apple on iPhone. A member who chose Hide My Email isn't required to give a PlayHQ email. Parents and guardians still give the email they registered their child with, whatever the sign-in, because it is how the club checks an adult before linking them to a child | `src/lib/sign-in.ts`, `src/app/join.tsx` (#219) |
+| Which sign-in methods are there? | Continue with Google, and Continue with Apple (Sign in with Apple) on iPhone and iPad. A member who chose Hide My Email isn't required to give a PlayHQ email. Parents and guardians still give the email they registered their child with, whatever the sign-in, because it is how the club checks an adult before linking them to a child | `src/lib/sign-in.ts`, `src/app/join.tsx` (#219) |
 | Is health data used for anything else? | No. It is seen only by the athlete, their parents, their coaches and physios (for under 18s only with a parent's consent) and admins | [data-inventory.md](data-inventory.md) rows 7 to 9 |
