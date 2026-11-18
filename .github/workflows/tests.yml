@@ -87,6 +87,9 @@ jobs:
       - name: Store builds go to the Google Play closed test
         if: ${{ !cancelled() }}
         run: python3 scripts/test-store-build.py
+      - name: Builds upload the app, not the guides or the git history
+        if: ${{ !cancelled() }}
+        run: python3 scripts/test-build-upload.py
       - name: Reset demo club puts the demo accounts back
         if: ${{ !cancelled() }}
         run: scripts/test-reset-demo-club.sh
