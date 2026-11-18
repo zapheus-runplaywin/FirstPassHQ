@@ -96,6 +96,9 @@ jobs:
       - name: Updates keep the demo club off the live project
         if: ${{ !cancelled() }}
         run: scripts/test-publish-update.sh
+      - name: Lockfile stays off the patched advisories
+        if: ${{ !cancelled() }}
+        run: python3 scripts/test-dependency-floors.py
 
   # The real web build driven through key flows in Chromium at phone size, with
   # Supabase answered by e2e/support/fake-supabase.ts, so a broken build or a
