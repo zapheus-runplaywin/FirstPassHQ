@@ -10,7 +10,7 @@ workflow, and check the test project isn't paused, the day before each submissio
 
 ## Signing in
 
-- **Club code:** `DEMO` (FirstPass Demo Club). It holds sample people only, never a real member.
+- **Club code:** `DEMO` (Perth Pumpkins, a made-up demo club). It holds sample people only, never a real member.
 - **How:** open the app, enter `DEMO`, tap the button to continue, then sign in with an email
   and password on the next screen. Real clubs show "Continue with Google", and "Continue with Apple" on iPhone and iPad.
 - **Password:** the same for every demo account. You paste it into the store form.

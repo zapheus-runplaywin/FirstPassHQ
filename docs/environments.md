@@ -188,7 +188,7 @@ dashboard and run **Deploy migrations** again.
 
 ## The demo club
 
-The code `DEMO` opens the **FirstPass Demo Club**: 20 sample accounts on the **test** project, one
+The code `DEMO` opens the **Perth Pumpkins**, a made-up demo club: 20 sample accounts on the **test** project, one
 for each kind of member, for app store reviewers and for anyone trying a screen as another role.
 It's the only club that signs in with an email and password. Every account uses the same password,
 which lives in the `DEMO_PASSWORD` repository secret and nowhere in the repo.

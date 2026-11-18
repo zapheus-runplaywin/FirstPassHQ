@@ -83,7 +83,7 @@ export function demoClubFrom(env: {
   if (!env.url || !env.anonKey) return null;
   return {
     code: DEMO_CLUB_CODE,
-    name: 'FirstPass Demo Club',
+    name: 'Perth Pumpkins',
     supabaseUrl: env.url,
     anonKey: env.anonKey,
     demo: true,
