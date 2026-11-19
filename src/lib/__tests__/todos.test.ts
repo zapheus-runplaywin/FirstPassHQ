@@ -333,6 +333,23 @@ describe('buildTodos', () => {
     ]);
   });
 
+  it('says what each child’s consent to-do still asks, defaulting to both', () => {
+    const list = todos({
+      consentsNeeded: [
+        {
+          id: 'c1',
+          name: 'Jo',
+          detail: 'Choose who sees their injury and medical details',
+        },
+        { id: 'c2', name: 'Sam' },
+      ],
+    });
+    expect(list.map((t) => t.detail)).toEqual([
+      'Choose who sees their injury and medical details',
+      'Choose who sees their check-ins and injury details',
+    ]);
+  });
+
   it('asks for the code of conduct for the member and their children', () => {
     const list = todos({
       conduct: [

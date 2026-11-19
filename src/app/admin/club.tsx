@@ -28,7 +28,14 @@ import {
   pilotSummary,
   savePilot,
 } from '@/lib/pilot';
+import {
+  checkInsOffNote,
+  injuriesOffWarning,
+  liveStreamsOffNote,
+  openInjuryCounts,
+} from '@/lib/feature-switches';
 import { supabase } from '@/lib/supabase';
+import type { InjuryStatus } from '@/lib/types';
 import { useTeams } from '@/lib/use-teams';
 
 const LOGO_TYPES = ['image/png', 'image/jpeg'];
@@ -390,6 +397,9 @@ export default function ClubSettingsScreen() {
                 {...(Platform.OS === 'web' ? { activeThumbColor: theme.onAccent } : {})}
               />
             </View>
+            {club.features[f.key] && !features[f.key] ? (
+              <FeatureOffNote feature={f.key} />
+            ) : null}
             {features[f.key] ? (
               <View accessibilityLabel={`Who sees ${f.label}`}>
                 <ChipGroup
@@ -470,6 +480,38 @@ export default function ClubSettingsScreen() {
 
       <RecordRetention />
     </Screen>
+  );
+}
+
+/**
+ * Shown under a switch an admin has just turned off, before they save: what
+ * turning it off does to work already under way.
+ */
+function FeatureOffNote({ feature }: { feature: FeatureKey }) {
+  const [counts, setCounts] = useState<{ open: number; clearances: number } | null>(null);
+  useEffect(() => {
+    if (feature !== 'injuries') return;
+    let current = true;
+    supabase.rpc('visible_injuries').then(({ data }) => {
+      if (current) setCounts(openInjuryCounts((data as { status: InjuryStatus }[] | null) ?? []));
+    });
+    return () => {
+      current = false;
+    };
+  }, [feature]);
+  const text =
+    feature === 'injuries'
+      ? injuriesOffWarning(counts)
+      : feature === 'checkIns'
+        ? checkInsOffNote
+        : feature === 'liveStreams'
+          ? liveStreamsOffNote
+          : null;
+  if (!text) return null;
+  return (
+    <ThemedText type="small" themeColor={feature === 'injuries' ? 'tint' : 'textSecondary'}>
+      {text}
+    </ThemedText>
   );
 }
 

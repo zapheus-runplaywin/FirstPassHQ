@@ -20,6 +20,15 @@ export type ChildConsent = {
   publish: boolean;
   /** False until the guardian's identity has been verified. */
   can_consent: boolean;
+  /**
+   * Whether Daily check-ins is on for the child. Check-in consent is asked for
+   * only while it is; a consent already given is kept while it's off.
+   */
+  check_ins_on?: boolean;
+  /** Whether the parent still has a consent to give, worked out by the database. */
+  needs_consent?: boolean;
+  /** Whether Live streams is on for the child. The stream stats question shows only while it is. */
+  streams_on?: boolean;
 };
 
 export type ConsentKind = 'data' | 'health' | 'publish';
@@ -70,7 +79,52 @@ export function useClubPolicies() {
   return policies;
 }
 
+/**
+ * Whether check-in consent is asked for this child: only while Daily
+ * check-ins is on for them. Before the database says, it is asked as before.
+ */
+export function asksCheckIns(child: Pick<ChildConsent, 'check_ins_on'>) {
+  return child.check_ins_on !== false;
+}
+
+/**
+ * The consents a parent is shown for a child: check-ins only while Daily
+ * check-ins is on, stream stats only while Live streams is on, and injuries
+ * always (medical details have no switch). A consent already given stays
+ * shown while its feature is off, so it can still be withdrawn.
+ */
+export function consentKindsShown(
+  child: Pick<ChildConsent, 'data' | 'publish' | 'check_ins_on' | 'streams_on'>,
+): ConsentKind[] {
+  return (['data', 'health', 'publish'] as const).filter(
+    (kind) =>
+      (kind === 'data' && (asksCheckIns(child) || child.data)) ||
+      kind === 'health' ||
+      (kind === 'publish' && (child.streams_on !== false || child.publish)),
+  );
+}
+
+/**
+ * Whether the parent still has a consent to give for this child. Health
+ * consent is always asked (it covers medical and emergency details, which have
+ * no switch); check-in consent only while Daily check-ins is on.
+ */
+export function needsConsent(
+  child: Pick<ChildConsent, 'can_consent' | 'data' | 'health' | 'check_ins_on' | 'needs_consent'>,
+) {
+  if (typeof child.needs_consent === 'boolean') return child.needs_consent;
+  return child.can_consent && (!child.health || (asksCheckIns(child) && !child.data));
+}
+
 /** Consents a guardian still needs to give, for the to-do list. */
 export function consentsNeeded(children: ChildConsent[]) {
-  return children.filter((c) => c.can_consent && (!c.data || !c.health));
+  return children.filter(needsConsent);
+}
+
+/** The "Give consent" to-do's second line: what the parent is still asked. */
+export function consentTodoDetail(child: Pick<ChildConsent, 'data' | 'health' | 'check_ins_on'>) {
+  const checkIns = asksCheckIns(child) && !child.data;
+  if (checkIns && !child.health) return 'Choose who sees their check-ins and injury details';
+  if (checkIns) return 'Choose who sees their check-ins';
+  return 'Choose who sees their injury and medical details';
 }

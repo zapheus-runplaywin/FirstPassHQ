@@ -143,7 +143,7 @@ export function buildTodos({
   /** Absences reported or withdrawn for the member's squads and teams since they last looked. */
   absencesToReview?: number;
   /** A guardian's children under 18 still waiting for their consent. */
-  consentsNeeded?: { id: string; name: string }[];
+  consentsNeeded?: { id: string; name: string; detail?: string }[];
   /** Code of conduct acceptances still owed this season, for the member and their children. */
   conduct?: { id: string; name: string; forChild: boolean }[];
   /** Season KPI reviews to write, and the member's own to confirm. */
@@ -211,7 +211,7 @@ export function buildTodos({
     todos.push({
       key: `consent-${child.id}`,
       title: `Give consent for ${child.name}`,
-      detail: 'Choose who sees their check-ins and injury details',
+      detail: child.detail ?? 'Choose who sees their check-ins and injury details',
       href: `/consent/${child.id}`,
     });
   }

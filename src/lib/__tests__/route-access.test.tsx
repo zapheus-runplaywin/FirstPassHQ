@@ -35,6 +35,7 @@ function features(overrides: Partial<Features> = {}): Features {
     surveys: true,
     captainPolls: true,
     awards: true,
+    liveStreams: true,
     goals: true,
     integrity: true,
     kpis: true,

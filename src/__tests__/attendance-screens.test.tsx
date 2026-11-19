@@ -257,11 +257,13 @@ describe('one register', () => {
     expect(screen.queryByText(/^Injured/)).toBeNull();
   });
 
-  it('doesn’t ask who was injured when the club has Injuries off', async () => {
+  // Changed 2026-11-19 (Matt): turning Injuries off pauses open injuries, it
+  // doesn't end them, so whoever takes attendance still needs to know.
+  it('still shows who is injured when the club has Injuries off', async () => {
     setClubFeatures({ injuries: false });
     await openRegister('coach', session());
-    expect(screen.queryByText(/^Injured/)).toBeNull();
-    expect(rpcNames()).not.toContain('injured_on');
+    expect(screen.getByText(/^Injured, back/)).toBeTruthy();
+    expect(rpcNames()).toContain('injured_on');
     expect(screen.getByText('Away: Illness')).toBeTruthy();
   });
 });

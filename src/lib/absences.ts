@@ -109,12 +109,12 @@ export function injuredLabel(expectedReturn: string | null) {
  * away, and athletes injured that day. Injured athletes still come to support
  * the team, so they are marked like anyone else; everyone taking attendance
  * sees that they're injured and when they're expected back, never the injury
- * itself. `teamId` null is a club event; pass `enabled` false until a group
- * is chosen.
+ * itself. That stays true while an admin has Injuries turned off: the
+ * injuries are still open, and whoever takes attendance needs to know a child
+ * has restrictions (Matt, 2026-11-19). `teamId` null is a club event; pass
+ * `enabled` false until a group is chosen.
  */
 export function useAwayNotes(teamId: string | null, heldAt: string | null, enabled = true) {
-  const { features } = useClub();
-  const injuries = features.injuries;
   const [away, setAway] = useState<Record<string, string>>({});
   const day = heldAt ? toDateString(new Date(heldAt)) : null;
   useEffect(() => {
@@ -122,9 +122,7 @@ export function useAwayNotes(teamId: string | null, heldAt: string | null, enabl
     let current = true;
     Promise.all([
       supabase.rpc('absences_on', { p_team_id: teamId, p_day: day }),
-      injuries
-        ? supabase.rpc('injured_on', { p_team_id: teamId, p_day: day })
-        : Promise.resolve({ data: [] }),
+      supabase.rpc('injured_on', { p_team_id: teamId, p_day: day }),
     ]).then(([absences, injured]) => {
       if (!current) return;
       const notes: Record<string, string> = {};
@@ -141,7 +139,7 @@ export function useAwayNotes(teamId: string | null, heldAt: string | null, enabl
     return () => {
       current = false;
     };
-  }, [teamId, day, enabled, injuries]);
+  }, [teamId, day, enabled]);
   return enabled ? away : {};
 }
 
