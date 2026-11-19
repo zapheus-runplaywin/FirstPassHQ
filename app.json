@@ -58,7 +58,8 @@
           "cameraPermission": "Allow $(PRODUCT_NAME) to take photos of session plans.",
           "microphonePermission": false
         }
-      ]
+      ],
+      "./plugins/optional-portrait"
     ],
     "experiments": {
       "typedRoutes": true,
