@@ -11,6 +11,8 @@ on:
 
 permissions:
   contents: read
+  # Reads other open pull requests' files for the version clash check.
+  pull-requests: read
 
 jobs:
   check:
@@ -52,6 +54,17 @@ jobs:
             echo "::error::Two migrations share a version number. Give the newer one a later, unused number."
             exit 1
           fi
+      # GitHub doesn't re-run this check when main moves, so two open pull
+      # requests could each pass the step above and clash once both merge.
+      - name: No other open pull request uses the same version number
+        if: ${{ !cancelled() }}
+        env:
+          BASE: origin/${{ github.base_ref }}
+          GH_TOKEN: ${{ github.token }}
+          PR_NUMBER: ${{ github.event.pull_request.number }}
+        run: |
+          files=$(git diff --name-only --diff-filter=AR "$BASE"...HEAD -- 'supabase/migrations/*.sql')
+          python3 scripts/check-migration-clashes.py $files
       - name: Nothing exposes data
         if: ${{ !cancelled() }}
         env:
