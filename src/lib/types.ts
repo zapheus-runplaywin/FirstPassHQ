@@ -800,6 +800,10 @@ export type Concern = {
   status: ConcernStatus;
   closed_at: string | null;
   last_action_at: string | null;
+  /** A copy of the message reported with "Report this message", kept with the concern. */
+  reported_message_sender_name?: string | null;
+  reported_message_sent_at?: string | null;
+  reported_message_body?: string | null;
 };
 
 /** Something done about a concern, from `concern_history`. */

@@ -105,8 +105,13 @@ const officer: Persona = { ...personas.coach, isSafeguardingOfficer: true };
 // ---------------------------------------------------------------------------
 // Raising a concern
 
-async function openRaise(who: Who, mine: MyConcern[] = [], url = '/concern/new') {
-  await openScreen(who, { 'concern/new': RaiseConcernScreen }, url, {}, {
+async function openRaise(
+  who: Who,
+  mine: MyConcern[] = [],
+  url = '/concern/new',
+  tables: Record<string, unknown[]> = {},
+) {
+  await openScreen(who, { 'concern/new': RaiseConcernScreen }, url, tables, {
     rpcs: {
       safeguarding_contacts: [CONTACTS],
       concern_people: [
@@ -195,8 +200,54 @@ describe('raising a concern', () => {
       p_contact_ok: false,
       p_involves_child: 'unsure',
       p_context: null,
+      p_message_id: null,
     });
     expect(screen.getByText('Thank you for telling us')).toBeTruthy();
+  });
+
+  describe('reporting a message', () => {
+    const REPORTED = {
+      id: 'msg-1',
+      sender_name: 'Sample Coach',
+      created_at: '2026-10-17T10:30:00Z',
+      body: 'Come early on your own',
+    };
+    const url = '/concern/new?context=Message%20from%20Sample%20Coach&message=msg-1';
+
+    it('shows the message being reported, and that a copy is kept', async () => {
+      await openRaise(morePersonas.under18Athlete, [], url, { messages: [REPORTED] });
+      expect(screen.getByText('The message you’re reporting')).toBeTruthy();
+      expect(screen.getByText(/^From Sample Coach, /)).toBeTruthy();
+      expect(screen.getByText('Come early on your own')).toBeTruthy();
+      expect(screen.getByText(/A copy of this message is kept with your concern/)).toBeTruthy();
+      expect(screen.queryByText(/^About: /)).toBeNull();
+    });
+
+    it('sends the message with the concern, keeping their name hidden if they ask', async () => {
+      await openRaise('athlete', [], url, { messages: [REPORTED] });
+      await fireEvent.changeText(screen.getByPlaceholderText('In your own words'), 'Strange message');
+      await fireEvent.press(screen.getByText('Don’t show my name'));
+      await fireEvent.press(screen.getByText('Send to the club'));
+      await settle();
+      expect(rpcCalls().find(([n]) => n === 'raise_concern')?.[1]).toMatchObject({
+        p_body: 'Strange message',
+        p_anonymous: true,
+        p_contact_ok: false,
+        p_context: 'Message from Sample Coach',
+        p_message_id: 'msg-1',
+      });
+    });
+
+    it('still sends where it came from when the message can’t be shown', async () => {
+      await openRaise('athlete', [], url, { messages: [] });
+      expect(screen.queryByText('The message you’re reporting')).toBeNull();
+      expect(screen.getByText('About: Message from Sample Coach')).toBeTruthy();
+      await fireEvent.changeText(screen.getByPlaceholderText('In your own words'), 'Strange message');
+      await fireEvent.press(screen.getByText('Send to the club'));
+      await settle();
+      // The database refuses a message they can't see, so nothing is copied.
+      expect(rpcCalls().find(([n]) => n === 'raise_concern')?.[1]).toMatchObject({ p_message_id: 'msg-1' });
+    });
   });
 
   it('offers matching members to name who it’s about', async () => {
@@ -204,6 +255,19 @@ describe('raising a concern', () => {
     await fireEvent.changeText(screen.getByPlaceholderText('A name, or a description'), 'sample p');
     expect(screen.getByText('Sample Parent')).toBeTruthy();
     expect(screen.getByText('Sample Person')).toBeTruthy();
+  });
+
+  it('offers members from the first letter typed', async () => {
+    await openRaise('athlete');
+    await fireEvent.changeText(screen.getByPlaceholderText('A name, or a description'), 'P');
+    expect(screen.getByText('Sample Parent')).toBeTruthy();
+    expect(screen.getByText('Sample Person')).toBeTruthy();
+  });
+
+  it('lists only the adults with club roles, never every member', async () => {
+    await openRaise('guest');
+    expect(rpcCalls().map(([n]) => n)).toContain('concern_people');
+    expect(rpcCalls().map(([n]) => n)).not.toContain('concern_about_people');
   });
 });
 
@@ -276,7 +340,10 @@ async function openConcern(who: Who, shown: Concern | null, history: ConcernEven
     rpcs: {
       concern_register: shown ? [shown] : [],
       concern_history: history,
-      concern_people: [{ id: 'p1', name: 'Sample Parent' }],
+      concern_about_people: [
+        { id: 'p1', name: 'Sample Parent' },
+        { id: 'p3', name: 'Avery Athlete' },
+      ],
       safeguarding_contacts: [CONTACTS],
     },
   });
@@ -360,6 +427,55 @@ describe('one concern', () => {
     expect(screen.queryByText('Being looked into')).toBeNull();
     await fireEvent.press(screen.getByText('Closed'));
     expect(screen.getByText('Close it (the note says why)')).toBeTruthy();
+  });
+
+  it('shows the reported message in full: who sent it, when and what it said', async () => {
+    await openConcern(
+      officer,
+      concern({
+        context: 'Message from Sample Coach, Saturday 17 October, 6:30 pm',
+        reported_message_sender_name: 'Sample Coach',
+        reported_message_sent_at: '2026-10-17T10:30:00Z',
+        reported_message_body: 'Come early on your own, don’t tell your parents',
+      }),
+    );
+    expect(screen.getByText('Reported message')).toBeTruthy();
+    expect(screen.getByText(/^From Sample Coach, /)).toBeTruthy();
+    expect(screen.getByText('Come early on your own, don’t tell your parents')).toBeTruthy();
+  });
+
+  it('shows no reported message for a concern raised some other way', async () => {
+    await openConcern(officer, concern());
+    expect(screen.queryByText('Reported message')).toBeNull();
+  });
+
+  describe('naming who it’s about', () => {
+    it('searches every approved member, athletes and parents included', async () => {
+      await openConcern(officer, concern());
+      expect(rpcCalls().map(([n]) => n)).toContain('concern_about_people');
+      expect(rpcCalls().map(([n]) => n)).not.toContain('concern_people');
+    });
+
+    it('finds members from the first letter typed', async () => {
+      await openConcern('admin', concern());
+      await fireEvent.changeText(screen.getByPlaceholderText('Name'), 'A');
+      expect(screen.getByText('Avery Athlete')).toBeTruthy();
+      expect(screen.queryByText('Sample Parent')).toBeNull();
+    });
+
+    it('names the member picked', async () => {
+      await openConcern('admin', concern());
+      await fireEvent.changeText(screen.getByPlaceholderText('Name'), 'Avery');
+      await fireEvent.press(screen.getByText('Avery Athlete'));
+      await settle();
+      expect(rpcCalls().find(([n]) => n === 'set_concern_about')?.[1]).toMatchObject({ p_member_id: 'p3' });
+    });
+
+    it('says when nobody matches, instead of showing nothing', async () => {
+      await openConcern('admin', concern());
+      await fireEvent.changeText(screen.getByPlaceholderText('Name'), 'zz');
+      expect(screen.getByText('No approved member’s name matches “zz”.')).toBeTruthy();
+    });
   });
 
   it('offers no way to clear who it’s about while nobody is named', async () => {

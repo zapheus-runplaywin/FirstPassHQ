@@ -3,15 +3,15 @@ import { useCallback, useState } from 'react';
 import { StyleSheet, View } from 'react-native';
 
 import { Screen } from '@/components/screen';
-import { SafeguardingContactsCard } from '@/components/safeguarding';
+import { ReportedMessage, SafeguardingContactsCard } from '@/components/safeguarding';
 import { ThemedText } from '@/components/themed-text';
 import { Button, Card, ChipGroup, ErrorText, TextField } from '@/components/ui';
 import { Spacing } from '@/constants/theme';
 import { parseDate } from '@/lib/age';
-import { concernStatusLabels, involvesChildLabels } from '@/lib/concerns';
+import { concernStatusLabels, type ConcernPerson, involvesChildLabels, matchPeople } from '@/lib/concerns';
 import { localDay } from '@/lib/reports';
 import { supabase } from '@/lib/supabase';
-import type { InvolvesChild, MyConcern } from '@/lib/types';
+import type { InvolvesChild, Message, MyConcern } from '@/lib/types';
 
 const involvesOptions = Object.keys(involvesChildLabels) as InvolvesChild[];
 
@@ -24,12 +24,14 @@ const PERSON_MATCHES = 5;
  * the concerns they've raised before with where each is up to.
  */
 export default function RaiseConcernScreen() {
-  // Where they came from, for example a message or an injury.
-  const { context } = useLocalSearchParams<{ context?: string }>();
+  // Where they came from, for example a message or an injury, and the
+  // message they're reporting, which the concern keeps a copy of.
+  const { context, message: messageId } = useLocalSearchParams<{ context?: string; message?: string }>();
+  const [message, setMessage] = useState<Pick<Message, 'sender_name' | 'created_at' | 'body'> | null>(null);
   const [body, setBody] = useState('');
   const [aboutText, setAboutText] = useState('');
   const [aboutId, setAboutId] = useState<string | null>(null);
-  const [people, setPeople] = useState<{ id: string; name: string }[]>([]);
+  const [people, setPeople] = useState<ConcernPerson[]>([]);
   const [happened, setHappened] = useState('');
   const [involves, setInvolves] = useState<InvolvesChild>('unsure');
   const [anonymous, setAnonymous] = useState(false);
@@ -41,13 +43,17 @@ export default function RaiseConcernScreen() {
   const [error, setError] = useState<string | null>(null);
 
   const load = useCallback(async () => {
-    const [peopleResult, mineResult] = await Promise.all([
+    const [peopleResult, mineResult, messageResult] = await Promise.all([
       supabase.rpc('concern_people'),
       supabase.rpc('my_concerns'),
+      messageId
+        ? supabase.from('messages').select('sender_name, created_at, body').eq('id', messageId).maybeSingle()
+        : Promise.resolve({ data: null }),
     ]);
-    setPeople((peopleResult.data as { id: string; name: string }[] | null) ?? []);
+    setPeople((peopleResult.data as ConcernPerson[] | null) ?? []);
     setMine((mineResult.data as MyConcern[] | null) ?? []);
-  }, []);
+    setMessage((messageResult.data as Pick<Message, 'sender_name' | 'created_at' | 'body'> | null) ?? null);
+  }, [messageId]);
 
   useFocusEffect(
     useCallback(() => {
@@ -55,11 +61,7 @@ export default function RaiseConcernScreen() {
     }, [load]),
   );
 
-  const search = aboutText.trim().toLowerCase();
-  const matches =
-    search.length >= 2 && !aboutId
-      ? people.filter((p) => p.name.toLowerCase().includes(search)).slice(0, PERSON_MATCHES)
-      : [];
+  const matches = aboutId ? [] : matchPeople(people, aboutText, PERSON_MATCHES);
 
   async function send() {
     const happenedOn = parseDate(happened);
@@ -83,6 +85,7 @@ export default function RaiseConcernScreen() {
       p_contact_details: contactDetails,
       p_anonymous: anonymous,
       p_context: context ?? null,
+      p_message_id: messageId ?? null,
     });
     setBusy(false);
     if (rpcError) {
@@ -118,7 +121,20 @@ export default function RaiseConcernScreen() {
             The club’s Child Safety Officer, Complaints Manager and admins see it, but not the
             person it’s about.
           </ThemedText>
-          {context ? (
+          {message ? (
+            <>
+              <ReportedMessage
+                title="The message you’re reporting"
+                senderName={message.sender_name}
+                sentAt={message.created_at}
+                body={message.body}
+              />
+              <ThemedText type="small" themeColor="textSecondary">
+                A copy of this message is kept with your concern, so the people who look into it
+                can read it even if the message is later removed.
+              </ThemedText>
+            </>
+          ) : context ? (
             <ThemedText type="small" themeColor="textSecondary">
               About: {context}
             </ThemedText>
