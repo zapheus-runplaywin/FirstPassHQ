@@ -474,15 +474,22 @@ do $$ begin
 end $$;
 
 -- Captains and vice captains send polls with choices to their own group.
--- Jordan (under 18) captains the squad; their parents get a copy saying
--- Jordan sent it, and the squad's coaches and managers see the poll.
+-- Jordan (under 18) captains Sample Team (captains are chosen per team since
+-- 20 November 2026); their parents get a copy saying Jordan sent it, and the
+-- team's coaches and managers see the poll. Kai, the manager and the
+-- coach-parent join the team for this.
+insert into public.team_members (team_id, profile_id, team_role, selection) values
+  ('00000000-0000-0000-0000-0000000000a2', '00000000-0000-0000-0000-000000000032', 'athlete', 'training_partner'),
+  ('00000000-0000-0000-0000-0000000000a2', '00000000-0000-0000-0000-000000000013', 'manager', null);
+update public.team_members set team_role = 'coach', coach_title = 'assistant_coach'
+where team_id = '00000000-0000-0000-0000-0000000000a2' and profile_id = '00000000-0000-0000-0000-000000000042';
 insert into public.team_captains (team_id, profile_id, captain_role) values
-  ('00000000-0000-0000-0000-0000000000a1', '00000000-0000-0000-0000-000000000031', 'captain');
+  ('00000000-0000-0000-0000-0000000000a2', '00000000-0000-0000-0000-000000000031', 'captain');
 set role authenticated;
 set request.jwt.claim.sub = '00000000-0000-0000-0000-000000000031';
 do $$ begin
   begin
-    perform public.create_survey('Chat', null, 'named', 'group', null, '00000000-0000-0000-0000-0000000000a1', null,
+    perform public.create_survey('Chat', null, 'named', 'group', null, '00000000-0000-0000-0000-0000000000a2', null,
       now() + interval '1 day', '[{"kind":"text","prompt":"Hi"}]');
     raise exception 'captain sent a written-answer poll';
   exception when others then
@@ -497,7 +504,7 @@ do $$ begin
   end;
 end $$;
 insert into ids values ('social', public.create_survey('Team dinner', null, 'named', 'group', null,
-  '00000000-0000-0000-0000-0000000000a1', null, now() + interval '3 days',
+  '00000000-0000-0000-0000-0000000000a2', null, now() + interval '3 days',
   '[{"kind":"multi_choice","prompt":"Which nights can you come?","options":["Friday","Saturday","Sunday"]}]', true));
 reset role;
 do $$
@@ -506,7 +513,7 @@ begin
   if (select share_with_committee from public.surveys where id = v) then raise exception 'captain poll shared'; end if;
   if (select sent_as from public.surveys where id = v) <> 'captain' then raise exception 'not sent as captain'; end if;
   -- 41 is Jordan's parent and gets a copy naming Jordan, even though Jordan
-  -- doesn't get the poll. 42 is in the squad in their own right.
+  -- doesn't get the poll. 42 is in the team in their own right.
   if (select for_children from public.survey_recipients where survey_id = v
       and profile_id = '00000000-0000-0000-0000-000000000041') <> array['00000000-0000-0000-0000-000000000031'::uuid] then
     raise exception 'captain''s parent has no copy';
@@ -570,7 +577,7 @@ update public.club_settings set features = coalesce(features, '{}'::jsonb) || '{
 set role authenticated;
 do $$ begin
   begin
-    perform public.create_survey('Off', null, 'named', 'group', null, '00000000-0000-0000-0000-0000000000a1', null,
+    perform public.create_survey('Off', null, 'named', 'group', null, '00000000-0000-0000-0000-0000000000a2', null,
       now() + interval '1 day', '[{"kind":"choice","prompt":"Hi","options":["a","b"]}]');
     raise exception 'captain sent a poll while switched off';
   exception when others then

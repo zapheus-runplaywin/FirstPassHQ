@@ -47,10 +47,10 @@ select pg_temp.ok('brothers and sisters in different squads',
      join public.team_members tm on tm.profile_id = g.athlete_id
      join public.teams t on t.id = tm.team_id and t.kind = 'squad'
      group by 1 having count(distinct t.id) > 1) x) >= 10, true);
-select pg_temp.ok('athletes in two teams of a squad',
+select pg_temp.ok('no athlete is in two teams',
   (select count(*) from (
      select tm.profile_id from public.team_members tm join public.teams t on t.id = tm.team_id
-     where t.kind = 'team' and tm.team_role = 'athlete' group by 1 having count(*) > 1) x) >= 10, true);
+     where t.kind = 'team' and tm.team_role = 'athlete' group by 1 having count(*) > 1) x) = 0, true);
 select pg_temp.ok('children with no consents, and with only the check-ins one',
   (select count(*) from lc_members m where public.is_minor(m.date_of_birth, m.under_17)
      and not exists (select 1 from public.child_consents c where c.athlete_id = m.id)) > 0

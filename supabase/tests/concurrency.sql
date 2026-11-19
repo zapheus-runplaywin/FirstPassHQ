@@ -114,17 +114,28 @@ select pg_temp.ok('two coaches saving one register: still one register',
 -- Two coaches choose captains at once: the group ends with one coach's
 -- choice, whichever saved last, never a mix of both.
 -- ---------------------------------------------------------------------------
+-- Captains are chosen per team (20 November 2026): 17 & Under B, coached by
+-- head coach 10, with assistant 16 added for this check.
+insert into public.team_members (team_id, profile_id, team_role, coach_title)
+values (pg_temp.lc_team(22), pg_temp.lc(16), 'coach', 'assistant_coach')
+on conflict do nothing;
+insert into pick
+select 'captain' || row_number() over (order by tm.profile_id), tm.profile_id
+from public.team_members tm
+join public.profiles p on p.id = tm.profile_id and p.status = 'approved'
+where tm.team_id = pg_temp.lc_team(22) and tm.team_role = 'athlete'
+order by tm.profile_id limit 4;
 select pg_temp.race('captains', 10,
-  format('select public.set_group_captains(%L::uuid, %L::uuid[], %L::uuid[])::text', pg_temp.lc_team(2),
-    array[pg_temp.p('athlete1')], array[pg_temp.p('athlete2')]),
+  format('select public.set_group_captains(%L::uuid, %L::uuid[], %L::uuid[])::text', pg_temp.lc_team(22),
+    array[pg_temp.p('captain1')], array[pg_temp.p('captain2')]),
   16,
-  format('select public.set_group_captains(%L::uuid, %L::uuid[], %L::uuid[])::text', pg_temp.lc_team(2),
-    array[pg_temp.p('athlete3')], array[pg_temp.p('athlete4')]));
+  format('select public.set_group_captains(%L::uuid, %L::uuid[], %L::uuid[])::text', pg_temp.lc_team(22),
+    array[pg_temp.p('captain3')], array[pg_temp.p('captain4')]));
 select pg_temp.ok('two coaches choosing captains: the second save goes through',
   (select b_error is null from race_results where label = 'captains'), true);
 select pg_temp.ok('two coaches choosing captains: one coach''s choice is kept, not a mix of both',
-  (select array_agg(profile_id order by captain_role, profile_id) from public.team_captains where team_id = pg_temp.lc_team(2))
-    in (array[pg_temp.p('athlete3'), pg_temp.p('athlete4')], array[pg_temp.p('athlete1'), pg_temp.p('athlete2')]), true);
+  (select array_agg(profile_id order by captain_role, profile_id) from public.team_captains where team_id = pg_temp.lc_team(22))
+    in (array[pg_temp.p('captain3'), pg_temp.p('captain4')], array[pg_temp.p('captain1'), pg_temp.p('captain2')]), true);
 
 -- ---------------------------------------------------------------------------
 -- A new register sent twice (a retry after a dropped connection): one

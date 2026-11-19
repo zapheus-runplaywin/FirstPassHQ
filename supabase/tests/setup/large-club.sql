@@ -129,8 +129,9 @@ select pg_temp.lc_team(s * 10 + t), (array['Open', '17 & Under', '15 & Under', '
   'team', pg_temp.lc_team(s), 100 + s * 10 + t
 from generate_series(1, 4) s, generate_series(1, 3) t;
 
--- Each athlete is in the squad for their age and one of its teams; one in
--- eight also tours with a second team. Adults are in the Open squad.
+-- Each athlete is in the squad for their age and one of its teams (an
+-- athlete is in one team at a time, 20 November 2026). Adults are in the
+-- Open squad.
 create temp table lc_athlete_squad as
 select n, case
     when dob <= current_date - interval '18 years' then 1
@@ -143,9 +144,6 @@ insert into public.team_members (team_id, profile_id, team_role)
 select pg_temp.lc_team(squad), pg_temp.lc(n), 'athlete' from lc_athlete_squad;
 insert into public.team_members (team_id, profile_id, team_role)
 select pg_temp.lc_team(squad * 10 + 1 + n % 3), pg_temp.lc(n), 'athlete' from lc_athlete_squad;
-insert into public.team_members (team_id, profile_id, team_role, selection)
-select pg_temp.lc_team(squad * 10 + 1 + (n + 1) % 3), pg_temp.lc(n), 'athlete', 'touring'
-from lc_athlete_squad where n % 8 = 0;
 
 -- Coaches: two head coaches per squad (squad and team), assistants across
 -- squads, the lapsed and stood-down coaches still listed on groups.

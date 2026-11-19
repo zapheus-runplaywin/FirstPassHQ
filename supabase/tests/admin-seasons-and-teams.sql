@@ -252,29 +252,51 @@ select pg_temp.as_member('12');
 select pg_temp.fails('lapsed coach cannot choose captains', $s$ select public.set_group_captains('00000000-0000-0000-0000-0000000000a1', '{00000000-0000-0000-0000-000000000031}'::uuid[], '{}'::uuid[]) $s$);
 select pg_temp.as_member('42');
 select pg_temp.fails('squad coach cannot choose a team''s captains', $s$ select public.set_group_captains('00000000-0000-0000-0000-0000000000a2', '{00000000-0000-0000-0000-000000000031}'::uuid[], '{}'::uuid[]) $s$);
+-- Captains are chosen per team, not per squad (Matt, 20 November 2026). Kai
+-- joins Sample Team for this part, and leaves it again after.
+insert into public.team_members (team_id, profile_id, team_role, selection) values
+  (pg_temp.m('a2'), pg_temp.m('32'), 'athlete', 'training_partner');
 select pg_temp.as_member('11');
-select pg_temp.fails('captains must be athletes in the group', $s$ select public.set_group_captains('00000000-0000-0000-0000-0000000000a1', '{00000000-0000-0000-0000-000000000013}'::uuid[], '{}'::uuid[]) $s$);
-select pg_temp.fails('an athlete outside the group cannot be captain', $s$ select public.set_group_captains('00000000-0000-0000-0000-0000000000a2', '{00000000-0000-0000-0000-000000000032}'::uuid[], '{}'::uuid[]) $s$);
-select pg_temp.fails('nobody is captain and vice captain', $s$ select public.set_group_captains('00000000-0000-0000-0000-0000000000a1', '{00000000-0000-0000-0000-000000000031}'::uuid[], '{00000000-0000-0000-0000-000000000031}'::uuid[]) $s$);
+select pg_temp.fails('captains must be athletes in the group', $s$ select public.set_group_captains('00000000-0000-0000-0000-0000000000a2', '{00000000-0000-0000-0000-000000000013}'::uuid[], '{}'::uuid[]) $s$);
+select pg_temp.fails('an athlete outside the group cannot be captain', $s$ select public.set_group_captains('00000000-0000-0000-0000-0000000000a2', '{00000000-0000-0000-0000-000000000033}'::uuid[], '{}'::uuid[]) $s$);
+select pg_temp.fails('nobody is captain and vice captain', $s$ select public.set_group_captains('00000000-0000-0000-0000-0000000000a2', '{00000000-0000-0000-0000-000000000031}'::uuid[], '{00000000-0000-0000-0000-000000000031}'::uuid[]) $s$);
 select pg_temp.fails('missing group refused', $s$ select public.set_group_captains('00000000-0000-0000-0000-0000000000ee', '{}'::uuid[], '{}'::uuid[]) $s$);
-select pg_temp.works('coach chooses the squad''s captain and vice captain', $s$ select public.set_group_captains('00000000-0000-0000-0000-0000000000a1', '{00000000-0000-0000-0000-000000000032}'::uuid[], '{00000000-0000-0000-0000-000000000031}'::uuid[]) $s$);
-select pg_temp.ok('captains saved', (select array_agg(profile_id::text || ':' || captain_role order by profile_id) = array[pg_temp.m('31') || ':vice_captain', pg_temp.m('32') || ':captain'] from public.team_captains where team_id = pg_temp.m('a1')), true);
-select pg_temp.works('coach changes them', $s$ select public.set_group_captains('00000000-0000-0000-0000-0000000000a1', '{00000000-0000-0000-0000-000000000031,00000000-0000-0000-0000-000000000032}'::uuid[], '{}'::uuid[]) $s$);
-select pg_temp.ok('two captains, no vice captain', (select count(*) = 2 and bool_and(captain_role = 'captain') from public.team_captains where team_id = pg_temp.m('a1')), true);
+select pg_temp.fails('the squad''s coach cannot choose squad captains', $s$ select public.set_group_captains('00000000-0000-0000-0000-0000000000a1', '{00000000-0000-0000-0000-000000000032}'::uuid[], '{}'::uuid[]) $s$);
+select pg_temp.fails('nor with the old one-captain call', $s$ select public.set_group_captains('00000000-0000-0000-0000-0000000000a1', '00000000-0000-0000-0000-000000000032'::uuid, '{}'::uuid[]) $s$);
+select pg_temp.ok('no squad captains saved', (select count(*) = 0 from public.team_captains where team_id = pg_temp.m('a1')), true);
+select pg_temp.works('coach chooses the team''s captain and vice captain', $s$ select public.set_group_captains('00000000-0000-0000-0000-0000000000a2', '{00000000-0000-0000-0000-000000000032}'::uuid[], '{00000000-0000-0000-0000-000000000031}'::uuid[]) $s$);
+select pg_temp.ok('captains saved', (select array_agg(profile_id::text || ':' || captain_role order by profile_id) = array[pg_temp.m('31') || ':vice_captain', pg_temp.m('32') || ':captain'] from public.team_captains where team_id = pg_temp.m('a2')), true);
+select pg_temp.works('coach changes them', $s$ select public.set_group_captains('00000000-0000-0000-0000-0000000000a2', '{00000000-0000-0000-0000-000000000031,00000000-0000-0000-0000-000000000032}'::uuid[], '{}'::uuid[]) $s$);
+select pg_temp.ok('two captains, no vice captain', (select count(*) = 2 and bool_and(captain_role = 'captain') from public.team_captains where team_id = pg_temp.m('a2')), true);
 select pg_temp.as_member('31');
-select pg_temp.ok('a group captain can message their group', public.can_message_group(pg_temp.m('a1')), true);
+select pg_temp.ok('a team captain can message their team', public.can_message_group(pg_temp.m('a2')), true);
+select pg_temp.ok('but not the squad', public.can_message_group(pg_temp.m('a1')), false);
+-- A squad captain chosen before 20 November keeps the row but not the role.
+reset role;
+alter table public.team_captains disable trigger team_captains_in_teams;
+insert into public.team_captains (team_id, profile_id, captain_role) values (pg_temp.m('a1'), pg_temp.m('32'), 'captain');
+alter table public.team_captains enable trigger team_captains_in_teams;
+select pg_temp.as_member('32');
+select pg_temp.ok('an old squad captain no longer counts', public.is_group_captain(pg_temp.m('a1')), false);
+select pg_temp.ok('an old squad captain cannot message the squad', public.can_message_group(pg_temp.m('a1')), false);
+select pg_temp.ok('their team captaincy still counts', public.is_group_captain(pg_temp.m('a2')), true);
+reset role;
+select pg_temp.ok('the old squad captain row is kept', (select count(*) = 1 from public.team_captains where team_id = pg_temp.m('a1')), true);
 update public.profiles set stood_down_at = now() where id = pg_temp.m('11');
 select pg_temp.as_member('11');
-select pg_temp.fails('stood-down coach cannot choose captains', $s$ select public.set_group_captains('00000000-0000-0000-0000-0000000000a1', '{}'::uuid[], '{}'::uuid[]) $s$);
+select pg_temp.fails('stood-down coach cannot choose captains', $s$ select public.set_group_captains('00000000-0000-0000-0000-0000000000a2', '{}'::uuid[], '{}'::uuid[]) $s$);
 update public.profiles set stood_down_at = null where id = pg_temp.m('11');
 select pg_temp.as_member('01');
+select pg_temp.fails('admin cannot choose squad captains either', $s$ select public.set_group_captains('00000000-0000-0000-0000-0000000000a1', '{00000000-0000-0000-0000-000000000031}'::uuid[], '{}'::uuid[]) $s$);
 select pg_temp.works('admin chooses the team''s captain', $s$ select public.set_group_captains('00000000-0000-0000-0000-0000000000a2', '{00000000-0000-0000-0000-000000000031}'::uuid[], '{}'::uuid[]) $s$);
 set role authenticated;
 select pg_temp.as_member('33');
 select pg_temp.ok('someone outside the groups cannot see their captains', (select count(*) = 0 from public.team_captains), true);
-select pg_temp.as_member('13');
-select pg_temp.ok('a squad member sees the squad''s captains', (select count(*) = 2 from public.team_captains where team_id = pg_temp.m('a1')), true);
+select pg_temp.as_member('11');
+select pg_temp.ok('a team''s coach sees the team''s captains', (select count(*) = 1 from public.team_captains where team_id = pg_temp.m('a2')), true);
 reset role;
+delete from public.team_captains where team_id = pg_temp.m('a1');
+delete from public.team_members where team_id = pg_temp.m('a2') and profile_id = pg_temp.m('32');
 
 -- ---------------------------------------------------------------------------
 -- Selections and seasons

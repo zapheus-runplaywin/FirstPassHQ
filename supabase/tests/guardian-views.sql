@@ -137,11 +137,17 @@ select pg_temp.ok('Jordan''s guardians follow them to Second Team and leave Samp
 select pg_temp.ok('Jordan stays in the squad, unrecorded',
   (select count(*) from public.group_membership_changes where profile_id = pg_temp.id('31')
    and changed_at > (select at from mark) and team_id = pg_temp.id('a1')) = 0 and pg_temp.placed('31', 'a1', 'athlete'), true);
-select pg_temp.works('admin puts Jordan back in Sample Team',
+-- An athlete is in one team at a time (20 November 2026).
+select pg_temp.fails('admin cannot put Jordan in both teams',
   $s$ select public.admin_save_member(pg_temp.id('31'), 'athlete', 'approved',
        '[{"team_id":"00000000-0000-0000-0000-0000000000a1","team_role":"athlete"},
          {"team_id":"00000000-0000-0000-0000-0000000000a2","team_role":"athlete"},
          {"team_id":"00000000-0000-0000-0000-0000000000a3","team_role":"athlete"}]', true,
+       array[pg_temp.id('41'), pg_temp.id('42')]) $s$);
+select pg_temp.works('admin puts Jordan back in Sample Team',
+  $s$ select public.admin_save_member(pg_temp.id('31'), 'athlete', 'approved',
+       '[{"team_id":"00000000-0000-0000-0000-0000000000a1","team_role":"athlete"},
+         {"team_id":"00000000-0000-0000-0000-0000000000a2","team_role":"athlete"}]', true,
        array[pg_temp.id('41'), pg_temp.id('42')]) $s$);
 select pg_temp.as_member('41');
 select pg_temp.ok('Logan sees Sample Team''s game and calendar again',
@@ -156,8 +162,8 @@ update public.profiles set status = 'approved', full_name = 'Quinn Parent', role
 select pg_temp.works('admin links Quinn to Jordan too',
   $s$ select public.admin_save_member(pg_temp.id('31'), 'athlete', 'approved', pg_temp.page_teams('31'), true,
        array[pg_temp.id('41'), pg_temp.id('42'), pg_temp.id('43')]) $s$);
-select pg_temp.ok('Quinn follows Jordan into Sample Team and Second Team',
-  pg_temp.placed('43', 'a2', 'guardian') and pg_temp.placed('43', 'a3', 'guardian'), true);
+select pg_temp.ok('Quinn follows Jordan into Sample Team only',
+  pg_temp.placed('43', 'a2', 'guardian') and not pg_temp.placed('43', 'a3', 'guardian'), true);
 select pg_temp.works('admin sets Quinn back to waiting for approval',
   $s$ select public.admin_save_member(pg_temp.id('43'), 'guardian', 'pending', pg_temp.page_teams('43'), false, '{}') $s$);
 select pg_temp.ok('a guardian waiting for approval is in no group and linked to nobody',
@@ -179,11 +185,11 @@ select pg_temp.fails('a guardian cannot save a member',
 select pg_temp.as_member('11');
 select pg_temp.works('Casey messages the squad',
   $s$ select public.send_group_message('Training moved to 6pm', 'group', null, pg_temp.id('a1')) $s$);
-select pg_temp.works('Casey makes Jordan squad captain',
-  $s$ select public.set_group_captains(pg_temp.id('a1'), array[pg_temp.id('31')], '{}') $s$);
+select pg_temp.works('Casey makes Jordan team captain',
+  $s$ select public.set_group_captains(pg_temp.id('a2'), array[pg_temp.id('31')], '{}') $s$);
 select pg_temp.as_member('31');
-select pg_temp.works('Jordan messages the squad as captain',
-  $s$ select public.send_group_message('Bring bibs', 'group', null, pg_temp.id('a1')) $s$);
+select pg_temp.works('Jordan messages the team as captain',
+  $s$ select public.send_group_message('Bring bibs', 'group', null, pg_temp.id('a2')) $s$);
 select pg_temp.works('Jordan reports an absence',
   $s$ select public.report_absence(pg_temp.id('31'), current_date + 1, current_date + 2, 'Exams') $s$);
 select pg_temp.works('Jordan checks in',
