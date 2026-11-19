@@ -18,9 +18,13 @@ the Expo plan's monthly builds, so the workflow only runs when you start it.
 
 ## One-time setup
 
-1. **Expo token.** On [expo.dev](https://expo.dev), open **Account settings > Access tokens** and
-   create a token (name it something like `github-builds`). In GitHub, **Settings > Secrets and
-   variables > Actions**, add it as a repository secret called `EXPO_TOKEN`.
+1. **Expo token.** On [expo.dev](https://expo.dev), signed in as the account that owns the
+   project (`runplaywin`, the one `npx eas-cli@latest whoami` shows on your Mac), open **Account
+   settings > Access tokens** and create a **personal access token** (name it something like
+   `github-builds`). In GitHub, **Settings > Secrets and variables > Actions**, add it as a
+   repository secret called `EXPO_TOKEN`. A robot token works only if the robot was made in the
+   organization that owns the project. Otherwise the build stops with "You don't have the required
+   permissions" and "Entity not authorized: AppEntity".
 2. **Live Supabase settings in EAS.** Do step 4 of
    [Test and live](environments.md#4-point-the-installed-apps-at-the-live-project) if you haven't,
    so builds know which database to use. Every build checks them before it starts: see
