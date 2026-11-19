@@ -246,6 +246,7 @@ function RootStack() {
           <Stack.Protected guard={can.open}>
             <Stack.Screen name="declaration" options={{ title: 'Exemption declaration' }} />
             <Stack.Screen name="wwcc-application" options={{ title: 'Check application' }} />
+            <Stack.Screen name="wwcc" options={{ title: 'Your Working With Children Check' }} />
             <Stack.Screen name="conduct/[id]" options={{ title: 'Code of conduct' }} />
           </Stack.Protected>
           <Stack.Screen name="concern/new" options={{ title: 'Raise a concern' }} />

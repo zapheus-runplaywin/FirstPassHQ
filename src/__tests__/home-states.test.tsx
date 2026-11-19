@@ -18,7 +18,13 @@ import HomeScreen from '@/app/index';
 import { formatDateString } from '@/lib/injuries';
 import { taskDetail, type PersonalTask } from '@/lib/personal-tasks';
 import { supabase } from '@/lib/supabase';
-import type { MyVolunteerExemption, MyWwccApplication, Profile, RejectionReason } from '@/lib/types';
+import type {
+  MyVolunteerExemption,
+  MyWwccApplication,
+  MyWwccSubmission,
+  Profile,
+  RejectionReason,
+} from '@/lib/types';
 
 import { argsOf, clearCalls, field, recordTable, rpcNames, type } from './helpers/forms';
 import {
@@ -409,7 +415,7 @@ describe('paused roles', () => {
     await openHome('coachExpiredCheck');
     expect(
       screen.getByText(
-        "Your Working With Children Check has expired or isn't recorded, so your coach role is paused. Apply for one or renew it, then send a club admin the card number and expiry date. If you never work with children, ask an admin to exempt you with the reason.",
+        "Your Working With Children Check has expired or isn't recorded, so your coach role is paused. Apply for one or renew it, then add your card below. A club admin checks it, and your role starts again once they accept it. If you never work with children, ask an admin to exempt you with the reason.",
       ),
     ).toBeTruthy();
   });
@@ -444,7 +450,7 @@ describe('paused roles', () => {
     await openHome(exemptCoach(exemption(extra)));
     expect(
       screen.getByText(
-        `${start}, so your coach role is paused. Apply for a Working With Children Check, then send a club admin the card number and expiry date.`,
+        `${start}, so your coach role is paused. Apply for a Working With Children Check, then add your card below. A club admin checks it, and your role starts again once they accept it.`,
       ),
     ).toBeTruthy();
   });
@@ -453,6 +459,96 @@ describe('paused roles', () => {
     await openHome(exemptCoach(exemption({ valid: true })));
     expect(screen.queryByText('Coach paused')).toBeNull();
     expect(screen.getByText('Open A')).toBeTruthy();
+  });
+});
+
+describe('sending in your own check', () => {
+  const sent = (extra: Partial<MyWwccSubmission> = {}): MyWwccSubmission => ({
+    id: 'sub-1',
+    card_number: 'WWC1234567',
+    expires_on: '2029-10-01',
+    card_name: 'Casey Coach',
+    submitted_at: '2026-10-17T00:00:00Z',
+    status: 'waiting',
+    decided_at: null,
+    return_note: null,
+    ...extra,
+  });
+
+  it('a paused coach adds their card from the paused card and from the to-do list', async () => {
+    await openHome('coachExpiredCheck');
+    expect(screen.getByText('Add your Working With Children Check')).toBeTruthy();
+    expect(screen.getByText('Your role is paused until a club admin checks it')).toBeTruthy();
+    await fireEvent.press(screen.getByText('Add your card'));
+    expect(push).toHaveBeenCalledWith('/wwcc');
+    push.mockClear();
+    await fireEvent.press(screen.getByText('Add your Working With Children Check'));
+    expect(push).toHaveBeenCalledWith('/wwcc');
+  });
+
+  it('shows a card waiting for an admin, keeps the role paused, and lists nothing to do', async () => {
+    await openHome('coachExpiredCheck', {}, { rpcs: { my_wwcc_submission: sent() } });
+    expect(screen.getByText('Coach paused')).toBeTruthy();
+    expect(
+      screen.getByText(
+        `You sent in your card WWC1234567, expiring 01/10/2029. A club admin will check it with the Screening Unit. Your role starts again once they accept it.`,
+      ),
+    ).toBeTruthy();
+    expect(screen.getByText('Change what you sent')).toBeTruthy();
+    expect(screen.queryByText('Add your Working With Children Check')).toBeNull();
+  });
+
+  it('shows a card an admin sent back, with their note, and lists it to send again', async () => {
+    await openHome('coachExpiredCheck', {}, {
+      rpcs: {
+        my_wwcc_submission: sent({
+          status: 'returned',
+          decided_at: '2026-10-18T00:00:00Z',
+          return_note: 'The expiry is different',
+        }),
+      },
+    });
+    expect(screen.getByText('Send your Working With Children Check again')).toBeTruthy();
+    expect(screen.getByText('Sent back: The expiry is different')).toBeTruthy();
+    await fireEvent.press(screen.getByText('Send it again'));
+    expect(push).toHaveBeenCalledWith('/wwcc');
+  });
+
+  it('offers nothing to a stood-down coach, whose card isn’t the reason', async () => {
+    await openHome('stoodDownCoach');
+    expect(screen.queryByText('Add your card')).toBeNull();
+    expect(screen.queryByText('Add your Working With Children Check')).toBeNull();
+  });
+
+  it('offers nothing while an exemption declaration waits to be accepted', async () => {
+    await openHome(exemptCoach(exemption({ declared_at: null })));
+    expect(screen.queryByText('Add your card')).toBeNull();
+    expect(screen.queryByText('Add your Working With Children Check')).toBeNull();
+  });
+
+  it('asks a coach whose card expires soon for the renewed one, without pausing them', async () => {
+    await openHome(withProfile(personas.coach, { wwcc_expires_on: '2026-11-01' }));
+    expect(screen.queryByText('Coach paused')).toBeNull();
+    expect(screen.getByText('Add your renewed Working With Children Check')).toBeTruthy();
+  });
+
+  it('asks a coach with a current card for nothing', async () => {
+    await openHome('coach');
+    expect(screen.queryByText('Add your renewed Working With Children Check')).toBeNull();
+    expect(screen.queryByText('Add your Working With Children Check')).toBeNull();
+  });
+
+  it('asks admins to check cards members sent in, and opens those members', async () => {
+    await openHome('admin', {}, {
+      rpcs: {
+        admin_safety_todos: {},
+        admin_wwcc_submissions: [{ id: 's1', profile_id: 'm1' }, { id: 's2', profile_id: 'm2' }],
+      },
+    });
+    await fireEvent.press(
+      screen.getByText('Check 2 Working With Children Checks members sent in'),
+    );
+    expect(push).toHaveBeenCalledWith({ pathname: '/admin', params: { todo: 'wwcc-sent' } });
   });
 });
 
@@ -498,7 +594,7 @@ describe('a lodged check application', () => {
     await openHome(appliedCoach(application({ status: 'lapsed', valid: false })));
     expect(
       screen.getByText(
-        'Your Working With Children Check application has lapsed because nobody confirmed it’s still being assessed, so your coach role is paused. Ask a club admin to check it, or send them your card number and expiry date if it has arrived.',
+        'Your Working With Children Check application has lapsed because nobody confirmed it’s still being assessed, so your coach role is paused. Ask a club admin to check it, or add your card below if it has arrived.',
       ),
     ).toBeTruthy();
     expect(screen.queryByText('Confirm your Working With Children Check application')).toBeNull();

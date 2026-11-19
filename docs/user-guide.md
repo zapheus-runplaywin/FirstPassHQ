@@ -44,10 +44,10 @@ each of their roles can.
 | ------------- | ---------------------------------------------------------------------------------------------------- |
 | **Athlete**   | Registered players aged 13 and over (nobody under 13 signs in to the app this year). Some are club captains, or captains or vice captains of a squad or team. They see their own attendance and can report an absence. An athlete under 18 can't use the app until a verified parent or guardian is linked to them: until then they see only a link code to share with one (see [Ask to join the club](#ask-to-join-the-club)). |
 | **Guardian**  | Parents and guardians of athletes under 18. They ask to be linked to their child by entering the link code from their child's app, and follow their children into and out of their squads and teams. They see their child's attendance and can report an absence for them, and see what has changed around their child. If the club asks, they accept the club's code of conduct for their child each season. |
-| **Coach**     | Head coaches and assistant coaches. Both have the same permissions, except that a head coach sets Season KPIs for the group's assistant coaches; otherwise the title only shows who is who. The app gives each coach a title from their team, or their squad until they're in a team, such as "Head Coach, Open A". Need a current Working With Children Check; the role pauses while it's expired. Someone who has applied for one, new or a renewal, can work while it's assessed (see [Checks applied for](#checks-applied-for)). A parent volunteering at their child's club, a volunteer under 18, or a short-term visitor or national event helper from outside WA has an exemption instead (see [Volunteer exemptions](#volunteer-exemptions)). |
-| **Manager**   | Squad and team managers. The app gives each manager a title from their team, or their squad until they're in a team, such as "Manager, 17 & Under". Need a current Working With Children Check; the role pauses while it's expired. Someone who has applied for one, new or a renewal, can work while it's assessed (see [Checks applied for](#checks-applied-for)). A parent volunteering at their child's club, a volunteer under 18, or a short-term visitor or national event helper from outside WA has an exemption instead (see [Volunteer exemptions](#volunteer-exemptions)). |
-| **Committee** | Club committee members. Each can add a title, such as President or Secretary, shown with their role. Only committee members and admins can add their own title. Need a current Working With Children Check, or an application being assessed, unless an admin exempts them with a reason (not if they also coach, manage or physio); the role pauses if a recorded check expires or was recorded without an expiry date. Committee members approved before checks were needed keep the role without one only until the club's **committee checks date**. Those with a current check, an application in force or a volunteer exemption also read most of the club's governance reports. |
-| **Physio**    | The club's physiotherapists. A physio can be placed in squads or teams to look after their athletes, and one can be the **Head Physio**, who looks after every athlete. Need a current Working With Children Check; the role pauses while it's expired. Someone who has applied for one, new or a renewal, can work while it's assessed (see [Checks applied for](#checks-applied-for)). A parent volunteering at their child's club, a volunteer under 18, or a short-term visitor or national event helper from outside WA has an exemption instead (see [Volunteer exemptions](#volunteer-exemptions)). |
+| **Coach**     | Head coaches and assistant coaches. Both have the same permissions, except that a head coach sets Season KPIs for the group's assistant coaches; otherwise the title only shows who is who. The app gives each coach a title from their team, or their squad until they're in a team, such as "Head Coach, Open A". Need a current Working With Children Check; the role pauses while it's expired, and they add the renewed card from their home screen for an admin to check (see [Sending in your own check](#sending-in-your-own-check)). Someone who has applied for one, new or a renewal, can work while it's assessed (see [Checks applied for](#checks-applied-for)). A parent volunteering at their child's club, a volunteer under 18, or a short-term visitor or national event helper from outside WA has an exemption instead (see [Volunteer exemptions](#volunteer-exemptions)). |
+| **Manager**   | Squad and team managers. The app gives each manager a title from their team, or their squad until they're in a team, such as "Manager, 17 & Under". Need a current Working With Children Check; the role pauses while it's expired, and they add the renewed card from their home screen for an admin to check (see [Sending in your own check](#sending-in-your-own-check)). Someone who has applied for one, new or a renewal, can work while it's assessed (see [Checks applied for](#checks-applied-for)). A parent volunteering at their child's club, a volunteer under 18, or a short-term visitor or national event helper from outside WA has an exemption instead (see [Volunteer exemptions](#volunteer-exemptions)). |
+| **Committee** | Club committee members. Each can add a title, such as President or Secretary, shown with their role. Only committee members and admins can add their own title. Need a current Working With Children Check, or an application being assessed, unless an admin exempts them with a reason (not if they also coach, manage or physio); the role pauses if a recorded check expires or was recorded without an expiry date, and they add the renewed card from their home screen for an admin to check. Committee members approved before checks were needed keep the role without one only until the club's **committee checks date**. Those with a current check, an application in force or a volunteer exemption also read most of the club's governance reports. |
+| **Physio**    | The club's physiotherapists. A physio can be placed in squads or teams to look after their athletes, and one can be the **Head Physio**, who looks after every athlete. Need a current Working With Children Check; the role pauses while it's expired, and they add the renewed card from their home screen for an admin to check (see [Sending in your own check](#sending-in-your-own-check)). Someone who has applied for one, new or a renewal, can work while it's assessed (see [Checks applied for](#checks-applied-for)). A parent volunteering at their child's club, a volunteer under 18, or a short-term visitor or national event helper from outside WA has an exemption instead (see [Volunteer exemptions](#volunteer-exemptions)). |
 | **Guest**     | Anyone else the club lets in, such as partners and sponsors. Guests must be 18 or over. They see only the club calendar, keep their own tasks and can raise a concern. They aren't in squads or teams, get no messages, don't vote and aren't asked for a Working With Children Check or the code of conduct. |
 | **Statistician** | The people who record live game stats on a tablet in FirstPass Vantage, which coaches watch live in FirstPass Vision. Statisticians see every game the club records; a game's coaches and managers see their own squad's or team's, and a squad's coaches and managers also see the games of its teams. Any member can hold it alongside another role, such as a manager or an athlete who isn't playing. Need a current Working With Children Check, an application being assessed, or a volunteer exemption such as a parent at their child's games, unless an admin exempts them with a reason, such as only recording opens games; the role pauses if a recorded check expires. Statisticians approved before checks were needed keep the role without one only until the club's **statistician checks date**. The role pauses while a member is stood down. |
 | **Studio** | The people who run the club's live streams in FirstPass Studio, which shows the club's live game stats on screen. Studio signs in to the club with this person's own Google account and reads only the stats the club records for its PlayHQ games, live and finished, and the line-ups for them; it can't change anything. Someone whose only role is Studio, such as a streamer from outside the club, isn't a club member: they see none of the club's features, members or messages. A member can also hold it alongside their own roles. No Working With Children Check is needed, because a Studio operator isn't with the team and never sees contact details, injuries or anything else sensitive. The role pauses while a member is stood down (see [Studio](#studio)). |
@@ -124,6 +124,7 @@ What each role sees on its home screen:
 | Check medical details once a year      | Own, if 18 or over | Their athlete's |              |            | See who has (report), if checked |               |         | See who has (report) |
 | Consent for a child's check-ins, injuries and stats on live streams |         |        ✓        |              |            |               |               |         |  See status   |
 | Accept the code of conduct each season (if the club asks) | Own§ | Own, and their athlete's | Own | Own | Own | Own | | Own, see who has |
+| Send in your own Working With Children Check |         |                 |     Own      |    Own     | Own, unless exempt |      Own      |         | Own, unless exempt; check and accept others' |
 | Take attendance                        |         |                 |      ✓       |     ✓      |       ✓       |               |         |       ✓       |
 | See athletes' attendance history       |         |                 |      ✓       |            |       ✓       |               |         |       ✓       |
 | Review reported absences               | Report own | Report their athlete's | Own groups | Own groups |   See all    |               |         |    See all    |
@@ -1452,10 +1453,38 @@ passed, your coach or manager role pauses and your home screen says so. You keep
 team places, though they're hidden from your home screen until the role comes back, along with
 the Messages, Attendance and Check-ins cards, so you can't read messages while paused; the
 database closes your groups' rosters, calendars and fixtures too, not just the screen. Everything
-returns as soon as an admin records the renewed check. Renew it well before it expires; admins are
-reminded 60 days ahead, and 60 days before a parent or under-18 exemption ends.
+returns as soon as an admin accepts the renewed card you send in, or records it themselves (see
+[Sending in your own check](#sending-in-your-own-check)). Renew it well before it expires; you
+get a to-do 60 days ahead to send in the renewed card, admins are reminded 60 days ahead, and 60
+days before a parent or under-18 exemption ends.
 
-<img src="user-guide/role-paused.png" width="210" alt="Home screen of a coach whose check has expired, saying the coach role is paused">
+<img src="user-guide/role-paused.png" width="210" alt="Home screen of a coach whose check has expired, saying the coach role is paused, with Add your card">
+
+### Sending in your own check
+
+When your role is paused because your check has expired or isn't recorded, the paused card on
+your home screen has **Add your card**, and your to-do list has **Add your Working With Children
+Check** in red. Both open **Your Working With Children Check**: enter the **Card number**, the
+**Expires** date (DD/MM/YYYY) and the **Name on the card** as it appears on the card, and tap
+**Send to a club admin**. The same goes for a committee member, statistician or admin who needs a
+check, and when your card expires within 60 days you get **Add your renewed Working With Children
+Check** in amber, so you can send the new card before your role pauses.
+
+The card you send counts for nothing yet: your role stays paused. A club admin checks it with the
+Working with Children Screening Unit (online, or by sighting the card) and accepts it, and your
+role comes back straight away. Your home screen shows the card you sent while it waits; tap
+**Change what you sent** to correct it. If the admin sends it back, for example because the Screening
+Unit shows a different expiry, you get a to-do, **Send your Working With Children Check again**,
+with their note. An expired card, or an expiry more than three years away, is refused.
+
+Still waiting for your card? Show a club admin the receipt instead (see [Checks applied
+for](#checks-applied-for)). If you never work with children, ask a club admin whether you can be
+exempted, with the reason (only committee members, admins and statisticians who hold no coach,
+manager or physio role can be). A stood-down member can't send a card in: the stand-down, not the
+card, is why their role is paused.
+
+<img src="user-guide/wwcc-send.png" width="210" alt="A paused coach entering their Working With Children Check card number, expiry and name on the card">
+<img src="user-guide/wwcc-sent-waiting.png" width="210" alt="Home screen of a paused coach whose card is waiting for a club admin to check it">
 
 ### Declaring conflicts of interest
 
@@ -1997,8 +2026,8 @@ check-ins, injury records, game goals, team goals or session plans.
 
 While your check has expired, or an exemption has ended or hasn't been accepted yet, your home
 screen says **Manager (paused)** and the Messages, Attendance and My squads and teams cards are
-hidden: you can't read or send messages, take attendance or open your groups until an admin records
-the renewed check, and the database closes those too, not just the screen. A stand-down removes
+hidden: you can't read or send messages, take attendance or open your groups until an admin accepts
+the renewed card you send in, or records it (see [Sending in your own check](#sending-in-your-own-check)), and the database closes those too, not just the screen. A stand-down removes
 your squad and team places for the season; lifting it puts them back.
 
 <img src="user-guide/manager-home.png" width="210" alt="Manager home screen">
@@ -2012,7 +2041,9 @@ Committee members oversee the club's athletes without seeing anyone's private ch
 Like coaches, they need a current Working With Children Check, recorded by an admin, unless an
 admin exempts them with a reason. A committee member who also coaches, manages or is a physio
 can't be exempted. If a check an admin recorded expires, or was recorded without an expiry date,
-the committee role pauses until the renewed one is recorded.
+the committee role pauses until the renewed one is recorded. Add the renewed card from your home
+screen for an admin to check (see [Sending in your own check](#sending-in-your-own-check)); the
+card about the committee checks date has **Add your card** too.
 
 Committee members approved before checks were needed keep their role without one until the
 club's **committee checks date**, set under Safeguarding as **Committee checks required from** (90
@@ -2296,7 +2327,7 @@ club messages** in [Club settings](#club-settings).
 Physios need a current Working With Children Check, recorded by an admin, before they're approved,
 or a [volunteer exemption](#volunteer-exemptions) if they volunteer unpaid at their child's club or
 are under 18. Like a coach's, the physio role pauses once the check's expiry date has passed and comes back when an admin
-records the renewed one.
+accepts the renewed card you send in, or records it (see [Sending in your own check](#sending-in-your-own-check)).
 
 Some clubs have one physio, and some have a physio for each team. An admin can place a physio in
 one or more squads or teams, where they show on the roster as **Physio**, and can mark one physio
@@ -2721,6 +2752,18 @@ PlayHQ** (their PlayHQ email matches the parent on the registration) or **ID sig
 you checked under **What you checked**, and tap **Record check**. The member then shows as
 "Verified", with how and, under **What was checked**, your note. You can't verify yourself, change your own date of birth or card details, or exempt yourself; ask another admin. An admin can't approve a member who hasn't given their name.
 
+**Cards members send in.** A coach, manager, physio, committee member, statistician or admin who
+needs a check can send in their own card from their home screen (see [Sending in your own
+check](#sending-in-your-own-check)). Your to-do list shows **Check N Working With Children Checks
+members sent in**, which opens just those members, and **Needs checking** marks them "Sent in a
+card to check". On the member's page, **Card they sent in** shows the card number, expiry, name on
+the card and when they sent it. Check it with the Screening Unit, correct the **Name on the card**
+if needed, choose how you checked it, switch on **Registered card with** your club if you have,
+and tap **Accept and validate**. That records the card and your validation together, so their
+paused role comes back only once you've checked it. Or tap **Send it back** with a note saying
+what to fix; they see the note and a to-do to send it again. You can't accept or send back your
+own card: another admin does. A card you record by hand closes the one they sent.
+
 **Linking guardians.** Linking or unlinking a guardian takes effect when you save. Add a **Reason for
 the change** if there is one, such as a parenting order you've seen; only admins see it. When you
 save, the child's guardians, and the child if they're 13 or over, get a message naming the
@@ -2769,6 +2812,7 @@ club** or **Other**) and tap **Don't approve**. They see the reason and can requ
 <img src="user-guide/member-wwcc-exempt.png" width="210" alt="Committee member exempted from the Working With Children Check, with the reason">
 <img src="user-guide/member-wwcc-admin.png" width="210" alt="An admin who needs a Working With Children Check, with the Exempt choice">
 <img src="user-guide/member-wwcc-validation.png" width="210" alt="Validating a card: name on the card, how it was checked and whether it is registered with the club">
+<img src="user-guide/member-wwcc-sent.png" width="210" alt="A card a paused coach sent in, with Accept and validate and Send it back">
 <img src="user-guide/member-volunteer-exempt.png" width="210" alt="A manager recorded as a parent volunteer, waiting to accept the declaration">
 <img src="user-guide/member-volunteer.png" width="210" alt="A temporary helper waiting for approval: their task, dates and what they said">
 <img src="user-guide/member-visitor-exempt.png" width="210" alt="Recording a national event exemption, with the links to the rules at the source">
@@ -3697,6 +3741,7 @@ once saved, only replaced or removed, and anyone who gets it wrong five times in
 | Who entered a child's code | The parent or guardian who entered it, and admins. The child sees the names of parents and guardians who entered their code. |
 | Stand-downs             | Admins, and committee members with a current check in the Working With Children Checks report (read only). The member sees that their role is paused, not the reason. |
 | Screening Unit notices and card validations | Admins, and committee members with a current check in the Working With Children Checks report (read only). |
+| Cards members send in | The member (their own) and admins. A card counts only once an admin accepts it; the member sees an admin's note if it's sent back. |
 | Check applications, receipts and declarations | The member (their own application and declaration, not the receipt) and admins. Committee members with a current check read the applications in the Working With Children Checks report, never the receipts. Kept, with the receipt, if the member deletes their account. |
 | Volunteer exemptions and declarations | The volunteer (their own) and admins, and committee members with a current check in the Working With Children Checks report (read only). Kept under the member's name if they delete their account; the exemption ends that day. |
 | Temporary helpers' task, dates and policy acceptance | The volunteer and admins. Temporary helpers see nothing of the club's members, squads, calendar or messages. If a helper deletes their account, their policy acceptance and any exemption declaration are kept under their name; their task and dates go with the account. |
@@ -4055,7 +4100,9 @@ Working With Children Check, and another admin must do it.
   turns 18. A parent's exemption doesn't cover overnight camps or trips, and the app doesn't mark
   events as overnight, so the club makes sure a parent volunteer has a check before a tour.
 - **Your role pauses the day after your check expires**, and comes back when an admin records the
-  renewed check. While it's paused the database closes your groups' rosters, calendars, fixtures,
+  renewed check. You add the renewed card yourself from your home screen, and it counts only once
+  an admin has checked it with the Screening Unit and accepted it, which records their validation
+  at the same time (see [Sending in your own check](#sending-in-your-own-check)). While it's paused the database closes your groups' rosters, calendars, fixtures,
   attendance, plans, team goals and the athletes' comments on them; they aren't only hidden on the
   screen. Messages are hidden from the screen
   while your check has lapsed, and closed at the database too while you're stood down. Admins are
@@ -4222,8 +4269,8 @@ Working With Children Check, and another admin must do it.
   at the job, or a list of just the people it's about: new concerns (marked **Urgent** and always
   first), missing or expiring checks (missing or
   expired checks in red at the top, checks to validate, register or renew in amber), volunteer
-  exemptions ending, declarations not yet accepted (counted with missing checks), cards to validate
-  or register with the club, notices to report to the governing body, no WWC Registration Officer,
+  exemptions ending, declarations not yet accepted (counted with missing checks), cards members sent
+  in to check, cards to validate or register with the club, notices to report to the governing body, no WWC Registration Officer,
   no cleared Child Safety Officer or Complaints Manager, athletes with no date of birth, athletes under 18 locked out with no verified parent or guardian, athletes turning 18 in the
   next 30 days, and old records kept
   forever while **Remove old records** is off.

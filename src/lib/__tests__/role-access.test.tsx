@@ -213,6 +213,7 @@ function persona({
     paused: paused ? { ...paused, exemption: null, application: null } : null,
     exemption: null,
     wwccApplication: null,
+    wwccSubmission: null,
     memberships,
     captaincies,
     isClubCaptain,
