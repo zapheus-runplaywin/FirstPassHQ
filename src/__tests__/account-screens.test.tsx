@@ -38,6 +38,7 @@ import {
   resetClub,
   settle,
   type BackendOptions,
+  type QueryInfo,
   type Persona,
   type PersonaName,
 } from './helpers/harness';
@@ -185,6 +186,72 @@ describe('deleting the account', () => {
       screen.getByText(/^If you’re the only verified parent or guardian linked to a child under 18, their app locks\s+again/),
     ).toBeTruthy();
     expect(screen.getByText(/the club’s admins are told\.$/)).toBeTruthy();
+  });
+
+  describe('a parent of a child who won’t use the app', () => {
+    // The parent's linked children, as guardianships and profiles return them.
+    function children(rows: { id: string; full_name: string; no_sign_in: boolean }[]) {
+      return {
+        tableHandlers: {
+          guardianships: (q: QueryInfo) =>
+            q.calls.some((c) => c.method === 'eq' && c.args[0] === 'guardian_id')
+              ? rows.map((r) => ({ athlete_id: r.id }))
+              : undefined,
+          profiles: (q: QueryInfo) =>
+            q.calls.some((c) => c.method === 'in' && c.args[0] === 'id')
+              ? rows.map((r) => ({ ...r, preferred_name: null }))
+              : undefined,
+        },
+      };
+    }
+
+    it('says who would be left with nobody to act for them, not that their app locks', async () => {
+      await openScreen(
+        'guardian',
+        { 'delete-account': DeleteAccountScreen },
+        '/delete-account',
+        {},
+        children([{ id: 'c1', full_name: 'Charlie Lee', no_sign_in: true }]),
+      );
+      await settle();
+      expect(
+        screen.getByText(
+          /^Charlie Lee doesn’t use the app\. If\s+you’re the only verified parent or guardian linked to\s+them, nobody can report their absences or\s+injuries, give consent or answer surveys for them until the club links another parent or\s+guardian, and the club’s admins are told\.$/,
+        ),
+      ).toBeTruthy();
+      expect(screen.queryByText(/their app locks\s+again/)).toBeNull();
+    });
+
+    it('names every such child, and keeps the app note for a child who has the app', async () => {
+      await openScreen(
+        'guardian',
+        { 'delete-account': DeleteAccountScreen },
+        '/delete-account',
+        {},
+        children([
+          { id: 'c1', full_name: 'Charlie Lee', no_sign_in: true },
+          { id: 'c2', full_name: 'Alex Lee', no_sign_in: true },
+          { id: 'c3', full_name: 'Jo Lee', no_sign_in: false },
+        ]),
+      );
+      await settle();
+      expect(screen.getByText(/^Alex Lee and Charlie Lee don’t use the app\./)).toBeTruthy();
+      expect(screen.getByText(/linked to\s+any of them, nobody can/)).toBeTruthy();
+      expect(screen.getByText(/their app locks\s+again/)).toBeTruthy();
+    });
+
+    it('says nothing about it to a parent whose children all use the app', async () => {
+      await openScreen(
+        'guardian',
+        { 'delete-account': DeleteAccountScreen },
+        '/delete-account',
+        {},
+        children([{ id: 'c3', full_name: 'Jo Lee', no_sign_in: false }]),
+      );
+      await settle();
+      expect(screen.queryByText(/use the app\./)).toBeNull();
+      expect(screen.getByText(/their app locks\s+again/)).toBeTruthy();
+    });
   });
 
   it('asks once more before deleting, and Cancel deletes nothing', async () => {

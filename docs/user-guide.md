@@ -844,7 +844,9 @@ switched off. Clearance documents may go sooner, after the club's keep period fo
 any concerns you raised (unless you hid your name) and, if you coach or manage, your season KPIs
 and their reviews. If you're a parent or guardian and the only verified one linked to a child
 under 18, the screen tells you that your child's app locks again until another parent or guardian
-is linked: they see only a new link code to share, and every admin is told. Deleting your account doesn't
+is linked: they see only a new link code to share, and every admin is told. For a child who doesn't
+use the app, the screen names them instead and says that nobody can act for them until the club
+links another parent or guardian. Deleting your account doesn't
 change your PlayHQ registration or club membership, or your account at any other club in
 FirstPass HQ.
 
@@ -1218,6 +1220,8 @@ left out for them: daily check-ins, logged training, game goals and award votes.
 **No app** beside their name, so they know why.
 
 A second parent or guardian joins as usual and asks an admin to link them from your child's page.
+If you delete your account while you're your child's only verified parent or guardian, nobody can
+act for them until an admin links another, and the delete screen tells you so, naming your child.
 When your child turns 18 your access ends as it does for any child, and they join with their own
 account if they want to keep using the app.
 
@@ -3936,8 +3940,12 @@ for them. Every protection for children still applies, and:
 - **Their parents are copied on everything,** as for any child. Read receipts show the child as
   read once a parent has read their copy. A parent can answer a survey for them, marked as
   answered by that parent; other parents can't.
-- **If their last parent goes,** the child stays in the club's records, locked like any child, and
-  every admin is told, until another verified parent is linked.
+- **If their last parent goes,** by being unlinked or deleting their account, the child stays in
+  the club's records and their teams, and every admin is told in Messages and on their home
+  screen's to-do list. Nobody can report their absences or injuries, give consent or answer surveys
+  for them until an admin links another verified parent from the child's page in Members: there's
+  no app to lock and no link code. A parent deleting their account is warned about this first,
+  naming the child.
 - **At 18** their parents' access ends, as for any child, and they join with their own account if
   they want to keep using the app.
 

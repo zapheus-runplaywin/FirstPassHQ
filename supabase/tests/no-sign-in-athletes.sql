@@ -11,6 +11,7 @@
 -- New people: 71 asks to join as a parent (Taylor Parent), 72 asks to join
 -- as a coach, 73 has signed in but not asked to join. Sam Small (10) is
 -- Taylor's child who won't use the app; Riley Rookie (15) is Logan's (41).
+-- Jamie Solo (74) is a parent who deletes their account, leaving Robin Solo.
 \set ON_ERROR_STOP 0
 \pset tuples_only on
 \pset format unaligned
@@ -268,6 +269,32 @@ select pg_temp.as_member('01');
 select pg_temp.works('an admin unlinks Taylor from Sam', format($s$ select public.admin_save_member(%L, 'athlete', 'approved', '[]', false, '{}', null, '{}', 'Testing') $s$, pg_temp.v('sam')));
 select pg_temp.ok('Sam is locked with no verified parent', public.is_locked_child(pg_temp.v('sam')), true);
 select pg_temp.ok('and still a no-app athlete', (select no_sign_in and status = 'approved' from public.profiles where id = pg_temp.v('sam')), true);
+
+select pg_temp.ok('admins are told nobody can act for Sam, not that Sam sees a link code',
+  (select count(*) = 1 from public.messages
+   where audience_label = 'Admins' and body like 'Sam Small is under 18, doesn’t use the app, and no longer has a verified parent or guardian linked (Taylor Parent was the last).%'
+     and body like '%Nobody can report their absences or injuries, give consent or answer surveys for them until one is.%'
+     and body like '%Link another parent or guardian from Sam Small’s page in Members.'), true);
+select pg_temp.ok('no notice about Sam mentions a link code',
+  not exists (select 1 from public.messages where body like 'Sam Small%' and body like '%link code%'), true);
+
+-- A parent deletes their own account, leaving their no-app child with nobody.
+insert into auth.users (id, email, email_confirmed_at) values (pg_temp.id('74'), 'jamie.solo@example.test', now());
+update public.profiles set full_name = 'Jamie Solo', requested_role = 'guardian', join_requested_at = now(),
+  verified_at = now(), verification_method = 'playhq', declared_date_of_birth = current_date - interval '40 years'
+where id = pg_temp.id('74');
+select pg_temp.works('an admin adds Robin for Jamie',
+  format($s$ insert into ids values ('robin', public.admin_add_no_app_child(%L, 'Robin Solo', (current_date - interval '11 years')::date, '{}', null)) $s$, pg_temp.id('74')));
+select pg_temp.as_member('74');
+select pg_temp.works('Jamie deletes their account', 'select public.delete_my_account()');
+select pg_temp.as_member('01');
+select pg_temp.ok('Robin is kept, approved, with nobody linked',
+  (select status = 'approved' and no_sign_in from public.profiles where id = pg_temp.v('robin'))
+    and not exists (select 1 from public.guardianships where athlete_id = pg_temp.v('robin')), true);
+select pg_temp.ok('Robin counts in the admins'' locked to-do', public.is_locked_child(pg_temp.v('robin')), true);
+select pg_temp.ok('admins are told nobody can act for Robin',
+  (select count(*) = 1 from public.messages
+   where audience_label = 'Admins' and body like 'Robin Solo is under 18, doesn’t use the app, and no longer has a verified parent or guardian linked (Jamie Solo was the last).%'), true);
 
 -- Deleting a no-app child removes their sign-in record and profile.
 select pg_temp.works('an admin deletes Riley', format($s$ select public.admin_delete_member(%L) $s$, pg_temp.v('riley')));

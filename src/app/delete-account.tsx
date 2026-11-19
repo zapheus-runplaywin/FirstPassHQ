@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
 import { Platform } from 'react-native';
 
 import { Screen } from '@/components/screen';
@@ -9,6 +9,7 @@ import { useClub } from '@/lib/club';
 import { hasRole } from '@/lib/roles';
 import { revokeAppleSignIn, usesAppleSignIn } from '@/lib/sign-in';
 import { supabase } from '@/lib/supabase';
+import type { Profile } from '@/lib/types';
 
 export default function DeleteAccountScreen() {
   const club = useClub();
@@ -18,6 +19,51 @@ export default function DeleteAccountScreen() {
   const apple = Platform.OS === 'ios' && usesAppleSignIn(session?.user);
   const [deleting, setDeleting] = useState(false);
   const [error, setError] = useState<string | null>(null);
+  const guardian = !!profile && hasRole(profile, 'guardian');
+  // A parent's children who don't use the app: they have no app to lock, so
+  // the parent is told what leaving means for them instead.
+  const [children, setChildren] = useState<{ name: string; noApp: boolean }[] | null>(null);
+
+  useEffect(() => {
+    if (!guardian || !profile) return;
+    let live = true;
+    (async () => {
+      const { data: links } = await supabase
+        .from('guardianships')
+        .select('athlete_id')
+        .eq('guardian_id', profile.id);
+      const ids = ((links as { athlete_id: string }[] | null) ?? []).map((l) => l.athlete_id);
+      if (ids.length === 0) {
+        if (live) setChildren([]);
+        return;
+      }
+      const { data } = await supabase
+        .from('profiles')
+        .select('id, full_name, preferred_name, no_sign_in')
+        .in('id', ids);
+      if (!live) return;
+      const rows =
+        (data as Pick<Profile, 'id' | 'full_name' | 'preferred_name' | 'no_sign_in'>[] | null) ??
+        [];
+      setChildren(
+        rows.map((c) => ({
+          name: c.preferred_name || c.full_name || 'Your child',
+          noApp: !!c.no_sign_in,
+        })),
+      );
+    })();
+    return () => {
+      live = false;
+    };
+  }, [guardian, profile]);
+
+  const noAppNames = (children ?? [])
+    .filter((c) => c.noApp)
+    .map((c) => c.name)
+    .sort();
+  // Until the children load, or with none linked, a parent sees the usual note.
+  const anyWithApp = children === null || children.length === 0 || children.some((c) => !c.noApp);
+
 
   async function deleteAccount() {
     setDeleting(true);
@@ -55,11 +101,20 @@ export default function DeleteAccountScreen() {
         your code of conduct acceptances, any concerns you raised (unless you hid your name) and,
         if you coach or manage, your season KPIs and their reviews.
       </ThemedText>
-      {profile && hasRole(profile, 'guardian') ? (
+      {guardian && anyWithApp ? (
         <ThemedText type="small" themeColor="textSecondary">
           If you’re the only verified parent or guardian linked to a child under 18, their app locks
           again until another parent or guardian is linked: they’ll see only a new link code to
           share, and the club’s admins are told.
+        </ThemedText>
+      ) : null}
+      {guardian && noAppNames.length > 0 ? (
+        <ThemedText type="small" themeColor="textSecondary">
+          {listNames(noAppNames)} {noAppNames.length === 1 ? 'doesn’t' : 'don’t'} use the app. If
+          you’re the only verified parent or guardian linked to{' '}
+          {noAppNames.length === 1 ? 'them' : 'any of them'}, nobody can report their absences or
+          injuries, give consent or answer surveys for them until the club links another parent or
+          guardian, and the club’s admins are told.
         </ThemedText>
       ) : null}
       <ThemedText type="small" themeColor="textSecondary">
@@ -84,4 +139,11 @@ export default function DeleteAccountScreen() {
       />
     </Screen>
   );
+}
+
+/** "Sam", "Sam and Alex", "Sam, Alex and Jo". */
+function listNames(names: string[]) {
+  return names.length <= 1
+    ? (names[0] ?? '')
+    : `${names.slice(0, -1).join(', ')} and ${names[names.length - 1]}`;
 }
