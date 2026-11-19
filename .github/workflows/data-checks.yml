@@ -2,7 +2,8 @@ name: Data checks
 
 # Read-only checks of a real database: what each parent or guardian sees
 # against what their child sees (supabase/checks/guardian-views.sql, guardian
-# data audit, 29 October 2026). Run by hand only, to save Actions minutes;
+# data audit, 29 October 2026), or athletes placed in more than one team
+# (supabase/checks/team-allocations.sql, 20 November 2026). Run by hand only, to save Actions minutes;
 # never on a schedule without Matt's yes. The check opens a read-only
 # transaction and rolls it back, so it can't change anything, and the log
 # shows member ids and counts only, never names, notes or message text.
@@ -14,12 +15,18 @@ on:
         type: choice
         options: [test, live]
         default: test
+      check:
+        description: Which check to run
+        type: choice
+        options: [guardian-views, team-allocations]
+        default: guardian-views
 
 permissions:
   contents: read
 
 jobs:
   guardian-views:
+    if: inputs.check != 'team-allocations'
     runs-on: ubuntu-24.04
     timeout-minutes: 15
     env:
@@ -57,5 +64,47 @@ jobs:
           echo '```' >> "$GITHUB_STEP_SUMMARY"
           if [ "$status" -eq 1 ]; then
             echo "::error::The check found guardians missing something their child sees (GAP lines above)."
+          fi
+          exit "$status"
+
+  team-allocations:
+    if: inputs.check == 'team-allocations'
+    runs-on: ubuntu-24.04
+    timeout-minutes: 15
+    env:
+      SUPABASE_ACCESS_TOKEN: ${{ inputs.project == 'live' && secrets.SUPABASE_ACCESS_TOKEN || secrets.SUPABASE_TEST_ACCESS_TOKEN || secrets.SUPABASE_ACCESS_TOKEN }}
+      SUPABASE_DB_PASSWORD: ${{ inputs.project == 'live' && secrets.SUPABASE_DB_PASSWORD || secrets.SUPABASE_TEST_DB_PASSWORD }}
+      SUPABASE_PROJECT_ID: ${{ inputs.project == 'live' && secrets.SUPABASE_PROJECT_ID || secrets.SUPABASE_TEST_PROJECT_ID }}
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+      - uses: supabase/setup-cli@45a513f8c64c0bc8e0e3dfe572b5c95be85f6359 # v3.0.1
+        with:
+          version: 2.121.0
+      - name: Link the ${{ inputs.project }} project
+        run: |
+          if [ -z "$SUPABASE_PROJECT_ID" ]; then
+            echo "::error::There is no ${{ inputs.project }} project id in the repository secrets. See docs/environments.md."
+            exit 1
+          fi
+          if ! supabase link --project-ref "$SUPABASE_PROJECT_ID"; then
+            echo "::error::Couldn't reach the ${{ inputs.project }} project. If it's paused, restore it in the Supabase dashboard and run this again."
+            exit 1
+          fi
+      - name: Team allocations
+        run: |
+          url=$(sed -E 's/:6543\//:5432\//' supabase/.temp/pooler-url)
+          {
+            echo "## Team allocations (${{ inputs.project }})"
+            echo
+            echo '```'
+          } >> "$GITHUB_STEP_SUMMARY"
+          set +e
+          PGPASSWORD="$SUPABASE_DB_PASSWORD" DATABASE_URL="$url" scripts/check-team-allocations.sh | tee -a "$GITHUB_STEP_SUMMARY"
+          status=${PIPESTATUS[0]}
+          echo '```' >> "$GITHUB_STEP_SUMMARY"
+          # FOUND lines are for Matt to decide on, not a failure of the check.
+          if [ "$status" -eq 1 ]; then
+            echo "::warning::Some athletes are in more than one team or squad, or squads have captains (FOUND lines above)."
+            status=0
           fi
           exit "$status"
