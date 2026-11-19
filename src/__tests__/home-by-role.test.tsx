@@ -764,3 +764,49 @@ describe('feature switches', () => {
     expect(screen.getByText('Review the Privacy Policy')).toBeTruthy();
   });
 });
+
+describe('concern traffic lights', () => {
+  const COUNTS = { concern_counts: [{ new_count: 2, in_progress_count: 3, closed_recent_count: 0 }] };
+
+  it('an admin sees red, orange and green counts on the Concerns card, with words', async () => {
+    await openHome({ ...personas.admin, rpcs: { ...personas.admin.rpcs, ...COUNTS } });
+    const lights = screen.getByTestId('concern-lights');
+    expect(lights.props.accessibilityLabel).toBe('2 new, 3 in progress, 0 closed in the last 4 weeks');
+    expect(screen.getByText('New')).toBeTruthy();
+    expect(screen.getByText('In progress')).toBeTruthy();
+    expect(screen.getByText('Closed, 4 weeks')).toBeTruthy();
+  });
+
+  it('a safeguarding officer who isn’t an admin sees them too', async () => {
+    await openHome({
+      ...personas.coach,
+      isSafeguardingOfficer: true,
+      rpcs: { ...personas.coach.rpcs, ...COUNTS },
+    });
+    expect(screen.getByTestId('concern-lights').props.accessibilityLabel).toBe(
+      '2 new, 3 in progress, 0 closed in the last 4 weeks',
+    );
+  });
+
+  it('shows zeros, not an error, before any concern is raised', async () => {
+    await openHome('admin');
+    expect(screen.getByTestId('concern-lights').props.accessibilityLabel).toBe(
+      '0 new, 0 in progress, 0 closed in the last 4 weeks',
+    );
+    expect(screen.queryByText('Urgent')).toBeNull();
+  });
+
+  it.each(['coach', 'committee', 'athlete', 'guardian'] as const)(
+    'a %s who doesn’t handle concerns has no lights',
+    async (who) => {
+      await openHome({ ...personas[who], rpcs: { ...personas[who].rpcs, ...COUNTS } });
+      expect(screen.queryByTestId('concern-lights')).toBeNull();
+    },
+  );
+
+  it('a new concern is an Urgent to-do at the top of the list', async () => {
+    await openHome({ ...personas.admin, rpcs: { ...personas.admin.rpcs, new_concerns_count: 1 } });
+    expect(screen.getByText('Look at 1 new concern')).toBeTruthy();
+    expect(screen.getAllByText('Urgent').length).toBeGreaterThan(0);
+  });
+});

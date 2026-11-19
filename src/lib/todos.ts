@@ -27,8 +27,14 @@ export type Todo = {
   alert?: TodoAlert;
 };
 
-/** Red for overdue or missing, amber for due soon or needing a check. */
-export type TodoAlert = { level: 'red' | 'amber'; label: string };
+/**
+ * Red for overdue or missing, amber for due soon or needing a check. An
+ * urgent red one (a new concern) goes above every other warning.
+ */
+export type TodoAlert = { level: 'red' | 'amber'; label: string; urgent?: boolean };
+
+/** A new concern about a child can't wait behind anything else. */
+export const URGENT: TodoAlert = { level: 'red', label: 'Urgent', urgent: true };
 
 /** To-dos due within this many days of today get an amber warning. */
 export const DUE_SOON_DAYS = 3;
@@ -42,8 +48,8 @@ export function dueAlert(dueOn: string | null | undefined, today = new Date()): 
 }
 
 /**
- * Red warnings first, then amber, then the rest in the order they came.
- * Within red and amber, the earliest due date comes first.
+ * Urgent warnings first, then red, then amber, then the rest in the order
+ * they came. Within red and amber, the earliest due date comes first.
  */
 export function sortByAlert<T>(
   items: T[],
@@ -51,8 +57,9 @@ export function sortByAlert<T>(
   dueOf: (item: T) => string | null | undefined,
 ) {
   const rank = (item: T) => {
-    const level = alertOf(item)?.level;
-    return level === 'red' ? 0 : level === 'amber' ? 1 : 2;
+    const alert = alertOf(item);
+    if (alert?.urgent) return -1;
+    return alert?.level === 'red' ? 0 : alert?.level === 'amber' ? 1 : 2;
   };
   return items
     .map((item, index) => ({ item, index, rank: rank(item), due: dueOf(item) ?? '9999' }))
@@ -160,13 +167,14 @@ export function buildTodos({
 }): Todo[] {
   const todos: Todo[] = [];
 
-  // A concern about a child can't wait, so it comes first.
+  // A concern about a child can't wait, so it comes first, marked urgent.
   if (newConcerns > 0) {
     todos.push({
       key: 'concerns',
       title: `Look at ${newConcerns} new ${newConcerns === 1 ? 'concern' : 'concerns'}`,
       detail: 'Refer child abuse and serious crimes to Police straight away',
       href: '/concerns',
+      alert: URGENT,
     });
   }
 

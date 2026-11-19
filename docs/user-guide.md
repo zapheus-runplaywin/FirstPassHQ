@@ -56,7 +56,8 @@ each of their roles can.
 
 **Safeguarding contacts.** An admin names one member as the club's **Child Safety Officer** and
 another as its **Complaints Manager**. They're not separate roles: each keeps their own role and also
-sees and acts on the concerns members raise (see [The concerns register](#the-concerns-register)).
+sees and acts on the concerns members raise, with new ones as an **Urgent** to-do and red, orange
+and green counts on their Concerns card (see [The concerns register](#the-concerns-register)).
 The Child Safety Officer also sees every athlete's wellbeing flags: the day and lowest score of
 each low check-in, never the answers or notes (see [Wellbeing flags](#wellbeing-flags)), and,
 when the club turns on Training load flags, training load patterns for children (see [Training load
@@ -449,6 +450,10 @@ Once you're approved, the home screen is where everything starts. From the top:
   covers every to-do with a due date: your own tasks, integrity training, KPI reviews you write, game
   goals (due on game day) and an injury past its expected return date. For admins, Working With
   Children Checks work the same way (see [Admins](#10-admins)).
+  A new concern is more urgent than anything else: for the Child Safety Officer, the Complaints
+  Manager and admins, **Look at N new concerns** has the red circle, a red **Urgent** label and the
+  red bar, and always sits at the very top, above anything overdue (see [The concerns
+  register](#the-concerns-register)).
 - **Coming up**: the next six events from your calendars, when the club uses the calendar. Tap
   **Full calendar** to see them all.
 - **Cards** for the features your role uses, in this order: Messages, Daily check-in, Check-ins,
@@ -2013,7 +2018,8 @@ exemption. The code of conduct, your own integrity training, award votes, person
 Any committee member with a current check (or a volunteer exemption, not an exemption with a
 reason) can be named by an admin as the club's Child Safety Officer, Complaints Manager or WWC
 Registration Officer. If you're the Child Safety Officer or Complaints Manager, your home screen
-also has **Concerns** (see [The concerns register](#the-concerns-register)): the register, each
+also has **Concerns** (see [The concerns register](#the-concerns-register)), with red, orange and
+green counts on the card for new, in progress and recently closed concerns: the register, each
 concern's notes and steps (**Referred to** the governing body or Police, **Being looked into**,
 **Closed** with a note), and **Export the register as a PDF**. A concern about you is never shown
 to you. The Child Safety Officer also has **Wellbeing flags** (see [Wellbeing
@@ -2469,7 +2475,7 @@ committee, and endorse only if they're also a coach or physio), read athletes' c
 set their game goals (unless they also coach them), plus run the club's set-up from **Administration** on the home
 screen. Administration lists its items alphabetically, and **Members** shows how many join requests
 are waiting. Admins' to-do lists include join requests waiting for approval and clearances waiting for
-sign-off, plus child-safety follow-ups: new concerns, athletes with no date of birth, athletes under 18
+sign-off, plus child-safety follow-ups: new concerns (marked **Urgent** and always first), athletes with no date of birth, athletes under 18
 locked out because no verified parent or guardian is linked, Working With Children Checks to sort out, volunteer exemptions that end within
 60 days, athletes turning 18 within 30 days, Screening Unit notices still to report to the
 governing body, no WWC Registration Officer, Child Safety Officer or Complaints Manager, and a
@@ -3538,8 +3544,27 @@ someone to see every season they've accepted it and the words accepted.
 ### The concerns register
 
 The Child Safety Officer, the Complaints Manager and admins open **Concerns** from the home screen.
-New concerns also appear in their to-do list until someone records something about them. Open
-concerns are listed first, newest at the top. Nobody sees a concern about themselves.
+New concerns also appear in their to-do list as **Look at N new concerns**, marked **Urgent** in
+red at the very top, until someone records something about them. Open concerns are listed first,
+newest at the top. Nobody sees a concern about themselves.
+
+The **Concerns** card on the home screen shows three traffic lights, each a count with a word
+beside it:
+
+| Light | Word | What it counts |
+| --- | --- | --- |
+| Red | **New** | Concerns with the status Received that nobody has recorded anything about yet. This is the same count as the Urgent to-do. |
+| Orange | **In progress** | Open concerns someone has acted on: Received with a note, Referred, or Being looked into. |
+| Green | **Closed, 4 weeks** | Concerns closed in the last 4 weeks. |
+
+So a concern moves from red to orange the moment anyone records a referral, a note or a status
+change, and to green when it's closed. A light with nothing in it is dimmed. The card shows counts
+only, never what a concern says or who it's about, and a concern about you is never counted on
+your card, just as it's never shown to you. Members who don't handle concerns don't have the card
+at all.
+
+<img src="user-guide/concerns-urgent-todo.png" width="210" alt="An admin's to-do list with Look at 1 new concern marked Urgent at the top">
+<img src="user-guide/concerns-lights.png" width="210" alt="The Concerns card: 1 new in red, 2 in progress in orange, 1 closed in the last 4 weeks in green">
 
 Open a concern to see what was raised, by whom (unless they hid their name), how to contact them,
 and where it was raised from. While a concern that may involve a child's safety is open and hasn't been referred, a red note at the top says to refer child abuse or a serious crime to Police and the
@@ -3630,7 +3655,7 @@ once saved, only replaced or removed, and anyone who gets it wrong five times in
 | Check applications, receipts and declarations | The member (their own application and declaration, not the receipt) and admins. Committee members with a current check read the applications in the Working With Children Checks report, never the receipts. Kept, with the receipt, if the member deletes their account. |
 | Volunteer exemptions and declarations | The volunteer (their own) and admins, and committee members with a current check in the Working With Children Checks report (read only). Kept under the member's name if they delete their account; the exemption ends that day. |
 | Temporary helpers' task, dates and policy acceptance | The volunteer and admins. Temporary helpers see nothing of the club's members, squads, calendar or messages. If a helper deletes their account, their policy acceptance and any exemption declaration are kept under their name; their task and dates go with the account. |
-| Concerns                | The Child Safety Officer, the Complaints Manager and admins, never the person a concern is about when they were named from the list (a concern that only describes someone in words is not hidden from anyone who handles concerns). Whoever raised it sees its status. A hidden name is never shown to them. |
+| Concerns                | The Child Safety Officer, the Complaints Manager and admins, never the person a concern is about when they were named from the list (a concern that only describes someone in words is not hidden from anyone who handles concerns). Whoever raised it sees its status. A hidden name is never shown to them. The traffic-light counts on the Concerns card follow the same rule: counts only, and never a concern about the person looking. |
 | Safeguarding contacts   | Everyone signed in, including guests and people waiting for approval.                                                       |
 | Committee checks date   | Everyone signed in. Only admins change it, and only to bring it forward; who changed it and when is kept. |
 | Messages                | The people they were sent to, the sender, and admins. A stood-down member doesn't see the messages they sent, or the ones they got as a coach, manager, physio, committee member or admin. Guardians of athletes under 18 get a copy of every message sent to their athlete, and of every message their athlete sends as a captain. Guests don't get messages; physios get messages sent to the Physio role and to their squads and teams, and whole-club messages only if an admin turns that on. |
@@ -4129,7 +4154,8 @@ Working With Children Check, and another admin must do it.
   Checks report lists them all. The admin's member page links to the Act and the Screening Unit's
   fact sheets so exemptions can be checked at the source.
 - **Your to-do list does the chasing**, and each to-do about a member opens that member's page
-  at the job, or a list of just the people it's about: new concerns, missing or expiring checks (missing or
+  at the job, or a list of just the people it's about: new concerns (marked **Urgent** and always
+  first), missing or expiring checks (missing or
   expired checks in red at the top, checks to validate, register or renew in amber), volunteer
   exemptions ending, declarations not yet accepted (counted with missing checks), cards to validate
   or register with the club, notices to report to the governing body, no WWC Registration Officer,
@@ -4143,6 +4169,11 @@ Working With Children Check, and another admin must do it.
   and validation, plus every exemption, notice and stand-down. The under 18s report lists every child, their guardians and how often their records were viewed in the last 12 months. Each saves as a PDF.
   The concerns register, on the Concerns card for the Child Safety Officer, Complaints Manager and
   admins, exports as a PDF listing every concern and what was done, except any about the person exporting it.
+- **Nothing raised sits unseen.** A new concern is an **Urgent** red to-do at the top of the list
+  for the Child Safety Officer, the Complaints Manager and admins until someone acts on it. The
+  Concerns card's traffic lights show at a glance how many are new (red), in progress (orange) and
+  closed in the last 4 weeks (green). They're counts only, and never include a concern about the
+  person looking.
 
 ### For the governing body and auditors
 

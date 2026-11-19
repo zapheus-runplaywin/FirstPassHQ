@@ -2,6 +2,7 @@ import { router, useFocusEffect } from 'expo-router';
 import { useCallback, useEffect, useState } from 'react';
 import { Pressable, StyleSheet, View } from 'react-native';
 
+import { ConcernLights } from '@/components/concern-lights';
 import { EventGrid } from '@/components/event-card';
 import { HomeHeader } from '@/components/home-header';
 import { ChildCodeCard, WaitingForGuardian } from '@/components/guardian-link';
@@ -53,7 +54,7 @@ import {
 } from '@/lib/use-pending-requests';
 import { rejectionReasonMessages, rolesLabel, staffTitle, teamPositionLabel } from '@/lib/labels';
 import { supabase } from '@/lib/supabase';
-import { useNewConcerns } from '@/lib/concerns';
+import { useConcernCounts, useNewConcerns } from '@/lib/concerns';
 import { useCanReadReports } from '@/lib/report-access';
 import { usePersonalTasks } from '@/lib/personal-tasks';
 import { useSessionPlanSummary } from '@/lib/session-plans';
@@ -101,6 +102,7 @@ export default function HomeScreen() {
   // Admins and the two safeguarding officers handle concerns members raise.
   const handlesConcerns = isAdmin || isSafeguardingOfficer;
   const newConcerns = useNewConcerns(handlesConcerns);
+  const concernCounts = useConcernCounts(handlesConcerns);
   const { switchClub } = useClubChoice();
   const club = useClub();
   const { features } = club;
@@ -477,6 +479,7 @@ export default function HomeScreen() {
                 ? `${newConcerns} new ${newConcerns === 1 ? 'concern' : 'concerns'} to look at`
                 : 'The concerns register'}
             </ThemedText>
+            <ConcernLights counts={concernCounts} />
           </PressableCard>
         ) : null}
 
