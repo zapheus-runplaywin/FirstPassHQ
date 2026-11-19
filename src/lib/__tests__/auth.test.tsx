@@ -19,6 +19,7 @@ import type {
   GroupCaptain,
   MyVolunteerExemption,
   MyWwccApplication,
+  MyWwccSubmission,
   Profile,
   Team,
   TeamMembership,
@@ -105,6 +106,19 @@ function application(overrides: Partial<MyWwccApplication> = {}): MyWwccApplicat
   };
 }
 
+function submission(): MyWwccSubmission {
+  return {
+    id: 'submission-1',
+    card_number: 'WWC1234',
+    expires_on: '2028-10-10',
+    card_name: 'Casey Coach',
+    submitted_at: '2026-10-17T00:00:00Z',
+    status: 'waiting',
+    decided_at: null,
+    return_note: null,
+  };
+}
+
 function exemption(overrides: Partial<MyVolunteerExemption> = {}): MyVolunteerExemption {
   return {
     basis: 'parent_volunteer',
@@ -127,6 +141,7 @@ type Rows = {
   isClubCaptain?: unknown;
   exemption?: MyVolunteerExemption | null;
   application?: MyWwccApplication | null;
+  submission?: MyWwccSubmission | null;
   isSafeguardingOfficer?: unknown;
   committeeSeesInjuries?: unknown;
   committeeChecksFrom?: unknown;
@@ -191,6 +206,7 @@ beforeEach(() => {
     if (fn === 'is_club_captain') return query({ data: rows.isClubCaptain ?? false });
     if (fn === 'my_volunteer_exemption') return query({ data: rows.exemption ?? null });
     if (fn === 'my_wwcc_application') return query({ data: rows.application ?? null });
+    if (fn === 'my_wwcc_submission') return query({ data: rows.submission ?? null });
     if (fn === 'is_safeguarding_officer') return query({ data: rows.isSafeguardingOfficer ?? false });
     if (fn === 'my_committee_sees_injuries') return query({ data: rows.committeeSeesInjuries ?? true });
     if (fn === 'committee_checks_from') return query({ data: rows.committeeChecksFrom ?? null });
@@ -407,11 +423,13 @@ describe('loading the member', () => {
       committeeSeesInjuries: false,
       exemption: exemption(),
       application: application(),
+      submission: submission(),
       committeeChecksFrom: '2027-01-11',
     });
     expect(result.current.auth.committeeSeesInjuries).toBe(false);
     expect(result.current.auth.exemption).toEqual(exemption());
     expect(result.current.auth.wwccApplication).toEqual(application());
+    expect(result.current.auth.wwccSubmission).toEqual(submission());
     expect(result.current.auth.committeeChecksFrom).toBe('2027-01-11');
 
     await act(async () => {
@@ -421,6 +439,7 @@ describe('loading the member', () => {
     await waitFor(() => expect(result.current.auth.profile).toBeNull());
     expect(result.current.auth.exemption).toBeNull();
     expect(result.current.auth.wwccApplication).toBeNull();
+    expect(result.current.auth.wwccSubmission).toBeNull();
     expect(result.current.auth.committeeChecksFrom).toBeNull();
     expect(result.current.auth.isClubCaptain).toBe(false);
     expect(result.current.auth.isSafeguardingOfficer).toBe(false);

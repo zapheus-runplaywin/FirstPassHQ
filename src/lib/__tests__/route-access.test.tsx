@@ -116,6 +116,7 @@ function auth(
     paused: null,
     exemption: extra.exemption ?? null,
     wwccApplication: extra.wwccApplication ?? null,
+    wwccSubmission: null,
     memberships: extra.memberships ?? [],
     captaincies: extra.captaincies ?? [],
     isClubCaptain: extra.isClubCaptain ?? false,

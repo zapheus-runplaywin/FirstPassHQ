@@ -6,7 +6,7 @@ import { Screen } from '@/components/screen';
 import { ThemedText } from '@/components/themed-text';
 import { Button, Card, PressableCard, TextField } from '@/components/ui';
 import { Spacing } from '@/constants/theme';
-import { isMinor } from '@/lib/age';
+import { formatDate, isMinor } from '@/lib/age';
 import { formatMonth } from '@/lib/format';
 import { toDateString } from '@/lib/injuries';
 import { PROFILE_COLUMNS } from '@/lib/auth';
@@ -29,6 +29,7 @@ import type {
   TeamRole,
   VolunteerExemption,
   WwccApplication,
+  WwccSubmission,
 } from '@/lib/types';
 import { rolesOf } from '@/lib/roles';
 
@@ -53,6 +54,8 @@ export default function MembersScreen() {
   const [noAppRequests, setNoAppRequests] = useState<NoAppChildRequest[]>([]);
   const [exemptions, setExemptions] = useState<Map<string, VolunteerExemption>>(new Map());
   const [applications, setApplications] = useState<Map<string, WwccApplication>>(new Map());
+  // Cards members sent in themselves, waiting for an admin.
+  const [submitted, setSubmitted] = useState<Map<string, WwccSubmission>>(new Map());
   const [groupTitles, setGroupTitles] = useState<Map<string, string>>(new Map());
   const [inactive, setInactive] = useState<Map<string, string>>(new Map());
   const [search, setSearch] = useState('');
@@ -70,6 +73,7 @@ export default function MembersScreen() {
       noticesResult,
       unendorsableResult,
       noAppResult,
+      submittedResult,
     ] = await Promise.all([
       supabase.from('profiles').select(PROFILE_COLUMNS).order('full_name', { nullsFirst: false }),
       supabase.from('guardianships').select('guardian_id, athlete_id'),
@@ -97,6 +101,7 @@ export default function MembersScreen() {
         : Promise.resolve({ data: null }),
       // Children parents asked the club to add, who won't use the app.
       supabase.rpc('admin_no_app_child_requests'),
+      supabase.rpc('admin_wwcc_submissions'),
     ]);
     setNotices(
       new Set(
@@ -127,6 +132,11 @@ export default function MembersScreen() {
       (applicationsResult.data as WwccApplication[] | null) ?? []
     ).filter((a) => !a.ended_at);
     setApplications(new Map(openApplications.map((a) => [a.profile_id, a])));
+    setSubmitted(
+      new Map(
+        ((submittedResult.data as WwccSubmission[] | null) ?? []).map((sub) => [sub.profile_id, sub]),
+      ),
+    );
     setMembers((profilesResult.data as Profile[] | null) ?? []);
     setLinks((guardiansResult.data as Pair[] | null) ?? []);
     setRequests((requestsResult.data as Pair[] | null) ?? []);
@@ -193,6 +203,7 @@ export default function MembersScreen() {
             exemption: exemptions.get(m.id),
             application: applications.get(m.id),
             noticeToReport: notices.has(m.id),
+            submitted: submitted.has(m.id),
             inactive: inactive.has(m.id),
             today,
           }),
@@ -224,6 +235,10 @@ export default function MembersScreen() {
             return rolesLabel(rolesOf(m), m.title, m.head_physio, groupTitles.get(m.id));
           }
           if (todo === 'notice') return `${rolesLabel(rolesOf(m))} · Notice not reported yet`;
+          if (todo === 'wwcc-sent') {
+            const sub = submitted.get(m.id);
+            return `${rolesLabel(rolesOf(m))} · Sent in card ${sub?.card_number ?? ''}, expires ${formatDate(sub?.expires_on)}`;
+          }
           const why = issues.get(m.id) ?? [];
           return [rolesLabel(rolesOf(m)), ...why].join(' · ');
         }}
@@ -243,7 +258,11 @@ export default function MembersScreen() {
       <Section
         title="Needs checking"
         members={needsChecking}
-        describe={(m) => `${rolesLabel(rolesOf(m))} · ${issues.get(m.id)?.join(' · ')}`}
+        describe={(m) =>
+          `${rolesLabel(rolesOf(m))} · ${issues.get(m.id)?.join(' · ')}${
+            submitted.has(m.id) ? ' · Sent in a card to check' : ''
+          }`
+        }
         warn
       />
       <Section

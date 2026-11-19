@@ -10,6 +10,7 @@ import { ScreeningNotices } from '@/components/screening-notices';
 import { StandDownSection } from '@/components/stand-down';
 import { WwccApplicationSection } from '@/components/wwcc-application';
 import { WwccValidation } from '@/components/wwcc-validation';
+import { WwccSubmissionReview } from '@/components/wwcc-submission-review';
 import { ThemedText } from '@/components/themed-text';
 import {
   Button,
@@ -1274,6 +1275,15 @@ export default function MemberScreen() {
             </>
           ) : volunteerBasis ? null : (
             <>
+              <WwccSubmissionReview
+                memberId={member.id}
+                isSelf={isSelf}
+                onAccepted={(changes) => {
+                  setMember((current) => current && { ...current, ...changes });
+                  setWwccNumber(changes.wwcc_number ?? '');
+                  setWwccExpires(formatDate(changes.wwcc_expires_on));
+                }}
+              />
               <TextField
                 label="Card number"
                 value={wwccNumber}

@@ -193,6 +193,20 @@ describe('memberMatchesTodo', () => {
     });
   });
 
+  describe('cards members sent in', () => {
+    it('is about whoever has a card waiting for an admin, whatever else is going on', () => {
+      expect(matches('wwcc-sent', profile({ role: 'coach' }), { submitted: true })).toBe(true);
+      expect(matches('wwcc-sent', profile({ role: 'coach', stood_down_at: '2026-10-01' }), { submitted: true })).toBe(true);
+      expect(matches('wwcc-sent', profile({ role: 'coach' }), { submitted: false })).toBe(false);
+      expect(matches('wwcc-sent', profile({ role: 'coach' }))).toBe(false);
+    });
+
+    it('opens the check section of their page', () => {
+      expect(memberTodoCopy['wwcc-sent'].section).toBe('wwcc');
+      expect(isMemberTodoKind('wwcc-sent')).toBe(true);
+    });
+  });
+
   describe('clearances nobody can endorse', () => {
     it('lists the club’s approved physios, who can be made Head Physio or placed', () => {
       expect(matches('unendorsable', profile({ role: 'physio' }))).toBe(true);

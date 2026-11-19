@@ -83,6 +83,8 @@ export type SafetyTodos = {
    */
   wwcc_applications_due?: number;
   wwcc_applications_lapsed?: number;
+  /** Cards members sent in themselves, waiting for an admin, from `admin_wwcc_submissions`. */
+  wwcc_submitted?: number;
 };
 
 /** Child-safety follow-ups for admins, refreshed when the screen is shown. */
@@ -99,6 +101,7 @@ export function useSafetyTodos() {
       { data: unendorsable },
       { data: applications },
       { data: purgeRun },
+      { data: submitted },
     ] = await Promise.all([
       supabase.rpc('admin_safety_todos').maybeSingle(),
       supabase.rpc('record_retention').maybeSingle(),
@@ -106,6 +109,7 @@ export function useSafetyTodos() {
       supabase.rpc('admin_unendorsable_clearances'),
       supabase.rpc('admin_wwcc_applications'),
       supabase.rpc('removal_run_status').maybeSingle(),
+      supabase.rpc('admin_wwcc_submissions'),
     ]);
     const run = toPurgeRunStatus(purgeRun);
     const toConfirm = applicationsToConfirm(
@@ -127,6 +131,7 @@ export function useSafetyTodos() {
           : [],
         wwcc_applications_due: toConfirm.due,
         wwcc_applications_lapsed: toConfirm.lapsed,
+        wwcc_submitted: Array.isArray(submitted) ? submitted.length : 0,
       },
     );
   }, [isAdmin]);

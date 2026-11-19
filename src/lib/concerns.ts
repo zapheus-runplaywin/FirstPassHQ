@@ -41,6 +41,25 @@ export const involvesChildLabels: Record<InvolvesChild, string> = {
   unsure: 'Not sure',
 };
 
+/** Someone who can be named as who a concern is about. */
+export type ConcernPerson = { id: string; name: string };
+
+/**
+ * The people whose name matches what's been typed, at most `max`. One letter
+ * matches the start of any part of a name ("A" finds Avery Admin and Sam
+ * Alder); two or more also match inside a name. Nothing typed matches nobody.
+ */
+export function matchPeople(people: ConcernPerson[], typed: string, max: number) {
+  const search = typed.trim().toLowerCase();
+  if (!search) return [];
+  const matches = (name: string) => {
+    const lower = name.toLowerCase();
+    if (lower.split(/[\s'’-]+/).some((part) => part.startsWith(search))) return true;
+    return search.length >= 2 && lower.includes(search);
+  };
+  return people.filter((p) => matches(p.name)).slice(0, max);
+}
+
 /** The club's safeguarding contacts, loaded when the screen is shown. */
 export function useSafeguardingContacts() {
   const [contacts, setContacts] = useState<SafeguardingContacts | null>(null);
@@ -119,7 +138,9 @@ export function concernsReport(
     cells: [
       localDay(c.created_at),
       c.about_member_name ?? c.about_text ?? '',
-      c.body,
+      c.reported_message_body
+        ? `${c.body}\n\nReported message from ${c.reported_message_sender_name ?? 'a former member'}, ${localDay(c.reported_message_sent_at ?? c.created_at)}: “${c.reported_message_body}”`
+        : c.body,
       involvesChildLabels[c.involves_child],
       c.anonymous ? 'Name not shown' : (c.raised_by_name ?? 'A former member'),
       concernStatusLabels[c.status],

@@ -18,6 +18,7 @@ import type {
   GroupCaptain,
   MyVolunteerExemption,
   MyWwccApplication,
+  MyWwccSubmission,
   Profile,
   TeamMembership,
 } from '@/lib/types';
@@ -51,6 +52,11 @@ type AuthState = {
    * recorded one: it counts as a check once they accept its declaration.
    */
   wwccApplication: MyWwccApplication | null;
+  /**
+   * A card the member sent in themselves, while it waits for an admin to check
+   * it or after an admin sent it back. It counts for nothing until accepted.
+   */
+  wwccSubmission: MyWwccSubmission | null;
   memberships: TeamMembership[];
   /** Squads and teams the member captains or vice captains, from any season. */
   captaincies: GroupCaptain[];
@@ -101,6 +107,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   const [isClubCaptain, setIsClubCaptain] = useState(false);
   const [exemption, setExemption] = useState<MyVolunteerExemption | null>(null);
   const [wwccApplication, setWwccApplication] = useState<MyWwccApplication | null>(null);
+  const [wwccSubmission, setWwccSubmission] = useState<MyWwccSubmission | null>(null);
   const [isSafeguardingOfficer, setIsSafeguardingOfficer] = useState(false);
   const [committeeSeesInjuries, setCommitteeSeesInjuries] = useState(true);
   const [committeeChecksFrom, setCommitteeChecksFrom] = useState<string | null>(null);
@@ -115,6 +122,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       setIsClubCaptain(false);
       setExemption(null);
       setWwccApplication(null);
+      setWwccSubmission(null);
       setIsSafeguardingOfficer(false);
       setCommitteeSeesInjuries(true);
       setCommitteeChecksFrom(null);
@@ -134,6 +142,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       applicationResult,
       statisticianChecksResult,
       committeeInjuriesResult,
+      submissionResult,
     ] = await Promise.all([
       supabase.from('profiles').select(PROFILE_COLUMNS).eq('id', userId).single(),
       supabase
@@ -151,6 +160,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       supabase.rpc('my_wwcc_application').maybeSingle(),
       supabase.rpc('statistician_checks_from'),
       supabase.rpc('my_committee_sees_injuries'),
+      supabase.rpc('my_wwcc_submission').maybeSingle(),
     ]);
     setProfile((profileResult.data as Profile | null) ?? null);
     setMemberships((membershipResult.data as unknown as TeamMembership[] | null) ?? []);
@@ -158,6 +168,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     setIsClubCaptain(clubCaptainResult.data === true);
     setExemption((exemptionResult.data as MyVolunteerExemption | null) ?? null);
     setWwccApplication((applicationResult.data as MyWwccApplication | null) ?? null);
+    setWwccSubmission((submissionResult.data as MyWwccSubmission | null) ?? null);
     setIsSafeguardingOfficer(officerResult.data === true);
     // False only when the club chose committee members and left this one out.
     setCommitteeSeesInjuries(committeeInjuriesResult.data !== false);
@@ -239,6 +250,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
             : null,
         exemption,
         wwccApplication,
+        wwccSubmission,
         memberships: usableMemberships,
         captaincies,
         isClubCaptain,

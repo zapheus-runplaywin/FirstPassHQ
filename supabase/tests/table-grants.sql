@@ -31,7 +31,8 @@ insert into through_functions values
   ('join_password_attempts'), ('load_flag_reviews'), ('medical_profiles'), ('no_app_child_requests'), ('policy_register'), ('purge_runs'), ('push_settings'), ('push_todo_log'), ('record_access_log'), ('season_kpi_measures'),
   ('season_kpi_review_notes'), ('season_kpi_review_points'), ('season_kpi_reviews'), ('season_kpis'),
   ('session_plan_notices'), ('session_plan_views'), ('survey_answers'), ('survey_questions'),
-  ('survey_recipients'), ('survey_responses'), ('surveys'), ('wwcc_applications');
+  ('survey_recipients'), ('survey_responses'), ('surveys'), ('wwcc_applications'),
+  ('wwcc_submissions');
 
 -- Every other table is granted to signed-in members. A new table whose
 -- migration forgot its grant shows up here.

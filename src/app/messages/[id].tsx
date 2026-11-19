@@ -95,6 +95,7 @@ export default function MessageScreen() {
       <RaiseConcernLink
         context={`Message from ${message.sender_name ?? 'the club'}, ${formatDateTime(new Date(message.created_at))}`}
         label="Report this message"
+        messageId={message.id}
       />
     </Screen>
   );
