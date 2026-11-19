@@ -13,6 +13,8 @@ $$ begin execute statement; return 'FAIL ' || label || ' (no error)';
 create or replace function pg_temp.works(label text, statement text) returns text language plpgsql as
 $$ begin execute statement; return 'PASS ' || label;
    exception when others then return 'FAIL ' || label || ' (' || sqlerrm || ')'; end $$;
+create or replace function pg_temp.has_todo(n text, key_prefix text) returns boolean language sql as
+$$ select exists (select 1 from public.member_todos(('00000000-0000-0000-0000-0000000000' || n)::uuid) m where m.todo_key like key_prefix || '%') $$;
 create or replace function pg_temp.coach_role(n text) returns boolean language plpgsql as
 $$ begin perform pg_temp.as_member(n); return public.has_role('coach'); end $$;
 
@@ -30,6 +32,11 @@ select pg_temp.ok('anon cannot send back', has_function_privilege('anon', 'publi
 select pg_temp.ok('nobody calls the trigger function', has_function_privilege('authenticated', 'public.close_wwcc_submission_on_card()', 'execute'), false);
 
 select pg_temp.ok('the lapsed coach starts paused', pg_temp.coach_role('12'), false);
+select pg_temp.ok('push: the paused coach is asked to add their card', pg_temp.has_todo('12', 'wwcc-send:'), true);
+select pg_temp.ok('push: a coach with a current card is not', pg_temp.has_todo('11', 'wwcc-'), false);
+select pg_temp.ok('push: an athlete is not', pg_temp.has_todo('32', 'wwcc-'), false);
+select pg_temp.ok('push: an exempt treasurer is not', pg_temp.has_todo('23', 'wwcc-'), false);
+select pg_temp.ok('push: nobody has cards to check yet', pg_temp.has_todo('01', 'wwcc-sent:'), false);
 
 -- Who may send a card in.
 select pg_temp.as_member('31');
@@ -72,6 +79,11 @@ select pg_temp.ok('they see the new expiry', (select expires_on = current_date +
 
 -- Admins see it.
 select pg_temp.as_member('01');
+select pg_temp.ok('push: the coach is asked nothing while the card waits', pg_temp.has_todo('12', 'wwcc-send'), false);
+select pg_temp.ok('push: admins are asked to check it', pg_temp.has_todo('01', 'wwcc-sent:'), true);
+select pg_temp.ok('push: the admin''s item names the count', (select title = 'Check 1 Working With Children Check members sent in' from public.member_todos('00000000-0000-0000-0000-000000000001') where todo_key like 'wwcc-sent:%'), true);
+select pg_temp.ok('push: a coach is not asked to check cards', pg_temp.has_todo('11', 'wwcc-sent:'), false);
+select pg_temp.as_member('01');
 select pg_temp.ok('the admin sees one card waiting, named', (select count(*) = 1 and bool_and(member_name = 'Drew Lapsed' and card_number = 'WWC1212') from public.admin_wwcc_submissions()), true);
 create temp table t as select (select id from public.wwcc_submissions where profile_id = '00000000-0000-0000-0000-000000000012' and status = 'waiting') as sub;
 grant select on t to public;
@@ -94,6 +106,10 @@ select pg_temp.fails('a card sent back cannot then be accepted', format('select 
 select pg_temp.as_member('12');
 select pg_temp.ok('the member reads the note', (select status = 'returned' and return_note = 'The Screening Unit has a different expiry' from public.my_wwcc_submission()), true);
 select pg_temp.ok('their coach role is still paused after it''s sent back', pg_temp.coach_role('12'), false);
+select pg_temp.ok('push: the coach is asked to send it again, with the note',
+  (select detail = 'Sent back: The Screening Unit has a different expiry' from public.member_todos('00000000-0000-0000-0000-000000000012') where todo_key like 'wwcc-send-again:%'), true);
+select pg_temp.ok('push: and not also to add a card', pg_temp.has_todo('12', 'wwcc-send:'), false);
+select pg_temp.as_member('12');
 
 -- Sent again and accepted.
 select pg_temp.works('they send it again', $s$ select public.submit_my_wwcc('WWC1212', current_date + 900, 'Drew Lapsed') $s$);
@@ -110,6 +126,8 @@ select pg_temp.ok('the card is recorded and validated',
 select pg_temp.ok('the submission is accepted by the admin', (select status = 'accepted' and decided_by_name = 'Alex Admin' from public.wwcc_submissions where id = (select sub from t)), true);
 select pg_temp.fails('it cannot be accepted twice', format('select public.admin_accept_wwcc_submission(%L, %L, %L, true)', (select sub from t), 'Drew Lapsed', 'online'));
 select pg_temp.ok('their coach role is back', pg_temp.coach_role('12'), true);
+select pg_temp.ok('push: the accepted coach is asked nothing more', pg_temp.has_todo('12', 'wwcc-'), false);
+select pg_temp.ok('push: admins have nothing left to check', pg_temp.has_todo('01', 'wwcc-sent:'), false);
 select pg_temp.as_member('12');
 select pg_temp.ok('the member no longer sees a card waiting', not exists (select 1 from public.my_wwcc_submission()), true);
 select pg_temp.fails('they cannot send the same validated card again', $s$ select public.submit_my_wwcc('WWC1212', current_date + 900, 'Drew Lapsed') $s$);
@@ -140,3 +158,11 @@ update public.wwcc_submissions set expires_on = current_date - 1 where profile_i
 select pg_temp.as_member('01');
 select pg_temp.fails('a card that expired while waiting is refused', format('select public.admin_accept_wwcc_submission(%L, %L, %L, true)',
   (select id from public.wwcc_submissions where profile_id = '00000000-0000-0000-0000-000000000021' and status = 'waiting'), 'Gale Committee', 'online'));
+
+-- A card expiring within 60 days asks for the renewed one, once per card.
+update public.profiles set wwcc_expires_on = current_date + 30 where id = '00000000-0000-0000-0000-000000000014';
+select pg_temp.ok('push: a physio whose card expires in 30 days is asked for the renewed one', pg_temp.has_todo('14', 'wwcc-renew:' || (current_date + 30)), true);
+update public.profiles set wwcc_expires_on = current_date + 61 where id = '00000000-0000-0000-0000-000000000014';
+select pg_temp.ok('push: not when it expires in 61 days', pg_temp.has_todo('14', 'wwcc-'), false);
+-- A stood-down member is asked nothing.
+select pg_temp.ok('push: the stood-down manager is asked nothing', pg_temp.has_todo('13', 'wwcc-'), false);
