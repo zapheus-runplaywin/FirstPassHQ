@@ -183,6 +183,30 @@ describe('signing in', () => {
     expect(screen.getByText(/^Not West Coast Thunder\?/)).toBeTruthy();
   });
 
+  it('styles Google’s button like Apple’s: white, Google’s outline, the G logo and the same size', async () => {
+    await open('/sign-in', { 'club-code': 'THUNDER' });
+    const button = screen.getByTestId('google-sign-in');
+    expect(button.props.accessibilityLabel).toBe('Continue with Google');
+    // Same height and corners as Apple's button; Google's light-theme colours.
+    const box = StyleSheet.flatten(button.props.style) as Record<string, unknown>;
+    expect(box).toMatchObject({
+      height: 52,
+      borderRadius: 12,
+      backgroundColor: '#FFFFFF',
+      borderWidth: 1,
+      borderColor: '#747775',
+    });
+    // Google's full-colour G, beside the words, never tinted.
+    const logo = screen.getByTestId('google-logo');
+    const logoStyle = StyleSheet.flatten(logo.props.style) as Record<string, unknown>;
+    expect(logoStyle).toMatchObject({ width: 18, height: 18 });
+    expect(logoStyle.tintColor).toBeUndefined();
+    expect(logo.props.tintColor).toBeUndefined();
+    // Apple's button letters at about 19 points; Google's dark text colour.
+    const words = StyleSheet.flatten(screen.getByText('Continue with Google').props.style);
+    expect(words).toMatchObject({ color: '#1F1F1F', fontSize: 20, fontWeight: '500' });
+  });
+
   it('starts Google sign-in once, however often it’s tapped while busy', async () => {
     let finish: () => void = () => {};
     google.mockImplementation(() => new Promise<void>((r) => (finish = r)));

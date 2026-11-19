@@ -9,6 +9,7 @@ import {
   ActivityIndicator,
   Pressable,
   StyleSheet,
+  Text,
   TextInput,
   View,
 } from "react-native";
@@ -28,6 +29,13 @@ import {
   signInWithApple,
   signInWithGoogle,
 } from "@/lib/sign-in";
+
+// Google's standard multicolour "G" (assets/images/google-g.svg is the source).
+// Relative, not "@/assets", so Jest can load it too.
+const GOOGLE_G = require("../../assets/images/google-g.png");
+// Colours of Google's light-theme sign-in button.
+const GOOGLE_TEXT = "#1F1F1F";
+const GOOGLE_OUTLINE = "#747775";
 
 export default function SignInScreen() {
   const theme = useTheme();
@@ -169,22 +177,35 @@ export default function SignInScreen() {
                   />
                 ) : null}
 
+                {/* Google's light-theme button from its sign-in branding
+                    guidelines (white, grey outline, dark text, the full-colour
+                    G never recoloured), sized and lettered to match Apple's
+                    button above it. */}
                 <Pressable
+                  testID="google-sign-in"
                   accessibilityRole="button"
+                  accessibilityLabel="Continue with Google"
                   disabled={busy !== null}
                   onPress={() => run("google", signInWithGoogle)}
                   style={({ pressed }) => [
                     styles.button,
-                    {
-                      backgroundColor: theme.backgroundElement,
-                      opacity: pressed ? 0.7 : 1,
-                    },
+                    styles.googleButton,
+                    { opacity: pressed ? 0.7 : 1 },
                   ]}
                 >
                   {busy === "google" ? (
-                    <ActivityIndicator />
+                    <ActivityIndicator color={GOOGLE_TEXT} />
                   ) : (
-                    <ThemedText type="smallBold">Continue with Google</ThemedText>
+                    <View style={styles.googleContent}>
+                      <Image
+                        testID="google-logo"
+                        source={GOOGLE_G}
+                        style={styles.googleLogo}
+                        contentFit="contain"
+                        accessible={false}
+                      />
+                      <Text style={styles.googleText}>Continue with Google</Text>
+                    </View>
                   )}
                 </Pressable>
               </>
@@ -262,6 +283,27 @@ const styles = StyleSheet.create({
   appleButton: {
     height: 52,
     width: "100%",
+  },
+  googleButton: {
+    backgroundColor: "#FFFFFF",
+    borderWidth: 1,
+    borderColor: GOOGLE_OUTLINE,
+  },
+  googleContent: {
+    flexDirection: "row",
+    alignItems: "center",
+    gap: 10,
+  },
+  googleLogo: {
+    width: 18,
+    height: 18,
+  },
+  // The phone's own font at the size Apple's 52-high button uses, so the two
+  // buttons read the same (Roboto on Android, as Google asks).
+  googleText: {
+    color: GOOGLE_TEXT,
+    fontSize: 20,
+    fontWeight: "500",
   },
   input: {
     height: 52,

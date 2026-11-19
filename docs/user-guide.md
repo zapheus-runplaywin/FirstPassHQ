@@ -260,7 +260,8 @@ its own code.
 There are no passwords to remember: you sign in with an account you already have. The same
 buttons are used whether you're new or coming back. (The demo club above is the one exception.)
 
-- **On Android**, tap **Continue with Google** and choose your Google account.
+- **On Android**, tap the white **Continue with Google** button, with Google's coloured **G**,
+  and choose your Google account.
 - **On iPhone or iPad**, you can also tap **Continue with Apple**, above the Google button, and
   confirm with Face ID, Touch ID or your passcode. Apple asks whether to share your email or
   **Hide My Email**. Either works.
@@ -280,7 +281,8 @@ If you picked the wrong club, tap **Change club** under the buttons.
 <img src="user-guide/sign-in.png" width="210" alt="Sign-in screen on Android, with Continue with Google">
 
 The picture shows the Android screen; on iPhone, Apple's white **Continue with Apple** button sits
-above **Continue with Google**.
+above **Continue with Google**. The two buttons match: both white, the same size, each with its
+company's logo beside the words.
 
 ### Belonging to more than one club
 
