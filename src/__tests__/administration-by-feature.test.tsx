@@ -1,7 +1,8 @@
 /**
  * The Administration screen's tiles (src/app/administration.tsx): which show
  * with each feature switch, and that every tile opens a screen the root
- * layout's guards let an admin into, so a tile never leads nowhere.
+ * layout's guards let an admin into, so a tile never leads nowhere. Tiles are
+ * sorted alphabetically by title (Matt, 19 November 2026).
  */
 import { act, fireEvent, renderRouter, screen } from 'expo-router/testing-library';
 
@@ -138,9 +139,37 @@ it.each(TILES)('the $title tile opens $route', async ({ title, route }) => {
   expect(screen).toHavePathname('/' + route.replace(/\/index$/, ''));
 });
 
+/** The tile titles in the order the screen shows them. */
+function shownTitles(titles: string[]) {
+  const escaped = titles.map((t) => t.replace(/[.*+?^${}()|[\]\\]/g, '\\$&'));
+  return screen
+    .queryAllByText(new RegExp(`^(${escaped.join('|')})$`))
+    .map((node) => String(node.props.children));
+}
+
+const byTitle = (a: string, b: string) => a.localeCompare(b, 'en', { sensitivity: 'base' });
+
+it('shows the tiles alphabetically with every feature on', async () => {
+  setClubFeatures(EVERY_FEATURE_ON);
+  await openAdministration();
+  const shown = shownTitles(TILES.map((t) => t.title));
+  expect(shown).toHaveLength(TILES.length);
+  expect(shown).toEqual([...shown].sort(byTitle));
+  expect(shown[0]).toBe('Absence reasons');
+  expect(shown.at(-1)).toBe('Squads and teams');
+});
+
+it('shows the tiles alphabetically with every feature off', async () => {
+  setClubFeatures(EVERY_FEATURE_OFF);
+  await openAdministration();
+  const shown = shownTitles(TILES.map((t) => t.title));
+  expect(shown).toEqual(TILES.filter((t) => !t.needs).map((t) => t.title).sort(byTitle));
+});
+
 it('calls them Teams in a club without squads', async () => {
   setClubFeatures({ squads: false });
   await openAdministration();
   expect(screen.getByText('Teams')).toBeTruthy();
   expect(screen.queryByText('Squads and teams')).toBeNull();
+  expect(shownTitles(['Seasons', 'Teams', 'Club password'])).toEqual(['Club password', 'Seasons', 'Teams']);
 });
