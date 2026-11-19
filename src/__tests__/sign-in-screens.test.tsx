@@ -169,6 +169,37 @@ describe('finding the club', () => {
     expect(connected()).toBe('connected:STORM');
     expect(connectToClub).toHaveBeenCalledWith(expect.objectContaining({ code: 'STORM' }));
   });
+
+  it('shows each club’s saved logo, and initials for a club with none saved here', async () => {
+    await open('/choose-club', {
+      'club-codes-used': JSON.stringify(['STORM', 'THUNDER']),
+      'club-profile:STORM': JSON.stringify({ club_name: 'Sample Storm', logo_path: 'logo-7.png' }),
+    });
+    await settle();
+    const logos = screen.getAllByTestId('club-logo');
+    expect(logos).toHaveLength(1);
+    expect(logos[0].props.source).toEqual([
+      { uri: 'https://storm.example.test/storage/v1/object/public/club-branding/logo-7.png' },
+    ]);
+    // Initials are hidden from screen readers: the card already reads the name.
+    const hidden = { includeHiddenElements: true };
+    expect(screen.getAllByTestId('club-initials', hidden)).toHaveLength(1);
+    expect(screen.getByText('WCT', hidden)).toBeTruthy();
+    expect(screen.queryByText('WCT')).toBeNull();
+  });
+
+  it('falls back to initials when a saved logo can’t load, such as offline', async () => {
+    await open('/choose-club', {
+      'club-codes-used': JSON.stringify(['STORM']),
+      'club-profile:STORM': JSON.stringify({ club_name: 'Sample Storm', logo_path: 'logo-7.png' }),
+    });
+    await settle();
+    await act(async () =>
+      screen.getByTestId('club-logo').props.onError({ nativeEvent: { error: 'offline' } }),
+    );
+    expect(screen.queryByTestId('club-logo')).toBeNull();
+    expect(screen.getByText('SS', { includeHiddenElements: true })).toBeTruthy();
+  });
 });
 
 describe('signing in', () => {

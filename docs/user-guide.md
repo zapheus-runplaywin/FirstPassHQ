@@ -292,7 +292,13 @@ sees what you do in that club. After that, **Switch club** lists **Your clubs**:
 straight back to it. The app stays signed in to each club, so switching doesn't need another
 sign-in.
 
-<img src="user-guide/your-clubs.png" width="210" alt="Switch club: your clubs and another club's code">
+Each club in the list shows its logo beside its name, so you can pick the right one at a glance.
+The logo is the one the club's admin set in **Club settings**, as the app last saw it when you
+were in that club, so it shows even without a connection. A club you haven't signed in to on this
+phone yet, or one with no logo, shows its initials in a circle instead (such as **PP** for the
+Perth Pumpkins).
+
+<img src="user-guide/your-clubs.png" width="210" alt="Switch club: your clubs, each with its logo, and another club's code">
 
 ### Ask to join the club
 
