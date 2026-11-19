@@ -67,6 +67,47 @@ export function useNewConcerns(handles: boolean) {
   return handles ? count : 0;
 }
 
+/**
+ * The home screen's traffic lights: red for new concerns nobody has acted on,
+ * orange for open ones someone has (a note, a referral or a status change),
+ * green for those closed in the last 4 weeks. Counts only.
+ */
+export type ConcernCounts = { new: number; inProgress: number; closedRecently: number };
+
+export const noConcernCounts: ConcernCounts = { new: 0, inProgress: 0, closedRecently: 0 };
+
+type ConcernCountsRow = {
+  new_count: number;
+  in_progress_count: number;
+  closed_recent_count: number;
+};
+
+/** The traffic-light counts for a member who handles concerns, or zeros. */
+export function useConcernCounts(handles: boolean) {
+  const [counts, setCounts] = useState<ConcernCounts>(noConcernCounts);
+  useFocusEffect(
+    useCallback(() => {
+      if (!handles) return;
+      supabase
+        .rpc('concern_counts')
+        .maybeSingle()
+        .then(({ data }) => {
+          const row = data as ConcernCountsRow | null;
+          setCounts(
+            row
+              ? {
+                  new: row.new_count ?? 0,
+                  inProgress: row.in_progress_count ?? 0,
+                  closedRecently: row.closed_recent_count ?? 0,
+                }
+              : noConcernCounts,
+          );
+        });
+    }, [handles]),
+  );
+  return handles ? counts : noConcernCounts;
+}
+
 /** The concerns register as a report, with everything done about each one. */
 export function concernsReport(
   concerns: Concern[],

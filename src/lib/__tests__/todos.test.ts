@@ -3,7 +3,7 @@ import type { KpiReviewTodo } from '@/lib/kpis';
 import type { MedicalReview } from '@/lib/medical';
 import type { MyConflictDeclaration, PolicyReview } from '@/lib/registers';
 import type { MySurvey } from '@/lib/surveys';
-import { buildTodos, dueAlert, sortByAlert, type Todo } from '@/lib/todos';
+import { buildTodos, dueAlert, sortByAlert, type Todo, URGENT } from '@/lib/todos';
 import type { MyTraining } from '@/lib/training';
 import type { AwardSlot, CoachTeamGame, GoalGame, Injury } from '@/lib/types';
 import type { SafetyTodos } from '@/lib/use-pending-requests';
@@ -221,11 +221,11 @@ describe('dueAlert', () => {
 });
 
 describe('sortByAlert', () => {
-  type Item = { id: string; level?: 'red' | 'amber'; due?: string };
+  type Item = { id: string; level?: 'red' | 'amber'; due?: string; urgent?: boolean };
   const sort = (items: Item[]) =>
     sortByAlert(
       items,
-      (i) => (i.level ? { level: i.level, label: '' } : null),
+      (i) => (i.urgent ? URGENT : i.level ? { level: i.level, label: '' } : null),
       (i) => i.due,
     ).map((i) => i.id);
 
@@ -247,6 +247,18 @@ describe('sortByAlert', () => {
         { id: 'a-early', level: 'amber', due: '2026-10-19' },
       ]),
     ).toEqual(['r-early', 'r-late', 'r-none', 'a-early', 'a-late']);
+  });
+
+  it('puts urgent above every red, even long-overdue ones', () => {
+    expect(
+      sort([
+        { id: 'plain' },
+        { id: 'amber', level: 'amber', due: '2026-10-19' },
+        { id: 'overdue', level: 'red', due: '2020-01-01' },
+        { id: 'red', level: 'red' },
+        { id: 'urgent', urgent: true },
+      ]),
+    ).toEqual(['urgent', 'overdue', 'red', 'amber', 'plain']);
   });
 
   it('keeps the order of everything else, whatever the dates', () => {
@@ -291,6 +303,23 @@ describe('buildTodos', () => {
     expect(list[0].title).toBe('Look at 2 new concerns');
     expect(list[0].detail).toBe('Refer child abuse and serious crimes to Police straight away');
     expect(todos({ newConcerns: 1 })[0].title).toBe('Look at 1 new concern');
+  });
+
+  it('marks new concerns urgent: a red Urgent warning that goes above every other', () => {
+    expect(todos({ newConcerns: 1 })[0].alert).toEqual({ level: 'red', label: 'Urgent', urgent: true });
+    // Above red warnings that are themselves missing or overdue.
+    const list = todos({
+      newConcerns: 3,
+      safety: safety({ records_removal_stalled: { last_ok_at: null } }),
+      medicalReviews: [{ athlete_id: 'me', athlete_name: 'Me', status: 'overdue', due_on: '2026-09-01' }],
+    });
+    const sorted = sortByAlert(list, (t) => t.alert, (t) => t.dueOn);
+    expect(sorted[0]).toMatchObject({ key: 'concerns', alert: { label: 'Urgent' } });
+    expect(sorted.slice(1).map((t) => t.alert?.level)).toEqual(['red', 'red']);
+  });
+
+  it('has no urgent warning without new concerns', () => {
+    expect(todos({ newConcerns: 0 }).some((t) => t.alert?.urgent)).toBe(false);
   });
 
   it('puts athletes flagged 3 times in a week straight after new concerns, for the Child Safety Officer', () => {
