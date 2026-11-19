@@ -23,6 +23,7 @@ export const memberTodoKinds = [
   'locked',
   'dob',
   'wwcc',
+  'wwcc-sent',
   'wwcc-application',
   'notice',
   'exemption-ending',
@@ -78,6 +79,13 @@ export const memberTodoCopy: Record<
     action:
       'Record, renew, validate or register their Working With Children Check under Working With Children Check.',
     empty: 'No Working With Children Check needs sorting out now.',
+    section: 'wwcc',
+  },
+  'wwcc-sent': {
+    heading: 'Cards members sent in',
+    action:
+      'Check the card they sent in with the Screening Unit, then accept it or send it back under Working With Children Check.',
+    empty: 'No card is waiting to be checked now. Another admin may have already checked it.',
     section: 'wwcc',
   },
   'wwcc-application': {
@@ -145,6 +153,8 @@ export type MemberTodoContext = {
   > | null;
   /** Their open check application, if they have one. */
   application?: Pick<WwccApplication, 'status' | 'check_due_on' | 'ended_at'> | null;
+  /** They sent in a card of their own that is waiting for an admin. */
+  submitted?: boolean;
   /** A barring notice about them the governing body hasn't been told of. */
   noticeToReport?: boolean;
   /** No squad, team or club role for 2 years (`admin_inactive_members`). */
@@ -168,6 +178,8 @@ export function memberMatchesTodo(
   if (kind === 'join') return member.status === 'pending' && !!member.join_requested_at;
   // A notice is reported whatever has happened to their membership since.
   if (kind === 'notice') return !!context.noticeToReport;
+  // A card they sent in waits for an admin whatever else is going on.
+  if (kind === 'wwcc-sent') return !!context.submitted;
   if (member.status !== 'approved') return false;
 
   const athlete = hasRole(member, 'athlete');

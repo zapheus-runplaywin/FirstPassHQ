@@ -483,7 +483,7 @@ describe('the check application declaration', () => {
     [
       'in force',
       { status: 'in_force', valid: true },
-      ' It counts as your check until your card arrives. Send a club admin the card number and expiry date as soon as it does.',
+      ' It counts as your check until your card arrives. Add your card from the home screen as soon as it does, for a club admin to check.',
     ],
     [
       'lapsed',

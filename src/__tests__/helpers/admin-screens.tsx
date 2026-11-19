@@ -129,6 +129,7 @@ export function adminWrites() {
       ![
         'admin_volunteer_exemptions',
         'admin_wwcc_applications',
+        'admin_wwcc_submissions',
         'admin_date_of_birth_record',
         'admin_inactive_members',
       ].includes(name),

@@ -260,6 +260,33 @@ export type MyWwccApplication = {
   valid: boolean;
 };
 
+/** Where a card a member sent in is: waiting for an admin, or sent back with a note. */
+export type WwccSubmissionStatus = 'waiting' | 'returned';
+
+/** The member's own card sent in for an admin to check, from `my_wwcc_submission`. */
+export type MyWwccSubmission = {
+  id: string;
+  card_number: string;
+  expires_on: string;
+  card_name: string;
+  submitted_at: string;
+  status: WwccSubmissionStatus;
+  decided_at: string | null;
+  /** Why an admin sent it back. */
+  return_note: string | null;
+};
+
+/** A card a member sent in that is waiting for an admin, from `admin_wwcc_submissions`. */
+export type WwccSubmission = {
+  id: string;
+  profile_id: string;
+  member_name: string;
+  card_number: string;
+  expires_on: string;
+  card_name: string;
+  submitted_at: string;
+};
+
 /** Any member's application, open or ended in the last year, from `admin_wwcc_applications`. */
 export type WwccApplication = {
   id: string;

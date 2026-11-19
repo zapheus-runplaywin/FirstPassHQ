@@ -11,7 +11,7 @@ import type { MyConflictDeclaration, PolicyReview } from '@/lib/registers';
 import { closingDay, surveysToAnswer, type MySurvey } from '@/lib/surveys';
 import { WWCC_WARNING_DAYS } from '@/lib/safety';
 import { dueLabel, isOutstanding, type MyTraining } from '@/lib/training';
-import type { AwardSlot, CoachTeamGame, GoalGame, Injury } from '@/lib/types';
+import type { AwardSlot, CoachTeamGame, GoalGame, Injury, MyWwccSubmission } from '@/lib/types';
 import type { SafetyTodos } from '@/lib/use-pending-requests';
 import { seasonLabel } from '@/lib/use-teams';
 
@@ -96,6 +96,8 @@ export function buildTodos({
   certificatesToCheck = 0,
   declarationWaiting = false,
   applicationDeclarationWaiting = false,
+  ownCheck = null,
+  wwccSubmission = null,
   newConcerns = 0,
   wellbeingFlagAlerts = 0,
   loadPatternAlerts = 0,
@@ -139,6 +141,14 @@ export function buildTodos({
   declarationWaiting?: boolean;
   /** An admin recorded the member's check application, and they haven't accepted its declaration. */
   applicationDeclarationWaiting?: boolean;
+  /**
+   * Why the member should send in their own Working With Children Check: a
+   * role paused for want of one, or their card expiring soon. Null when they
+   * needn't, or can't (stood down, or no role that needs one).
+   */
+  ownCheck?: 'paused' | 'expiring' | null;
+  /** The card the member sent in themselves, waiting for an admin or sent back. */
+  wwccSubmission?: MyWwccSubmission | null;
   /** Concerns nobody has acted on yet, for the people who handle them. */
   newConcerns?: number;
   /** Athletes flagged on 3 or more days in the last 7, for the Child Safety Officer. */
@@ -212,6 +222,36 @@ export function buildTodos({
       title: 'Confirm your Working With Children Check application',
       detail: 'It counts as your check once you accept the declaration',
       href: '/wwcc-application',
+    });
+  }
+
+  // A card the member sent in that an admin sent back, or a paused role that
+  // waits on their card. Nothing while a card they sent is waiting.
+  if (wwccSubmission?.status === 'returned') {
+    todos.push({
+      key: 'wwcc-send-again',
+      title: 'Send your Working With Children Check again',
+      detail: wwccSubmission.return_note
+        ? `Sent back: ${wwccSubmission.return_note}`
+        : 'A club admin sent it back',
+      href: '/wwcc',
+      alert: ownCheck === 'paused' ? { level: 'red', label: 'Paused' } : undefined,
+    });
+  } else if (!wwccSubmission && ownCheck === 'paused') {
+    todos.push({
+      key: 'wwcc-send',
+      title: 'Add your Working With Children Check',
+      detail: 'Your role is paused until a club admin checks it',
+      href: '/wwcc',
+      alert: { level: 'red', label: 'Paused' },
+    });
+  } else if (!wwccSubmission && ownCheck === 'expiring') {
+    todos.push({
+      key: 'wwcc-send',
+      title: 'Add your renewed Working With Children Check',
+      detail: 'Your card expires soon. Once you’ve renewed it, send the new card.',
+      href: '/wwcc',
+      alert: { level: 'amber', label: 'Expiring' },
     });
   }
 
@@ -509,6 +549,17 @@ export function buildTodos({
                       ? 'Validate'
                       : 'Register',
               },
+      });
+    }
+    // Cards members sent in themselves. Their roles stay paused until checked.
+    const submitted = safety.wwcc_submitted ?? 0;
+    if (submitted > 0) {
+      todos.push({
+        key: 'wwcc-sent',
+        title: `Check ${plural(submitted, 'Working With Children Check', 'Working With Children Checks')} members sent in`,
+        detail: 'Check each card with the Screening Unit, then accept it or send it back',
+        href: memberTodoHref('wwcc-sent'),
+        alert: { level: 'amber', label: 'Check' },
       });
     }
     const applicationsDue = safety.wwcc_applications_due ?? 0;

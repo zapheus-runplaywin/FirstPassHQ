@@ -146,6 +146,11 @@ async function openTodo(kind: MemberTodoKind | 'nonsense', members: Profile[] = 
         admin_volunteer_exemptions: [EXEMPTION],
         admin_inactive_members: [{ profile_id: 'm-gone', last_active: '2024-06-01T00:00:00Z' }],
         admin_wwcc_applications: [APPLICATION],
+        // Cards two coaches sent in themselves, waiting for an admin.
+        admin_wwcc_submissions: [
+          { id: 's1', profile_id: 'm-nocard', card_number: 'WWC1111', expires_on: '2029-01-31' },
+          { id: 's2', profile_id: 'm-applied', card_number: 'WWC2222', expires_on: '2028-05-01' },
+        ],
         admin_unendorsable_clearances: [{ injury_id: 'i1', athlete_id: 'a1', athlete_name: 'Kai Senior' }],
       },
     },
@@ -166,6 +171,7 @@ describe('a member to-do with several people', () => {
     ['join', ['Pia Parent', 'Nico New']],
     ['locked', ['Charlie Child', 'Taylor Turning']],
     ['unendorsable', ['Phil Physio', 'Hana Head']],
+    ['wwcc-sent', ['Corey NoCard', 'Alex Applied']],
   ])('lists only the people the %s to-do is about, with what to do', async (kind, names) => {
     await openTodo(kind);
     expect(listed()).toEqual(names);
@@ -193,6 +199,19 @@ describe('a member to-do with several people', () => {
     await openTodo('unendorsable');
     expect(
       screen.getByText(`Nobody can endorse the clearance for Kai Senior. ${memberTodoCopy.unendorsable.action}`),
+    ).toBeTruthy();
+  });
+
+  it('names the card each member sent in', async () => {
+    await openTodo('wwcc-sent');
+    expect(screen.getByText('Coach · Sent in card WWC1111, expires 31/01/2029')).toBeTruthy();
+    expect(screen.getByText(memberTodoCopy['wwcc-sent'].action)).toBeTruthy();
+  });
+
+  it('marks members in Needs checking who sent in a card', async () => {
+    await openTodo('nonsense');
+    expect(
+      screen.getByText('Coach · No Working With Children Check recorded · Sent in a card to check'),
     ).toBeTruthy();
   });
 
@@ -231,6 +250,7 @@ describe('a member to-do already dealt with', () => {
     ['dob', [M.adult, M.guardian]],
     ['wwcc', [M.goodCoach, M.applied, M.exempt]],
     ['unendorsable', [M.goodCoach]],
+    ['wwcc-sent', [M.goodCoach, M.adult]],
   ])('says the %s to-do is all done, and offers every member', async (kind, members) => {
     await openTodo(kind, members);
     expect(listed()).toEqual([]);

@@ -5,7 +5,7 @@ import type { MyConflictDeclaration, PolicyReview } from '@/lib/registers';
 import type { MySurvey } from '@/lib/surveys';
 import { buildTodos, dueAlert, sortByAlert, type Todo, URGENT } from '@/lib/todos';
 import type { MyTraining } from '@/lib/training';
-import type { AwardSlot, CoachTeamGame, GoalGame, Injury } from '@/lib/types';
+import type { AwardSlot, CoachTeamGame, GoalGame, Injury, MyWwccSubmission } from '@/lib/types';
 import type { SafetyTodos } from '@/lib/use-pending-requests';
 
 // The modules load auth and club context, which need native storage.
@@ -346,6 +346,60 @@ describe('buildTodos', () => {
       title: 'Confirm your Working With Children Check application',
       detail: 'It counts as your check once you accept the declaration',
       href: '/wwcc-application',
+    });
+  });
+
+  describe('the member’s own check', () => {
+    const sent = (extra: Partial<MyWwccSubmission> = {}): MyWwccSubmission => ({
+      id: 's1',
+      card_number: 'WWC1',
+      expires_on: '2029-01-01',
+      card_name: 'Sam',
+      submitted_at: at(17),
+      status: 'waiting',
+      decided_at: null,
+      return_note: null,
+      ...extra,
+    });
+
+    it('asks a paused member to add their card, in red', () => {
+      expect(only(todos({ ownCheck: 'paused' }))).toEqual({
+        key: 'wwcc-send',
+        title: 'Add your Working With Children Check',
+        detail: 'Your role is paused until a club admin checks it',
+        href: '/wwcc',
+        alert: { level: 'red', label: 'Paused' },
+      });
+    });
+
+    it('asks a member whose card expires soon for the renewed one, in amber', () => {
+      expect(only(todos({ ownCheck: 'expiring' }))).toEqual({
+        key: 'wwcc-send',
+        title: 'Add your renewed Working With Children Check',
+        detail: 'Your card expires soon. Once you’ve renewed it, send the new card.',
+        href: '/wwcc',
+        alert: { level: 'amber', label: 'Expiring' },
+      });
+    });
+
+    it('asks nothing while a card they sent waits for an admin', () => {
+      expect(todos({ ownCheck: 'paused', wwccSubmission: sent() })).toEqual([]);
+      expect(todos({ ownCheck: 'expiring', wwccSubmission: sent() })).toEqual([]);
+      expect(todos({ ownCheck: null })).toEqual([]);
+    });
+
+    it('asks them to send a card again after an admin sent it back, with the note', () => {
+      const back = sent({ status: 'returned', return_note: 'Wrong expiry' });
+      expect(only(todos({ ownCheck: 'paused', wwccSubmission: back }))).toEqual({
+        key: 'wwcc-send-again',
+        title: 'Send your Working With Children Check again',
+        detail: 'Sent back: Wrong expiry',
+        href: '/wwcc',
+        alert: { level: 'red', label: 'Paused' },
+      });
+      const noNote = only(todos({ ownCheck: null, wwccSubmission: sent({ status: 'returned' }) }));
+      expect(noNote.detail).toBe('A club admin sent it back');
+      expect(noNote.alert).toBeUndefined();
     });
   });
 
@@ -847,6 +901,23 @@ describe('buildTodos', () => {
       expect(only(todos({ safety: safety({ wwcc_applications_lapsed: 1 }) })).title).toBe(
         'Confirm 1 check application is still being assessed',
       );
+    });
+
+    it('asks admins to check cards members sent in, after the checks tile', () => {
+      expect(only(todos({ safety: safety({ wwcc_submitted: 1 }) }))).toEqual({
+        key: 'wwcc-sent',
+        title: 'Check 1 Working With Children Check members sent in',
+        detail: 'Check each card with the Screening Unit, then accept it or send it back',
+        href: { pathname: '/admin', params: { todo: 'wwcc-sent' } },
+        alert: { level: 'amber', label: 'Check' },
+      });
+      expect(only(todos({ safety: safety({ wwcc_submitted: 3 }) })).title).toBe(
+        'Check 3 Working With Children Checks members sent in',
+      );
+      expect(todos({ safety: safety({ wwcc_submitted: 0 }) })).toEqual([]);
+      expect(
+        keys(todos({ safety: safety({ wwcc_missing: 1, wwcc_submitted: 1, wwcc_applications_due: 1 }) })),
+      ).toEqual(['wwcc', 'wwcc-sent', 'wwcc-applications']);
     });
 
     it('adds no applications tile when none is due', () => {

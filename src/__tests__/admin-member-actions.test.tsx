@@ -21,6 +21,7 @@ import type {
   StandDown,
   Team,
   VolunteerExemption,
+  WwccSubmission,
 } from '@/lib/types';
 
 import {
@@ -125,6 +126,8 @@ async function openMember(
     requests = [] as { guardian_id: string; athlete_id: string }[],
     others = [] as Profile[],
     childPlaces = [] as { profile_id: string; team_id: string }[],
+    // Cards members sent in themselves, waiting for an admin.
+    submissions = [] as WwccSubmission[],
   } = {},
 ) {
   await openScreen(
@@ -155,7 +158,11 @@ async function openMember(
           return undefined;
         },
       },
-      rpcs: { admin_volunteer_exemptions: exemptions, admin_date_of_birth_record: dobRecord },
+      rpcs: {
+        admin_volunteer_exemptions: exemptions,
+        admin_date_of_birth_record: dobRecord,
+        admin_wwcc_submissions: submissions,
+      },
       rpcErrors,
     },
   );
@@ -998,6 +1005,102 @@ describe('validating a coach’s card', () => {
     await openMember(p('admin'));
     expect(screen.getByText('Another admin needs to validate your card.')).toBeTruthy();
     expect(screen.queryByText('Record validation')).toBeNull();
+  });
+});
+
+// ---------------------------------------------------------------------------
+// A card the member sent in themselves
+
+describe('a card a paused coach sent in', () => {
+  const lapsed = p('coachExpiredCheck');
+  const sent = (extra: Partial<WwccSubmission> = {}): WwccSubmission => ({
+    id: 'sub-1',
+    profile_id: lapsed.id,
+    member_name: lapsed.full_name ?? '',
+    card_number: 'WWC7654321',
+    expires_on: '2029-10-01',
+    card_name: 'Sam Lapsed',
+    submitted_at: '2026-10-17T00:00:00Z',
+    ...extra,
+  });
+
+  it('shows what they sent, and needs how it was checked before accepting', async () => {
+    await openMember(lapsed, { submissions: [sent()] });
+    expect(screen.getByText('Card they sent in')).toBeTruthy();
+    expect(
+      screen.getByText(
+        `WWC7654321, expires 01/10/2029. Name on the card: Sam Lapsed. Sent ${localDay('2026-10-17T00:00:00Z')}.`,
+      ),
+    ).toBeTruthy();
+    expect(fieldFor('Name on the card').props.value).toBe('Sam Lapsed');
+    await press('Accept and validate');
+    expect(screen.getByText('Choose how you checked the card.')).toBeTruthy();
+    expect(rpcsNamed('admin_accept_wwcc_submission')).toEqual([]);
+  });
+
+  it('accepting records and validates the card in one step, and fills in the card fields', async () => {
+    await openMember(lapsed, { submissions: [sent()] });
+    await typeInto('Name on the card', 'Sam A Lapsed');
+    await press('Checked online');
+    await fireEvent(screen.getByLabelText('Registered card with Sample Club'), 'valueChange', true);
+    await press('Accept and validate');
+    expect(rpcsNamed('admin_accept_wwcc_submission')).toEqual([
+      [
+        'admin_accept_wwcc_submission',
+        { p_submission_id: 'sub-1', p_card_name: 'Sam A Lapsed', p_method: 'online', p_unit_linked: true },
+      ],
+    ]);
+    expect(
+      screen.getByText('Card accepted and validated. Their roles that needed it start again now.'),
+    ).toBeTruthy();
+    // A later Save keeps the accepted card, not the expired one.
+    expect(fieldFor('Card number').props.value).toBe('WWC7654321');
+    expect(fieldFor('Expires').props.value).toBe('01/10/2029');
+  });
+
+  it('sending back needs a note the member reads', async () => {
+    await openMember(lapsed, { submissions: [sent()] });
+    await press('Send it back');
+    await typeInto('What they need to fix', 'The Screening Unit shows a different expiry');
+    await press('Send it back');
+    expect(rpcsNamed('admin_return_wwcc_submission')).toEqual([
+      [
+        'admin_return_wwcc_submission',
+        { p_submission_id: 'sub-1', p_note: 'The Screening Unit shows a different expiry' },
+      ],
+    ]);
+    expect(
+      screen.getByText('Sent back. They’ll see your note and a to-do to send it again.'),
+    ).toBeTruthy();
+  });
+
+  it('cancelling a send-back goes back to accepting', async () => {
+    await openMember(lapsed, { submissions: [sent()] });
+    await press('Send it back');
+    await press('Cancel');
+    expect(screen.getByText('Accept and validate')).toBeTruthy();
+  });
+
+  it('shows the database’s refusal', async () => {
+    await openMember(lapsed, {
+      submissions: [sent()],
+      rpcErrors: { admin_accept_wwcc_submission: 'That card has expired. Send it back and ask for the new one' },
+    });
+    await press('Card sighted');
+    await press('Accept and validate');
+    expect(screen.getByText('That card has expired. Send it back and ask for the new one')).toBeTruthy();
+  });
+
+  it('shows nothing when another member sent the card', async () => {
+    await openMember(lapsed, { submissions: [sent({ profile_id: 'someone-else' })] });
+    expect(screen.queryByText('Card they sent in')).toBeNull();
+  });
+
+  it('asks another admin to check an admin’s own card', async () => {
+    const admin = p('admin');
+    await openMember(admin, { submissions: [sent({ profile_id: admin.id })] });
+    expect(screen.getByText('Another admin needs to check your card.')).toBeTruthy();
+    expect(screen.queryByText('Accept and validate')).toBeNull();
   });
 });
 
