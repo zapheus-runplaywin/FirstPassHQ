@@ -1,4 +1,4 @@
--- Tests for 20261119130000_wwcc_self_submit.sql. Run on a fresh database with
+-- Tests for 20261119135000_wwcc_self_submit.sql. Run on a fresh database with
 -- the migrations and seed-members.sql loaded. Prints one line per check.
 \set ON_ERROR_STOP 0
 \pset tuples_only on

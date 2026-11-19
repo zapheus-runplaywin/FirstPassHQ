@@ -75,6 +75,9 @@ jobs:
       - name: Security check flags open functions
         if: ${{ !cancelled() }}
         run: python3 scripts/test-check-migration-security.py
+      - name: Clash check catches a version another open pull request uses
+        if: ${{ !cancelled() }}
+        run: python3 scripts/test-check-migration-clashes.py
       - name: Club data export copies everything
         if: ${{ !cancelled() }}
         run: scripts/test-export-club-data.sh
