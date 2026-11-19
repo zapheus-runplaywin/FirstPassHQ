@@ -245,6 +245,53 @@ describe('Club settings', () => {
     });
   });
 
+  it('warns before Injuries is turned off with injuries open, saying they pause and registers keep the note', async () => {
+    await openClub({
+      visible_injuries: [
+        { id: 'i1', status: 'injured' },
+        { id: 'i2', status: 'clearance_requested' },
+        { id: 'i3', status: 'coach_endorsed' },
+      ],
+    });
+    expect(screen.queryByText(/injuries are open/)).toBeNull();
+    await flip('Injuries', false);
+    await settle();
+    expect(
+      screen.getByText(
+        /^3 injuries are open, and 2 are waiting for clearance sign-off, which will wait too\./,
+      ),
+    ).toBeTruthy();
+    expect(screen.getByText(/Registers keep showing “Injured”/)).toBeTruthy();
+    // Back on before saving: the warning goes.
+    await flip('Injuries', true);
+    expect(screen.queryByText(/injuries are open/)).toBeNull();
+  });
+
+  it('says what turning Daily check-ins or Live streams off does to parents’ consent', async () => {
+    await openClub();
+    expect(screen.getByText('Live streams')).toBeTruthy();
+    expect(isOn('Live streams')).toBe(true);
+    await flip('Daily check-ins', false);
+    await flip('Live streams', false);
+    expect(
+      screen.getByText(/haven’t answered the check-in consent question no longer see it/),
+    ).toBeTruthy();
+    expect(
+      screen.getByText(/no longer see the question about their child’s stats on live streams/),
+    ).toBeTruthy();
+    await save();
+    expect(savedProfile()[0].p_features).toEqual({
+      checkIns: false,
+      liveStreams: false,
+    });
+  });
+
+  it('shows no note under a feature already off when the screen opens', async () => {
+    setSavedClub({ features: { injuries: false } });
+    await openClub({ visible_injuries: [{ id: 'i1', status: 'injured' }] });
+    expect(screen.queryByText(/injur(y is|ies are) open/)).toBeNull();
+  });
+
   it('shows the club’s saved switches and keeps them when saved again, dropping the old Affiliation switch', async () => {
     setSavedClub({
       features: { calendar: false, awards: false, kpis: true, affiliation: true, squads: false },

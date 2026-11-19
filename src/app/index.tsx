@@ -64,7 +64,12 @@ import {
   useMyPolicyReviews,
 } from '@/lib/registers';
 import { buildTodos } from '@/lib/todos';
-import type { ChildConsent } from '@/lib/consents';
+import {
+  asksCheckIns,
+  type ChildConsent,
+  consentTodoDetail,
+  needsConsent,
+} from '@/lib/consents';
 import {
   isOutstanding,
   useClubHasTraining,
@@ -110,7 +115,16 @@ export default function HomeScreen() {
   const loadPatterns = useLoadPatternAlerts(wellbeingFlags.isOfficer && features.trainingLoad);
   const [refreshing, setRefreshing] = useState(false);
   const [athletes, setAthletes] = useState<
-    { id: string; name: string; data: boolean; health: boolean; canConsent: boolean }[]
+    {
+      id: string;
+      name: string;
+      data: boolean;
+      health: boolean;
+      canConsent: boolean;
+      checkInsOn: boolean;
+      needsConsent: boolean;
+      consentDetail: string;
+    }[]
   >([]);
   const { events, reload: reloadEvents } = useEvents();
   const { unreadCount, reloadUnread } = useUnreadCount();
@@ -185,7 +199,9 @@ export default function HomeScreen() {
     loadPatternAlerts: loadPatterns,
     loadFlags,
     absencesToReview: absencesToReview.length,
-    consentsNeeded: athletes.filter((a) => a.canConsent && (!a.data || !a.health)),
+    consentsNeeded: athletes
+      .filter((a) => a.needsConsent)
+      .map((a) => ({ id: a.id, name: a.name, detail: a.consentDetail })),
     conduct: conductTodos.map((t) => ({
       id: t.profile_id,
       name: t.full_name ?? 'your child',
@@ -222,6 +238,9 @@ export default function HomeScreen() {
         data: a.data,
         health: a.health,
         canConsent: a.can_consent,
+        checkInsOn: asksCheckIns(a),
+        needsConsent: needsConsent(a),
+        consentDetail: consentTodoDetail(a),
       })),
     );
   }, [isGuardian]);
@@ -627,7 +646,7 @@ export default function HomeScreen() {
                 <ThemedText type="smallBold">{a.name}</ThemedText>
                 <ThemedText
                   type="small"
-                  themeColor={a.canConsent && (!a.data || !a.health) ? 'tint' : 'textSecondary'}>
+                  themeColor={a.needsConsent ? 'tint' : 'textSecondary'}>
                   {consentSummary(a)}
                 </ThemedText>
               </PressableCard>
@@ -1156,9 +1175,18 @@ const styles = StyleSheet.create({
   },
 });
 
-/** Such as "Check-ins: yes · Injuries: not yet". */
-function consentSummary(a: { data: boolean; health: boolean; canConsent: boolean }) {
+/**
+ * Such as "Check-ins: yes · Injuries: not given". Check-ins are left out while
+ * Daily check-ins is off for the child and no consent was given for them.
+ */
+function consentSummary(a: {
+  data: boolean;
+  health: boolean;
+  canConsent: boolean;
+  checkInsOn: boolean;
+}) {
   if (!a.canConsent && !a.data && !a.health) return 'Waiting for an admin to verify you';
   const word = (on: boolean) => (on ? 'yes' : 'not given');
-  return `Check-ins: ${word(a.data)} · Injuries: ${word(a.health)}`;
+  const injuries = `Injuries: ${word(a.health)}`;
+  return a.checkInsOn || a.data ? `Check-ins: ${word(a.data)} · ${injuries}` : injuries;
 }
