@@ -363,30 +363,10 @@ export default function HomeScreen() {
 
         {approved ? <AdminChildInjuriesClosed /> : null}
 
-        {/* Main order: To do, Coming up, Messages, check-ins, attendance, Injuries, Session
+        {/* Main order: To do, Messages, Coming up, check-ins, attendance, Injuries, Session
             plans, Concerns, Reports or Administration. Raise a concern stays last. */}
         {approved ? (
           <TodoList todos={todos} personalTasks={personalTasks} onToggleTask={setTaskDone} />
-        ) : null}
-
-        {approved && features.calendar ? (
-          <View style={styles.section}>
-            <View style={styles.sectionHeader}>
-              <ThemedText type="smallBold">Coming up</ThemedText>
-              <Pressable accessibilityRole="button" onPress={() => router.push('/calendar')}>
-                <ThemedText type="small" style={{ color: theme.tint }}>
-                  Full calendar
-                </ThemedText>
-              </Pressable>
-            </View>
-            {events === null ? null : events.length === 0 ? (
-              <ThemedText type="small" themeColor="textSecondary">
-                Nothing on the calendar yet.
-              </ThemedText>
-            ) : (
-              <EventGrid events={events.slice(0, UPCOMING_COUNT)} showDay />
-            )}
-          </View>
         ) : null}
 
         {getsMessages && features.messages ? (
@@ -407,6 +387,26 @@ export default function HomeScreen() {
                 : `${unreadCount} new ${unreadCount === 1 ? 'message' : 'messages'}`}
             </ThemedText>
           </PressableCard>
+        ) : null}
+
+        {approved && features.calendar ? (
+          <View style={styles.section}>
+            <View style={styles.sectionHeader}>
+              <ThemedText type="smallBold">Coming up</ThemedText>
+              <Pressable accessibilityRole="button" onPress={() => router.push('/calendar')}>
+                <ThemedText type="small" style={{ color: theme.tint }}>
+                  Full calendar
+                </ThemedText>
+              </Pressable>
+            </View>
+            {events === null ? null : events.length === 0 ? (
+              <ThemedText type="small" themeColor="textSecondary">
+                Nothing on the calendar yet.
+              </ThemedText>
+            ) : (
+              <EventGrid events={events.slice(0, UPCOMING_COUNT)} showDay />
+            )}
+          </View>
         ) : null}
 
         {features.checkIns && myCheckIn !== undefined ? (
