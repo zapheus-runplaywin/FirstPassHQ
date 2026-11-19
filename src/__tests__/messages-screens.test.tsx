@@ -9,6 +9,7 @@
  * box or a way to message someone back (AGENTS.md, "No social media features
  * for children"). Every message offers a way to report it.
  */
+import { router } from 'expo-router';
 import { fireEvent, screen } from 'expo-router/testing-library';
 
 import MessageScreen from '@/app/messages/[id]';
@@ -231,6 +232,20 @@ describe('one message', () => {
   it('lets anyone who got it report it as a concern', async () => {
     await openMessage(morePersonas.under18Athlete, MESSAGE);
     expect(screen.getByText('Report this message')).toBeTruthy();
+  });
+
+  it('reports the message itself, so the concern keeps a copy of it', async () => {
+    const push = jest.spyOn(router, 'push').mockImplementation(() => {});
+    try {
+      await openMessage('athlete', MESSAGE);
+      await fireEvent.press(screen.getByText('Report this message'));
+      expect(push).toHaveBeenCalledWith({
+        pathname: '/concern/new',
+        params: { message: 'msg-1', context: expect.stringMatching(/^Message from Sample coach, /) },
+      });
+    } finally {
+      push.mockRestore();
+    }
   });
 
   it('tells a guardian which child their copy was for', async () => {

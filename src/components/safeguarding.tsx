@@ -5,6 +5,7 @@ import { ThemedText } from '@/components/themed-text';
 import { Card } from '@/components/ui';
 import { Spacing } from '@/constants/theme';
 import { helplines, useSafeguardingContacts } from '@/lib/concerns';
+import { formatDateTime } from '@/lib/format';
 import { useTheme } from '@/hooks/use-theme';
 
 /**
@@ -66,14 +67,24 @@ export function SafeguardingContactsCard() {
  * A link to raise a concern, with where it came from (for example a message)
  * kept with the concern.
  */
-export function RaiseConcernLink({ context, label }: { context?: string; label?: string }) {
+export function RaiseConcernLink({
+  context,
+  label,
+  messageId,
+}: {
+  context?: string;
+  label?: string;
+  /** The message being reported, so the concern keeps a copy of it. */
+  messageId?: string;
+}) {
   const theme = useTheme();
+  const params: Record<string, string> = {};
+  if (context) params.context = context;
+  if (messageId) params.message = messageId;
   return (
     <Pressable
       accessibilityRole="link"
-      onPress={() =>
-        router.push({ pathname: '/concern/new', params: context ? { context } : {} })
-      }
+      onPress={() => router.push({ pathname: '/concern/new', params })}
       style={styles.link}>
       <ThemedText type="small" style={{ color: theme.tint }}>
         {label ?? 'Worried about something? Raise a concern'}
@@ -82,7 +93,40 @@ export function RaiseConcernLink({ context, label }: { context?: string; label?:
   );
 }
 
+/**
+ * A reported message as the concern keeps it: who sent it, when, and exactly
+ * what it said.
+ */
+export function ReportedMessage({
+  title = 'Reported message',
+  senderName,
+  sentAt,
+  body,
+}: {
+  title?: string;
+  senderName: string | null | undefined;
+  sentAt: string | null | undefined;
+  body: string;
+}) {
+  const theme = useTheme();
+  return (
+    <Card testID="reported-message">
+      <ThemedText type="smallBold">{title}</ThemedText>
+      <ThemedText type="small" themeColor="textSecondary">
+        From {senderName ?? 'a former member'}
+        {sentAt ? `, ${formatDateTime(new Date(sentAt))}` : ''}
+      </ThemedText>
+      <View style={[styles.quote, { borderLeftColor: theme.textSecondary }]}>
+        <ThemedText type="small" selectable>
+          {body}
+        </ThemedText>
+      </View>
+    </Card>
+  );
+}
+
 const styles = StyleSheet.create({
+  quote: { borderLeftWidth: 3, paddingLeft: Spacing.two },
   link: { paddingVertical: Spacing.two },
   rows: { gap: Spacing.two },
 });

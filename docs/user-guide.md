@@ -555,7 +555,7 @@ Messages from your coaches, managers, captains, the committee and the club arriv
 **Messages**. Unread messages have a dot in the club's colour, and the home card shows how many
 are new. Opening a message marks it as read, and the
 sender can see that you've read it. **Report this message** on any message raises a concern
-about it (see [Raising a concern](#raising-a-concern)).
+about it, and the concern keeps a copy of the message (see [Raising a concern](#raising-a-concern)).
 
 Who a message went to is shown under the sender's name, for example "To Mixed Open Squad",
 "To Physios" or "To Everyone in the club". Messages from **Club safeguarding** tell a family about a change, such
@@ -795,14 +795,18 @@ managers'.
 coaches, guests and people still waiting for approval. Use it for anything that worries you about a
 child or about how someone at the club behaves. You don't need to be sure. The same link is on the
 daily check-in screen, on every injury and, as **Report this message**, on every message, so the
-concern notes where it came from.
+concern notes where it came from. When you report a message, the screen shows the message you're
+reporting, and the concern keeps its own copy of it: what it said, who sent it and when. The people
+who look into it can read the message even if it's later removed under the club's keep periods.
+Only a message you received or sent can be reported this way.
 
 The screen starts with who to talk to: the club's **Child Safety Officer** and **Complaints
 Manager**, the sport's governing body if the club has added it, and services anyone can call
 (Police on 000, Kids Helpline and the Safe Sport Hotline). Tap a number to call it.
 
-Then say what happened, and optionally who it's about (pick a coach, manager, physio, committee
-member, admin or temporary helper by name, or describe anyone else in your own words), when it happened and whether a child's safety is involved. Choose **Show my name** or
+Then say what happened, and optionally who it's about (start typing a name to pick a coach, manager,
+physio, committee member, admin or temporary helper, or describe anyone else in your own words; the
+list never shows athletes or parents, so nobody can browse the club's children here), when it happened and whether a child's safety is involved. Choose **Show my name** or
 **Don't show my name**. If you hide your name, the people who look into it won't see who you are,
 so they can't ask you more; the app still keeps it with your account so you can follow it. If you
 show your name, say whether they can contact you and how. Tap **Send to the club**.
@@ -813,6 +817,7 @@ shows each one and where it's up to: Received, Referred, Being looked into or Cl
 
 <img src="user-guide/raise-concern.png" width="210" alt="Raise a concern: who to call first">
 <img src="user-guide/raise-concern-form.png" width="210" alt="The concern form: what happened, who, when, and whether to show your name">
+<img src="user-guide/report-message.png" width="210" alt="Reporting a message: the message is shown on the form and a copy is kept">
 
 ### Deleting your account
 
@@ -3415,7 +3420,7 @@ its periods starts on those.
 A period the club saved before these choices changed (such as 7 years for attendance) stays as it
 is, shown as its own choice, until an admin picks another.
 
-Concerns are never removed. While a concern names a member (open or closed), nothing about them
+Concerns are never removed, including the copy of any message reported with them. While a concern names a member (open or closed), nothing about them
 is removed either, whatever these periods say: their attendance and the sessions they were at, messages they
 sent or received, check-ins, game goals, season KPIs, absences, training certificates, injuries
 and their documents, safeguarding records, who viewed their records and who viewed what with
@@ -3567,24 +3572,31 @@ at all.
 <img src="user-guide/concerns-lights.png" width="210" alt="The Concerns card: 1 new in red, 2 in progress in orange, 1 closed in the last 4 weeks in green">
 
 Open a concern to see what was raised, by whom (unless they hid their name), how to contact them,
-and where it was raised from. While a concern that may involve a child's safety is open and hasn't been referred, a red note at the top says to refer child abuse or a serious crime to Police and the
+and where it was raised from. A concern raised with **Report this message** shows the **Reported
+message** in full: who sent it, when, and exactly what it said. This is the concern's own copy, kept
+with the concern for good, so it stays the same if the message is later removed. Hiding the
+reporter's name works the same as for any concern. While a concern that may involve a child's safety is open and hasn't been referred, a red note at the top says to refer child abuse or a serious crime to Police and the
 governing body straight away and not to resolve it within the club. Then record what you did:
 
 - **Referred to** the governing body, or **Referred to Police**, with an optional note such as a
   reference number. Either sets the status to Referred.
 - **Add note** for anything else: who you spoke to and what was decided.
 - **Change status** to Being looked into, or **Closed** with a note saying why.
-- **Who it's about**: name the member it's about. From then on they can't see it, even if they're
-  an admin or handle concerns. Nothing about them is removed under [Keeping
+- **Who it's about**: type a name under **Search members** and tap the member it's about. Every
+  approved member can be found here, athletes, parents and guests included, and matches start from
+  the first letter (one letter finds names with a part starting with it). If nobody matches, it
+  says so. From then on they can't see it, even if they're an admin or handle concerns. Nothing about them is removed under [Keeping
   records](#keeping-records) while the concern names them, even once it's closed: their
   attendance, messages, check-ins, injuries and safeguarding records are kept as a legal hold.
 
 Every step is kept with who did it and when. **Export the register as a PDF** gives the whole
-register with every step, except any concern about you, for the committee, the governing body or
+register with every step and any reported message, except any concern about you, for the committee, the governing body or
 an auditor.
 
 <img src="user-guide/concerns-register.png" width="210" alt="The concerns register">
 <img src="user-guide/concern.png" width="210" alt="A concern with the referral prompt and what's been done">
+<img src="user-guide/concern-reported-message.png" width="210" alt="A concern raised from a message, with the reported message in full">
+<img src="user-guide/concern-about-search.png" width="210" alt="Who it's about: typing A finds members whose names start with A">
 
 ### Wellbeing flags
 
@@ -3720,7 +3732,10 @@ the sport's governing body. The details are in each role's section.
 Anyone signed in can raise a concern, from the home screen, the check-in screen, any injury or any
 message, and can hide their name (see [Raising a concern](#raising-a-concern)). It goes to the
 club's Child Safety Officer, Complaints Manager and admins, never to the person it's about when
-they were named from the list. Police
+they were named from the list. A reported message is copied into the concern by the club's
+database, from the message itself, so it can't be altered on the way and survives the message
+being removed later. Those handling a concern can name anyone in the club as who it's about,
+children included, while the form members use to raise one lists only adults with club roles. Police
 (000), Kids Helpline, the Safe Sport Hotline and the governing body's contacts are shown on the same
 screen. Every concern and every step taken is kept in the [concerns
 register](#the-concerns-register), which prints as a PDF.
