@@ -2459,7 +2459,8 @@ member, and doesn't replace the club's own membership or registration process.
 Admins can do everything above except endorse injury clearances (they accept them, like the
 committee, and endorse only if they're also a coach or physio), read athletes' check-in answers or
 set their game goals (unless they also coach them), plus run the club's set-up from **Administration** on the home
-screen. Admins' to-do lists include join requests waiting for approval and clearances waiting for
+screen. Administration lists its items alphabetically, and **Members** shows how many join requests
+are waiting. Admins' to-do lists include join requests waiting for approval and clearances waiting for
 sign-off, plus child-safety follow-ups: new concerns, athletes with no date of birth, athletes under 18
 locked out because no verified parent or guardian is linked, Working With Children Checks to sort out, volunteer exemptions that end within
 60 days, athletes turning 18 within 30 days, Screening Unit notices still to report to the
