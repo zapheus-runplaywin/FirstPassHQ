@@ -10,6 +10,7 @@ import { useTheme } from '@/hooks/use-theme';
 import { formatDate, isMinor, isUnder13, parseDate, under13Message } from '@/lib/age';
 import { looksLikeSetupCode } from '@/lib/first-admin';
 import { looksLikeLinkCode } from '@/lib/guardian-links';
+import { childDetailsProblem } from '@/lib/no-app-child';
 import { useAuth } from '@/lib/auth';
 import { useSquads } from '@/lib/club';
 import { isTeamRole, requestableRoles, roleLabels } from '@/lib/labels';
@@ -41,6 +42,11 @@ export default function JoinScreen() {
   );
   const [cardNumber, setCardNumber] = useState(profile?.declared_wwcc_number ?? '');
   const [childCode, setChildCode] = useState('');
+  // A parent whose child won't use the app asks the club to add the child.
+  const [noApp, setNoApp] = useState(false);
+  const [childName, setChildName] = useState('');
+  const [childDob, setChildDob] = useState('');
+  const [childTeamId, setChildTeamId] = useState<string | null>(null);
   const [password, setPassword] = useState('');
   const [needsPassword, setNeedsPassword] = useState(false);
   // A new club with no admin yet, and a setup code waiting to be used: the
@@ -130,7 +136,14 @@ export default function JoinScreen() {
       setError('Please enter the email you used to register with PlayHQ.');
       return;
     }
-    if (guardian && childCode.trim() && !looksLikeLinkCode(childCode)) {
+    if (guardian && noApp) {
+      const problem = childDetailsProblem(childName, childDob);
+      if (problem) {
+        setError(problem);
+        return;
+      }
+    }
+    if (guardian && !noApp && childCode.trim() && !looksLikeLinkCode(childCode)) {
       setError('Enter the 6-letter code from your child’s app, such as 7KQ-4MD, or leave it blank.');
       return;
     }
@@ -193,7 +206,22 @@ export default function JoinScreen() {
         return;
       }
     }
-    if (guardian && childCode.trim()) {
+    if (guardian && noApp) {
+      const { error: childError } = await supabase.rpc('request_no_app_child', {
+        p_full_name: childName,
+        p_date_of_birth: parseDate(childDob),
+        p_team_id: childTeamId,
+      });
+      if (childError) {
+        setSaving(false);
+        await refresh();
+        setError(
+          `Your request is sent, but your child wasn’t: ${childError.message} You can add them from Home.`,
+        );
+        return;
+      }
+    }
+    if (guardian && !noApp && childCode.trim()) {
       // A wrong code comes back as a message: the request is sent, so they
       // can try the code again from Home.
       const { data: codeRefused, error: codeError } = await supabase.rpc('enter_child_code', {
@@ -385,6 +413,43 @@ export default function JoinScreen() {
       ) : null}
 
       {guardian ? (
+        <ChipGroup
+          label="Will your child use the app?"
+          options={[
+            { value: 'yes', label: 'Yes, they’ll ask to join' },
+            { value: 'no', label: 'No, they won’t use the app' },
+          ]}
+          selected={[noApp ? 'no' : 'yes']}
+          onToggle={(value) => setNoApp(value === 'no')}
+        />
+      ) : null}
+
+      {guardian && noApp ? (
+        <>
+          <ThemedText type="small" themeColor="textSecondary">
+            The club can add your child under 18 without a sign-in of their own, if they have no
+            phone or won’t use the app. You then do everything for them. A club admin checks these
+            details against PlayHQ and adds them.
+          </ThemedText>
+          <TextField label="Child’s name" value={childName} onChangeText={setChildName} maxLength={80} />
+          <TextField
+            label="Child’s date of birth"
+            value={childDob}
+            onChangeText={setChildDob}
+            placeholder="DD/MM/YYYY"
+            keyboardType="numbers-and-punctuation"
+            maxLength={10}
+          />
+          <ChipGroup
+            label={word === 'squad' ? 'Their squad' : 'Their team'}
+            options={groups.map((t) => ({ value: t.id, label: t.name }))}
+            selected={childTeamId ? [childTeamId] : []}
+            onToggle={(id) => setChildTeamId(id === childTeamId ? null : id)}
+          />
+        </>
+      ) : null}
+
+      {guardian && !noApp ? (
         <>
           <TextField
             label="Your child’s link code"

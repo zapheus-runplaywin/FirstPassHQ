@@ -42,8 +42,8 @@ each of their roles can.
 
 | Role          | Who it's for                                                                                         |
 | ------------- | ---------------------------------------------------------------------------------------------------- |
-| **Athlete**   | Registered players aged 13 and over (nobody under 13 signs in to the app this year). Some are club captains, or captains or vice captains of a squad or team. They see their own attendance and can report an absence. An athlete under 18 can't use the app until a verified parent or guardian is linked to them: until then they see only a link code to share with one (see [Ask to join the club](#ask-to-join-the-club)). |
-| **Guardian**  | Parents and guardians of athletes under 18. They ask to be linked to their child by entering the link code from their child's app, and follow their children into and out of their squads and teams. They see their child's attendance and can report an absence for them, and see what has changed around their child. If the club asks, they accept the club's code of conduct for their child each season. |
+| **Athlete**   | Registered players aged 13 and over (nobody under 13 signs in to the app this year). Some are club captains, or captains or vice captains of a squad or team. They see their own attendance and can report an absence. An athlete under 18 can't use the app until a verified parent or guardian is linked to them: until then they see only a link code to share with one (see [Ask to join the club](#ask-to-join-the-club)). A child with no phone, or who won't use the app, can be added by an admin with no sign-in of their own, at any age under 18, and their parent or guardian does everything for them (see [A child who won't use the app](#a-child-who-wont-use-the-app)). |
+| **Guardian**  | Parents and guardians of athletes under 18. They ask to be linked to their child by entering the link code from their child's app, or ask the club to add a child who won't use the app, and follow their children into and out of their squads and teams. They see their child's attendance and can report an absence for them, and see what has changed around their child. If the club asks, they accept the club's code of conduct for their child each season. |
 | **Coach**     | Head coaches and assistant coaches. Both have the same permissions, except that a head coach sets Season KPIs for the group's assistant coaches; otherwise the title only shows who is who. The app gives each coach a title from their team, or their squad until they're in a team, such as "Head Coach, Open A". Need a current Working With Children Check; the role pauses while it's expired, and they add the renewed card from their home screen for an admin to check (see [Sending in your own check](#sending-in-your-own-check)). Someone who has applied for one, new or a renewal, can work while it's assessed (see [Checks applied for](#checks-applied-for)). A parent volunteering at their child's club, a volunteer under 18, or a short-term visitor or national event helper from outside WA has an exemption instead (see [Volunteer exemptions](#volunteer-exemptions)). |
 | **Manager**   | Squad and team managers. The app gives each manager a title from their team, or their squad until they're in a team, such as "Manager, 17 & Under". Need a current Working With Children Check; the role pauses while it's expired, and they add the renewed card from their home screen for an admin to check (see [Sending in your own check](#sending-in-your-own-check)). Someone who has applied for one, new or a renewal, can work while it's assessed (see [Checks applied for](#checks-applied-for)). A parent volunteering at their child's club, a volunteer under 18, or a short-term visitor or national event helper from outside WA has an exemption instead (see [Volunteer exemptions](#volunteer-exemptions)). |
 | **Committee** | Club committee members. Each can add a title, such as President or Secretary, shown with their role. Only committee members and admins can add their own title. Need a current Working With Children Check, or an application being assessed, unless an admin exempts them with a reason (not if they also coach, manage or physio); the role pauses if a recorded check expires or was recorded without an expiry date, and they add the renewed card from their home screen for an admin to check. Committee members approved before checks were needed keep the role without one only until the club's **committee checks date**. Those with a current check, an application in force or a volunteer exemption also read most of the club's governance reports. |
@@ -1194,6 +1194,36 @@ Safety Officer or an admin.
 The home screen shows who you're the guardian of. Until an admin links you, it says "Nobody yet"
 and asks for your child's link code.
 
+### A child who won't use the app
+
+If your child under 18 has no phone, or won't use the app, the club can add them without a sign-in
+of their own. They're still in their squads and teams, on the registers and in the club's records,
+and you do everything for them.
+
+1. When you ask to join as **Guardian**, answer **Will your child use the app?** with **No, they
+   won't use the app**, and give your child's name, date of birth and squad or team instead of a
+   link code. Already in the club? Use **Add a child who won't use the app** on your home screen.
+2. A club admin verifies who you are and checks your child's details against PlayHQ, then adds
+   your child, linked to you. If you were still waiting, you're approved at the same time. Until
+   then your home screen shows what you asked for, and you can **Withdraw** it.
+3. You get the usual **Club safeguarding** message naming the admin who linked you.
+
+Your child never signs in: they have no email, and nobody can sign in as them. Children under 13
+can be added this way, because they never sign in themselves. Everything in this section works for
+them as for any child: you give consent, report absences and injuries, keep their medical details,
+see their attendance and accept the code of conduct for them. Messages sent to them come to you,
+as for any child. When a survey is sent to them, your copy has **Answer for** with their name:
+your answers go in as theirs, marked as answered by you. What only an athlete does in person is
+left out for them: daily check-ins, logged training, game goals and award votes. Coaches see
+**No app** beside their name, so they know why.
+
+A second parent or guardian joins as usual and asks an admin to link them from your child's page.
+When your child turns 18 your access ends as it does for any child, and they join with their own
+account if they want to keep using the app.
+
+<img src="user-guide/no-app-child-join.png" width="210" alt="A parent asking to join, with their child who won't use the app">
+<img src="user-guide/no-app-child-home.png" width="210" alt="A parent's home screen showing the child they asked the club to add">
+
 ### Giving consent
 
 Once you're linked and verified, **Consent** on your home screen lists each child under 18, and
@@ -1339,7 +1369,9 @@ them.
 
 When a survey is sent to your child under 18, you get a copy naming your child, so you can see
 what they're asked. Only your child answers it, even if you're placed in their squad or team
-yourself: a survey to the squad is for the athletes in it. If the survey is named, you can read your child's
+yourself: a survey to the squad is for the athletes in it. The one exception is a child who
+doesn't use the app: tap **Answer for** with their name, and your answers go in as theirs, marked
+as answered by you (see [A child who won't use the app](#a-child-who-wont-use-the-app)). If the survey is named, you can read your child's
 answers once they've sent them. If it's anonymous, or your child chose not to give their name,
 nobody can see their answers, including you.
 
@@ -1598,7 +1630,9 @@ Messages from captains under 18 are copied to their parents or guardians.
 
 The **Check-ins** card shows how many of your athletes have checked in today and how many are
 flagged. If any are flagged, your to-do list says "Check in with N athletes". Athletes under 18
-show, and count, only once a parent or guardian has given consent for their check-ins. A squad
+show, and count, only once a parent or guardian has given consent for their check-ins. A child who
+doesn't use the app never checks in, so they're not shown or counted, and they're not on the game
+goals board either. A squad
 drops out once its squad phase is complete, and if that was your only group the card goes too.
 
 - **Day by day** lists today's (or yesterday's) check-ins for a squad or team: athletes to check
@@ -1863,7 +1897,8 @@ its athletes' details, as with check-ins; the Head Physio sees every athlete's.
    absence was reported for that day show **Away** under their name, with the reason and any
    details. Injured athletes show **Injured** and when they're expected back, and nothing else about the
    injury, even while the club has Injuries switched off. Injured athletes are still expected to come and support the team, so mark them like
-   anyone else.
+   anyone else. A child who doesn't use the app shows **No app** beside their name: mark them like
+   anyone else; their parent sees the marks (see [A child who won't use the app](#a-child-who-wont-use-the-app)).
 5. Tap **Save attendance**.
 
 If attendance was already taken for the same group within 3 hours of the session's time, a warning
@@ -2822,6 +2857,32 @@ club** or **Other**) and tap **Don't approve**. They see the reason and can requ
 <img src="user-guide/member-physio.png" width="210" alt="A physio placed in two squads">
 <img src="user-guide/member-head-physio.png" width="210" alt="The Head Physio, who looks after every athlete">
 
+### Adding a child who won't use the app
+
+A child under 18 with no phone, or who won't use the app, can be added with no sign-in of their own.
+Their parent or guardian does everything for them (see
+[A child who won't use the app](#a-child-who-wont-use-the-app)). Only you can add one, and only for
+a parent who is verified.
+
+1. A parent asks, when they join or from their home screen, with the child's name, date of birth and
+   squad or team. In **Members** they show under **Waiting for approval** or **Parents asking to be
+   linked**, with "Asked to add Sam Small, who won't use the app".
+2. Open the parent's page and verify who they are, as for any parent.
+3. Under **Children who won't use the app**, tap **Check and add** beside the child. Check their
+   name and date of birth against PlayHQ, and that this parent is their parent or guardian. Choose
+   their squads and teams (a team's squad is added with it), then tap **Add child**. Or tap **Turn
+   down** if PlayHQ doesn't match.
+4. The child is approved as an athlete and linked to the parent, and a parent still waiting is
+   approved with them. The parent follows the child into their squads and teams.
+
+You can also tap **Add a child who won't sign in** on any verified parent's page, with no request.
+A child added this way can be under 13, has no email and can't sign in, and can only ever be an
+athlete. Their page says so under **Sign-in email**, and **Members** and registers show **No app**
+beside their name. Add a second parent from the child's page, as for any child. You can't add your
+own child: another admin does.
+
+<img src="user-guide/no-app-child-admin.png" width="210" alt="Adding a child who won't use the app from their parent's page">
+
 ### Changing or removing members
 
 Open any member to change their role, squads, teams or titles, then tap **Save changes**. A
@@ -3739,6 +3800,7 @@ once saved, only replaced or removed, and anyone who gets it wrong five times in
 | How a member was verified | You and admins: the method, and what the admin checked. |
 | Guardian link history   | Admins only: every link and unlink, by whom, when and the reason. The child's guardians, and the child from 13, get a message about each change, without the reason. |
 | A child's link code     | Only the child, in their own app. Nobody else can read it, admins included. It works once, for 7 days, and a new one stops the old one working. |
+| A request to add a child who won't use the app | The parent or guardian who made it, and admins. It's removed once the child is added or the request is turned down or withdrawn. |
 | Who entered a child's code | The parent or guardian who entered it, and admins. The child sees the names of parents and guardians who entered their code. |
 | Stand-downs             | Admins, and committee members with a current check in the Working With Children Checks report (read only). The member sees that their role is paused, not the reason. |
 | Screening Unit notices and card validations | Admins, and committee members with a current check in the Working With Children Checks report (read only). |
@@ -3750,7 +3812,7 @@ once saved, only replaced or removed, and anyone who gets it wrong five times in
 | Safeguarding contacts   | Everyone signed in, including guests and people waiting for approval.                                                       |
 | Committee checks date   | Everyone signed in. Only admins change it, and only to bring it forward; who changed it and when is kept. |
 | Messages                | The people they were sent to, the sender, and admins. A stood-down member doesn't see the messages they sent, or the ones they got as a coach, manager, physio, committee member or admin. Guardians of athletes under 18 get a copy of every message sent to their athlete, and of every message their athlete sends as a captain. Guests don't get messages; physios get messages sent to the Physio role and to their squads and teams, and whole-club messages only if an admin turns that on. |
-| Read receipts           | The sender and admins.                                                                                                      |
+| Read receipts           | The sender and admins. A child who doesn't use the app shows as read once one of their parents has read their copy. |
 | Survey answers          | Whoever sent the survey. The committee and admins for their own surveys and ones a coach or manager shared with them. A coach or manager's survey to their own squad or team is seen by them while they still coach or manage it, by admins unless it's a quick poll (up to 5 questions with choices or ratings), and by the committee if they shared it. A captain's poll is seen by the captain while they're captain, and by the squad or team's coaches and managers. Named answers show the member's name; parents and guardians of an athlete under 18 also read their child's named answers. Anonymous answers, and name-optional answers given without a name, are kept with no name, no member and no time, so nobody can see who gave them, admins included; their results show only once the survey has closed, or everyone has answered, and at least 3 people have answered. Named results show once 3 people have answered, a club survey's chosen 20%, 50% or 80%, or everyone when everyone must answer; every survey's results show once it closes. Members never see each other's answers. Whoever sees the results can download them as a PDF or spreadsheet, except captains. |
 | Survey totals shared with a team | When a coach, manager or captain shares a poll's results with the squad or team: everyone it went to and their parents or guardians, once results show. Only how many picked each choice and average ratings: never names, written answers or who has answered. |
 | Who has answered a survey | Named surveys: whoever can see the results sees who hasn't answered yet. Anonymous and name-optional surveys: only how many have answered. Each member sees whether they've answered themselves. |
@@ -3853,8 +3915,31 @@ are Google and Apple sign-in, so both stores are told the app is for people aged
   checks every athlete's date of birth against PlayHQ or ID before approving them.
 - **Nobody already approved is removed.** A person can join from their 13th birthday.
 
-A way for athletes under 13 to be in the app through a parent, with no sign-in of their own, is
-planned for a later year.
+Athletes under 13 can still be in the club's records through a parent, with no sign-in of their
+own (see [Children who don't use the app](#children-who-dont-use-the-app)).
+
+### Children who don't use the app
+
+A child under 18 with no phone, or who won't use the app, can be added by an admin with no sign-in
+of their own, so their parent can give consent, report absences and injuries, and answer surveys
+for them. Every protection for children still applies, and:
+
+- **Only an admin adds one, only for a verified parent.** A parent asks; an admin verifies the
+  parent and checks the child's details against PlayHQ before adding the child. The child is linked
+  to that parent in the same step, so they're never without a verified parent. Nobody claims a
+  child: there's no code to guess, and an admin can't add their own child.
+- **The child can't sign in.** Their record has no email and no Google or Apple sign-in, and
+  sign-in is blocked on the record itself by the club's database. Nobody can take it over.
+- **Under 13s may be added this way**, because they never sign in. The join rule still turns away
+  anyone under 13 who signs in.
+- **They're only ever an athlete.** The club's database refuses any other role for them.
+- **Their parents are copied on everything,** as for any child. Read receipts show the child as
+  read once a parent has read their copy. A parent can answer a survey for them, marked as
+  answered by that parent; other parents can't.
+- **If their last parent goes,** the child stays in the club's records, locked like any child, and
+  every admin is told, until another verified parent is linked.
+- **At 18** their parents' access ends, as for any child, and they join with their own account if
+  they want to keep using the app.
 
 ### Locked until a parent or guardian is linked
 

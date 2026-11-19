@@ -21,7 +21,19 @@ create table auth.users (
   raw_user_meta_data jsonb default '{}'::jsonb,
   raw_app_meta_data jsonb default '{}'::jsonb,
   created_at timestamptz default now(),
-  last_sign_in_at timestamptz
+  last_sign_in_at timestamptz,
+  -- Columns a function that makes a sign-in record writes, as on Supabase
+  -- (admin_add_no_app_child, supabase/demo-club.sql).
+  instance_id uuid,
+  aud varchar(255),
+  role varchar(255),
+  banned_until timestamptz,
+  updated_at timestamptz,
+  encrypted_password varchar(255),
+  confirmation_token varchar(255),
+  recovery_token varchar(255),
+  email_change_token_new varchar(255),
+  email_change varchar(255)
 );
 create function auth.uid() returns uuid language sql stable as $$
   select nullif(current_setting('request.jwt.claim.sub', true), '')::uuid

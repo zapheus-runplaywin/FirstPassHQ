@@ -40,11 +40,7 @@ psql -X -q -v ON_ERROR_STOP=1 -d "$db" -f "$root/supabase/tests/setup/supabase-s
 for m in "$root"/supabase/migrations/*.sql; do
   sed 's/^create extension if not exists pg_net;//' "$m" | psql -X -q -v ON_ERROR_STOP=1 -d "$db" >"$log" 2>&1 || { cat "$log"; exit 1; }
 done
-q "alter table auth.users add column instance_id uuid, add column aud text, add column role text,
-     add column encrypted_password text, add column updated_at timestamptz,
-     add column confirmation_token text, add column recovery_token text,
-     add column email_change_token_new text, add column email_change text;
-   create unique index on auth.users (email);
+q "create unique index on auth.users (email);
    create table auth.identities (
      id uuid primary key default gen_random_uuid(), provider_id text not null,
      user_id uuid not null references auth.users on delete cascade, identity_data jsonb not null,

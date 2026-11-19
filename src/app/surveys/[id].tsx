@@ -37,6 +37,8 @@ export default function SurveyScreen() {
   const [loadError, setLoadError] = useState<string | null>(null);
   const [draft, setDraft] = useState<Draft>({});
   const [giveName, setGiveName] = useState(false);
+  // A child who doesn't use the app, whose copy this parent is answering.
+  const [answerFor, setAnswerFor] = useState<string | null>(null);
   const [sending, setSending] = useState(false);
   const [closing, setClosing] = useState(false);
   const [error, setError] = useState<string | null>(null);
@@ -74,9 +76,14 @@ export default function SurveyScreen() {
   if (!survey) return <Screen>{null}</Screen>;
 
   const hasText = survey.questions.some((q) => q.kind === 'text');
+  // Children who don't use the app, whose copy this parent can answer.
+  const answerForChildren = survey.answer_for ?? [];
+  const answeringFor = answerForChildren.find((c) => c.id === answerFor) ?? null;
+  const answering = survey.can_answer || !!answeringFor;
 
   async function submit() {
     if (!survey) return;
+    const child = answerFor;
     for (const q of survey.questions) {
       const a = draft[q.id];
       const answered = !!a && (!!a.choices?.length || !!a.rating || !!a.text?.trim());
@@ -84,7 +91,7 @@ export default function SurveyScreen() {
     }
     setSending(true);
     setError(null);
-    const { error: sendError } = await supabase.rpc('submit_survey_response', {
+    const answers = {
       p_survey_id: survey.id,
       p_answers: Object.entries(draft).map(([questionId, a]) => ({
         question_id: questionId,
@@ -93,9 +100,14 @@ export default function SurveyScreen() {
         text: a.text ?? null,
       })),
       p_give_name: survey.identity === 'optional' && giveName,
-    });
+    };
+    const { error: sendError } = child
+      ? await supabase.rpc('submit_survey_response_for_child', { ...answers, p_child_id: child })
+      : await supabase.rpc('submit_survey_response', answers);
     setSending(false);
     if (sendError) return setError(sendError.message);
+    setAnswerFor(null);
+    setDraft({});
     load();
   }
 
@@ -143,13 +155,35 @@ export default function SurveyScreen() {
                 : 'You can read your child’s answers here once they’ve answered.'}
             </ThemedText>
           ) : null}
+          {answerForChildren.map((c) =>
+            answerFor === c.id ? null : (
+              <View key={c.id} style={styles.list}>
+                <ThemedText type="small">
+                  {c.name} doesn’t use the app, so you can answer for them. Their answers are
+                  marked as answered by you.
+                </ThemedText>
+                <Button
+                  title={`Answer for ${c.name}`}
+                  variant="secondary"
+                  onPress={() => {
+                    setAnswerFor(c.id);
+                    setDraft({});
+                    setError(null);
+                  }}
+                />
+              </View>
+            ),
+          )}
         </Card>
       ) : survey.can_answer ? (
         <IdentityNotice survey={survey} />
       ) : null}
 
-      {survey.can_answer ? (
+      {answering ? (
         <>
+          {answeringFor ? (
+            <ThemedText type="smallBold">Answering for {answeringFor.name}</ThemedText>
+          ) : null}
           {survey.questions.map((q, i) => (
             <QuestionInput
               key={q.id}
@@ -161,16 +195,16 @@ export default function SurveyScreen() {
           ))}
           {survey.identity === 'optional' ? (
             <ChipGroup
-              label="Your name"
+              label={answeringFor ? `${answeringFor.name}’s name` : 'Your name'}
               options={[
-                { value: 'no', label: 'Don’t give my name' },
-                { value: 'yes', label: 'Give my name' },
+                { value: 'no', label: answeringFor ? 'Don’t give their name' : 'Don’t give my name' },
+                { value: 'yes', label: answeringFor ? 'Give their name' : 'Give my name' },
               ]}
               selected={[giveName ? 'yes' : 'no']}
               onToggle={(value) => setGiveName(value === 'yes')}
             />
           ) : null}
-          {minor && survey.identity !== 'named' && hasText ? (
+          {minor && !answeringFor && survey.identity !== 'named' && hasText ? (
             <Card>
               <ThemedText type="small">
                 Because you might not give your name, nobody can reply to what you write here. If
@@ -183,7 +217,14 @@ export default function SurveyScreen() {
             You can’t change your answers once they’re sent.
           </ThemedText>
           <ErrorText>{error}</ErrorText>
-          <Button title="Send answers" onPress={submit} busy={sending} />
+          <Button
+            title={answeringFor ? `Send ${answeringFor.name}’s answers` : 'Send answers'}
+            onPress={submit}
+            busy={sending}
+          />
+          {answeringFor ? (
+            <Button title="Cancel" variant="secondary" onPress={() => setAnswerFor(null)} />
+          ) : null}
         </>
       ) : (
         <>
@@ -241,7 +282,7 @@ export default function SurveyScreen() {
               busy={closing}
             />
           ) : null}
-          {!survey.can_answer ? <ErrorText>{error}</ErrorText> : null}
+          {!answering ? <ErrorText>{error}</ErrorText> : null}
         </View>
       ) : null}
     </Screen>

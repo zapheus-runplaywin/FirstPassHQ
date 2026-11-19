@@ -503,6 +503,55 @@ describe('parents and guardians', () => {
     expect(back).not.toHaveBeenCalled();
   });
 
+  it('a parent whose child won’t use the app asks the club to add them, instead of a code', async () => {
+    await openJoin(newcomer, { rpcs: { request_no_app_child: 'request-id' } });
+    await fillBasics();
+    await fireEvent.press(screen.getByText('Guardian'));
+    await type('PlayHQ email', 'parent@playhq.test');
+    expect(isSelected('Yes, they’ll ask to join')).toBe(true);
+    await fireEvent.press(screen.getByText('No, they won’t use the app'));
+    expect(screen.queryByText('Your child’s link code')).toBeNull();
+    await type('Child’s name', 'Sam Small');
+    await type('Child’s date of birth', '04/05/2016');
+    await fireEvent.press(screen.getByText(TEAM_B.name));
+    await send();
+    expect(rpcNames().indexOf('submit_join_request')).toBeLessThan(rpcNames().indexOf('request_no_app_child'));
+    expect(argsOf('request_no_app_child')).toEqual([
+      { p_full_name: 'Sam Small', p_date_of_birth: '2016-05-04', p_team_id: TEAM_B.id },
+    ]);
+    expect(rpcNames()).not.toContain('enter_child_code');
+    expect(back).toHaveBeenCalled();
+  });
+
+  it('checks the child’s details before sending anything', async () => {
+    await openJoin();
+    await fillBasics();
+    await fireEvent.press(screen.getByText('Guardian'));
+    await type('PlayHQ email', 'parent@playhq.test');
+    await fireEvent.press(screen.getByText('No, they won’t use the app'));
+    await type('Child’s name', 'Sam Small');
+    await send();
+    expect(screen.getByText('Enter the child’s date of birth as DD/MM/YYYY.')).toBeTruthy();
+    expect(rpcNames()).not.toContain('submit_join_request');
+  });
+
+  it('says the request is sent when the child couldn’t be, and stays put', async () => {
+    await openJoin(newcomer, { rpcErrors: { request_no_app_child: 'You’ve already asked for Sam Small.' } });
+    await fillBasics();
+    await fireEvent.press(screen.getByText('Guardian'));
+    await type('PlayHQ email', 'parent@playhq.test');
+    await fireEvent.press(screen.getByText('No, they won’t use the app'));
+    await type('Child’s name', 'Sam Small');
+    await type('Child’s date of birth', '04/05/2016');
+    await send();
+    expect(
+      screen.getByText(
+        'Your request is sent, but your child wasn’t: You’ve already asked for Sam Small. You can add them from Home.',
+      ),
+    ).toBeTruthy();
+    expect(back).not.toHaveBeenCalled();
+  });
+
   it('other roles may leave the PlayHQ email blank, defaulting to their sign-in email', async () => {
     await openJoin();
     await fillBasics();

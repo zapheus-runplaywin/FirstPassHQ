@@ -72,6 +72,8 @@ export type Profile = {
    * the admin's old choice. Athletes under 18 have parents or guardians linked.
    */
   under_17: boolean;
+  /** An athlete who never signs in, run by their parent or guardian (added by an admin). */
+  no_sign_in?: boolean;
   /** Checked and recorded by an admin. Decides whether an athlete is under 18. */
   date_of_birth: string | null;
   /** What the member said when asking to join. Not checked, so it decides nothing. */

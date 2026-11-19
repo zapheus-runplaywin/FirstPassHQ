@@ -1,12 +1,37 @@
+import { useEffect, useState } from 'react';
 import { Pressable, StyleSheet, View } from 'react-native';
 
 import { ThemedText } from '@/components/themed-text';
 import { Spacing } from '@/constants/theme';
 import { useTheme } from '@/hooks/use-theme';
 import { presentLabel } from '@/lib/attendance';
+import { withNoAppLabel } from '@/lib/no-app-child';
+import { supabase } from '@/lib/supabase';
 import type { AttendanceMark } from '@/lib/types';
 
 const ABSENT = '#FF8A8A';
+
+/** Which of these members never sign in (a parent runs their record), so the register says so. */
+function useNoAppIds(ids: string[]) {
+  const [noApp, setNoApp] = useState<Set<string>>(new Set());
+  const key = [...ids].sort().join(',');
+  useEffect(() => {
+    if (!key) return;
+    let current = true;
+    supabase
+      .from('profiles')
+      .select('id')
+      .eq('no_sign_in', true)
+      .in('id', key.split(','))
+      .then(({ data }) => {
+        if (current) setNoApp(new Set(((data as { id: string }[] | null) ?? []).map((r) => r.id)));
+      });
+    return () => {
+      current = false;
+    };
+  }, [key]);
+  return noApp;
+}
 
 /**
  * Each athlete with Present and Absent buttons. Read-only when `onChange` is
@@ -22,6 +47,7 @@ export function AttendanceRegister({
   away?: Record<string, string>;
 }) {
   const theme = useTheme();
+  const noApp = useNoAppIds(register.map((m) => m.profile_id));
   const marked = register.filter((m) => m.present !== null);
   const present = marked.filter((m) => m.present).length;
 
@@ -42,7 +68,7 @@ export function AttendanceRegister({
           style={[styles.row, { backgroundColor: theme.backgroundElement }]}>
           <View style={styles.name}>
             <ThemedText type="small" numberOfLines={1}>
-              {mark.full_name ?? 'Unnamed athlete'}
+              {withNoAppLabel(mark.full_name ?? 'Unnamed athlete', noApp.has(mark.profile_id))}
             </ThemedText>
             {away[mark.profile_id] ? (
               <ThemedText type="small" themeColor="textSecondary" numberOfLines={3}>
