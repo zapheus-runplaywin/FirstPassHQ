@@ -2,6 +2,7 @@ import { Image } from 'expo-image';
 import { useState } from 'react';
 import { StyleSheet, View } from 'react-native';
 
+import { ClubBadge } from '@/components/club-badge';
 import { Screen } from '@/components/screen';
 import { ThemedText } from '@/components/themed-text';
 import { Button, Card, ErrorText, PressableCard, TextField } from '@/components/ui';
@@ -10,6 +11,7 @@ import { Spacing } from '@/constants/theme';
 import { useTheme } from '@/hooks/use-theme';
 import { defaultLogo } from '@/lib/club';
 import { useClubChoice } from '@/lib/club-choice';
+import { useSavedClubLogos } from '@/lib/club-logos';
 
 /**
  * Finds the member's club by its code. Each club has its own database, so this
@@ -19,6 +21,7 @@ import { useClubChoice } from '@/lib/club-choice';
 export default function ChooseClubScreen() {
   const theme = useTheme();
   const { choose, recent } = useClubChoice();
+  const logos = useSavedClubLogos(recent);
   const [code, setCode] = useState('');
   const [error, setError] = useState<string | null>(null);
   const club = findClub(code);
@@ -51,10 +54,15 @@ export default function ChooseClubScreen() {
           <ThemedText type="smallBold">Your clubs</ThemedText>
           {recent.map((c) => (
             <PressableCard key={c.code} onPress={() => choose(c.code)}>
-              <ThemedText type="smallBold">{c.name}</ThemedText>
-              <ThemedText type="small" themeColor="textSecondary">
-                {c.code}
-              </ThemedText>
+              <View style={styles.clubRow}>
+                <ClubBadge name={c.name} logo={logos[c.code]} />
+                <View style={styles.clubText}>
+                  <ThemedText type="smallBold">{c.name}</ThemedText>
+                  <ThemedText type="small" themeColor="textSecondary">
+                    {c.code}
+                  </ThemedText>
+                </View>
+              </View>
             </PressableCard>
           ))}
           <ThemedText type="smallBold" style={styles.another}>
@@ -111,6 +119,14 @@ const styles = StyleSheet.create({
   },
   recent: {
     gap: Spacing.two,
+  },
+  clubRow: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: Spacing.three,
+  },
+  clubText: {
+    flex: 1,
   },
   another: {
     marginTop: Spacing.three,
