@@ -234,7 +234,7 @@ describe.each(BY_ROLE)('$who', ({ who, sees }) => {
 });
 
 // ---------------------------------------------------------------------------
-// The order of the home screen (Matt, 2026-11-12): To do, Coming up, Messages,
+// The order of the home screen (Matt, 2026-11-12): To do, Messages, Coming up,
 // check-ins, attendance, Injuries, Session plans, Concerns, Administration
 // (Reports for the committee), then the cards outside that list in their
 // earlier order, the guardian and squad sections, and Raise a concern last.
@@ -270,8 +270,8 @@ describe('home screen order', () => {
     await openHome('athlete');
     expectInOrder([
       'To do',
-      'Coming up',
       'Messages',
+      'Coming up',
       'Daily check-in',
       'My attendance',
       'Injuries',
@@ -287,8 +287,8 @@ describe('home screen order', () => {
     });
     expectInOrder([
       'To do',
-      'Coming up',
       'Messages',
+      'Coming up',
       'Check-ins',
       'Attendance',
       'Injuries',
@@ -303,8 +303,8 @@ describe('home screen order', () => {
     await openHome('admin');
     expectInOrder([
       'To do',
-      'Coming up',
       'Messages',
+      'Coming up',
       'Check-ins',
       'Attendance',
       'Injuries',
@@ -320,8 +320,8 @@ describe('home screen order', () => {
     await openHome('committee');
     expectInOrder([
       'To do',
-      'Coming up',
       'Messages',
+      'Coming up',
       'Check-ins',
       'Attendance',
       'Injuries',
@@ -346,8 +346,8 @@ describe('home screen order', () => {
     await openHome('guardian');
     expectInOrder([
       'To do',
-      'Coming up',
       'Messages',
+      'Coming up',
       'Injuries',
       'Guardian of',
       'Consent',
