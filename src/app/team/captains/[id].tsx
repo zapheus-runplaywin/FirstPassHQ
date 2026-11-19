@@ -20,7 +20,7 @@ const options: { value: Pick; label: string }[] = [
 ];
 
 /**
- * Admins and a squad or team's coaches choose its captains and vice captains,
+ * Admins and a team's coaches choose its captains and vice captains,
  * who can then message the group like its coaches.
  */
 export default function ChooseCaptainsScreen() {
@@ -81,18 +81,31 @@ export default function ChooseCaptainsScreen() {
 
   if (athletes === null) return <Screen>{null}</Screen>;
 
+  // Captains are chosen per team, not per squad (Matt, 20 November 2026).
+  if (team?.kind === 'squad') {
+    return (
+      <Screen>
+        <Stack.Screen options={{ title: 'Captains' }} />
+        <ThemedText type="small" themeColor="textSecondary">
+          Captains are chosen for each team, not for the squad. Open one of the squad’s teams to
+          choose its captains.
+        </ThemedText>
+      </Screen>
+    );
+  }
+
   return (
     <Screen>
       <Stack.Screen options={{ title: team ? `${team.name} captains` : 'Captains' }} />
       <ThemedText type="small" themeColor="textSecondary">
         Choose as many captains and vice captains as you like. They can all message everyone in
-        this {team?.kind === 'squad' ? 'squad' : 'team'}, like its coaches. Messages from athletes under
+        this team, like its coaches. Messages from athletes under
         18 are copied to their parents or guardians.
       </ThemedText>
 
       {athletes.length === 0 ? (
         <ThemedText type="small" themeColor="textSecondary">
-          No athletes are in this group yet.
+          No athletes are in this team yet.
         </ThemedText>
       ) : (
         athletes.map((athlete) => (

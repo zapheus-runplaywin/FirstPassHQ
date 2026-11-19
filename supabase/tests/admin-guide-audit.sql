@@ -118,7 +118,9 @@ insert into public.guardianships (guardian_id, athlete_id) values (pg_temp.m('41
 select pg_temp.works('admin names the team with the adult athlete', $s$ select public.admin_set_team_members('00000000-0000-0000-0000-0000000000a2', '[{"profile_id": "00000000-0000-0000-0000-000000000032"}]') $s$);
 select pg_temp.ok('an adult athlete''s guardian link places nobody', not pg_temp.in_team('a2', '41', 'guardian'), true);
 delete from public.guardianships where guardian_id = pg_temp.m('41') and athlete_id = pg_temp.m('32');
-insert into public.teams (id, name, kind, season, sort_order) values (pg_temp.m('b3'), 'Second Squad', 'squad', 2026, 3);
+-- Next season's squad: Jordan is in this season's, and an athlete is in one
+-- squad a season (20 November 2026).
+insert into public.teams (id, name, kind, season, sort_order) values (pg_temp.m('b3'), 'Second Squad', 'squad', (select season + 1 from public.teams where id = pg_temp.m('a1')), 3);
 insert into public.team_members (team_id, profile_id, team_role) values (pg_temp.m('b3'), pg_temp.m('31'), 'athlete');
 select pg_temp.ok('placing a child in a squad places their guardians with them', pg_temp.in_team('b3', '41', 'guardian') and pg_temp.in_team('b3', '42', 'guardian') and (select count(*) = 3 from public.team_members where team_id = pg_temp.m('b3')), true);
 

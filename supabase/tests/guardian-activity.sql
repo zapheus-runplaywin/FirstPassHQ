@@ -39,8 +39,11 @@ select pg_temp.ok('another athlete joining is not listed',
    where summary like 'Kai Senior%'), true);
 
 -- Changes before the child joined aren't listed.
-insert into public.teams (id, name, kind, squad_id, sort_order) values
-  ('00000000-0000-0000-0000-0000000000a3', 'Second Team', 'team', '00000000-0000-0000-0000-0000000000a1', 3);
+-- Next season's team: Jordan is in Sample Team this season, and an athlete is
+-- in one team a season (20 November 2026).
+insert into public.teams (id, name, kind, season, sort_order) values
+  ('00000000-0000-0000-0000-0000000000a3', 'Second Team', 'team',
+   (select season + 1 from public.teams where id = '00000000-0000-0000-0000-0000000000a1'), 3);
 insert into public.team_members (team_id, profile_id, team_role, created_at) values
   ('00000000-0000-0000-0000-0000000000a3', '00000000-0000-0000-0000-000000000013', 'manager', now());
 update public.group_membership_changes set changed_at = now() - interval '2 days'

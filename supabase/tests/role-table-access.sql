@@ -530,7 +530,10 @@ select pg_temp.write(n, who, 'team_members', 'remove people from a squad', $$del
 from personas where key <> 'admin' order by ord;
 select pg_temp.as_member('01');
 select pg_temp.ok('teams: admin renames a squad', pg_temp.changed($$update public.teams set name = 'Sample Squad' where id = '00000000-0000-0000-0000-0000000000a1'$$) = 1, true);
-select pg_temp.works('team_members: admin places a member', $$insert into public.team_members (team_id, profile_id, team_role) values ('00000000-0000-0000-0000-0000000000b1', '00000000-0000-0000-0000-000000000032', 'athlete')$$);
+-- Kai is already an athlete in Sample Squad, and an athlete is in one squad
+-- at a time (20 November 2026), so the admin places the manager instead.
+select pg_temp.works('team_members: admin places a member', $$insert into public.team_members (team_id, profile_id, team_role) values ('00000000-0000-0000-0000-0000000000b1', '00000000-0000-0000-0000-000000000013', 'manager')$$);
+select pg_temp.fails('team_members: admin cannot put an athlete in a second squad', $$insert into public.team_members (team_id, profile_id, team_role) values ('00000000-0000-0000-0000-0000000000b1', '00000000-0000-0000-0000-000000000032', 'athlete')$$);
 reset role;
 -- Eight places: the seven seeded and the guardian placed with their child.
 select pg_temp.ok('squad places and groups unchanged', (select count(*) from public.team_members where team_id = '00000000-0000-0000-0000-0000000000a1') = 8

@@ -13,6 +13,9 @@ import type { AppRole, CoachTitle, RosterEntry, Team, TeamRole, TeamSelection } 
 import { TEAM_COLUMNS } from '@/lib/use-teams';
 
 /** An approved member who could be in a team without a squad. */
+/** An athlete in another of the season's teams (athletes_in_other_teams). */
+type AthleteElsewhere = { profile_id: string; team_id: string; team_name: string };
+
 type ClubPerson = {
   id: string;
   full_name: string | null;
@@ -43,6 +46,10 @@ export default function NameTeamScreen() {
   const [squadMembers, setSquadMembers] = useState<RosterEntry[] | null>(null);
   const [picks, setPicks] = useState<Record<string, Pick>>({});
   const [titles, setTitles] = useState<Record<string, CoachTitle | null>>({});
+  // The season's other team each athlete is in (one team at a time), and the
+  // squad's other teams each coach is in (as many as the club likes).
+  const [otherTeam, setOtherTeam] = useState<Record<string, string>>({});
+  const [alsoCoaches, setAlsoCoaches] = useState<Record<string, string[]>>({});
   const [saving, setSaving] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
@@ -58,7 +65,16 @@ export default function NameTeamScreen() {
         setError('Team not found.');
         return;
       }
-      const { data: teamRoster } = await supabase.rpc('team_roster', { p_team_id: id });
+      const [{ data: teamRoster }, { data: elsewhere }] = await Promise.all([
+        supabase.rpc('team_roster', { p_team_id: id }),
+        supabase.rpc('athletes_in_other_teams', { p_team_id: id }),
+      ]);
+      setOtherTeam(
+        Object.fromEntries(
+          ((elsewhere as AthleteElsewhere[] | null) ?? []).map((e) => [e.profile_id, e.team_name]),
+        ),
+      );
+      const coachesElsewhere: Record<string, string[]> = {};
       const current = new Map(
         ((teamRoster as RosterEntry[] | null) ?? []).map((m) => [m.profile_id, m]),
       );
@@ -68,7 +84,11 @@ export default function NameTeamScreen() {
         const [squadResult, squadRoster, siblings] = await Promise.all([
           supabase.from('teams').select(TEAM_COLUMNS).eq('id', loadedTeam.squad_id).single(),
           supabase.rpc('team_roster', { p_team_id: loadedTeam.squad_id }),
-          supabase.from('teams').select('id').eq('squad_id', loadedTeam.squad_id).eq('archived', false),
+          supabase
+            .from('teams')
+            .select('id, name')
+            .eq('squad_id', loadedTeam.squad_id)
+            .eq('archived', false),
         ]);
         setSquad(squadResult.data as Team | null);
         // Guardians follow their athlete and aren't picked here; the roster
@@ -78,12 +98,15 @@ export default function NameTeamScreen() {
         const fromSquad = (squadRoster.data as RosterEntry[] | null) ?? [];
         const seen = new Set(fromSquad.map((m) => m.profile_id));
         const movedPhysios: RosterEntry[] = [];
-        for (const sibling of ((siblings.data as { id: string }[] | null) ?? [])) {
+        for (const sibling of ((siblings.data as { id: string; name: string }[] | null) ?? [])) {
           const roster =
             sibling.id === id
               ? [...current.values()]
               : (((await supabase.rpc('team_roster', { p_team_id: sibling.id })).data as RosterEntry[] | null) ?? []);
           for (const m of roster) {
+            if (m.team_role === 'coach' && sibling.id !== id) {
+              coachesElsewhere[m.profile_id] = [...(coachesElsewhere[m.profile_id] ?? []), sibling.name];
+            }
             if (m.team_role === 'physio' && !seen.has(m.profile_id)) {
               seen.add(m.profile_id);
               movedPhysios.push({ ...m, selection: null });
@@ -115,6 +138,7 @@ export default function NameTeamScreen() {
       }
       setTeam(loadedTeam);
       setSquadMembers(members);
+      setAlsoCoaches(coachesElsewhere);
       // Coaches keep their title in this team, or bring the one they have in the squad.
       setTitles(
         Object.fromEntries(
@@ -184,6 +208,10 @@ export default function NameTeamScreen() {
             ? `Choosing from the ${squad?.name ?? 'squad'}. People not selected stay in the squad. A physio selected for a team moves out of the squad, and back when selected for none of its teams.`
             : 'Choosing from everyone approved as an athlete, coach or manager. Add guardians from their member page.'}
         </ThemedText>
+        <ThemedText type="small" themeColor="textSecondary">
+          An athlete can be in only one team at a time. Selecting an athlete who is in another team
+          moves them here when you save. Coaches can be in more than one team.
+        </ThemedText>
       </Card>
 
       {squadMembers.length === 0 ? (
@@ -201,6 +229,18 @@ export default function NameTeamScreen() {
               selected={[picks[member.profile_id] ?? 'out']}
               onToggle={(pick) => setPicks((current) => ({ ...current, [member.profile_id]: pick }))}
             />
+            {member.team_role === 'athlete' && otherTeam[member.profile_id] ? (
+              <ThemedText type="small" themeColor="textSecondary">
+                {(picks[member.profile_id] ?? 'out') === 'out'
+                  ? `In ${otherTeam[member.profile_id]} now.`
+                  : `Moves here from ${otherTeam[member.profile_id]} when you save.`}
+              </ThemedText>
+            ) : null}
+            {member.team_role === 'coach' && alsoCoaches[member.profile_id]?.length ? (
+              <ThemedText type="small" themeColor="textSecondary">
+                Also coaches {alsoCoaches[member.profile_id].join(', ')}.
+              </ThemedText>
+            ) : null}
             {member.team_role === 'coach' && picks[member.profile_id] === 'in' ? (
               <ChipGroup
                 label={`${member.full_name ?? 'Unnamed member'}: head or assistant coach`}

@@ -165,6 +165,22 @@ describe('choosing captains', () => {
     expect(screen.queryByText('Choose captains')).toBeNull();
   });
 
+  it('a squad has no captains: its coach and admins aren’t offered them (Matt, 20 November 2026)', async () => {
+    for (const who of ['doneSquadCoach', 'admin'] as const) {
+      await openTeam(who, DONE_SQUAD.id);
+      expect(screen.getByText('Alice Athlete')).toBeTruthy();
+      expect(screen.queryByText('Choose captains')).toBeNull();
+    }
+  });
+
+  it('a squad captaincy chosen before then isn’t shown on the squad’s page', async () => {
+    await openTeam('admin', DONE_SQUAD.id, {
+      captains: [{ team_id: DONE_SQUAD.id, profile_id: 'a1', captain_role: 'captain' }],
+    });
+    expect(screen.getByText('Alice Athlete')).toBeTruthy();
+    expect(screen.queryByText(/Captain/)).toBeNull();
+  });
+
   it('a coach is offered it only once there are athletes', async () => {
     await openTeam('coach', TEAM.id, { roster: ROSTER.filter((m) => m.team_role !== 'athlete') });
     expect(screen.queryByText('Choose captains')).toBeNull();
@@ -316,6 +332,20 @@ async function openCaptains(options: BackendOptions = {}, captains: unknown[] = 
 }
 
 describe('the captains screen', () => {
+  it('for a squad, points to its teams instead and saves nothing', async () => {
+    await openScreen('admin', { 'team/captains/[id]': ChooseCaptainsScreen }, `/team/captains/${DONE_SQUAD.id}`, { teams: TEAMS }, {
+      tableHandlers: { team_captains: (q) => (q.eq('team_id') ? [] : undefined) },
+      rpcs: { team_roster: ROSTER },
+    });
+    expect(
+      screen.getByText(
+        'Captains are chosen for each team, not for the squad. Open one of the squad’s teams to choose its captains.',
+      ),
+    ).toBeTruthy();
+    expect(screen.queryByText('Save captains')).toBeNull();
+    expect(screen.queryByText('Alice Athlete')).toBeNull();
+  });
+
   it('lists only the athletes, each with their current pick', async () => {
     await openCaptains({}, [{ team_id: TEAM.id, profile_id: 'a2', captain_role: 'vice_captain' }]);
     expect(screen.getByText('Alice Athlete')).toBeTruthy();
@@ -358,7 +388,7 @@ describe('the captains screen', () => {
 
   it('says when there are no athletes', async () => {
     await openCaptains({ rpcs: { team_roster: ROSTER.filter((m) => m.team_role !== 'athlete') } });
-    expect(screen.getByText('No athletes are in this group yet.')).toBeTruthy();
+    expect(screen.getByText('No athletes are in this team yet.')).toBeTruthy();
   });
 
   it('the chosen pick shows as selected', async () => {

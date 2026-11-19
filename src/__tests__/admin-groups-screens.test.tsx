@@ -447,14 +447,22 @@ const SQUAD_ROSTER = [
 
 async function openTeam(
   teamId: string,
-  { rosters = {} as Record<string, RosterEntry[]>, people = [] as unknown[], rpcErrors = {} as BackendOptions['rpcErrors'] } = {},
+  {
+    rosters = {} as Record<string, RosterEntry[]>,
+    people = [] as unknown[],
+    elsewhere = {} as Record<string, unknown[]>,
+    rpcErrors = {} as BackendOptions['rpcErrors'],
+  } = {},
 ) {
   await openScreen('admin', { 'admin/team/[id]': NameTeamScreen }, `/admin/team/${teamId}`, {}, {
     tableHandlers: {
       teams: teamsTable([SQUAD, TEAM_A, TEAM_B, group('team-own', 'Opens Team', { kind: 'team' })]),
       profiles: (q) => (q.eq('status') === 'approved' ? people : undefined),
     },
-    rpcHandlers: { team_roster: (args) => rosters[args.p_team_id as string] ?? [] },
+    rpcHandlers: {
+      team_roster: (args) => rosters[args.p_team_id as string] ?? [],
+      athletes_in_other_teams: (args) => elsewhere[args.p_team_id as string] ?? [],
+    },
     rpcErrors,
   });
 }
@@ -527,6 +535,60 @@ describe('naming a team from its squad', () => {
     });
     expect(isChosen(inSection('Pia Physio · Physio', 'In this team'))).toBe(true);
     expect(screen.getAllByText(/Pia Physio/)).toHaveLength(1);
+  });
+
+  it('says an athlete is in one team at a time, and coaches can be in more', async () => {
+    await openTeam(TEAM_A.id, { rosters });
+    expect(
+      screen.getByText(
+        'An athlete can be in only one team at a time. Selecting an athlete who is in another team moves them here when you save. Coaches can be in more than one team.',
+      ),
+    ).toBeTruthy();
+    expect(rpcsNamed('athletes_in_other_teams')).toEqual([['athletes_in_other_teams', { p_team_id: TEAM_A.id }]]);
+  });
+
+  it('shows the team an athlete is in now, and that saving moves them (Matt, 20 November 2026)', async () => {
+    await openTeam(TEAM_A.id, {
+      rosters,
+      elsewhere: { [TEAM_A.id]: [{ profile_id: 'a2', team_id: TEAM_B.id, team_name: TEAM_B.name }] },
+    });
+    expect(screen.getByText(`In ${TEAM_B.name} now.`)).toBeTruthy();
+    // Ava is in no other team, so nothing is said about her.
+    expect(screen.getAllByText(/ now\.$/)).toHaveLength(1);
+    await pressInSection('Ben Athlete · Athlete', 'Final team');
+    expect(screen.queryByText(`In ${TEAM_B.name} now.`)).toBeNull();
+    expect(screen.getByText(`Moves here from ${TEAM_B.name} when you save.`)).toBeTruthy();
+    await press('Save team');
+    expect(rpcsNamed('admin_set_team_members')[0][1]!.p_members).toContainEqual({
+      profile_id: 'a2',
+      team_role: 'athlete',
+      selection: 'touring',
+      coach_title: null,
+    });
+  });
+
+  it('shows the squad’s other teams a coach is in, and keeps them', async () => {
+    await openTeam(TEAM_A.id, {
+      rosters: { ...rosters, [TEAM_B.id]: [...rosters[TEAM_B.id], entry('c1', 'Cam Coach', 'coach')] },
+    });
+    expect(screen.getByText(`Also coaches ${TEAM_B.name}.`)).toBeTruthy();
+    await pressInSection('Cam Coach · Assistant Coach', 'In this team');
+    expect(screen.queryByText(/Moves here from/)).toBeNull();
+    expect(screen.getByText(`Also coaches ${TEAM_B.name}.`)).toBeTruthy();
+  });
+
+  it('shows the database’s refusal when an athlete would be in two teams', async () => {
+    await openTeam(TEAM_A.id, {
+      rosters,
+      rpcErrors: {
+        admin_set_team_members: 'Ben Athlete is already in Open B. An athlete can be in only one team at a time.',
+      },
+    });
+    await press('Save team');
+    expect(
+      screen.getByText('Ben Athlete is already in Open B. An athlete can be in only one team at a time.'),
+    ).toBeTruthy();
+    expect(back).not.toHaveBeenCalled();
   });
 
   it('leaves out everyone not selected', async () => {
