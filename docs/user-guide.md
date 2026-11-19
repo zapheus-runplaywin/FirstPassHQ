@@ -1195,7 +1195,8 @@ and asks for your child's link code.
 ### Giving consent
 
 Once you're linked and verified, **Consent** on your home screen lists each child under 18, and
-your to-do list says **Give consent for** them until you have check-ins and injuries. Open it to
+your to-do list says **Give consent for** them until you have answered the questions the club
+needs: injuries always, and check-ins while the club uses Daily check-ins. Open it to
 choose who else sees two kinds of information about your child, and whether live streams may
 name them with their own stats:
 
@@ -1224,6 +1225,17 @@ child's check-ins or injuries at all, and an injury can't be cleared to play, be
 starts with a coach or physio endorsing it. Whoever takes attendance still sees that your child is injured and when
 they're expected back, so they know to expect them at training, but nothing more. Links to the club's policies are on the same screen. Tap **Save**.
 
+**When the club turns a feature off or on.** Each question shows only while the club uses what it
+covers: **Daily check-ins** while Daily check-ins is on for your child (including when it's on for
+their pilot team only), and **Stats on live streams** while Live streams is on. **Injuries and
+health information** is always asked, because it also covers your child's medical and emergency
+details, even if the club turns Injuries off. If the club turns Daily check-ins off before you've
+answered, the question and the to-do go away straight away; if it's turned on again, they come
+back straight away, but only if you never gave that consent. A consent you've already given is
+never cancelled when a feature is turned off: it's kept, still listed, and still counts when the
+feature is turned back on, so you aren't asked again. While the feature is off you still see it on
+the consent screen, marked as turned off, so you can withdraw it at any time.
+
 You can change your mind at any time: switch a consent off and save. Every consent given and
 withdrawn is kept with who did it, when and the policy version, and listed under **History**. Any
 of your child's parents or guardians can give or withdraw consent. A consent you gave stays in
@@ -1233,6 +1245,7 @@ you're asked each time (see [Injury documents and photos](#injury-documents-and-
 
 <img src="user-guide/consent.png" width="210" alt="A parent giving consent for their child's check-ins and injuries">
 <img src="user-guide/consent-home.png" width="210" alt="Home screen with Give consent in the to-do list">
+<img src="user-guide/consent-feature-off.png" width="210" alt="Consent screen while the club has daily check-ins turned off, with the earlier consent kept">
 
 ### Your child's medical and emergency details
 
@@ -1819,7 +1832,7 @@ its athletes' details, as with check-ins; the Head Physio sees every athlete's.
    marked**). Athletes whose
    absence was reported for that day show **Away** under their name, with the reason and any
    details. Injured athletes show **Injured** and when they're expected back, and nothing else about the
-   injury. Injured athletes are still expected to come and support the team, so mark them like
+   injury, even while the club has Injuries switched off. Injured athletes are still expected to come and support the team, so mark them like
    anyone else.
 5. Tap **Save attendance**.
 
@@ -3258,12 +3271,31 @@ so leave them filled in.
   how they look together and warns when text or buttons would be hard to read. **Use the built-in
   colours** goes back to deep navy, white and blaze orange.
 - **Features**: switch off any of Messages, Calendar, Daily check-ins, Injuries, Attendance,
-  Session plans, Surveys, Captains' polls, Awards, Game goals, Integrity training, Season KPIs and
-  the policy and conflict registers (see below). Switching
+  Session plans, Surveys, Captains' polls, Awards, Live streams, Game goals, Integrity training,
+  Season KPIs and the policy and conflict registers (see below). Switching
   off **Captains' polls** stops captains sending new polls and leaves the rest of Surveys on; polls
   already sent stay readable. A switched-off feature disappears from every member's home screen, to-do list and menus,
   and its Administration pages are hidden. Nothing is deleted, so switching it back on brings
   everything back.
+- **Switching off pauses work under way.** Anything part-way through stays exactly where it was
+  and carries on from there when the feature is switched back on. For **Injuries**, every injury,
+  update, document and clearance is kept; while it's off nobody can see, report or sign off an
+  injury, a clearance waiting for sign-off just waits, and nobody gets injury to-dos. Registers
+  still show **Injured** and the expected return for athletes with an open injury, so whoever takes
+  attendance knows. When you switch Injuries off, before you save, the screen says how many
+  injuries are open and how many clearances are waiting. The club's **Keeping records** periods
+  keep running while a feature is off.
+- **Parents' consent follows the switches.** Parents of athletes under 18 are asked for check-in
+  consent only while **Daily check-ins** is on for their child, and see the stream stats question
+  only while **Live streams** is on. Switching one off removes an unanswered question and its
+  to-do straight away; switching it on asks straight away, but only parents who never gave that
+  consent. Consents already given are kept and still count. Consent for injuries and health
+  information is always asked, because it covers medical and emergency details too. The screen
+  says this under Daily check-ins and Live streams when you switch them off. See [Giving
+  consent](#giving-consent).
+- **Live streams**: on unless you turn it off. It's for clubs that stream games with FirstPass
+  Studio: while it's on, parents of athletes under 18 can choose whether streams name their child
+  with their own stats. It never adds a to-do.
 - **Who sees it**: under each feature that's on, choose **Everyone** (the default) or **Pilot
   teams only**. A pilot-only feature shows just for the members of the squads and teams under
   **Pilot squads and teams**, whatever their role there (coaches, managers, physios, athletes), the
@@ -3310,6 +3342,7 @@ part of the app build and don't change here.
 <img src="user-guide/club-settings-squads.png" width="210" alt="Club settings: switching squads off">
 <img src="user-guide/club-settings-features.png" width="210" alt="Club settings: turning features on and off, and who sees each">
 <img src="user-guide/club-settings-pilot.png" width="210" alt="Club settings: pilot squads and teams">
+<img src="user-guide/club-settings-feature-off.png" width="210" alt="Club settings: switching Injuries off, with the open injuries and clearances it will pause">
 <img src="user-guide/club-settings-physios.png" width="210" alt="Club settings: physios get club messages">
 <img src="user-guide/club-settings-registers.png" width="210" alt="Club settings: the Policy and conflict registers switch">
 <img src="user-guide/club-settings-training-load.png" width="210" alt="Club settings: training load flag choices">
@@ -3850,6 +3883,12 @@ Working With Children Check, and another admin must do it.
   and it shows under **What's changed** with who logged it. Logging an injury gives the person who
   logged it no extra access: a manager never sees injury records, and an under 18's injury still
   shows to their coaches and physios only once a parent has consented.
+- **Switching Injuries off pauses, never loses, an injury.** If an admin turns Injuries off, every
+  injury and clearance is kept exactly where it was and picks up from there when it's turned back
+  on; the admin is shown how many are open before saving. Registers keep showing that a child is
+  injured and when they're expected back, so nobody takes a child with restrictions for granted.
+  Consent for injuries and health information is still asked, because it covers medical and
+  emergency details too.
 - **Physios write their own updates.** A physio who looks after the athlete adds updates directly,
   labelled with their role, so the record is the physio's own words. Only the athlete or a parent
   or guardian asks for clearance.
@@ -3917,7 +3956,13 @@ Working With Children Check, and another admin must do it.
   for **Stats on live streams**; otherwise the stream shows team totals. You can withdraw it at any
   time, and every change is kept (see [Giving consent](#giving-consent)). The consent counts only
   while your child has at least one verified parent or guardian, so if every guardian leaves the
-  club or loses verification, the stream goes back to team totals straight away.
+  club or loses verification, the stream goes back to team totals straight away. You're asked only
+  while the club has Live streams on.
+- **Consent follows what the club uses, and is never cancelled behind your back.** You're asked
+  about check-ins only while the club uses Daily check-ins for your child. If the club turns it off
+  before you answer, the question goes; if it's turned back on, you're asked again only if you
+  never gave consent. A consent you gave is kept and still counts when the feature returns, and you
+  can withdraw it at any time, even while the feature is off.
 - **Nothing is shared without your consent.** Your child's check-ins and injuries are seen by
   their coaches, physios and the committee members cleared to work with children only after you consent in the app (see [Giving
   consent](#giving-consent)), and until then none of them can endorse, accept or send back your
@@ -4057,6 +4102,11 @@ Working With Children Check, and another admin must do it.
   stats. An admin can stand the person down or remove the role to cut Studio off at once. Children
   are named with their own stats only with a parent's consent, and only while they still have a
   verified parent or guardian (see [Studio](#studio)).
+- **Turning a feature off pauses it.** Switching a feature off in Club settings deletes and
+  cancels nothing: injuries, clearances and consents stay as they were and carry on when it's
+  switched back on, and registers keep showing which children are injured. Parents' consent
+  questions follow the switches: an unanswered check-in or stream question goes when its feature is
+  off and comes back only for parents who never gave it (see [Club settings](#club-settings)).
 - **Committee checks have a deadline.** Committee members approved before checks were needed
   keep their role without one only until the club's committee checks date. From that day their
   committee role pauses unless a check is recorded, an application they've lodged is in force, or

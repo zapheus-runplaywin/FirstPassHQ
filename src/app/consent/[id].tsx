@@ -12,7 +12,9 @@ import {
   type ChildConsent,
   type ConsentKind,
   type ConsentRecord,
+  asksCheckIns,
   consentKindLabels,
+  consentKindsShown,
   consentText,
   useClubPolicies,
 } from '@/lib/consents';
@@ -92,6 +94,14 @@ export default function ConsentScreen() {
   }
 
   const name = child.full_name ?? 'your child';
+  // Check-in and stream consent are asked for only while their feature is on
+  // for the child. A consent already given stays shown, so it can still be
+  // withdrawn.
+  const offNote: Partial<Record<ConsentKind, boolean>> = {
+    data: !asksCheckIns(child),
+    publish: child.streams_on === false,
+  };
+  const kinds = consentKindsShown(child);
   return (
     <Screen>
       <Stack.Screen options={{ title: `Consent for ${name}` }} />
@@ -110,13 +120,22 @@ export default function ConsentScreen() {
         </Card>
       ) : (
         <>
-          {(['data', 'health', 'publish'] as const).map((kind) => (
+          {kinds.map((kind) => (
             <Card key={kind} style={styles.row}>
               <View style={styles.grow}>
                 <ThemedText type="smallBold">{consentText[kind].title}</ThemedText>
                 <ThemedText type="small" themeColor="textSecondary">
                   {consentText[kind].detail}
                 </ThemedText>
+                {offNote[kind] ? (
+                  <ThemedText type="small" themeColor="textSecondary">
+                    {kind === 'data'
+                      ? 'The club has turned daily check-ins off for now.'
+                      : 'The club has turned live streams off for now.'}{' '}
+                    Your consent is kept for if they’re turned back on, and you can withdraw it
+                    here at any time.
+                  </ThemedText>
+                ) : null}
               </View>
               <Switch
                 accessibilityLabel={`I consent: ${consentText[kind].title}`}

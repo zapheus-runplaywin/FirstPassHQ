@@ -485,6 +485,55 @@ describe('parents and guardians', () => {
     expect(screen.getByText('Give consent for Sample Child')).toBeTruthy();
   });
 
+  it('aren’t asked for check-in consent while Daily check-ins is off for their child', async () => {
+    await openHome({
+      ...personas.guardian,
+      rpcs: {
+        my_child_consents: [
+          {
+            ...CHILD_CONSENTS[0],
+            health: true,
+            check_ins_on: false,
+            needs_consent: false,
+          },
+        ],
+      },
+    });
+    expect(screen.getByText('Injuries: yes')).toBeTruthy();
+    expect(screen.queryByText(/^Check-ins:/)).toBeNull();
+    expect(screen.queryByText('Give consent for Sample Child')).toBeNull();
+  });
+
+  it('are asked only for health consent while check-ins are off, and told so', async () => {
+    await openHome({
+      ...personas.guardian,
+      rpcs: {
+        my_child_consents: [{ ...CHILD_CONSENTS[0], check_ins_on: false, needs_consent: true }],
+      },
+    });
+    expect(screen.getByText('Give consent for Sample Child')).toBeTruthy();
+    expect(screen.getByText('Choose who sees their injury and medical details')).toBeTruthy();
+  });
+
+  it('are asked again once check-ins are back on, if they never gave check-in consent', async () => {
+    await openHome({
+      ...personas.guardian,
+      rpcs: {
+        my_child_consents: [
+          {
+            ...CHILD_CONSENTS[0],
+            health: true,
+            check_ins_on: true,
+            needs_consent: true,
+          },
+        ],
+      },
+    });
+    expect(screen.getByText('Give consent for Sample Child')).toBeTruthy();
+    expect(screen.getByText('Choose who sees their check-ins')).toBeTruthy();
+    expect(screen.getByText('Check-ins: not given · Injuries: yes')).toBeTruthy();
+  });
+
   it('with no child linked yet, are asked for their child’s link code, and see nothing of a child', async () => {
     await openHome({ ...personas.guardian, rpcs: { my_child_consents: [] } });
     expect(screen.getByText(/^Nobody yet\. Enter your child’s link code below/)).toBeTruthy();

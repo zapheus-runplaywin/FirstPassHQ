@@ -38,6 +38,12 @@ export const FEATURES = [
     detail: 'Captains and vice captains send polls with choices to their own squad or team (needs Surveys)',
   },
   { key: 'awards', label: 'Awards', detail: 'Award votes and results' },
+  {
+    key: 'liveStreams',
+    label: 'Live streams',
+    detail:
+      'Games streamed with FirstPass Studio. Parents of athletes under 18 choose whether streams name their child with their own stats.',
+  },
   { key: 'goals', label: 'Game goals', detail: 'Athletes’ goals and reflections for PlayHQ games' },
   {
     key: 'integrity',

@@ -123,6 +123,43 @@ describe('consent for a child', () => {
     expect(argsOf('child_consent_history')).toEqual([{ p_athlete_id: 'child-1' }]);
   });
 
+  it('hides the check-in and stream questions while those features are off', async () => {
+    await openConsent('guardian', [{ ...CHILD, check_ins_on: false, streams_on: false }]);
+    expect(screen.queryByLabelText('I consent: Daily check-ins')).toBeNull();
+    expect(screen.queryByLabelText('I consent: Stats on live streams')).toBeNull();
+    expect(toggle('Injuries and health information').props.value).toBe(true);
+  });
+
+  it('saving with check-ins off leaves the check-in consent as it was', async () => {
+    await openConsent('guardian', [{ ...CHILD, check_ins_on: false }]);
+    await fireEvent(toggle('Injuries and health information'), 'valueChange', false);
+    await fireEvent.press(screen.getByText('Save'));
+    expect(argsOf('set_child_consent')).toEqual([
+      { p_athlete_id: 'child-1', p_data: false, p_health: false },
+    ]);
+  });
+
+  it('keeps a consent given before showing while its feature is off, so it can be withdrawn', async () => {
+    await openConsent('guardian', [
+      {
+        ...CHILD,
+        data: true,
+        publish: true,
+        check_ins_on: false,
+        streams_on: false,
+      },
+    ]);
+    expect(toggle('Daily check-ins').props.value).toBe(true);
+    expect(toggle('Stats on live streams').props.value).toBe(true);
+    expect(screen.getByText(/The club has turned daily check-ins off for now\./)).toBeTruthy();
+    expect(screen.getByText(/The club has turned live streams off for now\./)).toBeTruthy();
+    await fireEvent(toggle('Daily check-ins'), 'valueChange', false);
+    await fireEvent.press(screen.getByText('Save'));
+    expect(argsOf('set_child_consent')).toEqual([
+      { p_athlete_id: 'child-1', p_data: false, p_health: true },
+    ]);
+  });
+
   it('saves both choices for the child, then goes back', async () => {
     await openConsent('guardian', [CHILD]);
     await fireEvent(toggle('Daily check-ins'), 'valueChange', true);
