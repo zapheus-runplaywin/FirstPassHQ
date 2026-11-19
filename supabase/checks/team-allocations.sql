@@ -111,7 +111,7 @@ begin
     group by t.season, t.name, c.captain_role
     order by t.season, t.name
   loop
-    raise notice '  squad % %: % %', r.season, r.name, r.people, r.role;
+    raise notice '  squad % %: % %', r.season, r.name, r.people, r.captain_role;
   end loop;
 
   select count(*) into n
