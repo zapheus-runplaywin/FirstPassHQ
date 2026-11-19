@@ -1,9 +1,9 @@
-import { Image } from 'expo-image';
 import { router, useFocusEffect } from 'expo-router';
 import { useCallback, useEffect, useState } from 'react';
 import { Pressable, StyleSheet, View } from 'react-native';
 
 import { EventGrid } from '@/components/event-card';
+import { HomeHeader } from '@/components/home-header';
 import { ChildCodeCard, WaitingForGuardian } from '@/components/guardian-link';
 import { SafeguardingContactsCard } from '@/components/safeguarding';
 import { Screen } from '@/components/screen';
@@ -299,22 +299,16 @@ export default function HomeScreen() {
 
   return (
     <Screen withTopInset refreshing={refreshing} onRefresh={onRefresh}>
-      <View style={styles.headerRow}>
-        <View style={styles.header}>
-          <ThemedText type="subtitle">Hi {name}</ThemedText>
-          {approved && profile ? (
-            <ThemedText themeColor="textSecondary">
-              {rolesHeldLabel(profile, memberships, paused?.roles ?? [])}
-            </ThemedText>
-          ) : null}
-        </View>
-        <Image
-          source={club.logo}
-          style={styles.headerLogo}
-          contentFit="contain"
-          accessibilityLabel={club.name}
-        />
-      </View>
+      <HomeHeader
+        name={name}
+        roles={
+          approved && profile
+            ? rolesHeldLabel(profile, memberships, paused?.roles ?? [])
+            : undefined
+        }
+        logo={club.logo}
+        clubName={club.name}
+      />
 
       {volunteer ? (
         <VolunteerOnboarding verificationCode={<VerificationCode />} />
@@ -1126,19 +1120,6 @@ const styles = StyleSheet.create({
   codeDigits: {
     letterSpacing: 4,
     fontVariant: ['tabular-nums'],
-  },
-  headerRow: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    gap: Spacing.three,
-  },
-  header: {
-    flex: 1,
-    gap: Spacing.one,
-  },
-  headerLogo: {
-    width: 112,
-    height: 112,
   },
   section: {
     gap: Spacing.two,
