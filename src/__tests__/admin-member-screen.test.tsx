@@ -147,7 +147,7 @@ describe('a member’s page for an admin', () => {
     await openMember(GUARDIAN);
     expect(shown()).toEqual(['notices', 'removeAccess', 'deleteMember', 'removalReason', 'saveChanges', 'guardianOf']);
     expect(
-      screen.getByText(/^No children yet\. They enter their child’s link code, or you link them from the\s+child’s page\.$/),
+      screen.getByText(/^No children yet\. They enter their child’s link code, or you link them from the\s+child’s page, or add a child who won’t use the app above\.$/),
     ).toBeTruthy();
   });
 

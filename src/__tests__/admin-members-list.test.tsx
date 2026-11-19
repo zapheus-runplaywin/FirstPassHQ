@@ -20,6 +20,7 @@ import { supabase } from '@/lib/supabase';
 import type { Profile, VolunteerExemption } from '@/lib/types';
 
 import { typeInto } from './helpers/admin-screens';
+import { rpcNames } from './helpers/calls';
 import { openScreen, personas, resetClub } from './helpers/harness';
 
 jest.mock('@/lib/club', () => jest.requireActual('./helpers/harness').clubModuleMock());
@@ -133,7 +134,10 @@ const WAITING_EXEMPTION: VolunteerExemption = {
   organiser: null,
 };
 
-async function openMembers(members: Profile[] = Object.values(MEMBERS)) {
+async function openMembers(
+  members: Profile[] = Object.values(MEMBERS),
+  noAppRequests: { guardian_id: string; full_name: string }[] = [],
+) {
   await openScreen(
     'admin',
     { 'admin/index': MembersScreen },
@@ -172,6 +176,7 @@ async function openMembers(members: Profile[] = Object.values(MEMBERS)) {
           { ...WAITING_EXEMPTION, id: 'ex-0', profile_id: 'm-coach', ended_at: '2026-01-01T00:00:00Z' },
         ],
         admin_inactive_members: [{ profile_id: 'm-gone', last_active: '2024-06-01T00:00:00Z' }],
+        admin_no_app_child_requests: noAppRequests,
       },
     },
   );
@@ -273,6 +278,28 @@ describe('the Members list', () => {
     await openMembers();
     expect(namesUnder('Parents asking to be linked')).toEqual(['Gwen Guardian']);
     expect(screen.getByText('Entered Charlie Child’s code · Link them on their page')).toBeTruthy();
+  });
+
+  it('marks a child who won’t use the app, and lists parents asking to add one', async () => {
+    const noApp = member('m-no-app', 'Nell NoApp', { date_of_birth: '2016-05-04', email: null, no_sign_in: true });
+    await openMembers(
+      [...Object.values(MEMBERS), noApp],
+      [
+        { guardian_id: 'm-treasurer', full_name: 'Tim Small' },
+        { guardian_id: 'm-new-parent', full_name: 'Sam Small' },
+      ],
+    );
+    // With no parent linked she's also under Needs checking, so she's named twice.
+    expect(screen.getAllByText('Nell NoApp · No app').length).toBeGreaterThan(0);
+    expect(screen.queryByText('Nell NoApp')).toBeNull();
+    // An approved member asking to add a child is listed to act on.
+    expect(namesUnder('Parents asking to be linked')?.sort()).toEqual(['Gwen Guardian', 'Terry Treasurer']);
+    expect(
+      screen.getByText('Asked to add Tim Small, who won’t use the app · Link them on their page'),
+    ).toBeTruthy();
+    // A parent waiting for approval says what they asked for.
+    expect(screen.getByText(/· Asked to add Sam Small, who won’t use the app$/)).toBeTruthy();
+    expect(rpcNames()).toContain('admin_no_app_child_requests');
   });
 
   it('lists members with no team or role for 2 years, from the database, with when they were last active', async () => {

@@ -300,6 +300,87 @@ describe('entering a child’s code', () => {
 });
 
 // ---------------------------------------------------------------------------
+// A parent asking the club to add a child who won't use the app
+
+describe('a child who won’t use the app', () => {
+  const guardianWaiting = withProfile(personas.pending, { requested_role: 'guardian' });
+
+  it('asks the club to add the child, then shows the request', async () => {
+    let requests: unknown[] = [];
+    await openHome(guardianWaiting, {}, {
+      rpcHandlers: {
+        my_no_app_child_requests: () => requests,
+        request_no_app_child: () => {
+          requests = [
+            { id: 'r1', full_name: 'Sam Small', date_of_birth: '2016-05-04', team_name: null, requested_at: '2026-10-18T01:00:00Z' },
+          ];
+          return 'r1';
+        },
+      },
+    });
+    expect(screen.getByText('Child who won’t use the app')).toBeTruthy();
+    await fireEvent.press(screen.getByText('Add a child who won’t use the app'));
+    await settle();
+    await type('Child’s name', 'Sam Small');
+    await type('Child’s date of birth', '4/5/2016');
+    await fireEvent.press(screen.getByText('Ask the club to add them'));
+    await settle();
+    expect(argsOf('request_no_app_child')).toEqual([
+      { p_full_name: 'Sam Small', p_date_of_birth: '2016-05-04', p_team_id: null },
+    ]);
+    expect(
+      screen.getByText('✓ You’ve asked the club to add Sam Small. A club admin will check and add them.'),
+    ).toBeTruthy();
+    expect(screen.queryByText('Ask the club to add them')).toBeNull();
+  });
+
+  it('checks the child is under 18 before asking', async () => {
+    await openHome(guardianWaiting);
+    await fireEvent.press(screen.getByText('Add a child who won’t use the app'));
+    await settle();
+    await type('Child’s name', 'Sam Small');
+    await type('Child’s date of birth', '01/01/2000');
+    await fireEvent.press(screen.getByText('Ask the club to add them'));
+    await settle();
+    expect(screen.getByText(/^Only children under 18 can be added/)).toBeTruthy();
+    expect(rpcNames()).not.toContain('request_no_app_child');
+  });
+
+  it('shows why the database turned it down', async () => {
+    await openHome(guardianWaiting, {}, {
+      rpcErrors: { request_no_app_child: 'You’ve asked for 6 children already.' },
+    });
+    await fireEvent.press(screen.getByText('Add a child who won’t use the app'));
+    await settle();
+    await type('Child’s name', 'Sam Small');
+    await type('Child’s date of birth', '04/05/2016');
+    await fireEvent.press(screen.getByText('Ask the club to add them'));
+    await settle();
+    expect(screen.getByText('You’ve asked for 6 children already.')).toBeTruthy();
+  });
+
+  it('withdraws a request', async () => {
+    let requests: unknown[] = [
+      { id: 'r1', full_name: 'Sam Small', date_of_birth: '2016-05-04', team_name: 'Open A', requested_at: '2026-10-18T01:00:00Z' },
+    ];
+    await openHome(guardianWaiting, {}, {
+      rpcHandlers: {
+        my_no_app_child_requests: () => requests,
+        withdraw_no_app_child_request: () => {
+          requests = [];
+          return null;
+        },
+      },
+    });
+    expect(screen.getByText(/You’ve asked the club to add Sam Small \(Open A\)\./)).toBeTruthy();
+    await fireEvent.press(screen.getByText('Withdraw'));
+    await settle();
+    expect(argsOf('withdraw_no_app_child_request')).toEqual([{ p_request_id: 'r1' }]);
+    expect(screen.queryByText(/You’ve asked the club to add Sam Small/)).toBeNull();
+  });
+});
+
+// ---------------------------------------------------------------------------
 // A child under 18 with no verified parent or guardian linked: locked
 
 describe('a locked child', () => {

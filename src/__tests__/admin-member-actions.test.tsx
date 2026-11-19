@@ -13,6 +13,7 @@
 import { fireEvent, screen } from 'expo-router/testing-library';
 
 import MemberScreen from '@/app/admin/[id]';
+import type { NoAppChildRequest } from '@/lib/no-app-child';
 import { localDay } from '@/lib/reports';
 import { supabase } from '@/lib/supabase';
 import type {
@@ -125,6 +126,8 @@ async function openMember(
     requests = [] as { guardian_id: string; athlete_id: string }[],
     others = [] as Profile[],
     childPlaces = [] as { profile_id: string; team_id: string }[],
+    // Children the parent asked the club to add, who won't use the app.
+    noAppRequests = [] as NoAppChildRequest[],
   } = {},
 ) {
   await openScreen(
@@ -155,7 +158,11 @@ async function openMember(
           return undefined;
         },
       },
-      rpcs: { admin_volunteer_exemptions: exemptions, admin_date_of_birth_record: dobRecord },
+      rpcs: {
+        admin_volunteer_exemptions: exemptions,
+        admin_date_of_birth_record: dobRecord,
+        admin_no_app_child_requests: noAppRequests,
+      },
       rpcErrors,
     },
   );
@@ -1498,5 +1505,134 @@ describe('link codes', () => {
     expect(adminWrites()).toEqual([
       ['admin_accept_guardian_link', { p_guardian_id: GUARDIAN.id, p_athlete_id: CHILD.id }],
     ]);
+  });
+});
+
+describe('children who won’t use the app', () => {
+  const PENDING_PARENT: Profile = {
+    ...p('guardian'),
+    id: 'pending-parent',
+    full_name: 'Taylor Parent',
+    role: 'guest',
+    status: 'pending',
+    requested_role: 'guardian',
+    join_requested_at: '2026-10-17T00:00:00Z',
+    verified_at: '2026-10-17T00:00:00Z',
+  };
+  const REQUEST: NoAppChildRequest = {
+    id: 'req-1',
+    guardian_id: PENDING_PARENT.id,
+    full_name: 'Sam Small',
+    date_of_birth: '2016-05-04',
+    team_id: SQUAD_TEAM.id,
+    team_name: SQUAD_TEAM.name,
+    requested_at: '2026-10-17T03:00:00Z',
+  };
+
+  it('lists what the parent asked for, and adds the child from it, checked', async () => {
+    await openMember(PENDING_PARENT, { noAppRequests: [REQUEST] });
+    expect(rpcsNamed('admin_no_app_child_requests')).toEqual([
+      ['admin_no_app_child_requests', { p_guardian_id: PENDING_PARENT.id }],
+    ]);
+    expect(screen.getByText('Children who won’t use the app')).toBeTruthy();
+    expect(screen.getByText('Sam Small')).toBeTruthy();
+    expect(screen.getByText(/^Born .*2016 · Asked for Open A · Asked /)).toBeTruthy();
+    await press('Check and add Sam Small');
+    // The form starts from what the parent sent.
+    expect(fieldFor('Child’s name').props.value).toBe('Sam Small');
+    expect(fieldFor('Child’s date of birth').props.value).toBe('04/05/2016');
+    expect(isChosen(screen.getByText('· Open A'))).toBe(true);
+    await press('Add child');
+    expect(adminWrites()).toEqual([
+      [
+        'admin_add_no_app_child',
+        {
+          p_guardian_id: PENDING_PARENT.id,
+          p_full_name: 'Sam Small',
+          p_date_of_birth: '2016-05-04',
+          p_team_ids: [SQUAD_TEAM.id],
+          p_request_id: 'req-1',
+        },
+      ],
+    ]);
+    expect(back).not.toHaveBeenCalled();
+  });
+
+  it('adds a child with no request, in the squads and teams the admin picks', async () => {
+    await openMember(GUARDIAN);
+    await press('Add a child who won’t sign in');
+    await typeInto('Child’s name', 'Riley Rookie');
+    await typeInto('Child’s date of birth', '02/03/2011');
+    await pressInSection('Squads and teams', SQUAD.name);
+    await press('Add child');
+    expect(adminWrites()).toEqual([
+      [
+        'admin_add_no_app_child',
+        {
+          p_guardian_id: GUARDIAN.id,
+          p_full_name: 'Riley Rookie',
+          p_date_of_birth: '2011-03-02',
+          p_team_ids: [SQUAD.id],
+          p_request_id: null,
+        },
+      ],
+    ]);
+  });
+
+  test.each([
+    ['no name', '', '02/03/2011', 'Enter the child’s name.'],
+    ['no date of birth', 'Riley Rookie', '', 'Enter the child’s date of birth as DD/MM/YYYY.'],
+    ['an adult', 'Riley Rookie', '01/01/2000', 'Only children under 18 can be added without their own sign-in. At 18 they join with their own account.'],
+  ])('won’t send a child with %s', async (_, name, dob, problem) => {
+    await openMember(GUARDIAN);
+    await press('Add a child who won’t sign in');
+    await typeInto('Child’s name', name);
+    await typeInto('Child’s date of birth', dob);
+    await press('Add child');
+    expect(screen.getByText(problem)).toBeTruthy();
+    expect(adminWrites()).toEqual([]);
+  });
+
+  it('shows why the database wouldn’t add the child', async () => {
+    await openMember(GUARDIAN, { rpcErrors: { admin_add_no_app_child: 'Verify who they are first' } });
+    await press('Add a child who won’t sign in');
+    await typeInto('Child’s name', 'Riley Rookie');
+    await typeInto('Child’s date of birth', '02/03/2011');
+    await press('Add child');
+    expect(screen.getByText('Verify who they are first')).toBeTruthy();
+  });
+
+  it('turns a request down', async () => {
+    await openMember(PENDING_PARENT, { noAppRequests: [REQUEST] });
+    await press('Turn down');
+    expect(adminWrites()).toEqual([['admin_decline_no_app_child_request', { p_request_id: 'req-1' }]]);
+  });
+
+  it('asks for the parent to be verified before a child can be added', async () => {
+    await openMember({ ...PENDING_PARENT, verified_at: null }, { noAppRequests: [REQUEST] });
+    expect(screen.getByText('Verify who Taylor Parent is before adding a child.')).toBeTruthy();
+    expect(screen.queryByText('Check and add Sam Small')).toBeNull();
+    expect(screen.queryByText('Add a child who won’t sign in')).toBeNull();
+    // Turning it down is still possible.
+    expect(screen.getByText('Turn down')).toBeTruthy();
+  });
+
+  it('offers nothing on a page that isn’t a parent’s', async () => {
+    await openMember({ ...p('coach'), id: 'a-coach', full_name: 'A Coach' });
+    expect(screen.queryByText('Children who won’t use the app')).toBeNull();
+    expect(rpcsNamed('admin_no_app_child_requests')).toEqual([]);
+  });
+
+  it('leaves adding their own child to another admin', async () => {
+    await openMember(morePersonas.adminGuardian.profile, { viewer: morePersonas.adminGuardian });
+    expect(screen.queryByText('Add a child who won’t sign in')).toBeNull();
+  });
+
+  it('shows a no-app child has no sign-in, and offers no children of their own', async () => {
+    await openMember({ ...CHILD, id: 'sam', full_name: 'Sam Small', email: null, no_sign_in: true });
+    expect(
+      screen.getByText('None. A child who won’t use the app: their parent or guardian does everything for them'),
+    ).toBeTruthy();
+    expect(screen.queryByText('Children who won’t use the app')).toBeNull();
   });
 });

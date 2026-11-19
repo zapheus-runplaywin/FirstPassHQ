@@ -20,6 +20,7 @@ import {
   type MemberTodoKind,
 } from '@/lib/member-todos';
 import { barringNotices, safetyIssues } from '@/lib/safety';
+import { type NoAppChildRequest, withNoAppLabel } from '@/lib/no-app-child';
 import { supabase } from '@/lib/supabase';
 import type {
   CoachTitle,
@@ -49,6 +50,7 @@ export default function MembersScreen() {
   const [members, setMembers] = useState<Profile[]>([]);
   const [links, setLinks] = useState<Pair[]>([]);
   const [requests, setRequests] = useState<Pair[]>([]);
+  const [noAppRequests, setNoAppRequests] = useState<NoAppChildRequest[]>([]);
   const [exemptions, setExemptions] = useState<Map<string, VolunteerExemption>>(new Map());
   const [applications, setApplications] = useState<Map<string, WwccApplication>>(new Map());
   const [groupTitles, setGroupTitles] = useState<Map<string, string>>(new Map());
@@ -67,6 +69,7 @@ export default function MembersScreen() {
       requestsResult,
       noticesResult,
       unendorsableResult,
+      noAppResult,
     ] = await Promise.all([
       supabase.from('profiles').select(PROFILE_COLUMNS).order('full_name', { nullsFirst: false }),
       supabase.from('guardianships').select('guardian_id, athlete_id'),
@@ -92,6 +95,8 @@ export default function MembersScreen() {
       todo === 'unendorsable'
         ? supabase.rpc('admin_unendorsable_clearances')
         : Promise.resolve({ data: null }),
+      // Children parents asked the club to add, who won't use the app.
+      supabase.rpc('admin_no_app_child_requests'),
     ]);
     setNotices(
       new Set(
@@ -125,6 +130,7 @@ export default function MembersScreen() {
     setMembers((profilesResult.data as Profile[] | null) ?? []);
     setLinks((guardiansResult.data as Pair[] | null) ?? []);
     setRequests((requestsResult.data as Pair[] | null) ?? []);
+    setNoAppRequests((noAppResult.data as NoAppChildRequest[] | null) ?? []);
     setLoaded(true);
   }, [todo]);
 
@@ -146,6 +152,10 @@ export default function MembersScreen() {
   const withGuardian = athletesWithVerifiedGuardian(links, (id) => byId.get(id));
   const codeEnteredFor = (guardianId: string) =>
     requests.filter((r) => r.guardian_id === guardianId).map((r) => nameOf(r.athlete_id));
+  const noAppText = (guardianId: string) => {
+    const names = noAppRequests.filter((r) => r.guardian_id === guardianId).map((r) => r.full_name);
+    return names.length > 0 ? `Asked to add ${names.join(' and ')}, who won’t use the app` : '';
+  };
   const codeEnteredBy = (athleteId: string) =>
     requests.filter((r) => r.athlete_id === athleteId).map((r) => nameOf(r.guardian_id));
 
@@ -160,7 +170,11 @@ export default function MembersScreen() {
     .sort((a, b) => (a.join_requested_at ?? '').localeCompare(b.join_requested_at ?? ''));
   const approved = matching.filter((m) => m.status === 'approved');
   // Approved parents and guardians who entered another child's code.
-  const askingToLink = approved.filter((m) => requests.some((r) => r.guardian_id === m.id));
+  const askingToLink = approved.filter(
+    (m) =>
+      requests.some((r) => r.guardian_id === m.id) ||
+      noAppRequests.some((r) => r.guardian_id === m.id),
+  );
   // The people behind the child-safety to-dos on the home screen, with why.
   const issues = new Map(
     approved.map((m) => [m.id, safetyIssues(m, withGuardian.has(m.id), exemptions.get(m.id), applications.get(m.id))]),
@@ -201,7 +215,7 @@ export default function MembersScreen() {
         onRefresh={onRefresh}
         describe={(m) => {
           if (todo === 'join') {
-            return `Asked to join as ${m.requested_role ? roleLabels[m.requested_role] : 'a member'}${saysUnder18(m) ? ' · Says they’re under 18' : ''}${m.verified_at ? ' · Verified in person' : ''}${linkLabel(m, codeEnteredFor(m.id), codeEnteredBy(m.id))}`;
+            return `Asked to join as ${m.requested_role ? roleLabels[m.requested_role] : 'a member'}${saysUnder18(m) ? ' · Says they’re under 18' : ''}${m.verified_at ? ' · Verified in person' : ''}${linkLabel(m, codeEnteredFor(m.id), codeEnteredBy(m.id))}${noAppText(m.id) ? ` · ${noAppText(m.id)}` : ''}`;
           }
           if (todo === 'inactive') {
             return `${rolesLabel(rolesOf(m))} · Last active ${formatMonth(new Date(inactive.get(m.id) ?? ''))}`;
@@ -237,13 +251,23 @@ export default function MembersScreen() {
         empty="No requests waiting."
         members={waiting}
         describe={(m) =>
-          `Asked to join as ${m.requested_role ? roleLabels[m.requested_role] : 'a member'}${saysUnder18(m) ? ' · Says they’re under 18' : ''}${m.verified_at ? ' · Verified in person' : ''}${linkLabel(m, codeEnteredFor(m.id), codeEnteredBy(m.id))}`
+          `Asked to join as ${m.requested_role ? roleLabels[m.requested_role] : 'a member'}${saysUnder18(m) ? ' · Says they’re under 18' : ''}${m.verified_at ? ' · Verified in person' : ''}${linkLabel(m, codeEnteredFor(m.id), codeEnteredBy(m.id))}${noAppText(m.id) ? ` · ${noAppText(m.id)}` : ''}`
         }
       />
       <Section
         title="Parents asking to be linked"
         members={askingToLink}
-        describe={(m) => `Entered ${codeEnteredFor(m.id).join(' and ')}’s code · Link them on their page`}
+        describe={(m) =>
+          [
+            codeEnteredFor(m.id).length > 0
+              ? `Entered ${codeEnteredFor(m.id).join(' and ')}’s code`
+              : '',
+            noAppText(m.id),
+            'Link them on their page',
+          ]
+            .filter(Boolean)
+            .join(' · ')
+        }
         warn
       />
       <Section
@@ -336,7 +360,9 @@ function TodoMembers({
           <View style={styles.section}>
             {members.map((m) => (
               <PressableCard key={m.id} onPress={() => router.push(memberPageHref(m.id, kind))}>
-                <ThemedText type="smallBold">{m.full_name || m.email || 'Unnamed member'}</ThemedText>
+                <ThemedText type="smallBold">
+                  {withNoAppLabel(m.full_name || m.email || 'Unnamed member', m.no_sign_in)}
+                </ThemedText>
                 <ThemedText type="small" themeColor="tint">
                   {describe(m)}
                 </ThemedText>
@@ -381,7 +407,9 @@ function Section({
           <PressableCard
             key={m.id}
             onPress={() => router.push({ pathname: '/admin/[id]', params: { id: m.id } })}>
-            <ThemedText type="smallBold">{m.full_name || m.email || 'Unnamed member'}</ThemedText>
+            <ThemedText type="smallBold">
+              {withNoAppLabel(m.full_name || m.email || 'Unnamed member', m.no_sign_in)}
+            </ThemedText>
             <ThemedText type="small" themeColor={warn ? 'tint' : 'textSecondary'}>
               {describe(m)}
             </ThemedText>

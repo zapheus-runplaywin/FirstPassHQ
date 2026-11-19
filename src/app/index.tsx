@@ -6,6 +6,7 @@ import { ConcernLights } from '@/components/concern-lights';
 import { EventGrid } from '@/components/event-card';
 import { HomeHeader } from '@/components/home-header';
 import { ChildCodeCard, WaitingForGuardian } from '@/components/guardian-link';
+import { NoAppChildCard } from '@/components/no-app-child';
 import { SafeguardingContactsCard } from '@/components/safeguarding';
 import { Screen } from '@/components/screen';
 import { TodoList } from '@/components/todo-list';
@@ -634,9 +635,12 @@ export default function HomeScreen() {
         ) : null}
 
         {isGuardian ? (
-          <ChildCodeCard
-            title={athletes.length > 0 ? 'Add another child' : 'Enter your child’s code'}
-          />
+          <>
+            <ChildCodeCard
+              title={athletes.length > 0 ? 'Add another child' : 'Enter your child’s code'}
+            />
+            <NoAppChildCard />
+          </>
         ) : null}
 
         {isGuardian && athletes.length > 0 ? (
@@ -1100,6 +1104,7 @@ function JoinStatus() {
         </View>
       </Card>
       {guardian ? <ChildCodeCard /> : null}
+      {guardian ? <NoAppChildCard /> : null}
       {child ? <WaitingForGuardian /> : null}
       {child ? (
         <ThemedText type="small" themeColor="textSecondary">

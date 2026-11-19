@@ -617,6 +617,79 @@ describe('a parent’s copy of their child’s survey', () => {
   });
 });
 
+describe('a parent answering for a child who doesn’t use the app', () => {
+  const copy = (extra: Partial<SurveyDetail> = {}) =>
+    detail({
+      can_answer: false,
+      is_recipient: true,
+      identity: 'named',
+      for_child_names: ['Sam Small'],
+      answer_for: [{ id: 'sam', name: 'Sam Small' }],
+      children: [{ name: 'Sam Small', responded: false, answers: [] }],
+      ...extra,
+    });
+
+  it('offers to answer for the child, and shows no questions until the parent chooses to', async () => {
+    await openSurvey('guardian', copy());
+    expect(
+      screen.getByText(
+        'Sam Small doesn’t use the app, so you can answer for them. Their answers are marked as answered by you.',
+      ),
+    ).toBeTruthy();
+    expect(screen.queryByText('Send answers')).toBeNull();
+    expect(screen.container.queryAll((n) => n.type === 'TextInput')).toHaveLength(0);
+  });
+
+  it('sends the answers as the child’s, then shows them', async () => {
+    let answered = false;
+    await openSurvey('guardian', () =>
+      answered
+        ? copy({
+            answer_for: [],
+            children: [{ name: 'Sam Small', responded: true, answers: [{ question_id: 'q1', choices: [0], rating: null, text: null }] }],
+          })
+        : copy(),
+    );
+    await press('Answer for Sam Small');
+    expect(screen.getByText('Answering for Sam Small')).toBeTruthy();
+    await press('Send Sam Small’s answers');
+    expect(screen.getByText('Answer “Which night suits you?”.')).toBeTruthy();
+    expect(rpcCalls('submit_survey_response_for_child')).toEqual([]);
+    await press('Tuesday');
+    answered = true;
+    await press('Send Sam Small’s answers');
+    expect(onlyRpcCall('submit_survey_response_for_child')).toEqual({
+      p_survey_id: 's1',
+      p_child_id: 'sam',
+      p_answers: [{ question_id: 'q1', choices: [0], rating: null, text: null }],
+      p_give_name: false,
+    });
+    expect(rpcCalls('submit_survey_response')).toEqual([]);
+    expect(screen.queryByText('Answer for Sam Small')).toBeNull();
+    expect(screen.getByText('Their answers:')).toBeTruthy();
+    expect(screen.getByText('Tuesday')).toBeTruthy();
+  });
+
+  it('asks whether to give the child’s name on an optional survey', async () => {
+    await openSurvey('guardian', copy({ identity: 'optional' }));
+    await press('Answer for Sam Small');
+    expect(screen.getByText('Sam Small’s name')).toBeTruthy();
+    await press('Give their name');
+    await press('Thursday');
+    await press('Send Sam Small’s answers');
+    expect(onlyRpcCall('submit_survey_response_for_child')).toMatchObject({ p_child_id: 'sam', p_give_name: true });
+  });
+
+  it('can be cancelled without sending anything', async () => {
+    await openSurvey('guardian', copy());
+    await press('Answer for Sam Small');
+    await press('Cancel');
+    expect(screen.getByText('Answer for Sam Small')).toBeTruthy();
+    expect(screen.queryByText('Answering for Sam Small')).toBeNull();
+    expect(rpcNames()).not.toContain('submit_survey_response_for_child');
+  });
+});
+
 describe('the team’s totals', () => {
   it('shows a recipient the counts and averages the sender shared, never names', async () => {
     await openSurvey('athlete', detail({ identity: 'named', sent_as: 'leader', results_to_group: true, can_answer: false, responded: true, my_answers: [] }));

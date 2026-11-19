@@ -131,6 +131,7 @@ export function adminWrites() {
         'admin_wwcc_applications',
         'admin_date_of_birth_record',
         'admin_inactive_members',
+        'admin_no_app_child_requests',
       ].includes(name),
   );
 }

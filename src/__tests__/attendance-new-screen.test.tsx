@@ -186,6 +186,22 @@ describe('who the attendance is for', () => {
 });
 
 describe('marking and saving', () => {
+  it('says which athletes don’t use the app, asking only about the athletes on the register', async () => {
+    const asked: unknown[] = [];
+    await open('coach', {
+      tableHandlers: {
+        profiles: (q) => {
+          if (!q.calls.some((c) => c.method === 'eq' && c.args[0] === 'no_sign_in')) return undefined;
+          asked.push(q.calls.find((c) => c.method === 'in')?.args);
+          return [{ id: 'a2' }];
+        },
+      },
+    });
+    expect(screen.getByText('Bea Athlete · No app')).toBeTruthy();
+    expect(screen.getByText('Alice Athlete')).toBeTruthy();
+    expect(asked).toEqual([['id', ['a1', 'a2', 'a3']]]);
+  });
+
   it('needs a session name', async () => {
     await open('coach');
     await markAll([true, false, true]);

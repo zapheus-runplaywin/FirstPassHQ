@@ -4,6 +4,7 @@ import { Linking, Pressable, StyleSheet, View } from 'react-native';
 
 import { FocusAnchor } from '@/components/focus-anchor';
 import { GuardianHistory } from '@/components/guardian-history';
+import { NoAppChildAdmin } from '@/components/no-app-child';
 import { Screen } from '@/components/screen';
 import { ScreeningNotices } from '@/components/screening-notices';
 import { StandDownSection } from '@/components/stand-down';
@@ -822,7 +823,14 @@ export default function MemberScreen() {
       <Card>
         <Detail label="Status" value={statusLabels[member.status]} />
         <Detail label="Preferred name" value={member.preferred_name} />
-        <Detail label="Sign-in email" value={member.email} />
+        <Detail
+          label="Sign-in email"
+          value={
+            member.no_sign_in
+              ? 'None. A child who won’t use the app: their parent or guardian does everything for them'
+              : member.email
+          }
+        />
         <Detail label="PlayHQ email" value={member.playhq_email} />
         <Detail
           label="Verified"
@@ -1444,6 +1452,26 @@ export default function MemberScreen() {
         </PressableCard>
       ) : null}
 
+      {(isGuardian || member.requested_role === 'guardian') && !member.no_sign_in ? (
+        <NoAppChildAdmin
+          guardianId={id}
+          guardianName={member.full_name || 'this parent'}
+          canAdd={
+            !!member.verified_at &&
+            !isSelf &&
+            (member.status === 'approved'
+              ? hasRole(member, 'guardian')
+              : member.status === 'pending' &&
+                !!member.join_requested_at &&
+                member.requested_role === 'guardian')
+          }
+          onAdded={() => {
+            setReloads((n) => n + 1);
+            refresh();
+          }}
+        />
+      ) : null}
+
       {isGuardian && member.status === 'approved' ? (
         <Card>
           <ThemedText type="smallBold">Guardian of</ThemedText>
@@ -1456,7 +1484,7 @@ export default function MemberScreen() {
           ) : (
             <ThemedText type="small" themeColor="textSecondary">
               No children yet. They enter their child’s link code, or you link them from the
-              child’s page.
+              child’s page, or add a child who won’t use the app above.
             </ThemedText>
           )}
           <GuardianHistory memberId={id} />

@@ -149,6 +149,8 @@ export type SurveyDetail = {
   my_answers: SurveyAnswer[] | null;
   /** A parent or guardian's children's named answers. */
   children: { name: string; responded: boolean; answers: SurveyAnswer[] }[];
+  /** Children who don't use the app whose copy this parent can answer while it's open. */
+  answer_for?: { id: string; name: string }[];
 };
 
 /** A survey's title, who it went to and when. */
