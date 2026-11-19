@@ -449,9 +449,10 @@ Once you're approved, the home screen is where everything starts. From the top:
   covers every to-do with a due date: your own tasks, integrity training, KPI reviews you write, game
   goals (due on game day) and an injury past its expected return date. For admins, Working With
   Children Checks work the same way (see [Admins](#10-admins)).
+- **Messages**, with the number of new messages, when the club uses messages.
 - **Coming up**: the next six events from your calendars, when the club uses the calendar. Tap
   **Full calendar** to see them all.
-- **Cards** for the features your role uses, in this order: Messages, Daily check-in, Check-ins,
+- **Cards** for the features your role uses, in this order: Daily check-in, Check-ins,
   Attendance, My attendance, Injuries, Session plans, Concerns, and Reports or Administration.
   After those come Surveys, Awards, Integrity training, Season KPIs and Registers. Athletes fill
   in their own check-in from **Daily check-in**.
