@@ -72,6 +72,7 @@ import type {
   VolunteerExemption,
   VolunteerExemptionBasis,
 } from '@/lib/types';
+import { leaveOtherGroups } from '@/lib/team-placements';
 import { teamLabel, topGroups, useTeams } from '@/lib/use-teams';
 
 const allRoles = Object.keys(roleLabels) as AppRole[];
@@ -385,11 +386,16 @@ export default function MemberScreen() {
   /** Sets their role in a squad or team, and in the squad's teams with it. */
   function setTeamRole(teamId: string, teamRole: TeamRole) {
     setSelection((current) => {
-      const next = { ...current, [teamId]: placementFor(teamId, teamRole, current[teamId]) };
+      let next = { ...current, [teamId]: placementFor(teamId, teamRole, current[teamId]) };
       for (const t of teams) {
         if (t.squad_id === teamId && t.id in next) {
           next[t.id] = placementFor(t.id, teamRole, next[t.id]);
         }
+      }
+      // Becoming an athlete here takes them out of the season's other squad or team.
+      next = leaveOtherGroups(next, teams, teamId);
+      for (const t of teams) {
+        if (t.squad_id === teamId && t.id in next) next = leaveOtherGroups(next, teams, t.id);
       }
       return next;
     });
@@ -409,6 +415,8 @@ export default function MemberScreen() {
         const squadId = teams.find((t) => t.id === teamId)?.squad_id;
         const teamRole = (squadId && next[squadId]?.team_role) || teamRolesHeld[0];
         next[teamId] = placementFor(teamId, teamRole);
+        // An athlete is in one squad and one team a season: picking another moves them.
+        return leaveOtherGroups(next, teams, teamId);
       }
       return next;
     });

@@ -131,6 +131,7 @@ async function openMember(
     noAppRequests = [] as NoAppChildRequest[],
     // Cards members sent in themselves, waiting for an admin.
     submissions = [] as WwccSubmission[],
+    teams = [SQUAD, SQUAD_TEAM] as Team[],
   } = {},
 ) {
   await openScreen(
@@ -138,7 +139,7 @@ async function openMember(
     { 'admin/[id]': MemberScreen },
     `/admin/${target.id}`,
     {
-      teams: [SQUAD, SQUAD_TEAM],
+      teams,
       guardianships,
       guardian_link_requests: requests,
       stand_downs: standDowns,
@@ -266,6 +267,74 @@ describe('saving a member', () => {
     expect(screen.queryByText('Selected in Open A as')).toBeNull();
     await press('Save changes');
     expect(savedMember()!.p_teams).toEqual([]);
+  });
+
+  describe('one squad and one team at a time for an athlete (Matt, 20 November 2026)', () => {
+    const OPEN_B: Team = { ...SQUAD_TEAM, id: 'team-open-b', name: 'Open B', sort_order: 2 };
+    const OTHER_SQUAD: Team = { ...SQUAD, id: 'squad-u20', name: '20 & Under Squad', sort_order: 3 };
+    const U20_TEAM: Team = { ...SQUAD_TEAM, id: 'team-u20', name: '20 & Under', squad_id: OTHER_SQUAD.id, sort_order: 4 };
+    const NEXT_SQUAD: Team = { ...SQUAD, id: 'squad-next', name: 'Open Squad 2027', season: 2027, sort_order: 5 };
+    const teams = [SQUAD, SQUAD_TEAM, OPEN_B, OTHER_SQUAD, U20_TEAM, NEXT_SQUAD];
+
+    it('picking another team moves the athlete from the one they were in', async () => {
+      await openMember(p('athlete'), {
+        teams,
+        placements: [
+          { team_id: SQUAD.id, team_role: 'athlete', coach_title: null, selection: null },
+          { team_id: SQUAD_TEAM.id, team_role: 'athlete', coach_title: null, selection: 'touring' },
+        ],
+      });
+      await pressInSection('Teams', 'Open B');
+      expect(screen.queryByText('Selected in Open A as')).toBeNull();
+      expect(screen.getByText('Selected in Open B as')).toBeTruthy();
+      await press('Save changes');
+      expect(savedMember()!.p_teams).toEqual([
+        { team_id: SQUAD.id, team_role: 'athlete', coach_title: null, selection: null },
+        { team_id: OPEN_B.id, team_role: 'athlete', coach_title: null, selection: 'touring' },
+      ]);
+    });
+
+    it('picking another squad moves them out of the old squad and its teams', async () => {
+      await openMember(p('athlete'), {
+        teams,
+        placements: [
+          { team_id: SQUAD.id, team_role: 'athlete', coach_title: null, selection: null },
+          { team_id: SQUAD_TEAM.id, team_role: 'athlete', coach_title: null, selection: 'touring' },
+        ],
+      });
+      await pressInSection('Squads', OTHER_SQUAD.name);
+      await press('Save changes');
+      expect(savedMember()!.p_teams).toEqual([
+        { team_id: OTHER_SQUAD.id, team_role: 'athlete', coach_title: null, selection: null },
+      ]);
+    });
+
+    it('next season’s squad is kept alongside this season’s', async () => {
+      await openMember(p('athlete'), {
+        teams,
+        placements: [{ team_id: SQUAD.id, team_role: 'athlete', coach_title: null, selection: null }],
+      });
+      await pressInSection('Squads', NEXT_SQUAD.name);
+      await press('Save changes');
+      expect((savedMember()!.p_teams as Placement[]).map((t) => t.team_id)).toEqual([SQUAD.id, NEXT_SQUAD.id]);
+    });
+
+    it('a coach can be in more than one team', async () => {
+      await openMember(p('coach'), {
+        teams,
+        placements: [
+          { team_id: SQUAD.id, team_role: 'coach', coach_title: 'head_coach', selection: null },
+          { team_id: SQUAD_TEAM.id, team_role: 'coach', coach_title: 'head_coach', selection: null },
+        ],
+      });
+      await pressInSection('Teams', 'Open B');
+      await press('Save changes');
+      expect((savedMember()!.p_teams as Placement[]).map((t) => t.team_id)).toEqual([
+        SQUAD.id,
+        SQUAD_TEAM.id,
+        OPEN_B.id,
+      ]);
+    });
   });
 
   it('adds an extra role and picks which role they hold in each squad', async () => {

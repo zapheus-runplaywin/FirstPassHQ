@@ -67,11 +67,17 @@ export function useLedGroups(teams: Team[]) {
   return teams.filter((t) => ledIds.has(t.id));
 }
 
-/** Current squads and teams the member captains or vice captains while still an athlete in them. */
+/**
+ * Current teams the member captains or vice captains while still an athlete
+ * in them. Captains are chosen per team; a squad captaincy from before
+ * 20 November 2026 no longer counts.
+ */
 export function useCaptainedGroupIds() {
   const { memberships, captaincies } = useAuth();
   const athleteIn = new Set(
-    memberships.filter((m) => m.team_role === 'athlete').map((m) => m.team.id),
+    memberships
+      .filter((m) => m.team_role === 'athlete' && m.team.kind === 'team')
+      .map((m) => m.team.id),
   );
   return new Set(captaincies.map((c) => c.team_id).filter((id) => athleteIn.has(id)));
 }

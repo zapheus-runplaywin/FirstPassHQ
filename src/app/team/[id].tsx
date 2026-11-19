@@ -36,9 +36,11 @@ export default function TeamScreen() {
   const [refreshing, setRefreshing] = useState(false);
   const season = team?.season;
 
-  // Admins and the group's coaches choose its captains.
+  // Admins and the team's coaches choose its captains. Squads have none
+  // (Matt, 20 November 2026): captains are chosen per team.
   const canChooseCaptains =
-    !!team && (isAdmin || memberships.some((m) => m.team.id === id && m.team_role === 'coach'));
+    team?.kind === 'team' &&
+    (isAdmin || memberships.some((m) => m.team.id === id && m.team_role === 'coach'));
 
   // The group's coaches, managers and physios open its athletes' medical and
   // emergency details.
@@ -83,9 +85,12 @@ export default function TeamScreen() {
         : supabase.from('club_captains').select('profile_id').eq('season', season),
     ]);
     setRoster((rosterResult.data as RosterEntry[] | null) ?? []);
+    // Only a team's captains count; a squad captaincy chosen before
+    // 20 November 2026 isn't shown.
+    const captainRows = team?.kind === 'team' ? (captainResult.data as GroupCaptain[] | null) : [];
     setCaptains(
       new Map(
-        ((captainResult.data as GroupCaptain[] | null) ?? []).map((c) => [
+        (captainRows ?? []).map((c) => [
           c.profile_id,
           c.captain_role,
         ]),
@@ -96,7 +101,7 @@ export default function TeamScreen() {
         ((clubResult.data as { profile_id: string }[] | null) ?? []).map((c) => c.profile_id),
       ),
     );
-  }, [id, season]);
+  }, [id, season, team?.kind]);
 
   useFocusEffect(
     useCallback(() => {

@@ -66,7 +66,8 @@ patterns](#training-load-patterns)).
 **Squads and teams.** Each season, members join a **squad** (at West Coast Thunder: Mixed Open
 Squad, Open Squad, 20 & Under Squad, 17 & Under Squad, Lightning Academy). At selections, admins name
 **teams** from a squad and pick each team's final team athletes and training partners. People selected for a team stay
-in their squad as well. A club that doesn't use squads can switch them off in
+in their squad as well. An athlete is in one squad and one team at a time in a season; coaches,
+managers and physios can be in more than one team. A club that doesn't use squads can switch them off in
 [Club settings](#club-settings): members then join a **team** straight away, as a final team athlete
 or training partner, and the app talks about teams wherever it would say squad.
 
@@ -89,10 +90,11 @@ those roles would show on its own.
 
 <img src="user-guide/home-two-roles.png" width="210" alt="Home screen of a coach who is also a guardian">
 
-**Captains.** Admins choose **club captains** from the season's athletes, and admins or a squad or
-team's coaches choose its **captains** and **vice captains**. Captains stay athletes; captaincy only
-adds the right to send messages and polls. Club captains can message the whole club, and captains
-and vice captains can message and send polls to their own squad or team. Captaincy ends when the season is archived.
+**Captains.** Admins choose **club captains** from the season's athletes, and admins or a team's
+coaches choose its **captains** and **vice captains**. Squads don't have captains. Captains stay
+athletes; captaincy only adds the right to send messages and polls. Club captains can message the
+whole club, and captains and vice captains can message and send polls to their own team. Captaincy
+ends when the season is archived, or when the athlete moves to another team.
 
 What each role sees on its home screen:
 
@@ -146,9 +148,9 @@ What each role sees on its home screen:
 | Policy and conflict registers (when turned on) |  |                 | Declare conflicts; review policies they own | Review policies they own | Read both; declare conflicts; review policies they own | Review policies they own |  | Read and change both; record any review |
 | Administration                         |         |                 |              |            |               |               |         |       ✓       |
 
-† Athletes who are captains: club captains can message the whole club, and squad and team
-captains and vice captains their own squad or team. Captains and vice captains can also send polls
-with choices to their own squad or team. Messages and polls from captains under 18 are copied to
+† Athletes who are captains: club captains can message the whole club, and team captains and
+vice captains their own team. Captains and vice captains can also send polls with choices to their
+own team. Messages and polls from captains under 18 are copied to
 their parents or guardians.
 
 \* Physios get messages sent to the Physio role and to the squads and teams they're in. They get
@@ -597,7 +599,7 @@ who sees answers, and it's never other members:
 - a survey from the committee or an admin: whoever sent it, the committee and admins;
 - a survey from a coach or manager: whoever sent it, plus admins for anything longer than a quick
   poll or with a written answer, and the committee too if the coach shared it;
-- a poll from a captain: the captain who sent it and the squad or team's coaches and managers.
+- a poll from a captain: the captain who sent it and the team's coaches and managers.
 
 A survey marked **Everyone must answer** says so at the top and in your to-do list. A coach,
 manager or captain can also share a poll's totals with the squad or team. Then everyone it went to,
@@ -1076,11 +1078,12 @@ concussion** at the top, and follows
 
 ### Captains
 
-If you're a **club captain**, a squad or team **captain** or a **vice captain**, you can send
+If you're a **club captain**, a team **captain** or a **vice captain**, you can send
 messages:
 
 - **Club captains** can send to **Everyone** in the club.
-- **Captains and vice captains** can send to their own squad or team, like its coaches.
+- **Captains and vice captains** can send to their own team, like its coaches. Squads don't have
+  captains.
 
 Open **Messages**, tap **New message**, choose who it goes to, write it and tap **Send**. You'll
 see who has read it in **Sent**. Club admins can read every message. If you're under 18, your
@@ -1088,7 +1091,7 @@ parents or guardians get a copy of every message you send.
 
 <img src="user-guide/captain-new-message.png" width="210" alt="A captain writing a message to their squad">
 
-Captains and vice captains can also send a poll to their own squad or team, for example to find a
+Captains and vice captains can also send a poll to their own team, for example to find a
 night everyone is free for a team dinner or to check who's coming to a social event. Open
 **Surveys** from the home screen, tap **New survey**, choose your squad or team, and add up to 5
 questions, each **One choice** or **Several choices**. Choose **Named** to see who picked what and
@@ -1379,7 +1382,7 @@ nobody can see their answers, including you.
 
 A survey sent to parents and guardians themselves, for example to all guardians, is yours to answer.
 
-If your child under 18 is a captain and sends a poll to their squad or team, you get a copy saying
+If your child under 18 is a captain and sends a poll to their team, you get a copy saying
 your child sent it, so you can see what they asked. You don't see their teammates' answers.
 
 ### Your child's training load
@@ -1613,14 +1616,16 @@ and hasn't read it. Club admins can read every message.
 
 ### Choosing captains
 
-Coaches choose the captains and vice captains of the squads and teams they coach (admins can too).
-Open the squad or team from **My squads and teams** and tap **Choose captains** at the bottom. For
+Coaches choose the captains and vice captains of the teams they coach (admins can too). Captains
+are chosen for each team, not for a squad, so a squad's page has no **Choose captains**. Open the
+team from **My squads and teams** and tap **Choose captains** at the bottom. For
 each athlete choose **Captain**, **Vice captain** or **Neither**, then tap **Save captains**. A
 group can have any number of captains and any number of vice captains, so it's up to you: co-captains
 and no vice captains, one captain and four vice captains, or anything in between.
 
-Captains and vice captains can then message everyone in that squad or team, like you. They must be
-athletes in it, and they stop being able to message it if they leave it or the season is archived.
+Captains and vice captains can then message everyone in that team, like you. They must be
+athletes in it, and they stop being captain if they leave it (for example when an admin moves them
+to another team) or the season is archived.
 Messages from captains under 18 are copied to their parents or guardians.
 
 <img src="user-guide/captains-team-roster.png" width="210" alt="Team roster with Choose captains">
@@ -2659,8 +2664,10 @@ and let their family know. Members approved before this rule keep their approval
 birthday they can ask again.
 
 1. Choose their **Role**.
-2. Choose their **Squads** and, once teams are named, **Teams**. For coaches, choose **Head Coach**
-   or **Assistant Coach** for each group. For athletes in a team, choose **Final team athlete** or
+2. Choose their **Squads** and, once teams are named, **Teams**. An athlete is in one squad and
+   one team a season: picking another squad or team for an athlete moves them out of the one they
+   were in (and out of the old squad's teams). Coaches, managers and physios can be in several.
+   For coaches, choose **Head Coach** or **Assistant Coach** for each group. For athletes in a team, choose **Final team athlete** or
    **Training partner**. For physios, choose **Physio** or **Head Physio** under **Physio title**,
    and place them in the squads or teams they look after. Only the Head Physio looks after every
    athlete; a physio in no squad or team sees no athletes.
@@ -2979,7 +2986,9 @@ works more simply:
 - **Choose who is in a team** (tap it): every approved athlete, coach and manager is listed. Pick
   **Final team**, **Training partner** or **Not selected** for athletes, and **In this team** or
   **Not in this team** for coaches and managers. For a coach in the team, choose **Head Coach** or
-  **Assistant Coach**. The parents and guardians of an athlete under 18 follow them into and out of
+  **Assistant Coach**. An athlete is in one team at a time: one already in another team shows
+  "In Open B now.", and selecting them shows "Moves here from Open B when you save." Saving moves
+  them, and any captaincy they had there ends. Coaches can be in more than one team. The parents and guardians of an athlete under 18 follow them into and out of
   the team by themselves.
 - On a member's page, **Teams** replaces **Squads**, and athletes are picked as a final team athlete
   or training partner for each team.
@@ -3002,7 +3011,11 @@ With squads on:
 - **Name a team** (tap it): for each person in the squad, choose **Final team**, **Training partner**
   or **Not selected** for athletes, and **In this team** or **Not in this team** for coaches and
   managers and physios. For a coach in the team, choose **Head Coach** or **Assistant Coach**; they
-  start with the one they have in the squad. People not selected stay in the squad, and so do the
+  start with the one they have in the squad. An athlete is in one team at a time: one already in
+  another of the season's teams shows "In Open B now.", and selecting them shows "Moves here from
+  Open B when you save." Saving moves them, and any captaincy they had in the other team ends, so
+  each team ends up with its own athletes. A coach can be in as many of the squad's teams as the
+  club likes: "Also coaches Open B." shows the others. People not selected stay in the squad, and so do the
   athletes, coaches and managers selected. A physio selected for a team moves out of the squad
   into it (a physio left in the squad looks after the athletes in all its teams); they can be in
   several of the squad's teams, and other squads and teams they're in are untouched. Once they're
@@ -3793,7 +3806,7 @@ once saved, only replaced or removed, and anyone who gets it wrong five times in
 | Preferred name and title | You and admins; your preferred name then shows wherever your name does.                                                 |
 | To-do notifications     | Only you, on the phones you're signed in on. They name the to-do but never injury details or reviewers' notes. Your on/off choice is yours alone. |
 | Your own personal tasks | Only you. Not your parents or guardians, coaches, the committee or admins. They can't be shared or sent to anyone. |
-| Captains                | Club captains: every member. A squad or team's captains: the people in it, and admins.                                     |
+| Captains                | Club captains: every member. A team's captains: the people in it, and admins. Squads have none.                                     |
 | Pilot features and pilot squads and teams | Admins only, in Club settings. Members just see whether a feature is in their app. |
 | Date of birth, Working With Children Check and exemption | You and admins. Committee members with a current check also read them, for everyone who needs a check, in the Working With Children Checks report. Awards with an age limit use it to decide who can be voted for, without showing it. |
 | Date of birth given at Join, and a child's parent or guardian email | You and admins. Admins also see who recorded your checked date of birth and when. |
