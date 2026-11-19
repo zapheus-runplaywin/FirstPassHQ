@@ -41,6 +41,25 @@ export const involvesChildLabels: Record<InvolvesChild, string> = {
   unsure: 'Not sure',
 };
 
+/** Someone who can be named as who a concern is about. */
+export type ConcernPerson = { id: string; name: string };
+
+/**
+ * The people whose name matches what's been typed, at most `max`. One letter
+ * matches the start of any part of a name ("A" finds Avery Admin and Sam
+ * Alder); two or more also match inside a name. Nothing typed matches nobody.
+ */
+export function matchPeople(people: ConcernPerson[], typed: string, max: number) {
+  const search = typed.trim().toLowerCase();
+  if (!search) return [];
+  const matches = (name: string) => {
+    const lower = name.toLowerCase();
+    if (lower.split(/[\s'’-]+/).some((part) => part.startsWith(search))) return true;
+    return search.length >= 2 && lower.includes(search);
+  };
+  return people.filter((p) => matches(p.name)).slice(0, max);
+}
+
 /** The club's safeguarding contacts, loaded when the screen is shown. */
 export function useSafeguardingContacts() {
   const [contacts, setContacts] = useState<SafeguardingContacts | null>(null);
@@ -67,6 +86,47 @@ export function useNewConcerns(handles: boolean) {
   return handles ? count : 0;
 }
 
+/**
+ * The home screen's traffic lights: red for new concerns nobody has acted on,
+ * orange for open ones someone has (a note, a referral or a status change),
+ * green for those closed in the last 4 weeks. Counts only.
+ */
+export type ConcernCounts = { new: number; inProgress: number; closedRecently: number };
+
+export const noConcernCounts: ConcernCounts = { new: 0, inProgress: 0, closedRecently: 0 };
+
+type ConcernCountsRow = {
+  new_count: number;
+  in_progress_count: number;
+  closed_recent_count: number;
+};
+
+/** The traffic-light counts for a member who handles concerns, or zeros. */
+export function useConcernCounts(handles: boolean) {
+  const [counts, setCounts] = useState<ConcernCounts>(noConcernCounts);
+  useFocusEffect(
+    useCallback(() => {
+      if (!handles) return;
+      supabase
+        .rpc('concern_counts')
+        .maybeSingle()
+        .then(({ data }) => {
+          const row = data as ConcernCountsRow | null;
+          setCounts(
+            row
+              ? {
+                  new: row.new_count ?? 0,
+                  inProgress: row.in_progress_count ?? 0,
+                  closedRecently: row.closed_recent_count ?? 0,
+                }
+              : noConcernCounts,
+          );
+        });
+    }, [handles]),
+  );
+  return handles ? counts : noConcernCounts;
+}
+
 /** The concerns register as a report, with everything done about each one. */
 export function concernsReport(
   concerns: Concern[],
@@ -78,7 +138,9 @@ export function concernsReport(
     cells: [
       localDay(c.created_at),
       c.about_member_name ?? c.about_text ?? '',
-      c.body,
+      c.reported_message_body
+        ? `${c.body}\n\nReported message from ${c.reported_message_sender_name ?? 'a former member'}, ${localDay(c.reported_message_sent_at ?? c.created_at)}: “${c.reported_message_body}”`
+        : c.body,
       involvesChildLabels[c.involves_child],
       c.anonymous ? 'Name not shown' : (c.raised_by_name ?? 'A former member'),
       concernStatusLabels[c.status],

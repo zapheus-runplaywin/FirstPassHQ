@@ -44,10 +44,10 @@ each of their roles can.
 | ------------- | ---------------------------------------------------------------------------------------------------- |
 | **Athlete**   | Registered players aged 13 and over (nobody under 13 signs in to the app this year). Some are club captains, or captains or vice captains of a squad or team. They see their own attendance and can report an absence. An athlete under 18 can't use the app until a verified parent or guardian is linked to them: until then they see only a link code to share with one (see [Ask to join the club](#ask-to-join-the-club)). |
 | **Guardian**  | Parents and guardians of athletes under 18. They ask to be linked to their child by entering the link code from their child's app, and follow their children into and out of their squads and teams. They see their child's attendance and can report an absence for them, and see what has changed around their child. If the club asks, they accept the club's code of conduct for their child each season. |
-| **Coach**     | Head coaches and assistant coaches. Both have the same permissions, except that a head coach sets Season KPIs for the group's assistant coaches; otherwise the title only shows who is who. The app gives each coach a title from their team, or their squad until they're in a team, such as "Head Coach, Open A". Need a current Working With Children Check; the role pauses while it's expired. Someone who has applied for one, new or a renewal, can work while it's assessed (see [Checks applied for](#checks-applied-for)). A parent volunteering at their child's club, a volunteer under 18, or a short-term visitor or national event helper from outside WA has an exemption instead (see [Volunteer exemptions](#volunteer-exemptions)). |
-| **Manager**   | Squad and team managers. The app gives each manager a title from their team, or their squad until they're in a team, such as "Manager, 17 & Under". Need a current Working With Children Check; the role pauses while it's expired. Someone who has applied for one, new or a renewal, can work while it's assessed (see [Checks applied for](#checks-applied-for)). A parent volunteering at their child's club, a volunteer under 18, or a short-term visitor or national event helper from outside WA has an exemption instead (see [Volunteer exemptions](#volunteer-exemptions)). |
-| **Committee** | Club committee members. Each can add a title, such as President or Secretary, shown with their role. Only committee members and admins can add their own title. Need a current Working With Children Check, or an application being assessed, unless an admin exempts them with a reason (not if they also coach, manage or physio); the role pauses if a recorded check expires or was recorded without an expiry date. Committee members approved before checks were needed keep the role without one only until the club's **committee checks date**. Those with a current check, an application in force or a volunteer exemption also read most of the club's governance reports. |
-| **Physio**    | The club's physiotherapists. A physio can be placed in squads or teams to look after their athletes, and one can be the **Head Physio**, who looks after every athlete. Need a current Working With Children Check; the role pauses while it's expired. Someone who has applied for one, new or a renewal, can work while it's assessed (see [Checks applied for](#checks-applied-for)). A parent volunteering at their child's club, a volunteer under 18, or a short-term visitor or national event helper from outside WA has an exemption instead (see [Volunteer exemptions](#volunteer-exemptions)). |
+| **Coach**     | Head coaches and assistant coaches. Both have the same permissions, except that a head coach sets Season KPIs for the group's assistant coaches; otherwise the title only shows who is who. The app gives each coach a title from their team, or their squad until they're in a team, such as "Head Coach, Open A". Need a current Working With Children Check; the role pauses while it's expired, and they add the renewed card from their home screen for an admin to check (see [Sending in your own check](#sending-in-your-own-check)). Someone who has applied for one, new or a renewal, can work while it's assessed (see [Checks applied for](#checks-applied-for)). A parent volunteering at their child's club, a volunteer under 18, or a short-term visitor or national event helper from outside WA has an exemption instead (see [Volunteer exemptions](#volunteer-exemptions)). |
+| **Manager**   | Squad and team managers. The app gives each manager a title from their team, or their squad until they're in a team, such as "Manager, 17 & Under". Need a current Working With Children Check; the role pauses while it's expired, and they add the renewed card from their home screen for an admin to check (see [Sending in your own check](#sending-in-your-own-check)). Someone who has applied for one, new or a renewal, can work while it's assessed (see [Checks applied for](#checks-applied-for)). A parent volunteering at their child's club, a volunteer under 18, or a short-term visitor or national event helper from outside WA has an exemption instead (see [Volunteer exemptions](#volunteer-exemptions)). |
+| **Committee** | Club committee members. Each can add a title, such as President or Secretary, shown with their role. Only committee members and admins can add their own title. Need a current Working With Children Check, or an application being assessed, unless an admin exempts them with a reason (not if they also coach, manage or physio); the role pauses if a recorded check expires or was recorded without an expiry date, and they add the renewed card from their home screen for an admin to check. Committee members approved before checks were needed keep the role without one only until the club's **committee checks date**. Those with a current check, an application in force or a volunteer exemption also read most of the club's governance reports. |
+| **Physio**    | The club's physiotherapists. A physio can be placed in squads or teams to look after their athletes, and one can be the **Head Physio**, who looks after every athlete. Need a current Working With Children Check; the role pauses while it's expired, and they add the renewed card from their home screen for an admin to check (see [Sending in your own check](#sending-in-your-own-check)). Someone who has applied for one, new or a renewal, can work while it's assessed (see [Checks applied for](#checks-applied-for)). A parent volunteering at their child's club, a volunteer under 18, or a short-term visitor or national event helper from outside WA has an exemption instead (see [Volunteer exemptions](#volunteer-exemptions)). |
 | **Guest**     | Anyone else the club lets in, such as partners and sponsors. Guests must be 18 or over. They see only the club calendar, keep their own tasks and can raise a concern. They aren't in squads or teams, get no messages, don't vote and aren't asked for a Working With Children Check or the code of conduct. |
 | **Statistician** | The people who record live game stats on a tablet in FirstPass Vantage, which coaches watch live in FirstPass Vision. Statisticians see every game the club records; a game's coaches and managers see their own squad's or team's, and a squad's coaches and managers also see the games of its teams. Any member can hold it alongside another role, such as a manager or an athlete who isn't playing. Need a current Working With Children Check, an application being assessed, or a volunteer exemption such as a parent at their child's games, unless an admin exempts them with a reason, such as only recording opens games; the role pauses if a recorded check expires. Statisticians approved before checks were needed keep the role without one only until the club's **statistician checks date**. The role pauses while a member is stood down. |
 | **Studio** | The people who run the club's live streams in FirstPass Studio, which shows the club's live game stats on screen. Studio signs in to the club with this person's own Google account and reads only the stats the club records for its PlayHQ games, live and finished, and the line-ups for them; it can't change anything. Someone whose only role is Studio, such as a streamer from outside the club, isn't a club member: they see none of the club's features, members or messages. A member can also hold it alongside their own roles. No Working With Children Check is needed, because a Studio operator isn't with the team and never sees contact details, injuries or anything else sensitive. The role pauses while a member is stood down (see [Studio](#studio)). |
@@ -56,7 +56,8 @@ each of their roles can.
 
 **Safeguarding contacts.** An admin names one member as the club's **Child Safety Officer** and
 another as its **Complaints Manager**. They're not separate roles: each keeps their own role and also
-sees and acts on the concerns members raise (see [The concerns register](#the-concerns-register)).
+sees and acts on the concerns members raise, with new ones as an **Urgent** to-do and red, orange
+and green counts on their Concerns card (see [The concerns register](#the-concerns-register)).
 The Child Safety Officer also sees every athlete's wellbeing flags: the day and lowest score of
 each low check-in, never the answers or notes (see [Wellbeing flags](#wellbeing-flags)), and,
 when the club turns on Training load flags, training load patterns for children (see [Training load
@@ -123,6 +124,7 @@ What each role sees on its home screen:
 | Check medical details once a year      | Own, if 18 or over | Their athlete's |              |            | See who has (report), if checked |               |         | See who has (report) |
 | Consent for a child's check-ins, injuries and stats on live streams |         |        ✓        |              |            |               |               |         |  See status   |
 | Accept the code of conduct each season (if the club asks) | Own§ | Own, and their athlete's | Own | Own | Own | Own | | Own, see who has |
+| Send in your own Working With Children Check |         |                 |     Own      |    Own     | Own, unless exempt |      Own      |         | Own, unless exempt; check and accept others' |
 | Take attendance                        |         |                 |      ✓       |     ✓      |       ✓       |               |         |       ✓       |
 | See athletes' attendance history       |         |                 |      ✓       |            |       ✓       |               |         |       ✓       |
 | Review reported absences               | Report own | Report their athlete's | Own groups | Own groups |   See all    |               |         |    See all    |
@@ -449,6 +451,10 @@ Once you're approved, the home screen is where everything starts. From the top:
   covers every to-do with a due date: your own tasks, integrity training, KPI reviews you write, game
   goals (due on game day) and an injury past its expected return date. For admins, Working With
   Children Checks work the same way (see [Admins](#10-admins)).
+  A new concern is more urgent than anything else: for the Child Safety Officer, the Complaints
+  Manager and admins, **Look at N new concerns** has the red circle, a red **Urgent** label and the
+  red bar, and always sits at the very top, above anything overdue (see [The concerns
+  register](#the-concerns-register)).
 - **Messages**, with the number of new messages, when the club uses messages.
 - **Coming up**: the next six events from your calendars, when the club uses the calendar. Tap
   **Full calendar** to see them all.
@@ -551,7 +557,7 @@ Messages from your coaches, managers, captains, the committee and the club arriv
 **Messages**. Unread messages have a dot in the club's colour, and the home card shows how many
 are new. Opening a message marks it as read, and the
 sender can see that you've read it. **Report this message** on any message raises a concern
-about it (see [Raising a concern](#raising-a-concern)).
+about it, and the concern keeps a copy of the message (see [Raising a concern](#raising-a-concern)).
 
 Who a message went to is shown under the sender's name, for example "To Mixed Open Squad",
 "To Physios" or "To Everyone in the club". Messages from **Club safeguarding** tell a family about a change, such
@@ -791,14 +797,18 @@ managers'.
 coaches, guests and people still waiting for approval. Use it for anything that worries you about a
 child or about how someone at the club behaves. You don't need to be sure. The same link is on the
 daily check-in screen, on every injury and, as **Report this message**, on every message, so the
-concern notes where it came from.
+concern notes where it came from. When you report a message, the screen shows the message you're
+reporting, and the concern keeps its own copy of it: what it said, who sent it and when. The people
+who look into it can read the message even if it's later removed under the club's keep periods.
+Only a message you received or sent can be reported this way.
 
 The screen starts with who to talk to: the club's **Child Safety Officer** and **Complaints
 Manager**, the sport's governing body if the club has added it, and services anyone can call
 (Police on 000, Kids Helpline and the Safe Sport Hotline). Tap a number to call it.
 
-Then say what happened, and optionally who it's about (pick a coach, manager, physio, committee
-member, admin or temporary helper by name, or describe anyone else in your own words), when it happened and whether a child's safety is involved. Choose **Show my name** or
+Then say what happened, and optionally who it's about (start typing a name to pick a coach, manager,
+physio, committee member, admin or temporary helper, or describe anyone else in your own words; the
+list never shows athletes or parents, so nobody can browse the club's children here), when it happened and whether a child's safety is involved. Choose **Show my name** or
 **Don't show my name**. If you hide your name, the people who look into it won't see who you are,
 so they can't ask you more; the app still keeps it with your account so you can follow it. If you
 show your name, say whether they can contact you and how. Tap **Send to the club**.
@@ -809,6 +819,7 @@ shows each one and where it's up to: Received, Referred, Being looked into or Cl
 
 <img src="user-guide/raise-concern.png" width="210" alt="Raise a concern: who to call first">
 <img src="user-guide/raise-concern-form.png" width="210" alt="The concern form: what happened, who, when, and whether to show your name">
+<img src="user-guide/report-message.png" width="210" alt="Reporting a message: the message is shown on the form and a copy is kept">
 
 ### Deleting your account
 
@@ -1443,10 +1454,38 @@ passed, your coach or manager role pauses and your home screen says so. You keep
 team places, though they're hidden from your home screen until the role comes back, along with
 the Messages, Attendance and Check-ins cards, so you can't read messages while paused; the
 database closes your groups' rosters, calendars and fixtures too, not just the screen. Everything
-returns as soon as an admin records the renewed check. Renew it well before it expires; admins are
-reminded 60 days ahead, and 60 days before a parent or under-18 exemption ends.
+returns as soon as an admin accepts the renewed card you send in, or records it themselves (see
+[Sending in your own check](#sending-in-your-own-check)). Renew it well before it expires; you
+get a to-do 60 days ahead to send in the renewed card, admins are reminded 60 days ahead, and 60
+days before a parent or under-18 exemption ends.
 
-<img src="user-guide/role-paused.png" width="210" alt="Home screen of a coach whose check has expired, saying the coach role is paused">
+<img src="user-guide/role-paused.png" width="210" alt="Home screen of a coach whose check has expired, saying the coach role is paused, with Add your card">
+
+### Sending in your own check
+
+When your role is paused because your check has expired or isn't recorded, the paused card on
+your home screen has **Add your card**, and your to-do list has **Add your Working With Children
+Check** in red. Both open **Your Working With Children Check**: enter the **Card number**, the
+**Expires** date (DD/MM/YYYY) and the **Name on the card** as it appears on the card, and tap
+**Send to a club admin**. The same goes for a committee member, statistician or admin who needs a
+check, and when your card expires within 60 days you get **Add your renewed Working With Children
+Check** in amber, so you can send the new card before your role pauses.
+
+The card you send counts for nothing yet: your role stays paused. A club admin checks it with the
+Working with Children Screening Unit (online, or by sighting the card) and accepts it, and your
+role comes back straight away. Your home screen shows the card you sent while it waits; tap
+**Change what you sent** to correct it. If the admin sends it back, for example because the Screening
+Unit shows a different expiry, you get a to-do, **Send your Working With Children Check again**,
+with their note. An expired card, or an expiry more than three years away, is refused.
+
+Still waiting for your card? Show a club admin the receipt instead (see [Checks applied
+for](#checks-applied-for)). If you never work with children, ask a club admin whether you can be
+exempted, with the reason (only committee members, admins and statisticians who hold no coach,
+manager or physio role can be). A stood-down member can't send a card in: the stand-down, not the
+card, is why their role is paused.
+
+<img src="user-guide/wwcc-send.png" width="210" alt="A paused coach entering their Working With Children Check card number, expiry and name on the card">
+<img src="user-guide/wwcc-sent-waiting.png" width="210" alt="Home screen of a paused coach whose card is waiting for a club admin to check it">
 
 ### Declaring conflicts of interest
 
@@ -1988,8 +2027,8 @@ check-ins, injury records, game goals, team goals or session plans.
 
 While your check has expired, or an exemption has ended or hasn't been accepted yet, your home
 screen says **Manager (paused)** and the Messages, Attendance and My squads and teams cards are
-hidden: you can't read or send messages, take attendance or open your groups until an admin records
-the renewed check, and the database closes those too, not just the screen. A stand-down removes
+hidden: you can't read or send messages, take attendance or open your groups until an admin accepts
+the renewed card you send in, or records it (see [Sending in your own check](#sending-in-your-own-check)), and the database closes those too, not just the screen. A stand-down removes
 your squad and team places for the season; lifting it puts them back.
 
 <img src="user-guide/manager-home.png" width="210" alt="Manager home screen">
@@ -2003,7 +2042,9 @@ Committee members oversee the club's athletes without seeing anyone's private ch
 Like coaches, they need a current Working With Children Check, recorded by an admin, unless an
 admin exempts them with a reason. A committee member who also coaches, manages or is a physio
 can't be exempted. If a check an admin recorded expires, or was recorded without an expiry date,
-the committee role pauses until the renewed one is recorded.
+the committee role pauses until the renewed one is recorded. Add the renewed card from your home
+screen for an admin to check (see [Sending in your own check](#sending-in-your-own-check)); the
+card about the committee checks date has **Add your card** too.
 
 Committee members approved before checks were needed keep their role without one until the
 club's **committee checks date**, set under Safeguarding as **Committee checks required from** (90
@@ -2027,7 +2068,8 @@ exemption. The code of conduct, your own integrity training, award votes, person
 Any committee member with a current check (or a volunteer exemption, not an exemption with a
 reason) can be named by an admin as the club's Child Safety Officer, Complaints Manager or WWC
 Registration Officer. If you're the Child Safety Officer or Complaints Manager, your home screen
-also has **Concerns** (see [The concerns register](#the-concerns-register)): the register, each
+also has **Concerns** (see [The concerns register](#the-concerns-register)), with red, orange and
+green counts on the card for new, in progress and recently closed concerns: the register, each
 concern's notes and steps (**Referred to** the governing body or Police, **Being looked into**,
 **Closed** with a note), and **Export the register as a PDF**. A concern about you is never shown
 to you. The Child Safety Officer also has **Wellbeing flags** (see [Wellbeing
@@ -2286,7 +2328,7 @@ club messages** in [Club settings](#club-settings).
 Physios need a current Working With Children Check, recorded by an admin, before they're approved,
 or a [volunteer exemption](#volunteer-exemptions) if they volunteer unpaid at their child's club or
 are under 18. Like a coach's, the physio role pauses once the check's expiry date has passed and comes back when an admin
-records the renewed one.
+accepts the renewed card you send in, or records it (see [Sending in your own check](#sending-in-your-own-check)).
 
 Some clubs have one physio, and some have a physio for each team. An admin can place a physio in
 one or more squads or teams, where they show on the roster as **Physio**, and can mark one physio
@@ -2483,7 +2525,7 @@ committee, and endorse only if they're also a coach or physio), read athletes' c
 set their game goals (unless they also coach them), plus run the club's set-up from **Administration** on the home
 screen. Administration lists its items alphabetically, and **Members** shows how many join requests
 are waiting. Admins' to-do lists include join requests waiting for approval and clearances waiting for
-sign-off, plus child-safety follow-ups: new concerns, athletes with no date of birth, athletes under 18
+sign-off, plus child-safety follow-ups: new concerns (marked **Urgent** and always first), athletes with no date of birth, athletes under 18
 locked out because no verified parent or guardian is linked, Working With Children Checks to sort out, volunteer exemptions that end within
 60 days, athletes turning 18 within 30 days, Screening Unit notices still to report to the
 governing body, no WWC Registration Officer, Child Safety Officer or Complaints Manager, and a
@@ -2711,6 +2753,18 @@ PlayHQ** (their PlayHQ email matches the parent on the registration) or **ID sig
 you checked under **What you checked**, and tap **Record check**. The member then shows as
 "Verified", with how and, under **What was checked**, your note. You can't verify yourself, change your own date of birth or card details, or exempt yourself; ask another admin. An admin can't approve a member who hasn't given their name.
 
+**Cards members send in.** A coach, manager, physio, committee member, statistician or admin who
+needs a check can send in their own card from their home screen (see [Sending in your own
+check](#sending-in-your-own-check)). Your to-do list shows **Check N Working With Children Checks
+members sent in**, which opens just those members, and **Needs checking** marks them "Sent in a
+card to check". On the member's page, **Card they sent in** shows the card number, expiry, name on
+the card and when they sent it. Check it with the Screening Unit, correct the **Name on the card**
+if needed, choose how you checked it, switch on **Registered card with** your club if you have,
+and tap **Accept and validate**. That records the card and your validation together, so their
+paused role comes back only once you've checked it. Or tap **Send it back** with a note saying
+what to fix; they see the note and a to-do to send it again. You can't accept or send back your
+own card: another admin does. A card you record by hand closes the one they sent.
+
 **Linking guardians.** Linking or unlinking a guardian takes effect when you save. Add a **Reason for
 the change** if there is one, such as a parenting order you've seen; only admins see it. When you
 save, the child's guardians, and the child if they're 13 or over, get a message naming the
@@ -2759,6 +2813,7 @@ club** or **Other**) and tap **Don't approve**. They see the reason and can requ
 <img src="user-guide/member-wwcc-exempt.png" width="210" alt="Committee member exempted from the Working With Children Check, with the reason">
 <img src="user-guide/member-wwcc-admin.png" width="210" alt="An admin who needs a Working With Children Check, with the Exempt choice">
 <img src="user-guide/member-wwcc-validation.png" width="210" alt="Validating a card: name on the card, how it was checked and whether it is registered with the club">
+<img src="user-guide/member-wwcc-sent.png" width="210" alt="A card a paused coach sent in, with Accept and validate and Send it back">
 <img src="user-guide/member-volunteer-exempt.png" width="210" alt="A manager recorded as a parent volunteer, waiting to accept the declaration">
 <img src="user-guide/member-volunteer.png" width="210" alt="A temporary helper waiting for approval: their task, dates and what they said">
 <img src="user-guide/member-visitor-exempt.png" width="210" alt="Recording a national event exemption, with the links to the rules at the source">
@@ -3443,7 +3498,7 @@ its periods starts on those.
 A period the club saved before these choices changed (such as 7 years for attendance) stays as it
 is, shown as its own choice, until an admin picks another.
 
-Concerns are never removed. While a concern names a member (open or closed), nothing about them
+Concerns are never removed, including the copy of any message reported with them. While a concern names a member (open or closed), nothing about them
 is removed either, whatever these periods say: their attendance and the sessions they were at, messages they
 sent or received, check-ins, game goals, season KPIs, absences, training certificates, injuries
 and their documents, safeguarding records, who viewed their records and who viewed what with
@@ -3572,28 +3627,54 @@ someone to see every season they've accepted it and the words accepted.
 ### The concerns register
 
 The Child Safety Officer, the Complaints Manager and admins open **Concerns** from the home screen.
-New concerns also appear in their to-do list until someone records something about them. Open
-concerns are listed first, newest at the top. Nobody sees a concern about themselves.
+New concerns also appear in their to-do list as **Look at N new concerns**, marked **Urgent** in
+red at the very top, until someone records something about them. Open concerns are listed first,
+newest at the top. Nobody sees a concern about themselves.
+
+The **Concerns** card on the home screen shows three traffic lights, each a count with a word
+beside it:
+
+| Light | Word | What it counts |
+| --- | --- | --- |
+| Red | **New** | Concerns with the status Received that nobody has recorded anything about yet. This is the same count as the Urgent to-do. |
+| Orange | **In progress** | Open concerns someone has acted on: Received with a note, Referred, or Being looked into. |
+| Green | **Closed, 4 weeks** | Concerns closed in the last 4 weeks. |
+
+So a concern moves from red to orange the moment anyone records a referral, a note or a status
+change, and to green when it's closed. A light with nothing in it is dimmed. The card shows counts
+only, never what a concern says or who it's about, and a concern about you is never counted on
+your card, just as it's never shown to you. Members who don't handle concerns don't have the card
+at all.
+
+<img src="user-guide/concerns-urgent-todo.png" width="210" alt="An admin's to-do list with Look at 1 new concern marked Urgent at the top">
+<img src="user-guide/concerns-lights.png" width="210" alt="The Concerns card: 1 new in red, 2 in progress in orange, 1 closed in the last 4 weeks in green">
 
 Open a concern to see what was raised, by whom (unless they hid their name), how to contact them,
-and where it was raised from. While a concern that may involve a child's safety is open and hasn't been referred, a red note at the top says to refer child abuse or a serious crime to Police and the
+and where it was raised from. A concern raised with **Report this message** shows the **Reported
+message** in full: who sent it, when, and exactly what it said. This is the concern's own copy, kept
+with the concern for good, so it stays the same if the message is later removed. Hiding the
+reporter's name works the same as for any concern. While a concern that may involve a child's safety is open and hasn't been referred, a red note at the top says to refer child abuse or a serious crime to Police and the
 governing body straight away and not to resolve it within the club. Then record what you did:
 
 - **Referred to** the governing body, or **Referred to Police**, with an optional note such as a
   reference number. Either sets the status to Referred.
 - **Add note** for anything else: who you spoke to and what was decided.
 - **Change status** to Being looked into, or **Closed** with a note saying why.
-- **Who it's about**: name the member it's about. From then on they can't see it, even if they're
-  an admin or handle concerns. Nothing about them is removed under [Keeping
+- **Who it's about**: type a name under **Search members** and tap the member it's about. Every
+  approved member can be found here, athletes, parents and guests included, and matches start from
+  the first letter (one letter finds names with a part starting with it). If nobody matches, it
+  says so. From then on they can't see it, even if they're an admin or handle concerns. Nothing about them is removed under [Keeping
   records](#keeping-records) while the concern names them, even once it's closed: their
   attendance, messages, check-ins, injuries and safeguarding records are kept as a legal hold.
 
 Every step is kept with who did it and when. **Export the register as a PDF** gives the whole
-register with every step, except any concern about you, for the committee, the governing body or
+register with every step and any reported message, except any concern about you, for the committee, the governing body or
 an auditor.
 
 <img src="user-guide/concerns-register.png" width="210" alt="The concerns register">
 <img src="user-guide/concern.png" width="210" alt="A concern with the referral prompt and what's been done">
+<img src="user-guide/concern-reported-message.png" width="210" alt="A concern raised from a message, with the reported message in full">
+<img src="user-guide/concern-about-search.png" width="210" alt="Who it's about: typing A finds members whose names start with A">
 
 ### Wellbeing flags
 
@@ -3661,10 +3742,11 @@ once saved, only replaced or removed, and anyone who gets it wrong five times in
 | Who entered a child's code | The parent or guardian who entered it, and admins. The child sees the names of parents and guardians who entered their code. |
 | Stand-downs             | Admins, and committee members with a current check in the Working With Children Checks report (read only). The member sees that their role is paused, not the reason. |
 | Screening Unit notices and card validations | Admins, and committee members with a current check in the Working With Children Checks report (read only). |
+| Cards members send in | The member (their own) and admins. A card counts only once an admin accepts it; the member sees an admin's note if it's sent back. |
 | Check applications, receipts and declarations | The member (their own application and declaration, not the receipt) and admins. Committee members with a current check read the applications in the Working With Children Checks report, never the receipts. Kept, with the receipt, if the member deletes their account. |
 | Volunteer exemptions and declarations | The volunteer (their own) and admins, and committee members with a current check in the Working With Children Checks report (read only). Kept under the member's name if they delete their account; the exemption ends that day. |
 | Temporary helpers' task, dates and policy acceptance | The volunteer and admins. Temporary helpers see nothing of the club's members, squads, calendar or messages. If a helper deletes their account, their policy acceptance and any exemption declaration are kept under their name; their task and dates go with the account. |
-| Concerns                | The Child Safety Officer, the Complaints Manager and admins, never the person a concern is about when they were named from the list (a concern that only describes someone in words is not hidden from anyone who handles concerns). Whoever raised it sees its status. A hidden name is never shown to them. |
+| Concerns                | The Child Safety Officer, the Complaints Manager and admins, never the person a concern is about when they were named from the list (a concern that only describes someone in words is not hidden from anyone who handles concerns). Whoever raised it sees its status. A hidden name is never shown to them. The traffic-light counts on the Concerns card follow the same rule: counts only, and never a concern about the person looking. |
 | Safeguarding contacts   | Everyone signed in, including guests and people waiting for approval.                                                       |
 | Committee checks date   | Everyone signed in. Only admins change it, and only to bring it forward; who changed it and when is kept. |
 | Messages                | The people they were sent to, the sender, and admins. A stood-down member doesn't see the messages they sent, or the ones they got as a coach, manager, physio, committee member or admin. Guardians of athletes under 18 get a copy of every message sent to their athlete, and of every message their athlete sends as a captain. Guests don't get messages; physios get messages sent to the Physio role and to their squads and teams, and whole-club messages only if an admin turns that on. |
@@ -3729,7 +3811,10 @@ the sport's governing body. The details are in each role's section.
 Anyone signed in can raise a concern, from the home screen, the check-in screen, any injury or any
 message, and can hide their name (see [Raising a concern](#raising-a-concern)). It goes to the
 club's Child Safety Officer, Complaints Manager and admins, never to the person it's about when
-they were named from the list. Police
+they were named from the list. A reported message is copied into the concern by the club's
+database, from the message itself, so it can't be altered on the way and survives the message
+being removed later. Those handling a concern can name anyone in the club as who it's about,
+children included, while the form members use to raise one lists only adults with club roles. Police
 (000), Kids Helpline, the Safe Sport Hotline and the governing body's contacts are shown on the same
 screen. Every concern and every step taken is kept in the [concerns
 register](#the-concerns-register), which prints as a PDF.
@@ -4016,7 +4101,9 @@ Working With Children Check, and another admin must do it.
   turns 18. A parent's exemption doesn't cover overnight camps or trips, and the app doesn't mark
   events as overnight, so the club makes sure a parent volunteer has a check before a tour.
 - **Your role pauses the day after your check expires**, and comes back when an admin records the
-  renewed check. While it's paused the database closes your groups' rosters, calendars, fixtures,
+  renewed check. You add the renewed card yourself from your home screen, and it counts only once
+  an admin has checked it with the Screening Unit and accepted it, which records their validation
+  at the same time (see [Sending in your own check](#sending-in-your-own-check)). While it's paused the database closes your groups' rosters, calendars, fixtures,
   attendance, plans, team goals and the athletes' comments on them; they aren't only hidden on the
   screen. Messages are hidden from the screen
   while your check has lapsed, and closed at the database too while you're stood down. Admins are
@@ -4180,10 +4267,11 @@ Working With Children Check, and another admin must do it.
   Checks report lists them all. The admin's member page links to the Act and the Screening Unit's
   fact sheets so exemptions can be checked at the source.
 - **Your to-do list does the chasing**, and each to-do about a member opens that member's page
-  at the job, or a list of just the people it's about: new concerns, missing or expiring checks (missing or
+  at the job, or a list of just the people it's about: new concerns (marked **Urgent** and always
+  first), missing or expiring checks (missing or
   expired checks in red at the top, checks to validate, register or renew in amber), volunteer
-  exemptions ending, declarations not yet accepted (counted with missing checks), cards to validate
-  or register with the club, notices to report to the governing body, no WWC Registration Officer,
+  exemptions ending, declarations not yet accepted (counted with missing checks), cards members sent
+  in to check, cards to validate or register with the club, notices to report to the governing body, no WWC Registration Officer,
   no cleared Child Safety Officer or Complaints Manager, athletes with no date of birth, athletes under 18 locked out with no verified parent or guardian, athletes turning 18 in the
   next 30 days, and old records kept
   forever while **Remove old records** is off.
@@ -4194,6 +4282,11 @@ Working With Children Check, and another admin must do it.
   and validation, plus every exemption, notice and stand-down. The under 18s report lists every child, their guardians and how often their records were viewed in the last 12 months. Each saves as a PDF.
   The concerns register, on the Concerns card for the Child Safety Officer, Complaints Manager and
   admins, exports as a PDF listing every concern and what was done, except any about the person exporting it.
+- **Nothing raised sits unseen.** A new concern is an **Urgent** red to-do at the top of the list
+  for the Child Safety Officer, the Complaints Manager and admins until someone acts on it. The
+  Concerns card's traffic lights show at a glance how many are new (red), in progress (orange) and
+  closed in the last 4 weeks (green). They're counts only, and never include a concern about the
+  person looking.
 
 ### For the governing body and auditors
 

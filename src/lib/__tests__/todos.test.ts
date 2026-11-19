@@ -3,9 +3,9 @@ import type { KpiReviewTodo } from '@/lib/kpis';
 import type { MedicalReview } from '@/lib/medical';
 import type { MyConflictDeclaration, PolicyReview } from '@/lib/registers';
 import type { MySurvey } from '@/lib/surveys';
-import { buildTodos, dueAlert, sortByAlert, type Todo } from '@/lib/todos';
+import { buildTodos, dueAlert, sortByAlert, type Todo, URGENT } from '@/lib/todos';
 import type { MyTraining } from '@/lib/training';
-import type { AwardSlot, CoachTeamGame, GoalGame, Injury } from '@/lib/types';
+import type { AwardSlot, CoachTeamGame, GoalGame, Injury, MyWwccSubmission } from '@/lib/types';
 import type { SafetyTodos } from '@/lib/use-pending-requests';
 
 // The modules load auth and club context, which need native storage.
@@ -221,11 +221,11 @@ describe('dueAlert', () => {
 });
 
 describe('sortByAlert', () => {
-  type Item = { id: string; level?: 'red' | 'amber'; due?: string };
+  type Item = { id: string; level?: 'red' | 'amber'; due?: string; urgent?: boolean };
   const sort = (items: Item[]) =>
     sortByAlert(
       items,
-      (i) => (i.level ? { level: i.level, label: '' } : null),
+      (i) => (i.urgent ? URGENT : i.level ? { level: i.level, label: '' } : null),
       (i) => i.due,
     ).map((i) => i.id);
 
@@ -247,6 +247,18 @@ describe('sortByAlert', () => {
         { id: 'a-early', level: 'amber', due: '2026-10-19' },
       ]),
     ).toEqual(['r-early', 'r-late', 'r-none', 'a-early', 'a-late']);
+  });
+
+  it('puts urgent above every red, even long-overdue ones', () => {
+    expect(
+      sort([
+        { id: 'plain' },
+        { id: 'amber', level: 'amber', due: '2026-10-19' },
+        { id: 'overdue', level: 'red', due: '2020-01-01' },
+        { id: 'red', level: 'red' },
+        { id: 'urgent', urgent: true },
+      ]),
+    ).toEqual(['urgent', 'overdue', 'red', 'amber', 'plain']);
   });
 
   it('keeps the order of everything else, whatever the dates', () => {
@@ -293,6 +305,23 @@ describe('buildTodos', () => {
     expect(todos({ newConcerns: 1 })[0].title).toBe('Look at 1 new concern');
   });
 
+  it('marks new concerns urgent: a red Urgent warning that goes above every other', () => {
+    expect(todos({ newConcerns: 1 })[0].alert).toEqual({ level: 'red', label: 'Urgent', urgent: true });
+    // Above red warnings that are themselves missing or overdue.
+    const list = todos({
+      newConcerns: 3,
+      safety: safety({ records_removal_stalled: { last_ok_at: null } }),
+      medicalReviews: [{ athlete_id: 'me', athlete_name: 'Me', status: 'overdue', due_on: '2026-09-01' }],
+    });
+    const sorted = sortByAlert(list, (t) => t.alert, (t) => t.dueOn);
+    expect(sorted[0]).toMatchObject({ key: 'concerns', alert: { label: 'Urgent' } });
+    expect(sorted.slice(1).map((t) => t.alert?.level)).toEqual(['red', 'red']);
+  });
+
+  it('has no urgent warning without new concerns', () => {
+    expect(todos({ newConcerns: 0 }).some((t) => t.alert?.urgent)).toBe(false);
+  });
+
   it('puts athletes flagged 3 times in a week straight after new concerns, for the Child Safety Officer', () => {
     const list = todos({ newConcerns: 1, wellbeingFlagAlerts: 2, declarationWaiting: true, needsCheckIn: true });
     expect(keys(list)).toEqual(['concerns', 'wellbeing-flags', 'volunteer-declaration', 'check-in']);
@@ -317,6 +346,60 @@ describe('buildTodos', () => {
       title: 'Confirm your Working With Children Check application',
       detail: 'It counts as your check once you accept the declaration',
       href: '/wwcc-application',
+    });
+  });
+
+  describe('the member’s own check', () => {
+    const sent = (extra: Partial<MyWwccSubmission> = {}): MyWwccSubmission => ({
+      id: 's1',
+      card_number: 'WWC1',
+      expires_on: '2029-01-01',
+      card_name: 'Sam',
+      submitted_at: at(17),
+      status: 'waiting',
+      decided_at: null,
+      return_note: null,
+      ...extra,
+    });
+
+    it('asks a paused member to add their card, in red', () => {
+      expect(only(todos({ ownCheck: 'paused' }))).toEqual({
+        key: 'wwcc-send',
+        title: 'Add your Working With Children Check',
+        detail: 'Your role is paused until a club admin checks it',
+        href: '/wwcc',
+        alert: { level: 'red', label: 'Paused' },
+      });
+    });
+
+    it('asks a member whose card expires soon for the renewed one, in amber', () => {
+      expect(only(todos({ ownCheck: 'expiring' }))).toEqual({
+        key: 'wwcc-send',
+        title: 'Add your renewed Working With Children Check',
+        detail: 'Your card expires soon. Once you’ve renewed it, send the new card.',
+        href: '/wwcc',
+        alert: { level: 'amber', label: 'Expiring' },
+      });
+    });
+
+    it('asks nothing while a card they sent waits for an admin', () => {
+      expect(todos({ ownCheck: 'paused', wwccSubmission: sent() })).toEqual([]);
+      expect(todos({ ownCheck: 'expiring', wwccSubmission: sent() })).toEqual([]);
+      expect(todos({ ownCheck: null })).toEqual([]);
+    });
+
+    it('asks them to send a card again after an admin sent it back, with the note', () => {
+      const back = sent({ status: 'returned', return_note: 'Wrong expiry' });
+      expect(only(todos({ ownCheck: 'paused', wwccSubmission: back }))).toEqual({
+        key: 'wwcc-send-again',
+        title: 'Send your Working With Children Check again',
+        detail: 'Sent back: Wrong expiry',
+        href: '/wwcc',
+        alert: { level: 'red', label: 'Paused' },
+      });
+      const noNote = only(todos({ ownCheck: null, wwccSubmission: sent({ status: 'returned' }) }));
+      expect(noNote.detail).toBe('A club admin sent it back');
+      expect(noNote.alert).toBeUndefined();
     });
   });
 
@@ -818,6 +901,23 @@ describe('buildTodos', () => {
       expect(only(todos({ safety: safety({ wwcc_applications_lapsed: 1 }) })).title).toBe(
         'Confirm 1 check application is still being assessed',
       );
+    });
+
+    it('asks admins to check cards members sent in, after the checks tile', () => {
+      expect(only(todos({ safety: safety({ wwcc_submitted: 1 }) }))).toEqual({
+        key: 'wwcc-sent',
+        title: 'Check 1 Working With Children Check members sent in',
+        detail: 'Check each card with the Screening Unit, then accept it or send it back',
+        href: { pathname: '/admin', params: { todo: 'wwcc-sent' } },
+        alert: { level: 'amber', label: 'Check' },
+      });
+      expect(only(todos({ safety: safety({ wwcc_submitted: 3 }) })).title).toBe(
+        'Check 3 Working With Children Checks members sent in',
+      );
+      expect(todos({ safety: safety({ wwcc_submitted: 0 }) })).toEqual([]);
+      expect(
+        keys(todos({ safety: safety({ wwcc_missing: 1, wwcc_submitted: 1, wwcc_applications_due: 1 }) })),
+      ).toEqual(['wwcc', 'wwcc-sent', 'wwcc-applications']);
     });
 
     it('adds no applications tile when none is due', () => {

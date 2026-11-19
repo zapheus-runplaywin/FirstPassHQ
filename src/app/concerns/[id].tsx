@@ -2,6 +2,7 @@ import { useFocusEffect, useLocalSearchParams } from 'expo-router';
 import { useCallback, useState } from 'react';
 import { StyleSheet, View } from 'react-native';
 
+import { ReportedMessage } from '@/components/safeguarding';
 import { Screen } from '@/components/screen';
 import { ThemedText } from '@/components/themed-text';
 import { Button, Card, ChipGroup, ErrorText, TextField } from '@/components/ui';
@@ -10,7 +11,9 @@ import { formatDate } from '@/lib/age';
 import {
   concernEventLabels,
   concernStatusLabels,
+  type ConcernPerson,
   involvesChildLabels,
+  matchPeople,
   useSafeguardingContacts,
 } from '@/lib/concerns';
 import { localDay } from '@/lib/reports';
@@ -29,7 +32,7 @@ export default function ConcernScreen() {
   const contacts = useSafeguardingContacts();
   const [concern, setConcern] = useState<Concern | null | undefined>(undefined);
   const [history, setHistory] = useState<ConcernEvent[]>([]);
-  const [people, setPeople] = useState<{ id: string; name: string }[]>([]);
+  const [people, setPeople] = useState<ConcernPerson[]>([]);
   const [note, setNote] = useState('');
   const [status, setStatus] = useState<ConcernStatus | null>(null);
   const [aboutSearch, setAboutSearch] = useState('');
@@ -40,12 +43,14 @@ export default function ConcernScreen() {
     const [registerResult, historyResult, peopleResult] = await Promise.all([
       supabase.rpc('concern_register'),
       supabase.rpc('concern_history', { p_concern_id: id }),
-      supabase.rpc('concern_people'),
+      // Every approved member, children and parents included: only those who
+      // handle concerns can list them.
+      supabase.rpc('concern_about_people'),
     ]);
     const found = ((registerResult.data as Concern[] | null) ?? []).find((c) => c.id === id);
     setConcern(found ?? null);
     setHistory((historyResult.data as ConcernEvent[] | null) ?? []);
-    setPeople((peopleResult.data as { id: string; name: string }[] | null) ?? []);
+    setPeople((peopleResult.data as ConcernPerson[] | null) ?? []);
   }, [id]);
 
   useFocusEffect(
@@ -103,11 +108,7 @@ export default function ConcernScreen() {
 
   const body = contacts?.governing_body_name ?? 'the governing body';
   const referred = history.some((e) => e.kind === 'referred_police' || e.kind === 'referred_governing_body');
-  const search = aboutSearch.trim().toLowerCase();
-  const matches =
-    search.length >= 2
-      ? people.filter((p) => p.name.toLowerCase().includes(search)).slice(0, PERSON_MATCHES)
-      : [];
+  const matches = matchPeople(people, aboutSearch, PERSON_MATCHES);
 
   return (
     <Screen>
@@ -150,6 +151,14 @@ export default function ConcernScreen() {
           />
         ) : null}
       </Card>
+
+      {concern.reported_message_body ? (
+        <ReportedMessage
+          senderName={concern.reported_message_sender_name}
+          sentAt={concern.reported_message_sent_at}
+          body={concern.reported_message_body}
+        />
+      ) : null}
 
       <View style={styles.group}>
         <ThemedText type="smallBold">What’s been done</ThemedText>
@@ -239,6 +248,10 @@ export default function ConcernScreen() {
             selected={[]}
             onToggle={setAbout}
           />
+        ) : aboutSearch.trim() ? (
+          <ThemedText type="small" themeColor="textSecondary">
+            No approved member’s name matches “{aboutSearch.trim()}”.
+          </ThemedText>
         ) : null}
         {concern.about_member_id ? (
           <Button

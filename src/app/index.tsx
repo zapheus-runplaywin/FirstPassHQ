@@ -2,6 +2,7 @@ import { router, useFocusEffect } from 'expo-router';
 import { useCallback, useEffect, useState } from 'react';
 import { Pressable, StyleSheet, View } from 'react-native';
 
+import { ConcernLights } from '@/components/concern-lights';
 import { EventGrid } from '@/components/event-card';
 import { HomeHeader } from '@/components/home-header';
 import { ChildCodeCard, WaitingForGuardian } from '@/components/guardian-link';
@@ -16,6 +17,7 @@ import { useTheme } from '@/hooks/use-theme';
 import { useAbsencesToReview, useLeadsAGroup } from '@/lib/absences';
 import { useConductTodos } from '@/lib/conduct';
 import { committeeCheckDue, isDatedExemption, statisticianCheckDue } from '@/lib/safety';
+import { canSendOwnCheck, ownCheckExpiring, submissionStatusText } from '@/lib/wwcc-submissions';
 import { formatDate } from '@/lib/age';
 import { useAuth } from '@/lib/auth';
 import { useCanTakeAttendance, useCanViewAttendance } from '@/lib/attendance';
@@ -53,7 +55,7 @@ import {
 } from '@/lib/use-pending-requests';
 import { rejectionReasonMessages, rolesLabel, staffTitle, teamPositionLabel } from '@/lib/labels';
 import { supabase } from '@/lib/supabase';
-import { useNewConcerns } from '@/lib/concerns';
+import { useConcernCounts, useNewConcerns } from '@/lib/concerns';
 import { useCanReadReports } from '@/lib/report-access';
 import { usePersonalTasks } from '@/lib/personal-tasks';
 import { useSessionPlanSummary } from '@/lib/session-plans';
@@ -93,6 +95,7 @@ export default function HomeScreen() {
     paused,
     exemption,
     wwccApplication,
+    wwccSubmission,
     memberships,
     isAdmin,
     isSafeguardingOfficer,
@@ -106,6 +109,7 @@ export default function HomeScreen() {
   // Admins and the two safeguarding officers handle concerns members raise.
   const handlesConcerns = isAdmin || isSafeguardingOfficer;
   const newConcerns = useNewConcerns(handlesConcerns);
+  const concernCounts = useConcernCounts(handlesConcerns);
   const { switchClub } = useClubChoice();
   const club = useClub();
   const { features } = club;
@@ -194,6 +198,8 @@ export default function HomeScreen() {
       !!wwccApplication &&
       !wwccApplication.declared_at &&
       wwccApplication.status === 'waiting_for_declaration',
+    ownCheck: ownCheckReason(profile, paused, exemption, wwccApplication),
+    wwccSubmission,
     newConcerns,
     wellbeingFlagAlerts: wellbeingFlags.repeated,
     loadPatternAlerts: loadPatterns,
@@ -496,6 +502,7 @@ export default function HomeScreen() {
                 ? `${newConcerns} new ${newConcerns === 1 ? 'concern' : 'concerns'} to look at`
                 : 'The concerns register'}
             </ThemedText>
+            <ConcernLights counts={concernCounts} />
           </PressableCard>
         ) : null}
 
@@ -900,7 +907,7 @@ function pausedReason(
     return `Your ${what} paused until you accept the declaration for your Working With Children Check application. Open it from your to-do list.`;
   }
   if (application?.status === 'lapsed') {
-    return `Your Working With Children Check application has lapsed because nobody confirmed it’s still being assessed, so your ${what} paused. Ask a club admin to check it, or send them your card number and expiry date if it has arrived.`;
+    return `Your Working With Children Check application has lapsed because nobody confirmed it’s still being assessed, so your ${what} paused. Ask a club admin to check it, or add your card below if it has arrived.`;
   }
   const exemption = paused.exemption;
   if (exemption && !exemption.declared_at) {
@@ -915,24 +922,81 @@ function pausedReason(
               exemption.ends_on ? ` on ${formatDateString(exemption.ends_on)}` : ''
             }`
           : 'Your exemption as an under-18 volunteer ended when you turned 18';
-    return `${ended}, so your ${what} paused. Apply for a Working With Children Check, then send a club admin the card number and expiry date.`;
+    return `${ended}, so your ${what} paused. Apply for a Working With Children Check, then add your card below. A club admin checks it, and your role starts again once they accept it.`;
   }
-  return `Your Working With Children Check has expired or isn't recorded, so your ${what} paused. Apply for one or renew it, then send a club admin the card number and expiry date. If you never work with children, ask an admin to exempt you with the reason.`;
+  return `Your Working With Children Check has expired or isn't recorded, so your ${what} paused. Apply for one or renew it, then add your card below. A club admin checks it, and your role starts again once they accept it. If you never work with children, ask an admin to exempt you with the reason.`;
+}
+
+/**
+ * Why the member should send in their own card, for the to-do list: a role
+ * paused for want of a check (not a stand-down, and not waiting on a
+ * declaration they can accept), or their card expiring soon.
+ */
+function ownCheckReason(
+  profile: Profile | null,
+  paused: ReturnType<typeof useAuth>['paused'],
+  exemption: ReturnType<typeof useAuth>['exemption'],
+  application: ReturnType<typeof useAuth>['wwccApplication'],
+): 'paused' | 'expiring' | null {
+  if (!canSendOwnCheck(profile, paused?.roles)) return null;
+  if (paused) return waitsOnDeclaration(exemption, application) ? null : 'paused';
+  return ownCheckExpiring(profile) ? 'expiring' : null;
+}
+
+/** A declaration the member can accept from their to-do list starts their role instead. */
+function waitsOnDeclaration(
+  exemption: ReturnType<typeof useAuth>['exemption'],
+  application: ReturnType<typeof useAuth>['wwccApplication'],
+) {
+  return (
+    (!!exemption && !exemption.declared_at) ||
+    (!!application && !application.declared_at && application.status === 'waiting_for_declaration')
+  );
 }
 
 /** Roles the member holds but can't use: an expired check or a stand-down. */
 function PausedRoles() {
-  const { paused } = useAuth();
+  const { profile, paused } = useAuth();
   if (!paused) return null;
   const roles = rolesLabel(paused.roles);
   const what = `${roles.toLowerCase()} ${paused.roles.length > 1 ? 'roles are' : 'role is'}`;
+  const canSend =
+    canSendOwnCheck(profile, paused.roles) &&
+    !waitsOnDeclaration(paused.exemption, paused.application);
   return (
-    <Card>
+    <Card style={styles.pausedCard}>
       <ThemedText type="smallBold">{roles} paused</ThemedText>
       <ThemedText type="small" themeColor="textSecondary">
         {pausedReason(paused, what)}
       </ThemedText>
+      {canSend ? <SendOwnCheck /> : null}
     </Card>
+  );
+}
+
+/**
+ * Where the member's own card is up to, with the button to send it: waiting
+ * for an admin, sent back with a note, or not sent yet.
+ */
+function SendOwnCheck() {
+  const { wwccSubmission: submission } = useAuth();
+  return (
+    <>
+      {submission ? (
+        <ThemedText type="small">{submissionStatusText(submission)}</ThemedText>
+      ) : null}
+      <Button
+        title={
+          !submission
+            ? 'Add your card'
+            : submission.status === 'returned'
+              ? 'Send it again'
+              : 'Change what you sent'
+        }
+        variant={submission?.status === 'waiting' ? 'secondary' : 'primary'}
+        onPress={() => router.push('/wwcc')}
+      />
+    </>
   );
 }
 
@@ -944,16 +1008,17 @@ function CommitteeCheckDue() {
   const { profile, committeeChecksFrom } = useAuth();
   if (!profile || !committeeCheckDue(profile, committeeChecksFrom)) return null;
   return (
-    <Card>
+    <Card style={styles.pausedCard}>
       <ThemedText type="smallBold">
         Your committee role needs a Working With Children Check from{' '}
         {formatDate(committeeChecksFrom)}
       </ThemedText>
       <ThemedText type="small" themeColor="textSecondary">
-        Your committee role pauses on that day unless a check is recorded. Apply for one, then send
-        a club admin the card number and expiry date. If you never work with children, ask an admin
-        to exempt you with the reason.
+        Your committee role pauses on that day unless a check is recorded. Apply for one, then add
+        your card below for a club admin to check. If you never work with children, ask an admin to
+        exempt you with the reason.
       </ThemedText>
+      <SendOwnCheck />
     </Card>
   );
 }
@@ -985,17 +1050,18 @@ function StatisticianCheckDue() {
   const { profile, statisticianChecksFrom } = useAuth();
   if (!profile || !statisticianCheckDue(profile, statisticianChecksFrom)) return null;
   return (
-    <Card>
+    <Card style={styles.pausedCard}>
       <ThemedText type="smallBold">
         Your statistician role needs a Working With Children Check from{' '}
         {formatDate(statisticianChecksFrom)}
       </ThemedText>
       <ThemedText type="small" themeColor="textSecondary">
         Your statistician role pauses on that day, in HQ and in Vantage, unless a check is
-        recorded. Apply for one, then send a club admin the card number and expiry date. If you
-        only record opens games and never work with children, ask an admin to exempt you with the
+        recorded. Apply for one, then add your card below for a club admin to check. If you only
+        record opens games and never work with children, ask an admin to exempt you with the
         reason.
       </ThemedText>
+      <SendOwnCheck />
     </Card>
   );
 }
@@ -1018,13 +1084,15 @@ function AdminChildInjuriesClosed() {
   );
   if (!closed) return null;
   return (
-    <Card>
+    <Card style={styles.pausedCard}>
       <ThemedText type="smallBold">You can’t see under 18s’ injuries right now</ThemedText>
       <ThemedText type="small" themeColor="textSecondary">
         Your Working With Children Check expired or isn’t recorded, and it’s been over 30 days. You
-        keep everything else an admin can do. Ask another admin to record your current check, or
-        an application you’ve lodged, and you’ll see children’s injuries again.
+        keep everything else an admin can do. Add your current card below for another admin to
+        check, or ask them to record an application you’ve lodged, and you’ll see children’s
+        injuries again.
       </ThemedText>
+      <SendOwnCheck />
     </Card>
   );
 }
@@ -1131,6 +1199,7 @@ function VerificationCode() {
 }
 
 const styles = StyleSheet.create({
+  pausedCard: { gap: Spacing.two },
   code: {
     alignItems: 'center',
     gap: Spacing.one,
