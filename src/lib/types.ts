@@ -349,7 +349,13 @@ export type Message = {
 
 /** A message in the member's inbox. */
 export type InboxMessage = {
+  /** When the member first opened it: the sender's read receipt. */
   read_at: string | null;
+  /**
+   * Whether it shows as unread in the member's own inbox. Follows `read_at`
+   * unless the member used "Mark all read" or "Mark as unread".
+   */
+  unread?: boolean;
   /** The member's own answer to its question, if it asks one. */
   answer?: number | null;
   /** For a guardian's copy: the children it was sent for. Null when it's the member's own. */

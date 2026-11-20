@@ -104,7 +104,7 @@ What each role sees on its home screen:
 | Your own personal tasks                |    ✓    |        ✓        |      ✓       |     ✓      |       ✓       |       ✓       |    ✓    |       ✓       |
 | To-do notifications on your phone      |    ✓    |        ✓        |      ✓       |     ✓      |       ✓       |       ✓       |    ✓    |       ✓       |
 | My squads and teams                    |    ✓    |        ✓        |      ✓       |     ✓      |  If in one    |       ✓       | Heading only |   If in one   |
-| Read messages                          |    ✓    |        ✓        |      ✓       |     ✓      |       ✓       |       ✓*      |         |       ✓       |
+| Read messages, mark read or unread     |    ✓    |        ✓        |      ✓       |     ✓      |       ✓       |       ✓*      |         |       ✓       |
 | Send messages                          | Captains† |                 |  Own groups  | Own groups |   Whole club  |               |         |     Anyone    |
 | Answer a message's question            |    ✓    | Own, and for their athlete |      ✓       |     ✓      |       ✓       |       ✓       |         |       ✓       |
 | See who answered a message's question  | Captains, their own† |   Their athlete's   |  Own groups  | Own groups | Their own |               |         |       ✓       |
@@ -565,7 +565,16 @@ there to allow them.
 Messages from your coaches, managers, captains, the committee and the club arrive in
 **Messages**. Unread messages have a dot in the club's colour, and the home card shows how many
 are new. Opening a message marks it as read, and the
-sender can see that you've read it. **Report this message** on any message raises a concern
+sender can see that you've read it.
+
+- **Mark all read** at the top of your inbox clears every dot at once. The senders still see those
+  messages as not read, because you didn't open them.
+- **Mark as unread** at the bottom of an open message puts it back in your inbox with its dot, to
+  come back to later. The sender still sees that you read it.
+- **Hide read** at the top of your inbox shows only your unread messages. Tap it again to see them
+  all.
+
+**Report this message** on any message raises a concern
 about it, and the concern keeps a copy of the message (see [Raising a concern](#raising-a-concern)).
 
 Some messages ask a question, such as "Extra session Friday?", with answers to pick from, such as
@@ -586,7 +595,9 @@ If the club removes old records, the text of a message older than the club's kee
 messages (a longer one when a child sent or received it) is replaced with "This message was removed after the club's keep period." Who sent it, who it went to
 and who read it stay (see [Record keeping](#record-keeping)).
 
-<img src="user-guide/inbox.png" width="210" alt="Messages inbox">
+<img src="user-guide/inbox.png" width="210" alt="Messages inbox with Hide read and Mark all read">
+<img src="user-guide/inbox-hide-read.png" width="210" alt="Messages inbox with Hide read on">
+<img src="user-guide/message-mark-unread.png" width="210" alt="An open message with Mark as unread">
 
 ### Surveys
 
@@ -1639,7 +1650,9 @@ straight away.
 Everyone else in that squad or team gets it, including the parents and guardians listed in it.
 Parents and guardians of athletes under 18 always get a copy, even if they aren't in the squad. Open
 **Sent** to see how many of them have read each message, and open a message to see exactly who has
-and hasn't read it. Club admins can read every message.
+and hasn't read it. Read means they opened it: someone who clears their inbox with **Mark all
+read** still shows as not read, and someone who puts a message back with **Mark as unread** still
+shows as read. Club admins can read every message.
 
 <img src="user-guide/new-message-coach.png" width="210" alt="New message">
 <img src="user-guide/messages-sent.png" width="210" alt="Sent messages with read counts">
@@ -3905,7 +3918,7 @@ once saved, only replaced or removed, and anyone who gets it wrong five times in
 | Safeguarding contacts   | Everyone signed in, including guests and people waiting for approval.                                                       |
 | Committee checks date   | Everyone signed in. Only admins change it, and only to bring it forward; who changed it and when is kept. |
 | Messages                | The people they were sent to, the sender, and admins. A stood-down member doesn't see the messages they sent, or the ones they got as a coach, manager, physio, committee member or admin. Guardians of athletes under 18 get a copy of every message sent to their athlete, and of every message their athlete sends as a captain. Guests don't get messages; physios get messages sent to the Physio role and to their squads and teams, and whole-club messages only if an admin turns that on. |
-| Read receipts           | The sender and admins. A child who doesn't use the app shows as read once one of their parents has read their copy. |
+| Read receipts           | The sender and admins. A receipt means the member opened the message: **Mark all read**, **Mark as unread** and **Hide read** change only the member's own inbox, never what the sender sees. A child who doesn't use the app shows as read once one of their parents has read their copy. |
 | Answers to a message's question | Who gave which answer, who answered for a child and when: the sender (a captain too) while not stood down, the squad or team's coaches and managers, and admins. Each member sees their own answer; parents and guardians see their child's, who gave it and when. Other members see nothing, or only how many picked each answer if the sender shares the totals. Answers are kept with the message. |
 | Survey answers          | Whoever sent the survey. The committee and admins for their own surveys and ones a coach or manager shared with them. A coach or manager's survey to their own squad or team is seen by them while they still coach or manage it, by admins unless it's a quick poll (up to 5 questions with choices or ratings), and by the committee if they shared it. A captain's poll is seen by the captain while they're captain, and by the squad or team's coaches and managers. Named answers show the member's name; parents and guardians of an athlete under 18 also read their child's named answers. Anonymous answers, and name-optional answers given without a name, are kept with no name, no member and no time, so nobody can see who gave them, admins included; their results show only once the survey has closed, or everyone has answered, and at least 3 people have answered. Named results show once 3 people have answered, a club survey's chosen 20%, 50% or 80%, or everyone when everyone must answer; every survey's results show once it closes. Members never see each other's answers. Whoever sees the results can download them as a PDF or spreadsheet, except captains. |
 | Survey totals shared with a team | When a coach, manager or captain shares a poll's results with the squad or team: everyone it went to and their parents or guardians, once results show. Only how many picked each choice and average ratings: never names, written answers or who has answered. |
