@@ -720,15 +720,36 @@ describe('adding and changing a task', () => {
     expect(t.writes('insert')).toEqual([]);
   });
 
-  it('deletes a task after asking', async () => {
+  it('marks a task done, which deletes it, with a note that says so and no delete button', async () => {
     const t = recordTable((q) => (q.calls.some((c) => c.method === 'delete') ? [] : [EXISTING]));
     await openScreen('athlete', { 'tasks/[id]': EditTaskScreen }, '/tasks/t9', {}, { tableHandlers: { personal_tasks: t.handler } });
-    await fireEvent.press(screen.getByText('Delete task'));
-    expect(screen.getByText('This deletes the task for good.')).toBeTruthy();
-    await fireEvent.press(screen.getByText('Delete it'));
+    expect(screen.getByText('Marking it done deletes it, so it won’t be on your list any more.')).toBeTruthy();
+    expect(screen.queryByText('Delete task')).toBeNull();
+    await fireEvent.press(screen.getByText('Mark as done'));
     await settle();
     expect(t.filtersOf('delete')).toEqual([[['id', 't9']]]);
+    expect(t.writes('update')).toEqual([]);
     expect(back).toHaveBeenCalled();
+  });
+
+  it('stays on the task and shows why when marking it done fails', async () => {
+    const t = recordTable(() => [EXISTING]);
+    await openScreen('athlete', { 'tasks/[id]': EditTaskScreen }, '/tasks/t9', {}, { tableHandlers: { personal_tasks: t.handler } });
+    // The next table call is the delete, which fails.
+    (supabase.from as jest.Mock).mockImplementationOnce(() => ({
+      delete: () => ({ eq: async () => ({ error: { message: 'Network request failed' } }) }),
+    }));
+    await fireEvent.press(screen.getByText('Mark as done'));
+    await settle();
+    expect(screen.getByText('Network request failed')).toBeTruthy();
+    expect(back).not.toHaveBeenCalled();
+  });
+
+  it('has no Mark as done on a new task', async () => {
+    const t = recordTable(() => []);
+    await openScreen('athlete', { 'tasks/new': NewTaskScreen }, '/tasks/new', {}, { tableHandlers: { personal_tasks: t.handler } });
+    expect(screen.queryByText('Mark as done')).toBeNull();
+    expect(screen.queryByText(/Marking it done/)).toBeNull();
   });
 
   it('says so when the task has been deleted', async () => {

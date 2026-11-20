@@ -3,18 +3,21 @@ import { useEffect, useState } from 'react';
 
 import { Screen } from '@/components/screen';
 import { ThemedText } from '@/components/themed-text';
-import { Button, ConfirmDelete, ErrorText, TextField } from '@/components/ui';
+import { Button, ErrorText, TextField } from '@/components/ui';
 import { WeekDateField } from '@/components/week-date-field';
 import { deleteTask, loadTask, saveTask } from '@/lib/personal-tasks';
 
-/** Adds one of the member's own tasks, or changes or deletes one (`id`). */
+/**
+ * Adds one of the member's own tasks, or changes one (`id`) or marks it done.
+ * Marking it done here deletes it, and the note under the button says so.
+ */
 export function TaskForm({ id = null }: { id?: string | null }) {
   const [title, setTitle] = useState('');
   const [dueOn, setDueOn] = useState<string | null>(null);
   const [loading, setLoading] = useState(!!id);
   const [missing, setMissing] = useState(false);
   const [saving, setSaving] = useState(false);
-  const [deleting, setDeleting] = useState(false);
+  const [finishing, setFinishing] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
   useEffect(() => {
@@ -46,11 +49,12 @@ export function TaskForm({ id = null }: { id?: string | null }) {
     router.back();
   }
 
-  async function remove() {
+  async function markDone() {
     if (!id) return;
-    setDeleting(true);
+    setFinishing(true);
+    setError(null);
     const deleteError = await deleteTask(id);
-    setDeleting(false);
+    setFinishing(false);
     if (deleteError) {
       setError(deleteError.message);
       return;
@@ -96,13 +100,18 @@ export function TaskForm({ id = null }: { id?: string | null }) {
       <ErrorText>{error}</ErrorText>
       <Button title={id ? 'Save' : 'Add task'} onPress={save} busy={saving} disabled={loading} />
       {id ? (
-        <ConfirmDelete
-          title="Delete task"
-          warning="This deletes the task for good."
-          confirmTitle="Delete it"
-          onConfirm={remove}
-          busy={deleting}
-        />
+        <>
+          <Button
+            title="Mark as done"
+            variant="secondary"
+            onPress={markDone}
+            busy={finishing}
+            disabled={loading || saving}
+          />
+          <ThemedText type="small" themeColor="textSecondary">
+            Marking it done deletes it, so it won’t be on your list any more.
+          </ThemedText>
+        </>
       ) : null}
     </Screen>
   );

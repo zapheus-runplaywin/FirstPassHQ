@@ -57,7 +57,7 @@ export function TaskRow({
       </Pressable>
       <Pressable
         accessibilityRole="button"
-        accessibilityHint="Opens it so you can change or delete it"
+        accessibilityHint="Opens it so you can change it or mark it done"
         onPress={() => router.push({ pathname: '/tasks/[id]', params: { id: task.id } })}
         style={({ pressed }) => [styles.body, pressed && { opacity: 0.6 }]}>
         <View style={styles.text}>

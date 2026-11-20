@@ -501,8 +501,9 @@ with the club's items (see [The home screen](#the-home-screen)).
   date, or tap **Remove due date** to take one off. Then tap **Add task**.
 - **Tick it off**: tap the circle next to it. It leaves your list, and **Undo** puts it back if
   you tapped by mistake.
-- **Change or delete it**: tap the task, change it and tap **Save**, or tap **Delete task** and
-  confirm with **Delete it**.
+- **Change it or mark it done**: tap the task, change it and tap **Save**, or tap **Mark as done**
+  when you've finished it. The note under the button says it: marking it done there deletes the
+  task, so it won't come back.
 - **See them all**: tap **Your tasks** for everything still to do and the last 30 you ticked off.
   Tap a ticked-off task's circle to put it back on your list, or **Delete done tasks** (then
   **Delete them**) to clear them. **Add a task** is at the top of this screen too.
@@ -510,11 +511,12 @@ with the club's items (see [The home screen](#the-home-screen)).
 Only you can see your tasks. Your coaches, parents or guardians, the committee and the club's
 admins can't, and a task can't be shared, assigned or sent to anyone. Members under 18 can add
 tasks too, with the same privacy. You can have up to 100 tasks still to do. They're kept until you
-delete them or your account.
+mark them done from the task, clear your done tasks, or delete your account.
 
 <img src="user-guide/todo-personal.png" width="210" alt="To-do list with an overdue task in red at the top, tasks due soon in amber, then club items and other tasks">
 <img src="user-guide/task-new.png" width="210" alt="Adding a personal task with a due date">
 <img src="user-guide/tasks-list.png" width="210" alt="Your tasks: to do and done">
+<img src="user-guide/task-edit.png" width="210" alt="Changing a personal task, with Mark as done and the note that marking it done deletes it">
 
 ### Your preferred name
 
