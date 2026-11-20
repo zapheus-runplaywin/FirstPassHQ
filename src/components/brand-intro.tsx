@@ -1,5 +1,5 @@
 import { Image } from 'expo-image';
-import { StyleSheet } from 'react-native';
+import { StyleSheet, View } from 'react-native';
 import Animated, {
   Easing,
   ReduceMotion,
@@ -11,10 +11,13 @@ import Animated, {
   withSpring,
   withTiming,
 } from 'react-native-reanimated';
+import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { scheduleOnRN } from 'react-native-worklets';
 import { useEffect } from 'react';
 
+import { AppVersion } from '@/components/app-version';
 import { FirstPass } from '@/constants/club';
+import { Spacing } from '@/constants/theme';
 import { useClub } from '@/lib/club';
 
 /** Matches `imageWidth` for the splash screen in app.json, so the hand-off is seamless. */
@@ -32,10 +35,12 @@ const SHIFT = (GAP + CLUB_LOGO_SIZE) / 2;
  * the FirstPass 1P HQ mark from the splash screen pulses and, once an admin has
  * uploaded the club's own logo, rises to make room for it beneath, so the
  * pair sits centred on the screen. Then both zoom and
- * fade away to reveal the first screen.
+ * fade away to reveal the first screen. The app's version and build sit at the
+ * foot, so testers can see which copy opened.
  */
 export function BrandIntro({ onDone }: { onDone: () => void }) {
   const club = useClub();
+  const insets = useSafeAreaInsets();
   const reduceMotion = useReducedMotion();
   const scale = useSharedValue(1);
   const opacity = useSharedValue(1);
@@ -103,6 +108,9 @@ export function BrandIntro({ onDone }: { onDone: () => void }) {
           </Animated.View>
         ) : null}
       </Animated.View>
+      <View style={[styles.version, { bottom: insets.bottom + Spacing.four }]}>
+        <AppVersion color={FirstPass.inkMuted} />
+      </View>
     </Animated.View>
   );
 }
@@ -126,6 +134,11 @@ const styles = StyleSheet.create({
     position: 'absolute',
     top: (LOGO_SIZE + FIRSTPASS_HEIGHT) / 2 + GAP,
     alignSelf: 'center',
+  },
+  version: {
+    position: 'absolute',
+    left: 0,
+    right: 0,
   },
   clubLogoImage: {
     width: CLUB_LOGO_SIZE,

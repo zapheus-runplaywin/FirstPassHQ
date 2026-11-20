@@ -40,6 +40,18 @@ if [ -n "$demo_url" ] && [ "$demo_url" = "$url" ]; then
   exit 1
 fi
 
+# "Build N" (or the commit) on the app's opening screen, Find your club, sign-in
+# and home, for the code in this update (docs/beta-builds.md, "Which build is
+# this?"). The committed file goes back afterwards. Without git history the
+# update still goes out, without a build number.
+info=src/constants/build-info.json
+if [ -f "$info" ]; then
+  cp "$info" "$work/build-info.json"
+  trap 'cp "$work/build-info.json" "$info"; rm -rf "$work"' EXIT
+fi
+git fetch --quiet origin main 2>/dev/null || echo "Couldn't fetch main, so the build number may be missing."
+node "$(dirname "$0")/write-build-info.js" || echo "So the update shows no build number."
+
 # Values already in the environment win over .env, so the build uses these.
 # The extra test clubs in .env are blanked, so they're never in an update.
 rm -rf dist

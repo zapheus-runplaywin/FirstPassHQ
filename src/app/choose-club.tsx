@@ -33,7 +33,7 @@ export default function ChooseClubScreen() {
   }
 
   return (
-    <Screen withTopInset>
+    <Screen withTopInset showVersion>
       <View style={styles.header}>
         <Image
           source={defaultLogo(theme.background)}

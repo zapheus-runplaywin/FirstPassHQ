@@ -1,7 +1,6 @@
 import { Montserrat_400Regular } from '@expo-google-fonts/montserrat/400Regular';
 import { Montserrat_700Bold } from '@expo-google-fonts/montserrat/700Bold';
 import { Montserrat_800ExtraBold } from '@expo-google-fonts/montserrat/800ExtraBold';
-import Constants from 'expo-constants';
 import { useFonts } from 'expo-font';
 import { DarkTheme, Stack, ThemeProvider } from 'expo-router';
 import * as SplashScreen from 'expo-splash-screen';
@@ -12,6 +11,7 @@ import { BrandIntro } from '@/components/brand-intro';
 import { rootStackOptions } from '@/constants/navigation';
 import { BrandFonts, contrastRatio } from '@/constants/theme';
 import { useTheme } from '@/hooks/use-theme';
+import { readAppVersion } from '@/lib/app-version';
 import { AuthProvider, useAuth } from '@/lib/auth';
 import { ClubProvider, useClub } from '@/lib/club';
 import { ClubChoiceProvider, useClubChoice } from '@/lib/club-choice';
@@ -20,7 +20,11 @@ import { usePushNotifications } from '@/lib/push';
 import { useRouteAccess } from '@/lib/route-access';
 
 SplashScreen.preventAutoHideAsync();
-startAppLog({ version: Constants.expoConfig?.version ?? null });
+{
+  // Which copy of the app wrote the log: the same details as the opening screen shows.
+  const { version, nativeBuild, build, commit, updateId } = readAppVersion();
+  startAppLog({ version, nativeBuild, build, commit, updateId });
+}
 
 export default function RootLayout() {
   return (

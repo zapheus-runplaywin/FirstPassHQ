@@ -335,7 +335,7 @@ export default function HomeScreen() {
   const studioOnly = heldRoles.length > 0 && heldRoles.every((r) => r === 'studio');
 
   return (
-    <Screen withTopInset refreshing={refreshing} onRefresh={onRefresh}>
+    <Screen withTopInset refreshing={refreshing} onRefresh={onRefresh} showVersion>
       <HomeHeader
         name={name}
         roles={

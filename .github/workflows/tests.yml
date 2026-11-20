@@ -120,6 +120,9 @@ jobs:
       - name: Updates keep the demo club off the live project
         if: ${{ !cancelled() }}
         run: scripts/test-publish-update.sh
+      - name: Builds and updates carry the build number
+        if: ${{ !cancelled() }}
+        run: scripts/test-write-build-info.sh
       - name: Lockfile stays off the patched advisories
         if: ${{ !cancelled() }}
         run: python3 scripts/test-dependency-floors.py
