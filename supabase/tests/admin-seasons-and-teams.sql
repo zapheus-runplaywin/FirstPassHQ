@@ -5,7 +5,7 @@
 -- 20261008120000_guest_and_physio_access.sql, 20261008150000_club_settings_save_where.sql,
 -- 20261008210000_captains.sql, 20261009000000_optional_squads.sql,
 -- 20261009110000_multiple_roles.sql, 20261012001000_team_physios.sql,
--- 20261012100000_team_templates.sql, 20261012200000_security_hardening.sql,
+-- 20261012100000_team_templates.sql, 20261120200000_ammna_setup_without_academy.sql, 20261012200000_security_hardening.sql,
 -- 20261012220000_stand_downs.sql, 20261012235000_concerns.sql,
 -- 20261013090000_record_access_log.sql, 20261016000000_season_kpis.sql and
 -- 20261016010000_session_plans.sql. Covers admin_start_season,
@@ -426,3 +426,8 @@ select pg_temp.works('admin chooses the WA Netball League setup', $s$ select pub
 select pg_temp.ok('four teams with no squads', (select count(*) = 4 and bool_and(kind = 'team' and squad_id is null) from public.teams where not archived), true);
 select pg_temp.ok('squads switched off and the setup remembered', not public.club_uses_squads() and public.club_team_template() = 'wanl', true);
 select pg_temp.fails('the setup cannot be applied twice', $s$ select public.admin_apply_team_template('wanl') $s$);
+update public.teams set archived = true;
+select pg_temp.works('admin chooses the AMMNA State Teams setup', $s$ select public.admin_apply_team_template('ammna_state_teams') $s$);
+select pg_temp.ok('four AMMNA squads, in order', (select string_agg(name, ', ' order by sort_order) from public.teams where not archived and kind = 'squad') = 'Mixed Open Squad, Open Squad, 20 & Under Squad, 17 & Under Squad', true);
+select pg_temp.ok('no Lightning Academy in the AMMNA setup', exists (select 1 from public.teams where not archived and name = 'Lightning Academy'), false);
+select pg_temp.ok('squads switched on and the setup remembered', public.club_uses_squads() and public.club_team_template() = 'ammna_state_teams', true);

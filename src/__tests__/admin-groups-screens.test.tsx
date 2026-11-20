@@ -350,7 +350,7 @@ describe('a club’s starting setup', () => {
   it('asks a new club to choose a setup, and applies the one chosen', async () => {
     await openSquads({ current: [], template: null });
     expect(screen.getByText('Choose a starting setup')).toBeTruthy();
-    expect(screen.getByText('Mixed Open Squad, Open Squad, 20 & Under Squad, 17 & Under Squad, Lightning Academy')).toBeTruthy();
+    expect(screen.getByText('Mixed Open Squad, Open Squad, 20 & Under Squad, 17 & Under Squad')).toBeTruthy();
     // Nothing to add to until a setup is chosen, and no way out of choosing.
     expect(screen.queryByText('Add a squad or team')).toBeNull();
     expect(screen.queryByText('Cancel')).toBeNull();

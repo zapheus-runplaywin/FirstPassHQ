@@ -2967,8 +2967,8 @@ teams you changed, so their parents' **What's changed** lists only real moves.
 **Starting setup.** A new club starts with no squads or teams. The first time an admin opens
 **Squads and teams**, they choose a starting setup to match the club's competition:
 
-- **AMMNA State Teams**: five squads (Mixed Open Squad, Open Squad, 20 & Under Squad, 17 & Under
-  Squad, Lightning Academy) with squads on. Members join a squad and teams are named from it at
+- **AMMNA State Teams**: four squads (Mixed Open Squad, Open Squad, 20 & Under Squad and 17 & Under
+  Squad) with squads on. Members join a squad and teams are named from it at
   selections.
 - **WA Netball League**: four teams (Mens Team, Opens Team, 21 & Under Team, Futures Team) with
   squads off. Members join a team straight away.
