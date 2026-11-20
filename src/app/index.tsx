@@ -17,6 +17,7 @@ import { Spacing } from '@/constants/theme';
 import { useTheme } from '@/hooks/use-theme';
 import { useAbsencesToReview, useLeadsAGroup } from '@/lib/absences';
 import { useConductTodos } from '@/lib/conduct';
+import { safeguardingPostsLabel } from '@/lib/safeguarding-posts';
 import { committeeCheckDue, isDatedExemption, statisticianCheckDue } from '@/lib/safety';
 import { canSendOwnCheck, ownCheckExpiring, submissionStatusText } from '@/lib/wwcc-submissions';
 import { formatDate } from '@/lib/age';
@@ -55,7 +56,13 @@ import {
   usePendingRequests,
   useSafetyTodos,
 } from '@/lib/use-pending-requests';
-import { rejectionReasonMessages, rolesLabel, staffTitle, teamPositionLabel } from '@/lib/labels';
+import {
+  captainTitle,
+  rejectionReasonMessages,
+  rolesLabel,
+  staffTitle,
+  teamPositionLabel,
+} from '@/lib/labels';
 import { supabase } from '@/lib/supabase';
 import { useConcernCounts, useNewConcerns } from '@/lib/concerns';
 import { useCanReadReports } from '@/lib/report-access';
@@ -99,8 +106,11 @@ export default function HomeScreen() {
     wwccApplication,
     wwccSubmission,
     memberships,
+    captaincies,
+    isClubCaptain,
     isAdmin,
     isSafeguardingOfficer,
+    safeguardingPosts,
     waitingForGuardian,
     isLocked,
     refresh,
@@ -331,6 +341,16 @@ export default function HomeScreen() {
         roles={
           approved && profile
             ? rolesHeldLabel(profile, memberships, paused?.roles ?? [])
+            : undefined
+        }
+        titles={
+          approved && profile
+            ? [
+                captainTitle(captaincies, memberships, isClubCaptain),
+                safeguardingPostsLabel(safeguardingPosts),
+              ]
+                .filter(Boolean)
+                .join(' · ')
             : undefined
         }
         logo={club.logo}

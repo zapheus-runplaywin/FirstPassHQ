@@ -143,6 +143,7 @@ type Rows = {
   application?: MyWwccApplication | null;
   submission?: MyWwccSubmission | null;
   isSafeguardingOfficer?: unknown;
+  safeguardingPosts?: unknown;
   committeeSeesInjuries?: unknown;
   committeeChecksFrom?: unknown;
   linkCode?: unknown;
@@ -208,6 +209,7 @@ beforeEach(() => {
     if (fn === 'my_wwcc_application') return query({ data: rows.application ?? null });
     if (fn === 'my_wwcc_submission') return query({ data: rows.submission ?? null });
     if (fn === 'is_safeguarding_officer') return query({ data: rows.isSafeguardingOfficer ?? false });
+    if (fn === 'my_safeguarding_posts') return query({ data: rows.safeguardingPosts ?? null });
     if (fn === 'my_committee_sees_injuries') return query({ data: rows.committeeSeesInjuries ?? true });
     if (fn === 'committee_checks_from') return query({ data: rows.committeeChecksFrom ?? null });
     if (fn === 'my_link_code') return query({ data: rows.linkCode ?? null });
@@ -305,6 +307,7 @@ describe('loading the member', () => {
     expect(auth.isAdmin).toBe(false);
     expect(auth.isClubCaptain).toBe(false);
     expect(auth.isSafeguardingOfficer).toBe(false);
+    expect(auth.safeguardingPosts).toEqual([]);
     expect(auth.committeeSeesInjuries).toBe(true);
     expect(supabase.from).not.toHaveBeenCalled();
     expect(supabase.rpc).not.toHaveBeenCalled();
@@ -333,12 +336,31 @@ describe('loading the member', () => {
     expect(teamMembers.eq).toHaveBeenCalledWith('team.archived', false);
   });
 
+  it('loads the safeguarding posts the member holds', async () => {
+    const auth = await authFor({
+      profile: profile('statistician'),
+      safeguardingPosts: {
+        child_safety_officer: true,
+        complaints_manager: false,
+        wwc_registration_officer: true,
+      },
+    });
+    expect(auth.safeguardingPosts).toEqual(['child_safety_officer', 'wwc_registration_officer']);
+    expect(supabase.rpc).toHaveBeenCalledWith('my_safeguarding_posts');
+  });
+
+  it('holds no safeguarding posts when the club has none set', async () => {
+    const auth = await authFor({ profile: profile('coach'), safeguardingPosts: null });
+    expect(auth.safeguardingPosts).toEqual([]);
+  });
+
   it('shows no member, groups or safeguarding contacts while loading', async () => {
     rows = {
       profile: profile('coach'),
       memberships: [member(TEAM_A, 'coach')],
       isClubCaptain: true,
       isSafeguardingOfficer: true,
+      safeguardingPosts: { child_safety_officer: true },
       committeeSeesInjuries: false,
       exemption: exemption(),
       committeeChecksFrom: '2027-01-11',
@@ -362,6 +384,7 @@ describe('loading the member', () => {
     expect(result.current.captaincies).toEqual([]);
     expect(result.current.isClubCaptain).toBe(false);
     expect(result.current.isSafeguardingOfficer).toBe(false);
+    expect(result.current.safeguardingPosts).toEqual([]);
     expect(result.current.exemption).toBeNull();
     expect(result.current.committeeChecksFrom).toBeNull();
     await act(async () => release());
@@ -420,6 +443,7 @@ describe('loading the member', () => {
       profile: profile('coach'),
       isClubCaptain: true,
       isSafeguardingOfficer: true,
+      safeguardingPosts: { complaints_manager: true },
       committeeSeesInjuries: false,
       exemption: exemption(),
       application: application(),
@@ -431,6 +455,7 @@ describe('loading the member', () => {
     expect(result.current.auth.wwccApplication).toEqual(application());
     expect(result.current.auth.wwccSubmission).toEqual(submission());
     expect(result.current.auth.committeeChecksFrom).toBe('2027-01-11');
+    expect(result.current.auth.safeguardingPosts).toEqual(['complaints_manager']);
 
     await act(async () => {
       authListener?.('SIGNED_OUT', null);
@@ -443,6 +468,7 @@ describe('loading the member', () => {
     expect(result.current.auth.committeeChecksFrom).toBeNull();
     expect(result.current.auth.isClubCaptain).toBe(false);
     expect(result.current.auth.isSafeguardingOfficer).toBe(false);
+    expect(result.current.auth.safeguardingPosts).toEqual([]);
     expect(result.current.auth.committeeSeesInjuries).toBe(true);
   });
 

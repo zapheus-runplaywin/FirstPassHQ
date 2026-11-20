@@ -124,6 +124,7 @@ function auth(
     committeeChecksFrom: null,
     statisticianChecksFrom: null,
     isSafeguardingOfficer: extra.isSafeguardingOfficer ?? false,
+    safeguardingPosts: [],
     waitingForGuardian: null,
     isLocked: false,
     committeeSeesInjuries: extra.committeeSeesInjuries ?? true,

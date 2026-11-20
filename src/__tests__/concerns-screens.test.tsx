@@ -10,7 +10,7 @@
  * would return for each member and check the screens show that, keep an
  * anonymous raiser anonymous, and prompt a referral for a child's safety.
  */
-import { fireEvent, screen } from 'expo-router/testing-library';
+import { fireEvent, screen, within } from 'expo-router/testing-library';
 
 import RaiseConcernScreen from '@/app/concern/new';
 import ConcernScreen from '@/app/concerns/[id]';
@@ -335,9 +335,15 @@ describe('the concerns register', () => {
 // ---------------------------------------------------------------------------
 // One concern
 
-async function openConcern(who: Who, shown: Concern | null, history: ConcernEvent[] = []) {
+async function openConcern(
+  who: Who,
+  shown: Concern | null,
+  history: ConcernEvent[] = [],
+  more: Record<string, unknown> = {},
+) {
   await openScreen(who, { 'concerns/[id]': ConcernScreen }, `/concerns/${shown?.id ?? 'con-1'}`, {}, {
     rpcs: {
+      ...more,
       concern_register: shown ? [shown] : [],
       concern_history: history,
       concern_about_people: [
@@ -488,6 +494,74 @@ describe('one concern', () => {
     expect(screen.getByText('Clear who it’s about')).toBeTruthy();
     expect(screen.getByText('About: Sample Parent')).toBeTruthy();
     expect(screen.getByText('In their words: A parent at training')).toBeTruthy();
+  });
+});
+
+// ---------------------------------------------------------------------------
+// The child's parents and guardians, on a concern about a child
+
+describe('a concern about a child: their parents and guardians', () => {
+  const aboutChild = concern({ about_member_id: 'p3', about_member_name: 'Avery Athlete' });
+  const GUARDIANS = [
+    { guardian_id: 'g1', name: 'Sample Parent', email: 'parent@example.test' },
+    { guardian_id: 'g2', name: 'Sample Carer', email: null },
+  ];
+  const VIEWS = [
+    { viewer_name: 'Sample Officer', created_at: '2026-10-18T02:00:00Z' },
+    { viewer_name: null, created_at: '2026-10-17T02:00:00Z' },
+  ];
+
+  it('shows each verified parent and guardian with their email', async () => {
+    await openConcern(officer, aboutChild, [], {
+      concern_guardians: GUARDIANS,
+      concern_guardian_views: VIEWS,
+    });
+    const card = within(screen.getByTestId('concern-guardians'));
+    expect(card.getByText('Avery Athlete’s parents and guardians')).toBeTruthy();
+    expect(card.getByText('Sample Parent · parent@example.test')).toBeTruthy();
+    expect(card.getByText('Sample Carer')).toBeTruthy();
+    expect(card.getByText(/never in the child’s record views, which parents read/)).toBeTruthy();
+  });
+
+  it('says who has looked, newest first', async () => {
+    await openConcern(officer, aboutChild, [], {
+      concern_guardians: GUARDIANS,
+      concern_guardian_views: VIEWS,
+    });
+    expect(
+      screen.getByText(
+        `Looked at by Sample Officer ${formatDateString('2026-10-18')}, A former member ${formatDateString('2026-10-17')}`,
+      ),
+    ).toBeTruthy();
+  });
+
+  it('asks for the guardians of this concern, then who has looked', async () => {
+    await openConcern(officer, aboutChild, [], {
+      concern_guardians: GUARDIANS,
+      concern_guardian_views: VIEWS,
+    });
+    expect(supabase.rpc).toHaveBeenCalledWith('concern_guardians', { p_concern_id: aboutChild.id });
+    expect(supabase.rpc).toHaveBeenCalledWith('concern_guardian_views', {
+      p_concern_id: aboutChild.id,
+    });
+  });
+
+  it('shows nothing when the database lists nobody (an adult, or no verified parent)', async () => {
+    await openConcern(officer, aboutChild, [], { concern_guardians: [] });
+    expect(screen.queryByTestId('concern-guardians')).toBeNull();
+    expect(supabase.rpc).not.toHaveBeenCalledWith('concern_guardian_views', expect.anything());
+  });
+
+  it('doesn’t ask, so no look is kept, when the concern names nobody', async () => {
+    await openConcern(officer, concern(), [], { concern_guardians: GUARDIANS });
+    expect(screen.queryByTestId('concern-guardians')).toBeNull();
+    expect(supabase.rpc).not.toHaveBeenCalledWith('concern_guardians', expect.anything());
+  });
+
+  it('doesn’t ask for a concern the member can’t see', async () => {
+    await openConcern(officer, null, [], { concern_guardians: GUARDIANS });
+    expect(screen.queryByTestId('concern-guardians')).toBeNull();
+    expect(supabase.rpc).not.toHaveBeenCalledWith('concern_guardians', expect.anything());
   });
 });
 

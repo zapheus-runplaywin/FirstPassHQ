@@ -51,6 +51,27 @@ describe('HomeHeader', () => {
     expect(screen.getByText('Committee · President')).toBeTruthy();
   });
 
+  it('shows titles held on their own line beneath the roles', async () => {
+    await render(
+      <HomeHeader
+        name="Sam Stats"
+        roles="Statistician"
+        titles="Child Safety Officer · WWC Registration Officer"
+        logo={LOGO}
+        clubName="Thunder"
+      />,
+    );
+    expect(screen.getByText('Statistician')).toBeTruthy();
+    expect(screen.getByTestId('home-titles')).toHaveTextContent(
+      'Child Safety Officer · WWC Registration Officer',
+    );
+  });
+
+  it('shows no titles line when none are held', async () => {
+    await render(<HomeHeader name="Sam" roles="Statistician" titles="" logo={LOGO} clubName="Thunder" />);
+    expect(screen.queryByTestId('home-titles')).toBeNull();
+  });
+
   it('shows no roles line for someone not yet approved', async () => {
     await render(<HomeHeader name="Sam" logo={LOGO} clubName="Thunder" />);
     expect(screen.queryByText(/Committee|Admin|Coach/)).toBeNull();

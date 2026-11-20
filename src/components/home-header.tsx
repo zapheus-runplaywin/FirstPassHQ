@@ -8,19 +8,24 @@ import { BrandFonts, Spacing } from '@/constants/theme';
 export const HOME_LOGO_SIZE = 136;
 
 /**
- * The top of the home screen: "Hi <name>" with the roles held beneath it, and
- * the club's logo on the right. The greeting is kept smaller than a page title
+ * The top of the home screen: "Hi <name>" with the roles held beneath it, any
+ * titles held (captaincies and safeguarding posts such as Child Safety
+ * Officer) under those, and the
+ * club's logo on the right. The greeting is kept smaller than a page title
  * so most names fit on one line beside the larger logo; a long name wraps to a
  * second line and, on phones, shrinks a little rather than run to a third.
  */
 export function HomeHeader({
   name,
   roles,
+  titles,
   logo,
   clubName,
 }: {
   name: string;
   roles?: string;
+  /** Titles held, such as "Captain, Open A · Child Safety Officer", under the roles. */
+  titles?: string;
   logo: ImageSource | number;
   clubName: string;
 }) {
@@ -36,6 +41,11 @@ export function HomeHeader({
           Hi {name}
         </ThemedText>
         {roles ? <ThemedText themeColor="textSecondary">{roles}</ThemedText> : null}
+        {titles ? (
+          <ThemedText testID="home-titles" themeColor="textSecondary">
+            {titles}
+          </ThemedText>
+        ) : null}
       </View>
       <Image
         testID="home-club-logo"

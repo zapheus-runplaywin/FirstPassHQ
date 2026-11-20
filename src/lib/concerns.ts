@@ -41,6 +41,20 @@ export const involvesChildLabels: Record<InvolvesChild, string> = {
   unsure: 'Not sure',
 };
 
+/** A verified parent or guardian of the child a concern is about. */
+export type ConcernGuardian = { guardian_id: string; name: string; email: string | null };
+
+/** Someone who looked at a concern's parents and guardians, and when. */
+export type ConcernGuardianView = { viewer_name: string | null; created_at: string };
+
+/**
+ * "Casey Coach 20 Nov, Alex Admin 19 Nov": who has looked at a concern's
+ * parents and guardians, newest first, as `concern_guardian_views` lists them.
+ */
+export function guardianViewsLine(views: ConcernGuardianView[]) {
+  return views.map((v) => `${v.viewer_name ?? 'A former member'} ${localDay(v.created_at)}`).join(', ');
+}
+
 /** Someone who can be named as who a concern is about. */
 export type ConcernPerson = { id: string; name: string };
 

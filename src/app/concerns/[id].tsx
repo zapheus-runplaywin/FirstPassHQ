@@ -11,7 +11,10 @@ import { formatDate } from '@/lib/age';
 import {
   concernEventLabels,
   concernStatusLabels,
+  type ConcernGuardian,
+  type ConcernGuardianView,
   type ConcernPerson,
+  guardianViewsLine,
   involvesChildLabels,
   matchPeople,
   useSafeguardingContacts,
@@ -33,6 +36,8 @@ export default function ConcernScreen() {
   const [concern, setConcern] = useState<Concern | null | undefined>(undefined);
   const [history, setHistory] = useState<ConcernEvent[]>([]);
   const [people, setPeople] = useState<ConcernPerson[]>([]);
+  const [guardians, setGuardians] = useState<ConcernGuardian[]>([]);
+  const [guardianViews, setGuardianViews] = useState<ConcernGuardianView[]>([]);
   const [note, setNote] = useState('');
   const [status, setStatus] = useState<ConcernStatus | null>(null);
   const [aboutSearch, setAboutSearch] = useState('');
@@ -51,6 +56,19 @@ export default function ConcernScreen() {
     setConcern(found ?? null);
     setHistory((historyResult.data as ConcernEvent[] | null) ?? []);
     setPeople((peopleResult.data as ConcernPerson[] | null) ?? []);
+    // The child's verified parents and guardians, when it names a child. Asked
+    // for after the register so the look is kept only for a concern shown.
+    const shown = found?.about_member_id ? found : null;
+    const guardianResult = shown
+      ? await supabase.rpc('concern_guardians', { p_concern_id: id })
+      : { data: [] };
+    const listed = (guardianResult.data as ConcernGuardian[] | null) ?? [];
+    setGuardians(listed);
+    const viewsResult =
+      listed.length > 0
+        ? await supabase.rpc('concern_guardian_views', { p_concern_id: id })
+        : { data: [] };
+    setGuardianViews((viewsResult.data as ConcernGuardianView[] | null) ?? []);
   }, [id]);
 
   useFocusEffect(
@@ -151,6 +169,30 @@ export default function ConcernScreen() {
           />
         ) : null}
       </Card>
+
+      {guardians.length > 0 ? (
+        <Card testID="concern-guardians">
+          <ThemedText type="smallBold">
+            {concern.about_member_name ?? 'The child'}’s parents and guardians
+          </ThemedText>
+          {guardians.map((g) => (
+            <ThemedText key={g.guardian_id} type="small">
+              {g.name}
+              {g.email ? ` · ${g.email}` : ''}
+            </ThemedText>
+          ))}
+          <ThemedText type="small" themeColor="textSecondary">
+            Verified parents and guardians only. Think before contacting them if the concern may be
+            about home. Each look is kept with this concern, never in the child’s record views,
+            which parents read.
+          </ThemedText>
+          {guardianViews.length > 0 ? (
+            <ThemedText type="small" themeColor="textSecondary">
+              {`Looked at by ${guardianViewsLine(guardianViews)}`}
+            </ThemedText>
+          ) : null}
+        </Card>
+      ) : null}
 
       {concern.reported_message_body ? (
         <ReportedMessage
