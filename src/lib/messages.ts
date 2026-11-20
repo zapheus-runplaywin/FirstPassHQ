@@ -27,7 +27,7 @@ export function audienceLabel(
 }
 
 /** Columns of the member's own copy of a message. */
-export const RECIPIENT_COLUMNS = 'read_at, for_children, for_child_names, answer';
+export const RECIPIENT_COLUMNS = 'read_at, unread, for_children, for_child_names, answer';
 
 /**
  * Why a parent or guardian got their copy of a message, naming the children
@@ -142,7 +142,7 @@ export function useUnreadCount() {
       .from('message_recipients')
       .select('message_id', { count: 'exact', head: true })
       .eq('profile_id', userId)
-      .is('read_at', null);
+      .eq('unread', true);
     setCount(unread ?? 0);
   }, [userId, approved]);
 

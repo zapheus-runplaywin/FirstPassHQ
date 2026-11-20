@@ -1,11 +1,11 @@
-import { useFocusEffect, useLocalSearchParams } from 'expo-router';
-import { useCallback, useState } from 'react';
+import { router, useFocusEffect, useLocalSearchParams } from 'expo-router';
+import { useCallback, useRef, useState } from 'react';
 import { StyleSheet, View } from 'react-native';
 
 import { RaiseConcernLink } from '@/components/safeguarding';
 import { Screen } from '@/components/screen';
 import { ThemedText } from '@/components/themed-text';
-import { Card } from '@/components/ui';
+import { Button, Card } from '@/components/ui';
 import { MessageQuestionCard } from '@/components/message-question';
 import { Spacing } from '@/constants/theme';
 import { useTheme } from '@/hooks/use-theme';
@@ -22,6 +22,9 @@ export default function MessageScreen() {
   const [receipts, setReceipts] = useState<MessageReceipt[] | null>(null);
   const [copy, setCopy] = useState<Omit<InboxMessage, 'message'> | null>(null);
   const [refreshing, setRefreshing] = useState(false);
+  const [markingUnread, setMarkingUnread] = useState(false);
+  // The "opened" mark, so "Mark as unread" can't land before it.
+  const markedRead = useRef<PromiseLike<unknown>>(Promise.resolve());
 
   const load = useCallback(async () => {
     const [{ data }, own] = await Promise.all([
@@ -38,7 +41,7 @@ export default function MessageScreen() {
     setCopy((own.data as Omit<InboxMessage, 'message'> | null) ?? null);
     if (!loaded) return;
     // Opening a message marks it read. Does nothing for its sender.
-    supabase.rpc('mark_message_read', { p_message_id: id }).then(() => {});
+    markedRead.current = supabase.rpc('mark_message_read', { p_message_id: id }).then(() => {});
     if (loaded.sender_id === session?.user.id || isAdmin) {
       const { data: rows } = await supabase.rpc('message_receipts', { p_message_id: id });
       setReceipts((rows as MessageReceipt[] | null) ?? []);
@@ -50,6 +53,17 @@ export default function MessageScreen() {
       load();
     }, [load]),
   );
+
+  // Puts the message back as unread in the member's own inbox, for later. The
+  // sender's receipt still shows it was read.
+  async function markUnread() {
+    setMarkingUnread(true);
+    await markedRead.current;
+    await supabase.rpc('mark_message_unread', { p_message_id: id });
+    setMarkingUnread(false);
+    if (router.canGoBack()) router.back();
+    else router.replace('/messages');
+  }
 
   async function onRefresh() {
     setRefreshing(true);
@@ -93,6 +107,10 @@ export default function MessageScreen() {
       </Card>
 
       {message.answer_options ? <MessageQuestionCard messageId={message.id} /> : null}
+
+      {copy ? (
+        <Button title="Mark as unread" variant="secondary" busy={markingUnread} onPress={markUnread} />
+      ) : null}
 
       {receipts ? <Receipts receipts={receipts} /> : null}
       <RaiseConcernLink

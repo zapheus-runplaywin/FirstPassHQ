@@ -416,3 +416,155 @@ describe('a message that asks a question', () => {
     expect(screen.getByText('Question: tap to answer')).toBeTruthy();
   });
 });
+
+// ---------------------------------------------------------------------------
+// Read controls: Mark all read, Hide read and Mark as unread. They change the
+// member's own inbox only; the sender's receipt (read_at) is never sent from
+// the app, so it can't be changed by them.
+
+const READ_ROW = (id: string, body: string) =>
+  inboxRow({
+    read_at: '2026-10-17T09:00:00Z',
+    unread: false,
+    message: { ...MESSAGE, id, body },
+  });
+
+describe('read controls in the inbox', () => {
+  const ALL_WHO_GET_MESSAGES: [string, Who][] = [...SENDERS, ...NOT_SENDERS.filter(([l]) => l !== 'guest')];
+
+  it.each(ALL_WHO_GET_MESSAGES)('gives a %s Hide read and Mark all read', async (_l, who) => {
+    await openList(who, [inboxRow(), READ_ROW('msg-3', 'Old news')]);
+    expect(screen.getByText('Hide read')).toBeTruthy();
+    expect(screen.getByText('Mark all read')).toBeTruthy();
+    expect(screen.getByText('1 unread')).toBeTruthy();
+  });
+
+  it('follows the member’s own unread mark over the first read time', async () => {
+    await openList('athlete', [
+      // Opened, then put back for later.
+      inboxRow({ read_at: '2026-10-17T09:00:00Z', unread: true }),
+      // Never opened, cleared with Mark all read.
+      inboxRow({ read_at: null, unread: false, message: { ...MESSAGE, id: 'msg-3', body: 'Cleared' } }),
+    ]);
+    expect(screen.getAllByLabelText('Unread')).toHaveLength(1);
+    expect(screen.getByText('1 unread')).toBeTruthy();
+  });
+
+  it('Mark all read clears every dot and asks the database to do the same', async () => {
+    const inbox = [
+      inboxRow(),
+      inboxRow({ message: { ...MESSAGE, id: 'msg-3', body: 'Second' } }),
+      READ_ROW('msg-4', 'Old news'),
+    ];
+    await openScreen('athlete', { 'messages/index': MessagesScreen }, '/messages', { message_recipients: inbox }, {
+      rpcHandlers: {
+        mark_all_messages_read: () => {
+          inbox.forEach((row) => (row.unread = false));
+          return 2;
+        },
+      },
+    });
+    expect(screen.getAllByLabelText('Unread')).toHaveLength(2);
+    await fireEvent.press(screen.getByText('Mark all read'));
+    await settle();
+    expect(rpcNames()).toContain('mark_all_messages_read');
+    expect(screen.queryAllByLabelText('Unread')).toHaveLength(0);
+    expect(screen.getByText('All read')).toBeTruthy();
+    expect(screen.queryByText('Mark all read')).toBeNull();
+    // Nothing that would set a read receipt is called.
+    expect(rpcNames()).not.toContain('mark_message_read');
+  });
+
+  it('hides Mark all read when nothing is unread', async () => {
+    await openList('athlete', [READ_ROW('msg-3', 'Old news')]);
+    expect(screen.queryByText('Mark all read')).toBeNull();
+    expect(screen.getByText('All read')).toBeTruthy();
+  });
+
+  it('Hide read shows only unread messages, and turns off again', async () => {
+    await openList('athlete', [inboxRow(), READ_ROW('msg-3', 'Old news')]);
+    expect(screen.getByText('Old news')).toBeTruthy();
+    await fireEvent.press(screen.getByText('Hide read'));
+    expect(screen.queryByText('Old news')).toBeNull();
+    expect(screen.getByText('Training moves to 6pm on Thursday')).toBeTruthy();
+    await fireEvent.press(screen.getByText('Hide read'));
+    expect(screen.getByText('Old news')).toBeTruthy();
+  });
+
+  it('says how to see the rest when Hide read leaves nothing', async () => {
+    await openList('athlete', [READ_ROW('msg-3', 'Old news')]);
+    await fireEvent.press(screen.getByText('Hide read'));
+    expect(screen.queryByText('Old news')).toBeNull();
+    expect(screen.getByText('No unread messages. Turn off Hide read to see the rest.')).toBeTruthy();
+  });
+
+  it('shows no controls in an empty inbox', async () => {
+    await openList('athlete', []);
+    expect(screen.queryByText('Hide read')).toBeNull();
+    expect(screen.queryByText('Mark all read')).toBeNull();
+  });
+
+  it('keeps the read controls off the Sent list', async () => {
+    await openList('coach');
+    await fireEvent.press(screen.getByText('Sent'));
+    await settle();
+    expect(screen.queryByText('Hide read')).toBeNull();
+    expect(screen.queryByText('Mark all read')).toBeNull();
+  });
+});
+
+describe('mark as unread on an open message', () => {
+  const OWN_COPY = [{ read_at: '2026-10-17T09:00:00Z', unread: false, for_children: null, for_child_names: null }];
+
+  it.each<[string, Who]>([
+    ['athlete', 'athlete'],
+    ['under-18 athlete', morePersonas.under18Athlete],
+    ['guardian', 'guardian'],
+    ['coach who got it', 'coach'],
+    ['physio', 'physio'],
+  ])('lets a %s who got it put it back as unread', async (_l, who) => {
+    await openMessage(who, MESSAGE, OWN_COPY);
+    expect(screen.getByText('Mark as unread')).toBeTruthy();
+  });
+
+  it('isn’t offered to the sender or an admin who has no copy', async () => {
+    await openMessage('coach', MESSAGE);
+    expect(screen.queryByText('Mark as unread')).toBeNull();
+    await openMessage('admin', MESSAGE);
+    expect(screen.queryByText('Mark as unread')).toBeNull();
+  });
+
+  it('marks it unread after the open is recorded, then goes back to the inbox', async () => {
+    const back = jest.spyOn(router, 'back').mockImplementation(() => {});
+    const canGoBack = jest.spyOn(router, 'canGoBack').mockReturnValue(true);
+    try {
+      await openMessage('athlete', MESSAGE, OWN_COPY);
+      await fireEvent.press(screen.getByText('Mark as unread'));
+      await settle();
+      const calls = (supabase.rpc as jest.Mock).mock.calls as [string, unknown][];
+      const read = calls.findIndex(([n]) => n === 'mark_message_read');
+      const unread = calls.findIndex(([n]) => n === 'mark_message_unread');
+      expect(unread).toBeGreaterThan(read);
+      expect(read).toBeGreaterThanOrEqual(0);
+      expect(calls[unread]).toEqual(['mark_message_unread', { p_message_id: 'msg-1' }]);
+      expect(back).toHaveBeenCalled();
+    } finally {
+      back.mockRestore();
+      canGoBack.mockRestore();
+    }
+  });
+
+  it('opens the inbox when there is nothing to go back to', async () => {
+    const replace = jest.spyOn(router, 'replace').mockImplementation(() => {});
+    const canGoBack = jest.spyOn(router, 'canGoBack').mockReturnValue(false);
+    try {
+      await openMessage('athlete', MESSAGE, OWN_COPY);
+      await fireEvent.press(screen.getByText('Mark as unread'));
+      await settle();
+      expect(replace).toHaveBeenCalledWith('/messages');
+    } finally {
+      replace.mockRestore();
+      canGoBack.mockRestore();
+    }
+  });
+});

@@ -1,6 +1,6 @@
 import { router, useFocusEffect } from 'expo-router';
 import { useCallback, useState } from 'react';
-import { StyleSheet, View } from 'react-native';
+import { Pressable, StyleSheet, View } from 'react-native';
 
 import { Screen } from '@/components/screen';
 import { ThemedText } from '@/components/themed-text';
@@ -17,6 +17,7 @@ import {
   RECIPIENT_COLUMNS,
   useCanSendMessages,
 } from '@/lib/messages';
+import { isUnread, markedAllRead, shownInbox } from '@/lib/inbox';
 import { supabase } from '@/lib/supabase';
 import type { InboxMessage, SentMessage } from '@/lib/types';
 
@@ -29,6 +30,7 @@ export default function MessagesScreen() {
   const [inbox, setInbox] = useState<InboxMessage[] | null>(null);
   const [sent, setSent] = useState<SentMessage[] | null>(null);
   const [refreshing, setRefreshing] = useState(false);
+  const [hideRead, setHideRead] = useState(false);
   const userId = session?.user.id;
 
   const load = useCallback(async () => {
@@ -54,6 +56,14 @@ export default function MessagesScreen() {
     }, [load]),
   );
 
+  // Clears the unread dots in the member's own inbox. Senders' read receipts
+  // don't change: these messages weren't opened.
+  async function markAllRead() {
+    setInbox((rows) => (rows ? markedAllRead(rows) : rows));
+    await supabase.rpc('mark_all_messages_read');
+    await load();
+  }
+
   async function onRefresh() {
     setRefreshing(true);
     await load();
@@ -76,12 +86,31 @@ export default function MessagesScreen() {
         </View>
       ) : null}
 
-      {box === 'inbox' ? <Inbox messages={inbox} /> : <Sent messages={sent} />}
+      {box === 'inbox' ? (
+        <Inbox
+          messages={inbox}
+          hideRead={hideRead}
+          onToggleHideRead={() => setHideRead((on) => !on)}
+          onMarkAllRead={markAllRead}
+        />
+      ) : (
+        <Sent messages={sent} />
+      )}
     </Screen>
   );
 }
 
-function Inbox({ messages }: { messages: InboxMessage[] | null }) {
+function Inbox({
+  messages,
+  hideRead,
+  onToggleHideRead,
+  onMarkAllRead,
+}: {
+  messages: InboxMessage[] | null;
+  hideRead: boolean;
+  onToggleHideRead: () => void;
+  onMarkAllRead: () => void;
+}) {
   const theme = useTheme();
   if (messages === null) return null;
   if (messages.length === 0) {
@@ -91,12 +120,38 @@ function Inbox({ messages }: { messages: InboxMessage[] | null }) {
       </ThemedText>
     );
   }
+  const unreadCount = messages.filter(isUnread).length;
+  const shown = shownInbox(messages, hideRead);
   return (
     <View style={styles.list}>
-      {messages.map(({ message, read_at, for_children, for_child_names, answer }) => (
+      <View style={styles.row}>
+        <View style={styles.grow}>
+          <ChipGroup
+            options={[{ value: 'hide', label: 'Hide read' }]}
+            selected={hideRead ? ['hide'] : []}
+            onToggle={onToggleHideRead}
+          />
+        </View>
+        {unreadCount > 0 ? (
+          <Pressable accessibilityRole="button" onPress={onMarkAllRead} hitSlop={8}>
+            <ThemedText type="smallBold" style={{ color: theme.tint }}>
+              Mark all read
+            </ThemedText>
+          </Pressable>
+        ) : null}
+      </View>
+      <ThemedText type="small" themeColor="textSecondary">
+        {unreadCount === 0 ? 'All read' : `${unreadCount} unread`}
+      </ThemedText>
+      {shown.length === 0 ? (
+        <ThemedText type="small" themeColor="textSecondary">
+          No unread messages. Turn off Hide read to see the rest.
+        </ThemedText>
+      ) : null}
+      {shown.map(({ message, read_at, unread, for_children, for_child_names, answer }) => (
         <PressableCard key={message.id} onPress={() => openMessage(message.id)}>
           <View style={styles.row}>
-            {read_at ? null : (
+            {!isUnread({ read_at, unread }) ? null : (
               <View
                 style={[styles.unreadDot, { backgroundColor: theme.accent }]}
                 accessibilityLabel="Unread"

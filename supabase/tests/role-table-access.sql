@@ -495,11 +495,19 @@ insert into writes values
   ('club_settings', $$true$$, 'features', 'rls'),
   ('safeguarding_settings', $$true$$, 'policy_version', 'rls');
 -- A copy of one existing row of each, with a fresh id where it has one (the
--- settings tables have a single row keyed by true).
+-- settings tables have a single row keyed by true). Generated columns, such
+-- as message_recipients.unread, are left for the database to fill in.
 create temp table write_rows as
-select w.*, j.r, format('insert into public.%I select * from jsonb_populate_record(null::public.%I, %L::jsonb)', w.t, w.t,
+select w.*, j.r, format('insert into public.%I (%s) select %s from jsonb_populate_record(null::public.%I, %L::jsonb)', w.t, c.cols, c.cols, w.t,
      case when jsonb_typeof(j.r -> 'id') = 'string' then j.r || jsonb_build_object('id', gen_random_uuid()) else j.r end) as ins
-from writes w, lateral (select pg_temp.row_json(w.t, w.key) as r) j;
+from writes w,
+  lateral (select pg_temp.row_json(w.t, w.key) as r) j,
+  lateral (
+    select string_agg(quote_ident(a.attname), ', ' order by a.attnum) as cols
+    from pg_attribute a
+    where a.attrelid = ('public.' || quote_ident(w.t))::regclass
+      and a.attnum > 0 and not a.attisdropped and a.attgenerated = ''
+  ) c;
 grant select on write_rows to authenticated;
 select pg_temp.ok(t || ': has a row to write', r is not null, true) from write_rows order by t;
 
