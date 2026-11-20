@@ -2,7 +2,7 @@
  * The member's own inbox: what shows as unread, and what "Hide read" and
  * "Mark all read" do to the list on screen. The database keeps the same rule
  * in the `unread` column of message_recipients
- * (supabase/migrations/20261120400000_message_read_controls.sql).
+ * (supabase/migrations/20261120600000_message_read_controls.sql).
  */
 import type { InboxMessage } from '@/lib/types';
 

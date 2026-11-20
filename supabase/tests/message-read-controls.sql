@@ -1,4 +1,4 @@
--- Tests for 20261120400000_message_read_controls.sql: "Mark all read" and
+-- Tests for 20261120600000_message_read_controls.sql: "Mark all read" and
 -- "Mark as unread" in the messages inbox. Run on a database with the
 -- migrations and seed-members.sql loaded. Prints one line per check.
 --
