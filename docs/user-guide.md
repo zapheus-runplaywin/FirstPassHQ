@@ -243,7 +243,20 @@ rises to make room for the Thunder logo beneath it.
 Whatever the club's look, "Powered by" and the FirstPass HQ logo stay at the foot of every
 screen.
 
-<img src="user-guide/opening.png" width="210" alt="Opening screen: FirstPass 1P HQ mark with the club logo beneath">
+<img src="user-guide/opening.png" width="210" alt="Opening screen: FirstPass 1P HQ mark with the club logo beneath, and the app's version and build at the foot">
+
+#### Which version you have
+
+The opening screen shows the app's version and build in small print at the foot, such as
+**Version 1.0.0 (23) · Build 714**, and so do Find your club, the sign-in screen and the foot of the
+home screen, under "Powered by". When the club has sent a fix over the air since you installed,
+a second line names it, such as **Update 1a2b3c4d · 20 Nov 2026**. If something goes wrong, or the
+club asks which version you're testing, read these lines out or send a screenshot of them.
+
+- **Version 1.0.0 (23)** is the version in the app store and, in brackets, the store build.
+- **Build 714** is the build of the club's app code. It matches the "build 714" on the guides and
+  PDFs made from the same code.
+- **Update** appears only while an over-the-air update is running, with when it was made.
 
 ### Find your club
 
@@ -287,7 +300,7 @@ sign in with Apple, the app keeps the name Apple shares and fills it in on the j
 
 If you picked the wrong club, tap **Change club** under the buttons.
 
-<img src="user-guide/sign-in.png" width="210" alt="Sign-in screen on Android, with Continue with Google">
+<img src="user-guide/sign-in.png" width="210" alt="Sign-in screen on Android, with Continue with Google, and the version and build under Powered by">
 
 The picture shows the Android screen; on iPhone, Apple's white **Continue with Apple** button sits
 above **Continue with Google**. The two buttons match: both white, the same size, each with its
@@ -3978,6 +3991,7 @@ once saved, only replaced or removed, and anyone who gets it wrong five times in
 | Who has viewed a child's records | For an athlete under 18: their verified parents or guardians (until the athlete turns 18) and admins. Lists every time someone other than the athlete or their guardians opened the athlete's injuries, injury documents, check-ins, game goals, season KPIs, named survey answers or member record. Opening a child's records is recorded whoever you are; nobody can switch it off or delete entries by hand, and old entries are removed only under the club's Record keeping settings. |
 | Consents for a child    | The athlete, their parents or guardians and admins, with every consent given and withdrawn. Only a verified parent or guardian can give or withdraw one. FirstPass Studio sees only whether an athlete of a streamed game may be named with their own stats. |
 | Club policies           | Everyone signed in, including people asking to join.                                                                        |
+| App version and build   | Everyone, signed in or not: it's the app's own version, not anything about you or the club. |
 | Code of conduct acceptances | The member, their parents or guardians and admins: each season's acceptance, who accepted it, when, the words and the policy version. Kept under the member's name if they delete their account. |
 | Game goals and reflections | The athlete, their guardians and their coaches. Only the athlete and their coaches set goals, and only the athlete reflects; guardians just read them. The committee, managers, physios and admins don't see them. |
 | Season KPIs, progress and reviews | An athlete's: the athlete, their coaches in that squad or team, their parents or guardians (read only, until 18) and admins (read only). Not teammates, the committee or physios. A coach's or manager's: them, the committee and admins, and an assistant coach's head coach. Only those who set KPIs change them, record results and write reviews; the person records progress, confirms reviews and adds their own view. A coach's or manager's KPIs and reviews are kept under their name if they delete their account, and stay on the admin report. |

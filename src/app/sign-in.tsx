@@ -236,7 +236,7 @@ export default function SignInScreen() {
           </View>
         </View>
 
-        <PoweredByFirstPass />
+        <PoweredByFirstPass showVersion />
       </SafeAreaView>
     </ThemedView>
   );

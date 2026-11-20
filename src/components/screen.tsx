@@ -46,6 +46,7 @@ export function Screen({
   withTopInset = false,
   gap = Spacing.four,
   stickyHeaderIndices,
+  showVersion = false,
 }: {
   children: ReactNode;
   refreshing?: boolean;
@@ -56,6 +57,8 @@ export function Screen({
   gap?: number;
   /** Children (by position) that stay pinned to the top while scrolling past them. */
   stickyHeaderIndices?: number[];
+  /** Shows the app's version and build under "Powered by" (src/components/app-version.tsx). */
+  showVersion?: boolean;
 }) {
   const scrollRef = useRef<ScrollViewInstance>(null);
   // Screens stay mounted underneath the one on top, and keyboard events reach
@@ -168,7 +171,7 @@ export function Screen({
               {children}
             </ScrollView>
             {/* FirstPass stays at the foot of every screen; it steps aside for the keyboard. */}
-            {keyboardHeight > 0 ? null : <PoweredByFirstPass />}
+            {keyboardHeight > 0 ? null : <PoweredByFirstPass showVersion={showVersion} />}
           </SafeAreaView>
         </ThemedView>
       </RevealFocusedInput>

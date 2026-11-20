@@ -21,7 +21,10 @@ case "$*" in
     while [ $# -gt 0 ]; do [ "$1" = --path ] && cp "$STUB_DIR/eas-env" "$2"; shift; done ;;
   *"expo export"*)
     mkdir -p dist/_expo/static/js
-    env | grep '^EXPO_PUBLIC_' | grep -v '=$' >dist/_expo/static/js/bundle.js ;;
+    env | grep '^EXPO_PUBLIC_' | grep -v '=$' >dist/_expo/static/js/bundle.js
+    if [ -f src/constants/build-info.json ]; then
+      { tr -d ' \n' <src/constants/build-info.json; echo; } >>dist/_expo/static/js/bundle.js
+    fi ;;
   *" update "*) echo published >>"$STUB_DIR/published" ;;
 esac
 STUB
@@ -71,5 +74,46 @@ check 'and says why' "$(grep -c 'points at the live project' "$work/out")" 1
 
 run 'no live project' "$DEMO" "$DOTENV"
 check 'an environment with no live project is refused' "$status:$(published)" '1:no'
+
+# The build number: worked out from the app folder's git history, built into
+# the update, and the committed file put back afterwards.
+NULLS='{
+  "build": null,
+  "commit": null
+}'
+git_app() {
+  mkdir -p "$work/app/src/constants"
+  printf '%s\n' "$NULLS" >"$work/app/src/constants/build-info.json"
+  (cd "$work/app" && git init -q -b main && git add -A \
+    && for i in 1 2 3; do git -c user.name=t -c user.email=t@example.test commit -q --allow-empty -m "c$i" || exit 1; done)
+}
+run_git() {
+  rm -rf "$work/app" "$work/published"; mkdir -p "$work/app"
+  printf '%s\n' "$LIVE" >"$work/eas-env"
+  printf '%s\n' "$DOTENV" >"$work/app/.env"
+  git_app
+  [ -n "${1:-}" ] && (cd "$work/app" && git checkout -q -b "$1" \
+    && git -c user.name=t -c user.email=t@example.test commit -q --allow-empty -m branch)
+  (cd "$work/app" && STUB_DIR=$work PATH="$work/bin:$PATH" MAIN_REF=main \
+    "$root/scripts/publish-update.sh" production "Test update" >"$work/out" 2>&1)
+  status=$?
+}
+
+run_git
+check 'an update from main is published' "$status:$(published)" '0:yes'
+check 'it carries the build number of main' "$(bundle '"build":3,')" 1
+check 'and the commit' "$(bundle "\"commit\":\"$(cd "$work/app" && git rev-parse --short=7 HEAD)\"")" 1
+check 'the committed file is put back afterwards' "$(cat "$work/app/src/constants/build-info.json")" "$NULLS"
+check 'git sees no change left behind' "$(cd "$work/app" && git status --porcelain -- src)" ''
+
+run_git my-branch
+check 'an update from a branch is published' "$status:$(published)" '0:yes'
+check 'it has no build number' "$(bundle '"build":null,')" 1
+check 'but has the commit' "$(bundle "\"commit\":\"$(cd "$work/app" && git rev-parse --short=7 HEAD)\"")" 1
+
+# The earlier runs had no git history: the update still went out, and said so.
+run 'without git history' "$LIVE" "$DOTENV"
+check 'an update without git history is still published' "$status:$(published)" '0:yes'
+check 'and says it has no build number' "$(grep -c 'shows no build number' "$work/out")" 1
 
 [ $failed -eq 0 ]

@@ -117,6 +117,12 @@ describe('finding the club', () => {
     expect(screen.queryByText('Your clubs')).toBeNull();
   });
 
+  it('shows the app’s version and build at the foot, so a tester can say which copy they have', async () => {
+    await open('/choose-club');
+    expect(screen.getByTestId('app-version')).toBeTruthy();
+    expect(screen.getByText(/^Version /)).toBeTruthy();
+  });
+
   it('names the club as its code is typed, ignoring case and spaces', async () => {
     await open('/choose-club');
     await type('Club code', 'thun der');
@@ -212,6 +218,13 @@ describe('signing in', () => {
     expect(screen.getByText('Continue with Google')).toBeTruthy();
     expect(screen.queryByText('Continue with Apple')).toBeNull();
     expect(screen.getByText(/^Not West Coast Thunder\?/)).toBeTruthy();
+  });
+
+  it('shows the app’s version and build under Powered by', async () => {
+    await open('/sign-in', { 'club-code': 'THUNDER' });
+    expect(screen.getByLabelText('Powered by FirstPass HQ')).toBeTruthy();
+    expect(screen.getByTestId('app-version')).toBeTruthy();
+    expect(screen.getByText(/^Version /)).toBeTruthy();
   });
 
   it('styles Google’s button like Apple’s: white, Google’s outline, the G logo and the same size', async () => {

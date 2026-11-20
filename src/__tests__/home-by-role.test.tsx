@@ -231,6 +231,13 @@ describe.each(BY_ROLE)('$who', ({ who, sees }) => {
     await openHome(who);
     expectOnly(sees);
   });
+
+  it('has the app’s version and build at the foot, under Powered by', async () => {
+    await openHome(who);
+    expect(screen.getByLabelText('Powered by FirstPass HQ')).toBeTruthy();
+    expect(screen.getByTestId('app-version')).toBeTruthy();
+    expect(screen.getByText(/^Version /)).toBeTruthy();
+  });
 });
 
 // ---------------------------------------------------------------------------

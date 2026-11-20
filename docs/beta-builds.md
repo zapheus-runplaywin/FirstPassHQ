@@ -70,6 +70,28 @@ the Expo plan's monthly builds, so the workflow only runs when you start it.
 Small fixes that don't add a native library don't need a new build: publish them over the air with
 `scripts/publish-update.sh` (see [Test and live](environments.md#day-to-day)).
 
+## Which build is this?
+
+Each build and over-the-air update shows which code it holds, in small print at the foot of the
+opening screen, Find your club, the sign-in screen and home, so testers can say which one they
+have (the user guide, "Which version you have"):
+
+- **Version 1.0.0 (23)**: the version in `app.json` and the store build number EAS gave the app.
+- **Build 714**: the `build-714` tag on GitHub (`.github/workflows/tag-build.yml`), the number of
+  commits on main up to that code. A build or update made from a commit that isn't on main shows
+  **Commit 1a2b3c4** instead, which you can paste into GitHub's search.
+- **Update 1a2b3c4d · 20 Nov 2026**: only while an over-the-air update is running, with the start
+  of its id on expo.dev and the day it was made.
+
+Expo's build servers get no git history ([What goes up to Expo](#what-goes-up-to-expo)), so they
+can't work out the build number. Instead `scripts/write-build-info.js` writes it into
+`src/constants/build-info.json` first: the Beta build workflow runs it after checking out the whole
+history, and `scripts/publish-update.sh` runs it before it exports an update and puts the file back
+afterwards. The committed file has nulls, so a copy running on your computer shows only the
+version. A build started by hand from your computer shows no build number either, unless you run
+`node scripts/write-build-info.js` first (and `git checkout src/constants/build-info.json` after).
+`scripts/test-write-build-info.sh` and `scripts/test-publish-update.sh` test this.
+
 ## What a build checks first
 
 The club's address and key are built into the app from the EAS environment named after the build's
