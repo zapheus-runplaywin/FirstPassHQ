@@ -37,15 +37,18 @@ describe('adminMenuItems', () => {
       'Absence reasons',
       'Awards',
       'Calendars',
+      'Club brand',
       'Club captains',
+      'Club features',
+      'Club options',
       'Club password',
-      'Club settings',
       'Code of conduct',
       'Fixtures',
       'Injury report',
       'Integrity training',
       'Invite members',
       'Members',
+      'Record keeping',
       'Reports',
       'Safeguarding',
       'Season KPI reviews',
@@ -56,11 +59,14 @@ describe('adminMenuItems', () => {
 
   it('lists the always-on items alphabetically with every feature off', () => {
     expect(titles(allFeatures(false))).toEqual([
+      'Club brand',
+      'Club features',
+      'Club options',
       'Club password',
-      'Club settings',
       'Code of conduct',
       'Invite members',
       'Members',
+      'Record keeping',
       'Reports',
       'Safeguarding',
       'Seasons',
@@ -104,6 +110,20 @@ describe('adminMenuItems', () => {
   it('gives every item its own screen', () => {
     const items = adminMenuItems({ features: allFeatures(true), squads: true, membersDetail: '' });
     expect(new Set(items.map((i) => i.href)).size).toBe(items.length);
+  });
+
+  it('splits the club’s settings into four pages that every club has, whatever is switched on', () => {
+    for (const features of [allFeatures(true), allFeatures(false)]) {
+      const items = adminMenuItems({ features, squads: false, membersDetail: '' });
+      const pages = Object.fromEntries(items.map((i) => [i.title, i.href]));
+      expect(pages).toMatchObject({
+        'Club brand': '/admin/club/brand',
+        'Club features': '/admin/club/features',
+        'Club options': '/admin/club/options',
+        'Record keeping': '/admin/club/records',
+      });
+      expect(items.map((i) => i.title)).not.toContain('Club settings');
+    }
   });
 
   it('shows Fixtures while any of calendar, awards or goals is on', () => {

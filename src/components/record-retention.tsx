@@ -318,7 +318,6 @@ export function RecordRetention() {
 
   return (
     <View style={styles.section}>
-      <ThemedText type="smallBold">Keeping records</ThemedText>
       <ThemedText type="small" themeColor="textSecondary">
         How long the club keeps members’ records, adults’ and children’s. Concerns are never
         removed, and while a concern names a member nothing about them is removed either: their

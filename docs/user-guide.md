@@ -68,7 +68,7 @@ Squad, Open Squad, 20 & Under Squad, 17 & Under Squad, Lightning Academy). At se
 **teams** from a squad and pick each team's final team athletes and training partners. People selected for a team stay
 in their squad as well. An athlete is in one squad and one team at a time in a season; coaches,
 managers and physios can be in more than one team. A club that doesn't use squads can switch them off in
-[Club settings](#club-settings): members then join a **team** straight away, as a final team athlete
+[Club options](#club-options): members then join a **team** straight away, as a final team athlete
 or training partner, and the app talks about teams wherever it would say squad.
 
 **Combining roles.** An admin adds other roles from the member's page. Some roles can't go
@@ -142,7 +142,7 @@ What each role sees on its home screen:
 | Preferred name                         |    ✓    |        ✓        |      ✓       |     ✓      |       ✓       |       ✓       |    ✓    |       ✓       |
 | Title, such as President               |         |                 |              |            |       ✓       |               |         |       ✓       |
 | Team title, set by the app             |         |                 |      ✓       |     ✓      |               |               |         |               |
-| Club name, colours, logo, features and pilot teams |         |                 |              |            |               |               |         |       ✓       |
+| Club brand, features, options and record keeping |         |                 |              |            |               |               |         |       ✓       |
 | Manage absence reasons                 |         |                 |              |            |               |               |         |       ✓       |
 | Invite members (QR code and link)      |         |                 |              |            |               |               |         |       ✓       |
 | Policy and conflict registers (when turned on) |  |                 | Declare conflicts; review policies they own | Review policies they own | Read both; declare conflicts; review policies they own | Review policies they own |  | Read and change both; record any review |
@@ -155,7 +155,7 @@ their parents or guardians.
 
 \* Physios get messages sent to the Physio role and to the squads and teams they're in. They get
 messages sent to everyone in the club only when an admin turns on **Physios get club messages** in
-Club settings.
+Club options.
 
 § Athletes under 18 don't accept it themselves: a verified parent or guardian accepts it for
 them. Guests and temporary helpers aren't asked (temporary helpers
@@ -206,11 +206,11 @@ with a parent or guardian, the people who can help, **Raise a concern**, and the
 club and Delete account links (see [Ask to join the club](#ask-to-join-the-club)).
 
 Admins can turn off Messages, Calendar, Daily check-ins, Injuries, Attendance, Session plans,
-Surveys, Captains' polls, Awards, Game goals and Integrity training for the whole club in **Club settings**. A feature that's off disappears for every role.
+Surveys, Captains' polls, Awards, Game goals and Integrity training for the whole club in **Club features**. A feature that's off disappears for every role.
 A feature that's on can also be on for **pilot teams only**, to try it with one squad or team
 first: it then shows for the people in the pilot squads and teams (and the teams of a pilot squad),
 the parents and guardians of their athletes, admins and committee, and for nobody else (see
-[Club settings](#club-settings)).
+[Club features](#club-features)).
 **Season KPIs**, **Training load flags** and **Policy and conflict registers** work the other way:
 they're off unless an admin turns them on. Training load flags give coaches prompts to talk with an
 athlete from the sessions they log (see [Training load](#training-load)). Season KPIs are for a club that sets its coaches,
@@ -297,7 +297,7 @@ straight back to it. The app stays signed in to each club, so switching doesn't 
 sign-in.
 
 Each club in the list shows its logo beside its name, so you can pick the right one at a glance.
-The logo is the one the club's admin set in **Club settings**, as the app last saw it when you
+The logo is the one the club's admin set in **Club brand**, as the app last saw it when you
 were in that club, so it shows even without a connection. A club you haven't signed in to on this
 phone yet, or one with no logo, shows its initials in a circle instead (such as **PP** for the
 Perth Pumpkins).
@@ -570,7 +570,7 @@ they're in, and messages sent to everyone in the club only when an admin turns t
 
 If the club removes old records, the text of a message older than the club's keep period for
 messages (a longer one when a child sent or received it) is replaced with "This message was removed after the club's keep period." Who sent it, who it went to
-and who read it stay (see [Keeping records](#keeping-records)).
+and who read it stay (see [Record keeping](#record-keeping)).
 
 <img src="user-guide/inbox.png" width="210" alt="Messages inbox">
 
@@ -922,7 +922,7 @@ Your coaches see the same flag (see [Training load](#training-load)).
 Your sessions are seen exactly as your check-ins are: by your coaches (if you're under 18, once a
 parent or guardian has given consent) and your parents or guardians. Your teammates, the
 committee, physios and admins never see them, and the screen says so. They're removed with
-check-ins, after the club's period under Keeping records.
+check-ins, after the club's period under Record keeping.
 
 <img src="user-guide/session-log.png" width="210" alt="Logging a training session with minutes and effort">
 <img src="user-guide/session-log-weeks.png" width="210" alt="Weekly training load and logged sessions">
@@ -1103,7 +1103,7 @@ polls for your squad or team](#surveys-and-polls-for-your-squad-or-team)). Your 
 too, and can close it. If you're under 18, your parents or guardians get a copy of your poll.
 **My groups** lists the polls you've sent while you're captain. You read the results in the app;
 only your coaches and managers can download them. Polls are on unless an admin switches off
-**Captains' polls** in Club settings.
+**Captains' polls** in Club features.
 
 <img src="user-guide/survey-captain-new.png" width="210" alt="A captain sending a poll to their team">
 
@@ -2365,7 +2365,7 @@ Physios see the squads and teams they're placed in and the club calendar; guests
 calendar only. Neither votes in club awards, so their home screen has no **Awards** card. Guests don't get messages. Physios have a **Messages**
 card and get messages an admin sends to the Physio role, and messages sent to the squads and teams
 they're in. They also get messages sent to everyone in the club when an admin turns on **Physios get
-club messages** in [Club settings](#club-settings).
+club messages** in [Club options](#club-options).
 
 ### Physios
 
@@ -2601,8 +2601,8 @@ member isn't in the club any more.
 phase is complete so its coaches no longer look after them, and the club has no Head Physio and no
 physio in their squad or team. Make a physio Head Physio, or place a physio in the athlete's squad
 or team, and it goes: tapping it lists the club's physios, opening each at the physio title. Nobody's access changes on its own. While **Remove old records** is off, the list also shows **Old
-records are kept forever**, which opens Club settings so you can switch it on (see [Keeping
-records](#keeping-records)), and **Members have had no team or role for 2 years** when anyone
+records are kept forever**, which opens Record keeping so you can switch it on (see [Record
+keeping](#record-keeping)), and **Members have had no team or role for 2 years** when anyone
 has (see [Approving members](#approving-members)). On an installed app, admins also get a push notification for each
 new join request, unless they have turned off [to-do notifications](#to-do-notifications).
 
@@ -2946,8 +2946,8 @@ teams you changed, so their parents' **What's changed** lists only real moves.
   links. The club's safeguarding records about them stay, under the name they had: their
   attendance, training certificates, message receipts, consents, code of conduct acceptances,
   policy acknowledgements, exemptions (ended on the day), stand-downs, Screening Unit notices, and
-  who viewed their records. Each goes when its own keep period ends (see [Keeping
-  records](#keeping-records)). Messages they sent stay, and their injury records are kept for the
+  who viewed their records. Each goes when its own keep period ends (see [Record
+  keeping](#record-keeping)). Messages they sent stay, and their injury records are kept for the
   club's period for cleared injuries, counted from when they left. You can't delete a member a
   concern names: the app says so, and their account and records stay while the concern names
   them. The member is only told to contact an admin. In the attendance report and a message's read receipts they show with "(deleted)" after
@@ -2975,7 +2975,7 @@ teams you changed, so their parents' **What's changed** lists only real moves.
 - **Blank**: nothing is added. Add your own squads or teams below.
 
 The squads or teams are added to this season, and squads are switched on or off in
-[Club settings](#club-settings) to match. Rename, add or remove them afterwards as usual. A club
+[Club options](#club-options) to match. Rename, add or remove them afterwards as usual. A club
 that chose Blank can still pick a setup with **Use a starting setup instead** until it adds its
 first squad or team. Clubs that already had squads or teams don't see this choice.
 
@@ -2983,7 +2983,7 @@ first squad or team. Clubs that already had squads or teams don't see this choic
 
 **Squads and teams** lists the current season's squads with the teams named from each. The note at
 the top says whether the club uses squads and what that means.
-If the club has switched squads off in [Club settings](#club-settings), it's called **Teams** and
+If the club has switched squads off in [Club options](#club-options), it's called **Teams** and
 works more simply:
 
 - **Add a team**: give it a name. There are no squads to choose from.
@@ -3376,7 +3376,21 @@ addresses, so keep them somewhere only the committee can reach.
 
 ### Club settings
 
-**Club settings** sets up the app for the club. Anything left empty uses the app's built-in
+The club's settings are on four pages in Administration, each with its own **Save**:
+
+- [Club brand](#club-brand): the club's name, logo and colours.
+- [Club features](#club-features): which features are on, who sees each one, and the training
+  load flags.
+- [Club options](#club-options): whether members join a squad first, and whether physios get club
+  messages.
+- [Record keeping](#record-keeping): how long the club keeps records, and removing old ones.
+
+Saving one page leaves the others exactly as they were. Members see the changes the next time
+they open the app.
+
+#### Club brand
+
+**Club brand** sets how the app looks for the club. Anything left empty uses the app's built-in
 FirstPass look: the name "FirstPass HQ", the FirstPass 1P mark as the logo, and blaze orange
 (`#F75C03`) on deep navy (`#0F172A`). West Coast Thunder's name, logo and yellow-on-black colours are saved here,
 so leave them filled in.
@@ -3393,6 +3407,17 @@ so leave them filled in.
   they use the FirstPass brand guide's panel and text colours). The preview shows
   how they look together and warns when text or buttons would be hard to read. **Use the built-in
   colours** goes back to deep navy, white and blaze orange.
+
+Tap **Save club brand**. Someone who has just installed the app sees the FirstPass look on the
+sign-in screen until they sign in. The app's icon (the FirstPass 1P HQ mark), its name under the
+icon (FirstPass HQ) and the splash screen are part of the app build and don't change here.
+
+<img src="user-guide/club-settings.png" width="210" alt="Club brand: name, logo and colours">
+
+#### Club features
+
+**Club features** switches features on and off for the whole club, or for pilot teams only.
+
 - **Features**: switch off any of Messages, Calendar, Daily check-ins, Injuries, Attendance,
   Session plans, Surveys, Captains' polls, Awards, Live streams, Game goals, Integrity training,
   Season KPIs and the policy and conflict registers (see below). Switching
@@ -3406,7 +3431,7 @@ so leave them filled in.
   injury, a clearance waiting for sign-off just waits, and nobody gets injury to-dos. Registers
   still show **Injured** and the expected return for athletes with an open injury, so whoever takes
   attendance knows. When you switch Injuries off, before you save, the screen says how many
-  injuries are open and how many clearances are waiting. The club's **Keeping records** periods
+  injuries are open and how many clearances are waiting. The club's **Record keeping** periods
   keep running while a feature is off.
 - **Parents' consent follows the switches.** Parents of athletes under 18 are asked for check-in
   consent only while **Daily check-ins** is on for their child, and see the stream stats question
@@ -3433,12 +3458,6 @@ so leave them filled in.
   **Everyone**) changes nothing else: nobody is moved and no records are touched. Something sent
   to the whole club, such as a message or survey, still reaches people outside the pilot, but they
   can't open it while the feature is pilot-only, so keep pilot sends to the pilot teams.
-- **Squads**: **Members join a squad first** is on unless the club switches it off. Switched off,
-  members join a team straight away, admins add teams without squads and choose their athletes from
-  the whole club, attendance takers can take attendance for any team, and each new season copies
-  the teams. Squads the club already has stay until that season ends, and nobody is moved.
-- **Physios get club messages**: when on, messages sent to everyone in the club also go to
-  physios. Physios always get messages sent to the Physio role. It starts off.
 - **Season KPIs**: off unless you turn it on. It adds **Season KPIs** to the home screen for the
   committee, coaches, managers, athletes and parents, **Season KPI reviews** to Administration and
   the **Season KPIs** report (see [Season KPIs](#season-kpis)).
@@ -3446,7 +3465,7 @@ so leave them filled in.
   gives coaches prompts to talk with an athlete from the sessions they log (see [Training
   load](#training-load)), parents a calm card once a coach has checked in, and the Child Safety
   Officer patterns for under 18s (see [Training load patterns](#training-load-patterns)). Once it's
-  on, **Training load flags** below the features lets you choose when a rise in load flags:
+  on, **Training load flags**, below **Save club features**, lets you choose when a rise in load flags:
   **1.5 or more** (the default, Gabbett 2016's "danger zone"), **above 1.3** (above the 0.8 to 1.3
   "sweet spot") or **Off**, and whether to flag **Hours over age (under 18s)** (on to start,
   Jayanthi et al. 2015). Only values from published studies are offered, and **Sources** links
@@ -3456,23 +3475,33 @@ so leave them filled in.
   season for the committee and coaches to declare conflicts of interest (see [Policy and conflict
   registers](#policy-and-conflict-registers)).
 
-Tap **Save club settings**. Members see the changes the next time they open the app. Someone
-who has just installed the app sees the FirstPass look on the sign-in screen until they sign in.
-The app's icon (the FirstPass 1P HQ mark), its name under the icon (FirstPass HQ) and the splash screen are
-part of the app build and don't change here.
+Tap **Save club features**.
 
-<img src="user-guide/club-settings.png" width="210" alt="Club settings: name, logo and colours">
-<img src="user-guide/club-settings-squads.png" width="210" alt="Club settings: switching squads off">
-<img src="user-guide/club-settings-features.png" width="210" alt="Club settings: turning features on and off, and who sees each">
-<img src="user-guide/club-settings-pilot.png" width="210" alt="Club settings: pilot squads and teams">
-<img src="user-guide/club-settings-feature-off.png" width="210" alt="Club settings: switching Injuries off, with the open injuries and clearances it will pause">
-<img src="user-guide/club-settings-physios.png" width="210" alt="Club settings: physios get club messages">
-<img src="user-guide/club-settings-registers.png" width="210" alt="Club settings: the Policy and conflict registers switch">
-<img src="user-guide/club-settings-training-load.png" width="210" alt="Club settings: training load flag choices">
+<img src="user-guide/club-settings-features.png" width="210" alt="Club features: turning features on and off, and who sees each">
+<img src="user-guide/club-settings-pilot.png" width="210" alt="Club features: pilot squads and teams">
+<img src="user-guide/club-settings-feature-off.png" width="210" alt="Club features: switching Injuries off, with the open injuries and clearances it will pause">
+<img src="user-guide/club-settings-registers.png" width="210" alt="Club features: the Policy and conflict registers switch">
+<img src="user-guide/club-settings-training-load.png" width="210" alt="Club features: training load flag choices">
+
+#### Club options
+
+**Club options** holds the settings that shape how the club runs.
+
+- **Squads**: **Members join a squad first** is on unless the club switches it off. Switched off,
+  members join a team straight away, admins add teams without squads and choose their athletes from
+  the whole club, attendance takers can take attendance for any team, and each new season copies
+  the teams. Squads the club already has stay until that season ends, and nobody is moved.
+- **Physios get club messages**: when on, messages sent to everyone in the club also go to
+  physios. Physios always get messages sent to the Physio role. It starts off.
+
+Tap **Save club options**.
+
+<img src="user-guide/club-settings-squads.png" width="210" alt="Club options: switching squads off">
+<img src="user-guide/club-settings-physios.png" width="210" alt="Club options: physios get club messages">
 
 ### Policy and conflict registers
 
-Turned on in [Club settings](#club-settings), **Registers** on the home screen holds two
+Turned on in [Club features](#club-features), **Registers** on the home screen holds two
 governance registers for the committee, the board and an audit. Admins change both; the committee
 reads them.
 
@@ -3500,10 +3529,10 @@ A member's declarations go if they delete their account.
 Risk and incident registers and the AGM pack aren't in the app yet (see [Not in the app
 yet](#15-not-in-the-app-yet)).
 
-### Keeping records
+### Record keeping
 
-A club should keep personal information only while it needs it. **Keeping records**, at the
-bottom of Club settings, sets how long the club keeps each kind of record, for everyone, adults
+A club should keep personal information only while it needs it. **Record keeping**, in
+Administration, sets how long the club keeps each kind of record, for everyone, adults
 and children alike. Each setting says which period is recommended, and a club that hasn't saved
 its periods starts on those.
 
@@ -3591,14 +3620,14 @@ admins see them under **No team or role for 2 years** (see [Approving
 members](#approving-members)). **Last changed by** shows which admin last saved the periods, and when.
 Tap **Save keep periods** to save.
 
-<img src="user-guide/club-settings-records.png" width="210" alt="Club settings: keeping records, with when the nightly removal last ran">
+<img src="user-guide/club-settings-records.png" width="210" alt="Record keeping, with when the nightly removal last ran">
 <img src="user-guide/records-removal-stalled.png" width="210" alt="An admin's to-do list: old records haven't been removed, in red">
-<img src="user-guide/club-settings-records-safety.png" width="210" alt="Club settings: keep periods for message text, messages involving a child and attendance">
-<img src="user-guide/club-settings-records-surveys.png" width="210" alt="Club settings: keep periods for training certificates and surveys">
-<img src="user-guide/club-settings-records-injury.png" width="210" alt="Club settings: keep periods for team polls, record views and injury documents">
-<img src="user-guide/club-settings-records-medical.png" width="210" alt="Club settings: how long medical and emergency details are kept without their yearly check">
-<img src="user-guide/club-settings-records-more.png" width="210" alt="Club settings: keep periods for cleared injuries and safeguarding records">
-<img src="user-guide/club-settings-records-awards.png" width="210" alt="Club settings: keep periods for who voted for whom and for awards and their results, with Keep for good">
+<img src="user-guide/club-settings-records-safety.png" width="210" alt="Record keeping: keep periods for message text, messages involving a child and attendance">
+<img src="user-guide/club-settings-records-surveys.png" width="210" alt="Record keeping: keep periods for training certificates and surveys">
+<img src="user-guide/club-settings-records-injury.png" width="210" alt="Record keeping: keep periods for team polls, record views and injury documents">
+<img src="user-guide/club-settings-records-medical.png" width="210" alt="Record keeping: how long medical and emergency details are kept without their yearly check">
+<img src="user-guide/club-settings-records-more.png" width="210" alt="Record keeping: keep periods for cleared injuries and safeguarding records">
+<img src="user-guide/club-settings-records-awards.png" width="210" alt="Record keeping: keep periods for who voted for whom and for awards and their results, with Keep for good">
 
 ### Safeguarding contacts
 
@@ -3741,8 +3770,8 @@ governing body straight away and not to resolve it within the club. Then record 
 - **Who it's about**: type a name under **Search members** and tap the member it's about. Every
   approved member can be found here, athletes, parents and guests included, and matches start from
   the first letter (one letter finds names with a part starting with it). If nobody matches, it
-  says so. From then on they can't see it, even if they're an admin or handle concerns. Nothing about them is removed under [Keeping
-  records](#keeping-records) while the concern names them, even once it's closed: their
+  says so. From then on they can't see it, even if they're an admin or handle concerns. Nothing about them is removed under [Record
+  keeping](#record-keeping) while the concern names them, even once it's closed: their
   attendance, messages, check-ins, injuries and safeguarding records are kept as a legal hold.
 
 Every step is kept with who did it and when. **Export the register as a PDF** gives the whole
@@ -3811,7 +3840,7 @@ once saved, only replaced or removed, and anyone who gets it wrong five times in
 | To-do notifications     | Only you, on the phones you're signed in on. They name the to-do but never injury details or reviewers' notes. Your on/off choice is yours alone. |
 | Your own personal tasks | Only you. Not your parents or guardians, coaches, the committee or admins. They can't be shared or sent to anyone. |
 | Captains                | Club captains: every member. A team's captains: the people in it, and admins. Squads have none.                                     |
-| Pilot features and pilot squads and teams | Admins only, in Club settings. Members just see whether a feature is in their app. |
+| Pilot features and pilot squads and teams | Admins only, in Club features. Members just see whether a feature is in their app. |
 | Date of birth, Working With Children Check and exemption | You and admins. Committee members with a current check also read them, for everyone who needs a check, in the Working With Children Checks report. Awards with an age limit use it to decide who can be voted for, without showing it. |
 | Date of birth given at Join, and a child's parent or guardian email | You and admins. Admins also see who recorded your checked date of birth and when. |
 | How a member was verified | You and admins: the method, and what the admin checked. |
@@ -3837,9 +3866,9 @@ once saved, only replaced or removed, and anyone who gets it wrong five times in
 | Training load flags (when turned on) | The athlete (their own flags, gently worded) and their coaches, who also see the numbers and each other's notes. For an athlete under 18, coaches only once a parent or guardian consents to check-ins. Parents and guardians see only that a coach talked with their child, when and what about, never the flags, numbers or note. The Child Safety Officer sees patterns for under 18s, not numbers or notes. The committee, managers, physios and admins see none. |
 | Wellbeing flags | Only the Child Safety Officer: for every athlete, selected or not, the day and lowest score of each check-in scoring 2 or less in the last 14 days, never the answers or notes. Under 18s only once a parent or guardian consents to check-ins. |
 | Injuries and documents  | For an athlete under 18 whose parents haven't given consent for injuries: only the athlete, their guardians and admins. Otherwise the athlete, their guardians, their coaches, the physios who look after them (the Head Physio and physios in their squad or team), the committee (or only the committee members the club chose under **Injuries are seen by**) and admins. For an athlete under 18, only committee members with a current Working With Children Check or a parent volunteer exemption, and admins unless their own check has been missing or expired for over 30 days. Managers don't see injuries, including ones they log. A coach, manager or physio who logs an injury sees it only as their role already allows. Whoever takes attendance (coaches, managers, the committee and admins) sees only that an athlete is **Injured** and their expected return date, whatever the consent. While a clearance waits for the committee, any committee member or admin who could accept it can share its documents; everyone else views them in the app. |
-| Medical and emergency details | The athlete; an under 18's verified parents and guardians, who keep them (an athlete 18 or over keeps their own); and the coaches, managers and physios of the athlete's current squads and teams (the Head Physio for every athlete), for an under 18 only once a parent or guardian has given consent for injuries and health information. Not admins or the committee. Each view by a coach, manager or physio is recorded, and the athlete 18 or over, or an under 18's parents and guardians, see who and when. Checked once a year by whoever keeps them; admins see who has checked and when, but not the details. Removed when nobody has checked them for the club's chosen time (Keeping records), and deleted with the athlete's account. |
+| Medical and emergency details | The athlete; an under 18's verified parents and guardians, who keep them (an athlete 18 or over keeps their own); and the coaches, managers and physios of the athlete's current squads and teams (the Head Physio for every athlete), for an under 18 only once a parent or guardian has given consent for injuries and health information. Not admins or the committee. Each view by a coach, manager or physio is recorded, and the athlete 18 or over, or an under 18's parents and guardians, see who and when. Checked once a year by whoever keeps them; admins see who has checked and when, but not the details. Removed when nobody has checked them for the club's chosen time (Record keeping), and deleted with the athlete's account. |
 | Who opened injury documents | The athlete, their guardians and admins: every view and share, by whom, their role and when, and each photo consent. |
-| Who has viewed a child's records | For an athlete under 18: their verified parents or guardians (until the athlete turns 18) and admins. Lists every time someone other than the athlete or their guardians opened the athlete's injuries, injury documents, check-ins, game goals, season KPIs, named survey answers or member record. Opening a child's records is recorded whoever you are; nobody can switch it off or delete entries by hand, and old entries are removed only under the club's Keeping records settings. |
+| Who has viewed a child's records | For an athlete under 18: their verified parents or guardians (until the athlete turns 18) and admins. Lists every time someone other than the athlete or their guardians opened the athlete's injuries, injury documents, check-ins, game goals, season KPIs, named survey answers or member record. Opening a child's records is recorded whoever you are; nobody can switch it off or delete entries by hand, and old entries are removed only under the club's Record keeping settings. |
 | Consents for a child    | The athlete, their parents or guardians and admins, with every consent given and withdrawn. Only a verified parent or guardian can give or withdraw one. FirstPass Studio sees only whether an athlete of a streamed game may be named with their own stats. |
 | Club policies           | Everyone signed in, including people asking to join.                                                                        |
 | Code of conduct acceptances | The member, their parents or guardians and admins: each season's acceptance, who accepted it, when, the words and the policy version. Kept under the member's name if they delete their account. |
@@ -3872,7 +3901,7 @@ training certificates go after 1 year, message text after 3 years (7 years when 
 received it), record views after 7 years, the files of a cleared injury 1 year after
 clearance and the injury 7 years after, medical and emergency details nobody has checked for 2 years, safeguarding records 30 years after they end, who voted
 for whom in awards after 1 year and awards with their results after 10 years, unless the club
-chooses other periods (see [Keeping records](#keeping-records)). Join requests then go 90 days after they're turned down or left unanswered, and temporary
+chooses other periods (see [Record keeping](#record-keeping)). Join requests then go 90 days after they're turned down or left unanswered, and temporary
 helpers with no other role a year after their last day. Deleting a member keeps the club's safeguarding records about them for their own periods.
 Concerns are never removed, and nothing about a member a concern names is removed while it names
 them.
@@ -4011,7 +4040,7 @@ images to stay inside the club. So for athletes under 18:
 - **Documents don't stay forever.** Once the club removes old records, a cleared injury's letters,
   reports and photos are removed 1 year after clearance (or the club's chosen period: 90 days or
   3 years). The record that they were added, checked and viewed stays (see
-  [Keeping records](#keeping-records)).
+  [Record keeping](#record-keeping)).
 - **Physios see only their own athletes.** A physio sees the injuries of the athletes in their own
   squads and teams. Only the Head Physio sees every athlete; a physio in no squad or team sees none
   until an admin places them.
@@ -4256,11 +4285,11 @@ Working With Children Check, and another admin must do it.
   stats. An admin can stand the person down or remove the role to cut Studio off at once. Children
   are named with their own stats only with a parent's consent, and only while they still have a
   verified parent or guardian (see [Studio](#studio)).
-- **Turning a feature off pauses it.** Switching a feature off in Club settings deletes and
+- **Turning a feature off pauses it.** Switching a feature off in Club features deletes and
   cancels nothing: injuries, clearances and consents stay as they were and carry on when it's
   switched back on, and registers keep showing which children are injured. Parents' consent
   questions follow the switches: an unanswered check-in or stream question goes when its feature is
-  off and comes back only for parents who never gave it (see [Club settings](#club-settings)).
+  off and comes back only for parents who never gave it (see [Club features](#club-features)).
 - **Committee checks have a deadline.** Committee members approved before checks were needed
   keep their role without one only until the club's committee checks date. From that day their
   committee role pauses unless a check is recorded, an application they've lodged is in force, or
@@ -4332,7 +4361,7 @@ Working With Children Check, and another admin must do it.
   The **Medical details checks** report shows admins who is up to date, due, overdue or has nothing
   saved, and which under 18s have no verified parent to keep them, without showing the details.
   Details nobody checks for the club's chosen time (2 years recommended) are removed under
-  Keeping records, so stale emergency contacts aren't relied on.
+  Record keeping, so stale emergency contacts aren't relied on.
 - **Admins see what coaches ask children.** Only a coach or manager's quick poll, up to 5
   questions with choices or ratings, can stay within the team. Any longer survey, or any survey
   with a written answer, is always seen by admins too.
@@ -4346,10 +4375,10 @@ Working With Children Check, and another admin must do it.
   answers. Captains can send their own squad or team polls with choices only, no written answers,
   the group's coaches and managers see each poll and its results and can close it, and a captain
   under 18's parents or guardians get a copy. Surveys and their answers are removed under
-  Keeping records, with their own periods.
+  Record keeping, with their own periods.
 - **Records aren't kept forever.** Set how long the club keeps check-ins, game goals, message text,
   surveys, attendance, training certificates, record views, injury documents, medical details
-  nobody checks, cleared injuries, safeguarding records and award votes under [Keeping records](#keeping-records), and switch on
+  nobody checks, cleared injuries, safeguarding records and award votes under [Record keeping](#record-keeping), and switch on
   **Remove old records**. The text of messages
   sent by or to a child is kept at least 3 years (7 recommended) and never less than other
   messages, and who viewed a child's records at least 3 years (7 recommended); concerns are never
@@ -4458,8 +4487,8 @@ goes wrong, and how the club gets it all back. The full statement is in
   Services in Sydney, encrypted on disk and on the way to and from the app. No other club's data
   is in it.
 - **No automatic backups yet.** The projects are on Supabase's free plan, which keeps no backups
-  FirstPass can restore. A record that is deleted, or removed under [Keeping
-  records](#keeping-records), can't be brought back. The club can ask for a full copy at any time
+  FirstPass can restore. A record that is deleted, or removed under [Record
+  keeping](#record-keeping), can't be brought back. The club can ask for a full copy at any time
   and keep it as its own backup.
 - **Who can read it.** Members see only what their roles allow (see section 11), checked by the
   database. FirstPass, which runs the app, owns each club's project and so can read everything in

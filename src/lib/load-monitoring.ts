@@ -15,7 +15,7 @@ export type LoadFlag = 'ratio' | 'hours' | 'injury' | 'wellbeing';
 
 export type RatioChoice = 'from_1_5' | 'above_1_3' | 'off';
 
-/** The club's choices (Club settings), each tied to its source. */
+/** The club's choices (Club features), each tied to its source. */
 export const RATIO_CHOICES: { value: RatioChoice; label: string; detail: string }[] = [
   {
     value: 'from_1_5',

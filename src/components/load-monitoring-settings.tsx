@@ -10,7 +10,7 @@ import { LOAD_CAVEAT, RATIO_CHOICES, type RatioChoice } from '@/lib/load-monitor
 import { supabase } from '@/lib/supabase';
 
 /**
- * Club settings > Training load flags. Admins pick only between published
+ * Club features > Training load flags. Admins pick only between published
  * values, each with its source (Matt, 28 October 2026): no numbers of the
  * club's own.
  */
