@@ -24,6 +24,7 @@ import type {
 } from '@/lib/types';
 import { TEAM_COLUMNS } from '@/lib/use-teams';
 import { hasRole } from '@/lib/roles';
+import { type SafeguardingPost, safeguardingPostsFrom } from '@/lib/safeguarding-posts';
 import { pausedRoles } from '@/lib/safety';
 
 type AuthState = {
@@ -70,6 +71,12 @@ type AuthState = {
   /** The Child Safety Officer or Complaints Manager, able to act as one now. */
   isSafeguardingOfficer: boolean;
   /**
+   * The safeguarding posts the member holds and can act in now (Child Safety
+   * Officer, Complaints Manager, WWC Registration Officer), shown as titles
+   * under their roles on the home screen.
+   */
+  safeguardingPosts: SafeguardingPost[];
+  /**
    * A child under 18 waiting for a parent or guardian: asking to join, or
    * approved with no verified guardian linked (locked). Their link code, to
    * share with a parent or guardian; null for everyone else.
@@ -109,6 +116,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   const [wwccApplication, setWwccApplication] = useState<MyWwccApplication | null>(null);
   const [wwccSubmission, setWwccSubmission] = useState<MyWwccSubmission | null>(null);
   const [isSafeguardingOfficer, setIsSafeguardingOfficer] = useState(false);
+  const [safeguardingPosts, setSafeguardingPosts] = useState<SafeguardingPost[]>([]);
   const [committeeSeesInjuries, setCommitteeSeesInjuries] = useState(true);
   const [committeeChecksFrom, setCommitteeChecksFrom] = useState<string | null>(null);
   const [linkCode, setLinkCode] = useState<LinkCode | null>(null);
@@ -124,6 +132,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       setWwccApplication(null);
       setWwccSubmission(null);
       setIsSafeguardingOfficer(false);
+      setSafeguardingPosts([]);
       setCommitteeSeesInjuries(true);
       setCommitteeChecksFrom(null);
       setLinkCode(null);
@@ -143,6 +152,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       statisticianChecksResult,
       committeeInjuriesResult,
       submissionResult,
+      postsResult,
     ] = await Promise.all([
       supabase.from('profiles').select(PROFILE_COLUMNS).eq('id', userId).single(),
       supabase
@@ -161,6 +171,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       supabase.rpc('statistician_checks_from'),
       supabase.rpc('my_committee_sees_injuries'),
       supabase.rpc('my_wwcc_submission').maybeSingle(),
+      supabase.rpc('my_safeguarding_posts').maybeSingle(),
     ]);
     setProfile((profileResult.data as Profile | null) ?? null);
     setMemberships((membershipResult.data as unknown as TeamMembership[] | null) ?? []);
@@ -170,6 +181,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     setWwccApplication((applicationResult.data as MyWwccApplication | null) ?? null);
     setWwccSubmission((submissionResult.data as MyWwccSubmission | null) ?? null);
     setIsSafeguardingOfficer(officerResult.data === true);
+    setSafeguardingPosts(safeguardingPostsFrom(postsResult.data));
     // False only when the club chose committee members and left this one out.
     setCommitteeSeesInjuries(committeeInjuriesResult.data !== false);
     setCommitteeChecksFrom(
@@ -256,6 +268,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
         isClubCaptain,
         isAdmin,
         isSafeguardingOfficer,
+        safeguardingPosts,
         committeeSeesInjuries,
         committeeChecksFrom,
         waitingForGuardian,

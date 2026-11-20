@@ -3,6 +3,7 @@ import {
   isTeamRole,
   requestableRoles,
   rolesLabel,
+  captainTitle,
   staffTitle,
   teamPositionLabel,
 } from '@/lib/labels';
@@ -169,5 +170,69 @@ describe('rolesLabel', () => {
     expect(rolesLabel(['committee', 'coach'], 'President', false, 'Head Coach, Open A')).toBe(
       'Committee, Coach · President · Head Coach, Open A',
     );
+  });
+});
+
+describe('captainTitle', () => {
+  const playing = (id: string, name: string, sort = 1, role: TeamRole = 'athlete') => ({
+    team_role: role,
+    team: { id, name, sort_order: sort },
+  });
+
+  it('is empty for someone who captains nothing', () => {
+    expect(captainTitle([], [playing('a', 'Open A')], false)).toBe('');
+  });
+
+  it('names the team they captain or vice captain', () => {
+    expect(
+      captainTitle([{ team_id: 'a', captain_role: 'captain' }], [playing('a', 'Open A')], false),
+    ).toBe('Captain, Open A');
+    expect(
+      captainTitle(
+        [{ team_id: 'u20', captain_role: 'vice_captain' }],
+        [playing('u20', '20 & Under')],
+        false,
+      ),
+    ).toBe('Vice Captain, 20 & Under');
+  });
+
+  it('puts Club Captain first, then captain before vice captain', () => {
+    expect(
+      captainTitle(
+        [
+          { team_id: 'b', captain_role: 'vice_captain' },
+          { team_id: 'a', captain_role: 'captain' },
+        ],
+        [playing('a', 'Open A', 2), playing('b', 'Open Mixed', 3)],
+        true,
+      ),
+    ).toBe('Club Captain · Captain, Open A · Vice Captain, Open Mixed');
+    expect(captainTitle([], [], true)).toBe('Club Captain');
+  });
+
+  it('joins several teams in club order', () => {
+    expect(
+      captainTitle(
+        [
+          { team_id: 'b', captain_role: 'captain' },
+          { team_id: 'a', captain_role: 'captain' },
+        ],
+        [playing('b', 'Open Mixed', 3), playing('a', 'Open A', 1)],
+        false,
+      ),
+    ).toBe('Captain, Open A and Open Mixed');
+  });
+
+  it('leaves out a past season\'s captaincy (no current membership) and groups they coach', () => {
+    expect(
+      captainTitle(
+        [
+          { team_id: 'old', captain_role: 'captain' },
+          { team_id: 'c', captain_role: 'captain' },
+        ],
+        [playing('c', 'Open', 1, 'coach')],
+        false,
+      ),
+    ).toBe('');
   });
 });

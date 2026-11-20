@@ -369,6 +369,33 @@ describe('administration and concerns', () => {
     expect(screen).toHavePathname('/administration');
   });
 
+  it('shows the safeguarding posts a member holds under their roles', async () => {
+    await openHome({
+      ...personas.coach,
+      isSafeguardingOfficer: true,
+      rpcs: {
+        my_safeguarding_posts: {
+          child_safety_officer: true,
+          complaints_manager: false,
+          wwc_registration_officer: true,
+        },
+      },
+    });
+    expect(screen.getByText('Coach · Head Coach, Open A')).toBeTruthy();
+    expect(screen.getByTestId('home-titles')).toHaveTextContent(
+      'Child Safety Officer · WWC Registration Officer',
+    );
+  });
+
+  it('shows a Complaints Manager’s title too', async () => {
+    await openHome({
+      ...personas.manager,
+      isSafeguardingOfficer: true,
+      rpcs: { my_safeguarding_posts: { complaints_manager: true } },
+    });
+    expect(screen.getByTestId('home-titles')).toHaveTextContent('Complaints Manager');
+  });
+
   it('a safeguarding officer who isn’t an admin has Concerns, but not Administration', async () => {
     await openHome({ ...personas.coach, isSafeguardingOfficer: true });
     expect(screen.getByText(ITEMS.concerns)).toBeTruthy();
@@ -590,6 +617,22 @@ describe('captains', () => {
     ...personas.athlete,
     captaincies: [{ team_id: TEAM.id, profile_id: 'athlete', captain_role: 'captain' }],
   };
+
+  it('shows their captaincy as a title under their role', async () => {
+    await openHome(captain);
+    expect(screen.getByText('Athlete')).toBeTruthy();
+    expect(screen.getByTestId('home-titles')).toHaveTextContent('Captain, Open A');
+  });
+
+  it('shows Club Captain first for a club captain', async () => {
+    await openHome({ ...captain, isClubCaptain: true });
+    expect(screen.getByTestId('home-titles')).toHaveTextContent('Club Captain · Captain, Open A');
+  });
+
+  it('shows no titles line for an athlete who captains nothing', async () => {
+    await openHome('athlete');
+    expect(screen.queryByTestId('home-titles')).toBeNull();
+  });
 
   it('can send polls to their team while captains’ polls are on', async () => {
     await openHome(captain);

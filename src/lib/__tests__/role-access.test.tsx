@@ -222,6 +222,7 @@ function persona({
     committeeChecksFrom: null,
     statisticianChecksFrom: null,
     isSafeguardingOfficer: false,
+    safeguardingPosts: [],
     waitingForGuardian: locked
       ? { waiting: true, code: '7KQ4MD', expires_at: null, parents_waiting: [] }
       : null,

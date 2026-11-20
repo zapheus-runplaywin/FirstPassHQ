@@ -2,6 +2,7 @@ import type {
   AppRole,
   CaptainRole,
   CoachTitle,
+  GroupCaptain,
   MemberStatus,
   RejectionReason,
   Team,
@@ -148,6 +149,45 @@ export function staffTitle(memberships: StaffMembership[]) {
     for (const [position, names] of byPosition) {
       titles.push(`${position}, ${joinNames(names)}`);
     }
+  }
+  return titles.join(' · ');
+}
+
+/** A squad or team the member plays in, for their captain title. */
+type PlayingMembership = {
+  team_role: TeamRole;
+  team: Pick<Team, 'id' | 'name' | 'sort_order'>;
+};
+
+const captainTitleLabels: Record<CaptainRole, string> = {
+  captain: 'Captain',
+  vice_captain: 'Vice Captain',
+};
+
+/**
+ * The title an athlete gets from captaining: "Club Captain", then "Captain,
+ * Open A" or "Vice Captain, 20 & Under". Only squads and teams of the current
+ * season they play in count (an archived season's captaincy isn't listed in
+ * their memberships). Empty if neither.
+ */
+export function captainTitle(
+  captaincies: Pick<GroupCaptain, 'team_id' | 'captain_role'>[],
+  memberships: PlayingMembership[],
+  isClubCaptain: boolean,
+) {
+  const titles: string[] = isClubCaptain ? ['Club Captain'] : [];
+  for (const role of ['captain', 'vice_captain'] as const) {
+    const names = memberships
+      .filter(
+        (m) =>
+          m.team_role === 'athlete' &&
+          captaincies.some((c) => c.team_id === m.team.id && c.captain_role === role),
+      )
+      .sort(
+        (a, b) => a.team.sort_order - b.team.sort_order || a.team.name.localeCompare(b.team.name),
+      )
+      .map((m) => m.team.name);
+    if (names.length > 0) titles.push(`${captainTitleLabels[role]}, ${joinNames(names)}`);
   }
   return titles.join(' · ');
 }

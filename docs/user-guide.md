@@ -58,6 +58,8 @@ each of their roles can.
 another as its **Complaints Manager**. They're not separate roles: each keeps their own role and also
 sees and acts on the concerns members raise, with new ones as an **Urgent** to-do and red, orange
 and green counts on their Concerns card (see [The concerns register](#the-concerns-register)).
+Each sees their post as a title under their roles on the home screen, as does the **WWC
+Registration Officer**.
 The Child Safety Officer also sees every athlete's wellbeing flags: the day and lowest score of
 each low check-in, never the answers or notes (see [Wellbeing flags](#wellbeing-flags)), and,
 when the club turns on Training load flags, training load patterns for children (see [Training load
@@ -94,6 +96,7 @@ those roles would show on its own.
 coaches choose its **captains** and **vice captains**. Squads don't have captains. Captains stay
 athletes; captaincy only adds the right to send messages and polls. Club captains can message the
 whole club, and captains and vice captains can message and send polls to their own team. Captaincy
+shows as a title under the athlete's role on their home screen, like "Captain, Open A". It
 ends when the season is archived, or when the athlete moves to another team.
 
 What each role sees on its home screen:
@@ -535,6 +538,19 @@ name, like "Coach · Head Coach, Open A" or "Manager · Manager, 17 & Under". It
 coach or manage. Until you're in a team, it names your squad. If you coach more than one team, it
 lists them all, like "Assistant Coach, Open A and Open". Only an admin can change whether you're a
 head or assistant coach.
+
+Other titles show on their own line under your roles on the home screen, so a statistician who is
+the club's Child Safety Officer sees "Statistician" and, beneath it, "Child Safety Officer":
+
+- **Captaincy**: "Club Captain", "Captain, Open A" or "Vice Captain, 20 & Under", for the current
+  season's teams you play in. It goes when the season is archived or you move teams.
+- **Safeguarding posts**: "Child Safety Officer", "Complaints Manager" or "WWC Registration
+  Officer", when an admin names you in **Administration > Safeguarding**. A post you hold but
+  can't act in right now (your check has lapsed, or you're stood down) isn't shown.
+
+Titles come from what admins and coaches set, so there's nothing to fill in.
+
+<img src="user-guide/home-titles.png" width="210" alt="Home screen of a statistician with Child Safety Officer and WWC Registration Officer under their role">
 
 <img src="user-guide/your-details.png" width="210" alt="Your details: preferred name, title and to-do notifications">
 <img src="user-guide/your-details-coach.png" width="210" alt="Your details for a coach: the title the app sets from their teams">
@@ -2191,8 +2207,9 @@ Registration Officer. If you're the Child Safety Officer or Complaints Manager, 
 also has **Concerns** (see [The concerns register](#the-concerns-register)), with red, orange and
 green counts on the card for new, in progress and recently closed concerns: the register, each
 concern's notes and steps (**Referred to** the governing body or Police, **Being looked into**,
-**Closed** with a note), and **Export the register as a PDF**. A concern about you is never shown
-to you. The Child Safety Officer also has **Wellbeing flags** (see [Wellbeing
+**Closed** with a note), and **Export the register as a PDF**. A concern about a child shows the
+child's verified parents and guardians, with their email. A concern about you is never shown
+to you. Whichever post you hold shows as a title under your roles on the home screen. The Child Safety Officer also has **Wellbeing flags** (see [Wellbeing
 flags](#wellbeing-flags)). If your check lapses, Concerns, wellbeing flags and their to-dos go
 until a renewed check is recorded.
 
@@ -3717,6 +3734,8 @@ which reaches them as a concern, and they see every athlete's wellbeing flags. T
 separate Wellbeing Officer; choose a Child Safety Officer who can take on that role.
 If a contact's check lapses or they're stood down, they stop being shown and stop seeing concerns
 until the check is recorded again or the stand-down is lifted, or you choose someone else.
+Each of the three sees their post as a title under their roles on their home screen, such as
+"Statistician" with "Child Safety Officer" beneath it, and loses the title at the same time.
 
 The **WWC Registration Officer** is an admin or committee member with a current check (or an
 exemption that applies) who keeps
@@ -3849,6 +3868,17 @@ governing body straight away and not to resolve it within the club. Then record 
   keeping](#record-keeping) while the concern names them, even once it's closed: their
   attendance, messages, check-ins, injuries and safeguarding records are kept as a legal hold.
 
+**A child's parents and guardians.** When a concern names a child under 18 under **Who it's
+about**, it shows the child's verified parents and guardians, each with their email, so you know
+who the right parent is without asking an admin. Parents not verified yet aren't shown. Think before
+contacting them if the concern may be about home. Each look is kept with the concern and listed
+under the names as **Looked at by**, with who and the day. It's never put in the child's record
+views, because parents read those and a line there would tell them a concern exists. Nothing is
+shown for a concern that names an adult or nobody, and looking doesn't count as acting on it: a
+new concern stays red until someone records something.
+
+<img src="user-guide/concern-guardians.png" width="210" alt="A concern about a child showing their parents and guardians with email, and who has looked">
+
 Every step is kept with who did it and when. **Export the register as a PDF** gives the whole
 register with every step and any reported message, except any concern about you, for the committee, the governing body or
 an auditor.
@@ -3930,6 +3960,7 @@ once saved, only replaced or removed, and anyone who gets it wrong five times in
 | Volunteer exemptions and declarations | The volunteer (their own) and admins, and committee members with a current check in the Working With Children Checks report (read only). Kept under the member's name if they delete their account; the exemption ends that day. |
 | Temporary helpers' task, dates and policy acceptance | The volunteer and admins. Temporary helpers see nothing of the club's members, squads, calendar or messages. If a helper deletes their account, their policy acceptance and any exemption declaration are kept under their name; their task and dates go with the account. |
 | Concerns                | The Child Safety Officer, the Complaints Manager and admins, never the person a concern is about when they were named from the list (a concern that only describes someone in words is not hidden from anyone who handles concerns). Whoever raised it sees its status. A hidden name is never shown to them. The traffic-light counts on the Concerns card follow the same rule: counts only, and never a concern about the person looking. |
+| A child's parents and guardians on a concern | The Child Safety Officer, the Complaints Manager and admins, on a concern naming that child under 18: verified parents and guardians only, with their email, never to someone the concern is about. Each look is kept with the concern for those who handle it, not in the child's record views. |
 | Safeguarding contacts   | Everyone signed in, including guests and people waiting for approval.                                                       |
 | Committee checks date   | Everyone signed in. Only admins change it, and only to bring it forward; who changed it and when is kept. |
 | Messages                | The people they were sent to, the sender, and admins. A stood-down member doesn't see the messages they sent, or the ones they got as a coach, manager, physio, committee member or admin. Guardians of athletes under 18 get a copy of every message sent to their athlete, and of every message their athlete sends as a captain. Guests don't get messages; physios get messages sent to the Physio role and to their squads and teams, and whole-club messages only if an admin turns that on. |
@@ -4001,7 +4032,12 @@ being removed later. Those handling a concern can name anyone in the club as who
 children included, while the form members use to raise one lists only adults with club roles. Police
 (000), Kids Helpline, the Safe Sport Hotline and the governing body's contacts are shown on the same
 screen. Every concern and every step taken is kept in the [concerns
-register](#the-concerns-register), which prints as a PDF.
+register](#the-concerns-register), which prints as a PDF. A concern about a child shows those
+handling it the child's verified parents and guardians, so they reach the right parent. Who looked
+is kept with the concern, not in the child's record views, so a parent the concern may be about
+is never tipped off. The Child Safety Officer, Complaints Manager and WWC Registration Officer
+each see their post as a title on their own home screen, so they always know the post is theirs
+and while they can act in it.
 
 ### Who counts as a child
 
