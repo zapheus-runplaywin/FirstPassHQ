@@ -189,7 +189,10 @@ describe('coaches, managers and captains', () => {
     await open(who);
     expect(screen.queryByText('Everyone')).toBeNull();
     expect(screen.getByText('Send to')).toBeTruthy();
-    expect(screen.getAllByRole('button').filter((b) => b.props.accessibilityState?.selected)).toHaveLength(1);
+    // One group chosen; "No question" is the other chip chosen from the start.
+    const chosen = screen.getAllByRole('button').filter((b) => b.props.accessibilityState?.selected);
+    expect(chosen).toHaveLength(2);
+    expect(isSelected('No question')).toBe(true);
     await send();
     expect(argsOf('send_group_message')).toEqual([
       { p_body: 'Training is on at 5pm', p_audience: 'group', p_role: null, p_team_id: teamId },
@@ -244,6 +247,96 @@ describe('writing the message', () => {
     await open('coach', { rpcErrors: { send_group_message: 'You can only message groups you lead.' } });
     await send();
     expect(screen.getByText('You can only message groups you lead.')).toBeTruthy();
+    expect(replace).not.toHaveBeenCalled();
+  });
+});
+
+describe('asking a question', () => {
+  it('sends a plain message when no question is chosen', async () => {
+    await open('coach');
+    expect(isSelected('No question')).toBe(true);
+    await send();
+    expect(rpcNames()).toEqual(expect.arrayContaining(['send_group_message']));
+    expect(rpcNames()).not.toContain('send_group_question');
+  });
+
+  it.each<[string, string[]]>([
+    ['Yes / No', ['Yes', 'No']],
+    ['Yes / No / Not sure', ['Yes', 'No', 'Not sure']],
+    ['Got it / Not sure', ['Got it', 'Not sure']],
+  ])('sends the ready-made answers %s', async (preset, options) => {
+    await open('coach', { rpcs: { send_group_question: 'msg-q' } });
+    await fireEvent.press(screen.getByText(preset));
+    expect(screen.getByText(/Nobody else sees names\.$/)).toBeTruthy();
+    await send('Extra session Friday?');
+    expect(argsOf('send_group_question')).toEqual([
+      {
+        p_body: 'Extra session Friday?',
+        p_audience: 'group',
+        p_role: null,
+        p_team_id: TEAM.id,
+        p_options: options,
+        p_share_totals: false,
+      },
+    ]);
+    expect(rpcNames()).not.toContain('send_group_message');
+    expect(replace).toHaveBeenCalledWith({ pathname: '/messages/[id]', params: { id: 'msg-q' } });
+  });
+
+  it('can share the totals with everyone it goes to', async () => {
+    await open('coach', { rpcs: { send_group_question: 'msg-q' } });
+    await fireEvent.press(screen.getByText('Yes / No'));
+    await fireEvent.press(screen.getByText('Yes, the totals'));
+    await send();
+    expect(argsOf('send_group_question')[0]).toMatchObject({ p_share_totals: true });
+  });
+
+  it('a captain can write their own answers, like a coach (Matt, 20 November 2026)', async () => {
+    await open('captain', { rpcs: { send_group_question: 'msg-q' } });
+    await fireEvent.press(screen.getByText('My own answers'));
+    await type('Answer 1', 'Driving');
+    await type('Answer 2', 'Need a lift');
+    await send('Lifts to the away game');
+    expect(argsOf('send_group_question')[0]).toMatchObject({
+      p_audience: 'group',
+      p_team_id: TEAM.id,
+      p_options: ['Driving', 'Need a lift'],
+    });
+  });
+
+  it('won’t send fewer than 2 of their own answers', async () => {
+    await open('coach');
+    await fireEvent.press(screen.getByText('My own answers'));
+    await type('Answer 1', 'Driving');
+    await send();
+    expect(screen.getByText('Give 2 to 4 answers.')).toBeTruthy();
+    expect(rpcNames()).not.toContain('send_group_question');
+  });
+
+  it('won’t send the same answer twice', async () => {
+    await open('coach');
+    await fireEvent.press(screen.getByText('My own answers'));
+    await type('Answer 1', 'Yes');
+    await type('Answer 2', 'yes');
+    await send();
+    expect(screen.getByText('Each answer must be different.')).toBeTruthy();
+    expect(rpcNames()).not.toContain('send_group_question');
+  });
+
+  it('an admin can ask a role', async () => {
+    await open('admin', { rpcs: { send_group_question: 'msg-q' } });
+    await fireEvent.press(screen.getByText('A role'));
+    await fireEvent.press(screen.getByText('Guardians'));
+    await fireEvent.press(screen.getByText('Yes / No'));
+    await send('Can you help at the canteen?');
+    expect(argsOf('send_group_question')[0]).toMatchObject({ p_audience: 'role', p_role: 'guardian' });
+  });
+
+  it('shows the database’s refusal', async () => {
+    await open('coach', { rpcErrors: { send_group_question: 'Answers can be up to 30 characters' } });
+    await fireEvent.press(screen.getByText('Yes / No'));
+    await send();
+    expect(screen.getByText('Answers can be up to 30 characters')).toBeTruthy();
     expect(replace).not.toHaveBeenCalled();
   });
 });

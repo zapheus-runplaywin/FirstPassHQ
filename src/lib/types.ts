@@ -343,11 +343,15 @@ export type Message = {
   audience_role: AppRole | 'partner' | null;
   audience_label: string | null;
   created_at: string;
+  /** The answers to the question it asks, or null when it asks none. */
+  answer_options?: string[] | null;
 };
 
 /** A message in the member's inbox. */
 export type InboxMessage = {
   read_at: string | null;
+  /** The member's own answer to its question, if it asks one. */
+  answer?: number | null;
   /** For a guardian's copy: the children it was sent for. Null when it's the member's own. */
   for_children: string[] | null;
   for_child_names: string[] | null;
