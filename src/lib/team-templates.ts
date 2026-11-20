@@ -12,7 +12,6 @@ export const TEAM_TEMPLATES = [
       'Open Squad',
       '20 & Under Squad',
       '17 & Under Squad',
-      'Lightning Academy',
     ],
     detail:
       'Squads on. Members join a squad first, and at selections you name teams from each squad.',
