@@ -1,15 +1,15 @@
 # PDFs
 
-Printable documents about FirstPass HQ, all made from the app at **build 694** (20 November 2026, commit d8c3d98, tag `build-694`). A build number is the number of commits on main; the Tag build workflow tags each one. Every screen is from the app itself, filled with made-up sample people. The source of truth for how the app works is the [user guide](../user-guide.md); these PDFs are snapshots of it, numbered by build.
+Printable documents about FirstPass HQ, all made from the app at **build 696** (20 November 2026, commit 77086eb, tag `build-696`). A build number is the number of commits on main; the Tag build workflow tags each one. Every screen is from the app itself, filled with made-up sample people. The source of truth for how the app works is the [user guide](../user-guide.md); these PDFs are snapshots of it, numbered by build.
 
 They cover game day too: **FirstPass Vantage** (the statistician's tablet app) and **FirstPass Vision** (the coach's live view) are in the manual, the brochure, and the guides for statisticians, coaches, managers and admins, with screens of a made-up game, Hawks v Kestrels. **FirstPass Studio**, the live-stream graphics product, is separate and has its own guide; these PDFs mention it only where it uses the club's stats or a parent's consent.
 
 | | West Coast Thunder | West Coast Warriors (a pitch) | FirstPass HQ (generic) |
 | --- | --- | --- | --- |
-| **Brochure** (20 pages): seven problems every club knows, how the app answers each one, and a spread on game day | [Brochure](thunder/West-Coast-Thunder-brochure-build-694.pdf) | [Brochure](warriors/West-Coast-Warriors-brochure-build-694.pdf) | [Brochure](generic/FirstPass-HQ-brochure-build-694.pdf) |
-| **Product manual** (156 pages): every feature, screen by screen | [Manual](thunder/West-Coast-Thunder-product-manual-build-694.pdf) | [Manual](warriors/West-Coast-Warriors-product-manual-build-694.pdf) | [Manual](generic/FirstPass-HQ-product-manual-build-694.pdf) |
+| **Brochure** (20 pages): seven problems every club knows, how the app answers each one, and a spread on game day | [Brochure](thunder/West-Coast-Thunder-brochure-build-696.pdf) | [Brochure](warriors/West-Coast-Warriors-brochure-build-696.pdf) | [Brochure](generic/FirstPass-HQ-brochure-build-696.pdf) |
+| **Product manual** (156 pages): every feature, screen by screen | [Manual](thunder/West-Coast-Thunder-product-manual-build-696.pdf) | [Manual](warriors/West-Coast-Warriors-product-manual-build-696.pdf) | [Manual](generic/FirstPass-HQ-product-manual-build-696.pdf) |
 
-Each brochure also has a **print version** for a printer: A4 trim with 3 mm bleed and crop marks, on a 236 × 323 mm sheet ([Thunder](thunder/West-Coast-Thunder-brochure-print-build-694.pdf), [Warriors](warriors/West-Coast-Warriors-brochure-print-build-694.pdf), [generic](generic/FirstPass-HQ-brochure-print-build-694.pdf)). The versions above are for screens and office printers.
+Each brochure also has a **print version** for a printer: A4 trim with 3 mm bleed and crop marks, on a 236 × 323 mm sheet ([Thunder](thunder/West-Coast-Thunder-brochure-print-build-696.pdf), [Warriors](warriors/West-Coast-Warriors-brochure-print-build-696.pdf), [generic](generic/FirstPass-HQ-brochure-print-build-696.pdf)). The versions above are for screens and office printers.
 
 The Warriors edition never names another real club; its second club is the made-up Coastal Hawks. The generic edition uses FirstPass branding and a made-up Bayside Netball Club.
 
@@ -19,16 +19,16 @@ One guide per role, for members to keep, in each edition. Each has getting start
 
 | Role | West Coast Thunder | West Coast Warriors | FirstPass HQ (generic) |
 | --- | --- | --- | --- |
-| Athletes | [Thunder](thunder/user-guides/West-Coast-Thunder-user-guide-athletes-build-694.pdf) | [Warriors](warriors/user-guides/West-Coast-Warriors-user-guide-athletes-build-694.pdf) | [Generic](generic/user-guides/FirstPass-HQ-user-guide-athletes-build-694.pdf) |
-| Parents and guardians | [Thunder](thunder/user-guides/West-Coast-Thunder-user-guide-guardians-build-694.pdf) | [Warriors](warriors/user-guides/West-Coast-Warriors-user-guide-guardians-build-694.pdf) | [Generic](generic/user-guides/FirstPass-HQ-user-guide-guardians-build-694.pdf) |
-| Coaches | [Thunder](thunder/user-guides/West-Coast-Thunder-user-guide-coaches-build-694.pdf) | [Warriors](warriors/user-guides/West-Coast-Warriors-user-guide-coaches-build-694.pdf) | [Generic](generic/user-guides/FirstPass-HQ-user-guide-coaches-build-694.pdf) |
-| Managers | [Thunder](thunder/user-guides/West-Coast-Thunder-user-guide-managers-build-694.pdf) | [Warriors](warriors/user-guides/West-Coast-Warriors-user-guide-managers-build-694.pdf) | [Generic](generic/user-guides/FirstPass-HQ-user-guide-managers-build-694.pdf) |
-| Committee | [Thunder](thunder/user-guides/West-Coast-Thunder-user-guide-committee-build-694.pdf) | [Warriors](warriors/user-guides/West-Coast-Warriors-user-guide-committee-build-694.pdf) | [Generic](generic/user-guides/FirstPass-HQ-user-guide-committee-build-694.pdf) |
-| Physios | [Thunder](thunder/user-guides/West-Coast-Thunder-user-guide-physios-build-694.pdf) | [Warriors](warriors/user-guides/West-Coast-Warriors-user-guide-physios-build-694.pdf) | [Generic](generic/user-guides/FirstPass-HQ-user-guide-physios-build-694.pdf) |
-| Guests | [Thunder](thunder/user-guides/West-Coast-Thunder-user-guide-guests-build-694.pdf) | [Warriors](warriors/user-guides/West-Coast-Warriors-user-guide-guests-build-694.pdf) | [Generic](generic/user-guides/FirstPass-HQ-user-guide-guests-build-694.pdf) |
-| Statisticians | [Thunder](thunder/user-guides/West-Coast-Thunder-user-guide-statisticians-build-694.pdf) | [Warriors](warriors/user-guides/West-Coast-Warriors-user-guide-statisticians-build-694.pdf) | [Generic](generic/user-guides/FirstPass-HQ-user-guide-statisticians-build-694.pdf) |
-| Temporary helpers | [Thunder](thunder/user-guides/West-Coast-Thunder-user-guide-temporary-helpers-build-694.pdf) | [Warriors](warriors/user-guides/West-Coast-Warriors-user-guide-temporary-helpers-build-694.pdf) | [Generic](generic/user-guides/FirstPass-HQ-user-guide-temporary-helpers-build-694.pdf) |
-| Admins | [Thunder](thunder/user-guides/West-Coast-Thunder-user-guide-admins-build-694.pdf) | [Warriors](warriors/user-guides/West-Coast-Warriors-user-guide-admins-build-694.pdf) | [Generic](generic/user-guides/FirstPass-HQ-user-guide-admins-build-694.pdf) |
+| Athletes | [Thunder](thunder/user-guides/West-Coast-Thunder-user-guide-athletes-build-696.pdf) | [Warriors](warriors/user-guides/West-Coast-Warriors-user-guide-athletes-build-696.pdf) | [Generic](generic/user-guides/FirstPass-HQ-user-guide-athletes-build-696.pdf) |
+| Parents and guardians | [Thunder](thunder/user-guides/West-Coast-Thunder-user-guide-guardians-build-696.pdf) | [Warriors](warriors/user-guides/West-Coast-Warriors-user-guide-guardians-build-696.pdf) | [Generic](generic/user-guides/FirstPass-HQ-user-guide-guardians-build-696.pdf) |
+| Coaches | [Thunder](thunder/user-guides/West-Coast-Thunder-user-guide-coaches-build-696.pdf) | [Warriors](warriors/user-guides/West-Coast-Warriors-user-guide-coaches-build-696.pdf) | [Generic](generic/user-guides/FirstPass-HQ-user-guide-coaches-build-696.pdf) |
+| Managers | [Thunder](thunder/user-guides/West-Coast-Thunder-user-guide-managers-build-696.pdf) | [Warriors](warriors/user-guides/West-Coast-Warriors-user-guide-managers-build-696.pdf) | [Generic](generic/user-guides/FirstPass-HQ-user-guide-managers-build-696.pdf) |
+| Committee | [Thunder](thunder/user-guides/West-Coast-Thunder-user-guide-committee-build-696.pdf) | [Warriors](warriors/user-guides/West-Coast-Warriors-user-guide-committee-build-696.pdf) | [Generic](generic/user-guides/FirstPass-HQ-user-guide-committee-build-696.pdf) |
+| Physios | [Thunder](thunder/user-guides/West-Coast-Thunder-user-guide-physios-build-696.pdf) | [Warriors](warriors/user-guides/West-Coast-Warriors-user-guide-physios-build-696.pdf) | [Generic](generic/user-guides/FirstPass-HQ-user-guide-physios-build-696.pdf) |
+| Guests | [Thunder](thunder/user-guides/West-Coast-Thunder-user-guide-guests-build-696.pdf) | [Warriors](warriors/user-guides/West-Coast-Warriors-user-guide-guests-build-696.pdf) | [Generic](generic/user-guides/FirstPass-HQ-user-guide-guests-build-696.pdf) |
+| Statisticians | [Thunder](thunder/user-guides/West-Coast-Thunder-user-guide-statisticians-build-696.pdf) | [Warriors](warriors/user-guides/West-Coast-Warriors-user-guide-statisticians-build-696.pdf) | [Generic](generic/user-guides/FirstPass-HQ-user-guide-statisticians-build-696.pdf) |
+| Temporary helpers | [Thunder](thunder/user-guides/West-Coast-Thunder-user-guide-temporary-helpers-build-696.pdf) | [Warriors](warriors/user-guides/West-Coast-Warriors-user-guide-temporary-helpers-build-696.pdf) | [Generic](generic/user-guides/FirstPass-HQ-user-guide-temporary-helpers-build-696.pdf) |
+| Admins | [Thunder](thunder/user-guides/West-Coast-Thunder-user-guide-admins-build-696.pdf) | [Warriors](warriors/user-guides/West-Coast-Warriors-user-guide-admins-build-696.pdf) | [Generic](generic/user-guides/FirstPass-HQ-user-guide-admins-build-696.pdf) |
 
 ## Rebuilding
 
