@@ -1,7 +1,7 @@
 # Push notifications
 
-Members get a push notification when something new appears on their home screen to-do list, and
-admins get one for each new join request. Members turn to-do notifications off in **Your details**.
+Members get a push notification when something new appears on their home screen to-do list or a
+session plan is first shared with them, and admins get one for each new join request. Members turn to-do notifications off in **Your details**.
 
 ## How it works
 
@@ -13,7 +13,13 @@ admins get one for each new join request. Members turn to-do notifications off i
   sends anything new through Expo's free push service with `pg_net`. No server or paid service is
   involved.
 - Nothing is sent between 8 pm and 7 am in the club's time zone (`club_settings.timezone`,
-  `Australia/Perth` by default). Several new to-dos go in one notification.
+  `Australia/Perth` by default; `push_quiet_hours` is the one place that works it out). Several
+  new to-dos go in one notification.
+- A session plan shared with someone for the first time sends its own notification
+  (`notify_session_plan_shared`), whatever their to-do switch says. It keeps the same quiet hours:
+  a plan shared between 8 pm and 7 am is held (`session_plan_notices.push_held`), and a second job
+  (`send-held-session-plan-pushes`, every 5 minutes) sends it at 7 am to everyone the plan is
+  still shared with, several plans in one notification.
 - Each to-do is sent once (`push_todo_log`). The first time a member's list is checked, or when they
   turn notifications back on, what's already on it is noted and not sent.
 - `member_todos` mirrors `buildTodos` in `src/lib/todos.ts`. A new or changed to-do needs both, the

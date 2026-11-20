@@ -408,6 +408,7 @@ select pg_temp.as_member('11');
 select pg_temp.fails('coach cannot end squads', $s$ select public.admin_end_squads_now() $s$);
 select pg_temp.as_member('01');
 select pg_temp.fails('squads must be switched off first', $s$ select public.admin_end_squads_now() $s$);
+select pg_temp.ok('and the message names Club options, where the switch is', pg_temp.fails('x', $s$ select public.admin_end_squads_now() $s$) like '%(Switch squads off in Club options first)', true);
 select pg_temp.works('admin switches squads off', $s$ select pg_temp.save_club('#ffcd00', '{"squads": false}', 'logo.png') $s$);
 select pg_temp.ok('squads off', public.club_uses_squads(), false);
 select pg_temp.ok('ending squads frees the three named teams', public.admin_end_squads_now() = 3, true);

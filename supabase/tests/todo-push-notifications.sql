@@ -82,6 +82,14 @@ select pg_temp.ok('athlete is not asked for consent', pg_temp.has('32', 'consent
 select pg_temp.ok('admin has the Working With Children Check follow-up', pg_temp.has('01', 'wwcc:'), true);
 select pg_temp.ok('coach has no admin follow-ups', pg_temp.has('11', 'wwcc:'), false);
 select pg_temp.ok('admin is told old records are kept', pg_temp.has('01', 'records-removal-off:'), true);
+select pg_temp.ok('it names the page as the app does and opens Record keeping', exists (
+  select 1 from public.member_todos(pg_temp.id('01')) m
+  where m.todo_key like 'records-removal-off:%' and m.title = 'Old records are kept forever'
+    and m.detail = 'Switch on Remove old records in Administration, under Record keeping'
+    and m.href = '/admin/club/records'), true);
+select pg_temp.ok('no to-do opens the old Club settings page or names it', exists (
+  select 1 from public.member_todos(pg_temp.id('01')) m
+  where m.href = '/admin/club' or m.detail like '%Club settings%' or m.detail like '%Keeping records%'), false);
 select pg_temp.ok('a pending member has no list', (select count(*) = 0 from public.member_todos(gen_random_uuid())), true);
 select pg_temp.ok('working out a list leaves nobody signed in', coalesce(current_setting('request.jwt.claim.sub', true), '') = '', true);
 
@@ -225,7 +233,7 @@ insert into public.purge_runs (ok, ran_at) values (true, now() - interval '3 day
 select pg_temp.ok('admin is told old records haven''t been removed', exists (
   select 1 from public.member_todos(pg_temp.id('01')) m
   where m.todo_key like 'records-removal-stalled:%' and m.title like 'Old records haven’t been removed since %'
-    and m.href = '/admin/club'), true);
+    and m.href = '/admin/club/records'), true);
 select pg_temp.ok('a coach isn''t', pg_temp.has('11', 'records-removal-stalled:'), false);
 insert into public.purge_runs (ok, ran_at) values (true, now());
 select pg_temp.ok('a finished run clears it', pg_temp.has('01', 'records-removal-stalled:'), false);
