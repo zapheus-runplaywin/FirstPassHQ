@@ -106,6 +106,8 @@ What each role sees on its home screen:
 | My squads and teams                    |    ✓    |        ✓        |      ✓       |     ✓      |  If in one    |       ✓       | Heading only |   If in one   |
 | Read messages                          |    ✓    |        ✓        |      ✓       |     ✓      |       ✓       |       ✓*      |         |       ✓       |
 | Send messages                          | Captains† |                 |  Own groups  | Own groups |   Whole club  |               |         |     Anyone    |
+| Answer a message's question            |    ✓    | Own, and for their athlete |      ✓       |     ✓      |       ✓       |       ✓       |         |       ✓       |
+| See who answered a message's question  | Captains, their own† |   Their athlete's   |  Own groups  | Own groups | Their own |               |         |       ✓       |
 | Answer surveys                         |    ✓    | Own; see their athlete's |      ✓       |     ✓      |       ✓       |       ✓       |         |       ✓       |
 | Team totals of a shared poll           |    ✓    | Their athlete's |      ✓       |     ✓      |  If sent one  |  If sent one  |         |  If sent one  |
 | Send surveys and polls, see results    | Captains' polls† |                 |  Own groups  | Own groups |    Anyone     |               |         |    Anyone     |
@@ -565,6 +567,13 @@ Messages from your coaches, managers, captains, the committee and the club arriv
 are new. Opening a message marks it as read, and the
 sender can see that you've read it. **Report this message** on any message raises a concern
 about it, and the concern keeps a copy of the message (see [Raising a concern](#raising-a-concern)).
+
+Some messages ask a question, such as "Extra session Friday?", with answers to pick from, such as
+**Yes**, **No** and **Not sure**. The inbox says **Question: tap to answer**. Open the message and
+tap one answer. You answer once and can't change it, and there's nothing to type. Whoever sent it,
+the squad or team's coaches and managers, and admins see what you picked; other members never do.
+If the sender shares the totals, you see how many picked each answer, never who. If you're under 18,
+a parent or guardian can answer for you, and the message then says who answered.
 
 Who a message went to is shown under the sender's name, for example "To Mixed Open Squad",
 "To Physios" or "To Everyone in the club". Messages from **Club safeguarding** tell a family about a change, such
@@ -1413,6 +1422,17 @@ reported. You stop seeing your child's attendance on their 18th birthday.
 
 <img src="user-guide/records-home.png" width="210" alt="Attendance, What's changed and Who has viewed their records on a parent's home screen">
 
+### Questions in your child's messages
+
+When a message to your child asks a question, your copy shows **Answer for** and your child's
+name with the answers to pick from. Either of you can answer, and the first answer stands: after
+that, you both see what it was, who gave it (your child or which parent) and when. Nobody can
+change it. If you're in the squad yourself, as a coach for example, you answer for yourself too.
+The sender, the squad or team's coaches and managers, and admins see the answer; other families
+never do. You can't answer a question your child sent as captain.
+
+<img src="user-guide/message-question-guardian.png" width="210" alt="A parent answering a question for their child">
+
 ### Your child's session plans
 
 When a coach shares a session plan with your child's squad or team, you can read it too, under
@@ -1625,6 +1645,25 @@ and hasn't read it. Club admins can read every message.
 <img src="user-guide/messages-sent.png" width="210" alt="Sent messages with read counts">
 <img src="user-guide/read-receipts.png" width="210" alt="Read receipts for one message">
 
+#### Asking a question
+
+To get a quick answer from everyone, such as who can make an extra session, choose an answer set
+under **Ask a question** when you write the message: **Yes / No**, **Yes / No / Not sure**,
+**Got it / Not sure**, or **My own answers** (2 to 4, up to 30 characters each). Under **Share
+the totals with everyone it goes to**, choose **Yes, the totals** if the group should see how many
+picked each answer; they never see names.
+
+Everyone it goes to taps one answer, once, and parents and guardians can answer for their child.
+Open the message to see the totals, each answer with the names under it, and who hasn't answered
+yet. Answers such as **Not sure** are listed first, marked **follow up**, so you know who to talk
+to. A name with "(answered by ...)" was answered by that parent. The squad or team's other coaches
+and managers, and admins, see the same. Tap **Close question** when you have what you need; nobody
+can answer after that. There's no written reply, so a real question back comes to you at training
+or through a parent, as now.
+
+<img src="user-guide/message-question-new.png" width="210" alt="Asking a question in a new message">
+<img src="user-guide/message-question-answers.png" width="210" alt="The answers to a question, with Not sure first to follow up">
+
 ### Choosing captains
 
 Coaches choose the captains and vice captains of the teams they coach (admins can too). Captains
@@ -1637,7 +1676,9 @@ and no vice captains, one captain and four vice captains, or anything in between
 Captains and vice captains can then message everyone in that team, like you. They must be
 athletes in it, and they stop being captain if they leave it (for example when an admin moves them
 to another team) or the season is archived.
-Messages from captains under 18 are copied to their parents or guardians.
+Messages from captains under 18 are copied to their parents or guardians. Captains can ask a
+question in a message, with ready-made or their own answers, and see who picked what, like a coach
+(see [Asking a question](#asking-a-question)).
 
 <img src="user-guide/captains-team-roster.png" width="210" alt="Team roster with Choose captains">
 <img src="user-guide/captains-choose.png" width="210" alt="Choosing a team's captains and vice captains">
@@ -3210,7 +3251,7 @@ Admins can also choose any team's captains and vice captains, the same way coach
 ### Messages to the club or a role
 
 Admins can send a message to **Everyone**, to **A role** (such as all guardians or all coaches), or
-to **A squad or team**. Admins can read every message and its read receipts.
+to **A squad or team**. Admins can read every message and its read receipts, and see who gave which answer to any question in one.
 
 <img src="user-guide/message-to-role.png" width="210" alt="Sending a message to a role">
 
@@ -3865,6 +3906,7 @@ once saved, only replaced or removed, and anyone who gets it wrong five times in
 | Committee checks date   | Everyone signed in. Only admins change it, and only to bring it forward; who changed it and when is kept. |
 | Messages                | The people they were sent to, the sender, and admins. A stood-down member doesn't see the messages they sent, or the ones they got as a coach, manager, physio, committee member or admin. Guardians of athletes under 18 get a copy of every message sent to their athlete, and of every message their athlete sends as a captain. Guests don't get messages; physios get messages sent to the Physio role and to their squads and teams, and whole-club messages only if an admin turns that on. |
 | Read receipts           | The sender and admins. A child who doesn't use the app shows as read once one of their parents has read their copy. |
+| Answers to a message's question | Who gave which answer, who answered for a child and when: the sender (a captain too) while not stood down, the squad or team's coaches and managers, and admins. Each member sees their own answer; parents and guardians see their child's, who gave it and when. Other members see nothing, or only how many picked each answer if the sender shares the totals. Answers are kept with the message. |
 | Survey answers          | Whoever sent the survey. The committee and admins for their own surveys and ones a coach or manager shared with them. A coach or manager's survey to their own squad or team is seen by them while they still coach or manage it, by admins unless it's a quick poll (up to 5 questions with choices or ratings), and by the committee if they shared it. A captain's poll is seen by the captain while they're captain, and by the squad or team's coaches and managers. Named answers show the member's name; parents and guardians of an athlete under 18 also read their child's named answers. Anonymous answers, and name-optional answers given without a name, are kept with no name, no member and no time, so nobody can see who gave them, admins included; their results show only once the survey has closed, or everyone has answered, and at least 3 people have answered. Named results show once 3 people have answered, a club survey's chosen 20%, 50% or 80%, or everyone when everyone must answer; every survey's results show once it closes. Members never see each other's answers. Whoever sees the results can download them as a PDF or spreadsheet, except captains. |
 | Survey totals shared with a team | When a coach, manager or captain shares a poll's results with the squad or team: everyone it went to and their parents or guardians, once results show. Only how many picked each choice and average ratings: never names, written answers or who has answered. |
 | Who has answered a survey | Named surveys: whoever can see the results sees who hasn't answered yet. Anonymous and name-optional surveys: only how many have answered. Each member sees whether they've answered themselves. |
@@ -4180,7 +4222,9 @@ Working With Children Check, and another admin must do it.
 ### For children and young people
 
 - **Nobody can message you privately.** There are no direct messages and no replies. Messages go to
-  whole squads, teams or roles, and your parents or guardians get a copy.
+  whole squads, teams or roles, and your parents or guardians get a copy. A message can ask a
+  question with answers to tap, but there's nothing to type, your teammates never see what you
+  picked, and your parents or guardians see your answer and can give it for you.
 - **Session plans are read only.** Plans your coaches share can't be replied to, liked or passed
   on, and your parents or guardians can read them too.
 - **Your training sessions stay private.** Only you, your coaches and your parents or guardians
@@ -4432,7 +4476,10 @@ Working With Children Check, and another admin must do it.
 ### For the governing body and auditors
 
 - **Two-deep messaging is enforced by the app**, not just by policy: no direct messages or replies,
-  guardians copied on everything to and from a child, and admins can see every message.
+  guardians copied on everything to and from a child, and admins can see every message. A question
+  in a message takes one tap from the answers its sender set, with no free text and no answer to an
+  answer. A child's answer is seen by their parents (who can give it for them, recorded with their
+  name and the time) and by the club, never by other members.
 - **Records are kept with who did what and when**: how each guardian was verified and what was
   checked, every guardian link and unlink with the admin and the reason, who recorded each date of birth, checks and
   who validated each card and how, Screening Unit notices and when the governing body was told,
@@ -4470,7 +4517,7 @@ Working With Children Check, and another admin must do it.
 - **Child abuse and serious crimes go out, not in.** The register prompts the club to refer them to
   Police and the governing body straight away, and records that it did.
 - **Each club's data is kept apart**, in that club's own database.
-- **Not social media, by design.** The app is a club administration tool: no replies or direct
+- **Not social media, by design.** The app is a club administration tool: no written replies or direct
   messages, feeds, profile pictures, likes or following, and posts never reach beyond a member's
   own squads and teams. That keeps it outside the under-16 social media ban, and the rule is
   written into how the app is built. Whether the Privacy Act binds a club depends on its turnover
@@ -4710,9 +4757,9 @@ decided on its own; until then the club keeps doing it the way it does now.
 - **Travel and tour forms**: permission, medical and travel forms for camps and tours.
 - **Microsoft Forms**: sending a form to chosen roles. [Surveys](#surveys) do this inside the app,
   with results kept with the club; a Forms link can go in a message.
-- **Asking for a response**: a sender asking members to confirm a message, or to say whether
-  they're available. Read receipts show who opened it (see [Messages](#messages)), but there's no
-  **Acknowledge** button or availability reply. A [survey](#surveys) or poll can ask instead.
+- **Written replies**: members can't reply to a message in words. A message can ask a question
+  with answers to tap (see [Asking a question](#asking-a-question)), but anything longer goes
+  through training, a parent or a [survey](#surveys) with a written answer.
 - **Overnight events**: events can't be marked as overnight, so the app doesn't warn that a parent
   volunteer's exemption doesn't cover a camp or tour. Admins check this themselves (see [Volunteer
   exemptions](#volunteer-exemptions)).

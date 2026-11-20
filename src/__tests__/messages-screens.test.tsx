@@ -15,6 +15,7 @@ import { fireEvent, screen } from 'expo-router/testing-library';
 import MessageScreen from '@/app/messages/[id]';
 import MessagesScreen from '@/app/messages/index';
 import { supabase } from '@/lib/supabase';
+import type { MessageQuestion } from '@/lib/message-questions';
 import type { InboxMessage, Message, MessageReceipt, SentMessage } from '@/lib/types';
 
 import {
@@ -259,5 +260,159 @@ describe('one message', () => {
     await openMessage('athlete', null);
     expect(screen.getByText('This message isn’t available.')).toBeTruthy();
     expect(rpcNames()).not.toContain('mark_message_read');
+  });
+});
+
+// ---------------------------------------------------------------------------
+// A message that asks a question (20261120300000_message_questions.sql)
+
+const QUESTION_MESSAGE: Message = { ...MESSAGE, body: 'Extra session Friday?', answer_options: ['Yes', 'No', 'Not sure'] };
+
+function question(extra: Partial<MessageQuestion> = {}): MessageQuestion {
+  return {
+    options: ['Yes', 'No', 'Not sure'],
+    closed: false,
+    totals_shared: false,
+    can_close: false,
+    my_answer: null,
+    my_answer_by_name: null,
+    my_answer_by_parent: false,
+    can_answer_myself: true,
+    children: [],
+    totals: null,
+    answers: null,
+    not_answered: null,
+    ...extra,
+  };
+}
+
+async function openQuestion(who: Who, q: MessageQuestion, rpcErrors: Record<string, string> = {}) {
+  await openScreen(who, { 'messages/[id]': MessageScreen }, '/messages/msg-1', {
+    messages: [QUESTION_MESSAGE],
+    message_recipients: [{ read_at: null, for_children: null, for_child_names: null, answer: null }],
+  }, {
+    rpcs: { message_receipts: RECEIPTS, message_question: q },
+    rpcErrors,
+  });
+}
+
+const SENDER_VIEW = question({
+  can_answer_myself: false,
+  can_close: true,
+  totals: [1, 1, 1],
+  answers: [
+    { profile_id: 'kai', name: 'Kai Senior', answer: 1, answered_by_name: 'Kai Senior', answered_by_parent: false, answered_at: '2026-11-20T06:00:00Z' },
+    { profile_id: 'jordan', name: 'Jordan Junior', answer: 0, answered_by_name: 'Logan Parent', answered_by_parent: true, answered_at: '2026-11-20T06:05:00Z' },
+    { profile_id: 'morgan', name: 'Morgan Coach', answer: 2, answered_by_name: 'Morgan Coach', answered_by_parent: false, answered_at: '2026-11-20T06:10:00Z' },
+  ],
+  not_answered: ['Emery Manager'],
+});
+
+describe('a message that asks a question', () => {
+  it('offers its answers as one tap each, and nothing to type', async () => {
+    await openQuestion(morePersonas.under18Athlete, question());
+    expect(screen.getByText('Your answer')).toBeTruthy();
+    for (const o of ['Yes', 'No', 'Not sure']) expect(screen.getByText(o)).toBeTruthy();
+    noTextBoxes();
+    await fireEvent.press(screen.getByText('No'));
+    await settle();
+    expect((supabase.rpc as jest.Mock).mock.calls).toContainEqual([
+      'answer_message_question',
+      { p_message_id: 'msg-1', p_answer: 1, p_for_child: null },
+    ]);
+  });
+
+  it('shows a member their answer once given, with no way to change it', async () => {
+    await openQuestion('athlete', question({ my_answer: 0, my_answer_by_name: 'Sample athlete' }));
+    expect(screen.getByText('Your answer: Yes')).toBeTruthy();
+    expect(screen.queryByText('No')).toBeNull();
+  });
+
+  it('tells a child when their parent answered for them', async () => {
+    await openQuestion(morePersonas.under18Athlete, question({ my_answer: 0, my_answer_by_name: 'Logan Parent', my_answer_by_parent: true }));
+    expect(screen.getByText('Your answer: Yes, answered by Logan Parent')).toBeTruthy();
+  });
+
+  it('shows members no names, and no totals unless shared', async () => {
+    await openQuestion('athlete', question({ my_answer: 0 }));
+    expect(screen.queryByText(/answered$/)).toBeNull();
+    expect(screen.queryByText('Kai Senior')).toBeNull();
+    expect(screen.queryByText('Close question')).toBeNull();
+  });
+
+  it('shows members the totals when the sender shares them, still without names', async () => {
+    await openQuestion('athlete', question({ my_answer: 0, totals_shared: true, totals: [5, 2, 1] }));
+    expect(screen.getByText('Totals for everyone it went to')).toBeTruthy();
+    expect(screen.getByText('5 · 63%')).toBeTruthy();
+    expect(screen.queryByText(/Not answered yet/)).toBeNull();
+  });
+
+  it('lets a parent answer for their child', async () => {
+    await openQuestion('guardian', question({
+      can_answer_myself: false,
+      children: [{ id: 'child-1', name: 'Sample Child', answer: null, answered_by_name: null, answered_by_parent: false, answered_at: null }],
+    }));
+    expect(screen.queryByText('Your answer')).toBeNull();
+    expect(screen.getByText('Answer for Sample Child')).toBeTruthy();
+    await fireEvent.press(screen.getByText('Not sure'));
+    await settle();
+    expect((supabase.rpc as jest.Mock).mock.calls).toContainEqual([
+      'answer_message_question',
+      { p_message_id: 'msg-1', p_answer: 2, p_for_child: 'child-1' },
+    ]);
+  });
+
+  it('shows a parent their child’s answer, who gave it and when', async () => {
+    await openQuestion('guardian', question({
+      can_answer_myself: false,
+      children: [{ id: 'child-1', name: 'Sample Child', answer: 1, answered_by_name: 'Sample Child', answered_by_parent: false, answered_at: '2026-11-20T06:00:00Z' }],
+    }));
+    expect(screen.getByText('Sample Child: No')).toBeTruthy();
+    expect(screen.getByText(/^Answered /)).toBeTruthy();
+    expect(screen.queryByText('Answer for Sample Child')).toBeNull();
+  });
+
+  it('shows the sender every answer by name, Not sure first to follow up, and who hasn’t answered', async () => {
+    await openQuestion('coach', SENDER_VIEW);
+    expect(screen.getByText('3 answered')).toBeTruthy();
+    expect(screen.getByText('Not sure (1): follow up')).toBeTruthy();
+    expect(screen.getByText('Morgan Coach')).toBeTruthy();
+    expect(screen.getByText('Jordan Junior (answered by Logan Parent)')).toBeTruthy();
+    expect(screen.getByText('Not answered yet (1)')).toBeTruthy();
+    expect(screen.getByText('Emery Manager')).toBeTruthy();
+    const labels = screen.getAllByText(/^(Yes|No|Not sure) \(\d\)/).map((n) => n.props.children.join(''));
+    expect(labels[0]).toMatch(/^Not sure/);
+  });
+
+  it('lets whoever may close it close it', async () => {
+    await openQuestion('coach', SENDER_VIEW);
+    await fireEvent.press(screen.getByText('Close question'));
+    await settle();
+    expect((supabase.rpc as jest.Mock).mock.calls).toContainEqual(['close_message_question', { p_message_id: 'msg-1' }]);
+  });
+
+  it('says when a question is closed and takes no more answers', async () => {
+    await openQuestion('athlete', question({ closed: true }));
+    expect(screen.getByText('Question (closed)')).toBeTruthy();
+    expect(screen.getByText('You didn’t answer before it closed.')).toBeTruthy();
+    expect(screen.queryByText('Not sure')).toBeNull();
+  });
+
+  it('shows the database’s refusal', async () => {
+    await openQuestion('athlete', question(), { answer_message_question: 'This has already been answered' });
+    await fireEvent.press(screen.getByText('Yes'));
+    await settle();
+    expect(screen.getByText('This has already been answered')).toBeTruthy();
+  });
+
+  it('asks nothing on a plain message', async () => {
+    await openMessage('athlete', MESSAGE);
+    expect(rpcNames()).not.toContain('message_question');
+    expect(screen.queryByText('Question')).toBeNull();
+  });
+
+  it('tags a question in the inbox', async () => {
+    await openList('athlete', [inboxRow({ message: QUESTION_MESSAGE, answer: null })]);
+    expect(screen.getByText('Question: tap to answer')).toBeTruthy();
   });
 });

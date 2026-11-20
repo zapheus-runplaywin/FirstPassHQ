@@ -9,6 +9,7 @@ import { Spacing } from '@/constants/theme';
 import { useTheme } from '@/hooks/use-theme';
 import { useAuth } from '@/lib/auth';
 import { formatSentAt } from '@/lib/format';
+import { questionTag } from '@/lib/message-questions';
 import {
   audienceLabel,
   guardianCopyLabel,
@@ -92,7 +93,7 @@ function Inbox({ messages }: { messages: InboxMessage[] | null }) {
   }
   return (
     <View style={styles.list}>
-      {messages.map(({ message, read_at, for_children, for_child_names }) => (
+      {messages.map(({ message, read_at, for_children, for_child_names, answer }) => (
         <PressableCard key={message.id} onPress={() => openMessage(message.id)}>
           <View style={styles.row}>
             {read_at ? null : (
@@ -117,6 +118,11 @@ function Inbox({ messages }: { messages: InboxMessage[] | null }) {
           <ThemedText type="small" numberOfLines={2}>
             {message.body}
           </ThemedText>
+          {message.answer_options ? (
+            <ThemedText type="smallBold" style={{ color: theme.tint }}>
+              {questionTag(for_children, answer ?? null)}
+            </ThemedText>
+          ) : null}
         </PressableCard>
       ))}
     </View>

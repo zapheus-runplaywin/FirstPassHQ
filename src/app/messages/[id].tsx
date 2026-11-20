@@ -6,6 +6,7 @@ import { RaiseConcernLink } from '@/components/safeguarding';
 import { Screen } from '@/components/screen';
 import { ThemedText } from '@/components/themed-text';
 import { Card } from '@/components/ui';
+import { MessageQuestionCard } from '@/components/message-question';
 import { Spacing } from '@/constants/theme';
 import { useTheme } from '@/hooks/use-theme';
 import { useAuth } from '@/lib/auth';
@@ -90,6 +91,8 @@ export default function MessageScreen() {
       <Card>
         <ThemedText selectable>{message.body}</ThemedText>
       </Card>
+
+      {message.answer_options ? <MessageQuestionCard messageId={message.id} /> : null}
 
       {receipts ? <Receipts receipts={receipts} /> : null}
       <RaiseConcernLink

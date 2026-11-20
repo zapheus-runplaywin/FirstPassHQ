@@ -87,8 +87,9 @@ RULE: always run the newest Supabase CLI release (Matt, 2026-10-15).
 
 ## No social media features for children
 
-RULE: the app is a club administration tool, not social media (see `docs/security/privacy-and-social-media-assessment-2026-10-13.md`). For members under 18 it must never have replies to messages or direct messages, feeds, profile pictures or browsable profiles, following or friends, likes or sharing, or posts visible outside their own squads and teams.
+RULE: the app is a club administration tool, not social media (see `docs/security/privacy-and-social-media-assessment-2026-10-13.md`). For members under 18 it must never have replies to messages (written answers of any kind) or direct messages, feeds, profile pictures or browsable profiles, following or friends, likes or sharing, or posts visible outside their own squads and teams.
 
+- A message may ask one question with answers the sender sets: members pick one, once, with no free text; only the sender, the group's coaches and managers, admins and the member's own parents see who answered what (assessment section 2, "Questions on messages").
 - Any comment feature sits inside a coach-led squad or team, is about a coaching item, is readable by parents and guardians, and can be removed by coaches.
 - A change that would break this rule needs Matt's explicit yes first, and the assessment is redone before it is built.
 

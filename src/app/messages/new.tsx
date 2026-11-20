@@ -9,6 +9,14 @@ import { Spacing } from '@/constants/theme';
 import { useAuth } from '@/lib/auth';
 import { pluralRoleLabels } from '@/lib/labels';
 import { isMinor } from '@/lib/age';
+import {
+  answersFor,
+  answersProblem,
+  MAX_ANSWER_LENGTH,
+  MAX_ANSWERS,
+  QUESTION_PRESETS,
+  type QuestionChoice,
+} from '@/lib/message-questions';
 import { useCanMessageClub, useMessageGroups } from '@/lib/messages';
 import { supabase } from '@/lib/supabase';
 import type { AppRole, MessageAudience } from '@/lib/types';
@@ -43,6 +51,9 @@ export default function NewMessageScreen() {
   const [role, setRole] = useState<AppRole | null>(null);
   const [teamId, setTeamId] = useState<string | null>(null);
   const [body, setBody] = useState('');
+  const [question, setQuestion] = useState<QuestionChoice>('none');
+  const [ownAnswers, setOwnAnswers] = useState<string[]>(['', '', '', '']);
+  const [shareTotals, setShareTotals] = useState(false);
   const [sending, setSending] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
@@ -62,14 +73,23 @@ export default function NewMessageScreen() {
       setError('Choose a squad or team.');
       return;
     }
+    const answers = answersFor(question, ownAnswers);
+    const problem = answers ? answersProblem(answers) : null;
+    if (problem) {
+      setError(problem);
+      return;
+    }
     setSending(true);
     setError(null);
-    const { data, error: sendError } = await supabase.rpc('send_group_message', {
+    const to = {
       p_body: body,
       p_audience: audience,
       p_role: audience === 'role' ? role : null,
       p_team_id: audience === 'group' ? selectedTeamId : null,
-    });
+    };
+    const { data, error: sendError } = answers
+      ? await supabase.rpc('send_group_question', { ...to, p_options: answers, p_share_totals: shareTotals })
+      : await supabase.rpc('send_group_message', to);
     setSending(false);
     if (sendError) {
       setError(sendError.message);
@@ -152,6 +172,55 @@ export default function NewMessageScreen() {
           </ThemedText>
         ) : null}
       </View>
+
+      <ChipGroup
+        label="Ask a question"
+        options={[
+          { value: 'none' as QuestionChoice, label: 'No question' },
+          ...QUESTION_PRESETS.map((p) => ({ value: p.value as QuestionChoice, label: p.label })),
+          { value: 'own' as QuestionChoice, label: 'My own answers' },
+        ]}
+        selected={[question]}
+        onToggle={(value) => {
+          setQuestion(value);
+          setError(null);
+        }}
+      />
+
+      {question === 'own' ? (
+        <View style={styles.field}>
+          {ownAnswers.slice(0, MAX_ANSWERS).map((answer, i) => (
+            <TextField
+              key={i}
+              label={i < 2 ? `Answer ${i + 1}` : `Answer ${i + 1} (optional)`}
+              value={answer}
+              onChangeText={(text) =>
+                setOwnAnswers((all) => all.map((a, j) => (j === i ? text : a)))
+              }
+              maxLength={MAX_ANSWER_LENGTH}
+            />
+          ))}
+        </View>
+      ) : null}
+
+      {question !== 'none' ? (
+        <>
+          <ChipGroup
+            label="Share the totals with everyone it goes to"
+            options={[
+              { value: 'no', label: 'No, just me' },
+              { value: 'yes', label: 'Yes, the totals' },
+            ]}
+            selected={[shareTotals ? 'yes' : 'no']}
+            onToggle={(value) => setShareTotals(value === 'yes')}
+          />
+          <ThemedText type="small" themeColor="textSecondary">
+            Everyone taps one answer, once, and can’t write anything else. Parents and guardians
+            can answer for their child. You, the squad or team’s coaches and managers, and admins see
+            who gave which answer. Nobody else sees names.
+          </ThemedText>
+        </>
+      ) : null}
 
       <ThemedText type="small" themeColor="textSecondary">
         You’ll see who has read it. Club admins can read every message.

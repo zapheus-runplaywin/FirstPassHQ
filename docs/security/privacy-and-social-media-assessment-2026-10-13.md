@@ -54,6 +54,32 @@ crosses the line, or a change in the law, doesn't need a rebuild. The privacy
 policy template (`docs/policies/privacy-policy.md`) says what is kept, who
 sees it and for how long.
 
+### Questions on messages (reassessed 20 November 2026)
+
+Matt asked for a way to answer a question in a message without opening up
+chat ("If we don't support real use cases the teams will use other chat
+platforms which are less safe anyway"). Built in
+`20261120300000_message_questions.sql`:
+
+- A message may ask one question with 2 to 4 answers the sender sets (such
+  as Yes / No / Not sure). Members tap one, once; it can't be changed, and
+  there is no box to type in and no answer to an answer.
+- Names are seen only by whoever sent it, the squad or team's coaches and
+  managers, and admins. Captains who ask are treated like coaches (Matt).
+  Other members see nothing, or only the totals if the sender shares them.
+- A parent or guardian can answer for their child under 18, and always sees
+  the question, their child's answer, who gave it and when.
+
+**Still not an age-restricted social media platform.** The answers are
+structured replies to a club notice, like the quick polls the app already
+has: they go back to the sender's side, never to other members, so they add
+no interaction between users. Every child's answer to an adult is seen by
+the child's parents and by the club, which meets netball's two-deep rule for
+electronic communication. No new kind of personal information is collected.
+
+**What would reopen this:** written answers, names shown to other members, or
+any way to answer an answer.
+
 ### What would change this
 
 - Advice that the club is a health service provider (the Act then applies to
@@ -90,7 +116,7 @@ and tied to that purpose:
 
 | Feature | What members can post | Why it isn't social interaction |
 | --- | --- | --- |
-| Messages | Coaches, managers, the committee, admins and captains send notices to squads, teams, roles or the club | One way: no replies, no direct messages, no threads. Parents get a copy of every message to or from a child. |
+| Messages | Coaches, managers, the committee, admins and captains send notices to squads, teams, roles or the club, and may ask one question with 2 to 4 answers they set | One way: no replies, no written answers, no direct messages, no threads. A question takes one tap from the answers the sender set, once; only the sender's side (the sender, the group's coaches and managers, admins) and the member's own parents see who answered what. Parents get a copy of every message to or from a child and can answer for their child. |
 | Daily check-ins | An athlete's scores and an optional note | Seen only by the athlete, their parents and their coaches (with a parent's consent for under 18s). Never shown to other athletes. |
 | Game goals and reflections | An athlete's own goals and how the game went; coaches comment | Coaching between an athlete and their coaches, read by parents. Other athletes don't see them. |
 | Team goals | Coaches set goals for a game; athletes and coaches in the team comment | Inside one coach-led team, about one game, read by parents. Coaches can remove any comment. No likes, sharing or following. |
@@ -108,7 +134,9 @@ Classroom. It doesn't belong with social media.
 
 For members under 18, the app must never have:
 
-- replies to messages, or direct messages between members;
+- replies to messages (written answers of any kind), or direct messages
+  between members. Picking one of the answers the sender set on a question
+  is allowed: see "Questions on messages" below;
 - feeds, timelines or stories;
 - profile pictures, or profiles members can browse;
 - following, friends or contacts lists;
