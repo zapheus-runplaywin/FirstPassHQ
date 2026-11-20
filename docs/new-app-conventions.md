@@ -58,7 +58,7 @@ _Rewritten for design C on 15 November 2026. The rules marked "after the proof" 
 
 ## Testing
 
-- **Every change ships tests that run on every push,** HQ's rule since 18 October. Vantage, Vision and Studio run tests on pull requests and main only.
+- **Every change ships tests that run on every pull request,** HQ's rule since 18 October. Since 20 November HQ runs them on pull requests only, to save Actions minutes; Vantage, Vision and Studio run them on pull requests, and Studio on main too.
 - **Access is tested in HQ, for every kind of member, both ways.** Each product has its own file there, as Vision and Studio do now.
 - **Before a new app's first pilot, run the revocation walk-through** from this review: role removed, stood down, deleted, consent changed. Keep the output.
 - **Sample people only.** Never live data.
