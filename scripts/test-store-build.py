@@ -22,7 +22,9 @@ eas.json
 - each Android choice runs the profile the runbook says it does, and an
   unknown choice fails;
 - every eas-cli call pins one version and runs non-interactively without
-  waiting, so the job doesn't use up Actions minutes.
+  waiting, so the job doesn't use up Actions minutes;
+- no build sends TestFlight "What to test" text (--what-to-test): EAS accepts
+  it only on Expo's Enterprise plan and refuses the submission otherwise.
 
 It also checks a few broken configurations are caught. Run by the "Tests"
 workflow."""
@@ -158,6 +160,8 @@ def workflow_problems(text: str) -> list[str]:
         for flag in ('--non-interactive', '--no-wait'):
             if flag not in body:
                 found.append(f'"{name}" runs eas-cli without {flag}')
+    if '--what-to-test' in text:
+        found.append('--what-to-test needs the Expo Enterprise plan; EAS refuses the TestFlight submission')
     return found
 
 
@@ -204,6 +208,7 @@ def main() -> int:
         'unknown choice ignored': re.sub(r'\n\s+\*\) echo .*?;;', '', workflow, count=1),
         'unpinned eas-cli': workflow.replace('eas-cli@24.12.0 build --platform android', 'eas-cli@latest build --platform android', 1),
         'waits for the build': workflow.replace('--non-interactive --no-wait | tee android.log', '--non-interactive | tee android.log', 1),
+        'What to test sent to TestFlight': workflow.replace('--auto-submit \\\n', '--auto-submit --what-to-test "Bug fixes" \\\n', 1),
         'extra choice offered': workflow.replace('[link, play-closed-test,', '[link, play-production, play-closed-test,', 1),
     }
     for name, broken in workflow_cases.items():
