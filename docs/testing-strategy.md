@@ -41,7 +41,8 @@ A new access rule is tested for every one of these, both ways: who gets it and w
 
 | Workflow | When | What |
 |---|---|---|
-| Tests | Every push to every branch | Lint, typecheck, Jest with a coverage floor, every database test against every migration, and the browser smoke tests against a fresh web build |
+| Tests | Every pull request, or by hand | Lint, typecheck, Jest with a coverage floor, and every database test against every migration |
+| Browser tests | Every pull request that changes more than `supabase/`, `scripts/`, `docs/` or Markdown, or by hand | The browser smoke tests against a fresh web build |
 | Check migrations | Pull requests that touch migrations | The migration safety checks above, including the row count check |
 | Security audit | Every merge to main, weekly, and pull requests that change packages | `scripts/check-cves.py` |
 | Mutation tests | By hand only (Actions, "Mutation tests", "Run workflow"), to save Actions minutes | Stryker over the child-safety and access rules. Its results are kept in the Actions cache, so only the first run takes about an hour and later runs only test what changed. The report of every surviving change is kept with the run |
