@@ -29,10 +29,10 @@ on:
         type: choice
         options: [link, play-closed-test, play-closed-test-rollout]
         default: link
-      what_to_test:
-        description: 'iOS only: what testers should try, shown in TestFlight (optional)'
-        type: string
-        default: ''
+      # No "What to test" box: EAS only accepts that TestFlight text
+      # on Expo's Enterprise plan and refuses the TestFlight submission
+      # otherwise (Beta build run 5, 20 Nov 2026). Type it in App Store
+      # Connect > TestFlight instead (docs/store/review-notes.md).
 
 concurrency:
   group: beta-build
@@ -80,11 +80,9 @@ jobs:
         if: inputs.platform != 'android'
         env:
           EXPO_TOKEN: ${{ secrets.EXPO_TOKEN }}
-          WHAT_TO_TEST: ${{ inputs.what_to_test }}
         run: |
-          args=(--platform ios --profile production --auto-submit --non-interactive --no-wait)
-          if [ -n "$WHAT_TO_TEST" ]; then args+=(--what-to-test "$WHAT_TO_TEST"); fi
-          npx --yes eas-cli@24.12.0 build "${args[@]}" | tee ios.log
+          npx --yes eas-cli@24.12.0 build --platform ios --profile production --auto-submit \
+            --non-interactive --no-wait | tee ios.log
       - name: Links to the builds
         if: always()
         run: |
