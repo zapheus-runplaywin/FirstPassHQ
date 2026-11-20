@@ -4,8 +4,9 @@ import { StyleSheet, View } from 'react-native';
 
 import { SurveyBars } from '@/components/survey-bars';
 import { ThemedText } from '@/components/themed-text';
-import { Button, Card, ChipGroup, ErrorText } from '@/components/ui';
+import { Button, ChipGroup, ErrorText } from '@/components/ui';
 import { Spacing } from '@/constants/theme';
+import { useTheme } from '@/hooks/use-theme';
 import { formatSentAt } from '@/lib/format';
 import { answerLine, groupAnswers, type MessageQuestion } from '@/lib/message-questions';
 import { supabase } from '@/lib/supabase';
@@ -16,6 +17,7 @@ import { supabase } from '@/lib/supabase';
  * them, and names for whoever sent it, its coaches and managers, and admins.
  */
 export function MessageQuestionCard({ messageId }: { messageId: string }) {
+  const theme = useTheme();
   const [question, setQuestion] = useState<MessageQuestion | null | undefined>(undefined);
   const [busy, setBusy] = useState<string | null>(null);
   const [error, setError] = useState<string | null>(null);
@@ -60,7 +62,9 @@ export function MessageQuestionCard({ messageId }: { messageId: string }) {
   const answered = question.totals?.reduce((a, b) => a + b, 0) ?? 0;
 
   return (
-    <Card style={styles.card}>
+    // A bordered box rather than a Card, so the answer chips (which use the
+    // card colour) stand out.
+    <View style={[styles.card, { borderColor: theme.backgroundElement }]}>
       <ThemedText type="smallBold">
         {question.closed ? 'Question (closed)' : 'Question'}
       </ThemedText>
@@ -140,7 +144,7 @@ export function MessageQuestionCard({ messageId }: { messageId: string }) {
       {question.can_close ? (
         <Button title="Close question" variant="secondary" busy={busy === 'close'} onPress={close} />
       ) : null}
-    </Card>
+    </View>
   );
 }
 
@@ -202,6 +206,9 @@ function Names({ question }: { question: MessageQuestion }) {
 const styles = StyleSheet.create({
   card: {
     gap: Spacing.two,
+    borderWidth: 2,
+    borderRadius: Spacing.three,
+    padding: Spacing.three,
   },
   section: {
     gap: Spacing.two,
