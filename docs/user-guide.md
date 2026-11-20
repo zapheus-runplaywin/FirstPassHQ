@@ -1217,7 +1217,6 @@ you, it says "Nobody yet" and asks for your child's link code. Tap it to open **
 which holds both ways to add a child: their link code, and asking the club to add a child who
 won't use the app.
 
-<img src="user-guide/guardian-home-card.png" width="210" alt="A parent's home screen with one Guardian of card naming their children">
 <img src="user-guide/guardian-children.png" width="210" alt="Your children: the children a parent is linked to, adding another with a link code, and a child who won't use the app">
 
 As a guardian you:
