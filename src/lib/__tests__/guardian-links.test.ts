@@ -1,6 +1,7 @@
 import {
   athletesWithVerifiedGuardian,
   formatLinkCode,
+  guardianOfText,
   isLockedChild,
   LINK_CODE_ALPHABET,
   linkCodeMessage,
@@ -160,5 +161,16 @@ describe('isLockedChild', () => {
 
   it('locks an athlete with another main role', () => {
     expect(isLockedChild({ ...child, role: 'guest', extra_roles: ['athlete'] }, false)).toBe(true);
+  });
+});
+
+describe('guardianOfText', () => {
+  it('names every child a parent or guardian is linked to', () => {
+    expect(guardianOfText(['Fifteen Locked', 'Sixteen Athlete'])).toBe('Fifteen Locked, Sixteen Athlete');
+    expect(guardianOfText(['Sam Small'])).toBe('Sam Small');
+  });
+
+  it('says nobody yet, and how to start, with no children linked', () => {
+    expect(guardianOfText([])).toMatch(/^Nobody yet\. Enter your child’s link code/);
   });
 });

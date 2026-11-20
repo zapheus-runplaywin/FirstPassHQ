@@ -95,3 +95,13 @@ export function isLockedChild(member: Member, hasVerifiedGuardian: boolean) {
     !hasVerifiedGuardian
   );
 }
+
+/**
+ * Who a parent or guardian is linked to, for the Guardian of card on Home and
+ * the Your children screen it opens.
+ */
+export function guardianOfText(names: readonly string[]) {
+  return names.length > 0
+    ? names.join(', ')
+    : 'Nobody yet. Enter your child’s link code, and a club admin links you once they have checked who you are.';
+}
