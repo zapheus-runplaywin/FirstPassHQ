@@ -1,6 +1,7 @@
 /**
  * Screens a parent or guardian uses for their child under 18, and the code of
- * conduct every member accepts: consent (src/app/consent/[id].tsx), the code
+ * conduct every member accepts: their children and adding another
+ * (src/app/children.tsx), consent (src/app/consent/[id].tsx), the code
  * of conduct (conduct/[id].tsx), who has viewed the child's records
  * (records/[id].tsx) and what has changed around them (activity/[id].tsx).
  * From "Giving consent", "The code of conduct for your child", "Who has
@@ -17,6 +18,7 @@ import { fireEvent, screen } from 'expo-router/testing-library';
 import { Linking } from 'react-native';
 
 import ChildActivityScreen from '@/app/activity/[id]';
+import ChildrenScreen from '@/app/children';
 import ConductScreen from '@/app/conduct/[id]';
 import ConsentScreen from '@/app/consent/[id]';
 import RecordAccessScreen from '@/app/records/[id]';
@@ -26,7 +28,7 @@ import { formatDateTime } from '@/lib/format';
 import type { RecordAccess } from '@/lib/record-access';
 import { localDay } from '@/lib/reports';
 
-import { argsOf, clearCalls, rpcNames } from './helpers/forms';
+import { argsOf, clearCalls, rpcNames, type } from './helpers/forms';
 import {
   openScreen,
   resetClub,
@@ -63,6 +65,59 @@ beforeEach(() => {
 afterEach(() => {
   back.mockRestore();
   canGoBack.mockRestore();
+});
+
+// ---------------------------------------------------------------------------
+// Your children: opened from the Guardian of card on Home
+
+describe('your children', () => {
+  const twoChildren = [
+    { athlete_id: 'c1', full_name: 'Fifteen Locked', data: true, health: true, publish: false, can_consent: true },
+    { athlete_id: 'c2', full_name: 'Sixteen Athlete', data: true, health: true, publish: false, can_consent: true },
+  ];
+
+  it('names their children, and offers a link code or a child who won’t use the app', async () => {
+    await openScreen('guardian', { children: ChildrenScreen }, '/children', {}, {
+      rpcs: { my_child_consents: twoChildren },
+    });
+    expect(screen.getByText('Guardian of')).toBeTruthy();
+    expect(screen.getByText('Fifteen Locked, Sixteen Athlete')).toBeTruthy();
+    expect(screen.getByText('Add another child')).toBeTruthy();
+    expect(screen.getByText('Child’s code')).toBeTruthy();
+    expect(screen.getByText('Child who won’t use the app')).toBeTruthy();
+    expect(screen.getByText('Add a child who won’t use the app')).toBeTruthy();
+    expect(rpcNames()).toEqual(
+      expect.arrayContaining(['my_child_consents', 'my_link_requests', 'my_no_app_child_requests']),
+    );
+  });
+
+  it('with no child linked yet, asks for their child’s code', async () => {
+    await openScreen('guardian', { children: ChildrenScreen }, '/children', {}, {
+      rpcs: { my_child_consents: [] },
+    });
+    expect(screen.getByText(/^Nobody yet\. Enter your child’s link code/)).toBeTruthy();
+    expect(screen.getByText('Enter your child’s code')).toBeTruthy();
+    expect(screen.queryByText('Add another child')).toBeNull();
+  });
+
+  it('enters a child’s code from here and shows it waiting for a club admin', async () => {
+    let requests: unknown[] = [];
+    await openScreen('guardian', { children: ChildrenScreen }, '/children', {}, {
+      rpcs: { my_child_consents: twoChildren },
+      rpcHandlers: {
+        my_link_requests: () => requests,
+        enter_child_code: () => {
+          requests = [{ athlete_id: 'c3', athlete_name: 'Jordan Sample', requested_at: '2026-10-18T01:00:00Z' }];
+          return null;
+        },
+      },
+    });
+    await type('Child’s code', '7kq4md');
+    await fireEvent.press(screen.getByText('Enter code'));
+    await settle();
+    expect(argsOf('enter_child_code')).toEqual([{ p_code: '7kq4md' }]);
+    expect(screen.getByText(/You’ve entered Jordan Sample’s code\./)).toBeTruthy();
+  });
 });
 
 // ---------------------------------------------------------------------------

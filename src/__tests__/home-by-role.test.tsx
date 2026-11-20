@@ -476,6 +476,17 @@ describe('members waiting for approval', () => {
 });
 
 describe('parents and guardians', () => {
+  it('have one Guardian of card that opens their children and adding another', async () => {
+    await openHome('guardian');
+    // The link code and child-without-the-app forms live behind the card, not on Home.
+    expect(screen.queryByText('Child’s code')).toBeNull();
+    expect(screen.queryByText('Enter code')).toBeNull();
+    expect(screen.queryByText('Child who won’t use the app')).toBeNull();
+    await fireEvent.press(screen.getByText(ITEMS.guardianOf));
+    await act(async () => {});
+    expect(screen).toHavePathname('/children');
+  });
+
   it('get a consent card for each child, and the consent to-do', async () => {
     await openHome('guardian');
     // And can add another child with their code.
@@ -536,8 +547,8 @@ describe('parents and guardians', () => {
 
   it('with no child linked yet, are asked for their child’s link code, and see nothing of a child', async () => {
     await openHome({ ...personas.guardian, rpcs: { my_child_consents: [] } });
-    expect(screen.getByText(/^Nobody yet\. Enter your child’s link code below/)).toBeTruthy();
-    expect(screen.getByText('Enter your child’s code')).toBeTruthy();
+    expect(screen.getByText(/^Nobody yet\. Enter your child’s link code/)).toBeTruthy();
+    expect(screen.getByText('Add your child')).toBeTruthy();
     for (const item of ['consent', 'whatsChanged', 'recordViews', 'childAttendance'] as Item[]) {
       expect(screen.queryByText(ITEMS[item])).toBeNull();
     }

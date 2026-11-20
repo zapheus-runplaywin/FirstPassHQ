@@ -25,6 +25,7 @@ import { useCanTakeAttendance, useCanViewAttendance } from '@/lib/attendance';
 import { useAwardSlots } from '@/lib/awards';
 import { useClub } from '@/lib/club';
 import { useClubChoice } from '@/lib/club-choice';
+import { guardianOfText } from '@/lib/guardian-links';
 import {
   checkInOverviewLabel,
   checkInSummaryLabel,
@@ -607,10 +608,24 @@ export default function HomeScreen() {
           </Card>
         ) : null}
 
+        {isGuardian ? (
+          // Their children, and adding another (a link code, or a child who
+          // won't use the app), sit behind one card so Home stays short.
+          <PressableCard onPress={() => router.push('/children')}>
+            <ThemedText type="smallBold">Guardian of</ThemedText>
+            <ThemedText type="small" themeColor="textSecondary">
+              {guardianOfText(athletes.map((a) => a.name))}
+            </ThemedText>
+            <ThemedText type="small" themeColor="tint">
+              {athletes.length > 0 ? 'Add another child' : 'Add your child'}
+            </ThemedText>
+          </PressableCard>
+        ) : null}
+
         {isGuardian && features.goals && athletes.length > 0 ? (
           // Guardians aren't in a squad, so their athletes' game goals open from here.
           <View style={styles.section}>
-            <ThemedText type="smallBold">Guardian of</ThemedText>
+            <ThemedText type="smallBold">Game goals</ThemedText>
             {athletes.map((a) => (
               <PressableCard
                 key={a.id}
@@ -627,24 +642,6 @@ export default function HomeScreen() {
               </PressableCard>
             ))}
           </View>
-        ) : isGuardian ? (
-          <Card>
-            <ThemedText type="smallBold">Guardian of</ThemedText>
-            <ThemedText type="small" themeColor="textSecondary">
-              {athletes.length > 0
-                ? athletes.map((a) => a.name).join(', ')
-                : 'Nobody yet. Enter your child’s link code below, and a club admin links you once they have checked who you are.'}
-            </ThemedText>
-          </Card>
-        ) : null}
-
-        {isGuardian ? (
-          <>
-            <ChildCodeCard
-              title={athletes.length > 0 ? 'Add another child' : 'Enter your child’s code'}
-            />
-            <NoAppChildCard />
-          </>
         ) : null}
 
         {isGuardian && athletes.length > 0 ? (

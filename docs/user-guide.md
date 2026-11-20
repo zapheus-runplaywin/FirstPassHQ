@@ -43,7 +43,7 @@ each of their roles can.
 | Role          | Who it's for                                                                                         |
 | ------------- | ---------------------------------------------------------------------------------------------------- |
 | **Athlete**   | Registered players aged 13 and over (nobody under 13 signs in to the app this year). Some are club captains, or captains or vice captains of a team. They see their own attendance and can report an absence. An athlete under 18 can't use the app until a verified parent or guardian is linked to them: until then they see only a link code to share with one (see [Ask to join the club](#ask-to-join-the-club)). A child with no phone, or who won't use the app, can be added by an admin with no sign-in of their own, at any age under 18, and their parent or guardian does everything for them (see [A child who won't use the app](#a-child-who-wont-use-the-app)). |
-| **Guardian**  | Parents and guardians of athletes under 18. They ask to be linked to their child by entering the link code from their child's app, or ask the club to add a child who won't use the app, and follow their children into and out of their squads and teams. They see their child's attendance and can report an absence for them, and see what has changed around their child. If the club asks, they accept the club's code of conduct for their child each season. |
+| **Guardian**  | Parents and guardians of athletes under 18. They ask to be linked to their child by entering the link code from their child's app, or ask the club to add a child who won't use the app (later children from the **Guardian of** card on Home), and follow their children into and out of their squads and teams. They see their child's attendance and can report an absence for them, and see what has changed around their child. If the club asks, they accept the club's code of conduct for their child each season. |
 | **Coach**     | Head coaches and assistant coaches. Both have the same permissions, except that a head coach sets Season KPIs for the group's assistant coaches; otherwise the title only shows who is who. The app gives each coach a title from their team, or their squad until they're in a team, such as "Head Coach, Open A". Need a current Working With Children Check; the role pauses while it's expired, and they add the renewed card from their home screen for an admin to check (see [Sending in your own check](#sending-in-your-own-check)). Someone who has applied for one, new or a renewal, can work while it's assessed (see [Checks applied for](#checks-applied-for)). A parent volunteering at their child's club, a volunteer under 18, or a short-term visitor or national event helper from outside WA has an exemption instead (see [Volunteer exemptions](#volunteer-exemptions)). |
 | **Manager**   | Squad and team managers. The app gives each manager a title from their team, or their squad until they're in a team, such as "Manager, 17 & Under". Need a current Working With Children Check; the role pauses while it's expired, and they add the renewed card from their home screen for an admin to check (see [Sending in your own check](#sending-in-your-own-check)). Someone who has applied for one, new or a renewal, can work while it's assessed (see [Checks applied for](#checks-applied-for)). A parent volunteering at their child's club, a volunteer under 18, or a short-term visitor or national event helper from outside WA has an exemption instead (see [Volunteer exemptions](#volunteer-exemptions)). |
 | **Committee** | Club committee members. Each can add a title, such as President or Secretary, shown with their role. Only committee members and admins can add their own title. Need a current Working With Children Check, or an application being assessed, unless an admin exempts them with a reason (not if they also coach, manage or physio); the role pauses if a recorded check expires or was recorded without an expiry date, and they add the renewed card from their home screen for an admin to check. Committee members approved before checks were needed keep the role without one only until the club's **committee checks date**. Those with a current check, an application in force or a volunteer exemption also read most of the club's governance reports. |
@@ -475,8 +475,9 @@ Once you're approved, the home screen is where everything starts. From the top:
   Awards card shows while an award vote is open to you, and Session plans once a coach has shared
   one with you. **Reports** is for committee members with a current check (admins find Reports in
   Administration). A number in the club's colour means something new or waiting for you.
-- **Parents and guardians** then see who they're the guardian of and a card for each child under
-  **Consent**, **Medical and emergency**, **Attendance**, **Check-ins**, **What's changed** and
+- **Parents and guardians** then see one **Guardian of** card naming their children, which opens
+  **Your children** to add another, and a card for each child under **Game goals** (when the club
+  uses them), **Consent**, **Medical and emergency**, **Attendance**, **Check-ins**, **What's changed** and
   **Who has viewed their records** (see [Parents and guardians](#5-parents-and-guardians)).
 - **My squads and teams** (**My teams** in a club without squads): tap one to see who's in it. A
   team's page also has its [game goals](#game-goals) for its athletes and coaches. Committee
@@ -1213,9 +1214,9 @@ until you've entered the code of a child under 18 who has been approved. Your ch
 stays locked until a verified parent or guardian is linked to them. A guardian can be linked to
 more than one athlete, and an athlete can have more than one guardian.
 
-To add another child later, enter their code under **Add another child** on your home screen
-(**Enter your child's code** until you have a child linked). An admin then links you from your
-page or the child's.
+To add another child later, tap **Guardian of** on your home screen. It opens **Your children**,
+where you enter their code under **Add another child** (**Enter your child's code** until you have
+a child linked). An admin then links you from your page or the child's.
 
 Whenever a guardian is linked to or unlinked from your child, you and your child's other guardians
 get a message from **Club safeguarding** in **Messages**, naming the guardian and the admin who made
@@ -1224,8 +1225,12 @@ Safety Officer or an admin.
 
 <img src="user-guide/message-guardian-notice.png" width="210" alt="The message guardians get when another guardian is unlinked">
 
-The home screen shows who you're the guardian of. Until an admin links you, it says "Nobody yet"
-and asks for your child's link code.
+The home screen shows who you're the guardian of in one **Guardian of** card. Until an admin links
+you, it says "Nobody yet" and asks for your child's link code. Tap it to open **Your children**,
+which holds both ways to add a child: their link code, and asking the club to add a child who
+won't use the app.
+
+<img src="user-guide/guardian-children.png" width="210" alt="Your children: the children a parent is linked to, adding another with a link code, and a child who won't use the app">
 
 As a guardian you:
 
@@ -1244,7 +1249,7 @@ As a guardian you:
   when your child leaves it you leave too, unless another of your children is still in it.
 - **See your athlete's game goals and reflections**: the goals they and their coaches set for
   each game, how your athlete thinks each one went, their coaches' comments and the team goals (see
-  [Game goals](#game-goals)). Tap your athlete under **Guardian of** on the home screen to see all
+  [Game goals](#game-goals)). Tap your athlete under **Game goals** on the home screen to see all
   their games. You can't set goals or reflect: your athlete and their coaches do that in the app.
 - **Report and update injuries** for your athlete, and ask for clearance, exactly as an athlete
   does (see [Athletes](#4-athletes)). If you look after more than one athlete, choose which one
@@ -1285,10 +1290,12 @@ and you do everything for them.
 
 1. When you ask to join as **Guardian**, answer **Will your child use the app?** with **No, they
    won't use the app**, and give your child's name, date of birth and squad or team instead of a
-   link code. Already in the club? Use **Add a child who won't use the app** on your home screen.
+   link code. Already in the club? Tap **Guardian of** on your home screen, then **Add a child who won't use
+   the app**.
 2. A club admin verifies who you are and checks your child's details against PlayHQ, then adds
    your child, linked to you. If you were still waiting, you're approved at the same time. Until
-   then your home screen shows what you asked for, and you can **Withdraw** it.
+   then **Your children** (your home screen while you're still waiting) shows what you asked for,
+   and you can **Withdraw** it.
 3. You get the usual **Club safeguarding** message naming the admin who linked you.
 
 Your child never signs in: they have no email, and nobody can sign in as them. Children under 13
