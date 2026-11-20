@@ -549,8 +549,10 @@ first time, your phone asks whether the app may send notifications: tap **Allow*
   still to do; admins' child-safety and records follow-ups come once a month. A new concern or
   a newly reported absence sends again even if the earlier one is still on your list.
 - Your own [personal tasks](#your-own-tasks) stay on the home screen and aren't sent.
-- A session plan shared with you for the first time sends its own notification straight away,
-  whatever the time (see [Session plans from your coaches](#session-plans-from-your-coaches)).
+- A session plan shared with you for the first time sends its own notification (see [Session
+  plans from your coaches](#session-plans-from-your-coaches)). It keeps the same quiet hours: a
+  plan shared between 8 pm and 7 am is there to read straight away, and its notification arrives
+  at 7 am, with several plans in one notification.
 - Notifications can show on a locked phone, so they never include injury details or reviewers'
   notes. Open the app to see those.
 - If you belong to more than one club, tapping a notification opens the club it came from.
@@ -1145,7 +1147,8 @@ absence your parent or guardian reported shows here too, and you can withdraw it
 When a coach shares a session plan with your squad or team, **Session plans** shows on your home
 screen, with a number for plans you haven't opened yet. If your phone gets the app's
 notifications, it also gets one the first time a plan is shared with you, saying who shared it,
-the session's name, its squad or team and its day. Each plan shows the session, the day, who
+the session's name, its squad or team and its day. A plan shared between 8 pm and 7 am doesn't
+wake your phone: its notification arrives at 7 am. Each plan shows the session, the day, who
 wrote it, and any photos or files, such as a drills sheet. Plans are read only: nobody can reply to
 them or react to them. If you're under 18, your parents or guardians can read the same plans.
 
@@ -1438,7 +1441,8 @@ never do. You can't answer a question your child sent as captain.
 When a coach shares a session plan with your child's squad or team, you can read it too, under
 **Session plans** on your home screen, until your child turns 18. If your phone gets the app's
 notifications, it gets one the first time a plan is shared with your child's squad or team;
-either way, look for the number on **Session plans**. You see the same plans your
+either way, look for the number on **Session plans**. A plan shared between 8 pm and 7 am doesn't
+wake your phone or your child's: the notification arrives at 7 am. You see the same plans your
 child does, and nobody can reply to them.
 
 ### Your child's season KPIs
@@ -2058,7 +2062,9 @@ other coaches and admins shared with you, marked **New** until you open them. Wh
 shared with someone, their phone gets a notification saying who shared it, the session's name, its
 squad or team and its day, if it gets the app's notifications; tapping it opens the plan. That
 goes for the coaches, athletes and parents you share it with, and everyone sees the plan marked
-**New**. Changing a plan sends nothing to anyone already told; anyone you
+**New**. Notifications aren't sent between 8 pm and 7 am, so you can share a plan late without
+waking anyone: the plan is shared straight away, and its notification goes out at 7 am to everyone
+it's still shared with then. Changing a plan sends nothing to anyone already told; anyone you
 share it with for the first time is told then. A plan shared with nobody says "Not shared. Only you
 and the club's admins can see it".
 
@@ -4175,6 +4181,9 @@ Working With Children Check, and another admin must do it.
   [Your child's surveys](#your-childs-surveys)).
 - **You read what the coaches share with your child.** Any session plan a coach shares with your
   child's squad or team, you can read too (see [Your child's session plans](#your-childs-session-plans)).
+- **Your child's phone isn't woken at night.** Notifications about to-dos and session plans
+  aren't sent between 8 pm and 7 am, to children or to adults. A plan a coach shares late is there
+  to read straight away, and its notification arrives at 7 am.
 - **The club keeps an eye on training load, calmly.** If the club uses Training load flags, a
   coach gets a prompt to check in when your child's logged training stands out, and you see a card
   once they have, never alarming numbers (see [Your child's training load](#your-childs-training-load)).
@@ -4227,6 +4236,9 @@ Working With Children Check, and another admin must do it.
   picked, and your parents or guardians see your answer and can give it for you.
 - **Session plans are read only.** Plans your coaches share can't be replied to, liked or passed
   on, and your parents or guardians can read them too.
+- **No notifications at night.** The app doesn't send notifications to your phone between 8 pm
+  and 7 am, for your to-dos or for a session plan a coach shares late. Anything from the night
+  arrives at 7 am.
 - **Your training sessions stay private.** Only you, your coaches and your parents or guardians
   see them. If the club uses Training load flags and you have a big week, your coach may check in
   with you: it's not a warning, just a chance to talk. There's no leaderboard or team total.

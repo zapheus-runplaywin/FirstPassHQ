@@ -35,7 +35,7 @@ export const FEATURES = [
   {
     key: 'captainPolls',
     label: 'Captains’ polls',
-    detail: 'Captains and vice captains send polls with choices to their own squad or team (needs Surveys)',
+    detail: 'Captains and vice captains send polls with choices to their own team (needs Surveys)',
   },
   { key: 'awards', label: 'Awards', detail: 'Award votes and results' },
   {
