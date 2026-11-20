@@ -42,7 +42,7 @@ each of their roles can.
 
 | Role          | Who it's for                                                                                         |
 | ------------- | ---------------------------------------------------------------------------------------------------- |
-| **Athlete**   | Registered players aged 13 and over (nobody under 13 signs in to the app this year). Some are club captains, or captains or vice captains of a squad or team. They see their own attendance and can report an absence. An athlete under 18 can't use the app until a verified parent or guardian is linked to them: until then they see only a link code to share with one (see [Ask to join the club](#ask-to-join-the-club)). A child with no phone, or who won't use the app, can be added by an admin with no sign-in of their own, at any age under 18, and their parent or guardian does everything for them (see [A child who won't use the app](#a-child-who-wont-use-the-app)). |
+| **Athlete**   | Registered players aged 13 and over (nobody under 13 signs in to the app this year). Some are club captains, or captains or vice captains of a team. They see their own attendance and can report an absence. An athlete under 18 can't use the app until a verified parent or guardian is linked to them: until then they see only a link code to share with one (see [Ask to join the club](#ask-to-join-the-club)). A child with no phone, or who won't use the app, can be added by an admin with no sign-in of their own, at any age under 18, and their parent or guardian does everything for them (see [A child who won't use the app](#a-child-who-wont-use-the-app)). |
 | **Guardian**  | Parents and guardians of athletes under 18. They ask to be linked to their child by entering the link code from their child's app, or ask the club to add a child who won't use the app, and follow their children into and out of their squads and teams. They see their child's attendance and can report an absence for them, and see what has changed around their child. If the club asks, they accept the club's code of conduct for their child each season. |
 | **Coach**     | Head coaches and assistant coaches. Both have the same permissions, except that a head coach sets Season KPIs for the group's assistant coaches; otherwise the title only shows who is who. The app gives each coach a title from their team, or their squad until they're in a team, such as "Head Coach, Open A". Need a current Working With Children Check; the role pauses while it's expired, and they add the renewed card from their home screen for an admin to check (see [Sending in your own check](#sending-in-your-own-check)). Someone who has applied for one, new or a renewal, can work while it's assessed (see [Checks applied for](#checks-applied-for)). A parent volunteering at their child's club, a volunteer under 18, or a short-term visitor or national event helper from outside WA has an exemption instead (see [Volunteer exemptions](#volunteer-exemptions)). |
 | **Manager**   | Squad and team managers. The app gives each manager a title from their team, or their squad until they're in a team, such as "Manager, 17 & Under". Need a current Working With Children Check; the role pauses while it's expired, and they add the renewed card from their home screen for an admin to check (see [Sending in your own check](#sending-in-your-own-check)). Someone who has applied for one, new or a renewal, can work while it's assessed (see [Checks applied for](#checks-applied-for)). A parent volunteering at their child's club, a volunteer under 18, or a short-term visitor or national event helper from outside WA has an exemption instead (see [Volunteer exemptions](#volunteer-exemptions)). |
@@ -206,7 +206,7 @@ with a parent or guardian, the people who can help, **Raise a concern**, and the
 club and Delete account links (see [Ask to join the club](#ask-to-join-the-club)).
 
 Admins can turn off Messages, Calendar, Daily check-ins, Injuries, Attendance, Session plans,
-Surveys, Captains' polls, Awards, Game goals and Integrity training for the whole club in **Club features**. A feature that's off disappears for every role.
+Surveys, Captains' polls, Awards, Live streams, Game goals and Integrity training for the whole club in **Club features**. A feature that's off disappears for every role.
 A feature that's on can also be on for **pilot teams only**, to try it with one squad or team
 first: it then shows for the people in the pilot squads and teams (and the teams of a pilot squad),
 the parents and guardians of their athletes, admins and committee, and for nobody else (see
@@ -324,9 +324,12 @@ and fill in:
 - **Squad**: athletes, coaches, managers and physios pick their squad. In a club without squads
   this is **Team**. Parents and guardians don't pick one: they follow their children into their
   squads and teams.
-- **Your child's link code**: parents and guardians only. Your child under 18 sees a 6-letter code,
-  such as 7KQ-4MD, in their app once they've asked to join. Enter it here, or leave it blank and
-  enter it from your home screen later.
+- **Will your child use the app?**: parents and guardians only. Choose **Yes, they'll ask to
+  join** or **No, they won't use the app**. With No, you give your child's name, date of birth and
+  squad or team instead of a link code (see [A child who won't use the app](#a-child-who-wont-use-the-app)).
+- **Your child's link code**: parents and guardians whose child will use the app. Your child under
+  18 sees a 6-letter code, such as 7KQ-4MD, in their app once they've asked to join. Enter it here,
+  or leave it blank and enter it from your home screen later.
 - **Club password**: if the club has set one, ask a club admin for it. Five wrong tries in a row
   lock you out of asking for 15 minutes.
 
@@ -544,6 +547,8 @@ first time, your phone asks whether the app may send notifications: tap **Allow*
   still to do; admins' child-safety and records follow-ups come once a month. A new concern or
   a newly reported absence sends again even if the earlier one is still on your list.
 - Your own [personal tasks](#your-own-tasks) stay on the home screen and aren't sent.
+- A session plan shared with you for the first time sends its own notification straight away,
+  whatever the time (see [Session plans from your coaches](#session-plans-from-your-coaches)).
 - Notifications can show on a locked phone, so they never include injury details or reviewers'
   notes. Open the app to see those.
 - If you belong to more than one club, tapping a notification opens the club it came from.
@@ -578,7 +583,7 @@ and who read it stay (see [Record keeping](#record-keeping)).
 
 The committee and admins send surveys to everyone, a role, or a squad or team. Coaches and
 managers send surveys and quick polls to their own squads and teams, and captains and vice captains
-send polls to theirs, for example to find a night everyone is free. A survey you need
+send polls to their own team, for example to find a night everyone is free. A survey you need
 to answer shows in your to-do list until you answer it or it closes, and the **Surveys** card on
 the home screen counts how many are waiting.
 
@@ -1091,15 +1096,15 @@ Open **Messages**, tap **New message**, choose who it goes to, write it and tap 
 see who has read it in **Sent**. Club admins can read every message. If you're under 18, your
 parents or guardians get a copy of every message you send.
 
-<img src="user-guide/captain-new-message.png" width="210" alt="A captain writing a message to their squad">
+<img src="user-guide/captain-new-message.png" width="210" alt="A captain writing a message to their team">
 
 Captains and vice captains can also send a poll to their own team, for example to find a
 night everyone is free for a team dinner or to check who's coming to a social event. Open
-**Surveys** from the home screen, tap **New survey**, choose your squad or team, and add up to 5
+**Surveys** from the home screen, tap **New survey**, choose your team, and add up to 5
 questions, each **One choice** or **Several choices**. Choose **Named** to see who picked what and
 who hasn't answered yet. Choose **Everyone must answer** if you need an answer from everyone, and
 **Share results with the squad or team** to let your teammates see the totals (see [Surveys and
-polls for your squad or team](#surveys-and-polls-for-your-squad-or-team)). Your squad or team's coaches and managers see your poll and its results
+polls for your squad or team](#surveys-and-polls-for-your-squad-or-team)). Your team's coaches and managers see your poll and its results
 too, and can close it. If you're under 18, your parents or guardians get a copy of your poll.
 **My groups** lists the polls you've sent while you're captain. You read the results in the app;
 only your coaches and managers can download them. Polls are on unless an admin switches off
@@ -1129,8 +1134,9 @@ absence your parent or guardian reported shows here too, and you can withdraw it
 ### Session plans from your coaches
 
 When a coach shares a session plan with your squad or team, **Session plans** shows on your home
-screen, with a number for plans you haven't opened yet. Your phone doesn't get a notification for
-it: only admins' phones are set up for the app's notifications. Each plan shows the session, the day, who
+screen, with a number for plans you haven't opened yet. If your phone gets the app's
+notifications, it also gets one the first time a plan is shared with you, saying who shared it,
+the session's name, its squad or team and its day. Each plan shows the session, the day, who
 wrote it, and any photos or files, such as a drills sheet. Plans are read only: nobody can reply to
 them or react to them. If you're under 18, your parents or guardians can read the same plans.
 
@@ -1198,6 +1204,56 @@ Safety Officer or an admin.
 
 The home screen shows who you're the guardian of. Until an admin links you, it says "Nobody yet"
 and asks for your child's link code.
+
+As a guardian you:
+
+- **Receive a copy of every message** sent to your athlete, whether it went to their squad, their
+  team, all athletes or the whole club. You get each message once, even if you're also in the
+  squad. Your copy says which of your children it's for, such as "Copied to you as Jordan's and
+  Riley's parent or guardian" when two of your children are in the same team.
+- **Receive a copy of every message your athlete sends** if they're a captain, so you see what
+  they send to their team or the club. These copies say "Copied to you because Jordan sent
+  it".
+- **See your athlete's daily check-ins**, including any note they write, and the training
+  sessions they log with their weekly load. Tap your athlete under **Check-ins** on the home
+  screen to see the last four weeks. Your athlete is told that you can read their notes.
+- **See the calendar and matches** of your child's squads and teams. You follow your child into
+  and out of them by yourself: when an admin puts your child in a squad or team you join it, and
+  when your child leaves it you leave too, unless another of your children is still in it.
+- **See your athlete's game goals and reflections**: the goals they and their coaches set for
+  each game, how your athlete thinks each one went, their coaches' comments and the team goals (see
+  [Game goals](#game-goals)). Tap your athlete under **Guardian of** on the home screen to see all
+  their games. You can't set goals or reflect: your athlete and their coaches do that in the app.
+- **Report and update injuries** for your athlete, and ask for clearance, exactly as an athlete
+  does (see [Athletes](#4-athletes)). If you look after more than one athlete, choose which one
+  when reporting. Proof is the physio's or doctor's letter, as a PDF or a photo of the letter; with
+  a photo you confirm it shows the letter, not the injury. If the club allows photos of injuries and
+  your identity has been verified, you can choose **The injury** and add one after switching on
+  **I consent**; your consent is kept with the photo. Your child can't add photos of injuries.
+- **Hear straight away when staff log an injury**: if a coach, manager or physio logs an injury for
+  your child at training or a game, your to-do list shows **Look at the injury Casey Coach logged
+  for Jordan** until you open it, and it shows under **What's changed**. You then add the physio's
+  updates and ask for clearance as usual (see
+  [When a coach, manager or physio logs your injury](#when-a-coach-manager-or-physio-logs-your-injury)).
+- **See who opened your athlete's injury documents**: under each document, every view and share,
+  by whom and when, and what was confirmed about each photo.
+- **See your athlete's attendance and report absences** (see
+  [Your child's attendance](#your-childs-attendance)).
+- **See what's changed around your athlete**: new adults in their groups, guardians, consents and
+  shared documents (see [What's changed for your child](#whats-changed-for-your-child)).
+- **See who has viewed your athlete's records**: everyone who opened their injuries, check-ins,
+  game goals, season KPIs, named survey answers, medical and emergency details or member record (see [Who has viewed your child's records](#who-has-viewed-your-childs-records)).
+- **Complete integrity training** for your athlete, and for yourself if the club sets a course
+  for parents and guardians: their training shows in your to-do list and on the **Integrity
+  training** screen under their name, and you upload their certificates exactly as they would (see
+  [Integrity training](#integrity-training)).
+
+<img src="user-guide/guardian-home.png" width="210" alt="Guardian home screen">
+<img src="user-guide/training-guardian.png" width="210" alt="A guardian's view of their athlete's training, one sent back">
+<img src="user-guide/goals-guardian.png" width="210" alt="An athlete's games, opened by their guardian">
+<img src="user-guide/goals-guardian-played.png" width="210" alt="A guardian reading their athlete's goals, reflections and coach comments">
+<img src="user-guide/check-ins-guardian.png" width="210" alt="A parent reading their child's check-ins and notes">
+<img src="user-guide/messages-guardian.png" width="210" alt="A parent's messages, each copy naming the children it's for">
 
 ### A child who won't use the app
 
@@ -1360,8 +1416,9 @@ reported. You stop seeing your child's attendance on their 18th birthday.
 ### Your child's session plans
 
 When a coach shares a session plan with your child's squad or team, you can read it too, under
-**Session plans** on your home screen, until your child turns 18. There's no phone notification
-for it; look for the number on **Session plans**. You see the same plans your
+**Session plans** on your home screen, until your child turns 18. If your phone gets the app's
+notifications, it gets one the first time a plan is shared with your child's squad or team;
+either way, look for the number on **Session plans**. You see the same plans your
 child does, and nobody can reply to them.
 
 ### Your child's season KPIs
@@ -1426,56 +1483,6 @@ child's 18th birthday.
 
 <img src="user-guide/activity-guardian.png" width="210" alt="What's changed for a parent's child">
 
-As a guardian you:
-
-- **Receive a copy of every message** sent to your athlete, whether it went to their squad, their
-  team, all athletes or the whole club. You get each message once, even if you're also in the
-  squad. Your copy says which of your children it's for, such as "Copied to you as Jordan's and
-  Riley's parent or guardian" when two of your children are in the same team.
-- **Receive a copy of every message your athlete sends** if they're a captain, so you see what
-  they send to their squad, team or the club. These copies say "Copied to you because Jordan sent
-  it".
-- **See your athlete's daily check-ins**, including any note they write, and the training
-  sessions they log with their weekly load. Tap your athlete under **Check-ins** on the home
-  screen to see the last four weeks. Your athlete is told that you can read their notes.
-- **See the calendar and matches** of your child's squads and teams. You follow your child into
-  and out of them by yourself: when an admin puts your child in a squad or team you join it, and
-  when your child leaves it you leave too, unless another of your children is still in it.
-- **See your athlete's game goals and reflections**: the goals they and their coaches set for
-  each game, how your athlete thinks each one went, their coaches' comments and the team goals (see
-  [Game goals](#game-goals)). Tap your athlete under **Guardian of** on the home screen to see all
-  their games. You can't set goals or reflect: your athlete and their coaches do that in the app.
-- **Report and update injuries** for your athlete, and ask for clearance, exactly as an athlete
-  does (see [Athletes](#4-athletes)). If you look after more than one athlete, choose which one
-  when reporting. Proof is the physio's or doctor's letter, as a PDF or a photo of the letter; with
-  a photo you confirm it shows the letter, not the injury. If the club allows photos of injuries and
-  your identity has been verified, you can choose **The injury** and add one after switching on
-  **I consent**; your consent is kept with the photo. Your child can't add photos of injuries.
-- **Hear straight away when staff log an injury**: if a coach, manager or physio logs an injury for
-  your child at training or a game, your to-do list shows **Look at the injury Casey Coach logged
-  for Jordan** until you open it, and it shows under **What's changed**. You then add the physio's
-  updates and ask for clearance as usual (see
-  [When a coach, manager or physio logs your injury](#when-a-coach-manager-or-physio-logs-your-injury)).
-- **See who opened your athlete's injury documents**: under each document, every view and share,
-  by whom and when, and what was confirmed about each photo.
-- **See your athlete's attendance and report absences** (see
-  [Your child's attendance](#your-childs-attendance)).
-- **See what's changed around your athlete**: new adults in their groups, guardians, consents and
-  shared documents (see [What's changed for your child](#whats-changed-for-your-child)).
-- **See who has viewed your athlete's records**: everyone who opened their injuries, check-ins,
-  game goals, season KPIs, named survey answers or member record (see [Who has viewed your child's records](#who-has-viewed-your-childs-records)).
-- **Complete integrity training** for your athlete, and for yourself if the club sets a course
-  for parents and guardians: their training shows in your to-do list and on the **Integrity
-  training** screen under their name, and you upload their certificates exactly as they would (see
-  [Integrity training](#integrity-training)).
-
-<img src="user-guide/guardian-home.png" width="210" alt="Guardian home screen">
-<img src="user-guide/training-guardian.png" width="210" alt="A guardian's view of their athlete's training, one sent back">
-<img src="user-guide/goals-guardian.png" width="210" alt="An athlete's games, opened by their guardian">
-<img src="user-guide/goals-guardian-played.png" width="210" alt="A guardian reading their athlete's goals, reflections and coach comments">
-<img src="user-guide/check-ins-guardian.png" width="210" alt="A parent reading their child's check-ins and notes">
-<img src="user-guide/messages-guardian.png" width="210" alt="A parent's messages, each copy naming the children it's for">
-
 <div style="page-break-before: always"></div>
 
 ## 6. Coaches
@@ -1485,6 +1492,11 @@ KPIs for the group's assistant coaches. Everything below applies to the squads a
 listed in as a coach. Your title, like "Head Coach, Open A", comes from your team, or your squad
 until you're in a team (see [Your preferred name](#your-preferred-name)); more than one group or
 role joins up, like "Head Coach, Open A and Open" or "Head Coach, Open A · Manager, 17 & Under".
+
+After an admin marks a squad's **squad phase complete**, coaches look after only the
+athletes in their named teams. Before that, they look after everyone in the squad.
+
+<img src="user-guide/coach-home.png" width="210" alt="Coach home screen with a clearance to review">
 
 Coaches and managers need a current Working With Children Check, recorded by an admin, before
 they're approved (or an exemption or a lodged application recorded for them; the role stays paused
@@ -1598,11 +1610,6 @@ straight away.
 
 <img src="user-guide/wwcc-application-declaration.png" width="210" alt="The declaration a coach accepts for their lodged Working With Children Check application">
 
-After an admin marks a squad's **squad phase complete**, coaches look after only the
-athletes in their named teams. Before that, they look after everyone in the squad.
-
-<img src="user-guide/coach-home.png" width="210" alt="Coach home screen with a clearance to review">
-
 ### Sending messages
 
 1. Open **Messages** and tap **New message**.
@@ -1624,7 +1631,7 @@ Coaches choose the captains and vice captains of the teams they coach (admins ca
 are chosen for each team, not for a squad, so a squad's page has no **Choose captains**. Open the
 team from **My squads and teams** and tap **Choose captains** at the bottom. For
 each athlete choose **Captain**, **Vice captain** or **Neither**, then tap **Save captains**. A
-group can have any number of captains and any number of vice captains, so it's up to you: co-captains
+team can have any number of captains and any number of vice captains, so it's up to you: co-captains
 and no vice captains, one captain and four vice captains, or anything in between.
 
 Captains and vice captains can then message everyone in that team, like you. They must be
@@ -2007,10 +2014,10 @@ a plan, being shared one and being told about one all need a current check or ex
 
 **Session plans** has two tabs: **My plans**, the plans you added, and **Shared with me**, plans
 other coaches and admins shared with you, marked **New** until you open them. When a plan is first
-shared with an admin, their phone gets a notification saying who shared it, the session's name, its
-squad or team and its day, if they've allowed the app's notifications; tapping it opens the plan.
-Only admins' phones are set up for notifications, so coaches, athletes and parents don't get one;
-they see the plan marked **New**. Changing a plan sends nothing to anyone already told; anyone you
+shared with someone, their phone gets a notification saying who shared it, the session's name, its
+squad or team and its day, if it gets the app's notifications; tapping it opens the plan. That
+goes for the coaches, athletes and parents you share it with, and everyone sees the plan marked
+**New**. Changing a plan sends nothing to anyone already told; anyone you
 share it with for the first time is told then. A plan shared with nobody says "Not shared. Only you
 and the club's admins can see it".
 
@@ -2128,8 +2135,8 @@ Committee members can send a message to everyone in the club (every member excep
 temporary helpers and, unless the club turns on **Physios get club messages**, physios). Open
 **Messages**, tap **New message**, write it (up to 4,000 characters) and tap **Send**. Guardians
 of athletes under 18 get a copy, and **Sent** shows who has read it. Only admins can message a
-single role, such as all coaches. A committee member who also coaches, manages or captains a squad
-or team can choose **A squad or team** to message it instead.
+single role, such as all coaches. A committee member who also coaches or manages a squad or team,
+or captains a team, can choose **A squad or team** to message it instead.
 
 <img src="user-guide/new-message-committee.png" width="210" alt="New message from a committee member">
 
@@ -2390,7 +2397,7 @@ Physios open the medical and emergency details of the athletes in their squads a
 way as coaches (see [Medical and emergency details](#medical-and-emergency-details-1)).
 
 While the physio role is paused the header reads "Physio (paused)" and a **Physio paused** card
-says what to do. Messages a physio gets are labelled "To Physios", "To {squad or team}" or "To
+says what to do. Messages a physio gets are labelled "To Physios", "To" and the squad or team's name (such as "To Mixed Open Squad") or "To
 Everyone in the club". On a roster the Head Physio shows as **Physio**; "Head Physio" appears on
 their own home screen and the Members list.
 
@@ -2472,8 +2479,6 @@ to record a game in Vantage is in [Game day](#14-game-day-firstpass-vantage-and-
   until then your home screen says when it will pause. From that day, or the day after a recorded
   check expires, the statistician role pauses, in HQ and in Vantage, until an admin records a
   check, an application or an exemption.
-
-  <img src="user-guide/statistician-check-due.png" width="210" alt="A statistician's home screen saying when their role needs a check">
 - **Awards.** Statisticians don't vote in club awards, unless they also hold a role that votes.
 - **Stand-downs.** An admin can stand a statistician down like a coach or manager. The role stops
   at once, in HQ and in Vantage, and comes back only when the stand-down is lifted. That includes a
@@ -2482,6 +2487,8 @@ to record a game in Vantage is in [Game day](#14-game-day-firstpass-vantage-and-
   and admins can record games". The stats saved before the stand-down stay with the game, and an
   admin can finish it. The same happens if an admin removes the role or a recorded check expires
   during a game.
+
+<img src="user-guide/statistician-check-due.png" width="210" alt="A statistician's home screen saying when their role needs a check">
 
 ### Studio
 
@@ -2494,9 +2501,8 @@ the club, and only as someone the club has given the **Studio** role.
   join, or an admin adds it to another role from your member page. Someone whose only role is
   Studio isn't a club member.
 - **Signing in.** In Studio, choose the club and sign in with the Google account the club approved.
-  A stream showing games of several clubs signs in to each of them. Signing in comes with a
-  FirstPass Studio update that isn't out yet; until then the role is ready in HQ but Studio can't
-  use it.
+  A stream showing games of several clubs signs in to each of them. It's on the **FirstPass HQ**
+  card of Studio's Devices tab.
 - **What Studio reads.** The club's games that have a PlayHQ game and are live or finished: each
   game's setup and the stats recorded for it, live as each one is entered, with a helper's
   substitutions and corrections, and the athletes of the
@@ -2953,7 +2959,7 @@ teams you changed, so their parents' **What's changed** lists only real moves.
   them. The member is only told to contact an admin. In the attendance report and a message's read receipts they show with "(deleted)" after
   their name.
 
-<img src="user-guide/member-title.png" width="210" alt="A committee member's page with their preferred name and title">
+<img src="user-guide/member-title.png" width="210" alt="A committee member’s page with their roles and title">
 <img src="user-guide/member-coach-title.png" width="210" alt="A coach's squads and teams, head or assistant coach in each, and the title the app gives them">
 <img src="user-guide/members-titles.png" width="210" alt="Members list with committee and coach titles">
 <img src="user-guide/member-roles.png" width="210" alt="An athlete who also coaches: other roles and their role in each squad">
@@ -3196,7 +3202,7 @@ captains can message everyone in the club until that season is archived; choose 
 season. If last season is still running alongside the new one, pick the season first. Athletes
 under 18 are marked, and their parents or guardians get a copy of everything they send.
 
-Admins can also choose any squad or team's captains and vice captains, the same way coaches do (see
+Admins can also choose any team's captains and vice captains, the same way coaches do (see
 [Choosing captains](#choosing-captains)).
 
 <img src="user-guide/club-captains.png" width="210" alt="Choosing the club captains">
@@ -4372,8 +4378,8 @@ Working With Children Check, and another admin must do it.
   time, its results show only after the survey closes and once at least 3 people have answered,
   and children are reminded to raise a concern rather than write a worry nobody can reply to.
   Parents and guardians get a copy of every survey sent to their child and read their child's named
-  answers. Captains can send their own squad or team polls with choices only, no written answers,
-  the group's coaches and managers see each poll and its results and can close it, and a captain
+  answers. Captains can send their own team polls with choices only, no written answers,
+  the team's coaches and managers see each poll and its results and can close it, and a captain
   under 18's parents or guardians get a copy. Surveys and their answers are removed under
   Record keeping, with their own periods.
 - **Records aren't kept forever.** Set how long the club keeps check-ins, game goals, message text,
@@ -4712,9 +4718,9 @@ decided on its own; until then the club keeps doing it the way it does now.
   exemptions](#volunteer-exemptions)).
 - **Sign in with Apple on Android or the web**: Apple is offered on iPhone and iPad only (see
   [Signing in](#signing-in)).
-- **Athletes under 13**: nobody under 13 signs in this year (see [Nobody under 13 signs
-  in](#nobody-under-13-signs-in)). A profile a parent runs for a younger athlete, with no sign-in
-  for the child, is planned for a later year.
+- **A sign-in for athletes under 13**: nobody under 13 signs in this year (see [Nobody under 13
+  signs in](#nobody-under-13-signs-in)). A parent can ask the club to add a younger child with no
+  sign-in of their own (see [A child who won't use the app](#a-child-who-wont-use-the-app)).
 
 <div style="page-break-before: always"></div>
 
