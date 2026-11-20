@@ -813,7 +813,7 @@ describe('buildTodos', () => {
       expect(todo).toMatchObject({
         key: 'records-removal-stalled',
         detail: 'The nightly removal hasn’t finished for 2 days. Ask FirstPass to check it.',
-        href: '/admin/club',
+        href: '/admin/club/records',
         alert: { level: 'red', label: 'Stopped' },
       });
       expect(todo.title).toMatch(/^Old records haven’t been removed since \S.*(5.*Jan|Jan.*5)/);

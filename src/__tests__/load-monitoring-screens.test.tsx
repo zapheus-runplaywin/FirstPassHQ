@@ -2,7 +2,7 @@
  * Training load prompts on screen (20261028000000_load_monitoring.sql): the
  * coach's Training load list and "Talked with them", what a parent sees once
  * a coach has checked in (and never before, and never the note), the
- * athlete's own line, the Child Safety Officer's patterns, the Club settings
+ * athlete's own line, the Child Safety Officer's patterns, the Club features
  * choices, and the "Training load flags" switch. Which flags come back is the
  * database's rule, so the tests seed what it would return. Every flag shown
  * names its published source.
@@ -10,7 +10,7 @@
 import { fireEvent, screen } from 'expo-router/testing-library';
 import { Linking } from 'react-native';
 
-import ClubSettingsScreen from '@/app/admin/club';
+import ClubFeaturesScreen from '@/app/admin/club/features';
 import CheckInScreen from '@/app/check-in';
 import AthleteCheckInsScreen from '@/app/check-ins/athlete/[id]';
 import CheckInsScreen from '@/app/check-ins/index';
@@ -395,16 +395,16 @@ describe('training load patterns for the Child Safety Officer', () => {
 });
 
 // ---------------------------------------------------------------------------
-// Club settings
+// Club features
 
 const RETENTION_RPCS = {
   physios_get_club_messages: false,
   load_monitoring_settings: { ratio_flag: 'from_1_5', hours_flag: true },
 };
 
-describe('Club settings: training load flags', () => {
+describe('Club features: training load flags', () => {
   it('offers only published values, with their sources, and saves the admin’s choice', async () => {
-    await openScreen('admin', { 'admin/club': ClubSettingsScreen }, '/admin/club', {}, { rpcs: RETENTION_RPCS });
+    await openScreen('admin', { 'admin/club/features': ClubFeaturesScreen }, '/admin/club/features', {}, { rpcs: RETENTION_RPCS });
     expect(screen.getByText('Save training load flags')).toBeTruthy();
     expect(screen.getByText('Gabbett 2016’s “danger zone”. Fewer, clearer prompts. The default.')).toBeTruthy();
     await press('Above 1.3');
@@ -416,7 +416,7 @@ describe('Club settings: training load flags', () => {
   });
 
   it('shows the database’s refusal', async () => {
-    await openScreen('admin', { 'admin/club': ClubSettingsScreen }, '/admin/club', {}, {
+    await openScreen('admin', { 'admin/club/features': ClubFeaturesScreen }, '/admin/club/features', {}, {
       rpcs: RETENTION_RPCS,
       rpcErrors: { admin_set_load_monitoring: 'Only admins can change training load flags' },
     });
@@ -426,7 +426,7 @@ describe('Club settings: training load flags', () => {
 
   it('hides the choices until the club turns the feature on', async () => {
     setClubFeatures({});
-    await openScreen('admin', { 'admin/club': ClubSettingsScreen }, '/admin/club', {}, { rpcs: RETENTION_RPCS });
+    await openScreen('admin', { 'admin/club/features': ClubFeaturesScreen }, '/admin/club/features', {}, { rpcs: RETENTION_RPCS });
     expect(screen.queryByText('Save training load flags')).toBeNull();
     expect(screen.getByLabelText('Training load flags')).toBeTruthy();
   });

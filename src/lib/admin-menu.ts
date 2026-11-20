@@ -44,9 +44,24 @@ export function adminMenuItems({ features, squads, membersDetail }: MenuOptions)
       href: '/admin/conduct',
     },
     {
-      title: 'Club settings',
-      detail: 'Club name, colours, logo and which features are on',
-      href: '/admin/club',
+      title: 'Club brand',
+      detail: 'Club name, logo and colours',
+      href: '/admin/club/brand',
+    },
+    {
+      title: 'Club features',
+      detail: 'Which features are on, and which teams try them first',
+      href: '/admin/club/features',
+    },
+    {
+      title: 'Club options',
+      detail: 'Squads, and whether physios get club messages',
+      href: '/admin/club/options',
+    },
+    {
+      title: 'Record keeping',
+      detail: 'How long the club keeps records, and removing old ones',
+      href: '/admin/club/records',
     },
     {
       title: squads ? 'Squads and teams' : 'Teams',

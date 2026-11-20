@@ -49,7 +49,7 @@ beforeEach(() => resetClub());
 
 it('finds the app’s screens on disk', () => {
   // Guards against the file walk silently finding nothing and every sweep passing.
-  expect(ROUTES).toEqual(expect.arrayContaining(['index', 'administration', 'admin/club', 'sign-in']));
+  expect(ROUTES).toEqual(expect.arrayContaining(['index', 'administration', 'admin/club/brand', 'sign-in']));
   expect(ADMIN_ROUTES.length).toBeGreaterThan(30);
   expect(MEMBER_ROUTES.length).toBeGreaterThan(50);
 });
@@ -78,7 +78,10 @@ describe('admin screens', () => {
     'administration',
     'admin/index',
     'admin/[id]',
-    'admin/club',
+    'admin/club/brand',
+    'admin/club/features',
+    'admin/club/options',
+    'admin/club/records',
     'admin/safeguarding',
     'admin/reports/index',
     'admin/reports/wwcc',
@@ -159,7 +162,7 @@ describe('committee reports', () => {
       await expectReaches(who, route);
     });
 
-    it.each(['admin/reports/under-18s', 'admin/injuries', 'admin/reports/session-plans', 'admin/reports/kpis', 'admin/index', 'admin/club'])(
+    it.each(['admin/reports/under-18s', 'admin/injuries', 'admin/reports/session-plans', 'admin/reports/kpis', 'admin/index', 'admin/club/brand', 'admin/club/features', 'admin/club/options', 'admin/club/records'])(
       'never lands on %s, and is sent home',
       async (route) => {
         await expectTurnedAway(who, route, 'index');

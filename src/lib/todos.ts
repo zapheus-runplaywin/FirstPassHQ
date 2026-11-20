@@ -645,8 +645,8 @@ export function buildTodos({
       todos.push({
         key: 'records-removal-off',
         title: 'Old records are kept forever',
-        detail: 'Switch on Remove old records in Club settings, under Keeping records',
-        href: '/admin/club',
+        detail: 'Switch on Remove old records in Administration, under Record keeping',
+        href: '/admin/club/records',
       });
     }
     if (safety.records_removal_stalled) {
@@ -657,7 +657,7 @@ export function buildTodos({
           ? `Old records haven’t been removed since ${formatShortDay(new Date(since))}`
           : 'Old records haven’t been removed yet',
         detail: 'The nightly removal hasn’t finished for 2 days. Ask FirstPass to check it.',
-        href: '/admin/club',
+        href: '/admin/club/records',
         alert: { level: 'red', label: 'Stopped' },
       });
     }

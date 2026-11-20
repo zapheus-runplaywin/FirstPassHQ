@@ -3,10 +3,10 @@ import { supabase } from '@/lib/supabase';
 import type { Team } from '@/lib/types';
 
 /**
- * Team pilot (Club settings): a feature that's on can show for everyone or
+ * Team pilot (Club features): a feature that's on can show for everyone or
  * only for the squads and teams in the pilot. The database works out what
  * each member sees (club_profile), so the rest of the app needs nothing from
- * here: only the Club settings screen reads and saves the pilot.
+ * here: only the Club features screen reads and saves the pilot.
  */
 export type Audience = 'everyone' | 'pilot';
 

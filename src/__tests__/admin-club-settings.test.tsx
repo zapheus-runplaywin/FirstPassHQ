@@ -1,19 +1,25 @@
 /**
- * Club settings (src/app/admin/club.tsx) and its Keeping records section
- * (src/components/record-retention.tsx), as an admin uses them: what the form
- * starts from, exactly what Save sends, colour and logo checks, and every
- * switch's effect on the saved features (section 10 of the user guide, "Club
- * settings" and "Keeping records"). Only admins reach the screen; the route
- * tests cover that.
+ * The admin pages that hold the club's settings, as an admin uses them: Club
+ * brand (src/app/admin/club/brand.tsx), Club features (club/features.tsx),
+ * Club options (club/options.tsx) and Record keeping (club/records.tsx, with
+ * src/components/record-retention.tsx). What each form starts from, exactly
+ * what Save sends, colour and logo checks, and every switch's effect on the
+ * saved features (section 10 of the user guide). Only admins reach the
+ * pages; the route tests cover that.
  *
  * Features are saved as switches away from their defaults only: most start
- * on, a few (such as Season KPIs) start off, and the database
- * replaces the whole list on each save, so every change must be in it.
+ * on, a few (such as Season KPIs) start off. The database saves the name,
+ * colours, logo, features and squads switch together and replaces all of
+ * them on each save, so each page must send back what it doesn't change
+ * exactly as saved.
  */
 import { fireEvent, screen, within } from 'expo-router/testing-library';
 import * as DocumentPicker from 'expo-document-picker';
 
-import ClubSettingsScreen from '@/app/admin/club';
+import ClubBrandScreen from '@/app/admin/club/brand';
+import ClubFeaturesScreen from '@/app/admin/club/features';
+import ClubOptionsScreen from '@/app/admin/club/options';
+import RecordKeepingScreen from '@/app/admin/club/records';
 import { RecordRetention } from '@/components/record-retention';
 import { Screen } from '@/components/screen';
 import { supabase } from '@/lib/supabase';
@@ -57,6 +63,7 @@ const callsTo = (name: string) =>
   (rpc().mock.calls as [string, Record<string, unknown>][])
     .filter(([n]) => n === name)
     .map(([, args]) => args);
+const rpcNames = () => (rpc().mock.calls as [string][]).map(([n]) => n);
 const pickDocument = DocumentPicker.getDocumentAsync as jest.Mock;
 
 beforeEach(() => {
@@ -90,38 +97,143 @@ const RETENTION_RPCS = {
   medical_keep_months: 24,
 };
 
+const PAGES = {
+  brand: ClubBrandScreen,
+  features: ClubFeaturesScreen,
+  options: ClubOptionsScreen,
+  records: RecordKeepingScreen,
+};
+type Page = keyof typeof PAGES;
+
+const SAVE_BUTTON: Record<Exclude<Page, 'records'>, string> = {
+  brand: 'Save club brand',
+  features: 'Save club features',
+  options: 'Save club options',
+};
+
+let openPage: Page = 'brand';
+
 async function openClub(
+  page: Page,
   rpcs: Record<string, unknown> = {},
   rpcErrors: Record<string, string> = {},
   tables: Record<string, unknown[]> = {},
 ) {
-  await openScreen('admin', { 'admin/club': ClubSettingsScreen }, '/admin/club', tables, {
-    rpcs: { physios_get_club_messages: false, ...RETENTION_RPCS, ...rpcs },
-    rpcErrors,
-  });
+  openPage = page;
+  await openScreen(
+    'admin',
+    { [`admin/club/${page}`]: PAGES[page] },
+    `/admin/club/${page}`,
+    tables,
+    { rpcs: { physios_get_club_messages: false, ...RETENTION_RPCS, ...rpcs }, rpcErrors },
+  );
 }
 
+/** Presses the open page's save button. */
 async function save() {
-  await fireEvent.press(screen.getByText('Save club settings'));
+  await fireEvent.press(screen.getByText(SAVE_BUTTON[openPage as Exclude<Page, 'records'>]));
   await settle();
 }
 
 const savedProfile = () => callsTo('admin_update_club_profile');
 
-// ---------------------------------------------------------------------------
-// Club settings
+/** A club with its own look, some switches changed, and no squads. */
+const CUSTOM_CLUB = {
+  club_name: 'Sample Netball Club',
+  short_name: 'Sample',
+  background_colour: '#FFFFFF',
+  text_colour: '#000000',
+  hero_colour: '#2274A5',
+  logo_path: 'logo-1.png',
+  features: { calendar: false, kpis: true, squads: false },
+};
+/** CUSTOM_CLUB's look and switches as every page sends them back. */
+const CUSTOM_SAVED = {
+  p_club_name: 'Sample Netball Club',
+  p_short_name: 'Sample',
+  p_background_colour: '#FFFFFF',
+  p_text_colour: '#000000',
+  p_hero_colour: '#2274A5',
+  p_logo_path: 'logo-1.png',
+  p_features: { calendar: false, kpis: true, squads: false },
+};
 
-describe('Club settings', () => {
-  it('starts from the club’s saved name, colours, text, logo and physio switch', async () => {
-    setSavedClub({
-      club_name: 'Sample Netball Club',
-      short_name: 'Sample',
-      background_colour: '#FFFFFF',
-      text_colour: '#000000',
-      hero_colour: '#2274A5',
-      logo_path: 'logo-1.png',
-    });
-    await openClub({ physios_get_club_messages: true });
+// ---------------------------------------------------------------------------
+// One page each
+
+describe('each settings page', () => {
+  it.each([
+    ['brand', ['Club name', 'Background', 'Choose logo'], ['Injuries', 'Members join a squad first', 'Remove old records']],
+    ['features', ['Injuries', 'Pilot squads and teams'], ['Club name', 'Members join a squad first', 'Remove old records']],
+    ['options', ['Members join a squad first', 'Physios get club messages'], ['Club name', 'Injuries', 'Remove old records']],
+    ['records', ['Remove old records', 'Save keep periods'], ['Club name', 'Injuries', 'Members join a squad first']],
+  ] as [Page, string[], string[]][])('%s shows only its own settings', async (page, shown, hidden) => {
+    await openClub(page);
+    const has = (label: string) =>
+      screen.queryAllByText(label).length + screen.queryAllByLabelText(label).length > 0;
+    for (const label of shown) expect(has(label)).toBe(true);
+    for (const label of hidden) expect(has(label)).toBe(false);
+  });
+
+  it.each(['brand', 'features', 'options'] as Page[])(
+    '%s sends back everything it doesn’t change exactly as saved',
+    async (page) => {
+      setSavedClub(CUSTOM_CLUB);
+      await openClub(page);
+      await save();
+      expect(savedProfile()).toEqual([CUSTOM_SAVED]);
+    },
+  );
+
+  it.each(['brand', 'features', 'options'] as Page[])(
+    '%s loads the latest saved settings before filling the form',
+    async (page) => {
+      await openClub(page);
+      expect(clubReload).toHaveBeenCalled();
+    },
+  );
+
+  it('only Club features saves the pilot and only Club options saves the physio switch', async () => {
+    await openClub('brand');
+    await save();
+    expect(rpcNames()).not.toContain('admin_set_pilot');
+    expect(rpcNames()).not.toContain('admin_set_physios_get_club_messages');
+
+    rpc().mockClear();
+    await openClub('features');
+    await save();
+    expect(rpcNames()).toContain('admin_set_pilot');
+    expect(rpcNames()).not.toContain('admin_set_physios_get_club_messages');
+
+    rpc().mockClear();
+    await openClub('options');
+    await save();
+    expect(rpcNames()).not.toContain('admin_set_pilot');
+    expect(rpcNames()).toContain('admin_set_physios_get_club_messages');
+  });
+
+  it.each(['brand', 'features', 'options'] as Page[])(
+    '%s shows the database’s refusal and saves nothing more',
+    async (page) => {
+      await openClub(page, {}, { admin_update_club_profile: 'Only admins can change club settings' });
+      clubReload.mockClear();
+      await save();
+      expect(screen.getByText('Only admins can change club settings')).toBeTruthy();
+      expect(rpcNames()).not.toContain('admin_set_pilot');
+      expect(rpcNames()).not.toContain('admin_set_physios_get_club_messages');
+      expect(clubReload).not.toHaveBeenCalled();
+      expect(screen.queryByText(/^Saved\./)).toBeNull();
+    },
+  );
+});
+
+// ---------------------------------------------------------------------------
+// Club brand
+
+describe('Club brand', () => {
+  it('starts from the club’s saved name, colours, text and logo', async () => {
+    setSavedClub(CUSTOM_CLUB);
+    await openClub('brand');
     expect(input('Club name').props.value).toBe('Sample Netball Club');
     expect(input('Short name').props.value).toBe('Sample');
     expect(input('Background').props.value).toBe('#FFFFFF');
@@ -129,12 +241,10 @@ describe('Club settings', () => {
     expect(isSelected('Dark text')).toBe(true);
     expect(isSelected('Light text')).toBe(false);
     expect(screen.getByText('Use the FirstPass mark')).toBeTruthy();
-    expect(isOn('Physios get club messages')).toBe(true);
-    expect(clubReload).toHaveBeenCalled();
   });
 
   it('leaves everything empty for a club on the built-in look, with the field limits', async () => {
-    await openClub();
+    await openClub('brand');
     expect(input('Club name').props.value).toBe('');
     expect(input('Club name').props.placeholder).toBe('FirstPass HQ');
     expect(input('Club name').props.maxLength).toBe(60);
@@ -144,12 +254,10 @@ describe('Club settings', () => {
     expect(input('Background').props.maxLength).toBe(7);
     expect(isSelected('Light text')).toBe(true);
     expect(screen.queryByText('Use the FirstPass mark')).toBeNull();
-    // Physios start off.
-    expect(isOn('Physios get club messages')).toBe(false);
   });
 
   it('saves the name, colours and logo as entered, with no feature changes when all are on their defaults', async () => {
-    await openClub();
+    await openClub('brand');
     await type('Club name', 'Sample Netball Club');
     await type('Short name', 'Sample');
     await type('Background', '#ffcd00');
@@ -167,12 +275,19 @@ describe('Club settings', () => {
         p_features: {},
       },
     ]);
-    expect(callsTo('admin_set_physios_get_club_messages')).toEqual([{ p_on: false }]);
     expect(screen.getByText('Saved. Members see the changes next time they open the app.')).toBeTruthy();
   });
 
+  it('saves a new look while keeping the club’s saved switches', async () => {
+    setSavedClub(CUSTOM_CLUB);
+    await openClub('brand');
+    await type('Club name', 'Sample Hawks');
+    await save();
+    expect(savedProfile()).toEqual([{ ...CUSTOM_SAVED, p_club_name: 'Sample Hawks' }]);
+  });
+
   it('saves Light text as white, and no text colour when the built-in text is kept', async () => {
-    await openClub();
+    await openClub('brand');
     await fireEvent.press(screen.getByText('Light text'));
     await save();
     expect(savedProfile()[0].p_text_colour).toBe('#FFFFFF');
@@ -189,7 +304,7 @@ describe('Club settings', () => {
 
   it('puts the built-in colours back, clearing the colour codes and text choice', async () => {
     setSavedClub({ background_colour: '#FFFFFF', hero_colour: '#2274A5', text_colour: '#000000' });
-    await openClub();
+    await openClub('brand');
     await fireEvent.press(screen.getByText('Use the built-in colours'));
     expect(input('Background').props.value).toBe('');
     expect(input('Hero colour').props.value).toBe('');
@@ -201,16 +316,15 @@ describe('Club settings', () => {
     ['Background', 'yellow', 'Background must be a colour code like #F75C03.'],
     ['Hero colour', '#GGGGGG', 'Hero colour must be a colour code like #F75C03.'],
   ])('refuses to save %s “%s”, saying what a colour code looks like', async (field, value, message) => {
-    await openClub();
+    await openClub('brand');
     await type(field, value);
     await save();
     expect(screen.getByText(message)).toBeTruthy();
     expect(savedProfile()).toEqual([]);
-    expect(callsTo('admin_set_physios_get_club_messages')).toEqual([]);
   });
 
   it('warns when the text would be hard to read on the background', async () => {
-    await openClub();
+    await openClub('brand');
     expect(screen.queryByText(/text and background are close in colour/)).toBeNull();
     // Dark text on the built-in deep navy.
     await fireEvent.press(screen.getByText('Dark text'));
@@ -218,14 +332,19 @@ describe('Club settings', () => {
   });
 
   it('warns when the hero colour is close to the background', async () => {
-    await openClub();
+    await openClub('brand');
     expect(screen.queryByText(/hero colour is close to the background/)).toBeNull();
     await type('Hero colour', '#10182C');
     expect(screen.getByText(/hero colour is close to the background/)).toBeTruthy();
   });
+});
 
+// ---------------------------------------------------------------------------
+// Club features
+
+describe('Club features', () => {
   it('saves every feature switched away from its default, and only those', async () => {
-    await openClub();
+    await openClub('features');
     // On by default: switching off is saved.
     await flip('Messages', false);
     await flip('Injuries', false);
@@ -233,20 +352,29 @@ describe('Club settings', () => {
     // Off by default: switching on is saved.
     await flip('Season KPIs', true);
     await flip('Policy and conflict registers', true);
-    await flip('Members join a squad first', false);
     await save();
-    expect(savedProfile()[0].p_features).toEqual({
-      messages: false,
-      injuries: false,
-      captainPolls: false,
-      kpis: true,
-      registers: true,
-      squads: false,
-    });
+    expect(savedProfile()).toEqual([
+      {
+        p_club_name: '',
+        p_short_name: '',
+        p_background_colour: '',
+        p_text_colour: '',
+        p_hero_colour: '',
+        p_logo_path: '',
+        p_features: {
+          messages: false,
+          injuries: false,
+          captainPolls: false,
+          kpis: true,
+          registers: true,
+        },
+      },
+    ]);
+    expect(screen.getByText('Saved. Members see the changes next time they open the app.')).toBeTruthy();
   });
 
   it('warns before Injuries is turned off with injuries open, saying they pause and registers keep the note', async () => {
-    await openClub({
+    await openClub('features', {
       visible_injuries: [
         { id: 'i1', status: 'injured' },
         { id: 'i2', status: 'clearance_requested' },
@@ -268,7 +396,7 @@ describe('Club settings', () => {
   });
 
   it('says what turning Daily check-ins or Live streams off does to parents’ consent', async () => {
-    await openClub();
+    await openClub('features');
     expect(screen.getByText('Live streams')).toBeTruthy();
     expect(isOn('Live streams')).toBe(true);
     await flip('Daily check-ins', false);
@@ -288,7 +416,7 @@ describe('Club settings', () => {
 
   it('shows no note under a feature already off when the screen opens', async () => {
     setSavedClub({ features: { injuries: false } });
-    await openClub({ visible_injuries: [{ id: 'i1', status: 'injured' }] });
+    await openClub('features', { visible_injuries: [{ id: 'i1', status: 'injured' }] });
     expect(screen.queryByText(/injur(y is|ies are) open/)).toBeNull();
   });
 
@@ -296,7 +424,7 @@ describe('Club settings', () => {
     setSavedClub({
       features: { calendar: false, awards: false, kpis: true, affiliation: true, squads: false },
     });
-    await openClub();
+    await openClub('features');
     expect(isOn('Calendar')).toBe(false);
     expect(isOn('Awards')).toBe(false);
     expect(isOn('Messages')).toBe(true);
@@ -304,8 +432,8 @@ describe('Club settings', () => {
     // Affiliation was removed on 7 November 2026: no switch, and saving clears it.
     expect(screen.queryByText('Affiliation records')).toBeNull();
     expect(screen.queryByText(/association/i)).toBeNull();
-    expect(isOn('Members join a squad first')).toBe(false);
     await save();
+    // Squads stay off: they're on Club options, and this page sends them back as saved.
     expect(savedProfile()[0].p_features).toEqual({
       calendar: false,
       awards: false,
@@ -316,16 +444,50 @@ describe('Club settings', () => {
 
   it('turning a switched-off feature back on stores nothing for it', async () => {
     setSavedClub({ features: { messages: false, kpis: true, registers: true } });
-    await openClub();
+    await openClub('features');
     await flip('Messages', true);
     await flip('Season KPIs', false);
     await flip('Policy and conflict registers', false);
     await save();
     expect(savedProfile()[0].p_features).toEqual({});
   });
+});
+
+// ---------------------------------------------------------------------------
+// Club options
+
+describe('Club options', () => {
+  it('starts from the club’s saved squads and physio switches', async () => {
+    setSavedClub({ features: { squads: false } });
+    await openClub('options', { physios_get_club_messages: true });
+    expect(isOn('Members join a squad first')).toBe(false);
+    expect(isOn('Physios get club messages')).toBe(true);
+  });
+
+  it('starts with squads on and physios off', async () => {
+    await openClub('options');
+    expect(isOn('Members join a squad first')).toBe(true);
+    expect(isOn('Physios get club messages')).toBe(false);
+  });
+
+  it('saves squads off with the club’s look and other switches as saved', async () => {
+    setSavedClub({ ...CUSTOM_CLUB, features: { calendar: false, kpis: true } });
+    await openClub('options');
+    await flip('Members join a squad first', false);
+    await save();
+    expect(savedProfile()).toEqual([CUSTOM_SAVED]);
+  });
+
+  it('turning squads back on stores nothing for them', async () => {
+    setSavedClub({ features: { squads: false } });
+    await openClub('options');
+    await flip('Members join a squad first', true);
+    await save();
+    expect(savedProfile()[0].p_features).toEqual({});
+  });
 
   it('explains what changes when squads are switched off or back on', async () => {
-    await openClub();
+    await openClub('options');
     expect(screen.getByText(/^New members join a squad\./)).toBeTruthy();
     expect(screen.queryByText(/Squads you already have stay until the season ends/)).toBeNull();
     await flip('Members join a squad first', false);
@@ -335,44 +497,41 @@ describe('Club settings', () => {
 
   it('says what happens to existing teams when squads are switched on', async () => {
     setSavedClub({ features: { squads: false } });
-    await openClub();
+    await openClub('options');
     expect(screen.queryByText(/From now on, new teams are named from a squad/)).toBeNull();
     await flip('Members join a squad first', true);
     expect(screen.getByText(/From now on, new teams are named from a squad\. Teams you already have keep their members\./)).toBeTruthy();
   });
 
   it('saves the physio switch after the club settings', async () => {
-    await openClub();
+    await openClub('options');
     await flip('Physios get club messages', true);
     await save();
-    const names = (rpc().mock.calls as [string][]).map(([n]) => n);
+    const names = rpcNames();
     expect(names.indexOf('admin_update_club_profile')).toBeLessThan(
       names.indexOf('admin_set_physios_get_club_messages'),
     );
     expect(callsTo('admin_set_physios_get_club_messages')).toEqual([{ p_on: true }]);
-  });
-
-  it('shows the database’s refusal and saves nothing more', async () => {
-    await openClub({}, { admin_update_club_profile: 'Only admins can change club settings' });
-    clubReload.mockClear();
-    await save();
-    expect(screen.getByText('Only admins can change club settings')).toBeTruthy();
-    expect(callsTo('admin_set_physios_get_club_messages')).toEqual([]);
-    expect(clubReload).not.toHaveBeenCalled();
-    expect(screen.queryByText(/^Saved\./)).toBeNull();
+    expect(screen.getByText('Saved. Members see the changes next time they open the app.')).toBeTruthy();
   });
 
   it('shows a failed physio setting and doesn’t say it saved', async () => {
-    await openClub({}, { admin_set_physios_get_club_messages: 'Not allowed' });
+    await openClub('options', {}, { admin_set_physios_get_club_messages: 'Not allowed' });
     await save();
     expect(screen.getByText('Not allowed')).toBeTruthy();
     expect(screen.queryByText(/^Saved\./)).toBeNull();
   });
+});
 
-  it('has the Keeping records section at the bottom', async () => {
-    await openClub();
-    expect(screen.getByText('Keeping records')).toBeTruthy();
+// ---------------------------------------------------------------------------
+// Record keeping
+
+describe('Record keeping', () => {
+  it('holds the keep periods and the removal switch', async () => {
+    await openClub('records');
+    expect(screen.getByText(/^How long the club keeps members’ records/)).toBeTruthy();
     expect(screen.getByLabelText('Remove old records')).toBeTruthy();
+    expect(screen.getByText('Save keep periods')).toBeTruthy();
   });
 });
 
@@ -415,7 +574,7 @@ const savedPilot = () => callsTo('admin_set_pilot');
 describe('Team pilot', () => {
   it('starts every feature that’s on as shown to everyone, and offers no choice for one that’s off', async () => {
     setSavedClub({ features: { awards: false } });
-    await openClub({}, {}, TEAMS);
+    await openClub('features', {}, {}, TEAMS);
     expect(audienceIs('Injuries', 'Everyone')).toBe(true);
     expect(audienceIs('Injuries', 'Pilot teams only')).toBe(false);
     expect(screen.queryByLabelText('Who sees Awards')).toBeNull();
@@ -424,7 +583,7 @@ describe('Team pilot', () => {
   });
 
   it('lists squads before their teams, marked as squad or team', async () => {
-    await openClub({}, {}, TEAMS);
+    await openClub('features', {}, {}, TEAMS);
     const labels = ['20 & Under (squad)', '20 & Under A (team)', 'Open (squad)'];
     for (const label of labels) expect(screen.getByText(label)).toBeTruthy();
     const all = screen.getAllByText(/\((squad|team)\)$/).map((n) => n.props.children);
@@ -432,21 +591,21 @@ describe('Team pilot', () => {
   });
 
   it('saves the pilot-only features and pilot teams after the club settings, leaving the on and off switches alone', async () => {
-    await openClub({}, {}, TEAMS);
+    await openClub('features', {}, {}, TEAMS);
     await choose('Injuries', 'Pilot teams only');
     await choose('Surveys', 'Pilot teams only');
     await pickGroup('20 & Under (squad)');
     await save();
     expect(savedProfile()[0].p_features).toEqual({});
     expect(savedPilot()).toEqual([{ p_features: ['injuries', 'surveys'], p_team_ids: ['sq-20'] }]);
-    const names = (rpc().mock.calls as [string][]).map(([n]) => n);
+    const names = rpcNames();
     expect(names.indexOf('admin_update_club_profile')).toBeLessThan(names.indexOf('admin_set_pilot'));
-    expect(names.indexOf('admin_set_pilot')).toBeLessThan(names.indexOf('admin_set_physios_get_club_messages'));
     expect(screen.getByText(/^Saved\./)).toBeTruthy();
   });
 
   it('shows the saved pilot and keeps it when saved again', async () => {
     await openClub(
+      'features',
       { admin_pilot_settings: [{ pilot_features: ['messages'], pilot_team_ids: ['t-20a'] }] },
       {},
       TEAMS,
@@ -461,6 +620,7 @@ describe('Team pilot', () => {
 
   it('puts a feature back to everyone and takes a team out of the pilot', async () => {
     await openClub(
+      'features',
       { admin_pilot_settings: [{ pilot_features: ['messages', 'injuries'], pilot_team_ids: ['t-20a', 'sq-open'] }] },
       {},
       TEAMS,
@@ -473,6 +633,7 @@ describe('Team pilot', () => {
 
   it('drops a pilot-only feature that is switched off, since off is off for everyone', async () => {
     await openClub(
+      'features',
       { admin_pilot_settings: [{ pilot_features: ['injuries'], pilot_team_ids: ['t-20a'] }] },
       {},
       TEAMS,
@@ -485,7 +646,7 @@ describe('Team pilot', () => {
   });
 
   it('says who sees pilot features, and warns when no squad or team is in the pilot', async () => {
-    await openClub({}, {}, TEAMS);
+    await openClub('features', {}, {}, TEAMS);
     expect(screen.queryByText(/Features for pilot teams only show/)).toBeNull();
     await choose('Attendance', 'Pilot teams only');
     expect(screen.getByText(/No squads or teams are in the pilot yet/)).toBeTruthy();
@@ -495,21 +656,20 @@ describe('Team pilot', () => {
   });
 
   it('asks for squads or teams first when the club has none', async () => {
-    await openClub();
+    await openClub('features');
     expect(screen.getByText('Add squads or teams in Administration first.')).toBeTruthy();
   });
 
   it('shows a refused pilot save, saves nothing after it and doesn’t say it saved', async () => {
-    await openClub({}, { admin_set_pilot: 'A squad or team in the pilot no longer exists' }, TEAMS);
+    await openClub('features', {}, { admin_set_pilot: 'A squad or team in the pilot no longer exists' }, TEAMS);
     await choose('Injuries', 'Pilot teams only');
     await save();
     expect(screen.getByText('A squad or team in the pilot no longer exists')).toBeTruthy();
-    expect(callsTo('admin_set_physios_get_club_messages')).toEqual([]);
     expect(screen.queryByText(/^Saved\./)).toBeNull();
   });
 
   it('starts with no pilot when the pilot can’t be read', async () => {
-    await openClub({}, { admin_pilot_settings: 'Only admins can see the pilot settings' }, TEAMS);
+    await openClub('features', {}, { admin_pilot_settings: 'Only admins can see the pilot settings' }, TEAMS);
     expect(audienceIs('Injuries', 'Everyone')).toBe(true);
     await save();
     expect(savedPilot()).toEqual([{ p_features: [], p_team_ids: [] }]);
@@ -540,7 +700,7 @@ describe('the club logo', () => {
   }
 
   it('offers only PNG and JPEG images', async () => {
-    await openClub();
+    await openClub('brand');
     useStorage();
     await choose(null);
     expect(pickDocument).toHaveBeenCalledWith({
@@ -551,7 +711,7 @@ describe('the club logo', () => {
   });
 
   it('uploads a PNG to the club’s branding files and saves its path with the settings', async () => {
-    await openClub();
+    await openClub('brand');
     useStorage();
     await choose({ mimeType: 'image/png', size: 1000 });
     expect(supabase.storage.from).toHaveBeenCalledWith('club-branding');
@@ -566,14 +726,14 @@ describe('the club logo', () => {
   });
 
   it('names a JPEG .jpg', async () => {
-    await openClub();
+    await openClub('brand');
     useStorage();
     await choose({ mimeType: 'image/jpeg', size: 1000 });
     expect(upload.mock.calls[0][0]).toBe(`logo-${TODAY.getTime()}.jpg`);
   });
 
   it('refuses an image over 2 MB without uploading it', async () => {
-    await openClub();
+    await openClub('brand');
     useStorage();
     await choose({ mimeType: 'image/png', size: 2 * 1024 * 1024 + 1 });
     expect(screen.getByText('That image is over 2 MB. Try a smaller PNG.')).toBeTruthy();
@@ -581,14 +741,14 @@ describe('the club logo', () => {
   });
 
   it('takes an image of exactly 2 MB', async () => {
-    await openClub();
+    await openClub('brand');
     useStorage();
     await choose({ mimeType: 'image/png', size: 2 * 1024 * 1024 });
     expect(upload).toHaveBeenCalledTimes(1);
   });
 
   it.each([['image/gif'], [undefined]])('refuses a file of type %p', async (mimeType) => {
-    await openClub();
+    await openClub('brand');
     useStorage();
     await choose({ mimeType, size: 1000 });
     expect(
@@ -599,7 +759,7 @@ describe('the club logo', () => {
 
   it('says why an upload failed and keeps the old logo', async () => {
     setSavedClub({ logo_path: 'logo-old.png' });
-    await openClub();
+    await openClub('brand');
     useStorage();
     upload.mockResolvedValue({ error: { message: 'Bucket full' } });
     await choose({ mimeType: 'image/png', size: 1000 });
@@ -610,7 +770,7 @@ describe('the club logo', () => {
 
   it('goes back to the FirstPass mark, saving no logo', async () => {
     setSavedClub({ logo_path: 'logo-old.png' });
-    await openClub();
+    await openClub('brand');
     await fireEvent.press(screen.getByText('Use the FirstPass mark'));
     expect(screen.queryByText('Use the FirstPass mark')).toBeNull();
     await save();
@@ -704,7 +864,7 @@ describe('Keeping records', () => {
 
   it('shows nothing when the database returns no keep periods', async () => {
     await openRetention({ record_retention: null });
-    expect(screen.queryByText('Keeping records')).toBeNull();
+    expect(screen.queryByText(/^How long the club keeps members’ records/)).toBeNull();
     expect(screen.queryByText('Save keep periods')).toBeNull();
   });
 
@@ -768,7 +928,7 @@ describe('Keeping records', () => {
     expect(callsTo('admin_set_more_record_retention')).toEqual([
       { p_injuries_months: 84, p_safeguarding_months: 360, p_award_votes_months: 12, p_awards_months: 0 },
     ]);
-    const names = (rpc().mock.calls as [string][]).map(([n]) => n);
+    const names = rpcNames();
     expect(names.indexOf('admin_set_record_retention_all')).toBeLessThan(names.indexOf('admin_set_survey_retention'));
     expect(names.indexOf('admin_set_survey_retention')).toBeLessThan(names.indexOf('admin_set_more_record_retention'));
     expect(callsTo('admin_set_medical_keep_months')).toEqual([{ p_months: 60 }]);
@@ -897,7 +1057,7 @@ describe('Keeping records: the nightly removal', () => {
 
   it('shows no line when the status can’t be read', async () => {
     await openRetention({ removal_run_status: null });
-    expect(screen.getByText('Keeping records')).toBeTruthy();
+    expect(screen.getByText(/^How long the club keeps members’ records/)).toBeTruthy();
     expect(screen.queryByText(/^Last run|nightly removal|haven’t been removed/)).toBeNull();
   });
 });

@@ -129,7 +129,7 @@ export default function SquadsScreen() {
             {!usesSquads && squads.length > 0
               ? ' Squads from before squads were switched off keep working until their season ends; the next season starts with teams only.'
               : ''}
-            {' Turn squads on or off in Club settings.'}
+            {' Turn squads on or off in Club options.'}
           </ThemedText>
           {loaded && teams.length === 0 && template ? (
             <Pressable accessibilityRole="button" onPress={() => setChoosing(true)}>

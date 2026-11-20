@@ -872,7 +872,7 @@ describe('the to-do list', () => {
     expect(push).toHaveBeenCalledWith({ pathname: '/admin', params: { todo: 'unendorsable' } });
   });
 
-  it('warns admins when the nightly removal has stopped, and opens Club settings', async () => {
+  it('warns admins when the nightly removal has stopped, and opens Record keeping', async () => {
     await openHome('admin', {}, {
       rpcs: {
         admin_safety_todos: {},
@@ -883,7 +883,7 @@ describe('the to-do list', () => {
     expect(screen.getByText('Old records haven’t been removed yet')).toBeTruthy();
     expect(screen.getByText('The nightly removal hasn’t finished for 2 days. Ask FirstPass to check it.')).toBeTruthy();
     await fireEvent.press(screen.getByText('Old records haven’t been removed yet'));
-    expect(push).toHaveBeenCalledWith('/admin/club');
+    expect(push).toHaveBeenCalledWith('/admin/club/records');
   });
 
   it('shows no removal warning while the nightly removal runs', async () => {

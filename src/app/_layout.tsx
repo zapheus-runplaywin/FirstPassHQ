@@ -302,7 +302,10 @@ function RootStack() {
             <Stack.Screen name="admin/index" options={{ title: 'Members' }} />
             <Stack.Screen name="admin/[id]" options={{ title: 'Member' }} />
             <Stack.Screen name="admin/wwcc-receipt" options={{ title: 'Application receipt' }} />
-            <Stack.Screen name="admin/club" options={{ title: 'Club settings' }} />
+            <Stack.Screen name="admin/club/brand" options={{ title: 'Club brand' }} />
+            <Stack.Screen name="admin/club/features" options={{ title: 'Club features' }} />
+            <Stack.Screen name="admin/club/options" options={{ title: 'Club options' }} />
+            <Stack.Screen name="admin/club/records" options={{ title: 'Record keeping' }} />
             <Stack.Screen name="admin/safeguarding" options={{ title: 'Safeguarding' }} />
             <Stack.Screen name="admin/conduct" options={{ title: 'Code of conduct' }} />
             <Stack.Screen name="admin/club-password" options={{ title: 'Club password' }} />

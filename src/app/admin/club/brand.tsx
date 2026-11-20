@@ -2,41 +2,17 @@ import * as DocumentPicker from 'expo-document-picker';
 import { File } from 'expo-file-system';
 import { Image } from 'expo-image';
 import { useEffect, useState } from 'react';
-import { Platform, Pressable, StyleSheet, Switch, View } from 'react-native';
+import { Platform, Pressable, StyleSheet, View } from 'react-native';
 
-import { LoadMonitoringSettings } from '@/components/load-monitoring-settings';
-import { RecordRetention } from '@/components/record-retention';
 import { Screen } from '@/components/screen';
 import { ThemedText } from '@/components/themed-text';
 import { Button, Card, ChipGroup, ErrorText, TextField } from '@/components/ui';
 import { ClubDefaults } from '@/constants/club';
 import { contrastRatio, isHexColour, makeColors, Spacing } from '@/constants/theme';
 import { useTheme } from '@/hooks/use-theme';
-import {
-  defaultLogo,
-  FEATURES,
-  logoUrl,
-  offByDefault,
-  useClub,
-  type FeatureKey,
-} from '@/lib/club';
-import {
-  AUDIENCES,
-  loadPilot,
-  pilotFeaturesToSave,
-  pilotGroupOptions,
-  pilotSummary,
-  savePilot,
-} from '@/lib/pilot';
-import {
-  checkInsOffNote,
-  injuriesOffWarning,
-  liveStreamsOffNote,
-  openInjuryCounts,
-} from '@/lib/feature-switches';
+import { defaultLogo, logoUrl, useClub } from '@/lib/club';
+import { SAVED_NOTICE, saveClubProfile } from '@/lib/club-settings';
 import { supabase } from '@/lib/supabase';
-import type { InjuryStatus } from '@/lib/types';
-import { useTeams } from '@/lib/use-teams';
 
 const LOGO_TYPES = ['image/png', 'image/jpeg'];
 const MAX_LOGO_BYTES = 2 * 1024 * 1024;
@@ -55,10 +31,10 @@ const toneOf = (hex: string | null | undefined): TextTone | null =>
   hex ? (hex.toUpperCase() === TONE_COLOURS.dark ? 'dark' : 'light') : null;
 
 /**
- * The club's name, colours, logo and features. Everything starts on the
- * app's built-in defaults; clearing a value goes back to them.
+ * Administration > Club brand: the club's name, logo and colours. Everything
+ * starts on the app's built-in defaults; clearing a value goes back to them.
  */
-export default function ClubSettingsScreen() {
+export default function ClubBrandScreen() {
   const theme = useTheme();
   const club = useClub();
   const saved = club.profile;
@@ -69,14 +45,6 @@ export default function ClubSettingsScreen() {
   /** Empty means the build's default. */
   const [textTone, setTextTone] = useState<TextTone | null>(null);
   const [logoPath, setLogoPath] = useState<string | null>(null);
-  const [features, setFeatures] = useState<Record<FeatureKey, boolean>>(club.features);
-  const [squads, setSquads] = useState(club.squads);
-  /** Whether physios get messages sent to the whole club. Off unless an admin turns it on. */
-  const [physioMessages, setPhysioMessages] = useState(false);
-  /** Features that are on for pilot teams only, and the squads and teams in the pilot. */
-  const [pilotOnly, setPilotOnly] = useState<FeatureKey[]>([]);
-  const [pilotTeams, setPilotTeams] = useState<string[]>([]);
-  const teams = useTeams();
   const [loaded, setLoaded] = useState(false);
   const [uploading, setUploading] = useState(false);
   const [saving, setSaving] = useState(false);
@@ -86,13 +54,6 @@ export default function ClubSettingsScreen() {
   // Fill the form once, from the latest saved settings.
   useEffect(() => {
     club.reload().finally(() => setLoaded(true));
-    supabase
-      .rpc('physios_get_club_messages')
-      .then(({ data }) => setPhysioMessages(data === true));
-    loadPilot().then((pilot) => {
-      setPilotOnly(pilot.features);
-      setPilotTeams(pilot.teamIds);
-    });
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
   const [filledFrom, setFilledFrom] = useState<typeof saved | undefined>(undefined);
@@ -106,8 +67,6 @@ export default function ClubSettingsScreen() {
     });
     setTextTone(toneOf(saved?.text_colour));
     setLogoPath(saved?.logo_path ?? null);
-    setFeatures(club.features);
-    setSquads(club.squads);
   }
 
   const defaults: Record<ColourKey, string> = {
@@ -170,49 +129,33 @@ export default function ClubSettingsScreen() {
     setSaving(true);
     setError(null);
     setNotice(null);
-    const { error: saveError } = await supabase.rpc('admin_update_club_profile', {
-      p_club_name: name,
-      p_short_name: shortName,
-      p_background_colour: colours.background,
-      p_text_colour: textTone ? TONE_COLOURS[textTone] : '',
-      p_hero_colour: colours.hero,
-      p_logo_path: logoPath ?? '',
-      // Only switches away from a feature's default are stored, so most new
-      // features start on and the few marked off by default start off.
-      p_features: Object.fromEntries([
-        ...FEATURES.filter((f) => !offByDefault(f) && !features[f.key]).map((f) => [f.key, false]),
-        ...FEATURES.filter((f) => offByDefault(f) && features[f.key]).map((f) => [f.key, true]),
-        ...(squads ? [] : [['squads', false]]),
-      ]),
-    });
+    // The feature and squads switches go back as saved: this page doesn't change them.
+    const saveError = await saveClubProfile(
+      {
+        clubName: name,
+        shortName,
+        background: colours.background,
+        text: textTone ? TONE_COLOURS[textTone] : '',
+        hero: colours.hero,
+        logoPath: logoPath ?? '',
+      },
+      club.features,
+      club.squads,
+    );
     if (saveError) {
       setSaving(false);
-      setError(saveError.message);
-      return;
-    }
-    const pilotError = await savePilot(pilotFeaturesToSave(features, pilotOnly), pilotTeams);
-    if (pilotError) {
-      setSaving(false);
-      setError(pilotError);
-      return;
-    }
-    const { error: physioError } = await supabase.rpc('admin_set_physios_get_club_messages', {
-      p_on: physioMessages,
-    });
-    if (physioError) {
-      setSaving(false);
-      setError(physioError.message);
+      setError(saveError);
       return;
     }
     await club.reload();
     setSaving(false);
-    setNotice('Saved. Members see the changes next time they open the app.');
+    setNotice(SAVED_NOTICE);
   }
 
   return (
     <Screen>
       <ThemedText type="small" themeColor="textSecondary">
-        Set up the app for your club. Anything left empty uses the app’s built-in defaults.
+        How the app looks for your club. Anything left empty uses the app’s built-in defaults.
       </ThemedText>
 
       <View style={styles.section}>
@@ -343,175 +286,14 @@ export default function ClubSettingsScreen() {
         </Pressable>
       </View>
 
-      <View style={styles.section}>
-        <ThemedText type="smallBold">Squads</ThemedText>
-        <Card style={styles.featureRow}>
-          <View style={styles.featureText}>
-            <ThemedText type="smallBold">Members join a squad first</ThemedText>
-            <ThemedText type="small" themeColor="textSecondary">
-              {squads
-                ? 'New members join a squad. At selections, admins name teams from it with final team athletes and training partners.'
-                : 'Members join a team straight away, as a final team athlete or training partner. There are no squads.'}
-            </ThemedText>
-          </View>
-          <Switch
-            accessibilityLabel="Members join a squad first"
-            value={squads}
-            onValueChange={setSquads}
-            trackColor={{ true: theme.accent, false: theme.backgroundSelected }}
-            thumbColor={theme.text}
-            {...(Platform.OS === 'web' ? { activeThumbColor: theme.onAccent } : {})}
-          />
-        </Card>
-        {squads !== club.squads ? (
-          <ThemedText type="small" themeColor="textSecondary">
-            {squads
-              ? 'From now on, new teams are named from a squad. Teams you already have keep their members.'
-              : 'Squads you already have stay until the season ends, and nobody is moved. From now on you add teams on their own, and the next season starts with this season’s teams.'}
-          </ThemedText>
-        ) : null}
-      </View>
-
-      <View style={styles.section}>
-        <ThemedText type="smallBold">Features</ThemedText>
-        <ThemedText type="small" themeColor="textSecondary">
-          Turned-off features disappear from everyone’s app, including the home screen and to-dos.
-          Nothing is deleted, so turning one back on brings its records back. A feature that’s on
-          can show for everyone or only for pilot teams, to try it with one team first.
-        </ThemedText>
-        {FEATURES.map((f) => (
-          <Card key={f.key} style={styles.featureCard}>
-            <View style={styles.featureRow}>
-              <View style={styles.featureText}>
-                <ThemedText type="smallBold">{f.label}</ThemedText>
-                <ThemedText type="small" themeColor="textSecondary">
-                  {f.detail}
-                </ThemedText>
-              </View>
-              <Switch
-                accessibilityLabel={f.label}
-                value={features[f.key]}
-                onValueChange={(on) => setFeatures({ ...features, [f.key]: on })}
-                trackColor={{ true: theme.accent, false: theme.backgroundSelected }}
-                thumbColor={theme.text}
-                {...(Platform.OS === 'web' ? { activeThumbColor: theme.onAccent } : {})}
-              />
-            </View>
-            {club.features[f.key] && !features[f.key] ? (
-              <FeatureOffNote feature={f.key} />
-            ) : null}
-            {features[f.key] ? (
-              <View accessibilityLabel={`Who sees ${f.label}`}>
-                <ChipGroup
-                  options={AUDIENCES}
-                  selected={[pilotOnly.includes(f.key) ? 'pilot' : 'everyone']}
-                  onToggle={(audience) =>
-                    setPilotOnly(
-                      audience === 'pilot'
-                        ? [...pilotOnly.filter((k) => k !== f.key), f.key]
-                        : pilotOnly.filter((k) => k !== f.key),
-                    )
-                  }
-                />
-              </View>
-            ) : null}
-          </Card>
-        ))}
-      </View>
-
-      <View style={styles.section}>
-        <ThemedText type="smallBold">Pilot squads and teams</ThemedText>
-        <ThemedText type="small" themeColor="textSecondary">
-          Choose who tries features set to Pilot teams only. A squad brings its teams with it.
-          Admins and committee always see them, so they can help.
-        </ThemedText>
-        {teams.length ? (
-          <ChipGroup
-            options={pilotGroupOptions(teams)}
-            selected={pilotTeams}
-            onToggle={(id) =>
-              setPilotTeams(
-                pilotTeams.includes(id) ? pilotTeams.filter((t) => t !== id) : [...pilotTeams, id],
-              )
-            }
-          />
-        ) : (
-          <ThemedText type="small" themeColor="textSecondary">
-            Add squads or teams in Administration first.
-          </ThemedText>
-        )}
-        {pilotSummary(pilotFeaturesToSave(features, pilotOnly), pilotTeams) ? (
-          <ThemedText type="small" themeColor="textSecondary">
-            {pilotSummary(pilotFeaturesToSave(features, pilotOnly), pilotTeams)}
-          </ThemedText>
-        ) : null}
-      </View>
-
-      <View style={styles.section}>
-        <ThemedText type="smallBold">Physios</ThemedText>
-        <Card style={styles.featureRow}>
-          <View style={styles.featureText}>
-            <ThemedText type="smallBold">Physios get club messages</ThemedText>
-            <ThemedText type="small" themeColor="textSecondary">
-              Physios always get messages sent to Physios and to the squads and teams they’re
-              in. Turn this on to also send them messages sent to everyone in the club.
-            </ThemedText>
-          </View>
-          <Switch
-            accessibilityLabel="Physios get club messages"
-            value={physioMessages}
-            onValueChange={setPhysioMessages}
-            trackColor={{ true: theme.accent, false: theme.backgroundSelected }}
-            thumbColor={theme.text}
-            {...(Platform.OS === 'web' ? { activeThumbColor: theme.onAccent } : {})}
-          />
-        </Card>
-      </View>
-
       <ErrorText>{error}</ErrorText>
       {notice ? (
         <ThemedText type="small" themeColor="textSecondary">
           {notice}
         </ThemedText>
       ) : null}
-      <Button title="Save club settings" onPress={save} busy={saving} disabled={uploading} />
-
-      {club.features.checkIns && club.features.trainingLoad ? <LoadMonitoringSettings /> : null}
-
-      <RecordRetention />
+      <Button title="Save club brand" onPress={save} busy={saving} disabled={uploading} />
     </Screen>
-  );
-}
-
-/**
- * Shown under a switch an admin has just turned off, before they save: what
- * turning it off does to work already under way.
- */
-function FeatureOffNote({ feature }: { feature: FeatureKey }) {
-  const [counts, setCounts] = useState<{ open: number; clearances: number } | null>(null);
-  useEffect(() => {
-    if (feature !== 'injuries') return;
-    let current = true;
-    supabase.rpc('visible_injuries').then(({ data }) => {
-      if (current) setCounts(openInjuryCounts((data as { status: InjuryStatus }[] | null) ?? []));
-    });
-    return () => {
-      current = false;
-    };
-  }, [feature]);
-  const text =
-    feature === 'injuries'
-      ? injuriesOffWarning(counts)
-      : feature === 'checkIns'
-        ? checkInsOffNote
-        : feature === 'liveStreams'
-          ? liveStreamsOffNote
-          : null;
-  if (!text) return null;
-  return (
-    <ThemedText type="small" themeColor={feature === 'injuries' ? 'tint' : 'textSecondary'}>
-      {text}
-    </ThemedText>
   );
 }
 
@@ -560,17 +342,5 @@ const styles = StyleSheet.create({
     borderRadius: 12,
     alignItems: 'center',
     justifyContent: 'center',
-  },
-  featureCard: {
-    gap: Spacing.two,
-  },
-  featureRow: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    gap: Spacing.three,
-  },
-  featureText: {
-    flex: 1,
-    gap: Spacing.half,
   },
 });
