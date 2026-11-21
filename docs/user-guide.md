@@ -107,10 +107,11 @@ What each role sees on its home screen:
 | Your own personal tasks                |    ✓    |        ✓        |      ✓       |     ✓      |       ✓       |       ✓       |    ✓    |       ✓       |
 | To-do notifications on your phone      |    ✓    |        ✓        |      ✓       |     ✓      |       ✓       |       ✓       |    ✓    |       ✓       |
 | My squads and teams                    |    ✓    |        ✓        |      ✓       |     ✓      |  If in one    |       ✓       | Heading only |   If in one   |
-| Read messages, mark read or unread     |    ✓    |        ✓        |      ✓       |     ✓      |       ✓       |       ✓*      |         |       ✓       |
+| Read and archive messages, mark read or unread |    ✓    |        ✓        |      ✓       |     ✓      |       ✓       |       ✓*      |         |       ✓       |
 | Send messages                          | Captains† |                 |  Own groups  | Own groups |   Whole club  |               |         |     Anyone    |
 | Answer a message's question            |    ✓    | Own, and for their athlete |      ✓       |     ✓      |       ✓       |       ✓       |         |       ✓       |
-| See who answered a message's question  | Captains, their own† |   Their athlete's   |  Own groups  | Own groups | Their own |               |         |       ✓       |
+| See who answered a message's question  | Captains, their own† |   Their athlete's   |  Own groups  | Own groups | Their own |               |         |   Their own   |
+| Answer a request to read a member's messages (for a concern) |         |                 |              |            |               |               |         |  If not involved‡‡ |
 | Answer surveys                         |    ✓    | Own; see their athlete's |      ✓       |     ✓      |       ✓       |       ✓       |         |       ✓       |
 | Team totals of a shared poll           |    ✓    | Their athlete's |      ✓       |     ✓      |  If sent one  |  If sent one  |         |  If sent one  |
 | Send surveys and polls, see results    | Captains' polls† |                 |  Own groups  | Own groups |    Anyone     |               |         |    Anyone     |
@@ -152,6 +153,10 @@ What each role sees on its home screen:
 | Invite members (QR code and link)      |         |                 |              |            |               |               |         |       ✓       |
 | Policy and conflict registers (when turned on) |  |                 | Declare conflicts; review policies they own | Review policies they own | Read both; declare conflicts; review policies they own | Review policies they own |  | Read and change both; record any review |
 | Administration                         |         |                 |              |            |               |               |         |       ✓       |
+
+‡‡ The Child Safety Officer or the Complaints Manager asks; an admin who isn't the one asking, the
+member it's about or the person the concern is about answers. Admins don't otherwise read
+messages they didn't send or get (see [Reading a member's messages for a concern](#reading-a-members-messages-for-a-concern)).
 
 † Athletes who are captains: club captains can message the whole club, and team captains and
 vice captains their own team. Captains and vice captains can also send polls with choices to their
@@ -605,16 +610,23 @@ sender can see that you've read it.
   messages as not read, because you didn't open them.
 - **Mark as unread** at the bottom of an open message puts it back in your inbox with its dot, to
   come back to later. The sender still sees that you read it.
-- **Hide read** at the top of your inbox shows only your unread messages. Tap it again to see them
-  all.
+
+**Inbox**, **Archived** and, if you send messages, **Sent** sit at the top. To tidy your inbox,
+swipe a message to the left to archive it (or open it and tap **Archive**). It moves to
+**Archived**, loses its dot, and **Undo** appears for a moment in case you didn't mean it. In
+**Archived**, swipe a message to the left (or open it and tap **Move to inbox**) to bring it back.
+Archiving only moves your own copy: the sender doesn't see it as read, and nobody else's copy
+changes, so a parent's copy of a message to their child stays in the parent's inbox. Messages can't
+be deleted, and messages you sent can't be archived. A question in an archived message can still
+be answered. Screen readers offer **Archive** and **Move to inbox** from each message's actions.
 
 **Report this message** on any message raises a concern
 about it, and the concern keeps a copy of the message (see [Raising a concern](#raising-a-concern)).
 
 Some messages ask a question, such as "Extra session Friday?", with answers to pick from, such as
 **Yes**, **No** and **Not sure**. The inbox says **Question: tap to answer**. Open the message and
-tap one answer. You answer once and can't change it, and there's nothing to type. Whoever sent it,
-the squad or team's coaches and managers, and admins see what you picked; other members never do.
+tap one answer. You answer once and can't change it, and there's nothing to type. Whoever sent it
+and the squad or team's coaches and managers see what you picked; other members never do.
 If the sender shares the totals, you see how many picked each answer, never who. If you're under 18,
 a parent or guardian can answer for you, and the message then says who answered.
 
@@ -629,9 +641,14 @@ If the club removes old records, the text of a message older than the club's kee
 messages (a longer one when a child sent or received it) is replaced with "This message was removed after the club's keep period." Who sent it, who it went to
 and who read it stay (see [Record keeping](#record-keeping)).
 
-<img src="user-guide/inbox.png" width="210" alt="Messages inbox with Hide read and Mark all read">
-<img src="user-guide/inbox-hide-read.png" width="210" alt="Messages inbox with Hide read on">
-<img src="user-guide/message-mark-unread.png" width="210" alt="An open message with Mark as unread">
+Only the people a message went to and its sender can read it. Admins can't read messages they
+didn't send or get. If a concern needs it, the Child Safety Officer or Complaints Manager can ask an
+admin to let them read one person's messages for 24 hours (see [Reading a member's messages for a
+concern](#reading-a-members-messages-for-a-concern)). Nobody is told when that happens.
+
+<img src="user-guide/inbox.png" width="210" alt="Messages inbox with Inbox, Archived and Mark all read">
+<img src="user-guide/inbox-archived.png" width="210" alt="The Archived tab, with a message swiped back to the inbox">
+<img src="user-guide/message-mark-unread.png" width="210" alt="An open message with Archive and Mark as unread">
 
 ### Surveys
 
@@ -876,7 +893,8 @@ show your name, say whether they can contact you and how. Tap **Send to the club
 
 The Child Safety Officer, the Complaints Manager and admins see it straight away, but the person
 it's about never does, even if they're one of them. **Concerns you've raised** on the same screen
-shows each one and where it's up to: Received, Referred, Being looked into or Closed.
+shows each one, its reference (such as C-0007) and where it's up to: Received, Referred, Being
+looked into or Closed. Quote the reference if you talk to the club about it.
 
 <img src="user-guide/raise-concern.png" width="210" alt="Raise a concern: who to call first">
 <img src="user-guide/raise-concern-form.png" width="210" alt="The concern form: what happened, who, when, and whether to show your name">
@@ -1147,7 +1165,7 @@ messages:
   captains.
 
 Open **Messages**, tap **New message**, choose who it goes to, write it and tap **Send**. You'll
-see who has read it in **Sent**. Club admins can read every message. If you're under 18, your
+see who has read it in **Sent**. If you're under 18, your
 parents or guardians get a copy of every message you send.
 
 <img src="user-guide/captain-new-message.png" width="210" alt="A captain writing a message to their team">
@@ -1480,8 +1498,8 @@ When a message to your child asks a question, your copy shows **Answer for** and
 name with the answers to pick from. Either of you can answer, and the first answer stands: after
 that, you both see what it was, who gave it (your child or which parent) and when. Nobody can
 change it. If you're in the squad yourself, as a coach for example, you answer for yourself too.
-The sender, the squad or team's coaches and managers, and admins see the answer; other families
-never do. You can't answer a question your child sent as captain.
+The sender and the squad or team's coaches and managers see the answer; other families never
+do. You can't answer a question your child sent as captain.
 
 <img src="user-guide/message-question-guardian.png" width="210" alt="A parent answering a question for their child">
 
@@ -1694,7 +1712,8 @@ Parents and guardians of athletes under 18 always get a copy, even if they aren'
 **Sent** to see how many of them have read each message, and open a message to see exactly who has
 and hasn't read it. Read means they opened it: someone who clears their inbox with **Mark all
 read** still shows as not read, and someone who puts a message back with **Mark as unread** still
-shows as read. Club admins can read every message.
+shows as read. Nobody else reads your messages, admins included, unless an admin lets the Child
+Safety Officer or Complaints Manager read them for a concern.
 
 <img src="user-guide/new-message-coach.png" width="210" alt="New message">
 <img src="user-guide/messages-sent.png" width="210" alt="Sent messages with read counts">
@@ -3316,7 +3335,10 @@ Admins can also choose any team's captains and vice captains, the same way coach
 ### Messages to the club or a role
 
 Admins can send a message to **Everyone**, to **A role** (such as all guardians or all coaches), or
-to **A squad or team**. Admins can read every message and its read receipts, and see who gave which answer to any question in one.
+to **A squad or team**. Admins see read receipts and answers for the messages they send. They
+don't read other people's messages: when a concern needs it, they answer the Child Safety
+Officer's or Complaints Manager's request instead (see [Reading a member's messages for a
+concern](#reading-a-members-messages-for-a-concern)).
 
 <img src="user-guide/message-to-role.png" width="210" alt="Sending a message to a role">
 
@@ -3724,6 +3746,8 @@ and their documents, safeguarding records, who viewed their records and who view
 them, award votes, survey answers given by name, and a join request that's still waiting. Their
 squad and team places and roles are never removed by the clean-up anyway. This legal hold lasts as
 long as the concern names them, so the club can still answer an investigation, insurer or court.
+A member whose messages the Child Safety Officer or Complaints Manager has asked to read is on the
+same hold while that concern is open.
 Nothing at all is removed while **Remove old records** is off,
 including the injuries of athletes who have left. Once it's on, join requests go 90 days after they're turned down or left
 unanswered, and temporary helpers with no other role a year after their last day; their
@@ -3908,6 +3932,52 @@ an auditor.
 <img src="user-guide/concern-reported-message.png" width="210" alt="A concern raised from a message, with the reported message in full">
 <img src="user-guide/concern-about-search.png" width="210" alt="Who it's about: typing A finds members whose names start with A">
 
+Every concern has a short reference, such as **C-0007**, shown in the register, on the concern and
+to whoever raised it. A message access request names the concern by its reference alone.
+
+### Reading a member's messages for a concern
+
+Nobody reads messages they didn't send or get, admins included. When a concern needs it, the
+**Child Safety Officer** or the **Complaints Manager** can ask to read one member's messages, and
+an admin answers.
+
+**Asking** (the Child Safety Officer or the Complaints Manager): open an open concern and tap
+**Ask to read messages**. Choose whose messages: who the concern is about, who raised it (unless
+they hid their name) or **Someone else involved** (search for them and say how in the reason).
+Choose the dates, up to 90 days at a time (the last 30 days to start with; the end can't be in the
+future), say why you need to read them without the concern's details, and tap **Send to an
+admin**. You can't ask about yourself or on a closed concern, and only one request for the same
+person and concern can wait at a time.
+
+**Answering** (an admin): a red **Answer N requests to read messages** to-do appears, and
+**Concerns** has a **Message access** button. Open the request to see its reference, the concern's
+reference and whether it's open, who asked and in which post, whose messages, the dates and why.
+You don't need to open the concern. Write your justification (to approve) or your reasons (to
+refuse), at least 10 characters, then tap **Approve for 24 hours** or **Refuse**. What you write is
+kept with the request for good. You can't answer a request you made, one for your own messages, or
+one on a concern about you; nobody sees a request in those cases. If no admin is free to answer (for
+example the only other admin is the one it's about, or is stood down), the other safeguarding
+officer answers instead. A club with only one admin gets an **Add a second admin** to-do for this
+reason.
+
+**Reading** (the person who asked, for 24 hours from approval): a **Read the messages you were
+approved to read** to-do appears. Open the request and tap **Show the messages** to list every
+message the member sent or got between the dates: the date, who sent it, who it went to, and
+whether the member opened or archived it. Tap a message to read it. It's read only: nothing can be
+changed, forwarded or answered, the member's own copy doesn't change, and nobody else, including the
+admin who approved it, can read under the request. After 24 hours it closes; ask again if you need
+more.
+
+**Who knows**: nobody is told: not the member, not their parents, not the committee. Every list
+and every message opened is recorded under **Who read what** on the request, which admins and the
+two safeguarding officers can see (never the member it's about, or the person the concern is
+about). This log is kept apart from the record views parents can read. Requests and their logs are
+never removed, so a later audit can follow each one from request to reading.
+
+<img src="user-guide/message-access-ask.png" width="210" alt="Asking to read messages for concern C-0012">
+<img src="user-guide/message-access-answer.png" width="210" alt="An admin answering a request with a justification">
+<img src="user-guide/message-access-read.png" width="210" alt="Reading the messages under an approved request, with the time left">
+
 ### Wellbeing flags
 
 A score of 2 or less on any daily check-in question flags the athlete to their coaches. Once a
@@ -3980,12 +4050,13 @@ once saved, only replaced or removed, and anyone who gets it wrong five times in
 | Volunteer exemptions and declarations | The volunteer (their own) and admins, and committee members with a current check in the Working With Children Checks report (read only). Kept under the member's name if they delete their account; the exemption ends that day. |
 | Temporary helpers' task, dates and policy acceptance | The volunteer and admins. Temporary helpers see nothing of the club's members, squads, calendar or messages. If a helper deletes their account, their policy acceptance and any exemption declaration are kept under their name; their task and dates go with the account. |
 | Concerns                | The Child Safety Officer, the Complaints Manager and admins, never the person a concern is about when they were named from the list (a concern that only describes someone in words is not hidden from anyone who handles concerns). Whoever raised it sees its status. A hidden name is never shown to them. The traffic-light counts on the Concerns card follow the same rule: counts only, and never a concern about the person looking. |
+| Requests to read a member's messages, and who read what | The person who asked, admins and the Child Safety Officer and Complaints Manager, never the member whose messages were asked for or the person the concern is about. Approval opens the messages to the person who asked only, for 24 hours. Every list and message opened is logged with the request, apart from the record views parents read. Never removed. |
 | A child's parents and guardians on a concern | The Child Safety Officer, the Complaints Manager and admins, on a concern naming that child under 18: verified parents and guardians only, with their email, never to someone the concern is about. Each look is kept with the concern for those who handle it, not in the child's record views. |
 | Safeguarding contacts   | Everyone signed in, including guests and people waiting for approval.                                                       |
 | Committee checks date   | Everyone signed in. Only admins change it, and only to bring it forward; who changed it and when is kept. |
-| Messages                | The people they were sent to, the sender, and admins. A stood-down member doesn't see the messages they sent, or the ones they got as a coach, manager, physio, committee member or admin. Guardians of athletes under 18 get a copy of every message sent to their athlete, and of every message their athlete sends as a captain. Guests don't get messages; physios get messages sent to the Physio role and to their squads and teams, and whole-club messages only if an admin turns that on. |
-| Read receipts           | The sender and admins. A receipt means the member opened the message: **Mark all read**, **Mark as unread** and **Hide read** change only the member's own inbox, never what the sender sees. A child who doesn't use the app shows as read once one of their parents has read their copy. |
-| Answers to a message's question | Who gave which answer, who answered for a child and when: the sender (a captain too) while not stood down, the squad or team's coaches and managers, and admins. Each member sees their own answer; parents and guardians see their child's, who gave it and when. Other members see nothing, or only how many picked each answer if the sender shares the totals. Answers are kept with the message. |
+| Messages                | The people they were sent to and the sender. Not admins, unless an admin approved the Child Safety Officer's or Complaints Manager's request to read one member's messages for a concern; then only the person who asked, read only, for 24 hours, with every message opened logged. Archiving moves only the member's own copy, and messages are never deleted by members. A stood-down member doesn't see the messages they sent, or the ones they got as a coach, manager, physio, committee member or admin. Guardians of athletes under 18 get a copy of every message sent to their athlete, and of every message their athlete sends as a captain. Guests don't get messages; physios get messages sent to the Physio role and to their squads and teams, and whole-club messages only if an admin turns that on. |
+| Read receipts           | The sender. A receipt means the member opened the message: **Mark all read**, **Mark as unread** and archiving change only the member's own inbox, never what the sender sees. A child who doesn't use the app shows as read once one of their parents has read their copy. |
+| Answers to a message's question | Who gave which answer, who answered for a child and when: the sender (a captain too) while not stood down, and the squad or team's coaches and managers. Each member sees their own answer; parents and guardians see their child's, who gave it and when. Other members see nothing, or only how many picked each answer if the sender shares the totals. Answers are kept with the message. |
 | Survey answers          | Whoever sent the survey. The committee and admins for their own surveys and ones a coach or manager shared with them. A coach or manager's survey to their own squad or team is seen by them while they still coach or manage it, by admins unless it's a quick poll (up to 5 questions with choices or ratings), and by the committee if they shared it. A captain's poll is seen by the captain while they're captain, and by the squad or team's coaches and managers. Named answers show the member's name; parents and guardians of an athlete under 18 also read their child's named answers. Anonymous answers, and name-optional answers given without a name, are kept with no name, no member and no time, so nobody can see who gave them, admins included; their results show only once the survey has closed, or everyone has answered, and at least 3 people have answered. Named results show once 3 people have answered, a club survey's chosen 20%, 50% or 80%, or everyone when everyone must answer; every survey's results show once it closes. Members never see each other's answers. Whoever sees the results can download them as a PDF or spreadsheet, except captains. |
 | Survey totals shared with a team | When a coach, manager or captain shares a poll's results with the squad or team: everyone it went to and their parents or guardians, once results show. Only how many picked each choice and average ratings: never names, written answers or who has answered. |
 | Who has answered a survey | Named surveys: whoever can see the results sees who hasn't answered yet. Anonymous and name-optional surveys: only how many have answered. Each member sees whether they've answered themselves. |
@@ -4053,7 +4124,8 @@ being removed later. Those handling a concern can name anyone in the club as who
 children included, while the form members use to raise one lists only adults with club roles. Police
 (000), Kids Helpline, the Safe Sport Hotline and the governing body's contacts are shown on the same
 screen. Every concern and every step taken is kept in the [concerns
-register](#the-concerns-register), which prints as a PDF. A concern about a child shows those
+register](#the-concerns-register), which prints as a PDF. Each concern has a short reference, such
+as C-0007, so it can be named without its details. A concern about a child shows those
 handling it the child's verified parents and guardians, so they reach the right parent. Who looked
 is kept with the concern, not in the child's record views, so a parent the concern may be about
 is never tipped off. The Child Safety Officer, Complaints Manager and WWC Registration Officer
@@ -4567,7 +4639,17 @@ Working With Children Check, and another admin must do it.
 ### For the governing body and auditors
 
 - **Two-deep messaging is enforced by the app**, not just by policy: no direct messages or replies,
-  guardians copied on everything to and from a child, and admins can see every message. A question
+  and guardians copied on everything to and from a child. Members can archive a message but never
+  delete one, and archiving moves only their own copy, so a child archiving a message never takes it
+  from their parents' copy or from the club's records.
+- **Reading someone's messages takes two people and leaves a trail.** Admins don't read messages
+  they didn't send or get. For a concern, the Child Safety Officer or Complaints Manager asks to read
+  one member's messages for up to 90 days, naming the concern only by its reference; an admin who
+  isn't involved approves with a justification or refuses with reasons; the person who asked reads
+  them, read only, for 24 hours; and every message opened is logged. Nobody is told, so the person
+  it's about isn't tipped off, and the log is kept apart from the record views parents read. That
+  member's messages are on legal hold while the concern is open, and requests and logs are never
+  removed (see [Reading a member's messages for a concern](#reading-a-members-messages-for-a-concern)). A question
   in a message takes one tap from the answers its sender set, with no free text and no answer to an
   answer. A child's answer is seen by their parents (who can give it for them, recorded with their
   name and the time) and by the club, never by other members.

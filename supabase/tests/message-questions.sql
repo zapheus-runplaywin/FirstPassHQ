@@ -130,7 +130,8 @@ select pg_temp.ok('a coach whose card expired sees no names', pg_temp.q('squad')
 select pg_temp.as_member('14');
 select pg_temp.ok('the squad''s physio sees no names', pg_temp.q('squad') -> 'answers' = 'null'::jsonb, true);
 select pg_temp.as_member('01');
-select pg_temp.ok('an admin sees names', jsonb_array_length(pg_temp.q('squad') -> 'answers') = 3, true);
+-- Admins no longer read messages they didn't send or get (21 November 2026).
+select pg_temp.ok('an admin, not sent it, sees nothing', pg_temp.q('squad') is null, true);
 select pg_temp.as_member('22');
 select pg_temp.ok('the committee, not sent it, sees nothing', pg_temp.q('squad') is null, true);
 select pg_temp.fails('the committee cannot answer it', format($s$ select public.answer_message_question(%L, 0) $s$, pg_temp.m('squad')), 'Message not found');

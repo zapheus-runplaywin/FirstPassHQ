@@ -240,6 +240,11 @@ const WHO_OPENS: Record<string, PersonaName[]> = {
   'concerns/report': union(ADMINS, ['safeguardingOfficer']),
   'concerns/wellbeing': union(ADMINS, ['safeguardingOfficer']),
   'concerns/load': union(ADMINS, ['safeguardingOfficer']),
+  // Message access requests: the officers ask, admins answer; the database
+  // keeps each request from the member it's about.
+  'concerns/message-access/index': union(ADMINS, ['safeguardingOfficer']),
+  'concerns/message-access/new': union(ADMINS, ['safeguardingOfficer']),
+  'concerns/message-access/[id]': union(ADMINS, ['safeguardingOfficer']),
 
   children: union(GUARDIANS, ADMINS),
   'consent/[id]': union(GUARDIANS, ADMINS),

@@ -244,14 +244,16 @@ insert into matrix (phase, label, q, counts) values
       '{0,0,0,1,0,0,0,0,1,1,1,0,0,0}'),
   (1, 'game_goals: Kai''s', $$select 1 from public.game_goals where athlete_id = pg_temp.m('32')$$,
       '{0,0,0,1,0,0,0,1,0,0,1,0,0,0}'),
-  -- Messages: recipients, the sender and admins. Guests never; physios get
-  -- squad messages but not club ones unless an admin turns that on.
+  -- Messages: recipients and the sender. Not admins since 21 November 2026:
+  -- they read someone else's messages only through an approved access
+  -- request. Guests never; physios get squad messages but not club ones
+  -- unless an admin turns that on.
   (1, 'messages: Casey''s squad message', $$select 1 from public.messages where id = '00000000-0000-0000-0000-0000000000c1'$$,
-      '{1,0,0,1,1,1,1,1,1,1,1,0,0,0}'),
+      '{0,0,0,1,1,1,1,1,1,1,1,0,0,0}'),
   (1, 'messages: the admin''s club notice', $$select 1 from public.messages where id = '00000000-0000-0000-0000-0000000000c2'$$,
       '{1,1,0,0,0,0,0,1,0,0,0,0,0,0}'),
   (1, 'message_recipients: other people''s receipts of the squad message', $$select 1 from public.message_recipients where message_id = '00000000-0000-0000-0000-0000000000c1' and profile_id <> auth.uid()$$,
-      '{8,0,0,8,0,0,0,0,0,0,0,0,0,0}'),
+      '{0,0,0,8,0,0,0,0,0,0,0,0,0,0}'),
   -- Training certificates: the member, their guardians, the committee and admins. Not coaches.
   (1, 'training_certificates: Jordan''s', $$select 1 from public.training_certificates where profile_id = pg_temp.m('31')$$,
       '{1,1,0,0,0,0,0,0,1,1,1,0,0,0}'),
@@ -355,22 +357,22 @@ insert into matrix (phase, label, q, counts) values
   (4, 'session_plans: Casey''s plans, head coach stood down', $$select 1 from public.session_plans where author_id = pg_temp.m('11')$$,
       '{3,0,0,0,0,0,0,1,1,1,2,0,0,0}'),
   (4, 'messages: Casey''s squad message, head coach stood down', $$select 1 from public.messages where id = '00000000-0000-0000-0000-0000000000c1'$$,
-      '{1,0,0,0,1,1,1,1,1,1,1,0,0,0}'),
+      '{0,0,0,0,1,1,1,1,1,1,1,0,0,0}'),
   (4, 'message_recipients: receipts of Casey''s squad message, head coach stood down', $$select 1 from public.message_recipients where message_id = '00000000-0000-0000-0000-0000000000c1' and profile_id <> auth.uid()$$,
-      '{8,0,0,0,0,0,0,0,0,0,0,0,0,0}'),
+      '{0,0,0,0,0,0,0,0,0,0,0,0,0,0}'),
   (4, 'my_sent_messages: head coach stood down', $$select 1 from public.my_sent_messages()$$,
       '{1,0,0,0,0,0,0,0,0,0,0,0,0,0}'),
   (4, 'message_receipts: Casey''s squad message, head coach stood down', $$select 1 from public.message_receipts('00000000-0000-0000-0000-0000000000c1')$$,
-      '{8,0,0,0,0,0,0,0,0,0,0,0,0,0}'),
+      '{0,0,0,0,0,0,0,0,0,0,0,0,0,0}'),
   -- Once it's lifted she reads them again.
   (5, 'attendance_marks: the register Casey took, stand-down lifted', $$select 1 from public.attendance_marks where session_id = '00000000-0000-0000-0000-0000000000a5'$$,
       '{2,2,0,2,0,2,0,0,0,0,2,0,0,0}'),
   (5, 'session_plans: Casey''s private plan, stand-down lifted', $$select 1 from public.session_plans where id = '00000000-0000-0000-0000-0000000000a7'$$,
       '{1,0,0,1,0,0,0,0,0,0,0,0,0,0}'),
   (5, 'messages: Casey''s squad message, stand-down lifted', $$select 1 from public.messages where id = '00000000-0000-0000-0000-0000000000c1'$$,
-      '{1,0,0,1,1,1,1,1,1,1,1,0,0,0}'),
+      '{0,0,0,1,1,1,1,1,1,1,1,0,0,0}'),
   (5, 'message_recipients: receipts of Casey''s squad message, stand-down lifted', $$select 1 from public.message_recipients where message_id = '00000000-0000-0000-0000-0000000000c1' and profile_id <> auth.uid()$$,
-      '{8,0,0,8,0,0,0,0,0,0,0,0,0,0}'),
+      '{0,0,0,8,0,0,0,0,0,0,0,0,0,0}'),
   (5, 'my_sent_messages: stand-down lifted', $$select 1 from public.my_sent_messages()$$,
       '{1,0,0,1,0,0,0,0,0,0,0,0,0,0}'),
   -- When Olly's check lapses he no longer reads the register he took.
@@ -496,7 +498,8 @@ insert into writes values
   ('safeguarding_settings', $$true$$, 'policy_version', 'rls');
 -- A copy of one existing row of each, with a fresh id where it has one (the
 -- settings tables have a single row keyed by true). Generated columns, such
--- as message_recipients.unread, are left for the database to fill in.
+-- as message_recipients.unread and concerns.ref_no, are left for the database
+-- to fill in.
 create temp table write_rows as
 select w.*, j.r, format('insert into public.%I (%s) select %s from jsonb_populate_record(null::public.%I, %L::jsonb)', w.t, c.cols, c.cols, w.t,
      case when jsonb_typeof(j.r -> 'id') = 'string' then j.r || jsonb_build_object('id', gen_random_uuid()) else j.r end) as ins
@@ -506,7 +509,7 @@ from writes w,
     select string_agg(quote_ident(a.attname), ', ' order by a.attnum) as cols
     from pg_attribute a
     where a.attrelid = ('public.' || quote_ident(w.t))::regclass
-      and a.attnum > 0 and not a.attisdropped and a.attgenerated = ''
+      and a.attnum > 0 and not a.attisdropped and a.attgenerated = '' and a.attidentity <> 'a'
   ) c;
 grant select on write_rows to authenticated;
 select pg_temp.ok(t || ': has a row to write', r is not null, true) from write_rows order by t;

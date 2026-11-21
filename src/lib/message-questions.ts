@@ -1,8 +1,9 @@
 /**
  * Questions on messages: one question with 2 to 4 answers the sender sets.
  * Members tap one answer, once; a parent or guardian can answer for their
- * child under 18. Names are seen only by whoever sent it, the squad or
- * team's coaches and managers, and admins. The database
+ * child under 18. Names are seen only by whoever sent it and the squad or
+ * team's coaches and managers (admins too until 20261121100000, which
+ * stopped admins reading messages they didn't send). The database
  * (20261120300000_message_questions.sql) applies every rule again.
  */
 
@@ -74,7 +75,7 @@ export type MessageQuestion = {
   children: ChildAnswer[];
   /** Counts per answer, to whoever sees names, and to everyone when shared. */
   totals: number[] | null;
-  /** Names, only to whoever sent it, its coaches and managers, and admins. */
+  /** Names, only to whoever sent it and its coaches and managers. */
   answers: QuestionAnswer[] | null;
   not_answered: string[] | null;
 };

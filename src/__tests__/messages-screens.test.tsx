@@ -3,8 +3,10 @@
  * each kind of member once they're open.
  *
  * Coaches, managers, captains, the committee and admins send messages
- * (`useCanSendMessages`); read receipts are for the sender and admins only
- * (section 11 of the user guide, and `message_receipts` in the database).
+ * (`useCanSendMessages`); read receipts are for the sender only (section 11
+ * of the user guide, and `message_receipts` in the database). Admins don't
+ * read other people's messages (21 November 2026). Members archive their own
+ * copy; nothing is deleted.
  * Messages are one way: nobody, and above all no one under 18, gets a reply
  * box or a way to message someone back (AGENTS.md, "No social media features
  * for children"). Every message offers a way to report it.
@@ -172,7 +174,9 @@ describe('the messages list', () => {
   it('says what an empty inbox is for', async () => {
     await openList('athlete', []);
     expect(
-      screen.getByText('No messages yet. Messages from your coaches, managers, captains and the club will show here.'),
+      screen.getByText(
+        'No messages in your inbox. Messages from your coaches, managers, captains and the club will show here, and ones you archive are in Archived.',
+      ),
     ).toBeTruthy();
   });
 });
@@ -199,9 +203,10 @@ describe('one message', () => {
     noTextBoxes();
   });
 
-  it('shows an admin the read receipts of a message they didn’t send', async () => {
-    await openMessage('admin', MESSAGE);
-    expect(screen.getByText('Read by 1 of 2')).toBeTruthy();
+  it('never asks for receipts for an admin who didn’t send it', async () => {
+    await openMessage('admin', MESSAGE, [{ read_at: null, for_children: null, for_child_names: null }]);
+    expect(screen.queryByText(/^Read by/)).toBeNull();
+    expect(rpcNames()).not.toContain('message_receipts');
   });
 
   it.each<[string, Who]>([
@@ -432,11 +437,14 @@ const READ_ROW = (id: string, body: string) =>
 describe('read controls in the inbox', () => {
   const ALL_WHO_GET_MESSAGES: [string, Who][] = [...SENDERS, ...NOT_SENDERS.filter(([l]) => l !== 'guest')];
 
-  it.each(ALL_WHO_GET_MESSAGES)('gives a %s Hide read and Mark all read', async (_l, who) => {
+  it.each(ALL_WHO_GET_MESSAGES)('gives a %s Inbox, Archived and Mark all read', async (_l, who) => {
     await openList(who, [inboxRow(), READ_ROW('msg-3', 'Old news')]);
-    expect(screen.getByText('Hide read')).toBeTruthy();
+    expect(screen.getByText('Inbox')).toBeTruthy();
+    expect(screen.getByText('Archived')).toBeTruthy();
     expect(screen.getByText('Mark all read')).toBeTruthy();
     expect(screen.getByText('1 unread')).toBeTruthy();
+    expect(screen.getByText('Swipe a message to the left to archive it.')).toBeTruthy();
+    expect(screen.queryByText('Hide read')).toBeNull();
   });
 
   it('follows the member’s own unread mark over the first read time', async () => {
@@ -481,35 +489,147 @@ describe('read controls in the inbox', () => {
     expect(screen.getByText('All read')).toBeTruthy();
   });
 
-  it('Hide read shows only unread messages, and turns off again', async () => {
-    await openList('athlete', [inboxRow(), READ_ROW('msg-3', 'Old news')]);
-    expect(screen.getByText('Old news')).toBeTruthy();
-    await fireEvent.press(screen.getByText('Hide read'));
-    expect(screen.queryByText('Old news')).toBeNull();
-    expect(screen.getByText('Training moves to 6pm on Thursday')).toBeTruthy();
-    await fireEvent.press(screen.getByText('Hide read'));
-    expect(screen.getByText('Old news')).toBeTruthy();
-  });
-
-  it('says how to see the rest when Hide read leaves nothing', async () => {
-    await openList('athlete', [READ_ROW('msg-3', 'Old news')]);
-    await fireEvent.press(screen.getByText('Hide read'));
-    expect(screen.queryByText('Old news')).toBeNull();
-    expect(screen.getByText('No unread messages. Turn off Hide read to see the rest.')).toBeTruthy();
-  });
-
   it('shows no controls in an empty inbox', async () => {
     await openList('athlete', []);
-    expect(screen.queryByText('Hide read')).toBeNull();
     expect(screen.queryByText('Mark all read')).toBeNull();
+    expect(screen.queryByText('Swipe a message to the left to archive it.')).toBeNull();
   });
 
   it('keeps the read controls off the Sent list', async () => {
     await openList('coach');
     await fireEvent.press(screen.getByText('Sent'));
     await settle();
-    expect(screen.queryByText('Hide read')).toBeNull();
     expect(screen.queryByText('Mark all read')).toBeNull();
+    expect(screen.queryByText('Swipe a message to the left to archive it.')).toBeNull();
+  });
+});
+
+// ---------------------------------------------------------------------------
+// Archive. Swiping left (or the card's Archive action, for screen readers)
+// moves the member's own copy to Archived; nothing is deleted and nobody
+// else's copy changes. Sent messages can't be archived.
+
+const ARCHIVED_ROW = (id: string, body: string) =>
+  inboxRow({
+    read_at: null,
+    unread: false,
+    archived_at: '2026-10-18T09:00:00Z',
+    message: { ...MESSAGE, id, body },
+  });
+
+/** Runs a card's screen-reader action, such as "Archive". */
+async function cardAction(text: string, action: string) {
+  let node = screen.getByText(text);
+  while (node && !node.props.accessibilityActions) node = node.parent as typeof node;
+  await fireEvent(node, 'accessibilityAction', { nativeEvent: { actionName: action } });
+  await settle();
+}
+
+describe('archiving messages', () => {
+  it('keeps archived copies out of the inbox and shows them under Archived', async () => {
+    await openList('athlete', [inboxRow(), ARCHIVED_ROW('msg-5', 'Kit order closed')]);
+    expect(screen.getByText('Training moves to 6pm on Thursday')).toBeTruthy();
+    expect(screen.queryByText('Kit order closed')).toBeNull();
+    await fireEvent.press(screen.getByText('Archived'));
+    await settle();
+    expect(screen.getByText('Kit order closed')).toBeTruthy();
+    expect(screen.queryByText('Training moves to 6pm on Thursday')).toBeNull();
+    expect(screen.getByText('Swipe left to move a message back to your inbox.')).toBeTruthy();
+  });
+
+  it('archives a message from its card, and asks the database to move only this copy', async () => {
+    await openList(morePersonas.under18Athlete, [inboxRow(), READ_ROW('msg-3', 'Old news')]);
+    await cardAction('Training moves to 6pm on Thursday', 'Archive');
+    expect((supabase.rpc as jest.Mock).mock.calls).toContainEqual(['archive_message', { p_message_id: 'msg-1' }]);
+    expect(screen.queryByText('Training moves to 6pm on Thursday')).toBeNull();
+    expect(screen.getByText('Moved to Archived')).toBeTruthy();
+    expect(screen.getByText('All read')).toBeTruthy();
+    // Archiving never records the message as opened.
+    expect(rpcNames()).not.toContain('mark_message_read');
+    // There is no delete.
+    expect(rpcNames().some((n) => /delete/.test(n))).toBe(false);
+    await fireEvent.press(screen.getByText('Archived'));
+    await settle();
+    expect(screen.getByText('Training moves to 6pm on Thursday')).toBeTruthy();
+  });
+
+  it('Undo puts it straight back', async () => {
+    await openList('athlete', [inboxRow()]);
+    await cardAction('Training moves to 6pm on Thursday', 'Archive');
+    await fireEvent.press(screen.getByText('Undo'));
+    await settle();
+    expect((supabase.rpc as jest.Mock).mock.calls).toContainEqual([
+      'move_message_to_inbox',
+      { p_message_id: 'msg-1' },
+    ]);
+    expect(screen.getByText('Training moves to 6pm on Thursday')).toBeTruthy();
+    expect(screen.queryByText('Moved to Archived')).toBeNull();
+  });
+
+  it('moves an archived message back to the inbox', async () => {
+    await openList('guardian', [ARCHIVED_ROW('msg-5', 'Kit order closed')]);
+    await fireEvent.press(screen.getByText('Archived'));
+    await settle();
+    await cardAction('Kit order closed', 'Move to inbox');
+    expect((supabase.rpc as jest.Mock).mock.calls).toContainEqual([
+      'move_message_to_inbox',
+      { p_message_id: 'msg-5' },
+    ]);
+    expect(screen.getByText('Nothing archived. Swipe a message to the left in your inbox to archive it.')).toBeTruthy();
+    await fireEvent.press(screen.getByText('Inbox'));
+    await settle();
+    expect(screen.getByText('Kit order closed')).toBeTruthy();
+  });
+
+  it('offers no archive on Sent', async () => {
+    await openList('coach');
+    await fireEvent.press(screen.getByText('Sent'));
+    await settle();
+    expect(screen.getByText('Bring a water bottle')).toBeTruthy();
+    let node = screen.getByText('Bring a water bottle');
+    while (node.parent && !node.props.accessibilityActions) node = node.parent as typeof node;
+    expect(node.props.accessibilityActions ?? []).toEqual([]);
+  });
+});
+
+describe('archive on an open message', () => {
+  it('archives the member’s copy after the open is recorded, then goes back', async () => {
+    const back = jest.spyOn(router, 'back').mockImplementation(() => {});
+    const canGoBack = jest.spyOn(router, 'canGoBack').mockReturnValue(true);
+    try {
+      await openMessage('athlete', MESSAGE, [{ read_at: null, for_children: null, for_child_names: null }]);
+      await fireEvent.press(screen.getByText('Archive'));
+      await settle();
+      const calls = (supabase.rpc as jest.Mock).mock.calls as [string, unknown][];
+      const read = calls.findIndex(([n]) => n === 'mark_message_read');
+      const archived = calls.findIndex(([n]) => n === 'archive_message');
+      expect(read).toBeGreaterThanOrEqual(0);
+      expect(archived).toBeGreaterThan(read);
+      expect(calls[archived]).toEqual(['archive_message', { p_message_id: 'msg-1' }]);
+      expect(back).toHaveBeenCalled();
+    } finally {
+      back.mockRestore();
+      canGoBack.mockRestore();
+    }
+  });
+
+  it('offers Move to inbox on an archived message', async () => {
+    await openMessage('athlete', MESSAGE, [
+      { read_at: null, archived_at: '2026-10-18T09:00:00Z', for_children: null, for_child_names: null },
+    ]);
+    expect(screen.queryByText('Archive')).toBeNull();
+    await fireEvent.press(screen.getByText('Move to inbox'));
+    await settle();
+    expect((supabase.rpc as jest.Mock).mock.calls).toContainEqual([
+      'move_message_to_inbox',
+      { p_message_id: 'msg-1' },
+    ]);
+  });
+
+  it('offers nothing to archive to the sender, who has no copy', async () => {
+    await openMessage('coach', MESSAGE);
+    expect(screen.queryByText('Archive')).toBeNull();
+    expect(screen.queryByText('Move to inbox')).toBeNull();
   });
 });
 

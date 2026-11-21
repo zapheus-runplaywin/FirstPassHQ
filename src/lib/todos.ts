@@ -99,6 +99,7 @@ export function buildTodos({
   ownCheck = null,
   wwccSubmission = null,
   newConcerns = 0,
+  messageAccess = null,
   wellbeingFlagAlerts = 0,
   loadPatternAlerts = 0,
   loadFlags = 0,
@@ -151,6 +152,12 @@ export function buildTodos({
   wwccSubmission?: MyWwccSubmission | null;
   /** Concerns nobody has acted on yet, for the people who handle them. */
   newConcerns?: number;
+  /**
+   * Message access requests waiting for the member's answer, the member's own
+   * approved access still open, and (for admins) whether the club has only one
+   * admin, who couldn't answer a request about themselves.
+   */
+  messageAccess?: { to_decide: number; open_access: number; only_one_admin: boolean } | null;
   /** Athletes flagged on 3 or more days in the last 7, for the Child Safety Officer. */
   wellbeingFlagAlerts?: number;
   /** Children whose training load shows a pattern, for the Child Safety Officer. */
@@ -185,6 +192,36 @@ export function buildTodos({
       detail: 'Refer child abuse and serious crimes to Police straight away',
       href: '/concerns',
       alert: URGENT,
+    });
+  }
+
+  // A safeguarding officer is waiting to look into a concern.
+  if (messageAccess && messageAccess.to_decide > 0) {
+    const n = messageAccess.to_decide;
+    todos.push({
+      key: 'message-access-decide',
+      title: `Answer ${n} ${n === 1 ? 'request' : 'requests'} to read messages`,
+      detail: 'From the Child Safety Officer or Complaints Manager, for a concern',
+      href: '/concerns/message-access',
+      alert: { level: 'red', label: 'Waiting' },
+    });
+  }
+  if (messageAccess && messageAccess.open_access > 0) {
+    todos.push({
+      key: 'message-access-open',
+      title: 'Read the messages you were approved to read',
+      detail: 'Your access lasts 24 hours from approval',
+      href: '/concerns/message-access',
+      alert: { level: 'amber', label: 'Within 24 hours' },
+    });
+  }
+  if (messageAccess?.only_one_admin) {
+    todos.push({
+      key: 'second-admin',
+      title: 'Add a second admin',
+      detail: 'So a request or concern about you has someone else to answer it',
+      href: '/admin',
+      alert: { level: 'amber', label: 'Needs checking' },
     });
   }
 

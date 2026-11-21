@@ -17,12 +17,13 @@ import type { InboxMessage, Message, MessageReceipt } from '@/lib/types';
 
 export default function MessageScreen() {
   const { id } = useLocalSearchParams<{ id: string }>();
-  const { session, isAdmin } = useAuth();
+  const { session } = useAuth();
   const [message, setMessage] = useState<Message | null | undefined>(undefined);
   const [receipts, setReceipts] = useState<MessageReceipt[] | null>(null);
   const [copy, setCopy] = useState<Omit<InboxMessage, 'message'> | null>(null);
   const [refreshing, setRefreshing] = useState(false);
   const [markingUnread, setMarkingUnread] = useState(false);
+  const [moving, setMoving] = useState(false);
   // The "opened" mark, so "Mark as unread" can't land before it.
   const markedRead = useRef<PromiseLike<unknown>>(Promise.resolve());
 
@@ -42,11 +43,12 @@ export default function MessageScreen() {
     if (!loaded) return;
     // Opening a message marks it read. Does nothing for its sender.
     markedRead.current = supabase.rpc('mark_message_read', { p_message_id: id }).then(() => {});
-    if (loaded.sender_id === session?.user.id || isAdmin) {
+    // Read receipts are for the sender only.
+    if (loaded.sender_id === session?.user.id) {
       const { data: rows } = await supabase.rpc('message_receipts', { p_message_id: id });
       setReceipts((rows as MessageReceipt[] | null) ?? []);
     }
-  }, [id, session, isAdmin]);
+  }, [id, session]);
 
   useFocusEffect(
     useCallback(() => {
@@ -61,6 +63,20 @@ export default function MessageScreen() {
     await markedRead.current;
     await supabase.rpc('mark_message_unread', { p_message_id: id });
     setMarkingUnread(false);
+    if (router.canGoBack()) router.back();
+    else router.replace('/messages');
+  }
+
+  // Archives the member's own copy, or moves it back to the inbox. Nothing is
+  // deleted, and nobody else's copy changes.
+  async function toggleArchived() {
+    if (!copy) return;
+    setMoving(true);
+    await markedRead.current;
+    await supabase.rpc(copy.archived_at ? 'move_message_to_inbox' : 'archive_message', {
+      p_message_id: id,
+    });
+    setMoving(false);
     if (router.canGoBack()) router.back();
     else router.replace('/messages');
   }
@@ -109,7 +125,15 @@ export default function MessageScreen() {
       {message.answer_options ? <MessageQuestionCard messageId={message.id} /> : null}
 
       {copy ? (
-        <Button title="Mark as unread" variant="secondary" busy={markingUnread} onPress={markUnread} />
+        <View style={styles.buttons}>
+          <Button
+            title={copy.archived_at ? 'Move to inbox' : 'Archive'}
+            variant="secondary"
+            busy={moving}
+            onPress={toggleArchived}
+          />
+          <Button title="Mark as unread" variant="secondary" busy={markingUnread} onPress={markUnread} />
+        </View>
       ) : null}
 
       {receipts ? <Receipts receipts={receipts} /> : null}
@@ -153,6 +177,9 @@ function Receipts({ receipts }: { receipts: MessageReceipt[] }) {
 const styles = StyleSheet.create({
   header: {
     gap: Spacing.one,
+  },
+  buttons: {
+    gap: Spacing.two,
   },
   receipts: {
     gap: Spacing.two,

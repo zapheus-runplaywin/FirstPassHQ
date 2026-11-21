@@ -318,6 +318,47 @@ describe('buildTodos', () => {
     expect(sorted.slice(1).map((t) => t.alert?.level)).toEqual(['red', 'red']);
   });
 
+  describe('message access requests', () => {
+    const access = (extra: Partial<{ to_decide: number; open_access: number; only_one_admin: boolean }>) => ({
+      to_decide: 0,
+      open_access: 0,
+      only_one_admin: false,
+      ...extra,
+    });
+
+    it('asks whoever can answer to answer, in red, after new concerns', () => {
+      const list = todos({ newConcerns: 1, messageAccess: access({ to_decide: 2 }) });
+      expect(keys(list)).toEqual(['concerns', 'message-access-decide']);
+      expect(list[1]).toMatchObject({
+        title: 'Answer 2 requests to read messages',
+        href: '/concerns/message-access',
+        alert: { level: 'red', label: 'Waiting' },
+      });
+      expect(todos({ messageAccess: access({ to_decide: 1 }) })[0].title).toBe('Answer 1 request to read messages');
+    });
+
+    it('reminds the requester their 24 hours are running', () => {
+      expect(todos({ messageAccess: access({ open_access: 1 }) })[0]).toMatchObject({
+        key: 'message-access-open',
+        detail: 'Your access lasts 24 hours from approval',
+        alert: { level: 'amber' },
+      });
+    });
+
+    it('tells a lone admin to add a second admin', () => {
+      expect(todos({ messageAccess: access({ only_one_admin: true }) })[0]).toMatchObject({
+        key: 'second-admin',
+        title: 'Add a second admin',
+        alert: { level: 'amber' },
+      });
+    });
+
+    it('adds nothing when there is nothing to do, or nothing was loaded', () => {
+      expect(todos({ messageAccess: access({}) })).toEqual([]);
+      expect(todos({ messageAccess: null })).toEqual([]);
+    });
+  });
+
   it('has no urgent warning without new concerns', () => {
     expect(todos({ newConcerns: 0 }).some((t) => t.alert?.urgent)).toBe(false);
   });

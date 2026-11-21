@@ -10,6 +10,7 @@ import { useAuth } from '@/lib/auth';
 import { useClub } from '@/lib/club';
 import { concernStatusLabels } from '@/lib/concerns';
 import { useLoadPatternAlerts } from '@/lib/load-monitoring';
+import { useMessageAccessTodo } from '@/lib/message-access';
 import { localDay } from '@/lib/reports';
 import { supabase } from '@/lib/supabase';
 import type { Concern } from '@/lib/types';
@@ -24,6 +25,7 @@ export default function ConcernsScreen() {
   // The route guard lets only these in; this keeps the register's controls
   // to them even so. The database returns no concerns to anyone else.
   const handles = isAdmin || isSafeguardingOfficer;
+  const accessTodo = useMessageAccessTodo(handles);
   // Only the Child Safety Officer sees athletes' check-in flags.
   const { features } = useClub();
   const wellbeing = useWellbeingFlagAlerts(handles && features.checkIns);
@@ -61,6 +63,15 @@ export default function ConcernsScreen() {
             Manager and admins see them, and nobody sees one about themselves. Child abuse and serious
             crimes go to Police and the governing body straight away.
           </ThemedText>
+          <Button
+            title={
+              accessTodo.to_decide > 0
+                ? `Message access (${accessTodo.to_decide} to answer)`
+                : 'Message access'
+            }
+            variant="secondary"
+            onPress={() => router.push('/concerns/message-access')}
+          />
           <Button
             title="Export the register as a PDF"
             variant="secondary"
@@ -110,6 +121,7 @@ function Section({ title, concerns, empty }: { title: string; concerns: Concern[
             key={c.id}
             onPress={() => router.push({ pathname: '/concerns/[id]', params: { id: c.id } })}>
             <ThemedText type="smallBold">
+              {c.reference ? `${c.reference} · ` : ''}
               {localDay(c.created_at)}
               {c.about_member_name || c.about_text
                 ? ` · about ${c.about_member_name ?? c.about_text}`

@@ -272,6 +272,18 @@ function RootStack() {
             <Stack.Screen name="concerns/report" options={{ title: 'Concerns register' }} />
             <Stack.Screen name="concerns/wellbeing" options={{ title: 'Wellbeing flags' }} />
             <Stack.Screen name="concerns/load" options={{ title: 'Training load patterns' }} />
+            <Stack.Screen
+              name="concerns/message-access/index"
+              options={{ title: 'Message access' }}
+            />
+            <Stack.Screen
+              name="concerns/message-access/new"
+              options={{ title: 'Ask to read messages' }}
+            />
+            <Stack.Screen
+              name="concerns/message-access/[id]"
+              options={{ title: 'Message access request' }}
+            />
           </Stack.Protected>
           <Stack.Protected guard={can.open}>
             <Stack.Screen name="tasks/index" options={{ title: 'Your tasks' }} />

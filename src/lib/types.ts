@@ -358,6 +358,8 @@ export type InboxMessage = {
   unread?: boolean;
   /** The member's own answer to its question, if it asks one. */
   answer?: number | null;
+  /** When the member archived their copy. Null while it's in their inbox. */
+  archived_at?: string | null;
   /** For a guardian's copy: the children it was sent for. Null when it's the member's own. */
   for_children: string[] | null;
   for_child_names: string[] | null;
@@ -843,6 +845,8 @@ export type Concern = {
   reported_message_sender_name?: string | null;
   reported_message_sent_at?: string | null;
   reported_message_body?: string | null;
+  /** A short reference such as C-0007, to name it without its details. */
+  reference?: string;
 };
 
 /** Something done about a concern, from `concern_history`. */
@@ -862,6 +866,8 @@ export type MyConcern = {
   status: ConcernStatus;
   about_text: string | null;
   anonymous: boolean;
+  /** A short reference such as C-0007, to quote to the club. */
+  reference?: string;
 };
 
 /** A session an athlete logged beside their check-ins (customer review R10). */

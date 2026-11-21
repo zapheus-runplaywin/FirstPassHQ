@@ -228,6 +228,7 @@ export default function RaiseConcernScreen() {
           {mine.map((c) => (
             <Card key={c.id}>
               <ThemedText type="small">
+                {c.reference ? `${c.reference} · ` : ''}
                 {localDay(c.created_at)}
                 {c.about_text ? ` · ${c.about_text}` : ''}
               </ThemedText>
