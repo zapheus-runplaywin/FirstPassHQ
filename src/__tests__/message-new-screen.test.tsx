@@ -223,7 +223,11 @@ describe('coaches, managers and captains', () => {
 
   it('an adult captain isn’t', async () => {
     await open('captain');
-    expect(screen.getByText('You’ll see who has read it. Club admins can read every message.')).toBeTruthy();
+    expect(
+      screen.getByText(
+        'You’ll see who has read it. Nobody else can read it unless an admin lets the Child Safety Officer or Complaints Manager look into a concern.',
+      ),
+    ).toBeTruthy();
   });
 });
 

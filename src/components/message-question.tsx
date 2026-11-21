@@ -14,7 +14,7 @@ import { supabase } from '@/lib/supabase';
 /**
  * A message's question: answer buttons for the member (and for each of their
  * children under 18), their answer once given, the totals when they may see
- * them, and names for whoever sent it, its coaches and managers, and admins.
+ * them, and names for whoever sent it and its coaches and managers.
  */
 export function MessageQuestionCard({ messageId }: { messageId: string }) {
   const theme = useTheme();
@@ -137,7 +137,7 @@ export function MessageQuestionCard({ messageId }: { messageId: string }) {
 
       <ThemedText type="small" themeColor="textSecondary">
         One answer each, which can’t be changed. Parents and guardians can answer for their child.
-        Only whoever sent it, the squad or team’s coaches and managers, and admins see names.
+        Only whoever sent it and the squad or team’s coaches and managers see names.
       </ThemedText>
 
       <ErrorText>{error}</ErrorText>

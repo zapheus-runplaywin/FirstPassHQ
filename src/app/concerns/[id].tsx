@@ -1,4 +1,4 @@
-import { useFocusEffect, useLocalSearchParams } from 'expo-router';
+import { router, useFocusEffect, useLocalSearchParams } from 'expo-router';
 import { useCallback, useState } from 'react';
 import { StyleSheet, View } from 'react-native';
 
@@ -19,6 +19,7 @@ import {
   matchPeople,
   useSafeguardingContacts,
 } from '@/lib/concerns';
+import { useAuth } from '@/lib/auth';
 import { localDay } from '@/lib/reports';
 import { supabase } from '@/lib/supabase';
 import type { Concern, ConcernEvent, ConcernEventKind, ConcernStatus } from '@/lib/types';
@@ -33,6 +34,7 @@ const PERSON_MATCHES = 5;
 export default function ConcernScreen() {
   const { id } = useLocalSearchParams<{ id: string }>();
   const contacts = useSafeguardingContacts();
+  const { isSafeguardingOfficer } = useAuth();
   const [concern, setConcern] = useState<Concern | null | undefined>(undefined);
   const [history, setHistory] = useState<ConcernEvent[]>([]);
   const [people, setPeople] = useState<ConcernPerson[]>([]);
@@ -144,6 +146,7 @@ export default function ConcernScreen() {
 
       <Card>
         <ThemedText type="smallBold">
+          {concern.reference ? `${concern.reference} · ` : ''}
           {concernStatusLabels[concern.status]} · raised {localDay(concern.created_at)}
         </ThemedText>
         <ThemedText type="small">{concern.body}</ThemedText>
@@ -271,6 +274,29 @@ export default function ConcernScreen() {
         ) : null}
         <ErrorText>{error}</ErrorText>
       </View>
+
+      {isSafeguardingOfficer && concern.status !== 'closed' ? (
+        <View style={styles.group}>
+          <ThemedText type="smallBold">Messages</ThemedText>
+          <ThemedText type="small" themeColor="textSecondary">
+            Ask an admin to let you read one person’s messages for this concern, for up to 90 days
+            at a time. Nobody else is told.
+          </ThemedText>
+          <Button
+            title="Ask to read messages"
+            variant="secondary"
+            onPress={() =>
+              router.push({
+                pathname: '/concerns/message-access/new',
+                params: {
+                  concern: concern.id,
+                  reference: concern.reference ?? '',
+                },
+              })
+            }
+          />
+        </View>
+      ) : null}
 
       <View style={styles.group}>
         <ThemedText type="smallBold">Who it’s about</ThemedText>

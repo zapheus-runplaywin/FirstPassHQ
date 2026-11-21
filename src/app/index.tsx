@@ -63,6 +63,7 @@ import {
   staffTitle,
   teamPositionLabel,
 } from '@/lib/labels';
+import { useMessageAccessTodo } from '@/lib/message-access';
 import { supabase } from '@/lib/supabase';
 import { useConcernCounts, useNewConcerns } from '@/lib/concerns';
 import { useCanReadReports } from '@/lib/report-access';
@@ -122,6 +123,7 @@ export default function HomeScreen() {
   const handlesConcerns = isAdmin || isSafeguardingOfficer;
   const newConcerns = useNewConcerns(handlesConcerns);
   const concernCounts = useConcernCounts(handlesConcerns);
+  const messageAccess = useMessageAccessTodo(handlesConcerns);
   const { switchClub } = useClubChoice();
   const club = useClub();
   const { features } = club;
@@ -213,6 +215,7 @@ export default function HomeScreen() {
     ownCheck: ownCheckReason(profile, paused, exemption, wwccApplication),
     wwccSubmission,
     newConcerns,
+    messageAccess,
     wellbeingFlagAlerts: wellbeingFlags.repeated,
     loadPatternAlerts: loadPatterns,
     loadFlags,

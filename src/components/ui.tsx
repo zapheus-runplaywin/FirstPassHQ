@@ -25,11 +25,30 @@ export function Card({ style, ...rest }: ViewProps) {
   );
 }
 
-export function PressableCard({ onPress, children }: { onPress: () => void; children: ReactNode }) {
+/**
+ * A tappable card. `actions` are extra things a screen reader offers from the
+ * card's actions menu, such as "Archive" on a message that can be swiped.
+ */
+export function PressableCard({
+  onPress,
+  children,
+  actions,
+}: {
+  onPress: () => void;
+  children: ReactNode;
+  actions?: { label: string; onPress: () => void }[];
+}) {
   const theme = useTheme();
   return (
     <Pressable
       accessibilityRole="button"
+      accessibilityActions={actions?.map((a) => ({
+        name: a.label,
+        label: a.label,
+      }))}
+      onAccessibilityAction={(e) =>
+        actions?.find((a) => a.label === e.nativeEvent.actionName)?.onPress()
+      }
       onPress={onPress}
       style={({ pressed }) => [
         styles.card,

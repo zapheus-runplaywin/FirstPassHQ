@@ -3,6 +3,7 @@ import { useCallback, useState } from 'react';
 import { Pressable, StyleSheet, View } from 'react-native';
 
 import { Screen } from '@/components/screen';
+import { SwipeRow } from '@/components/swipe-row';
 import { ThemedText } from '@/components/themed-text';
 import { Button, ChipGroup, PressableCard } from '@/components/ui';
 import { Spacing } from '@/constants/theme';
@@ -17,36 +18,50 @@ import {
   RECIPIENT_COLUMNS,
   useCanSendMessages,
 } from '@/lib/messages';
-import { isUnread, markedAllRead, shownInbox } from '@/lib/inbox';
+import {
+  archivedCopy,
+  isArchived,
+  isUnread,
+  markedAllRead,
+  type MessageBox,
+  messageBoxes,
+  moveBetween,
+  movedToInbox,
+} from '@/lib/inbox';
 import { supabase } from '@/lib/supabase';
 import type { InboxMessage, SentMessage } from '@/lib/types';
-
-type Box = 'inbox' | 'sent';
 
 export default function MessagesScreen() {
   const { session } = useAuth();
   const canSend = useCanSendMessages();
-  const [box, setBox] = useState<Box>('inbox');
+  const theme = useTheme();
+  const [box, setBox] = useState<MessageBox>('inbox');
   const [inbox, setInbox] = useState<InboxMessage[] | null>(null);
+  const [archived, setArchived] = useState<InboxMessage[] | null>(null);
   const [sent, setSent] = useState<SentMessage[] | null>(null);
   const [refreshing, setRefreshing] = useState(false);
-  const [hideRead, setHideRead] = useState(false);
+  // The message just archived, so it can be put back straight away.
+  const [justArchived, setJustArchived] = useState<string | null>(null);
   const userId = session?.user.id;
 
   const load = useCallback(async () => {
     if (!userId) return;
-    const [inboxResult, sentResult] = await Promise.all([
+    const copies = () =>
       supabase
         .from('message_recipients')
         .select(`${RECIPIENT_COLUMNS}, message:messages (${MESSAGE_COLUMNS})`)
-        .eq('profile_id', userId)
-        .order('created_at', { ascending: false })
-        .limit(100),
+        .eq('profile_id', userId);
+    const [inboxResult, archivedResult, sentResult] = await Promise.all([
+      copies().is('archived_at', null).order('created_at', { ascending: false }).limit(100),
+      copies().not('archived_at', 'is', null).order('created_at', { ascending: false }).limit(100),
       canSend ? supabase.rpc('my_sent_messages') : Promise.resolve({ data: [] }),
     ]);
     // A message the member can no longer read (for example a club message to a
     // physio after the club setting was turned off) comes back without its body.
-    setInbox(((inboxResult.data as unknown as InboxMessage[] | null) ?? []).filter((r) => r.message));
+    const readable = (data: unknown) =>
+      ((data as InboxMessage[] | null) ?? []).filter((r) => r.message);
+    setInbox(readable(inboxResult.data).filter((r) => !isArchived(r)));
+    setArchived(readable(archivedResult.data).filter(isArchived));
     setSent((sentResult.data as SentMessage[] | null) ?? []);
   }, [userId, canSend]);
 
@@ -64,6 +79,26 @@ export default function MessagesScreen() {
     await load();
   }
 
+  // Moves the member's own copy to Archived. Nothing is deleted, and nobody
+  // else's copy changes.
+  async function archive(messageId: string) {
+    if (!inbox || !archived) return;
+    const moved = moveBetween(inbox, archived, messageId, (c) => archivedCopy(c));
+    setInbox(moved.from);
+    setArchived(moved.to);
+    setJustArchived(messageId);
+    await supabase.rpc('archive_message', { p_message_id: messageId });
+  }
+
+  async function moveToInbox(messageId: string) {
+    if (!inbox || !archived) return;
+    const moved = moveBetween(archived, inbox, messageId, movedToInbox);
+    setArchived(moved.from);
+    setInbox(moved.to);
+    setJustArchived(null);
+    await supabase.rpc('move_message_to_inbox', { p_message_id: messageId });
+  }
+
   async function onRefresh() {
     setRefreshing(true);
     await load();
@@ -72,27 +107,40 @@ export default function MessagesScreen() {
 
   return (
     <Screen refreshing={refreshing} onRefresh={onRefresh}>
-      {canSend ? (
-        <View style={styles.actions}>
+      <View style={styles.actions}>
+        {canSend ? (
           <Button title="New message" onPress={() => router.push('/messages/new')} />
-          <ChipGroup
-            options={[
-              { value: 'inbox', label: 'Inbox' },
-              { value: 'sent', label: 'Sent' },
-            ]}
-            selected={[box]}
-            onToggle={setBox}
-          />
+        ) : null}
+        <ChipGroup
+          options={messageBoxes(canSend)}
+          selected={[box]}
+          onToggle={(next) => {
+            setBox(next);
+            setJustArchived(null);
+          }}
+        />
+      </View>
+
+      {justArchived && box === 'inbox' ? (
+        <View style={[styles.undo, { backgroundColor: theme.backgroundElement }]}>
+          <ThemedText type="small" style={styles.grow}>
+            Moved to Archived
+          </ThemedText>
+          <Pressable
+            accessibilityRole="button"
+            onPress={() => moveToInbox(justArchived)}
+            hitSlop={8}>
+            <ThemedText type="smallBold" style={{ color: theme.tint }}>
+              Undo
+            </ThemedText>
+          </Pressable>
         </View>
       ) : null}
 
       {box === 'inbox' ? (
-        <Inbox
-          messages={inbox}
-          hideRead={hideRead}
-          onToggleHideRead={() => setHideRead((on) => !on)}
-          onMarkAllRead={markAllRead}
-        />
+        <Inbox messages={inbox} onMarkAllRead={markAllRead} onArchive={archive} />
+      ) : box === 'archived' ? (
+        <Archived messages={archived} onMoveToInbox={moveToInbox} />
       ) : (
         <Sent messages={sent} />
       )}
@@ -102,36 +150,30 @@ export default function MessagesScreen() {
 
 function Inbox({
   messages,
-  hideRead,
-  onToggleHideRead,
   onMarkAllRead,
+  onArchive,
 }: {
   messages: InboxMessage[] | null;
-  hideRead: boolean;
-  onToggleHideRead: () => void;
   onMarkAllRead: () => void;
+  onArchive: (messageId: string) => void;
 }) {
   const theme = useTheme();
   if (messages === null) return null;
   if (messages.length === 0) {
     return (
       <ThemedText type="small" themeColor="textSecondary">
-        No messages yet. Messages from your coaches, managers, captains and the club will show here.
+        No messages in your inbox. Messages from your coaches, managers, captains and the club will
+        show here, and ones you archive are in Archived.
       </ThemedText>
     );
   }
   const unreadCount = messages.filter(isUnread).length;
-  const shown = shownInbox(messages, hideRead);
   return (
     <View style={styles.list}>
       <View style={styles.row}>
-        <View style={styles.grow}>
-          <ChipGroup
-            options={[{ value: 'hide', label: 'Hide read' }]}
-            selected={hideRead ? ['hide'] : []}
-            onToggle={onToggleHideRead}
-          />
-        </View>
+        <ThemedText type="small" themeColor="textSecondary" style={styles.grow}>
+          {unreadCount === 0 ? 'All read' : `${unreadCount} unread`}
+        </ThemedText>
         {unreadCount > 0 ? (
           <Pressable accessibilityRole="button" onPress={onMarkAllRead} hitSlop={8}>
             <ThemedText type="smallBold" style={{ color: theme.tint }}>
@@ -141,46 +183,101 @@ function Inbox({
         ) : null}
       </View>
       <ThemedText type="small" themeColor="textSecondary">
-        {unreadCount === 0 ? 'All read' : `${unreadCount} unread`}
+        Swipe a message to the left to archive it.
       </ThemedText>
-      {shown.length === 0 ? (
-        <ThemedText type="small" themeColor="textSecondary">
-          No unread messages. Turn off Hide read to see the rest.
-        </ThemedText>
-      ) : null}
-      {shown.map(({ message, read_at, unread, for_children, for_child_names, answer }) => (
-        <PressableCard key={message.id} onPress={() => openMessage(message.id)}>
-          <View style={styles.row}>
-            {!isUnread({ read_at, unread }) ? null : (
-              <View
-                style={[styles.unreadDot, { backgroundColor: theme.accent }]}
-                accessibilityLabel="Unread"
-              />
-            )}
-            <ThemedText type="smallBold" style={styles.grow} numberOfLines={1}>
-              {message.sender_name ?? 'Club'}
-            </ThemedText>
-            <ThemedText type="small" themeColor="textSecondary">
-              {formatSentAt(new Date(message.created_at))}
-            </ThemedText>
-          </View>
-          <ThemedText type="small" themeColor="textSecondary" numberOfLines={1}>
-            To {audienceLabel(message.audience, message.audience_role, message.audience_label)}
-          </ThemedText>
-          <GuardianCopy
-            label={guardianCopyLabel(message.sender_id, for_children, for_child_names)}
+      {messages.map((copy) => (
+        <SwipeRow
+          key={copy.message.id}
+          actionLabel="Archive"
+          onSwipe={() => onArchive(copy.message.id)}>
+          <MessageCard
+            copy={copy}
+            actions={[{ label: 'Archive', onPress: () => onArchive(copy.message.id) }]}
           />
-          <ThemedText type="small" numberOfLines={2}>
-            {message.body}
-          </ThemedText>
-          {message.answer_options ? (
-            <ThemedText type="smallBold" style={{ color: theme.tint }}>
-              {questionTag(for_children, answer ?? null)}
-            </ThemedText>
-          ) : null}
-        </PressableCard>
+        </SwipeRow>
       ))}
     </View>
+  );
+}
+
+function Archived({
+  messages,
+  onMoveToInbox,
+}: {
+  messages: InboxMessage[] | null;
+  onMoveToInbox: (messageId: string) => void;
+}) {
+  if (messages === null) return null;
+  if (messages.length === 0) {
+    return (
+      <ThemedText type="small" themeColor="textSecondary">
+        Nothing archived. Swipe a message to the left in your inbox to archive it.
+      </ThemedText>
+    );
+  }
+  return (
+    <View style={styles.list}>
+      <ThemedText type="small" themeColor="textSecondary">
+        Swipe left to move a message back to your inbox.
+      </ThemedText>
+      {messages.map((copy) => (
+        <SwipeRow
+          key={copy.message.id}
+          actionLabel="Move to inbox"
+          onSwipe={() => onMoveToInbox(copy.message.id)}>
+          <MessageCard
+            copy={copy}
+            actions={[
+              {
+                label: 'Move to inbox',
+                onPress: () => onMoveToInbox(copy.message.id),
+              },
+            ]}
+          />
+        </SwipeRow>
+      ))}
+    </View>
+  );
+}
+
+function MessageCard({
+  copy,
+  actions,
+}: {
+  copy: InboxMessage;
+  actions: { label: string; onPress: () => void }[];
+}) {
+  const theme = useTheme();
+  const { message, read_at, unread, for_children, for_child_names, answer } = copy;
+  return (
+    <PressableCard onPress={() => openMessage(message.id)} actions={actions}>
+      <View style={styles.row}>
+        {!isUnread({ read_at, unread }) ? null : (
+          <View
+            style={[styles.unreadDot, { backgroundColor: theme.accent }]}
+            accessibilityLabel="Unread"
+          />
+        )}
+        <ThemedText type="smallBold" style={styles.grow} numberOfLines={1}>
+          {message.sender_name ?? 'Club'}
+        </ThemedText>
+        <ThemedText type="small" themeColor="textSecondary">
+          {formatSentAt(new Date(message.created_at))}
+        </ThemedText>
+      </View>
+      <ThemedText type="small" themeColor="textSecondary" numberOfLines={1}>
+        To {audienceLabel(message.audience, message.audience_role, message.audience_label)}
+      </ThemedText>
+      <GuardianCopy label={guardianCopyLabel(message.sender_id, for_children, for_child_names)} />
+      <ThemedText type="small" numberOfLines={2}>
+        {message.body}
+      </ThemedText>
+      {message.answer_options ? (
+        <ThemedText type="smallBold" style={{ color: theme.tint }}>
+          {questionTag(for_children, answer ?? null)}
+        </ThemedText>
+      ) : null}
+    </PressableCard>
   );
 }
 
@@ -244,6 +341,13 @@ const styles = StyleSheet.create({
   },
   grow: {
     flex: 1,
+  },
+  undo: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: Spacing.two,
+    padding: Spacing.three,
+    borderRadius: 12,
   },
   unreadDot: {
     width: 8,

@@ -64,8 +64,10 @@ platforms which are less safe anyway"). Built in
 - A message may ask one question with 2 to 4 answers the sender sets (such
   as Yes / No / Not sure). Members tap one, once; it can't be changed, and
   there is no box to type in and no answer to an answer.
-- Names are seen only by whoever sent it, the squad or team's coaches and
-  managers, and admins. Captains who ask are treated like coaches (Matt).
+- Names are seen only by whoever sent it and the squad or team's coaches and
+  managers. Captains who ask are treated like coaches (Matt). Admins saw them
+  too until `20261121100000_message_archive_and_access.sql`, which stopped
+  admins reading messages they didn't send (Matt, 21 November 2026).
   Other members see nothing, or only the totals if the sender shares them.
 - A parent or guardian can answer for their child under 18, and always sees
   the question, their child's answer, who gave it and when.
@@ -116,7 +118,7 @@ and tied to that purpose:
 
 | Feature | What members can post | Why it isn't social interaction |
 | --- | --- | --- |
-| Messages | Coaches, managers, the committee, admins and captains send notices to squads, teams, roles or the club, and may ask one question with 2 to 4 answers they set | One way: no replies, no written answers, no direct messages, no threads. A question takes one tap from the answers the sender set, once; only the sender's side (the sender, the group's coaches and managers, admins) and the member's own parents see who answered what. Parents get a copy of every message to or from a child and can answer for their child. |
+| Messages | Coaches, managers, the committee, admins and captains send notices to squads, teams, roles or the club, and may ask one question with 2 to 4 answers they set | One way: no replies, no written answers, no direct messages, no threads. A question takes one tap from the answers the sender set, once; only the sender's side (the sender and the group's coaches and managers) and the member's own parents see who answered what. Nobody else reads a message they weren't sent; the Child Safety Officer or Complaints Manager can read one member's messages for an open concern only when an admin who isn't involved approves it, for 24 hours, with every message opened logged. Parents get a copy of every message to or from a child and can answer for their child. |
 | Daily check-ins | An athlete's scores and an optional note | Seen only by the athlete, their parents and their coaches (with a parent's consent for under 18s). Never shown to other athletes. |
 | Game goals and reflections | An athlete's own goals and how the game went; coaches comment | Coaching between an athlete and their coaches, read by parents. Other athletes don't see them. |
 | Team goals | Coaches set goals for a game; athletes and coaches in the team comment | Inside one coach-led team, about one game, read by parents. Coaches can remove any comment. No likes, sharing or following. |

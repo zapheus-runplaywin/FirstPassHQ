@@ -27,7 +27,8 @@ export function audienceLabel(
 }
 
 /** Columns of the member's own copy of a message. */
-export const RECIPIENT_COLUMNS = 'read_at, unread, for_children, for_child_names, answer';
+export const RECIPIENT_COLUMNS =
+  'read_at, unread, archived_at, for_children, for_child_names, answer';
 
 /**
  * Why a parent or guardian got their copy of a message, naming the children

@@ -216,14 +216,15 @@ export default function NewMessageScreen() {
           />
           <ThemedText type="small" themeColor="textSecondary">
             Everyone taps one answer, once, and can’t write anything else. Parents and guardians
-            can answer for their child. You, the squad or team’s coaches and managers, and admins see
-            who gave which answer. Nobody else sees names.
+            can answer for their child. You and the squad or team’s coaches and managers see who gave
+            which answer. Nobody else sees names.
           </ThemedText>
         </>
       ) : null}
 
       <ThemedText type="small" themeColor="textSecondary">
-        You’ll see who has read it. Club admins can read every message.
+        You’ll see who has read it. Nobody else can read it unless an admin lets the Child Safety
+        Officer or Complaints Manager look into a concern.
         {copiesGuardians ? ' Your parents or guardians get a copy too.' : ''}
       </ThemedText>
 

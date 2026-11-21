@@ -1,9 +1,20 @@
 /**
- * Read controls in the messages inbox (src/lib/inbox.ts): what counts as
- * unread, what Hide read shows, and what Mark all read changes. The sender's
- * read receipt (`read_at`) is never changed by either control.
+ * The messages inbox (src/lib/inbox.ts): what counts as unread, what Mark all
+ * read changes, and how archiving moves a message between Inbox and Archived.
+ * The sender's read receipt (`read_at`) is never changed by any of them, and
+ * nothing is ever deleted.
  */
-import { isUnread, markedAllRead, shownInbox } from '@/lib/inbox';
+import {
+  archivedCopy,
+  isArchived,
+  isUnread,
+  markedAllRead,
+  messageBoxes,
+  moveBetween,
+  movedToInbox,
+  SWIPE_TO_ARCHIVE,
+  swipeArchives,
+} from '@/lib/inbox';
 import type { InboxMessage, Message } from '@/lib/types';
 
 const MESSAGE: Message = {
@@ -18,7 +29,13 @@ const MESSAGE: Message = {
 };
 
 function row(id: string, read_at: string | null, unread?: boolean): InboxMessage {
-  return { read_at, unread, for_children: null, for_child_names: null, message: { ...MESSAGE, id } };
+  return {
+    read_at,
+    unread,
+    for_children: null,
+    for_child_names: null,
+    message: { ...MESSAGE, id },
+  };
 }
 
 describe('isUnread', () => {
@@ -34,19 +51,91 @@ describe('isUnread', () => {
   });
 });
 
-describe('shownInbox', () => {
-  const inbox = [row('a', null, true), row('b', '2026-11-20T01:00:00Z', false), row('c', '2026-11-20T01:00:00Z', true)];
-
-  it('shows everything with Hide read off', () => {
-    expect(shownInbox(inbox, false)).toBe(inbox);
+describe('messageBoxes', () => {
+  it('gives senders Inbox, Sent and Archived, in that order', () => {
+    expect(messageBoxes(true).map((b) => b.label)).toEqual(['Inbox', 'Sent', 'Archived']);
   });
 
-  it('shows only unread messages, in order, with Hide read on', () => {
-    expect(shownInbox(inbox, true).map((r) => r.message.id)).toEqual(['a', 'c']);
+  it('gives everyone else Inbox and Archived, with no Sent', () => {
+    expect(messageBoxes(false).map((b) => b.value)).toEqual(['inbox', 'archived']);
+  });
+});
+
+describe('archiving', () => {
+  const now = new Date('2026-11-21T09:00:00Z');
+
+  it('moves the copy to Archived and clears its dot', () => {
+    const after = archivedCopy(row('a', null, true), now);
+    expect(isArchived(after)).toBe(true);
+    expect(after.archived_at).toBe('2026-11-21T09:00:00.000Z');
+    expect(isUnread(after)).toBe(false);
   });
 
-  it('shows nothing when everything is read', () => {
-    expect(shownInbox([row('b', '2026-11-20T01:00:00Z', false)], true)).toEqual([]);
+  it('never tells the sender it was read', () => {
+    expect(archivedCopy(row('a', null, true), now).read_at).toBeNull();
+    expect(archivedCopy(row('b', '2026-11-20T01:00:00Z', false), now).read_at).toBe(
+      '2026-11-20T01:00:00Z',
+    );
+  });
+
+  it('keeps the first archived time', () => {
+    const once = archivedCopy(row('a', null, true), now);
+    expect(archivedCopy(once, new Date('2026-11-22T00:00:00Z')).archived_at).toBe(once.archived_at);
+  });
+
+  it('moving back to the inbox keeps it read', () => {
+    const back = movedToInbox(archivedCopy(row('a', null, true), now));
+    expect(isArchived(back)).toBe(false);
+    expect(isUnread(back)).toBe(false);
+  });
+
+  it('a copy from before archiving existed is in the inbox', () => {
+    expect(isArchived(row('a', null))).toBe(false);
+  });
+});
+
+describe('moveBetween', () => {
+  const older = {
+    ...row('old', null, true),
+    message: { ...MESSAGE, id: 'old', created_at: '2026-11-18T00:00:00Z' },
+  };
+  const newer = {
+    ...row('new', null, true),
+    message: { ...MESSAGE, id: 'new', created_at: '2026-11-20T00:00:00Z' },
+  };
+  const middle = {
+    ...row('mid', null, true),
+    message: { ...MESSAGE, id: 'mid', created_at: '2026-11-19T00:00:00Z' },
+  };
+
+  it('takes the message out of one list and puts it in the other, newest first', () => {
+    const { from, to } = moveBetween([middle], [newer, older], 'mid', (c) => archivedCopy(c));
+    expect(from).toEqual([]);
+    expect(to.map((m) => m.message.id)).toEqual(['new', 'mid', 'old']);
+    expect(isArchived(to[1])).toBe(true);
+  });
+
+  it('leaves both lists alone when the message isn’t there', () => {
+    const lists = { from: [older], to: [newer] };
+    expect(moveBetween(lists.from, lists.to, 'missing', movedToInbox)).toEqual(lists);
+  });
+
+  it('never shows the same message twice', () => {
+    const { to } = moveBetween([middle], [middle], 'mid', movedToInbox);
+    expect(to).toHaveLength(1);
+  });
+});
+
+describe('swipeArchives', () => {
+  it.each<[number, boolean]>([
+    [-SWIPE_TO_ARCHIVE - 1, true],
+    [-SWIPE_TO_ARCHIVE, true],
+    [-SWIPE_TO_ARCHIVE + 1, false],
+    [-20, false],
+    [0, false],
+    [200, false],
+  ])('a swipe of %i archives: %s', (dx, expected) => {
+    expect(swipeArchives(dx)).toBe(expected);
   });
 });
 
