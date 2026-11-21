@@ -1,5 +1,7 @@
--- Tests for 20261013060000_temporary_volunteers.sql. Run on a fresh database with the
--- migrations and seed-members.sql loaded. Prints one line per check.
+-- Tests for 20261013060000_temporary_volunteers.sql, and who can call its two
+-- compliance checks (20261121200000_match_database_access_to_roles.sql). Run
+-- on a fresh database with the migrations and seed-members.sql loaded. Prints
+-- one line per check.
 \set ON_ERROR_STOP 0
 \pset tuples_only on
 \pset format unaligned
@@ -217,3 +219,24 @@ select pg_temp.fails('a coach can''t change a volunteer''s dates',
   $s$ select public.admin_set_volunteer_details('00000000-0000-0000-0000-000000000051', 'X', current_date, current_date) $s$);
 select pg_temp.ok('nobody can read another member''s acknowledgement directly',
   has_table_privilege('anon', 'public.policy_acknowledgements', 'select'), false);
+
+-- The two compliance checks behind those saves run only inside them
+-- (20261121200000_match_database_access_to_roles.sql), so nobody signed in
+-- can look up whether someone else accepted the policies or is covered.
+select pg_temp.ok('members can''t call has_acknowledged_policies directly',
+  has_function_privilege('authenticated', 'public.has_acknowledged_policies(uuid)', 'execute'), false);
+select pg_temp.ok('members can''t call volunteer_covered directly',
+  has_function_privilege('authenticated', 'public.volunteer_covered(uuid, date, date)', 'execute'), false);
+set role authenticated;
+select pg_temp.as_member('01');
+select pg_temp.works('signed in, an admin still changes a volunteer''s dates (the check runs inside)',
+  $s$ select public.admin_set_volunteer_details('00000000-0000-0000-0000-000000000051', 'Scorer', current_date + 5, current_date + 7) $s$);
+select pg_temp.fails('signed in, an admin still can''t call has_acknowledged_policies directly',
+  $s$ select public.has_acknowledged_policies('00000000-0000-0000-0000-000000000051') $s$);
+select pg_temp.as_member('11');
+select pg_temp.fails('a coach can''t check whether a volunteer is covered',
+  $s$ select public.volunteer_covered('00000000-0000-0000-0000-000000000051', current_date, current_date) $s$);
+select pg_temp.as_member('51');
+select pg_temp.fails('a volunteer can''t check their own cover directly either',
+  $s$ select public.volunteer_covered('00000000-0000-0000-0000-000000000051', current_date, current_date) $s$);
+reset role;

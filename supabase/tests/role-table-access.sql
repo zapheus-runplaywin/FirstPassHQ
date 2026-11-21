@@ -140,12 +140,18 @@ values ('00000000-0000-0000-0000-000000000052', '00000000-0000-0000-0000-0000000
 
 insert into public.training_requirements (id, season, name, due_on, roles)
 values ('00000000-0000-0000-0000-0000000000d1', 2026, 'Integrity course', current_date + 30, '{athlete,coach}');
+insert into public.training_requirement_teams (requirement_id, team_id)
+values ('00000000-0000-0000-0000-0000000000d1', '00000000-0000-0000-0000-0000000000a1');
 insert into public.training_certificates (requirement_id, profile_id, submitted_by, submitted_by_name, completed_on, document_path) values
   ('00000000-0000-0000-0000-0000000000d1', '00000000-0000-0000-0000-000000000031', '00000000-0000-0000-0000-000000000041', 'Logan Parent', current_date, 'x/jordan.pdf'),
   ('00000000-0000-0000-0000-0000000000d1', '00000000-0000-0000-0000-000000000011', '00000000-0000-0000-0000-000000000011', 'Casey Coach', current_date, 'x/casey.pdf');
 
 insert into public.awards (id, season, name, closes_at, voter_roles)
 values ('00000000-0000-0000-0000-0000000000e1', 2026, 'Best and fairest', now() + interval '7 days', '{athlete,coach}');
+insert into public.award_groups (award_id, team_id)
+values ('00000000-0000-0000-0000-0000000000e1', '00000000-0000-0000-0000-0000000000a1');
+insert into public.award_candidates (award_id, name)
+values ('00000000-0000-0000-0000-0000000000e1', 'Umpire One');
 insert into public.award_ballots (id, award_id, voter_id) values
   ('00000000-0000-0000-0000-0000000000e2', '00000000-0000-0000-0000-0000000000e1', '00000000-0000-0000-0000-000000000032'),
   ('00000000-0000-0000-0000-0000000000e3', '00000000-0000-0000-0000-0000000000e1', '00000000-0000-0000-0000-000000000011');
@@ -259,6 +265,25 @@ insert into matrix (phase, label, q, counts) values
       '{1,1,0,0,0,0,0,0,1,1,1,0,0,0}'),
   (1, 'training_certificates: Casey''s', $$select 1 from public.training_certificates where profile_id = pg_temp.m('11')$$,
       '{1,1,0,1,0,0,0,0,0,0,0,0,0,0}'),
+  -- Training requirements: the committee and admins, who follow everyone's
+  -- progress. Members see their own training through my_training()
+  -- (20261121200000_match_database_access_to_roles.sql). A committee member
+  -- whose check expired has no committee role until it's renewed.
+  (1, 'training_requirements: the integrity course', $$select 1 from public.training_requirements where id = '00000000-0000-0000-0000-0000000000d1'$$,
+      '{1,1,0,0,0,0,0,0,0,0,0,0,0,0}'),
+  (1, 'training_requirement_teams: who the course is set for', $$select 1 from public.training_requirement_teams where requirement_id = '00000000-0000-0000-0000-0000000000d1'$$,
+      '{1,1,0,0,0,0,0,0,0,0,0,0,0,0}'),
+  -- Awards: admins, and committee members who read the award results
+  -- report: those with a current check, exemption or application, so not
+  -- this one, exempted with a reason (committee-reports.sql checks one who
+  -- can). Voters get what they vote in through award_slots() and
+  -- award_nominees() (20261121200000_match_database_access_to_roles.sql).
+  (1, 'awards: the club award', $$select 1 from public.awards where id = '00000000-0000-0000-0000-0000000000e1'$$,
+      '{1,0,0,0,0,0,0,0,0,0,0,0,0,0}'),
+  (1, 'award_groups: the squads the award is for', $$select 1 from public.award_groups where award_id = '00000000-0000-0000-0000-0000000000e1'$$,
+      '{1,0,0,0,0,0,0,0,0,0,0,0,0,0}'),
+  (1, 'award_candidates: the award''s listed names', $$select 1 from public.award_candidates where award_id = '00000000-0000-0000-0000-0000000000e1'$$,
+      '{1,0,0,0,0,0,0,0,0,0,0,0,0,0}'),
   -- Award votes: only the voter, admins included.
   (1, 'award_ballots: anyone else''s', $$select 1 from public.award_ballots where voter_id is distinct from auth.uid()$$,
       '{0,0,0,0,0,0,0,0,0,0,0,0,0,0}'),

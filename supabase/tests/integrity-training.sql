@@ -137,16 +137,22 @@ select pg_temp.works('committee member uploads their own certificate', format('s
 set role authenticated;
 select pg_temp.as_member('32');
 select pg_temp.ok('athlete sees only their own certificate', (select count(*) = 1 and bool_and(profile_id = pg_temp.m('32')) from public.training_certificates), true);
+-- Courses: members get their own through my_training, not the table
+-- (20261121200000_match_database_access_to_roles.sql).
+select pg_temp.ok('athlete reads no courses from the table', (select count(*) = 0 from public.training_requirements) and (select count(*) = 0 from public.training_requirement_teams), true);
+select pg_temp.ok('athlete still sees their own course', (select count(*) > 0 from public.my_training()), true);
 select pg_temp.as_member('41');
 select pg_temp.ok('guardian sees the child''s certificates', (select count(*) = 2 and bool_and(profile_id = pg_temp.m('31')) from public.training_certificates), true);
 select pg_temp.ok('guardian sees the child''s files', (select count(*) = 2 from storage.objects where bucket_id = 'training-certificates' and name like '00000000-0000-0000-0000-000000000031/%'), true);
 select pg_temp.as_member('11');
 select pg_temp.ok('coach sees no certificates', (select count(*) = 0 from public.training_certificates), true);
+select pg_temp.ok('coach reads no courses from the table', (select count(*) = 0 from public.training_requirements), true);
 select pg_temp.ok('coach sees no certificate files', (select count(*) = 0 from storage.objects where bucket_id = 'training-certificates'), true);
 select pg_temp.as_member('14');
 select pg_temp.ok('physio sees no certificates', (select count(*) = 0 from public.training_certificates), true);
 select pg_temp.as_member('23');
 select pg_temp.ok('committee sees every certificate', (select count(*) = 4 from public.training_certificates), true);
+select pg_temp.ok('committee reads every course and who it''s set for', (select count(*) = 4 from public.training_requirements) and (select count(*) = 1 from public.training_requirement_teams), true);
 reset role;
 
 -- ---------------------------------------------------------------------------

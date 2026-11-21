@@ -4075,6 +4075,7 @@ once saved, only replaced or removed, and anyone who gets it wrong five times in
 | Season KPIs, progress and reviews | An athlete's: the athlete, their coaches in that squad or team, their parents or guardians (read only, until 18) and admins (read only). Not teammates, the committee or physios. A coach's or manager's: them, the committee and admins, and an assistant coach's head coach. Only those who set KPIs change them, record results and write reviews; the person records progress, confirms reviews and adds their own view. A coach's or manager's KPIs and reviews are kept under their name if they delete their account, and stay on the admin report. |
 | Live game stats         | Admins and statisticians (while their statistician role isn't paused for a check): every game the club records. The coaches and managers of the game's squad or team, and of the squad a team belongs to, see the team's games at every stage and who has opened each, and the stats once they open the game in FirstPass Vision, without a pair code (a shadow statistician still pairs with the code in Vantage). Members with the Studio role (while not stood down), through FirstPass Studio: games with a PlayHQ game that are live or finished, their setup, the recorded stats and the athletes of the game's squad or team, never a shadow statistician's stats, pair codes or who paired. Athletes, guardians, physios and the committee don't see them. |
 | Team goals              | The team's athletes, their guardians, its coaches (while their check is current and they aren't stood down) and admins. Only its coaches set and review them. Athletes and coaches in the team can comment; guardians and admins read the comments. Managers and physios placed in the team don't see them. |
+| Integrity training courses | The committee and admins see every course and who it's set for. Each member sees the courses set for them, and parents and guardians their child's. |
 | Integrity training certificates | The member, their parents or guardians, the committee and admins. Coaches, managers and physios don't see them. Certificates can't be changed or removed once sent. |
 | Attendance records      | The committee and admins see every session. Coaches and managers see their own groups' sessions, whole-club sessions and any they took themselves, while their check is current and they aren't stood down. An athlete sees their own marks, and their parents or guardians see them until the athlete turns 18; neither sees other athletes on the register. |
 | What's changed for a child | Their parents or guardians (until the child turns 18) and admins: adults joining or leaving the child's squads and teams, the child's own group changes, guardian links, consents and shared injury documents. A stand-down shows only as the adult leaving. |
@@ -4083,6 +4084,7 @@ once saved, only replaced or removed, and anyone who gets it wrong five times in
 | Absence reasons         | Every approved member sees the list. Only admins switch reasons off or add them.                                             |
 | Committee calendar      | Committee members and admins.                                                                                               |
 | Award votes             | Only the voter sees their own ballot. Nobody, admins included, can see who someone voted for. Who cast each vote is removed after the club's keep period (1 year recommended). |
+| Awards and their settings | Admins, and committee members who read the Award results report. Voters see only the votes open to them and who they can vote for, while voting is open. |
 | Award results           | Admins: standings and how many people have voted, and once voting closes, how many votes each nominee got at each place. Committee members with a current check read the same results once voting closes. |
 | Policy register         | The committee and admins, when the club turns the registers on. A policy's owner also sees the policies they own. Only admins add, change or remove policies; the owner or an admin records a review. |
 | Conflict-of-interest declarations | The member (their own), the committee and admins, when the club turns the registers on. Coaches, athletes and parents don't see anyone else's. Only the member declares; admins can correct an entry, and the register shows they did. |
@@ -4689,6 +4691,9 @@ Working With Children Check, and another admin must do it.
   concern isn't given away.
 - **Child abuse and serious crimes go out, not in.** The register prompts the club to refer them to
   Police and the governing body straight away, and records that it did.
+- **The database keeps the same rules as the screens.** What each role can read is checked by the
+  club's database, not just hidden by the app's screens, and both follow
+  [Who can see what](#11-who-can-see-what).
 - **Each club's data is kept apart**, in that club's own database.
 - **Not social media, by design.** The app is a club administration tool: no written replies or direct
   messages, feeds, profile pictures, likes or following, and posts never reach beyond a member's
