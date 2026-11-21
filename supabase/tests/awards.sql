@@ -176,7 +176,12 @@ select pg_temp.as_member('01');
 select pg_temp.ok('admin cannot read anyone''s ballots', (select count(*) = 0 from public.award_ballots) and (select count(*) = 0 from public.award_votes), true);
 select pg_temp.as_member('41');
 select pg_temp.ok('guardian cannot read ballots', (select count(*) = 0 from public.award_votes), true);
-select pg_temp.ok('awards themselves are not secret', (select count(*) = 5 from public.awards), true);
+-- Awards themselves are read only on the admin award screens and the award
+-- results report (20261121200000_match_database_access_to_roles.sql); voters
+-- get theirs through award_slots and award_nominees, checked above.
+select pg_temp.ok('guardian cannot read the awards table', (select count(*) = 0 from public.awards), true);
+select pg_temp.as_member('01');
+select pg_temp.ok('admin reads every award', (select count(*) = 5 from public.awards), true);
 reset role;
 
 -- Settings lock once anyone votes.

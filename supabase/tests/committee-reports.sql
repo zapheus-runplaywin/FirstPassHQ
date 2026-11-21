@@ -55,6 +55,8 @@ $$ begin
        ('check applications', pg_temp.reads('select * from public.admin_wwcc_applications()') > 0),
        ('medical details checks', pg_temp.reads('select * from public.medical_review_compliance()') > 0),
        ('absences', pg_temp.reads($q$select * from public.absence_report(current_date - 7, current_date + 7)$q$) > 0),
+       -- The awards themselves (20261121200000_match_database_access_to_roles.sql).
+       ('awards', pg_temp.reads('select * from public.awards') > 0),
        ('award votes', pg_temp.reads($q$select * from public.award_vote_breakdown('f0000000-0000-0000-0000-000000000001')$q$) > 0),
        ('award turnout', pg_temp.reads($q$select * from public.award_turnout('f0000000-0000-0000-0000-000000000001')$q$) > 0);
    end $$;
