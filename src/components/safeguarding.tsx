@@ -4,13 +4,14 @@ import { Linking, Pressable, StyleSheet, View } from 'react-native';
 import { ThemedText } from '@/components/themed-text';
 import { Card } from '@/components/ui';
 import { Spacing } from '@/constants/theme';
-import { helplines, useSafeguardingContacts } from '@/lib/concerns';
+import { contactNames, helplines, useSafeguardingContacts } from '@/lib/concerns';
+import { namesLine } from '@/lib/people-picker';
 import { formatDateTime } from '@/lib/format';
 import { useTheme } from '@/hooks/use-theme';
 
 /**
- * Who to talk to about a child's safety: the club's Child Safety Officer and
- * Complaints Manager, the governing body, and services anyone can call.
+ * Who to talk to about a child's safety: the club's Child Safety Officers and
+ * Complaints Managers, the governing body, and services anyone can call.
  * Phone numbers and links open when tapped.
  */
 export function SafeguardingContactsCard() {
@@ -24,18 +25,24 @@ export function SafeguardingContactsCard() {
     </Pressable>
   );
   const phone = (number: string) => link(number, `tel:${number.replace(/\s/g, '')}`);
+  const officers = contactNames(contacts, 'officers');
+  const managers = contactNames(contacts, 'managers');
 
   return (
     <Card>
       <ThemedText type="smallBold">If a child is in danger now, call 000.</ThemedText>
       <View style={styles.rows}>
-        {contacts?.child_safety_officer_name ? (
+        {officers.length > 0 ? (
           <ThemedText type="small">
-            Child Safety Officer: {contacts.child_safety_officer_name}
+            {officers.length === 1 ? 'Child Safety Officer' : 'Child Safety Officers'}:{' '}
+            {namesLine(officers)}
           </ThemedText>
         ) : null}
-        {contacts?.complaints_manager_name ? (
-          <ThemedText type="small">Complaints Manager: {contacts.complaints_manager_name}</ThemedText>
+        {managers.length > 0 ? (
+          <ThemedText type="small">
+            {managers.length === 1 ? 'Complaints Manager' : 'Complaints Managers'}:{' '}
+            {namesLine(managers)}
+          </ThemedText>
         ) : null}
         {contacts?.governing_body_name ? (
           <View>

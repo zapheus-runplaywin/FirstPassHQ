@@ -48,7 +48,8 @@ insert into public.club_settings (id) values (true) on conflict (id) do nothing;
 update public.club_settings set features = features || '{"trainingLoad": true}' where id;
 insert into public.safeguarding_settings (id) values (true) on conflict (id) do nothing;
 -- Emery Manager is the Child Safety Officer for these tests.
-update public.safeguarding_settings set child_safety_officer_id = pg_temp.id('13') where id;
+delete from public.safeguarding_post_holders where post = 'child_safety_officer';
+insert into public.safeguarding_post_holders (post, profile_id) values ('child_safety_officer', pg_temp.id('13'));
 -- The seed's check-in for Jordan today is low (stress 2); start from a good one.
 update public.check_ins set stress = 4 where athlete_id = pg_temp.id('31');
 

@@ -145,7 +145,10 @@ update public.verification_codes set code = '000000', expires_at = now() - inter
 select pg_temp.works('asking after the code expired', $s$ select public.my_verification_code() $s$);
 select pg_temp.ok('the expired code is replaced with one lasting another 7 days', (select code ~ '^[0-9]{6}$' and expires_at > now() + interval '6 days' from public.verification_codes where profile_id = pg_temp.m('34')), true);
 
-update public.safeguarding_settings set child_safety_officer_id = pg_temp.m('01'), complaints_manager_id = pg_temp.m('31');
+delete from public.safeguarding_post_holders where post = 'child_safety_officer';
+insert into public.safeguarding_post_holders (post, profile_id) values ('child_safety_officer', pg_temp.m('01'));
+delete from public.safeguarding_post_holders where post = 'complaints_manager';
+insert into public.safeguarding_post_holders (post, profile_id) values ('complaints_manager', pg_temp.m('31'));
 select pg_temp.as_member('01');
 select pg_temp.ok('the Child Safety Officer is a safeguarding officer', public.is_safeguarding_officer(), true);
 select pg_temp.as_member('31');

@@ -136,6 +136,27 @@ describe('raising a concern', () => {
     ['admin', 'admin'],
   ];
 
+  it('names every Child Safety Officer and Complaints Manager when a club has several', async () => {
+    await openScreen('athlete', { 'concern/new': RaiseConcernScreen }, '/concern/new', {}, {
+      rpcs: {
+        safeguarding_contacts: [
+          {
+            ...CONTACTS,
+            child_safety_officers: [
+              { id: 'cso', name: 'Sample Officer' },
+              { id: 'cso-2', name: 'Second Officer' },
+            ],
+            complaints_managers: [{ id: 'cm', name: 'Sample Manager' }],
+          },
+        ],
+        concern_people: [],
+        my_concerns: [],
+      },
+    });
+    expect(screen.getByText('Child Safety Officers: Sample Officer and Second Officer')).toBeTruthy();
+    expect(screen.getByText('Complaints Manager: Sample Manager')).toBeTruthy();
+  });
+
   it.each(EVERYONE)('lets a %s raise one, and shows who to call first', async (_l, who) => {
     await openRaise(who);
     expect(screen.getByText('If a child is in danger now, call 000.')).toBeTruthy();
@@ -149,7 +170,7 @@ describe('raising a concern', () => {
   it('says the person it’s about won’t see it', async () => {
     await openRaise('athlete');
     expect(
-      screen.getByText(/The club’s Child Safety Officer, Complaints Manager and admins see it, but not the person it’s about\./),
+      screen.getByText(/The club’s Child Safety Officers, Complaints Managers and admins see it, but not anyone it’s about\./),
     ).toBeTruthy();
   });
 
@@ -252,16 +273,59 @@ describe('raising a concern', () => {
 
   it('offers matching members to name who it’s about', async () => {
     await openRaise('athlete');
-    await fireEvent.changeText(screen.getByPlaceholderText('A name, or a description'), 'sample p');
-    expect(screen.getByText('Sample Parent')).toBeTruthy();
-    expect(screen.getByText('Sample Person')).toBeTruthy();
+    await fireEvent.changeText(screen.getByPlaceholderText('Name'), 'sample p');
+    expect(screen.getByText('+ Sample Parent')).toBeTruthy();
+    expect(screen.getByText('+ Sample Person')).toBeTruthy();
   });
 
   it('offers members from the first letter typed', async () => {
     await openRaise('athlete');
-    await fireEvent.changeText(screen.getByPlaceholderText('A name, or a description'), 'P');
-    expect(screen.getByText('Sample Parent')).toBeTruthy();
-    expect(screen.getByText('Sample Person')).toBeTruthy();
+    await fireEvent.changeText(screen.getByPlaceholderText('Name'), 'P');
+    expect(screen.getByText('+ Sample Parent')).toBeTruthy();
+    expect(screen.getByText('+ Sample Person')).toBeTruthy();
+  });
+
+  it('shows each person picked right under the search box, and clears the search', async () => {
+    await openRaise('athlete');
+    const chosen = () => within(screen.getByTestId('Who is it about? (optional) chosen'));
+    expect(chosen().getByText('Nobody named yet.')).toBeTruthy();
+    await fireEvent.changeText(screen.getByPlaceholderText('Name'), 'parent');
+    await fireEvent.press(screen.getByText('+ Sample Parent'));
+    expect(chosen().getByText('Sample Parent  ✕')).toBeTruthy();
+    expect(screen.getByPlaceholderText('Name').props.value).toBe('');
+    expect(screen.getByText('1 of 10')).toBeTruthy();
+  });
+
+  it('names several people, takes one off again, and sends the rest with their own words', async () => {
+    await openRaise('athlete');
+    await fireEvent.changeText(screen.getByPlaceholderText('In your own words'), 'Left behind after training');
+    await fireEvent.changeText(screen.getByPlaceholderText('Name'), 'parent');
+    await fireEvent.press(screen.getByText('+ Sample Parent'));
+    await fireEvent.changeText(screen.getByPlaceholderText('Name'), 'person');
+    await fireEvent.press(screen.getByText('+ Sample Person'));
+    // Someone already picked isn't offered again.
+    await fireEvent.changeText(screen.getByPlaceholderText('Name'), 'sample');
+    expect(screen.queryByText('+ Sample Parent')).toBeNull();
+    await fireEvent.changeText(screen.getByPlaceholderText('Name'), '');
+    await fireEvent.press(screen.getByLabelText('Take Sample Parent off Who is it about? (optional)'));
+    await fireEvent.changeText(
+      screen.getByPlaceholderText('A name or a description, if they’re not in the search'),
+      'A parent helper',
+    );
+    await fireEvent.press(screen.getByText('Send to the club'));
+    await settle();
+    expect(rpcCalls().find(([n]) => n === 'raise_concern')?.[1]).toMatchObject({
+      p_about_member_ids: ['p2'],
+      p_about_text: 'A parent helper',
+    });
+  });
+
+  it('sends nobody named as an empty list', async () => {
+    await openRaise('athlete');
+    await fireEvent.changeText(screen.getByPlaceholderText('In your own words'), 'Something happened');
+    await fireEvent.press(screen.getByText('Send to the club'));
+    await settle();
+    expect(rpcCalls().find(([n]) => n === 'raise_concern')?.[1]).toMatchObject({ p_about_member_ids: [] });
   });
 
   it('lists only the adults with club roles, never every member', async () => {
@@ -299,6 +363,20 @@ describe('the concerns register', () => {
     await openRegister('admin', [ANONYMOUS]);
     expect(screen.getByText('Received · name not shown')).toBeTruthy();
     expect(screen.queryByText(/from /)).toBeNull();
+  });
+
+  it('shows everyone a concern is about', async () => {
+    await openRegister(officer, [
+      concern({
+        about_member_id: 'p1',
+        about_member_name: 'Sample Parent',
+        about_members: [
+          { id: 'p1', name: 'Sample Parent' },
+          { id: null, name: 'A former coach' },
+        ],
+      }),
+    ]);
+    expect(screen.getByText(/ · about Sample Parent, A former coach$/)).toBeTruthy();
   });
 
   it('shows who a concern is about by their member name', async () => {
@@ -340,8 +418,10 @@ async function openConcern(
   shown: Concern | null,
   history: ConcernEvent[] = [],
   more: Record<string, unknown> = {},
+  rpcErrors: Record<string, string> = {},
 ) {
   await openScreen(who, { 'concerns/[id]': ConcernScreen }, `/concerns/${shown?.id ?? 'con-1'}`, {}, {
+    rpcErrors,
     rpcs: {
       ...more,
       concern_register: shown ? [shown] : [],
@@ -465,33 +545,69 @@ describe('one concern', () => {
     it('finds members from the first letter typed', async () => {
       await openConcern('admin', concern());
       await fireEvent.changeText(screen.getByPlaceholderText('Name'), 'A');
-      expect(screen.getByText('Avery Athlete')).toBeTruthy();
-      expect(screen.queryByText('Sample Parent')).toBeNull();
+      expect(screen.getByText('+ Avery Athlete')).toBeTruthy();
+      expect(screen.queryByText('+ Sample Parent')).toBeNull();
     });
 
-    it('names the member picked', async () => {
+    it('adds the member picked, straight away', async () => {
       await openConcern('admin', concern());
       await fireEvent.changeText(screen.getByPlaceholderText('Name'), 'Avery');
-      await fireEvent.press(screen.getByText('Avery Athlete'));
+      await fireEvent.press(screen.getByText('+ Avery Athlete'));
       await settle();
-      expect(rpcCalls().find(([n]) => n === 'set_concern_about')?.[1]).toMatchObject({ p_member_id: 'p3' });
+      expect(rpcCalls().find(([n]) => n === 'add_concern_about')?.[1]).toMatchObject({
+        p_concern_id: 'con-1',
+        p_member_id: 'p3',
+      });
+      expect(rpcCalls().map(([n]) => n)).not.toContain('set_concern_about');
     });
 
     it('says when nobody matches, instead of showing nothing', async () => {
       await openConcern('admin', concern());
       await fireEvent.changeText(screen.getByPlaceholderText('Name'), 'zz');
-      expect(screen.getByText('No approved member’s name matches “zz”.')).toBeTruthy();
+      expect(screen.getByText('Nobody matches “zz”.')).toBeTruthy();
+    });
+
+    it('shows everyone named right under the search box, each with a way to take them off', async () => {
+      await openConcern(
+        officer,
+        concern({
+          about_member_id: 'p1',
+          about_member_name: 'Sample Parent',
+          about_members: [
+            { id: 'p1', name: 'Sample Parent' },
+            { id: 'p3', name: 'Avery Athlete' },
+          ],
+        }),
+      );
+      const chosen = within(screen.getByTestId('Who it’s about chosen'));
+      expect(chosen.getByText('Sample Parent  ✕')).toBeTruthy();
+      expect(chosen.getByText('Avery Athlete  ✕')).toBeTruthy();
+      expect(screen.getByText('About: Sample Parent, Avery Athlete')).toBeTruthy();
+      await fireEvent.press(screen.getByLabelText('Take Avery Athlete off Who it’s about'));
+      await settle();
+      expect(rpcCalls().find(([n]) => n === 'remove_concern_about')?.[1]).toMatchObject({
+        p_concern_id: 'con-1',
+        p_member_id: 'p3',
+      });
+    });
+
+    it('shows why the database refused a change beside the picker', async () => {
+      await openConcern('admin', concern(), [], {}, { add_concern_about: 'Name up to 10 people' });
+      await fireEvent.changeText(screen.getByPlaceholderText('Name'), 'Avery');
+      await fireEvent.press(screen.getByText('+ Avery Athlete'));
+      await settle();
+      expect(screen.getByText('Name up to 10 people')).toBeTruthy();
     });
   });
 
-  it('offers no way to clear who it’s about while nobody is named', async () => {
+  it('says nobody is named yet', async () => {
     await openConcern(officer, concern());
-    expect(screen.queryByText('Clear who it’s about')).toBeNull();
+    expect(within(screen.getByTestId('Who it’s about chosen')).getByText('No member named.')).toBeTruthy();
   });
 
-  it('offers to clear who it’s about once someone is named', async () => {
+  it('shows the member named by an older register row, with the raiser’s words', async () => {
     await openConcern(officer, concern({ about_member_id: 'p1', about_member_name: 'Sample Parent' }));
-    expect(screen.getByText('Clear who it’s about')).toBeTruthy();
+    expect(within(screen.getByTestId('Who it’s about chosen')).getByText('Sample Parent  ✕')).toBeTruthy();
     expect(screen.getByText('About: Sample Parent')).toBeTruthy();
     expect(screen.getByText('In their words: A parent at training')).toBeTruthy();
   });
@@ -544,6 +660,44 @@ describe('a concern about a child: their parents and guardians', () => {
     expect(supabase.rpc).toHaveBeenCalledWith('concern_guardian_views', {
       p_concern_id: aboutChild.id,
     });
+  });
+
+  it('groups the parents and guardians by child when it’s about several children', async () => {
+    await openConcern(
+      officer,
+      concern({
+        about_member_id: 'p3',
+        about_member_name: 'Avery Athlete',
+        about_members: [
+          { id: 'p3', name: 'Avery Athlete' },
+          { id: 'p4', name: 'Bailey Junior' },
+        ],
+      }),
+      [],
+      {
+        concern_guardians: [
+          { guardian_id: 'g1', name: 'Sample Parent', email: 'parent@example.test', child_id: 'p3', child_name: 'Avery Athlete' },
+          { guardian_id: 'g1', name: 'Sample Parent', email: 'parent@example.test', child_id: 'p4', child_name: 'Bailey Junior' },
+          { guardian_id: 'g3', name: 'Sample Aunt', email: null, child_id: 'p4', child_name: 'Bailey Junior' },
+        ],
+        concern_guardian_views: [],
+      },
+    );
+    const card = within(screen.getByTestId('concern-guardians'));
+    expect(card.getByText('Avery Athlete’s parents and guardians')).toBeTruthy();
+    expect(card.getByText('Bailey Junior’s parents and guardians')).toBeTruthy();
+    expect(card.getAllByText('Sample Parent · parent@example.test')).toHaveLength(2);
+    expect(card.getByText('Sample Aunt')).toBeTruthy();
+  });
+
+  it('asks for the guardians when only the list of people names someone', async () => {
+    await openConcern(
+      officer,
+      concern({ about_members: [{ id: 'p4', name: 'Bailey Junior' }] }),
+      [],
+      { concern_guardians: [] },
+    );
+    expect(supabase.rpc).toHaveBeenCalledWith('concern_guardians', { p_concern_id: 'con-1' });
   });
 
   it('shows nothing when the database lists nobody (an adult, or no verified parent)', async () => {

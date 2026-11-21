@@ -118,6 +118,22 @@ const SAVED_CONTACTS = {
   policy_url: 'https://club.example/safeguarding',
 };
 
+const SAVED_WWC = { officer_id: 'admin', officer_name: 'Sample admin' };
+
+/**
+ * Who holds each post, as `admin_safeguarding_posts` lists them, from a test's
+ * saved contacts and WWC Registration Officer (null for nobody).
+ */
+function postsFrom(contacts: typeof SAVED_CONTACTS | null, wwc: typeof SAVED_WWC | null) {
+  const holder = (post: string, id: string | null | undefined, name: string | null | undefined) =>
+    id && name ? [{ post, profile_id: id, name, can_act: true }] : [];
+  return [
+    ...holder('child_safety_officer', contacts?.child_safety_officer_id, contacts?.child_safety_officer_name),
+    ...holder('complaints_manager', contacts?.complaints_manager_id, contacts?.complaints_manager_name),
+    ...holder('wwc_officer', wwc?.officer_id, wwc?.officer_name),
+  ];
+}
+
 const SAVED_POLICIES = {
   privacy_policy_url: 'https://club.example/privacy',
   safeguarding_policy_url: null,
@@ -143,11 +159,14 @@ async function openSafeguarding(
     {
       tableHandlers: { profiles: (q) => (q.eq('status') === 'approved' ? people : undefined) },
       rpcs: {
+        admin_safeguarding_posts: 'admin_safeguarding_posts' in rpcs ? rpcs.admin_safeguarding_posts : postsFrom(
+          'safeguarding_contacts' in rpcs ? (rpcs.safeguarding_contacts as typeof SAVED_CONTACTS | null) : SAVED_CONTACTS,
+          'admin_wwc_officer' in rpcs ? (rpcs.admin_wwc_officer as typeof SAVED_WWC | null) : SAVED_WWC,
+        ),
         safeguarding_contacts: SAVED_CONTACTS,
         admin_volunteer_exemptions: EXEMPTIONS,
         safeguarding_photo_setting: false,
         club_policies: SAVED_POLICIES,
-        admin_wwc_officer: { officer_id: 'admin', officer_name: 'Sample admin' },
         conduct_each_season_setting: true,
         committee_checks_from: null,
         injury_rules: { physio_only_endorsement: false, concussion_min_days: 21 },
@@ -172,8 +191,9 @@ async function offered(picker: string) {
   const group = fieldGroup(picker);
   return within(group)
     .getAllByRole('button')
-    .map((b) => within(b).queryByText(/^Sample/)?.props.children as string | undefined)
-    .filter((t): t is string => !!t && !t.endsWith('✕'))
+    .map((b) => within(b).queryByText(/^\+ Sample/)?.props.children as string | undefined)
+    .filter((t): t is string => !!t)
+    .map((t) => t.replace(/^\+ /, ''))
     .sort();
 }
 
@@ -242,6 +262,63 @@ describe('Safeguarding settings', () => {
     expect(await offered('WWC Registration Officer')).toEqual(['Sample admin', 'Sample committee', 'Sample expiring']);
   });
 
+  it('names several people in a post, right under its search box, and saves them all', async () => {
+    await openSafeguarding();
+    await pickPerson('Child Safety Officer', 'coach', 'Sample coach');
+    const chosen = within(screen.getByTestId('Child Safety Officer chosen'));
+    expect(chosen.getByText('Sample committee  ✕')).toBeTruthy();
+    expect(chosen.getByText('Sample coach  ✕')).toBeTruthy();
+    expect(screen.getByText('2 of 5')).toBeTruthy();
+    await pickPerson('WWC Registration Officer', 'committee', 'Sample committee');
+    await saveSafeguarding();
+    expect(callsTo('admin_set_safeguarding_contacts')[0]).toMatchObject({
+      p_child_safety_officer_ids: ['committee', 'coach'],
+      p_complaints_manager_ids: ['admin'],
+    });
+    expect(callsTo('admin_set_wwc_officers')).toEqual([{ p_profile_ids: ['admin', 'committee'] }]);
+  });
+
+  it('doesn’t offer a Complaints Manager as a Child Safety Officer, or the other way round', async () => {
+    await openSafeguarding();
+    expect(await offered('Child Safety Officer')).not.toContain('Sample admin');
+    expect(await offered('Complaints Manager')).not.toContain('Sample committee');
+  });
+
+  it('shows a holder who can’t act now, and keeps them unless taken off', async () => {
+    await openSafeguarding({
+      admin_safeguarding_posts: [
+        { post: 'child_safety_officer', profile_id: 'lapsed', name: 'Sample lapsed', can_act: false },
+        { post: 'child_safety_officer', profile_id: 'coach', name: 'Sample coach', can_act: true },
+      ],
+    });
+    expect(screen.getByText('Sample lapsed (can’t act: no current check)  ✕')).toBeTruthy();
+    await saveSafeguarding();
+    expect(callsTo('admin_set_safeguarding_contacts')[0]).toMatchObject({
+      p_child_safety_officer_ids: ['lapsed', 'coach'],
+      p_complaints_manager_ids: [],
+    });
+  });
+
+  it('stops offering more once a post has 5 people', async () => {
+    await openSafeguarding({
+      admin_safeguarding_posts: ['a', 'b', 'c', 'd', 'e'].map((id) => ({
+        post: 'complaints_manager',
+        profile_id: id,
+        name: `Sample ${id}`,
+        can_act: true,
+      })),
+    });
+    expect(screen.getByText('That’s the most (5). Take someone off to add another.')).toBeTruthy();
+    await fireEvent.press(screen.getByLabelText('Take Sample a off Complaints Manager'));
+    expect(screen.queryByText('That’s the most (5). Take someone off to add another.')).toBeNull();
+  });
+
+  it('finds people by email as well as name', async () => {
+    await openSafeguarding({ safeguarding_contacts: null });
+    await type('Child Safety Officer', 'coach@');
+    expect(within(fieldGroup('Child Safety Officer')).getByText('+ Sample coach')).toBeTruthy();
+  });
+
   it('saves every setting in order, then goes back', async () => {
     await openSafeguarding();
     // Swap the contacts round and change the rest.
@@ -260,10 +337,10 @@ describe('Safeguarding settings', () => {
     await fireEvent.press(screen.getByText('12 days (elite program)'));
     await saveSafeguarding();
 
-    expect(callsTo('admin_set_safeguarding')).toEqual([
+    expect(callsTo('admin_set_safeguarding_contacts')).toEqual([
       {
-        p_child_safety_officer_id: 'coach',
-        p_complaints_manager_id: 'admin',
+        p_child_safety_officer_ids: ['coach'],
+        p_complaints_manager_ids: ['admin'],
         p_governing_body_name: 'Netball Australia',
         p_governing_body_phone: '1800 000 000',
         p_governing_body_url: 'https://netball.example/report',
@@ -284,7 +361,7 @@ describe('Safeguarding settings', () => {
     ]);
     const saves = rpcNames().filter((n) => n.startsWith('admin_set_'));
     expect(saves).toEqual([
-      'admin_set_safeguarding',
+      'admin_set_safeguarding_contacts',
       'admin_set_minor_injury_photos',
       'admin_set_policies',
       'admin_set_conduct_each_season',
@@ -315,7 +392,7 @@ describe('Safeguarding settings', () => {
     await pickPerson('WWC Registration Officer', 'committee', 'Sample committee');
     await saveSafeguarding();
     expect(screen.getByText('Choose 21 days, or 12 for an elite program')).toBeTruthy();
-    expect(callsTo('admin_set_wwc_officer')).toEqual([]);
+    expect(callsTo('admin_set_wwc_officers')).toEqual([]);
     expect(screen).toHavePathname('/admin/safeguarding');
   });
 
@@ -324,13 +401,13 @@ describe('Safeguarding settings', () => {
     await fireEvent.press(screen.getByText('Sample committee  ✕'));
     expect(within(fieldGroup('Child Safety Officer')).getByText('Nobody chosen.')).toBeTruthy();
     await saveSafeguarding();
-    expect(callsTo('admin_set_safeguarding')[0].p_child_safety_officer_id).toBeNull();
+    expect(callsTo('admin_set_safeguarding_contacts')[0].p_child_safety_officer_ids).toEqual([]);
   });
 
   it('saves the WWC Registration Officer only when it changes', async () => {
     await openSafeguarding();
     await saveSafeguarding();
-    expect(callsTo('admin_set_wwc_officer')).toEqual([]);
+    expect(callsTo('admin_set_wwc_officers')).toEqual([]);
   });
 
   it('saves a new WWC Registration Officer last', async () => {
@@ -338,8 +415,8 @@ describe('Safeguarding settings', () => {
     await fireEvent.press(within(fieldGroup('WWC Registration Officer')).getByText('Sample admin  ✕'));
     await pickPerson('WWC Registration Officer', 'committee', 'Sample committee');
     await saveSafeguarding();
-    expect(callsTo('admin_set_wwc_officer')).toEqual([{ p_profile_id: 'committee' }]);
-    expect(rpcNames().filter((n) => n.startsWith('admin_set_')).at(-1)).toBe('admin_set_wwc_officer');
+    expect(callsTo('admin_set_wwc_officers')).toEqual([{ p_profile_ids: ['committee'] }]);
+    expect(rpcNames().filter((n) => n.startsWith('admin_set_')).at(-1)).toBe('admin_set_wwc_officers');
   });
 
   it('keeps Save busy until the last call has finished, so a second tap can’t send them twice', async () => {
@@ -352,13 +429,13 @@ describe('Safeguarding settings', () => {
     const answer = rpc.getMockImplementation()!;
     const held: (() => void)[] = [];
     rpc.mockImplementation((name: string, args: unknown) =>
-      name === 'admin_set_wwc_officer' || name === 'admin_set_committee_checks_from'
+      name === 'admin_set_wwc_officers' || name === 'admin_set_committee_checks_from'
         ? new Promise((resolve) => held.push(() => resolve(answer(name, args))))
         : answer(name, args),
     );
     const saving = await pressWithoutWaiting(screen.getByText('Save'));
     await settle();
-    expect(callsTo('admin_set_wwc_officer')).toHaveLength(1);
+    expect(callsTo('admin_set_wwc_officers')).toHaveLength(1);
     expect(screen.queryByText('Save')).toBeNull();
     await act(async () => held.shift()!());
     await settle();
@@ -369,7 +446,7 @@ describe('Safeguarding settings', () => {
       await saving.done;
     });
     await settle();
-    expect(callsTo('admin_set_wwc_officer')).toHaveLength(1);
+    expect(callsTo('admin_set_wwc_officers')).toHaveLength(1);
     expect(callsTo('admin_set_committee_checks_from')).toHaveLength(1);
     expect(screen).toHavePathname('/administration');
   });
@@ -410,13 +487,13 @@ describe('Safeguarding settings', () => {
   });
 
   it.each([
-    ['admin_set_safeguarding', 'Choose two different people, so a concern about one of them can go to the other', []],
-    ['admin_set_minor_injury_photos', 'Photos refused', ['admin_set_safeguarding']],
-    ['admin_set_policies', 'Links must start with https://', ['admin_set_safeguarding', 'admin_set_minor_injury_photos']],
+    ['admin_set_safeguarding_contacts', 'Choose two different people, so a concern about one of them can go to the other', []],
+    ['admin_set_minor_injury_photos', 'Photos refused', ['admin_set_safeguarding_contacts']],
+    ['admin_set_policies', 'Links must start with https://', ['admin_set_safeguarding_contacts', 'admin_set_minor_injury_photos']],
     [
       'admin_set_conduct_each_season',
       'Conduct refused',
-      ['admin_set_safeguarding', 'admin_set_minor_injury_photos', 'admin_set_policies'],
+      ['admin_set_safeguarding_contacts', 'admin_set_minor_injury_photos', 'admin_set_policies'],
     ],
   ])('stops at a refused %s, shows why and stays on the screen', async (name, message, before) => {
     await openSafeguarding({ committee_checks_from: '2026-12-01' }, { [name]: message });
@@ -431,7 +508,7 @@ describe('Safeguarding settings', () => {
   it('stops at a refused WWC Registration Officer before the committee checks date', async () => {
     await openSafeguarding(
       { committee_checks_from: '2026-12-01' },
-      { admin_set_wwc_officer: 'The WWC Registration Officer must be an admin or committee member' },
+      { admin_set_wwc_officers: 'The WWC Registration Officer must be an admin or committee member' },
     );
     await fireEvent.press(within(fieldGroup('WWC Registration Officer')).getByText('Sample admin  ✕'));
     await fireEvent.press(screen.getByText('Today'));
@@ -578,7 +655,7 @@ describe('Injuries are seen by', () => {
     expect(callsTo('admin_set_injury_committee')).toEqual([{ p_chosen: true, p_member_ids: ['committee'] }]);
     const saves = rpcNames().filter((n) => n.startsWith('admin_set_'));
     expect(saves.indexOf('admin_set_injury_committee')).toBe(saves.indexOf('admin_set_injury_rules') + 1);
-    expect(saves.at(-1)).toBe('admin_set_wwc_officer');
+    expect(saves.at(-1)).toBe('admin_set_wwc_officers');
     expect(screen).toHavePathname('/administration');
   });
 
@@ -633,7 +710,7 @@ describe('Injuries are seen by', () => {
     await pickPerson('WWC Registration Officer', 'committee', 'Sample committee');
     await saveSafeguarding();
     expect(screen.getByText('Only approved committee members can be chosen to see injuries')).toBeTruthy();
-    expect(callsTo('admin_set_wwc_officer')).toEqual([]);
+    expect(callsTo('admin_set_wwc_officers')).toEqual([]);
     expect(screen).toHavePathname('/admin/safeguarding');
   });
 

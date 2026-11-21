@@ -49,7 +49,7 @@ describe('loadWwccData', () => {
         report_members: recordRpc(members),
         admin_volunteer_exemptions: recordRpc(exemptions),
         admin_wwcc_applications: recordRpc(applications),
-        admin_wwc_officer: recordRpc(officer ? [officer] : []),
+        admin_wwc_officers: recordRpc(Array.isArray(officer) ? officer : officer ? [officer] : []),
       },
       rpcErrors,
     });
@@ -81,6 +81,11 @@ describe('loadWwccData', () => {
     expect(methods(callsTo('screening_notices')[0])).toContainEqual(['order', 'received_on', { ascending: false }]);
     expect(methods(callsTo('policy_acknowledgements')[0])).toContainEqual(['order', 'acknowledged_at', { ascending: false }]);
     expect(methods(callsTo('admin_volunteer_exemptions')[0])).toEqual([['range', 0, 999]]);
+  });
+
+  it('names every WWC Registration Officer when the club has several', async () => {
+    backend([{ officer_name: 'Alex Admin' }, { officer_name: 'Morgan Committee' }]);
+    expect((await loadWwccData()).officerName).toBe('Alex Admin and Morgan Committee');
   });
 
   it('has no officer name when the club hasn’t named one', async () => {

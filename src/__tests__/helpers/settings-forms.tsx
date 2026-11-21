@@ -42,10 +42,14 @@ export async function type(label: string | RegExp, text: string, index = 0) {
   await fireEvent.changeText(input(label, index), text);
 }
 
-/** Searches a PersonPicker by name and taps the match. */
+/**
+ * Searches a PersonPicker or PeoplePicker by name and taps the match (a
+ * PeoplePicker shows matches as "+ Name").
+ */
 export async function pickPerson(pickerLabel: string, search: string, name: string) {
   await type(pickerLabel, search);
-  await fireEvent.press(within(fieldGroup(pickerLabel)).getByText(name));
+  const escaped = name.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
+  await fireEvent.press(within(fieldGroup(pickerLabel)).getByText(new RegExp(`^(\\+ )?${escaped}$`)));
 }
 
 /** Flips a Switch found by its accessibility label. */

@@ -41,8 +41,46 @@ export const involvesChildLabels: Record<InvolvesChild, string> = {
   unsure: 'Not sure',
 };
 
-/** A verified parent or guardian of the child a concern is about. */
-export type ConcernGuardian = { guardian_id: string; name: string; email: string | null };
+/** A verified parent or guardian of a child a concern is about. */
+export type ConcernGuardian = {
+  guardian_id: string;
+  name: string;
+  email: string | null;
+  child_id?: string;
+  child_name?: string;
+};
+
+/**
+ * The parents and guardians grouped by child, in the order listed: a concern
+ * can be about several children.
+ */
+export function guardiansByChild(guardians: ConcernGuardian[]) {
+  const groups: { childName: string | null; guardians: ConcernGuardian[] }[] = [];
+  for (const g of guardians) {
+    const name = g.child_name ?? null;
+    const last = groups[groups.length - 1];
+    if (last && last.childName === name) last.guardians.push(g);
+    else groups.push({ childName: name, guardians: [g] });
+  }
+  return groups;
+}
+
+/**
+ * The members a concern is about, by name: everyone named, or the single
+ * member an older register row gives.
+ */
+export function concernAboutNames(c: Pick<Concern, 'about_members' | 'about_member_name'>): string[] {
+  if (c.about_members && c.about_members.length > 0) return c.about_members.map((m) => m.name);
+  return c.about_member_name ? [c.about_member_name] : [];
+}
+
+/** Who a concern is about in a line: the members named, else the raiser's words. */
+export function concernAboutLine(
+  c: Pick<Concern, 'about_members' | 'about_member_name' | 'about_text'>,
+): string | null {
+  const names = concernAboutNames(c);
+  return names.length > 0 ? names.join(', ') : (c.about_text ?? null);
+}
 
 /** Someone who looked at a concern's parents and guardians, and when. */
 export type ConcernGuardianView = { viewer_name: string | null; created_at: string };
@@ -54,6 +92,9 @@ export type ConcernGuardianView = { viewer_name: string | null; created_at: stri
 export function guardianViewsLine(views: ConcernGuardianView[]) {
   return views.map((v) => `${v.viewer_name ?? 'A former member'} ${localDay(v.created_at)}`).join(', ');
 }
+
+/** The most people a concern can name (the database's limit too). */
+export const MAX_ABOUT = 10;
 
 /** Someone who can be named as who a concern is about. */
 export type ConcernPerson = { id: string; name: string };
@@ -72,6 +113,21 @@ export function matchPeople(people: ConcernPerson[], typed: string, max: number)
     return search.length >= 2 && lower.includes(search);
   };
   return people.filter((p) => matches(p.name)).slice(0, max);
+}
+
+/**
+ * The names of the club's Child Safety Officers or Complaints Managers who
+ * can act now, from `safeguarding_contacts` (one name from an older server).
+ */
+export function contactNames(
+  contacts: SafeguardingContacts | null | undefined,
+  post: 'officers' | 'managers',
+): string[] {
+  if (!contacts) return [];
+  const list = post === 'officers' ? contacts.child_safety_officers : contacts.complaints_managers;
+  if (list) return list.map((p) => p.name);
+  const one = post === 'officers' ? contacts.child_safety_officer_name : contacts.complaints_manager_name;
+  return one ? [one] : [];
 }
 
 /** The club's safeguarding contacts, loaded when the screen is shown. */
@@ -151,7 +207,7 @@ export function concernsReport(
   const row = (c: Concern): ReportRow => ({
     cells: [
       localDay(c.created_at),
-      c.about_member_name ?? c.about_text ?? '',
+      concernAboutLine(c) ?? '',
       c.reported_message_body
         ? `${c.body}\n\nReported message from ${c.reported_message_sender_name ?? 'a former member'}, ${localDay(c.reported_message_sent_at ?? c.created_at)}: “${c.reported_message_body}”`
         : c.body,
@@ -201,7 +257,7 @@ export function concernsReport(
         empty: 'None closed.',
       },
     ],
-    footnote: `Only the Child Safety Officer, the Complaints Manager and admins can see concerns, and nobody sees one about themselves, so this copy leaves out any concern about the person who made it. Child abuse and serious crimes go to Police${governingBody ? ` and ${governingBody}` : ''} straight away.`,
+    footnote: `Only the Child Safety Officers, the Complaints Managers and admins can see concerns, and nobody sees one about themselves, so this copy leaves out any concern about the person who made it. Child abuse and serious crimes go to Police${governingBody ? ` and ${governingBody}` : ''} straight away.`,
     landscape: true,
   };
 }
