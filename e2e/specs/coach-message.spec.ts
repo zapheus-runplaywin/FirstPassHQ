@@ -119,7 +119,8 @@ test('an athlete has no New message button, and /messages/new sends them Home', 
   const backend = await openApp(page, { me: athlete, teams: [openSquad], memberships });
   await expect(page.getByText(`Hi ${athlete.full_name}`)).toBeVisible();
   await page.getByRole('button', { name: 'Messages No new messages' }).click();
-  await expect(page.getByText('No messages yet.', { exact: false })).toBeVisible();
+  await expect(page.getByText('No messages in your inbox.', { exact: false })).toBeVisible();
+  await expect(page.getByText('Archived', { exact: true })).toBeVisible();
   await expect(page.getByRole('button', { name: 'New message', exact: true })).toHaveCount(0);
   await expect(page.getByRole('button', { name: 'Sent', exact: true })).toHaveCount(0);
   expect(backend.called('rpc/my_sent_messages')).toBe(false);
