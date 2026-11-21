@@ -80,7 +80,8 @@ update public.profiles set extra_roles = '{guardian,committee}' where id = pg_te
 -- What the reports are built from.
 insert into public.club_settings (id) values (true) on conflict (id) do nothing;
 insert into public.safeguarding_settings (id) values (true) on conflict (id) do nothing;
-update public.safeguarding_settings set wwc_officer_id = pg_temp.id('01') where id;
+delete from public.safeguarding_post_holders where post = 'wwc_officer';
+insert into public.safeguarding_post_holders (post, profile_id) values ('wwc_officer', pg_temp.id('01'));
 insert into public.stand_downs (profile_id, member_name, reason, started_at, lifted_at)
   values (pg_temp.id('12'), 'Drew Lapsed', 'other', now() - interval '1 month', now() - interval '1 week');
 insert into public.screening_notices (profile_id, member_name, kind, received_on, action)

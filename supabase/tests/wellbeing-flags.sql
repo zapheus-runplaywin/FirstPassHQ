@@ -34,9 +34,10 @@ $$ select pg_temp.as_member(n);
 insert into public.club_settings (id) values (true) on conflict (id) do nothing;
 insert into public.safeguarding_settings (id) values (true) on conflict (id) do nothing;
 -- Casey Coach is the Child Safety Officer, Emery Manager the Complaints Manager.
-update public.safeguarding_settings
-set child_safety_officer_id = pg_temp.id('11'), complaints_manager_id = pg_temp.id('13')
-where id;
+delete from public.safeguarding_post_holders where post = 'child_safety_officer';
+insert into public.safeguarding_post_holders (post, profile_id) values ('child_safety_officer', pg_temp.id('11'));
+delete from public.safeguarding_post_holders where post = 'complaints_manager';
+insert into public.safeguarding_post_holders (post, profile_id) values ('complaints_manager', pg_temp.id('13'));
 
 -- More athletes: 61 an adult in no squad or team (not selected), 62 asking
 -- to join, 63 a coach who also plays.
@@ -192,11 +193,12 @@ update public.profiles set stood_down_at = null where id = pg_temp.id('11');
 update public.profiles set wwcc_expires_on = current_date - 1 where id = pg_temp.id('11');
 select pg_temp.officer_cannot('11');
 update public.profiles set wwcc_expires_on = current_date + 400 where id = pg_temp.id('11');
-update public.safeguarding_settings set child_safety_officer_id = null where id;
+delete from public.safeguarding_post_holders where post = 'child_safety_officer';
 select pg_temp.officer_cannot('11');
 select pg_temp.ok('with no officer named, nobody gets a to-do count', public.wellbeing_flag_alerts() is null, true);
 -- A new officer sees the flags straight away.
-update public.safeguarding_settings set child_safety_officer_id = pg_temp.id('14') where id;
+delete from public.safeguarding_post_holders where post = 'child_safety_officer';
+insert into public.safeguarding_post_holders (post, profile_id) values ('child_safety_officer', pg_temp.id('14'));
 select pg_temp.as_member('14');
 select pg_temp.is('a newly named officer sees the flags', pg_temp.flag_days('32'), 3);
 select pg_temp.officer_cannot('11');

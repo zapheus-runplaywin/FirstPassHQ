@@ -56,6 +56,13 @@ jest.mock('@/global.css', () => ({}));
 type Who = PersonaName | Persona;
 
 const officer: Persona = { ...personas.coach, isSafeguardingOfficer: true };
+
+/** Whether the chip holding this text is shown as chosen. */
+function isChosen(text: string) {
+  let node = screen.getByText(text) as ReturnType<typeof screen.getByText> | null;
+  while (node && node.props.accessibilityState === undefined) node = node.parent;
+  return node?.props.accessibilityState?.selected === true;
+}
 const rpcCalls = () =>
   (supabase.rpc as jest.Mock).mock.calls as [string, Record<string, unknown>][];
 const rpcNames = () => rpcCalls().map(([n]) => n);
@@ -271,6 +278,45 @@ describe('asking to read messages', () => {
       expect(replace).toHaveBeenCalledWith({
         pathname: '/concerns/message-access/[id]',
         params: { id: 'req-9' },
+      });
+    } finally {
+      replace.mockRestore();
+    }
+  });
+
+  it('offers each person a concern is about on its own, and asks for the one picked', async () => {
+    const replace = jest.spyOn(router, 'replace').mockImplementation(() => {});
+    try {
+      await openScreen(
+        officer,
+        { 'concerns/message-access/new': NewMessageAccessScreen },
+        '/concerns/message-access/new?concern=con-1&reference=C-0007',
+        {},
+        {
+          rpcs: {
+            message_access_people: [
+              { link: 'about', profile_id: 'coach-2', name: 'Sample Assistant' },
+              { link: 'about', profile_id: 'kid-1', name: 'Sample Child' },
+              { link: 'raised_by', profile_id: 'guardian', name: 'Sample Guardian' },
+            ],
+            concern_about_people: [],
+            request_message_access: 'req-9',
+          },
+        },
+      );
+      expect(screen.getByText('Who the concern is about: Sample Assistant')).toBeTruthy();
+      await fireEvent.press(screen.getByText('Who the concern is about: Sample Child'));
+      expect(isChosen('Who the concern is about: Sample Child')).toBe(true);
+      expect(isChosen('Who the concern is about: Sample Assistant')).toBe(false);
+      await fireEvent.changeText(
+        screen.getByPlaceholderText(/What you’re checking/),
+        'Check the late night messages',
+      );
+      await fireEvent.press(screen.getByText('Send to an admin'));
+      await settle();
+      expect(rpcCalls().find(([n]) => n === 'request_message_access')?.[1]).toMatchObject({
+        p_subject_id: 'kid-1',
+        p_link: 'about',
       });
     } finally {
       replace.mockRestore();

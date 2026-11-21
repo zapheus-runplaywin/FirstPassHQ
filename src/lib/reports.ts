@@ -251,7 +251,7 @@ export function wwccReport(
 
   return {
     title: 'Working With Children Checks',
-    subtitle: `Approved coaches, managers, physios, statisticians, temporary helpers, committee members and admins. WWC Registration Officer: ${officerName ?? 'not named yet'}`,
+    subtitle: `Approved coaches, managers, physios, statisticians, temporary helpers, committee members and admins. WWC Registration ${officerName?.includes(' and ') ? 'Officers' : 'Officer'}: ${officerName ?? 'not named yet'}`,
     landscape: true,
     stats: [
       { label: 'Need a check', value: people.length },

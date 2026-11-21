@@ -808,6 +808,10 @@ export type SafeguardingContacts = {
   governing_body_phone: string | null;
   governing_body_url: string | null;
   policy_url: string | null;
+  /** Every Child Safety Officer who can act now (a club can name up to 5). */
+  child_safety_officers?: { id: string; name: string }[];
+  /** Every Complaints Manager who can act now. */
+  complaints_managers?: { id: string; name: string }[];
 };
 
 export type ConcernStatus = 'received' | 'referred' | 'under_review' | 'closed';
@@ -847,6 +851,8 @@ export type Concern = {
   reported_message_body?: string | null;
   /** A short reference such as C-0007, to name it without its details. */
   reference?: string;
+  /** Everyone the concern is about, in the order named (id null once their account is gone). */
+  about_members?: { id: string | null; name: string }[];
 };
 
 /** Something done about a concern, from `concern_history`. */

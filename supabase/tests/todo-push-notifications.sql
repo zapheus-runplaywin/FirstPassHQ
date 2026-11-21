@@ -109,7 +109,8 @@ select pg_temp.ok('the concern''s words never go in a notification', exists (
 
 -- Athletes flagged on 3 days in 7 reach the Child Safety Officer only.
 insert into public.safeguarding_settings (id) values (true) on conflict (id) do nothing;
-update public.safeguarding_settings set child_safety_officer_id = pg_temp.id('11') where id;
+delete from public.safeguarding_post_holders where post = 'child_safety_officer';
+insert into public.safeguarding_post_holders (post, profile_id) values ('child_safety_officer', pg_temp.id('11'));
 insert into public.check_ins (athlete_id, day, sleep, soreness, stress, mood, note)
 select pg_temp.id('32'), current_date - d, 4, 1, 4, 5, 'Private note' from generate_series(1, 3) d
 on conflict (athlete_id, day) do update set soreness = excluded.soreness;
@@ -123,7 +124,7 @@ select pg_temp.ok('the check-in note never goes in a notification', exists (
   select 1 from public.member_todos(pg_temp.id('11')) m where m.title || m.detail like '%Private note%'), false);
 -- The officer also handles concerns; step back so the sending checks below
 -- only have the admin handling them.
-update public.safeguarding_settings set child_safety_officer_id = null where id;
+delete from public.safeguarding_post_holders where post = 'child_safety_officer';
 
 -- An injury a coach logged reaches the athlete, without the body area.
 select pg_temp.as_member('11');
@@ -182,7 +183,8 @@ do $$ begin
   perform public.set_child_consent('00000000-0000-0000-0000-000000000031', true, true);
   perform set_config('request.jwt.claim.sub', '', false);
 end $$;
-update public.safeguarding_settings set child_safety_officer_id = pg_temp.id('13') where id;
+delete from public.safeguarding_post_holders where post = 'child_safety_officer';
+insert into public.safeguarding_post_holders (post, profile_id) values ('child_safety_officer', pg_temp.id('13'));
 select pg_temp.ok('while it''s off, the coach has no load to-do', pg_temp.has('11', 'load-flags:'), false);
 select pg_temp.ok('nor the officer', pg_temp.has('13', 'load-patterns:'), false);
 update public.club_settings set features = features || '{"trainingLoad": true}' where id;
@@ -199,7 +201,7 @@ select pg_temp.ok('an admin who isn''t the officer isn''t', pg_temp.has('01', 'l
 update public.club_settings set features = features || '{"trainingLoad": true, "checkIns": false}' where id;
 select pg_temp.ok('with Daily check-ins off, the coach has no load to-do', pg_temp.has('11', 'load-flags:'), false);
 update public.club_settings set features = features - 'trainingLoad' - 'checkIns' where id;
-update public.safeguarding_settings set child_safety_officer_id = null where id;
+delete from public.safeguarding_post_holders where post = 'child_safety_officer';
 
 -- Registers (off by default): policy owners' reviews and conflict
 -- declarations for committee members and coaches.

@@ -8,7 +8,7 @@ import { Button, PressableCard } from '@/components/ui';
 import { Spacing } from '@/constants/theme';
 import { useAuth } from '@/lib/auth';
 import { useClub } from '@/lib/club';
-import { concernStatusLabels } from '@/lib/concerns';
+import { concernAboutLine, concernStatusLabels } from '@/lib/concerns';
 import { useLoadPatternAlerts } from '@/lib/load-monitoring';
 import { useMessageAccessTodo } from '@/lib/message-access';
 import { localDay } from '@/lib/reports';
@@ -123,9 +123,7 @@ function Section({ title, concerns, empty }: { title: string; concerns: Concern[
             <ThemedText type="smallBold">
               {c.reference ? `${c.reference} · ` : ''}
               {localDay(c.created_at)}
-              {c.about_member_name || c.about_text
-                ? ` · about ${c.about_member_name ?? c.about_text}`
-                : ''}
+              {concernAboutLine(c) ? ` · about ${concernAboutLine(c)}` : ''}
             </ThemedText>
             <ThemedText type="small" numberOfLines={2}>
               {c.body}

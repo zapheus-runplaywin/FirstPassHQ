@@ -3,7 +3,7 @@ import { useCallback, useState } from 'react';
 import { Platform, StyleSheet, Switch, View } from 'react-native';
 
 import { DateField } from '@/components/date-field';
-import { PersonPicker } from '@/components/person-picker';
+import { PeoplePicker } from '@/components/people-picker';
 import { Screen } from '@/components/screen';
 import { ThemedText } from '@/components/themed-text';
 import { Button, Card, ChipGroup, ErrorText, TextField } from '@/components/ui';
@@ -11,6 +11,12 @@ import { Spacing } from '@/constants/theme';
 import { useTheme } from '@/hooks/use-theme';
 import { isMinor } from '@/lib/age';
 import { PROFILE_COLUMNS } from '@/lib/auth';
+import {
+  type PickablePerson,
+  withoutPerson,
+  withPerson,
+} from '@/lib/people-picker';
+import { memberName } from '@/lib/reports';
 import { hasRole } from '@/lib/roles';
 import { wwccStatus } from '@/lib/safety';
 import { supabase } from '@/lib/supabase';
@@ -22,17 +28,39 @@ import type {
   WwccApplication,
 } from '@/lib/types';
 
+/** The most people in each safeguarding post (the database's limit too). */
+const MAX_PER_POST = 5;
+
+/** Someone holding a post, from `admin_safeguarding_posts`. */
+type PostHolder = {
+  post: 'child_safety_officer' | 'complaints_manager' | 'wwc_officer';
+  profile_id: string;
+  name: string;
+  can_act: boolean;
+};
+
+/** A holder as the picker shows them, noting one who can't act now. */
+function holderPerson(h: PostHolder): PickablePerson {
+  return { id: h.profile_id, name: h.name, note: h.can_act ? null : 'can’t act: no current check' };
+}
+
+/** Same people, in any order. */
+function samePeople(a: PickablePerson[], b: PickablePerson[]) {
+  return a.length === b.length && a.every((p) => b.some((q) => q.id === p.id));
+}
+
 /**
- * The club's Child Safety Officer and Complaints Manager, who see and act on
- * concerns members raise, and the governing body's contact details and the
- * club's safeguarding policy, shown wherever a concern can be raised.
+ * The club's Child Safety Officers and Complaints Managers, who see and act
+ * on concerns members raise, and the governing body's contact details and the
+ * club's safeguarding policy, shown wherever a concern can be raised. A
+ * larger club can name up to 5 people in each post.
  */
 export default function SafeguardingScreen() {
   const [eligible, setEligible] = useState<Profile[]>([]);
-  const [officer, setOfficer] = useState<string | null>(null);
-  const [manager, setManager] = useState<string | null>(null);
-  const [wwcOfficer, setWwcOfficer] = useState<string | null>(null);
-  const [savedWwcOfficer, setSavedWwcOfficer] = useState<string | null>(null);
+  const [officers, setOfficers] = useState<PickablePerson[]>([]);
+  const [managers, setManagers] = useState<PickablePerson[]>([]);
+  const [wwcOfficers, setWwcOfficers] = useState<PickablePerson[]>([]);
+  const [savedWwcOfficers, setSavedWwcOfficers] = useState<PickablePerson[]>([]);
   const [bodyName, setBodyName] = useState('');
   const [bodyPhone, setBodyPhone] = useState('');
   const [bodyUrl, setBodyUrl] = useState('');
@@ -63,7 +91,7 @@ export default function SafeguardingScreen() {
       exemptionsResult,
       photosResult,
       policiesResult,
-      wwcOfficerResult,
+      postsResult,
       conductResult,
       committeeFromResult,
       injuryRulesResult,
@@ -76,7 +104,7 @@ export default function SafeguardingScreen() {
       supabase.rpc('admin_volunteer_exemptions'),
       supabase.rpc('safeguarding_photo_setting'),
       supabase.rpc('club_policies').maybeSingle(),
-      supabase.rpc('admin_wwc_officer').maybeSingle(),
+      supabase.rpc('admin_safeguarding_posts'),
       supabase.rpc('conduct_each_season_setting'),
       supabase.rpc('committee_checks_from'),
       supabase.rpc('injury_rules').maybeSingle(),
@@ -84,9 +112,13 @@ export default function SafeguardingScreen() {
       supabase.rpc('statistician_checks_from'),
       supabase.rpc('admin_injury_committee').maybeSingle(),
     ]);
-    const officerId = (wwcOfficerResult.data as { officer_id: string } | null)?.officer_id ?? null;
-    setWwcOfficer(officerId);
-    setSavedWwcOfficer(officerId);
+    const holders = (postsResult.data as PostHolder[] | null) ?? [];
+    const holding = (post: PostHolder['post']) =>
+      holders.filter((h) => h.post === post).map(holderPerson);
+    setOfficers(holding('child_safety_officer'));
+    setManagers(holding('complaints_manager'));
+    setWwcOfficers(holding('wwc_officer'));
+    setSavedWwcOfficers(holding('wwc_officer'));
     const policies = policiesResult.data as ClubPolicies | null;
     setPrivacyUrl(policies?.privacy_policy_url ?? '');
     setConductUrl(policies?.code_of_conduct_url ?? '');
@@ -114,8 +146,6 @@ export default function SafeguardingScreen() {
     setStatisticianFrom(statsFrom);
     setSavedStatisticianFrom(statsFrom);
     const contacts = contactsResult.data as SafeguardingContacts | null;
-    setOfficer(contacts?.child_safety_officer_id ?? null);
-    setManager(contacts?.complaints_manager_id ?? null);
     setBodyName(contacts?.governing_body_name ?? '');
     setBodyPhone(contacts?.governing_body_phone ?? '');
     setBodyUrl(contacts?.governing_body_url ?? '');
@@ -155,9 +185,9 @@ export default function SafeguardingScreen() {
   async function save() {
     setBusy(true);
     setError(null);
-    const { error: rpcError } = await supabase.rpc('admin_set_safeguarding', {
-      p_child_safety_officer_id: officer,
-      p_complaints_manager_id: manager,
+    const { error: rpcError } = await supabase.rpc('admin_set_safeguarding_contacts', {
+      p_child_safety_officer_ids: officers.map((p) => p.id),
+      p_complaints_manager_ids: managers.map((p) => p.id),
       p_governing_body_name: bodyName,
       p_governing_body_phone: bodyPhone,
       p_governing_body_url: bodyUrl,
@@ -197,7 +227,7 @@ export default function SafeguardingScreen() {
             p_chosen: injuryCommittee.chosen,
             p_member_ids: injuryCommittee.memberIds,
           });
-    // The WWC Registration Officer and committee checks date go last, as they
+    // The WWC Registration Officers and committee checks date go last, as they
     // can change who manages these settings.
     const { error: officerError } =
       rpcError ||
@@ -206,9 +236,11 @@ export default function SafeguardingScreen() {
       conductError ||
       injuryError ||
       injuryCommitteeError ||
-      wwcOfficer === savedWwcOfficer
+      samePeople(wwcOfficers, savedWwcOfficers)
         ? { error: null }
-        : await supabase.rpc('admin_set_wwc_officer', { p_profile_id: wwcOfficer });
+        : await supabase.rpc('admin_set_wwc_officers', {
+            p_profile_ids: wwcOfficers.map((p) => p.id),
+          });
     const { error: committeeError } =
       rpcError ||
       photosError ||
@@ -252,38 +284,46 @@ export default function SafeguardingScreen() {
     router.back();
   }
 
+  const choosable = eligible.map(asPickable);
+
   return (
     <Screen>
       <ThemedText type="small" themeColor="textSecondary">
         Members can raise a concern from their home screen, the check-in screen, injuries and
-        messages. The Child Safety Officer, the Complaints Manager and admins see every concern,
-        except one about themselves. Choose two different people, each an adult with a current
-        Working With Children Check, so a concern about one can go to the other.
+        messages. The Child Safety Officers, the Complaints Managers and admins see every concern,
+        except one about themselves. Name each an adult with a current Working With Children
+        Check. A larger club can name up to {MAX_PER_POST} people in each post. Nobody can hold
+        both posts, so a concern about one person can always go to another.
       </ThemedText>
-      <PersonPicker
+      <PeoplePicker
         label="Child Safety Officer"
-        people={eligible}
-        selected={officer}
-        onChange={setOfficer}
+        people={choosable.filter((p) => !managers.some((m) => m.id === p.id))}
+        selected={officers}
+        onAdd={(p) => setOfficers((list) => withPerson(list, p))}
+        onRemove={(p) => setOfficers((list) => withoutPerson(list, p.id))}
+        max={MAX_PER_POST}
+        placeholder="Name or email"
       />
-      <PersonPicker
+      <PeoplePicker
         label="Complaints Manager"
-        people={eligible}
-        selected={manager}
-        onChange={setManager}
+        people={choosable.filter((p) => !officers.some((o) => o.id === p.id))}
+        selected={managers}
+        onAdd={(p) => setManagers((list) => withPerson(list, p))}
+        onRemove={(p) => setManagers((list) => withoutPerson(list, p.id))}
+        max={MAX_PER_POST}
+        placeholder="Name or email"
       />
 
-      <PersonPicker
+      <PeoplePicker
         label="WWC Registration Officer"
-        people={eligible.filter((m) => hasRole(m, 'admin', 'committee'))}
-        selected={wwcOfficer}
-        onChange={setWwcOfficer}
+        hint="An admin or committee member who keeps the club’s Working With Children Check records, registers members’ cards with the club through the Screening Unit and receives its notices. Shown on the Working With Children Checks report."
+        people={eligible.filter((m) => hasRole(m, 'admin', 'committee')).map(asPickable)}
+        selected={wwcOfficers}
+        onAdd={(p) => setWwcOfficers((list) => withPerson(list, p))}
+        onRemove={(p) => setWwcOfficers((list) => withoutPerson(list, p.id))}
+        max={MAX_PER_POST}
+        placeholder="Name or email"
       />
-      <ThemedText type="small" themeColor="textSecondary">
-        An admin or committee member who keeps the club’s Working With Children Check records,
-        registers members’ cards with the club through the Screening Unit and receives its notices.
-        Shown on the Working With Children Checks report.
-      </ThemedText>
 
       {savedCommitteeFrom ? (
         <View style={styles.group}>
@@ -537,6 +577,11 @@ export default function SafeguardingScreen() {
       <Button title="Save" onPress={save} busy={busy} />
     </Screen>
   );
+}
+
+/** A member as the picker searches them: by name or email. */
+function asPickable(m: Profile): PickablePerson {
+  return { id: m.id, name: memberName(m), email: m.email };
 }
 
 /** Who on the committee sees injuries (customer review R7). */

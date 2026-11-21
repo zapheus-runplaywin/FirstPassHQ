@@ -234,7 +234,7 @@ describe('Working With Children Checks', () => {
         rpcs: {
           report_members: [coach, manager, athlete],
           admin_volunteer_exemptions: [],
-          admin_wwc_officer: [{ officer_name: 'Wren Officer' }],
+          admin_wwc_officers: [{ officer_name: 'Wren Officer' }],
           ...options.rpcs,
         },
       },
@@ -252,6 +252,13 @@ describe('Working With Children Checks', () => {
     expect(all).toContain('Squads and teams: Open A');
     expect(all).toContain('Status: Expired');
     expect(all).not.toContain('Ari Athlete');
+  });
+
+  it('names every WWC Registration Officer when the club has several', async () => {
+    await openWwcc({
+      rpcs: { admin_wwc_officers: [{ officer_name: 'Wren Officer' }, { officer_name: 'Sky Officer' }] },
+    });
+    expect(screen.getByText(/WWC Registration Officers: Wren Officer and Sky Officer$/)).toBeTruthy();
   });
 
   it('exports the same report as a PDF named for the club, report and day', async () => {

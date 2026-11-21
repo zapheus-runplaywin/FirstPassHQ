@@ -2,6 +2,7 @@ import { router, useFocusEffect, useLocalSearchParams } from 'expo-router';
 import { useCallback, useState } from 'react';
 import { StyleSheet, View } from 'react-native';
 
+import { PeoplePicker } from '@/components/people-picker';
 import { ReportedMessage } from '@/components/safeguarding';
 import { Screen } from '@/components/screen';
 import { ThemedText } from '@/components/themed-text';
@@ -9,23 +10,22 @@ import { Button, Card, ChipGroup, ErrorText, TextField } from '@/components/ui';
 import { Spacing } from '@/constants/theme';
 import { formatDate } from '@/lib/age';
 import {
+  concernAboutNames,
   concernEventLabels,
   concernStatusLabels,
   type ConcernGuardian,
   type ConcernGuardianView,
   type ConcernPerson,
+  guardiansByChild,
   guardianViewsLine,
   involvesChildLabels,
-  matchPeople,
+  MAX_ABOUT,
   useSafeguardingContacts,
 } from '@/lib/concerns';
 import { useAuth } from '@/lib/auth';
 import { localDay } from '@/lib/reports';
 import { supabase } from '@/lib/supabase';
 import type { Concern, ConcernEvent, ConcernEventKind, ConcernStatus } from '@/lib/types';
-
-/** How many people to offer while searching for who it's about. */
-const PERSON_MATCHES = 5;
 
 /**
  * One concern for those who handle it: what was raised, everything done about
@@ -42,9 +42,9 @@ export default function ConcernScreen() {
   const [guardianViews, setGuardianViews] = useState<ConcernGuardianView[]>([]);
   const [note, setNote] = useState('');
   const [status, setStatus] = useState<ConcernStatus | null>(null);
-  const [aboutSearch, setAboutSearch] = useState('');
   const [busy, setBusy] = useState<string | null>(null);
   const [error, setError] = useState<string | null>(null);
+  const [aboutError, setAboutError] = useState<string | null>(null);
 
   const load = useCallback(async () => {
     const [registerResult, historyResult, peopleResult] = await Promise.all([
@@ -60,7 +60,7 @@ export default function ConcernScreen() {
     setPeople((peopleResult.data as ConcernPerson[] | null) ?? []);
     // The child's verified parents and guardians, when it names a child. Asked
     // for after the register so the look is kept only for a concern shown.
-    const shown = found?.about_member_id ? found : null;
+    const shown = found && concernAboutNames(found).length > 0 ? found : null;
     const guardianResult = shown
       ? await supabase.rpc('concern_guardians', { p_concern_id: id })
       : { data: [] };
@@ -98,19 +98,18 @@ export default function ConcernScreen() {
     load();
   }
 
-  async function setAbout(memberId: string | null) {
+  async function changeAbout(memberId: string, add: boolean) {
     setBusy('about');
-    setError(null);
-    const { error: rpcError } = await supabase.rpc('set_concern_about', {
+    setAboutError(null);
+    const { error: rpcError } = await supabase.rpc(add ? 'add_concern_about' : 'remove_concern_about', {
       p_concern_id: id,
       p_member_id: memberId,
     });
     setBusy(null);
     if (rpcError) {
-      setError(rpcError.message);
+      setAboutError(rpcError.message);
       return;
     }
-    setAboutSearch('');
     load();
   }
 
@@ -128,7 +127,14 @@ export default function ConcernScreen() {
 
   const body = contacts?.governing_body_name ?? 'the governing body';
   const referred = history.some((e) => e.kind === 'referred_police' || e.kind === 'referred_governing_body');
-  const matches = matchPeople(people, aboutSearch, PERSON_MATCHES);
+  const aboutNames = concernAboutNames(concern);
+  // Everyone named, as the picker shows them. An older register row names one.
+  const aboutPeople = (
+    concern.about_members ??
+    (concern.about_member_id
+      ? [{ id: concern.about_member_id, name: concern.about_member_name ?? 'A member' }]
+      : [])
+  ).flatMap((m) => (m.id ? [{ id: m.id, name: m.name }] : []));
 
   return (
     <Screen>
@@ -150,8 +156,8 @@ export default function ConcernScreen() {
           {concernStatusLabels[concern.status]} · raised {localDay(concern.created_at)}
         </ThemedText>
         <ThemedText type="small">{concern.body}</ThemedText>
-        <Detail label="About" value={concern.about_member_name ?? concern.about_text} />
-        {concern.about_member_name && concern.about_text && concern.about_text !== concern.about_member_name ? (
+        <Detail label="About" value={aboutNames.length > 0 ? aboutNames.join(', ') : concern.about_text} />
+        {aboutNames.length > 0 && concern.about_text && !aboutNames.includes(concern.about_text) ? (
           <Detail label="In their words" value={concern.about_text} />
         ) : null}
         <Detail label="Happened" value={concern.happened_on ? formatDate(concern.happened_on) : null} />
@@ -175,14 +181,18 @@ export default function ConcernScreen() {
 
       {guardians.length > 0 ? (
         <Card testID="concern-guardians">
-          <ThemedText type="smallBold">
-            {concern.about_member_name ?? 'The child'}’s parents and guardians
-          </ThemedText>
-          {guardians.map((g) => (
-            <ThemedText key={g.guardian_id} type="small">
-              {g.name}
-              {g.email ? ` · ${g.email}` : ''}
-            </ThemedText>
+          {guardiansByChild(guardians).map((group) => (
+            <View key={group.childName ?? 'child'} style={styles.guardianGroup}>
+              <ThemedText type="smallBold">
+                {group.childName ?? aboutNames[0] ?? 'The child'}’s parents and guardians
+              </ThemedText>
+              {group.guardians.map((g) => (
+                <ThemedText key={`${g.child_id ?? ''}${g.guardian_id}`} type="small">
+                  {g.name}
+                  {g.email ? ` · ${g.email}` : ''}
+                </ThemedText>
+              ))}
+            </View>
           ))}
           <ThemedText type="small" themeColor="textSecondary">
             Verified parents and guardians only. Think before contacting them if the concern may be
@@ -298,38 +308,19 @@ export default function ConcernScreen() {
         </View>
       ) : null}
 
-      <View style={styles.group}>
-        <ThemedText type="smallBold">Who it’s about</ThemedText>
-        <ThemedText type="small" themeColor="textSecondary">
-          Name the member it’s about so they can’t see it, even if they’re an admin or handle
-          concerns. If you name yourself, you lose it too.
-        </ThemedText>
-        <TextField
-          label="Search members"
-          value={aboutSearch}
-          onChangeText={setAboutSearch}
-          placeholder="Name"
-        />
-        {matches.length > 0 ? (
-          <ChipGroup
-            options={matches.map((p) => ({ value: p.id, label: p.name }))}
-            selected={[]}
-            onToggle={setAbout}
-          />
-        ) : aboutSearch.trim() ? (
-          <ThemedText type="small" themeColor="textSecondary">
-            No approved member’s name matches “{aboutSearch.trim()}”.
-          </ThemedText>
-        ) : null}
-        {concern.about_member_id ? (
-          <Button
-            title="Clear who it’s about"
-            variant="secondary"
-            onPress={() => setAbout(null)}
-            busy={busy === 'about'}
-          />
-        ) : null}
-      </View>
+      <PeoplePicker
+        label="Who it’s about"
+        hint="Name every member it’s about, so none of them can see it, even if they’re an admin or handle concerns. Each change is saved straight away and kept in the history. If you name yourself, you lose it too."
+        people={people}
+        selected={aboutPeople}
+        onAdd={(p) => changeAbout(p.id, true)}
+        onRemove={(p) => changeAbout(p.id, false)}
+        max={MAX_ABOUT}
+        searchLabel="Search members"
+        noneChosen="No member named."
+        disabled={busy === 'about'}
+      />
+      <ErrorText>{aboutError}</ErrorText>
     </Screen>
   );
 }
@@ -345,4 +336,5 @@ function Detail({ label, value }: { label: string; value: string | null | undefi
 
 const styles = StyleSheet.create({
   group: { gap: Spacing.two },
+  guardianGroup: { gap: Spacing.one },
 });

@@ -2,21 +2,20 @@ import { useFocusEffect, useLocalSearchParams } from 'expo-router';
 import { useCallback, useState } from 'react';
 import { StyleSheet, View } from 'react-native';
 
+import { PeoplePicker } from '@/components/people-picker';
 import { Screen } from '@/components/screen';
 import { ReportedMessage, SafeguardingContactsCard } from '@/components/safeguarding';
 import { ThemedText } from '@/components/themed-text';
 import { Button, Card, ChipGroup, ErrorText, TextField } from '@/components/ui';
 import { Spacing } from '@/constants/theme';
 import { parseDate } from '@/lib/age';
-import { concernStatusLabels, type ConcernPerson, involvesChildLabels, matchPeople } from '@/lib/concerns';
+import { concernStatusLabels, type ConcernPerson, involvesChildLabels, MAX_ABOUT } from '@/lib/concerns';
+import { type PickablePerson, withoutPerson, withPerson } from '@/lib/people-picker';
 import { localDay } from '@/lib/reports';
 import { supabase } from '@/lib/supabase';
 import type { InvolvesChild, Message, MyConcern } from '@/lib/types';
 
 const involvesOptions = Object.keys(involvesChildLabels) as InvolvesChild[];
-
-/** How many people to offer while searching for who it's about. */
-const PERSON_MATCHES = 5;
 
 /**
  * Anyone signed in, guests and people waiting for approval included, tells
@@ -30,7 +29,7 @@ export default function RaiseConcernScreen() {
   const [message, setMessage] = useState<Pick<Message, 'sender_name' | 'created_at' | 'body'> | null>(null);
   const [body, setBody] = useState('');
   const [aboutText, setAboutText] = useState('');
-  const [aboutId, setAboutId] = useState<string | null>(null);
+  const [about, setAbout] = useState<PickablePerson[]>([]);
   const [people, setPeople] = useState<ConcernPerson[]>([]);
   const [happened, setHappened] = useState('');
   const [involves, setInvolves] = useState<InvolvesChild>('unsure');
@@ -61,8 +60,6 @@ export default function RaiseConcernScreen() {
     }, [load]),
   );
 
-  const matches = aboutId ? [] : matchPeople(people, aboutText, PERSON_MATCHES);
-
   async function send() {
     const happenedOn = parseDate(happened);
     if (!body.trim()) {
@@ -78,7 +75,7 @@ export default function RaiseConcernScreen() {
     const { error: rpcError } = await supabase.rpc('raise_concern', {
       p_body: body,
       p_about_text: aboutText,
-      p_about_member_id: aboutId,
+      p_about_member_ids: about.map((p) => p.id),
       p_happened_on: happenedOn,
       p_involves_child: involves,
       p_contact_ok: !anonymous && contactOk,
@@ -95,7 +92,7 @@ export default function RaiseConcernScreen() {
     setSent(true);
     setBody('');
     setAboutText('');
-    setAboutId(null);
+    setAbout([]);
     setHappened('');
     setContactDetails('');
     load();
@@ -109,8 +106,8 @@ export default function RaiseConcernScreen() {
         <Card>
           <ThemedText type="smallBold">Thank you for telling us</ThemedText>
           <ThemedText type="small" themeColor="textSecondary">
-            The club’s Child Safety Officer, Complaints Manager and admins can see it now. You can
-            see where it’s up to below. If a child is in danger, call 000.
+            The club’s Child Safety Officers, Complaints Managers and admins can see it now. You
+            can see where it’s up to below. If a child is in danger, call 000.
           </ThemedText>
         </Card>
       ) : (
@@ -118,8 +115,8 @@ export default function RaiseConcernScreen() {
           <ThemedText type="small" themeColor="textSecondary">
             Tell the club about anything that worries you: how a child is being treated, something
             someone said or did, or a message that didn’t feel right. You don’t need to be sure.
-            The club’s Child Safety Officer, Complaints Manager and admins see it, but not the
-            person it’s about.
+            The club’s Child Safety Officers, Complaints Managers and admins see it, but not anyone
+            it’s about.
           </ThemedText>
           {message ? (
             <>
@@ -147,26 +144,24 @@ export default function RaiseConcernScreen() {
             multiline
             maxLength={5000}
           />
-          <TextField
+          <PeoplePicker
             label="Who is it about? (optional)"
+            hint="Search the club’s coaches, managers, physios, committee and admins. You can name more than one."
+            people={people}
+            selected={about}
+            onAdd={(p) => setAbout((list) => withPerson(list, p))}
+            onRemove={(p) => setAbout((list) => withoutPerson(list, p.id))}
+            max={MAX_ABOUT}
+            searchLabel="Search by name"
+            noneChosen="Nobody named yet."
+          />
+          <TextField
+            label="Anyone else, in your words (optional)"
             value={aboutText}
-            onChangeText={(text) => {
-              setAboutText(text);
-              setAboutId(null);
-            }}
-            placeholder="A name, or a description"
+            onChangeText={setAboutText}
+            placeholder="A name or a description, if they’re not in the search"
             maxLength={300}
           />
-          {matches.length > 0 ? (
-            <ChipGroup
-              options={matches.map((p) => ({ value: p.id, label: p.name }))}
-              selected={[]}
-              onToggle={(id) => {
-                setAboutId(id);
-                setAboutText(people.find((p) => p.id === id)?.name ?? '');
-              }}
-            />
-          ) : null}
           <TextField
             label="When did it happen? (optional)"
             value={happened}

@@ -1,5 +1,6 @@
 import { fetchAll, type Acknowledgement, type CourseProgress, type Placement } from '@/lib/reports';
 import { supabase } from '@/lib/supabase';
+import { namesLine } from '@/lib/people-picker';
 import {
   REQUIREMENT_COLUMNS,
   type TrainingMember,
@@ -64,7 +65,7 @@ export async function loadWwccData(): Promise<WwccData> {
         .order('received_on', { ascending: false })
         .range(from, to),
     ),
-    supabase.rpc('admin_wwc_officer').maybeSingle(),
+    supabase.rpc('admin_wwc_officers'),
     fetchAll<Acknowledgement>((from, to) =>
       supabase
         .from('policy_acknowledgements')
@@ -76,7 +77,11 @@ export async function loadWwccData(): Promise<WwccData> {
       supabase.rpc('admin_wwcc_applications').range(from, to),
     ),
   ]);
-  const officerName = (officer.data as { officer_name: string } | null)?.officer_name ?? null;
+  // Every WWC Registration Officer, by name (a club can name up to 5).
+  const officerNames = ((officer.data as { officer_name: string }[] | null) ?? []).map(
+    (o) => o.officer_name,
+  );
+  const officerName = officerNames.length > 0 ? namesLine(officerNames) : null;
   return {
     members,
     placements,

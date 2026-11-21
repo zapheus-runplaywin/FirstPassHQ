@@ -54,8 +54,9 @@ each of their roles can.
 | **Temporary helper** | Someone helping for a day or a short time, such as at a carnival, clinic or tournament, paid or unpaid. Not necessarily a member of the club: this is only a role so the app can onboard them. The app screens them: a Working With Children Check or an exemption covering every day they help, and the club's code of conduct and safeguarding policy accepted. They see none of the club's features or messages, and their time ends by itself after their last day (see [Temporary helpers](#temporary-helpers)). |
 | **Admin**     | The people who run the app. Admin is granted by another admin, never requested; only a new club's first admin is made with a one-time setup code from FirstPass (see [Setting up a new club](#setting-up-a-new-club)). Admins can add a title too. Need a current Working With Children Check, or an application being assessed, unless another admin exempts them. An expired check doesn't pause the admin role, so the club is never locked out, but it stays on the admins' to-do list until it's renewed, and 30 days after it expired (or after the club's committee checks date, if none is recorded) the admin stops seeing under 18s' injuries until a check, an application or a parent volunteer exemption is recorded. Admins set how long the club keeps records, and are warned when the nightly removal of old records stops. |
 
-**Safeguarding contacts.** An admin names one member as the club's **Child Safety Officer** and
-another as its **Complaints Manager**. They're not separate roles: each keeps their own role and also
+**Safeguarding contacts.** An admin names members as the club's **Child Safety Officer** and
+its **Complaints Manager** (a larger club can name up to 5 people in each, and nobody can hold
+both). They're not separate roles: each keeps their own role and also
 sees and acts on the concerns members raise, with new ones as an **Urgent** to-do and red, orange
 and green counts on their Concerns card (see [The concerns register](#the-concerns-register)).
 Each sees their post as a title under their roles on the home screen, as does the **WWC
@@ -881,23 +882,27 @@ who look into it can read the message even if it's later removed under the club'
 Only a message you received or sent can be reported this way.
 
 The screen starts with who to talk to: the club's **Child Safety Officer** and **Complaints
-Manager**, the sport's governing body if the club has added it, and services anyone can call
+Manager** (every one, if the club has named more than one), the sport's governing body if the club has added it, and services anyone can call
 (Police on 000, Kids Helpline and the Safe Sport Hotline). Tap a number to call it.
 
-Then say what happened, and optionally who it's about (start typing a name to pick a coach, manager,
-physio, committee member, admin or temporary helper, or describe anyone else in your own words; the
-list never shows athletes or parents, so nobody can browse the club's children here), when it happened and whether a child's safety is involved. Choose **Show my name** or
+Then say what happened, and optionally who it's about. Under **Who is it about?** start typing a
+name and tap a coach, manager, physio, committee member, admin or temporary helper to add them: they
+appear straight away in the box under the search, with a ✕ to take them off. You can name up to 10
+people. The list never shows athletes or parents, so nobody can browse the club's children here;
+describe anyone else under **Anyone else, in your words**. Then say when it happened and whether a
+child's safety is involved. Choose **Show my name** or
 **Don't show my name**. If you hide your name, the people who look into it won't see who you are,
 so they can't ask you more; the app still keeps it with your account so you can follow it. If you
 show your name, say whether they can contact you and how. Tap **Send to the club**.
 
-The Child Safety Officer, the Complaints Manager and admins see it straight away, but the person
-it's about never does, even if they're one of them. **Concerns you've raised** on the same screen
+The Child Safety Officers, the Complaints Managers and admins see it straight away, but nobody
+you named ever does, even if they're one of them. Your list shows the names you gave, never names
+added later by the people looking into it. **Concerns you've raised** on the same screen
 shows each one, its reference (such as C-0007) and where it's up to: Received, Referred, Being
 looked into or Closed. Quote the reference if you talk to the club about it.
 
 <img src="user-guide/raise-concern.png" width="210" alt="Raise a concern: who to call first">
-<img src="user-guide/raise-concern-form.png" width="210" alt="The concern form: what happened, who, when, and whether to show your name">
+<img src="user-guide/raise-concern-form.png" width="210" alt="The concern form: what happened, two people named under the search, anyone else in your words, and when">
 <img src="user-guide/report-message.png" width="210" alt="Reporting a message: the message is shown on the form and a copy is kept">
 
 ### Deleting your account
@@ -3768,24 +3773,31 @@ Tap **Save keep periods** to save.
 ### Safeguarding contacts
 
 **Administration > Safeguarding** names the club's **Child Safety Officer**, **Complaints
-Manager** and **WWC Registration Officer**. Search for each by name. All three must be approved adults (not guests or temporary helpers) with
-a current Working With Children Check (or an exemption that applies), and the Child Safety
-Officer and Complaints Manager must be two different people, so a concern about one can go to the
-other. You can't name yourself unless someone else is the other contact.
+Manager** and **WWC Registration Officer**. A larger club can name up to 5 people in each post;
+each person named acts in the post exactly as a single holder would. Search for each by name or
+email and tap them to add them: they show straight away in the box under that search, with a ✕ to
+take them off, and "2 of 5" beside the heading. Everyone named must be an approved adult (not a
+guest or temporary helper) with a current Working With Children Check (or an exemption that
+applies). Nobody can be both a Child Safety Officer and a Complaints Manager, so a concern about
+one person can always go to another; someone already in one post isn't offered for the other. You
+can't name yourself unless someone else is named too. Changes are saved when you tap **Save**.
 The Child Safety Officer is also the club's welfare contact for athletes. Athletes
 who'd like to talk to someone are pointed to the check-in's **Something worrying you? Tell the club safely**,
 which reaches them as a concern, and they see every athlete's wellbeing flags. The app has no
 separate Wellbeing Officer; choose a Child Safety Officer who can take on that role.
 If a contact's check lapses or they're stood down, they stop being shown and stop seeing concerns
-until the check is recorded again or the stand-down is lifted, or you choose someone else.
+until the check is recorded again or the stand-down is lifted. They stay named on this screen,
+marked "can't act: no current check", so saving other settings doesn't drop them; take them off
+with ✕ to replace them. Your to-do list asks you to name a Child Safety Officer (or Complaints
+Manager) only when nobody in that post can act.
 Each of the three sees their post as a title under their roles on their home screen, such as
 "Statistician" with "Child Safety Officer" beneath it, and loses the title at the same time.
 
 The **WWC Registration Officer** is an admin or committee member with a current check (or an
 exemption that applies) who keeps
 the club's Working With Children Check records, registers members' cards with the club through
-the Screening Unit and receives its notices. They're named on the Working With Children Checks report,
-and your to-do list asks you to choose one until you do.
+the Screening Unit and receives its notices. They're named on the Working With Children Checks report
+(every one, if there are several), and your to-do list asks you to choose one until you do.
 
 **Committee checks required from** is the day from which every committee member needs a current
 check or an exemption. It starts 90 days after the rule came in. Committee members without a check keep their role until then; from that day their committee role
@@ -3866,12 +3878,12 @@ someone to see every season they've accepted it and the words accepted.
 
 <img src="user-guide/admin-conduct.png" width="210" alt="Administration: who has accepted the code of conduct this season">
 
-<img src="user-guide/admin-safeguarding.png" width="210" alt="Safeguarding settings: Child Safety Officer, Complaints Manager, governing body and policy">
-<img src="user-guide/admin-wwc-officer.png" width="210" alt="Safeguarding settings: WWC Registration Officer">
+<img src="user-guide/admin-safeguarding.png" width="210" alt="Safeguarding settings: two Child Safety Officers and a Complaints Manager, each shown under their search">
+<img src="user-guide/admin-wwc-officer.png" width="210" alt="Safeguarding settings: two WWC Registration Officers">
 
 ### The concerns register
 
-The Child Safety Officer, the Complaints Manager and admins open **Concerns** from the home screen.
+The Child Safety Officers, the Complaints Managers and admins open **Concerns** from the home screen.
 New concerns also appear in their to-do list as **Look at N new concerns**, marked **Urgent** in
 red at the very top, until someone records something about them. Open concerns are listed first,
 newest at the top. Nobody sees a concern about themselves.
@@ -3905,15 +3917,19 @@ governing body straight away and not to resolve it within the club. Then record 
   reference number. Either sets the status to Referred.
 - **Add note** for anything else: who you spoke to and what was decided.
 - **Change status** to Being looked into, or **Closed** with a note saying why.
-- **Who it's about**: type a name under **Search members** and tap the member it's about. Every
-  approved member can be found here, athletes, parents and guests included, and matches start from
-  the first letter (one letter finds names with a part starting with it). If nobody matches, it
-  says so. From then on they can't see it, even if they're an admin or handle concerns. Nothing about them is removed under [Record
+- **Who it's about**: type a name under **Search members** and tap each member it's about, up to
+  10. Every approved member can be found here, athletes, parents and guests included, and matches
+  start from the first letter (one letter finds names with a part starting with it). If nobody
+  matches, it says so. Each person added shows straight away in the box under the search, with a
+  ✕ to take them off; each change is saved at once and kept in the history ("Added: …",
+  "Removed: …"). From then on nobody named can see it, even if they're an admin or handle
+  concerns. Nothing about them is removed under [Record
   keeping](#record-keeping) while the concern names them, even once it's closed: their
   attendance, messages, check-ins, injuries and safeguarding records are kept as a legal hold.
 
 **A child's parents and guardians.** When a concern names a child under 18 under **Who it's
-about**, it shows the child's verified parents and guardians, each with their email, so you know
+about**, it shows the child's verified parents and guardians, each with their email (grouped by
+child when it names more than one), so you know
 who the right parent is without asking an admin. Parents not verified yet aren't shown. Think before
 contacting them if the concern may be about home. Each look is kept with the concern and listed
 under the names as **Looked at by**, with who and the day. It's never put in the child's record
@@ -3921,7 +3937,7 @@ views, because parents read those and a line there would tell them a concern exi
 shown for a concern that names an adult or nobody, and looking doesn't count as acting on it: a
 new concern stays red until someone records something.
 
-<img src="user-guide/concern-guardians.png" width="210" alt="A concern about a child showing their parents and guardians with email, and who has looked">
+<img src="user-guide/concern-guardians.png" width="210" alt="A concern about two children showing each child's parents and guardians with email, and who has looked">
 
 Every step is kept with who did it and when. **Export the register as a PDF** gives the whole
 register with every step and any reported message, except any concern about you, for the committee, the governing body or
@@ -3930,7 +3946,7 @@ an auditor.
 <img src="user-guide/concerns-register.png" width="210" alt="The concerns register">
 <img src="user-guide/concern.png" width="210" alt="A concern with the referral prompt and what's been done">
 <img src="user-guide/concern-reported-message.png" width="210" alt="A concern raised from a message, with the reported message in full">
-<img src="user-guide/concern-about-search.png" width="210" alt="Who it's about: typing A finds members whose names start with A">
+<img src="user-guide/concern-about-search.png" width="210" alt="Who it's about: two members named in the box under the search, and a match offered while typing">
 
 Every concern has a short reference, such as **C-0007**, shown in the register, on the concern and
 to whoever raised it. A message access request names the concern by its reference alone.
@@ -3938,11 +3954,12 @@ to whoever raised it. A message access request names the concern by its referenc
 ### Reading a member's messages for a concern
 
 Nobody reads messages they didn't send or get, admins included. When a concern needs it, the
-**Child Safety Officer** or the **Complaints Manager** can ask to read one member's messages, and
-an admin answers.
+**Child Safety Officer** or the **Complaints Manager** (any of them, if the club has named more than
+one) can ask to read one member's messages, and an admin answers.
 
 **Asking** (the Child Safety Officer or the Complaints Manager): open an open concern and tap
-**Ask to read messages**. Choose whose messages: who the concern is about, who raised it (unless
+**Ask to read messages**. Choose whose messages: someone the concern is about (each is offered on
+their own), who raised it (unless
 they hid their name) or **Someone else involved** (search for them and say how in the reason).
 Choose the dates, up to 90 days at a time (the last 30 days to start with; the end can't be in the
 future), say why you need to read them without the concern's details, and tap **Send to an
@@ -3956,8 +3973,8 @@ You don't need to open the concern. Write your justification (to approve) or you
 refuse), at least 10 characters, then tap **Approve for 24 hours** or **Refuse**. What you write is
 kept with the request for good. You can't answer a request you made, one for your own messages, or
 one on a concern about you; nobody sees a request in those cases. If no admin is free to answer (for
-example the only other admin is the one it's about, or is stood down), the other safeguarding
-officer answers instead. A club with only one admin gets an **Add a second admin** to-do for this
+example the only other admin is the one it's about, or is stood down), another safeguarding
+officer (any Child Safety Officer or Complaints Manager who isn't involved) answers instead. A club with only one admin gets an **Add a second admin** to-do for this
 reason.
 
 **Reading** (the person who asked, for 24 hours from approval): a **Read the messages you were
@@ -3970,7 +3987,7 @@ more.
 
 **Who knows**: nobody is told: not the member, not their parents, not the committee. Every list
 and every message opened is recorded under **Who read what** on the request, which admins and the
-two safeguarding officers can see (never the member it's about, or the person the concern is
+safeguarding officers can see (never the member it's about, or the person the concern is
 about). This log is kept apart from the record views parents can read. Requests and their logs are
 never removed, so a later audit can follow each one from request to reading.
 
@@ -4049,9 +4066,9 @@ once saved, only replaced or removed, and anyone who gets it wrong five times in
 | Check applications, receipts and declarations | The member (their own application and declaration, not the receipt) and admins. Committee members with a current check read the applications in the Working With Children Checks report, never the receipts. Kept, with the receipt, if the member deletes their account. |
 | Volunteer exemptions and declarations | The volunteer (their own) and admins, and committee members with a current check in the Working With Children Checks report (read only). Kept under the member's name if they delete their account; the exemption ends that day. |
 | Temporary helpers' task, dates and policy acceptance | The volunteer and admins. Temporary helpers see nothing of the club's members, squads, calendar or messages. If a helper deletes their account, their policy acceptance and any exemption declaration are kept under their name; their task and dates go with the account. |
-| Concerns                | The Child Safety Officer, the Complaints Manager and admins, never the person a concern is about when they were named from the list (a concern that only describes someone in words is not hidden from anyone who handles concerns). Whoever raised it sees its status. A hidden name is never shown to them. The traffic-light counts on the Concerns card follow the same rule: counts only, and never a concern about the person looking. |
-| Requests to read a member's messages, and who read what | The person who asked, admins and the Child Safety Officer and Complaints Manager, never the member whose messages were asked for or the person the concern is about. Approval opens the messages to the person who asked only, for 24 hours. Every list and message opened is logged with the request, apart from the record views parents read. Never removed. |
-| A child's parents and guardians on a concern | The Child Safety Officer, the Complaints Manager and admins, on a concern naming that child under 18: verified parents and guardians only, with their email, never to someone the concern is about. Each look is kept with the concern for those who handle it, not in the child's record views. |
+| Concerns                | The Child Safety Officers, the Complaints Managers and admins, never anyone a concern is about when they were named from the list (a concern can name up to 10 people, and none of them sees it) (a concern that only describes someone in words is not hidden from anyone who handles concerns). Whoever raised it sees its status. A hidden name is never shown to them. The traffic-light counts on the Concerns card follow the same rule: counts only, and never a concern about the person looking. |
+| Requests to read a member's messages, and who read what | The person who asked, admins and the Child Safety Officers and Complaints Managers, never the member whose messages were asked for or anyone the concern is about. Approval opens the messages to the person who asked only, for 24 hours. Every list and message opened is logged with the request, apart from the record views parents read. Never removed. |
+| A child's parents and guardians on a concern | The Child Safety Officers, the Complaints Managers and admins, on a concern naming that child under 18 (each child's, when it names several): verified parents and guardians only, with their email, never to anyone the concern is about. Each look is kept with the concern for those who handle it, not in the child's record views. |
 | Safeguarding contacts   | Everyone signed in, including guests and people waiting for approval.                                                       |
 | Committee checks date   | Everyone signed in. Only admins change it, and only to bring it forward; who changed it and when is kept. |
 | Messages                | The people they were sent to and the sender. Not admins, unless an admin approved the Child Safety Officer's or Complaints Manager's request to read one member's messages for a concern; then only the person who asked, read only, for 24 hours, with every message opened logged. Archiving moves only the member's own copy, and messages are never deleted by members. A stood-down member doesn't see the messages they sent, or the ones they got as a coach, manager, physio, committee member or admin. Guardians of athletes under 18 get a copy of every message sent to their athlete, and of every message their athlete sends as a captain. Guests don't get messages; physios get messages sent to the Physio role and to their squads and teams, and whole-club messages only if an admin turns that on. |
@@ -4117,8 +4134,8 @@ the sport's governing body. The details are in each role's section.
 
 Anyone signed in can raise a concern, from the home screen, the check-in screen, any injury or any
 message, and can hide their name (see [Raising a concern](#raising-a-concern)). It goes to the
-club's Child Safety Officer, Complaints Manager and admins, never to the person it's about when
-they were named from the list. A reported message is copied into the concern by the club's
+club's Child Safety Officers, Complaints Managers and admins, never to anyone it's about when
+they were named from the list (a concern can name up to 10 people). A reported message is copied into the concern by the club's
 database, from the message itself, so it can't be altered on the way and survives the message
 being removed later. Those handling a concern can name anyone in the club as who it's about,
 children included, while the form members use to raise one lists only adults with club roles. Police
@@ -4528,12 +4545,13 @@ Working With Children Check, and another admin must do it.
   admin's role doesn't pause when the check expires, so the club can't be locked out of its own
   app, but it stays on every admin's to-do list until renewed, and an admin can be stood down. After
   30 days without one they stop seeing under 18s' injuries.
-- **Safeguarding contacts.** Name a Child Safety Officer and a Complaints Manager, two different
-  adults with a current check, a check application in force or a volunteer exemption (an exemption
-  with a reason doesn't count;
-  an officer whose check lapses loses the register until it's renewed), and add the governing body's contacts and the club's policy (see
-  [Safeguarding contacts](#safeguarding-contacts)). Name a WWC Registration Officer to keep the
-  club's check records.
+- **Safeguarding contacts.** Name a Child Safety Officer and a Complaints Manager (a larger club
+  can name up to 5 of each, and nobody can be both), each an adult with a current check, a check
+  application in force or a volunteer exemption (an exemption with a reason doesn't count;
+  an officer whose check lapses loses the register until it's renewed, and the to-do to name one
+  comes back once nobody in the post can act), and add the governing body's contacts and the
+  club's policy (see [Safeguarding contacts](#safeguarding-contacts)). Name a WWC Registration
+  Officer (up to 5) to keep the club's check records.
 - **Screening Unit notices.** Record every notice on the member's page. An interim negative
   notice, negative notice, interstate decision or cancelled card stands them down at once, and
   stays on your to-do list until you record telling the governing body in writing.

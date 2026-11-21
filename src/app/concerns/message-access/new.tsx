@@ -34,7 +34,9 @@ export default function NewMessageAccessScreen() {
   }>();
   const [named, setNamed] = useState<MessageAccessPerson[]>([]);
   const [everyone, setEveryone] = useState<ConcernPerson[]>([]);
-  const [link, setLink] = useState<MessageAccessLink | null>(null);
+  // 'other', or the link and person for someone named on the concern, such
+  // as 'about:<id>' (a concern can be about several people).
+  const [choice, setChoice] = useState<string | null>(null);
   const [subjectId, setSubjectId] = useState<string | null>(null);
   const [search, setSearch] = useState('');
   const [{ from, to }, setRange] = useState<{
@@ -58,19 +60,23 @@ export default function NewMessageAccessScreen() {
 
   const linkOptions = [
     ...named.map((p) => ({
-      value: p.link,
+      value: `${p.link}:${p.profile_id}`,
       label: `${linkLabels[p.link]}: ${p.name}`,
     })),
-    { value: 'other' as const, label: linkLabels.other },
+    { value: 'other', label: linkLabels.other },
   ];
+  const link: MessageAccessLink | null =
+    choice === null ? null : (choice.split(':')[0] as MessageAccessLink);
   const matches = link === 'other' ? matchPeople(everyone, search, PERSON_MATCHES) : [];
   const chosenOther = link === 'other' ? everyone.find((p) => p.id === subjectId) : undefined;
 
-  function chooseLink(next: MessageAccessLink) {
-    setLink(next);
+  function chooseLink(next: string) {
+    setChoice(next);
     setSearch('');
     setSubjectId(
-      next === 'other' ? null : (named.find((p) => p.link === next)?.profile_id ?? null),
+      next === 'other'
+        ? null
+        : (named.find((p) => `${p.link}:${p.profile_id}` === next)?.profile_id ?? null),
     );
   }
 
@@ -121,7 +127,7 @@ export default function NewMessageAccessScreen() {
         <ChipGroup
           label="Whose messages"
           options={linkOptions}
-          selected={link ? [link] : []}
+          selected={choice ? [choice] : []}
           onToggle={chooseLink}
         />
         {link === 'other' ? (
