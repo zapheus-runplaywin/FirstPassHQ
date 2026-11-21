@@ -13,6 +13,7 @@ import {
 } from '@/constants/calendar-colors';
 import { Spacing, type Palette } from '@/constants/theme';
 import { useTheme, useThemedStyles } from '@/hooks/use-theme';
+import { checkCalendarUrl, cleanCalendarUrl } from '@/lib/calendar-url';
 import { supabase } from '@/lib/supabase';
 import type { Team } from '@/lib/types';
 import { teamLabel, useTeams } from '@/lib/use-teams';
@@ -29,10 +30,6 @@ type CalendarRow = {
 const CLUB = 'club';
 const COMMITTEE = 'committee';
 
-/** Outlook's published links start with https:// (or webcal://). */
-function isCalendarUrl(url: string) {
-  return /^(https|webcal):\/\//i.test(url);
-}
 
 function audienceOf(
   teamId: string | null,
@@ -73,13 +70,15 @@ export default function CalendarsScreen() {
   const newAudience = audienceOf(team?.id ?? null, committeeOnly, teams);
 
   async function add() {
-    const trimmedUrl = url.trim();
-    if (!isCalendarUrl(trimmedUrl)) {
-      setError('Paste the ICS link from Outlook. It starts with https://');
-      return;
-    }
+    const trimmedUrl = cleanCalendarUrl(url);
     setSaving(true);
     setError(null);
+    const problem = await checkCalendarUrl(trimmedUrl);
+    if (problem) {
+      setSaving(false);
+      setError(problem);
+      return;
+    }
     const { error: insertError } = await supabase.from('calendars').insert({
       name:
         name.trim() ||
@@ -199,10 +198,16 @@ function CalendarCard({
   }
 
   async function saveEdit() {
-    const trimmedUrl = url.trim();
-    if (!isCalendarUrl(trimmedUrl)) {
-      setError('Paste the ICS link from Outlook. It starts with https://');
-      return;
+    const trimmedUrl = cleanCalendarUrl(url);
+    if (trimmedUrl !== calendar.url) {
+      setBusy(true);
+      setError(null);
+      const problem = await checkCalendarUrl(trimmedUrl);
+      setBusy(false);
+      if (problem) {
+        setError(problem);
+        return;
+      }
     }
     if (await update({ name: name.trim() || calendar.name, url: trimmedUrl })) setEditing(false);
   }

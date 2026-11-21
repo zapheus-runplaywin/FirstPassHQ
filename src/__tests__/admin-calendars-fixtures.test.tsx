@@ -96,6 +96,20 @@ const OLD_TEAM_CAL: CalendarRow = { ...CLUB_CAL, id: 'cal-old', name: 'Old team'
 
 let log: TableQuery[];
 
+const ICS = 'BEGIN:VCALENDAR\r\nVERSION:2.0\r\nEND:VCALENDAR\r\n';
+/** Each link an admin saves is downloaded first; answers by link, a calendar file otherwise. */
+let feeds: Record<string, string | number>;
+let fetchMock: jest.Mock;
+beforeEach(() => {
+  feeds = {};
+  fetchMock = jest.fn(async (url: string) => {
+    const body = feeds[url] ?? ICS;
+    if (typeof body === 'number') return { ok: false, status: body, text: async () => '' };
+    return { ok: true, status: 200, text: async () => body };
+  });
+  globalThis.fetch = fetchMock as unknown as typeof fetch;
+});
+
 async function openCalendars(calendars: CalendarRow[] = []) {
   const recorder = recordTables(['calendars']);
   log = recorder.log;
@@ -165,6 +179,47 @@ describe('Calendars', () => {
         filters: [],
       },
     ]);
+  });
+
+  it('refuses Outlook’s web page link and saves nothing (21 November 2026)', async () => {
+    await openCalendars();
+    await type('ICS link', 'https://outlook.example/owa/calendar/abc/calendar.html');
+    await add();
+    expect(
+      screen.getByText('That’s Outlook’s web page link (it ends in .html). Use the ICS link instead, which ends in .ics.'),
+    ).toBeTruthy();
+    expect(writes(log, 'calendars')).toEqual([]);
+    expect(input('ICS link').props.value).toBe('https://outlook.example/owa/calendar/abc/calendar.html');
+  });
+
+  it('downloads a new link first and refuses one that isn’t a calendar file', async () => {
+    feeds['https://outlook.example/page'] = '<html><body>Calendar</body></html>';
+    await openCalendars();
+    await type('ICS link', 'https://outlook.example/page');
+    await add();
+    expect(fetchMock).toHaveBeenCalledWith('https://outlook.example/page');
+    expect(
+      screen.getByText('That link opens a web page, not a calendar file. Use the ICS link from Outlook, which ends in .ics.'),
+    ).toBeTruthy();
+    expect(writes(log, 'calendars')).toEqual([]);
+  });
+
+  it('refuses a new link that answers with an error', async () => {
+    feeds['https://outlook.example/club.ics'] = 404;
+    await openCalendars();
+    await type('ICS link', 'https://outlook.example/club.ics');
+    await add();
+    expect(
+      screen.getByText('That link didn’t work (error 404). Copy the ICS link from Outlook again and paste the whole of it.'),
+    ).toBeTruthy();
+    expect(writes(log, 'calendars')).toEqual([]);
+  });
+
+  it('takes out line breaks a paste slipped into the middle of the link', async () => {
+    await openCalendars();
+    await type('ICS link', 'https://outlook.example/owa/\n  calendar/club.ics');
+    await add();
+    expect(writes(log, 'calendars')[0].values).toMatchObject({ url: 'https://outlook.example/owa/calendar/club.ics' });
   });
 
   it('adds a committee calendar from a webcal:// link', async () => {
@@ -248,6 +303,30 @@ describe('Calendars', () => {
       },
     ]);
     expect(screen.queryByText('Save')).toBeNull();
+  });
+
+  it('refuses a changed link that opens a web page, and stays editing', async () => {
+    feeds['https://outlook.example/new.html.page'] = '<html></html>';
+    await openCalendars([CLUB_CAL]);
+    await fireEvent.press(screen.getByText('Edit name or link'));
+    await type('ICS link', 'https://outlook.example/new.html.page', 0);
+    await fireEvent.press(screen.getByText('Save'));
+    await settle();
+    expect(
+      screen.getByText('That link opens a web page, not a calendar file. Use the ICS link from Outlook, which ends in .ics.'),
+    ).toBeTruthy();
+    expect(writes(log, 'calendars')).toEqual([]);
+    expect(screen.getByText('Save')).toBeTruthy();
+  });
+
+  it('doesn’t download the link again when only the name changes', async () => {
+    await openCalendars([CLUB_CAL]);
+    await fireEvent.press(screen.getByText('Edit name or link'));
+    await type('Name', 'Thunder club');
+    await fireEvent.press(screen.getByText('Save'));
+    await settle();
+    expect(fetchMock).not.toHaveBeenCalled();
+    expect(writes(log, 'calendars')[0].values).toEqual({ name: 'Thunder club', url: CLUB_CAL.url });
   });
 
   it('keeps the old name when the new one is left empty', async () => {
