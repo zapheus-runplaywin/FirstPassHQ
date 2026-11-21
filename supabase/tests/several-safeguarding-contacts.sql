@@ -1,4 +1,4 @@
--- Tests for 20261121200000_several_safeguarding_contacts_and_about_people.sql:
+-- Tests for 20261121300000_several_safeguarding_contacts_and_about_people.sql:
 -- several people in each safeguarding post, and several people a concern is
 -- about. Run on a fresh database with the migrations and seed-members.sql
 -- loaded. Prints one line per check.
@@ -347,7 +347,7 @@ create temp table counts_before as
   select (select count(*) from public.concerns) as concerns,
          (select count(*) from public.safeguarding_post_holders) as holders,
          (select count(*) from public.concern_about_members) as about;
-\ir ../migrations/20261121200000_several_safeguarding_contacts_and_about_people.sql
+\ir ../migrations/20261121300000_several_safeguarding_contacts_and_about_people.sql
 select pg_temp.ok('running it again works and keeps every holder',
   (select count(*) = (select holders from counts_before) from public.safeguarding_post_holders), true);
 select pg_temp.ok('the older concern''s member is filled in, named by the raiser',
