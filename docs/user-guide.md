@@ -3277,6 +3277,13 @@ ICS link, then paste it under **Add a calendar**, give it a name and choose who 
 **Everyone**, the **Committee**, or one squad or team. Each calendar has a colour, used for its
 events in the app. **Edit name or link** and **Delete** change or remove one.
 
+Outlook gives two links for a published calendar: an HTML link, for viewing it in a browser, and an
+ICS link, ending in **.ics**, for apps. Use the ICS link. The app downloads a new or changed link
+before saving it and refuses one that isn't a calendar it can read, saying why: Outlook's HTML link,
+a web page, a link that answers with an error, or one it can't reach. Spaces or line breaks a paste
+slips into the link are taken out. If members' **Calendar** shows "Couldn't load" with a calendar's
+name, copy that calendar's ICS link from Outlook again and save it here.
+
 <img src="user-guide/admin-calendars.png" width="210" alt="Calendars admin">
 
 ### Absence reasons
