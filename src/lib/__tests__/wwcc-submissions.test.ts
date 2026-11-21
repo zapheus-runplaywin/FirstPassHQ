@@ -4,7 +4,7 @@
  * `public.submit_my_wwcc` (supabase/tests/wwcc-self-submit.sql).
  */
 import type { AppRole, MyWwccSubmission, Profile } from '@/lib/types';
-import { canSendOwnCheck, ownCheckExpiring, submissionStatusText } from '@/lib/wwcc-submissions';
+import { canSendOwnCheck, isGuest, ownCheckExpiring, submissionStatusText } from '@/lib/wwcc-submissions';
 
 // Sunday 18 October 2026.
 beforeEach(() => {
@@ -39,7 +39,8 @@ describe('canSendOwnCheck', () => {
     ['a parent who also coaches, the coach role paused', { role: 'guardian' }, ['coach'], true],
     ['an athlete', { role: 'athlete' }, [], false],
     ['a parent', { role: 'guardian' }, [], false],
-    ['a guest', { role: 'guest' }, [], false],
+    // Optional for a guest, so they can be named to a safeguarding post (21 November 2026).
+    ['a guest', { role: 'guest' }, [], true],
     ['a stood-down coach', { role: 'guest', stood_down_at: '2026-10-01T00:00:00Z' }, ['coach'], false],
     ['a coach waiting for approval', { status: 'pending' }, [], false],
     ['a turned-down coach', { status: 'rejected' }, [], false],
@@ -49,6 +50,16 @@ describe('canSendOwnCheck', () => {
 
   it('is false with nobody signed in', () => {
     expect(canSendOwnCheck(null)).toBe(false);
+  });
+});
+
+describe('isGuest', () => {
+  it('is a guest with no paused roles, not stood down', () => {
+    expect(isGuest({ role: 'guest', stood_down_at: null })).toBe(true);
+    expect(isGuest({ role: 'guest', stood_down_at: null }, ['coach'])).toBe(false);
+    expect(isGuest({ role: 'guest', stood_down_at: '2026-10-01T00:00:00Z' })).toBe(false);
+    expect(isGuest({ role: 'coach', stood_down_at: null })).toBe(false);
+    expect(isGuest(null)).toBe(false);
   });
 });
 
@@ -68,6 +79,12 @@ describe('submissionStatusText', () => {
   it('says a waiting card counts once an admin accepts it', () => {
     expect(submissionStatusText(sent())).toBe(
       'You sent in your card WWC1234, expiring 31/03/2029. A club admin will check it with the Screening Unit. Your role starts again once they accept it.',
+    );
+  });
+
+  it('says nothing about a role starting for a guest, whose card is optional', () => {
+    expect(submissionStatusText(sent(), true)).toBe(
+      'You sent in your card WWC1234, expiring 31/03/2029. A club admin will check it with the Screening Unit before it counts.',
     );
   });
 

@@ -8,11 +8,25 @@ import {
   calendarColorKey,
   calendarColorKeys,
   CalendarColors,
-  type CalendarAudience,
   type CalendarColor,
 } from '@/constants/calendar-colors';
 import { Spacing, type Palette } from '@/constants/theme';
 import { useTheme, useThemedStyles } from '@/hooks/use-theme';
+import {
+  calendarPostLabels,
+  calendarPosts,
+  calendarRoleLabels,
+  calendarRoles,
+  colourAudience,
+  isShownToSomeone,
+  nobody,
+  saveArgs,
+  shownToFromRows,
+  shownToLabel,
+  toggled,
+  type AudienceRow,
+  type CalendarShownTo,
+} from '@/lib/calendar-audience';
 import { checkCalendarUrl, cleanCalendarUrl } from '@/lib/calendar-url';
 import { supabase } from '@/lib/supabase';
 import type { Team } from '@/lib/types';
@@ -22,22 +36,27 @@ type CalendarRow = {
   id: string;
   name: string;
   url: string;
-  team_id: string | null;
-  committee_only: boolean;
   color: CalendarColor | null;
+  calendar_audiences: AudienceRow[] | null;
 };
 
-const CLUB = 'club';
-const COMMITTEE = 'committee';
+const NEEDS_SOMEONE = 'Choose who sees this calendar.';
 
-
-function audienceOf(
-  teamId: string | null,
-  committeeOnly: boolean,
-  teams: Team[],
-): CalendarAudience {
-  if (teamId) return teams.find((t) => t.id === teamId)?.kind ?? 'squad';
-  return committeeOnly ? 'committee' : 'club';
+/** Saves a calendar and who sees it, through the database's admin function. */
+async function saveCalendar(
+  id: string | null,
+  name: string,
+  url: string,
+  color: CalendarColor | null,
+  shownTo: CalendarShownTo,
+) {
+  return supabase.rpc('admin_save_calendar', {
+    p_id: id,
+    p_name: name,
+    p_url: url,
+    p_color: color,
+    ...saveArgs(shownTo),
+  });
 }
 
 export default function CalendarsScreen() {
@@ -46,7 +65,7 @@ export default function CalendarsScreen() {
   const [calendars, setCalendars] = useState<CalendarRow[]>([]);
   const [name, setName] = useState('');
   const [url, setUrl] = useState('');
-  const [scope, setScope] = useState<string>(CLUB);
+  const [shownTo, setShownTo] = useState<CalendarShownTo>(nobody);
   const [color, setColor] = useState<CalendarColor | null>(null);
   const [saving, setSaving] = useState(false);
   const [error, setError] = useState<string | null>(null);
@@ -55,7 +74,7 @@ export default function CalendarsScreen() {
     () =>
       supabase
         .from('calendars')
-        .select('id, name, url, team_id, committee_only, color')
+        .select('id, name, url, color, calendar_audiences (kind, role, post, team_id)')
         .order('created_at')
         .then(({ data }) => setCalendars((data as CalendarRow[] | null) ?? [])),
     [],
@@ -65,12 +84,14 @@ export default function CalendarsScreen() {
     load();
   }, [load]);
 
-  const team = teams.find((t) => t.id === scope);
-  const committeeOnly = scope === COMMITTEE;
-  const newAudience = audienceOf(team?.id ?? null, committeeOnly, teams);
+  const newAudience = colourAudience(shownTo, teams);
 
   async function add() {
     const trimmedUrl = cleanCalendarUrl(url);
+    if (!isShownToSomeone(shownTo)) {
+      setError(NEEDS_SOMEONE);
+      return;
+    }
     setSaving(true);
     setError(null);
     const problem = await checkCalendarUrl(trimmedUrl);
@@ -79,15 +100,24 @@ export default function CalendarsScreen() {
       setError(problem);
       return;
     }
-    const { error: insertError } = await supabase.from('calendars').insert({
-      name:
-        name.trim() ||
-        (team ? `${team.name} calendar` : committeeOnly ? 'Committee calendar' : 'Club calendar'),
-      url: trimmedUrl,
-      team_id: team?.id ?? null,
-      committee_only: committeeOnly,
+    const onlyTeam =
+      shownTo.teamIds.length === 1 && shownTo.roles.length === 0 && shownTo.posts.length === 0
+        ? teams.find((t) => t.id === shownTo.teamIds[0])
+        : undefined;
+    const { error: insertError } = await saveCalendar(
+      null,
+      name.trim() ||
+        (shownTo.everyone
+          ? 'Club calendar'
+          : onlyTeam
+            ? `${onlyTeam.name} calendar`
+            : newAudience === 'committee'
+              ? 'Committee calendar'
+              : 'Calendar'),
+      trimmedUrl,
       color,
-    });
+      shownTo,
+    );
     setSaving(false);
     if (insertError) {
       setError(insertError.message);
@@ -96,15 +126,9 @@ export default function CalendarsScreen() {
     setName('');
     setUrl('');
     setColor(null);
+    setShownTo(nobody);
     await load();
   }
-
-  const scopeLabel = (calendar: CalendarRow) =>
-    calendar.team_id
-      ? (teams.find((t) => t.id === calendar.team_id)?.name ?? 'Team')
-      : calendar.committee_only
-        ? 'the committee'
-        : 'Everyone in the club';
 
   return (
     <Screen>
@@ -116,13 +140,7 @@ export default function CalendarsScreen() {
           </ThemedText>
         ) : (
           calendars.map((calendar) => (
-            <CalendarCard
-              key={calendar.id}
-              calendar={calendar}
-              shownTo={scopeLabel(calendar)}
-              audience={audienceOf(calendar.team_id, calendar.committee_only, teams)}
-              onChanged={load}
-            />
+            <CalendarCard key={calendar.id} calendar={calendar} teams={teams} onChanged={load} />
           ))
         )}
       </View>
@@ -130,7 +148,9 @@ export default function CalendarsScreen() {
       <View style={styles.section}>
         <ThemedText type="smallBold">Add a calendar</ThemedText>
         <ThemedText type="small" themeColor="textSecondary">
-          In Outlook, publish the calendar and copy its ICS link.
+          In Outlook, publish the calendar and copy its ICS link. Only the people you choose see
+          the calendar and its link, so keep each calendar to the people who need it, and split
+          the club’s calendars when different people need different events.
         </ThemedText>
         <TextField
           label="ICS link"
@@ -142,16 +162,7 @@ export default function CalendarsScreen() {
           keyboardType="url"
         />
         <TextField label="Name (optional)" value={name} onChangeText={setName} />
-        <ChipGroup
-          label="Show to"
-          options={[
-            { value: CLUB, label: 'Everyone' },
-            { value: COMMITTEE, label: 'Committee' },
-            ...teams.map((t) => ({ value: t.id, label: teamLabel(t, teams) })),
-          ]}
-          selected={[scope]}
-          onToggle={setScope}
-        />
+        <ShownToPicker shownTo={shownTo} teams={teams} onChange={setShownTo} />
         <ColorPicker selected={calendarColorKey(color, newAudience)} onSelect={setColor} />
         <ErrorText>{error}</ErrorText>
         <Button title="Add calendar" onPress={add} busy={saving} />
@@ -162,20 +173,21 @@ export default function CalendarsScreen() {
 
 function CalendarCard({
   calendar,
-  shownTo,
-  audience,
+  teams,
   onChanged,
 }: {
   calendar: CalendarRow;
-  shownTo: string;
-  audience: CalendarAudience;
+  teams: Team[];
   onChanged: () => PromiseLike<unknown>;
 }) {
   const styles = useThemedStyles(makeStyles);
   const theme = useTheme();
+  const savedShownTo = shownToFromRows(calendar.calendar_audiences);
+  const audience = colourAudience(savedShownTo, teams);
   const [editing, setEditing] = useState(false);
   const [name, setName] = useState(calendar.name);
   const [url, setUrl] = useState(calendar.url);
+  const [shownTo, setShownTo] = useState<CalendarShownTo>(savedShownTo);
   const [confirmingDelete, setConfirmingDelete] = useState(false);
   const [busy, setBusy] = useState(false);
   const [error, setError] = useState<string | null>(null);
@@ -199,6 +211,10 @@ function CalendarCard({
 
   async function saveEdit() {
     const trimmedUrl = cleanCalendarUrl(url);
+    if (!isShownToSomeone(shownTo)) {
+      setError(NEEDS_SOMEONE);
+      return;
+    }
     if (trimmedUrl !== calendar.url) {
       setBusy(true);
       setError(null);
@@ -209,7 +225,22 @@ function CalendarCard({
         return;
       }
     }
-    if (await update({ name: name.trim() || calendar.name, url: trimmedUrl })) setEditing(false);
+    setBusy(true);
+    setError(null);
+    const { error: saveError } = await saveCalendar(
+      calendar.id,
+      name.trim() || calendar.name,
+      trimmedUrl,
+      calendar.color,
+      shownTo,
+    );
+    setBusy(false);
+    if (saveError) {
+      setError(saveError.message);
+      return;
+    }
+    await onChanged();
+    setEditing(false);
   }
 
   async function remove() {
@@ -236,7 +267,7 @@ function CalendarCard({
         </ThemedText>
       </View>
       <ThemedText type="small" themeColor="textSecondary">
-        Shown to {shownTo}
+        Shown to {shownToLabel(savedShownTo, teams.map((t) => ({ id: t.id, name: teamLabel(t, teams) })))}
       </ThemedText>
 
       {editing ? (
@@ -250,6 +281,7 @@ function CalendarCard({
             autoCorrect={false}
             keyboardType="url"
           />
+          <ShownToPicker shownTo={shownTo} teams={teams} onChange={setShownTo} />
           <ErrorText>{error}</ErrorText>
           <Button title="Save" onPress={saveEdit} busy={busy} />
           <Button
@@ -258,6 +290,7 @@ function CalendarCard({
             onPress={() => {
               setName(calendar.name);
               setUrl(calendar.url);
+              setShownTo(savedShownTo);
               setError(null);
               setEditing(false);
             }}
@@ -273,7 +306,7 @@ function CalendarCard({
           <View style={styles.cardActions}>
             <Pressable accessibilityRole="button" onPress={() => setEditing(true)}>
               <ThemedText type="small" style={{ color: theme.tint }}>
-                Edit name or link
+                Change name, link or who sees it
               </ThemedText>
             </Pressable>
             <Pressable accessibilityRole="button" onPress={remove} disabled={busy}>
@@ -292,6 +325,66 @@ function CalendarCard({
         </>
       )}
     </Card>
+  );
+}
+
+const EVERYONE = 'everyone';
+
+/**
+ * Who sees a calendar: everyone in the club, or any mix of roles,
+ * safeguarding posts, and squads and teams. Admins always see every calendar.
+ */
+function ShownToPicker({
+  shownTo,
+  teams,
+  onChange,
+}: {
+  shownTo: CalendarShownTo;
+  teams: Team[];
+  onChange: (shownTo: CalendarShownTo) => void;
+}) {
+  const styles = useThemedStyles(makeStyles);
+  return (
+    <View style={styles.pickerField}>
+      <ChipGroup
+        label="Who sees it"
+        options={[{ value: EVERYONE, label: 'Everyone in the club' }]}
+        selected={shownTo.everyone ? [EVERYONE] : []}
+        onToggle={() => onChange({ ...shownTo, everyone: !shownTo.everyone })}
+      />
+      {shownTo.everyone ? (
+        <ThemedText type="small" themeColor="textSecondary">
+          Every approved member, including guests. Not temporary helpers.
+        </ThemedText>
+      ) : (
+        <>
+          <ThemedText type="small" themeColor="textSecondary">
+            Or choose the people who need it. They see it if they match any choice. Admins always
+            see every calendar.
+          </ThemedText>
+          <ChipGroup
+            label="Roles"
+            options={calendarRoles.map((r) => ({ value: r, label: calendarRoleLabels[r] }))}
+            selected={shownTo.roles}
+            onToggle={(r) => onChange({ ...shownTo, roles: toggled(shownTo.roles, r) })}
+          />
+          <ChipGroup
+            label="Safeguarding posts"
+            options={calendarPosts.map((p) => ({ value: p, label: calendarPostLabels[p] }))}
+            selected={shownTo.posts}
+            onToggle={(p) => onChange({ ...shownTo, posts: toggled(shownTo.posts, p) })}
+          />
+          {teams.length > 0 ? (
+            <ChipGroup
+              label="Squads and teams"
+              options={teams.map((t) => ({ value: t.id, label: teamLabel(t, teams) }))}
+              selected={shownTo.teamIds}
+              onToggle={(id) => onChange({ ...shownTo, teamIds: toggled(shownTo.teamIds, id) })}
+            />
+          ) : null}
+        </>
+      )}
+    </View>
   );
 }
 

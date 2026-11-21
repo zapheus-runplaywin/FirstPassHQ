@@ -146,6 +146,21 @@ describe('sending in your own check', () => {
     expect(screen.queryByText('Send to a club admin')).toBeNull();
   });
 
+  it('a guest can send one, told it’s optional and never that a role waits on it (21 November 2026)', async () => {
+    await open('guest');
+    expect(screen.getByText(/^Guests don’t need a Working With Children Check\. If you have one/)).toBeTruthy();
+    expect(screen.queryByText(/paused role/)).toBeNull();
+    expect(screen.queryByText(/ask a club admin whether you can be exempted/)).toBeNull();
+    clearCalls();
+    await type('Card number', 'WWC0009');
+    await type('Expires', '01/10/2029');
+    await fireEvent.press(screen.getByText('Send to a club admin'));
+    await settle();
+    expect(argsOf('submit_my_wwcc')).toEqual([
+      { p_card_number: 'WWC0009', p_expires_on: '2029-10-01', p_card_name: personas.guest.profile!.full_name },
+    ]);
+  });
+
   it('a committee member past the checks date can send one', async () => {
     await open('committeePastChecksDate');
     expect(screen.getByText('Send to a club admin')).toBeTruthy();

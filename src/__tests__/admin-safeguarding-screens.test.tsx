@@ -65,12 +65,18 @@ const COMMITTEE = p('committee');
 const COACH = p('coach');
 const EXPIRING = person('expiring', { full_name: 'Sample expiring', role: 'committee', wwcc_number: '9', wwcc_expires_on: '2026-11-01' });
 const EXEMPT = person('exempt', { full_name: 'Sample exempt', role: 'manager' });
+// A guest with a current check can hold a post (21 November 2026).
+const CHECKED_GUEST = person('checked-guest', { full_name: 'Sample checked guest', wwcc_number: '7', wwcc_expires_on: '2029-01-01' });
 const PEOPLE: Profile[] = [
   ADMIN,
   COMMITTEE,
   COACH,
   EXPIRING,
   EXEMPT,
+  CHECKED_GUEST,
+  // Not eligible: a guest with no check, and a temporary helper even with one.
+  person('plain-guest', { full_name: 'Sample unchecked guest' }),
+  person('helper', { full_name: 'Sample checked helper', role: 'volunteer', wwcc_number: '8', wwcc_expires_on: '2029-01-01' }),
   // Not eligible: no check, under 18, stood down, expired, ended or invalid exemption.
   p('athlete'),
   { ...p('minorAthlete'), wwcc_number: '5', wwcc_expires_on: '2029-01-01' },
@@ -236,6 +242,21 @@ describe('Safeguarding settings', () => {
     );
   });
 
+  it('offers a guest with a current check, but not one without, nor a temporary helper (21 November 2026)', async () => {
+    await openSafeguarding({ safeguarding_contacts: null });
+    const matching = async (picker: string, text: string) => {
+      await type(picker, text);
+      return within(fieldGroup(picker))
+        .queryAllByText(/^\+ Sample/)
+        .map((t) => String(t.props.children).replace(/^\+ /, ''));
+    };
+    expect(await matching('Child Safety Officer', 'guest')).toEqual(['Sample checked guest']);
+    expect(await matching('Complaints Manager', 'guest')).toEqual(['Sample checked guest']);
+    expect(await matching('Child Safety Officer', 'helper')).toEqual([]);
+    // The WWC Registration Officer must be an admin or committee member, which a guest can't be.
+    expect(await matching('WWC Registration Officer', 'guest')).toEqual([]);
+  });
+
   it('counts a lodged check application in force as a check, but not one that lapsed', async () => {
     const application = (profile_id: string, status: string) => ({
       id: `a-${profile_id}`,
@@ -252,9 +273,15 @@ describe('Safeguarding settings', () => {
         { ...application('athlete', 'in_force'), ended_at: '2026-10-01T00:00:00Z' },
       ],
     });
-    expect(await offered('Child Safety Officer')).toEqual(
-      ['Sample admin', 'Sample coach', 'Sample committee', 'Sample ended exemption', 'Sample expiring'].sort(),
-    );
+    const matching = async (text: string) => {
+      await type('Child Safety Officer', text);
+      return within(fieldGroup('Child Safety Officer'))
+        .queryAllByText(/^\+ Sample/)
+        .map((t) => String(t.props.children).replace(/^\+ /, ''));
+    };
+    expect(await matching('exemption')).toEqual(['Sample ended exemption']);
+    expect(await matching('athlete')).toEqual([]);
+    expect(await matching('exempt')).not.toContain('Sample exempt');
   });
 
   it('offers as WWC Registration Officer only eligible admins and committee members', async () => {

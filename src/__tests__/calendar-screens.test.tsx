@@ -82,9 +82,19 @@ const TEAM_ICS = ics({
   description: 'Bring bibs. Drills at https://example.test/drills.',
 });
 
-const CALENDARS = [
-  { id: 'cal-club', name: 'Club', url: 'webcal://example.test/club.ics', committee_only: false, color: null, team: null },
-  { id: 'cal-team', name: 'ignored', url: 'https://example.test/open-a.ics', committee_only: false, color: 'violet', team: { name: 'Open A', kind: 'team' } },
+type AudienceRow = { kind: string; role: string | null; post: string | null; team_id: string | null; team: { kind: string } | null };
+type CalendarRow = {
+  id: string;
+  name: string;
+  url: string;
+  color: string | null;
+  team: { name: string; kind: string } | null;
+  calendar_audiences: AudienceRow[];
+};
+
+const CALENDARS: CalendarRow[] = [
+  { id: 'cal-club', name: 'Club', url: 'webcal://example.test/club.ics', color: null, team: null, calendar_audiences: [{ kind: 'everyone', role: null, post: null, team_id: null, team: null }] },
+  { id: 'cal-team', name: 'ignored', url: 'https://example.test/open-a.ics', color: 'violet', team: { name: 'Open A', kind: 'team' }, calendar_audiences: [{ kind: 'team', role: null, post: null, team_id: 'team-x', team: { kind: 'team' } }] },
 ];
 
 const FIXTURES = [
@@ -193,6 +203,34 @@ describe('the calendar list', () => {
     await fireEvent.press(screen.getAllByText('Open A')[0]);
     expect(screen.queryByText('Club AGM')).toBeNull();
     expect(screen.getByText('Open A training')).toBeTruthy();
+  });
+
+  it('shows a calendar shared with roles or posts under its own name, as its own filter (21 November 2026)', async () => {
+    const physioIcs = ics({ uid: 'screening', summary: 'Physio screening day', start: '20261022T010000Z', end: '20261022T030000Z' });
+    await openCalendar(
+      'physio',
+      { ...FEEDS, 'https://example.test/physio.ics': physioIcs },
+      [
+        ...CALENDARS,
+        {
+          id: 'cal-physio',
+          name: 'Physio and safeguarding',
+          url: 'https://example.test/physio.ics',
+          color: null,
+          team: null,
+          calendar_audiences: [
+            { kind: 'role', role: 'physio', post: null, team_id: null, team: null },
+            { kind: 'post', role: null, post: 'child_safety_officer', team_id: null, team: null },
+          ],
+        },
+      ],
+    );
+    expect(screen.getByText('Physio screening day')).toBeTruthy();
+    await fireEvent.press(screen.getByText('Club'));
+    expect(screen.queryByText('Physio screening day')).toBeNull();
+    await fireEvent.press(screen.getAllByText('Physio and safeguarding')[0]);
+    expect(screen.getByText('Physio screening day')).toBeTruthy();
+    expect(screen.queryByText('Club AGM')).toBeNull();
   });
 
   it('opens an event when tapped', async () => {

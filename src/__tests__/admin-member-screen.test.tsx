@@ -225,6 +225,21 @@ describe('a member’s page for an admin', () => {
     expect(screen.queryByText('Another admin needs to exempt you.')).toBeNull();
   });
 
+  it('lets an admin record an optional check on a guest, for a safeguarding post (21 November 2026)', async () => {
+    await openMember(personas.guest.profile!);
+    expect(screen.getByText('Working With Children Check')).toBeTruthy();
+    expect(
+      screen.getByText(/^Guests don’t need a check\. Record one only if they’ll be a Child Safety Officer or\s+Complaints Manager/),
+    ).toBeTruthy();
+    expect(screen.queryByText(/need a current check before you can approve them/)).toBeNull();
+    expect(screen.getByText('Card number')).toBeTruthy();
+  });
+
+  it('shows an athlete no check section', async () => {
+    await openMember(personas.athlete.profile!);
+    expect(screen.queryByText('Working With Children Check')).toBeNull();
+  });
+
   it('offers Approve and Don’t approve for someone waiting, never Remove access', async () => {
     await openMember(p('pending'));
     expect(shown()).toEqual(['deleteMember', 'approve', 'dontApprove', 'verify']);

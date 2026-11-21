@@ -66,33 +66,44 @@ const TEAMS: Team[] = [SQUAD, TEAM, TEAM_B];
 // ---------------------------------------------------------------------------
 // Calendars
 
+type AudienceRow = { kind: string; role: string | null; post: string | null; team_id: string | null };
 type CalendarRow = {
   id: string;
   name: string;
   url: string;
-  team_id: string | null;
-  committee_only: boolean;
   color: string | null;
+  calendar_audiences: AudienceRow[];
 };
+
+const everyone: AudienceRow = { kind: 'everyone', role: null, post: null, team_id: null };
+const role = (r: string): AudienceRow => ({ kind: 'role', role: r, post: null, team_id: null });
+const post = (p: string): AudienceRow => ({ kind: 'post', role: null, post: p, team_id: null });
+const group = (id: string): AudienceRow => ({ kind: 'team', role: null, post: null, team_id: id });
 
 const CLUB_CAL: CalendarRow = {
   id: 'cal-club',
   name: 'Club calendar',
   url: 'https://outlook.example/club.ics',
-  team_id: null,
-  committee_only: false,
   color: null,
+  calendar_audiences: [everyone],
 };
 const COMMITTEE_CAL: CalendarRow = {
   ...CLUB_CAL,
   id: 'cal-committee',
   name: 'Committee dates',
   url: 'webcal://outlook.example/committee.ics',
-  committee_only: true,
   color: 'violet',
+  calendar_audiences: [role('committee')],
 };
-const TEAM_CAL: CalendarRow = { ...CLUB_CAL, id: 'cal-team', name: 'Open A games', team_id: TEAM.id };
-const OLD_TEAM_CAL: CalendarRow = { ...CLUB_CAL, id: 'cal-old', name: 'Old team', team_id: 'gone' };
+const TEAM_CAL: CalendarRow = { ...CLUB_CAL, id: 'cal-team', name: 'Open A games', calendar_audiences: [group(TEAM.id)] };
+const OLD_TEAM_CAL: CalendarRow = { ...CLUB_CAL, id: 'cal-old', name: 'Old team', calendar_audiences: [group('gone')] };
+const MIXED_CAL: CalendarRow = {
+  ...CLUB_CAL,
+  id: 'cal-mixed',
+  name: 'Physio and safeguarding',
+  calendar_audiences: [role('statistician'), role('physio'), post('child_safety_officer'), group(SQUAD.id)],
+};
+const NOBODY_CAL: CalendarRow = { ...CLUB_CAL, id: 'cal-nobody', name: 'Added the old way', calendar_audiences: [] };
 
 let log: TableQuery[];
 
@@ -110,21 +121,35 @@ beforeEach(() => {
   globalThis.fetch = fetchMock as unknown as typeof fetch;
 });
 
-async function openCalendars(calendars: CalendarRow[] = []) {
+async function openCalendars(calendars: CalendarRow[] = [], rpcErrors: Record<string, string> = {}) {
   const recorder = recordTables(['calendars']);
   log = recorder.log;
   await openScreen('admin', { 'admin/calendars': CalendarsScreen }, '/admin/calendars', {
     calendars,
     teams: TEAMS,
-  }, { tableHandlers: recorder.handlers });
+  }, { tableHandlers: recorder.handlers, rpcErrors });
 }
 
 const calendarReads = () =>
   log.filter((q) => q.table === 'calendars' && q.calls.some((c) => c.method === 'select')).length;
+const saves = () => callsTo('admin_save_calendar');
+/** Whether the first chip with this text (the card being edited) is selected. */
+function chipSelected(text: string) {
+  let node: ReturnType<typeof screen.getByText> | null = screen.getAllByText(text)[0];
+  while (node && node.props.accessibilityState === undefined) node = node.parent;
+  return node?.props.accessibilityState?.selected === true;
+}
 
 async function add() {
   await fireEvent.press(screen.getByText('Add calendar'));
   await settle();
+}
+
+/** Saves a new calendar with a good link, shown to these choices. */
+async function addShownTo(...labels: string[]) {
+  await type('ICS link', 'https://outlook.example/new.ics');
+  for (const label of labels) await fireEvent.press(screen.getAllByText(label).at(-1)!);
+  await add();
 }
 
 describe('Calendars', () => {
@@ -134,21 +159,59 @@ describe('Calendars', () => {
   });
 
   it('lists each calendar with who it’s shown to and its link', async () => {
-    await openCalendars([CLUB_CAL, COMMITTEE_CAL, TEAM_CAL, OLD_TEAM_CAL]);
+    await openCalendars([CLUB_CAL, COMMITTEE_CAL, TEAM_CAL, OLD_TEAM_CAL, MIXED_CAL, NOBODY_CAL]);
     expect(screen.getByText('Shown to Everyone in the club')).toBeTruthy();
-    expect(screen.getByText('Shown to the committee')).toBeTruthy();
+    expect(screen.getByText('Shown to Committee')).toBeTruthy();
     expect(screen.getByText('Shown to Open A')).toBeTruthy();
     // A team that isn't this season's any more.
-    expect(screen.getByText('Shown to Team')).toBeTruthy();
+    expect(screen.getByText('Shown to 1 earlier squad or team')).toBeTruthy();
+    expect(
+      screen.getByText('Shown to Physios, Statisticians, Child Safety Officers and Open Squad'),
+    ).toBeTruthy();
+    expect(screen.getByText('Shown to Admins only (choose who sees it)')).toBeTruthy();
     expect(screen.getByText('webcal://outlook.example/committee.ics')).toBeTruthy();
   });
 
-  it('offers Everyone, the Committee and each current squad and team', async () => {
+  it('offers everyone, each role, each safeguarding post and each current squad and team', async () => {
     await openCalendars();
-    for (const label of ['Everyone', 'Committee', 'Open Squad', 'Open A', '17 & Under A']) {
+    expect(isSelected('Everyone in the club')).toBe(false);
+    for (const label of [
+      'Committee',
+      'Coaches',
+      'Managers',
+      'Physios',
+      'Statisticians',
+      'Athletes',
+      'Parents and guardians',
+      'Guests',
+      'Child Safety Officers',
+      'Complaints Managers',
+      'WWC Registration Officers',
+      'Open Squad',
+      'Open A',
+      '17 & Under A',
+    ]) {
       expect(screen.getByText(label)).toBeTruthy();
     }
-    expect(isSelected('Everyone')).toBe(true);
+  });
+
+  it('hides the other choices while Everyone is ticked', async () => {
+    await openCalendars();
+    await fireEvent.press(screen.getByText('Everyone in the club'));
+    expect(isSelected('Everyone in the club')).toBe(true);
+    expect(screen.queryByText('Physios')).toBeNull();
+    expect(screen.getByText('Every approved member, including guests. Not temporary helpers.')).toBeTruthy();
+    await fireEvent.press(screen.getByText('Everyone in the club'));
+    expect(screen.getByText('Physios')).toBeTruthy();
+  });
+
+  it('won’t add a calendar shown to nobody (need to know)', async () => {
+    await openCalendars();
+    await type('ICS link', 'https://outlook.example/club.ics');
+    await add();
+    expect(screen.getByText('Choose who sees this calendar.')).toBeTruthy();
+    expect(saves()).toEqual([]);
+    expect(fetchMock).not.toHaveBeenCalled();
   });
 
   it.each(['outlook.example/club.ics', 'http://outlook.example/club.ics', '', 'ftp://x'])(
@@ -156,39 +219,76 @@ describe('Calendars', () => {
     async (link) => {
       await openCalendars();
       await type('ICS link', link);
+      await fireEvent.press(screen.getByText('Everyone in the club'));
       await add();
       expect(screen.getByText('Paste the ICS link from Outlook. It starts with https://')).toBeTruthy();
-      expect(writes(log, 'calendars')).toEqual([]);
+      expect(saves()).toEqual([]);
     },
   );
 
   it('adds the club calendar under its default name, trimming the link', async () => {
     await openCalendars();
     await type('ICS link', '  https://outlook.example/club.ics  ');
+    await fireEvent.press(screen.getByText('Everyone in the club'));
     await add();
-    expect(writes(log, 'calendars')).toEqual([
+    expect(saves()).toEqual([
       {
-        method: 'insert',
-        values: {
-          name: 'Club calendar',
-          url: 'https://outlook.example/club.ics',
-          team_id: null,
-          committee_only: false,
-          color: null,
-        },
-        filters: [],
+        p_id: null,
+        p_name: 'Club calendar',
+        p_url: 'https://outlook.example/club.ics',
+        p_color: null,
+        p_everyone: true,
+        p_roles: [],
+        p_team_ids: [],
+        p_posts: [],
       },
     ]);
+    expect(writes(log, 'calendars')).toEqual([]);
+  });
+
+  it('adds a calendar for physios, statisticians and guests', async () => {
+    await openCalendars();
+    await addShownTo('Physios', 'Statisticians', 'Guests');
+    expect(saves()[0]).toMatchObject({
+      p_name: 'Calendar',
+      p_everyone: false,
+      p_roles: ['physio', 'statistician', 'guest'],
+      p_team_ids: [],
+      p_posts: [],
+    });
+  });
+
+  it('adds a calendar for the safeguarding posts and a squad', async () => {
+    await openCalendars();
+    await addShownTo('Child Safety Officers', 'Complaints Managers', 'Open Squad');
+    expect(saves()[0]).toMatchObject({
+      p_roles: [],
+      p_team_ids: [SQUAD.id],
+      p_posts: ['child_safety_officer', 'complaints_manager'],
+    });
+  });
+
+  it('untapping a choice takes it off', async () => {
+    await openCalendars();
+    await addShownTo('Guests', 'Coaches', 'Guests');
+    expect(saves()[0]).toMatchObject({ p_roles: ['coach'] });
+  });
+
+  it('sends only Everyone when Everyone is ticked after other choices', async () => {
+    await openCalendars();
+    await addShownTo('Guests', 'Open A', 'Everyone in the club');
+    expect(saves()[0]).toMatchObject({ p_everyone: true, p_roles: [], p_team_ids: [], p_posts: [] });
   });
 
   it('refuses Outlook’s web page link and saves nothing (21 November 2026)', async () => {
     await openCalendars();
     await type('ICS link', 'https://outlook.example/owa/calendar/abc/calendar.html');
+    await fireEvent.press(screen.getByText('Everyone in the club'));
     await add();
     expect(
       screen.getByText('That’s Outlook’s web page link (it ends in .html). Use the ICS link instead, which ends in .ics.'),
     ).toBeTruthy();
-    expect(writes(log, 'calendars')).toEqual([]);
+    expect(saves()).toEqual([]);
     expect(input('ICS link').props.value).toBe('https://outlook.example/owa/calendar/abc/calendar.html');
   });
 
@@ -196,30 +296,33 @@ describe('Calendars', () => {
     feeds['https://outlook.example/page'] = '<html><body>Calendar</body></html>';
     await openCalendars();
     await type('ICS link', 'https://outlook.example/page');
+    await fireEvent.press(screen.getByText('Everyone in the club'));
     await add();
     expect(fetchMock).toHaveBeenCalledWith('https://outlook.example/page');
     expect(
       screen.getByText('That link opens a web page, not a calendar file. Use the ICS link from Outlook, which ends in .ics.'),
     ).toBeTruthy();
-    expect(writes(log, 'calendars')).toEqual([]);
+    expect(saves()).toEqual([]);
   });
 
   it('refuses a new link that answers with an error', async () => {
     feeds['https://outlook.example/club.ics'] = 404;
     await openCalendars();
     await type('ICS link', 'https://outlook.example/club.ics');
+    await fireEvent.press(screen.getByText('Everyone in the club'));
     await add();
     expect(
       screen.getByText('That link didn’t work (error 404). Copy the ICS link from Outlook again and paste the whole of it.'),
     ).toBeTruthy();
-    expect(writes(log, 'calendars')).toEqual([]);
+    expect(saves()).toEqual([]);
   });
 
   it('takes out line breaks a paste slipped into the middle of the link', async () => {
     await openCalendars();
     await type('ICS link', 'https://outlook.example/owa/\n  calendar/club.ics');
+    await fireEvent.press(screen.getByText('Everyone in the club'));
     await add();
-    expect(writes(log, 'calendars')[0].values).toMatchObject({ url: 'https://outlook.example/owa/calendar/club.ics' });
+    expect(saves()[0]).toMatchObject({ p_url: 'https://outlook.example/owa/calendar/club.ics' });
   });
 
   it('adds a committee calendar from a webcal:// link', async () => {
@@ -227,12 +330,10 @@ describe('Calendars', () => {
     await type('ICS link', 'WEBCAL://outlook.example/committee.ics');
     await fireEvent.press(screen.getByText('Committee'));
     await add();
-    expect(writes(log, 'calendars')[0].values).toEqual({
-      name: 'Committee calendar',
-      url: 'WEBCAL://outlook.example/committee.ics',
-      team_id: null,
-      committee_only: true,
-      color: null,
+    expect(saves()[0]).toMatchObject({
+      p_name: 'Committee calendar',
+      p_url: 'WEBCAL://outlook.example/committee.ics',
+      p_roles: ['committee'],
     });
   });
 
@@ -244,24 +345,26 @@ describe('Calendars', () => {
     await fireEvent.press(screen.getByText('Open A'));
     await fireEvent.press(screen.getByLabelText('Violet'));
     await add();
-    expect(writes(log, 'calendars')[0].values).toEqual({
-      name: 'Open A games',
-      url: 'https://outlook.example/open-a.ics',
-      team_id: TEAM.id,
-      committee_only: false,
-      color: 'violet',
+    expect(saves()[0]).toEqual({
+      p_id: null,
+      p_name: 'Open A games',
+      p_url: 'https://outlook.example/open-a.ics',
+      p_color: 'violet',
+      p_everyone: false,
+      p_roles: [],
+      p_team_ids: [TEAM.id],
+      p_posts: [],
     });
     expect(input('ICS link').props.value).toBe('');
     expect(input('Name (optional)').props.value).toBe('');
+    expect(isSelected('Open A')).toBe(false);
     expect(calendarReads()).toBe(readsBefore + 1);
   });
 
   it('names a team calendar after the team when left unnamed', async () => {
     await openCalendars();
-    await type('ICS link', 'https://outlook.example/u17.ics');
-    await fireEvent.press(screen.getByText('17 & Under A'));
-    await add();
-    expect(writes(log, 'calendars')[0].values).toMatchObject({ name: '17 & Under A calendar', team_id: TEAM_B.id });
+    await addShownTo('17 & Under A');
+    expect(saves()[0]).toMatchObject({ p_name: '17 & Under A calendar', p_team_ids: [TEAM_B.id] });
   });
 
   it('starts each audience on its own colour until one is picked', async () => {
@@ -273,95 +376,136 @@ describe('Calendars', () => {
     expect(selected()).toEqual(['Yellow']);
     await fireEvent.press(screen.getByText('Committee'));
     expect(selected()).toEqual(['Pink']);
+    await fireEvent.press(screen.getByText('Committee'));
     await fireEvent.press(screen.getByText('Open Squad'));
     expect(selected()).toEqual(['Blue']);
+    await fireEvent.press(screen.getByText('Open Squad'));
     await fireEvent.press(screen.getByText('Open A'));
     expect(selected()).toEqual(['Green']);
+    // A mix takes the club's colour.
+    await fireEvent.press(screen.getByText('Physios'));
+    expect(selected()).toEqual(['Yellow']);
   });
 
   it('shows why the database refused a new calendar and keeps what was typed', async () => {
-    await openCalendars();
-    failTableWrite('calendars', 'insert', 'new row violates row-level security policy');
+    await openCalendars([], { admin_save_calendar: 'Only admins can change calendars' });
     await type('ICS link', 'https://outlook.example/club.ics');
+    await fireEvent.press(screen.getByText('Everyone in the club'));
     await add();
-    expect(screen.getByText('new row violates row-level security policy')).toBeTruthy();
+    expect(screen.getByText('Only admins can change calendars')).toBeTruthy();
     expect(input('ICS link').props.value).toBe('https://outlook.example/club.ics');
   });
 
-  it('changes a calendar’s name and link', async () => {
-    await openCalendars([CLUB_CAL]);
-    await fireEvent.press(screen.getByText('Edit name or link'));
+  it('changes a calendar’s name and link, keeping who sees it', async () => {
+    await openCalendars([MIXED_CAL]);
+    await fireEvent.press(screen.getByText('Change name, link or who sees it'));
     await type('Name', 'Thunder club');
     await type('ICS link', ' https://outlook.example/new.ics ', 0);
     await fireEvent.press(screen.getByText('Save'));
     await settle();
-    expect(writes(log, 'calendars')).toEqual([
+    expect(saves()).toEqual([
       {
-        method: 'update',
-        values: { name: 'Thunder club', url: 'https://outlook.example/new.ics' },
-        filters: [['id', 'cal-club']],
+        p_id: 'cal-mixed',
+        p_name: 'Thunder club',
+        p_url: 'https://outlook.example/new.ics',
+        p_color: null,
+        p_everyone: false,
+        p_roles: ['statistician', 'physio'],
+        p_team_ids: [SQUAD.id],
+        p_posts: ['child_safety_officer'],
       },
     ]);
     expect(screen.queryByText('Save')).toBeNull();
   });
 
+  it('changes who sees a calendar: from everyone to guests and WWC officers', async () => {
+    await openCalendars([CLUB_CAL]);
+    await fireEvent.press(screen.getByText('Change name, link or who sees it'));
+    expect(chipSelected('Everyone in the club')).toBe(true);
+    await fireEvent.press(screen.getAllByText('Everyone in the club')[0]);
+    await fireEvent.press(screen.getAllByText('Guests')[0]);
+    await fireEvent.press(screen.getAllByText('WWC Registration Officers')[0]);
+    await fireEvent.press(screen.getByText('Save'));
+    await settle();
+    expect(saves()[0]).toMatchObject({
+      p_id: 'cal-club',
+      p_everyone: false,
+      p_roles: ['guest'],
+      p_posts: ['wwc_officer'],
+      p_team_ids: [],
+    });
+    expect(fetchMock).not.toHaveBeenCalled();
+  });
+
+  it('won’t save a calendar changed to be shown to nobody', async () => {
+    await openCalendars([COMMITTEE_CAL]);
+    await fireEvent.press(screen.getByText('Change name, link or who sees it'));
+    await fireEvent.press(screen.getAllByText('Committee')[0]);
+    await fireEvent.press(screen.getByText('Save'));
+    await settle();
+    expect(screen.getByText('Choose who sees this calendar.')).toBeTruthy();
+    expect(saves()).toEqual([]);
+    expect(screen.getByText('Save')).toBeTruthy();
+  });
+
   it('refuses a changed link that opens a web page, and stays editing', async () => {
     feeds['https://outlook.example/new.html.page'] = '<html></html>';
     await openCalendars([CLUB_CAL]);
-    await fireEvent.press(screen.getByText('Edit name or link'));
+    await fireEvent.press(screen.getByText('Change name, link or who sees it'));
     await type('ICS link', 'https://outlook.example/new.html.page', 0);
     await fireEvent.press(screen.getByText('Save'));
     await settle();
     expect(
       screen.getByText('That link opens a web page, not a calendar file. Use the ICS link from Outlook, which ends in .ics.'),
     ).toBeTruthy();
-    expect(writes(log, 'calendars')).toEqual([]);
+    expect(saves()).toEqual([]);
     expect(screen.getByText('Save')).toBeTruthy();
   });
 
   it('doesn’t download the link again when only the name changes', async () => {
     await openCalendars([CLUB_CAL]);
-    await fireEvent.press(screen.getByText('Edit name or link'));
+    await fireEvent.press(screen.getByText('Change name, link or who sees it'));
     await type('Name', 'Thunder club');
     await fireEvent.press(screen.getByText('Save'));
     await settle();
     expect(fetchMock).not.toHaveBeenCalled();
-    expect(writes(log, 'calendars')[0].values).toEqual({ name: 'Thunder club', url: CLUB_CAL.url });
+    expect(saves()[0]).toMatchObject({ p_name: 'Thunder club', p_url: CLUB_CAL.url, p_everyone: true });
   });
 
   it('keeps the old name when the new one is left empty', async () => {
     await openCalendars([CLUB_CAL]);
-    await fireEvent.press(screen.getByText('Edit name or link'));
+    await fireEvent.press(screen.getByText('Change name, link or who sees it'));
     await type('Name', '   ');
     await fireEvent.press(screen.getByText('Save'));
     await settle();
-    expect(writes(log, 'calendars')[0].values).toEqual({ name: 'Club calendar', url: CLUB_CAL.url });
+    expect(saves()[0]).toMatchObject({ p_name: 'Club calendar', p_url: CLUB_CAL.url });
   });
 
   it('refuses a changed link that isn’t an ICS link', async () => {
     await openCalendars([CLUB_CAL]);
-    await fireEvent.press(screen.getByText('Edit name or link'));
+    await fireEvent.press(screen.getByText('Change name, link or who sees it'));
     await type('ICS link', 'outlook.example', 0);
     await fireEvent.press(screen.getByText('Save'));
     await settle();
     expect(screen.getAllByText('Paste the ICS link from Outlook. It starts with https://')).toHaveLength(1);
-    expect(writes(log, 'calendars')).toEqual([]);
+    expect(saves()).toEqual([]);
   });
 
-  it('cancelling an edit puts the saved name and link back', async () => {
+  it('cancelling an edit puts the saved name, link and audience back', async () => {
     await openCalendars([CLUB_CAL]);
-    await fireEvent.press(screen.getByText('Edit name or link'));
+    await fireEvent.press(screen.getByText('Change name, link or who sees it'));
     await type('Name', 'Something else');
+    await fireEvent.press(screen.getAllByText('Everyone in the club')[0]);
     await fireEvent.press(screen.getByText('Cancel'));
-    await fireEvent.press(screen.getByText('Edit name or link'));
+    await fireEvent.press(screen.getByText('Change name, link or who sees it'));
     expect(input('Name').props.value).toBe('Club calendar');
-    expect(writes(log, 'calendars')).toEqual([]);
+    expect(chipSelected('Everyone in the club')).toBe(true);
+    expect(saves()).toEqual([]);
   });
 
   it('shows a refused change on the calendar and stays editing', async () => {
-    await openCalendars([CLUB_CAL]);
-    failTableWrite('calendars', 'update', 'Only admins can change calendars');
-    await fireEvent.press(screen.getByText('Edit name or link'));
+    await openCalendars([CLUB_CAL], { admin_save_calendar: 'Only admins can change calendars' });
+    await fireEvent.press(screen.getByText('Change name, link or who sees it'));
     await fireEvent.press(screen.getByText('Save'));
     await settle();
     expect(screen.getByText('Only admins can change calendars')).toBeTruthy();

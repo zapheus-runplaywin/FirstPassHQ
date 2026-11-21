@@ -12,7 +12,9 @@ import type { AppRole, MyWwccSubmission, Profile } from '@/lib/types';
 /**
  * Whether the member can send in their own card: approved, not stood down,
  * and holding a role that needs a check, counting roles paused for want of
- * one. Same rule as `public.submit_my_wwcc`.
+ * one, or a guest, who never needs one but may add one so they can be named
+ * to a safeguarding post (Matt, 21 November 2026). Same rule as
+ * `public.submit_my_wwcc`.
  */
 export function canSendOwnCheck(
   profile: Pick<
@@ -24,6 +26,7 @@ export function canSendOwnCheck(
   if (!profile || profile.status !== 'approved' || profile.stood_down_at) return false;
   const held = [...new Set([profile.role, ...profile.extra_roles, ...pausedRoles])];
   const [role = 'guest', ...extra] = held;
+  if (isGuest(profile, pausedRoles)) return true;
   return needsWwcc({
     role,
     extra_roles: extra,
@@ -31,14 +34,30 @@ export function canSendOwnCheck(
   });
 }
 
-/** What the member reads about the card they sent in, in a sentence. */
-export function submissionStatusText(submission: MyWwccSubmission): string {
+/**
+ * Whether the member is a guest, for whom a check is optional. A member whose
+ * roles are paused also shows as a guest in the app, so they don't count.
+ */
+export function isGuest(
+  profile: Pick<Profile, 'role' | 'stood_down_at'> | null,
+  pausedRoles: AppRole[] = [],
+): boolean {
+  return !!profile && profile.role === 'guest' && pausedRoles.length === 0 && !profile.stood_down_at;
+}
+
+/**
+ * What the member reads about the card they sent in, in a sentence. For a
+ * guest (`optional`) no role waits on it.
+ */
+export function submissionStatusText(submission: MyWwccSubmission, optional = false): string {
   const card = `card ${submission.card_number}, expiring ${formatDate(submission.expires_on)}`;
   if (submission.status === 'returned') {
     const note = submission.return_note ? ` Their note: “${submission.return_note}”` : '';
     return `A club admin sent back your ${card}.${note} Check the details and send it again.`;
   }
-  return `You sent in your ${card}. A club admin will check it with the Screening Unit. Your role starts again once they accept it.`;
+  return optional
+    ? `You sent in your ${card}. A club admin will check it with the Screening Unit before it counts.`
+    : `You sent in your ${card}. A club admin will check it with the Screening Unit. Your role starts again once they accept it.`;
 }
 
 /**

@@ -7,7 +7,7 @@ import { Button, Card, ErrorText, TextField } from '@/components/ui';
 import { formatDate, parseDate } from '@/lib/age';
 import { useAuth } from '@/lib/auth';
 import { localDay } from '@/lib/reports';
-import { canSendOwnCheck, submissionStatusText } from '@/lib/wwcc-submissions';
+import { canSendOwnCheck, isGuest, submissionStatusText } from '@/lib/wwcc-submissions';
 import { supabase } from '@/lib/supabase';
 
 /**
@@ -22,6 +22,9 @@ export default function SendWwccScreen() {
   const [cardName, setCardName] = useState(submission?.card_name ?? profile?.full_name ?? '');
   const [busy, setBusy] = useState(false);
   const [error, setError] = useState<string | null>(null);
+
+  // A guest's card is optional: no role waits on it.
+  const optional = isGuest(profile, paused?.roles);
 
   if (!canSendOwnCheck(profile, paused?.roles)) {
     return (
@@ -65,13 +68,13 @@ export default function SendWwccScreen() {
   return (
     <Screen>
       <ThemedText type="small" themeColor="textSecondary">
-        Enter your Working With Children Check card as it appears on the card or on the Screening
-        Unit’s website. A club admin checks it with the Screening Unit before it counts, so a paused
-        role stays paused until they accept it.
+        {optional
+          ? 'Guests don’t need a Working With Children Check. If you have one, enter it as it appears on the card or on the Screening Unit’s website. A club admin checks it with the Screening Unit before it counts. The club needs a current check before it can name you Child Safety Officer or Complaints Manager.'
+          : 'Enter your Working With Children Check card as it appears on the card or on the Screening Unit’s website. A club admin checks it with the Screening Unit before it counts, so a paused role stays paused until they accept it.'}
       </ThemedText>
       {submission ? (
         <Card>
-          <ThemedText type="small">{submissionStatusText(submission)}</ThemedText>
+          <ThemedText type="small">{submissionStatusText(submission, optional)}</ThemedText>
           <ThemedText type="small" themeColor="textSecondary">
             Sent {localDay(submission.submitted_at)}
             {submission.decided_at ? `, sent back ${localDay(submission.decided_at)}` : ''}.
@@ -108,11 +111,13 @@ export default function SendWwccScreen() {
         onPress={send}
         busy={busy}
       />
+      {optional ? null : (
       <ThemedText type="small" themeColor="textSecondary">
         Still waiting for your card? Show a club admin your application receipt and they can record
         the application, which counts while it’s assessed. If you never work with children, ask a
         club admin whether you can be exempted, with the reason.
       </ThemedText>
+      )}
     </Screen>
   );
 }
