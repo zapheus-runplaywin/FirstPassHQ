@@ -13,9 +13,11 @@ import { canHoldTitle, staffTitle } from '@/lib/labels';
 import { openNotificationSettings, useTodoNotifications } from '@/lib/push';
 import { supabase } from '@/lib/supabase';
 import { hasRole, rolesOf } from '@/lib/roles';
+import { wwccStatus } from '@/lib/safety';
+import { isGuest, submissionStatusText } from '@/lib/wwcc-submissions';
 
 export default function MyDetailsScreen() {
-  const { profile, memberships, refresh } = useAuth();
+  const { profile, memberships, refresh, wwccSubmission, paused } = useAuth();
   const [preferredName, setPreferredName] = useState(profile?.preferred_name ?? '');
   const [title, setTitle] = useState(profile?.title ?? '');
   const [saving, setSaving] = useState(false);
@@ -98,6 +100,18 @@ export default function MyDetailsScreen() {
           <ThemedText type="small" themeColor="textSecondary">
             Emergency contacts, allergies, conditions, medications and an action plan for your
             coaches, managers and physios
+          </ThemedText>
+        </PressableCard>
+      ) : null}
+      {profile?.status === 'approved' && isGuest(profile, paused?.roles) ? (
+        <PressableCard onPress={() => router.push('/wwcc')}>
+          <ThemedText type="smallBold">Working With Children Check (optional)</ThemedText>
+          <ThemedText type="small" themeColor="textSecondary">
+            {wwccSubmission
+              ? submissionStatusText(wwccSubmission, true)
+              : ['current', 'expiring'].includes(wwccStatus(profile).kind)
+                ? `Card ${profile.wwcc_number} recorded. Tap to send in a new one.`
+                : 'Guests don’t need one. If you have a card, add it here: the club needs a current check before it can name you Child Safety Officer or Complaints Manager.'}
           </ThemedText>
         </PressableCard>
       ) : null}

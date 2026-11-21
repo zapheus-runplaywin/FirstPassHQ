@@ -149,6 +149,53 @@ describe('your details', () => {
     expect(screen.getByPlaceholderText('President, Secretary, Treasurer…')).toBeTruthy();
   });
 
+  describe('a guest’s optional check (21 November 2026)', () => {
+    it('offers a guest an optional check, saying they don’t need one', async () => {
+      await open('guest');
+      expect(screen.getByText('Working With Children Check (optional)')).toBeTruthy();
+      expect(screen.getByText(/^Guests don’t need one\. If you have a card, add it here/)).toBeTruthy();
+      await fireEvent.press(screen.getByText('Working With Children Check (optional)'));
+      expect(push).toHaveBeenCalledWith('/wwcc');
+    });
+
+    it('shows a guest’s recorded card', async () => {
+      await open({
+        ...personas.guest,
+        profile: { ...personas.guest.profile!, wwcc_number: 'WWC0007', wwcc_expires_on: '2029-01-01' },
+      });
+      expect(screen.getByText('Card WWC0007 recorded. Tap to send in a new one.')).toBeTruthy();
+    });
+
+    it('shows a guest the card they sent in, without saying a role waits on it', async () => {
+      await open('guest', {
+        rpcs: {
+          my_wwcc_submission: {
+            id: 's1',
+            card_number: 'WWC0008',
+            expires_on: '2029-01-01',
+            card_name: 'Sample guest',
+            submitted_at: '2026-10-17T00:00:00Z',
+            status: 'waiting',
+            decided_at: null,
+            return_note: null,
+          },
+        },
+      });
+      expect(
+        screen.getByText('You sent in your card WWC0008, expiring 01/01/2029. A club admin will check it with the Screening Unit before it counts.'),
+      ).toBeTruthy();
+    });
+
+    it.each<[string, Who]>([
+      ['athlete', 'athlete'],
+      ['coach', 'coach'],
+      ['coach whose role is paused (shown as a guest)', 'coachExpiredCheck'],
+    ])('offers a %s no optional check here', async (_l, who) => {
+      await open(who);
+      expect(screen.queryByText('Working With Children Check (optional)')).toBeNull();
+    });
+  });
+
   it('shows the database’s error and stays', async () => {
     await open('athlete', { rpcErrors: { save_my_details: 'Preferred name is too long.' } });
     await fireEvent.press(screen.getByText('Save'));

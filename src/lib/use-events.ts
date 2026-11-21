@@ -4,6 +4,7 @@ import { useCallback, useEffect, useState } from 'react';
 import { calendarColorHex } from '@/constants/calendar-colors';
 import { useAuth } from '@/lib/auth';
 import { parseIcs, type CalendarEvent } from '@/lib/calendar';
+import { colourAudience, shownToFromRows, type AudienceRow } from '@/lib/calendar-audience';
 import { supabase } from '@/lib/supabase';
 import type { GroupKind } from '@/lib/types';
 
@@ -27,8 +28,9 @@ type CalendarRow = {
 };
 
 /**
- * Events from every calendar this member can see: the club calendar plus
- * calendars attached to their teams. The database decides which rows they get.
+ * Events from every calendar this member can see: the club calendar plus the
+ * calendars an admin has shown to their roles, safeguarding posts, squads and
+ * teams. The database decides which rows they get.
  * Each ICS file is cached so the last copy still shows when offline.
  */
 export function useEvents() {
@@ -114,20 +116,28 @@ async function fetchEvents(
   if (!approved) return { events: [], failed: [] };
   const { data } = await supabase
     .from('calendars')
-    .select('id, name, url, committee_only, color, team:teams (name, kind)')
+    .select(
+      'id, name, url, color, team:teams (name, kind), calendar_audiences (kind, role, post, team_id, team:teams (kind))',
+    )
     .order('created_at');
   const calendars: CalendarRow[] = (data ?? []).map((row) => {
+    // A squad's or team's calendar added before calendars had audiences shows
+    // under the squad's or team's name.
     const team = row.team as unknown as { name: string; kind: GroupKind } | null;
+    const rows = (row.calendar_audiences ?? []) as unknown as (AudienceRow & {
+      team: { kind: GroupKind } | null;
+    })[];
+    const shownTo = shownToFromRows(rows);
+    const teamKinds = rows
+      .filter((r) => r.team_id && r.team)
+      .map((r) => ({ id: r.team_id as string, kind: r.team!.kind }));
     return {
       id: row.id,
       url: row.url,
       name: team?.name ?? row.name,
-      // Committee calendars get their own colour and filter, like a squad's.
-      clubWide: !team && !row.committee_only,
-      color: calendarColorHex(
-        row.color,
-        team ? team.kind : row.committee_only ? 'committee' : 'club',
-      ),
+      // Calendars not shown to everyone get their own colour and filter, like a squad's.
+      clubWide: shownTo.everyone,
+      color: calendarColorHex(row.color, colourAudience(shownTo, teamKinds)),
     };
   });
 

@@ -162,14 +162,16 @@ export default function SafeguardingScreen() {
     const members = (membersResult.data as Profile[] | null) ?? [];
     // Admins see injuries as admins, whatever the choice.
     setCommittee(members.filter((m) => hasRole(m, 'committee') && !hasRole(m, 'admin')));
-    // The same rule as the database: approved adults, not stood down, screened.
+    // The same rule as the database: approved adults, not stood down, screened,
+    // and not temporary helpers. A guest with a check can be named (Matt, 21
+    // November 2026).
     setEligible(
       members.filter((m) => {
         const check = wwccStatus(m).kind;
         return (
           !isMinor(m.date_of_birth, m.under_17) &&
           !m.stood_down_at &&
-          !hasRole(m, 'guest', 'volunteer') &&
+          !hasRole(m, 'volunteer') &&
           (check === 'current' || check === 'expiring' || exempt.has(m.id))
         );
       }),

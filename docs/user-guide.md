@@ -48,7 +48,7 @@ each of their roles can.
 | **Manager**   | Squad and team managers. The app gives each manager a title from their team, or their squad until they're in a team, such as "Manager, 17 & Under". Need a current Working With Children Check; the role pauses while it's expired, and they add the renewed card from their home screen for an admin to check (see [Sending in your own check](#sending-in-your-own-check)). Someone who has applied for one, new or a renewal, can work while it's assessed (see [Checks applied for](#checks-applied-for)). A parent volunteering at their child's club, a volunteer under 18, or a short-term visitor or national event helper from outside WA has an exemption instead (see [Volunteer exemptions](#volunteer-exemptions)). |
 | **Committee** | Club committee members. Each can add a title, such as President or Secretary, shown with their role. Only committee members and admins can add their own title. Need a current Working With Children Check, or an application being assessed, unless an admin exempts them with a reason (not if they also coach, manage or physio); the role pauses if a recorded check expires or was recorded without an expiry date, and they add the renewed card from their home screen for an admin to check. Committee members approved before checks were needed keep the role without one only until the club's **committee checks date**. Those with a current check, an application in force or a volunteer exemption also read most of the club's governance reports. |
 | **Physio**    | The club's physiotherapists. A physio can be placed in squads or teams to look after their athletes, and one can be the **Head Physio**, who looks after every athlete. Need a current Working With Children Check; the role pauses while it's expired, and they add the renewed card from their home screen for an admin to check (see [Sending in your own check](#sending-in-your-own-check)). Someone who has applied for one, new or a renewal, can work while it's assessed (see [Checks applied for](#checks-applied-for)). A parent volunteering at their child's club, a volunteer under 18, or a short-term visitor or national event helper from outside WA has an exemption instead (see [Volunteer exemptions](#volunteer-exemptions)). |
-| **Guest**     | Anyone else the club lets in, such as partners and sponsors. Guests must be 18 or over. They see only the club calendar, keep their own tasks and can raise a concern. They aren't in squads or teams, get no messages, don't vote and aren't asked for a Working With Children Check or the code of conduct. |
+| **Guest**     | Anyone else the club lets in, such as partners and sponsors. Guests must be 18 or over. They see the club calendar and any calendar an admin shares with guests, keep their own tasks and can raise a concern. They aren't in squads or teams, get no messages, don't vote and aren't asked for a Working With Children Check or the code of conduct. A guest can add a check if they have one, which is optional, and a guest with a current check can be named Child Safety Officer or Complaints Manager. |
 | **Statistician** | The people who record live game stats on a tablet in FirstPass Vantage, which coaches watch live in FirstPass Vision. Statisticians see every game the club records; a game's coaches and managers see their own squad's or team's, and a squad's coaches and managers also see the games of its teams. Any member can hold it alongside another role, such as a manager or an athlete who isn't playing. Need a current Working With Children Check, an application being assessed, or a volunteer exemption such as a parent at their child's games, unless an admin exempts them with a reason, such as only recording opens games; the role pauses if a recorded check expires. Statisticians approved before checks were needed keep the role without one only until the club's **statistician checks date**. The role pauses while a member is stood down. |
 | **Studio** | The people who run the club's live streams in FirstPass Studio, which shows the club's live game stats on screen. Studio signs in to the club with this person's own Google account and reads only the stats the club records for its PlayHQ games, live and finished, and the line-ups for them; it can't change anything. Someone whose only role is Studio, such as a streamer from outside the club, isn't a club member: they see none of the club's features, members or messages. A member can also hold it alongside their own roles. No Working With Children Check is needed, because a Studio operator isn't with the team and never sees contact details, injuries or anything else sensitive. The role pauses while a member is stood down (see [Studio](#studio)). |
 | **Temporary helper** | Someone helping for a day or a short time, such as at a carnival, clinic or tournament, paid or unpaid. Not necessarily a member of the club: this is only a role so the app can onboard them. The app screens them: a Working With Children Check or an exemption covering every day they help, and the club's code of conduct and safeguarding policy accepted. They see none of the club's features or messages, and their time ends by itself after their last day (see [Temporary helpers](#temporary-helpers)). |
@@ -56,7 +56,8 @@ each of their roles can.
 
 **Safeguarding contacts.** An admin names members as the club's **Child Safety Officer** and
 its **Complaints Manager** (a larger club can name up to 5 people in each, and nobody can hold
-both). They're not separate roles: each keeps their own role and also
+both). Any approved adult with a current check can be named, guests included, but not temporary
+helpers. They're not separate roles: each keeps their own role and also
 sees and acts on the concerns members raise, with new ones as an **Urgent** to-do and red, orange
 and green counts on their Concerns card (see [The concerns register](#the-concerns-register)).
 Each sees their post as a title under their roles on the home screen, as does the **WWC
@@ -698,9 +699,11 @@ is on.
 
 ### Calendar
 
-The calendar shows events from the club's Outlook calendars. You see the club calendar, plus the
-calendars of the squads and teams you belong to. Committee members and admins also see the
-committee calendar.
+The calendar shows events from the club's Outlook calendars. Each calendar is shared on a need to
+know basis: you see the ones an admin has shared with everyone in the club, with one of your roles
+(such as **Physios** or **Guests**), with a safeguarding post you hold (such as **Child Safety
+Officers**), or with one of your squads or teams. Admins see every calendar. A role whose check
+has lapsed or that is paused doesn't count, and nor does a post you can't act in.
 
 - **List** shows a week strip and the events after it, grouped by day. Use the arrows to move
   between weeks, and **Load more** at the bottom to see further ahead. The list starts today, or at
@@ -712,8 +715,9 @@ committee calendar.
   1st of that month (or today, for this month).
 - You can look back 12 months (to the start of that month) and ahead 12 months. The arrow fades
   out when you reach either end.
-- The chips (**All**, **Club**, and each of your squads and teams with something on in that
-  period) filter which calendars are shown.
+- The chips (**All**, **Club**, and each of your squads and teams and every other calendar
+  shared with you, by name, with something on in that period) filter which calendars are shown.
+  **Club** is the calendars shared with everyone.
 
 Your teams' matches from PlayHQ appear in the calendar too, for example "Mixed Open A v Rockets"
 with the venue and court. A match with no time yet, which includes most byes, shows as an all-day
@@ -726,6 +730,7 @@ the address.
 <img src="user-guide/calendar-month.png" width="210" alt="Calendar month view">
 <img src="user-guide/event.png" width="210" alt="Event details">
 <img src="user-guide/calendar-fixtures.png" width="210" alt="Matches from PlayHQ in the calendar">
+<img src="user-guide/calendar-shared.png" width="210" alt="A physio's calendar with the calendar shared with physios and statisticians">
 
 ### Squads and teams
 
@@ -1625,6 +1630,8 @@ role comes back straight away. Your home screen shows the card you sent while it
 Unit shows a different expiry, you get a to-do, **Send your Working With Children Check again**,
 with their note. An expired card, or an expiry more than three years away, is refused.
 
+A guest can send in a card too, though they never need one (see [Guests](#guests)).
+
 Still waiting for your card? Show a club admin the receipt instead (see [Checks applied
 for](#checks-applied-for)). If you never work with children, ask a club admin whether you can be
 exempted, with the reason (only committee members, admins and statisticians who hold no coach,
@@ -2484,15 +2491,17 @@ and the to-do goes.
 
 ### Committee calendar
 
-Calendars an admin shares with the **Committee** appear only for committee members and admins,
-with their own colour and filter in the calendar. A paused committee member doesn't see them.
+Calendars an admin shares with the **Committee** appear only for committee members (and anyone
+else the admin shared them with) and admins, with their own colour and filter in the calendar. A
+paused committee member doesn't see them.
 
 <div style="page-break-before: always"></div>
 
 ## 9. Physios, statisticians, guests and temporary helpers
 
 Physios see the squads and teams they're placed in and the club calendar; guests see the club
-calendar only. Neither votes in club awards, so their home screen has no **Awards** card. Guests don't get messages. Physios have a **Messages**
+calendar. Either also sees any calendar an admin shares with their role (see
+[Calendars](#calendars)). Neither votes in club awards, so their home screen has no **Awards** card. Guests don't get messages. Physios have a **Messages**
 card and get messages an admin sends to the Physio role, and messages sent to the squads and teams
 they're in. They also get messages sent to everyone in the club when an admin turns on **Physios get
 club messages** in [Club options](#club-options).
@@ -2553,14 +2562,33 @@ their own home screen and the Members list.
 
 ### Guests
 
-Guests, such as the club's partners and sponsors, can only look at the club calendar. The Guest
+Guests, such as the club's partners and sponsors, can only look at the club calendar and any
+calendar an admin shares with **Guests**. The Guest
 role is for adults: an admin can't approve a guest under 18, because guests get none of the
 protections the app gives children. They are
 never in a squad or team, so **My squads and teams** on their home screen always says "You are
-not in a squad yet." Their to-do list holds only their own tasks, and Your details is just a
-preferred name. Guests can't be stood down and need no Working With Children Check.
+not in a squad yet." Their to-do list holds only their own tasks, and Your details is a
+preferred name and an optional check. Guests can't be stood down and need no Working With
+Children Check.
+
+**A guest in a safeguarding post.** Guest is a level of access in the app, not a statement about
+club membership, so the club's Child Safety Officer or Complaints Manager can be a guest, such as
+an independent person from outside the club. They need a current Working With Children Check,
+like anyone in the post. Most guests have none and don't need one: **Your details** shows
+**Working With Children Check (optional)**, which says "Guests don't need one", and opens the same
+screen as [Sending in your own check](#sending-in-your-own-check) for a guest who has a card. It
+never shows on their home screen or to-do list, even when a card they sent is sent back or nears
+its expiry. An admin can also record a guest's card on their member page, under **Working With
+Children Check**, which for a guest reads "Guests don't need a check. Record one only if they'll
+be a Child Safety Officer or Complaints Manager". Once a card is accepted or recorded, the guest is
+offered in [Safeguarding contacts](#safeguarding-contacts). Named, they see the concerns register,
+their post's title and any calendar shared with their post, and lose them if the check lapses, as
+anyone in the post does. A guest can't be the WWC Registration Officer, who must be an admin or
+committee member.
 
 <img src="user-guide/guest-home.png" width="210" alt="Guest home screen">
+<img src="user-guide/guest-details-check.png" width="210" alt="A guest's Your details with the optional Working With Children Check">
+<img src="user-guide/member-guest-check.png" width="210" alt="An admin recording an optional check on a guest's member page">
 
 ### Statisticians
 
@@ -3297,9 +3325,27 @@ go to the app's log on your phone.
 ### Calendars
 
 **Calendars** connects the club's Outlook calendars. In Outlook, publish the calendar and copy its
-ICS link, then paste it under **Add a calendar**, give it a name and choose who it's shown to:
-**Everyone**, the **Committee**, or one squad or team. Each calendar has a colour, used for its
-events in the app. **Edit name or link** and **Delete** change or remove one.
+ICS link, then paste it under **Add a calendar**, give it a name and choose **Who sees it**.
+Calendars are need to know: a new calendar is shown to nobody but admins until you choose, and the
+app won't save one shown to nobody. Choose either:
+
+- **Everyone in the club**: every approved member, guests included, but not temporary helpers.
+  The other choices are hidden while it's ticked.
+- Or any mix of **Roles** (Committee, Coaches, Managers, Physios, Statisticians, Athletes, Parents
+  and guardians, Guests), **Safeguarding posts** (Child Safety Officers, Complaints Managers, WWC
+  Registration Officers) and **Squads and teams**. A member sees the calendar if they match any one
+  choice, while that role or post is usable: a coach whose check lapsed, or a Child Safety Officer
+  who can't act, doesn't see it.
+
+When different people need different events, split them into separate Outlook calendars, such as
+a physio calendar for physios and statisticians, and a safeguarding calendar for the safeguarding
+posts, and add each one here. Admins always see every calendar. Each card says who it's shown to,
+such as "Shown to Physios, Statisticians and Open Squad". Each calendar has a colour, used for its
+events in the app: until you pick one it's yellow for everyone, pink for the committee alone, blue
+for squads only and green for teams only. **Change name, link or who sees it** and **Delete** change
+or remove one. Calendars added before this choice existed keep who they were shown to: everyone,
+the committee, or their squad or team. A calendar shown to a squad or team is also shown to the
+squad or team of the same name when you start the next season.
 
 Outlook gives two links for a published calendar: an HTML link, for viewing it in a browser, and an
 ICS link, ending in **.ics**, for apps. Use the ICS link. The app downloads a new or changed link
@@ -3308,7 +3354,9 @@ a web page, a link that answers with an error, or one it can't reach. Spaces or 
 slips into the link are taken out. If members' **Calendar** shows "Couldn't load" with a calendar's
 name, copy that calendar's ICS link from Outlook again and save it here.
 
-<img src="user-guide/admin-calendars.png" width="210" alt="Calendars admin">
+<img src="user-guide/admin-calendars.png" width="210" alt="Calendars admin: each calendar says who it's shown to">
+<img src="user-guide/admin-calendar-audience.png" width="210" alt="Adding a calendar for physios, statisticians, Child Safety Officers and a squad">
+<img src="user-guide/admin-calendar-edit.png" width="210" alt="Changing who sees a calendar">
 
 ### Absence reasons
 
@@ -3776,9 +3824,9 @@ Tap **Save keep periods** to save.
 Manager** and **WWC Registration Officer**. A larger club can name up to 5 people in each post;
 each person named acts in the post exactly as a single holder would. Search for each by name or
 email and tap them to add them: they show straight away in the box under that search, with a ✕ to
-take them off, and "2 of 5" beside the heading. Everyone named must be an approved adult (not a
-guest or temporary helper) with a current Working With Children Check (or an exemption that
-applies). Nobody can be both a Child Safety Officer and a Complaints Manager, so a concern about
+take them off, and "2 of 5" beside the heading. Everyone named must be an approved adult (not a temporary helper) with a current Working With
+Children Check (or an exemption that applies). A guest with a current check can be named, such as
+an independent Child Safety Officer from outside the club (see [Guests](#guests)). Nobody can be both a Child Safety Officer and a Complaints Manager, so a concern about
 one person can always go to another; someone already in one post isn't offered for the other. You
 can't name yourself unless someone else is named too. Changes are saved when you tap **Save**.
 The Child Safety Officer is also the club's welfare contact for athletes. Athletes
@@ -4099,7 +4147,8 @@ once saved, only replaced or removed, and anyone who gets it wrong five times in
 | Session plans           | The coach or admin who added the plan (while their check is current and they aren't stood down), and admins. The people the author shares it with: the other coaches of its squad or team, its athletes and the parents and guardians of those under 18, and coaches of other groups chosen by name. Read only: nobody can reply or react. Only the author and admins change it; only admins delete it. Managers, physios and the committee don't see plans unless they also coach. |
 | Reported absences       | The athlete, their parents or guardians, the coaches and managers of the athlete's squads and teams, the committee and admins, with the reason and details. Physios don't see them. The Attendance report counts reasons only, never the details. |
 | Absence reasons         | Every approved member sees the list. Only admins switch reasons off or add them.                                             |
-| Committee calendar      | Committee members and admins.                                                                                               |
+| Calendars               | Admins see every calendar and its link. Members see a calendar, and its link, only if an admin shared it with everyone in the club, one of their usable roles, a safeguarding post they can act in, or one of their squads or teams. Temporary helpers see none. |
+| Committee calendar      | Committee members (and anyone else the admin shared it with) and admins.                                                    |
 | Award votes             | Only the voter sees their own ballot. Nobody, admins included, can see who someone voted for. Who cast each vote is removed after the club's keep period (1 year recommended). |
 | Awards and their settings | Admins, and committee members who read the Award results report. Voters see only the votes open to them and who they can vote for, while voting is open. |
 | Award results           | Admins: standings and how many people have voted, and once voting closes, how many votes each nominee got at each place. Committee members with a current check read the same results once voting closes. |
@@ -4549,11 +4598,17 @@ Working With Children Check, and another admin must do it.
   30 days without one they stop seeing under 18s' injuries.
 - **Safeguarding contacts.** Name a Child Safety Officer and a Complaints Manager (a larger club
   can name up to 5 of each, and nobody can be both), each an adult with a current check, a check
-  application in force or a volunteer exemption (an exemption with a reason doesn't count;
+  application in force or a volunteer exemption, whatever their role, guests included but not
+  temporary helpers (an exemption with a reason doesn't count;
   an officer whose check lapses loses the register until it's renewed, and the to-do to name one
   comes back once nobody in the post can act), and add the governing body's contacts and the
   club's policy (see [Safeguarding contacts](#safeguarding-contacts)). Name a WWC Registration
   Officer (up to 5) to keep the club's check records.
+- **Calendars are need to know.** Training times and venues tell someone where children will be,
+  so each calendar is shown only to the roles, safeguarding posts, squads and teams an admin
+  chooses, and a new one to nobody but admins until they choose (see [Calendars](#calendars)).
+  Temporary helpers see none, and a role paused for a lapsed check or a stand-down stops showing
+  its calendars.
 - **Screening Unit notices.** Record every notice on the member's page. An interim negative
   notice, negative notice, interstate decision or cancelled card stands them down at once, and
   stays on your to-do list until you record telling the governing body in writing.

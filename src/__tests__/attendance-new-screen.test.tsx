@@ -84,8 +84,8 @@ const CLUB_ICS = ics(
 );
 
 const CALENDARS = [
-  { id: 'c1', name: 'Club', url: 'https://example.test/club.ics', committee_only: false, color: null, team: null },
-  { id: 'c2', name: 'x', url: 'https://example.test/team.ics', committee_only: false, color: null, team: { name: TEAM.name, kind: 'team' } },
+  { id: 'c1', name: 'Club', url: 'https://example.test/club.ics', color: null, team: null, calendar_audiences: [{ kind: 'everyone', role: null, post: null, team_id: null, team: null }] },
+  { id: 'c2', name: 'x', url: 'https://example.test/team.ics', color: null, team: { name: TEAM.name, kind: 'team' }, calendar_audiences: [{ kind: 'team', role: null, post: null, team_id: 'team-x', team: { kind: 'team' } }] },
 ];
 
 function serve(feeds: Record<string, string>) {

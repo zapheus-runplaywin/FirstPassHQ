@@ -15,14 +15,18 @@ create or replace function pg_temp.works(label text, statement text) returns tex
 $$ begin execute statement; return 'PASS ' || label;
    exception when others then return 'FAIL ' || label || ' (' || sqlerrm || ')'; end $$;
 
--- A guest with a recorded card is still not eligible as a safeguarding contact.
+-- A guest with a current card can be a safeguarding contact (Matt, 21 November
+-- 2026; until then guests never could). One without a card can't.
 insert into auth.users (id, email, email_confirmed_at) values
   ('00000000-0000-0000-0000-000000000061', 'guest@example.test', now()),
   ('00000000-0000-0000-0000-000000000062', 'helper@example.test', now());
 update public.profiles set status = 'approved', full_name = 'Gus Guest', role = 'guest', verified_at = now(),
   wwcc_number = 'WWC0061', wwcc_expires_on = current_date + 400, date_of_birth = current_date - interval '30 years'
 where id = '00000000-0000-0000-0000-000000000061';
-select pg_temp.ok('guest cannot be a safeguarding contact', public.can_be_safeguarding_contact('00000000-0000-0000-0000-000000000061'), false);
+select pg_temp.ok('guest with a current card can be a safeguarding contact', public.can_be_safeguarding_contact('00000000-0000-0000-0000-000000000061'), true);
+update public.profiles set wwcc_number = null, wwcc_expires_on = null where id = '00000000-0000-0000-0000-000000000061';
+select pg_temp.ok('guest without a card cannot', public.can_be_safeguarding_contact('00000000-0000-0000-0000-000000000061'), false);
+update public.profiles set wwcc_number = 'WWC0061', wwcc_expires_on = current_date + 400 where id = '00000000-0000-0000-0000-000000000061';
 select pg_temp.ok('cleared coach can be', public.can_be_safeguarding_contact('00000000-0000-0000-0000-000000000011'), true);
 
 -- A temporary helper whose first day is ahead, with an unvalidated card, is in no WWC count yet.

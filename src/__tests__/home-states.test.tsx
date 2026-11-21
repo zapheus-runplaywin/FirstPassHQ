@@ -567,6 +567,20 @@ describe('sending in your own check', () => {
     expect(push).toHaveBeenCalledWith('/wwcc');
   });
 
+  it('never asks a guest for a check: optional, so no to-do even for a card sent back (21 November 2026)', async () => {
+    await openHome('guest', {}, { rpcs: { my_wwcc_submission: sent({ status: 'returned', return_note: 'Wrong expiry' }) } });
+    expect(screen.queryByText(/Working With Children Check/)).toBeNull();
+    expect(screen.queryByText('Add your card')).toBeNull();
+  });
+
+  it('never reminds a guest about their own card expiring', async () => {
+    await openHome({
+      ...personas.guest,
+      profile: { ...personas.guest.profile!, wwcc_number: 'WWC0007', wwcc_expires_on: '2026-11-01' },
+    });
+    expect(screen.queryByText(/Working With Children Check/)).toBeNull();
+  });
+
   it('shows a card waiting for an admin, keeps the role paused, and lists nothing to do', async () => {
     await openHome('coachExpiredCheck', {}, { rpcs: { my_wwcc_submission: sent() } });
     expect(screen.getByText('Coach paused')).toBeTruthy();

@@ -337,7 +337,11 @@ export default function MemberScreen() {
   const minor = isMinor(dob, under18);
   const hasGuardians = isAthlete && minor;
   const isVolunteer = roles.includes('volunteer');
+  // A guest needs no check, but can record one to be named Child Safety
+  // Officer or Complaints Manager (Matt, 21 November 2026).
+  const isGuest = roles.includes('guest');
   const needsWwcc =
+    isGuest ||
     roles.some((r) => wwccRoles.includes(r)) ||
     isVolunteer ||
     roles.includes('committee') ||
@@ -1119,6 +1123,12 @@ export default function MemberScreen() {
       {needsWwcc ? (
         <View style={styles.group}>
           <ThemedText type="smallBold">Working With Children Check</ThemedText>
+          {isGuest ? (
+            <ThemedText type="small" themeColor="textSecondary">
+              Guests don’t need a check. Record one only if they’ll be a Child Safety Officer or
+              Complaints Manager: nobody can be named to those posts without a current check.
+            </ThemedText>
+          ) : (
           <ThemedText type="small" themeColor="textSecondary">
             Coaches, managers, physios, statisticians, temporary helpers, committee members and
             admins need a current check before you can approve them. In WA, a parent volunteering at their
@@ -1129,6 +1139,7 @@ export default function MemberScreen() {
             statistician with a reason, such as a statistician who only records opens games. Someone who has applied for a check can work while it’s assessed once you record
             the application below. Being supervised by someone with a check doesn’t count.
           </ThemedText>
+          )}
           <WwcSources />
           {canVolunteer && !isSelf ? (
             <ChipGroup

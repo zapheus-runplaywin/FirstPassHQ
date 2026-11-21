@@ -19,7 +19,12 @@ import { useAbsencesToReview, useLeadsAGroup } from '@/lib/absences';
 import { useConductTodos } from '@/lib/conduct';
 import { safeguardingPostsLabel } from '@/lib/safeguarding-posts';
 import { committeeCheckDue, isDatedExemption, statisticianCheckDue } from '@/lib/safety';
-import { canSendOwnCheck, ownCheckExpiring, submissionStatusText } from '@/lib/wwcc-submissions';
+import {
+  canSendOwnCheck,
+  isGuest,
+  ownCheckExpiring,
+  submissionStatusText,
+} from '@/lib/wwcc-submissions';
 import { formatDate } from '@/lib/age';
 import { useAuth } from '@/lib/auth';
 import { useCanTakeAttendance, useCanViewAttendance } from '@/lib/attendance';
@@ -213,7 +218,8 @@ export default function HomeScreen() {
       !wwccApplication.declared_at &&
       wwccApplication.status === 'waiting_for_declaration',
     ownCheck: ownCheckReason(profile, paused, exemption, wwccApplication),
-    wwccSubmission,
+    // A guest's card is optional: one sent back shows in My details, not as a to-do.
+    wwccSubmission: isGuest(profile, paused?.roles) ? null : wwccSubmission,
     newConcerns,
     messageAccess,
     wellbeingFlagAlerts: wellbeingFlags.repeated,
@@ -963,6 +969,8 @@ function ownCheckReason(
   application: ReturnType<typeof useAuth>['wwccApplication'],
 ): 'paused' | 'expiring' | null {
   if (!canSendOwnCheck(profile, paused?.roles)) return null;
+  // A guest's card is optional, so it never becomes a to-do.
+  if (isGuest(profile, paused?.roles)) return null;
   if (paused) return waitsOnDeclaration(exemption, application) ? null : 'paused';
   return ownCheckExpiring(profile) ? 'expiring' : null;
 }
