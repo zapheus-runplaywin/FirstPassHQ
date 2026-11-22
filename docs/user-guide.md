@@ -4177,7 +4177,7 @@ once saved, only replaced or removed, and anyone who gets it wrong five times in
 | An athlete's own stats from a recorded game | The athlete's current coaches only, on the played game's goals page, once the recording is finished. Only that athlete's own figures: time on court and positions, shooting, feeds, gains, turnovers, rebounds and Net Points. Not the athlete, their parents or guardians, team mates, other parents, managers, physios, statisticians, the committee or admins. Nothing is shown when a team mate has the same name. The figures are worked out when the page opens and aren't stored with the goals. |
 | The list of recorded games | Admins only, under **Games** in Administration: each game's teams, round, status, who recorded it and how many events it holds. No stats and no athletes. |
 | Season KPIs, progress and reviews | An athlete's: the athlete, their coaches in that squad or team, their parents or guardians (read only, until 18) and admins (read only). Not teammates, the committee or physios. A coach's or manager's: them, the committee and admins, and an assistant coach's head coach. Only those who set KPIs change them, record results and write reviews; the person records progress, confirms reviews and adds their own view. A coach's or manager's KPIs and reviews are kept under their name if they delete their account, and stay on the admin report. |
-| Live game stats         | Admins and statisticians (while their statistician role isn't paused for a check): every game the club records. The coaches and managers of the game's squad or team, and of the squad a team belongs to, see the team's games at every stage and who has opened each, and the stats once they open the game in FirstPass Vision, without a pair code (a shadow statistician still pairs with the code in Vantage). Members with the Studio role (while not stood down), through FirstPass Studio: games with a PlayHQ game that are live or finished, their setup, the recorded stats and the athletes of the game's squad or team, never a shadow statistician's stats, pair codes or who paired. The same people can save a game's report or its video markers file from Vision or Vantage, and coaches and managers see their team's season so far in Vision. Athletes, guardians, physios and the committee don't see any of it; an athlete's own figures after the game show only to their coaches (see the row above). |
+| Live game stats         | Admins and statisticians (while their statistician role isn't paused for a check): every game the club records. The coaches and managers of the game's squad or team, and of the squad a team belongs to, see the team's games at every stage and who has opened each, and the stats once they open the game in FirstPass Vision, without a pair code (a shadow statistician still pairs with the code in Vantage). Members with the Studio role (while not stood down), through FirstPass Studio: games with a PlayHQ game that are live or finished, their setup, the recorded stats and the athletes of the game's squad or team, never a shadow statistician's stats, pair codes or who paired. The same people can save a game's report or its video markers file from Vision or Vantage, and coaches and managers see their team's season so far in Vision, with PlayHQ's score and shooting for games nobody recorded. Athletes, guardians, physios and the committee don't see any of it; an athlete's own figures after the game show only to their coaches (see the row above). |
 | Team goals              | The team's athletes, their guardians, its coaches (while their check is current and they aren't stood down) and admins. Only its coaches set and review them. Athletes and coaches in the team can comment; guardians and admins read the comments. Managers and physios placed in the team don't see them. |
 | Integrity training courses | The committee and admins see every course and who it's set for. Each member sees the courses set for them, and parents and guardians their child's. |
 | Integrity training certificates | The member, their parents or guardians, the committee and admins. Coaches, managers and physios don't see them. Certificates can't be changed or removed once sent. |
@@ -4612,7 +4612,10 @@ Working With Children Check, and another admin must do it.
   for the coaching team. Once saved it is an ordinary file the apps can no longer protect, so
   treat it like a team sheet: keep it within the coaching team and don't post it. The season so
   far in Vision shows only to the team's coaches and managers, statisticians and admins, and
-  can't be saved as a file.
+  can't be saved as a file. For a game nobody recorded it reads the score and your own team's
+  shooting from PlayHQ, where the public can already see them: the app's server checks who is
+  asking each time, sends only your team's side, leaves out any player PlayHQ hides from the
+  public, and keeps nothing.
 - **Stand-downs.** An admin can stand someone down straight away, for example on an interim
   negative notice from the Working with Children Screening Unit. Their coach, manager, physio,
   committee, admin, statistician, Studio and temporary helper roles stop and they leave the squads and teams they lead. A
@@ -5080,6 +5083,16 @@ game recorded with no lineup adds nothing. The view names players and carries th
 coaching team" line; athletes and parents don't see it.
 
 <img src="user-guide/vision-season.png" width="420" alt="Vision's Season so far: each athlete's figures over the team's finished games, with one athlete's games opened">
+
+A game with no statistician still counts where PlayHQ has it. For each of the team's past PlayHQ
+games that nobody recorded to full time, the season shows the score and each of your players'
+goals from PlayHQ's scoresheet, marked **PlayHQ**. PlayHQ has shooting only, so those games show
+dashes for time on court, gains and Net Points and add nothing to them, and goals the scorer
+entered without attempts show on the game's row and stay out of the shooting percentage. A player
+is matched by their registered name, and shown under the name your lineups use. If PlayHQ doesn't
+answer, the season shows the recorded games alone.
+
+<img src="user-guide/vision-season-playhq.png" width="420" alt="Vision's Season so far with two games from PlayHQ: the scores at the top, and one athlete's games with the PlayHQ ones showing shooting only">
 
 ### What stays private
 

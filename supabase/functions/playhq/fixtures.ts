@@ -32,12 +32,12 @@ export type PlayhqDeps = {
 
 // One JSON line per event in the function's logs (Supabase dashboard, Edge
 // Functions, playhq, Logs). No tokens or people: ids, counts and timings only.
-function makeLog(logger: Logger) {
+export function makeLog(logger: Logger) {
   return (level: 'info' | 'warn' | 'error', message: string, data: Record<string, unknown> = {}) => {
     logger[level](JSON.stringify({ level, message, ...data }));
   };
 }
-type Log = ReturnType<typeof makeLog>;
+export type Log = ReturnType<typeof makeLog>;
 
 export const SEASON_QUERY = `
   query season($id: String!) {
@@ -113,7 +113,7 @@ export type Season = {
   grades?: Grade[];
 };
 
-async function query<T>(
+export async function query<T>(
   fetch: Fetch,
   log: Log,
   tenant: string,
@@ -173,7 +173,7 @@ export function anonKey(env: Env) {
   return env.get('SUPABASE_ANON_KEY')!;
 }
 
-function json(body: unknown, status = 200) {
+export function json(body: unknown, status = 200) {
   return Response.json(body, { status, headers: CORS });
 }
 
