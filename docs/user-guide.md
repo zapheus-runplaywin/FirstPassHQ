@@ -2832,9 +2832,11 @@ birthday they can ask again.
    **Training partner**. For physios, choose **Physio** or **Head Physio** under **Physio title**,
    and place them in the squads or teams they look after. Only the Head Physio looks after every
    athlete; a physio in no squad or team sees no athletes.
-3. For athletes, check their date of birth against PlayHQ or ID and enter it under **Date of
-   birth** (DD/MM/YYYY). If it matches what they gave, tap **I've checked it: use** that date. If
-   you enter a different date, the page notes the one they gave. The page shows who recorded the
+3. For athletes, check their date of birth against PlayHQ or ID. **Date of birth** starts with the
+   date they entered when they asked to join, marked as theirs and not yet checked; it's saved as
+   the checked date, with your name, only when you save their page. If PlayHQ or ID shows a
+   different date, type the right one (DD/MM/YYYY) and the page notes the one they gave. If you
+   clear the field, **Use the date they entered** puts theirs back. The page shows who recorded the
    date and when. Anyone under 18 gets a **Parents and guardians** section. You can approve a child
    before a parent or guardian is linked: their app stays locked, showing only their link code,
    until a verified one is, and the section says **Locked** while it is. Each parent or guardian
@@ -3004,8 +3006,8 @@ club** or **Other**) and tap **Don't approve**. They see the reason and can requ
 <img src="user-guide/member-approve.png" width="210" alt="Approving a guardian's request">
 <img src="user-guide/member-new.png" width="210" alt="Approving an athlete's request">
 
-<img src="user-guide/member-date-of-birth.png" width="210" alt="An admin checking the date of birth a child gave">
-<img src="user-guide/member-date-checked.png" width="210" alt="The checked date of birth, with the guardian search started from the email the child gave">
+<img src="user-guide/member-date-of-birth.png" width="210" alt="A child's request, with the date of birth they gave and the role and squad they asked for">
+<img src="user-guide/member-date-checked.png" width="210" alt="Date of birth started from the date the child gave, marked to check against PlayHQ or ID, with the guardian search started from the email the child gave">
 <img src="user-guide/member-under-18.png" width="210" alt="Athlete under 18 with date of birth and guardians linked">
 <img src="user-guide/member-link-request.png" width="210" alt="A locked child's page, with the parent who entered their code waiting for approval">
 <img src="user-guide/member-link-parent.png" width="210" alt="A parent's page, with the child whose code they entered, their date of birth and squad">
