@@ -83,8 +83,8 @@ insert into auth.users (id, email, email_confirmed_at) values
 update public.profiles p set status = 'approved', full_name = v.name, role = v.role::public.app_role,
   date_of_birth = v.dob, verified_at = v.verified
 from (values
-  ('00000000-0000-0000-0000-000000000055', 'Riley Second', 'athlete', (current_date - interval '13 years')::date, now()),
-  ('00000000-0000-0000-0000-000000000057', 'Taylor Unverified', 'guardian', (current_date - interval '40 years')::date, null)
+  ('00000000-0000-0000-0000-000000000055', 'Riley Second', 'athlete', (public.club_today() - interval '13 years')::date, now()),
+  ('00000000-0000-0000-0000-000000000057', 'Taylor Unverified', 'guardian', (public.club_today() - interval '40 years')::date, null)
 ) as v(id, name, role, dob, verified)
 where p.id = v.id::uuid;
 insert into public.team_members (team_id, profile_id, team_role) values
@@ -168,14 +168,14 @@ select pg_temp.ok('Jordan''s injury is still there with Injuries off', (
   select count(*) = 1 from public.injuries where athlete_id = pg_temp.id('31') and status <> 'cleared'), true);
 select pg_temp.as_member('11');
 select pg_temp.ok('the coach''s register still shows Jordan as injured', (
-  select count(*) = 1 from public.injured_on('00000000-0000-0000-0000-0000000000a1', current_date) i
+  select count(*) = 1 from public.injured_on('00000000-0000-0000-0000-0000000000a1', public.club_today()) i
   where i.profile_id = pg_temp.id('31')), true);
 select pg_temp.as_member('01');
 select pg_temp.ok('the admin can count open injuries for the warning', (
   select count(*) >= 1 from public.visible_injuries() v where v.athlete_id = pg_temp.id('31')), true);
 select pg_temp.as_member('41');
 select pg_temp.ok('a parent''s register view is unchanged (not an attendance taker)', (
-  select count(*) = 0 from public.injured_on(null, current_date)), true);
+  select count(*) = 0 from public.injured_on(null, public.club_today())), true);
 select set_config('request.jwt.claim.sub', '', false);
 select pg_temp.switch('injuries', true);
 

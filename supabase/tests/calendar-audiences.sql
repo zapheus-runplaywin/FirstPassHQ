@@ -38,13 +38,13 @@ insert into auth.users (id, email, email_confirmed_at) values
   ('00000000-0000-0000-0000-000000000072', 'stats.calendar@example.test', now()),
   ('00000000-0000-0000-0000-000000000073', 'volunteer.calendar@example.test', now());
 update public.profiles set status = 'approved', full_name = 'Quinn Guest', role = 'guest',
-  date_of_birth = current_date - interval '40 years'
+  date_of_birth = public.club_today() - interval '40 years'
 where id = pg_temp.id('71');
 update public.profiles set status = 'approved', full_name = 'Rowan Stats', role = 'statistician',
-  wwcc_number = 'WWC0072', wwcc_expires_on = current_date + 400, date_of_birth = current_date - interval '30 years'
+  wwcc_number = 'WWC0072', wwcc_expires_on = public.club_today() + 400, date_of_birth = public.club_today() - interval '30 years'
 where id = pg_temp.id('72');
 update public.profiles set status = 'approved', full_name = 'Sky Helper', role = 'volunteer',
-  date_of_birth = current_date - interval '30 years'
+  date_of_birth = public.club_today() - interval '30 years'
 where id = pg_temp.id('73');
 insert into public.safeguarding_post_holders (post, profile_id) values
   ('child_safety_officer', pg_temp.id('14')),

@@ -29,15 +29,15 @@ select pg_temp.ok('to-do: one approved athlete without a date of birth',
 -- Join.
 select pg_temp.as_member('51');
 select pg_temp.fails('a child must give a guardian email',
-  $s$ select public.submit_join_request('Riley Child', '', 'athlete', null, null, (current_date - interval '13 years')::date, null) $s$);
+  $s$ select public.submit_join_request('Riley Child', '', 'athlete', null, null, (public.club_today() - interval '13 years')::date, null) $s$);
 select pg_temp.fails('a guardian email must look like one',
-  $s$ select public.submit_join_request('Riley Child', '', 'athlete', null, null, (current_date - interval '13 years')::date, 'not-an-email') $s$);
+  $s$ select public.submit_join_request('Riley Child', '', 'athlete', null, null, (public.club_today() - interval '13 years')::date, 'not-an-email') $s$);
 select pg_temp.fails('a date of birth in the future is refused',
-  $s$ select public.submit_join_request('Riley Child', '', 'athlete', null, null, current_date + 1, 'parent@example.test') $s$);
+  $s$ select public.submit_join_request('Riley Child', '', 'athlete', null, null, public.club_today() + 1, 'parent@example.test') $s$);
 select pg_temp.works('a child asks to join with a guardian email',
-  $s$ select public.submit_join_request('Riley Child', '', 'athlete', null, null, (current_date - interval '13 years')::date, ' Parent@Example.test ') $s$);
+  $s$ select public.submit_join_request('Riley Child', '', 'athlete', null, null, (public.club_today() - interval '13 years')::date, ' Parent@Example.test ') $s$);
 select pg_temp.ok('their date of birth is kept as declared, not as checked',
-  (select declared_date_of_birth = (current_date - interval '13 years')::date and date_of_birth is null and status = 'pending'
+  (select declared_date_of_birth = (public.club_today() - interval '13 years')::date and date_of_birth is null and status = 'pending'
    from public.profiles where id = auth.uid()), true);
 select pg_temp.ok('the guardian email is kept, in lower case',
   (select guardian_email = 'parent@example.test' from public.profiles where id = auth.uid()), true);
@@ -66,12 +66,12 @@ select pg_temp.fails('nor as a child without a date of birth',
   $s$ select public.admin_save_member('00000000-0000-0000-0000-000000000051', 'athlete', 'approved', '[]', true, '{00000000-0000-0000-0000-000000000041}') $s$);
 select pg_temp.as_member('11');
 select pg_temp.fails('only admins record a date of birth',
-  $s$ select public.admin_set_member_details('00000000-0000-0000-0000-000000000051', (current_date - interval '13 years')::date, null, null) $s$);
+  $s$ select public.admin_set_member_details('00000000-0000-0000-0000-000000000051', (public.club_today() - interval '13 years')::date, null, null) $s$);
 select pg_temp.ok('only admins see who recorded it',
   (select count(*) = 0 from public.admin_date_of_birth_record('00000000-0000-0000-0000-000000000031')), true);
 select pg_temp.as_member('01');
 select pg_temp.works('admin records the checked date of birth',
-  $s$ select public.admin_set_member_details('00000000-0000-0000-0000-000000000051', (current_date - interval '13 years')::date, null, null) $s$);
+  $s$ select public.admin_set_member_details('00000000-0000-0000-0000-000000000051', (public.club_today() - interval '13 years')::date, null, null) $s$);
 select pg_temp.ok('who recorded it and when is kept',
   (select recorded_by_name = 'Alex Admin' and recorded_at is not null
    from public.admin_date_of_birth_record('00000000-0000-0000-0000-000000000051')), true);
@@ -79,7 +79,7 @@ create temp table first_record as
   select date_of_birth_recorded_at as at from public.profiles where id = '00000000-0000-0000-0000-000000000051';
 select pg_temp.as_member('02');
 select pg_temp.works('another admin saves the same date',
-  $s$ select public.admin_set_member_details('00000000-0000-0000-0000-000000000051', (current_date - interval '13 years')::date, null, null) $s$);
+  $s$ select public.admin_set_member_details('00000000-0000-0000-0000-000000000051', (public.club_today() - interval '13 years')::date, null, null) $s$);
 select pg_temp.ok('saving the same date keeps the first record',
   (select p.date_of_birth_recorded_by = '00000000-0000-0000-0000-000000000001' and p.date_of_birth_recorded_at = f.at
    from public.profiles p, first_record f where p.id = '00000000-0000-0000-0000-000000000051'), true);
@@ -108,7 +108,7 @@ select pg_temp.ok('the old athlete keeps their access meanwhile',
 select pg_temp.works('a guardian is still saved without a date of birth',
   $s$ select public.admin_save_member('00000000-0000-0000-0000-000000000041', 'guardian', 'approved', '[]', false, '{}') $s$);
 select pg_temp.works('the old athlete''s date of birth is added',
-  $s$ select public.admin_set_member_details('00000000-0000-0000-0000-000000000053', (current_date - interval '15 years')::date, null, null) $s$);
+  $s$ select public.admin_set_member_details('00000000-0000-0000-0000-000000000053', (public.club_today() - interval '15 years')::date, null, null) $s$);
 select pg_temp.ok('the to-do clears',
   (select athletes_without_date_of_birth = 0 from public.admin_safety_todos()), true);
 select pg_temp.as_member('11');

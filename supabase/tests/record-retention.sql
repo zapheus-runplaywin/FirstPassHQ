@@ -20,8 +20,8 @@ $$ begin execute statement; return 'PASS ' || label;
 -- Old and recent records of every kind.
 insert into public.club_settings (id) values (true) on conflict (id) do nothing;
 insert into public.check_ins (athlete_id, day, sleep, soreness, stress, mood, note) values
-  ('00000000-0000-0000-0000-000000000031', current_date - interval '13 months', 3, 3, 3, 3, 'old'),
-  ('00000000-0000-0000-0000-000000000031', current_date - interval '11 months', 3, 3, 3, 3, 'recent');
+  ('00000000-0000-0000-0000-000000000031', public.club_today() - interval '13 months', 3, 3, 3, 3, 'old'),
+  ('00000000-0000-0000-0000-000000000031', public.club_today() - interval '11 months', 3, 3, 3, 3, 'recent');
 insert into public.fixtures (id, team_id, team_name, starts_at) values
   ('00000000-0000-0000-0000-0000000000f1', '00000000-0000-0000-0000-0000000000a2', 'Sample Team', now() - interval '13 months'),
   ('00000000-0000-0000-0000-0000000000f2', '00000000-0000-0000-0000-0000000000a2', 'Sample Team', now() - interval '1 month');
@@ -115,7 +115,7 @@ select pg_temp.ok('second run removes nothing', (select r ->> 'check_ins' = '0' 
 -- Longer periods keep more.
 select pg_temp.works('admin keeps check-ins 2 years', $$select public.admin_set_record_retention(true, 24, 12, 36, 12, 12, 84)$$);
 insert into public.check_ins (athlete_id, day, sleep, soreness, stress, mood, note) values
-  ('00000000-0000-0000-0000-000000000032', current_date - interval '18 months', 3, 3, 3, 3, 'kept longer');
+  ('00000000-0000-0000-0000-000000000032', public.club_today() - interval '18 months', 3, 3, 3, 3, 'kept longer');
 select pg_temp.ok('kept under the longer period', (select (public.purge_expired_records() ->> 'check_ins') = '0'), true);
 
 -- Switching off stops it again.

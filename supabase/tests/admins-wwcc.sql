@@ -36,10 +36,10 @@ select pg_temp.fails('making someone a new admin without a check is refused',
 select pg_temp.ok('they are still a guardian only',
   (select role = 'guardian' from public.profiles where id = '00000000-0000-0000-0000-000000000041'), true);
 select pg_temp.works('with a current check they can be made an admin',
-  $s$ select public.admin_set_member_details('00000000-0000-0000-0000-000000000041', null, 'WWC0041', current_date + 400);
+  $s$ select public.admin_set_member_details('00000000-0000-0000-0000-000000000041', null, 'WWC0041', public.club_today() + 400);
       select public.admin_save_member('00000000-0000-0000-0000-000000000041', 'admin', 'approved', '[]', false, '{}', null, '{guardian}') $s$);
 select pg_temp.fails('a new admin with an expired check is refused, even if already on the committee',
-  $s$ select public.admin_set_member_details('00000000-0000-0000-0000-000000000022', null, 'WWC0022', current_date - 1);
+  $s$ select public.admin_set_member_details('00000000-0000-0000-0000-000000000022', null, 'WWC0022', public.club_today() - 1);
       select public.admin_save_member('00000000-0000-0000-0000-000000000022', 'admin', 'approved', '[]', false, '{}', null, '{committee}') $s$);
 select pg_temp.works('a committee member exempted with a reason can be made an admin',
   $s$ select public.admin_save_member('00000000-0000-0000-0000-000000000023', 'admin', 'approved', '[]', false, '{}', null, '{committee}') $s$);
@@ -62,15 +62,15 @@ select pg_temp.ok('and they are counted again',
   (select wwcc_missing = 4 from public.admin_safety_todos()), true);
 
 -- An expired check never locks the club out.
-update public.profiles set wwcc_expires_on = current_date - 1 where id = '00000000-0000-0000-0000-000000000001';
+update public.profiles set wwcc_expires_on = public.club_today() - 1 where id = '00000000-0000-0000-0000-000000000001';
 select pg_temp.ok('an admin whose check expired is still an admin', public.is_admin(), true);
 select pg_temp.ok('and shows on the to-do list',
   (select wwcc_missing = 5 from public.admin_safety_todos()), true);
 select pg_temp.fails('they cannot record their own renewed card',
-  $s$ select public.admin_set_member_details('00000000-0000-0000-0000-000000000001', null, 'WWC0001B', current_date + 700) $s$);
+  $s$ select public.admin_set_member_details('00000000-0000-0000-0000-000000000001', null, 'WWC0001B', public.club_today() + 700) $s$);
 select pg_temp.as_member('02');
 select pg_temp.works('another admin records their renewed card',
-  $s$ select public.admin_set_member_details('00000000-0000-0000-0000-000000000001', null, 'WWC0001B', current_date + 700) $s$);
+  $s$ select public.admin_set_member_details('00000000-0000-0000-0000-000000000001', null, 'WWC0001B', public.club_today() + 700) $s$);
 select pg_temp.as_member('01');
 select pg_temp.ok('and the to-do clears',
   (select wwcc_missing = 4 from public.admin_safety_todos()), true);

@@ -95,7 +95,7 @@ select pg_temp.ok('working out a list leaves nobody signed in', coalesce(current
 
 -- A new absence reaches the athlete's coach and manager, not the athlete.
 insert into public.attendance_absences (athlete_id, from_day, to_day, reported_as)
-values (pg_temp.id('32'), current_date, current_date, 'athlete');
+values (pg_temp.id('32'), public.club_today(), public.club_today(), 'athlete');
 select pg_temp.ok('coach is told about the absence', pg_temp.has('11', 'absences-to-review:'), true);
 select pg_temp.ok('manager is told about the absence', pg_temp.has('13', 'absences-to-review:'), true);
 select pg_temp.ok('the athlete isn''t', pg_temp.has('32', 'absences-to-review:'), false);
@@ -112,7 +112,7 @@ insert into public.safeguarding_settings (id) values (true) on conflict (id) do 
 delete from public.safeguarding_post_holders where post = 'child_safety_officer';
 insert into public.safeguarding_post_holders (post, profile_id) values ('child_safety_officer', pg_temp.id('11'));
 insert into public.check_ins (athlete_id, day, sleep, soreness, stress, mood, note)
-select pg_temp.id('32'), current_date - d, 4, 1, 4, 5, 'Private note' from generate_series(1, 3) d
+select pg_temp.id('32'), public.club_today() - d, 4, 1, 4, 5, 'Private note' from generate_series(1, 3) d
 on conflict (athlete_id, day) do update set soreness = excluded.soreness;
 select pg_temp.ok('the Child Safety Officer is told about the flagged athlete', exists (
   select 1 from public.member_todos(pg_temp.id('11')) m
@@ -128,7 +128,7 @@ delete from public.safeguarding_post_holders where post = 'child_safety_officer'
 
 -- An injury a coach logged reaches the athlete, without the body area.
 select pg_temp.as_member('11');
-select pg_temp.works('coach logs Kai''s injury', $$select public.log_injury('00000000-0000-0000-0000-000000000032', 'Wrist', 'Fell at training', current_date, 'No catching', current_date + 7)$$);
+select pg_temp.works('coach logs Kai''s injury', $$select public.log_injury('00000000-0000-0000-0000-000000000032', 'Wrist', 'Fell at training', public.club_today(), 'No catching', public.club_today() + 7)$$);
 select set_config('request.jwt.claim.sub', '', false);
 select pg_temp.ok('the athlete is asked to look at it', exists (
   select 1 from public.member_todos(pg_temp.id('32')) m
@@ -139,11 +139,11 @@ select pg_temp.ok('the coach who logged it isn''t', pg_temp.has('11', 'injury-lo
 -- A check application waiting for the member's declaration, and the
 -- admin's follow-up once one lapses.
 insert into public.wwcc_applications (profile_id, application_number, lodged_on, kind, receipt_path)
-values (pg_temp.id('12'), 'APL 12', current_date - 2, 'renewal', '00000000-0000-0000-0000-000000000012/receipt.pdf');
+values (pg_temp.id('12'), 'APL 12', public.club_today() - 2, 'renewal', '00000000-0000-0000-0000-000000000012/receipt.pdf');
 select pg_temp.ok('the member is asked to confirm their application', pg_temp.has('12', 'wwcc-application-declaration:'), true);
 select pg_temp.ok('nobody else is', pg_temp.has('11', 'wwcc-application-declaration:'), false);
 insert into public.wwcc_applications (profile_id, application_number, lodged_on, kind, receipt_path, declared_at, recorded_at)
-values (pg_temp.id('13'), 'APL 13', current_date - 400, 'new', '00000000-0000-0000-0000-000000000013/receipt.pdf', now() - interval '399 days', now() - interval '399 days');
+values (pg_temp.id('13'), 'APL 13', public.club_today() - 400, 'new', '00000000-0000-0000-0000-000000000013/receipt.pdf', now() - interval '399 days', now() - interval '399 days');
 select pg_temp.ok('the admin is asked to confirm applications still being assessed', pg_temp.has('01', 'wwcc-applications:'), true);
 select pg_temp.ok('a coach isn''t', pg_temp.has('11', 'wwcc-applications:'), false);
 
@@ -163,7 +163,7 @@ select pg_temp.ok('a coach who isn''t an athlete or parent has no medical to-do'
 -- their home screen shows no to-do list.
 insert into auth.users (id, email, email_confirmed_at) values ('00000000-0000-0000-0000-0000000000e2', 'locked.child@example.test', now());
 update public.profiles set status = 'approved', role = 'athlete', full_name = 'Lee Locked',
-  date_of_birth = current_date - interval '14 years', verified_at = now()
+  date_of_birth = public.club_today() - interval '14 years', verified_at = now()
 where id = '00000000-0000-0000-0000-0000000000e2';
 select pg_temp.ok('a locked child has no list, not even the check-in', (select count(*) = 0 from public.member_todos('00000000-0000-0000-0000-0000000000e2')), true);
 select pg_temp.ok('admin is told the child is locked out', exists (
@@ -206,8 +206,8 @@ delete from public.safeguarding_post_holders where post = 'child_safety_officer'
 -- Registers (off by default): policy owners' reviews and conflict
 -- declarations for committee members and coaches.
 insert into public.policy_register (title, owner_id, review_on)
-values ('Child Safe Policy', pg_temp.id('21'), current_date - 1),
-  ('Privacy Policy', pg_temp.id('21'), current_date + 90);
+values ('Child Safe Policy', pg_temp.id('21'), public.club_today() - 1),
+  ('Privacy Policy', pg_temp.id('21'), public.club_today() + 90);
 select pg_temp.ok('while Registers is off, no policy to-do', pg_temp.has('21', 'policy:'), false);
 select pg_temp.ok('nor a conflicts to-do', pg_temp.has('11', 'conflicts:'), false);
 update public.club_settings set features = features || '{"registers": true}' where id;
@@ -243,7 +243,7 @@ update public.club_settings set retention_enabled = false where id;
 
 -- Injury details never go in a notification: they can show on a locked phone.
 insert into public.injuries (athlete_id, reported_by, body_area, description, injured_on, expected_return, athlete_name)
-values (pg_temp.id('32'), pg_temp.id('32'), 'Left hamstring', 'Strain', current_date - 10, current_date - 1, 'Kai Senior');
+values (pg_temp.id('32'), pg_temp.id('32'), 'Left hamstring', 'Strain', public.club_today() - 10, public.club_today() - 1, 'Kai Senior');
 select pg_temp.ok('athlete is asked to update an injury past its return day', pg_temp.has('32', 'injury-update:'), true);
 select pg_temp.ok('no to-do names the body area', exists (
   select 1 from public.profiles p, public.member_todos(p.id) m
@@ -254,7 +254,7 @@ insert into auth.users (id, email, email_confirmed_at) values ('00000000-0000-00
 update public.profiles set status = 'approved', role = 'athlete', full_name = 'Riley Unplaced'
 where id = '00000000-0000-0000-0000-0000000000e1';
 insert into public.injuries (athlete_id, reported_by, body_area, description, injured_on, athlete_name, status)
-values ('00000000-0000-0000-0000-0000000000e1', '00000000-0000-0000-0000-0000000000e1', 'Right wrist', 'Sprain', current_date - 3, 'Riley Unplaced', 'clearance_requested');
+values ('00000000-0000-0000-0000-0000000000e1', '00000000-0000-0000-0000-0000000000e1', 'Right wrist', 'Sprain', public.club_today() - 3, 'Riley Unplaced', 'clearance_requested');
 select pg_temp.ok('admin is told nobody can endorse the clearance', exists (
   select 1 from public.member_todos(pg_temp.id('01')) m
   where m.todo_key like 'unendorsable-clearances:%' and m.title = 'Nobody can endorse Riley Unplaced’s clearance'

@@ -54,7 +54,7 @@ $$ begin
        ('the WWC Registration Officer', pg_temp.reads('select * from public.admin_wwc_officer()') > 0),
        ('check applications', pg_temp.reads('select * from public.admin_wwcc_applications()') > 0),
        ('medical details checks', pg_temp.reads('select * from public.medical_review_compliance()') > 0),
-       ('absences', pg_temp.reads($q$select * from public.absence_report(current_date - 7, current_date + 7)$q$) > 0),
+       ('absences', pg_temp.reads($q$select * from public.absence_report(public.club_today() - 7, public.club_today() + 7)$q$) > 0),
        -- The awards themselves (20261121200000_match_database_access_to_roles.sql).
        ('awards', pg_temp.reads('select * from public.awards') > 0),
        ('award votes', pg_temp.reads($q$select * from public.award_vote_breakdown('f0000000-0000-0000-0000-000000000001')$q$) > 0),
@@ -66,7 +66,7 @@ $$ select pg_temp.ok(who || ': ' || r.label, r.seen, expected) from pg_temp.read
 -- A committee member with a current check (Gale's lapsed five days ago in the
 -- seed; renewed here), one cleared by a parent volunteer exemption, a checked
 -- one who is stood down, and a coach-parent who is also on the committee.
-update public.profiles set wwcc_expires_on = current_date + 400 where id = pg_temp.id('21');
+update public.profiles set wwcc_expires_on = public.club_today() + 400 where id = pg_temp.id('21');
 insert into auth.users (id, email, email_confirmed_at) values
   (pg_temp.id('51'), 'committee.parent@example.test', now()),
   (pg_temp.id('52'), 'committee.stood@example.test', now());
@@ -76,7 +76,7 @@ insert into public.guardianships (guardian_id, athlete_id) values (pg_temp.id('5
 insert into public.volunteer_exemptions (profile_id, basis, child_id, child_name, declared_at, declaration_text)
   values (pg_temp.id('51'), 'parent_volunteer', pg_temp.id('31'), 'Jordan Junior', now(), 'Declared');
 update public.profiles set status = 'approved', full_name = 'Oak Committee', role = 'committee', wwcc_number = 'WWC0052',
-  wwcc_expires_on = current_date + 400, stood_down_at = now() where id = pg_temp.id('52');
+  wwcc_expires_on = public.club_today() + 400, stood_down_at = now() where id = pg_temp.id('52');
 update public.profiles set extra_roles = '{guardian,committee}' where id = pg_temp.id('42');
 
 -- What the reports are built from.
@@ -87,13 +87,13 @@ insert into public.safeguarding_post_holders (post, profile_id) values ('wwc_off
 insert into public.stand_downs (profile_id, member_name, reason, started_at, lifted_at)
   values (pg_temp.id('12'), 'Drew Lapsed', 'other', now() - interval '1 month', now() - interval '1 week');
 insert into public.screening_notices (profile_id, member_name, kind, received_on, action)
-  values (pg_temp.id('12'), 'Drew Lapsed', 'other', current_date - 30, 'Noted');
+  values (pg_temp.id('12'), 'Drew Lapsed', 'other', public.club_today() - 30, 'Noted');
 insert into public.policy_acknowledgements (profile_id, policy_version, statement)
   values (pg_temp.id('32'), 'v1', 'I agree'), (pg_temp.id('11'), 'v1', 'I agree');
 insert into public.wwcc_applications (profile_id, application_number, lodged_on, kind, receipt_path)
-  values (pg_temp.id('13'), 'APP-0013', current_date - 10, 'renewal', '00000000-0000-0000-0000-000000000013/receipt.pdf');
+  values (pg_temp.id('13'), 'APP-0013', public.club_today() - 10, 'renewal', '00000000-0000-0000-0000-000000000013/receipt.pdf');
 insert into public.attendance_absences (athlete_id, from_day, to_day, reported_as)
-  values (pg_temp.id('31'), current_date, current_date, 'athlete');
+  values (pg_temp.id('31'), public.club_today(), public.club_today(), 'athlete');
 insert into public.awards (id, season, name, closes_at, voter_roles) values
   ('f0000000-0000-0000-0000-000000000001', 2026, 'Best and fairest', now() - interval '1 day', '{athlete}'),
   ('f0000000-0000-0000-0000-000000000002', 2026, 'Still open', now() + interval '1 week', '{athlete}');
@@ -128,7 +128,7 @@ insert into public.attendance_sessions (team_id, team_name, club_wide, name, hel
   select null, '', true, 'Club day', now() - interval '1 day'
   where not exists (select 1 from public.attendance_sessions);
 insert into public.training_requirements (season, name, due_on, roles)
-  select 2026, 'Child Safeguarding in Sport Induction', current_date + 30, '{coach}'
+  select 2026, 'Child Safeguarding in Sport Induction', public.club_today() + 30, '{coach}'
   where not exists (select 1 from public.training_requirements);
 select pg_temp.as_member('21');
 select pg_temp.ok('a checked committee member reads awards for the award results report', pg_temp.reads('select * from public.awards') > 0, true);
@@ -148,12 +148,12 @@ select pg_temp.ok('someone signed out cannot read reports', public.can_read_repo
 select pg_temp.ok('someone signed out reads no members', pg_temp.reads('select * from public.report_members()') = 0, true);
 
 -- Gale's check lapses: the reports close again.
-update public.profiles set wwcc_expires_on = current_date - 1 where id = pg_temp.id('21');
+update public.profiles set wwcc_expires_on = public.club_today() - 1 where id = pg_temp.id('21');
 select pg_temp.as_member('21');
 select pg_temp.ok('a committee member whose check lapsed reads no reports', public.can_read_reports(), false);
 select pg_temp.ok('a committee member whose check lapsed reads no members', pg_temp.reads('select * from public.report_members()') = 0, true);
 select pg_temp.fails('a committee member whose check lapsed gets no medical details checks', 'select * from public.medical_review_compliance()');
-update public.profiles set wwcc_expires_on = current_date + 400 where id = pg_temp.id('21');
+update public.profiles set wwcc_expires_on = public.club_today() + 400 where id = pg_temp.id('21');
 
 -- A member's own rows stay theirs whatever this adds.
 select pg_temp.as_member('32');
@@ -204,7 +204,7 @@ select pg_temp.ok('the committee cannot move a member between teams', pg_temp.ch
 select pg_temp.ok('the committee cannot take a member out of a team', pg_temp.changes(
   $q$delete from public.team_members where profile_id = '00000000-0000-0000-0000-000000000032'$q$), false);
 select pg_temp.ok('the committee cannot change a check', pg_temp.changes(
-  $q$update public.profiles set wwcc_expires_on = current_date + 1000 where id = '00000000-0000-0000-0000-000000000011'$q$), false);
+  $q$update public.profiles set wwcc_expires_on = public.club_today() + 1000 where id = '00000000-0000-0000-0000-000000000011'$q$), false);
 select pg_temp.fails('the committee cannot choose the WWC Registration Officer',
   $q$select public.admin_set_wwc_officer('00000000-0000-0000-0000-000000000021')$q$);
 reset role;

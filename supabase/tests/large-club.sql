@@ -65,7 +65,7 @@ select pg_temp.ok('children with no consents, and with only the check-ins one',
 create temp view lc_locked as
 select p.id from public.profiles p
 where p.status = 'approved' and 'athlete' = any (array[p.role] || p.extra_roles)
-  and case when p.date_of_birth is not null then p.date_of_birth > current_date - interval '18 years'
+  and case when p.date_of_birth is not null then p.date_of_birth > public.club_today() - interval '18 years'
     else coalesce(p.under_17, false) end
   and not exists (
     select 1 from public.guardianships g join public.profiles gp on gp.id = g.guardian_id
@@ -75,8 +75,8 @@ create temp view lc_rule_people as
 select p.id,
   p.status = 'approved' and p.role <> 'volunteer' and p.id not in (select id from lc_locked) as approved,
   p.stood_down_at is not null as stood_down,
-  coalesce(trim(p.wwcc_number), '') <> '' and p.wwcc_expires_on >= current_date as current_check,
-  case when p.date_of_birth is not null then p.date_of_birth > current_date - interval '18 years'
+  coalesce(trim(p.wwcc_number), '') <> '' and p.wwcc_expires_on >= public.club_today() as current_check,
+  case when p.date_of_birth is not null then p.date_of_birth > public.club_today() - interval '18 years'
     else coalesce(p.under_17, false) end as minor,
   array[p.role] || p.extra_roles as roles,
   p.head_physio,
@@ -378,7 +378,7 @@ $$ declare started timestamptz; ms int; got bigint; begin
 select pg_temp.timed('admin: safety to-dos', pg_temp.lc(1), 'select * from public.admin_safety_todos()');
 select pg_temp.timed('admin: every child''s consents', pg_temp.lc(1), 'select * from public.admin_child_consents()',
   (select count(*) from lc_members where public.is_minor(date_of_birth, under_17)) + 1);
-select pg_temp.timed('committee: check-in overview', pg_temp.lc(3), format('select * from public.check_in_overview(%L)', current_date));
+select pg_temp.timed('committee: check-in overview', pg_temp.lc(3), format('select * from public.check_in_overview(%L)', public.club_today()));
 -- The injuries list matches what the Head Physio can read of the table.
 select pg_temp.timed('Head Physio: injuries list, every athlete they may see', pg_temp.lc(26), 'select * from public.visible_injuries(true, null)',
   (select count(*) from public.injuries where pg_temp.sees_injuries(pg_temp.lc(26), athlete_id)));
@@ -386,7 +386,7 @@ select pg_temp.timed('committee: injuries list matches what they may see', pg_te
   (select count(*) from public.injuries where pg_temp.sees_injuries(pg_temp.lc(3), athlete_id)));
 select pg_temp.timed('head coach: Open Squad roster', pg_temp.lc(8), format('select * from public.team_roster(%L)', pg_temp.lc_team(1)),
   (select count(*) from public.team_members where team_id = pg_temp.lc_team(1)));
-select pg_temp.timed('head coach: Open Squad check-in board', pg_temp.lc(8), format('select * from public.check_in_board(%L, %L)', pg_temp.lc_team(1), current_date));
+select pg_temp.timed('head coach: Open Squad check-in board', pg_temp.lc(8), format('select * from public.check_in_board(%L, %L)', pg_temp.lc_team(1), public.club_today()));
 select pg_temp.timed('head coach: sent messages and receipts', pg_temp.lc(8), 'select * from public.my_sent_messages()');
 select pg_temp.timed('guardian of four: their children', pg_temp.lc(7), 'select * from public.my_athletes()',
   (select count(*) from public.guardianships g join lc_rule_people c on c.id = g.athlete_id and c.minor where g.guardian_id = pg_temp.lc(7)));

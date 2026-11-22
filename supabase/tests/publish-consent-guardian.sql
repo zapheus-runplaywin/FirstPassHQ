@@ -39,7 +39,7 @@ insert into auth.users (id, email, email_confirmed_at) values
   ('00000000-0000-0000-0000-000000000081', 'athlete.nearly18@example.test', now());
 update public.profiles set status = 'approved', full_name = 'Nico Studio', role = 'studio' where id = pg_temp.m('51');
 update public.profiles set status = 'approved', full_name = 'Ash Nearly', role = 'athlete',
-  date_of_birth = current_date - interval '18 years' + interval '1 day', verified_at = now()
+  date_of_birth = public.club_today() - interval '18 years' + interval '1 day', verified_at = now()
 where id = pg_temp.m('81');
 insert into public.team_members (team_id, profile_id, team_role, selection) values
   ('00000000-0000-0000-0000-0000000000a2', pg_temp.m('32'), 'athlete', 'touring'),
@@ -106,7 +106,7 @@ select pg_temp.ok('and Ash', pg_temp.may_publish('81'), true);
 -- Other ways the last verified guardian goes
 update public.profiles set status = 'pending' where id = pg_temp.m('41');
 select pg_temp.ok('guardian no longer approved: not shown', pg_temp.may_publish('31'), false);
-update public.profiles set status = 'approved', role = 'athlete', date_of_birth = current_date - interval '40 years' where id = pg_temp.m('41');
+update public.profiles set status = 'approved', role = 'athlete', date_of_birth = public.club_today() - interval '40 years' where id = pg_temp.m('41');
 select pg_temp.ok('guardian role taken away: not shown', pg_temp.may_publish('31'), false);
 update public.profiles set role = 'guardian' where id = pg_temp.m('41');
 select pg_temp.ok('guardian role back: shown', pg_temp.may_publish('31'), true);
@@ -114,7 +114,7 @@ select pg_temp.ok('a coach of the team who isn''t Jordan''s guardian doesn''t co
   (select count(*) = 0 from public.guardianships where athlete_id = pg_temp.m('31') and guardian_id = pg_temp.m('11')), true);
 
 -- Turning 18: adults need neither consent nor guardian.
-update public.profiles set date_of_birth = current_date - interval '18 years' where id = pg_temp.m('81');
+update public.profiles set date_of_birth = public.club_today() - interval '18 years' where id = pg_temp.m('81');
 delete from public.guardianships where athlete_id = pg_temp.m('81');
 select pg_temp.ok('Ash at 18 with no guardian is shown', pg_temp.may_publish('81'), true);
 

@@ -7,8 +7,8 @@ import { ThemedText } from '@/components/themed-text';
 import { Button, Card, PressableCard, TextField } from '@/components/ui';
 import { Spacing } from '@/constants/theme';
 import { formatDate, isMinor } from '@/lib/age';
+import { clubToday } from '@/lib/club-time';
 import { formatMonth } from '@/lib/format';
-import { toDateString } from '@/lib/injuries';
 import { PROFILE_COLUMNS } from '@/lib/auth';
 import { athletesWithVerifiedGuardian } from '@/lib/guardian-links';
 import { rejectionReasonLabels, roleLabels, rolesLabel, staffTitle } from '@/lib/labels';
@@ -194,7 +194,7 @@ export default function MembersScreen() {
   const notRequested = matching.filter((m) => m.status === 'pending' && !m.join_requested_at);
   const rejected = matching.filter((m) => m.status === 'rejected');
 
-  const today = toDateString(new Date());
+  const today = clubToday();
   const focused = todo
     ? members
         .filter((m) =>

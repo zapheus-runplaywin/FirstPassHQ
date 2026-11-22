@@ -167,34 +167,34 @@ select pg_temp.ok('another coach taking the same session still gets their own re
 -- An absence sent twice: kept once. A different absence is still added.
 -- ---------------------------------------------------------------------------
 create or replace function pg_temp.absence(days int, reason text) returns text language sql as $$
-  select format('select public.report_absence(%L, current_date + %s, current_date + %s, %L, %L)::text',
+  select format('select public.report_absence(%L, public.club_today() + %s, public.club_today() + %s, %L, %L)::text',
     pg_temp.lc(98), days, days, (select id from public.absence_categories where active order by id limit 1), reason) $$;
 select pg_temp.race('absence', 98, pg_temp.absence(3, 'Away'), 98, pg_temp.absence(3, 'Away'));
 select pg_temp.ok('an absence sent twice: the second waits and goes through',
   (select b_waited and b_error is null from race_results where label = 'absence'), true);
 select pg_temp.ok('an absence sent twice: kept once',
-  (select count(*) = 1 from public.attendance_absences where athlete_id = pg_temp.lc(98) and from_day = current_date + 3), true);
+  (select count(*) = 1 from public.attendance_absences where athlete_id = pg_temp.lc(98) and from_day = public.club_today() + 3), true);
 select set_config('request.jwt.claim.sub', pg_temp.lc(98)::text, false);
-select public.report_absence(pg_temp.lc(98), current_date + 3, current_date + 3,
+select public.report_absence(pg_temp.lc(98), public.club_today() + 3, public.club_today() + 3,
   (select id from public.absence_categories where active order by id limit 1), 'Away for a wedding');
-select public.report_absence(pg_temp.lc(98), current_date + 4, current_date + 4,
+select public.report_absence(pg_temp.lc(98), public.club_today() + 4, public.club_today() + 4,
   (select id from public.absence_categories where active order by id limit 1), 'Away');
 select pg_temp.ok('a different reason or day is a new absence',
-  (select count(*) = 3 from public.attendance_absences where athlete_id = pg_temp.lc(98) and from_day >= current_date + 3), true);
+  (select count(*) = 3 from public.attendance_absences where athlete_id = pg_temp.lc(98) and from_day >= public.club_today() + 3), true);
 
 -- ---------------------------------------------------------------------------
 -- An athlete's check-in sent twice (a retry on a bad connection): one
 -- check-in for the day, with the later answers.
 -- ---------------------------------------------------------------------------
 select pg_temp.race('check-in', pg_temp.n(pg_temp.p('athlete1')),
-  format('select public.save_check_in(%L, 3, 3, 3, 3, %L)::text', current_date, 'first'),
+  format('select public.save_check_in(%L, 3, 3, 3, 3, %L)::text', public.club_today(), 'first'),
   pg_temp.n(pg_temp.p('athlete1')),
-  format('select public.save_check_in(%L, 4, 4, 4, 4, %L)::text', current_date, 'second'));
+  format('select public.save_check_in(%L, 4, 4, 4, 4, %L)::text', public.club_today(), 'second'));
 select pg_temp.ok('a check-in sent twice: the second waits and goes through',
   (select b_waited and b_error is null from race_results where label = 'check-in'), true);
 select pg_temp.ok('a check-in sent twice: one check-in for the day, with the later answers',
   (select count(*) = 1 and min(note) = 'second' from public.check_ins
-   where athlete_id = pg_temp.p('athlete1') and day = current_date), true);
+   where athlete_id = pg_temp.p('athlete1') and day = public.club_today()), true);
 
 -- ---------------------------------------------------------------------------
 -- Both guardians give consent at the same moment: one consent of each kind,

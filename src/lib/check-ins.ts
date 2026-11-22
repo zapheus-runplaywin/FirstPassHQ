@@ -2,7 +2,7 @@ import { useFocusEffect } from 'expo-router';
 import { useCallback, useState } from 'react';
 
 import { useAuth } from '@/lib/auth';
-import { toDateString } from '@/lib/injuries';
+import { clubToday } from '@/lib/club-time';
 import { supabase } from '@/lib/supabase';
 import type { CheckIn, CheckInOverviewRow, CheckInScores, CheckInSummary } from '@/lib/types';
 import { hasRole } from '@/lib/roles';
@@ -59,7 +59,7 @@ export function scoresLine(scores: CheckInScores) {
 
 /** Today in the member's own time zone, such as "2026-10-07". */
 export function today() {
-  return toDateString(new Date());
+  return clubToday();
 }
 
 /** Athletes do the daily check-in. */

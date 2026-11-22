@@ -78,7 +78,7 @@ select pg_temp.as_member('22');
 select pg_temp.ok('member outside the team reads no team goals', pg_temp.goals() = 0, true);
 
 -- 3. Renewing the check gives the coach the team goals back.
-update public.profiles set wwcc_expires_on = current_date + 365 where id = '00000000-0000-0000-0000-000000000012';
+update public.profiles set wwcc_expires_on = public.club_today() + 365 where id = '00000000-0000-0000-0000-000000000012';
 select pg_temp.as_member('12');
 select pg_temp.ok('renewed coach can work with children', public.can_work_with_children(), true);
 select pg_temp.ok('renewed coach reads the squad''s team goal', pg_temp.goals() = 1, true);

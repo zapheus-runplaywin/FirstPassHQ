@@ -69,54 +69,54 @@ select pg_temp.ok('members can delete their sessions', has_function_privilege('a
 -- ---------------------------------------------------------------------------
 
 select pg_temp.as_member('32');
-select pg_temp.works('an adult athlete logs training', $s$ select public.save_session_log(null, current_date, 'training', 90, 6) $s$);
+select pg_temp.works('an adult athlete logs training', $s$ select public.save_session_log(null, public.club_today(), 'training', 90, 6) $s$);
 select pg_temp.ok('saved with minutes and effort', (select count(*) = 1 and min(minutes) = 90 and min(rpe) = 6 and min(kind) = 'training' from public.session_logs where athlete_id = pg_temp.id('32')), true);
-select pg_temp.works('a second session the same day', $s$ select public.save_session_log(null, current_date, 'gym', 45, 4) $s$);
-select pg_temp.works('a game last week', $s$ select public.save_session_log(null, current_date - 7, 'game', 60, 9) $s$);
-select pg_temp.works('tomorrow is allowed (time zones)', $s$ select public.save_session_log(null, current_date + 1, 'other', 20, 2) $s$);
-select pg_temp.fails('eight days ago is refused', $s$ select public.save_session_log(null, current_date - 8, 'training', 60, 5) $s$);
-select pg_temp.fails('two days ahead is refused', $s$ select public.save_session_log(null, current_date + 2, 'training', 60, 5) $s$);
+select pg_temp.works('a second session the same day', $s$ select public.save_session_log(null, public.club_today(), 'gym', 45, 4) $s$);
+select pg_temp.works('a game last week', $s$ select public.save_session_log(null, public.club_today() - 7, 'game', 60, 9) $s$);
+select pg_temp.works('tomorrow is allowed (time zones)', $s$ select public.save_session_log(null, public.club_today() + 1, 'other', 20, 2) $s$);
+select pg_temp.fails('eight days ago is refused', $s$ select public.save_session_log(null, public.club_today() - 8, 'training', 60, 5) $s$);
+select pg_temp.fails('two days ahead is refused', $s$ select public.save_session_log(null, public.club_today() + 2, 'training', 60, 5) $s$);
 select pg_temp.fails('no day is refused', $s$ select public.save_session_log(null, null, 'training', 60, 5) $s$);
-select pg_temp.fails('an unknown kind is refused', $s$ select public.save_session_log(null, current_date, 'swim', 60, 5) $s$);
-select pg_temp.fails('no kind is refused', $s$ select public.save_session_log(null, current_date, null, 60, 5) $s$);
-select pg_temp.fails('0 minutes is refused', $s$ select public.save_session_log(null, current_date, 'training', 0, 5) $s$);
-select pg_temp.fails('over 300 minutes is refused', $s$ select public.save_session_log(null, current_date, 'training', 301, 5) $s$);
-select pg_temp.works('300 minutes is allowed', $s$ select public.save_session_log(null, current_date - 1, 'game', 300, 10) $s$);
-select pg_temp.works('1 minute and effort 1 are allowed', $s$ select public.save_session_log(null, current_date - 1, 'other', 1, 1) $s$);
-select pg_temp.fails('no minutes is refused', $s$ select public.save_session_log(null, current_date, 'training', null, 5) $s$);
-select pg_temp.fails('effort 0 is refused', $s$ select public.save_session_log(null, current_date, 'training', 60, 0) $s$);
-select pg_temp.fails('effort 11 is refused', $s$ select public.save_session_log(null, current_date, 'training', 60, 11) $s$);
-select pg_temp.fails('no effort is refused', $s$ select public.save_session_log(null, current_date, 'training', 60, null) $s$);
+select pg_temp.fails('an unknown kind is refused', $s$ select public.save_session_log(null, public.club_today(), 'swim', 60, 5) $s$);
+select pg_temp.fails('no kind is refused', $s$ select public.save_session_log(null, public.club_today(), null, 60, 5) $s$);
+select pg_temp.fails('0 minutes is refused', $s$ select public.save_session_log(null, public.club_today(), 'training', 0, 5) $s$);
+select pg_temp.fails('over 300 minutes is refused', $s$ select public.save_session_log(null, public.club_today(), 'training', 301, 5) $s$);
+select pg_temp.works('300 minutes is allowed', $s$ select public.save_session_log(null, public.club_today() - 1, 'game', 300, 10) $s$);
+select pg_temp.works('1 minute and effort 1 are allowed', $s$ select public.save_session_log(null, public.club_today() - 1, 'other', 1, 1) $s$);
+select pg_temp.fails('no minutes is refused', $s$ select public.save_session_log(null, public.club_today(), 'training', null, 5) $s$);
+select pg_temp.fails('effort 0 is refused', $s$ select public.save_session_log(null, public.club_today(), 'training', 60, 0) $s$);
+select pg_temp.fails('effort 11 is refused', $s$ select public.save_session_log(null, public.club_today(), 'training', 60, 11) $s$);
+select pg_temp.fails('no effort is refused', $s$ select public.save_session_log(null, public.club_today(), 'training', 60, null) $s$);
 select pg_temp.ok('refusals saved nothing', (select count(*) = 6 from public.session_logs where athlete_id = pg_temp.id('32')), true);
 
 -- Up to 6 a day.
-select pg_temp.works('a third today', $s$ select public.save_session_log(null, current_date, 'other', 10, 2) $s$);
-select pg_temp.works('a fourth today', $s$ select public.save_session_log(null, current_date, 'other', 10, 2) $s$);
-select pg_temp.works('a fifth today', $s$ select public.save_session_log(null, current_date, 'other', 10, 2) $s$);
-select pg_temp.works('a sixth today', $s$ select public.save_session_log(null, current_date, 'other', 10, 2) $s$);
-select pg_temp.fails('a seventh today is refused', $s$ select public.save_session_log(null, current_date, 'other', 10, 2) $s$);
-select pg_temp.ok('six logged today', (select count(*) = 6 from public.session_logs where athlete_id = pg_temp.id('32') and day = current_date), true);
+select pg_temp.works('a third today', $s$ select public.save_session_log(null, public.club_today(), 'other', 10, 2) $s$);
+select pg_temp.works('a fourth today', $s$ select public.save_session_log(null, public.club_today(), 'other', 10, 2) $s$);
+select pg_temp.works('a fifth today', $s$ select public.save_session_log(null, public.club_today(), 'other', 10, 2) $s$);
+select pg_temp.works('a sixth today', $s$ select public.save_session_log(null, public.club_today(), 'other', 10, 2) $s$);
+select pg_temp.fails('a seventh today is refused', $s$ select public.save_session_log(null, public.club_today(), 'other', 10, 2) $s$);
+select pg_temp.ok('six logged today', (select count(*) = 6 from public.session_logs where athlete_id = pg_temp.id('32') and day = public.club_today()), true);
 -- Tidy the extra ones away through the athlete's own delete.
 do $$ declare r record; begin
-  for r in select id from public.session_logs where athlete_id = pg_temp.id('32') and kind = 'other' and day = current_date loop
+  for r in select id from public.session_logs where athlete_id = pg_temp.id('32') and kind = 'other' and day = public.club_today() loop
     perform public.delete_session_log(r.id);
   end loop;
 end $$;
-select pg_temp.ok('the athlete deleted their own extra sessions', (select count(*) = 2 from public.session_logs where athlete_id = pg_temp.id('32') and day = current_date), true);
+select pg_temp.ok('the athlete deleted their own extra sessions', (select count(*) = 2 from public.session_logs where athlete_id = pg_temp.id('32') and day = public.club_today()), true);
 
 -- Changing a session.
 select pg_temp.works('the athlete changes their training', $s$
-  select public.save_session_log((select id from public.session_logs where athlete_id = pg_temp.id('32') and kind = 'training'), current_date - 1, 'training', 75, 7) $s$);
-select pg_temp.ok('changed in place', (select count(*) = 1 and min(minutes) = 75 and min(rpe) = 7 and min(day) = current_date - 1 from public.session_logs where athlete_id = pg_temp.id('32') and kind = 'training'), true);
+  select public.save_session_log((select id from public.session_logs where athlete_id = pg_temp.id('32') and kind = 'training'), public.club_today() - 1, 'training', 75, 7) $s$);
+select pg_temp.ok('changed in place', (select count(*) = 1 and min(minutes) = 75 and min(rpe) = 7 and min(day) = public.club_today() - 1 from public.session_logs where athlete_id = pg_temp.id('32') and kind = 'training'), true);
 select pg_temp.fails('a change still checks the day', $s$
-  select public.save_session_log((select id from public.session_logs where athlete_id = pg_temp.id('32') and kind = 'training'), current_date - 30, 'training', 75, 7) $s$);
-select pg_temp.fails('changing a session that doesn''t exist is refused', $s$ select public.save_session_log(gen_random_uuid(), current_date, 'training', 60, 5) $s$);
+  select public.save_session_log((select id from public.session_logs where athlete_id = pg_temp.id('32') and kind = 'training'), public.club_today() - 30, 'training', 75, 7) $s$);
+select pg_temp.fails('changing a session that doesn''t exist is refused', $s$ select public.save_session_log(gen_random_uuid(), public.club_today(), 'training', 60, 5) $s$);
 
 -- The under 18 logs their own.
 select pg_temp.as_member('31');
-select pg_temp.works('an under 18 logs training', $s$ select public.save_session_log(null, current_date, 'training', 60, 5) $s$);
+select pg_temp.works('an under 18 logs training', $s$ select public.save_session_log(null, public.club_today(), 'training', 60, 5) $s$);
 select pg_temp.fails('Jordan cannot change Kai''s session', $s$
-  select public.save_session_log((select id from public.session_logs where athlete_id = pg_temp.id('32') and kind = 'game' and minutes = 60), current_date, 'game', 1, 1) $s$);
+  select public.save_session_log((select id from public.session_logs where athlete_id = pg_temp.id('32') and kind = 'game' and minutes = 60), public.club_today(), 'game', 1, 1) $s$);
 select pg_temp.fails('Jordan cannot delete Kai''s session', $s$
   select public.delete_session_log((select id from public.session_logs where athlete_id = pg_temp.id('32') and kind = 'gym')) $s$);
 select pg_temp.ok('Kai''s sessions are untouched', (select count(*) = 1 from public.session_logs where athlete_id = pg_temp.id('32') and kind = 'game' and minutes = 60 and rpe = 9), true);
@@ -124,27 +124,27 @@ select pg_temp.fails('deleting a session that doesn''t exist is refused', $s$ se
 
 -- Only athletes log sessions.
 select pg_temp.as_member('41');
-select pg_temp.fails('a guardian cannot log a session', $s$ select public.save_session_log(null, current_date, 'training', 60, 5) $s$);
+select pg_temp.fails('a guardian cannot log a session', $s$ select public.save_session_log(null, public.club_today(), 'training', 60, 5) $s$);
 select pg_temp.as_member('11');
-select pg_temp.fails('a coach cannot log a session', $s$ select public.save_session_log(null, current_date, 'training', 60, 5) $s$);
+select pg_temp.fails('a coach cannot log a session', $s$ select public.save_session_log(null, public.club_today(), 'training', 60, 5) $s$);
 select pg_temp.fails('a coach cannot change an athlete''s session', $s$
-  select public.save_session_log((select id from public.session_logs where athlete_id = pg_temp.id('32') and kind = 'gym'), current_date, 'gym', 1, 1) $s$);
+  select public.save_session_log((select id from public.session_logs where athlete_id = pg_temp.id('32') and kind = 'gym'), public.club_today(), 'gym', 1, 1) $s$);
 select pg_temp.fails('a coach cannot delete an athlete''s session', $s$
   select public.delete_session_log((select id from public.session_logs where athlete_id = pg_temp.id('32') and kind = 'gym')) $s$);
 select pg_temp.as_member('01');
-select pg_temp.fails('an admin cannot log a session', $s$ select public.save_session_log(null, current_date, 'training', 60, 5) $s$);
+select pg_temp.fails('an admin cannot log a session', $s$ select public.save_session_log(null, public.club_today(), 'training', 60, 5) $s$);
 select pg_temp.fails('an admin cannot delete an athlete''s session', $s$
   select public.delete_session_log((select id from public.session_logs where athlete_id = pg_temp.id('32') and kind = 'gym')) $s$);
 select pg_temp.as_member('21');
-select pg_temp.fails('the committee cannot log a session', $s$ select public.save_session_log(null, current_date, 'training', 60, 5) $s$);
+select pg_temp.fails('the committee cannot log a session', $s$ select public.save_session_log(null, public.club_today(), 'training', 60, 5) $s$);
 select set_config('request.jwt.claim.sub', '', false);
-select pg_temp.fails('nobody signed in cannot log a session', $s$ select public.save_session_log(null, current_date, 'training', 60, 5) $s$);
+select pg_temp.fails('nobody signed in cannot log a session', $s$ select public.save_session_log(null, public.club_today(), 'training', 60, 5) $s$);
 
 -- A pending athlete and a stood-down athlete.
 insert into auth.users (id, email, email_confirmed_at) values (pg_temp.id('53'), 'athlete.pending@example.test', now());
 update public.profiles set status = 'pending', full_name = 'Pat Pending', role = 'athlete' where id = pg_temp.id('53');
 select pg_temp.as_member('53');
-select pg_temp.fails('an athlete waiting for approval cannot log a session', $s$ select public.save_session_log(null, current_date, 'training', 60, 5) $s$);
+select pg_temp.fails('an athlete waiting for approval cannot log a session', $s$ select public.save_session_log(null, public.club_today(), 'training', 60, 5) $s$);
 
 -- ---------------------------------------------------------------------------
 -- Who reads session logs: exactly who reads check-ins
@@ -179,7 +179,7 @@ select pg_temp.sees('an admin, after consent', '01', 0, 0);
 -- Teammates never see each other's.
 insert into auth.users (id, email, email_confirmed_at) values (pg_temp.id('54'), 'athlete.teammate@example.test', now());
 update public.profiles set status = 'approved', full_name = 'Quinn Teammate', role = 'athlete',
-  date_of_birth = current_date - interval '22 years', verified_at = now() where id = pg_temp.id('54');
+  date_of_birth = public.club_today() - interval '22 years', verified_at = now() where id = pg_temp.id('54');
 insert into public.team_members (team_id, profile_id, team_role) values (pg_temp.id('a1'), pg_temp.id('54'), 'athlete');
 select pg_temp.sees('a teammate', '54', 0, 0);
 
@@ -197,21 +197,21 @@ update public.profiles set stood_down_at = null where id = pg_temp.id('42');
 -- ---------------------------------------------------------------------------
 
 insert into public.session_logs (athlete_id, day, kind, minutes, rpe) values
-  (pg_temp.id('32'), current_date - interval '13 months', 'training', 60, 5),
-  (pg_temp.id('31'), current_date - interval '13 months', 'training', 60, 5),
-  (pg_temp.id('32'), current_date - interval '11 months', 'training', 60, 5);
+  (pg_temp.id('32'), public.club_today() - interval '13 months', 'training', 60, 5),
+  (pg_temp.id('31'), public.club_today() - interval '13 months', 'training', 60, 5),
+  (pg_temp.id('32'), public.club_today() - interval '11 months', 'training', 60, 5);
 update public.club_settings set retention_enabled = false where id;
 select pg_temp.ok('nothing is removed while Remove old records is off', (select public.purge_expired_records() = '{"enabled": false}'::jsonb), true);
-select pg_temp.ok('so every old session stays', (select count(*) = 3 from public.session_logs where day < current_date - 300), true);
+select pg_temp.ok('so every old session stays', (select count(*) = 3 from public.session_logs where day < public.club_today() - 300), true);
 update public.club_settings set retention_enabled = true, retention_check_ins_months = 12 where id;
 -- Jordan is named in a concern, so nothing of theirs goes.
 insert into public.concerns (raised_by, raised_by_name, body, about_member_id, about_member_name)
 values (pg_temp.id('41'), 'Logan Parent', 'Worried about Jordan', pg_temp.id('31'), 'Jordan Junior');
 select pg_temp.ok('the clean-up removes one old session log', (select (r->>'session_logs')::int = 1 from public.purge_expired_records() r), true);
-select pg_temp.ok('Kai''s 13-month-old session is gone', (select count(*) = 0 from public.session_logs where athlete_id = pg_temp.id('32') and day < current_date - interval '12 months'), true);
-select pg_temp.ok('Kai''s 11-month-old session stays', (select count(*) = 1 from public.session_logs where athlete_id = pg_temp.id('32') and day = (current_date - interval '11 months')::date), true);
-select pg_temp.ok('Jordan''s stays while on hold', (select count(*) = 1 from public.session_logs where athlete_id = pg_temp.id('31') and day < current_date - interval '12 months'), true);
-select pg_temp.ok('recent sessions stay', (select count(*) = 7 from public.session_logs where day >= current_date - 7), true);
+select pg_temp.ok('Kai''s 13-month-old session is gone', (select count(*) = 0 from public.session_logs where athlete_id = pg_temp.id('32') and day < public.club_today() - interval '12 months'), true);
+select pg_temp.ok('Kai''s 11-month-old session stays', (select count(*) = 1 from public.session_logs where athlete_id = pg_temp.id('32') and day = (public.club_today() - interval '11 months')::date), true);
+select pg_temp.ok('Jordan''s stays while on hold', (select count(*) = 1 from public.session_logs where athlete_id = pg_temp.id('31') and day < public.club_today() - interval '12 months'), true);
+select pg_temp.ok('recent sessions stay', (select count(*) = 7 from public.session_logs where day >= public.club_today() - 7), true);
 update public.club_settings set retention_check_ins_months = 3 where id;
 select pg_temp.ok('a shorter period removes the 11-month-old one', (select (r->>'session_logs')::int = 1 from public.purge_expired_records() r), true);
 select pg_temp.ok('the clean-up still reports check-ins', (select r ? 'check_ins' from public.purge_expired_records() r), true);

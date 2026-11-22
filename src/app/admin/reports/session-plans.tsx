@@ -8,6 +8,7 @@ import { Screen } from '@/components/screen';
 import { ThemedText } from '@/components/themed-text';
 import { ChipGroup, ErrorText, PressableCard } from '@/components/ui';
 import { Spacing } from '@/constants/theme';
+import { clubToday } from '@/lib/club-time';
 import { formatDateString, toDateString } from '@/lib/injuries';
 import { fetchAll, sessionPlanReport, type SessionPlanReportRow } from '@/lib/reports';
 import { formatDate } from '@/lib/age';
@@ -32,7 +33,7 @@ const ALL = 'all';
  */
 export default function SessionPlanReportScreen() {
   const teams = useTeams();
-  const today = toDateString(new Date());
+  const today = clubToday();
   const [period, setPeriod] = useState<Period>('3m');
   const [customFrom, setCustomFrom] = useState(() => monthsAgo(3));
   const [customTo, setCustomTo] = useState(today);

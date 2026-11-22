@@ -209,7 +209,7 @@ reset role;
 insert into auth.users (id, email, email_confirmed_at) values
   ('00000000-0000-0000-0000-000000000063', 'riley@example.test', now());
 update public.profiles set full_name = 'Riley Young', role = 'athlete', status = 'approved',
-  date_of_birth = current_date - interval '12 years' where id = pg_temp.id('63');
+  date_of_birth = public.club_today() - interval '12 years' where id = pg_temp.id('63');
 insert into public.guardianships (guardian_id, athlete_id) values (pg_temp.id('41'), pg_temp.id('63'));
 
 select pg_temp.as_member('32');
@@ -315,11 +315,11 @@ select pg_temp.as_member('14');
 select pg_temp.ok('the second Child Safety Officer can name each person it''s about',
   (select count(*) = 3 from public.message_access_people((select id from c)) where link = 'about'), true);
 create temp table r as select public.request_message_access((select id from c), pg_temp.id('63'), 'about',
-  current_date - 30, current_date, 'Messages to Riley around the trip') as id;
+  public.club_today() - 30, public.club_today(), 'Messages to Riley around the trip') as id;
 select pg_temp.ok('a request names the second child as who it''s about',
   (select subject_link = 'about' from public.message_access_requests where id = (select id from r)), true);
 select pg_temp.fails('naming someone not on the concern as who it''s about is refused',
-  $s$ select public.request_message_access((select id from c), pg_temp.id('42'), 'about', current_date - 30, current_date, 'Not about this person') $s$);
+  $s$ select public.request_message_access((select id from c), pg_temp.id('42'), 'about', public.club_today() - 30, public.club_today(), 'Not about this person') $s$);
 select pg_temp.as_member('13');
 select pg_temp.ok('a Complaints Manager named in the concern doesn''t see the request',
   (select count(*) = 0 from public.message_access_requests() where id = (select id from r)), true);

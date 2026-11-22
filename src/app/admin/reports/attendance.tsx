@@ -5,6 +5,7 @@ import { MonthDateField } from '@/components/month-date-field';
 import { ReportView } from '@/components/report-view';
 import { Screen } from '@/components/screen';
 import { ChipGroup, ErrorText } from '@/components/ui';
+import { clubToday } from '@/lib/club-time';
 import { formatDateString, parseDateString, toDateString } from '@/lib/injuries';
 import {
   type AbsenceReportRow,
@@ -40,7 +41,7 @@ type Data = {
 /** Attendance for a period and chosen squads and teams, for admins. */
 export default function AttendanceReportScreen() {
   const teams = useTeams();
-  const today = toDateString(new Date());
+  const today = clubToday();
   const [period, setPeriod] = useState<Period>('4w');
   const [customFrom, setCustomFrom] = useState(() => daysAgo(28));
   const [customTo, setCustomTo] = useState(today);

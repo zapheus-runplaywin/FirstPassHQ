@@ -1,4 +1,5 @@
 import { isMinor, parseDate } from '@/lib/age';
+import { clubToday } from '@/lib/club-time';
 import type { Team } from '@/lib/types';
 
 /**
@@ -44,7 +45,7 @@ export function childDetailsProblem(name: string, dateOfBirth: string) {
   if (name.trim().length > 80) return 'Keep the child’s name to 80 characters.';
   const dob = parseDate(dateOfBirth);
   if (!dob) return 'Enter the child’s date of birth as DD/MM/YYYY.';
-  if (dob > toDay(new Date())) return 'That date of birth is in the future.';
+  if (dob > clubToday()) return 'That date of birth is in the future.';
   if (!isMinor(dob, false)) {
     return 'Only children under 18 can be added without their own sign-in. At 18 they join with their own account.';
   }
@@ -61,9 +62,3 @@ export function newestSeasonGroups(teams: Team[]) {
   return tops.flatMap((top) => [top, ...season.filter((t) => t.squad_id === top.id).sort(byOrder)]);
 }
 
-function toDay(date: Date) {
-  const y = date.getFullYear();
-  const m = String(date.getMonth() + 1).padStart(2, '0');
-  const d = String(date.getDate()).padStart(2, '0');
-  return `${y}-${m}-${d}`;
-}

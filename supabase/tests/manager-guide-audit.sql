@@ -32,12 +32,12 @@ select pg_temp.as_member('13');
 select pg_temp.ok('cleared manager is a team member', public.is_team_member('00000000-0000-0000-0000-0000000000a1'), true);
 select pg_temp.ok('cleared manager sees the roster', (select count(*) from public.team_roster('00000000-0000-0000-0000-0000000000a1')) > 0, true);
 select pg_temp.ok('cleared manager can view the game', public.may_view_game('00000000-0000-0000-0000-0000000000f1'), true);
-update public.profiles set wwcc_expires_on = current_date where id = '00000000-0000-0000-0000-000000000013';
+update public.profiles set wwcc_expires_on = public.club_today() where id = '00000000-0000-0000-0000-000000000013';
 select pg_temp.ok('manager is a member on the expiry date', public.is_team_member('00000000-0000-0000-0000-0000000000a1'), true);
-update public.profiles set wwcc_expires_on = current_date - 1 where id = '00000000-0000-0000-0000-000000000013';
+update public.profiles set wwcc_expires_on = public.club_today() - 1 where id = '00000000-0000-0000-0000-000000000013';
 select pg_temp.ok('paused manager is not a team member', public.is_team_member('00000000-0000-0000-0000-0000000000a1'), false);
 select pg_temp.ok('paused manager cannot view the game', public.may_view_game('00000000-0000-0000-0000-0000000000f1'), false);
-update public.profiles set wwcc_expires_on = current_date + 400 where id = '00000000-0000-0000-0000-000000000013';
+update public.profiles set wwcc_expires_on = public.club_today() + 400 where id = '00000000-0000-0000-0000-000000000013';
 select pg_temp.ok('manager is back once the card is', public.is_team_member('00000000-0000-0000-0000-0000000000a1'), true);
 
 -- 3. Athletes, admins and the cleared coach are unchanged.
@@ -56,7 +56,7 @@ create temp table ids (name text, id uuid);
 select pg_temp.as_member('01');
 update public.safeguarding_settings set code_of_conduct_url = 'https://example.com/conduct', policy_version = '2026-1' where id;
 select pg_temp.works('admin turns the code of conduct on', $$select public.admin_set_conduct_each_season(true)$$);
-insert into ids select 'point', public.admin_save_kpi_review_point(null, (select season from public.teams where id = '00000000-0000-0000-0000-0000000000a1'), 'Mid-season', current_date - 1);
+insert into ids select 'point', public.admin_save_kpi_review_point(null, (select season from public.teams where id = '00000000-0000-0000-0000-0000000000a1'), 'Mid-season', public.club_today() - 1);
 select pg_temp.as_member('22');
 insert into ids select 'okr', public.save_season_kpi(null, '00000000-0000-0000-0000-000000000013',
   '00000000-0000-0000-0000-0000000000a1', 'okr', 'Run smooth game days', null,

@@ -20,19 +20,19 @@ update public.profiles p set status = 'approved', full_name = v.name, role = v.r
   extra_roles = v.extra::public.app_role[], wwcc_number = v.wwcc, wwcc_expires_on = v.exp,
   wwcc_exempt_reason = v.exempt, date_of_birth = v.dob, verified_at = now()
 from (values
-  ('00000000-0000-0000-0000-000000000001', 'Alex Admin', 'admin', '{}', 'WWC0001', current_date + 400, null, null::date),
+  ('00000000-0000-0000-0000-000000000001', 'Alex Admin', 'admin', '{}', 'WWC0001', public.club_today() + 400, null, null::date),
   ('00000000-0000-0000-0000-000000000002', 'Blair Admin', 'admin', '{}', null, null, null, null),
-  ('00000000-0000-0000-0000-000000000011', 'Casey Coach', 'coach', '{}', 'WWC0011', current_date + 400, null, null),
-  ('00000000-0000-0000-0000-000000000012', 'Drew Lapsed', 'coach', '{}', 'WWC0012', current_date - 1, null, null),
-  ('00000000-0000-0000-0000-000000000013', 'Emery Manager', 'manager', '{}', 'WWC0013', current_date + 400, null, null),
-  ('00000000-0000-0000-0000-000000000014', 'Finley Physio', 'physio', '{}', 'WWC0014', current_date + 400, null, null),
-  ('00000000-0000-0000-0000-000000000021', 'Gale Committee', 'committee', '{}', 'WWC0021', current_date - 5, null, null),
+  ('00000000-0000-0000-0000-000000000011', 'Casey Coach', 'coach', '{}', 'WWC0011', public.club_today() + 400, null, null),
+  ('00000000-0000-0000-0000-000000000012', 'Drew Lapsed', 'coach', '{}', 'WWC0012', public.club_today() - 1, null, null),
+  ('00000000-0000-0000-0000-000000000013', 'Emery Manager', 'manager', '{}', 'WWC0013', public.club_today() + 400, null, null),
+  ('00000000-0000-0000-0000-000000000014', 'Finley Physio', 'physio', '{}', 'WWC0014', public.club_today() + 400, null, null),
+  ('00000000-0000-0000-0000-000000000021', 'Gale Committee', 'committee', '{}', 'WWC0021', public.club_today() - 5, null, null),
   ('00000000-0000-0000-0000-000000000022', 'Harper Committee', 'committee', '{}', null, null, null, null),
   ('00000000-0000-0000-0000-000000000023', 'Indy Treasurer', 'committee', '{}', null, null, 'Treasurer only', null),
-  ('00000000-0000-0000-0000-000000000031', 'Jordan Junior', 'athlete', '{}', null, null, null, current_date - interval '14 years'),
-  ('00000000-0000-0000-0000-000000000032', 'Kai Senior', 'athlete', '{}', null, null, null, current_date - interval '25 years'),
+  ('00000000-0000-0000-0000-000000000031', 'Jordan Junior', 'athlete', '{}', null, null, null, public.club_today() - interval '14 years'),
+  ('00000000-0000-0000-0000-000000000032', 'Kai Senior', 'athlete', '{}', null, null, null, public.club_today() - interval '25 years'),
   ('00000000-0000-0000-0000-000000000041', 'Logan Parent', 'guardian', '{}', null, null, null, null),
-  ('00000000-0000-0000-0000-000000000042', 'Morgan Coach-Parent', 'coach', '{guardian}', 'WWC0042', current_date + 400, null, null)
+  ('00000000-0000-0000-0000-000000000042', 'Morgan Coach-Parent', 'coach', '{guardian}', 'WWC0042', public.club_today() + 400, null, null)
 ) as v(id, name, role, extra, wwcc, exp, exempt, dob)
 where p.id = v.id::uuid;
 
@@ -60,7 +60,7 @@ insert into public.guardianships (guardian_id, athlete_id) values
 
 insert into public.injuries (athlete_id, reported_by, body_area, description, injured_on, athlete_name)
 values ('00000000-0000-0000-0000-000000000031', '00000000-0000-0000-0000-000000000031', 'Ankle',
-  'Rolled ankle at training', current_date - 3, 'Jordan Junior');
+  'Rolled ankle at training', public.club_today() - 3, 'Jordan Junior');
 
 insert into public.check_ins (athlete_id, day, sleep, soreness, stress, mood, note)
-values ('00000000-0000-0000-0000-000000000031', current_date, 4, 3, 2, 4, 'Tired after exams');
+values ('00000000-0000-0000-0000-000000000031', public.club_today(), 4, 3, 2, 4, 'Tired after exams');

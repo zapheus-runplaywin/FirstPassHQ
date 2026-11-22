@@ -66,7 +66,7 @@ insert into auth.users (id, email, email_confirmed_at) values
   ('00000000-0000-0000-0000-000000000067', 'studio@example.test', now());
 update public.profiles p set status = v.status::public.member_status, full_name = v.name,
   role = v.role::public.app_role, wwcc_exempt_reason = v.reason, stood_down_at = v.stood,
-  date_of_birth = current_date - interval '40 years', verified_at = now()
+  date_of_birth = public.club_today() - interval '40 years', verified_at = now()
 from (values
   ('00000000-0000-0000-0000-000000000061', 'Sam Stats', 'statistician', 'approved', 'Opens games only', null::timestamptz),
   ('00000000-0000-0000-0000-000000000062', 'Quinn Paused', 'statistician', 'approved', 'Opens games only', now()),

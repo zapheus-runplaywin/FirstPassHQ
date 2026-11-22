@@ -47,6 +47,12 @@ $$ update public.club_settings set timezone = (
      from (select ((h - extract(hour from now() at time zone 'UTC')::int) % 24 + 24) % 24 as o) x)
    where id $$;
 
+-- Moving the club up to a day east or west moves its calendar day too
+-- (club_today). Drew's card ended yesterday in Perth, which could be today
+-- in the zone the club is moved to; end it well before, so Drew stays
+-- without a current check whatever the hour.
+update public.profiles set wwcc_expires_on = public.club_today() - 30 where id = pg_temp.id('12');
+
 create temp table ids (k text primary key, v uuid);
 grant all on ids to public;
 create or replace function pg_temp.plan(k text) returns uuid language sql as $$ select v from ids where ids.k = plan.k $$;
@@ -106,7 +112,7 @@ select pg_temp.works('the head coach registers a phone', $$select public.registe
 select pg_temp.club_hour_is(12);
 select pg_temp.as_member('11');
 insert into ids values ('day', public.save_session_plan(
-  null, pg_temp.id('a1'), 'Day plan', current_date + 2, '18:00', '19:30', 'Main court', 'Footwork', null, true, true, '{}'));
+  null, pg_temp.id('a1'), 'Day plan', public.club_today() + 2, '18:00', '19:30', 'Main court', 'Footwork', null, true, true, '{}'));
 select pg_temp.ok('a plan shared at midday tells everyone at once', pg_temp.sent_to() = '31,32,41,42', true);
 select pg_temp.ok('the author is not told about their own plan', pg_temp.sent_to() like '%11%', false);
 select pg_temp.ok('nobody is left waiting', pg_temp.held(pg_temp.plan('day')) = '', true);
@@ -117,7 +123,7 @@ select pg_temp.ok('a tap opens the plan, in the right club', (select bool_and(
   m->'data'->>'planId' = pg_temp.plan('day')::text and m->'data'->>'club' = 'THUNDER') from pg_temp.messages() m), true);
 select pg_temp.ok('the plan''s notes stay off the lock screen', (select bool_or(m::text like '%Footwork%') from pg_temp.messages() m), false);
 select pg_temp.works('the coach changes the plan', format($$select public.save_session_plan(
-  %L, pg_temp.id('a1'), 'Day plan', current_date + 2, '18:00', '19:30', 'Court 2', 'Footwork', null, true, true, '{}')$$, pg_temp.plan('day')));
+  %L, pg_temp.id('a1'), 'Day plan', public.club_today() + 2, '18:00', '19:30', 'Court 2', 'Footwork', null, true, true, '{}')$$, pg_temp.plan('day')));
 select pg_temp.ok('a change tells nobody again', (select count(*) = 4 from pg_temp.messages()), true);
 
 -- ---------------------------------------------------------------------------
@@ -127,7 +133,7 @@ truncate net.sent;
 select pg_temp.club_hour_is(0);
 select pg_temp.as_member('11');
 insert into ids values ('night', public.save_session_plan(
-  null, pg_temp.id('a1'), 'Night plan', current_date + 3, '18:00', '19:30', null, null, null, true, true, '{}'));
+  null, pg_temp.id('a1'), 'Night plan', public.club_today() + 3, '18:00', '19:30', null, null, null, true, true, '{}'));
 select pg_temp.ok('a plan shared at midnight sends nothing', (select count(*) = 0 from pg_temp.messages()), true);
 select pg_temp.ok('the child''s phone is not woken', pg_temp.sent_to() like '%31%', false);
 select pg_temp.ok('everyone it is shared with is waiting to be told', pg_temp.held(pg_temp.plan('night')) = '31,32,41,42', true);
@@ -137,17 +143,17 @@ select pg_temp.ok('the job sends nothing while it is still quiet', public.send_h
 select pg_temp.ok('and they are still waiting', pg_temp.held(pg_temp.plan('night')) = '31,32,41,42', true);
 select pg_temp.as_member('11');
 select pg_temp.works('the coach changes the held plan', format($$select public.save_session_plan(
-  %L, pg_temp.id('a1'), 'Night plan', current_date + 3, '18:00', '19:30', 'Main court', null, null, true, true, '{}')$$, pg_temp.plan('night')));
+  %L, pg_temp.id('a1'), 'Night plan', public.club_today() + 3, '18:00', '19:30', 'Main court', null, null, true, true, '{}')$$, pg_temp.plan('night')));
 select pg_temp.ok('a change to a held plan still sends nothing', (select count(*) = 0 from pg_temp.messages()), true);
 
 -- A second plan the same night, for the coaches only.
 insert into ids values ('coaches', public.save_session_plan(
-  null, pg_temp.id('a1'), 'Coaches plan', current_date + 4, null, null, null, null, null, true, false, '{}'));
+  null, pg_temp.id('a1'), 'Coaches plan', public.club_today() + 4, null, null, null, null, null, true, false, '{}'));
 select pg_temp.ok('the coaches-only plan waits for the assistant coach alone', pg_temp.held(pg_temp.plan('coaches')) = '42', true);
 
 -- Before morning the coach stops sharing the night plan with athletes.
 select pg_temp.works('the coach stops sharing the night plan with athletes', format($$select public.save_session_plan(
-  %L, pg_temp.id('a1'), 'Night plan', current_date + 3, '18:00', '19:30', 'Main court', null, null, true, false, '{}')$$, pg_temp.plan('night')));
+  %L, pg_temp.id('a1'), 'Night plan', public.club_today() + 3, '18:00', '19:30', 'Main court', null, null, true, false, '{}')$$, pg_temp.plan('night')));
 select set_config('request.jwt.claim.sub', '', false);
 select pg_temp.ok('nothing is sent or forgotten until the quiet hours end', pg_temp.held(pg_temp.plan('night')) = '31,32,41,42'
   and (select count(*) = 0 from pg_temp.messages()), true);
@@ -177,7 +183,7 @@ truncate net.sent;
 select pg_temp.club_hour_is(12);
 select pg_temp.as_member('11');
 select pg_temp.works('the coach shares the night plan with athletes again', format($$select public.save_session_plan(
-  %L, pg_temp.id('a1'), 'Night plan', current_date + 3, '18:00', '19:30', 'Main court', null, null, true, true, '{}')$$, pg_temp.plan('night')));
+  %L, pg_temp.id('a1'), 'Night plan', public.club_today() + 3, '18:00', '19:30', 'Main court', null, null, true, true, '{}')$$, pg_temp.plan('night')));
 select pg_temp.ok('the athletes and the parent are told, the assistant coach not twice', pg_temp.sent_to() = '31,32,41', true);
 
 -- ---------------------------------------------------------------------------
@@ -187,9 +193,9 @@ truncate net.sent;
 select pg_temp.club_hour_is(0);
 select pg_temp.as_member('11');
 insert into ids values ('late', public.save_session_plan(
-  null, pg_temp.id('a1'), 'Late plan', current_date + 5, null, null, null, null, null, true, true, '{}'));
+  null, pg_temp.id('a1'), 'Late plan', public.club_today() + 5, null, null, null, null, null, true, true, '{}'));
 insert into ids values ('staff', public.save_session_plan(
-  null, pg_temp.id('a1'), 'Staff plan', current_date + 6, null, null, null, null, null, true, false, '{}'));
+  null, pg_temp.id('a1'), 'Staff plan', public.club_today() + 6, null, null, null, null, null, true, false, '{}'));
 select set_config('request.jwt.claim.sub', '', false);
 select pg_temp.ok('everyone waits again', pg_temp.held(pg_temp.plan('late')) = '31,32,41,42'
   and pg_temp.held(pg_temp.plan('staff')) = '42', true);
@@ -215,7 +221,7 @@ update public.profiles set stood_down_at = null where id = pg_temp.id('42');
 select pg_temp.club_hour_is(0);
 select pg_temp.as_member('11');
 insert into ids values ('gone', public.save_session_plan(
-  null, pg_temp.id('a1'), 'Deleted plan', current_date + 6, null, null, null, null, null, true, true, '{}'));
+  null, pg_temp.id('a1'), 'Deleted plan', public.club_today() + 6, null, null, null, null, null, true, true, '{}'));
 select set_config('request.jwt.claim.sub', '', false);
 select pg_temp.ok('the plan waits', pg_temp.held(pg_temp.plan('gone')) <> '', true);
 delete from public.session_plans where id = pg_temp.plan('gone');
@@ -228,7 +234,7 @@ delete from public.push_tokens where profile_id = pg_temp.id('41');
 select pg_temp.club_hour_is(0);
 select pg_temp.as_member('11');
 insert into ids values ('nophone', public.save_session_plan(
-  null, pg_temp.id('a1'), 'No phone plan', current_date + 7, null, null, null, null, null, false, true, '{}'));
+  null, pg_temp.id('a1'), 'No phone plan', public.club_today() + 7, null, null, null, null, null, false, true, '{}'));
 select set_config('request.jwt.claim.sub', '', false);
 update public.club_settings set timezone = 'Australia/Perth' where id;
 select pg_temp.ok('a parent with no phone is skipped, the others are told', public.send_held_session_plan_pushes((select seven from t)) = 2

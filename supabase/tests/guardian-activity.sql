@@ -115,7 +115,7 @@ select pg_temp.ok('coach cannot mark seen',
   (select count(*) = 0 from public.child_activity_seen where guardian_id = '00000000-0000-0000-0000-000000000011'), true);
 
 -- Ends at 18
-update public.profiles set date_of_birth = current_date - interval '19 years', under_17 = false
+update public.profiles set date_of_birth = public.club_today() - interval '19 years', under_17 = false
   where id = '00000000-0000-0000-0000-000000000031';
 select pg_temp.as_member('41');
 select pg_temp.ok('guardian reads nothing once the child is 18',

@@ -38,22 +38,22 @@ select pg_temp.as_member('51');
 select pg_temp.works('asking to join as a volunteer',
   $s$ select public.submit_join_request('Quinn Helper', null, 'volunteer', null, null, date '1990-01-01', null) $s$);
 select pg_temp.fails('details need a task',
-  $s$ select public.set_my_volunteer_details('', current_date + 5, current_date + 5, 'card', 'WWC0051') $s$);
+  $s$ select public.set_my_volunteer_details('', public.club_today() + 5, public.club_today() + 5, 'card', 'WWC0051') $s$);
 select pg_temp.fails('the last day can''t be before the first',
-  $s$ select public.set_my_volunteer_details('Bench helper', current_date + 5, current_date + 4, 'card', 'WWC0051') $s$);
+  $s$ select public.set_my_volunteer_details('Bench helper', public.club_today() + 5, public.club_today() + 4, 'card', 'WWC0051') $s$);
 select pg_temp.fails('more than 12 months isn''t temporary',
-  $s$ select public.set_my_volunteer_details('Bench helper', current_date, current_date + 400, 'card', 'WWC0051') $s$);
+  $s$ select public.set_my_volunteer_details('Bench helper', public.club_today(), public.club_today() + 400, 'card', 'WWC0051') $s$);
 select pg_temp.fails('a card choice needs the number',
-  $s$ select public.set_my_volunteer_details('Bench helper', current_date + 5, current_date + 5, 'card', '') $s$);
+  $s$ select public.set_my_volunteer_details('Bench helper', public.club_today() + 5, public.club_today() + 5, 'card', '') $s$);
 select pg_temp.works('saving their details',
-  $s$ select public.set_my_volunteer_details('Bench helper at the carnival', current_date + 5, current_date + 6, 'card', 'wwc 0051') $s$);
+  $s$ select public.set_my_volunteer_details('Bench helper at the carnival', public.club_today() + 5, public.club_today() + 6, 'card', 'wwc 0051') $s$);
 select pg_temp.ok('their details are kept',
   (select volunteer_task = 'Bench helper at the carnival' and volunteer_screening = 'card'
      and declared_wwcc_number = 'WWC 0051' and requested_role = 'volunteer'
    from public.profiles where id = '00000000-0000-0000-0000-000000000051'), true);
 select pg_temp.as_member('32');
 select pg_temp.fails('someone who didn''t ask to join as a volunteer can''t set them',
-  $s$ select public.set_my_volunteer_details('Helper', current_date, current_date, 'none') $s$);
+  $s$ select public.set_my_volunteer_details('Helper', public.club_today(), public.club_today(), 'none') $s$);
 
 -- Approving them.
 select pg_temp.as_member('01');
@@ -69,11 +69,11 @@ select pg_temp.as_member('01');
 select pg_temp.fails('can''t approve without a check',
   $s$ select public.admin_save_member('00000000-0000-0000-0000-000000000051', 'volunteer', 'approved') $s$);
 select pg_temp.works('recording a card that ends before their last day',
-  $s$ select public.admin_set_member_details('00000000-0000-0000-0000-000000000051', null, 'WWC0051', current_date + 5) $s$);
+  $s$ select public.admin_set_member_details('00000000-0000-0000-0000-000000000051', null, 'WWC0051', public.club_today() + 5) $s$);
 select pg_temp.fails('can''t approve when the card ends before their last day',
   $s$ select public.admin_save_member('00000000-0000-0000-0000-000000000051', 'volunteer', 'approved') $s$);
 select pg_temp.works('with a card that lasts, they''re approved',
-  $s$ select public.admin_set_member_details('00000000-0000-0000-0000-000000000051', null, 'WWC0051', current_date + 300);
+  $s$ select public.admin_set_member_details('00000000-0000-0000-0000-000000000051', null, 'WWC0051', public.club_today() + 300);
       select public.admin_save_member('00000000-0000-0000-0000-000000000051', 'volunteer', 'approved') $s$);
 select pg_temp.fails('a volunteer can''t also be a coach',
   $s$ select public.admin_save_member('00000000-0000-0000-0000-000000000051', 'volunteer', 'approved', '[]', false, '{}', null, '{coach}') $s$);
@@ -105,37 +105,37 @@ select pg_temp.works('a volunteer can be stood down',
 
 -- Changing an approved volunteer's dates.
 select pg_temp.works('an admin changes the task',
-  $s$ select public.admin_set_volunteer_details('00000000-0000-0000-0000-000000000051', 'Scorer', current_date + 5, current_date + 6) $s$);
+  $s$ select public.admin_set_volunteer_details('00000000-0000-0000-0000-000000000051', 'Scorer', public.club_today() + 5, public.club_today() + 6) $s$);
 select pg_temp.fails('dates beyond their card are refused',
-  $s$ select public.admin_set_volunteer_details('00000000-0000-0000-0000-000000000051', 'Scorer', current_date + 5, current_date + 320) $s$);
+  $s$ select public.admin_set_volunteer_details('00000000-0000-0000-0000-000000000051', 'Scorer', public.club_today() + 5, public.club_today() + 320) $s$);
 
 -- Short-term visitor.
 select pg_temp.as_member('52');
 select public.submit_join_request('Riley Visitor', null, 'volunteer', null, null, date '1985-05-05', null);
-select public.set_my_volunteer_details('Guest coach at two clinics', current_date + 2, current_date + 9, 'visitor');
+select public.set_my_volunteer_details('Guest coach at two clinics', public.club_today() + 2, public.club_today() + 9, 'visitor');
 select public.acknowledge_club_policies();
 select pg_temp.as_member('01');
 select pg_temp.fails('a visitor exemption needs the arrival day',
   $s$ select public.admin_set_volunteer_exemption('00000000-0000-0000-0000-000000000052', 'short_term_visitor') $s$);
 select pg_temp.fails('a visitor who arrived more than two weeks ago is refused',
-  $s$ select public.admin_set_volunteer_exemption('00000000-0000-0000-0000-000000000052', 'short_term_visitor', null, current_date - 14) $s$);
+  $s$ select public.admin_set_volunteer_exemption('00000000-0000-0000-0000-000000000052', 'short_term_visitor', null, public.club_today() - 14) $s$);
 select pg_temp.works('recording a visitor exemption from their arrival',
-  $s$ select public.admin_set_volunteer_exemption('00000000-0000-0000-0000-000000000052', 'short_term_visitor', null, current_date + 1) $s$);
+  $s$ select public.admin_set_volunteer_exemption('00000000-0000-0000-0000-000000000052', 'short_term_visitor', null, public.club_today() + 1) $s$);
 select pg_temp.fails('can''t approve before they accept the declaration',
   $s$ select public.admin_save_member('00000000-0000-0000-0000-000000000052', 'volunteer', 'approved') $s$);
 select pg_temp.as_member('52');
 select pg_temp.ok('their declaration names the dates',
-  (select declaration_text like '%arrived in WA for this visit on ' || to_char(current_date + 1, 'DD/MM/YYYY') || '%'
-     and declaration_text like '%ends on ' || to_char(current_date + 14, 'DD/MM/YYYY') || '%'
-     and ends_on = current_date + 14 and not valid
+  (select declaration_text like '%arrived in WA for this visit on ' || to_char(public.club_today() + 1, 'DD/MM/YYYY') || '%'
+     and declaration_text like '%ends on ' || to_char(public.club_today() + 14, 'DD/MM/YYYY') || '%'
+     and ends_on = public.club_today() + 14 and not valid
    from public.my_volunteer_exemption()), true);
 select pg_temp.works('they accept it', $s$ select public.accept_volunteer_declaration() $s$);
 select pg_temp.as_member('01');
 select pg_temp.fails('dates past the two weeks are refused',
-  $s$ select public.admin_set_volunteer_details('00000000-0000-0000-0000-000000000052', 'Guest coach', current_date + 2, current_date + 20);
+  $s$ select public.admin_set_volunteer_details('00000000-0000-0000-0000-000000000052', 'Guest coach', public.club_today() + 2, public.club_today() + 20);
       select public.admin_save_member('00000000-0000-0000-0000-000000000052', 'volunteer', 'approved') $s$);
 select pg_temp.works('dates inside the two weeks are approved',
-  $s$ select public.admin_set_volunteer_details('00000000-0000-0000-0000-000000000052', 'Guest coach', current_date + 2, current_date + 9);
+  $s$ select public.admin_set_volunteer_details('00000000-0000-0000-0000-000000000052', 'Guest coach', public.club_today() + 2, public.club_today() + 9);
       select public.admin_save_member('00000000-0000-0000-0000-000000000052', 'volunteer', 'approved') $s$);
 select pg_temp.ok('the exemption doesn''t apply until they arrive',
   public.is_cleared('00000000-0000-0000-0000-000000000052'), false);
@@ -144,20 +144,20 @@ select pg_temp.ok('a volunteer who hasn''t started isn''t counted as missing a c
   (select count(*) from public.profiles p where p.status = 'approved'
      and public.needs_wwcc(public.roles_of(p.role, p.extra_roles), p.wwcc_exempt_reason)
      and p.role <> 'volunteer' and not public.is_cleared(p.id)), true);
-update public.volunteer_exemptions set starts_on = current_date - 1
+update public.volunteer_exemptions set starts_on = public.club_today() - 1
 where profile_id = '00000000-0000-0000-0000-000000000052' and ended_at is null;
 select pg_temp.ok('it applies from the day they arrive', public.is_cleared('00000000-0000-0000-0000-000000000052'), true);
 select pg_temp.ok('a short exemption isn''t flagged as ending',
   (select exemptions_ending = 0 from public.admin_safety_todos()), true);
-update public.volunteer_exemptions set starts_on = current_date - 14
+update public.volunteer_exemptions set starts_on = public.club_today() - 14
 where profile_id = '00000000-0000-0000-0000-000000000052' and ended_at is null;
 select pg_temp.ok('and stops after two weeks', public.is_cleared('00000000-0000-0000-0000-000000000052'), false);
 select pg_temp.fails('a second visitor exemption within 12 months is refused',
-  $s$ select public.admin_set_volunteer_exemption('00000000-0000-0000-0000-000000000052', 'short_term_visitor', null, current_date + 200) $s$);
+  $s$ select public.admin_set_volunteer_exemption('00000000-0000-0000-0000-000000000052', 'short_term_visitor', null, public.club_today() + 200) $s$);
 select pg_temp.fails('so is a national event exemption',
-  $s$ select public.admin_set_volunteer_exemption('00000000-0000-0000-0000-000000000052', 'national_event', null, current_date + 300, 'National Championships', 'Netball Australia') $s$);
+  $s$ select public.admin_set_volunteer_exemption('00000000-0000-0000-0000-000000000052', 'national_event', null, public.club_today() + 300, 'National Championships', 'Netball Australia') $s$);
 select pg_temp.works('one more than 12 months after it ended is allowed',
-  $s$ select public.admin_set_volunteer_exemption('00000000-0000-0000-0000-000000000052', 'short_term_visitor', null, current_date + 400) $s$);
+  $s$ select public.admin_set_volunteer_exemption('00000000-0000-0000-0000-000000000052', 'short_term_visitor', null, public.club_today() + 400) $s$);
 select pg_temp.ok('the earlier one is kept, ended',
   (select count(*) = 2 and count(*) filter (where ended_at is not null) = 1
    from public.volunteer_exemptions where profile_id = '00000000-0000-0000-0000-000000000052'), true);
@@ -165,44 +165,44 @@ select pg_temp.ok('the earlier one is kept, ended',
 -- National event: the national coach.
 select pg_temp.as_member('53');
 select public.submit_join_request('Sam National', null, 'volunteer', null, null, date '1980-02-02', null);
-select public.set_my_volunteer_details('Coaching at the national championships', current_date + 30, current_date + 40, 'national_event');
+select public.set_my_volunteer_details('Coaching at the national championships', public.club_today() + 30, public.club_today() + 40, 'national_event');
 select public.acknowledge_club_policies();
 select pg_temp.as_member('01');
 select pg_temp.fails('a national event needs its name and organiser',
-  $s$ select public.admin_set_volunteer_exemption('00000000-0000-0000-0000-000000000053', 'national_event', null, current_date + 28) $s$);
+  $s$ select public.admin_set_volunteer_exemption('00000000-0000-0000-0000-000000000053', 'national_event', null, public.club_today() + 28) $s$);
 select pg_temp.works('recording the national event',
-  $s$ select public.admin_set_volunteer_exemption('00000000-0000-0000-0000-000000000053', 'national_event', null, current_date + 28, 'National Netball Championships', 'Netball Australia') $s$);
+  $s$ select public.admin_set_volunteer_exemption('00000000-0000-0000-0000-000000000053', 'national_event', null, public.club_today() + 28, 'National Netball Championships', 'Netball Australia') $s$);
 select pg_temp.as_member('53');
 select pg_temp.ok('the declaration names the event and organiser',
   (select declaration_text like '%in WA for National Netball Championships, organised by Netball Australia%'
-     and ends_on = current_date + 57 from public.my_volunteer_exemption()), true);
+     and ends_on = public.club_today() + 57 from public.my_volunteer_exemption()), true);
 select public.accept_volunteer_declaration();
 select pg_temp.as_member('01');
 select pg_temp.works('approved for dates inside the 30 days',
   $s$ select public.admin_save_member('00000000-0000-0000-0000-000000000053', 'volunteer', 'approved') $s$);
 select pg_temp.works('swapping an accepted exemption that hasn''t started yet is allowed',
-  $s$ select public.admin_set_volunteer_exemption('00000000-0000-0000-0000-000000000053', 'short_term_visitor', null, current_date + 100) $s$);
+  $s$ select public.admin_set_volunteer_exemption('00000000-0000-0000-0000-000000000053', 'short_term_visitor', null, public.club_today() + 100) $s$);
 select pg_temp.works('and back to the national event, with its first day corrected',
-  $s$ select public.admin_set_volunteer_exemption('00000000-0000-0000-0000-000000000053', 'national_event', null, current_date + 29, 'National Netball Championships', 'Netball Australia') $s$);
+  $s$ select public.admin_set_volunteer_exemption('00000000-0000-0000-0000-000000000053', 'national_event', null, public.club_today() + 29, 'National Netball Championships', 'Netball Australia') $s$);
 select pg_temp.ok('the admin list shows the event and dates',
-  (select event_name = 'National Netball Championships' and starts_on = current_date + 29 and ends_on = current_date + 58
+  (select event_name = 'National Netball Championships' and starts_on = public.club_today() + 29 and ends_on = public.club_today() + 58
    from public.admin_volunteer_exemptions()
    where profile_id = '00000000-0000-0000-0000-000000000053' and ended_at is null), true);
 select pg_temp.as_member('53');
 select public.accept_volunteer_declaration();
 select pg_temp.as_member('01');
-update public.volunteer_exemptions set starts_on = current_date - 1
+update public.volunteer_exemptions set starts_on = public.club_today() - 1
 where profile_id = '00000000-0000-0000-0000-000000000053' and ended_at is null;
 select pg_temp.fails('once it has started, swapping to a visitor exemption is refused',
-  $s$ select public.admin_set_volunteer_exemption('00000000-0000-0000-0000-000000000053', 'short_term_visitor', null, current_date + 100) $s$);
+  $s$ select public.admin_set_volunteer_exemption('00000000-0000-0000-0000-000000000053', 'short_term_visitor', null, public.club_today() + 100) $s$);
 
 -- An exemption not accepted doesn't count towards the 12 months.
 select pg_temp.as_member('54');
 select public.submit_join_request('Taylor Twice', null, 'volunteer', null, null, date '1979-03-03', null);
 select pg_temp.as_member('01');
-select public.admin_set_volunteer_exemption('00000000-0000-0000-0000-000000000054', 'short_term_visitor', null, current_date);
+select public.admin_set_volunteer_exemption('00000000-0000-0000-0000-000000000054', 'short_term_visitor', null, public.club_today());
 select pg_temp.works('an exemption they never accepted can be replaced',
-  $s$ select public.admin_set_volunteer_exemption('00000000-0000-0000-0000-000000000054', 'national_event', null, current_date + 10, 'State Schools Cup', 'School Sport WA') $s$);
+  $s$ select public.admin_set_volunteer_exemption('00000000-0000-0000-0000-000000000054', 'national_event', null, public.club_today() + 10, 'State Schools Cup', 'School Sport WA') $s$);
 
 -- Older exemptions still work.
 select pg_temp.works('a parent volunteer exemption still records',
@@ -214,9 +214,9 @@ select pg_temp.ok('with no dates',
 -- Only admins.
 select pg_temp.as_member('11');
 select pg_temp.fails('a coach can''t record an exemption',
-  $s$ select public.admin_set_volunteer_exemption('00000000-0000-0000-0000-000000000054', 'short_term_visitor', null, current_date) $s$);
+  $s$ select public.admin_set_volunteer_exemption('00000000-0000-0000-0000-000000000054', 'short_term_visitor', null, public.club_today()) $s$);
 select pg_temp.fails('a coach can''t change a volunteer''s dates',
-  $s$ select public.admin_set_volunteer_details('00000000-0000-0000-0000-000000000051', 'X', current_date, current_date) $s$);
+  $s$ select public.admin_set_volunteer_details('00000000-0000-0000-0000-000000000051', 'X', public.club_today(), public.club_today()) $s$);
 select pg_temp.ok('nobody can read another member''s acknowledgement directly',
   has_table_privilege('anon', 'public.policy_acknowledgements', 'select'), false);
 
@@ -230,13 +230,13 @@ select pg_temp.ok('members can''t call volunteer_covered directly',
 set role authenticated;
 select pg_temp.as_member('01');
 select pg_temp.works('signed in, an admin still changes a volunteer''s dates (the check runs inside)',
-  $s$ select public.admin_set_volunteer_details('00000000-0000-0000-0000-000000000051', 'Scorer', current_date + 5, current_date + 7) $s$);
+  $s$ select public.admin_set_volunteer_details('00000000-0000-0000-0000-000000000051', 'Scorer', public.club_today() + 5, public.club_today() + 7) $s$);
 select pg_temp.fails('signed in, an admin still can''t call has_acknowledged_policies directly',
   $s$ select public.has_acknowledged_policies('00000000-0000-0000-0000-000000000051') $s$);
 select pg_temp.as_member('11');
 select pg_temp.fails('a coach can''t check whether a volunteer is covered',
-  $s$ select public.volunteer_covered('00000000-0000-0000-0000-000000000051', current_date, current_date) $s$);
+  $s$ select public.volunteer_covered('00000000-0000-0000-0000-000000000051', public.club_today(), public.club_today()) $s$);
 select pg_temp.as_member('51');
 select pg_temp.fails('a volunteer can''t check their own cover directly either',
-  $s$ select public.volunteer_covered('00000000-0000-0000-0000-000000000051', current_date, current_date) $s$);
+  $s$ select public.volunteer_covered('00000000-0000-0000-0000-000000000051', public.club_today(), public.club_today()) $s$);
 reset role;

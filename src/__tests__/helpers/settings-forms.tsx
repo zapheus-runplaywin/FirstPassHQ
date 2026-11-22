@@ -164,6 +164,7 @@ type ClubProfileRow = {
   logo_path: string | null;
   features: Partial<Record<string, boolean>>;
   updated_at: string | null;
+  timezone?: string | null;
 };
 
 const EMPTY_PROFILE: ClubProfileRow = {

@@ -5,7 +5,7 @@ import { ThemedText } from '@/components/themed-text';
 import { Button, Card, ErrorText } from '@/components/ui';
 import { Spacing } from '@/constants/theme';
 import { useClub } from '@/lib/club';
-import { toDateString } from '@/lib/injuries';
+import { clubToday } from '@/lib/club-time';
 import { reportPdf, type Report } from '@/lib/pdf';
 import { fileSlug, sharePdf } from '@/lib/reports';
 
@@ -31,7 +31,7 @@ export function ReportView({
     try {
       const bytes = reportPdf(report, { clubName: club.name, accent: club.colors.accent });
       await sharePdf(
-        `${fileSlug(club.shortName)}-${fileSlug(report.title)}-${toDateString(new Date())}.pdf`,
+        `${fileSlug(club.shortName)}-${fileSlug(report.title)}-${clubToday()}.pdf`,
         bytes,
       );
       await action?.onShared();

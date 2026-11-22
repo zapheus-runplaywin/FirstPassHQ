@@ -2,7 +2,7 @@ import { useFocusEffect } from 'expo-router';
 import { useCallback, useState } from 'react';
 
 import { useAuth } from '@/lib/auth';
-import { toDateString } from '@/lib/injuries';
+import { clubToday } from '@/lib/club-time';
 import { toPurgeRunStatus } from '@/lib/purge-runs';
 import { supabase } from '@/lib/supabase';
 import type { WwccApplication } from '@/lib/types';
@@ -114,7 +114,7 @@ export function useSafetyTodos() {
     const run = toPurgeRunStatus(purgeRun);
     const toConfirm = applicationsToConfirm(
       Array.isArray(applications) ? (applications as WwccApplication[]) : [],
-      toDateString(new Date()),
+      clubToday(),
     );
     const todos = (data as SafetyTodos | null) ?? null;
     const removalOn = (retention as { enabled?: unknown } | null)?.enabled;

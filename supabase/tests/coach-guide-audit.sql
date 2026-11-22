@@ -22,57 +22,57 @@ insert into auth.users (id, email, email_confirmed_at)
 select ('00000000-0000-0000-0000-0000000000' || n)::uuid, 'athlete' || n || '@example.test', now()
 from unnest(array['51', '52', '53', '54', '55', '56']) n;
 update public.profiles set status = 'approved', role = 'athlete', full_name = 'Athlete ' || right(id::text, 2),
-  date_of_birth = current_date - interval '25 years', verified_at = now()
+  date_of_birth = public.club_today() - interval '25 years', verified_at = now()
 where right(id::text, 2) in ('51', '52', '53', '54', '55', '56');
 insert into public.team_members (team_id, profile_id, team_role)
 select '00000000-0000-0000-0000-0000000000a1', ('00000000-0000-0000-0000-0000000000' || n)::uuid, 'athlete'
 from unnest(array['51', '52', '53', '54', '55', '56']) n;
 insert into public.check_ins (athlete_id, day, sleep, soreness, stress, mood) values
-  ('00000000-0000-0000-0000-000000000051', current_date - 2, 4, 4, 4, 4),
-  ('00000000-0000-0000-0000-000000000052', current_date - 2, 4, 4, 4, 4),
-  ('00000000-0000-0000-0000-000000000053', current_date - 2, 2, 4, 4, 4),
-  ('00000000-0000-0000-0000-000000000054', current_date - 1, 4, 4, 4, 4),
-  ('00000000-0000-0000-0000-000000000055', current_date - 1, 4, 4, 4, 4),
-  ('00000000-0000-0000-0000-000000000056', current_date, 4, 4, 4, 4);
+  ('00000000-0000-0000-0000-000000000051', public.club_today() - 2, 4, 4, 4, 4),
+  ('00000000-0000-0000-0000-000000000052', public.club_today() - 2, 4, 4, 4, 4),
+  ('00000000-0000-0000-0000-000000000053', public.club_today() - 2, 2, 4, 4, 4),
+  ('00000000-0000-0000-0000-000000000054', public.club_today() - 1, 4, 4, 4, 4),
+  ('00000000-0000-0000-0000-000000000055', public.club_today() - 1, 4, 4, 4, 4),
+  ('00000000-0000-0000-0000-000000000056', public.club_today(), 4, 4, 4, 4);
 
 -- 1. Trends: a rolling 3-day average that leaves out a child without consent.
 select pg_temp.as_member('11');
 select pg_temp.ok('today counts only the day''s own check-ins (child left out)',
-  (select checked_in_count = 1 from public.check_in_trend('00000000-0000-0000-0000-0000000000a1', current_date - 2, current_date) where day = current_date), true);
+  (select checked_in_count = 1 from public.check_in_trend('00000000-0000-0000-0000-0000000000a1', public.club_today() - 2, public.club_today()) where day = public.club_today()), true);
 select pg_temp.ok('today''s window covers three days',
-  (select window_count = 6 from public.check_in_trend('00000000-0000-0000-0000-0000000000a1', current_date - 2, current_date) where day = current_date), true);
+  (select window_count = 6 from public.check_in_trend('00000000-0000-0000-0000-0000000000a1', public.club_today() - 2, public.club_today()) where day = public.club_today()), true);
 select pg_temp.ok('today shows scores with 6 athletes over three days',
-  (select avg_sleep is not null from public.check_in_trend('00000000-0000-0000-0000-0000000000a1', current_date - 2, current_date) where day = current_date), true);
+  (select avg_sleep is not null from public.check_in_trend('00000000-0000-0000-0000-0000000000a1', public.club_today() - 2, public.club_today()) where day = public.club_today()), true);
 select pg_temp.ok('today''s flagged count covers the three days',
-  (select flagged_count = 1 from public.check_in_trend('00000000-0000-0000-0000-0000000000a1', current_date - 2, current_date) where day = current_date), true);
+  (select flagged_count = 1 from public.check_in_trend('00000000-0000-0000-0000-0000000000a1', public.club_today() - 2, public.club_today()) where day = public.club_today()), true);
 -- From 20261017090000 averages show from 3 check-ins (it was 5).
 select pg_temp.ok('the day before yesterday shows scores (3 over its three days)',
-  (select avg_sleep is not null and checked_in_count = 3 from public.check_in_trend('00000000-0000-0000-0000-0000000000a1', current_date - 2, current_date) where day = current_date - 2), true);
+  (select avg_sleep is not null and checked_in_count = 3 from public.check_in_trend('00000000-0000-0000-0000-0000000000a1', public.club_today() - 2, public.club_today()) where day = public.club_today() - 2), true);
 select pg_temp.ok('a coach cannot ask for the whole club',
-  (select count(*) = 0 from public.check_in_trend(null, current_date - 2, current_date)), true);
+  (select count(*) = 0 from public.check_in_trend(null, public.club_today() - 2, public.club_today())), true);
 select pg_temp.as_member('22');
 select pg_temp.ok('committee: whole club shows today',
-  (select avg_sleep is not null and window_count = 6 from public.check_in_trend(null, current_date - 2, current_date) where day = current_date), true);
+  (select avg_sleep is not null and window_count = 6 from public.check_in_trend(null, public.club_today() - 2, public.club_today()) where day = public.club_today()), true);
 select pg_temp.ok('committee overview leaves the child out of the count',
-  (select athlete_count = 7 and checked_in_count = 1 from public.check_in_overview(current_date) where team_id = '00000000-0000-0000-0000-0000000000a1'), true);
+  (select athlete_count = 7 and checked_in_count = 1 from public.check_in_overview(public.club_today()) where team_id = '00000000-0000-0000-0000-0000000000a1'), true);
 select pg_temp.ok('committee overview hides a single day under 5',
-  (select avg_sleep is null from public.check_in_overview(current_date) where team_id = '00000000-0000-0000-0000-0000000000a1'), true);
+  (select avg_sleep is null from public.check_in_overview(public.club_today()) where team_id = '00000000-0000-0000-0000-0000000000a1'), true);
 
 -- The parent consents: the child counts from then on.
 select pg_temp.as_member('41');
 select pg_temp.works('parent gives data consent', $s$ select public.set_child_consent('00000000-0000-0000-0000-000000000031', true, false) $s$);
 select pg_temp.as_member('11');
 select pg_temp.ok('after consent today counts the child',
-  (select checked_in_count = 2 and window_count = 7 from public.check_in_trend('00000000-0000-0000-0000-0000000000a1', current_date - 2, current_date) where day = current_date), true);
+  (select checked_in_count = 2 and window_count = 7 from public.check_in_trend('00000000-0000-0000-0000-0000000000a1', public.club_today() - 2, public.club_today()) where day = public.club_today()), true);
 select pg_temp.as_member('22');
 select pg_temp.ok('after consent the overview counts the child',
-  (select athlete_count = 8 and checked_in_count = 2 from public.check_in_overview(current_date) where team_id = '00000000-0000-0000-0000-0000000000a1'), true);
+  (select athlete_count = 8 and checked_in_count = 2 from public.check_in_overview(public.club_today()) where team_id = '00000000-0000-0000-0000-0000000000a1'), true);
 
 -- 2. Home totals know a team's squad.
 select pg_temp.as_member('11');
 select pg_temp.ok('check_in_summary names the team''s squad',
-  (select squad_id = '00000000-0000-0000-0000-0000000000a1' from public.check_in_summary(current_date) where team_id = '00000000-0000-0000-0000-0000000000a2'), true);
-select pg_temp.ok('a lapsed coach gets no summary', (select count(*) = 0 from (select pg_temp.as_member('12')) x, public.check_in_summary(current_date)), true);
+  (select squad_id = '00000000-0000-0000-0000-0000000000a1' from public.check_in_summary(public.club_today()) where team_id = '00000000-0000-0000-0000-0000000000a2'), true);
+select pg_temp.ok('a lapsed coach gets no summary', (select count(*) = 0 from (select pg_temp.as_member('12')) x, public.check_in_summary(public.club_today())), true);
 
 -- 3. Team goals: coaches and athletes only. A game for the team, with a
 -- manager and a physio placed in the team too.

@@ -29,8 +29,8 @@ select pg_temp.ok('current coach sees injuries', public.can_view_athlete_injurie
 select pg_temp.ok('current coach sees check-ins', public.can_view_check_ins('00000000-0000-0000-0000-000000000031'), true);
 select pg_temp.ok('current coach messages squad', public.can_message_group('00000000-0000-0000-0000-0000000000a1'), true);
 select pg_temp.ok('current coach has coach role', public.has_role('coach'), true);
-select pg_temp.ok('current coach sees check-in board', (select count(*) > 0 from public.check_in_board('00000000-0000-0000-0000-0000000000a1', current_date)), true);
-select pg_temp.ok('current coach sees check-in trend', (select count(*) > 0 from public.check_in_trend('00000000-0000-0000-0000-0000000000a1', current_date - 7, current_date)), true);
+select pg_temp.ok('current coach sees check-in board', (select count(*) > 0 from public.check_in_board('00000000-0000-0000-0000-0000000000a1', public.club_today())), true);
+select pg_temp.ok('current coach sees check-in trend', (select count(*) > 0 from public.check_in_trend('00000000-0000-0000-0000-0000000000a1', public.club_today() - 7, public.club_today())), true);
 
 -- Expired check: every coach right stops.
 select pg_temp.as_member('12');
@@ -40,10 +40,10 @@ select pg_temp.ok('lapsed coach sees check-ins', public.can_view_check_ins('0000
 select pg_temp.ok('lapsed coach messages squad', public.can_message_group('00000000-0000-0000-0000-0000000000a1'), false);
 select pg_temp.ok('lapsed coach takes attendance', public.is_attendance_taker(), false);
 select pg_temp.ok('lapsed coach leads squad', public.leads_group('00000000-0000-0000-0000-0000000000a1'), false);
-select pg_temp.ok('lapsed coach sees check-in trend', (select count(*) > 0 from public.check_in_trend('00000000-0000-0000-0000-0000000000a1', current_date - 7, current_date)), false);
-select pg_temp.ok('lapsed coach sees check-in board', (select count(*) > 0 from public.check_in_board('00000000-0000-0000-0000-0000000000a1', current_date)), false);
+select pg_temp.ok('lapsed coach sees check-in trend', (select count(*) > 0 from public.check_in_trend('00000000-0000-0000-0000-0000000000a1', public.club_today() - 7, public.club_today())), false);
+select pg_temp.ok('lapsed coach sees check-in board', (select count(*) > 0 from public.check_in_board('00000000-0000-0000-0000-0000000000a1', public.club_today())), false);
 select pg_temp.ok('lapsed coach sees goal board', (select count(*) > 0 from public.goal_board()), false);
-select pg_temp.ok('lapsed coach sees check-in summary', (select count(*) > 0 from public.check_in_summary(current_date)), false);
+select pg_temp.ok('lapsed coach sees check-in summary', (select count(*) > 0 from public.check_in_summary(public.club_today())), false);
 select pg_temp.ok('lapsed coach still approved', public.is_approved(), true);
 
 -- Manager and physio with current checks.
@@ -127,5 +127,5 @@ select public.admin_delete_member('00000000-0000-0000-0000-000000000002');
 select pg_temp.ok('record survives deletion', (select count(*) = 1 from public.stand_downs where member_name = 'Blair Admin' and profile_id is null), true);
 
 -- To-dos count a check expiring in 45 days.
-update public.profiles set wwcc_expires_on = current_date + 45 where id = '00000000-0000-0000-0000-000000000013';
+update public.profiles set wwcc_expires_on = public.club_today() + 45 where id = '00000000-0000-0000-0000-000000000013';
 select pg_temp.ok('60-day expiry warning', (select wwcc_expiring >= 1 from public.admin_safety_todos()), true);

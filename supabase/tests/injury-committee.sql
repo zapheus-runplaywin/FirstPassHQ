@@ -60,12 +60,12 @@ insert into public.safeguarding_settings (id) values (true) on conflict (id) do 
 -- date; Indy (23) is exempt as treasurer. Rowan (51) is a second checked
 -- committee member, Sage (52) is waiting for approval, and Morgan (42), a
 -- coach-parent with a check, also sits on the committee.
-update public.profiles set wwcc_expires_on = current_date + 400 where id = pg_temp.id('21');
+update public.profiles set wwcc_expires_on = public.club_today() + 400 where id = pg_temp.id('21');
 insert into auth.users (id, email, email_confirmed_at) values
   (pg_temp.id('51'), 'committee.second@example.test', now()),
   (pg_temp.id('52'), 'committee.pending@example.test', now());
 update public.profiles set status = 'approved', full_name = 'Rowan Committee', role = 'committee',
-  wwcc_number = 'WWC0051', wwcc_expires_on = current_date + 400, verified_at = now() where id = pg_temp.id('51');
+  wwcc_number = 'WWC0051', wwcc_expires_on = public.club_today() + 400, verified_at = now() where id = pg_temp.id('51');
 update public.profiles set status = 'pending', full_name = 'Sage Pending', role = 'committee' where id = pg_temp.id('52');
 update public.profiles set extra_roles = '{guardian,committee}' where id = pg_temp.id('42');
 
@@ -74,7 +74,7 @@ select pg_temp.as_member('41');
 select pg_temp.works('Logan consents for Jordan', $$select public.set_child_consent('00000000-0000-0000-0000-000000000031', true, true)$$);
 select set_config('request.jwt.claim.sub', '', false);
 insert into public.injuries (athlete_id, reported_by, body_area, description, injured_on, athlete_name)
-values (pg_temp.id('32'), pg_temp.id('32'), 'Wrist', 'Jammed at training', current_date - 2, 'Kai Senior');
+values (pg_temp.id('32'), pg_temp.id('32'), 'Wrist', 'Jammed at training', public.club_today() - 2, 'Kai Senior');
 
 -- ---------------------------------------------------------------------------
 -- Who can call what
@@ -161,9 +161,9 @@ select pg_temp.ok('Gale keeps it', public.my_committee_sees_injuries(), true);
 -- A chosen member whose recorded check lapses has the committee role paused,
 -- so sees nothing; Indy above shows a chosen member without a check keeps
 -- adults' injuries only.
-update public.profiles set wwcc_expires_on = current_date - 1 where id = pg_temp.id('21');
+update public.profiles set wwcc_expires_on = public.club_today() - 1 where id = pg_temp.id('21');
 select pg_temp.sees('chosen, Gale after the check lapses (role paused)', '21', false, false);
-update public.profiles set wwcc_expires_on = current_date + 400 where id = pg_temp.id('21');
+update public.profiles set wwcc_expires_on = public.club_today() + 400 where id = pg_temp.id('21');
 -- A chosen member stood down sees nothing.
 update public.profiles set stood_down_at = now() where id = pg_temp.id('21');
 select pg_temp.sees('chosen, Gale stood down', '21', false, false);

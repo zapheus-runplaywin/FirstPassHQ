@@ -1,3 +1,5 @@
+import { clubToday } from '@/lib/club-time';
+
 /** Dates typed by admins as DD/MM/YYYY, stored as YYYY-MM-DD. */
 
 /** "2010-03-14" → "14/03/2010". */
@@ -29,12 +31,13 @@ export function parseDate(text: string): string | null | undefined {
   return date.toISOString().slice(0, 10);
 }
 
-/** Whether someone born on this date is younger than `years` today, by the device's date. */
+/**
+ * Whether someone born on this date is younger than `years` on the club's
+ * today, the same day the database uses. Someone born on 29 February has
+ * their birthday on 1 March in other years, as in the database.
+ */
 function isYoungerThan(dateOfBirth: string, years: number) {
-  const [year, month, day] = dateOfBirth.split('-').map(Number);
-  const today = new Date();
-  const birthday = new Date(year + years, month - 1, day);
-  return birthday > new Date(today.getFullYear(), today.getMonth(), today.getDate());
+  return `${Number(dateOfBirth.slice(0, 4)) + years}${dateOfBirth.slice(4)}` > clubToday();
 }
 
 /**
@@ -49,8 +52,8 @@ export function isMinor(dateOfBirth: string | null | undefined, under18: boolean
 /**
  * Whether a date of birth makes someone under 13 today, too young to join
  * this year (Matt, 18 November 2026). No date: not known, so no. Same rule as
- * `public.is_under_13` in the database, which has the final say by its own
- * date (UTC).
+ * `public.is_under_13` in the database, which has the final say, on the
+ * same club day.
  */
 export function isUnder13(dateOfBirth: string | null | undefined) {
   if (!dateOfBirth) return false;

@@ -56,8 +56,8 @@ values ('bbbbbbbb-0000-0000-0000-000000000001', 'aaaaaaaa-0000-0000-0000-0000000
 insert into public.attendance_marks (session_id, profile_id, present) values ('bbbbbbbb-0000-0000-0000-000000000001', pg_temp.id('32'), true);
 insert into public.messages (id, sender_id, sender_name, body, audience) values ('cccccccc-0000-0000-0000-000000000001', pg_temp.id('11'), 'Casey Coach', 'Training moved', 'club');
 insert into public.message_recipients (message_id, profile_id, read_at) values ('cccccccc-0000-0000-0000-000000000001', pg_temp.id('32'), now());
-insert into public.training_requirements (id, season, name, due_on, roles) values ('dddddddd-0000-0000-0000-000000000001', 2026, 'Integrity basics', current_date, '{athlete}');
-insert into public.training_certificates (requirement_id, profile_id, completed_on, document_path) values ('dddddddd-0000-0000-0000-000000000001', pg_temp.id('32'), current_date, pg_temp.id('32') || '/cert.pdf');
+insert into public.training_requirements (id, season, name, due_on, roles) values ('dddddddd-0000-0000-0000-000000000001', 2026, 'Integrity basics', public.club_today(), '{athlete}');
+insert into public.training_certificates (requirement_id, profile_id, completed_on, document_path) values ('dddddddd-0000-0000-0000-000000000001', pg_temp.id('32'), public.club_today(), pg_temp.id('32') || '/cert.pdf');
 insert into storage.objects (bucket_id, name) values ('training-certificates', pg_temp.id('32') || '/cert.pdf');
 insert into public.record_access_log (subject_id, viewer_id, kind) values (pg_temp.id('32'), pg_temp.id('11'), 'member_record');
 insert into public.child_consents (athlete_id, kind, policy_version) values (pg_temp.id('32'), 'data', 'v1');
@@ -99,8 +99,8 @@ update public.profiles set status = 'rejected', full_name = 'New Reject' where i
 update public.profiles set rejected_at = now() - interval '91 days' where id = pg_temp.id('51');
 update public.profiles set full_name = 'Old Pending', join_requested_at = now() - interval '91 days' where id = pg_temp.id('53');
 update public.profiles set full_name = 'New Pending', join_requested_at = now() - interval '10 days' where id = pg_temp.id('54');
-update public.profiles set status = 'approved', full_name = 'Old Helper', role = 'volunteer', volunteer_until = current_date - 400 where id = pg_temp.id('55');
-update public.profiles set status = 'approved', full_name = 'Recent Helper', role = 'volunteer', volunteer_until = current_date - 30 where id = pg_temp.id('56');
+update public.profiles set status = 'approved', full_name = 'Old Helper', role = 'volunteer', volunteer_until = public.club_today() - 400 where id = pg_temp.id('55');
+update public.profiles set status = 'approved', full_name = 'Recent Helper', role = 'volunteer', volunteer_until = public.club_today() - 30 where id = pg_temp.id('56');
 update public.profiles set status = 'approved', full_name = 'Ivy Inactive', role = 'athlete', created_at = now() - interval '3 years' where id = pg_temp.id('57');
 update auth.users set last_sign_in_at = now() - interval '30 months' where id = pg_temp.id('57');
 update public.profiles set status = 'approved', full_name = 'Quinn Quiet', role = 'athlete', created_at = now() - interval '3 years' where id = pg_temp.id('58');
@@ -123,10 +123,10 @@ select set_config('request.jwt.claim.sub', '', false);
 -- Injuries: old cleared (goes), old cleared with a file (stays until the
 -- file goes), recent cleared (stays), old but not cleared (stays).
 insert into public.injuries (id, athlete_id, body_area, description, injured_on, status, cleared_at) values
-  ('eeeeeeee-0000-0000-0000-000000000001', pg_temp.id('31'), 'Ankle', 'Rolled', current_date - 1500, 'cleared', now() - interval '4 years'),
-  ('eeeeeeee-0000-0000-0000-000000000002', pg_temp.id('31'), 'Knee', 'Sore', current_date - 1500, 'cleared', now() - interval '4 years'),
-  ('eeeeeeee-0000-0000-0000-000000000003', pg_temp.id('31'), 'Wrist', 'Sprain', current_date - 400, 'cleared', now() - interval '1 year'),
-  ('eeeeeeee-0000-0000-0000-000000000004', pg_temp.id('31'), 'Back', 'Tight', current_date - 1500, 'injured', null);
+  ('eeeeeeee-0000-0000-0000-000000000001', pg_temp.id('31'), 'Ankle', 'Rolled', public.club_today() - 1500, 'cleared', now() - interval '4 years'),
+  ('eeeeeeee-0000-0000-0000-000000000002', pg_temp.id('31'), 'Knee', 'Sore', public.club_today() - 1500, 'cleared', now() - interval '4 years'),
+  ('eeeeeeee-0000-0000-0000-000000000003', pg_temp.id('31'), 'Wrist', 'Sprain', public.club_today() - 400, 'cleared', now() - interval '1 year'),
+  ('eeeeeeee-0000-0000-0000-000000000004', pg_temp.id('31'), 'Back', 'Tight', public.club_today() - 1500, 'injured', null);
 insert into storage.objects (bucket_id, name) values ('injury-documents', pg_temp.id('31') || '/eeeeeeee-0000-0000-0000-000000000002/letter.pdf');
 
 -- Safeguarding records, with the club's 7-year period.
@@ -135,8 +135,8 @@ insert into public.stand_downs (id, profile_id, member_name, reason, started_at,
   ('f0000000-0000-0000-0000-000000000002', pg_temp.id('12'), 'Drew Lapsed', 'other', now() - interval '9 years', null),
   ('f0000000-0000-0000-0000-000000000003', pg_temp.id('12'), 'Drew Lapsed', 'other', now() - interval '3 years', now() - interval '2 years');
 insert into public.screening_notices (profile_id, member_name, kind, received_on, action) values
-  (pg_temp.id('12'), 'Drew Lapsed', 'other', current_date - 3000, 'Noted'),
-  (pg_temp.id('12'), 'Drew Lapsed', 'other', current_date - 100, 'Noted');
+  (pg_temp.id('12'), 'Drew Lapsed', 'other', public.club_today() - 3000, 'Noted'),
+  (pg_temp.id('12'), 'Drew Lapsed', 'other', public.club_today() - 100, 'Noted');
 insert into public.child_consents (athlete_id, kind, policy_version, given_at, withdrawn_at) values
   (pg_temp.id('31'), 'health', 'v0', now() - interval '9 years', now() - interval '8 years'),
   (pg_temp.id('31'), 'data', 'v0', now() - interval '9 years', null);

@@ -56,7 +56,7 @@ select pg_temp.ok('conduct season is the newest season that isn''t archived',
   public.conduct_season() = coalesce(
     (select max(season) from public.teams where not archived),
     (select max(season) from public.teams),
-    extract(year from current_date)::int), true);
+    extract(year from public.club_today())::int), true);
 
 create temp table saved_teams as select id, archived from public.teams;
 update public.teams set archived = true where id in (select id from saved_teams);

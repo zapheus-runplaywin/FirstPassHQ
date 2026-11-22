@@ -9,12 +9,12 @@ insert into auth.users (id, email, email_confirmed_at) values
   ('00000000-0000-0000-0000-000000000051', 'guest@example.test', now()),
   ('00000000-0000-0000-0000-000000000052', 'pending@example.test', now());
 update public.profiles set status = 'approved', full_name = 'Olly Othercoach', role = 'coach',
-  wwcc_number = 'WWC0015', wwcc_expires_on = current_date + 400, verified_at = now()
+  wwcc_number = 'WWC0015', wwcc_expires_on = public.club_today() + 400, verified_at = now()
 where id = '00000000-0000-0000-0000-000000000015';
 update public.profiles set status = 'approved', full_name = 'Gus Guest', role = 'guest', verified_at = now()
 where id = '00000000-0000-0000-0000-000000000051';
 update public.profiles set status = 'pending', full_name = 'Pat Pending', role = 'athlete',
-  date_of_birth = current_date - interval '30 years'
+  date_of_birth = public.club_today() - interval '30 years'
 where id = '00000000-0000-0000-0000-000000000052';
 insert into public.teams (id, name, kind, sort_order) values
   ('00000000-0000-0000-0000-0000000000b1', 'Other Squad', 'squad', 3);
@@ -24,11 +24,11 @@ insert into public.team_members (team_id, profile_id, team_role, coach_title) va
 
 -- ---------------------------------------------------------------------------
 insert into public.injuries (athlete_id, reported_by, body_area, description, injured_on, athlete_name)
-values ('00000000-0000-0000-0000-000000000032', '00000000-0000-0000-0000-000000000032', 'Knee', 'Jarred knee', current_date - 1, 'Kai Senior');
+values ('00000000-0000-0000-0000-000000000032', '00000000-0000-0000-0000-000000000032', 'Knee', 'Jarred knee', public.club_today() - 1, 'Kai Senior');
 insert into public.injury_updates (injury_id, author_id, author_name, kind, notes)
 select id, athlete_id, athlete_name, 'reported', 'Reported' from public.injuries;
 insert into public.check_ins (athlete_id, day, sleep, soreness, stress, mood, note)
-values ('00000000-0000-0000-0000-000000000032', current_date, 3, 3, 3, 3, 'Fine');
+values ('00000000-0000-0000-0000-000000000032', public.club_today(), 3, 3, 3, 3, 'Fine');
 insert into public.fixtures (id, team_id, team_name, opponent, starts_at)
 values ('00000000-0000-0000-0000-0000000000f1', '00000000-0000-0000-0000-0000000000a1', 'Sample Squad', 'Rivals', now() + interval '2 days');
 insert into public.game_goals (athlete_id, fixture_id, body, set_by, set_by_name) values
@@ -49,10 +49,10 @@ select '00000000-0000-0000-0000-0000000000c2'::uuid, ('00000000-0000-0000-0000-0
 from unnest(array['14', '23', '32', '51']) n;
 
 insert into public.training_requirements (id, season, name, due_on, roles)
-values ('00000000-0000-0000-0000-0000000000d1', 2026, 'Integrity course', current_date + 30, '{athlete,coach}');
+values ('00000000-0000-0000-0000-0000000000d1', 2026, 'Integrity course', public.club_today() + 30, '{athlete,coach}');
 insert into public.training_certificates (requirement_id, profile_id, submitted_by, submitted_by_name, completed_on, document_path) values
-  ('00000000-0000-0000-0000-0000000000d1', '00000000-0000-0000-0000-000000000031', '00000000-0000-0000-0000-000000000041', 'Logan Parent', current_date, 'x/jordan.pdf'),
-  ('00000000-0000-0000-0000-0000000000d1', '00000000-0000-0000-0000-000000000011', '00000000-0000-0000-0000-000000000011', 'Casey Coach', current_date, 'x/casey.pdf');
+  ('00000000-0000-0000-0000-0000000000d1', '00000000-0000-0000-0000-000000000031', '00000000-0000-0000-0000-000000000041', 'Logan Parent', public.club_today(), 'x/jordan.pdf'),
+  ('00000000-0000-0000-0000-0000000000d1', '00000000-0000-0000-0000-000000000011', '00000000-0000-0000-0000-000000000011', 'Casey Coach', public.club_today(), 'x/casey.pdf');
 
 insert into public.awards (id, season, name, closes_at, voter_roles)
 values ('00000000-0000-0000-0000-0000000000e1', 2026, 'Best and fairest', now() + interval '7 days', '{athlete,coach}');
@@ -66,7 +66,7 @@ insert into public.award_votes (ballot_id, rank, points, nominee_id, nominee_nam
 insert into public.stand_downs (profile_id, member_name, reason, note)
 values ('00000000-0000-0000-0000-000000000012', 'Drew Lapsed', 'allegation', 'Being looked into');
 insert into public.screening_notices (profile_id, member_name, kind, received_on, action)
-values ('00000000-0000-0000-0000-000000000012', 'Drew Lapsed', 'interim_negative_notice', current_date, 'Stood down');
+values ('00000000-0000-0000-0000-000000000012', 'Drew Lapsed', 'interim_negative_notice', public.club_today(), 'Stood down');
 insert into public.volunteer_exemptions (profile_id, basis, child_id, child_name)
 values ('00000000-0000-0000-0000-000000000041', 'parent_volunteer', '00000000-0000-0000-0000-000000000031', 'Jordan Junior');
 insert into public.policy_acknowledgements (profile_id, policy_version, statement)
@@ -97,6 +97,6 @@ insert into public.attendance_marks (session_id, profile_id, present) values
 -- Session plans by Casey: private, shared with the squad's athletes, and
 -- shared with the squad's other coaches.
 insert into public.session_plans (id, team_id, team_name, title, session_on, share_team_coaches, share_athletes, author_id, author_name, author_position) values
-  ('00000000-0000-0000-0000-0000000000a7', '00000000-0000-0000-0000-0000000000a1', 'Sample Squad', 'Private plan', current_date + 1, false, false, '00000000-0000-0000-0000-000000000011', 'Casey Coach', 'Head coach'),
-  ('00000000-0000-0000-0000-0000000000a8', '00000000-0000-0000-0000-0000000000a1', 'Sample Squad', 'Athletes plan', current_date + 1, false, true, '00000000-0000-0000-0000-000000000011', 'Casey Coach', 'Head coach'),
-  ('00000000-0000-0000-0000-0000000000a9', '00000000-0000-0000-0000-0000000000a1', 'Sample Squad', 'Coaches plan', current_date + 1, true, false, '00000000-0000-0000-0000-000000000011', 'Casey Coach', 'Head coach');
+  ('00000000-0000-0000-0000-0000000000a7', '00000000-0000-0000-0000-0000000000a1', 'Sample Squad', 'Private plan', public.club_today() + 1, false, false, '00000000-0000-0000-0000-000000000011', 'Casey Coach', 'Head coach'),
+  ('00000000-0000-0000-0000-0000000000a8', '00000000-0000-0000-0000-0000000000a1', 'Sample Squad', 'Athletes plan', public.club_today() + 1, false, true, '00000000-0000-0000-0000-000000000011', 'Casey Coach', 'Head coach'),
+  ('00000000-0000-0000-0000-0000000000a9', '00000000-0000-0000-0000-0000000000a1', 'Sample Squad', 'Coaches plan', public.club_today() + 1, true, false, '00000000-0000-0000-0000-000000000011', 'Casey Coach', 'Head coach');

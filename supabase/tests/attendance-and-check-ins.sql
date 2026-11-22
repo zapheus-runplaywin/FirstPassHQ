@@ -121,23 +121,23 @@ select pg_temp.ok('athlete sees no nearby sessions', (select count(*) = 0 from p
 
 -- Attendance records: coaches, the committee and admins.
 select pg_temp.as_member('11');
-select pg_temp.ok('coach sees the junior at 6 sessions, present at 5', (select session_count = 6 and present_count = 5 from public.athlete_attendance_summary(current_date - 10) where profile_id = pg_temp.m('31')), true);
-select pg_temp.ok('coach sees squad sessions only when filtered', (select session_count = 3 from public.athlete_attendance_summary(current_date - 10, pg_temp.m('a1')) where profile_id = pg_temp.m('31')), true);
-select pg_temp.ok('older sessions left out', (select session_count = 1 from public.athlete_attendance_summary(current_date - 1) where profile_id = pg_temp.m('31')), true);
-select pg_temp.ok('last present time is the latest present session', (select last_present_at = (select held_at from public.attendance_sessions where name = 'Tuesday training') from public.athlete_attendance_summary(current_date - 10) where profile_id = pg_temp.m('31')), true);
+select pg_temp.ok('coach sees the junior at 6 sessions, present at 5', (select session_count = 6 and present_count = 5 from public.athlete_attendance_summary(public.club_today() - 10) where profile_id = pg_temp.m('31')), true);
+select pg_temp.ok('coach sees squad sessions only when filtered', (select session_count = 3 from public.athlete_attendance_summary(public.club_today() - 10, pg_temp.m('a1')) where profile_id = pg_temp.m('31')), true);
+select pg_temp.ok('older sessions left out', (select session_count = 1 from public.athlete_attendance_summary(public.club_today() - 1) where profile_id = pg_temp.m('31')), true);
+select pg_temp.ok('last present time is the latest present session', (select last_present_at = (select held_at from public.attendance_sessions where name = 'Tuesday training') from public.athlete_attendance_summary(public.club_today() - 10) where profile_id = pg_temp.m('31')), true);
 select pg_temp.as_member('22');
-select pg_temp.ok('committee sees everyone''s attendance', (select count(*) = 2 from public.athlete_attendance_summary(current_date - 10)), true);
-select pg_temp.ok('committee counts the adult athlete''s 4 sessions, present at 2', (select session_count = 4 and present_count = 2 from public.athlete_attendance_summary(current_date - 10) where profile_id = pg_temp.m('32')), true);
+select pg_temp.ok('committee sees everyone''s attendance', (select count(*) = 2 from public.athlete_attendance_summary(public.club_today() - 10)), true);
+select pg_temp.ok('committee counts the adult athlete''s 4 sessions, present at 2', (select session_count = 4 and present_count = 2 from public.athlete_attendance_summary(public.club_today() - 10) where profile_id = pg_temp.m('32')), true);
 select pg_temp.as_member('13');
-select pg_temp.ok('manager sees no attendance records', (select count(*) = 0 from public.athlete_attendance_summary(current_date - 10)), true);
+select pg_temp.ok('manager sees no attendance records', (select count(*) = 0 from public.athlete_attendance_summary(public.club_today() - 10)), true);
 select pg_temp.as_member('31');
-select pg_temp.ok('athlete sees no attendance records', (select count(*) = 0 from public.athlete_attendance_summary(current_date - 10)), true);
+select pg_temp.ok('athlete sees no attendance records', (select count(*) = 0 from public.athlete_attendance_summary(public.club_today() - 10)), true);
 select pg_temp.as_member('41');
-select pg_temp.ok('guardian sees no attendance summary', (select count(*) = 0 from public.athlete_attendance_summary(current_date - 10)), true);
+select pg_temp.ok('guardian sees no attendance summary', (select count(*) = 0 from public.athlete_attendance_summary(public.club_today() - 10)), true);
 select pg_temp.as_member('12');
-select pg_temp.ok('lapsed coach sees no attendance records', (select count(*) = 0 from public.athlete_attendance_summary(current_date - 10)), true);
+select pg_temp.ok('lapsed coach sees no attendance records', (select count(*) = 0 from public.athlete_attendance_summary(public.club_today() - 10)), true);
 select pg_temp.as_member('14');
-select pg_temp.ok('physio sees no attendance records', (select count(*) = 0 from public.athlete_attendance_summary(current_date - 10)), true);
+select pg_temp.ok('physio sees no attendance records', (select count(*) = 0 from public.athlete_attendance_summary(public.club_today() - 10)), true);
 
 set role authenticated;
 select pg_temp.as_member('13');
@@ -152,24 +152,24 @@ reset role;
 -- Check-ins
 -- ---------------------------------------------------------------------------
 select pg_temp.as_member('32');
-select pg_temp.works('adult athlete checks in', $s$ select public.save_check_in(current_date, 4, 4, 3, 5, '  Feeling good  ') $s$);
+select pg_temp.works('adult athlete checks in', $s$ select public.save_check_in(public.club_today(), 4, 4, 3, 5, '  Feeling good  ') $s$);
 select pg_temp.ok('check-in saved with the note trimmed', (select sleep = 4 and mood = 5 and note = 'Feeling good' from public.check_ins where athlete_id = pg_temp.m('32')), true);
-select pg_temp.works('checking in again replaces it', $s$ select public.save_check_in(current_date, 2, 4, 3, 5, '  ') $s$);
+select pg_temp.works('checking in again replaces it', $s$ select public.save_check_in(public.club_today(), 2, 4, 3, 5, '  ') $s$);
 select pg_temp.ok('one check-in for the day, changed', (select count(*) = 1 and min(sleep) = 2 and bool_and(note is null) from public.check_ins where athlete_id = pg_temp.m('32')), true);
-select pg_temp.works('check-in for yesterday allowed (time zones)', $s$ select public.save_check_in(current_date - 1, 3, 3, 3, 3) $s$);
-select pg_temp.fails('check-in two days ago refused', $s$ select public.save_check_in(current_date - 2, 3, 3, 3, 3) $s$);
-select pg_temp.fails('check-in for later in the week refused', $s$ select public.save_check_in(current_date + 2, 3, 3, 3, 3) $s$);
-select pg_temp.fails('score above 5 refused', $s$ select public.save_check_in(current_date, 6, 3, 3, 3) $s$);
-select pg_temp.fails('score of 0 refused', $s$ select public.save_check_in(current_date, 3, 0, 3, 3) $s$);
+select pg_temp.works('check-in for yesterday allowed (time zones)', $s$ select public.save_check_in(public.club_today() - 1, 3, 3, 3, 3) $s$);
+select pg_temp.fails('check-in two days ago refused', $s$ select public.save_check_in(public.club_today() - 2, 3, 3, 3, 3) $s$);
+select pg_temp.fails('check-in for later in the week refused', $s$ select public.save_check_in(public.club_today() + 2, 3, 3, 3, 3) $s$);
+select pg_temp.fails('score above 5 refused', $s$ select public.save_check_in(public.club_today(), 6, 3, 3, 3) $s$);
+select pg_temp.fails('score of 0 refused', $s$ select public.save_check_in(public.club_today(), 3, 0, 3, 3) $s$);
 select pg_temp.as_member('31');
-select pg_temp.works('junior checks in again today', $s$ select public.save_check_in(current_date, 5, 5, 5, 5, 'Better') $s$);
+select pg_temp.works('junior checks in again today', $s$ select public.save_check_in(public.club_today(), 5, 5, 5, 5, 'Better') $s$);
 select pg_temp.ok('junior''s check-in replaced', (select count(*) = 1 and min(sleep) = 5 from public.check_ins where athlete_id = pg_temp.m('31')), true);
 select pg_temp.as_member('41');
-select pg_temp.fails('guardian cannot check in', $s$ select public.save_check_in(current_date, 3, 3, 3, 3) $s$);
+select pg_temp.fails('guardian cannot check in', $s$ select public.save_check_in(public.club_today(), 3, 3, 3, 3) $s$);
 select pg_temp.as_member('11');
-select pg_temp.fails('coach cannot check in', $s$ select public.save_check_in(current_date, 3, 3, 3, 3) $s$);
+select pg_temp.fails('coach cannot check in', $s$ select public.save_check_in(public.club_today(), 3, 3, 3, 3) $s$);
 select pg_temp.as_member('01');
-select pg_temp.fails('admin cannot check in', $s$ select public.save_check_in(current_date, 3, 3, 3, 3) $s$);
+select pg_temp.fails('admin cannot check in', $s$ select public.save_check_in(public.club_today(), 3, 3, 3, 3) $s$);
 
 -- Who reads check-ins.
 set role authenticated;

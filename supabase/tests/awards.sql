@@ -90,13 +90,13 @@ select pg_temp.as_member('01');
 select pg_temp.fails('age of 0 refused', format('select public.admin_set_award_ages(%L, 0::smallint, null, null)', pg_temp.award('Rising Star')));
 select pg_temp.fails('minimum age must be below the maximum', format('select public.admin_set_award_ages(%L, 18::smallint, 18::smallint, null)', pg_temp.award('Rising Star')));
 select pg_temp.fails('ages for a missing award refused', $s$ select public.admin_set_award_ages('00000000-0000-0000-0000-0000000000ee', null, 18::smallint, null) $s$);
-select pg_temp.works('admin limits the award to under 18s', format('select public.admin_set_award_ages(%L, null, 18::smallint, %L)', pg_temp.award('Rising Star'), current_date));
-select pg_temp.ok('age limit saved', (select nominee_max_age = 18 and nominee_min_age is null and nominee_age_on = current_date from public.awards where id = pg_temp.award('Rising Star')), true);
+select pg_temp.works('admin limits the award to under 18s', format('select public.admin_set_award_ages(%L, null, 18::smallint, %L)', pg_temp.award('Rising Star'), public.club_today()));
+select pg_temp.ok('age limit saved', (select nominee_max_age = 18 and nominee_min_age is null and nominee_age_on = public.club_today() from public.awards where id = pg_temp.award('Rising Star')), true);
 select pg_temp.ok('no nominees are missing a birthday', public.admin_award_missing_birthdays(pg_temp.award('Rising Star')) = 0, true);
 update public.profiles set date_of_birth = null where id = pg_temp.m('32');
 select pg_temp.ok('an athlete with no birthday is counted', public.admin_award_missing_birthdays(pg_temp.award('Rising Star')) = 1, true);
 select pg_temp.ok('award with no ages counts nobody', public.admin_award_missing_birthdays(pg_temp.award('Club Champion')) = 0, true);
-update public.profiles set date_of_birth = current_date - interval '25 years' where id = pg_temp.m('32');
+update public.profiles set date_of_birth = public.club_today() - interval '25 years' where id = pg_temp.m('32');
 
 -- ---------------------------------------------------------------------------
 -- Who is offered a vote, and who they can vote for
@@ -190,8 +190,8 @@ select pg_temp.fails('points cannot change after votes', format('select pg_temp.
 select pg_temp.fails('voters cannot change after votes', format('select pg_temp.save_award(%L, %L, true, false, %L, %L, %L)', pg_temp.award('Club Champion'), 'Club Champion', '{athlete}', 'athletes', '{3,2,1}'));
 select pg_temp.works('name can change after votes', format('select pg_temp.save_award(%L, %L, true, false, %L, %L, %L)', pg_temp.award('Club Champion'), 'Club Champion 2026', '{athlete,coach}', 'athletes', '{3,2,1}'));
 select pg_temp.ok('name changed', pg_temp.award('Club Champion 2026') is not null, true);
-select pg_temp.fails('ages cannot change after votes', format('select public.admin_set_award_ages(%L, null, 21::smallint, %L)', pg_temp.award('Rising Star'), current_date));
-select pg_temp.works('saving the same ages after votes is fine', format('select public.admin_set_award_ages(%L, null, 18::smallint, %L)', pg_temp.award('Rising Star'), current_date));
+select pg_temp.fails('ages cannot change after votes', format('select public.admin_set_award_ages(%L, null, 21::smallint, %L)', pg_temp.award('Rising Star'), public.club_today()));
+select pg_temp.works('saving the same ages after votes is fine', format('select public.admin_set_award_ages(%L, null, 18::smallint, %L)', pg_temp.award('Rising Star'), public.club_today()));
 select pg_temp.fails('award with votes cannot be removed', format('select public.admin_delete_award(%L)', pg_temp.award('Club Champion 2026')));
 select pg_temp.works('voted-for listed name is kept when removed from the list', format('select pg_temp.save_award(%L, %L, true, false, %L, %L, %L, %L, %L)', pg_temp.award('Best Umpire'), 'Best Umpire', '{member}', 'listed', '{1}', '{}', '{Umpire Three}'));
 select pg_temp.ok('voted name kept, unvoted name dropped, new name added', (select array_agg(name order by name) = array['Umpire One', 'Umpire Three'] from public.award_candidates where award_id = pg_temp.award('Best Umpire')), true);

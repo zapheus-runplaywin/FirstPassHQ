@@ -56,7 +56,7 @@ insert into auth.users (id, email, email_confirmed_at) values
   ('00000000-0000-0000-0000-000000000033', 'athlete.free@example.test', now()),
   ('00000000-0000-0000-0000-000000000034', 'new.member@example.test', now());
 update public.profiles set status = 'approved', role = 'athlete', full_name = 'Lee Free',
-  date_of_birth = current_date - interval '30 years', verified_at = now()
+  date_of_birth = public.club_today() - interval '30 years', verified_at = now()
 where id = '00000000-0000-0000-0000-000000000033';
 update public.profiles set status = 'pending', role = 'athlete', full_name = 'Nico New'
 where id = '00000000-0000-0000-0000-000000000034';
@@ -158,9 +158,9 @@ select pg_temp.ok('a committee member not named is not', public.is_safeguarding_
 update public.profiles set stood_down_at = now() where id = pg_temp.m('01');
 select pg_temp.as_member('01');
 select pg_temp.ok('a stood-down officer is not', public.is_safeguarding_officer(), false);
-update public.profiles set stood_down_at = null, wwcc_expires_on = current_date - 1 where id = pg_temp.m('01');
+update public.profiles set stood_down_at = null, wwcc_expires_on = public.club_today() - 1 where id = pg_temp.m('01');
 select pg_temp.ok('an officer whose check lapsed is not', public.is_safeguarding_officer(), false);
-update public.profiles set wwcc_expires_on = current_date + 400 where id = pg_temp.m('01');
+update public.profiles set wwcc_expires_on = public.club_today() + 400 where id = pg_temp.m('01');
 
 select pg_temp.as_member('41');
 select pg_temp.ok('verified guardian can see the child''s access log', public.can_see_record_access(pg_temp.m('31')), true);
@@ -177,12 +177,12 @@ update public.profiles set verified_at = null where id = pg_temp.m('41');
 select pg_temp.as_member('41');
 select pg_temp.ok('unverified guardian cannot see the log', public.can_see_record_access(pg_temp.m('31')), false);
 update public.profiles set verified_at = now() where id = pg_temp.m('41');
-update public.profiles set date_of_birth = current_date - interval '18 years', under_17 = false where id = pg_temp.m('31');
+update public.profiles set date_of_birth = public.club_today() - interval '18 years', under_17 = false where id = pg_temp.m('31');
 select pg_temp.ok('guardian cannot see the log once the child is 18', public.can_see_record_access(pg_temp.m('31')), false);
-update public.profiles set date_of_birth = current_date - interval '14 years', under_17 = true where id = pg_temp.m('31');
+update public.profiles set date_of_birth = public.club_today() - interval '14 years', under_17 = true where id = pg_temp.m('31');
 
 insert into public.season_kpi_review_points (season, name, due_on) values
-  (2026, 'Mid-season', current_date + 60), (2026, 'Preseason', current_date + 10), (2025, 'Old', current_date - 300);
+  (2026, 'Mid-season', public.club_today() + 60), (2026, 'Preseason', public.club_today() + 10), (2025, 'Old', public.club_today() - 300);
 select pg_temp.as_member('31');
 select pg_temp.ok('review points for the season in date order', (select array_agg(name) = array['Preseason', 'Mid-season'] from public.kpi_review_points(2026)), true);
 select pg_temp.as_member('34');

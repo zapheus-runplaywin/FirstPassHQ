@@ -26,8 +26,8 @@ from unnest(array['00000000-0000-0000-0000-0000000005a1', '00000000-0000-0000-00
   '00000000-0000-0000-0000-0000000005a5']::uuid[]) s,
   unnest(array['00000000-0000-0000-0000-000000000031', '00000000-0000-0000-0000-000000000032']::uuid[]) a;
 insert into public.check_ins (athlete_id, day, sleep, soreness, stress, mood)
-values ('00000000-0000-0000-0000-000000000032', current_date, 3, 3, 3, 3),
-       ('00000000-0000-0000-0000-000000000031', current_date - 1, 3, 3, 3, 3);
+values ('00000000-0000-0000-0000-000000000032', public.club_today(), 3, 3, 3, 3),
+       ('00000000-0000-0000-0000-000000000031', public.club_today() - 1, 3, 3, 3, 3);
 
 -- For every member: rows read under row level security, minus or plus the
 -- rows the per-row rules allow. Passes when none differ.

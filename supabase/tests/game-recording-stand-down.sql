@@ -61,12 +61,12 @@ insert into auth.users (id, email, email_confirmed_at) values
   ('00000000-0000-0000-0000-000000000066', 'stats.pending@example.test', now());
 update public.profiles p set status = v.status::public.member_status, full_name = v.name,
   role = v.role::public.app_role, wwcc_number = v.wwcc, wwcc_expires_on = v.exp,
-  wwcc_exempt_reason = v.reason, date_of_birth = current_date - interval '40 years', verified_at = now()
+  wwcc_exempt_reason = v.reason, date_of_birth = public.club_today() - interval '40 years', verified_at = now()
 from (values
-  ('00000000-0000-0000-0000-000000000061', 'Sam Stats', 'statistician', 'approved', 'WWC0061', current_date + 400, null),
+  ('00000000-0000-0000-0000-000000000061', 'Sam Stats', 'statistician', 'approved', 'WWC0061', public.club_today() + 400, null),
   ('00000000-0000-0000-0000-000000000062', 'Quinn Shadow', 'statistician', 'approved', null, null::date, 'Opens games only'),
-  ('00000000-0000-0000-0000-000000000063', 'Rory Removed', 'statistician', 'approved', 'WWC0063', current_date + 400, null),
-  ('00000000-0000-0000-0000-000000000064', 'Toby Lapsing', 'statistician', 'approved', 'WWC0064', current_date + 400, null),
+  ('00000000-0000-0000-0000-000000000063', 'Rory Removed', 'statistician', 'approved', 'WWC0063', public.club_today() + 400, null),
+  ('00000000-0000-0000-0000-000000000064', 'Toby Lapsing', 'statistician', 'approved', 'WWC0064', public.club_today() + 400, null),
   ('00000000-0000-0000-0000-000000000065', 'Uma Guest', 'guest', 'approved', null, null, null),
   ('00000000-0000-0000-0000-000000000066', 'Vic Newcomer', 'guest', 'pending', null, null, null)
 ) as v(id, name, role, status, wwcc, exp, reason)
@@ -192,12 +192,12 @@ select pg_temp.refused('role removed: Rory can''t change the game', $$select pub
 -- ---------------------------------------------------------------------------
 -- 3. Toby's check lapses mid-game (after the club's checks date)
 -- ---------------------------------------------------------------------------
-update public.profiles set wwcc_expires_on = current_date - 1 where id = pg_temp.id('64');
+update public.profiles set wwcc_expires_on = public.club_today() - 1 where id = pg_temp.id('64');
 select pg_temp.as_member('64');
 select pg_temp.refused('check lapsed: Toby''s primary events refused', $$select pg_temp.append_primary((select g3 from t))$$);
 select pg_temp.refused('check lapsed: Toby''s snapshot refused', $$select public.save_game_snapshot((select g3 from t), 1, '0.1.0', '{}')$$);
 select pg_temp.refused('check lapsed: Toby can''t change the game', $$select public.set_game_status((select g3 from t), 'final')$$);
-update public.profiles set wwcc_expires_on = current_date + 400 where id = pg_temp.id('64');
+update public.profiles set wwcc_expires_on = public.club_today() + 400 where id = pg_temp.id('64');
 select pg_temp.works('check renewed: Toby records again', $$select pg_temp.append_primary((select g3 from t))$$);
 
 -- ---------------------------------------------------------------------------

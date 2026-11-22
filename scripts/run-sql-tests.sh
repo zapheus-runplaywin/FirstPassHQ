@@ -37,9 +37,12 @@ psql_q() { psql -X -q -v ON_ERROR_STOP=1 "$@"; }
 # against today again. A run that crosses midnight in the database's time
 # zone (UTC in CI, 8 am in Perth) would compare a template built yesterday
 # with today and fail. So the template is rebuilt whenever the date has moved
-# on since it was built. SQL_TESTS_DATE_QUERY replaces the query that reads
+# on since it was built. Most dates now follow the club's day, club_today()
+# (Perth unless a test changes it), and a few older ones the UTC day, so a
+# change of either counts. SQL_TESTS_DATE_QUERY replaces the query that reads
 # the date, only so scripts/test-run-sql-tests.sh can move it.
-date_query=${SQL_TESTS_DATE_QUERY:-select current_date}
+default_date_query="select current_date || ' ' || (now() at time zone 'Australia/Perth')::date"
+date_query=${SQL_TESTS_DATE_QUERY:-$default_date_query}
 db_date() { psql -X -qAt -d postgres -c "$date_query"; }
 
 build_template() {

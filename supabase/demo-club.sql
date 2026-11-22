@@ -156,18 +156,18 @@ begin
       rejection_reason = null,
       rejected_at = null,
       verified_at = case when d.approved then now() end,
-      date_of_birth = (current_date - make_interval(years => d.age) - interval '30 days')::date,
+      date_of_birth = (public.club_today() - make_interval(years => d.age) - interval '30 days')::date,
       declared_date_of_birth = null,
       under_17 = d.age < 18,
       title = d.title,
       head_physio = d.head_physio,
       stood_down_at = null,
       wwcc_number = case when d.wwcc is not null then 'WWC9' || right(d.id::text, 6) end,
-      wwcc_expires_on = case d.wwcc when 'current' then current_date + 400 when 'expired' then current_date - 1 end,
+      wwcc_expires_on = case d.wwcc when 'current' then public.club_today() + 400 when 'expired' then public.club_today() - 1 end,
       wwcc_exempt_reason = null,
       volunteer_task = case when d.role = 'volunteer' then 'Carnival' end,
-      volunteer_from = case when d.role = 'volunteer' then current_date end,
-      volunteer_until = case when d.role = 'volunteer' then current_date + 7 end,
+      volunteer_from = case when d.role = 'volunteer' then public.club_today() end,
+      volunteer_until = case when d.role = 'volunteer' then public.club_today() + 7 end,
       volunteer_screening = case when d.role = 'volunteer' then 'card' end
   from demo_accounts d
   where p.id = d.id;
@@ -278,10 +278,10 @@ begin
   )
   values
     ('demo-game-u20', 'demo-20-under', v_u20, '20 & Under', 'Swan Districts', 'Round 5',
-      'Demo competition', ((current_date + 3) + time '10:00') at time zone 'Australia/Perth',
+      'Demo competition', ((public.club_today() + 3) + time '10:00') at time zone public.club_timezone(),
       'Matthews Netball Centre', 'Court 2', true),
     ('demo-game-open', 'demo-open-a', v_open, 'Open A', 'Hawks', 'Round 5',
-      'Demo competition', ((current_date + 5) + time '10:00') at time zone 'Australia/Perth',
+      'Demo competition', ((public.club_today() + 5) + time '10:00') at time zone public.club_timezone(),
       'Matthews Netball Centre', 'Court 4', false)
   on conflict (playhq_game_id, playhq_team_id) do update set
     team_id = excluded.team_id, starts_at = excluded.starts_at;

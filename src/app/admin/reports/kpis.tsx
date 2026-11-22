@@ -5,7 +5,7 @@ import { ReportView } from '@/components/report-view';
 import { Screen } from '@/components/screen';
 import { SeasonChips } from '@/components/training-list';
 import { ErrorText } from '@/components/ui';
-import { toDateString } from '@/lib/injuries';
+import { clubToday } from '@/lib/club-time';
 import { kpiReport, type KpiReportRow } from '@/lib/reports';
 import { supabase } from '@/lib/supabase';
 import { currentSeason } from '@/lib/training';
@@ -52,7 +52,7 @@ export default function KpiReportScreen() {
       <SeasonChips seasons={seasons} season={season} onChange={setChoice} />
       <ErrorText>{error}</ErrorText>
       {rows ? (
-        <ReportView report={kpiReport(seasonLabel(season), rows, toDateString(new Date()))} />
+        <ReportView report={kpiReport(seasonLabel(season), rows, clubToday())} />
       ) : null}
     </Screen>
   );

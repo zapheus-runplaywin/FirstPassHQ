@@ -21,28 +21,28 @@ insert into auth.users (id, email, email_confirmed_at) values
   ('00000000-0000-0000-0000-000000000061', 'guest@example.test', now()),
   ('00000000-0000-0000-0000-000000000062', 'helper@example.test', now());
 update public.profiles set status = 'approved', full_name = 'Gus Guest', role = 'guest', verified_at = now(),
-  wwcc_number = 'WWC0061', wwcc_expires_on = current_date + 400, date_of_birth = current_date - interval '30 years'
+  wwcc_number = 'WWC0061', wwcc_expires_on = public.club_today() + 400, date_of_birth = public.club_today() - interval '30 years'
 where id = '00000000-0000-0000-0000-000000000061';
 select pg_temp.ok('guest with a current card can be a safeguarding contact', public.can_be_safeguarding_contact('00000000-0000-0000-0000-000000000061'), true);
 update public.profiles set wwcc_number = null, wwcc_expires_on = null where id = '00000000-0000-0000-0000-000000000061';
 select pg_temp.ok('guest without a card cannot', public.can_be_safeguarding_contact('00000000-0000-0000-0000-000000000061'), false);
-update public.profiles set wwcc_number = 'WWC0061', wwcc_expires_on = current_date + 400 where id = '00000000-0000-0000-0000-000000000061';
+update public.profiles set wwcc_number = 'WWC0061', wwcc_expires_on = public.club_today() + 400 where id = '00000000-0000-0000-0000-000000000061';
 select pg_temp.ok('cleared coach can be', public.can_be_safeguarding_contact('00000000-0000-0000-0000-000000000011'), true);
 
 -- A temporary helper whose first day is ahead, with an unvalidated card, is in no WWC count yet.
 update public.profiles set status = 'approved', full_name = 'Hal Helper', role = 'volunteer', verified_at = now(),
-  volunteer_task = 'Bench helper', volunteer_from = current_date + 10, volunteer_until = current_date + 12,
-  wwcc_number = 'WWC0062', wwcc_expires_on = current_date + 11
+  volunteer_task = 'Bench helper', volunteer_from = public.club_today() + 10, volunteer_until = public.club_today() + 12,
+  wwcc_number = 'WWC0062', wwcc_expires_on = public.club_today() + 11
 where id = '00000000-0000-0000-0000-000000000062';
 select pg_temp.as_member('01');
 create temp table before as select * from public.admin_safety_todos();
-update public.profiles set volunteer_from = current_date - 1 where id = '00000000-0000-0000-0000-000000000062';
+update public.profiles set volunteer_from = public.club_today() - 1 where id = '00000000-0000-0000-0000-000000000062';
 create temp table during as select * from public.admin_safety_todos();
 select pg_temp.ok('upcoming helper not counted to validate', (select wwcc_to_validate from during) - (select wwcc_to_validate from before) = 1, true);
 select pg_temp.ok('upcoming helper not counted to register', (select wwcc_to_link from during) - (select wwcc_to_link from before) = 1, true);
 select pg_temp.ok('upcoming helper not counted as expiring', (select wwcc_expiring from during) - (select wwcc_expiring from before) = 1, true);
 select pg_temp.ok('upcoming helper not counted in people', (select wwcc_people from during) - (select wwcc_people from before) = 1, true);
-update public.profiles set volunteer_until = current_date - 1, volunteer_from = current_date - 3 where id = '00000000-0000-0000-0000-000000000062';
+update public.profiles set volunteer_until = public.club_today() - 1, volunteer_from = public.club_today() - 3 where id = '00000000-0000-0000-0000-000000000062';
 create temp table after as select * from public.admin_safety_todos();
 select pg_temp.ok('finished helper drops out again', (select wwcc_people from after) = (select wwcc_people from before), true);
 
@@ -69,11 +69,11 @@ update public.teams set selections_completed_at = null where id = '00000000-0000
 -- guest; a guest without a date of birth, or under 18, can't be approved.
 select pg_temp.as_member('01');
 select pg_temp.works('adult guest can be re-saved as approved', $$select public.admin_save_member('00000000-0000-0000-0000-000000000061', 'guest', 'approved')$$);
-update public.profiles set date_of_birth = current_date - interval '16 years' where id = '00000000-0000-0000-0000-000000000061';
+update public.profiles set date_of_birth = public.club_today() - interval '16 years' where id = '00000000-0000-0000-0000-000000000061';
 select pg_temp.fails_with('guest under 18 is refused', $$select public.admin_save_member('00000000-0000-0000-0000-000000000061', 'guest', 'approved')$$, 'Guests must be 18 or over');
 update public.profiles set date_of_birth = null where id = '00000000-0000-0000-0000-000000000061';
 select pg_temp.fails_with('guest without a date of birth is refused', $$select public.admin_save_member('00000000-0000-0000-0000-000000000061', 'guest', 'approved')$$, 'before approving a guest');
-update public.profiles set date_of_birth = current_date - interval '30 years' where id = '00000000-0000-0000-0000-000000000061';
+update public.profiles set date_of_birth = public.club_today() - interval '30 years' where id = '00000000-0000-0000-0000-000000000061';
 
 -- 20261019000000: a temporary helper's parent-volunteer exemption names the
 -- child with no guardian link; a coach still needs the link.

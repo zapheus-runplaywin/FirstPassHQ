@@ -20,7 +20,7 @@ create temp table ids (name text, id uuid);
 -- 1. One review note per reviewer. The committee (22) and an admin (01) each
 -- set a KPI for Emery the manager (13) and each write a mid-season review.
 select pg_temp.as_member('01');
-insert into ids select 'mid', public.admin_save_kpi_review_point(null, (select season from public.teams where id = '00000000-0000-0000-0000-0000000000a1'), 'Mid-season', current_date - 1);
+insert into ids select 'mid', public.admin_save_kpi_review_point(null, (select season from public.teams where id = '00000000-0000-0000-0000-0000000000a1'), 'Mid-season', public.club_today() - 1);
 insert into ids select 'admin_kpi', public.save_season_kpi(null, '00000000-0000-0000-0000-000000000013',
   '00000000-0000-0000-0000-0000000000a1', 'kpi', 'Rosters in on time', null, '[{"kind":"yes_no"}]');
 select pg_temp.as_member('22');
@@ -93,7 +93,7 @@ select pg_temp.as_member('02');
 select pg_temp.works('admin names Casey (cleared coach) and Alex (admin) as officers', $$select public.admin_set_safeguarding('00000000-0000-0000-0000-000000000011', '00000000-0000-0000-0000-000000000001', null, null, null, null)$$);
 select pg_temp.ok('no officer to-dos once named', (
   select child_safety_officer_missing = 0 and complaints_manager_missing = 0 from public.admin_safety_todos()), true);
-update public.profiles set wwcc_expires_on = current_date - 1 where id = '00000000-0000-0000-0000-000000000011';
+update public.profiles set wwcc_expires_on = public.club_today() - 1 where id = '00000000-0000-0000-0000-000000000011';
 select pg_temp.ok('officer whose check lapsed counts as missing', (
   select child_safety_officer_missing = 1 and complaints_manager_missing = 0 from public.admin_safety_todos()), true);
 select pg_temp.as_member('22');
@@ -122,10 +122,10 @@ select pg_temp.fails_with('attendance change error names the committee and admin
 -- days; the club has only two athletes, so scores are hidden but the count is
 -- computed per athlete (checked on the raw window through an admin-visible day).
 insert into public.check_ins (athlete_id, day, sleep, soreness, stress, mood)
-values ('00000000-0000-0000-0000-000000000032', current_date - 1, 1, 1, 1, 1),
-       ('00000000-0000-0000-0000-000000000032', current_date, 1, 1, 1, 1);
+values ('00000000-0000-0000-0000-000000000032', public.club_today() - 1, 1, 1, 1, 1),
+       ('00000000-0000-0000-0000-000000000032', public.club_today(), 1, 1, 1, 1);
 select pg_temp.as_member('22');
 select pg_temp.ok('trend window counts both check-ins', (
-  select window_count from public.check_in_trend(null, current_date, current_date)) >= 2, true);
+  select window_count from public.check_in_trend(null, public.club_today(), public.club_today())) >= 2, true);
 select pg_temp.ok('trend flagged is null or at most one per athlete', (
-  select flagged_count is null or flagged_count <= 2 from public.check_in_trend(null, current_date, current_date)), true);
+  select flagged_count is null or flagged_count <= 2 from public.check_in_trend(null, public.club_today(), public.club_today())), true);

@@ -106,7 +106,7 @@ select pg_temp.works('another admin unlinks Blair',
       '[]', true, '{00000000-0000-0000-0000-000000000041}') $s$);
 
 -- Under 13: the child isn't sent the notice.
-update public.profiles set date_of_birth = current_date - interval '10 years' where id = '00000000-0000-0000-0000-000000000031';
+update public.profiles set date_of_birth = public.club_today() - interval '10 years' where id = '00000000-0000-0000-0000-000000000031';
 select pg_temp.works('linking Morgan again',
   $s$ select public.admin_save_member('00000000-0000-0000-0000-000000000031', 'athlete', 'approved',
       '[]', true, '{00000000-0000-0000-0000-000000000041,00000000-0000-0000-0000-000000000042}') $s$);

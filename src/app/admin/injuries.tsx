@@ -15,6 +15,7 @@ import {
   toDateString,
 } from '@/lib/injuries';
 import { useClub } from '@/lib/club';
+import { clubToday } from '@/lib/club-time';
 import { reportPdf } from '@/lib/pdf';
 import { fileSlug, injuryReport, sharePdf } from '@/lib/reports';
 import { supabase } from '@/lib/supabase';
@@ -64,7 +65,7 @@ export default function InjuryReportScreen() {
         clubName: club.name,
         accent: club.colors.accent,
       });
-      await sharePdf(`${fileSlug(club.shortName)}-injuries-${toDateString(new Date())}.pdf`, bytes);
+      await sharePdf(`${fileSlug(club.shortName)}-injuries-${clubToday()}.pdf`, bytes);
     } catch (e) {
       setError(e instanceof Error ? e.message : 'The PDF didn’t save. Try again.');
     } finally {
@@ -111,7 +112,7 @@ export default function InjuryReportScreen() {
           r.document_count,
         ]),
       ]);
-      await shareCsv(`${fileSlug(club.shortName)}-injuries-${toDateString(new Date())}.csv`, csv);
+      await shareCsv(`${fileSlug(club.shortName)}-injuries-${clubToday()}.csv`, csv);
     } catch (e) {
       setError(e instanceof Error ? e.message : 'The export didn’t work. Try again.');
     } finally {

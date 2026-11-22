@@ -24,7 +24,7 @@ $$ select count(*) from public.record_access_log where subject_id = ('00000000-0
 create temp table t as select
   (select id from public.injuries where athlete_id = '00000000-0000-0000-0000-000000000031') as injury;
 insert into public.injuries (athlete_id, reported_by, body_area, description, injured_on, athlete_name)
-values ('00000000-0000-0000-0000-000000000032', '00000000-0000-0000-0000-000000000032', 'Knee', 'Jarred knee', current_date - 1, 'Kai Senior');
+values ('00000000-0000-0000-0000-000000000032', '00000000-0000-0000-0000-000000000032', 'Knee', 'Jarred knee', public.club_today() - 1, 'Kai Senior');
 
 -- Nothing can be read or written directly.
 select pg_temp.ok('authenticated cannot select the log', has_table_privilege('authenticated', 'public.record_access_log', 'select'), false);
@@ -128,7 +128,7 @@ select pg_temp.as_member('01');
 select pg_temp.ok('row kept with name', (select count(*) = 1 from public.record_access_history('00000000-0000-0000-0000-000000000031') where viewer_name = 'Finley Physio'), true);
 
 -- At 18 the guardian's view ends.
-update public.profiles set date_of_birth = current_date - interval '18 years' where id = '00000000-0000-0000-0000-000000000031';
+update public.profiles set date_of_birth = public.club_today() - interval '18 years' where id = '00000000-0000-0000-0000-000000000031';
 select pg_temp.as_member('41');
 select pg_temp.ok('guardian loses the log at 18', (select count(*) = 0 from public.record_access_history('00000000-0000-0000-0000-000000000031')), true);
 select pg_temp.as_member('11');

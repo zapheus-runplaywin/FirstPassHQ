@@ -104,7 +104,7 @@ update public.profiles set status = 'approved' where id = pg_temp.m('41');
 
 -- A guardian with two children in the team stays while either is in it.
 insert into auth.users (id, email, email_confirmed_at) values ('00000000-0000-0000-0000-000000000035', 'second.child@example.test', now());
-update public.profiles set status = 'approved', role = 'athlete', full_name = 'Jess Junior', date_of_birth = current_date - interval '12 years', under_17 = true, verified_at = now() where id = pg_temp.m('35');
+update public.profiles set status = 'approved', role = 'athlete', full_name = 'Jess Junior', date_of_birth = public.club_today() - interval '12 years', under_17 = true, verified_at = now() where id = pg_temp.m('35');
 insert into public.guardianships (guardian_id, athlete_id) values (pg_temp.m('41'), pg_temp.m('35'));
 insert into public.team_members (team_id, profile_id, team_role) values (pg_temp.m('a1'), pg_temp.m('35'), 'athlete');
 insert into public.team_members (team_id, profile_id, team_role, selection) values (pg_temp.m('a2'), pg_temp.m('35'), 'athlete', 'touring');

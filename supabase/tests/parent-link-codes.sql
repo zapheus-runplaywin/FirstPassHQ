@@ -67,7 +67,7 @@ insert into auth.users (id, email, email_confirmed_at) values
 -- 1. A child asking to join gets a link code; nobody else does.
 -- ---------------------------------------------------------------------------
 select pg_temp.as_member('61');
-select pg_temp.ok('Sam asks to join as an athlete aged 13', public.submit_join_request('Sam Taylor', 'sam.taylor@example.test', 'athlete', '00000000-0000-0000-0000-0000000000a1', null, (current_date - interval '13 years')::date, 'robin.taylor@example.test') is null, true);
+select pg_temp.ok('Sam asks to join as an athlete aged 13', public.submit_join_request('Sam Taylor', 'sam.taylor@example.test', 'athlete', '00000000-0000-0000-0000-0000000000a1', null, (public.club_today() - interval '13 years')::date, 'robin.taylor@example.test') is null, true);
 select pg_temp.ok('Sam is waiting for a parent or guardian', (select waiting from public.my_link_code()), true);
 insert into codes select 'sam1', code from public.my_link_code();
 select pg_temp.ok('the code is 6 characters with no look-alikes (0, O, 1, I, L)', (select v ~ '^[2-9A-HJKMNP-Z]{6}$' from codes where k = 'sam1'), true);
@@ -78,12 +78,12 @@ insert into codes select 'sam2', code from public.new_link_code();
 select pg_temp.ok('a new code replaces it', (select v from codes where k = 'sam2') <> (select v from codes where k = 'sam1') and (select code from public.my_link_code()) = (select v from codes where k = 'sam2'), true);
 
 select pg_temp.as_member('64');
-select pg_temp.ok('the other Sam Taylor asks to join too', public.submit_join_request('Sam Taylor', '', 'athlete', '00000000-0000-0000-0000-0000000000a1', null, (current_date - interval '13 years')::date, 'other.parent@example.test') is null, true);
+select pg_temp.ok('the other Sam Taylor asks to join too', public.submit_join_request('Sam Taylor', '', 'athlete', '00000000-0000-0000-0000-0000000000a1', null, (public.club_today() - interval '13 years')::date, 'other.parent@example.test') is null, true);
 insert into codes select 'sam64', code from public.my_link_code();
 select pg_temp.ok('and gets a different code', (select v from codes where k = 'sam64') not in (select v from codes where k in ('sam1', 'sam2')), true);
 
 select pg_temp.as_member('65');
-select pg_temp.ok('an adult asking to join as an athlete', public.submit_join_request('Ash Adult', '', 'athlete', null, null, (current_date - interval '30 years')::date, null) is null, true);
+select pg_temp.ok('an adult asking to join as an athlete', public.submit_join_request('Ash Adult', '', 'athlete', null, null, (public.club_today() - interval '30 years')::date, null) is null, true);
 select pg_temp.ok('an adult has no code', (select not waiting and code is null from public.my_link_code()), true);
 select pg_temp.fails_with('an adult can''t make one', $$select * from public.new_link_code()$$, 'Only an athlete under 18');
 select pg_temp.as_member('32');
@@ -108,7 +108,7 @@ select pg_temp.ok('signed-out visitors cannot read a code', has_function_privile
 select pg_temp.as_member('62');
 select pg_temp.fails_with('someone who hasn''t asked to join as a parent can''t enter one',
   format('select public.enter_child_code(%L)', (select v from codes where k = 'sam2')), 'Ask to join as a parent or guardian first');
-select pg_temp.ok('Robin asks to join as a parent or guardian', public.submit_join_request('Robin Taylor', 'robin.taylor@example.test', 'guardian', null, null, (current_date - interval '45 years')::date, null) is null, true);
+select pg_temp.ok('Robin asks to join as a parent or guardian', public.submit_join_request('Robin Taylor', 'robin.taylor@example.test', 'guardian', null, null, (public.club_today() - interval '45 years')::date, null) is null, true);
 select pg_temp.as_member('64');
 select pg_temp.fails_with('a child asking to join can''t enter another child''s code',
   format('select public.enter_child_code(%L)', (select v from codes where k = 'sam2')), 'Ask to join as a parent or guardian first');
@@ -174,7 +174,7 @@ select pg_temp.works('the admin verifies Quinn too',
 select pg_temp.fails_with('a parent with no child''s code can''t be approved',
   $$select public.admin_save_member('00000000-0000-0000-0000-000000000063', 'guardian', 'approved')$$, 'haven’t entered their child’s link code');
 select pg_temp.works('the admin records Sam''s date of birth',
-  $$select public.admin_set_member_details('00000000-0000-0000-0000-000000000061', (current_date - interval '13 years')::date, null, null)$$);
+  $$select public.admin_set_member_details('00000000-0000-0000-0000-000000000061', (public.club_today() - interval '13 years')::date, null, null)$$);
 select pg_temp.works('the child is approved with no guardian linked, into the squad',
   $$select public.admin_save_member('00000000-0000-0000-0000-000000000061', 'athlete', 'approved', '[{"team_id": "00000000-0000-0000-0000-0000000000a1"}]', true, '{}')$$);
 select pg_temp.ok('Sam is locked', public.is_locked_child(pg_temp.m('61')), true);
@@ -225,7 +225,7 @@ insert into public.message_recipients (message_id, profile_id) values
 insert into public.fixtures (id, team_id, team_name, opponent, starts_at) values
   ('00000000-0000-0000-0000-0000000000f1', pg_temp.m('a1'), 'Sample Squad', 'Rockets', now() + interval '3 days');
 insert into public.calendars (team_id, name, url) values (pg_temp.m('a1'), 'Squad calendar', 'https://example.test/squad.ics');
-insert into public.session_logs (athlete_id, day, kind, minutes, rpe) values (pg_temp.m('31'), current_date - 1, 'training', 60, 5);
+insert into public.session_logs (athlete_id, day, kind, minutes, rpe) values (pg_temp.m('31'), public.club_today() - 1, 'training', 60, 5);
 select pg_temp.as_member('01');
 create temp table survey as select public.create_survey('Training nights', null, 'named', 'group', null,
   '00000000-0000-0000-0000-0000000000a1', null, now() + interval '7 days',
@@ -278,12 +278,12 @@ select pg_temp.ok('locked Jordan has a code to share', (select waiting and code 
 select pg_temp.ok('locked Jordan reads no notices', pg_temp.n('select 1 from public.messages') = 0, true);
 reset role;
 select pg_temp.as_member('31');
-select pg_temp.fails('locked Jordan can''t do a check-in', $$select public.save_check_in(current_date, 4, 3, 2, 4, 'x')$$);
-select pg_temp.fails('locked Jordan can''t report an injury', $$select public.report_injury('00000000-0000-0000-0000-000000000031', 'Knee', 'Fell', current_date)$$);
-select pg_temp.fails('locked Jordan can''t report an absence', $$select public.report_absence('00000000-0000-0000-0000-000000000031', current_date + 1, current_date + 1, 'Exam')$$);
+select pg_temp.fails('locked Jordan can''t do a check-in', $$select public.save_check_in(public.club_today(), 4, 3, 2, 4, 'x')$$);
+select pg_temp.fails('locked Jordan can''t report an injury', $$select public.report_injury('00000000-0000-0000-0000-000000000031', 'Knee', 'Fell', public.club_today())$$);
+select pg_temp.fails('locked Jordan can''t report an absence', $$select public.report_absence('00000000-0000-0000-0000-000000000031', public.club_today() + 1, public.club_today() + 1, 'Exam')$$);
 select pg_temp.fails('locked Jordan can''t answer the survey', format('select public.submit_survey_response(%L, %L, false)', (select id from survey), (select answer from survey_answer)));
 select pg_temp.fails('locked Jordan can''t accept the code of conduct', $$select public.accept_code_of_conduct('00000000-0000-0000-0000-000000000031')$$);
-select pg_temp.fails('locked Jordan can''t log a training session', $$select public.save_session_log(null, current_date, 'training', 60, 5)$$);
+select pg_temp.fails('locked Jordan can''t log a training session', $$select public.save_session_log(null, public.club_today(), 'training', 60, 5)$$);
 select pg_temp.fails('locked Jordan can''t delete a training session', $$select public.delete_session_log((select id from public.session_logs where athlete_id = '00000000-0000-0000-0000-000000000031' limit 1))$$);
 select pg_temp.fails('locked Jordan can''t see their training load', $$select public.athlete_load('00000000-0000-0000-0000-000000000031')$$);
 select pg_temp.fails('locked Jordan can''t open their medical details', $$select public.medical_profile('00000000-0000-0000-0000-000000000031')$$);
@@ -324,23 +324,23 @@ select pg_temp.as_member('31');
 select pg_temp.ok('unlocked again, Jordan ' || label, pg_temp.n(q) > 0, true) from jordan_can order by label;
 reset role;
 select pg_temp.as_member('31');
-select pg_temp.works('unlocked Jordan does a check-in', $$select public.save_check_in(current_date, 4, 3, 2, 4, 'x')$$);
-select pg_temp.works('unlocked Jordan reports an absence', $$select public.report_absence('00000000-0000-0000-0000-000000000031', current_date + 1, current_date + 1, 'Exam')$$);
+select pg_temp.works('unlocked Jordan does a check-in', $$select public.save_check_in(public.club_today(), 4, 3, 2, 4, 'x')$$);
+select pg_temp.works('unlocked Jordan reports an absence', $$select public.report_absence('00000000-0000-0000-0000-000000000031', public.club_today() + 1, public.club_today() + 1, 'Exam')$$);
 select pg_temp.works('unlocked Jordan answers the survey', format('select public.submit_survey_response(%L, %L, false)', (select id from survey), (select answer from survey_answer)));
-select pg_temp.works('unlocked Jordan logs a training session', $$select public.save_session_log(null, current_date, 'training', 60, 5)$$);
+select pg_temp.works('unlocked Jordan logs a training session', $$select public.save_session_log(null, public.club_today(), 'training', 60, 5)$$);
 select pg_temp.works('unlocked Jordan sees their training load', $$select public.athlete_load('00000000-0000-0000-0000-000000000031')$$);
 select pg_temp.works('unlocked Jordan opens their medical details', $$select public.medical_profile('00000000-0000-0000-0000-000000000031')$$);
 
 -- Turning 18 ends the lock; the day before, it holds.
 reset role;
 delete from public.guardianships where athlete_id = pg_temp.m('31');
-update public.profiles set date_of_birth = current_date - interval '18 years' + interval '1 day' where id = pg_temp.m('31');
+update public.profiles set date_of_birth = public.club_today() - interval '18 years' + interval '1 day' where id = pg_temp.m('31');
 select pg_temp.as_member('31');
 select pg_temp.ok('the day before turning 18 with no guardian, Jordan is locked', public.is_approved(), false);
-update public.profiles set date_of_birth = current_date - interval '18 years' where id = pg_temp.m('31');
+update public.profiles set date_of_birth = public.club_today() - interval '18 years' where id = pg_temp.m('31');
 select pg_temp.ok('on their 18th birthday Jordan is no longer locked', public.is_approved(), true);
 select pg_temp.ok('and needs no code', (select not waiting from public.my_link_code()), true);
-update public.profiles set date_of_birth = current_date - interval '14 years' where id = pg_temp.m('31');
+update public.profiles set date_of_birth = public.club_today() - interval '14 years' where id = pg_temp.m('31');
 
 -- ---------------------------------------------------------------------------
 -- 5. An approved parent adds another child by code; an admin links or turns

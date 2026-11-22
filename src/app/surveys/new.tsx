@@ -8,6 +8,7 @@ import { ThemedText } from '@/components/themed-text';
 import { Button, ChipGroup, ErrorText, TextField } from '@/components/ui';
 import { Spacing } from '@/constants/theme';
 import { useTheme } from '@/hooks/use-theme';
+import { clubToday } from '@/lib/club-time';
 import { toDateString } from '@/lib/injuries';
 import { pluralRoleLabels } from '@/lib/labels';
 import { useLedGroups } from '@/lib/messages';
@@ -86,7 +87,7 @@ export default function NewSurveyScreen() {
   const [audience, setAudience] = useState<SurveyAudience>(canManage ? 'club' : 'group');
   const [role, setRole] = useState<AppRole | null>(null);
   const [teamId, setTeamId] = useState<string | null>(null);
-  const [opensOn, setOpensOn] = useState<string | null>(toDateString(new Date()));
+  const [opensOn, setOpensOn] = useState<string | null>(clubToday());
   const [closesOn, setClosesOn] = useState<string | null>(daysFromToday(14));
   const [questions, setQuestions] = useState<DraftQuestion[]>([newQuestion()]);
   const [share, setShare] = useState<'team' | 'admins' | 'committee'>('team');
@@ -143,7 +144,7 @@ export default function NewSurveyScreen() {
     }
     setSending(true);
     setError(null);
-    const today = toDateString(new Date());
+    const today = clubToday();
     const { data, error: sendError } = await supabase.rpc('create_survey', {
       p_title: title,
       p_intro: intro,

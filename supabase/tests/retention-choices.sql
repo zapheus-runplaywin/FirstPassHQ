@@ -62,7 +62,7 @@ select pg_temp.ok('still the last good save', (select retention_messages_months 
 
 -- Messages: adult text goes after 3 years; text involving a child after 7.
 select set_config('request.jwt.claim.sub', '', false);
-update public.profiles set date_of_birth = current_date - interval '20 years', under_17 = false
+update public.profiles set date_of_birth = public.club_today() - interval '20 years', under_17 = false
 where id = '00000000-0000-0000-0000-000000000032';
 insert into public.messages (id, sender_id, sender_name, body, audience, created_at) values
   ('00000000-0000-0000-0000-0000000000c1', '00000000-0000-0000-0000-000000000001', 'Alex Admin', 'adult old', 'club', now() - interval '4 years'),
@@ -100,8 +100,8 @@ select set_config('request.jwt.claim.sub', '', false);
 insert into public.teams (name, kind, season, archived, created_at) values
   ('Old Squad', 'squad', 2020, true, now() - interval '600 days');
 insert into public.injuries (id, athlete_id, body_area, description, injured_on, status, cleared_at) values
-  ('00000000-0000-0000-0000-0000000000e1', '00000000-0000-0000-0000-000000000032', 'Ankle', 'Rolled', current_date - 200, 'cleared', now() - interval '100 days'),
-  ('00000000-0000-0000-0000-0000000000e2', '00000000-0000-0000-0000-000000000032', 'Knee', 'Sore', current_date - 500, 'cleared', now() - interval '400 days');
+  ('00000000-0000-0000-0000-0000000000e1', '00000000-0000-0000-0000-000000000032', 'Ankle', 'Rolled', public.club_today() - 200, 'cleared', now() - interval '100 days'),
+  ('00000000-0000-0000-0000-0000000000e2', '00000000-0000-0000-0000-000000000032', 'Knee', 'Sore', public.club_today() - 500, 'cleared', now() - interval '400 days');
 select pg_temp.ok('cleared 100 days ago in an archived season: kept', (select not public.injury_documents_expired(i) from public.injuries i where id = '00000000-0000-0000-0000-0000000000e1'), true);
 select pg_temp.ok('cleared over a year ago: due', (select public.injury_documents_expired(i) from public.injuries i where id = '00000000-0000-0000-0000-0000000000e2'), true);
 select pg_temp.as_member('01');

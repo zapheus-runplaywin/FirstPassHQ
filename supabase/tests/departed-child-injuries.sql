@@ -43,7 +43,7 @@ grant select, insert, delete on storage.objects to authenticated;
 -- screening is the only rule in the way. Jordan's ankle injury gets a physio
 -- update and a document.
 insert into public.safeguarding_settings (id) values (true) on conflict (id) do nothing;
-update public.safeguarding_settings set committee_checks_from = current_date - 31 where id;
+update public.safeguarding_settings set committee_checks_from = public.club_today() - 31 where id;
 insert into public.child_consents (athlete_id, kind, given_by, given_by_name, policy_version)
 values ('00000000-0000-0000-0000-000000000031', 'health', '00000000-0000-0000-0000-000000000041', 'Logan Parent', 'test');
 insert into public.injury_updates (injury_id, author_id, author_name, kind, notes, restrictions)
@@ -57,7 +57,7 @@ insert into storage.objects (bucket_id, name, metadata)
 select 'injury-documents', path, '{"mimetype":"application/pdf"}' from doc;
 -- Kai Senior (32, 25) has an injury too.
 insert into public.injuries (athlete_id, reported_by, body_area, description, injured_on, athlete_name)
-values ('00000000-0000-0000-0000-000000000032', '00000000-0000-0000-0000-000000000032', 'Knee', 'Jarred knee', current_date - 1, 'Kai Senior');
+values ('00000000-0000-0000-0000-000000000032', '00000000-0000-0000-0000-000000000032', 'Knee', 'Jarred knee', public.club_today() - 1, 'Kai Senior');
 
 -- 1. While the child is a member.
 select pg_temp.as_member('23');
@@ -105,11 +105,11 @@ select pg_temp.works('screened admin can open the child''s document', format('se
 
 -- 4. Ages kept with the record follow the calendar, and records kept before
 -- this change (no age) count as under 18.
-update public.injuries set athlete_date_of_birth = current_date - interval '19 years'
+update public.injuries set athlete_date_of_birth = public.club_today() - interval '19 years'
 where athlete_id = '00000000-0000-0000-0000-000000000031';
 select pg_temp.ok('a departed child who has since turned 18 counts as an adult', public.athlete_is_minor('00000000-0000-0000-0000-000000000031'), false);
 insert into public.injuries (athlete_id, reported_by, body_area, description, injured_on, athlete_name, athlete_left_at)
-values ('00000000-0000-0000-0000-0000000000d1', null, 'Wrist', 'Kept from before', current_date - 400, 'Left Earlier', now() - interval '1 year');
+values ('00000000-0000-0000-0000-0000000000d1', null, 'Wrist', 'Kept from before', public.club_today() - 400, 'Left Earlier', now() - interval '1 year');
 select pg_temp.ok('a record kept with no age counts as under 18', public.athlete_is_minor('00000000-0000-0000-0000-0000000000d1'), true);
 select pg_temp.ok('an id with no profile and no record counts as under 18', public.athlete_is_minor('00000000-0000-0000-0000-0000000000d2'), true);
 select pg_temp.ok('a current member''s age still comes from their profile', public.athlete_is_minor('00000000-0000-0000-0000-000000000011'), false);

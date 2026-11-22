@@ -7,8 +7,8 @@ import { Screen } from '@/components/screen';
 import { ThemedText } from '@/components/themed-text';
 import { Button, Card, ChipGroup, ErrorText, TextField } from '@/components/ui';
 import { Spacing } from '@/constants/theme';
+import { clubToday } from '@/lib/club-time';
 import { type ConcernPerson, matchPeople } from '@/lib/concerns';
-import { toDateString } from '@/lib/injuries';
 import {
   ACCESS_HOURS,
   defaultRange,
@@ -107,7 +107,7 @@ export default function NewMessageAccessScreen() {
     });
   }
 
-  const today = toDateString(new Date());
+  const today = clubToday();
 
   return (
     <Screen>

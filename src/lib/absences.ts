@@ -3,7 +3,8 @@ import { useCallback, useEffect, useState } from 'react';
 
 import { useAuth } from '@/lib/auth';
 import { useClub } from '@/lib/club';
-import { formatDateString, toDateString } from '@/lib/injuries';
+import { clubDay } from '@/lib/club-time';
+import { formatDateString } from '@/lib/injuries';
 import { supabase } from '@/lib/supabase';
 
 /** A reason for an absence, from the club's list in Administration. */
@@ -116,7 +117,7 @@ export function injuredLabel(expectedReturn: string | null) {
  */
 export function useAwayNotes(teamId: string | null, heldAt: string | null, enabled = true) {
   const [away, setAway] = useState<Record<string, string>>({});
-  const day = heldAt ? toDateString(new Date(heldAt)) : null;
+  const day = heldAt ? clubDay(heldAt) : null;
   useEffect(() => {
     if (!enabled || !day) return;
     let current = true;

@@ -115,12 +115,12 @@ select pg_temp.as_member('11');
 select pg_temp.ok('coach has no athletes of their own', (select count(*) = 0 from public.my_athletes()), true);
 select pg_temp.as_member('31');
 select pg_temp.ok('athlete has no athletes', (select count(*) = 0 from public.my_athletes()), true);
-update public.profiles set date_of_birth = current_date - interval '18 years', under_17 = false where id = pg_temp.m('31');
+update public.profiles set date_of_birth = public.club_today() - interval '18 years', under_17 = false where id = pg_temp.m('31');
 select pg_temp.as_member('41');
 select pg_temp.ok('the child drops off on their 18th birthday', (select count(*) = 0 from public.my_athletes()), true);
-update public.profiles set date_of_birth = current_date - interval '18 years' + interval '1 day' where id = pg_temp.m('31');
+update public.profiles set date_of_birth = public.club_today() - interval '18 years' + interval '1 day' where id = pg_temp.m('31');
 select pg_temp.ok('the day before their 18th they are still listed', (select count(*) = 1 from public.my_athletes()), true);
-update public.profiles set date_of_birth = current_date - interval '14 years', under_17 = true where id = pg_temp.m('31');
+update public.profiles set date_of_birth = public.club_today() - interval '14 years', under_17 = true where id = pg_temp.m('31');
 update public.profiles set status = 'pending' where id = pg_temp.m('31');
 select pg_temp.ok('a child who isn''t approved is not listed', (select count(*) = 0 from public.my_athletes()), true);
 update public.profiles set status = 'approved' where id = pg_temp.m('31');
@@ -129,41 +129,41 @@ update public.profiles set status = 'approved' where id = pg_temp.m('31');
 -- Reporting injuries
 -- ---------------------------------------------------------------------------
 select pg_temp.as_member('32');
-select pg_temp.works('adult athlete reports their own injury', $s$ select public.report_injury('00000000-0000-0000-0000-000000000032', ' Knee ', ' Jarred landing ', current_date - 1, ' No jumping ', current_date + 14) $s$);
-select pg_temp.ok('injury saved trimmed, injured, reported by them', (select status = 'injured' and reported_by = pg_temp.m('32') and description = 'Jarred landing' and restrictions = 'No jumping' and expected_return = current_date + 14 from public.injuries where body_area = 'Knee'), true);
+select pg_temp.works('adult athlete reports their own injury', $s$ select public.report_injury('00000000-0000-0000-0000-000000000032', ' Knee ', ' Jarred landing ', public.club_today() - 1, ' No jumping ', public.club_today() + 14) $s$);
+select pg_temp.ok('injury saved trimmed, injured, reported by them', (select status = 'injured' and reported_by = pg_temp.m('32') and description = 'Jarred landing' and restrictions = 'No jumping' and expected_return = public.club_today() + 14 from public.injuries where body_area = 'Knee'), true);
 select pg_temp.ok('report added to the history', (select count(*) = 1 and bool_and(kind = 'reported' and author_name = 'Kai Senior') from public.injury_updates where injury_id = pg_temp.injury('Knee')), true);
-select pg_temp.fails('athlete cannot report for another athlete', $s$ select public.report_injury('00000000-0000-0000-0000-000000000031', 'Wrist', 'Fell', current_date) $s$);
-select pg_temp.fails('injury needs a body area', $s$ select public.report_injury('00000000-0000-0000-0000-000000000032', ' ', 'Fell', current_date) $s$);
-select pg_temp.fails('injury needs a description', $s$ select public.report_injury('00000000-0000-0000-0000-000000000032', 'Wrist', '', current_date) $s$);
-select pg_temp.fails('injury in the future refused', $s$ select public.report_injury('00000000-0000-0000-0000-000000000032', 'Wrist', 'Fell', current_date + 1) $s$);
+select pg_temp.fails('athlete cannot report for another athlete', $s$ select public.report_injury('00000000-0000-0000-0000-000000000031', 'Wrist', 'Fell', public.club_today()) $s$);
+select pg_temp.fails('injury needs a body area', $s$ select public.report_injury('00000000-0000-0000-0000-000000000032', ' ', 'Fell', public.club_today()) $s$);
+select pg_temp.fails('injury needs a description', $s$ select public.report_injury('00000000-0000-0000-0000-000000000032', 'Wrist', '', public.club_today()) $s$);
+select pg_temp.fails('injury in the future refused', $s$ select public.report_injury('00000000-0000-0000-0000-000000000032', 'Wrist', 'Fell', public.club_today() + 1) $s$);
 select pg_temp.fails('injury needs a date', $s$ select public.report_injury('00000000-0000-0000-0000-000000000032', 'Wrist', 'Fell', null) $s$);
 select pg_temp.as_member('41');
-select pg_temp.works('guardian reports for their child', $s$ select public.report_injury('00000000-0000-0000-0000-000000000031', 'Shoulder', 'Fell at school', current_date) $s$);
+select pg_temp.works('guardian reports for their child', $s$ select public.report_injury('00000000-0000-0000-0000-000000000031', 'Shoulder', 'Fell at school', public.club_today()) $s$);
 select pg_temp.ok('reported by the guardian', (select reported_by = pg_temp.m('41') and athlete_id = pg_temp.m('31') from public.injuries where body_area = 'Shoulder'), true);
-update public.profiles set date_of_birth = current_date - interval '19 years', under_17 = false where id = pg_temp.m('31');
-select pg_temp.fails('guardian cannot report for an adult', $s$ select public.report_injury('00000000-0000-0000-0000-000000000031', 'Hip', 'Sore', current_date) $s$);
-update public.profiles set date_of_birth = current_date - interval '14 years', under_17 = true where id = pg_temp.m('31');
+update public.profiles set date_of_birth = public.club_today() - interval '19 years', under_17 = false where id = pg_temp.m('31');
+select pg_temp.fails('guardian cannot report for an adult', $s$ select public.report_injury('00000000-0000-0000-0000-000000000031', 'Hip', 'Sore', public.club_today()) $s$);
+update public.profiles set date_of_birth = public.club_today() - interval '14 years', under_17 = true where id = pg_temp.m('31');
 select pg_temp.as_member('11');
-select pg_temp.fails('coach cannot report for an athlete', $s$ select public.report_injury('00000000-0000-0000-0000-000000000031', 'Hip', 'Sore', current_date) $s$);
-select pg_temp.fails('a coach is not an athlete to report for', $s$ select public.report_injury('00000000-0000-0000-0000-000000000011', 'Back', 'Sore', current_date) $s$);
+select pg_temp.fails('coach cannot report for an athlete', $s$ select public.report_injury('00000000-0000-0000-0000-000000000031', 'Hip', 'Sore', public.club_today()) $s$);
+select pg_temp.fails('a coach is not an athlete to report for', $s$ select public.report_injury('00000000-0000-0000-0000-000000000011', 'Back', 'Sore', public.club_today()) $s$);
 select pg_temp.as_member('14');
-select pg_temp.fails('physio cannot report for an athlete', $s$ select public.report_injury('00000000-0000-0000-0000-000000000032', 'Hip', 'Sore', current_date) $s$);
+select pg_temp.fails('physio cannot report for an athlete', $s$ select public.report_injury('00000000-0000-0000-0000-000000000032', 'Hip', 'Sore', public.club_today()) $s$);
 select pg_temp.as_member('01');
-select pg_temp.fails('admin cannot report for an athlete', $s$ select public.report_injury('00000000-0000-0000-0000-000000000032', 'Hip', 'Sore', current_date) $s$);
+select pg_temp.fails('admin cannot report for an athlete', $s$ select public.report_injury('00000000-0000-0000-0000-000000000032', 'Hip', 'Sore', public.club_today()) $s$);
 
 -- The admin report.
 select pg_temp.as_member('01');
-select pg_temp.ok('admin report lists all three injuries', (select count(*) = 3 from public.injury_report(current_date - 30)), true);
-select pg_temp.ok('admin report has the athlete and history count', (select athlete_name = 'Kai Senior' and update_count = 1 and document_count = 0 and status = 'injured' from public.injury_report(current_date - 30) where body_area = 'Knee'), true);
+select pg_temp.ok('admin report lists all three injuries', (select count(*) = 3 from public.injury_report(public.club_today() - 30)), true);
+select pg_temp.ok('admin report has the athlete and history count', (select athlete_name = 'Kai Senior' and update_count = 1 and document_count = 0 and status = 'injured' from public.injury_report(public.club_today() - 30) where body_area = 'Knee'), true);
 update public.injuries set status = 'cleared', cleared_at = now() - interval '60 days', created_at = now() - interval '90 days' where body_area = 'Ankle';
-select pg_temp.ok('injuries cleared before the date drop off', (select count(*) = 2 from public.injury_report(current_date - 30)), true);
-select pg_temp.ok('and come back for a longer period', (select count(*) = 3 from public.injury_report(current_date - 100)), true);
+select pg_temp.ok('injuries cleared before the date drop off', (select count(*) = 2 from public.injury_report(public.club_today() - 30)), true);
+select pg_temp.ok('and come back for a longer period', (select count(*) = 3 from public.injury_report(public.club_today() - 100)), true);
 select pg_temp.as_member('22');
-select pg_temp.ok('committee gets no admin report', (select count(*) = 0 from public.injury_report(current_date - 30)), true);
+select pg_temp.ok('committee gets no admin report', (select count(*) = 0 from public.injury_report(public.club_today() - 30)), true);
 select pg_temp.as_member('11');
-select pg_temp.ok('coach gets no admin report', (select count(*) = 0 from public.injury_report(current_date - 30)), true);
+select pg_temp.ok('coach gets no admin report', (select count(*) = 0 from public.injury_report(public.club_today() - 30)), true);
 select pg_temp.as_member('41');
-select pg_temp.ok('guardian gets no admin report', (select count(*) = 0 from public.injury_report(current_date - 30)), true);
+select pg_temp.ok('guardian gets no admin report', (select count(*) = 0 from public.injury_report(public.club_today() - 30)), true);
 
 -- ---------------------------------------------------------------------------
 -- Sending back a clearance

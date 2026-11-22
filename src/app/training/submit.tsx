@@ -9,7 +9,8 @@ import { ThemedText } from '@/components/themed-text';
 import { Button, ChipGroup, ErrorText, TextField } from '@/components/ui';
 import { Spacing } from '@/constants/theme';
 import { useTheme } from '@/hooks/use-theme';
-import { DOCUMENT_TYPES, toDateString } from '@/lib/injuries';
+import { clubToday } from '@/lib/club-time';
+import { DOCUMENT_TYPES } from '@/lib/injuries';
 import { supabase } from '@/lib/supabase';
 import { dueLabel, isOutstanding, uploadCertificate, useMyTraining } from '@/lib/training';
 
@@ -30,7 +31,7 @@ export default function SubmitCertificateScreen() {
   const { myTraining } = useMyTraining();
   const [profileChoice, setProfileChoice] = useState<string | null>(params.profile ?? null);
   const [ticked, setTicked] = useState<string[]>(params.requirement ? [params.requirement] : []);
-  const [completedOn, setCompletedOn] = useState<string | null>(toDateString(new Date()));
+  const [completedOn, setCompletedOn] = useState<string | null>(clubToday());
   const [notes, setNotes] = useState('');
   const [attachment, setAttachment] = useState<DocumentPicker.DocumentPickerAsset | null>(null);
   const [saving, setSaving] = useState(false);
@@ -174,7 +175,7 @@ export default function SubmitCertificateScreen() {
         value={completedOn}
         onChange={setCompletedOn}
         quickPicks={completedQuickPicks}
-        max={toDateString(new Date())}
+        max={clubToday()}
       />
 
       <View style={styles.section}>

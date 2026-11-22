@@ -5,7 +5,7 @@
 -- person can ask for, after the club password check, and saves nothing.
 -- admin_save_member won't approve anyone under 13, by the checked date or the
 -- date given at join. Members already approved, and every sample member, are
--- unchanged. "Today" is the database's current_date, the same date every
+-- unchanged. "Today" is the database's public.club_today(), the same date every
 -- date below is worked out from, so the test means the same on any day.
 \set ON_ERROR_STOP 0
 \pset tuples_only on
@@ -30,9 +30,9 @@ $$ select ('00000000-0000-0000-0000-0000000000' || n)::uuid $$;
 -- The two dates every check turns on: the day before the 13th birthday, and
 -- the birthday itself.
 create or replace function pg_temp.almost_13() returns date language sql as
-$$ select (current_date - interval '13 years')::date + 1 $$;
+$$ select (public.club_today() - interval '13 years')::date + 1 $$;
 create or replace function pg_temp.just_13() returns date language sql as
-$$ select (current_date - interval '13 years')::date $$;
+$$ select (public.club_today() - interval '13 years')::date $$;
 
 create or replace function pg_temp.too_young() returns text language sql as
 $$ select 'FirstPass HQ is for members aged 13 and over. If you’re a parent or guardian, enter your own date of birth.' $$;
@@ -71,7 +71,7 @@ insert into auth.users (id, email, email_confirmed_at) values
 
 select pg_temp.ok('is_under_13: the day before the 13th birthday', public.is_under_13(pg_temp.almost_13()), true);
 select pg_temp.ok('is_under_13: the 13th birthday', public.is_under_13(pg_temp.just_13()), false);
-select pg_temp.ok('is_under_13: a young child', public.is_under_13(current_date - 365 * 5), true);
+select pg_temp.ok('is_under_13: a young child', public.is_under_13(public.club_today() - 365 * 5), true);
 select pg_temp.ok('is_under_13: an adult', public.is_under_13(date '1980-01-01'), false);
 select pg_temp.ok('is_under_13: no date of birth is not known, so no', public.is_under_13(null), false);
 select pg_temp.ok('is_under_13: signed-out callers can''t run it',
@@ -106,11 +106,11 @@ select pg_temp.ok('turned away: still pending, with no join request',
 select pg_temp.ok('turned away with no guardian email: the age answers, not the guardian email rule',
   public.submit_join_request('Riley Young', '', 'athlete', null, null, pg_temp.almost_13(), null) = pg_temp.too_young(), true);
 select pg_temp.ok('turned away: a young child too',
-  public.submit_join_request('Riley Young', '', 'athlete', null, null, current_date - 365 * 7, 'parent@example.test') = pg_temp.too_young(), true);
+  public.submit_join_request('Riley Young', '', 'athlete', null, null, public.club_today() - 365 * 7, 'parent@example.test') = pg_temp.too_young(), true);
 select pg_temp.ok('turned away: a baby born today too',
-  public.submit_join_request('Riley Young', '', 'athlete', null, null, current_date, 'parent@example.test') = pg_temp.too_young(), true);
+  public.submit_join_request('Riley Young', '', 'athlete', null, null, public.club_today(), 'parent@example.test') = pg_temp.too_young(), true);
 select pg_temp.fails_with('a date of birth in the future still doesn''t look right',
-  $s$ select public.submit_join_request('Riley Young', '', 'athlete', null, null, current_date + 1, 'parent@example.test') $s$,
+  $s$ select public.submit_join_request('Riley Young', '', 'athlete', null, null, public.club_today() + 1, 'parent@example.test') $s$,
   'That date of birth doesn%t look right');
 select pg_temp.ok('still nothing saved after every refusal',
   pg_temp.request_of('61') = (select v from before_61), true);
@@ -143,12 +143,12 @@ select pg_temp.ok('the last request is saved: a 13-year-old asking to help as a 
   (select requested_role = 'volunteer' and declared_date_of_birth = pg_temp.just_13() and full_name = 'Sam Thirteen'
    from public.profiles where id = pg_temp.id('62')), true);
 select pg_temp.works('join as an athlete on the 13th birthday keeps the parent''s email',
-  $s$ select public.submit_join_request('Sam Thirteen', '', 'athlete', null, null, (current_date - interval '13 years')::date, 'parent@example.test') $s$);
+  $s$ select public.submit_join_request('Sam Thirteen', '', 'athlete', null, null, (public.club_today() - interval '13 years')::date, 'parent@example.test') $s$);
 select pg_temp.ok('a 13-year-old athlete''s request is saved with their parent''s email',
   (select guardian_email = 'parent@example.test' and declared_date_of_birth = pg_temp.just_13()
    from public.profiles where id = pg_temp.id('62')), true);
 select pg_temp.fails_with('a 13-year-old athlete still needs a parent''s email',
-  $s$ select public.submit_join_request('Sam Thirteen', '', 'athlete', null, null, (current_date - interval '13 years')::date, null) $s$,
+  $s$ select public.submit_join_request('Sam Thirteen', '', 'athlete', null, null, (public.club_today() - interval '13 years')::date, null) $s$,
   'Give the email of a parent or guardian%');
 
 -- ---------------------------------------------------------------------------
@@ -209,7 +209,7 @@ select pg_temp.ok('and nothing about them changed',
 
 select pg_temp.as_member('99');
 select pg_temp.fails_with('signed-out or unknown callers are refused as before',
-  $s$ select public.submit_join_request('Nobody', '', 'athlete', null, null, (current_date - interval '13 years')::date + 1, 'p@example.test') $s$,
+  $s$ select public.submit_join_request('Nobody', '', 'athlete', null, null, (public.club_today() - interval '13 years')::date + 1, 'p@example.test') $s$,
   'Confirm your email address%');
 
 -- ---------------------------------------------------------------------------
@@ -256,7 +256,7 @@ select pg_temp.works('saving them as pending again works',
 -- 67 said at join they're 13; the admin checks and finds they're 12.
 select pg_temp.as_member('67');
 select pg_temp.works('a 13-year-old by their own date asks to join',
-  $s$ select public.submit_join_request('Rowan Checked', '', 'athlete', null, null, (current_date - interval '13 years')::date, 'parent@example.test') $s$);
+  $s$ select public.submit_join_request('Rowan Checked', '', 'athlete', null, null, (public.club_today() - interval '13 years')::date, 'parent@example.test') $s$);
 select pg_temp.as_member('01');
 select pg_temp.works('admin records the checked date, under 13',
   format($s$ select public.admin_set_member_details(%L, %L, null, null) $s$, pg_temp.id('67'), pg_temp.almost_13()));

@@ -10,6 +10,7 @@ import { useTheme } from '@/hooks/use-theme';
 import { type Absence, absenceDays, absenceOn, absenceWhy } from '@/lib/absences';
 import { percent } from '@/lib/attendance';
 import { useAuth } from '@/lib/auth';
+import { clubDay, clubToday } from '@/lib/club-time';
 import { formatDateTime } from '@/lib/format';
 import { toDateString } from '@/lib/injuries';
 import { supabase } from '@/lib/supabase';
@@ -40,7 +41,7 @@ export default function FamilyAttendanceScreen() {
   // to sees them read-only.
   const [family, setFamily] = useState(false);
   const self = id === session?.user.id;
-  const today = toDateString(new Date());
+  const today = clubToday();
 
   const load = useCallback(async () => {
     const since = new Date();
@@ -139,7 +140,7 @@ export default function FamilyAttendanceScreen() {
             : `At ${present} of ${sessions.length} sessions · ${percent(present, sessions.length)}`}
         </ThemedText>
         {sessions.map((s) => {
-          const reported = !s.present && absenceOn(active, toDateString(new Date(s.held_at)));
+          const reported = !s.present && absenceOn(active, clubDay(s.held_at));
           return (
             <Card key={s.session_id}>
               <View style={styles.row}>

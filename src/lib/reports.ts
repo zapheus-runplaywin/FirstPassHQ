@@ -3,6 +3,7 @@ import * as Sharing from 'expo-sharing';
 import { Platform } from 'react-native';
 
 import { formatDate, isMinor } from '@/lib/age';
+import { clubDay } from '@/lib/club-time';
 import type { ConductStatus } from '@/lib/conduct';
 import { formatDateString, injuryStatusLabels, toDateString } from '@/lib/injuries';
 import {
@@ -124,7 +125,7 @@ function groupsOf(profileId: string, placements: Placement[], teams: Team[], rol
 /** The local day of an ISO time, such as "Tue 7 Oct 2026". */
 /** A timestamp as the local day, DD/MM/YYYY. */
 export function localDay(iso: string) {
-  return formatDateString(toDateString(new Date(iso)));
+  return formatDateString(clubDay(iso));
 }
 
 const byName = (a: { name: string }, b: { name: string }) => a.name.localeCompare(b.name);
@@ -726,7 +727,7 @@ export function integrityReport(
                 courseStatusLabels[m.status],
                 formatDate(m.completed_on),
                 m.reviewed_by_name && m.status !== 'submitted'
-                  ? `${m.reviewed_by_name}${m.reviewed_at ? `, ${formatDate(toDateString(new Date(m.reviewed_at)))}` : ''}`
+                  ? `${m.reviewed_by_name}${m.reviewed_at ? `, ${formatDate(clubDay(m.reviewed_at))}` : ''}`
                   : '',
               ],
               flag: m.status !== 'approved' && course.due_on < today,
@@ -1129,14 +1130,14 @@ export function injuryReport(rows: InjuryReportRow[], sinceDate: string): Report
       `${r.athlete_name ?? r.athlete_email ?? 'Unnamed member'}${r.athlete_left_at ? ' (left the club)' : ''}`,
       r.body_area,
       formatDate(r.injured_on),
-      formatDate(toDateString(new Date(r.reported_at))),
+      formatDate(clubDay(r.reported_at)),
       injuryStatusLabels[r.status],
       r.restrictions ?? '',
       formatDate(r.expected_return),
       [
         r.coach_endorsed_by_name ? `Endorsed: ${r.coach_endorsed_by_name}` : '',
         r.cleared_by_name
-          ? `Cleared: ${r.cleared_by_name}${r.cleared_at ? `, ${formatDate(toDateString(new Date(r.cleared_at)))}` : ''}`
+          ? `Cleared: ${r.cleared_by_name}${r.cleared_at ? `, ${formatDate(clubDay(r.cleared_at))}` : ''}`
           : '',
       ]
         .filter(Boolean)
@@ -1271,8 +1272,8 @@ export function sessionPlanReport(
               `${r.author_name}\n${r.author_position}`,
               r.run_by ?? '',
               content(r),
-              formatDate(toDateString(new Date(r.created_at))),
-              r.edited_at ? formatDate(toDateString(new Date(r.edited_at))) : '',
+              formatDate(clubDay(r.created_at)),
+              r.edited_at ? formatDate(clubDay(r.edited_at)) : '',
             ],
           })),
         empty: 'No session plans in this period.',
@@ -1433,7 +1434,7 @@ export function medicalCheckReport(
         : 'Athlete',
       r.has_contacts ? 'Yes' : 'None',
       r.checked_at
-        ? `${formatDateString(toDateString(new Date(r.checked_at)))}\n${r.checked_by_name ?? 'Former member'}`
+        ? `${formatDateString(clubDay(r.checked_at))}\n${r.checked_by_name ?? 'Former member'}`
         : 'Never',
       r.due_on ? formatDateString(r.due_on) : 'Now',
     ],

@@ -5,7 +5,7 @@ import { ReportView } from '@/components/report-view';
 import { Screen } from '@/components/screen';
 import { SeasonChips } from '@/components/training-list';
 import { ErrorText } from '@/components/ui';
-import { toDateString } from '@/lib/injuries';
+import { clubToday } from '@/lib/club-time';
 import { loadCourses } from '@/lib/report-data';
 import { integrityReport, type CourseProgress } from '@/lib/reports';
 import { currentSeason } from '@/lib/training';
@@ -52,7 +52,7 @@ export default function IntegrityReportScreen() {
       <ErrorText>{error}</ErrorText>
       {courses ? (
         <ReportView
-          report={integrityReport(seasonLabel(season), courses, toDateString(new Date()))}
+          report={integrityReport(seasonLabel(season), courses, clubToday())}
         />
       ) : null}
     </Screen>

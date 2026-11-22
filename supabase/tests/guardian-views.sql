@@ -191,9 +191,9 @@ select pg_temp.as_member('31');
 select pg_temp.works('Jordan messages the team as captain',
   $s$ select public.send_group_message('Bring bibs', 'group', null, pg_temp.id('a2')) $s$);
 select pg_temp.works('Jordan reports an absence',
-  $s$ select public.report_absence(pg_temp.id('31'), current_date + 1, current_date + 2, 'Exams') $s$);
+  $s$ select public.report_absence(pg_temp.id('31'), public.club_today() + 1, public.club_today() + 2, 'Exams') $s$);
 select pg_temp.works('Jordan checks in',
-  $s$ select public.save_check_in(current_date - 1, 3, 3, 3, 3, 'Fine') $s$);
+  $s$ select public.save_check_in(public.club_today() - 1, 3, 3, 3, 3, 'Fine') $s$);
 select set_config('request.jwt.claim.sub', '', false);
 
 -- The check finds drift: Logan taken out of Sample Team behind the app's back.

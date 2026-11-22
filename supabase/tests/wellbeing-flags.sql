@@ -25,7 +25,7 @@ create or replace function pg_temp.flag_days(n text, p_days int default 14) retu
 $$ select count(*) from public.wellbeing_flags(p_days) where athlete_id = pg_temp.id(n) $$;
 create or replace function pg_temp.check_in(n text, back int, low int) returns void language sql as
 $$ insert into public.check_ins (athlete_id, day, sleep, soreness, stress, mood, note)
-   values (pg_temp.id(n), current_date - back, 4, low, 4, 5, 'Private note')
+   values (pg_temp.id(n), public.club_today() - back, 4, low, 4, 5, 'Private note')
    on conflict (athlete_id, day) do update set soreness = excluded.soreness $$;
 create or replace function pg_temp.officer_cannot(n text) returns text language sql as
 $$ select pg_temp.as_member(n);
@@ -47,8 +47,8 @@ insert into auth.users (id, email, email_confirmed_at) values
   ('00000000-0000-0000-0000-000000000063', 'coach.player@example.test', now());
 update public.profiles p set status = v.status::public.member_status, full_name = v.name,
   role = v.role::public.app_role, extra_roles = v.extra::public.app_role[],
-  date_of_birth = current_date - interval '22 years', verified_at = now(),
-  wwcc_number = 'WWC' || right(v.id, 4), wwcc_expires_on = current_date + 400
+  date_of_birth = public.club_today() - interval '22 years', verified_at = now(),
+  wwcc_number = 'WWC' || right(v.id, 4), wwcc_expires_on = public.club_today() + 400
 from (values
   ('00000000-0000-0000-0000-000000000061', 'Nico Unselected', 'athlete', '{}', 'approved'),
   ('00000000-0000-0000-0000-000000000062', 'Oli Waiting', 'athlete', '{}', 'pending'),
@@ -133,8 +133,8 @@ select pg_temp.is('a flag 20 days ago is left out of the last 14 days', pg_temp.
 select pg_temp.is('asking for more than 60 days gives 60', pg_temp.flag_days('32', 1000), 4);
 select pg_temp.is('asking for 0 days gives today only', pg_temp.flag_days('32', 0), 0);
 select pg_temp.is('no days given means 14', (select count(*) from public.wellbeing_flags(null) where athlete_id = pg_temp.id('32')), 3);
-select pg_temp.is('a day with no low score is not a flag', (select count(*) from public.wellbeing_flags() where athlete_id = pg_temp.id('32') and day = current_date), 0);
-select pg_temp.is('the lowest score is shown', (select lowest_score from public.wellbeing_flags() where athlete_id = pg_temp.id('32') and day = current_date - 3), 1);
+select pg_temp.is('a day with no low score is not a flag', (select count(*) from public.wellbeing_flags() where athlete_id = pg_temp.id('32') and day = public.club_today()), 0);
+select pg_temp.is('the lowest score is shown', (select lowest_score from public.wellbeing_flags() where athlete_id = pg_temp.id('32') and day = public.club_today() - 3), 1);
 select pg_temp.is('each row counts the athlete''s flags in the last 7 days', (select min(flags_in_7_days) from public.wellbeing_flags() where athlete_id = pg_temp.id('32')), 3);
 select pg_temp.ok('rows are newest first', (select array_agg(day) = array_agg(day order by day desc) from public.wellbeing_flags() where athlete_id = pg_temp.id('32')), true);
 select pg_temp.ok('the athlete''s name is shown', exists (select 1 from public.wellbeing_flags() where athlete_name = 'Kai Senior'), true);
@@ -190,9 +190,9 @@ update public.profiles set stood_down_at = now() where id = pg_temp.id('11');
 select pg_temp.officer_cannot('11');
 select pg_temp.ok('a stood down officer gets no to-do count', public.wellbeing_flag_alerts() is null, true);
 update public.profiles set stood_down_at = null where id = pg_temp.id('11');
-update public.profiles set wwcc_expires_on = current_date - 1 where id = pg_temp.id('11');
+update public.profiles set wwcc_expires_on = public.club_today() - 1 where id = pg_temp.id('11');
 select pg_temp.officer_cannot('11');
-update public.profiles set wwcc_expires_on = current_date + 400 where id = pg_temp.id('11');
+update public.profiles set wwcc_expires_on = public.club_today() + 400 where id = pg_temp.id('11');
 delete from public.safeguarding_post_holders where post = 'child_safety_officer';
 select pg_temp.officer_cannot('11');
 select pg_temp.ok('with no officer named, nobody gets a to-do count', public.wellbeing_flag_alerts() is null, true);
