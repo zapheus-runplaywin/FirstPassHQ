@@ -256,13 +256,13 @@ screen.
 #### Which version you have
 
 The opening screen shows the app's version and build in small print at the foot, such as
-**Version 1.0.0 (23) · Build 714**, and so do Find your club, the sign-in screen and the foot of the
+**Version 1.0.0 (23) · Build 749**, and so do Find your club, the sign-in screen and the foot of the
 home screen, under "Powered by". When the club has sent a fix over the air since you installed,
 a second line names it, such as **Update 1a2b3c4d · 20 Nov 2026**. If something goes wrong, or the
 club asks which version you're testing, read these lines out or send a screenshot of them.
 
 - **Version 1.0.0 (23)** is the version in the app store and, in brackets, the store build.
-- **Build 714** is the build of the club's app code. It matches the "build 714" on the guides and
+- **Build 749** is the build of the club's app code. It matches the "build 749" on the guides and
   PDFs made from the same code.
 - **Update** appears only while an over-the-air update is running, with when it was made.
 
