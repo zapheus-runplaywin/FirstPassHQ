@@ -11,6 +11,11 @@
 \set ON_ERROR_STOP 0
 \pset tuples_only on
 \pset format unaligned
+-- Requests take dates in the club's own time zone (Perth), so today here must
+-- be Perth's today too. Without this, current_date is UTC's, a day behind
+-- Perth from 4 pm to midnight UTC, and today's messages fell outside a
+-- request ending "today" (failed in CI at 21:52 UTC, 22 November 2026).
+set time zone 'Australia/Perth';
 create or replace function pg_temp.as_member(n text) returns void language sql as
 $$ select set_config('request.jwt.claim.sub', case when n = '' then '' else '00000000-0000-0000-0000-0000000000' || n end, false) $$;
 create or replace function pg_temp.id(n text) returns uuid language sql as
