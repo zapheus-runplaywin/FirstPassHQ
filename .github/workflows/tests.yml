@@ -1,18 +1,17 @@
 name: Tests
 
-# Runs the regression suite on every pull request, so a change shows a failure
-# before it's merged: lint, typecheck and the Jest unit tests for the app, and
-# the database tests in supabase/tests against every migration. The browser
-# smoke tests are in browser-tests.yml. Every pull request adds tests for what
-# it changes (AGENTS.md "Tests").
+# Runs the regression suite on every push to every branch, so a branch shows a
+# failure before its pull request is merged: lint, typecheck and the Jest unit
+# tests for the app, the database tests in supabase/tests against every
+# migration, and browser smoke tests of the web build (e2e/). Every pull
+# request adds tests for what it changes (AGENTS.md "Tests").
 #
-# Pull requests only, not every push and not main after a merge, to save
-# Actions minutes (Matt, 20 November 2026): the run tests the pull request
-# merged with main, so it is what main gets. To test main or a branch with no
-# pull request, run it by hand (Actions > Tests > Run workflow). To go back to
-# every push, put `push:` back in place of `pull_request:`.
+# From 20 to 22 November 2026 this ran on pull requests only, to save Actions
+# minutes. Every FirstPass repo is public since 22 November, so minutes are free
+# and it runs on every push again (Matt). scripts/test-workflow-triggers.py
+# keeps it that way.
 on:
-  pull_request:
+  push:
   workflow_dispatch:
 
 permissions:
@@ -96,7 +95,7 @@ jobs:
       - name: Test clubs stay off without TEST_CLUBS
         if: ${{ !cancelled() }}
         run: python3 scripts/test-workflow-test-clubs.py
-      - name: Tests still run on every pull request
+      - name: Tests still run on every push
         if: ${{ !cancelled() }}
         run: python3 scripts/test-workflow-triggers.py
       - name: Store builds go to the Google Play closed test
@@ -126,3 +125,33 @@ jobs:
       - name: Lockfile stays off the patched advisories
         if: ${{ !cancelled() }}
         run: python3 scripts/test-dependency-floors.py
+
+  # The real web build driven through key flows in Chromium at phone size, with
+  # Supabase answered by e2e/support/fake-supabase.ts, so a broken build or a
+  # broken key flow fails here. See docs/testing-strategy.md.
+  browser:
+    runs-on: ubuntu-24.04
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+      - run: npm ci --no-audit --no-fund
+      - name: Lint the smoke tests
+        env:
+          EXPO_OFFLINE: '1'
+        run: npx expo lint e2e
+      - name: Install Chromium
+        run: npx playwright install --with-deps chromium
+      - name: Build the web app
+        run: npm run e2e:build
+      - name: Browser smoke tests
+        run: npm run e2e
+      - name: Keep the browser test report
+        # The HTML report, with a screenshot and trace of each failed test.
+        if: failure()
+        uses: actions/upload-artifact@cf430e030ddbb5b0abf93d22962f4752f3646cd9 # v7.0.2
+        with:
+          name: browser-test-report
+          path: |
+            e2e/playwright-report
+            e2e/test-results
+          retention-days: 14
+          if-no-files-found: ignore

@@ -1,53 +1,24 @@
 #!/usr/bin/env python3
-"""Checks when the test workflows run, so a change that saves Actions minutes
-can't quietly stop the tests running on a pull request (AGENTS.md "Tests").
+"""Checks when the test workflows run, so a change can't quietly stop the
+tests running on a branch before its pull request merges (AGENTS.md "Tests").
 
-Since 20 November 2026 (Matt, to save minutes):
-- Tests (tests.yml) runs on every pull request, and by hand. Not on every
-  push, and not on main after a merge.
-- Browser tests (browser-tests.yml) runs on pull requests, and by hand, but
-  skips one that changes only the database, scripts or docs. Anything that can
-  change the web build (src/, e2e/, assets/, package files, app.json, the
-  workflow) must still run it.
-- The Security audit still runs on every merge to main (AGENTS.md "Tests").
+- Tests (tests.yml) runs on every push to every branch, with no path filter,
+  and by hand, and runs the app, database and browser jobs. From 20 to 22
+  November 2026 it ran on pull requests only, to save Actions minutes; every
+  repo is public since 22 November, so minutes are free and it runs on every
+  push again (Matt, 22 November 2026).
+- The Security audit still runs on every merge to main.
 
 It also checks a few broken workflows are caught. Run by the "Tests"
 workflow."""
 
-import fnmatch
-import re
 import sys
 from pathlib import Path
 
 import yaml
 
 WORKFLOWS = Path(__file__).resolve().parent.parent / '.github' / 'workflows'
-
-# Files a pull request might change that can change the web build. Each must
-# start the browser tests.
-MUST_RUN_BROWSER = [
-    'src/app/(tabs)/index.tsx',
-    'src/lib/inbox.ts',
-    'src/components/concern-lights.tsx',
-    'e2e/specs/messages.spec.ts',
-    'e2e/playwright.config.ts',
-    'assets/images/icon.png',
-    'package.json',
-    'package-lock.json',
-    'app.json',
-    'tsconfig.json',
-    '.github/workflows/browser-tests.yml',
-]
-# Files that can't change the web build. Each may skip the browser tests.
-MAY_SKIP_BROWSER = [
-    'supabase/migrations/20261120000000_example.sql',
-    'supabase/tests/record-access.sql',
-    'supabase/functions/playhq/index.ts',
-    'scripts/run-sql-tests.sh',
-    'docs/user-guide.md',
-    'docs/pdfs/manual.pdf',
-    'README.md',
-]
+JOBS = ['app', 'database', 'browser']
 
 
 def triggers(text: str) -> dict:
@@ -61,53 +32,22 @@ def triggers(text: str) -> dict:
     return on or {}
 
 
-def glob_match(path: str, pattern: str) -> bool:
-    """GitHub's path filters: ** crosses folders, * doesn't."""
-    regex = ''
-    i = 0
-    while i < len(pattern):
-        if pattern.startswith('**', i):
-            regex += '.*'
-            i += 2
-        elif pattern[i] == '*':
-            regex += '[^/]*'
-            i += 1
-        else:
-            regex += fnmatch.translate(pattern[i])[4:-3]
-            i += 1
-    return re.fullmatch(regex, path) is not None
-
-
-def skipped(path: str, ignore: list[str]) -> bool:
-    return any(glob_match(path, p) for p in ignore)
-
-
 def tests_problems(text: str) -> list[str]:
     on = triggers(text)
     problems = []
-    if 'pull_request' not in on:
-        problems.append('Tests must run on pull_request')
-    elif on['pull_request'] and ('paths' in on['pull_request'] or 'paths-ignore' in on['pull_request']):
-        problems.append('Tests must run on every pull request (no path filter)')
+    if 'push' not in on:
+        problems.append('Tests must run on push')
+    else:
+        push = on['push'] or {}
+        for key in ('branches', 'branches-ignore', 'paths', 'paths-ignore', 'tags'):
+            if key in push:
+                problems.append(f'Tests must run on every push to every branch (no {key} filter)')
     if 'workflow_dispatch' not in on:
         problems.append('Tests must be runnable by hand (workflow_dispatch)')
-    return problems
-
-
-def browser_problems(text: str) -> list[str]:
-    on = triggers(text)
-    problems = []
-    if 'pull_request' not in on:
-        return ['Browser tests must run on pull_request']
-    if 'workflow_dispatch' not in on:
-        problems.append('Browser tests must be runnable by hand (workflow_dispatch)')
-    pr = on['pull_request'] or {}
-    if 'paths' in pr:
-        problems.append('Browser tests must list what to skip (paths-ignore), not what to run')
-    ignore = pr.get('paths-ignore', [])
-    for path in MUST_RUN_BROWSER:
-        if skipped(path, ignore):
-            problems.append(f'Browser tests would skip a change to {path}')
+    jobs = (yaml.safe_load(text) or {}).get('jobs') or {}
+    for job in JOBS:
+        if job not in jobs:
+            problems.append(f'Tests must run the {job} job')
     return problems
 
 
@@ -130,32 +70,28 @@ def main() -> int:
             failures.append(name)
 
     tests = (WORKFLOWS / 'tests.yml').read_text()
-    browser = (WORKFLOWS / 'browser-tests.yml').read_text()
     audit = (WORKFLOWS / 'security-audit.yml').read_text()
 
     for problem in tests_problems(tests) or ['']:
-        check(problem or 'Tests runs on every pull request and by hand', not problem)
-    for problem in browser_problems(browser) or ['']:
-        check(problem or 'Browser tests run on pull requests that can change the web build', not problem)
+        check(problem or 'Tests runs every job on every push and by hand', not problem)
     for problem in audit_problems(audit) or ['']:
         check(problem or 'Security audit runs on every merge to main', not problem)
-    check('Tests no longer runs the browser job itself', 'browser:' not in (yaml.safe_load(tests).get('jobs') or {}))
-    check('Browser tests runs the smoke tests', 'npm run e2e' in browser)
+    check('Tests runs the browser smoke tests', 'npm run e2e' in tests)
+    check('No separate browser workflow can drift from Tests',
+          not (WORKFLOWS / 'browser-tests.yml').exists())
 
-    ignore = (triggers(browser)['pull_request'] or {}).get('paths-ignore', [])
-    for path in MAY_SKIP_BROWSER:
-        check(f'Browser tests skip a pull request that changes only {path}', skipped(path, ignore))
-
+    jobs = '\njobs:\n  app: {}\n  database: {}\n  browser: {}\n'
     # Broken workflows are caught.
-    check('Catches Tests on push only', bool(tests_problems('on:\n  push:\n  workflow_dispatch:\n')))
+    check('Catches Tests on pull requests only',
+          bool(tests_problems('on:\n  pull_request:\n  workflow_dispatch:' + jobs)))
+    check('Catches Tests on main only',
+          bool(tests_problems('on:\n  push:\n    branches: [main]\n  workflow_dispatch:' + jobs)))
     check('Catches Tests with a path filter',
-          bool(tests_problems("on:\n  pull_request:\n    paths: ['src/**']\n  workflow_dispatch:\n")))
-    check('Catches browser tests skipping src/',
-          bool(browser_problems("on:\n  pull_request:\n    paths-ignore: ['src/**']\n  workflow_dispatch:\n")))
-    check('Catches browser tests skipping the package files',
-          bool(browser_problems("on:\n  pull_request:\n    paths-ignore: ['*.json']\n  workflow_dispatch:\n")))
-    check('Catches browser tests skipping everything',
-          bool(browser_problems("on:\n  pull_request:\n    paths-ignore: ['**']\n  workflow_dispatch:\n")))
+          bool(tests_problems("on:\n  push:\n    paths-ignore: ['docs/**']\n  workflow_dispatch:" + jobs)))
+    check('Catches Tests that can\'t be run by hand', bool(tests_problems('on:\n  push:' + jobs)))
+    check('Catches Tests without the browser job',
+          bool(tests_problems('on:\n  push:\n  workflow_dispatch:\njobs:\n  app: {}\n  database: {}\n')))
+    check('Accepts Tests on every push', not tests_problems('on:\n  push:\n  workflow_dispatch:' + jobs))
     check('Catches a security audit that skips main',
           bool(audit_problems("on:\n  pull_request:\n  schedule:\n    - cron: '0 0 * * 0'\n")))
     check('Catches a security audit with a path filter on main',
