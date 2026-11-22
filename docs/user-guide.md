@@ -1955,8 +1955,13 @@ follow it live in FirstPass Vision. Managers can too. On your phone, open
 
 1. Type the club code, the same one you use for HQ.
 2. Tap **Sign in with Google** and choose the Google account you use for HQ.
-3. Tap a game in the list to follow it. Games stay in the list for three days, so you can look
-   back after full time.
+3. Tap a game in the list to follow it. The list shows the last three days, and **Earlier games**
+   brings older ones.
+
+After a game, **Report** shows it on one page, which you can print or save, and **Season** on the
+games list adds up each athlete's figures over the team's finished games (see [The game
+report](#the-game-report) and [The season so far](#the-season-so-far)). A saved report names
+players: keep it within the coaching team and don't post it publicly.
 
 You see a game only while you're a coach or manager of its squad or team with a current check;
 if your role pauses or you're stood down, Vision stops showing it within about a minute. Use your
@@ -4172,7 +4177,7 @@ once saved, only replaced or removed, and anyone who gets it wrong five times in
 | An athlete's own stats from a recorded game | The athlete's current coaches only, on the played game's goals page, once the recording is finished. Only that athlete's own figures: time on court and positions, shooting, feeds, gains, turnovers, rebounds and Net Points. Not the athlete, their parents or guardians, team mates, other parents, managers, physios, statisticians, the committee or admins. Nothing is shown when a team mate has the same name. The figures are worked out when the page opens and aren't stored with the goals. |
 | The list of recorded games | Admins only, under **Games** in Administration: each game's teams, round, status, who recorded it and how many events it holds. No stats and no athletes. |
 | Season KPIs, progress and reviews | An athlete's: the athlete, their coaches in that squad or team, their parents or guardians (read only, until 18) and admins (read only). Not teammates, the committee or physios. A coach's or manager's: them, the committee and admins, and an assistant coach's head coach. Only those who set KPIs change them, record results and write reviews; the person records progress, confirms reviews and adds their own view. A coach's or manager's KPIs and reviews are kept under their name if they delete their account, and stay on the admin report. |
-| Live game stats         | Admins and statisticians (while their statistician role isn't paused for a check): every game the club records. The coaches and managers of the game's squad or team, and of the squad a team belongs to, see the team's games at every stage and who has opened each, and the stats once they open the game in FirstPass Vision, without a pair code (a shadow statistician still pairs with the code in Vantage). Members with the Studio role (while not stood down), through FirstPass Studio: games with a PlayHQ game that are live or finished, their setup, the recorded stats and the athletes of the game's squad or team, never a shadow statistician's stats, pair codes or who paired. Athletes, guardians, physios and the committee don't see them, except an athlete's own figures after the game (see the row above). |
+| Live game stats         | Admins and statisticians (while their statistician role isn't paused for a check): every game the club records. The coaches and managers of the game's squad or team, and of the squad a team belongs to, see the team's games at every stage and who has opened each, and the stats once they open the game in FirstPass Vision, without a pair code (a shadow statistician still pairs with the code in Vantage). Members with the Studio role (while not stood down), through FirstPass Studio: games with a PlayHQ game that are live or finished, their setup, the recorded stats and the athletes of the game's squad or team, never a shadow statistician's stats, pair codes or who paired. The same people can save a game's report or its video markers file from Vision or Vantage, and coaches and managers see their team's season so far in Vision. Athletes, guardians, physios and the committee don't see any of it; an athlete's own figures after the game show only to their coaches (see the row above). |
 | Team goals              | The team's athletes, their guardians, its coaches (while their check is current and they aren't stood down) and admins. Only its coaches set and review them. Athletes and coaches in the team can comment; guardians and admins read the comments. Managers and physios placed in the team don't see them. |
 | Integrity training courses | The committee and admins see every course and who it's set for. Each member sees the courses set for them, and parents and guardians their child's. |
 | Integrity training certificates | The member, their parents or guardians, the committee and admins. Coaches, managers and physios don't see them. Certificates can't be changed or removed once sent. |
@@ -4601,6 +4606,13 @@ Working With Children Check, and another admin must do it.
   see them. The app's server checks who is asking each time and sends only that one athlete's
   figures, and a lapsed or stood-down coach gets none. Admins
   see which games were recorded (**Games** in Administration), not the stats.
+- **Copies of game stats that leave the app.** A game report saved or printed from FirstPass
+  Vision, and a video markers file saved from Vision or Vantage, name players beside their stats.
+  Only someone who can already see that game can make one, and each carries a line saying it is
+  for the coaching team. Once saved it is an ordinary file the apps can no longer protect, so
+  treat it like a team sheet: keep it within the coaching team and don't post it. The season so
+  far in Vision shows only to the team's coaches and managers, statisticians and admins, and
+  can't be saved as a file.
 - **Stand-downs.** An admin can stand someone down straight away, for example on an interim
   negative notice from the Working with Children Screening Unit. Their coach, manager, physio,
   committee, admin, statistician, Studio and temporary helper roles stop and they leave the squads and teams they lead. A
@@ -4897,7 +4909,8 @@ its tablets by invitation; it isn't in the public app stores yet.
 <img src="user-guide/vantage-home.png" width="420" alt="Vantage's home screen: the club code, New game and the Stream Deck switch">
 
 1. **Choose the club and sign in.** On the home screen, type the club's code (the same one as HQ),
-   tap **Find your club**, then **Sign in with Google** with the account you use for HQ. Vantage
+   tap **Find your club**, then sign in the way you do in HQ: **Sign in with Google**, or on an
+   iPad or a Mac **Sign in with Apple**. Vantage
    checks with the club that you're a statistician or an admin. Without the role, or without
    signing in, you can still record, but the game stays on the tablet and nobody else sees it.
 2. **Set up the game.** Tap **New game**. Pick the team you're recording for; Vantage then offers
@@ -4927,7 +4940,8 @@ The game screen also has:
 - **Stats**, the game so far: each quarter's score, centre pass to goal, shooting, gains and
   unforced turnovers, each shooter's goals, time on court and rebounds.
 - **Export**, to save or send the whole game as one file, to Drive, email or another app, as a
-  backup that doesn't need signal.
+  backup that doesn't need signal. Export also makes **Video markers** (see [Video
+  markers](#video-markers)).
 - **Helper**, to let a second statistician help (see below).
 
 <img src="user-guide/vantage-stats.png" width="420" alt="Vantage's Game so far: score, conversions, shooters, time on court and rebounds">
@@ -4968,17 +4982,40 @@ keys** on the home screen; leave it off on a tablet or phone. Every key keeps it
 whole game, only the detail row changes to answer the action just pressed, and **End quarter**
 takes two presses.
 
+#### Keyboard shortcuts
+
+On a Mac, or a tablet with a keyboard attached, the keyboard can do who, what and the detail while
+you tap or click where on the court. Turn on **Use keyboard shortcuts** on the home screen; leave
+it off without a keyboard. The keyboard's four rows, eight keys from the left, are laid out as the
+Stream Deck's four rows are: `1` to `8` for who, `Q` to `I` for what, `A` to `K` for the detail,
+then `Z` `X` `C` `V` for the other team, skip, flag and undo, `M` for the clock and `,` for **End
+quarter**, which takes two presses. Backspace undoes too. **Keys** on the game screen shows what
+every key does at that moment. A key held down counts once, and the keys rest while a sheet with
+its own text boxes is open.
+
+#### Video markers
+
+After a game, **Export** then **Video markers** makes a file that puts a named marker on every
+event in the game's video, in a video editor: goals and misses by shooter, centre passes, gains,
+turnovers, feeds, penalties, substitutions, quarter starts and ends, and flags. Type how far into
+the video the first quarter starts (the moment the clock was started in Vantage), pick the video's
+frames a second, how long before the tap each marker sits, and which kinds of event to mark, then
+choose **For DaVinci Resolve**, **For Premiere Pro** or a plain list of times. The file names
+players, so it's for the coaching team: keep it within the team and don't post it publicly. Coaches
+can make the same files in Vision, under the game report.
+
 ### Following a game in Vision
 
 Vision opens in the browser on your phone, at **https://firstpass-vision.expo.app**; there's
 nothing to install.
 
 1. Type the club code, the same one you use for HQ.
-2. Tap **Sign in with Google** and choose the Google account you use for HQ.
-3. Tap a game in the list. Games stay in the list for three days, so you can look back after full
-   time.
+2. Tap **Sign in with Google** and choose the Google account you use for HQ. In a browser Vision
+   signs in with Google only, so a member who joined HQ with Apple can't use it there yet.
+3. Tap a game in the list. The list shows the last three days; **Earlier games** at the foot
+   brings older ones, twenty at a time, each with its date.
 
-<img src="user-guide/vision-sign-in.png" width="210" alt="Vision's sign-in: the club, Sign in with Google and a reminder not to use a shared phone"> <img src="user-guide/vision-games.png" width="210" alt="Vision's games list: a live game and two finished ones">
+<img src="user-guide/vision-sign-in.png" width="210" alt="Vision's sign-in: the club, Sign in with Google and a reminder not to use a shared phone"> <img src="user-guide/vision-games.png" width="210" alt="Vision's games list: a live game and two finished ones"> <img src="user-guide/vision-earlier-games.png" width="210" alt="Vision's games list after Earlier games: older games with their dates">
 
 Use your own phone or computer, not a shared one: you stay signed in in that browser until you tap
 **Sign out**, and signing out of Vision doesn't sign you out of HQ.
@@ -5012,6 +5049,38 @@ The chip at the top says **Live** while updates arrive as they happen. If they s
 every few seconds and says when the numbers may be behind, for example when the tablet has lost
 signal.
 
+#### The game report
+
+**Report** at the top of a game shows the whole game on one page: each quarter with a Game row,
+the shooters, time on court, rebounds, Net Points and unforced turnovers by third of the court. A
+finished game opens on its report; during a game the button opens and closes it.
+
+**Print or save** on the report opens the browser's print box on a black on white page of the same
+tables, to print or save as a PDF. The report names players, many of them under 18, and a printed
+or saved copy is no longer protected by the app, so the screen and every copy say: "For the
+coaching team. This report names players: keep it within the team and do not post it publicly."
+Only people who can already open the game in Vision can make one.
+
+Under the report, **Video markers** makes the same marker files as Vantage does (see [Video
+markers](#video-markers)), with the same note.
+
+<img src="user-guide/vision-report.png" width="210" alt="Vision's game report: quarters, shooters and time on court"> <img src="user-guide/vision-report-print.png" width="210" alt="The report as it prints or saves: black on white, with the note that it names players"> <img src="user-guide/vision-video-markers.png" width="210" alt="Video markers under the report: where the first quarter starts, frames a second and the three files">
+
+#### The season so far
+
+**Season** on the games list adds up a team's finished games. Each athlete has a row: games, time
+on court, shooting, gains, turnovers, Net Points, and Net Points per 10 minutes, so athletes with
+different court time can be read side by side. Tap an athlete to see each of their games in turn,
+then a Season row. Pick the team at the top if you have more than one.
+
+Nothing new is kept for this: Vision reads each finished game you may already see, so a coach or
+manager gets their own team's games and a statistician or admin any team's. An athlete is matched
+between games by the name in the lineup, so a name spelt two ways shows as two athletes, and a
+game recorded with no lineup adds nothing. The view names players and carries the same "For the
+coaching team" line; athletes and parents don't see it.
+
+<img src="user-guide/vision-season.png" width="420" alt="Vision's Season so far: each athlete's figures over the team's finished games, with one athlete's games opened">
+
 ### What stays private
 
 - **Only the people who need it.** Game stats are about athletes, many of them under 18, so only
@@ -5027,6 +5096,11 @@ signal.
   otherwise it shows team totals.
 - **Stand-downs act at once.** A stood-down statistician can't save another stat, and a stood-down
   coach or manager stops seeing the team's games.
+- **Copies that leave the app.** A printed or saved game report and a video markers file name
+  players, and once saved they're outside the app's access rules. Only people who can already see
+  the game can make one, each says it is for the coaching team and must not be posted publicly,
+  and whoever makes one is responsible for keeping it within the team. The season view has no
+  export.
 
 <div style="page-break-before: always"></div>
 
