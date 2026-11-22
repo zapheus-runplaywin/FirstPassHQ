@@ -256,13 +256,13 @@ screen.
 #### Which version you have
 
 The opening screen shows the app's version and build in small print at the foot, such as
-**Version 1.0.0 (23) · Build 749**, and so do Find your club, the sign-in screen and the foot of the
+**Version 1.0.0 (23) · Build 755**, and so do Find your club, the sign-in screen and the foot of the
 home screen, under "Powered by". When the club has sent a fix over the air since you installed,
 a second line names it, such as **Update 1a2b3c4d · 20 Nov 2026**. If something goes wrong, or the
 club asks which version you're testing, read these lines out or send a screenshot of them.
 
 - **Version 1.0.0 (23)** is the version in the app store and, in brackets, the store build.
-- **Build 749** is the build of the club's app code. It matches the "build 749" on the guides and
+- **Build 755** is the build of the club's app code. It matches the "build 755" on the guides and
   PDFs made from the same code.
 - **Update** appears only while an over-the-air update is running, with when it was made.
 
@@ -4187,7 +4187,7 @@ once saved, only replaced or removed, and anyone who gets it wrong five times in
 | An athlete's own stats from a recorded game | The athlete's current coaches only, on the played game's goals page, once the recording is finished. Only that athlete's own figures: time on court and positions, shooting, feeds, gains, turnovers, rebounds and Net Points. Not the athlete, their parents or guardians, team mates, other parents, managers, physios, statisticians, the committee or admins. Nothing is shown when a team mate has the same name. The figures are worked out when the page opens and aren't stored with the goals. |
 | The list of recorded games | Admins only, under **Games** in Administration: each game's teams, round, status, who recorded it and how many events it holds. No stats and no athletes. |
 | Season KPIs, progress and reviews | An athlete's: the athlete, their coaches in that squad or team, their parents or guardians (read only, until 18) and admins (read only). Not teammates, the committee or physios. A coach's or manager's: them, the committee and admins, and an assistant coach's head coach. Only those who set KPIs change them, record results and write reviews; the person records progress, confirms reviews and adds their own view. A coach's or manager's KPIs and reviews are kept under their name if they delete their account, and stay on the admin report. |
-| Live game stats         | Admins and statisticians (while their statistician role isn't paused for a check): every game the club records. The coaches and managers of the game's squad or team, and of the squad a team belongs to, see the team's games at every stage and who has opened each, and the stats once they open the game in FirstPass Vision, without a pair code (a shadow statistician still pairs with the code in Vantage). Members with the Studio role (while not stood down), through FirstPass Studio: games with a PlayHQ game that are live or finished, their setup, the recorded stats and the athletes of the game's squad or team, never a shadow statistician's stats, pair codes or who paired. The same people can save a game's report or its video markers file from Vision or Vantage, and coaches and managers see their team's season so far in Vision, with PlayHQ's score and shooting for games nobody recorded. Athletes, guardians, physios and the committee don't see any of it; an athlete's own figures after the game show only to their coaches (see the row above). |
+| Live game stats         | Admins and statisticians (while their statistician role isn't paused for a check): every game the club records. The coaches and managers of the game's squad or team, and of the squad a team belongs to, see the team's games at every stage and who has opened each, and the stats once they open the game in FirstPass Vision, without a pair code (a shadow statistician still pairs with the code in Vantage). Members with the Studio role (while not stood down), through FirstPass Studio: games with a PlayHQ game that are live or finished, their setup, the recorded stats and the athletes of the game's squad or team, never a shadow statistician's stats, pair codes or who paired. The same people can save a game's report or its video markers file from Vision or Vantage, and coaches and managers see their team's season so far in Vision, with PlayHQ's score and shooting for games nobody recorded. At a venue streaming with FirstPass Studio, a statistician's tablet that someone at the Studio Mac has allowed can also send the game's stats to Studio over the venue link; it shows nobody anything they couldn't already see. Athletes, guardians, physios and the committee don't see any of it; an athlete's own figures after the game show only to their coaches (see the row above). |
 | Team goals              | The team's athletes, their guardians, its coaches (while their check is current and they aren't stood down) and admins. Only its coaches set and review them. Athletes and coaches in the team can comment; guardians and admins read the comments. Managers and physios placed in the team don't see them. |
 | Integrity training courses | The committee and admins see every course and who it's set for. Each member sees the courses set for them, and parents and guardians their child's. |
 | Integrity training certificates | The member, their parents or guardians, the committee and admins. Coaches, managers and physios don't see them. Certificates can't be changed or removed once sent. |
@@ -4633,6 +4633,12 @@ Working With Children Check, and another admin must do it.
   shooting from PlayHQ, where the public can already see them: the app's server checks who is
   asking each time, sends only your team's side, leaves out any player PlayHQ hides from the
   public, and keeps nothing.
+- **Game stats on a venue's network.** At a venue streaming with FirstPass Studio, a
+  statistician's tablet can also send a game's stats straight to the Studio Mac (the venue link).
+  They cross the venue's network only over an encrypted link, a person at the Studio Mac allows
+  each tablet and can remove it, and an allowed tablet reaches that game's stats and nothing
+  else. The link carries athletes' ids, not names, and Studio still names an athlete under 18 on
+  a stream only with a parent's or guardian's consent.
 - **Stand-downs.** An admin can stand someone down straight away, for example on an interim
   negative notice from the Working with Children Screening Unit. Their coach, manager, physio,
   committee, admin, statistician, Studio and temporary helper roles stop and they leave the squads and teams they lead. A
@@ -4926,7 +4932,7 @@ stand-down stops Vantage saving at once and Vision showing the game within about
 Vantage runs on a tablet held in landscape: an Android tablet, or an iPad. The club installs it on
 its tablets by invitation; it isn't in the public app stores yet.
 
-<img src="user-guide/vantage-home.png" width="420" alt="Vantage's home screen: the club code, New game and the Stream Deck switch">
+<img src="user-guide/vantage-home.png" width="420" alt="Vantage's home screen: the club code, New game, the Stream Deck and keyboard switches, and the venue link">
 
 1. **Choose the club and sign in.** On the home screen, type the club's code (the same one as HQ),
    tap **Find your club**, then sign in the way you do in HQ: **Sign in with Google**, or on an
@@ -5023,6 +5029,32 @@ frames a second, how long before the tap each marker sits, and which kinds of ev
 choose **For DaVinci Resolve**, **For Premiere Pro** or a plain list of times. The file names
 players, so it's for the coaching team: keep it within the team and don't post it publicly. Coaches
 can make the same files in Vision, under the game report.
+
+#### The venue link
+
+At a venue that streams with FirstPass Studio, the internet is often the slowest part of game
+day. The venue link lets the tablet also hand each stat straight to the Studio Mac over the
+venue's own network, so the stats on the stream keep up. FirstPass HQ still gets every stat from
+Vantage as before and stays the record. Anywhere else, leave it alone.
+
+It needs Studio's secure phone link turned on and the club signed in on that Mac, the tablet on
+the venue's network, and it works for the game on Studio's scoreboard.
+
+1. On the Studio Mac, open the **Devices** tab and read the six letters of its secure link.
+2. In Vantage, on the home screen under **Venue link**, type the six letters and tap **Connect**.
+3. The Studio Mac says the tablet is asking to use the venue link. Someone at the Mac presses
+   **Allow**, and Vantage then says **Connected to Studio**.
+4. Start the game as usual. The game screen shows a **Venue link** pill: **live**; **not this
+   game** (Studio's scoreboard has another game); **not reached**; **connect again** (the tablet
+   was removed at the Mac); or **stopped** (another tablet is recording the game).
+
+Vantage never waits for Studio: if the link drops, recording carries on and HQ still has
+everything. **Disconnect** on the home screen ends it, and so does **Remove** in Studio's list of
+devices.
+
+Vision in a phone's browser can't use the venue link and keeps reading the game over the
+internet. The Vision phone app can connect the same way, but that app isn't handed out to clubs
+yet.
 
 ### Following a game in Vision
 
@@ -5131,6 +5163,11 @@ answer, the season shows the recorded games alone.
   the game can make one, each says it is for the coaching team and must not be posted publicly,
   and whoever makes one is responsible for keeping it within the team. The season view has no
   export.
+- **The venue link.** Stats cross a venue's network only over an encrypted link. A person at the
+  Studio Mac allows each tablet, and can remove it. An allowed tablet can send and read the stats
+  of the game on Studio's scoreboard and nothing else in Studio. The link carries athletes' ids,
+  not names: names and the game's setup still come from the club's HQ, which checks who is
+  asking. Whatever HQ holds replaces what came over the venue link.
 
 <div style="page-break-before: always"></div>
 
