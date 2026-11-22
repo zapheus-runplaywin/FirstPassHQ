@@ -108,6 +108,9 @@ jobs:
       - name: Builds stop when the club settings are missing or wrong
         if: ${{ !cancelled() }}
         run: python3 scripts/test-check-build-settings.py
+      - name: The repository stays all rights reserved
+        if: ${{ !cancelled() }}
+        run: python3 scripts/test-licence.py
       - name: Reset demo club puts the demo accounts back
         if: ${{ !cancelled() }}
         run: scripts/test-reset-demo-club.sh
