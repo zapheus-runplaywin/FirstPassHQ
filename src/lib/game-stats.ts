@@ -4,7 +4,8 @@ import { supabase } from '@/lib/supabase';
 /**
  * One athlete's own figures from a game recorded in FirstPass Vantage, as the
  * club's game-stats function works them out (supabase/functions/game-stats).
- * Net Points come only to the athlete's coaches: the server decides.
+ * Only the athlete's coaches are answered: the server decides, and the athlete
+ * and their guardians get none.
  */
 export type GameStats = {
   goals: number;

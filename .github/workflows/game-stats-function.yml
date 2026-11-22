@@ -1,7 +1,7 @@
 name: Deploy game stats function
 
 # Deploys the game-stats function, which works out one athlete's own figures
-# from a game recorded in FirstPass Vantage for that game's goals page, to
+# from a game recorded in FirstPass Vantage for their coaches, on that game's goals page, to
 # the live and test projects (and the extra test clubs when TEST_CLUBS lists
 # them). It runs only when Matt presses Run workflow: never on a push or a
 # schedule, so run it after a merge that changes the function.

@@ -46,7 +46,7 @@ npx supabase functions deploy revoke-apple --project-ref <the club's project id>
 West Coast Thunder's own test and live projects are deployed by pressing **Actions > Deploy Apple
 revoke function** instead; like **Deploy migrations**, it doesn't reach other clubs yet.
 
-Game goals show each athlete their own figures from a game recorded in FirstPass Vantage. The
+Game goals show an athlete's coaches that athlete's own figures from a game recorded in FirstPass Vantage. The
 `game-stats` edge function works them out, and needs no secrets:
 
 ```bash

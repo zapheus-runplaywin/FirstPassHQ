@@ -72,9 +72,9 @@ export default function GameGoalsScreen() {
     setGoals(lists.goals);
     setComments(lists.comments);
     logRecordView(athlete, 'goals');
-    // The athlete's own figures, once the game has been played and recorded.
-    setStats(row && gamePhase(row) === 'played' ? await fetchGameStats(athlete, fixture) : null);
-  }, [athlete, fixture]);
+    // The athlete's own figures, for their coaches only, once the game has been played and recorded.
+    setStats(coach && row && gamePhase(row) === 'played' ? await fetchGameStats(athlete, fixture) : null);
+  }, [athlete, fixture, coach]);
 
   useFocusEffect(
     useCallback(() => {
@@ -159,7 +159,7 @@ export default function GameGoalsScreen() {
         <AddGoal athleteId={athlete} fixtureId={fixture} asCoach={coach} onAdded={load} />
       ) : null}
 
-      {phase === 'played' && stats ? <GameStatsCard stats={stats} own={own} /> : null}
+      {coach && phase === 'played' && stats ? <GameStatsCard stats={stats} /> : null}
 
       {own ? (
         <ThemedText type="small" themeColor="textSecondary">

@@ -107,7 +107,7 @@ names the project, so no code changes:
    `revoke-apple` function's `APPLE_TEAM_ID`, `APPLE_KEY_ID` and `APPLE_PRIVATE_KEY` secrets on the
    new project ([docs/new-club-setup.md](new-club-setup.md#1-create-the-clubs-supabase-project))
    and run **Deploy Apple revoke function**, so deleting an Apple member's account revokes their Apple sign-in.
-   Run **Deploy game stats function** too, so game goals show each athlete's figures from recorded games.
+   Run **Deploy game stats function** too, so game goals show coaches each athlete's figures from recorded games.
 5. Installed apps keep the old address until they get an update (`scripts/publish-update.sh`) or a
    new build.
 

@@ -1,20 +1,20 @@
 -- Game stats beside game goals, and a games list for admins.
 --
 -- An athlete's own figures from a game recorded in FirstPass Vantage (shots,
--- gains, turnovers, time on court) show on that game's goals page in HQ, to
--- the people who already see the athlete's goals for it: the athlete, their
--- verified guardians and their coaches (can_view_game_goals). Net Points,
--- one plus or minus score for the athlete, show to their coaches only.
+-- gains, turnovers, time on court, and Net Points, one plus or minus score
+-- for the athlete) show on that game's goals page in HQ, to the athlete's
+-- coaches only (coaches_athlete). The athlete and their guardians see their
+-- goals for the game as before, and none of these figures (Matt, 22 November
+-- 2026).
 --
 -- Nothing new is stored. The figures are worked out from the game's events
 -- by the game-stats function (supabase/functions/game-stats), with the same
 -- engine Vantage and Vision use, and only that one athlete's figures leave
 -- it. This migration gives the function what it needs to decide:
 --
---   goal_game_stats_access(athlete, fixture)  whether the caller may see the
---     athlete's goals for that game and it has a finished recording, and if
---     so which game, the names the athlete may be recorded under, and
---     whether the caller is one of their coaches.
+--   goal_game_stats_access(athlete, fixture)  whether the caller coaches the
+--     athlete and that game has a finished recording, and if so which game
+--     and the names the athlete may be recorded under.
 --
 -- The game's events themselves stay closed to athletes and guardians (row
 -- level security on game_events is unchanged): the function reads them with
@@ -53,7 +53,8 @@ declare
   v_names text[];
   v_clash boolean;
 begin
-  if auth.uid() is null or not public.can_view_game_goals(p_athlete_id) then
+  -- The athlete's coaches only: not the athlete, not their guardians.
+  if auth.uid() is null or not public.coaches_athlete(p_athlete_id) then
     return null;
   end if;
   -- One of the athlete's own games, as the goals pages list them.
@@ -99,14 +100,14 @@ begin
     'game_id', v_game.id,
     'config', v_game.config,
     'names', case when v_clash then '[]'::jsonb else to_jsonb(v_names) end,
-    -- Net Points are for the athlete's coaches only.
-    'net_points', public.coaches_athlete(p_athlete_id)
+    -- Net Points go with the rest: everyone answered here coaches the athlete.
+    'net_points', true
   );
 end;
 $$;
 
 comment on function public.goal_game_stats_access(uuid, uuid) is
-  'For the game-stats function: whether the caller may see this athlete''s goals for the game and it has a finished recording; then the game, the names the lineup may hold for the athlete (none when a team mate shares one) and whether the caller coaches them (Net Points).';
+  'For the game-stats function: whether the caller coaches this athlete and the game has a finished recording; then the game and the names the lineup may hold for the athlete (none when a team mate shares one). The athlete and their guardians are answered nothing.';
 
 revoke execute on function public.goal_game_stats_access(uuid, uuid) from public, anon;
 grant execute on function public.goal_game_stats_access(uuid, uuid) to authenticated;

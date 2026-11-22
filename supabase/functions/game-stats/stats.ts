@@ -3,12 +3,12 @@
 //
 // The game's events hold the whole team, so athletes and guardians can't
 // read them (row level security). This function is the only way one
-// athlete's figures leave: it asks the database whether the caller may see
-// this athlete's goals for the game (goal_game_stats_access, run as the
-// caller), and only then reads the events with the service role, folds them
+// athlete's figures leave: it asks the database whether the caller coaches
+// this athlete (goal_game_stats_access, run as the caller; the athlete and
+// their guardians are told no), and only then reads the events with the service role, folds them
 // with @firstpass/engine, the engine Vantage and Vision use, and answers with
 // that athlete's figures alone. Net Points are added only when the database
-// says the caller is one of the athlete's coaches. Nothing is stored.
+// says so, which it does for every coach it answers. Nothing is stored.
 //
 // Actions record a position, not a person, and the lineup holds each
 // player's name. The athlete is found by name (the names the database gives

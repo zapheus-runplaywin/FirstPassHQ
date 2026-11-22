@@ -2,11 +2,10 @@
 -- which tells the game-stats function whether the caller may see an
 -- athlete's own figures from a recorded game, and admin_games, the Games
 -- list in Administration.
--- Rules checked, for every kind of member: an athlete's figures are for the
--- athlete, a child's guardians and their current coaches (the people
--- who see their goals for the game) and nobody else, not managers, physios,
--- statisticians, the committee, admins, lapsed or stood-down coaches, other
--- athletes or anyone signed out; Net Points are for the coaches only; only a
+-- Rules checked, for every kind of member: an athlete's figures are for
+-- their current coaches and nobody else, not the athlete, their guardians,
+-- managers, physios, statisticians, the committee, admins, lapsed or
+-- stood-down coaches, other athletes or anyone signed out; only a
 -- finished recording of one of the athlete's own games counts; a team mate
 -- with the same name hides both; the game's events stay closed to athletes
 -- and guardians; only admins list the club's games. Prints one line per check.
@@ -115,13 +114,14 @@ select pg_temp.ok('both run as their owner with a fixed search path', (select bo
 -- ---------------------------------------------------------------------------
 -- An athlete's figures: who is told there are some
 -- ---------------------------------------------------------------------------
-select pg_temp.ok('the athlete is told about their own game', pg_temp.access('31', '31', 'f5') is not null, true);
-select pg_temp.ok('their verified parent is told', pg_temp.access('41', '31', 'f5') is not null, true);
 select pg_temp.ok('their team''s coach is told', pg_temp.access('11', '31', 'f5') is not null, true);
-select pg_temp.ok('a coach who is also their parent is told', pg_temp.access('42', '31', 'f5') is not null, true);
+select pg_temp.ok('a coach who is also their parent is told, as their coach', pg_temp.access('42', '31', 'f5') is not null, true);
+select pg_temp.ok('the athlete is not told about their own game', pg_temp.access('31', '31', 'f5') is null, true);
+select pg_temp.ok('their verified parent is not', pg_temp.access('41', '31', 'f5') is null, true);
 select pg_temp.ok('another athlete''s parent is not', pg_temp.access('64', '31', 'f5') is null, true);
 select pg_temp.ok('a parent is not told about a child who is now an adult', pg_temp.access('64', '63', 'f5') is null, true);
-select pg_temp.ok('though that adult athlete is', pg_temp.access('63', '63', 'f5') is not null, true);
+select pg_temp.ok('nor is that adult athlete', pg_temp.access('63', '63', 'f5') is null, true);
+select pg_temp.ok('though the adult athlete''s coach is', pg_temp.access('11', '63', 'f5') is not null, true);
 select pg_temp.ok('a coach whose check lapsed is not', pg_temp.access('12', '31', 'f5') is null, true);
 select pg_temp.ok('a stood-down coach of the team is not', pg_temp.access('62', '31', 'f5') is null, true);
 select pg_temp.ok('a manager is not', pg_temp.access('13', '31', 'f5') is null, true);
@@ -134,38 +134,34 @@ select pg_temp.ok('another athlete is not', pg_temp.access('32', '31', 'f5') is 
 select pg_temp.ok('someone signed out is not', pg_temp.access('', '31', 'f5') is null, true);
 
 -- ---------------------------------------------------------------------------
--- Net Points are for the athlete's coaches only
+-- Net Points go with the rest, to the athlete's coaches
 -- ---------------------------------------------------------------------------
-select pg_temp.is('the athlete gets no Net Points', pg_temp.access('31', '31', 'f5') ->> 'net_points', 'false');
-select pg_temp.is('their parent gets no Net Points', pg_temp.access('41', '31', 'f5') ->> 'net_points', 'false');
 select pg_temp.is('their coach gets Net Points', pg_temp.access('11', '31', 'f5') ->> 'net_points', 'true');
 select pg_temp.is('a current coach who is also their parent gets them, as their coach', pg_temp.access('42', '31', 'f5') ->> 'net_points', 'true');
 
 -- ---------------------------------------------------------------------------
 -- Which game, and under which names
 -- ---------------------------------------------------------------------------
-select pg_temp.is('a game recorded twice gives the one finished last', pg_temp.access('31', '31', 'f5') ->> 'game_id', pg_temp.g(2)::text);
-select pg_temp.is('with that recording''s setup', pg_temp.access('31', '31', 'f5') -> 'config' ->> 'quarterMs', '900000');
-select pg_temp.is('the athlete may be recorded under their preferred or full name, tidied', (select string_agg(n, ',' order by n) from jsonb_array_elements_text(pg_temp.access('31', '31', 'f5') -> 'names') n), 'jj,jordan junior');
+select pg_temp.is('a game recorded twice gives the one finished last', pg_temp.access('11', '31', 'f5') ->> 'game_id', pg_temp.g(2)::text);
+select pg_temp.is('with that recording''s setup', pg_temp.access('11', '31', 'f5') -> 'config' ->> 'quarterMs', '900000');
+select pg_temp.is('the athlete may be recorded under their preferred or full name, tidied', (select string_agg(n, ',' order by n) from jsonb_array_elements_text(pg_temp.access('11', '31', 'f5') -> 'names') n), 'jj,jordan junior');
 select pg_temp.is('the answer holds nothing else', (select string_agg(k, ',' order by k) from jsonb_object_keys(pg_temp.access('11', '31', 'f5')) k), 'config,game_id,names,net_points');
-select pg_temp.ok('a recording that was never finished gives nothing', pg_temp.access('31', '31', 'f6') is null, true);
-select pg_temp.ok('nor to the coach', pg_temp.access('11', '31', 'f6') is null, true);
-select pg_temp.ok('a game nobody recorded gives nothing', pg_temp.access('31', '31', 'f8') is null, true);
-select pg_temp.ok('a game that is not this athlete''s gives nothing', pg_temp.access('32', '32', 'f5') is null, true);
-select pg_temp.ok('a squad game gives its athletes theirs', pg_temp.access('32', '32', 'f7') is not null, true);
-select pg_temp.is('for the squad''s own recording', pg_temp.access('32', '32', 'f7') ->> 'game_id', pg_temp.g(4)::text);
-select pg_temp.ok('a fixture that does not exist gives nothing', pg_temp.access('31', '31', 'ff') is null, true);
+select pg_temp.ok('a recording that was never finished gives nothing', pg_temp.access('11', '31', 'f6') is null, true);
+select pg_temp.ok('a game nobody recorded gives nothing', pg_temp.access('11', '31', 'f8') is null, true);
+select pg_temp.ok('a game that is not this athlete''s gives nothing', pg_temp.access('11', '32', 'f5') is null, true);
+select pg_temp.ok('a squad game gives its athletes'' figures to their coach', pg_temp.access('11', '32', 'f7') is not null, true);
+select pg_temp.is('for the squad''s own recording', pg_temp.access('11', '32', 'f7') ->> 'game_id', pg_temp.g(4)::text);
+select pg_temp.ok('a fixture that does not exist gives nothing', pg_temp.access('11', '31', 'ff') is null, true);
 select pg_temp.ok('an athlete who does not exist gives nothing', pg_temp.access('11', '99', 'f5') is null, true);
 select pg_temp.is('plain_name tidies case and spaces', public.plain_name('  Jordan   JUNIOR '), 'jordan junior');
 select pg_temp.ok('plain_name gives nothing for an empty name', public.plain_name('   ') is null and public.plain_name(null) is null, true);
 
 -- A team mate under the same name: neither can be told apart in the lineup.
 update public.profiles set preferred_name = 'jj' where id = pg_temp.m('63');
-select pg_temp.is('a team mate with the same name hides the athlete''s figures', pg_temp.access('31', '31', 'f5') ->> 'names', '[]');
-select pg_temp.is('and the team mate''s own', pg_temp.access('63', '63', 'f5') ->> 'names', '[]');
-select pg_temp.is('from the coach too', pg_temp.access('11', '31', 'f5') ->> 'names', '[]');
+select pg_temp.is('a team mate with the same name hides the athlete''s figures from their coach', pg_temp.access('11', '31', 'f5') ->> 'names', '[]');
+select pg_temp.is('and the team mate''s own', pg_temp.access('11', '63', 'f5') ->> 'names', '[]');
 update public.profiles set preferred_name = null where id = pg_temp.m('63');
-select pg_temp.is('and they come back once the names differ', pg_temp.access('63', '63', 'f5') ->> 'names', '["riley teammate"]');
+select pg_temp.is('and they come back once the names differ', pg_temp.access('11', '63', 'f5') ->> 'names', '["riley teammate"]');
 
 -- ---------------------------------------------------------------------------
 -- The game's events stay closed
