@@ -55,9 +55,9 @@ insert into auth.users (id, email, email_confirmed_at) values
 update public.profiles p set status = 'approved', full_name = v.name, role = v.role::public.app_role,
   date_of_birth = v.dob, verified_at = now()
 from (values
-  ('00000000-0000-0000-0000-000000000051', 'Quinn Guest', 'guest', current_date - interval '40 years'),
-  ('00000000-0000-0000-0000-000000000052', 'Reese Other', 'athlete', current_date - interval '19 years'),
-  ('00000000-0000-0000-0000-000000000053', 'Sam Parent', 'guardian', current_date - interval '45 years')
+  ('00000000-0000-0000-0000-000000000051', 'Quinn Guest', 'guest', public.club_today() - interval '40 years'),
+  ('00000000-0000-0000-0000-000000000052', 'Reese Other', 'athlete', public.club_today() - interval '19 years'),
+  ('00000000-0000-0000-0000-000000000053', 'Sam Parent', 'guardian', public.club_today() - interval '45 years')
 ) as v(id, name, role, dob)
 where p.id = v.id::uuid;
 insert into public.team_members (team_id, profile_id, team_role) values

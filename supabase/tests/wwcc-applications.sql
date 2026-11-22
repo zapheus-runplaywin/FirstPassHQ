@@ -112,40 +112,40 @@ select pg_temp.ok('a coach can''t open receipts', pg_temp.reads_receipts(), fals
 -- Who may record one.
 select pg_temp.as_member('11');
 select pg_temp.fails_with('a coach can''t record an application',
-  $s$ select pg_temp.record('12', current_date - 3) $s$, 'Only admins');
+  $s$ select pg_temp.record('12', public.club_today() - 3) $s$, 'Only admins');
 select pg_temp.as_member('01');
 select pg_temp.fails_with('an admin can''t record their own',
-  $s$ select pg_temp.record('01', current_date - 3) $s$, 'another admin');
+  $s$ select pg_temp.record('01', public.club_today() - 3) $s$, 'another admin');
 select pg_temp.fails_with('an under 18 doesn''t need one',
-  $s$ select pg_temp.record('31', current_date - 3) $s$, 'under 18');
+  $s$ select pg_temp.record('31', public.club_today() - 3) $s$, 'under 18');
 select pg_temp.fails_with('a missing member is refused',
-  $s$ select public.admin_record_wwcc_application(gen_random_uuid(), 'APL', current_date, 'new', 'x/y.pdf', null) $s$, 'not found');
+  $s$ select public.admin_record_wwcc_application(gen_random_uuid(), 'APL', public.club_today(), 'new', 'x/y.pdf', null) $s$, 'not found');
 select pg_temp.fails_with('the number is needed',
-  $s$ select public.admin_record_wwcc_application(pg_temp.id('12'), '  ', current_date, 'new', pg_temp.receipt('12'), null) $s$, 'application number');
+  $s$ select public.admin_record_wwcc_application(pg_temp.id('12'), '  ', public.club_today(), 'new', pg_temp.receipt('12'), null) $s$, 'application number');
 select pg_temp.fails_with('a number longer than 40 is refused',
-  $s$ select public.admin_record_wwcc_application(pg_temp.id('12'), repeat('9', 41), current_date, 'new', pg_temp.receipt('12'), null) $s$, 'application number');
+  $s$ select public.admin_record_wwcc_application(pg_temp.id('12'), repeat('9', 41), public.club_today(), 'new', pg_temp.receipt('12'), null) $s$, 'application number');
 select pg_temp.fails_with('the day can''t be in the future',
-  $s$ select pg_temp.record('12', current_date + 1) $s$, 'lodged');
+  $s$ select pg_temp.record('12', public.club_today() + 1) $s$, 'lodged');
 select pg_temp.fails_with('or more than 90 days ago',
-  $s$ select pg_temp.record('12', current_date - 91) $s$, 'lodged');
+  $s$ select pg_temp.record('12', public.club_today() - 91) $s$, 'lodged');
 select pg_temp.fails_with('or missing',
   $s$ select pg_temp.record('12', null) $s$, 'lodged');
 select pg_temp.fails_with('new or renewal is needed',
-  $s$ select pg_temp.record('12', current_date, 'other') $s$, 'renewal');
+  $s$ select pg_temp.record('12', public.club_today(), 'other') $s$, 'renewal');
 select pg_temp.fails_with('the receipt is needed',
-  $s$ select public.admin_record_wwcc_application(pg_temp.id('12'), 'APL', current_date, 'new', null, null) $s$, 'receipt');
+  $s$ select public.admin_record_wwcc_application(pg_temp.id('12'), 'APL', public.club_today(), 'new', null, null) $s$, 'receipt');
 select pg_temp.fails_with('the receipt must be uploaded',
-  $s$ select public.admin_record_wwcc_application(pg_temp.id('12'), 'APL', current_date, 'new', pg_temp.id('12')::text || '/missing.pdf', null) $s$, 'receipt');
+  $s$ select public.admin_record_wwcc_application(pg_temp.id('12'), 'APL', public.club_today(), 'new', pg_temp.id('12')::text || '/missing.pdf', null) $s$, 'receipt');
 select pg_temp.fails_with('the receipt must be in the member''s folder',
-  $s$ select public.admin_record_wwcc_application(pg_temp.id('12'), 'APL', current_date, 'new', pg_temp.receipt('11'), null) $s$, 'receipt');
+  $s$ select public.admin_record_wwcc_application(pg_temp.id('12'), 'APL', public.club_today(), 'new', pg_temp.receipt('11'), null) $s$, 'receipt');
 select pg_temp.ok('nothing was recorded', (select count(*) = 0 from public.wwcc_applications), true);
 
 -- A renewal for a coach whose card has expired.
 select pg_temp.ok('the lapsed coach is paused', pg_temp.has('12', 'coach'), false);
 select pg_temp.works('an admin records their renewal application',
-  $s$ select pg_temp.record('12', current_date - 3, 'renewal') $s$);
+  $s$ select pg_temp.record('12', public.club_today() - 3, 'renewal') $s$);
 select pg_temp.ok('it''s kept as entered, number in capitals',
-  (select application_number = 'APL 12' and kind = 'renewal' and lodged_on = current_date - 3
+  (select application_number = 'APL 12' and kind = 'renewal' and lodged_on = public.club_today() - 3
      and receipt_name = 'receipt.pdf' and recorded_by = pg_temp.id('01') and recorded_by_name = 'Alex Admin'
    from public.wwcc_applications where profile_id = pg_temp.id('12')), true);
 select pg_temp.ok('it waits for their declaration', pg_temp.status('12') = 'waiting_for_declaration', true);
@@ -171,7 +171,7 @@ select pg_temp.ok('the member sees their application and the declaration',
 select pg_temp.works('they accept it', $s$ select public.accept_wwcc_application_declaration() $s$);
 select pg_temp.fails_with('only once', $s$ select public.accept_wwcc_application_declaration() $s$, 'already');
 select pg_temp.ok('the words they accepted are kept',
-  (select declaration_text = public.wwcc_application_declaration('APL 12', current_date - 3) and declared_at is not null
+  (select declaration_text = public.wwcc_application_declaration('APL 12', public.club_today() - 3) and declared_at is not null
    from public.wwcc_applications where profile_id = pg_temp.id('12')), true);
 select pg_temp.ok('it''s in force', pg_temp.status('12') = 'in_force', true);
 select pg_temp.ok('they see it counts', (select valid and status = 'in_force' from public.my_wwcc_application()), true);
@@ -213,7 +213,7 @@ update public.wwcc_applications set recorded_at = now(), declared_at = now() whe
 
 -- The card arrives.
 select pg_temp.works('recording their new card',
-  $s$ select public.admin_set_member_details(pg_temp.id('12'), null, 'WWC0012', current_date + 1000) $s$);
+  $s$ select public.admin_set_member_details(pg_temp.id('12'), null, 'WWC0012', public.club_today() + 1000) $s$);
 select pg_temp.ok('ends the application',
   (select ended_at is not null and ended_reason = 'card_recorded' and ended_by_name = 'Alex Admin'
    from public.wwcc_applications where profile_id = pg_temp.id('12')), true);
@@ -227,22 +227,22 @@ select pg_temp.fails_with('an ended application can''t be confirmed',
   $s$ select public.admin_confirm_wwcc_application((select id from public.wwcc_applications where profile_id = pg_temp.id('12'))) $s$, 'ended');
 select pg_temp.fails_with('or ended again',
   $s$ select public.admin_end_wwcc_application((select id from public.wwcc_applications where profile_id = pg_temp.id('12')), 'other', null) $s$, 'already');
-select pg_temp.works('changing an unrelated detail later', $s$ select public.admin_set_member_details(pg_temp.id('12'), null, 'WWC0012', current_date + 1000) $s$);
+select pg_temp.works('changing an unrelated detail later', $s$ select public.admin_set_member_details(pg_temp.id('12'), null, 'WWC0012', public.club_today() + 1000) $s$);
 select pg_temp.works('an expired card doesn''t end one',
-  $s$ select pg_temp.record('13', current_date);
-      select public.admin_set_member_details(pg_temp.id('13'), null, 'WWC0013', current_date - 1) $s$);
+  $s$ select pg_temp.record('13', public.club_today());
+      select public.admin_set_member_details(pg_temp.id('13'), null, 'WWC0013', public.club_today() - 1) $s$);
 select pg_temp.ok('so it stays open', pg_temp.status('13') = 'waiting_for_declaration', true);
 
 -- A new committee member, after checks are needed.
-update public.safeguarding_settings set committee_checks_from = current_date - 1 where id;
+update public.safeguarding_settings set committee_checks_from = public.club_today() - 1 where id;
 select pg_temp.ok('a committee member with no check is paused', pg_temp.has('22', 'committee'), false);
-select pg_temp.works('recording their application', $s$ select pg_temp.record('22', current_date) $s$);
+select pg_temp.works('recording their application', $s$ select pg_temp.record('22', public.club_today()) $s$);
 select pg_temp.as_member('22');
 select pg_temp.works('they accept the declaration', $s$ select public.accept_wwcc_application_declaration() $s$);
 select pg_temp.ok('they''re committee again', pg_temp.has('22', 'committee'), true);
 select pg_temp.ok('and cleared, so they see children''s injuries if allowed', public.is_cleared(pg_temp.id('22')), true);
 select pg_temp.as_member('01');
-select pg_temp.works('recording it again replaces the open one', $s$ select pg_temp.record('22', current_date) $s$);
+select pg_temp.works('recording it again replaces the open one', $s$ select pg_temp.record('22', public.club_today()) $s$);
 select pg_temp.ok('the earlier one ends as replaced',
   (select count(*) = 1 from public.wwcc_applications where profile_id = pg_temp.id('22') and ended_reason = 'replaced'), true);
 select pg_temp.ok('one stays open', (select count(*) = 1 from public.wwcc_applications where profile_id = pg_temp.id('22') and ended_at is null), true);
@@ -266,24 +266,24 @@ select pg_temp.ok('and they''re paused', pg_temp.has('22', 'committee'), false);
 
 -- A notice from the Screening Unit stops it.
 select pg_temp.works('an application for the physio, whose card has expired',
-  $s$ select public.admin_set_member_details(pg_temp.id('14'), null, 'WWC0014', current_date - 1);
-      select pg_temp.record('14', current_date - 10) $s$);
+  $s$ select public.admin_set_member_details(pg_temp.id('14'), null, 'WWC0014', public.club_today() - 1);
+      select pg_temp.record('14', public.club_today() - 10) $s$);
 select pg_temp.as_member('14');
 select pg_temp.works('the physio accepts it', $s$ select public.accept_wwcc_application_declaration() $s$);
 select pg_temp.ok('the physio is working', pg_temp.has('14', 'physio'), true);
 select pg_temp.as_member('01');
 select pg_temp.works('an interim negative notice arrives',
-  $s$ select public.admin_record_screening_notice(pg_temp.id('14'), 'interim_negative_notice', current_date, 'Stood down') $s$);
+  $s$ select public.admin_record_screening_notice(pg_temp.id('14'), 'interim_negative_notice', public.club_today(), 'Stood down') $s$);
 select pg_temp.ok('the application is stopped', pg_temp.status('14') = 'stopped', true);
 select pg_temp.ok('so they''re not cleared', public.is_cleared(pg_temp.id('14')), false);
 select pg_temp.ok('and not a physio', pg_temp.has('14', 'physio'), false);
 select pg_temp.fails_with('it can''t be confirmed',
   $s$ select public.admin_confirm_wwcc_application((select id from public.wwcc_applications where profile_id = pg_temp.id('14'))) $s$, 'notice');
 select pg_temp.fails_with('or recorded again for an earlier lodged date',
-  $s$ select pg_temp.record('14', current_date - 5) $s$, 'notice');
+  $s$ select pg_temp.record('14', public.club_today() - 5) $s$, 'notice');
 select pg_temp.ok('the admin sees it stopped', (select status = 'stopped' from public.admin_wwcc_applications() where profile_id = pg_temp.id('14')), true);
 select pg_temp.works('a notice of another kind doesn''t stop one',
-  $s$ select public.admin_record_screening_notice(pg_temp.id('13'), 'other', current_date, 'Letter about address') $s$);
+  $s$ select public.admin_record_screening_notice(pg_temp.id('13'), 'other', public.club_today(), 'Letter about address') $s$);
 select pg_temp.ok('the manager''s is still waiting', pg_temp.status('13') = 'waiting_for_declaration', true);
 -- A member with a notice that is still waiting for their declaration can't
 -- accept it.
@@ -297,7 +297,7 @@ select pg_temp.as_member('01');
 select pg_temp.fails_with('a new coach with nothing can''t be approved',
   $s$ select public.admin_save_member(pg_temp.id('61'), 'coach', 'approved') $s$, 'application they''ve lodged');
 select pg_temp.works('with an application recorded, they''re approved',
-  $s$ select pg_temp.record('61', current_date - 1);
+  $s$ select pg_temp.record('61', public.club_today() - 1);
       select public.admin_save_member(pg_temp.id('61'), 'coach', 'approved') $s$);
 select pg_temp.ok('but paused until they accept the declaration', pg_temp.has('61', 'coach'), false);
 select pg_temp.as_member('61');
@@ -317,12 +317,12 @@ select pg_temp.as_member('01');
 select pg_temp.fails_with('a new committee member needs a check, an application or an exemption',
   $s$ select public.admin_save_member(pg_temp.id('32'), 'athlete', 'approved', '[]', false, '{}', null, '{committee}') $s$, 'before making them a committee member');
 select pg_temp.works('an application they''ve lodged is enough',
-  $s$ select pg_temp.record('32', current_date);
+  $s$ select pg_temp.record('32', public.club_today());
       select public.admin_save_member(pg_temp.id('32'), 'athlete', 'approved', '[]', false, '{}', null, '{committee}') $s$);
 select pg_temp.fails_with('a committee member with no open application can''t be made an admin',
   $s$ select public.admin_save_member(pg_temp.id('22'), 'committee', 'approved', '[]', false, '{}', null, '{admin}') $s$, 'before making them an admin');
 select pg_temp.works('with one, they can',
-  $s$ select pg_temp.record('22', current_date);
+  $s$ select pg_temp.record('22', public.club_today());
       select public.admin_save_member(pg_temp.id('22'), 'committee', 'approved', '[]', false, '{}', null, '{admin}') $s$);
 select pg_temp.works('taking admin away again',
   $s$ select public.admin_save_member(pg_temp.id('22'), 'committee', 'approved') $s$);

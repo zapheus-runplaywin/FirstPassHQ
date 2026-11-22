@@ -6,6 +6,7 @@ import { ThemedText } from '@/components/themed-text';
 import { Button, Card, ChipGroup, ErrorText, TextField } from '@/components/ui';
 import { Spacing } from '@/constants/theme';
 import { formatDate, parseDate } from '@/lib/age';
+import { clubToday } from '@/lib/club-time';
 import { localDay } from '@/lib/reports';
 import { barringNotices, screeningNoticeLabels } from '@/lib/safety';
 import { supabase } from '@/lib/supabase';
@@ -13,11 +14,9 @@ import type { ScreeningNotice, ScreeningNoticeKind } from '@/lib/types';
 
 const kinds = Object.keys(screeningNoticeLabels) as ScreeningNoticeKind[];
 
-/** Today as DD/MM/YYYY, for date fields. */
+/** The club's today as DD/MM/YYYY, for date fields. */
 function todayText() {
-  const now = new Date();
-  const month = String(now.getMonth() + 1).padStart(2, '0');
-  return formatDate(`${now.getFullYear()}-${month}-${String(now.getDate()).padStart(2, '0')}`);
+  return formatDate(clubToday());
 }
 
 /**

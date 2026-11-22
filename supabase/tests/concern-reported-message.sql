@@ -118,7 +118,7 @@ from unnest(array['12', '14', '21', '22', '23', '31', '32', '41', '42', '61']) n
 
 -- An officer whose check lapses stops finding anyone.
 reset role;
-update public.profiles set wwcc_expires_on = current_date - 1 where id = pg_temp.id('13');
+update public.profiles set wwcc_expires_on = public.club_today() - 1 where id = pg_temp.id('13');
 select pg_temp.ok('a lapsed officer finds nobody', pg_temp.people_for('13') = 0, true);
 
 -- Raise a concern still offers only adults with club roles, never children.

@@ -521,6 +521,51 @@ describe('Club options', () => {
     expect(screen.getByText('Not allowed')).toBeTruthy();
     expect(screen.queryByText(/^Saved\./)).toBeNull();
   });
+  it('shows the club’s time zone, Perth unless changed', async () => {
+    await openClub('options');
+    expect(screen.getByText('Time zone')).toBeTruthy();
+    expect(screen.getByText('Perth')).toBeTruthy();
+    expect(screen.getByRole('button', { name: 'Perth', selected: true })).toBeTruthy();
+    expect(screen.getByText(/^Perth \(Western Australia\)\. Today there is /)).toBeTruthy();
+  });
+
+  it('starts from the zone the club saved', async () => {
+    setSavedClub({ timezone: 'Australia/Hobart' });
+    await openClub('options');
+    expect(screen.getByRole('button', { name: 'Hobart', selected: true })).toBeTruthy();
+    expect(screen.getByRole('button', { name: 'Perth', selected: false })).toBeTruthy();
+  });
+
+  it('keeps a zone saved some other way on the list', async () => {
+    setSavedClub({ timezone: 'Pacific/Fiji' });
+    await openClub('options');
+    expect(screen.getByRole('button', { name: 'Pacific/Fiji', selected: true })).toBeTruthy();
+  });
+
+  it('doesn’t save the time zone when it hasn’t changed', async () => {
+    await openClub('options');
+    await save();
+    expect(rpcNames()).not.toContain('admin_set_club_timezone');
+  });
+
+  it('saves a new time zone after the club settings', async () => {
+    await openClub('options');
+    await fireEvent.press(screen.getByRole('button', { name: 'Sydney' }));
+    expect(screen.getByText(/^Sydney \(New South Wales and the ACT\)\. Today there is /)).toBeTruthy();
+    await save();
+    const names = rpcNames();
+    expect(names.indexOf('admin_update_club_profile')).toBeLessThan(names.indexOf('admin_set_club_timezone'));
+    expect(callsTo('admin_set_club_timezone')).toEqual([{ p_timezone: 'Australia/Sydney' }]);
+    expect(screen.getByText('Saved. Members see the changes next time they open the app.')).toBeTruthy();
+  });
+
+  it('shows a refused time zone and doesn’t say it saved', async () => {
+    await openClub('options', {}, { admin_set_club_timezone: 'Choose a time zone from the list' });
+    await fireEvent.press(screen.getByRole('button', { name: 'Adelaide' }));
+    await save();
+    expect(screen.getByText('Choose a time zone from the list')).toBeTruthy();
+    expect(screen.queryByText(/^Saved\./)).toBeNull();
+  });
 });
 
 // ---------------------------------------------------------------------------

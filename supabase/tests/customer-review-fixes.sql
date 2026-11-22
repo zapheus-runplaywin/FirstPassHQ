@@ -39,7 +39,7 @@ select pg_temp.ok('the purge can remove injuries', has_function_privilege('servi
 -- ---------------------------------------------------------------------------
 -- Kai Senior (32) is an adult in the squad only, asking for clearance.
 insert into public.injuries (id, athlete_id, reported_by, body_area, description, injured_on, status, athlete_name) values
-  ('c1000000-0000-0000-0000-000000000001', pg_temp.id('32'), pg_temp.id('32'), 'Knee', 'Jarred knee', current_date - 20, 'clearance_requested', 'Kai Senior');
+  ('c1000000-0000-0000-0000-000000000001', pg_temp.id('32'), pg_temp.id('32'), 'Knee', 'Jarred knee', public.club_today() - 20, 'clearance_requested', 'Kai Senior');
 
 select pg_temp.as_member('01');
 select pg_temp.ok('squad open: the squad coach can endorse, nothing listed', pg_temp.unendorsable() = 0, true);
@@ -83,9 +83,9 @@ select pg_temp.ok('Head Physio stood down: Kai listed again', pg_temp.unendorsab
 update public.profiles set stood_down_at = null where id = pg_temp.id('14');
 
 -- A Head Physio whose check lapsed can't.
-update public.profiles set wwcc_expires_on = current_date - 1 where id = pg_temp.id('14');
+update public.profiles set wwcc_expires_on = public.club_today() - 1 where id = pg_temp.id('14');
 select pg_temp.ok('Head Physio check lapsed: Kai listed', pg_temp.unendorsable() = 1, true);
-update public.profiles set wwcc_expires_on = current_date + 400 where id = pg_temp.id('14');
+update public.profiles set wwcc_expires_on = public.club_today() + 400 where id = pg_temp.id('14');
 
 -- Head Physio without the physio role doesn't count.
 update public.profiles set role = 'coach' where id = pg_temp.id('14');
@@ -134,13 +134,13 @@ update public.teams set selections_completed_at = null where id = pg_temp.id('a1
 --   d6 left 4 years ago, cleared 4 years ago
 -- And c1 belongs to a current athlete, never cleared, from 9 years ago.
 insert into public.injuries (id, athlete_id, body_area, description, injured_on, status, cleared_at, athlete_name, athlete_left_at) values
-  ('d1000000-0000-0000-0000-000000000001', pg_temp.id('32'), 'Ankle', 'Rolled', current_date - 500, 'cleared', now() - interval '14 months', 'Kai Senior', now() - interval '13 months'),
-  ('d1000000-0000-0000-0000-000000000002', pg_temp.id('32'), 'Knee', 'Sore', current_date - 3400, 'cleared', now() - interval '9 years', 'Kai Senior', now() - interval '8 years'),
-  ('d1000000-0000-0000-0000-000000000003', pg_temp.id('32'), 'Back', 'Tight', current_date - 3400, 'injured', null, 'Kai Senior', now() - interval '8 years'),
-  ('d1000000-0000-0000-0000-000000000004', pg_temp.id('32'), 'Wrist', 'Sprain', current_date - 3400, 'cleared', now() - interval '8 years', 'Kai Senior', now() - interval '1 year'),
-  ('d1000000-0000-0000-0000-000000000005', pg_temp.id('32'), 'Hip', 'Strain', current_date - 3400, 'cleared', now() - interval '9 years', 'Kai Senior', now() - interval '8 years'),
-  ('d1000000-0000-0000-0000-000000000006', pg_temp.id('32'), 'Calf', 'Strain', current_date - 1500, 'cleared', now() - interval '4 years', 'Kai Senior', now() - interval '4 years'),
-  ('c2000000-0000-0000-0000-000000000001', pg_temp.id('31'), 'Shoulder', 'Sore', current_date - 3400, 'injured', null, 'Jordan Junior', null);
+  ('d1000000-0000-0000-0000-000000000001', pg_temp.id('32'), 'Ankle', 'Rolled', public.club_today() - 500, 'cleared', now() - interval '14 months', 'Kai Senior', now() - interval '13 months'),
+  ('d1000000-0000-0000-0000-000000000002', pg_temp.id('32'), 'Knee', 'Sore', public.club_today() - 3400, 'cleared', now() - interval '9 years', 'Kai Senior', now() - interval '8 years'),
+  ('d1000000-0000-0000-0000-000000000003', pg_temp.id('32'), 'Back', 'Tight', public.club_today() - 3400, 'injured', null, 'Kai Senior', now() - interval '8 years'),
+  ('d1000000-0000-0000-0000-000000000004', pg_temp.id('32'), 'Wrist', 'Sprain', public.club_today() - 3400, 'cleared', now() - interval '8 years', 'Kai Senior', now() - interval '1 year'),
+  ('d1000000-0000-0000-0000-000000000005', pg_temp.id('32'), 'Hip', 'Strain', public.club_today() - 3400, 'cleared', now() - interval '9 years', 'Kai Senior', now() - interval '8 years'),
+  ('d1000000-0000-0000-0000-000000000006', pg_temp.id('32'), 'Calf', 'Strain', public.club_today() - 1500, 'cleared', now() - interval '4 years', 'Kai Senior', now() - interval '4 years'),
+  ('c2000000-0000-0000-0000-000000000001', pg_temp.id('31'), 'Shoulder', 'Sore', public.club_today() - 3400, 'injured', null, 'Jordan Junior', null);
 insert into storage.objects (bucket_id, name) values
   ('injury-documents', pg_temp.id('32') || '/d1000000-0000-0000-0000-000000000005/letter.pdf'),
   ('injury-documents', pg_temp.id('32') || '/d1000000-0000-0000-0000-000000000003/scan.pdf');

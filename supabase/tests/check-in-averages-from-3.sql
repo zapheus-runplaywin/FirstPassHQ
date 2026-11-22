@@ -10,8 +10,8 @@ create or replace function pg_temp.ok(label text, actual boolean, expected boole
 $$ select case when actual is not distinct from expected then 'PASS ' else 'FAIL ' end || label || ' (got ' || coalesce(actual::text, 'null') || ')' $$;
 -- Whether a group (null = whole club) shows on a day, one-day window.
 create or replace function pg_temp.shows(g text, d int) returns boolean language sql as
-$$ select v.visible from public.check_in_visible_days(current_date - d, current_date - d, 1) v
-   where v.day = current_date - d and v.team_id is not distinct from g::uuid $$;
+$$ select v.visible from public.check_in_visible_days(public.club_today() - d, public.club_today() - d, 1) v
+   where v.day = public.club_today() - d and v.team_id is not distinct from g::uuid $$;
 
 select count(*) as rows_before from public.check_ins \gset
 
@@ -20,7 +20,7 @@ insert into auth.users (id, email, email_confirmed_at)
 select ('00000000-0000-0000-0000-0000000000' || n)::uuid, 'athlete' || n || '@example.test', now()
 from generate_series(61, 69) n;
 update public.profiles set status = 'approved', role = 'athlete', full_name = 'Athlete ' || right(id::text, 2),
-  date_of_birth = current_date - interval '25 years', verified_at = now()
+  date_of_birth = public.club_today() - interval '25 years', verified_at = now()
 where right(id::text, 2) between '61' and '69';
 insert into public.team_members (team_id, profile_id, team_role)
 select '00000000-0000-0000-0000-0000000000a1', ('00000000-0000-0000-0000-0000000000' || n)::uuid, 'athlete'
@@ -30,7 +30,7 @@ select '00000000-0000-0000-0000-0000000000a2', ('00000000-0000-0000-0000-0000000
 from generate_series(67, 69) n;
 
 insert into public.check_ins (athlete_id, day, sleep, soreness, stress, mood)
-select ('00000000-0000-0000-0000-0000000000' || n)::uuid, current_date - d, 4, 4, 4, 4
+select ('00000000-0000-0000-0000-0000000000' || n)::uuid, public.club_today() - d, 4, 4, 4, 4
 from (values
   -- 20 days back: 3 squad athletes
   (20, 61), (20, 62), (20, 63),
@@ -59,9 +59,9 @@ select pg_temp.ok('team of 3 shows when its squad is 3 apart', pg_temp.shows('00
 -- Through the committee's own views.
 select pg_temp.as_member('22');
 select pg_temp.ok('committee overview shows 3 check-ins',
-  (select avg_sleep is not null and checked_in_count = 3 from public.check_in_overview(current_date - 20) where team_id = '00000000-0000-0000-0000-0000000000a1'), true);
+  (select avg_sleep is not null and checked_in_count = 3 from public.check_in_overview(public.club_today() - 20) where team_id = '00000000-0000-0000-0000-0000000000a1'), true);
 select pg_temp.ok('committee overview hides 2 check-ins',
-  (select avg_sleep is null from public.check_in_overview(current_date - 21) where team_id = '00000000-0000-0000-0000-0000000000a1'), true);
+  (select avg_sleep is null from public.check_in_overview(public.club_today() - 21) where team_id = '00000000-0000-0000-0000-0000000000a1'), true);
 select pg_temp.ok('committee cannot call the helper directly',
   (select not has_function_privilege('authenticated', 'public.check_in_visible_days(date, date, int)', 'execute')), true);
 

@@ -25,7 +25,7 @@ $$ begin execute statement; return 'PASS ' || label;
 grant select, insert on storage.objects to authenticated;
 -- Junior (31) has an ankle injury; Senior (32) gets one too.
 insert into public.injuries (athlete_id, reported_by, body_area, description, injured_on, athlete_name)
-values ('00000000-0000-0000-0000-000000000032', '00000000-0000-0000-0000-000000000032', 'Knee', 'Jarred knee', current_date - 1, 'Kai Senior');
+values ('00000000-0000-0000-0000-000000000032', '00000000-0000-0000-0000-000000000032', 'Knee', 'Jarred knee', public.club_today() - 1, 'Kai Senior');
 create temp table t as select
   (select id from public.injuries where athlete_id = '00000000-0000-0000-0000-000000000031') as junior,
   (select id from public.injuries where athlete_id = '00000000-0000-0000-0000-000000000032') as senior;

@@ -2,8 +2,9 @@ import { useFocusEffect } from 'expo-router';
 import { useCallback, useState } from 'react';
 
 import { useAuth } from '@/lib/auth';
+import { clubDay } from '@/lib/club-time';
 import { formatDateTime } from '@/lib/format';
-import { formatDateString, parseDateString, toDateString } from '@/lib/injuries';
+import { formatDateString, parseDateString } from '@/lib/injuries';
 import { supabase } from '@/lib/supabase';
 import type { Award, AwardNominees, AwardSlot, AwardVoterRole } from '@/lib/types';
 
@@ -100,7 +101,7 @@ export function endOfDay(day: string) {
 
 /** The local day of an ISO time, as "2026-10-07". */
 export function dayOf(iso: string) {
-  return toDateString(new Date(iso));
+  return clubDay(iso);
 }
 
 /** The votes open to the signed-in member right now. */

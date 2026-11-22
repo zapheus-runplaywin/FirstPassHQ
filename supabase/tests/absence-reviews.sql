@@ -17,14 +17,14 @@ $$ select id from public.absence_categories where name = n $$;
 
 -- An old absence (reported 10 days ago) is before the 7-day start.
 insert into public.attendance_absences (athlete_id, from_day, to_day, reported_by, reported_by_name, reported_as, created_at)
-values ('00000000-0000-0000-0000-000000000032', current_date + 5, current_date + 5, '00000000-0000-0000-0000-000000000032', 'Kai', 'athlete', now() - interval '10 days');
+values ('00000000-0000-0000-0000-000000000032', public.club_today() + 5, public.club_today() + 5, '00000000-0000-0000-0000-000000000032', 'Kai', 'athlete', now() - interval '10 days');
 
 select pg_temp.as_member('11');
 select pg_temp.ok('coach starts with nothing to review', (select count(*) = 0 from public.absences_to_review()), true);
 
 select pg_temp.as_member('31');
 select pg_temp.works('athlete reports an absence',
-  format($s$select public.report_absence('00000000-0000-0000-0000-000000000031', current_date + 3, current_date + 4, %L, 'Bali')$s$, pg_temp.cat('Planned holidays')));
+  format($s$select public.report_absence('00000000-0000-0000-0000-000000000031', public.club_today() + 3, public.club_today() + 4, %L, 'Bali')$s$, pg_temp.cat('Planned holidays')));
 
 select pg_temp.as_member('11');
 select pg_temp.ok('coach sees the new absence with its reason',
@@ -58,7 +58,7 @@ select pg_temp.ok('coach sees it again as withdrawn', (select bool_and(withdrawn
 select pg_temp.as_member('42');
 select pg_temp.works('coach-guardian marks reviewed', 'select public.mark_absences_reviewed()');
 select pg_temp.works('coach-guardian reports for their child',
-  format($s$select public.report_absence('00000000-0000-0000-0000-000000000031', current_date + 8, current_date + 8, %L, null)$s$, pg_temp.cat('Personal illness')));
+  format($s$select public.report_absence('00000000-0000-0000-0000-000000000031', public.club_today() + 8, public.club_today() + 8, %L, null)$s$, pg_temp.cat('Personal illness')));
 select pg_temp.ok('their own report is not on their list', (select count(*) = 0 from public.absences_to_review()), true);
 select pg_temp.as_member('11');
 select pg_temp.ok('the other coach sees it', (select count(*) = 2 from public.absences_to_review()), true);

@@ -4,22 +4,26 @@ import { StyleSheet, View } from 'react-native';
 import { Screen } from '@/components/screen';
 import { SettingSwitch } from '@/components/setting-switch';
 import { ThemedText } from '@/components/themed-text';
-import { Button, Card, ErrorText } from '@/components/ui';
+import { Button, Card, ChipGroup, ErrorText } from '@/components/ui';
 import { Spacing } from '@/constants/theme';
 import { useClub } from '@/lib/club';
 import { SAVED_NOTICE, saveClubProfile, savedLook } from '@/lib/club-settings';
+import { CLUB_TIME_ZONES, clubToday, timeZoneLabel } from '@/lib/club-time';
+import { formatDateString } from '@/lib/injuries';
 import { supabase } from '@/lib/supabase';
 
 /**
  * Administration > Club options: how the club is set up, apart from its look
- * and features. Whether members join a squad first, and whether physios get
- * messages sent to the whole club.
+ * and features. Whether members join a squad first, whether physios get
+ * messages sent to the whole club, and the club's time zone, which decides
+ * the club's "today" everywhere.
  */
 export default function ClubOptionsScreen() {
   const club = useClub();
   const saved = club.profile;
 
   const [squads, setSquads] = useState(club.squads);
+  const [timeZone, setTimeZone] = useState(club.timeZone);
   /** Whether physios get messages sent to the whole club. Off unless an admin turns it on. */
   const [physioMessages, setPhysioMessages] = useState(false);
   const [loaded, setLoaded] = useState(false);
@@ -39,7 +43,12 @@ export default function ClubOptionsScreen() {
   if (loaded && filledFrom !== saved) {
     setFilledFrom(saved);
     setSquads(club.squads);
+    setTimeZone(club.timeZone);
   }
+  // A zone saved some other way is still shown, so saving keeps it.
+  const zones = CLUB_TIME_ZONES.some((z) => z.value === club.timeZone)
+    ? CLUB_TIME_ZONES
+    : [...CLUB_TIME_ZONES, { value: club.timeZone, label: timeZoneLabel(club.timeZone) }];
 
   async function save() {
     setSaving(true);
@@ -59,6 +68,16 @@ export default function ClubOptionsScreen() {
       setSaving(false);
       setError(physioError.message);
       return;
+    }
+    if (timeZone !== club.timeZone) {
+      const { error: zoneError } = await supabase.rpc('admin_set_club_timezone', {
+        p_timezone: timeZone,
+      });
+      if (zoneError) {
+        setSaving(false);
+        setError(zoneError.message);
+        return;
+      }
     }
     await club.reload();
     setSaving(false);
@@ -107,6 +126,26 @@ export default function ClubOptionsScreen() {
         </Card>
       </View>
 
+      <View style={styles.section}>
+        <ThemedText type="smallBold">Time zone</ThemedText>
+        <Card style={styles.zone}>
+          <ThemedText type="small" themeColor="textSecondary">
+            The club’s day starts at midnight here. It decides “today” everywhere in the app: check-ins,
+            due dates, when cards and checks run out, birthdays, quiet hours for notifications and the
+            dates on notices.
+          </ThemedText>
+          <ChipGroup
+            label="Where the club is"
+            options={zones.map((z) => ({ value: z.value, label: z.label.split(' (')[0] }))}
+            selected={[timeZone]}
+            onToggle={setTimeZone}
+          />
+          <ThemedText type="small" themeColor="textSecondary">
+            {timeZoneLabel(timeZone)}. Today there is {formatDateString(clubToday(new Date(), timeZone))}.
+          </ThemedText>
+        </Card>
+      </View>
+
       <ErrorText>{error}</ErrorText>
       {notice ? (
         <ThemedText type="small" themeColor="textSecondary">
@@ -130,5 +169,8 @@ const styles = StyleSheet.create({
   rowText: {
     flex: 1,
     gap: Spacing.half,
+  },
+  zone: {
+    gap: Spacing.two,
   },
 });

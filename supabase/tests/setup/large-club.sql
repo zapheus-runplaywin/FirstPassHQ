@@ -72,8 +72,8 @@ select n,
   -- Checks: everyone who needs one has a current one, except the lapsed.
   case when n between 1 and 27 and n not in (5, 6) or n in (198, 199) then 'WWC' || lpad(n::text, 4, '0') end,
   case
-    when n in (4, 17, 20) then current_date - 1 - (n % 20)
-    when n between 1 and 27 and n not in (5, 6) or n in (198, 199) then current_date + 100 + n * 7
+    when n in (4, 17, 20) then public.club_today() - 1 - (n % 20)
+    when n between 1 and 27 and n not in (5, 6) or n in (198, 199) then public.club_today() + 100 + n * 7
   end,
   case when n = 6 then 'Treasurer only, no contact with children' end
 from generate_series(1, 200) n;
@@ -87,13 +87,13 @@ update lc_people set status = 'pending' where n in (196, 197);
 -- Ages: under 18s from 10 to 17, two of them on the 18th birthday edge;
 -- adults from 18 to 45; staff and guardians 25 to 60.
 update lc_people set dob = case
-    when n = 28 then (current_date - interval '18 years' + interval '1 day')::date
-    when n = 29 then (current_date - interval '18 years')::date
-    when n <= 97 then (current_date - interval '10 years' - (floor(random() * 365 * 7.9)::int) * interval '1 day')::date
-    else (current_date - interval '18 years' - interval '1 day' - (floor(random() * 365 * 27)::int) * interval '1 day')::date
+    when n = 28 then (public.club_today() - interval '18 years' + interval '1 day')::date
+    when n = 29 then (public.club_today() - interval '18 years')::date
+    when n <= 97 then (public.club_today() - interval '10 years' - (floor(random() * 365 * 7.9)::int) * interval '1 day')::date
+    else (public.club_today() - interval '18 years' - interval '1 day' - (floor(random() * 365 * 27)::int) * interval '1 day')::date
   end
 where role = 'athlete';
-update lc_people set dob = (current_date - interval '25 years' - (floor(random() * 365 * 35)::int) * interval '1 day')::date
+update lc_people set dob = (public.club_today() - interval '25 years' - (floor(random() * 365 * 35)::int) * interval '1 day')::date
 where role <> 'athlete';
 
 insert into auth.users (id, email, email_confirmed_at)
@@ -113,8 +113,8 @@ update public.profiles p set
   head_physio = l.head_physio,
   verified_at = case when l.status = 'approved' then now() - interval '30 days' end,
   volunteer_task = case when l.role = 'volunteer' then 'Canteen at the carnival' end,
-  volunteer_from = case when l.role = 'volunteer' then current_date end,
-  volunteer_until = case when l.role = 'volunteer' then current_date + 2 end
+  volunteer_from = case when l.role = 'volunteer' then public.club_today() end,
+  volunteer_until = case when l.role = 'volunteer' then public.club_today() + 2 end
 from lc_people l
 where p.id = pg_temp.lc(l.n);
 
@@ -134,9 +134,9 @@ from generate_series(1, 4) s, generate_series(1, 3) t;
 -- Open squad.
 create temp table lc_athlete_squad as
 select n, case
-    when dob <= current_date - interval '18 years' then 1
-    when dob <= current_date - interval '16 years' then 2
-    when dob <= current_date - interval '14 years' then 3
+    when dob <= public.club_today() - interval '18 years' then 1
+    when dob <= public.club_today() - interval '16 years' then 2
+    when dob <= public.club_today() - interval '14 years' then 3
     else 4
   end as squad
 from lc_people where role = 'athlete' or 'athlete' = any (extra);
@@ -201,12 +201,12 @@ group by f.n, k.kind;
 -- Two weeks of check-ins from most athletes, an injury for one in five and
 -- a register for every team's last six trainings.
 insert into public.check_ins (athlete_id, day, sleep, soreness, stress, mood)
-select pg_temp.lc(a.n), current_date - d, 1 + floor(random() * 5), 1 + floor(random() * 5), 1 + floor(random() * 5), 1 + floor(random() * 5)
+select pg_temp.lc(a.n), public.club_today() - d, 1 + floor(random() * 5), 1 + floor(random() * 5), 1 + floor(random() * 5), 1 + floor(random() * 5)
 from lc_athlete_squad a, generate_series(0, 13) d
 where random() < 0.7;
 insert into public.injuries (athlete_id, reported_by, body_area, description, injured_on, athlete_name)
 select pg_temp.lc(a.n), pg_temp.lc(a.n), (array['Ankle', 'Knee', 'Finger', 'Shoulder'])[1 + a.n % 4],
-  'Sample injury', current_date - (a.n % 20), p.full_name
+  'Sample injury', public.club_today() - (a.n % 20), p.full_name
 from lc_athlete_squad a join public.profiles p on p.id = pg_temp.lc(a.n)
 where a.n % 5 = 0;
 insert into public.injury_updates (injury_id, author_id, author_name, kind, notes)

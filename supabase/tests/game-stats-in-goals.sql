@@ -64,10 +64,10 @@ update public.profiles p set status = 'approved', full_name = v.name, role = v.r
   wwcc_number = v.wwcc, wwcc_expires_on = v.exp, wwcc_exempt_reason = v.reason, stood_down_at = v.stood,
   date_of_birth = v.dob, verified_at = v.verified
 from (values
-  ('00000000-0000-0000-0000-000000000061', 'Sam Stats', 'statistician', null, null::date, 'Opens games only', null::timestamptz, current_date - interval '40 years', now()),
-  ('00000000-0000-0000-0000-000000000062', 'Quinn Paused', 'coach', 'WWC0062', current_date + 400, null, null, current_date - interval '40 years', now()),
-  ('00000000-0000-0000-0000-000000000063', 'Riley Teammate', 'athlete', null, null, null, null, current_date - interval '25 years', now()),
-  ('00000000-0000-0000-0000-000000000064', 'Tatum Parent', 'guardian', null, null, null, null, current_date - interval '40 years', now())
+  ('00000000-0000-0000-0000-000000000061', 'Sam Stats', 'statistician', null, null::date, 'Opens games only', null::timestamptz, public.club_today() - interval '40 years', now()),
+  ('00000000-0000-0000-0000-000000000062', 'Quinn Paused', 'coach', 'WWC0062', public.club_today() + 400, null, null, public.club_today() - interval '40 years', now()),
+  ('00000000-0000-0000-0000-000000000063', 'Riley Teammate', 'athlete', null, null, null, null, public.club_today() - interval '25 years', now()),
+  ('00000000-0000-0000-0000-000000000064', 'Tatum Parent', 'guardian', null, null, null, null, public.club_today() - interval '40 years', now())
 ) as v(id, name, role, wwcc, exp, reason, stood, dob, verified)
 where p.id = v.id::uuid;
 insert into public.team_members (team_id, profile_id, team_role, coach_title) values

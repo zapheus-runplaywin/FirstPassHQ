@@ -4,6 +4,7 @@ import { ThemedText } from '@/components/themed-text';
 import { ChipGroup } from '@/components/ui';
 import { Spacing } from '@/constants/theme';
 import { useTheme } from '@/hooks/use-theme';
+import { clubToday } from '@/lib/club-time';
 import { formatDateString, parseDateString, toDateString } from '@/lib/injuries';
 
 /**
@@ -27,7 +28,7 @@ export function DateField({
   optional?: boolean;
 }) {
   const theme = useTheme();
-  const today = toDateString(new Date());
+  const today = clubToday();
 
   function shift(days: number) {
     const date = parseDateString(value ?? today);

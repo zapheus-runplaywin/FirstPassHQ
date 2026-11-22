@@ -97,7 +97,7 @@ check 'athlete16 is not locked' "$(q "select public.is_locked_child('$(id 9)')")
 check 'locked15 is locked' "$(q "select public.is_locked_child('$(id 10)')")" t
 check 'locked15 has a fresh link code' \
   "$(q "select count(*) from public.guardian_link_codes where athlete_id = '$(id 10)' and used_at is null and replaced_at is null and expires_at > now()")" 1
-check "lapsedcoach's check expired yesterday" "$(q "select wwcc_expires_on = current_date - 1 from public.profiles where id = '$(id 13)'")" t
+check "lapsedcoach's check expired yesterday" "$(q "select wwcc_expires_on = public.club_today() - 1 from public.profiles where id = '$(id 13)'")" t
 check 'headcoach is Head Coach of the 20 & Under team' \
   "$(q "select m.coach_title from public.team_members m join public.teams t on t.id = m.team_id where m.profile_id = '$(id 3)' and t.name = '20 & Under'")" head_coach
 check 'coachparent coaches Open A and is a guardian' \

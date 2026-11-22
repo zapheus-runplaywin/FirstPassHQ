@@ -7,14 +7,14 @@ import { ThemedText } from '@/components/themed-text';
 import { Button, ChipGroup, ErrorText, TextField } from '@/components/ui';
 import { useAbsenceReasons } from '@/lib/absences';
 import { useAuth } from '@/lib/auth';
-import { toDateString } from '@/lib/injuries';
+import { clubToday } from '@/lib/club-time';
 import { supabase } from '@/lib/supabase';
 
 /** An athlete, or their parent or guardian, tells the club they'll be away. */
 export default function ReportAbsenceScreen() {
   const { session } = useAuth();
   const { id, name } = useLocalSearchParams<{ id: string; name?: string }>();
-  const today = toDateString(new Date());
+  const today = clubToday();
   const [from, setFrom] = useState(today);
   const [to, setTo] = useState(today);
   const { reasons } = useAbsenceReasons(true);

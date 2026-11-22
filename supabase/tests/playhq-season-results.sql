@@ -69,11 +69,11 @@ insert into auth.users (id, email, email_confirmed_at) values
   ('00000000-0000-0000-0000-000000000074', 'stats@example.test', now());
 update public.profiles p set status = 'approved', full_name = v.name, role = v.role::public.app_role,
   wwcc_number = v.wwcc, wwcc_expires_on = v.exp, wwcc_exempt_reason = v.reason,
-  date_of_birth = current_date - interval '40 years', verified_at = now()
+  date_of_birth = public.club_today() - interval '40 years', verified_at = now()
 from (values
-  ('00000000-0000-0000-0000-000000000071', 'Rene Other', 'coach', 'WWC0071', current_date + 400, null),
-  ('00000000-0000-0000-0000-000000000072', 'Sky Other', 'manager', 'WWC0072', current_date + 400, null),
-  ('00000000-0000-0000-0000-000000000073', 'Toni Paused', 'coach', 'WWC0073', current_date + 400, null),
+  ('00000000-0000-0000-0000-000000000071', 'Rene Other', 'coach', 'WWC0071', public.club_today() + 400, null),
+  ('00000000-0000-0000-0000-000000000072', 'Sky Other', 'manager', 'WWC0072', public.club_today() + 400, null),
+  ('00000000-0000-0000-0000-000000000073', 'Toni Paused', 'coach', 'WWC0073', public.club_today() + 400, null),
   ('00000000-0000-0000-0000-000000000074', 'Pat Stats', 'statistician', null, null::date, 'Opens games only')
 ) as v(id, name, role, wwcc, exp, reason)
 where p.id = v.id::uuid;

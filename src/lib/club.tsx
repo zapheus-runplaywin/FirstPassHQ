@@ -6,6 +6,7 @@ import { ClubDefaults, DefaultLogo, FirstPass } from '@/constants/club';
 import { Colors, contrastRatio, isHexColour, makeColors, type Palette } from '@/constants/theme';
 import { useClubChoice } from '@/lib/club-choice';
 import { clubProfileCacheKey } from '@/lib/club-logos';
+import { DEFAULT_CLUB_TIME_ZONE, setClubTimeZone } from '@/lib/club-time';
 import { supabase } from '@/lib/supabase';
 
 /** Features an admin can turn on and off for the club. */
@@ -82,6 +83,8 @@ export type ClubProfile = {
   logo_path: string | null;
   features: Partial<Record<string, boolean>>;
   updated_at: string | null;
+  /** The club's time zone, such as "Australia/Perth". Missing from settings saved by older versions. */
+  timezone?: string | null;
 };
 
 type ClubState = {
@@ -97,6 +100,8 @@ type ClubState = {
   features: Features;
   /** Whether members join a squad before teams are named from it. */
   squads: boolean;
+  /** The club's time zone, such as "Australia/Perth": the zone "today" is worked out in. */
+  timeZone: string;
   reload: () => Promise<void>;
 };
 
@@ -147,6 +152,7 @@ export function resolveClub(profile: ClubProfile | null) {
     ) as Features,
     // Stored with the features, but it shapes the club rather than adding a screen.
     squads: profile?.features?.squads !== false,
+    timeZone: profile?.timezone || DEFAULT_CLUB_TIME_ZONE,
   };
 }
 
@@ -172,7 +178,13 @@ export function ClubProvider({ signedIn, children }: { signedIn: boolean; childr
     if (!canCache || !cacheKey) return;
     AsyncStorage.getItem(cacheKey)
       .then((saved) => {
-        if (saved) setProfile((current) => current ?? (JSON.parse(saved) as ClubProfile));
+        if (!saved) return;
+        setProfile((current) => {
+          if (current) return current;
+          const row = JSON.parse(saved) as ClubProfile;
+          setClubTimeZone(row.timezone);
+          return row;
+        });
       })
       .catch(() => {})
       .finally(() => setReady(true));
@@ -181,6 +193,8 @@ export function ClubProvider({ signedIn, children }: { signedIn: boolean; childr
   const save = useCallback(
     (row: ClubProfile | null) => {
       if (!row) return;
+      // Before the screens render with it, so "today" is the club's day.
+      setClubTimeZone(row.timezone);
       setProfile(row);
       if (canCache && cacheKey) {
         AsyncStorage.setItem(cacheKey, JSON.stringify(row)).catch(() => {});

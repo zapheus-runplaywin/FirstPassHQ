@@ -8,7 +8,7 @@ import { SurveyBars } from '@/components/survey-bars';
 import { Button, Card, ConfirmDelete, ErrorText } from '@/components/ui';
 import { Spacing } from '@/constants/theme';
 import { useClub } from '@/lib/club';
-import { toDateString } from '@/lib/injuries';
+import { clubToday } from '@/lib/club-time';
 import { reportPdf } from '@/lib/pdf';
 import { fileSlug, sharePdf } from '@/lib/reports';
 import { shareXlsx, surveyReport, surveyWorkbook, type SurveyExport } from '@/lib/survey-reports';
@@ -48,7 +48,7 @@ export default function SurveyResultsScreen() {
   if (!results) return <Screen>{null}</Screen>;
 
   const fileName = (ext: string) =>
-    `${fileSlug(club.shortName)}-${fileSlug(results.survey.title)}-${toDateString(new Date())}.${ext}`;
+    `${fileSlug(club.shortName)}-${fileSlug(results.survey.title)}-${clubToday()}.${ext}`;
 
   async function downloadPdf() {
     if (!results) return;

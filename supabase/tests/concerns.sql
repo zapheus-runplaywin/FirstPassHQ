@@ -43,9 +43,9 @@ select pg_temp.ok('signed-out sees no contacts', (select count(*) = 0 from publi
 -- Raising concerns.
 select pg_temp.as_member('61');
 select pg_temp.fails('a concern needs words', $s$ select public.raise_concern('   ') $s$);
-select pg_temp.fails('no future dates', $s$ select public.raise_concern('Something', p_happened_on => current_date + 1) $s$);
+select pg_temp.fails('no future dates', $s$ select public.raise_concern('Something', p_happened_on => public.club_today() + 1) $s$);
 select public.raise_concern('Coach shouted at my child and grabbed her arm', 'Head coach of the squad',
-  '00000000-0000-0000-0000-000000000011', current_date - 2, 'yes', true, '0400 000 000', false, null);
+  '00000000-0000-0000-0000-000000000011', public.club_today() - 2, 'yes', true, '0400 000 000', false, null);
 select pg_temp.as_member('31');
 select public.raise_concern('Someone keeps messaging me', p_anonymous => true, p_contact_ok => true, p_contact_details => 'my number', p_involves_child => 'yes', p_context => 'From the check-in screen');
 select pg_temp.ok('raiser sees their own concern and status', (select count(*) = 1 and bool_and(status = 'received') from public.my_concerns()), true);
@@ -105,7 +105,7 @@ select pg_temp.ok('raiser sees it closed', (select status = 'closed' from public
 
 -- A contact who loses their check stops being a contact.
 reset role;
-update public.profiles set wwcc_expires_on = current_date - 1 where id = '00000000-0000-0000-0000-000000000013';
+update public.profiles set wwcc_expires_on = public.club_today() - 1 where id = '00000000-0000-0000-0000-000000000013';
 select pg_temp.as_member('13');
 select pg_temp.ok('lapsed officer sees nothing', (select count(*) = 0 from public.concern_register()), true);
 select pg_temp.as_member('61');

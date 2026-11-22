@@ -133,11 +133,11 @@ select pg_temp.ok('and once it names an adult, nobody sees guardians',
 select pg_temp.as_member('11');
 select public.set_concern_about((select child from c), pg_temp.id('31'));
 reset role;
-update public.profiles set wwcc_expires_on = current_date - 1 where id = pg_temp.id('11');
+update public.profiles set wwcc_expires_on = public.club_today() - 1 where id = pg_temp.id('11');
 select pg_temp.ok('a Child Safety Officer whose check lapsed sees nothing',
   pg_temp.guardians('11', (select child from c)) = '', true);
 reset role;
-update public.profiles set wwcc_expires_on = current_date + 400 where id = pg_temp.id('11');
+update public.profiles set wwcc_expires_on = public.club_today() + 400 where id = pg_temp.id('11');
 
 -- ---------------------------------------------------------------------------
 -- Access to the functions and the table
@@ -180,11 +180,11 @@ select public.admin_set_safeguarding(pg_temp.id('13'), pg_temp.id('11'), null, n
 select pg_temp.ok('swapping the contacts swaps the titles',
   pg_temp.posts('11') = 'cm' and pg_temp.posts('13') = 'cso', true);
 reset role;
-update public.profiles set wwcc_expires_on = current_date - 1 where id = pg_temp.id('13');
+update public.profiles set wwcc_expires_on = public.club_today() - 1 where id = pg_temp.id('13');
 select pg_temp.ok('a contact whose check lapsed shows no title',
   pg_temp.posts('13') = '', true);
 reset role;
-update public.profiles set wwcc_expires_on = current_date + 400 where id = pg_temp.id('13');
+update public.profiles set wwcc_expires_on = public.club_today() + 400 where id = pg_temp.id('13');
 update public.profiles set role = 'coach' where id = pg_temp.id('01');
 select pg_temp.ok('a WWC Registration Officer no longer an admin or on the committee shows no title',
   pg_temp.posts('01') = '', true);

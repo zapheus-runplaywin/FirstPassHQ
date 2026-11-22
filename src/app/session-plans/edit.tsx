@@ -12,6 +12,7 @@ import { Spacing } from '@/constants/theme';
 import { useTheme } from '@/hooks/use-theme';
 import type { CalendarEvent } from '@/lib/calendar';
 import { useAuth } from '@/lib/auth';
+import { clubToday } from '@/lib/club-time';
 import { formatEventTime, formatShortDay } from '@/lib/format';
 import { formatDateString, toDateString } from '@/lib/injuries';
 import {
@@ -65,7 +66,7 @@ export default function EditSessionPlanScreen() {
   const [loaded, setLoaded] = useState(!params.id && !params.copy);
   const [groupChoice, setGroupChoice] = useState<string | null>(null);
   const [title, setTitle] = useState('');
-  const [sessionOn, setSessionOn] = useState<string | null>(toDateString(new Date()));
+  const [sessionOn, setSessionOn] = useState<string | null>(clubToday());
   const [startText, setStartText] = useState('');
   const [endText, setEndText] = useState('');
   const [location, setLocation] = useState('');
@@ -118,7 +119,7 @@ export default function EditSessionPlanScreen() {
       const copying = !params.id;
       setGroupChoice(p.team_id);
       setTitle(p.title);
-      setSessionOn(copying ? toDateString(new Date()) : p.session_on);
+      setSessionOn(copying ? clubToday() : p.session_on);
       setStartText(p.starts_at?.slice(0, 5) ?? '');
       setEndText(p.ends_at?.slice(0, 5) ?? '');
       setLocation(p.location ?? '');
@@ -506,7 +507,7 @@ export default function EditSessionPlanScreen() {
         </ThemedText>
       </View>
 
-      {sessionOn && planId === null && sessionOn > toDateString(new Date()) ? (
+      {sessionOn && planId === null && sessionOn > clubToday() ? (
         <Card>
           <ThemedText type="small" themeColor="textSecondary">
             Planning ahead for {formatDateString(sessionOn)}. You can change the plan after the

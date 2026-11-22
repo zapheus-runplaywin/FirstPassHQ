@@ -5,7 +5,7 @@ set role authenticated;
 
 -- An athlete under 18 adds two tasks.
 set request.jwt.claim.sub = '00000000-0000-0000-0000-000000000031';
-insert into public.personal_tasks (title, due_on) values ('Pack my bib', current_date + 1);
+insert into public.personal_tasks (title, due_on) values ('Pack my bib', public.club_today() + 1);
 insert into public.personal_tasks (title) values ('Stretch before bed');
 do $$ begin
   if (select count(*) from public.personal_tasks) <> 2 then raise exception 'owner should see 2 tasks'; end if;

@@ -53,12 +53,12 @@ insert into auth.users (id, email, email_confirmed_at) values
 update public.profiles p set status = v.status::public.member_status, full_name = v.name,
   role = v.role::public.app_role, extra_roles = v.extra::public.app_role[],
   wwcc_number = v.wwcc, wwcc_expires_on = v.exp, wwcc_exempt_reason = v.reason,
-  date_of_birth = current_date - interval '40 years', verified_at = now()
+  date_of_birth = public.club_today() - interval '40 years', verified_at = now()
 from (values
   ('00000000-0000-0000-0000-000000000051', 'Rowan Stats', 'statistician', '{}', 'approved', null, null::date, null),
   ('00000000-0000-0000-0000-000000000052', 'Sasha Opens', 'statistician', '{}', 'approved', null, null, 'Opens games only, from video'),
-  ('00000000-0000-0000-0000-000000000053', 'Tatum Checked', 'statistician', '{}', 'approved', 'WWC0053', current_date + 400, null),
-  ('00000000-0000-0000-0000-000000000054', 'Uri Lapsed', 'statistician', '{}', 'approved', 'WWC0054', current_date - 1, null),
+  ('00000000-0000-0000-0000-000000000053', 'Tatum Checked', 'statistician', '{}', 'approved', 'WWC0053', public.club_today() + 400, null),
+  ('00000000-0000-0000-0000-000000000054', 'Uri Lapsed', 'statistician', '{}', 'approved', 'WWC0054', public.club_today() - 1, null),
   ('00000000-0000-0000-0000-000000000055', 'Val Parent-Stats', 'guardian', '{statistician}', 'approved', null, null, null),
   ('00000000-0000-0000-0000-000000000056', 'Wren Newcomer', 'guest', '{}', 'pending', null, null, null),
   ('00000000-0000-0000-0000-000000000057', 'Xan Kept', 'statistician', '{}', 'approved', null, null, null)
@@ -69,7 +69,7 @@ insert into public.volunteer_exemptions (profile_id, basis, child_id, child_name
 values (pg_temp.id('55'), 'parent_volunteer', pg_temp.id('31'), 'Jordan Junior', now(), 'Declared');
 -- An adult's injury alongside the seed's under 18 (Jordan's ankle).
 insert into public.injuries (athlete_id, reported_by, body_area, description, injured_on, athlete_name)
-values (pg_temp.id('32'), pg_temp.id('32'), 'Knee', 'Jarred knee', current_date - 2, 'Kai Senior');
+values (pg_temp.id('32'), pg_temp.id('32'), 'Knee', 'Jarred knee', public.club_today() - 2, 'Kai Senior');
 select set_config('request.jwt.claim.sub', '', false);
 
 -- ---------------------------------------------------------------------------
@@ -96,6 +96,7 @@ select pg_temp.ok('committee unchanged: exempt with a reason', public.needs_wwcc
 
 -- ---------------------------------------------------------------------------
 -- The statistician checks date
+-- The migration that added it filled it in from the UTC day it ran (current_date).
 -- ---------------------------------------------------------------------------
 select pg_temp.ok('date defaults to 90 days ahead',
   (select statistician_checks_from = current_date + 90 from public.safeguarding_settings where id), true);
@@ -120,25 +121,25 @@ select pg_temp.ok('parent volunteer exemption: keeps the role', public.has_role(
 -- Changing the date
 select pg_temp.as_member('51');
 select pg_temp.fails_with('a statistician cannot change the date',
-  $$select public.admin_set_statistician_checks_from(current_date)$$, 'Only admins');
+  $$select public.admin_set_statistician_checks_from(public.club_today())$$, 'Only admins');
 select pg_temp.as_member('22');
 select pg_temp.fails_with('a committee member cannot change the date',
-  $$select public.admin_set_statistician_checks_from(current_date)$$, 'Only admins');
+  $$select public.admin_set_statistician_checks_from(public.club_today())$$, 'Only admins');
 select pg_temp.as_member('01');
 select pg_temp.fails_with('admin cannot push the date back',
-  $$select public.admin_set_statistician_checks_from(current_date + 200)$$, 'only be brought forward');
+  $$select public.admin_set_statistician_checks_from(public.club_today() + 200)$$, 'only be brought forward');
 select pg_temp.fails_with('admin cannot clear the date',
   $$select public.admin_set_statistician_checks_from(null)$$, 'Choose the date');
 select pg_temp.works('admin brings the date forward to today',
-  $$select public.admin_set_statistician_checks_from(current_date)$$);
+  $$select public.admin_set_statistician_checks_from(public.club_today())$$);
 select pg_temp.ok('the new date is saved',
-  (select statistician_checks_from = current_date from public.safeguarding_settings where id), true);
+  (select statistician_checks_from = public.club_today() from public.safeguarding_settings where id), true);
 select pg_temp.ok('who changed it is kept',
   (select updated_by = pg_temp.id('01') from public.safeguarding_settings where id), true);
 select pg_temp.ok('the committee date did not move',
   (select committee_checks_from = current_date + 90 from public.safeguarding_settings where id), true);
 select pg_temp.works('admin can set it to the same day again',
-  $$select public.admin_set_statistician_checks_from(current_date)$$);
+  $$select public.admin_set_statistician_checks_from(public.club_today())$$);
 
 -- From the date
 select pg_temp.as_member('51');
@@ -158,16 +159,16 @@ select pg_temp.ok('committee member with no check still keeps theirs (their own 
 -- What brings it back
 reset role;
 insert into public.wwcc_applications (profile_id, application_number, lodged_on, kind, receipt_path, recorded_by, declared_at, declaration_text)
-values (pg_temp.id('51'), 'APP51', current_date - 5, 'new', '51/r/receipt.pdf', pg_temp.id('01'), now(), 'Declared');
+values (pg_temp.id('51'), 'APP51', public.club_today() - 5, 'new', '51/r/receipt.pdf', pg_temp.id('01'), now(), 'Declared');
 select pg_temp.as_member('51');
 select pg_temp.ok('a lodged application in force brings the role back', public.has_role('statistician'), true);
 reset role;
 update public.wwcc_applications set declared_at = null where profile_id = pg_temp.id('51');
 select pg_temp.ok('one waiting for their declaration does not', public.has_role('statistician'), false);
 update public.wwcc_applications set ended_at = now(), ended_reason = 'withdrawn' where profile_id = pg_temp.id('51');
-update public.profiles set wwcc_number = 'WWC0051', wwcc_expires_on = current_date + 365 where id = pg_temp.id('51');
+update public.profiles set wwcc_number = 'WWC0051', wwcc_expires_on = public.club_today() + 365 where id = pg_temp.id('51');
 select pg_temp.ok('a current check brings it back', public.has_role('statistician'), true);
-update public.profiles set wwcc_expires_on = current_date - 1 where id = pg_temp.id('51');
+update public.profiles set wwcc_expires_on = public.club_today() - 1 where id = pg_temp.id('51');
 select pg_temp.ok('and it pauses again when the check expires', public.has_role('statistician'), false);
 update public.profiles set wwcc_number = null, wwcc_expires_on = null, wwcc_exempt_reason = 'Video only' where id = pg_temp.id('51');
 select pg_temp.ok('an exemption with a reason brings it back', public.has_role('statistician'), true);
@@ -204,7 +205,7 @@ select pg_temp.fails_with('a new statistician with no check is refused',
   $$select pg_temp.save_statistician('56')$$, 'before making them a statistician');
 reset role;
 select pg_temp.ok('and nothing changed', (select status = 'pending' and role = 'guest' from public.profiles where id = pg_temp.id('56')), true);
-update public.profiles set wwcc_number = 'WWC0056', wwcc_expires_on = current_date - 1 where id = pg_temp.id('56');
+update public.profiles set wwcc_number = 'WWC0056', wwcc_expires_on = public.club_today() - 1 where id = pg_temp.id('56');
 select pg_temp.as_member('01');
 select pg_temp.fails_with('a new statistician with an expired check is refused',
   $$select pg_temp.save_statistician('56')$$, 'before making them a statistician');
@@ -221,14 +222,14 @@ select pg_temp.ok('they are approved as a statistician',
 
 -- A new one with a current check, an application or a volunteer exemption
 update public.profiles set status = 'pending', role = 'guest', wwcc_exempt_reason = null where id = pg_temp.id('56');
-update public.profiles set wwcc_number = 'WWC0056', wwcc_expires_on = current_date + 400 where id = pg_temp.id('56');
+update public.profiles set wwcc_number = 'WWC0056', wwcc_expires_on = public.club_today() + 400 where id = pg_temp.id('56');
 select pg_temp.as_member('01');
 select pg_temp.works('a new statistician with a current check is approved',
   $$select pg_temp.save_statistician('56')$$);
 reset role;
 update public.profiles set status = 'pending', role = 'guest', wwcc_number = null, wwcc_expires_on = null where id = pg_temp.id('56');
 insert into public.wwcc_applications (profile_id, application_number, lodged_on, kind, receipt_path, recorded_by)
-values (pg_temp.id('56'), 'APP56', current_date - 2, 'new', '56/r/receipt.pdf', pg_temp.id('01'));
+values (pg_temp.id('56'), 'APP56', public.club_today() - 2, 'new', '56/r/receipt.pdf', pg_temp.id('01'));
 select pg_temp.as_member('01');
 select pg_temp.works('one with an application still waiting for their declaration is approved',
   $$select pg_temp.save_statistician('56')$$);
@@ -275,15 +276,15 @@ select pg_temp.ok('their own answer is yes before the date', public.my_admin_see
 
 -- 29 and 31 days after the committee checks date
 reset role;
-update public.safeguarding_settings set committee_checks_from = current_date - 29 where id;
+update public.safeguarding_settings set committee_checks_from = public.club_today() - 29 where id;
 select pg_temp.as_member('02');
 select pg_temp.ok('no check, 29 days after the committee date: still sees it', pg_temp.reads('Ankle'), true);
 reset role;
-update public.safeguarding_settings set committee_checks_from = current_date - 30 where id;
+update public.safeguarding_settings set committee_checks_from = public.club_today() - 30 where id;
 select pg_temp.as_member('02');
 select pg_temp.ok('no check, 30 days after the committee date: no longer sees it', pg_temp.reads('Ankle'), false);
 reset role;
-update public.safeguarding_settings set committee_checks_from = current_date - 31 where id;
+update public.safeguarding_settings set committee_checks_from = public.club_today() - 31 where id;
 select pg_temp.as_member('02');
 select pg_temp.ok('no check, 31 days after: does not read the under 18''s injury', pg_temp.reads('Ankle'), false);
 select pg_temp.ok('nor list it', pg_temp.listed('Ankle'), false);
@@ -293,7 +294,7 @@ select pg_temp.ok('still lists the adult''s injury', pg_temp.listed('Knee'), tru
 select pg_temp.ok('keeps the admin role', public.has_role('admin'), true);
 select pg_temp.ok('and still counts as an admin', public.is_admin(), true);
 select pg_temp.works('and can still use admin powers',
-  $$select public.admin_set_statistician_checks_from(current_date)$$);
+  $$select public.admin_set_statistician_checks_from(public.club_today())$$);
 
 -- Accepting a clearance follows the same rule
 reset role;
@@ -316,7 +317,7 @@ update public.profiles set wwcc_exempt_reason = null where id = pg_temp.id('02')
 
 -- What brings it back
 insert into public.wwcc_applications (profile_id, application_number, lodged_on, kind, receipt_path, recorded_by, declared_at, declaration_text)
-values (pg_temp.id('02'), 'APP02', current_date - 5, 'new', '02/r/receipt.pdf', pg_temp.id('01'), now(), 'Declared');
+values (pg_temp.id('02'), 'APP02', public.club_today() - 5, 'new', '02/r/receipt.pdf', pg_temp.id('01'), now(), 'Declared');
 select pg_temp.as_member('02');
 select pg_temp.ok('a lodged application in force brings it back', pg_temp.reads('Ankle'), true);
 reset role;
@@ -324,21 +325,21 @@ update public.wwcc_applications set ended_at = now(), ended_reason = 'withdrawn'
 select pg_temp.as_member('02');
 select pg_temp.ok('and it goes again when the application ends', pg_temp.reads('Ankle'), false);
 reset role;
-update public.profiles set wwcc_number = 'WWC0002', wwcc_expires_on = current_date + 365 where id = pg_temp.id('02');
+update public.profiles set wwcc_number = 'WWC0002', wwcc_expires_on = public.club_today() + 365 where id = pg_temp.id('02');
 select pg_temp.as_member('02');
 select pg_temp.ok('a current check brings it back', pg_temp.reads('Ankle'), true);
 
 -- An expired card: 30 days' grace from the expiry
 reset role;
-update public.profiles set wwcc_expires_on = current_date - 1 where id = pg_temp.id('02');
+update public.profiles set wwcc_expires_on = public.club_today() - 1 where id = pg_temp.id('02');
 select pg_temp.as_member('02');
 select pg_temp.ok('card expired yesterday: still sees it', pg_temp.reads('Ankle'), true);
 reset role;
-update public.profiles set wwcc_expires_on = current_date - 30 where id = pg_temp.id('02');
+update public.profiles set wwcc_expires_on = public.club_today() - 30 where id = pg_temp.id('02');
 select pg_temp.as_member('02');
 select pg_temp.ok('card expired 30 days ago: still sees it', pg_temp.reads('Ankle'), true);
 reset role;
-update public.profiles set wwcc_expires_on = current_date - 31 where id = pg_temp.id('02');
+update public.profiles set wwcc_expires_on = public.club_today() - 31 where id = pg_temp.id('02');
 select pg_temp.as_member('02');
 select pg_temp.ok('card expired 31 days ago: no longer sees it', pg_temp.reads('Ankle'), false);
 select pg_temp.ok('their own answer is no', public.my_admin_sees_children_injuries(), false);

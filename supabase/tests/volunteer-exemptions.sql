@@ -62,7 +62,7 @@ select pg_temp.ok('accepted exemption gives the manager role', public.has_role('
 select pg_temp.ok('accepted exemption lets them lead the squad', public.leads_group('00000000-0000-0000-0000-0000000000a1'), true);
 select pg_temp.ok('accepted exemption lets them message the squad', public.can_message_group('00000000-0000-0000-0000-0000000000a1'), true);
 select pg_temp.ok('declaration words are kept', (select declaration_text like 'I volunteer at this club because my child, Jordan Junior,%overnight camps.' from public.volunteer_exemptions where profile_id = '00000000-0000-0000-0000-000000000041' and ended_at is null), true);
-select pg_temp.ok('ends on the child''s 18th birthday', (select ends_on = (current_date - interval '14 years' + interval '18 years')::date from public.my_volunteer_exemption()), true);
+select pg_temp.ok('ends on the child''s 18th birthday', (select ends_on = (public.club_today() - interval '14 years' + interval '18 years')::date from public.my_volunteer_exemption()), true);
 select pg_temp.as_member('02');
 select pg_temp.ok('accepted exemption no longer counts as missing', (select wwcc_missing from public.admin_safety_todos()) = 4, true);
 select pg_temp.ok('nothing ending soon yet', (select exemptions_ending from public.admin_safety_todos()) = 0, true);
@@ -76,19 +76,19 @@ select pg_temp.ok('admin list is empty for non-admins', (select count(*) = 0 fro
 
 -- The child nearly 18: admins hear 60 days ahead.
 reset role;
-update public.profiles set date_of_birth = current_date - interval '18 years' + interval '40 days' where id = '00000000-0000-0000-0000-000000000031';
+update public.profiles set date_of_birth = public.club_today() - interval '18 years' + interval '40 days' where id = '00000000-0000-0000-0000-000000000031';
 select pg_temp.as_member('02');
 select pg_temp.ok('exemption ending within 60 days is a to-do', (select exemptions_ending from public.admin_safety_todos()) = 1, true);
 
 -- The child turns 18: the exemption stops applying.
 reset role;
-update public.profiles set date_of_birth = current_date - interval '18 years' - interval '1 day' where id = '00000000-0000-0000-0000-000000000031';
+update public.profiles set date_of_birth = public.club_today() - interval '18 years' - interval '1 day' where id = '00000000-0000-0000-0000-000000000031';
 select pg_temp.as_member('41');
 select pg_temp.ok('child turned 18: role paused again', public.has_role('manager'), false);
 select pg_temp.as_member('02');
 select pg_temp.ok('lapsed exemption counts as missing', (select wwcc_missing from public.admin_safety_todos()) = 5, true);
 reset role;
-update public.profiles set date_of_birth = current_date - interval '14 years' where id = '00000000-0000-0000-0000-000000000031';
+update public.profiles set date_of_birth = public.club_today() - interval '14 years' where id = '00000000-0000-0000-0000-000000000031';
 
 -- Unlinked from the child: stops applying.
 delete from public.guardianships where guardian_id = '00000000-0000-0000-0000-000000000041';
@@ -126,11 +126,11 @@ select public.accept_volunteer_declaration();
 select pg_temp.ok('under-18 volunteer coaches once accepted', public.has_role('coach'), true);
 select pg_temp.ok('under-18 declaration words', (select declaration_text like 'I''m under 18%18th birthday%' from public.my_volunteer_exemption()), true);
 reset role;
-update public.profiles set date_of_birth = current_date - interval '18 years' where id = '00000000-0000-0000-0000-000000000031';
+update public.profiles set date_of_birth = public.club_today() - interval '18 years' where id = '00000000-0000-0000-0000-000000000031';
 select pg_temp.as_member('31');
 select pg_temp.ok('under-18 volunteer turns 18: coach role paused', public.has_role('coach'), false);
 reset role;
-update public.profiles set date_of_birth = current_date - interval '14 years', extra_roles = '{}' where id = '00000000-0000-0000-0000-000000000031';
+update public.profiles set date_of_birth = public.club_today() - interval '14 years', extra_roles = '{}' where id = '00000000-0000-0000-0000-000000000031';
 
 -- Replacing an exemption ends the old one.
 select pg_temp.as_member('01');
@@ -144,9 +144,9 @@ reset role;
 insert into auth.users (id, email, email_confirmed_at) values
   ('00000000-0000-0000-0000-000000000051', 'teen.helper@example.test', now()),
   ('00000000-0000-0000-0000-000000000052', 'adult.helper@example.test', now());
-update public.profiles set full_name = 'Noa Helper', date_of_birth = current_date - interval '16 years', status = 'pending'
+update public.profiles set full_name = 'Noa Helper', date_of_birth = public.club_today() - interval '16 years', status = 'pending'
 where id = '00000000-0000-0000-0000-000000000051';
-update public.profiles set full_name = 'Oak Helper', date_of_birth = current_date - interval '30 years', status = 'pending'
+update public.profiles set full_name = 'Oak Helper', date_of_birth = public.club_today() - interval '30 years', status = 'pending'
 where id = '00000000-0000-0000-0000-000000000052';
 select pg_temp.as_member('01');
 select pg_temp.fails('new coach with no check or exemption refused',

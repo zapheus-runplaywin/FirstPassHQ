@@ -99,8 +99,8 @@ select pg_temp.ok('no member is never on hold', public.on_legal_hold(null), fals
 -- Old records, one for Jordan (on hold) and one for Kai
 -- ---------------------------------------------------------------------------
 insert into public.check_ins (athlete_id, day, sleep, soreness, stress, mood, note) values
-  (pg_temp.id('31'), current_date - 400, 2, 3, 3, 3, 'Old'),
-  (pg_temp.id('32'), current_date - 400, 2, 3, 3, 3, 'Old');
+  (pg_temp.id('31'), public.club_today() - 400, 2, 3, 3, 3, 'Old'),
+  (pg_temp.id('32'), public.club_today() - 400, 2, 3, 3, 3, 'Old');
 
 insert into public.teams (id, name, kind, season, archived) values
   ('a0000000-0000-0000-0000-000000000001', 'Old Team', 'team', 2023, true);
@@ -132,14 +132,14 @@ insert into public.attendance_marks (session_id, profile_id, present) values
   ('c0000000-0000-0000-0000-000000000001', pg_temp.id('32'), true),
   ('c0000000-0000-0000-0000-000000000002', pg_temp.id('32'), true);
 insert into public.attendance_absences (athlete_id, from_day, to_day, reported_as) values
-  (pg_temp.id('31'), current_date - 800, current_date - 800, 'guardian'),
-  (pg_temp.id('32'), current_date - 800, current_date - 800, 'athlete');
+  (pg_temp.id('31'), public.club_today() - 800, public.club_today() - 800, 'guardian'),
+  (pg_temp.id('32'), public.club_today() - 800, public.club_today() - 800, 'athlete');
 
 insert into public.training_requirements (id, season, name, due_on, roles) values
-  ('d0000000-0000-0000-0000-000000000001', 2023, 'Integrity basics', current_date - 800, '{athlete}');
+  ('d0000000-0000-0000-0000-000000000001', 2023, 'Integrity basics', public.club_today() - 800, '{athlete}');
 insert into public.training_certificates (requirement_id, profile_id, completed_on, document_path, created_at) values
-  ('d0000000-0000-0000-0000-000000000001', pg_temp.id('31'), current_date - 800, pg_temp.id('31') || '/cert.pdf', now() - interval '2 years'),
-  ('d0000000-0000-0000-0000-000000000001', pg_temp.id('32'), current_date - 800, pg_temp.id('32') || '/cert.pdf', now() - interval '2 years');
+  ('d0000000-0000-0000-0000-000000000001', pg_temp.id('31'), public.club_today() - 800, pg_temp.id('31') || '/cert.pdf', now() - interval '2 years'),
+  ('d0000000-0000-0000-0000-000000000001', pg_temp.id('32'), public.club_today() - 800, pg_temp.id('32') || '/cert.pdf', now() - interval '2 years');
 
 -- Views of each one's records, and one of Kai's viewed by Jordan.
 insert into public.record_access_log (subject_id, viewer_id, kind, created_at) values
@@ -150,18 +150,18 @@ insert into public.record_access_log (subject_id, viewer_id, kind, created_at) v
 -- Cleared injuries four years ago, each with a document still in storage,
 -- and injuries of athletes who left.
 insert into public.injuries (id, athlete_id, body_area, description, injured_on, status, cleared_at) values
-  ('e0000000-0000-0000-0000-000000000001', pg_temp.id('31'), 'Ankle', 'Rolled', current_date - 1500, 'cleared', now() - interval '4 years'),
-  ('e0000000-0000-0000-0000-000000000002', pg_temp.id('32'), 'Ankle', 'Rolled', current_date - 1500, 'cleared', now() - interval '4 years'),
-  ('e0000000-0000-0000-0000-000000000003', pg_temp.id('31'), 'Knee', 'Sore', current_date - 1500, 'cleared', now() - interval '4 years'),
-  ('e0000000-0000-0000-0000-000000000004', pg_temp.id('32'), 'Knee', 'Sore', current_date - 1500, 'cleared', now() - interval '4 years');
+  ('e0000000-0000-0000-0000-000000000001', pg_temp.id('31'), 'Ankle', 'Rolled', public.club_today() - 1500, 'cleared', now() - interval '4 years'),
+  ('e0000000-0000-0000-0000-000000000002', pg_temp.id('32'), 'Ankle', 'Rolled', public.club_today() - 1500, 'cleared', now() - interval '4 years'),
+  ('e0000000-0000-0000-0000-000000000003', pg_temp.id('31'), 'Knee', 'Sore', public.club_today() - 1500, 'cleared', now() - interval '4 years'),
+  ('e0000000-0000-0000-0000-000000000004', pg_temp.id('32'), 'Knee', 'Sore', public.club_today() - 1500, 'cleared', now() - interval '4 years');
 insert into storage.objects (bucket_id, name) values
   ('injury-documents', pg_temp.id('31') || '/e0000000-0000-0000-0000-000000000003/letter.pdf'),
   ('injury-documents', pg_temp.id('32') || '/e0000000-0000-0000-0000-000000000004/letter.pdf');
 
 -- Safeguarding records that ended nine years ago.
 insert into public.screening_notices (profile_id, member_name, kind, received_on, action) values
-  (pg_temp.id('31'), 'Jordan Junior', 'other', current_date - 3300, 'Noted'),
-  (pg_temp.id('32'), 'Kai Senior', 'other', current_date - 3300, 'Noted');
+  (pg_temp.id('31'), 'Jordan Junior', 'other', public.club_today() - 3300, 'Noted'),
+  (pg_temp.id('32'), 'Kai Senior', 'other', public.club_today() - 3300, 'Noted');
 insert into public.stand_downs (profile_id, member_name, reason, started_at, lifted_at) values
   (pg_temp.id('31'), 'Jordan Junior', 'other', now() - interval '10 years', now() - interval '9 years'),
   (pg_temp.id('32'), 'Kai Senior', 'other', now() - interval '10 years', now() - interval '9 years');
@@ -228,9 +228,9 @@ select pg_temp.works('the survey clean-up runs', $$select public.purge_expired_s
 -- ---------------------------------------------------------------------------
 -- What stays and what goes
 -- ---------------------------------------------------------------------------
-select pg_temp.ok('Jordan''s old check-in stays', (select count(*) = 1 from public.check_ins where athlete_id = pg_temp.id('31') and day = current_date - 400), true);
+select pg_temp.ok('Jordan''s old check-in stays', (select count(*) = 1 from public.check_ins where athlete_id = pg_temp.id('31') and day = public.club_today() - 400), true);
 select pg_temp.ok('Kai''s goes', (select count(*) = 0 from public.check_ins where athlete_id = pg_temp.id('32')), true);
-select pg_temp.ok('Jordan''s check-in from today stays too', (select count(*) = 1 from public.check_ins where athlete_id = pg_temp.id('31') and day = current_date), true);
+select pg_temp.ok('Jordan''s check-in from today stays too', (select count(*) = 1 from public.check_ins where athlete_id = pg_temp.id('31') and day = public.club_today()), true);
 select pg_temp.ok('Jordan''s game goal stays', pg_temp.n('game_goals', 'athlete_id', '31') = 1, true);
 select pg_temp.ok('Kai''s goes', pg_temp.n('game_goals', 'athlete_id', '32') = 0, true);
 select pg_temp.ok('Jordan''s season KPI stays', pg_temp.n('season_kpis', 'profile_id', '31') = 1, true);

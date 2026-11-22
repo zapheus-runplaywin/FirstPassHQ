@@ -79,7 +79,7 @@ select pg_temp.ok('second admin sees the same counts', pg_temp.counts() = '1/4/2
 
 -- An officer whose check lapses stops seeing counts.
 reset role;
-update public.profiles set wwcc_expires_on = current_date - 1 where id = '00000000-0000-0000-0000-000000000013';
+update public.profiles set wwcc_expires_on = public.club_today() - 1 where id = '00000000-0000-0000-0000-000000000013';
 select pg_temp.as_member('13');
 select pg_temp.ok('lapsed officer sees zeros', pg_temp.counts() = '0/0/0', true);
 

@@ -105,12 +105,12 @@ select pg_temp.ok('Morgan, Jordan''s guardian and a coach, opens as guardian', (
 select pg_temp.ok('and isn''t logged', pg_temp.views('31') = 0, true);
 
 -- Once Jordan turns 18, Jordan keeps them and the guardians lose them.
-update public.profiles set date_of_birth = current_date - interval '18 years', under_17 = false where id = pg_temp.id('31');
+update public.profiles set date_of_birth = public.club_today() - interval '18 years', under_17 = false where id = pg_temp.id('31');
 select pg_temp.as_member('41');
 select pg_temp.ok('a guardian can''t open an adult''s', pg_temp.opens('31'), false);
 select pg_temp.as_member('31');
 select pg_temp.ok('Jordan at 18 saves their own', pg_temp.saves('31'), true);
-update public.profiles set date_of_birth = current_date - interval '14 years', under_17 = true where id = pg_temp.id('31');
+update public.profiles set date_of_birth = public.club_today() - interval '14 years', under_17 = true where id = pg_temp.id('31');
 select pg_temp.as_member('41');
 select pg_temp.works('Logan puts Jordan''s back', $$select public.save_medical_profile(pg_temp.id('31'), '[{"name": "Logan Parent", "relationship": "Parent", "phone": "0400 000 001"}]'::jsonb, 'Asthma', 'Peanuts', 'Ventolin', 'Two puffs')$$);
 
@@ -179,10 +179,10 @@ select pg_temp.ok('a stood-down coach can''t open Kai''s', pg_temp.opens('32'), 
 update public.profiles set stood_down_at = null where id = pg_temp.id('11');
 select pg_temp.ok('and can again once the stand-down is lifted', pg_temp.opens('32'), true);
 
-update public.profiles set wwcc_expires_on = current_date - 1 where id = pg_temp.id('14');
+update public.profiles set wwcc_expires_on = public.club_today() - 1 where id = pg_temp.id('14');
 select pg_temp.as_member('14');
 select pg_temp.ok('a physio whose check has lapsed can''t open Jordan''s', pg_temp.opens('31'), false);
-update public.profiles set wwcc_expires_on = current_date + 400 where id = pg_temp.id('14');
+update public.profiles set wwcc_expires_on = public.club_today() + 400 where id = pg_temp.id('14');
 
 -- A squad whose selections are done: its coach and manager lose it, as with
 -- their other access; Jordan is still in Sample Team, which Casey coaches.
@@ -276,7 +276,7 @@ create temp table kept as select athlete_id, updated_at, conditions, emergency_c
 
 select pg_temp.as_member('32');
 select pg_temp.ok('Kai''s profile says the check is overdue', (select public.medical_profile(pg_temp.id('32')) ->> 'check_status') = 'overdue', true);
-select pg_temp.ok('with the date it was due', (select (public.medical_profile(pg_temp.id('32')) ->> 'check_due_on')::date = ((now() - interval '13 months') + interval '1 year')::date), true);
+select pg_temp.ok('with the date it was due', (select (public.medical_profile(pg_temp.id('32')) ->> 'check_due_on')::date = public.club_day(now() - interval '13 months') + interval '1 year'), true);
 select pg_temp.ok('Kai is reminded about their own', (select array_agg(athlete_id) = array[pg_temp.id('32')] and bool_and(status = 'overdue') from public.my_medical_reviews()), true);
 select pg_temp.works('Kai confirms theirs are still correct', $$select public.confirm_medical_profile(pg_temp.id('32'))$$);
 select pg_temp.ok('the check is recorded with who did it', (select checked_by_name = 'Kai Senior' and checked_at > now() - interval '1 minute' from public.medical_profiles where athlete_id = pg_temp.id('32')), true);
@@ -376,9 +376,9 @@ select pg_temp.as_member('32');
 select pg_temp.ok('and Kai isn''t given a removal date', (public.medical_profile(pg_temp.id('32')) -> 'removal_on') = 'null'::jsonb, true);
 
 update public.club_settings set retention_enabled = true where id;
-select pg_temp.ok('with it on, Kai is told the day they''ll go', (public.medical_profile(pg_temp.id('32')) ->> 'removal_on')::date = ((now() - interval '25 months') + interval '24 months')::date, true);
+select pg_temp.ok('with it on, Kai is told the day they''ll go', (public.medical_profile(pg_temp.id('32')) ->> 'removal_on')::date = public.club_day(now() - interval '25 months') + interval '24 months', true);
 select pg_temp.as_member('41');
-select pg_temp.ok('Jordan''s, checked today, go in 2 years', (public.medical_profile(pg_temp.id('31')) ->> 'removal_on')::date = (now() + interval '24 months')::date, true);
+select pg_temp.ok('Jordan''s, checked today, go in 2 years', (public.medical_profile(pg_temp.id('31')) ->> 'removal_on')::date = public.club_today() + interval '24 months', true);
 select set_config('request.jwt.claim.sub', '', false);
 create temp table purged as select public.purge_expired_records() as r;
 select pg_temp.ok('the clean-up removes details unchecked for 2 years', (select (r ->> 'medical_details')::int = 1 from purged), true);

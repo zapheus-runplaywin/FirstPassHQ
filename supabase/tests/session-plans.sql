@@ -8,7 +8,7 @@
 insert into auth.users (id, email, email_confirmed_at) values
   ('00000000-0000-0000-0000-000000000051', 'coach.other@example.test', now());
 update public.profiles set status = 'approved', full_name = 'Nico Other', role = 'coach',
-  wwcc_number = 'WWC0051', wwcc_expires_on = current_date + 400, verified_at = now()
+  wwcc_number = 'WWC0051', wwcc_expires_on = public.club_today() + 400, verified_at = now()
 where id = '00000000-0000-0000-0000-000000000051';
 insert into public.teams (id, name, kind, sort_order) values
   ('00000000-0000-0000-0000-0000000000a3', 'Other Squad', 'squad', 3);
@@ -25,7 +25,7 @@ set role authenticated;
 -- and by name with the other squad's coach.
 set request.jwt.claim.sub = '00000000-0000-0000-0000-000000000011';
 insert into ids values ('plan', public.save_session_plan(
-  null, '00000000-0000-0000-0000-0000000000a1', 'Tuesday training', current_date - 1,
+  null, '00000000-0000-0000-0000-0000000000a1', 'Tuesday training', public.club_today() - 1,
   '18:00', '19:30', 'Main court', 'Warm up, footwork, 3v2', null, true, true,
   array['00000000-0000-0000-0000-000000000051']::uuid[]));
 do $$ begin
@@ -52,7 +52,7 @@ set request.jwt.claim.sub = '00000000-0000-0000-0000-000000000011';
 -- Coaches can only add plans for groups they coach.
 do $$ begin
   begin
-    perform public.save_session_plan(null, '00000000-0000-0000-0000-0000000000a3', 'Sneaky', current_date,
+    perform public.save_session_plan(null, '00000000-0000-0000-0000-0000000000a3', 'Sneaky', public.club_today(),
       null, null, null, null, null, true, false, '{}');
     raise exception 'coach added a plan for a squad they don''t coach';
   exception when others then
@@ -62,7 +62,7 @@ end $$;
 -- Names can only be shared with coaches.
 do $$ begin
   begin
-    perform public.save_session_plan(null, '00000000-0000-0000-0000-0000000000a1', 'X', current_date,
+    perform public.save_session_plan(null, '00000000-0000-0000-0000-0000000000a1', 'X', public.club_today(),
       null, null, null, null, null, true, false, array['00000000-0000-0000-0000-000000000032']::uuid[]);
     raise exception 'shared with a non-coach by name';
   exception when others then
@@ -72,7 +72,7 @@ end $$;
 -- End before start is refused.
 do $$ begin
   begin
-    perform public.save_session_plan(null, '00000000-0000-0000-0000-0000000000a1', 'X', current_date,
+    perform public.save_session_plan(null, '00000000-0000-0000-0000-0000000000a1', 'X', public.club_today(),
       '19:00', '18:00', null, null, null, true, false, '{}');
     raise exception 'end before start accepted';
   exception when others then
@@ -149,12 +149,12 @@ end $$;
 set request.jwt.claim.sub = '00000000-0000-0000-0000-000000000001';
 do $$ begin
   if (select count(*) from public.shared_session_plans()) <> 0 then raise exception 'admin sees plan as shared'; end if;
-  if (select count(*) from public.session_plan_report(current_date - 30, current_date)) <> 1 then raise exception 'report missing plan'; end if;
+  if (select count(*) from public.session_plan_report(public.club_today() - 30, public.club_today())) <> 1 then raise exception 'report missing plan'; end if;
 end $$;
 -- Only admins get the report.
 set request.jwt.claim.sub = '00000000-0000-0000-0000-000000000011';
 do $$ begin
-  if (select count(*) from public.session_plan_report(current_date - 30, current_date)) <> 0 then raise exception 'coach got the report'; end if;
+  if (select count(*) from public.session_plan_report(public.club_today() - 30, public.club_today())) <> 0 then raise exception 'coach got the report'; end if;
 end $$;
 -- Athletes don't see who it was shared with by name.
 set request.jwt.claim.sub = '00000000-0000-0000-0000-000000000031';
@@ -164,7 +164,7 @@ end $$;
 
 -- Turning off athlete sharing hides it from athletes and guardians.
 set request.jwt.claim.sub = '00000000-0000-0000-0000-000000000011';
-select public.save_session_plan(v, '00000000-0000-0000-0000-0000000000a1', 'Tuesday training (edited)', current_date - 1,
+select public.save_session_plan(v, '00000000-0000-0000-0000-0000000000a1', 'Tuesday training (edited)', public.club_today() - 1,
   '18:00', '19:30', 'Main court', 'Updated', null, true, false, '{}') from ids where k = 'plan';
 do $$
 declare who text;
@@ -187,7 +187,7 @@ set role authenticated;
 set request.jwt.claim.sub = '00000000-0000-0000-0000-000000000042';
 do $$ begin
   begin
-    perform public.save_session_plan(v, '00000000-0000-0000-0000-0000000000a1', 'Hijack', current_date,
+    perform public.save_session_plan(v, '00000000-0000-0000-0000-0000000000a1', 'Hijack', public.club_today(),
       null, null, null, null, null, true, true, '{}') from ids where k = 'plan';
     raise exception 'other coach edited the plan';
   exception when others then
@@ -213,7 +213,7 @@ end $$;
 -- Admins add plans for any group, recorded as Admin with Run by.
 set request.jwt.claim.sub = '00000000-0000-0000-0000-000000000001';
 insert into ids values ('admin_plan', public.save_session_plan(
-  null, '00000000-0000-0000-0000-0000000000a3', 'Conditioning', current_date, null, null, null,
+  null, '00000000-0000-0000-0000-0000000000a3', 'Conditioning', public.club_today(), null, null, null,
   'S&C circuit', 'S&C partner', false, true, '{}'));
 do $$ begin
   if (select author_position from public.session_plans p join ids on ids.v = p.id and ids.k = 'admin_plan') <> 'Admin' then
@@ -247,7 +247,7 @@ reset role;
 update public.club_settings set features = features - 'sessionPlans' where id;
 
 -- Retention: an old plan goes only with removal on, after its files.
-update public.session_plans set session_on = current_date - interval '8 years';
+update public.session_plans set session_on = public.club_today() - interval '8 years';
 update public.club_settings set retention_enabled = false where id;
 do $$ begin
   if (select count(*) from public.expired_session_plan_files()) <> 0 then raise exception 'files listed with removal off'; end if;

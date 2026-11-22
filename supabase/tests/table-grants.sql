@@ -100,8 +100,8 @@ select pg_temp.ok('injuries: full access, row level security decides rows',
 -- Signed in as a member, a table read works through the grant and row level
 -- security still filters: an athlete sees their own injury, not Jordan's.
 insert into public.injuries (athlete_id, body_area, description, injured_on) values
-  ('00000000-0000-0000-0000-000000000031', 'Ankle', 'Rolled ankle', current_date - 3),
-  ('00000000-0000-0000-0000-000000000032', 'Knee', 'Sore knee', current_date - 3);
+  ('00000000-0000-0000-0000-000000000031', 'Ankle', 'Rolled ankle', public.club_today() - 3),
+  ('00000000-0000-0000-0000-000000000032', 'Knee', 'Sore knee', public.club_today() - 3);
 do $$ begin
   perform set_config('request.jwt.claim.sub', '00000000-0000-0000-0000-000000000032', false);
 end $$;

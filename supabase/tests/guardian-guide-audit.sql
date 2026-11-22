@@ -66,12 +66,12 @@ select public.submit_survey_response((select v from ids where k = 'named'), (
 select pg_temp.as_member('41');
 select pg_temp.ok('the guardian reads the child''s named answers',
   jsonb_array_length(public.survey_detail((select v from ids where k = 'named')) -> 'children' -> 0 -> 'answers') = 1, true);
-update public.profiles set date_of_birth = current_date - interval '18 years', under_17 = false where id = '00000000-0000-0000-0000-000000000031';
+update public.profiles set date_of_birth = public.club_today() - interval '18 years', under_17 = false where id = '00000000-0000-0000-0000-000000000031';
 select pg_temp.ok('on the child''s 18th birthday the answers are no longer the guardian''s to read',
   jsonb_array_length(public.survey_detail((select v from ids where k = 'named')) -> 'children') = 0, true);
 select pg_temp.ok('the copy itself stays in the guardian''s list',
   exists (select 1 from public.my_surveys() where id = (select v from ids where k = 'named')), true);
-update public.profiles set date_of_birth = current_date - interval '14 years', under_17 = true where id = '00000000-0000-0000-0000-000000000031';
+update public.profiles set date_of_birth = public.club_today() - interval '14 years', under_17 = true where id = '00000000-0000-0000-0000-000000000031';
 select pg_temp.ok('and comes back for a child under 18',
   jsonb_array_length(public.survey_detail((select v from ids where k = 'named')) -> 'children') = 1, true);
 

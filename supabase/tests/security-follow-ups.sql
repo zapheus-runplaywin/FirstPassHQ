@@ -14,7 +14,7 @@ create or replace function pg_temp.works(label text, statement text) returns tex
 $$ begin execute statement; return 'PASS ' || label;
    exception when others then return 'FAIL ' || label || ' (' || sqlerrm || ')'; end $$;
 
-select set_config('app.sq', current_date::text, false);
+select set_config('app.sq', public.club_today()::text, false);
 -- Extra people: a second squad with a team, a head physio, nameless member.
 insert into auth.users (id, email, email_confirmed_at) values
   ('00000000-0000-0000-0000-000000000051', 'physio.head@example.test', now()),
@@ -23,13 +23,13 @@ insert into auth.users (id, email, email_confirmed_at) values
   ('00000000-0000-0000-0000-000000000054', 'athlete.other@example.test', now()),
   ('00000000-0000-0000-0000-000000000055', 'athlete.team2@example.test', now());
 update public.profiles set status = 'approved', verified_at = now(), role = 'athlete',
-  date_of_birth = current_date - interval '25 years', full_name = 'Other Squad Athlete'
+  date_of_birth = public.club_today() - interval '25 years', full_name = 'Other Squad Athlete'
   where id in ('00000000-0000-0000-0000-000000000054', '00000000-0000-0000-0000-000000000055');
 update public.profiles set status = 'approved', role = 'physio', full_name = 'Head Physio', head_physio = true,
-  wwcc_number = 'WWC0051', wwcc_expires_on = current_date + 400, verified_at = now()
+  wwcc_number = 'WWC0051', wwcc_expires_on = public.club_today() + 400, verified_at = now()
   where id = '00000000-0000-0000-0000-000000000051';
 update public.profiles set status = 'approved', role = 'physio', full_name = 'Unplaced Physio',
-  wwcc_number = 'WWC0052', wwcc_expires_on = current_date + 400, verified_at = now()
+  wwcc_number = 'WWC0052', wwcc_expires_on = public.club_today() + 400, verified_at = now()
   where id = '00000000-0000-0000-0000-000000000052';
 update public.profiles set full_name = '' where id = '00000000-0000-0000-0000-000000000053';
 insert into public.teams (id, name, kind, sort_order) values
@@ -53,14 +53,14 @@ select pg_temp.ok('the Head Physio sees everyone', public.physio_looks_after('00
 -- Admins cannot check themselves.
 select pg_temp.as_member('01');
 select pg_temp.fails('an admin cannot change their own card details',
-  $s$ select public.admin_set_member_details('00000000-0000-0000-0000-000000000001', null, 'WWC9999', current_date + 100) $s$);
+  $s$ select public.admin_set_member_details('00000000-0000-0000-0000-000000000001', null, 'WWC9999', public.club_today() + 100) $s$);
 select pg_temp.fails('an admin cannot verify themselves',
   $s$ select public.admin_mark_verified('00000000-0000-0000-0000-000000000001') $s$);
 select pg_temp.works('another admin can change their details',
-  $s$ select public.admin_set_member_details('00000000-0000-0000-0000-000000000011', null, 'WWC0011', current_date + 401) $s$);
+  $s$ select public.admin_set_member_details('00000000-0000-0000-0000-000000000011', null, 'WWC0011', public.club_today() + 401) $s$);
 select pg_temp.as_member('02');
 select pg_temp.works('another admin can change theirs',
-  $s$ select public.admin_set_member_details('00000000-0000-0000-0000-000000000001', null, 'WWC0001', current_date + 401) $s$);
+  $s$ select public.admin_set_member_details('00000000-0000-0000-0000-000000000001', null, 'WWC0001', public.club_today() + 401) $s$);
 select pg_temp.as_member('01');
 
 -- Names.

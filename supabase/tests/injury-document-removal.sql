@@ -33,10 +33,10 @@ insert into public.teams (name, kind, season, archived, created_at) values
 --     no longer removes files sooner)
 --   open: still injured, reported 200 days ago
 insert into public.injuries (id, athlete_id, body_area, description, injured_on, athlete_name, status, cleared_at) values
-  ('00000000-0000-0000-0000-0000000001a1', '00000000-0000-0000-0000-000000000031', 'Knee', 'long', current_date - 120, 'Jordan Junior', 'cleared', now() - interval '100 days'),
-  ('00000000-0000-0000-0000-0000000001a2', '00000000-0000-0000-0000-000000000031', 'Wrist', 'recent', current_date - 20, 'Jordan Junior', 'cleared', now() - interval '3 days'),
-  ('00000000-0000-0000-0000-0000000001a3', '00000000-0000-0000-0000-000000000032', 'Hip', 'archived', current_date - 30, 'Kai Senior', 'cleared', now() - interval '60 days'),
-  ('00000000-0000-0000-0000-0000000001a4', '00000000-0000-0000-0000-000000000032', 'Back', 'open', current_date - 200, 'Kai Senior', 'injured', null);
+  ('00000000-0000-0000-0000-0000000001a1', '00000000-0000-0000-0000-000000000031', 'Knee', 'long', public.club_today() - 120, 'Jordan Junior', 'cleared', now() - interval '100 days'),
+  ('00000000-0000-0000-0000-0000000001a2', '00000000-0000-0000-0000-000000000031', 'Wrist', 'recent', public.club_today() - 20, 'Jordan Junior', 'cleared', now() - interval '3 days'),
+  ('00000000-0000-0000-0000-0000000001a3', '00000000-0000-0000-0000-000000000032', 'Hip', 'archived', public.club_today() - 30, 'Kai Senior', 'cleared', now() - interval '60 days'),
+  ('00000000-0000-0000-0000-0000000001a4', '00000000-0000-0000-0000-000000000032', 'Back', 'open', public.club_today() - 200, 'Kai Senior', 'injured', null);
 create or replace function pg_temp.p(athlete text, injury text, f text) returns text language sql as
 $$ select '00000000-0000-0000-0000-0000000000' || athlete || '/00000000-0000-0000-0000-0000000001' || injury || '/' || f $$;
 insert into public.injury_updates (injury_id, author_name, kind, document_path, document_name) values

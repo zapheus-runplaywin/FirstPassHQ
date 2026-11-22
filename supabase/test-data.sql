@@ -79,10 +79,10 @@ begin
   set role = v.role::public.app_role,
       status = v.status::public.member_status,
       date_of_birth = v.born,
-      under_17 = coalesce(v.born > current_date - interval '18 years', false),
+      under_17 = coalesce(v.born > public.club_today() - interval '18 years', false),
       verified_at = case when v.role = 'guardian' then coalesce(p.verified_at, now()) end,
       wwcc_number = v.wwcc,
-      wwcc_expires_on = case when v.wwcc is not null then current_date + interval '2 years' end
+      wwcc_expires_on = case when v.wwcc is not null then public.club_today() + interval '2 years' end
   from (values
     ('casey.coach@example.com', 'coach', 'approved', null::date, 'WWCC1000001'),
     ('ash.assistant@example.com', 'coach', 'approved', null, 'WWCC1000002'),
@@ -92,7 +92,7 @@ begin
     ('charlie.wade@example.com', 'athlete', 'approved', date '1997-11-23', null),
     ('dana.lowe@example.com', 'athlete', 'approved', date '2003-01-30', null),
     ('eden.park@example.com', 'athlete', 'approved', date '2000-05-19', null),
-    ('finn.young@example.com', 'athlete', 'approved', (current_date - interval '15 years')::date, null),
+    ('finn.young@example.com', 'athlete', 'approved', (public.club_today() - interval '15 years')::date, null),
     ('gina.young@example.com', 'guardian', 'approved', null, null),
     ('kai.committee@example.com', 'committee', 'approved', null, null),
     ('pat.physio@example.com', 'physio', 'approved', null, null),
@@ -194,7 +194,7 @@ begin
       'Cockburn'])[greatest(g.n, 1)] end,
     case when g.n = 0 then 'Round 13' when g.n = 1 then 'Round 14' else 'Round ' || (14 - g.n) end,
     'Test competition',
-    ((current_date + g.days) + time '10:00') at time zone 'Australia/Perth',
+    ((public.club_today() + g.days) + time '10:00') at time zone public.club_timezone(),
     'Matthews Netball Centre', 'Court ' || (g.n % 6 + 1), g.n % 2 = 0
   from (
     select 0 as n, 3 as days

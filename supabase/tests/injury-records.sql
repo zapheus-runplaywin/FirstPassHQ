@@ -74,10 +74,10 @@ insert into auth.users (id, email, email_confirmed_at) values
 update public.profiles p set status = 'approved', full_name = v.name, role = v.role::public.app_role,
   wwcc_number = v.wwcc, wwcc_expires_on = v.exp, date_of_birth = v.dob, verified_at = now()
 from (values
-  ('00000000-0000-0000-0000-000000000016', 'Nico Othercoach', 'coach', 'WWC0016', current_date + 400, null::date),
-  ('00000000-0000-0000-0000-000000000017', 'Ola Otherphysio', 'physio', 'WWC0017', current_date + 400, null),
+  ('00000000-0000-0000-0000-000000000016', 'Nico Othercoach', 'coach', 'WWC0016', public.club_today() + 400, null::date),
+  ('00000000-0000-0000-0000-000000000017', 'Ola Otherphysio', 'physio', 'WWC0017', public.club_today() + 400, null),
   ('00000000-0000-0000-0000-000000000061', 'Parker Parent-Committee', 'committee', null, null, null),
-  ('00000000-0000-0000-0000-000000000062', 'Quinn Junior', 'athlete', null, null, current_date - interval '12 years')
+  ('00000000-0000-0000-0000-000000000062', 'Quinn Junior', 'athlete', null, null, public.club_today() - interval '12 years')
 ) as v(id, name, role, wwcc, exp, dob)
 where p.id = v.id::uuid;
 update public.profiles set extra_roles = '{guardian}' where id = pg_temp.id('61');
@@ -133,17 +133,17 @@ select pg_temp.ok('members cannot read who has seen logged injuries', has_table_
 -- Finley (14) is the squad's physio. Kai (32) is an adult in the squad,
 -- Jordan (31) an under 18 in the squad and team.
 select pg_temp.as_member('11');
-select pg_temp.works('coach logs Kai''s injury', $$select public.log_injury('00000000-0000-0000-0000-000000000032', 'Wrist', 'Fell on a drive at training', current_date, 'No catching', current_date + 7)$$);
+select pg_temp.works('coach logs Kai''s injury', $$select public.log_injury('00000000-0000-0000-0000-000000000032', 'Wrist', 'Fell on a drive at training', public.club_today(), 'No catching', public.club_today() + 7)$$);
 select pg_temp.ok('logged as the coach', (select logged_by_role = 'coach' and reported_by = pg_temp.id('11') and not concussion and athlete_name = 'Kai Senior' from public.injuries where body_area = 'Wrist'), true);
 select pg_temp.ok('its first entry is the coach''s report', (select count(*) = 1 from public.injury_updates where injury_id = pg_temp.injury('Wrist') and kind = 'reported' and author_role = 'coach' and author_name = 'Casey Coach'), true);
 select pg_temp.ok('the coach still sees the adult''s injury', pg_temp.reads('Wrist'), true);
 select pg_temp.ok('and it lists for them, not as theirs to update', (select not can_report and not can_update and logged_by_role = 'coach' from public.visible_injuries(true) where body_area = 'Wrist'), true);
-select pg_temp.fails_with('future day refused', $$select public.log_injury('00000000-0000-0000-0000-000000000032', 'Toe', 'Stubbed', current_date + 1)$$, 'Choose the day');
-select pg_temp.fails_with('blank refused', $$select public.log_injury('00000000-0000-0000-0000-000000000032', ' ', 'Stubbed', current_date)$$, 'Say where');
+select pg_temp.fails_with('future day refused', $$select public.log_injury('00000000-0000-0000-0000-000000000032', 'Toe', 'Stubbed', public.club_today() + 1)$$, 'Choose the day');
+select pg_temp.fails_with('blank refused', $$select public.log_injury('00000000-0000-0000-0000-000000000032', ' ', 'Stubbed', public.club_today())$$, 'Say where');
 select pg_temp.ok('coach''s athletes to log for', (select array_agg(athlete_name order by athlete_name) = '{"Jordan Junior","Kai Senior"}' from public.injury_loggable_athletes()), true);
 
 select pg_temp.as_member('13');
-select pg_temp.works('manager logs Jordan''s injury', $$select public.log_injury('00000000-0000-0000-0000-000000000031', 'Knee', 'Landed badly in the game', current_date - 1, null, null, true)$$);
+select pg_temp.works('manager logs Jordan''s injury', $$select public.log_injury('00000000-0000-0000-0000-000000000031', 'Knee', 'Landed badly in the game', public.club_today() - 1, null, null, true)$$);
 select pg_temp.ok('logged as the manager, a suspected concussion', (select logged_by_role = 'manager' and concussion from public.injuries where body_area = 'Knee'), true);
 select pg_temp.ok('the manager can''t read what they logged', pg_temp.reads('Knee'), false);
 select pg_temp.ok('nor the adult''s', pg_temp.reads('Wrist'), false);
@@ -151,43 +151,43 @@ select pg_temp.ok('manager''s athletes to log for', (select count(*) = 2 from pu
 select pg_temp.ok('manager logs as manager', (select bool_and(logged_as = 'manager') from public.injury_loggable_athletes()), true);
 
 select pg_temp.as_member('14');
-select pg_temp.works('squad physio logs Kai''s injury', $$select public.log_injury('00000000-0000-0000-0000-000000000032', 'Calf', 'Tight calf after sprints', current_date)$$);
+select pg_temp.works('squad physio logs Kai''s injury', $$select public.log_injury('00000000-0000-0000-0000-000000000032', 'Calf', 'Tight calf after sprints', public.club_today())$$);
 select pg_temp.ok('logged as the physio', (select logged_by_role = 'physio' from public.injuries where body_area = 'Calf'), true);
 select pg_temp.ok('physio can''t read Jordan''s without consent', pg_temp.reads('Knee'), false);
 
 -- Refused: no group in common, a lapsed check, the athlete's own, family,
 -- committee, admins, guests.
 select pg_temp.as_member('16');
-select pg_temp.fails_with('a coach of another squad can''t log for Kai', $$select public.log_injury('00000000-0000-0000-0000-000000000032', 'Hip', 'x', current_date)$$, 'Only the athlete’s coaches');
+select pg_temp.fails_with('a coach of another squad can''t log for Kai', $$select public.log_injury('00000000-0000-0000-0000-000000000032', 'Hip', 'x', public.club_today())$$, 'Only the athlete’s coaches');
 select pg_temp.ok('and has nobody to log for but their own', (select array_agg(athlete_name) = '{"Quinn Junior"}' from public.injury_loggable_athletes()), true);
 select pg_temp.as_member('17');
-select pg_temp.fails('a physio of another squad can''t log for Kai', $$select public.log_injury('00000000-0000-0000-0000-000000000032', 'Hip', 'x', current_date)$$);
+select pg_temp.fails('a physio of another squad can''t log for Kai', $$select public.log_injury('00000000-0000-0000-0000-000000000032', 'Hip', 'x', public.club_today())$$);
 select pg_temp.as_member('12');
-select pg_temp.fails('a coach with a lapsed check can''t log', $$select public.log_injury('00000000-0000-0000-0000-000000000032', 'Hip', 'x', current_date)$$);
+select pg_temp.fails('a coach with a lapsed check can''t log', $$select public.log_injury('00000000-0000-0000-0000-000000000032', 'Hip', 'x', public.club_today())$$);
 select pg_temp.ok('and has nobody to log for', (select count(*) = 0 from public.injury_loggable_athletes()), true);
 select pg_temp.as_member('32');
-select pg_temp.fails('an athlete can''t log for a teammate', $$select public.log_injury('00000000-0000-0000-0000-000000000031', 'Hip', 'x', current_date)$$);
-select pg_temp.fails('nor log their own (they report it)', $$select public.log_injury('00000000-0000-0000-0000-000000000032', 'Hip', 'x', current_date)$$);
+select pg_temp.fails('an athlete can''t log for a teammate', $$select public.log_injury('00000000-0000-0000-0000-000000000031', 'Hip', 'x', public.club_today())$$);
+select pg_temp.fails('nor log their own (they report it)', $$select public.log_injury('00000000-0000-0000-0000-000000000032', 'Hip', 'x', public.club_today())$$);
 select pg_temp.as_member('41');
-select pg_temp.fails('a guardian can''t log', $$select public.log_injury('00000000-0000-0000-0000-000000000031', 'Hip', 'x', current_date)$$);
+select pg_temp.fails('a guardian can''t log', $$select public.log_injury('00000000-0000-0000-0000-000000000031', 'Hip', 'x', public.club_today())$$);
 select pg_temp.as_member('23');
-select pg_temp.fails('committee can''t log', $$select public.log_injury('00000000-0000-0000-0000-000000000032', 'Hip', 'x', current_date)$$);
+select pg_temp.fails('committee can''t log', $$select public.log_injury('00000000-0000-0000-0000-000000000032', 'Hip', 'x', public.club_today())$$);
 select pg_temp.as_member('01');
-select pg_temp.fails('an admin can''t log', $$select public.log_injury('00000000-0000-0000-0000-000000000032', 'Hip', 'x', current_date)$$);
+select pg_temp.fails('an admin can''t log', $$select public.log_injury('00000000-0000-0000-0000-000000000032', 'Hip', 'x', public.club_today())$$);
 select set_config('request.jwt.claim.sub', '', false);
-select pg_temp.fails('nobody signed in can''t log', $$select public.log_injury('00000000-0000-0000-0000-000000000032', 'Hip', 'x', current_date)$$);
+select pg_temp.fails('nobody signed in can''t log', $$select public.log_injury('00000000-0000-0000-0000-000000000032', 'Hip', 'x', public.club_today())$$);
 
 -- A stood-down coach can't; once selections are done the squad's coach and
 -- manager can't for an athlete left only in the squad, but its physio can.
 update public.profiles set stood_down_at = now() where id = pg_temp.id('11');
 select pg_temp.as_member('11');
-select pg_temp.fails('a stood-down coach can''t log', $$select public.log_injury('00000000-0000-0000-0000-000000000032', 'Hip', 'x', current_date)$$);
+select pg_temp.fails('a stood-down coach can''t log', $$select public.log_injury('00000000-0000-0000-0000-000000000032', 'Hip', 'x', public.club_today())$$);
 update public.profiles set stood_down_at = null where id = pg_temp.id('11');
 update public.teams set selections_completed_at = now() where id = pg_temp.id('a1');
-select pg_temp.fails('after selections, the squad coach can''t log for Kai', $$select public.log_injury('00000000-0000-0000-0000-000000000032', 'Hip', 'x', current_date)$$);
+select pg_temp.fails('after selections, the squad coach can''t log for Kai', $$select public.log_injury('00000000-0000-0000-0000-000000000032', 'Hip', 'x', public.club_today())$$);
 select pg_temp.ok('but can for Jordan, still in their team', (select array_agg(athlete_name) = '{"Jordan Junior"}' from public.injury_loggable_athletes()), true);
 select pg_temp.as_member('13');
-select pg_temp.fails('after selections, the squad manager can''t log', $$select public.log_injury('00000000-0000-0000-0000-000000000032', 'Hip', 'x', current_date)$$);
+select pg_temp.fails('after selections, the squad manager can''t log', $$select public.log_injury('00000000-0000-0000-0000-000000000032', 'Hip', 'x', public.club_today())$$);
 select pg_temp.as_member('14');
 select pg_temp.ok('the squad physio still can', (select count(*) = 2 from public.injury_loggable_athletes()), true);
 update public.teams set selections_completed_at = null where id = pg_temp.id('a1');
@@ -234,8 +234,8 @@ select pg_temp.ok('admins have no logged injuries to look at', pg_temp.logged_co
 -- C3: physio updates
 -- ---------------------------------------------------------------------------
 select pg_temp.as_member('14');
-select pg_temp.works('physio updates Kai''s wrist', $$select public.add_injury_update(pg_temp.injury('Wrist'), 'Sprain, strapping for two weeks', 'No ball work', current_date + 14)$$);
-select pg_temp.ok('the injury takes the physio''s restrictions', (select restrictions = 'No ball work' and expected_return = current_date + 14 from public.injuries where body_area = 'Wrist'), true);
+select pg_temp.works('physio updates Kai''s wrist', $$select public.add_injury_update(pg_temp.injury('Wrist'), 'Sprain, strapping for two weeks', 'No ball work', public.club_today() + 14)$$);
+select pg_temp.ok('the injury takes the physio''s restrictions', (select restrictions = 'No ball work' and expected_return = public.club_today() + 14 from public.injuries where body_area = 'Wrist'), true);
 select pg_temp.ok('the update is marked as the physio''s', (select author_role = 'physio' and author_name = 'Finley Physio' from public.injury_updates where injury_id = pg_temp.injury('Wrist') and kind = 'physio_update'), true);
 select pg_temp.ok('the physio can update it', (select can_update from public.visible_injuries(true) where body_area = 'Wrist'), true);
 select pg_temp.ok('the physio may attach for an adult: photos', public.injury_document_rule(pg_temp.id('32')) = 'photos', true);
@@ -269,7 +269,7 @@ select pg_temp.ok('physio may upload the letter', public.can_upload_injury_docum
 select set_config('request.jwt.claim.sub', '', false);
 select pg_temp.upload('Knee') as path \gset
 select pg_temp.as_member('14');
-select pg_temp.works('physio updates Jordan''s knee with the report', format($$select public.add_injury_update(pg_temp.injury('Knee'), 'Assessed, concussion protocol started', 'No contact', current_date + 21, %L, 'report.pdf')$$, :'path'));
+select pg_temp.works('physio updates Jordan''s knee with the report', format($$select public.add_injury_update(pg_temp.injury('Knee'), 'Assessed, concussion protocol started', 'No contact', public.club_today() + 21, %L, 'report.pdf')$$, :'path'));
 select pg_temp.ok('the update keeps the report', (select count(*) = 1 from public.injury_updates where injury_id = pg_temp.injury('Knee') and document_name = 'report.pdf' and author_role = 'physio'), true);
 select pg_temp.as_member('11');
 select pg_temp.ok('a coach may not upload', public.can_upload_injury_document(pg_temp.id('31')::text || '/' || pg_temp.injury('Knee')::text || '/report2.pdf'), false);
@@ -278,18 +278,18 @@ select pg_temp.ok('a coach may not upload', public.can_upload_injury_document(pg
 -- C4: concussion
 -- ---------------------------------------------------------------------------
 select pg_temp.as_member('32');
-select pg_temp.works('Kai reports a concussion', $$select public.report_injury('00000000-0000-0000-0000-000000000032', 'Head', 'Knock to the head in a contest', current_date - 5, null, current_date + 20, true)$$);
+select pg_temp.works('Kai reports a concussion', $$select public.report_injury('00000000-0000-0000-0000-000000000032', 'Head', 'Knock to the head in a contest', public.club_today() - 5, null, public.club_today() + 20, true)$$);
 select pg_temp.ok('it''s a concussion', (select concussion and logged_by_role is null from public.injuries where body_area = 'Head'), true);
 select pg_temp.ok('its report says so', (select concussion from public.injury_updates where injury_id = pg_temp.injury('Head') and kind = 'reported'), true);
-select pg_temp.ok('earliest clearance is day 21', (select earliest_clearance = current_date + 16 and needs_physio from public.visible_injuries(true) where body_area = 'Head'), true);
+select pg_temp.ok('earliest clearance is day 21', (select earliest_clearance = public.club_today() + 16 and needs_physio from public.visible_injuries(true) where body_area = 'Head'), true);
 select pg_temp.ok('not a concussion: no earliest day', (select earliest_clearance is null and not concussion and not needs_physio from public.visible_injuries(true) where body_area = 'Wrist'), true);
-select pg_temp.works('report without the flag is not a concussion', $$select public.report_injury('00000000-0000-0000-0000-000000000032', 'Shin', 'Bruised shin', current_date)$$);
+select pg_temp.works('report without the flag is not a concussion', $$select public.report_injury('00000000-0000-0000-0000-000000000032', 'Shin', 'Bruised shin', public.club_today())$$);
 select pg_temp.ok('shin isn''t a concussion', (select not concussion from public.injuries where body_area = 'Shin'), true);
 select set_config('request.jwt.claim.sub', '', false);
 select pg_temp.upload('Head') as head_letter \gset
 select pg_temp.as_member('32');
 select pg_temp.fails_with('too early to ask for clearance', format($$select public.request_clearance(pg_temp.injury('Head'), null, %L, 'letter.pdf', true)$$, :'head_letter'), 'After a concussion, clearance can be asked for from');
-update public.injuries set injured_on = current_date - 21 where body_area = 'Head';
+update public.injuries set injured_on = public.club_today() - 21 where body_area = 'Head';
 select pg_temp.fails_with('day 21 needs a doctor''s clearance', format($$select public.request_clearance(pg_temp.injury('Head'), null, %L, 'letter.pdf')$$, :'head_letter'), 'attach a doctor’s clearance');
 select pg_temp.works('with a doctor''s clearance on day 21', format($$select public.request_clearance(pg_temp.injury('Head'), 'GP cleared', %L, 'gp.pdf', true)$$, :'head_letter'));
 select pg_temp.ok('the request records the doctor''s clearance', (select doctor_clearance from public.injury_updates where injury_id = pg_temp.injury('Head') and kind = 'clearance_requested'), true);
@@ -314,13 +314,13 @@ select pg_temp.ok('the coach is asked to endorse it', pg_temp.waiting('Shin'), t
 -- Marking and unmarking.
 select pg_temp.works('Kai marks the calf as a concussion', $$select 1$$);
 select pg_temp.as_member('32');
-select pg_temp.works('athlete marks an injury as a suspected concussion', $$select public.add_injury_update(pg_temp.injury('Calf'), 'Also hit my head', null, current_date + 21, null, null, true)$$);
+select pg_temp.works('athlete marks an injury as a suspected concussion', $$select public.add_injury_update(pg_temp.injury('Calf'), 'Also hit my head', null, public.club_today() + 21, null, null, true)$$);
 select pg_temp.ok('the calf is now a concussion', (select concussion from public.injuries where body_area = 'Calf'), true);
-select pg_temp.fails_with('the athlete can''t unmark it', $$select public.add_injury_update(pg_temp.injury('Calf'), 'It was nothing', null, current_date + 3, null, null, false)$$, 'Only a physio can say it isn’t a concussion');
-select pg_temp.works('repeating true changes nothing', $$select public.add_injury_update(pg_temp.injury('Calf'), 'Still sore', null, current_date + 21, null, null, true)$$);
+select pg_temp.fails_with('the athlete can''t unmark it', $$select public.add_injury_update(pg_temp.injury('Calf'), 'It was nothing', null, public.club_today() + 3, null, null, false)$$, 'Only a physio can say it isn’t a concussion');
+select pg_temp.works('repeating true changes nothing', $$select public.add_injury_update(pg_temp.injury('Calf'), 'Still sore', null, public.club_today() + 21, null, null, true)$$);
 select pg_temp.ok('and isn''t recorded as a change', (select count(*) = 1 from public.injury_updates where injury_id = pg_temp.injury('Calf') and concussion is true and kind = 'physio_update'), true);
 select pg_temp.as_member('14');
-select pg_temp.works('the physio rules it out', $$select public.add_injury_update(pg_temp.injury('Calf'), 'No concussion signs on assessment', null, current_date + 3, null, null, false)$$);
+select pg_temp.works('the physio rules it out', $$select public.add_injury_update(pg_temp.injury('Calf'), 'No concussion signs on assessment', null, public.club_today() + 3, null, null, false)$$);
 select pg_temp.ok('the calf is no longer a concussion', (select not concussion from public.injuries where body_area = 'Calf'), true);
 select pg_temp.ok('the physio''s update records it', (select count(*) = 1 from public.injury_updates where injury_id = pg_temp.injury('Calf') and concussion is false and author_role = 'physio'), true);
 
@@ -374,7 +374,7 @@ select pg_temp.as_member('21');
 select pg_temp.ok('lapsed committee: not Jordan''s', pg_temp.reads('Knee'), false);
 select pg_temp.as_member('61');
 select pg_temp.ok('parent volunteer committee: Jordan''s', pg_temp.reads('Knee'), true);
-update public.profiles set wwcc_number = 'WWC0022', wwcc_expires_on = current_date + 300 where id = pg_temp.id('22');
+update public.profiles set wwcc_number = 'WWC0022', wwcc_expires_on = public.club_today() + 300 where id = pg_temp.id('22');
 select pg_temp.as_member('22');
 select pg_temp.ok('committee with a current check: Jordan''s', pg_temp.reads('Knee'), true);
 select pg_temp.ok('and its updates', pg_temp.reads_updates('Knee'), true);

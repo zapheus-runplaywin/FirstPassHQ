@@ -8,12 +8,12 @@ grant all on ids to authenticated;
 
 -- An admin sets two review dates; nobody else can.
 set request.jwt.claim.sub = '00000000-0000-0000-0000-000000000001';
-insert into ids select 'mid', public.admin_save_kpi_review_point(null, extract(year from now())::int, 'Mid-season review', current_date + 3);
-insert into ids select 'end', public.admin_save_kpi_review_point(null, extract(year from now())::int, 'End-of-season review', current_date + 60);
+insert into ids select 'mid', public.admin_save_kpi_review_point(null, extract(year from now())::int, 'Mid-season review', public.club_today() + 3);
+insert into ids select 'end', public.admin_save_kpi_review_point(null, extract(year from now())::int, 'End-of-season review', public.club_today() + 60);
 set request.jwt.claim.sub = '00000000-0000-0000-0000-000000000022';
 do $$ begin
   begin
-    perform public.admin_save_kpi_review_point(null, 2026, 'Sneaky', current_date);
+    perform public.admin_save_kpi_review_point(null, 2026, 'Sneaky', public.club_today());
     raise exception 'committee set a review date';
   exception when raise_exception then
     if sqlerrm = 'committee set a review date' then raise; end if;

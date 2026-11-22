@@ -391,8 +391,9 @@ you typed is saved by the club. You can join from your 13th birthday.
   sign-in you just made (see [Deleting your account](#deleting-your-account)). Until then it's an
   empty account that sees nothing.
 
-The club checks too, so the same message comes back if the app's date and the club's differ. The
-club's date changes at 8 am Perth time, so on your 13th birthday you can join from 8 am.
+The club checks too, on the same day: the club's, which starts at midnight in the club's time
+zone (see [Club options](#club-options)). So on your 13th birthday you can join from midnight,
+club time.
 
 <img src="user-guide/new-member-home.png" width="210" alt="Home screen before asking to join">
 <img src="user-guide/join.png" width="210" alt="Request to join form">
@@ -583,7 +584,7 @@ On an installed app, your phone gets a notification when something new appears o
 to complete or, for athletes, the day's check-in. Tap the notification to go straight to it. The
 first time, your phone asks whether the app may send notifications: tap **Allow**.
 
-- Notifications aren't sent between 8 pm and 7 am. Anything still on your list at 7 am arrives
+- Notifications aren't sent between 8 pm and 7 am, club time. Anything still on your list at 7 am arrives
   then, with several to-dos in one notification.
 - Each to-do is sent once. Daily items, such as the check-in, come once a day while they're
   still to do; admins' child-safety and records follow-ups come once a month. A new concern or
@@ -3605,8 +3606,8 @@ The club's settings are on four pages in Administration, each with its own **Sav
 - [Club brand](#club-brand): the club's name, logo and colours.
 - [Club features](#club-features): which features are on, who sees each one, and the training
   load flags.
-- [Club options](#club-options): whether members join a squad first, and whether physios get club
-  messages.
+- [Club options](#club-options): whether members join a squad first, whether physios get club
+  messages, and the club's time zone.
 - [Record keeping](#record-keeping): how long the club keeps records, and removing old ones.
 
 Saving one page leaves the others exactly as they were. Members see the changes the next time
@@ -3717,11 +3718,20 @@ Tap **Save club features**.
   the teams. Squads the club already has stay until that season ends, and nobody is moved.
 - **Physios get club messages**: when on, messages sent to everyone in the club also go to
   physios. Physios always get messages sent to the Physio role. It starts off.
+- **Time zone**: where the club is. The club's day starts at midnight there, and it decides
+  "today" everywhere in the app, for every member wherever their phone is: the day a check-in or
+  training session is for, due dates and reminders, when Working With Children Checks, volunteer
+  exemptions and policy reviews run out, birthdays (turning 13 and 18), the 8 pm to 7 am quiet
+  hours for notifications, the dates a message access request covers and the dates printed on
+  notices. A new club starts in **Perth**; choose another city from the list, such as Adelaide,
+  Brisbane, Sydney, Melbourne or Hobart. Daylight saving is handled for you. The line under the
+  list shows the city chosen and today's date there.
 
 Tap **Save club options**.
 
 <img src="user-guide/club-settings-squads.png" width="210" alt="Club options: switching squads off">
 <img src="user-guide/club-settings-physios.png" width="210" alt="Club options: physios get club messages">
+<img src="user-guide/club-settings-time-zone.png" width="210" alt="Club options: choosing the club's time zone">
 
 ### Policy and conflict registers
 
@@ -4197,6 +4207,7 @@ once saved, only replaced or removed, and anyone who gets it wrong five times in
 | Match fixtures          | The members of each squad or team, statisticians and admins.                                                                |
 | How long records are kept | Admins: the keep periods, whether old records are removed, who last changed them, and when the nightly removal last ran or where it stopped. |
 | Club name, colours and logo | Every signed-in member. The logo file is public so it can show before sign-in. Only admins can change them.            |
+| The club's time zone    | Every signed-in member's app uses it for "today". Only admins change it, in Club options.                                   |
 | Other clubs' members and records | Nobody in this club. Each club's members, messages, injuries and documents are kept in that club's own database, which other clubs can't reach. |
 
 When someone leaves, their injury records are visible only to the committee and admins. Once an
@@ -4246,6 +4257,12 @@ checks it against PlayHQ or ID and records it, and the app keeps who recorded it
 athlete can't be approved without a checked date of birth, so a missed field can never approve a
 child as an adult. A child also gives a parent's or guardian's email, and while they wait they're
 shown a link code to give that parent or guardian and who they can talk to.
+
+Every age and every check is worked out on the same day: the club's, which starts at midnight in
+the time zone an admin chooses in [Club options](#club-options). So a child becomes an adult in
+the app at midnight on their 18th birthday club time, a Working With Children Check that ends
+today still counts until midnight club time, and the app and the club's database never disagree
+by a day because a phone is set to another zone or it's late in the evening.
 
 ### Who can become an admin
 
@@ -4440,7 +4457,7 @@ Working With Children Check, and another admin must do it.
 - **You read what the coaches share with your child.** Any session plan a coach shares with your
   child's squad or team, you can read too (see [Your child's session plans](#your-childs-session-plans)).
 - **Your child's phone isn't woken at night.** Notifications about to-dos and session plans
-  aren't sent between 8 pm and 7 am, to children or to adults. A plan a coach shares late is there
+  aren't sent between 8 pm and 7 am club time, to children or to adults. A plan a coach shares late is there
   to read straight away, and its notification arrives at 7 am.
 - **The club keeps an eye on training load, calmly.** If the club uses Training load flags, a
   coach gets a prompt to check in when your child's logged training stands out, and you see a card

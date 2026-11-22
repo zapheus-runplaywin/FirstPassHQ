@@ -40,7 +40,7 @@ insert into auth.users (id, email, email_confirmed_at) values
   (pg_temp.id('73'), 'not.asked@example.test', now());
 update public.profiles p
 set full_name = v.name, requested_role = v.role::public.app_role, join_requested_at = now(),
-    playhq_email = v.email, declared_date_of_birth = current_date - interval '40 years'
+    playhq_email = v.email, declared_date_of_birth = public.club_today() - interval '40 years'
 from (values
   ('71', 'Taylor Parent', 'guardian', 'taylor.parent@example.test'),
   ('72', 'Quinn Coach', 'coach', 'quinn.coach@example.test')
@@ -70,18 +70,18 @@ select pg_temp.ok('members cannot mark themselves as having no sign-in',
 -- Asking for a child
 -- ---------------------------------------------------------------------------
 select pg_temp.as_member('71');
-select pg_temp.fails_with('a name is needed', $s$ select public.request_no_app_child('  ', (current_date - interval '10 years')::date, null) $s$, '%child’s name%');
+select pg_temp.fails_with('a name is needed', $s$ select public.request_no_app_child('  ', (public.club_today() - interval '10 years')::date, null) $s$, '%child’s name%');
 select pg_temp.fails_with('a date of birth is needed', $s$ select public.request_no_app_child('Sam Small', null, null) $s$, '%doesn''t look right%');
-select pg_temp.fails_with('a date in the future is refused', $s$ select public.request_no_app_child('Sam Small', current_date + 1, null) $s$, '%doesn''t look right%');
-select pg_temp.fails_with('an adult is refused', $s$ select public.request_no_app_child('Sam Small', (current_date - interval '18 years')::date, null) $s$, '%under 18%');
-select pg_temp.fails_with('an unknown team is refused', $s$ select public.request_no_app_child('Sam Small', (current_date - interval '10 years')::date, gen_random_uuid()) $s$, '%this season''s%');
+select pg_temp.fails_with('a date in the future is refused', $s$ select public.request_no_app_child('Sam Small', public.club_today() + 1, null) $s$, '%doesn''t look right%');
+select pg_temp.fails_with('an adult is refused', $s$ select public.request_no_app_child('Sam Small', (public.club_today() - interval '18 years')::date, null) $s$, '%under 18%');
+select pg_temp.fails_with('an unknown team is refused', $s$ select public.request_no_app_child('Sam Small', (public.club_today() - interval '10 years')::date, gen_random_uuid()) $s$, '%this season''s%');
 select pg_temp.works('a parent asking to join asks for their child under 13',
-  $s$ insert into ids values ('req', public.request_no_app_child(' Sam Small ', (current_date - interval '10 years')::date, '00000000-0000-0000-0000-0000000000a2')) $s$);
-select pg_temp.fails_with('the same child twice is refused', $s$ select public.request_no_app_child('sam small', (current_date - interval '10 years')::date, null) $s$, '%already asked for%');
+  $s$ insert into ids values ('req', public.request_no_app_child(' Sam Small ', (public.club_today() - interval '10 years')::date, '00000000-0000-0000-0000-0000000000a2')) $s$);
+select pg_temp.fails_with('the same child twice is refused', $s$ select public.request_no_app_child('sam small', (public.club_today() - interval '10 years')::date, null) $s$, '%already asked for%');
 select pg_temp.ok('the parent sees their request, name trimmed, with the team',
   (select full_name = 'Sam Small' and team_name = 'Sample Team' from public.my_no_app_child_requests()), true);
 select pg_temp.works('they can ask for another and withdraw it',
-  $s$ select public.withdraw_no_app_child_request(public.request_no_app_child('Alex Small', (current_date - interval '8 years')::date, null)) $s$);
+  $s$ select public.withdraw_no_app_child_request(public.request_no_app_child('Alex Small', (public.club_today() - interval '8 years')::date, null)) $s$);
 select pg_temp.ok('one request left', (select count(*) = 1 from public.my_no_app_child_requests()), true);
 
 select pg_temp.as_member('41');
@@ -89,11 +89,11 @@ select pg_temp.fails_with('another parent cannot withdraw it', format($s$ select
 select pg_temp.ok('and does not see it', (select count(*) = 0 from public.my_no_app_child_requests()), true);
 select pg_temp.fails_with('a parent cannot list everyone''s requests', $s$ select * from public.admin_no_app_child_requests() $s$, 'Only admins%');
 select pg_temp.as_member('31');
-select pg_temp.fails_with('a child cannot ask', $s$ select public.request_no_app_child('Pat Small', (current_date - interval '9 years')::date, null) $s$, 'Ask to join as a parent or guardian first');
+select pg_temp.fails_with('a child cannot ask', $s$ select public.request_no_app_child('Pat Small', (public.club_today() - interval '9 years')::date, null) $s$, 'Ask to join as a parent or guardian first');
 select pg_temp.as_member('73');
-select pg_temp.fails_with('someone who hasn''t asked to join cannot ask', $s$ select public.request_no_app_child('Pat Small', (current_date - interval '9 years')::date, null) $s$, 'Ask to join as a parent or guardian first');
+select pg_temp.fails_with('someone who hasn''t asked to join cannot ask', $s$ select public.request_no_app_child('Pat Small', (public.club_today() - interval '9 years')::date, null) $s$, 'Ask to join as a parent or guardian first');
 select pg_temp.as_member('72');
-select pg_temp.fails_with('someone asking to join as a coach cannot ask', $s$ select public.request_no_app_child('Pat Small', (current_date - interval '9 years')::date, null) $s$, 'Ask to join as a parent or guardian first');
+select pg_temp.fails_with('someone asking to join as a coach cannot ask', $s$ select public.request_no_app_child('Pat Small', (public.club_today() - interval '9 years')::date, null) $s$, 'Ask to join as a parent or guardian first');
 select pg_temp.as_member('11');
 select pg_temp.fails_with('a coach cannot list requests', $s$ select * from public.admin_no_app_child_requests() $s$, 'Only admins%');
 select pg_temp.fails_with('a coach cannot turn one down', format($s$ select public.admin_decline_no_app_child_request(%L) $s$, pg_temp.v('req')), 'Only admins%');
@@ -105,30 +105,30 @@ select pg_temp.ok('an admin sees the request on the parent''s page',
 -- Adding the child
 -- ---------------------------------------------------------------------------
 select pg_temp.as_member('11');
-select pg_temp.fails_with('a coach cannot add a child', format($s$ select public.admin_add_no_app_child(%L, 'Sam Small', (current_date - interval '10 years')::date, '{}', null) $s$, pg_temp.id('71')), 'Only admins%');
+select pg_temp.fails_with('a coach cannot add a child', format($s$ select public.admin_add_no_app_child(%L, 'Sam Small', (public.club_today() - interval '10 years')::date, '{}', null) $s$, pg_temp.id('71')), 'Only admins%');
 select pg_temp.as_member('41');
-select pg_temp.fails_with('a parent cannot add a child themselves', format($s$ select public.admin_add_no_app_child(%L, 'Sam Small', (current_date - interval '10 years')::date, '{}', null) $s$, pg_temp.id('41')), 'Only admins%');
+select pg_temp.fails_with('a parent cannot add a child themselves', format($s$ select public.admin_add_no_app_child(%L, 'Sam Small', (public.club_today() - interval '10 years')::date, '{}', null) $s$, pg_temp.id('41')), 'Only admins%');
 select pg_temp.as_member('01');
-select pg_temp.fails_with('not before the parent is verified', format($s$ select public.admin_add_no_app_child(%L, 'Sam Small', (current_date - interval '10 years')::date, '{}', null) $s$, pg_temp.id('71')), 'Verify who they are%');
+select pg_temp.fails_with('not before the parent is verified', format($s$ select public.admin_add_no_app_child(%L, 'Sam Small', (public.club_today() - interval '10 years')::date, '{}', null) $s$, pg_temp.id('71')), 'Verify who they are%');
 update public.profiles set verified_at = now(), verification_method = 'playhq' where id = pg_temp.id('71');
 select pg_temp.fails_with('approving the parent first says to add their child', format($s$ select public.admin_save_member(%L, 'guardian', 'approved') $s$, pg_temp.id('71')), '%won’t use the app first%');
-select pg_temp.fails_with('an admin cannot add their own child', format($s$ select public.admin_add_no_app_child(%L, 'Sam Small', (current_date - interval '10 years')::date, '{}', null) $s$, pg_temp.id('01')), '%own child%');
+select pg_temp.fails_with('an admin cannot add their own child', format($s$ select public.admin_add_no_app_child(%L, 'Sam Small', (public.club_today() - interval '10 years')::date, '{}', null) $s$, pg_temp.id('01')), '%own child%');
 update public.profiles set verified_at = now() where id = pg_temp.id('72');
-select pg_temp.fails_with('not for someone asking to join as a coach', format($s$ select public.admin_add_no_app_child(%L, 'Pat Small', (current_date - interval '9 years')::date, '{}', null) $s$, pg_temp.id('72')), '%as a parent or guardian%');
-select pg_temp.fails_with('not for an athlete', format($s$ select public.admin_add_no_app_child(%L, 'Pat Small', (current_date - interval '9 years')::date, '{}', null) $s$, pg_temp.id('32')), '%as a parent or guardian%');
-select pg_temp.fails_with('not an adult', format($s$ select public.admin_add_no_app_child(%L, 'Pat Small', (current_date - interval '18 years')::date, '{}', null) $s$, pg_temp.id('71')), '%under 18%');
+select pg_temp.fails_with('not for someone asking to join as a coach', format($s$ select public.admin_add_no_app_child(%L, 'Pat Small', (public.club_today() - interval '9 years')::date, '{}', null) $s$, pg_temp.id('72')), '%as a parent or guardian%');
+select pg_temp.fails_with('not for an athlete', format($s$ select public.admin_add_no_app_child(%L, 'Pat Small', (public.club_today() - interval '9 years')::date, '{}', null) $s$, pg_temp.id('32')), '%as a parent or guardian%');
+select pg_temp.fails_with('not an adult', format($s$ select public.admin_add_no_app_child(%L, 'Pat Small', (public.club_today() - interval '18 years')::date, '{}', null) $s$, pg_temp.id('71')), '%under 18%');
 select pg_temp.fails_with('not without a date of birth', format($s$ select public.admin_add_no_app_child(%L, 'Pat Small', null, '{}', null) $s$, pg_temp.id('71')), '%date of birth%');
-select pg_temp.fails_with('not without a name', format($s$ select public.admin_add_no_app_child(%L, '', (current_date - interval '9 years')::date, '{}', null) $s$, pg_temp.id('71')), '%child’s name%');
-select pg_temp.fails_with('not into an unknown team', format($s$ select public.admin_add_no_app_child(%L, 'Pat Small', (current_date - interval '9 years')::date, array[gen_random_uuid()], null) $s$, pg_temp.id('71')), '%this season''s%');
-select pg_temp.fails_with('not with another parent''s request', format($s$ select public.admin_add_no_app_child(%L, 'Pat Small', (current_date - interval '9 years')::date, '{}', %L) $s$, pg_temp.id('41'), pg_temp.v('req')), 'Request not found');
+select pg_temp.fails_with('not without a name', format($s$ select public.admin_add_no_app_child(%L, '', (public.club_today() - interval '9 years')::date, '{}', null) $s$, pg_temp.id('71')), '%child’s name%');
+select pg_temp.fails_with('not into an unknown team', format($s$ select public.admin_add_no_app_child(%L, 'Pat Small', (public.club_today() - interval '9 years')::date, array[gen_random_uuid()], null) $s$, pg_temp.id('71')), '%this season''s%');
+select pg_temp.fails_with('not with another parent''s request', format($s$ select public.admin_add_no_app_child(%L, 'Pat Small', (public.club_today() - interval '9 years')::date, '{}', %L) $s$, pg_temp.id('41'), pg_temp.v('req')), 'Request not found');
 select pg_temp.ok('nothing was added by the refusals', not exists (select 1 from public.profiles where no_sign_in), true);
 
 select pg_temp.works('an admin adds Sam (10) to Sample Team from the request',
-  format($s$ insert into ids values ('sam', public.admin_add_no_app_child(%L, 'Sam Small', (current_date - interval '10 years')::date, array['00000000-0000-0000-0000-0000000000a2']::uuid[], %L)) $s$,
+  format($s$ insert into ids values ('sam', public.admin_add_no_app_child(%L, 'Sam Small', (public.club_today() - interval '10 years')::date, array['00000000-0000-0000-0000-0000000000a2']::uuid[], %L)) $s$,
     pg_temp.id('71'), pg_temp.v('req')));
 select pg_temp.ok('Sam is an approved athlete with no sign-in',
   (select status = 'approved' and role = 'athlete' and extra_roles = '{}' and no_sign_in and email is null
-     and full_name = 'Sam Small' and date_of_birth = (current_date - interval '10 years')::date
+     and full_name = 'Sam Small' and date_of_birth = (public.club_today() - interval '10 years')::date
    from public.profiles where id = pg_temp.v('sam')), true);
 select pg_temp.ok('Sam''s sign-in record has no email and sign-in is blocked',
   (select email is null and banned_until = 'infinity' and (raw_app_meta_data ->> 'no_sign_in')::boolean
@@ -147,14 +147,14 @@ select pg_temp.ok('Sam is not locked: a verified parent is linked', public.is_lo
 select pg_temp.ok('the request is gone', not exists (select 1 from public.no_app_child_requests where id = pg_temp.v('req')), true);
 
 select pg_temp.works('an admin adds Riley (15) for Logan, already approved, with no request',
-  format($s$ insert into ids values ('riley', public.admin_add_no_app_child(%L, 'Riley Rookie', (current_date - interval '15 years')::date, '{}', null)) $s$, pg_temp.id('41')));
+  format($s$ insert into ids values ('riley', public.admin_add_no_app_child(%L, 'Riley Rookie', (public.club_today() - interval '15 years')::date, '{}', null)) $s$, pg_temp.id('41')));
 select pg_temp.ok('Logan keeps his role and approval',
   (select status = 'approved' and role = 'guardian' from public.profiles where id = pg_temp.id('41')), true);
 select pg_temp.ok('Logan is linked to Riley', exists (select 1 from public.guardianships where guardian_id = pg_temp.id('41') and athlete_id = pg_temp.v('riley')), true);
 
 -- An approved parent's request, turned down.
 select pg_temp.as_member('41');
-insert into ids values ('req2', public.request_no_app_child('Robin Rookie', (current_date - interval '12 years')::date, null));
+insert into ids values ('req2', public.request_no_app_child('Robin Rookie', (public.club_today() - interval '12 years')::date, null));
 select pg_temp.as_member('01');
 select pg_temp.works('an admin turns a request down', format($s$ select public.admin_decline_no_app_child_request(%L) $s$, pg_temp.v('req2')));
 select pg_temp.as_member('41');
@@ -171,7 +171,7 @@ select pg_temp.works('and approves Sam again after taking them off',
     pg_temp.v('sam'), pg_temp.v('sam'), pg_temp.id('71')));
 select pg_temp.fails_with('Sam can''t be given another role', format($s$ select public.admin_save_member(%L, 'athlete', 'approved', '[]', false, array[%L]::uuid[], null, '{guest}') $s$, pg_temp.v('sam'), pg_temp.id('71')), '%can only be an athlete%');
 select pg_temp.fails_with('or made a guardian', format($s$ select public.admin_save_member(%L, 'guardian', 'approved') $s$, pg_temp.v('sam')), '%can only be an athlete%');
-update public.profiles set date_of_birth = current_date - interval '10 years', full_name = 'Not Asked' where id = pg_temp.id('73');
+update public.profiles set date_of_birth = public.club_today() - interval '10 years', full_name = 'Not Asked' where id = pg_temp.id('73');
 select pg_temp.fails_with('an under 13 who signs in can''t be approved', format($s$ select public.admin_save_member(%L, 'athlete', 'approved') $s$, pg_temp.id('73')), '%under 13%');
 select pg_temp.ok('Sam can''t ask for children: they never sign in',
   (select set_config('request.jwt.claim.sub', pg_temp.v('sam')::text, false) is not null and not public.can_ask_for_child()), true);
@@ -185,15 +185,15 @@ select pg_temp.ok('Taylor is Sam''s guardian', public.is_guardian_of(pg_temp.v('
 select pg_temp.works('Taylor gives consent for Sam', format($s$ select public.set_child_consent(%L, true, true) $s$, pg_temp.v('sam')));
 select pg_temp.ok('the consent counts', public.has_child_consent(pg_temp.v('sam'), 'health') and public.has_child_consent(pg_temp.v('sam'), 'data'), true);
 select pg_temp.works('Taylor reports an absence for Sam',
-  format($s$ select public.report_absence(%L, current_date + 3, current_date + 4, (select id from public.absence_categories where name = 'Planned holidays'), 'Away') $s$, pg_temp.v('sam')));
+  format($s$ select public.report_absence(%L, public.club_today() + 3, public.club_today() + 4, (select id from public.absence_categories where name = 'Planned holidays'), 'Away') $s$, pg_temp.v('sam')));
 select pg_temp.works('Taylor reports an injury for Sam',
-  format($s$ select public.report_injury(%L, 'Wrist', 'Fell at school', current_date - 1, 'No catching', current_date + 14, false) $s$, pg_temp.v('sam')));
+  format($s$ select public.report_injury(%L, 'Wrist', 'Fell at school', public.club_today() - 1, 'No catching', public.club_today() + 14, false) $s$, pg_temp.v('sam')));
 select pg_temp.as_member('41');
 select pg_temp.ok('Logan is not Sam''s guardian', public.is_guardian_of(pg_temp.v('sam')), false);
 select pg_temp.works('Logan gives consent for Jordan, who has the app', $s$ select public.set_child_consent('00000000-0000-0000-0000-000000000031', true, true) $s$);
 select pg_temp.fails_with('Logan cannot consent for Sam', format($s$ select public.set_child_consent(%L, true, true) $s$, pg_temp.v('sam')), '%');
 select pg_temp.fails_with('Logan cannot report an injury for Sam',
-  format($s$ select public.report_injury(%L, 'Wrist', 'x', current_date - 1, null, current_date + 14, false) $s$, pg_temp.v('sam')), '%');
+  format($s$ select public.report_injury(%L, 'Wrist', 'x', public.club_today() - 1, null, public.club_today() + 14, false) $s$, pg_temp.v('sam')), '%');
 
 -- ---------------------------------------------------------------------------
 -- What coaches see
@@ -202,8 +202,8 @@ select pg_temp.as_member('11');
 select pg_temp.ok('the coach sees Sam on the squad''s members',
   exists (select 1 from public.team_members where team_id = '00000000-0000-0000-0000-0000000000a2' and profile_id = pg_temp.v('sam')), true);
 select pg_temp.ok('Sam is not on the check-in board, even with consent',
-  exists (select 1 from public.check_in_board('00000000-0000-0000-0000-0000000000a2', current_date) where athlete_id = pg_temp.v('sam')), false);
-select pg_temp.ok('Jordan, with consent, still is on the check-in board', exists (select 1 from public.check_in_board('00000000-0000-0000-0000-0000000000a2', current_date) where athlete_id = pg_temp.id('31')), true);
+  exists (select 1 from public.check_in_board('00000000-0000-0000-0000-0000000000a2', public.club_today()) where athlete_id = pg_temp.v('sam')), false);
+select pg_temp.ok('Jordan, with consent, still is on the check-in board', exists (select 1 from public.check_in_board('00000000-0000-0000-0000-0000000000a2', public.club_today()) where athlete_id = pg_temp.id('31')), true);
 select pg_temp.ok('Sam is not on the game goals board', exists (select 1 from public.goal_board() where athlete_id = pg_temp.v('sam')), false);
 select pg_temp.ok('Jordan still is on the game goals board', exists (select 1 from public.goal_board() where athlete_id = pg_temp.id('31')), true);
 
@@ -281,10 +281,10 @@ select pg_temp.ok('no notice about Sam mentions a link code',
 -- A parent deletes their own account, leaving their no-app child with nobody.
 insert into auth.users (id, email, email_confirmed_at) values (pg_temp.id('74'), 'jamie.solo@example.test', now());
 update public.profiles set full_name = 'Jamie Solo', requested_role = 'guardian', join_requested_at = now(),
-  verified_at = now(), verification_method = 'playhq', declared_date_of_birth = current_date - interval '40 years'
+  verified_at = now(), verification_method = 'playhq', declared_date_of_birth = public.club_today() - interval '40 years'
 where id = pg_temp.id('74');
 select pg_temp.works('an admin adds Robin for Jamie',
-  format($s$ insert into ids values ('robin', public.admin_add_no_app_child(%L, 'Robin Solo', (current_date - interval '11 years')::date, '{}', null)) $s$, pg_temp.id('74')));
+  format($s$ insert into ids values ('robin', public.admin_add_no_app_child(%L, 'Robin Solo', (public.club_today() - interval '11 years')::date, '{}', null)) $s$, pg_temp.id('74')));
 select pg_temp.as_member('74');
 select pg_temp.works('Jamie deletes their account', 'select public.delete_my_account()');
 select pg_temp.as_member('01');

@@ -436,5 +436,5 @@ select pg_temp.is('an adult''s injury prompt needs no consent', pg_temp.flags('5
 -- ---------------------------------------------------------------------------
 
 select pg_temp.ok('the club''s day is Perth''s', public.load_today() = (now() at time zone 'Australia/Perth')::date, true);
-select pg_temp.ok('a review is dated with the club''s day', (select column_default like '%Australia/Perth%' from information_schema.columns where table_name = 'load_flag_reviews' and column_name = 'reviewed_on'), true);
+select pg_temp.ok('a review is dated with the club''s day', (select column_default like '%club_today()%' from information_schema.columns where table_name = 'load_flag_reviews' and column_name = 'reviewed_on'), true);
 select pg_temp.ok('the helper is closed', has_function_privilege('authenticated', 'public.load_today()', 'execute'), false);

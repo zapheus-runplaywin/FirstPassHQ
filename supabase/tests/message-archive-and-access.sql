@@ -12,7 +12,7 @@
 \pset tuples_only on
 \pset format unaligned
 -- Requests take dates in the club's own time zone (Perth), so today here must
--- be Perth's today too. Without this, current_date is UTC's, a day behind
+-- be Perth's today too. Without this, public.club_today() is UTC's, a day behind
 -- Perth from 4 pm to midnight UTC, and today's messages fell outside a
 -- request ending "today" (failed in CI at 21:52 UTC, 22 November 2026).
 set time zone 'Australia/Perth';
@@ -204,35 +204,35 @@ select pg_temp.as_member('11');
 select pg_temp.ok('the officer a concern is about is offered nobody', exists (select 1 from public.message_access_people(pg_temp.s('about_casey'))), false);
 
 select pg_temp.as_member('01');
-select pg_temp.fails('an admin can''t ask', format($s$ select public.request_message_access(%L, %L, 'about', current_date - 30, current_date, 'Need to see these messages') $s$, pg_temp.s('about_kai'), pg_temp.id('32')), 'Only the Child Safety Officer or the Complaints Manager%');
+select pg_temp.fails('an admin can''t ask', format($s$ select public.request_message_access(%L, %L, 'about', public.club_today() - 30, public.club_today(), 'Need to see these messages') $s$, pg_temp.s('about_kai'), pg_temp.id('32')), 'Only the Child Safety Officer or the Complaints Manager%');
 select pg_temp.as_member('23');
-select pg_temp.fails('the committee can''t ask', format($s$ select public.request_message_access(%L, %L, 'about', current_date - 30, current_date, 'Need to see these messages') $s$, pg_temp.s('about_kai'), pg_temp.id('32')), 'Only the Child Safety Officer or the Complaints Manager%');
+select pg_temp.fails('the committee can''t ask', format($s$ select public.request_message_access(%L, %L, 'about', public.club_today() - 30, public.club_today(), 'Need to see these messages') $s$, pg_temp.s('about_kai'), pg_temp.id('32')), 'Only the Child Safety Officer or the Complaints Manager%');
 select pg_temp.as_member('32');
-select pg_temp.fails('an athlete can''t ask', format($s$ select public.request_message_access(%L, %L, 'about', current_date - 30, current_date, 'Need to see these messages') $s$, pg_temp.s('about_casey'), pg_temp.id('11')), 'Only the Child Safety Officer or the Complaints Manager%');
+select pg_temp.fails('an athlete can''t ask', format($s$ select public.request_message_access(%L, %L, 'about', public.club_today() - 30, public.club_today(), 'Need to see these messages') $s$, pg_temp.s('about_casey'), pg_temp.id('11')), 'Only the Child Safety Officer or the Complaints Manager%');
 select pg_temp.as_member('41');
-select pg_temp.fails('a parent can''t ask', format($s$ select public.request_message_access(%L, %L, 'about', current_date - 30, current_date, 'Need to see these messages') $s$, pg_temp.s('about_kai'), pg_temp.id('32')), 'Only the Child Safety Officer or the Complaints Manager%');
+select pg_temp.fails('a parent can''t ask', format($s$ select public.request_message_access(%L, %L, 'about', public.club_today() - 30, public.club_today(), 'Need to see these messages') $s$, pg_temp.s('about_kai'), pg_temp.id('32')), 'Only the Child Safety Officer or the Complaints Manager%');
 select pg_temp.as_member('11');
-select pg_temp.fails('the officer a concern is about can''t ask on it', format($s$ select public.request_message_access(%L, %L, 'raised_by', current_date - 30, current_date, 'Need to see these messages') $s$, pg_temp.s('about_casey'), pg_temp.id('31')), 'Concern not found');
+select pg_temp.fails('the officer a concern is about can''t ask on it', format($s$ select public.request_message_access(%L, %L, 'raised_by', public.club_today() - 30, public.club_today(), 'Need to see these messages') $s$, pg_temp.s('about_casey'), pg_temp.id('31')), 'Concern not found');
 
 select pg_temp.as_member('13');
-select pg_temp.fails('a concern must exist', format($s$ select public.request_message_access(gen_random_uuid(), %L, 'other', current_date - 30, current_date, 'Need to see these messages') $s$, pg_temp.id('32')), 'Concern not found');
-select pg_temp.fails('not your own messages', format($s$ select public.request_message_access(%L, %L, 'other', current_date - 30, current_date, 'Need to see these messages') $s$, pg_temp.s('about_casey'), pg_temp.id('13')), '%your own messages%');
-select pg_temp.fails('who it''s about must match', format($s$ select public.request_message_access(%L, %L, 'about', current_date - 30, current_date, 'Need to see these messages') $s$, pg_temp.s('about_casey'), pg_temp.id('32')), '%isn''t about that person%');
-select pg_temp.fails('who raised it must match', format($s$ select public.request_message_access(%L, %L, 'raised_by', current_date - 30, current_date, 'Need to see these messages') $s$, pg_temp.s('about_casey'), pg_temp.id('32')), '%didn''t raise this concern%');
-select pg_temp.fails('an anonymous raiser can''t be named as the raiser', format($s$ select public.request_message_access(%L, %L, 'raised_by', current_date - 30, current_date, 'Need to see these messages') $s$, pg_temp.s('about_kai'), pg_temp.id('41')), '%didn''t raise this concern%');
-select pg_temp.fails('how they''re involved is needed', format($s$ select public.request_message_access(%L, %L, 'friend', current_date - 30, current_date, 'Need to see these messages') $s$, pg_temp.s('about_casey'), pg_temp.id('11')), '%how this person is involved%');
-select pg_temp.fails('a reason is needed', format($s$ select public.request_message_access(%L, %L, 'about', current_date - 30, current_date, 'short') $s$, pg_temp.s('about_casey'), pg_temp.id('11')), '%at least 10 characters%');
-select pg_temp.fails('no future end date', format($s$ select public.request_message_access(%L, %L, 'about', current_date - 30, current_date + 2, 'Need to see these messages') $s$, pg_temp.s('about_casey'), pg_temp.id('11')), '%can''t be in the future%');
-select pg_temp.fails('start on or before the end', format($s$ select public.request_message_access(%L, %L, 'about', current_date - 1, current_date - 5, 'Need to see these messages') $s$, pg_temp.s('about_casey'), pg_temp.id('11')), '%on or before the end date%');
-select pg_temp.fails('at most 90 days', format($s$ select public.request_message_access(%L, %L, 'about', current_date - 91, current_date, 'Need to see these messages') $s$, pg_temp.s('about_casey'), pg_temp.id('11')), '%90 days or less%');
+select pg_temp.fails('a concern must exist', format($s$ select public.request_message_access(gen_random_uuid(), %L, 'other', public.club_today() - 30, public.club_today(), 'Need to see these messages') $s$, pg_temp.id('32')), 'Concern not found');
+select pg_temp.fails('not your own messages', format($s$ select public.request_message_access(%L, %L, 'other', public.club_today() - 30, public.club_today(), 'Need to see these messages') $s$, pg_temp.s('about_casey'), pg_temp.id('13')), '%your own messages%');
+select pg_temp.fails('who it''s about must match', format($s$ select public.request_message_access(%L, %L, 'about', public.club_today() - 30, public.club_today(), 'Need to see these messages') $s$, pg_temp.s('about_casey'), pg_temp.id('32')), '%isn''t about that person%');
+select pg_temp.fails('who raised it must match', format($s$ select public.request_message_access(%L, %L, 'raised_by', public.club_today() - 30, public.club_today(), 'Need to see these messages') $s$, pg_temp.s('about_casey'), pg_temp.id('32')), '%didn''t raise this concern%');
+select pg_temp.fails('an anonymous raiser can''t be named as the raiser', format($s$ select public.request_message_access(%L, %L, 'raised_by', public.club_today() - 30, public.club_today(), 'Need to see these messages') $s$, pg_temp.s('about_kai'), pg_temp.id('41')), '%didn''t raise this concern%');
+select pg_temp.fails('how they''re involved is needed', format($s$ select public.request_message_access(%L, %L, 'friend', public.club_today() - 30, public.club_today(), 'Need to see these messages') $s$, pg_temp.s('about_casey'), pg_temp.id('11')), '%how this person is involved%');
+select pg_temp.fails('a reason is needed', format($s$ select public.request_message_access(%L, %L, 'about', public.club_today() - 30, public.club_today(), 'short') $s$, pg_temp.s('about_casey'), pg_temp.id('11')), '%at least 10 characters%');
+select pg_temp.fails('no future end date', format($s$ select public.request_message_access(%L, %L, 'about', public.club_today() - 30, public.club_today() + 2, 'Need to see these messages') $s$, pg_temp.s('about_casey'), pg_temp.id('11')), '%can''t be in the future%');
+select pg_temp.fails('start on or before the end', format($s$ select public.request_message_access(%L, %L, 'about', public.club_today() - 1, public.club_today() - 5, 'Need to see these messages') $s$, pg_temp.s('about_casey'), pg_temp.id('11')), '%on or before the end date%');
+select pg_temp.fails('at most 90 days', format($s$ select public.request_message_access(%L, %L, 'about', public.club_today() - 91, public.club_today(), 'Need to see these messages') $s$, pg_temp.s('about_casey'), pg_temp.id('11')), '%90 days or less%');
 
 create temp table msg_count_before as select id from public.messages where id not in (select id from saved);
-insert into saved values ('casey_req', public.request_message_access(pg_temp.s('about_casey'), pg_temp.id('11'), 'about', current_date - 90, current_date, 'Check what Casey sent the squad'));
+insert into saved values ('casey_req', public.request_message_access(pg_temp.s('about_casey'), pg_temp.id('11'), 'about', public.club_today() - 90, public.club_today(), 'Check what Casey sent the squad'));
 select pg_temp.ok('the request is saved as pending', (pg_temp.req('casey_req')).status = 'pending', true);
 select pg_temp.ok('it names the Complaints Manager''s post', (pg_temp.req('casey_req')).requested_post = 'complaints_manager', true);
-select pg_temp.fails('one pending request at a time for the same person and concern', format($s$ select public.request_message_access(%L, %L, 'about', current_date - 10, current_date, 'Asking a second time') $s$, pg_temp.s('about_casey'), pg_temp.id('11')), '%already asked%');
-insert into saved values ('jordan_req', public.request_message_access(pg_temp.s('about_casey'), pg_temp.id('31'), 'raised_by', current_date - 30, current_date, 'Messages Jordan got from Casey'));
-insert into saved values ('logan_req', public.request_message_access(pg_temp.s('about_kai'), pg_temp.id('41'), 'other', current_date - 30, current_date, 'Logan saw it happen and messaged the coach'));
+select pg_temp.fails('one pending request at a time for the same person and concern', format($s$ select public.request_message_access(%L, %L, 'about', public.club_today() - 10, public.club_today(), 'Asking a second time') $s$, pg_temp.s('about_casey'), pg_temp.id('11')), '%already asked%');
+insert into saved values ('jordan_req', public.request_message_access(pg_temp.s('about_casey'), pg_temp.id('31'), 'raised_by', public.club_today() - 30, public.club_today(), 'Messages Jordan got from Casey'));
+insert into saved values ('logan_req', public.request_message_access(pg_temp.s('about_kai'), pg_temp.id('41'), 'other', public.club_today() - 30, public.club_today(), 'Logan saw it happen and messaged the coach'));
 select pg_temp.ok('someone else involved can be named with a reason', (pg_temp.req('logan_req')).subject_link = 'other', true);
 
 -- ---------------------------------------------------------------------------
@@ -343,7 +343,7 @@ select public.admin_set_safeguarding(pg_temp.id('11'), pg_temp.id('13'), null, n
 -- Who answers when an admin is involved
 -- ---------------------------------------------------------------------------
 select pg_temp.as_member('11');
-insert into saved values ('alex_req', public.request_message_access(pg_temp.s('about_alex'), pg_temp.id('01'), 'about', current_date - 30, current_date, 'Messages Alex sent the club'));
+insert into saved values ('alex_req', public.request_message_access(pg_temp.s('about_alex'), pg_temp.id('01'), 'about', public.club_today() - 30, public.club_today(), 'Messages Alex sent the club'));
 select pg_temp.ok('the Child Safety Officer can ask about an admin', (pg_temp.req('alex_req')).requested_post = 'child_safety_officer', true);
 select pg_temp.as_member('01');
 select pg_temp.ok('the admin it''s about never sees it', pg_temp.sees('alex_req'), false);
@@ -389,5 +389,5 @@ select pg_temp.as_member('13');
 select public.add_concern_event(pg_temp.s('about_casey'), 'status_changed', 'Dealt with', 'closed');
 select pg_temp.ok('closing the concern ends the hold on Jordan', public.on_legal_hold(pg_temp.id('31')), false);
 select pg_temp.ok('the request shows the concern is closed', (select not concern_open from public.message_access_requests() where id = pg_temp.s('jordan_req')), true);
-select pg_temp.fails('no new requests on a closed concern', format($s$ select public.request_message_access(%L, %L, 'raised_by', current_date - 30, current_date, 'Messages Jordan got from Casey') $s$, pg_temp.s('about_casey'), pg_temp.id('31')), '%concern is closed%');
+select pg_temp.fails('no new requests on a closed concern', format($s$ select public.request_message_access(%L, %L, 'raised_by', public.club_today() - 30, public.club_today(), 'Messages Jordan got from Casey') $s$, pg_temp.s('about_casey'), pg_temp.id('31')), '%concern is closed%');
 select pg_temp.ok('requests are never removed', (select count(*) = 4 from public.message_access_requests), true);

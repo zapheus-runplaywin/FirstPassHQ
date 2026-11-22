@@ -3,7 +3,8 @@ import { useCallback, useState } from 'react';
 
 import { useAuth } from '@/lib/auth';
 import { useClub } from '@/lib/club';
-import { parseDateString, toDateString } from '@/lib/injuries';
+import { clubDay } from '@/lib/club-time';
+import { parseDateString } from '@/lib/injuries';
 import { pluralRoleLabels } from '@/lib/labels';
 import { useCaptainedGroupIds } from '@/lib/messages';
 import { hasRole } from '@/lib/roles';
@@ -248,12 +249,12 @@ export function surveyAudienceLabel(
 
 /** The day a survey closes, as a "2026-10-17" date: the last day it's open. */
 export function closingDay(closesAt: string) {
-  return toDateString(new Date(new Date(closesAt).getTime() - 1));
+  return clubDay(new Date(closesAt).getTime() - 1);
 }
 
 /** The day a survey opens, as a "2026-10-17" date. */
 export function openingDay(opensAt: string) {
-  return toDateString(new Date(opensAt));
+  return clubDay(opensAt);
 }
 
 /** The start of a day on this phone, as a time the database stores. */

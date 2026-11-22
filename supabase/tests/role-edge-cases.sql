@@ -15,9 +15,9 @@ select pg_temp.ok('a guardian marked under 18 with no date of birth is refused',
 select pg_temp.ok('a guardian not marked under 18 with no date of birth is fine',
   pg_temp.problem('{guardian}', null, false) is null, true);
 select pg_temp.ok('a guardian aged 17 is refused, whatever the admin chose',
-  pg_temp.problem('{guardian}', (current_date - interval '17 years')::date, false) = 'Parents and guardians must be 18 or over', true);
+  pg_temp.problem('{guardian}', (public.club_today() - interval '17 years')::date, false) = 'Parents and guardians must be 18 or over', true);
 select pg_temp.ok('a guardian aged 18 is fine, whatever the admin chose',
-  pg_temp.problem('{guardian}', (current_date - interval '18 years')::date, true) is null, true);
+  pg_temp.problem('{guardian}', (public.club_today() - interval '18 years')::date, true) is null, true);
 select pg_temp.ok('a guardian who is also a coach, marked under 18, is refused',
   pg_temp.problem('{coach,guardian}', null, true) = 'Parents and guardians must be 18 or over', true);
 

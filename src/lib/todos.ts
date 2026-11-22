@@ -1,6 +1,7 @@
 import type { Href } from 'expo-router';
 
 import { slotTitle } from '@/lib/awards';
+import { clubDay } from '@/lib/club-time';
 import { formatShortDay } from '@/lib/format';
 import { gamePhase, gameTitle } from '@/lib/goals';
 import { formatDateString, type LoggedInjury, toDateString } from '@/lib/injuries';
@@ -411,7 +412,7 @@ export function buildTodos({
       title: `Set your goals for ${gameTitle(next)}`,
       detail: `${formatShortDay(new Date(next.starts_at))} · goals close when the game starts`,
       href: goalHref(next, userId),
-      dueOn: toDateString(new Date(next.starts_at)),
+      dueOn: clubDay(next.starts_at),
     });
   }
 
@@ -440,7 +441,7 @@ export function buildTodos({
       title: `Set team goals for ${game.team_name}`,
       detail: `${gameTitle(game)} · ${formatShortDay(new Date(game.starts_at))}`,
       href: { pathname: '/goals/team', params: { fixture: game.fixture_id } },
-      dueOn: toDateString(new Date(game.starts_at)),
+      dueOn: clubDay(game.starts_at),
     });
   }
 

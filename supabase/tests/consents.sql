@@ -16,9 +16,9 @@ $$ begin execute statement; return 'PASS ' || label;
 
 -- Junior (31, under 18) has an ankle injury and a check-in today; Senior (32) is an adult.
 insert into public.injuries (athlete_id, reported_by, body_area, description, injured_on, athlete_name, restrictions)
-values ('00000000-0000-0000-0000-000000000032', '00000000-0000-0000-0000-000000000032', 'Knee', 'Jarred knee', current_date - 1, 'Kai Senior', 'No jumping');
+values ('00000000-0000-0000-0000-000000000032', '00000000-0000-0000-0000-000000000032', 'Knee', 'Jarred knee', public.club_today() - 1, 'Kai Senior', 'No jumping');
 insert into public.check_ins (athlete_id, day, sleep, soreness, stress, mood, note)
-values ('00000000-0000-0000-0000-000000000032', current_date, 3, 3, 3, 3, 'Fine');
+values ('00000000-0000-0000-0000-000000000032', public.club_today(), 3, 3, 3, 3, 'Fine');
 update public.injuries set restrictions = 'No landing drills' where athlete_id = '00000000-0000-0000-0000-000000000031';
 create temp table t as select (select id from public.injuries where athlete_id = '00000000-0000-0000-0000-000000000031') as junior;
 grant select on t to authenticated;
@@ -52,11 +52,11 @@ select pg_temp.as_member('11');
 select pg_temp.ok('coach sees an adult''s details as before',
   (select body_area = 'Knee' and description = 'Jarred knee' from public.visible_injuries() where athlete_id = '00000000-0000-0000-0000-000000000032'), true);
 select pg_temp.ok('coach board leaves the child out',
-  (select count(*) = 0 from public.check_in_board('00000000-0000-0000-0000-0000000000a1', current_date) where athlete_id = '00000000-0000-0000-0000-000000000031'), true);
+  (select count(*) = 0 from public.check_in_board('00000000-0000-0000-0000-0000000000a1', public.club_today()) where athlete_id = '00000000-0000-0000-0000-000000000031'), true);
 select pg_temp.ok('coach counts leave the child out',
-  (select athlete_count = 1 and checked_in_count = 1 from public.check_in_summary(current_date) where team_id = '00000000-0000-0000-0000-0000000000a1'), true);
+  (select athlete_count = 1 and checked_in_count = 1 from public.check_in_summary(public.club_today()) where team_id = '00000000-0000-0000-0000-0000000000a1'), true);
 select pg_temp.ok('coach board: adult answers shown',
-  (select sleep = 3 and note = 'Fine' from public.check_in_board('00000000-0000-0000-0000-0000000000a1', current_date) where athlete_id = '00000000-0000-0000-0000-000000000032'), true);
+  (select sleep = 3 and note = 'Fine' from public.check_in_board('00000000-0000-0000-0000-0000000000a1', public.club_today()) where athlete_id = '00000000-0000-0000-0000-000000000032'), true);
 set role authenticated;
 select pg_temp.ok('coach cannot read the child''s check-ins directly', (select count(*) = 0 from public.check_ins where athlete_id = '00000000-0000-0000-0000-000000000031'), true);
 select pg_temp.ok('coach cannot read the child''s injury history', (select count(*) = 0 from public.injury_updates u join t on u.injury_id = t.junior), true);
@@ -97,8 +97,8 @@ select pg_temp.works('guardian gives data consent only', $s$ select public.set_c
 select pg_temp.works('saving again changes nothing', $s$ select public.set_child_consent('00000000-0000-0000-0000-000000000031', true, false) $s$);
 select pg_temp.ok('one data consent recorded with the version', (select count(*) = 1 and bool_and(policy_version = '2026-1' and given_by_name = 'Logan Parent') from public.child_consent_history('00000000-0000-0000-0000-000000000031')), true);
 select pg_temp.as_member('11');
-select pg_temp.ok('coach now sees the answers', (select sleep = 4 and note = 'Tired after exams' from public.check_in_board('00000000-0000-0000-0000-0000000000a1', current_date) where athlete_id = '00000000-0000-0000-0000-000000000031'), true);
-select pg_temp.ok('and counts them', (select athlete_count = 2 from public.check_in_summary(current_date) where team_id = '00000000-0000-0000-0000-0000000000a1'), true);
+select pg_temp.ok('coach now sees the answers', (select sleep = 4 and note = 'Tired after exams' from public.check_in_board('00000000-0000-0000-0000-0000000000a1', public.club_today()) where athlete_id = '00000000-0000-0000-0000-000000000031'), true);
+select pg_temp.ok('and counts them', (select athlete_count = 2 from public.check_in_summary(public.club_today()) where team_id = '00000000-0000-0000-0000-0000000000a1'), true);
 select pg_temp.ok('but still not the injury', (select count(*) = 0 from public.visible_injuries() where athlete_id = '00000000-0000-0000-0000-000000000031'), true);
 select pg_temp.as_member('42');
 select pg_temp.works('second guardian gives health consent too', $s$ select public.set_child_consent('00000000-0000-0000-0000-000000000031', true, true) $s$);

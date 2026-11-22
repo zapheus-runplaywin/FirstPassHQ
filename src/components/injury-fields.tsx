@@ -5,7 +5,8 @@ import { ThemedText } from '@/components/themed-text';
 import { Card, TextField } from '@/components/ui';
 import { Spacing } from '@/constants/theme';
 import { useTheme } from '@/hooks/use-theme';
-import { returnQuickPicks, toDateString } from '@/lib/injuries';
+import { clubToday } from '@/lib/club-time';
+import { returnQuickPicks } from '@/lib/injuries';
 
 export type InjuryDraft = {
   bodyArea: string;
@@ -20,7 +21,7 @@ export function emptyInjuryDraft(): InjuryDraft {
   return {
     bodyArea: '',
     description: '',
-    injuredOn: toDateString(new Date()),
+    injuredOn: clubToday(),
     restrictions: '',
     expectedReturn: null,
     concussion: false,
@@ -52,7 +53,7 @@ export function InjuryFields({
   describePlaceholder: string;
 }) {
   const theme = useTheme();
-  const today = toDateString(new Date());
+  const today = clubToday();
   const set = (patch: Partial<InjuryDraft>) => onChange({ ...draft, ...patch });
 
   return (

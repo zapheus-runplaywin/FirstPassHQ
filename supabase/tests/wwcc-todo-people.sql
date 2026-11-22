@@ -17,7 +17,7 @@ select pg_temp.ok('seed: 4 missing, 5 to validate, 5 to register, 9 people',
 
 -- 13's card now expires within 60 days and is still unvalidated and unregistered:
 -- three counts, one person.
-update public.profiles set wwcc_expires_on = current_date + 30 where id = '00000000-0000-0000-0000-000000000013';
+update public.profiles set wwcc_expires_on = public.club_today() + 30 where id = '00000000-0000-0000-0000-000000000013';
 select pg_temp.ok('expiring and unvalidated counts the person once',
   (select wwcc_expiring = 1 and wwcc_to_validate = 5 and wwcc_people = 9 from public.admin_safety_todos()), true);
 
