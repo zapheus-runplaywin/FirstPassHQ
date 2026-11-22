@@ -4,6 +4,8 @@
   "version": "1.0.0",
   "dependencies": {
     "@expo-google-fonts/montserrat": "^0.4.2",
+    "@firstpass/engine": "0.2.0",
+    "@firstpass/schema": "0.2.0",
     "@react-native-async-storage/async-storage": "2.2.0",
     "@stryker-mutator/core": "10.1.1",
     "@stryker-mutator/jest-runner": "10.1.1",

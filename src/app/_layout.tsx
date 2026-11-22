@@ -330,6 +330,7 @@ function RootStack() {
             <Stack.Screen name="admin/squads" options={{ title: 'Squads and teams' }} />
             <Stack.Screen name="admin/team/[id]" options={{ title: 'Name team' }} />
             <Stack.Screen name="admin/seasons" options={{ title: 'Seasons' }} />
+            <Stack.Screen name="admin/games" options={{ title: 'Games' }} />
             <Stack.Screen name="admin/place/[id]" options={{ title: 'Place members' }} />
             <Stack.Protected guard={features.messages}>
               <Stack.Screen name="admin/captains" options={{ title: 'Club captains' }} />

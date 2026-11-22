@@ -18,6 +18,8 @@ import { Text } from 'react-native';
 import AthleteGoalsScreen from '@/app/goals/athlete/[id]';
 import GameGoalsScreen from '@/app/goals/game';
 import TeamGoalsScreen from '@/app/goals/team';
+import type { GameStats } from '@/lib/game-stats';
+import { supabase } from '@/lib/supabase';
 import type {
   CoachTeamGame,
   GameGoal,
@@ -157,11 +159,27 @@ type GameSetup = {
   teamGoals?: TeamGameGoal[];
   teamComments?: TeamGameGoalComment[];
   errors?: Record<string, string>;
+  /** What the game-stats function answers: the athlete's figures, none, or a failure. */
+  stats?: GameStats | null | 'fails';
+};
+
+const invoke = () => (supabase as unknown as { functions: { invoke: jest.Mock } }).functions.invoke;
+
+const STATS: GameStats = {
+  goals: 18,
+  shots: 24,
+  gains: 3,
+  turnovers: 5,
+  feeds: 7,
+  offensiveRebounds: 2,
+  defensiveRebounds: 0,
+  minutes: 37.5,
+  positions: ['GS', 'GA'],
 };
 
 async function openGame(
   who: Who,
-  { shown = game(), goals = [], comments = [], teamGoals = [], teamComments = [], errors = {} }: GameSetup = {},
+  { shown = game(), goals = [], comments = [], teamGoals = [], teamComments = [], errors = {}, stats = null }: GameSetup = {},
   query = 'athlete=athlete&fixture=fx1&name=Sample%20athlete',
 ) {
   await openScreen(
@@ -174,7 +192,16 @@ async function openGame(
       team_game_goals: teamGoals,
       team_game_goal_comments: teamComments,
     },
-    { rpcs: { goal_game: shown ? [shown] : [] }, rpcErrors: errors },
+    {
+      rpcs: { goal_game: shown ? [shown] : [] },
+      rpcErrors: errors,
+      functions: {
+        'game-stats':
+          stats === 'fails'
+            ? { error: { name: 'FunctionsHttpError', message: 'Edge Function returned a non-2xx status code' } }
+            : { data: { stats } },
+      },
+    },
   );
 }
 
@@ -392,6 +419,55 @@ describe('one game’s goals after the game', () => {
   it('says when no goals were set', async () => {
     await openGame('athlete', { shown: game(PLAYED) });
     expect(screen.getByText('No goals were set for this game.')).toBeTruthy();
+  });
+});
+
+describe('the athlete’s own stats from the recorded game', () => {
+  it('asks for nothing before the game or while it is on', async () => {
+    await openGame('athlete', { stats: STATS });
+    expect(invoke()).not.toHaveBeenCalled();
+    expect(screen.queryByText('Your game stats')).toBeNull();
+    await openGame('athlete', { shown: game(PLAYING), stats: STATS });
+    expect(invoke()).not.toHaveBeenCalled();
+    expect(screen.queryByText('Your game stats')).toBeNull();
+  });
+
+  it('shows the athlete their own figures after the game, without Net Points', async () => {
+    await openGame('athlete', { shown: game(PLAYED), stats: STATS });
+    expect(invoke()).toHaveBeenCalledWith('game-stats', { body: { athleteId: 'athlete', fixtureId: 'fx1' } });
+    expect(screen.getByText('Your game stats')).toBeTruthy();
+    expect(screen.getByText('37.5 min · GS, GA')).toBeTruthy();
+    expect(screen.getByText('18 from 24 (75%)')).toBeTruthy();
+    expect(screen.getByText('2 (2 attacking, 0 defending)')).toBeTruthy();
+    expect(screen.getByText('From the game recorded in FirstPass Vantage.')).toBeTruthy();
+    expect(screen.queryByText('Net Points')).toBeNull();
+  });
+
+  it('shows a parent the same figures, read only and without Net Points', async () => {
+    await openGame('guardian', { shown: game(PLAYED), stats: STATS }, asCoach);
+    expect(screen.getByText('Game stats')).toBeTruthy();
+    expect(screen.getByText('Turnovers')).toBeTruthy();
+    expect(screen.queryByText('Net Points')).toBeNull();
+  });
+
+  it('shows a coach Net Points when the server sends them, and says only coaches see them', async () => {
+    await openGame('coach', { shown: game(PLAYED), stats: { ...STATS, netPoints: 12.5 } }, asCoach);
+    expect(screen.getByText('Game stats')).toBeTruthy();
+    expect(screen.getByText('Net Points')).toBeTruthy();
+    expect(screen.getByText('+12.5')).toBeTruthy();
+    expect(
+      screen.getByText('From the game recorded in FirstPass Vantage. Net Points show to coaches only.'),
+    ).toBeTruthy();
+  });
+
+  it.each<[string, GameStats | null | 'fails']>([
+    ['the game wasn’t recorded or the athlete didn’t play', null],
+    ['the stats can’t be reached', 'fails'],
+  ])('shows the goals as before when %s', async (_l, stats) => {
+    await openGame('athlete', { shown: game(PLAYED), goals: [goal()], stats });
+    expect(screen.queryByText('Your game stats')).toBeNull();
+    expect(screen.getByText('Win 3 centre pass receives')).toBeTruthy();
+    expect(screen.getByText('How did it go?')).toBeTruthy();
   });
 });
 

@@ -100,6 +100,11 @@ export function adminMenuItems({ features, squads, membersDetail }: MenuOptions)
       detail: 'Import match fixtures from PlayHQ',
       href: '/admin/fixtures',
     },
+    {
+      title: 'Games',
+      detail: 'Games recorded in FirstPass Vantage, and who recorded each',
+      href: '/admin/games',
+    },
     features.calendar && {
       title: 'Calendars',
       detail: 'Add the club calendar and team calendars',

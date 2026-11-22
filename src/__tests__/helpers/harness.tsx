@@ -489,6 +489,8 @@ export type BackendOptions = {
   rpcErrors?: Record<string, string>;
   /** Rows worked out from the query's filters, asked before the seeded rows. */
   tableHandlers?: Record<string, TableHandler>;
+  /** What the club's edge functions answer, by name; one not listed answers nothing. */
+  functions?: Record<string, { data?: unknown; error?: unknown }>;
 };
 
 /**
@@ -594,7 +596,12 @@ export function signInAs(
     getPublicUrl: () => ({ data: { publicUrl: 'https://example.test/logo.png' } }),
     createSignedUrl: async () => ({ data: null, error: null }),
   }));
-  client.functions = { invoke: jest.fn(async () => ({ data: null, error: null })) };
+  client.functions = {
+    invoke: jest.fn(async (name: string) => ({
+      data: options.functions?.[name]?.data ?? null,
+      error: options.functions?.[name]?.error ?? null,
+    })),
+  };
   client.auth.getSession = jest.fn(async () => ({ data: { session: backend.session }, error: null }));
   client.auth.onAuthStateChange = jest.fn(() => ({
     data: { subscription: { unsubscribe: jest.fn() } },
