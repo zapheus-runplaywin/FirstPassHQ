@@ -129,7 +129,9 @@ export default function MemberScreen() {
   const [extraRoles, setExtraRoles] = useState<AppRole[]>([]);
   const [selection, setSelection] = useState<Placements>({});
   const [under18, setUnder18] = useState(false);
-  const [dateOfBirth, setDateOfBirth] = useState('');
+  // null until the admin types: the field then shows the saved date, or for an
+  // athlete with none, the date they entered at Join (see declaredDob below).
+  const [typedDateOfBirth, setDateOfBirth] = useState<string | null>(null);
   const [wwccNumber, setWwccNumber] = useState('');
   const [wwccExpires, setWwccExpires] = useState('');
   const [exempt, setExempt] = useState(false);
@@ -217,7 +219,7 @@ export default function MemberScreen() {
       setMember(profile);
       logRecordView(id, 'member_record');
       setUnder18(profile.under_17);
-      setDateOfBirth(formatDate(profile.date_of_birth));
+      setDateOfBirth(null);
       setDobRecord((dobResult.data as DobRecord | null) ?? null);
       setWwccNumber(profile.wwcc_number ?? '');
       setWwccExpires(formatDate(profile.wwcc_expires_on));
@@ -325,6 +327,15 @@ export default function MemberScreen() {
   const inTeams = teamRolesHeld.length > 0;
   const isAthlete = roles.includes('athlete');
   const isGuardian = roles.includes('guardian');
+
+  // An athlete with no checked date of birth yet: the field starts from the
+  // date they entered at Join, for the admin to check against PlayHQ or ID.
+  // Only for athletes, the one role whose field shows, so no unchecked date
+  // is ever saved for anyone else.
+  const declaredDob = !member?.date_of_birth ? (member?.declared_date_of_birth ?? null) : null;
+  const dateOfBirth =
+    typedDateOfBirth ??
+    formatDate(member?.date_of_birth ?? (isAthlete ? declaredDob : null));
   const isPhysio = roles.includes('physio');
   const dob = parseDate(dateOfBirth);
   // The card as saved, and whether the fields still show it.
@@ -1086,6 +1097,12 @@ export default function MemberScreen() {
             keyboardType="numbers-and-punctuation"
             maxLength={10}
           />
+          {dob && declaredDob && dob === declaredDob ? (
+            <ThemedText type="small" themeColor="textSecondary">
+              The date they entered when they asked to join. Check it against PlayHQ or ID before
+              you save.
+            </ThemedText>
+          ) : null}
           {dob ? (
             <ThemedText type="small" themeColor="textSecondary">
               {minor
@@ -1104,7 +1121,7 @@ export default function MemberScreen() {
           ) : null}
           {dob === null && member.declared_date_of_birth ? (
             <Button
-              title={`I’ve checked it: use ${formatDate(member.declared_date_of_birth)}`}
+              title={`Use the date they entered: ${formatDate(member.declared_date_of_birth)}`}
               variant="secondary"
               onPress={() => setDateOfBirth(formatDate(member.declared_date_of_birth))}
             />

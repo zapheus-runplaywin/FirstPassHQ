@@ -517,12 +517,14 @@ describe('approving a request', () => {
     await openMember(PENDING_CHILD, { people: [GUARDIAN, UNVERIFIED_GUARDIAN] });
     expect(isChosen(inSection('Role', 'Athlete'))).toBe(true);
     expect(isChosen(inSection('Squads', 'Open Squad'))).toBe(true);
-    expect(
-      screen.getByText('Check their date of birth against PlayHQ or ID and add it before you approve them.'),
-    ).toBeTruthy();
-
-    await press('I’ve checked it: use 01/04/2012');
+    // The field starts from the date they entered at Join, marked as not yet checked.
     expect(fieldFor('Date of birth').props.value).toBe('01/04/2012');
+    expect(
+      screen.getByText(
+        'The date they entered when they asked to join. Check it against PlayHQ or ID before you save.',
+      ),
+    ).toBeTruthy();
+    expect(screen.queryByText(/^Use the date they entered/)).toBeNull();
     expect(
       screen.getByText('Under 18, so their app stays locked until a verified parent or guardian is linked.'),
     ).toBeTruthy();
@@ -562,12 +564,52 @@ describe('approving a request', () => {
     await openMember(PENDING_CHILD);
     await typeInto('Date of birth', '02/04/2012');
     expect(screen.getByText('Not the date they gave (01/04/2012).')).toBeTruthy();
-    expect(screen.queryByText(/^I’ve checked it/)).toBeNull();
+    expect(screen.queryByText(/^Use the date they entered/)).toBeNull();
+    expect(screen.queryByText(/^The date they entered when they asked to join/)).toBeNull();
+  });
+
+  it('puts the date they entered back when the field is cleared', async () => {
+    await openMember(PENDING_CHILD);
+    await typeInto('Date of birth', '');
+    expect(
+      screen.getByText('Check their date of birth against PlayHQ or ID and add it before you approve them.'),
+    ).toBeTruthy();
+    await press('Use the date they entered: 01/04/2012');
+    expect(fieldFor('Date of birth').props.value).toBe('01/04/2012');
+  });
+
+  it('never fills in the date they entered for someone who isn’t an athlete', async () => {
+    const PENDING_GUEST: Profile = {
+      ...PENDING_CHILD,
+      id: 'pending-guest',
+      requested_role: 'guest',
+      requested_team_id: null,
+      declared_date_of_birth: '1980-04-01',
+      guardian_email: null,
+    };
+    await openMember(PENDING_GUEST);
+    expect(screen.queryByText('Date of birth')).toBeNull();
+    await press('Approve');
+    const details = adminWrites().find(([name]) => name === 'admin_set_member_details');
+    expect(details?.[1]).toMatchObject({ p_date_of_birth: null });
+  });
+
+  it('starts from the date they entered once an admin makes them an athlete', async () => {
+    await openMember({ ...PENDING_CHILD, id: 'asked-as-guest', requested_role: 'guest', requested_team_id: null });
+    expect(screen.queryByText('Date of birth')).toBeNull();
+    await pressInSection('Role', 'Athlete');
+    expect(fieldFor('Date of birth').props.value).toBe('01/04/2012');
+  });
+
+  it('keeps a checked date of birth rather than the one they entered', async () => {
+    await openMember({ ...p('athlete'), date_of_birth: '1990-05-06', declared_date_of_birth: '1991-01-01' });
+    expect(fieldFor('Date of birth').props.value).toBe('06/05/1990');
+    expect(screen.queryByText(/^The date they entered when they asked to join/)).toBeNull();
+    expect(screen.getByText('Not the date they gave (01/01/1991).')).toBeTruthy();
   });
 
   it('never links a guardian who hasn’t been verified', async () => {
     await openMember(PENDING_CHILD, { people: [UNVERIFIED_GUARDIAN] });
-    await press('I’ve checked it: use 01/04/2012');
     await typeInto('Add a guardian', 'unverified');
     await press('Unverified Parent · parent2@example.test (not verified)');
     expect(
@@ -581,7 +623,6 @@ describe('approving a request', () => {
 
   it('says when no guardians are approved yet', async () => {
     await openMember(PENDING_CHILD, { people: [] });
-    await press('I’ve checked it: use 01/04/2012');
     expect(screen.getByText(/^No approved guardians yet\./)).toBeTruthy();
     expect(screen.queryByText('Add a guardian')).toBeNull();
   });
@@ -590,7 +631,6 @@ describe('approving a request', () => {
     await openMember(PENDING_CHILD, {
       rpcErrors: { admin_save_member: 'Link at least one verified guardian before approving an athlete under 18' },
     });
-    await press('I’ve checked it: use 01/04/2012');
     await press('Approve');
     expect(
       screen.getByText('Link at least one verified guardian before approving an athlete under 18'),
@@ -602,7 +642,6 @@ describe('approving a request', () => {
     const UNDER_13 = { ...PENDING_CHILD, id: 'under-13', declared_date_of_birth: '2014-04-01' };
     const refusal = "They're under 13. FirstPass HQ is for members aged 13 and over, so decline their request";
     await openMember(UNDER_13, { rpcErrors: { admin_save_member: refusal } });
-    await press('I’ve checked it: use 01/04/2014');
     await press('Approve');
     expect(screen.getByText(refusal)).toBeTruthy();
     expect(back).not.toHaveBeenCalled();
