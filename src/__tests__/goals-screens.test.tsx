@@ -18,6 +18,8 @@ import { Text } from 'react-native';
 import AthleteGoalsScreen from '@/app/goals/athlete/[id]';
 import GameGoalsScreen from '@/app/goals/game';
 import TeamGoalsScreen from '@/app/goals/team';
+import type { GameStats } from '@/lib/game-stats';
+import { supabase } from '@/lib/supabase';
 import type {
   CoachTeamGame,
   GameGoal,
@@ -157,11 +159,27 @@ type GameSetup = {
   teamGoals?: TeamGameGoal[];
   teamComments?: TeamGameGoalComment[];
   errors?: Record<string, string>;
+  /** What the game-stats function answers: the athlete's figures, none, or a failure. */
+  stats?: GameStats | null | 'fails';
+};
+
+const invoke = () => (supabase as unknown as { functions: { invoke: jest.Mock } }).functions.invoke;
+
+const STATS: GameStats = {
+  goals: 18,
+  shots: 24,
+  gains: 3,
+  turnovers: 5,
+  feeds: 7,
+  offensiveRebounds: 2,
+  defensiveRebounds: 0,
+  minutes: 37.5,
+  positions: ['GS', 'GA'],
 };
 
 async function openGame(
   who: Who,
-  { shown = game(), goals = [], comments = [], teamGoals = [], teamComments = [], errors = {} }: GameSetup = {},
+  { shown = game(), goals = [], comments = [], teamGoals = [], teamComments = [], errors = {}, stats = null }: GameSetup = {},
   query = 'athlete=athlete&fixture=fx1&name=Sample%20athlete',
 ) {
   await openScreen(
@@ -174,7 +192,16 @@ async function openGame(
       team_game_goals: teamGoals,
       team_game_goal_comments: teamComments,
     },
-    { rpcs: { goal_game: shown ? [shown] : [] }, rpcErrors: errors },
+    {
+      rpcs: { goal_game: shown ? [shown] : [] },
+      rpcErrors: errors,
+      functions: {
+        'game-stats':
+          stats === 'fails'
+            ? { error: { name: 'FunctionsHttpError', message: 'Edge Function returned a non-2xx status code' } }
+            : { data: { stats } },
+      },
+    },
   );
 }
 
@@ -395,362 +422,55 @@ describe('one game’s goals after the game', () => {
   });
 });
 
-describe('team goals on a game', () => {
-  const comments = [
-    teamComment(),
-    teamComment({ id: 'tc2', author_id: 'other-athlete', author_name: 'Other Athlete', body: 'Me too' }),
-    teamComment({ id: 'tc3', author_id: 'coach', author_name: 'Sample coach', author_role: 'coach', body: 'Love it' }),
-  ];
-
-  it('shows the team’s goals above the athlete’s own, with who set them', async () => {
-    await openGame('athlete', { teamGoals: [teamGoal()], goals: [goal()] });
-    expect(screen.getByText('Team goals')).toBeTruthy();
-    expect(screen.getByText('Set by Coach Sample coach')).toBeTruthy();
-    expect(screen.getByText('Win the third quarter')).toBeTruthy();
-    expect(screen.getByText('Personal goals')).toBeTruthy();
+describe('the athlete’s own stats from the recorded game, for their coaches', () => {
+  it('asks for nothing before the game or while it is on', async () => {
+    await openGame('coach', { stats: STATS }, asCoach);
+    expect(invoke()).not.toHaveBeenCalled();
+    expect(screen.queryByText('Game stats')).toBeNull();
+    await openGame('coach', { shown: game(PLAYING), stats: STATS }, asCoach);
+    expect(invoke()).not.toHaveBeenCalled();
+    expect(screen.queryByText('Game stats')).toBeNull();
   });
 
-  it('lets an athlete in the team comment, and remove only their own comment', async () => {
-    await openGame('athlete', { teamGoals: [teamGoal()], teamComments: comments });
-    expect(screen.getByText('Sample athlete')).toBeTruthy();
-    expect(screen.getByText('Other Athlete')).toBeTruthy();
-    expect(screen.getByText('Coach Sample coach')).toBeTruthy();
-    expect(screen.getAllByText('Remove')).toHaveLength(1);
-    await press('Remove');
-    expect(screen.getByText('Remove this comment?')).toBeTruthy();
-    await press('Remove comment');
-    expect(onlyRpcCall('delete_team_game_goal_comment')).toEqual({ p_comment_id: 'tc1' });
+  it('shows a coach the athlete’s figures after the game, with Net Points, and says only coaches see them', async () => {
+    await openGame('coach', { shown: game(PLAYED), stats: { ...STATS, netPoints: 12.5 } }, asCoach);
+    expect(invoke()).toHaveBeenCalledWith('game-stats', { body: { athleteId: 'athlete', fixtureId: 'fx1' } });
+    expect(screen.getByText('Game stats')).toBeTruthy();
+    expect(screen.getByText('37.5 min · GS, GA')).toBeTruthy();
+    expect(screen.getByText('18 from 24 (75%)')).toBeTruthy();
+    expect(screen.getByText('2 (2 attacking, 0 defending)')).toBeTruthy();
+    expect(screen.getByText('Net Points')).toBeTruthy();
+    expect(screen.getByText('+12.5')).toBeTruthy();
+    expect(screen.getByText('From the game recorded in FirstPass Vantage. Only the athlete’s coaches see these.')).toBeTruthy();
   });
 
-  it('sends an athlete’s comment on a team goal', async () => {
-    await openGame('athlete', { teamGoals: [teamGoal()] });
-    await press('Comment');
-    await type('What you think, and what you’ll do to help', 'I’ll talk more');
-    await press('Add comment');
-    expect(onlyRpcCall('add_team_game_goal_comment')).toEqual({ p_goal_id: 'tg1', p_body: 'I’ll talk more' });
+  // Coaches only (Matt, 22 November 2026): the app doesn't ask for the athlete or a parent, and
+  // shows nothing even if figures came back. The database refuses them too (game-stats-in-goals.sql).
+  it('never asks for or shows them to the athlete', async () => {
+    await openGame('athlete', { shown: game(PLAYED), goals: [goal()], stats: { ...STATS, netPoints: 12.5 } });
+    expect(invoke()).not.toHaveBeenCalled();
+    expect(screen.queryByText('Game stats')).toBeNull();
+    expect(screen.queryByText('Your game stats')).toBeNull();
+    expect(screen.queryByText('Net Points')).toBeNull();
+    expect(screen.getByText('Win 3 centre pass receives')).toBeTruthy();
   });
 
-  it('drops an unsent comment on Cancel', async () => {
-    await openGame('athlete', { teamGoals: [teamGoal()] });
-    await press('Comment');
-    await type('What you think, and what you’ll do to help', 'Draft');
-    await press('Cancel');
-    expect(screen.queryByPlaceholderText('What you think, and what you’ll do to help')).toBeNull();
-    expect(rpcCalls('add_team_game_goal_comment')).toEqual([]);
+  it('never asks for or shows them to a parent, even one who also coaches', async () => {
+    await openGame('guardian', { shown: game(PLAYED), stats: { ...STATS, netPoints: 12.5 } }, asCoach);
+    expect(invoke()).not.toHaveBeenCalled();
+    expect(screen.queryByText('Game stats')).toBeNull();
+    expect(screen.queryByText('Turnovers')).toBeNull();
+    await openGame('guardian', { shown: game(PLAYED), stats: STATS });
+    expect(invoke()).not.toHaveBeenCalled();
+    expect(screen.queryByText('Game stats')).toBeNull();
   });
 
-  it.each<[string, Who]>([
-    ['guardian', 'guardian'],
-    ['physio of the team', 'physio'],
-    ['manager of the team', 'manager'],
-  ])('lets a %s read the team’s comments with no way to add or remove one', async (_l, who) => {
-    await openGame(who, { teamGoals: [teamGoal()], teamComments: comments });
-    expect(screen.getByText('I’ll push hard in the third')).toBeTruthy();
-    expect(screen.queryByText('Comment')).toBeNull();
-    expect(screen.queryByText('Remove')).toBeNull();
-  });
-
-  it('doesn’t let an athlete of another team comment', async () => {
-    await openGame('athlete', { shown: game({ team_id: TEAM_B.id }), teamGoals: [teamGoal()] });
-    expect(screen.queryByText('Comment')).toBeNull();
-  });
-
-  it('shows how the coaches think the team went after the game', async () => {
-    await openGame('athlete', {
-      shown: game(PLAYED),
-      teamGoals: [teamGoal({ outcome: 'achieved', review: 'Best quarter all year', reviewed_by_name: 'Sample coach' })],
-    });
-    expect(screen.getByText('Achieved')).toBeTruthy();
-    expect(screen.getByText('Best quarter all year')).toBeTruthy();
-    expect(screen.getByText('Coach Sample coach')).toBeTruthy();
-  });
-
-  it('asks for the comments of this game’s team goals only', async () => {
-    await openGame('athlete', { teamGoals: [teamGoal()] });
-    const tables = (jest.requireMock('@/lib/supabase').supabase.from as jest.Mock).mock.calls.map(([t]: [string]) => t);
-    expect(tables).toEqual(expect.arrayContaining(['team_game_goals', 'team_game_goal_comments', 'game_goals']));
-  });
-
-  it('doesn’t ask for team goal comments when the game has no team goals', async () => {
-    await openGame('athlete', {});
-    const tables = (jest.requireMock('@/lib/supabase').supabase.from as jest.Mock).mock.calls.map(([t]: [string]) => t);
-    expect(tables).not.toContain('team_game_goal_comments');
-    expect(tables).not.toContain('game_goal_comments');
-  });
-});
-
-// ---------------------------------------------------------------------------
-// An athlete's games
-
-function GamePlaceholder() {
-  return <Text>screen:goals/game</Text>;
-}
-
-async function openAthlete(
-  who: Who,
-  { next = game() as GoalGame | null, past = [] as GoalGame[], query = '', pastError }: { next?: GoalGame | null; past?: GoalGame[]; query?: string; pastError?: string } = {},
-) {
-  await openScreen(
-    who,
-    { 'goals/athlete/[id]': AthleteGoalsScreen, 'goals/game': GamePlaceholder },
-    `/goals/athlete/athlete?name=Sample%20athlete${query}`,
-    {},
-    {
-      rpcs: { goal_next_game: next ? [next] : [] },
-      rpcHandlers: {
-        goal_past_games: (args) => past.slice(args.p_offset as number, (args.p_offset as number) + (args.p_limit as number)),
-      },
-      rpcErrors: pastError ? { goal_past_games: pastError } : {},
-    },
-  );
-}
-
-function played(n: number): GoalGame {
-  return game({ ...PLAYED, fixture_id: `p${n}`, round_name: `Round ${n}`, goal_count: 2, reflected_count: 1, comment_count: 1 });
-}
-
-describe('an athlete’s games', () => {
-  it('shows a coach the next game and asks for played games 10 at a time', async () => {
-    await openAthlete('coach', { next: game({ goal_count: 2 }) });
-    expect(screen.getByText('Add goals for the next game. Once it’s played, read the athlete’s reflections and comment on each goal.')).toBeTruthy();
-    expect(screen.getByText('2 of up to 5 goals set · they close when the game starts')).toBeTruthy();
-    expect(rpcCalls('goal_next_game')).toEqual([{ p_athlete_id: 'athlete' }]);
-    expect(rpcCalls('goal_past_games')).toEqual([
-      { p_athlete_id: 'athlete', p_limit: 11, p_offset: 0, p_team_id: null },
-    ]);
-    expect(rpcCalls('log_record_view')).toEqual([{ p_subject_id: 'athlete', p_kind: 'goals', p_record_id: null }]);
-  });
-
-  it('opens the next game for a coach to add goals', async () => {
-    await openAthlete('coach');
-    await press('Round 3 v Swans');
-    expect(screen.getByText('screen:goals/game')).toBeTruthy();
-    expect(screen).toHaveSearchParams({ athlete: 'athlete', fixture: 'fx1', name: 'Sample athlete' });
-  });
-
-  it.each<[string, Who, string]>([
-    ['guardian', 'guardian', ''],
-    ['coach who opened it as a guardian', morePersonas.coachGuardian, '&view=guardian'],
-  ])('opens games read-only for a %s', async (_l, who, query) => {
-    await openAthlete(who, { query });
-    expect(screen.getByText(/^See the goals your athlete and their coaches set for each game/)).toBeTruthy();
-    expect(screen.getByText('No goals set yet')).toBeTruthy();
-    await press('Round 3 v Swans');
-    expect(screen).toHaveSearchParams({ athlete: 'athlete', fixture: 'fx1', name: 'Sample athlete', view: 'guardian' });
-  });
-
-  it('says when there’s no game in the next week', async () => {
-    await openAthlete('coach', { next: null });
-    expect(screen.getByText('No game in the next 7 days. Goals open a week before each game.')).toBeTruthy();
-    expect(screen.getByText('No games played yet.')).toBeTruthy();
-  });
-
-  it('says a game being played is closed', async () => {
-    await openAthlete('coach', { next: game(PLAYING) });
-    expect(screen.getByText('Game on. Reflections open after the game.')).toBeTruthy();
-  });
-
-  it('shows each played game’s goals, reflections and coach comments', async () => {
-    await openAthlete('coach', {
-      past: [
-        played(1),
-        game({ ...PLAYED, fixture_id: 'p2', round_name: 'Round 2', goal_count: 1, reflected_count: 1, comment_count: 0 }),
-        game({ ...PLAYED, fixture_id: 'p3', round_name: 'Round 1', goal_count: 0 }),
-      ],
-    });
-    expect(screen.getByText('2 goals · 1 of 2 reflected · 1 coach comment')).toBeTruthy();
-    expect(screen.getByText('1 goal · ✓ Reflected')).toBeTruthy();
-    expect(screen.getByText('No goals set')).toBeTruthy();
-  });
-
-  it('loads older games with Load more', async () => {
-    const past = Array.from({ length: 12 }, (_, i) => played(i + 1));
-    await openAthlete('coach', { past });
-    expect(screen.getAllByText(/^Round \d+ v Swans$/)).toHaveLength(11);
-    await press('Load more');
-    expect(rpcCalls('goal_past_games')[1]).toEqual({ p_athlete_id: 'athlete', p_limit: 11, p_offset: 10, p_team_id: null });
-    expect(screen.getAllByText(/^Round \d+ v Swans$/)).toHaveLength(13);
-    expect(screen.queryByText('Load more')).toBeNull();
-  });
-
-  it('opened from a team’s page, shows only that team’s games', async () => {
-    await openAthlete('coach', { next: game({ team_id: TEAM_B.id }), query: `&team=${TEAM.id}` });
-    expect(rpcCalls('goal_past_games')[0]).toMatchObject({ p_team_id: TEAM.id });
-    // The athlete's next game is another team's, so it isn't shown here.
-    expect(screen.getByText('No game in the next 7 days. Goals open a week before each game.')).toBeTruthy();
-  });
-
-  it('shows why the games didn’t load', async () => {
-    await openAthlete('coach', { pastError: 'Not your athlete' });
-    // The fake backend's errors are plain objects, so the screen's own words show.
-    expect(screen.getByText('Couldn’t load games')).toBeTruthy();
-  });
-});
-
-// ---------------------------------------------------------------------------
-// A coach's team goals
-
-function teamGame(extra: Partial<CoachTeamGame> = {}): CoachTeamGame {
-  return {
-    team_id: TEAM.id,
-    team_name: TEAM.name,
-    team_kind: 'team',
-    fixture_id: 'fx1',
-    is_next: true,
-    round_name: 'Round 3',
-    opponent: 'Swans',
-    starts_at: OPEN.starts_at,
-    time_tbc: false,
-    goals_close_at: OPEN.goals_close_at,
-    played_at: OPEN.played_at,
-    goal_count: 0,
-    reviewed_count: 0,
-    ...extra,
-  };
-}
-
-async function openTeam(
-  who: Who,
-  {
-    games = [teamGame()],
-    adminGames = [] as CoachTeamGame[],
-    goals = [] as TeamGameGoal[],
-    comments = [] as TeamGameGoalComment[],
-    errors = {} as Record<string, string>,
-  } = {},
-) {
-  await openScreen(
-    who,
-    { 'goals/team': TeamGoalsScreen },
-    '/goals/team?fixture=fx1',
-    { team_game_goals: goals, team_game_goal_comments: comments },
-    { rpcs: { coach_team_games: games, admin_team_games: adminGames }, rpcErrors: errors },
-  );
-}
-
-describe('an admin reading a team’s goals', () => {
-  it('reads the goals, reviews and comments, and can change nothing', async () => {
-    await openTeam('admin', {
-      games: [],
-      adminGames: [teamGame()],
-      goals: [teamGoal()],
-      comments: [teamComment()],
-    });
-    expect(screen.getByText(/^The goals the team’s coaches set for this game/)).toBeTruthy();
-    expect(screen.getByText('Team goal 1 · set by Coach Sample coach')).toBeTruthy();
-    expect(screen.getByText('Win the third quarter')).toBeTruthy();
-    expect(screen.queryByText('Edit')).toBeNull();
-    expect(screen.queryByText('Add team goal')).toBeNull();
-    expect(screen.queryByText('Remove')).toBeNull();
-    expect(screen.queryByPlaceholderText('What you think, and what you’ll do to help')).toBeNull();
-    expect(rpcCalls('admin_team_games')).toHaveLength(1);
-  });
-
-  it('reads a played game without the review form', async () => {
-    await openTeam('admin', {
-      games: [],
-      adminGames: [teamGame({ ...PLAYED, is_next: false })],
-      goals: [teamGoal()],
-    });
-    expect(screen.queryByText(/^How did the team go\?/)).toBeNull();
-    expect(screen.queryByText('Save review')).toBeNull();
-  });
-
-  it('says when the game isn’t in either list', async () => {
-    await openTeam('admin', { games: [], adminGames: [] });
-    expect(screen.getByText('This game isn’t available any more.')).toBeTruthy();
-  });
-
-  it('a coach of the team is never read only, so the admin list isn’t asked for', async () => {
-    await openTeam('coach', { goals: [teamGoal()] });
-    expect(screen.getByText('Edit')).toBeTruthy();
-    expect(rpcCalls('admin_team_games')).toHaveLength(0);
-  });
-});
-
-describe('a coach’s team goals', () => {
-  it('adds a goal for the whole team before the game', async () => {
-    await openTeam('coach');
-    expect(screen.getByText(/^Goals for the whole team\. Everyone in it, and their parents or guardians, can see them/)).toBeTruthy();
-    expect(screen.getByText('No team goals yet.')).toBeTruthy();
-    await type('For example, win the third quarter', 'Win the third quarter');
-    await press('Add team goal');
-    expect(onlyRpcCall('save_team_game_goal')).toEqual({ p_goal_id: null, p_fixture_id: 'fx1', p_body: 'Win the third quarter' });
-    expect(rpcCalls('coach_team_games')).toHaveLength(2);
-  });
-
-  it('changes and removes a team goal before the game', async () => {
-    await openTeam('coach', { goals: [teamGoal()] });
-    expect(screen.getByText('Team goal 1 · set by Coach Sample coach')).toBeTruthy();
-    await press('Edit');
-    await fireEvent.changeText(screen.getByDisplayValue('Win the third quarter'), 'Win the last quarter');
-    await press('Save');
-    expect(onlyRpcCall('save_team_game_goal')).toEqual({ p_goal_id: 'tg1', p_fixture_id: 'fx1', p_body: 'Win the last quarter' });
-  });
-
-  it('removes a team goal only after asking once more', async () => {
-    await openTeam('coach', { goals: [teamGoal()] });
-    await press('Edit');
-    await press('Remove goal');
-    expect(screen.getByText('Remove this team goal from the game?')).toBeTruthy();
-    await press('Remove goal');
-    expect(onlyRpcCall('delete_team_game_goal')).toEqual({ p_goal_id: 'tg1' });
-  });
-
-  it('lets a coach remove anyone’s comment on the team’s goals', async () => {
-    await openTeam('coach', {
-      goals: [teamGoal()],
-      comments: [teamComment(), teamComment({ id: 'tc2', author_id: 'other', author_name: 'Other Athlete', body: 'Me too' })],
-    });
-    expect(screen.getAllByText('Remove')).toHaveLength(2);
-    await press('Remove', 1);
-    await press('Remove comment');
-    expect(onlyRpcCall('delete_team_game_goal_comment')).toEqual({ p_comment_id: 'tc2' });
-  });
-
-  it('shows why a comment couldn’t be removed', async () => {
-    await openTeam('coach', { goals: [teamGoal()], comments: [teamComment()], errors: { delete_team_game_goal_comment: 'Already removed' } });
-    await press('Remove');
-    await press('Remove comment');
-    expect(screen.getByText('Already removed')).toBeTruthy();
-  });
-
-  it('stops adding at 5 team goals', async () => {
-    await openTeam('coach', { goals: [1, 2, 3, 4, 5].map((n) => teamGoal({ id: `tg${n}`, body: `Goal ${n}` })) });
-    expect(screen.queryByText('Add team goal')).toBeNull();
-  });
-
-  it('closes team goals while the game is on', async () => {
-    await openTeam('coach', { games: [teamGame(PLAYING)], goals: [teamGoal()] });
-    expect(screen.getByText('Game on. You can say how each goal went after the game.')).toBeTruthy();
-    expect(screen.queryByText('Edit')).toBeNull();
-    expect(screen.queryByText('Add team goal')).toBeNull();
-    expect(screen.queryByText('Save review')).toBeNull();
-  });
-
-  it('reviews how the team went after the game', async () => {
-    await openTeam('coach', { games: [teamGame({ ...PLAYED, is_next: false })], goals: [teamGoal()] });
-    expect(screen.getByText('How did the team go? Pick how each goal went and add a few words for the team.')).toBeTruthy();
-    expect(screen.queryByText('Edit')).toBeNull();
-    await press('Save review');
-    expect(rpcCalls('review_team_game_goal')).toEqual([]);
-    await press('Partly');
-    await type('What worked, and what to work on at training', 'Close, keep at it');
-    await press('Save review');
-    expect(onlyRpcCall('review_team_game_goal')).toEqual({ p_goal_id: 'tg1', p_outcome: 'partly', p_review: 'Close, keep at it' });
-  });
-
-  it('updates a review already saved', async () => {
-    await openTeam('coach', { games: [teamGame(PLAYED)], goals: [teamGoal({ outcome: 'achieved', review: 'Great' })] });
-    await type('What worked, and what to work on at training', 'Great, again');
-    await press('Update review');
-    expect(onlyRpcCall('review_team_game_goal')).toEqual({ p_goal_id: 'tg1', p_outcome: 'achieved', p_review: 'Great, again' });
-  });
-
-  it('says the game isn’t available when it isn’t one of the coach’s', async () => {
-    await openTeam('coach', { games: [teamGame({ fixture_id: 'other' })] });
-    expect(screen.getByText('This game isn’t available any more.')).toBeTruthy();
-    expect(rpcNames()).not.toContain('save_team_game_goal');
-    expect(screen.queryByText('Add team goal')).toBeNull();
+  it.each<[string, GameStats | null | 'fails']>([
+    ['the game wasn’t recorded or the athlete didn’t play', null],
+    ['the stats can’t be reached', 'fails'],
+  ])('shows a coach the goals as before when %s', async (_l, stats) => {
+    await openGame('coach', { shown: game(PLAYED), goals: [goal()], stats }, asCoach);
+    expect(screen.queryByText('Game stats')).toBeNull();
+    expect(screen.getByText('Win 3 centre pass receives')).toBeTruthy();
   });
 });

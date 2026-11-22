@@ -1,0 +1,89 @@
+name: Deploy game stats function
+
+# Deploys the game-stats function, which works out one athlete's own figures
+# from a game recorded in FirstPass Vantage for their coaches, on that game's goals page, to
+# the live and test projects (and the extra test clubs when TEST_CLUBS lists
+# them). It runs only when Matt presses Run workflow: never on a push or a
+# schedule, so run it after a merge that changes the function.
+#
+# The function needs no secrets of its own. Until it's deployed the goals
+# pages work as before, without the stats card.
+on:
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  deploy:
+    runs-on: ubuntu-24.04
+    environment: production
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+      - uses: supabase/setup-cli@45a513f8c64c0bc8e0e3dfe572b5c95be85f6359 # v3.0.1
+        with:
+          version: 2.121.0
+      # JWT check on: only signed-in members reach it, and the database decides whose figures each may see.
+      - run: >
+          supabase functions deploy game-stats
+          --project-ref "$SUPABASE_PROJECT_ID" --use-api
+        env:
+          SUPABASE_ACCESS_TOKEN: ${{ secrets.SUPABASE_ACCESS_TOKEN }}
+          SUPABASE_PROJECT_ID: ${{ secrets.SUPABASE_PROJECT_ID }}
+
+  # The same function in the test project, when there is one (see
+  # docs/environments.md).
+  deploy-test:
+    if: ${{ github.event_name != 'schedule' }}
+    runs-on: ubuntu-24.04
+    steps:
+      - name: Check the test project is set up
+        id: test
+        env:
+          TEST_PROJECT_ID: ${{ secrets.SUPABASE_TEST_PROJECT_ID }}
+        run: echo "ready=$([ -n "$TEST_PROJECT_ID" ] && echo true || echo false)" >> "$GITHUB_OUTPUT"
+      - if: steps.test.outputs.ready == 'true'
+        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+      - if: steps.test.outputs.ready == 'true'
+        uses: supabase/setup-cli@45a513f8c64c0bc8e0e3dfe572b5c95be85f6359 # v3.0.1
+        with:
+          version: 2.121.0
+      - if: steps.test.outputs.ready == 'true'
+        run: >
+          supabase functions deploy game-stats
+          --project-ref "$SUPABASE_PROJECT_ID" --use-api
+        env:
+          SUPABASE_ACCESS_TOKEN: ${{ secrets.SUPABASE_TEST_ACCESS_TOKEN || secrets.SUPABASE_ACCESS_TOKEN }}
+          SUPABASE_PROJECT_ID: ${{ secrets.SUPABASE_TEST_PROJECT_ID }}
+
+  # The extra test clubs in the development setup, when they exist (see
+  # docs/environments.md). Off for now: they only run when the TEST_CLUBS
+  # repository variable lists them, such as [2, 3].
+  deploy-test-clubs:
+    if: ${{ vars.TEST_CLUBS != '' && github.event_name != 'schedule' }}
+    runs-on: ubuntu-24.04
+    strategy:
+      fail-fast: false
+      matrix:
+        # The fallback is never used: without TEST_CLUBS the job is skipped.
+        club: ${{ fromJSON(vars.TEST_CLUBS || '["off"]') }}
+    name: deploy-test-club-${{ matrix.club }}
+    steps:
+      - name: Check test club ${{ matrix.club }} is set up
+        id: test
+        env:
+          CLUB_PROJECT_ID: ${{ secrets[format('SUPABASE_TEST_{0}_PROJECT_ID', matrix.club)] }}
+        run: echo "ready=$([ -n "$CLUB_PROJECT_ID" ] && echo true || echo false)" >> "$GITHUB_OUTPUT"
+      - if: steps.test.outputs.ready == 'true'
+        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+      - if: steps.test.outputs.ready == 'true'
+        uses: supabase/setup-cli@45a513f8c64c0bc8e0e3dfe572b5c95be85f6359 # v3.0.1
+        with:
+          version: 2.121.0
+      - if: steps.test.outputs.ready == 'true'
+        run: >
+          supabase functions deploy game-stats
+          --project-ref "$SUPABASE_PROJECT_ID" --use-api
+        env:
+          SUPABASE_ACCESS_TOKEN: ${{ secrets[format('SUPABASE_TEST_{0}_ACCESS_TOKEN', matrix.club)] }}
+          SUPABASE_PROJECT_ID: ${{ secrets[format('SUPABASE_TEST_{0}_PROJECT_ID', matrix.club)] }}

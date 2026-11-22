@@ -65,6 +65,7 @@ const TILES: Tile[] = [
   { title: 'Record keeping', route: 'admin/club/records' },
   { title: 'Squads and teams', route: 'admin/squads' },
   { title: 'Seasons', route: 'admin/seasons' },
+  { title: 'Games', route: 'admin/games' },
   { title: 'Club captains', route: 'admin/captains', needs: ['messages'] },
   { title: 'Awards', route: 'admin/awards/index', needs: ['awards'] },
   { title: 'Integrity training', route: 'admin/training/index', needs: ['integrity'] },

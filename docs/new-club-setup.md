@@ -46,6 +46,16 @@ npx supabase functions deploy revoke-apple --project-ref <the club's project id>
 West Coast Thunder's own test and live projects are deployed by pressing **Actions > Deploy Apple
 revoke function** instead; like **Deploy migrations**, it doesn't reach other clubs yet.
 
+Game goals show an athlete's coaches that athlete's own figures from a game recorded in FirstPass Vantage. The
+`game-stats` edge function works them out, and needs no secrets:
+
+```bash
+npx supabase functions deploy game-stats --project-ref <the club's project id> --use-api
+```
+
+West Coast Thunder's own projects are deployed by pressing **Actions > Deploy game stats
+function**. Until it is deployed, the goals pages work as before, without the stats card.
+
 The key comes from the Apple Developer site: **Certificates, Identifiers & Profiles > Keys**, a new
 key with **Sign in with Apple** ticked and the app's App ID chosen as its primary App ID. Apple
 lets you download the `.p8` file once, so keep it somewhere safe. Until the secrets are set the

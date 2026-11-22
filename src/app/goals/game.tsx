@@ -2,12 +2,14 @@ import { Stack, useFocusEffect, useLocalSearchParams } from 'expo-router';
 import { useCallback, useState } from 'react';
 import { StyleSheet, View } from 'react-native';
 
+import { GameStatsCard } from '@/components/game-stats-card';
 import { Screen } from '@/components/screen';
 import { TeamGoals } from '@/components/team-goals';
 import { ThemedText } from '@/components/themed-text';
 import { Button, Card, ChipGroup, ConfirmDelete, ErrorText, TextField } from '@/components/ui';
 import { Spacing } from '@/constants/theme';
 import { useAuth } from '@/lib/auth';
+import { fetchGameStats, type GameStats } from '@/lib/game-stats';
 import {
   MAX_GOALS,
   fetchGame,
@@ -54,6 +56,7 @@ export default function GameGoalsScreen() {
   const [comments, setComments] = useState<GameGoalComment[]>([]);
   const [teamGoals, setTeamGoals] = useState<TeamGameGoal[]>([]);
   const [teamComments, setTeamComments] = useState<TeamGameGoalComment[]>([]);
+  const [stats, setStats] = useState<GameStats | null>(null);
   const [refreshing, setRefreshing] = useState(false);
   const canCommentOnTeamGoals = useCanCommentOnTeamGoals(game?.team_id);
 
@@ -69,7 +72,9 @@ export default function GameGoalsScreen() {
     setGoals(lists.goals);
     setComments(lists.comments);
     logRecordView(athlete, 'goals');
-  }, [athlete, fixture]);
+    // The athlete's own figures, for their coaches only, once the game has been played and recorded.
+    setStats(coach && row && gamePhase(row) === 'played' ? await fetchGameStats(athlete, fixture) : null);
+  }, [athlete, fixture, coach]);
 
   useFocusEffect(
     useCallback(() => {
@@ -153,6 +158,8 @@ export default function GameGoalsScreen() {
       {phase === 'open' && (own || coach) && goals.length < MAX_GOALS ? (
         <AddGoal athleteId={athlete} fixtureId={fixture} asCoach={coach} onAdded={load} />
       ) : null}
+
+      {coach && phase === 'played' && stats ? <GameStatsCard stats={stats} /> : null}
 
       {own ? (
         <ThemedText type="small" themeColor="textSecondary">

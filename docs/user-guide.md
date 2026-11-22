@@ -120,6 +120,7 @@ What each role sees on its home screen:
 | Daily check-in                         |    ✓    |                 |              |            |               |               |         |               |
 | Log training sessions (minutes, effort) |    ✓    |                 |              |            |               |               |         |               |
 | Game goals and reflections             |   Own   |  See athlete's  | Own athletes |            |               |               |         |               |
+| An athlete's stats from a recorded game |         |                 | Own athletes, with Net Points |            |               |               |         |               |
 | Team goals for a game                  | See, comment |       See       | Set, review, comment |            |               |               |         |      See      |
 | Check-ins of others                    |         | Their athlete's | Own athletes |            | Averages only | Averages only |         | Averages only |
 | Training sessions of others            |         | Their athlete's | Own athletes |            |               |               |         |               |
@@ -1047,6 +1048,10 @@ shows on your comment, and the team's athletes and coaches, the athletes' parent
 the club's admins can read it. The team's manager and physio can't. Tap **Remove** on your own comment to
 take it down; your coaches can remove any comment.
 
+**Game stats.** When a statistician records your game in FirstPass Vantage, your coaches see your
+own figures from it beside your goals, to help them comment on how it went. You and your parents
+or guardians don't see them in the app; your coach can talk them through with you.
+
 <img src="user-guide/goals-athlete.png" width="210" alt="Game goals: the next game and played games">
 <img src="user-guide/goals-set.png" width="210" alt="Adding a goal for the next game">
 <img src="user-guide/goals-reflect.png" width="210" alt="Reflecting on goals after a game, with a coach's comment">
@@ -1311,6 +1316,8 @@ As a guardian you:
   each game, how your athlete thinks each one went, their coaches' comments and the team goals (see
   [Game goals](#game-goals)). Tap your athlete under **Game goals** on the home screen to see all
   their games. You can't set goals or reflect: your athlete and their coaches do that in the app.
+  When a game was recorded in FirstPass Vantage, your athlete's coaches also see your athlete's
+  own stats from it beside the goals. You and your athlete don't see those figures in the app.
 - **Report and update injuries** for your athlete, and ask for clearance, exactly as an athlete
   does (see [Athletes](#4-athletes)). If you look after more than one athlete, choose which one
   when reporting. Proof is the physio's or doctor's letter, as a PDF or a photo of the letter; with
@@ -1860,11 +1867,19 @@ don't have PlayHQ games, so their pages don't show goals.
   says "Comment on N goal reflections", which opens the team. Under **Played games**, each game
   shows how many goals were set, how many the athlete has reflected on and how many coach comments
   there are, with **Load more** for older games.
-- Opening an athlete under 18's game goals is recorded for their parents (see [Who has viewed your
-  child's records](#who-has-viewed-your-childs-records)).
+- When a statistician recorded the game in FirstPass Vantage and finished it, the played game
+  shows the athlete's **Game stats** under their goals: time on court and positions, shooting,
+  feeds, gains, turnovers and rebounds, and their **Net Points** for the game. Only the
+  athlete's coaches see them: the athlete and their parents or guardians don't.
+  The whole team's stats stay in FirstPass Vision (see [Watching live game
+  stats](#watching-live-game-stats)). An athlete shows no stats when the lineup in Vantage has
+  their name spelt differently from HQ, or when two athletes in the team share a name.
+- Opening an athlete under 18's game goals, with their game stats, is recorded for their parents
+  (see [Who has viewed your child's records](#who-has-viewed-your-childs-records)).
 
 <img src="user-guide/goals-coach.png" width="210" alt="A team's page for its coach: team goals and athletes with their goals">
 <img src="user-guide/goals-coach-comment.png" width="210" alt="A coach reading reflections and commenting">
+<img src="user-guide/goals-stats-coach.png" width="210" alt="A coach sees the athlete's game stats with Net Points">
 
 #### Team goals
 
@@ -2610,7 +2625,9 @@ to record a game in Vantage is in [Game day](#14-game-day-firstpass-vantage-and-
   https://firstpass-vision.expo.app, see [Watching live game stats](#watching-live-game-stats)) by
   tapping it, with no pair code, even days after full time. The six-digit pair code is only for a
   second statistician shadowing or helping with a game in Vantage. Athletes, guardians, physios
-  and the committee don't see games (see [Who can see what](#11-who-can-see-what)).
+  and the committee don't see games; after a finished game an athlete's coaches see that
+  athlete's own figures beside their game goals (see [Who can see what](#11-who-can-see-what)).
+  That is why the lineup should hold each athlete's name as HQ has it.
 - **A helper.** A game can have a second statistician as its **helper**. The statistician
   recording the game turns the helper on for that game (it is off unless they do) and gives the
   helper the game's pair code. The helper does two jobs only, so the recorder can keep their eyes
@@ -3323,6 +3340,19 @@ go to the app's log on your phone.
 <img src="user-guide/fixtures.png" width="210" alt="Fixtures from PlayHQ">
 <img src="user-guide/playhq-lookup.png" width="210" alt="Linking a PlayHQ team to a club team">
 <img src="user-guide/playhq-check.png" width="210" alt="The PlayHQ check after a refresh">
+
+### Games
+
+**Games** lists the games your statisticians have recorded in FirstPass Vantage, newest first, 50
+at a time, with **Show earlier games** for older ones. Each game shows the two teams, the round,
+the squad or team it was recorded for, when it was started, whether it is **Finished**, **Being
+recorded** or **Set up, not started**, who recorded it and how many events it holds. A game
+started without a PlayHQ fixture says **Not from the fixture list**; coaches see an athlete's stats
+beside their game goals only for games started from a fixture and finished. Use the list to check that each game was
+recorded and finished. It shows no stats and no athletes: a team's stats stay with its coaches in
+FirstPass Vision, and each athlete's own figures show to their coaches on their game goals.
+
+<img src="user-guide/admin-games.png" width="210" alt="Games recorded in Vantage, with who recorded each and whether it was finished">
 
 ### Calendars
 
@@ -4139,8 +4169,10 @@ once saved, only replaced or removed, and anyone who gets it wrong five times in
 | App version and build   | Everyone, signed in or not: it's the app's own version, not anything about you or the club. |
 | Code of conduct acceptances | The member, their parents or guardians and admins: each season's acceptance, who accepted it, when, the words and the policy version. Kept under the member's name if they delete their account. |
 | Game goals and reflections | The athlete, their guardians and their coaches. Only the athlete and their coaches set goals, and only the athlete reflects; guardians just read them. The committee, managers, physios and admins don't see them. |
+| An athlete's own stats from a recorded game | The athlete's current coaches only, on the played game's goals page, once the recording is finished. Only that athlete's own figures: time on court and positions, shooting, feeds, gains, turnovers, rebounds and Net Points. Not the athlete, their parents or guardians, team mates, other parents, managers, physios, statisticians, the committee or admins. Nothing is shown when a team mate has the same name. The figures are worked out when the page opens and aren't stored with the goals. |
+| The list of recorded games | Admins only, under **Games** in Administration: each game's teams, round, status, who recorded it and how many events it holds. No stats and no athletes. |
 | Season KPIs, progress and reviews | An athlete's: the athlete, their coaches in that squad or team, their parents or guardians (read only, until 18) and admins (read only). Not teammates, the committee or physios. A coach's or manager's: them, the committee and admins, and an assistant coach's head coach. Only those who set KPIs change them, record results and write reviews; the person records progress, confirms reviews and adds their own view. A coach's or manager's KPIs and reviews are kept under their name if they delete their account, and stay on the admin report. |
-| Live game stats         | Admins and statisticians (while their statistician role isn't paused for a check): every game the club records. The coaches and managers of the game's squad or team, and of the squad a team belongs to, see the team's games at every stage and who has opened each, and the stats once they open the game in FirstPass Vision, without a pair code (a shadow statistician still pairs with the code in Vantage). Members with the Studio role (while not stood down), through FirstPass Studio: games with a PlayHQ game that are live or finished, their setup, the recorded stats and the athletes of the game's squad or team, never a shadow statistician's stats, pair codes or who paired. Athletes, guardians, physios and the committee don't see them. |
+| Live game stats         | Admins and statisticians (while their statistician role isn't paused for a check): every game the club records. The coaches and managers of the game's squad or team, and of the squad a team belongs to, see the team's games at every stage and who has opened each, and the stats once they open the game in FirstPass Vision, without a pair code (a shadow statistician still pairs with the code in Vantage). Members with the Studio role (while not stood down), through FirstPass Studio: games with a PlayHQ game that are live or finished, their setup, the recorded stats and the athletes of the game's squad or team, never a shadow statistician's stats, pair codes or who paired. Athletes, guardians, physios and the committee don't see them, except an athlete's own figures after the game (see the row above). |
 | Team goals              | The team's athletes, their guardians, its coaches (while their check is current and they aren't stood down) and admins. Only its coaches set and review them. Athletes and coaches in the team can comment; guardians and admins read the comments. Managers and physios placed in the team don't see them. |
 | Integrity training courses | The committee and admins see every course and who it's set for. Each member sees the courses set for them, and parents and guardians their child's. |
 | Integrity training certificates | The member, their parents or guardians, the committee and admins. Coaches, managers and physios don't see them. Certificates can't be changed or removed once sent. |
@@ -4410,6 +4442,11 @@ Working With Children Check, and another admin must do it.
   once they have, never alarming numbers (see [Your child's training load](#your-childs-training-load)).
 - **You can tell the club your child will be away**, so an absence you didn't report stands out
   (see [Your child's attendance](#your-childs-attendance)).
+- **Your child's own game stats are for their coaches.** After a game recorded in FirstPass
+  Vantage, your child's own figures show beside their game goals to their current coaches, and to
+  nobody else. Your child and you don't see them in the app, and nor do other families, team
+  mates, managers, physios, the committee or admins. There is no ranking or comparison with other
+  athletes. A coach opening them is on the list of who has viewed your child's records.
 - **Your child's stats go on a stream only if you agree.** When the club streams its games with
   FirstPass Studio, your child is named with their own game stats only once you've given consent
   for **Stats on live streams**; otherwise the stream shows team totals. You can withdraw it at any
@@ -4475,6 +4512,9 @@ Working With Children Check, and another admin must do it.
   the totals, never who picked what.
 - **Your own tasks are just for you.** Tasks you add to your to-do list are private reminders:
   nobody else can see them, and they can't be shared, liked or sent to anyone.
+- **Your game stats stay with your coaches.** After a recorded game only your coaches see your own
+  figures, beside your goals. Team mates never see yours, you never see theirs, and nothing ranks
+  you against anyone.
 - **You're told who sees what you write**: on the check-in, on injury reports, on game goals and
   when you join. Your coaches see your check-ins and injuries once a parent or guardian agrees.
 - **You're told who your guardians are.** From 13, you get the same message as your parents when a
@@ -4555,6 +4595,12 @@ Working With Children Check, and another admin must do it.
 > reasons are in the [privacy and social media
 > assessment](security/privacy-and-social-media-assessment-2026-10-13.md).
 
+- **An athlete's game stats stay with their coaches.** Stats recorded on game day are about
+  children. In HQ an athlete's own figures from a finished game show only to their current
+  coaches, beside the game's goals; the athlete, their parents or guardians and team mates don't
+  see them. The app's server checks who is asking each time and sends only that one athlete's
+  figures, and a lapsed or stood-down coach gets none. Admins
+  see which games were recorded (**Games** in Administration), not the stats.
 - **Stand-downs.** An admin can stand someone down straight away, for example on an interim
   negative notice from the Working with Children Screening Unit. Their coach, manager, physio,
   committee, admin, statistician, Studio and temporary helper roles stop and they leave the squads and teams they lead. A
@@ -4836,7 +4882,7 @@ The screens below show a made-up game, Hawks v Kestrels.
 | **Statisticians** | Record games, or help with a game someone else records | Can open any game the club records |
 | **Coaches and managers** | | Follow their squad's or team's games, and the games of the teams in a squad they coach or manage |
 | **Admins** | Can record and help, like a statistician | Can open any game the club records |
-| **Everyone else** | | No access: athletes, parents and guardians, physios, the committee, guests and temporary helpers don't see game stats |
+| **Everyone else** | | No access: athletes, parents and guardians, physios, the committee, guests and temporary helpers don't see game stats there. In HQ, an athlete's coaches see that athlete's own figures beside their game goals after the game (see [Game goals](#game-goals)) |
 
 A statistician needs a current Working With Children Check, an application being assessed or an
 exemption, and a coach or manager needs the checks their role already needs. A paused role or a
@@ -4970,7 +5016,9 @@ signal.
 
 - **Only the people who need it.** Game stats are about athletes, many of them under 18, so only
   the people in the table above see them, each only while their role is current. Athletes,
-  parents and guardians, physios and the committee don't.
+  parents and guardians, physios and the committee don't. In HQ, after a finished game, an athlete's coaches
+  also see that athlete's own figures beside their game goals; the athlete and their parents or
+  guardians don't.
 - **Nothing else from HQ.** Vantage reads only what a game needs: the teams, the team's PlayHQ
   games and its athletes' names. Vision reads only the games a coach or manager may see. Neither
   shows contact details, injuries, check-ins or anything else in HQ.
