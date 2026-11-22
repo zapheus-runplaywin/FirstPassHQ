@@ -140,7 +140,7 @@ to under 10 MB, so a build starts sooner from your computer and from GitHub.
 EAS reads `.easignore` **instead of** `.gitignore`, not as well as it (Expo's
 [.easignore](https://docs.expo.dev/build-reference/easignore/) page, read 18 November 2026). So
 when a line is added to `.gitignore`, add it to `.easignore` too, or a build would upload those
-files. `scripts/test-build-upload.py` checks that on every pull request, and that nothing a build reads is
+files. `scripts/test-build-upload.py` checks that on every push, and that nothing a build reads is
 left out.
 
 Leaving these out changes nothing in the app: no build reads a file from `docs/` or from the git
