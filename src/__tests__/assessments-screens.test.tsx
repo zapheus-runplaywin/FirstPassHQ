@@ -1191,7 +1191,12 @@ describe('the Selection audit report', () => {
   it('asks for the round’s audit and nothing that holds an assessment', async () => {
     await openAudit();
     // The round's dates come with it: titles, days and who marked them done.
-    expect(assessmentRpcs()).toEqual(['admin_selection_audit', 'admin_selection_milestones']);
+    // And who has signed their summaries: names, counts and dates.
+    expect(assessmentRpcs()).toEqual([
+      'admin_selection_audit',
+      'admin_selection_milestones',
+      'admin_selection_summaries',
+    ]);
     expect(onlyRpcCall('admin_selection_audit')).toEqual({ p_round_id: 'r1' });
     expect(onlyRpcCall('admin_selection_milestones')).toEqual({ p_round_id: 'r1' });
   });
@@ -1210,7 +1215,7 @@ describe('the Selection audit report', () => {
     expect(screen.getByText('Jordan Junior (under 18)')).toBeTruthy();
     expect(screen.getByText(/3 \/ 1 \/ 0 \/ 0/)).toBeTruthy();
     expect(screen.getByText(/Declared a conflict of interest this season/)).toBeTruthy();
-    expect(screen.getByText(/it holds no ratings, evidence or names of criteria/)).toBeTruthy();
+    expect(screen.getByText(/it holds no ratings, evidence, recommendations or names of criteria/)).toBeTruthy();
     expect(screen.getByText(/1 panel member has written nothing yet/)).toBeTruthy();
   });
 

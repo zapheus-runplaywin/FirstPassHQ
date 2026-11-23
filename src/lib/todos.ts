@@ -760,8 +760,9 @@ export function buildTodos({
   }
 
   // Selection rounds: a date that is close or overdue, for the panel and for
-  // admins (who mark it done), and athletes nobody has written about as the
-  // round's last two weeks run out.
+  // admins (who mark it done), athletes nobody has written about as the
+  // round's last two weeks run out, and summaries still to sign from a week
+  // before it ends. A kind this version doesn't know is left out.
   for (const todo of selectionTodos) {
     if (todo.kind === 'date') {
       todos.push({
@@ -775,7 +776,16 @@ export function buildTodos({
           : { pathname: '/assessments/round', params: { id: todo.round_id } },
         dueOn: todo.due_on,
       });
-    } else {
+    } else if (todo.kind === 'summaries') {
+      const n = todo.athletes ?? 0;
+      todos.push({
+        key: `selection-summaries-${todo.round_id}`,
+        title: `Sign your ${n === 1 ? 'summary' : `${n} summaries`}: ${todo.round_name}`,
+        detail: `${todo.due_on < toDateString(today) ? 'The round ended' : 'The round ends'} ${formatDateString(todo.due_on)}`,
+        href: { pathname: '/assessments/round', params: { id: todo.round_id } },
+        dueOn: todo.due_on,
+      });
+    } else if (todo.kind === 'thin') {
       const n = todo.athletes ?? 0;
       todos.push({
         key: `selection-thin-${todo.round_id}`,

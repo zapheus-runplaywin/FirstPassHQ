@@ -4,7 +4,7 @@ import { useCallback, useState } from 'react';
 import { useAuth } from '@/lib/auth';
 import { useFeature } from '@/lib/club';
 import { formatDateString } from '@/lib/injuries';
-import type { Report } from '@/lib/pdf';
+import type { Report, ReportSection } from '@/lib/pdf';
 import { hasRole } from '@/lib/roles';
 import { canWorkWithChildren } from '@/lib/safety';
 import { supabase } from '@/lib/supabase';
@@ -31,13 +31,28 @@ export type CriteriaGroup = {
   items: CriteriaItem[];
 };
 
-export type Criteria = { groups: CriteriaGroup[] };
+export type Criteria = {
+  groups: CriteriaGroup[];
+  /** What a selector can recommend in a summary, such as "Select". None, or two to eight. */
+  recommendations?: string[];
+};
 
 export const MAX_GROUPS = 20;
 export const MAX_ITEMS = 12;
 export const MAX_NAME = 60;
 export const MAX_STEP = 30;
 export const MAX_EVIDENCE = 1000;
+export const MAX_RECOMMENDATIONS = 8;
+export const MAX_RECOMMENDATION = 40;
+export const MAX_SUMMARY_TEXT = 1000;
+
+/** A usual set of recommendations a club can start from and change. */
+export const STARTER_RECOMMENDATIONS = [
+  'Select',
+  'Select as a training partner',
+  'Not selected this time',
+  'More evidence needed',
+];
 
 export const DEFAULT_SCALE = ['Below standard', 'Meets standard', 'Exceeds standard'];
 
@@ -239,13 +254,13 @@ export type RoundDate = { id: string; title: string; due_on: string; done: boole
 
 /** A selection to-do: a date that is close or overdue, or athletes with nothing written. */
 export type SelectionTodo = {
-  kind: 'date' | 'thin';
+  kind: 'date' | 'thin' | 'summaries';
   round_id: string;
   round_name: string;
   milestone_id: string | null;
   title: string | null;
   due_on: string;
-  /** For 'thin': athletes the member can assess with nothing written yet. */
+  /** For 'thin': athletes the member can assess with nothing written yet. For 'summaries': ones whose summary they haven't signed. */
   athletes: number | null;
   /** An admin who isn't on the panel: they open the round's set-up, not its assessments. */
   for_admin: boolean;
@@ -338,6 +353,10 @@ const DEVELOPING = ['Developing', 'Meets standard', 'Exceeds standard'];
  * assessment sheet. An example only; every name and scale can be changed.
  */
 export function starterCriteria(): Criteria {
+  return { ...starterGroups(), recommendations: [...STARTER_RECOMMENDATIONS] };
+}
+
+function starterGroups(): Criteria {
   return makeCriteria([
     {
       name: 'Technical ability',
@@ -396,6 +415,20 @@ export function criteriaProblem(criteria: Criteria): string | null {
   }
   const keys = criteriaKeys(criteria);
   if (new Set(keys).size !== keys.length) return 'Two criteria share a key. Remove one and add it again.';
+  return recommendationsProblem(criteria.recommendations ?? []);
+}
+
+/** What stops this list of recommendations being saved, or null: none, or two to eight different ones. */
+export function recommendationsProblem(recommendations: string[]): string | null {
+  if (recommendations.length === 0) return null;
+  const names = recommendations.map((r) => r.trim());
+  if (names.some((r) => !r)) return 'Name each recommendation, or remove the empty one.';
+  if (names.length < 2) return 'Give selectors at least two recommendations to choose from, or none.';
+  if (names.length > MAX_RECOMMENDATIONS) return `Keep the recommendations to ${MAX_RECOMMENDATIONS}.`;
+  if (names.some((r) => r.length > MAX_RECOMMENDATION)) {
+    return `Keep each recommendation to ${MAX_RECOMMENDATION} characters.`;
+  }
+  if (new Set(names.map((r) => r.toLowerCase())).size !== names.length) return 'Two recommendations are the same.';
   return null;
 }
 
@@ -580,7 +613,11 @@ const plural = (n: number, one: string, many: string) => `${n} ${n === 1 ? one :
  * who did what and when, with counts, and never a rating, a line of evidence
  * or the name of a criterion.
  */
-export function selectionAuditReport(audit: SelectionAudit, dates: Milestone[] = []): Report {
+export function selectionAuditReport(
+  audit: SelectionAudit,
+  dates: Milestone[] = [],
+  summaries: AdminSummaries | null = null,
+): Report {
   const { round } = audit;
   const groups = round.criteria_groups;
   const onPanel = audit.panel.filter((m) => !m.removed_at);
@@ -720,9 +757,10 @@ export function selectionAuditReport(audit: SelectionAudit, dates: Milestone[] =
         })),
         empty: 'There are no athletes in the round.',
       },
+      ...(summaries ? summariesAuditSections(summaries) : []),
     ],
     footnote: [
-      'This report shows how the selection work was done, not what was said: it holds no ratings, evidence or names of criteria, and nothing in it ranks athletes.',
+      'This report shows how the selection work was done, not what was said: it holds no ratings, evidence, recommendations or names of criteria, and nothing in it ranks athletes.',
       quiet.length > 0
         ? `${plural(quiet.length, 'panel member has', 'panel members have')} written nothing yet.`
         : null,
@@ -784,6 +822,7 @@ export function roundsLabel(rounds: MyRound[]) {
 // Editing criteria (each returns new criteria; nothing is changed in place)
 
 const mapGroup = (criteria: Criteria, groupKey: string, change: (group: CriteriaGroup) => CriteriaGroup) => ({
+  ...criteria,
   groups: criteria.groups.map((g) => (g.key === groupKey ? change(g) : g)),
 });
 
@@ -793,6 +832,7 @@ export function addGroup(criteria: Criteria): Criteria {
   const groupKey = newKey('group', keys);
   const itemKey = newKey('item', [...keys, groupKey]);
   return {
+    ...criteria,
     groups: [
       ...criteria.groups,
       { key: groupKey, name: '', scale: [...DEFAULT_SCALE], items: [{ key: itemKey, name: '' }] },
@@ -801,7 +841,7 @@ export function addGroup(criteria: Criteria): Criteria {
 }
 
 export function removeGroup(criteria: Criteria, groupKey: string): Criteria {
-  return { groups: criteria.groups.filter((g) => g.key !== groupKey) };
+  return { ...criteria, groups: criteria.groups.filter((g) => g.key !== groupKey) };
 }
 
 export function renameGroup(criteria: Criteria, groupKey: string, name: string): Criteria {
@@ -830,6 +870,14 @@ export function renameItem(criteria: Criteria, groupKey: string, itemKey: string
     ...g,
     items: g.items.map((i) => (i.key === itemKey ? { ...i, name } : i)),
   }));
+}
+
+/** Names one recommendation, adds one (index past the end) or, with null, removes it. */
+export function setRecommendation(criteria: Criteria, index: number, name: string | null): Criteria {
+  const list = [...(criteria.recommendations ?? [])];
+  if (name === null) list.splice(index, 1);
+  else list[index] = name;
+  return { ...criteria, recommendations: list };
 }
 
 /** What an admin's list says under a round. */
@@ -958,4 +1006,244 @@ export function selectionInfoLabel(info: SelectionInfo[], today: string) {
   const rounds = [...new Set(info.map((i) => i.round_name))];
   const name = rounds.length === 1 ? rounds[0] : `${rounds.length} selection rounds`;
   return next ? `${name} · next: ${next.title}, ${formatDateString(next.due_on)}` : `${name} · criteria and dates`;
+}
+
+// ---------------------------------------------------------------------------
+// Summaries: each selector's own view of an athlete, signed at the end
+
+/** One step chosen in a summary: 1 is the lowest of the group's three. */
+export type SummaryRating = { item_key: string; rating: number };
+
+/** What a summary says. */
+export type SummaryBody = {
+  ratings: SummaryRating[];
+  recommendation: string | null;
+  strengths: string | null;
+  priorities: string | null;
+  comments: string | null;
+  signed_at: string | null;
+};
+
+/** Another selector's signed summary, shown once the reader has signed their own. */
+export type OtherSummary = SummaryBody & { id: string; author_name: string };
+
+/** A selector's summary of one athlete, as the summary screen loads it. */
+export type AssessmentSummary = {
+  round_id: string;
+  round_name: string;
+  team_name: string;
+  closed: boolean;
+  starts_on: string;
+  ends_on: string;
+  criteria: Criteria;
+  today: string;
+  athlete_id: string;
+  athlete_name: string | null;
+  my_name: string | null;
+  mine: (SummaryBody & { id: string; updated_at: string }) | null;
+  /** The reader's own latest step for each item, to start a new summary from. */
+  prefill: SummaryRating[];
+  my_observations: { total: number; training: number; game: number; trial: number; other: number };
+  last_reopened: { by_name: string; at: string } | null;
+  /** The head coach of the round's squad or team, while the round is open. */
+  can_reopen: boolean;
+  /** How many other selectors have signed one for this athlete. */
+  others_signed: number;
+  /** Empty until the reader's own is signed. */
+  others: OtherSummary[];
+};
+
+/** Where a selector's summary of an athlete stands, for a round's list. */
+export type SummaryStatus = { athlete_id: string; mine: 'none' | 'draft' | 'signed'; signed: number };
+
+/** Who has signed what, for an admin: names, counts and dates only. */
+export type AdminSummaries = {
+  ends_on: string;
+  closed: boolean;
+  selectors: {
+    name: string;
+    on_panel: boolean;
+    athletes: number;
+    signed: number;
+    signed_late: number;
+    drafts: number;
+    reopened: number;
+  }[];
+  signed: { id: string; selector_name: string; athlete_name: string | null; signed_at: string; late: boolean }[];
+  reopenings: { selector_name: string; athlete_name: string | null; by_name: string; at: string }[];
+};
+
+/** A summary being written. */
+export type SummaryDraft = {
+  ratings: SummaryRating[];
+  recommendation: string | null;
+  strengths: string;
+  priorities: string;
+  comments: string;
+};
+
+/**
+ * What the summary form starts with: the selector's saved summary, or for a
+ * new one their own latest step for each item, which they then check.
+ */
+export function summaryStart(summary: AssessmentSummary): SummaryDraft {
+  const keys = new Set(summary.criteria.groups.flatMap((g) => g.items.map((i) => i.key)));
+  const recommendations = summary.criteria.recommendations ?? [];
+  const mine = summary.mine;
+  return {
+    ratings: (mine ? mine.ratings : summary.prefill).filter((r) => keys.has(r.item_key)),
+    recommendation: mine?.recommendation && recommendations.includes(mine.recommendation) ? mine.recommendation : null,
+    strengths: mine?.strengths ?? '',
+    priorities: mine?.priorities ?? '',
+    comments: mine?.comments ?? '',
+  };
+}
+
+/** Sets an item's step in a summary, or with undefined takes it off. */
+export function setSummaryRating(ratings: SummaryRating[], itemKey: string, step: number | undefined) {
+  const rest = ratings.filter((r) => r.item_key !== itemKey);
+  return step === undefined ? rest : [...rest, { item_key: itemKey, rating: step }];
+}
+
+/** What stops a summary being saved, or signed, or null. The database checks the same. */
+export function summaryProblem(draft: SummaryDraft, criteria: Criteria, sign: boolean): string | null {
+  const texts = [draft.strengths, draft.priorities, draft.comments];
+  if (texts.some((t) => t.trim().length > MAX_SUMMARY_TEXT)) {
+    return `Keep each box to ${MAX_SUMMARY_TEXT} characters.`;
+  }
+  if (!sign) return null;
+  if (draft.ratings.length === 0) return 'Choose a step for at least one of the criteria before you sign.';
+  if ((criteria.recommendations ?? []).length > 0 && !draft.recommendation) {
+    return 'Choose a recommendation before you sign.';
+  }
+  return null;
+}
+
+/** How many of the round's items a summary has a step for, as "12 of 33 criteria". */
+export function summaryCoverage(criteria: Criteria, ratings: SummaryRating[]) {
+  const keys = criteria.groups.flatMap((g) => g.items.map((i) => i.key));
+  const rated = keys.filter((key) => ratings.some((r) => r.item_key === key)).length;
+  return `${rated} of ${keys.length} criteria`;
+}
+
+/** A selector's observations of an athlete, as "5 observations: 3 training, 2 game". */
+export function myObservationsLine(counts: AssessmentSummary['my_observations']) {
+  if (counts.total === 0) return 'You have written no observations about this athlete.';
+  const parts = CONTEXTS.filter((c) => counts[c.value] > 0).map((c) => `${counts[c.value]} ${c.label.toLowerCase()}`);
+  return `Your ${plural(counts.total, 'observation', 'observations')}: ${parts.join(', ')}`;
+}
+
+/** What a round's list says about an athlete's summaries, or null before anyone starts one. */
+export function summaryStatusLine(status: SummaryStatus | undefined) {
+  if (!status || (status.mine === 'none' && status.signed === 0)) return null;
+  const mine =
+    status.mine === 'signed' ? 'Your summary is signed' : status.mine === 'draft' ? 'Your summary is a draft' : 'No summary from you yet';
+  return `${mine} · ${status.signed} signed in all`;
+}
+
+/**
+ * The completed assessment sheet for one athlete: every signed summary side
+ * by side, on screen and as a PDF. Only a selector who has signed their own
+ * can build it. It has no total or score, and puts nobody in order.
+ */
+export function summarySheetReport(summary: AssessmentSummary): Report {
+  const mine = summary.mine && summary.mine.signed_at ? summary.mine : null;
+  const signed: { name: string; body: SummaryBody }[] = [
+    ...(mine ? [{ name: summary.my_name ?? 'You', body: mine as SummaryBody }] : []),
+    ...summary.others.map((o) => ({ name: o.author_name, body: o as SummaryBody })),
+  ];
+  const step = (group: CriteriaGroup, body: SummaryBody, itemKey: string) => {
+    const rating = body.ratings.find((r) => r.item_key === itemKey);
+    return rating ? (group.scale[rating.rating - 1] ?? '') : '';
+  };
+  const words = (title: string, pick: (body: SummaryBody) => string | null): ReportSection => ({
+    title,
+    columns: [{ label: 'Selector' }, { label: title, width: 4 }],
+    rows: signed.filter((s) => pick(s.body)).map((s) => ({ cells: [s.name, pick(s.body) ?? ''] })),
+    empty: 'Nothing written.',
+  });
+  const recommendations = summary.criteria.recommendations ?? [];
+
+  return {
+    title: 'Selection assessment',
+    subtitle: `${summary.athlete_name ?? 'Athlete'} · ${summary.round_name} · ${summary.team_name} · ${roundDates(summary)}`,
+    landscape: signed.length > 2,
+    stats: [{ label: signed.length === 1 ? 'Signed summary' : 'Signed summaries', value: signed.length }],
+    sections: [
+      ...summary.criteria.groups.map((group) => ({
+        title: group.name,
+        note: `Steps, lowest first: ${group.scale.join(', ')}.`,
+        columns: [{ label: 'Criteria', width: 2 }, ...signed.map((s) => ({ label: s.name, width: 1.5 }))],
+        rows: group.items.map((item) => ({ cells: [item.name, ...signed.map((s) => step(group, s.body, item.key))] })),
+      })),
+      ...(recommendations.length > 0
+        ? [
+            {
+              title: 'Recommendation',
+              columns: [{ label: 'Selector' }, { label: 'Recommends', width: 4 }],
+              rows: signed.map((s) => ({ cells: [s.name, s.body.recommendation ?? ''] })),
+            },
+          ]
+        : []),
+      words('Strengths', (b) => b.strengths),
+      words('Development priorities', (b) => b.priorities),
+      words('Comments', (b) => b.comments),
+      {
+        title: 'Signed',
+        columns: [{ label: 'Selector' }, { label: 'Signed on', width: 4 }],
+        rows: signed.map((s) => ({ cells: [s.name, day(s.body.signed_at)] })),
+      },
+    ],
+    footnote:
+      'Each selector wrote and signed their own summary before seeing anyone else’s. There is no total or score, and nothing here puts athletes in order. Confidential to the selection panel: keep this copy as the club’s privacy policy says.',
+  };
+}
+
+/** The Summaries part of the Selection audit report: who signed, when, and every reopening. */
+export function summariesAuditSections(summaries: AdminSummaries): ReportSection[] {
+  return [
+    {
+      title: 'Summaries',
+      note: 'Each selector’s own summary of each athlete they can assess, signed at the end of the round. “Late” is signed after the round’s last day. Counts only.',
+      columns: [
+        { label: 'Selector', width: 2.4 },
+        { label: 'Athletes' },
+        { label: 'Signed' },
+        { label: 'Signed late' },
+        { label: 'Drafts' },
+        { label: 'Still to start' },
+        { label: 'Reopened' },
+      ],
+      rows: summaries.selectors.map((s) => {
+        const toStart = Math.max(0, s.athletes - s.signed - s.drafts);
+        return {
+          cells: [
+            s.on_panel ? s.name : `${s.name} (not on the panel now)`,
+            String(s.athletes),
+            String(s.signed),
+            String(s.signed_late),
+            String(s.drafts),
+            s.on_panel ? String(toStart) : '',
+            String(s.reopened),
+          ],
+          flag: s.on_panel && summaries.closed && s.signed < s.athletes,
+        };
+      }),
+      empty: 'Nobody is on the panel.',
+    },
+    {
+      title: 'Summaries reopened',
+      note: 'A signed summary can be reopened by the head coach or an admin so its selector can change it and sign again.',
+      columns: [
+        { label: 'Selector', width: 2 },
+        { label: 'Athlete', width: 2 },
+        { label: 'Reopened by', width: 2 },
+        { label: 'When' },
+      ],
+      rows: summaries.reopenings.map((r) => ({
+        cells: [r.selector_name, r.athlete_name ?? 'Athlete', r.by_name, day(r.at)],
+      })),
+      empty: 'No summary has been reopened.',
+    },
+  ];
 }

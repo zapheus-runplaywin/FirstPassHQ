@@ -773,7 +773,7 @@ describe('the Selection audit report', () => {
 
   it('ends by saying what it leaves out, who has written nothing, and that building it is recorded', () => {
     expect(report.footnote).toBe(
-      'This report shows how the selection work was done, not what was said: it holds no ratings, evidence or names of criteria, and nothing in it ranks athletes. 1 panel member has written nothing yet. Building this report is recorded in the record views of each athlete under 18 in the round.',
+      'This report shows how the selection work was done, not what was said: it holds no ratings, evidence, recommendations or names of criteria, and nothing in it ranks athletes. 1 panel member has written nothing yet. Building this report is recorded in the record views of each athlete under 18 in the round.',
     );
     const two = audit();
     two.selectors[0].observations = 0;

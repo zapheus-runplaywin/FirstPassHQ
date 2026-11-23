@@ -273,6 +273,7 @@ const WHO_OPENS: Record<string, PersonaName[]> = {
   'assessments/round': SELECTORS,
   'assessments/athlete': SELECTORS,
   'assessments/observe': SELECTORS,
+  'assessments/summary': SELECTORS,
   // The criteria and shared dates of a round: athletes, and parents and guardians.
   selection: union(ATHLETES, GUARDIANS),
 };
@@ -417,7 +418,7 @@ describe('registers off', () => {
 });
 
 describe('selection assessments off', () => {
-  it.each(['assessments/index', 'assessments/round', 'assessments/athlete', 'assessments/observe'])(
+  it.each(['assessments/index', 'assessments/round', 'assessments/athlete', 'assessments/observe', 'assessments/summary'])(
     'sends even admins and coaches home from %s',
     async (route) => {
       setClubFeatures({ kpis: true, registers: true });

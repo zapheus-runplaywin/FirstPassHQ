@@ -10,7 +10,10 @@ import {
   MAX_GROUPS,
   MAX_ITEMS,
   MAX_NAME,
+  MAX_RECOMMENDATION,
+  MAX_RECOMMENDATIONS,
   MAX_STEP,
+  STARTER_RECOMMENDATIONS,
   addGroup,
   addItem,
   criteriaProblem,
@@ -19,6 +22,7 @@ import {
   renameGroup,
   renameItem,
   renameStep,
+  setRecommendation,
   starterCriteria,
   type Criteria,
 } from '@/lib/assessments';
@@ -64,6 +68,7 @@ export default function AssessmentCriteriaScreen() {
   }
 
   if (!criteria) return <Screen>{null}</Screen>;
+  const recommendations = criteria.recommendations ?? [];
 
   return (
     <Screen>
@@ -77,7 +82,7 @@ export default function AssessmentCriteriaScreen() {
         <>
           <Button title="Start from the netball example" onPress={() => setCriteria(starterCriteria())} />
           <ThemedText type="small" themeColor="textSecondary">
-            Nine groups, from technical ability to team focus. Change, add or remove anything to
+            Nine groups, from technical ability to team focus, and four recommendations. Change, add or remove anything to
             suit your sport and club.
           </ThemedText>
           <Button title="Start blank" variant="secondary" onPress={() => setCriteria(addGroup(criteria))} />
@@ -138,6 +143,46 @@ export default function AssessmentCriteriaScreen() {
 
       {criteria.groups.length > 0 && criteria.groups.length < MAX_GROUPS ? (
         <Button title="Add a group" variant="secondary" onPress={() => setCriteria(addGroup(criteria))} />
+      ) : null}
+
+      {criteria.groups.length > 0 ? (
+        <Card style={styles.card}>
+          <ThemedText type="smallBold">Recommendations</ThemedText>
+          <ThemedText type="small" themeColor="textSecondary">
+            What a selector can recommend when they sign their summary of an athlete. Leave this
+            empty and summaries have no recommendation.
+          </ThemedText>
+          {recommendations.map((name, index) => (
+            <TextField
+              key={index}
+              label={`Recommendation ${index + 1}`}
+              value={name}
+              onChangeText={(text) => setCriteria(setRecommendation(criteria, index, text))}
+              maxLength={MAX_RECOMMENDATION}
+            />
+          ))}
+          {recommendations.length === 0 ? (
+            <Button
+              title="Use the usual four"
+              variant="secondary"
+              onPress={() => setCriteria({ ...criteria, recommendations: [...STARTER_RECOMMENDATIONS] })}
+            />
+          ) : null}
+          {recommendations.length < MAX_RECOMMENDATIONS ? (
+            <Button
+              title="Add a recommendation"
+              variant="secondary"
+              onPress={() => setCriteria(setRecommendation(criteria, recommendations.length, ''))}
+            />
+          ) : null}
+          {recommendations.length > 0 ? (
+            <Button
+              title="Remove the last recommendation"
+              variant="secondary"
+              onPress={() => setCriteria(setRecommendation(criteria, recommendations.length - 1, null))}
+            />
+          ) : null}
+        </Card>
       ) : null}
 
       <ErrorText>{error}</ErrorText>

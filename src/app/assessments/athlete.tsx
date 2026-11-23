@@ -96,6 +96,16 @@ export default function AthleteAssessmentScreen() {
       ) : null}
       <ErrorText>{error}</ErrorText>
       {assessment.closed ? null : <Button title="Add an observation" onPress={() => observe()} />}
+      <Button
+        title="My summary"
+        variant="secondary"
+        onPress={() => router.push({ pathname: '/assessments/summary', params: { round, athlete } })}
+      />
+      <ThemedText type="small" themeColor="textSecondary">
+        Your own view at the end of the round: a step for each of the criteria, a recommendation
+        and a few words, which you sign. You see the other selectors’ summaries once you have
+        signed yours.
+      </ThemedText>
 
       {picture.observations > 0 ? (
         <>
