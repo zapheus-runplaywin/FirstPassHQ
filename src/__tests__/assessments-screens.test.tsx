@@ -246,10 +246,18 @@ describe('Home', () => {
     });
   }
 
-  it('shows a coach on a panel their round, and opens the list', async () => {
+  it('shows a coach on one panel their round, and opens it without a list in between', async () => {
+    const push = jest.spyOn(router, 'push').mockImplementation(() => {});
     await openHome('coach', [myRound()]);
     expect(screen.getByText('Selection assessments')).toBeTruthy();
     expect(screen.getByText('2027 selection phase · 14 athletes')).toBeTruthy();
+    await press('Selection assessments');
+    expect(push).toHaveBeenLastCalledWith({ pathname: '/assessments/round', params: { id: 'r1' } });
+    push.mockRestore();
+  });
+
+  it('opens the list of rounds for a coach on more than one panel', async () => {
+    await openHome('coach', [myRound(), myRound({ id: 'r2', name: 'Open squad selections' })]);
     await press('Selection assessments');
     expect(screen.getByText('screen:assessments/index')).toBeTruthy();
   });
@@ -543,7 +551,7 @@ describe('adding an observation', () => {
     expect(screen.getByText(d(TODAY))).toBeTruthy();
     expect(screen.getByText('Passing, Catching')).toBeTruthy();
     expect(screen.queryByText('Seen, not rated')).toBeNull();
-    expect(screen.getByText(/A worry about a child’s safety doesn’t go here/)).toBeTruthy();
+    expect(screen.getByText(/A worry about a child’s safety is raised as a\s+concern from Home, not here\./)).toBeTruthy();
   });
 
   it('sends where, when, the steps chosen and the evidence, then goes back', async () => {
@@ -553,7 +561,7 @@ describe('adding an observation', () => {
     await press('Technical ability');
     await press('Exceeds standard', 0);
     await press('Seen, not rated', 1);
-    await fireEvent.changeText(screen.getByPlaceholderText(/What you saw/), 'Won three intercepts');
+    await fireEvent.changeText(fieldLabelled('What you saw'), 'Won three intercepts');
     await press('Add observation');
     expect(onlyRpcCall('save_assessment_observation')).toEqual({
       p_id: null,
@@ -591,7 +599,7 @@ describe('adding an observation', () => {
 
   it('saves nothing without one of the criteria', async () => {
     await openObserve();
-    await fireEvent.changeText(screen.getByPlaceholderText(/What you saw/), 'Good session');
+    await fireEvent.changeText(fieldLabelled('What you saw'), 'Good session');
     await press('Add observation');
     expect(screen.getByText('Choose at least one of the criteria.')).toBeTruthy();
     expect(rpcCalls('save_assessment_observation')).toEqual([]);

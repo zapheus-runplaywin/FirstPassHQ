@@ -1711,21 +1711,29 @@ phase. Instead of filling in a sheet for each athlete at the end, you add a shor
 whenever you see something worth noting, at training, a game or a trial, and they build each
 athlete's assessment over the round.
 
-1. Tap **Selection assessments**, then the round. Each athlete shows how many observations there
-   are, from how many selectors, and how many groups of the criteria they cover. **Nothing written
-   yet**, or nothing for 14 days, is in bold so nobody is judged on one session.
+1. Tap **Selection assessments**. If you're on one round's panel it opens that round; otherwise
+   choose the round. Each athlete shows how many observations there are, from how many selectors,
+   and how many groups of the criteria they cover. **Nothing written yet**, or nothing for 14
+   days, is in bold so nobody is judged on one session.
 2. Tap an athlete. **The picture so far** shows, for each of the criteria, how often it has been
    seen, by how many selectors, and the steps given in words, such as "Meets standard ×2, Exceeds
    standard ×1", and what nobody has written about yet. Tap **Observations** beside it for every
    observation, newest first.
-3. Tap **Add an observation**. Choose where you saw it (**Training**, **Game**, **Trial** or
-   **Other**) and the day, open a group of criteria and tap a step for each thing you saw (one is
-   enough; **Seen, not rated** tags it without a step), and write a line of **evidence**: what you
-   saw, as if the athlete may read it one day. Tap **Add observation**.
+3. To add an observation, tap the **+** beside the athlete on the round's list (the quickest way
+   at training), or **Add an observation** on their assessment. Write **What you saw**, as if the
+   athlete may read it one day. It starts on **Training** and today: change where you saw it
+   (**Game**, **Trial** or **Other**) or the day if you need to. Open a group of criteria and tap
+   a step for each thing it shows (one is enough; **Seen, not rated** tags it without a step).
+   Tap **Add observation**.
 
-<img src="user-guide/assessments-round.png" width="210" alt="A selection round's dates and athletes, with how much is written about each">
+**Finding an athlete.** Above the list, **Nothing written** shows only the athletes nobody has
+written about, and **Summary to sign** (once summaries are due or you've started one) shows only
+those whose summary you haven't signed. A list of more than eight athletes also has **Find an
+athlete**: type part of a name.
+
+<img src="user-guide/assessments-round.png" width="210" alt="A selection round: the next date, the filters, and each athlete with a + to add an observation">
 <img src="user-guide/assessments-athlete.png" width="210" alt="An athlete's assessment: sessions attended, My summary, and the picture so far with the observations on a second tab">
-<img src="user-guide/assessments-observe.png" width="210" alt="Adding an observation: where, when, the criteria and the evidence">
+<img src="user-guide/assessments-observe.png" width="210" alt="Adding an observation: what you saw, where, when and the criteria">
 <img src="user-guide/assessments-todo.png" width="210" alt="A selector's to-do list with a selection date coming up">
 
 **Your summary.** Near the end of the round, write your own summary of each athlete. It replaces
@@ -1739,6 +1747,8 @@ the paper assessment sheet.
 3. Tap **Save draft** to come back to it; only you can see a draft. When it's right, tap **Sign
    my summary**, then **Sign and lock**. Signing needs at least one step, and a recommendation
    when the club lists any.
+4. Tap **Next: …** to go straight to the next athlete whose summary you haven't signed, without
+   going back to the list.
 
 <img src="user-guide/assessments-summary.png" width="210" alt="A selector's summary of an athlete: steps against the criteria, a recommendation and a few words">
 <img src="user-guide/assessments-summary-signed.png" width="210" alt="A signed summary: Export PDF, each selector's recommendation and words, and a group of criteria open with their steps side by side">
@@ -1761,8 +1771,8 @@ the paper assessment sheet.
   many summaries you still have to sign, until you've signed them or an admin closes the round.
 
 - **Dates and reminders.** When an admin sets dates for the round, such as **Observations
-  complete** or **Panel meeting**, they show at the top of the round with how close each is, in
-  bold once overdue. From a week before, each is on your to-do list (amber in the last three days,
+  complete** or **Panel meeting**, the top of the round shows the next one still to do and how
+  close it is; tap it to see them all, in bold once overdue. From a week before, each is on your to-do list (amber in the last three days,
   red once overdue) until an admin marks it done. In a round's last two weeks your to-do list also
   says how many athletes on your list have **nothing written yet**.
 - **Attendance.** Under the athlete's name, **Marked at 5 of 6 sessions in this round** counts
