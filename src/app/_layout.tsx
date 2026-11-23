@@ -1,13 +1,16 @@
 import { Montserrat_400Regular } from '@expo-google-fonts/montserrat/400Regular';
 import { Montserrat_700Bold } from '@expo-google-fonts/montserrat/700Bold';
 import { Montserrat_800ExtraBold } from '@expo-google-fonts/montserrat/800ExtraBold';
+import Constants from 'expo-constants';
 import { useFonts } from 'expo-font';
-import { DarkTheme, Stack, ThemeProvider } from 'expo-router';
+import { DarkTheme, Stack, ThemeProvider, useSegments, type ErrorBoundaryProps } from 'expo-router';
 import * as SplashScreen from 'expo-splash-screen';
 import { StatusBar } from 'expo-status-bar';
+import * as Updates from 'expo-updates';
 import { useCallback, useEffect, useMemo, useState, type ReactNode } from 'react';
 
 import { BrandIntro } from '@/components/brand-intro';
+import { CrashScreen } from '@/components/crash-screen';
 import { rootStackOptions } from '@/constants/navigation';
 import { BrandFonts, contrastRatio } from '@/constants/theme';
 import { useTheme } from '@/hooks/use-theme';
@@ -15,6 +18,11 @@ import { readAppVersion } from '@/lib/app-version';
 import { AuthProvider, useAuth } from '@/lib/auth';
 import { ClubProvider, useClub } from '@/lib/club';
 import { ClubChoiceProvider, useClubChoice } from '@/lib/club-choice';
+import {
+  rememberPersonalValues,
+  setCrashReportScreen,
+  startCrashReports,
+} from '@/lib/crash-reports';
 import { startAppLog } from '@/lib/log';
 import { usePushNotifications } from '@/lib/push';
 import { useRouteAccess } from '@/lib/route-access';
@@ -24,6 +32,19 @@ SplashScreen.preventAutoHideAsync();
   // Which copy of the app wrote the log: the same details as the opening screen shows.
   const { version, nativeBuild, build, commit, updateId } = readAppVersion();
   startAppLog({ version, nativeBuild, build, commit, updateId });
+  // Off unless the build has the Sentry settings; never in Expo Go or development.
+  startCrashReports({
+    dsn: process.env.EXPO_PUBLIC_SENTRY_DSN,
+    executionEnvironment: Constants.executionEnvironment,
+    isDev: __DEV__,
+    version: { build, commit, updateId },
+    channel: Updates.channel ?? null,
+  });
+}
+
+/** In place of a blank screen when something breaks (src/components/crash-screen.tsx). */
+export function ErrorBoundary({ error, retry }: ErrorBoundaryProps) {
+  return <CrashScreen error={error} retry={retry} />;
 }
 
 export default function RootLayout() {
@@ -51,7 +72,17 @@ function ChosenClub() {
 }
 
 function Club({ children }: { children: ReactNode }) {
-  const { session } = useAuth();
+  const { session, profile } = useAuth();
+  // Crash reports leave out the signed-in member's own name and emails wherever they appear.
+  useEffect(() => {
+    rememberPersonalValues([
+      profile?.full_name,
+      profile?.preferred_name,
+      profile?.email,
+      profile?.playhq_email,
+      session?.user?.email,
+    ]);
+  }, [profile?.full_name, profile?.preferred_name, profile?.email, profile?.playhq_email, session?.user?.email]);
   return <ClubProvider signedIn={!!session}>{children}</ClubProvider>;
 }
 
@@ -104,6 +135,9 @@ function RootStack() {
   const [introDone, setIntroDone] = useState(false);
   const finishIntro = useCallback(() => setIntroDone(true), []);
   usePushNotifications(!loading);
+  // The open screen's pattern, such as /injuries/[id], for crash reports.
+  const segments = useSegments();
+  useEffect(() => setCrashReportScreen(segments), [segments]);
 
   useEffect(() => {
     if (!loading) SplashScreen.hideAsync();

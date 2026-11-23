@@ -111,7 +111,11 @@ top of the log on its expo.dev page says why, when:
 - a key is a secret or `service_role` key (those give full access to a club's data and must never
   be in an app), has expired, or belongs to another project than its address;
 - only one of `EXPO_PUBLIC_DEMO_CLUB_URL` and `EXPO_PUBLIC_DEMO_CLUB_ANON_KEY` is set, or the demo
-  club is the live club's own project. With neither set the build goes ahead without a demo club.
+  club is the live club's own project. With neither set the build goes ahead without a demo club;
+- only one of `EXPO_PUBLIC_SENTRY_DSN` and `SENTRY_AUTH_TOKEN` is set, the Sentry address isn't in
+  Sentry's EU data centre (`…ingest.de.sentry.io`), or the token is a personal one or belongs to an
+  organisation stored outside the EU. With neither set the build goes ahead with crash reports off
+  (see [Crash reports](#crash-reports)).
 
 Before that, when a build is started, EAS prints which variables it found:
 
@@ -129,6 +133,34 @@ account's page are marked **Global** and reach every project in the account, thi
 If an installed build ever closes the moment it opens, look here first: the iPhone's crash report
 names `ErrorRecovery.crash()` from expo-updates, which only means the app's own code stopped
 before the first screen.
+
+## Crash reports
+
+Builds with both crash report settings send a report to [Sentry](https://sentry.io), in its EU
+data centre, when the app crashes or shows "Something went wrong"
+(`src/lib/crash-reports.ts`). Nothing about a person is in a report: no names, emails, dates of
+birth, member ids, message text or tokens, no breadcrumbs, no screenshots and no IP address.
+[data-handling.md](data-handling.md#crash-reports) lists what is and isn't sent, and
+`src/lib/__tests__/crash-reports.test.ts` tests it.
+
+| Variable on expo.dev | Visibility | Preview and Production | What it is |
+| --- | --- | --- | --- |
+| `EXPO_PUBLIC_SENTRY_DSN` | Plain text | Both | The Sentry project's address (its DSN). It is built into the app, which is safe: it can only send reports |
+| `SENTRY_AUTH_TOKEN` | **Sensitive** (not Secret) | Both | An organisation token, so the build can upload the source maps that turn a report's stack back into our code. Sensitive, so `scripts/publish-update.sh` can read it too |
+
+- **Neither set:** the app sends nothing and the build skips Sentry's upload step (`app.config.js`).
+- **One set, or a US address:** the build stops in its first minute and says which.
+- **The Sentry project must be called `firstpass-hq`.** `app.config.js` names it, and reads the
+  organisation from the token.
+- **The app needs a new build to get crash reports,** not an over-the-air update: Sentry adds
+  code to the app itself. Updates published after that build keep reports on, and
+  `scripts/publish-update.sh` uploads their source maps too.
+- **A test report:** an admin signed in to a build with crash reports sees **Send a test crash
+  report** in Your details, under "Help with a problem". It shows in Sentry within a few minutes
+  as "Test crash report from Your details". Members never see the button, and builds without
+  crash reports don't show it to anyone.
+- **Cost:** Sentry's free Developer plan, 5,000 errors a month. Past that, reports are dropped
+  until the next month and the app carries on.
 
 ## What goes up to Expo
 

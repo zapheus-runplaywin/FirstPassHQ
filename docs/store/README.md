@@ -43,6 +43,7 @@ Change the words here, then the site copies them again.
 | The test project's region (the demo club holds sample people only) | Matt | Step 2 | Data inventory |
 | Whether the record of who opened a child's records stays after the child's account is deleted (open from security audit run 1; today it is deleted) | Matt | Step 2 | Data inventory, delete page |
 | The app's name on each store, if not "FirstPass HQ" | Matt | Thu 19 Nov | Listing |
+| Apple's privacy labels list crash reports: Diagnostics, "Crash data" and "Other diagnostic data", not linked to the user and not used for tracking ([data-inventory.md](data-inventory.md) row 23, matching `ios.privacyManifests` in `app.json`) | Step 2 | Fri 27 Nov | `apple-privacy-labels.md` |
 
 The "Last updated" date at the top of the privacy page changes whenever its words change.
 

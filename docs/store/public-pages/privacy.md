@@ -1,6 +1,6 @@
 # FirstPass HQ privacy policy
 
-Last updated: 18 November 2026
+Last updated: 23 November 2026
 
 FirstPass HQ is an app that netball clubs use to run the club: messages, attendance, injuries, Working With Children Checks and child safety. This policy explains what the app keeps about you, why, who can see it, how long it is kept, and how to have it deleted.
 
@@ -25,7 +25,9 @@ Only what the club needs to run. Depending on your role, that is:
 - **A record of who opened a child's records,** and when, so parents can see it.
 - **A notification token** for your phone, if you allow notifications.
 
-The app does not use your location, your contacts or your phone's calendar. It has no advertising, no analytics and no tracking, and we never sell or rent your information. The app keeps a short technical log on your phone to help find faults; it never leaves the phone and has names, emails and health details removed.
+The app does not use your location, your contacts or your phone's calendar. It has no advertising, no analytics and no tracking, and we never sell or rent your information.
+
+**When the app crashes,** it sends us a crash report so we can fix the fault: the kind of error, where in the app's code it happened, the app's version, your phone's model and system version, the name of the screen, and a random id made for your copy of the app. Names, emails, dates of birth, member ids, messages and anything else you or the club entered are taken out on your phone before it is sent, and no screenshots, record of what you tapped or IP address are sent. The app also keeps a short technical log on your phone to help find faults, with names, emails and health details kept out of it. It leaves the phone only if you send it yourself with **Send app log** in Your details.
 
 ## Why
 
@@ -53,9 +55,10 @@ These services help us run the app:
 - **Supabase** hosts each club's database, files and sign-in.
 - **Google** signs you in when you choose Continue with Google. The app receives your Google account's email and name, and a link to your Google profile picture, which the app never shows or uses.
 - **Apple** signs you in when you choose Continue with Apple on an iPhone or iPad. The app receives your email or a private Apple address, and your name the first time. When you delete your account, the app asks Apple to stop the app's access to your Apple account.
+- **Sentry** receives crash reports, stores them in its data centre in the European Union (Germany) and keeps them for 30 days. Only we read them.
 - **Expo, Apple and Google** deliver notifications to your phone. Each notification's title and text (which can include a person's name, never injury details) and your phone's notification token pass through them.
 
-Google and Apple sign-in and the notification services are run from outside Australia, so your Google or Apple account's email and name at sign-in, and each notification's title, text and token, are handled by those companies outside Australia under their own privacy terms. The records your club keeps are stored in its database and files in Sydney.
+Google and Apple sign-in and the notification services are run from outside Australia, so your Google or Apple account's email and name at sign-in, and each notification's title, text and token, are handled by those companies outside Australia under their own privacy terms. Crash reports, which hold nothing that identifies you, are stored by Sentry in the European Union. The records your club keeps are stored in its database and files in Sydney.
 
 ## How long it is kept
 

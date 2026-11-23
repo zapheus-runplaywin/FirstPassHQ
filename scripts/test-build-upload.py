@@ -9,8 +9,9 @@ Before a build, EAS copies the project folder to its build servers. When an
   .env, signing keys and generated folders;
 - the copy of the git history (.git) and docs/ stay out: the history and the
   guides, PDFs and screenshots were 470 MB of a 473 MB upload;
-- nothing a build reads is left out: app.json, eas.json, package.json,
-  package-lock.json, tsconfig.json, .gitignore (it is part of the runtime
+- nothing a build reads is left out: app.json, app.config.js (Sentry's
+  build step), metro.config.js, eas.json, package.json, package-lock.json,
+  tsconfig.json, .gitignore (it is part of the runtime
   version's fingerprint), scripts/check-build-settings.js (the build's first
   step runs it) and everything under src/ and assets/;
 - nothing in src/ or app.json loads a file from a folder that is left out;
@@ -33,7 +34,7 @@ GITIGNORE = ROOT / '.gitignore'
 
 # What a build reads from outside src/ and assets/.
 NEEDED_FILES = [
-    'app.json', 'eas.json', 'package.json', 'package-lock.json', 'tsconfig.json', '.gitignore',
+    'app.json', 'app.config.js', 'metro.config.js', 'eas.json', 'package.json', 'package-lock.json', 'tsconfig.json', '.gitignore',
     # package.json's eas-build-pre-install script: without the file every build fails.
     'scripts/check-build-settings.js',
 ]

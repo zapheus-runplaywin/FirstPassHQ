@@ -36,7 +36,8 @@ function logFile(index: number) {
   return new File(directory!, index === 0 ? 'app.log' : `app.${index}.log`);
 }
 
-function redact(value: unknown, depth = 0): unknown {
+/** A copy of `value` with personal and secret keys replaced; crash reports use it too. */
+export function redact(value: unknown, depth = 0): unknown {
   if (value instanceof Error) return { error: value.name, message: value.message };
   if (value === null || typeof value !== 'object') return value;
   if (depth > 4) return '[…]';
@@ -128,6 +129,41 @@ export function logFiles(): File[] {
   flush();
   directory ??= new Directory(Paths.document, 'logs');
   return Array.from({ length: MAX_FILES }, (_, i) => logFile(i)).filter((f) => f.exists);
+}
+
+/** How much of the log "Send app log" shares: the newest 5 MB. */
+export const SHARE_BYTES = 5 * 1024 * 1024;
+export const SHARED_LOG_NAME = 'firstpass-hq-app-log.txt';
+
+/**
+ * One file holding the newest part of the log (at most SHARE_BYTES, oldest
+ * line first), for "Send app log" in Your details. It is written to the app's
+ * cache and goes only where the member sends it. Null when there's no log,
+ * as on the web.
+ */
+export function shareableLog(): File | null {
+  const files = logFiles();
+  if (files.length === 0) return null;
+  const parts: string[] = [];
+  let size = 0;
+  for (const file of files) {
+    const text = file.textSync();
+    parts.unshift(text);
+    size += text.length;
+    if (size >= SHARE_BYTES) break;
+  }
+  let text = parts.join('');
+  if (text.length > SHARE_BYTES) {
+    // Start at a whole line.
+    const cut = text.length - SHARE_BYTES;
+    const next = text.indexOf('\n', cut);
+    text = text.slice(next === -1 ? cut : next + 1);
+  }
+  const out = new File(Paths.cache, SHARED_LOG_NAME);
+  if (out.exists) out.delete();
+  out.create();
+  out.writeSync(text);
+  return out;
 }
 
 const appLog = logger('app');

@@ -20,6 +20,39 @@ like the [user guide](user-guide.md), and summarised in its section 13,
   concerns, stand-downs, Screening Unit notices, exemptions and consents. The user guide says who
   can see each kind, in section 11, [Who can see what](user-guide.md#11-who-can-see-what).
 
+## Crash reports
+
+When the app crashes on a phone, or shows "Something went wrong", it sends a crash report to
+[Sentry](https://sentry.io) so FirstPass can find and fix the fault. Reports are stored in
+Sentry's **EU data centre** (Germany), kept for 30 days, and only FirstPass can read them. Builds
+without the Sentry settings send nothing, and nothing is sent from the web or from development
+copies of the app.
+
+| Sent | Never sent |
+| --- | --- |
+| The kind of error and its message, with anything that could be about a person taken out | Names, emails, dates of birth, phone numbers |
+| Where in the app's code it happened | Member ids, guardian links, roles or teams |
+| The app's version, build and update | Injury, medical, check-in or concern details |
+| The phone's model and system version | Message, survey or note text |
+| A random id made for that copy of the app, so repeat crashes group together | Tokens, keys, club passwords |
+| The screen's name, such as "injuries/[id]", never the record's id | Screenshots, recordings, a trail of what the member tapped, the phone's name or its IP address |
+
+- **The same for everyone.** Children's reports are no different, and nothing in a report says who
+  the member is or which club they belong to.
+- **Taken out on the phone, before sending.** Each report keeps only the fields listed above.
+  Every text in it has emails, ids, dates, long numbers, quoted text, web addresses' details and
+  the signed-in member's own name and emails removed. The tests that check this run on every
+  change (`src/lib/__tests__/crash-reports.test.ts`), including one that puts a sample member's
+  details everywhere in a report and checks none of them is left.
+- **Sentry is a service provider.** It handles reports for FirstPass and doesn't use them for
+  anything else. FirstPass uses Sentry's free plan, with "Prevent storing of IP addresses" on.
+
+## The app's log on the phone
+
+The app also keeps a short technical log on each phone, with names, emails, health details and
+tokens kept out of it. It never leaves the phone unless the member sends it themselves, with
+**Send app log** in Your details, to whoever is helping them.
+
 ## Backups
 
 - **Today there are no automatic backups.** The projects are on Supabase's free plan, which keeps

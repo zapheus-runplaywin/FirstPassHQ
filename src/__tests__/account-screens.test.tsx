@@ -13,6 +13,7 @@
  * database's row security keeps them theirs).
  */
 import { router } from 'expo-router';
+import * as Sharing from 'expo-sharing';
 import { Platform } from 'react-native';
 import { fireEvent, screen } from 'expo-router/testing-library';
 
@@ -24,6 +25,8 @@ import TasksScreen from '@/app/tasks/index';
 import NewTaskScreen from '@/app/tasks/new';
 import WwccApplicationScreen from '@/app/wwcc-application';
 import { formatDate } from '@/lib/age';
+import { crashReportsOn, reportCrash } from '@/lib/crash-reports';
+import { shareableLog } from '@/lib/log';
 import type { PersonalTask } from '@/lib/personal-tasks';
 import { localDay } from '@/lib/reports';
 import { revokeAppleSignIn } from '@/lib/sign-in';
@@ -62,6 +65,14 @@ jest.mock('@/lib/sign-in', () => ({
   ...jest.requireActual('@/lib/sign-in'),
   revokeAppleSignIn: jest.fn(),
 }));
+
+// What the log holds is tested in src/lib/__tests__/log.test.ts; here only the button.
+jest.mock('@/lib/log', () => ({
+  ...jest.requireActual('@/lib/log'),
+  shareableLog: jest.fn(),
+}));
+jest.mock('expo-sharing', () => ({ shareAsync: jest.fn(async () => {}) }));
+jest.mock('@/lib/crash-reports', () => ({ crashReportsOn: jest.fn(() => false), reportCrash: jest.fn() }));
 
 type Who = PersonaName | Persona;
 
@@ -193,6 +204,94 @@ describe('your details', () => {
     ])('offers a %s no optional check here', async (_l, who) => {
       await open(who);
       expect(screen.queryByText('Working With Children Check (optional)')).toBeNull();
+    });
+  });
+
+  describe('Send app log', () => {
+    const shareable = jest.mocked(shareableLog);
+    const share = jest.mocked(Sharing.shareAsync);
+    beforeEach(() => {
+      shareable.mockReset();
+      share.mockReset();
+    });
+
+    it.each<[string, Who]>([
+      ['athlete', 'athlete'],
+      ['under-18 athlete', 'minorAthlete'],
+      ['guardian', 'guardian'],
+      ['coach', 'coach'],
+      ['admin', 'admin'],
+      ['member waiting for approval', { ...personas.athlete, profile: { ...personas.athlete.profile!, status: 'pending' } }],
+    ])('lets a %s send the app log through the share sheet', async (_l, who) => {
+      shareable.mockReturnValue({ uri: 'file:///cache/firstpass-hq-app-log.txt' } as ReturnType<typeof shareableLog>);
+      await open(who);
+      expect(screen.getByText(/keeps names, emails, health details and passwords out of it/)).toBeTruthy();
+      await fireEvent.press(screen.getByText('Send app log'));
+      await settle();
+      expect(share).toHaveBeenCalledWith('file:///cache/firstpass-hq-app-log.txt', {
+        mimeType: 'text/plain',
+        UTI: 'public.plain-text',
+        dialogTitle: 'App log',
+      });
+    });
+
+    it('says so when there is no log yet', async () => {
+      shareable.mockReturnValue(null);
+      await open('athlete');
+      await fireEvent.press(screen.getByText('Send app log'));
+      await settle();
+      expect(share).not.toHaveBeenCalled();
+      expect(screen.getByText('There’s no app log on this phone yet.')).toBeTruthy();
+    });
+
+    it('says so when the share sheet won’t open', async () => {
+      shareable.mockReturnValue({ uri: 'file:///x' } as ReturnType<typeof shareableLog>);
+      share.mockRejectedValueOnce(new Error('no sharing'));
+      await open('athlete');
+      await fireEvent.press(screen.getByText('Send app log'));
+      await settle();
+      expect(screen.getByText('Couldn’t open the share sheet. Try again.')).toBeTruthy();
+    });
+
+    describe('a test crash report', () => {
+      const on = jest.mocked(crashReportsOn);
+      afterEach(() => on.mockReturnValue(false));
+
+      it('lets an admin send one when the build has crash reports', async () => {
+        on.mockReturnValue(true);
+        await open('admin');
+        await fireEvent.press(screen.getByText('Send a test crash report'));
+        expect(reportCrash).toHaveBeenCalledWith(new Error('Test crash report from Your details'));
+        expect(screen.getByText(/Sent\. It shows in Sentry within a few minutes/)).toBeTruthy();
+      });
+
+      it.each<[string, Who]>([
+        ['athlete', 'athlete'],
+        ['coach', 'coach'],
+        ['committee member', 'committee'],
+        ['guardian', 'guardian'],
+      ])('never shows the button to a %s', async (_l, who) => {
+        on.mockReturnValue(true);
+        await open(who);
+        expect(screen.queryByText('Send a test crash report')).toBeNull();
+      });
+
+      it('shows it to nobody in a build without crash reports', async () => {
+        await open('admin');
+        expect(screen.getByText('Send app log')).toBeTruthy();
+        expect(screen.queryByText('Send a test crash report')).toBeNull();
+      });
+    });
+
+    it('is not on the web, which keeps no log', async () => {
+      const realOS = Platform.OS;
+      Object.defineProperty(Platform, 'OS', { configurable: true, get: () => 'web' });
+      try {
+        await open('athlete');
+        expect(screen.queryByText('Send app log')).toBeNull();
+      } finally {
+        Object.defineProperty(Platform, 'OS', { configurable: true, get: () => realOS });
+      }
     });
   });
 
