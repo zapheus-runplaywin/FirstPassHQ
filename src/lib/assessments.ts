@@ -1528,3 +1528,29 @@ export function useMySelectionFeedback() {
 export function feedbackHeading(feedback: SharedFeedback) {
   return feedback.is_me ? 'Feedback for you' : `Feedback for ${feedback.athlete_name ?? 'your child'}`;
 }
+
+// ---------------------------------------------------------------------------
+// Evidence from games
+
+/** A game the athlete played during the round, for the panel: which and when, never a figure. */
+export type RoundGame = {
+  fixture_id: string;
+  team_name: string;
+  opponent: string;
+  round_name: string | null;
+  starts_at: string;
+  played_on: string;
+  /** Whether the game has a finished recording in FirstPass Vantage to draw figures from. */
+  recorded: boolean;
+};
+
+/** Such as "v Stars · Sat, Oct 17, 2026". */
+export function roundGameTitle(game: RoundGame) {
+  return `v ${game.opponent} · ${formatDateString(game.played_on)}`;
+}
+
+/** What the folded card says under a game's title. */
+export function roundGameLine(game: RoundGame) {
+  const what = [game.team_name, game.round_name].filter(Boolean).join(' · ');
+  return `${what} · ${game.recorded ? 'tap for the game stats' : 'not recorded'}`;
+}

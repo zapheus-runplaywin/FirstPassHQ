@@ -7,7 +7,8 @@ import { statLines, type GameStats } from '@/lib/game-stats';
 
 /**
  * The athlete's own figures from the game, beside their goals for it, for
- * their coaches. Only this athlete's figures are here, never a team mate's or
+ * their coaches (a selection round's panel sees the same figures on the
+ * athlete's assessment). Only this athlete's figures are here, never a team mate's or
  * the team's.
  */
 export function GameStatsCard({ stats }: { stats: GameStats }) {
@@ -27,7 +28,7 @@ export function GameStatsCard({ stats }: { stats: GameStats }) {
         ))}
       </Card>
       <ThemedText type="small" themeColor="textSecondary">
-        From the game recorded in FirstPass Vantage. Only the athlete’s coaches see these.
+        From the game recorded in FirstPass Vantage. Only the athlete’s coaches see these, and their selectors during a selection round.
       </ThemedText>
     </View>
   );
