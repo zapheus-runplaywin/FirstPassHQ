@@ -463,8 +463,26 @@ describe('a round’s dates, for the panel', () => {
     expect(assessmentRpcs()).toEqual(['selection_round_sheet', 'selection_round_dates', 'selection_round_summaries']);
   });
 
+  it('shows only the next date still to do until the card is tapped', async () => {
+    await openRound(PANEL_DATES);
+    expect(screen.getByText('Next: Panel meeting · 3 days overdue')).toBeTruthy();
+    expect(screen.getByText('Tap to see all 4 dates')).toBeTruthy();
+    expect(screen.queryByText('Dates')).toBeNull();
+    expect(screen.queryByText(/Teams named/)).toBeNull();
+    await press(/^Next: /);
+    expect(screen.getByText('Dates')).toBeTruthy();
+    await press('Dates');
+    expect(screen.getByText('Next: Panel meeting · 3 days overdue')).toBeTruthy();
+  });
+
+  it('says when every date is done', async () => {
+    await openRound(PANEL_DATES.map((date) => ({ ...date, done: true })));
+    expect(screen.getByText('Every date is done')).toBeTruthy();
+  });
+
   it('lists each date with how close it is', async () => {
     await openRound(PANEL_DATES);
+    await press(/^Next: /);
     expect(screen.getByText('Dates')).toBeTruthy();
     expect(screen.getByText(`${d('2026-10-06')} · Criteria shared with athletes · Done`)).toBeTruthy();
     expect(screen.getByText(`${d('2026-10-15')} · Panel meeting · 3 days overdue`)).toBeTruthy();

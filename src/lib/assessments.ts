@@ -1309,3 +1309,74 @@ export function summaryComparison(summary: AssessmentSummary): { selectors: Comp
     }),
   };
 }
+
+// ---------------------------------------------------------------------------
+// Getting around quickly (Matt, 23 November 2026: coaches won't use it
+// unless it is easy to navigate)
+
+/** Where Home's card goes: straight to the round when the member has only one. */
+export function selectionHomeHref(rounds: MyRound[]) {
+  return rounds.length === 1
+    ? ({ pathname: '/assessments/round', params: { id: rounds[0].id } } as const)
+    : ('/assessments' as const);
+}
+
+/** The next date still to do in a round, overdue ones first, or null. */
+export function nextRoundDate(dates: RoundDate[]): RoundDate | null {
+  return [...dates].filter((date) => !date.done).sort((a, b) => a.due_on.localeCompare(b.due_on))[0] ?? null;
+}
+
+/** Which athletes a round's list shows. */
+export type AthleteFilter = 'all' | 'nothing' | 'unsigned';
+
+/** The filters over a round's list with how many athletes each holds; only ones worth offering. */
+export function athleteFilters(
+  athletes: SheetAthlete[],
+  statuses: SummaryStatus[],
+  summariesDue: boolean,
+): { value: AthleteFilter; label: string }[] {
+  const nothing = athletes.filter((a) => a.observations === 0).length;
+  const unsigned = athletes.filter((a) => summaryOf(statuses, a.id) !== 'signed').length;
+  const started = statuses.some((s) => s.mine !== 'none');
+  const filters: { value: AthleteFilter; label: string }[] = [{ value: 'all', label: `All (${athletes.length})` }];
+  if (nothing > 0) filters.push({ value: 'nothing', label: `Nothing written (${nothing})` });
+  if ((summariesDue || started) && unsigned > 0) filters.push({ value: 'unsigned', label: `Summary to sign (${unsigned})` });
+  return filters.length > 1 ? filters : [];
+}
+
+const summaryOf = (statuses: SummaryStatus[], athleteId: string) =>
+  statuses.find((s) => s.athlete_id === athleteId)?.mine ?? 'none';
+
+/** A round's athletes under a filter and a search for part of a name. */
+export function filterAthletes(
+  athletes: SheetAthlete[],
+  statuses: SummaryStatus[],
+  filter: AthleteFilter,
+  search = '',
+) {
+  const words = search.trim().toLowerCase();
+  return athletes.filter(
+    (a) =>
+      (filter === 'all' ||
+        (filter === 'nothing' ? a.observations === 0 : summaryOf(statuses, a.id) !== 'signed')) &&
+      (!words || (a.name ?? 'athlete').toLowerCase().includes(words)),
+  );
+}
+
+/** A round's list is searchable once it is longer than this. */
+export const SEARCH_FROM = 8;
+
+/** Whether a round is in the week before its last day, or past it: summaries are due. */
+export function summariesDue(round: { ends_on: string; closed: boolean }, today: string) {
+  return !round.closed && daysBetween(today, round.ends_on) <= 7;
+}
+
+/**
+ * The next athlete in a round's list, after this one and wrapping round,
+ * whose summary the member hasn't signed; null when there is no other.
+ */
+export function nextToSign(athletes: SheetAthlete[], statuses: SummaryStatus[], currentId: string) {
+  const at = athletes.findIndex((a) => a.id === currentId);
+  const order = [...athletes.slice(at + 1), ...athletes.slice(0, Math.max(at, 0))];
+  return order.find((a) => a.id !== currentId && summaryOf(statuses, a.id) !== 'signed') ?? null;
+}

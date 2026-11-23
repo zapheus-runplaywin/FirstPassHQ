@@ -37,8 +37,7 @@ export default function AssessmentsScreen() {
   return (
     <Screen refreshing={refreshing} onRefresh={onRefresh}>
       <ThemedText type="small" themeColor="textSecondary">
-        Add a short observation whenever you see something worth noting, at training or a game.
-        They build each athlete’s assessment over the round. Only the round’s panel reads them.
+        Only a round’s panel reads what is written in it.
       </ThemedText>
       {rounds.length === 0 ? (
         <ThemedText type="small" themeColor="textSecondary">

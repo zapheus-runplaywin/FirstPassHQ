@@ -127,6 +127,14 @@ export default function ObserveScreen() {
           original stays on the record with this beside it.
         </ThemedText>
       ) : null}
+      <TextField
+        label="What you saw"
+        value={note}
+        onChangeText={setNote}
+        placeholder="Such as “Won three intercepts in the second quarter”"
+        multiline
+        maxLength={MAX_EVIDENCE}
+      />
       <ChipGroup
         label="Where you saw it"
         options={CONTEXTS}
@@ -144,10 +152,9 @@ export default function ObserveScreen() {
         max={assessment.today}
       />
 
-      <ThemedText type="smallBold">What it is about</ThemedText>
+      <ThemedText type="smallBold">Which criteria it shows</ThemedText>
       <ThemedText type="small" themeColor="textSecondary">
-        Open a group and tap a step for each thing you saw. One is enough. Tap a step again to
-        take it off.
+        Open a group and tap a step. One is enough.
       </ThemedText>
       {assessment.criteria.groups.map((group) => {
         const chosen = ratings.filter((r) => group.items.some((i) => i.key === r.item_key)).length;
@@ -196,17 +203,9 @@ export default function ObserveScreen() {
         );
       })}
 
-      <TextField
-        label="Evidence"
-        value={note}
-        onChangeText={setNote}
-        placeholder="What you saw, such as “Won three intercepts in the second quarter”"
-        multiline
-        maxLength={MAX_EVIDENCE}
-      />
       <ThemedText type="small" themeColor="textSecondary">
-        Write what you saw, as if the athlete may read it one day. A worry about a child’s safety
-        doesn’t go here: raise a concern from Home instead.
+        Write as if the athlete may read it one day. A worry about a child’s safety is raised as a
+        concern from Home, not here.
       </ThemedText>
 
       <ErrorText>{error}</ErrorText>

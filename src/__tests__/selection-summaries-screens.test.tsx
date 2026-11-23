@@ -13,6 +13,7 @@
  * database's refusal. The route guards are in route-guards-roles.test.tsx
  * and route-guards-features.test.tsx.
  */
+import { router } from 'expo-router';
 import { act, fireEvent, screen } from 'expo-router/testing-library';
 import { Text } from 'react-native';
 import * as Sharing from 'expo-sharing';
@@ -197,9 +198,12 @@ describe('a selector’s summary of an athlete', () => {
     });
   }
 
-  it('asks for the member’s own summary of that athlete, and nothing else', async () => {
+  it('asks for the member’s own summary of that athlete, then the round’s list to find who is next', async () => {
     await openSummary();
-    expect(assessmentRpcs()).toEqual(['my_assessment_summary']);
+    // Neither of the other two holds an assessment: the list's counts, and where summaries stand.
+    expect(assessmentRpcs()).toEqual(['my_assessment_summary', 'selection_round_sheet', 'selection_round_summaries']);
+    expect(onlyRpcCall('selection_round_sheet')).toEqual({ p_round_id: 'r1' });
+    expect(onlyRpcCall('selection_round_summaries')).toEqual({ p_round_id: 'r1' });
     expect(onlyRpcCall('my_assessment_summary')).toEqual(ARGS);
   });
 
@@ -354,6 +358,45 @@ describe('a selector’s summary of an athlete', () => {
     expect(rpcCalls('my_assessment_summary')).toHaveLength(2);
   });
 
+  describe('moving on to the next athlete', () => {
+    const LIST = {
+      athletes: ['a1', 'a2', 'a3'].map((id, n) => ({ id, name: n === 2 ? null : `Athlete ${n + 1}` })),
+    };
+    const open = (loaded: AssessmentSummary, statuses: SummaryStatus[] | null, list: unknown = LIST) =>
+      openScreen('coach', { 'assessments/summary': SummaryScreen }, '/assessments/summary?round=r1&athlete=a1', {}, {
+        rpcs: { my_assessment_summary: loaded, selection_round_sheet: list, selection_round_summaries: statuses },
+      });
+
+    it('offers the next athlete whose summary isn’t signed, and opens theirs in place of this one', async () => {
+      const replace = jest.spyOn(router, 'replace').mockImplementation(() => {});
+      await open(summary(), [{ athlete_id: 'a2', mine: 'draft', signed: 0 }]);
+      await press('Next: Athlete 2');
+      expect(replace).toHaveBeenLastCalledWith({ pathname: '/assessments/summary', params: { round: 'r1', athlete: 'a2' } });
+      replace.mockRestore();
+    });
+
+    it('skips athletes already signed, on a signed summary too', async () => {
+      await open(summary({ mine: SIGNED }), [
+        { athlete_id: 'a1', mine: 'signed', signed: 1 },
+        { athlete_id: 'a2', mine: 'signed', signed: 1 },
+      ]);
+      expect(screen.getByText('Next: Athlete')).toBeTruthy();
+      expect(screen.queryByText('Next: Athlete 2')).toBeNull();
+    });
+
+    it('offers nothing when every other summary is signed, the list is missing or the round is closed', async () => {
+      await open(summary(), [
+        { athlete_id: 'a2', mine: 'signed', signed: 1 },
+        { athlete_id: 'a3', mine: 'signed', signed: 1 },
+      ]);
+      expect(screen.queryByText(/^Next: /)).toBeNull();
+      await open(summary(), null, null);
+      expect(screen.queryByText(/^Next: /)).toBeNull();
+      await open(summary({ closed: true, mine: SIGNED }), []);
+      expect(screen.queryByText(/^Next: /)).toBeNull();
+    });
+  });
+
   it('has nothing to write or show for an unsigned summary in a closed round', async () => {
     await openSummary(summary({ closed: true, mine: MINE, others_signed: 1 }));
     expect(screen.getByText(/This round is closed and you didn’t sign a summary/)).toBeTruthy();
@@ -501,7 +544,6 @@ describe('reaching a summary', () => {
   it('opens from the athlete’s assessment, and reads no summary until then', async () => {
     await openAthlete();
     expect(assessmentRpcs()).not.toContain('my_assessment_summary');
-    expect(screen.getByText(/You see the other selectors’ summaries once you have\s+signed yours\./)).toBeTruthy();
     await press('My summary');
     expect(screen.getByText('screen:assessments/summary')).toBeTruthy();
   });
@@ -558,6 +600,68 @@ describe('reaching a summary', () => {
     expect(screen.getByText('Your summary is a draft · 0 signed in all')).toBeTruthy();
     expect(screen.getByText('No summary from you yet · 1 signed in all')).toBeTruthy();
     expect(screen.getAllByText(/signed in all/)).toHaveLength(3);
+  });
+
+  it('goes straight to a new observation from the + beside an athlete', async () => {
+    const push = jest.spyOn(router, 'push').mockImplementation(() => {});
+    await openRound([]);
+    await fireEvent.press(screen.getByLabelText('Add an observation about Athlete 2'));
+    expect(push).toHaveBeenLastCalledWith({ pathname: '/assessments/observe', params: { round: 'r1', athlete: 'a2' } });
+    await press('Athlete 3');
+    expect(push).toHaveBeenLastCalledWith({ pathname: '/assessments/athlete', params: { round: 'r1', athlete: 'a3' } });
+    push.mockRestore();
+  });
+
+  it('offers no + on a closed round', async () => {
+    await openScreen('coach', { 'assessments/round': RoundScreen }, '/assessments/round?id=r1', {}, {
+      rpcs: { selection_round_sheet: { ...SHEET, closed: true }, selection_round_summaries: [] },
+    });
+    expect(screen.getByText('Athlete 1')).toBeTruthy();
+    expect(screen.queryByLabelText(/^Add an observation about/)).toBeNull();
+    expect(screen.queryByText(/Tap \+ to add an observation/)).toBeNull();
+  });
+
+  it('filters the list to athletes with nothing written, or a summary still to sign', async () => {
+    const athletes = SHEET.athletes.map((a, n) => (n === 3 ? { ...a, observations: 0 } : a));
+    await openScreen('coach', { 'assessments/round': RoundScreen }, '/assessments/round?id=r1', {}, {
+      rpcs: {
+        selection_round_sheet: { ...SHEET, athletes },
+        selection_round_summaries: [
+          { athlete_id: 'a1', mine: 'signed', signed: 1 },
+          { athlete_id: 'a2', mine: 'draft', signed: 0 },
+        ],
+      },
+    });
+    expect(screen.getByText('All (4)')).toBeTruthy();
+    await press('Nothing written (1)');
+    expect(screen.getByText('Athlete 4')).toBeTruthy();
+    expect(screen.queryByText('Athlete 1')).toBeNull();
+    await press('Summary to sign (3)');
+    expect(screen.queryByText('Athlete 1')).toBeNull();
+    expect(screen.getByText('Athlete 2')).toBeTruthy();
+    expect(screen.getByText('Athlete 4')).toBeTruthy();
+    await press('All (4)');
+    expect(screen.getByText('Athlete 1')).toBeTruthy();
+  });
+
+  it('offers no filter when every athlete has something written and no summary is started or due', async () => {
+    await openRound([]);
+    expect(screen.queryByText(/^All \(/)).toBeNull();
+    expect(screen.queryByLabelText('Find an athlete')).toBeNull();
+  });
+
+  it('finds an athlete by part of their name once the list is long', async () => {
+    const names = ['Mia Chen', 'Ava Thompson', 'Zoe Williams', 'Ruby Patel', 'Ella Nguyen', 'Isla Brown', 'Amy Chen', 'Tia Rose', 'Kim Lee'];
+    const athletes = names.map((name, n) => ({ ...SHEET.athletes[0], id: `b${n}`, name }));
+    await openScreen('coach', { 'assessments/round': RoundScreen }, '/assessments/round?id=r1', {}, {
+      rpcs: { selection_round_sheet: { ...SHEET, athletes }, selection_round_summaries: [] },
+    });
+    await fill('Find an athlete', ' chen');
+    expect(screen.getByText('Mia Chen')).toBeTruthy();
+    expect(screen.getByText('Amy Chen')).toBeTruthy();
+    expect(screen.queryByText('Ruby Patel')).toBeNull();
+    await fill('Find an athlete', 'zzz');
+    expect(screen.getByText('No athlete matches.')).toBeTruthy();
   });
 
   it('says nothing about summaries before anyone starts one, or with no answer', async () => {
