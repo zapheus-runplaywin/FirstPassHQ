@@ -10,7 +10,9 @@ export type RecordKind =
   | 'member_record'
   | 'kpis'
   | 'survey_answers'
-  | 'medical';
+  | 'medical'
+  | 'assessment'
+  | 'assessment_audit';
 
 /** One time someone opened a child's record. */
 export type RecordAccess = {
@@ -32,6 +34,8 @@ export const recordKindLabels: Record<RecordKind, string> = {
   kpis: 'Read season KPIs',
   survey_answers: 'Read their named survey answers',
   medical: 'Opened their medical and emergency details',
+  assessment: 'Opened their selection assessment',
+  assessment_audit: 'Built a selection audit report that counts their observations',
 };
 
 /**

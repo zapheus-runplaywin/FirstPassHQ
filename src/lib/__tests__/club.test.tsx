@@ -89,8 +89,8 @@ describe('resolveClub', () => {
     expect(club.squads).toBe(true);
   });
 
-  it('starts every feature on except training load flags, Season KPIs and the registers', () => {
-    const offs = ['trainingLoad', 'kpis', 'registers'];
+  it('starts every feature on except training load flags, Season KPIs, the registers and selection assessments', () => {
+    const offs = ['trainingLoad', 'kpis', 'registers', 'selectionAssessments'];
     const { features } = resolveClub(null);
     for (const f of FEATURES) {
       expect([f.key, features[f.key]]).toEqual([f.key, !offs.includes(f.key)]);

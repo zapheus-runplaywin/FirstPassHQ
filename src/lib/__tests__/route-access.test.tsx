@@ -40,6 +40,7 @@ function features(overrides: Partial<Features> = {}): Features {
     integrity: true,
     kpis: true,
     registers: true,
+    selectionAssessments: true,
     ...overrides,
   };
 }
@@ -141,6 +142,7 @@ const captainOf = (team: Team): GroupCaptain => ({
 
 type Key = keyof RouteAccess;
 const KEYS: Key[] = [
+  'assessments',
   'readMessages',
   'sendMessages',
   'answerSurveys',
@@ -184,7 +186,21 @@ const CASES: [string, Auth, Key[]][] = [
   ['signed out', auth(null), []],
   ['waiting for approval as a coach', auth(profile('coach', { status: 'pending' }), { memberships: [member('coach')] }), []],
   ['turned down', auth(profile('guest', { status: 'rejected' })), []],
-  ['a guest', auth(profile('guest')), []],
+  // A guest with a current check can be named an independent selector, so the
+  // screen opens; it lists only the rounds whose panel they are on.
+  ['a guest', auth(profile('guest')), ['assessments']],
+  ['a guest with no check', auth(profile('guest', { wwcc_number: null, wwcc_expires_on: null })), []],
+  [
+    'a guest with no check and a volunteer exemption',
+    auth(profile('guest', { wwcc_number: null, wwcc_expires_on: null }), { exemption: { valid: true } as Auth['exemption'] }),
+    ['assessments'],
+  ],
+  [
+    'a guest with no check and an application in force',
+    auth(profile('guest', { wwcc_number: null, wwcc_expires_on: null }), { wwccApplication: { valid: true } as Auth['wwccApplication'] }),
+    ['assessments'],
+  ],
+  ['a guest who is stood down', auth(profile('guest', { stood_down_at: '2026-10-01T00:00:00Z' })), []],
   ['a temporary helper', auth(profile('volunteer')), []],
   // AuthProvider shows a member whose every role is paused as a guest, with no groups.
   ['a coach whose check lapsed', auth(profile('guest', { wwcc_expires_on: '2026-10-01' })), []],
@@ -216,12 +232,12 @@ const CASES: [string, Auth, Key[]][] = [
   [
     'a coach',
     auth(profile('coach'), { memberships: [member('coach')] }),
-    ['readMessages', 'sendMessages', 'answerSurveys', 'sendSurveys', 'surveyResults', 'injuries', 'logInjury', 'attendance', 'takeAttendance', 'athleteAttendance', 'readSessionPlans', 'addSessionPlans', 'checkIns', 'athleteCheckIns', 'trainingLoad', 'awards', 'gameGoals', 'athleteGoals', 'teamGoals', 'kpis', 'setKpis', 'training', 'chooseCaptains', 'medical', 'teamMedical', 'reviewPolicy', 'declareConflicts'],
+    ['readMessages', 'sendMessages', 'answerSurveys', 'sendSurveys', 'surveyResults', 'injuries', 'logInjury', 'attendance', 'takeAttendance', 'athleteAttendance', 'readSessionPlans', 'addSessionPlans', 'checkIns', 'athleteCheckIns', 'trainingLoad', 'awards', 'gameGoals', 'athleteGoals', 'teamGoals', 'kpis', 'setKpis', 'training', 'chooseCaptains', 'medical', 'teamMedical', 'reviewPolicy', 'declareConflicts', 'assessments'],
   ],
   [
     'a coach of only a finished squad',
     auth(profile('coach'), { memberships: [member('coach', DONE_SQUAD)] }),
-    ['readMessages', 'sendMessages', 'answerSurveys', 'sendSurveys', 'surveyResults', 'injuries', 'logInjury', 'attendance', 'takeAttendance', 'athleteAttendance', 'readSessionPlans', 'addSessionPlans', 'awards', 'kpis', 'setKpis', 'training', 'chooseCaptains', 'medical', 'teamMedical', 'reviewPolicy', 'declareConflicts'],
+    ['readMessages', 'sendMessages', 'answerSurveys', 'sendSurveys', 'surveyResults', 'injuries', 'logInjury', 'attendance', 'takeAttendance', 'athleteAttendance', 'readSessionPlans', 'addSessionPlans', 'awards', 'kpis', 'setKpis', 'training', 'chooseCaptains', 'medical', 'teamMedical', 'reviewPolicy', 'declareConflicts', 'assessments'],
   ],
   [
     'a manager',
@@ -303,24 +319,24 @@ const CASES: [string, Auth, Key[]][] = [
   [
     'an admin on the committee, left out of the members who see injuries',
     auth(profile('admin', { extra_roles: ['committee'] }), { committeeSeesInjuries: false }),
-    ['readMessages', 'sendMessages', 'answerSurveys', 'sendSurveys', 'surveyResults', 'injuries', 'attendance', 'takeAttendance', 'athleteAttendance', 'readSessionPlans', 'addSessionPlans', 'checkIns', 'awards', 'teamGoals', 'kpis', 'setKpis', 'training', 'checkTraining', 'reports', 'concerns', 'family', 'chooseCaptains', 'registers', 'editRegisters', 'reviewPolicy', 'declareConflicts'],
+    ['readMessages', 'sendMessages', 'answerSurveys', 'sendSurveys', 'surveyResults', 'injuries', 'attendance', 'takeAttendance', 'athleteAttendance', 'readSessionPlans', 'addSessionPlans', 'checkIns', 'awards', 'teamGoals', 'kpis', 'setKpis', 'training', 'checkTraining', 'reports', 'concerns', 'family', 'chooseCaptains', 'registers', 'editRegisters', 'reviewPolicy', 'declareConflicts', 'assessments'],
   ],
   [
     'a coach with a check who is not on the committee',
     auth(profile('coach'), { exemption: { valid: true } as Auth['exemption'] }),
-    ['readMessages', 'answerSurveys', 'attendance', 'takeAttendance', 'readSessionPlans', 'awards', 'kpis', 'training', 'reviewPolicy', 'declareConflicts'],
+    ['readMessages', 'answerSurveys', 'attendance', 'takeAttendance', 'readSessionPlans', 'awards', 'kpis', 'training', 'reviewPolicy', 'declareConflicts', 'assessments'],
   ],
   [
     'an admin',
     auth(profile('admin')),
-    ['readMessages', 'sendMessages', 'answerSurveys', 'sendSurveys', 'surveyResults', 'injuries', 'attendance', 'takeAttendance', 'athleteAttendance', 'readSessionPlans', 'addSessionPlans', 'checkIns', 'awards', 'teamGoals', 'kpis', 'setKpis', 'training', 'checkTraining', 'reports', 'concerns', 'family', 'chooseCaptains', 'registers', 'editRegisters', 'reviewPolicy'],
+    ['readMessages', 'sendMessages', 'answerSurveys', 'sendSurveys', 'surveyResults', 'injuries', 'attendance', 'takeAttendance', 'athleteAttendance', 'readSessionPlans', 'addSessionPlans', 'checkIns', 'awards', 'teamGoals', 'kpis', 'setKpis', 'training', 'checkTraining', 'reports', 'concerns', 'family', 'chooseCaptains', 'registers', 'editRegisters', 'reviewPolicy', 'assessments'],
   ],
   [
     'an athlete who coaches another team',
     auth(profile('athlete', { extra_roles: ['coach'] }), {
       memberships: [member('athlete'), member('coach', OTHER_TEAM)],
     }),
-    ['readMessages', 'sendMessages', 'answerSurveys', 'sendSurveys', 'surveyResults', 'injuries', 'reportInjury', 'logInjury', 'attendance', 'takeAttendance', 'athleteAttendance', 'familyAttendance', 'readSessionPlans', 'addSessionPlans', 'checkIn', 'checkIns', 'athleteCheckIns', 'trainingLoad', 'awards', 'gameGoals', 'athleteGoals', 'teamGoals', 'kpis', 'setKpis', 'training', 'chooseCaptains', 'medical', 'teamMedical', 'reviewPolicy', 'declareConflicts'],
+    ['readMessages', 'sendMessages', 'answerSurveys', 'sendSurveys', 'surveyResults', 'injuries', 'reportInjury', 'logInjury', 'attendance', 'takeAttendance', 'athleteAttendance', 'familyAttendance', 'readSessionPlans', 'addSessionPlans', 'checkIn', 'checkIns', 'athleteCheckIns', 'trainingLoad', 'awards', 'gameGoals', 'athleteGoals', 'teamGoals', 'kpis', 'setKpis', 'training', 'chooseCaptains', 'medical', 'teamMedical', 'reviewPolicy', 'declareConflicts', 'assessments'],
   ],
   // A role opens its screens before the member is placed in a squad or team.
   [
@@ -331,7 +347,7 @@ const CASES: [string, Auth, Key[]][] = [
   [
     'a coach not yet in a team',
     auth(profile('coach')),
-    ['readMessages', 'answerSurveys', 'attendance', 'takeAttendance', 'readSessionPlans', 'awards', 'kpis', 'training', 'reviewPolicy', 'declareConflicts'],
+    ['readMessages', 'answerSurveys', 'attendance', 'takeAttendance', 'readSessionPlans', 'awards', 'kpis', 'training', 'reviewPolicy', 'declareConflicts', 'assessments'],
   ],
   [
     'a manager not yet in a team',
@@ -347,7 +363,7 @@ const CASES: [string, Auth, Key[]][] = [
   [
     'a statistician placed in a team as a coach',
     auth(profile('statistician'), { memberships: [member('coach')] }),
-    ['readMessages', 'sendMessages', 'answerSurveys', 'sendSurveys', 'surveyResults', 'injuries', 'logInjury', 'attendance', 'takeAttendance', 'athleteAttendance', 'readSessionPlans', 'addSessionPlans', 'checkIns', 'athleteCheckIns', 'trainingLoad', 'awards', 'gameGoals', 'athleteGoals', 'teamGoals', 'kpis', 'setKpis', 'training', 'chooseCaptains', 'medical', 'teamMedical', 'reviewPolicy', 'declareConflicts'],
+    ['readMessages', 'sendMessages', 'answerSurveys', 'sendSurveys', 'surveyResults', 'injuries', 'logInjury', 'attendance', 'takeAttendance', 'athleteAttendance', 'readSessionPlans', 'addSessionPlans', 'checkIns', 'athleteCheckIns', 'trainingLoad', 'awards', 'gameGoals', 'athleteGoals', 'teamGoals', 'kpis', 'setKpis', 'training', 'chooseCaptains', 'medical', 'teamMedical', 'reviewPolicy', 'declareConflicts', 'assessments'],
   ],
   [
     'a statistician placed in a team as a manager',
@@ -430,6 +446,17 @@ describe('feature switches', () => {
     expect(result.current.editRegisters).toBe(false);
     expect(result.current.reviewPolicy).toBe(false);
     expect(result.current.declareConflicts).toBe(false);
+  });
+
+  it.each<[string, Auth]>([
+    ['an admin', auth(profile('admin'))],
+    ['a coach', auth(profile('coach'), { memberships: [member('coach')] })],
+    ['a guest', auth(profile('guest'))],
+  ])('Selection assessments off closes them for %s', async (_name, who) => {
+    mockAuth = who;
+    mockClub.features = features({ selectionAssessments: false });
+    const { result } = await renderHook(() => useRouteAccess());
+    expect(result.current.assessments).toBe(false);
   });
 
   it('captains’ polls off: a captain can’t send polls but keeps their polls’ results', async () => {

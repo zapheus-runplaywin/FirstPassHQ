@@ -16,6 +16,7 @@ import { Button, Card, PressableCard } from '@/components/ui';
 import { Spacing } from '@/constants/theme';
 import { useTheme } from '@/hooks/use-theme';
 import { useAbsencesToReview, useLeadsAGroup } from '@/lib/absences';
+import { roundsLabel, useMySelectionRounds } from '@/lib/assessments';
 import { useConductTodos } from '@/lib/conduct';
 import { safeguardingPostsLabel } from '@/lib/safeguarding-posts';
 import { committeeCheckDue, isDatedExemption, statisticianCheckDue } from '@/lib/safety';
@@ -166,6 +167,7 @@ export default function HomeScreen() {
   const { mySurveys, reloadMySurveys } = useMySurveys();
   const { policyReviews, reloadPolicyReviews } = useMyPolicyReviews();
   const { conflictDeclaration, reloadConflictDeclaration } = useMyConflictDeclaration();
+  const { selectionRounds, reloadSelectionRounds } = useMySelectionRounds();
   const canReadRegisters = useCanReadRegisters() && features.registers;
   const canSendSurveys = useCanSendSurveys();
   const surveysWaiting = surveysToAnswer(mySurveys).length;
@@ -292,6 +294,7 @@ export default function HomeScreen() {
       reloadMedicalReviews(),
       reloadPolicyReviews(),
       reloadConflictDeclaration(),
+      reloadSelectionRounds(),
       reloadMySurveys(),
       reloadAbsencesToReview(),
       loadAthletes(),
@@ -611,6 +614,15 @@ export default function HomeScreen() {
             <ThemedText type="smallBold">Season KPIs</ThemedText>
             <ThemedText type="small" themeColor="textSecondary">
               {kpisLabel(kpiPeople ?? [])}
+            </ThemedText>
+          </PressableCard>
+        ) : null}
+
+        {selectionRounds.length > 0 ? (
+          <PressableCard onPress={() => router.push('/assessments')}>
+            <ThemedText type="smallBold">Selection assessments</ThemedText>
+            <ThemedText type="small" themeColor="textSecondary">
+              {roundsLabel(selectionRounds)}
             </ThemedText>
           </PressableCard>
         ) : null}

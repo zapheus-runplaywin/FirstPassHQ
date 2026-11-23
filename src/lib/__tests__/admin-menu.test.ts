@@ -24,6 +24,7 @@ const KEYS = Object.keys({
   integrity: true,
   kpis: true,
   registers: true,
+  selectionAssessments: true,
 } satisfies Record<FeatureKey, true>) as FeatureKey[];
 
 const allFeatures = (on: boolean) => Object.fromEntries(KEYS.map((k) => [k, on])) as Features;
@@ -54,6 +55,7 @@ describe('adminMenuItems', () => {
       'Safeguarding',
       'Season KPI reviews',
       'Seasons',
+      'Selection assessments',
       'Squads and teams',
     ]);
   });

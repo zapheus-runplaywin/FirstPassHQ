@@ -247,6 +247,12 @@ function RootStack() {
           <Stack.Protected guard={can.declareConflicts}>
             <Stack.Screen name="declare-conflicts" options={{ title: 'Conflicts of interest' }} />
           </Stack.Protected>
+          <Stack.Protected guard={can.assessments}>
+            <Stack.Screen name="assessments/index" options={{ title: 'Selection assessments' }} />
+            <Stack.Screen name="assessments/round" options={{ title: 'Selection round' }} />
+            <Stack.Screen name="assessments/athlete" options={{ title: 'Assessment' }} />
+            <Stack.Screen name="assessments/observe" options={{ title: 'Observation' }} />
+          </Stack.Protected>
           <Stack.Protected guard={can.open}>
             <Stack.Screen name="declaration" options={{ title: 'Exemption declaration' }} />
             <Stack.Screen name="wwcc-application" options={{ title: 'Check application' }} />
@@ -359,6 +365,12 @@ function RootStack() {
             <Stack.Protected guard={features.integrity}>
               <Stack.Screen name="admin/training/index" options={{ title: 'Integrity training' }} />
               <Stack.Screen name="admin/training/edit" options={{ title: 'Training' }} />
+            </Stack.Protected>
+            <Stack.Protected guard={features.selectionAssessments}>
+              <Stack.Screen name="admin/assessments/index" options={{ title: 'Selection assessments' }} />
+              <Stack.Screen name="admin/assessments/criteria" options={{ title: 'Assessment criteria' }} />
+              <Stack.Screen name="admin/assessments/round" options={{ title: 'Selection round' }} />
+              <Stack.Screen name="admin/assessments/audit" options={{ title: 'Selection audit report' }} />
             </Stack.Protected>
             <Stack.Protected guard={features.kpis}>
               <Stack.Screen name="admin/reports/kpis" options={{ title: 'Season KPIs report' }} />

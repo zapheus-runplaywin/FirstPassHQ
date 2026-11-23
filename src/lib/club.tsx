@@ -63,6 +63,13 @@ export const FEATURES = [
     detail: 'Policy review dates and owners, and conflict-of-interest declarations each season',
     offByDefault: true,
   },
+  {
+    key: 'selectionAssessments',
+    label: 'Selection assessments',
+    detail:
+      'Selectors build each athlete’s assessment over a selection round, against the club’s own criteria. Admins get an audit report, not the assessments.',
+    offByDefault: true,
+  },
 ] as const;
 
 /** Whether a feature starts off until an admin turns it on. */
