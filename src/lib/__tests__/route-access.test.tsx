@@ -143,6 +143,7 @@ const captainOf = (team: Team): GroupCaptain => ({
 type Key = keyof RouteAccess;
 const KEYS: Key[] = [
   'assessments',
+  'selectionInfo',
   'readMessages',
   'sendMessages',
   'answerSurveys',
@@ -207,27 +208,27 @@ const CASES: [string, Auth, Key[]][] = [
   [
     'an athlete',
     auth(profile('athlete'), { memberships: [member('athlete')] }),
-    ['readMessages', 'answerSurveys', 'injuries', 'reportInjury', 'familyAttendance', 'readSessionPlans', 'checkIn', 'awards', 'gameGoals', 'kpis', 'training', 'medical'],
+    ['selectionInfo', 'readMessages', 'answerSurveys', 'injuries', 'reportInjury', 'familyAttendance', 'readSessionPlans', 'checkIn', 'awards', 'gameGoals', 'kpis', 'training', 'medical'],
   ],
   [
     'a captain',
     auth(profile('athlete'), { memberships: [member('athlete')], captaincies: [captainOf(TEAM)] }),
-    ['readMessages', 'sendMessages', 'answerSurveys', 'sendSurveys', 'surveyResults', 'injuries', 'reportInjury', 'familyAttendance', 'readSessionPlans', 'checkIn', 'awards', 'gameGoals', 'kpis', 'training', 'medical'],
+    ['selectionInfo', 'readMessages', 'sendMessages', 'answerSurveys', 'sendSurveys', 'surveyResults', 'injuries', 'reportInjury', 'familyAttendance', 'readSessionPlans', 'checkIn', 'awards', 'gameGoals', 'kpis', 'training', 'medical'],
   ],
   [
     'still listed as captain of a team they no longer play in',
     auth(profile('athlete'), { memberships: [member('athlete')], captaincies: [captainOf(OTHER_TEAM)] }),
-    ['readMessages', 'answerSurveys', 'injuries', 'reportInjury', 'familyAttendance', 'readSessionPlans', 'checkIn', 'awards', 'gameGoals', 'kpis', 'training', 'medical'],
+    ['selectionInfo', 'readMessages', 'answerSurveys', 'injuries', 'reportInjury', 'familyAttendance', 'readSessionPlans', 'checkIn', 'awards', 'gameGoals', 'kpis', 'training', 'medical'],
   ],
   [
     'a club captain',
     auth(profile('athlete'), { memberships: [member('athlete')], isClubCaptain: true }),
-    ['readMessages', 'sendMessages', 'answerSurveys', 'injuries', 'reportInjury', 'familyAttendance', 'readSessionPlans', 'checkIn', 'awards', 'gameGoals', 'kpis', 'training', 'medical'],
+    ['selectionInfo', 'readMessages', 'sendMessages', 'answerSurveys', 'injuries', 'reportInjury', 'familyAttendance', 'readSessionPlans', 'checkIn', 'awards', 'gameGoals', 'kpis', 'training', 'medical'],
   ],
   [
     'a guardian',
     auth(profile('guardian')),
-    ['readMessages', 'answerSurveys', 'injuries', 'reportInjury', 'familyAttendance', 'readSessionPlans', 'athleteCheckIns', 'gameGoals', 'athleteGoals', 'kpis', 'training', 'family', 'medical'],
+    ['selectionInfo', 'readMessages', 'answerSurveys', 'injuries', 'reportInjury', 'familyAttendance', 'readSessionPlans', 'athleteCheckIns', 'gameGoals', 'athleteGoals', 'kpis', 'training', 'family', 'medical'],
   ],
   [
     'a coach',
@@ -257,7 +258,7 @@ const CASES: [string, Auth, Key[]][] = [
   [
     'a physio who is also a guardian',
     auth(profile('physio', { extra_roles: ['guardian'] })),
-    ['readMessages', 'answerSurveys', 'injuries', 'reportInjury', 'logInjury', 'familyAttendance', 'readSessionPlans', 'checkIns', 'athleteCheckIns', 'awards', 'gameGoals', 'athleteGoals', 'kpis', 'training', 'family', 'medical', 'reviewPolicy'],
+    ['selectionInfo', 'readMessages', 'answerSurveys', 'injuries', 'reportInjury', 'logInjury', 'familyAttendance', 'readSessionPlans', 'checkIns', 'athleteCheckIns', 'awards', 'gameGoals', 'athleteGoals', 'kpis', 'training', 'family', 'medical', 'reviewPolicy'],
   ],
   ['a statistician', auth(profile('statistician')), ['readMessages', 'answerSurveys', 'awards', 'training', 'reviewPolicy']],
   [
@@ -314,7 +315,7 @@ const CASES: [string, Auth, Key[]][] = [
   [
     'the committee, left out of the members who see injuries, who is also a guardian',
     auth(profile('committee', { extra_roles: ['guardian'] }), { committeeSeesInjuries: false }),
-    ['readMessages', 'sendMessages', 'answerSurveys', 'sendSurveys', 'surveyResults', 'injuries', 'reportInjury', 'attendance', 'takeAttendance', 'athleteAttendance', 'familyAttendance', 'readSessionPlans', 'checkIns', 'athleteCheckIns', 'awards', 'gameGoals', 'athleteGoals', 'kpis', 'setKpis', 'training', 'checkTraining', 'family', 'medical', 'reports', 'registers', 'reviewPolicy', 'declareConflicts'],
+    ['selectionInfo', 'readMessages', 'sendMessages', 'answerSurveys', 'sendSurveys', 'surveyResults', 'injuries', 'reportInjury', 'attendance', 'takeAttendance', 'athleteAttendance', 'familyAttendance', 'readSessionPlans', 'checkIns', 'athleteCheckIns', 'awards', 'gameGoals', 'athleteGoals', 'kpis', 'setKpis', 'training', 'checkTraining', 'family', 'medical', 'reports', 'registers', 'reviewPolicy', 'declareConflicts'],
   ],
   [
     'an admin on the committee, left out of the members who see injuries',
@@ -336,13 +337,13 @@ const CASES: [string, Auth, Key[]][] = [
     auth(profile('athlete', { extra_roles: ['coach'] }), {
       memberships: [member('athlete'), member('coach', OTHER_TEAM)],
     }),
-    ['readMessages', 'sendMessages', 'answerSurveys', 'sendSurveys', 'surveyResults', 'injuries', 'reportInjury', 'logInjury', 'attendance', 'takeAttendance', 'athleteAttendance', 'familyAttendance', 'readSessionPlans', 'addSessionPlans', 'checkIn', 'checkIns', 'athleteCheckIns', 'trainingLoad', 'awards', 'gameGoals', 'athleteGoals', 'teamGoals', 'kpis', 'setKpis', 'training', 'chooseCaptains', 'medical', 'teamMedical', 'reviewPolicy', 'declareConflicts', 'assessments'],
+    ['selectionInfo', 'readMessages', 'sendMessages', 'answerSurveys', 'sendSurveys', 'surveyResults', 'injuries', 'reportInjury', 'logInjury', 'attendance', 'takeAttendance', 'athleteAttendance', 'familyAttendance', 'readSessionPlans', 'addSessionPlans', 'checkIn', 'checkIns', 'athleteCheckIns', 'trainingLoad', 'awards', 'gameGoals', 'athleteGoals', 'teamGoals', 'kpis', 'setKpis', 'training', 'chooseCaptains', 'medical', 'teamMedical', 'reviewPolicy', 'declareConflicts', 'assessments'],
   ],
   // A role opens its screens before the member is placed in a squad or team.
   [
     'an athlete not yet in a team',
     auth(profile('athlete')),
-    ['readMessages', 'answerSurveys', 'injuries', 'reportInjury', 'familyAttendance', 'readSessionPlans', 'checkIn', 'awards', 'gameGoals', 'kpis', 'training', 'medical'],
+    ['selectionInfo', 'readMessages', 'answerSurveys', 'injuries', 'reportInjury', 'familyAttendance', 'readSessionPlans', 'checkIn', 'awards', 'gameGoals', 'kpis', 'training', 'medical'],
   ],
   [
     'a coach not yet in a team',
@@ -358,7 +359,7 @@ const CASES: [string, Auth, Key[]][] = [
   [
     'a statistician placed in a team as an athlete',
     auth(profile('statistician'), { memberships: [member('athlete')] }),
-    ['readMessages', 'answerSurveys', 'familyAttendance', 'readSessionPlans', 'awards', 'kpis', 'training', 'medical', 'reviewPolicy'],
+    ['selectionInfo', 'readMessages', 'answerSurveys', 'familyAttendance', 'readSessionPlans', 'awards', 'kpis', 'training', 'medical', 'reviewPolicy'],
   ],
   [
     'a statistician placed in a team as a coach',
@@ -457,6 +458,19 @@ describe('feature switches', () => {
     mockClub.features = features({ selectionAssessments: false });
     const { result } = await renderHook(() => useRouteAccess());
     expect(result.current.assessments).toBe(false);
+  });
+
+  it.each<[string, Auth]>([
+    ['an athlete', auth(profile('athlete'), { memberships: [member('athlete')] })],
+    ['a guardian', auth(profile('guardian'))],
+  ])('Selection assessments off closes the criteria and dates for %s', async (_name, who) => {
+    mockAuth = who;
+    mockClub.features = features();
+    const on = await renderHook(() => useRouteAccess());
+    expect(on.result.current.selectionInfo).toBe(true);
+    mockClub.features = features({ selectionAssessments: false });
+    const { result } = await renderHook(() => useRouteAccess());
+    expect(result.current.selectionInfo).toBe(false);
   });
 
   it('captains’ polls off: a captain can’t send polls but keeps their polls’ results', async () => {

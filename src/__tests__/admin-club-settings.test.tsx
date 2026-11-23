@@ -95,6 +95,7 @@ const RETENTION_RPCS = {
   survey_retention: SURVEYS,
   more_record_retention: MORE,
   medical_keep_months: 24,
+  assessment_keep_months: 12,
 };
 
 const PAGES = {
@@ -880,6 +881,7 @@ describe('Keeping records', () => {
     expect(chosen('Cleared injuries', '7 years')).toBe(true);
     expect(chosen('Safeguarding records', '30 years')).toBe(true);
     expect(chosen('Awards and their results', '10 years')).toBe(true);
+    expect(chosen('Selection assessments', '1 year')).toBe(true);
     expect(screen.getByText(/^Last changed by Sample admin, /)).toBeTruthy();
     // Nothing to save until something changes.
     expect(isDisabled('Save keep periods')).toBe(true);
@@ -893,7 +895,9 @@ describe('Keeping records', () => {
       survey_retention: null,
       more_record_retention: null,
       medical_keep_months: null,
+      assessment_keep_months: null,
     });
+    expect(chosen('Selection assessments', '1 year')).toBe(true);
     expect(chosen('Message text involving a child', '7 years')).toBe(true);
     expect(chosen('Medical and emergency details', '2 years')).toBe(true);
     expect(chosen('Injury documents', '1 year')).toBe(true);
@@ -978,6 +982,10 @@ describe('Keeping records', () => {
     expect(names.indexOf('admin_set_survey_retention')).toBeLessThan(names.indexOf('admin_set_more_record_retention'));
     expect(callsTo('admin_set_medical_keep_months')).toEqual([{ p_months: 60 }]);
     expect(names.indexOf('admin_set_more_record_retention')).toBeLessThan(names.indexOf('admin_set_medical_keep_months'));
+    expect(callsTo('admin_set_assessment_keep_months')).toEqual([{ p_months: 12 }]);
+    expect(names.indexOf('admin_set_medical_keep_months')).toBeLessThan(
+      names.indexOf('admin_set_assessment_keep_months'),
+    );
     expect(screen.getByText('Saved.')).toBeTruthy();
   });
 
@@ -1044,6 +1052,39 @@ describe('Keeping records', () => {
     await saveKeepPeriods();
     expect(screen.getByText('Medical details can be kept 2, 3, 5 or 7 years without their yearly check')).toBeTruthy();
     expect(screen.queryByText('Saved.')).toBeNull();
+  });
+
+  it('offers selection assessments for 1 to 7 years from the end of the round, and saves the choice', async () => {
+    await openRetention();
+    for (const choice of ['1 year', '2 years', '3 years', '5 years', '7 years']) {
+      expect(chip('Selection assessments', choice)).toBeTruthy();
+    }
+    expect(screen.getByText(/from the day the round ends, or the day it was closed if that was later/)).toBeTruthy();
+    expect(screen.getByText(/A round stays while a concern names anyone assessed in it/)).toBeTruthy();
+    await fireEvent.press(chip('Selection assessments', '3 years'));
+    await saveKeepPeriods();
+    expect(callsTo('admin_set_assessment_keep_months')).toEqual([{ p_months: 36 }]);
+    expect(screen.getByText('Saved.')).toBeTruthy();
+  });
+
+  it('shows a refusal of the selection assessments period, after saving the others', async () => {
+    await openRetention({}, {
+      admin_set_assessment_keep_months: 'Selection assessments can be kept 1, 2, 3, 5 or 7 years after the round ends',
+    });
+    await fireEvent.press(chip('Selection assessments', '2 years'));
+    await saveKeepPeriods();
+    expect(
+      screen.getByText('Selection assessments can be kept 1, 2, 3, 5 or 7 years after the round ends'),
+    ).toBeTruthy();
+    expect(callsTo('admin_set_medical_keep_months')).toHaveLength(1);
+    expect(screen.queryByText('Saved.')).toBeNull();
+  });
+
+  it('doesn’t save the selection assessments period when the medical period is refused', async () => {
+    await openRetention({}, { admin_set_medical_keep_months: 'Medical period refused' });
+    await fireEvent.press(chip('Selection assessments', '2 years'));
+    await saveKeepPeriods();
+    expect(callsTo('admin_set_assessment_keep_months')).toEqual([]);
   });
 
   it('loads the periods again after saving and shows what the database holds', async () => {

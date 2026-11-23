@@ -74,6 +74,7 @@ const ALL_STEPS = [
   'rpc:expired_session_plan_files',
   'rpc:purge_expired_records',
   'rpc:purge_expired_surveys',
+  'rpc:purge_expired_assessments',
 ];
 
 /** A whole run: every step, then the run recording itself. */
@@ -227,6 +228,7 @@ describe('runPurge: order', () => {
       'remove:session-plans',
       'rpc:purge_expired_records',
       'rpc:purge_expired_surveys',
+      'rpc:purge_expired_assessments',
       'rpc:record_purge_run',
     ]);
   });
@@ -315,6 +317,7 @@ describe('runPurge: stops at the first error', () => {
     ['expired_session_plan_files', 'listing expired session plan files'],
     ['purge_expired_records', 'removing old records'],
     ['purge_expired_surveys', 'removing old surveys'],
+    ['purge_expired_assessments', 'removing old selection assessments'],
   ];
 
   it.each(rpcSteps)('an error from %s stops the run (%s)', async (fn, step) => {
@@ -417,7 +420,36 @@ describe('runPurge: projects without session plans yet', () => {
     expect(calls).not.toContain('rpc:purge_expired_records');
   });
 
-  it('PGRST202 is tolerated only for session plans, not for other lists', async () => {
+  it('carries on when purge_expired_assessments does not exist yet (PGRST202), recording nothing for it', async () => {
+    const { client, calls, recorded } = fakeClient({
+      rpc: {
+        purge_expired_assessments: { error: { message: 'Could not find the function', code: 'PGRST202' } },
+      },
+    });
+    const logger = fakeLogger();
+    const response = await runPurge(client, logger);
+    expect(response.status).toBe(200);
+    expect(calls).toEqual(RUN);
+    expect(recorded[0]).toMatchObject({ p_ok: true, p_counts: { assessments: null } });
+    expect(logger.error).not.toHaveBeenCalled();
+  });
+
+  it.each([['PGRST203'], ['42883'], [undefined]])(
+    'stops on any other error from purge_expired_assessments (%s)',
+    async (code) => {
+      const { client, recorded } = fakeClient({
+        rpc: { purge_expired_assessments: { error: { message: 'other', code } } },
+      });
+      const response = await runPurge(client, fakeLogger());
+      expect(response.status).toBe(500);
+      expect(await response.json()).toEqual({ error: 'Failed while removing old selection assessments' });
+      expect(recorded).toEqual([
+        { p_ok: false, p_failed_step: 'removing old selection assessments', p_counts: null },
+      ]);
+    },
+  );
+
+  it('PGRST202 is tolerated only for functions newer than the job, not for other lists', async () => {
     const { client, calls } = fakeClient({
       rpc: { expired_injury_documents: { error: { message: 'missing', code: 'PGRST202' } } },
     });
@@ -440,6 +472,7 @@ describe('runPurge: success', () => {
         expired_session_plan_files: { data: paths('club/plan', 2) },
         purge_expired_records: { data: { attendance: 7 } },
         purge_expired_surveys: { data: 0 },
+        purge_expired_assessments: { data: { enabled: true, selection_rounds: 2 } },
       },
     });
     const logger = fakeLogger();
@@ -449,7 +482,7 @@ describe('runPurge: success', () => {
     expect(logger.log.mock.calls).toEqual([
       ['Purged 2 document(s) and 3 injury record(s)'],
       ['Removed 1 cleared injury file(s); marked 1 document(s)'],
-      ['Removed 4 certificate file(s) and 2 session plan file(s); old records: {"attendance":7}; old surveys: 0'],
+      ['Removed 4 certificate file(s) and 2 session plan file(s); old records: {"attendance":7}; old surveys: 0; old selection rounds: {"enabled":true,"selection_rounds":2}'],
     ]);
     const logged = JSON.stringify([logger.log.mock.calls, logger.warn.mock.calls, logger.error.mock.calls]);
     expect(logged).not.toMatch(/jane|sam|alex|athlete|coach|\.pdf|club\//i);
@@ -468,6 +501,7 @@ describe('runPurge: recording the run', () => {
         expired_session_plan_files: { data: paths('d', 5) },
         purge_expired_records: { data: { check_ins: 7 } },
         purge_expired_surveys: { data: { surveys: 1 } },
+        purge_expired_assessments: { data: { enabled: true, selection_rounds: 3 } },
       },
     });
     const response = await runPurge(client, fakeLogger());
@@ -485,6 +519,7 @@ describe('runPurge: recording the run', () => {
           session_plan_files: 5,
           records: { check_ins: 7 },
           surveys: { surveys: 1 },
+          assessments: { enabled: true, selection_rounds: 3 },
         },
       },
     ]);

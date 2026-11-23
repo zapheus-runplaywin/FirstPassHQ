@@ -1,3 +1,4 @@
+import type { SelectionTodo } from '@/lib/assessments';
 import { formatDateString, type LoggedInjury } from '@/lib/injuries';
 import type { KpiReviewTodo } from '@/lib/kpis';
 import type { MedicalReview } from '@/lib/medical';
@@ -1175,5 +1176,76 @@ describe('policy reviews and conflicts of interest', () => {
     expect(todos({ conflictDeclaration: declaration({ declared_at: '2026-10-01T00:00:00Z', has_conflict: false }) })).toEqual([]);
     expect(todos({ conflictDeclaration: declaration({ required: false }) })).toEqual([]);
     expect(todos({ conflictDeclaration: null })).toEqual([]);
+  });
+});
+
+describe('selection rounds', () => {
+  const date = (extra: Partial<SelectionTodo> = {}): SelectionTodo => ({
+    kind: 'date',
+    round_id: 'r1',
+    round_name: '2027 selection phase',
+    milestone_id: 'm1',
+    title: 'Teams named',
+    due_on: '2026-10-24',
+    athletes: null,
+    for_admin: false,
+    ...extra,
+  });
+  const thin = (extra: Partial<SelectionTodo> = {}): SelectionTodo =>
+    date({ kind: 'thin', milestone_id: null, title: null, due_on: '2026-10-30', athletes: 3, ...extra });
+
+  it('reminds a panel member of a date, opening the round’s athletes', () => {
+    expect(only(todos({ selectionTodos: [date()] }))).toEqual({
+      key: 'selection-date-m1',
+      title: 'Teams named: 2027 selection phase',
+      detail: `Due ${formatDateString('2026-10-24')}`,
+      href: { pathname: '/assessments/round', params: { id: 'r1' } },
+      dueOn: '2026-10-24',
+    });
+  });
+
+  it('sends an admin who isn’t on the panel to the round’s set-up, to mark it done', () => {
+    expect(only(todos({ selectionTodos: [date({ for_admin: true })] }))).toMatchObject({
+      detail: `Due ${formatDateString('2026-10-24')}. Mark it done when it is`,
+      href: { pathname: '/admin/assessments/round', params: { id: 'r1' } },
+    });
+  });
+
+  it('says a date was due once its day has passed, in red, and amber in the last three days', () => {
+    const overdue = only(todos({ selectionTodos: [date({ due_on: '2026-10-17' })] }));
+    expect(overdue.detail).toBe(`Was due ${formatDateString('2026-10-17')}`);
+    expect(overdue.alert).toEqual({ level: 'red', label: 'Overdue' });
+    const today = only(todos({ selectionTodos: [date({ due_on: '2026-10-18' })] }));
+    expect(today.detail).toBe(`Due ${formatDateString('2026-10-18')}`);
+    expect(today.alert).toEqual({ level: 'amber', label: 'Due soon' });
+    expect(only(todos({ selectionTodos: [date()] })).alert).toBeUndefined();
+  });
+
+  it('falls back to a plain name for a date without one', () => {
+    expect(only(todos({ selectionTodos: [date({ title: null })] })).title).toBe('Selection date: 2027 selection phase');
+  });
+
+  it('counts the athletes with nothing written as a round runs out, and never names them', () => {
+    expect(only(todos({ selectionTodos: [thin()] }))).toEqual({
+      key: 'selection-thin-r1',
+      title: '3 athletes have nothing written yet: 2027 selection phase',
+      detail: `The round ends ${formatDateString('2026-10-30')}`,
+      href: { pathname: '/assessments/round', params: { id: 'r1' } },
+      dueOn: '2026-10-30',
+    });
+    expect(only(todos({ selectionTodos: [thin({ athletes: 1 })] })).title).toBe(
+      '1 athlete has nothing written yet: 2027 selection phase',
+    );
+    expect(only(todos({ selectionTodos: [thin({ athletes: null })] })).title).toBe(
+      '0 athletes have nothing written yet: 2027 selection phase',
+    );
+  });
+
+  it('has one to-do per date and one per round, and none without any', () => {
+    expect(
+      keys(todos({ selectionTodos: [date(), date({ milestone_id: 'm2' }), thin(), thin({ round_id: 'r2' })] })),
+    ).toEqual(['selection-date-m1', 'selection-date-m2', 'selection-thin-r1', 'selection-thin-r2']);
+    expect(todos({ selectionTodos: [] })).toEqual([]);
+    expect(todos()).toEqual([]);
   });
 });

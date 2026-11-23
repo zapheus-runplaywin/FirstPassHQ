@@ -5,7 +5,17 @@
  */
 import { act, renderHook } from '@testing-library/react-native';
 
-import { useAssessmentsOn, useCanBeSelector, useMySelectionRounds, type MyRound } from '@/lib/assessments';
+import {
+  useAssessmentsOn,
+  useCanBeSelector,
+  useCanSeeSelectionInfo,
+  useMySelectionInfo,
+  useMySelectionRounds,
+  useMySelectionTodos,
+  type MyRound,
+  type SelectionInfo,
+  type SelectionTodo,
+} from '@/lib/assessments';
 import type { useAuth } from '@/lib/auth';
 import { supabase } from '@/lib/supabase';
 import type { AppRole, Profile, TeamMembership, TeamRole } from '@/lib/types';
@@ -146,5 +156,129 @@ describe('useMySelectionRounds', () => {
     const { result } = await rounds();
     expect(result.current.selectionRounds).toEqual([]);
     expect(supabase.rpc).not.toHaveBeenCalled();
+  });
+});
+
+describe('useMySelectionTodos', () => {
+  const TODOS = [{ kind: 'date', round_id: 'r1', milestone_id: 'm1' }] as SelectionTodo[];
+  const answer = (data: unknown) => (supabase.rpc as jest.Mock).mockResolvedValue({ data, error: null });
+
+  async function todos() {
+    const hook = await renderHook(() => useMySelectionTodos());
+    await act(async () => {});
+    return hook;
+  }
+
+  it.each<[string, Partial<Auth>]>([
+    ['a coach', auth(profile('coach'))],
+    ['an admin', auth(profile('admin'))],
+    ['a guest with a current check', auth(profile('guest'))],
+  ])('asks for %s’s selection to-dos', async (_name, who) => {
+    mockAuth = who;
+    answer(TODOS);
+    const { result } = await todos();
+    expect(result.current.selectionTodos).toEqual(TODOS);
+    expect((supabase.rpc as jest.Mock).mock.calls).toEqual([['my_selection_todos']]);
+  });
+
+  it.each<[string, Partial<Auth>]>([
+    ['an athlete', auth(profile('athlete'), { memberships: inGroup('athlete') })],
+    ['a guardian', auth(profile('guardian'))],
+    ['a manager', auth(profile('manager'), { memberships: inGroup('manager') })],
+    ['the committee', auth(profile('committee'))],
+    ['a physio', auth(profile('physio'))],
+    ['a guest with no check', auth(profile('guest', NO_CHECK))],
+    ['someone signed out', auth(null)],
+  ])('never asks for %s', async (_name, who) => {
+    mockAuth = who;
+    answer(TODOS);
+    const { result } = await todos();
+    expect(result.current.selectionTodos).toEqual([]);
+    expect(supabase.rpc).not.toHaveBeenCalled();
+  });
+
+  it('gives none when the database answers nothing, and reads again when asked', async () => {
+    mockAuth = auth(profile('coach'));
+    answer(null);
+    const { result } = await todos();
+    expect(result.current.selectionTodos).toEqual([]);
+    answer(TODOS);
+    await act(async () => {
+      await result.current.reloadSelectionTodos();
+    });
+    expect(result.current.selectionTodos).toEqual(TODOS);
+  });
+
+  it('never asks while the feature is off, even when told to read again', async () => {
+    mockAuth = auth(profile('coach'));
+    mockOn = false;
+    answer(TODOS);
+    const { result } = await todos();
+    await act(async () => {
+      await result.current.reloadSelectionTodos();
+    });
+    expect(result.current.selectionTodos).toEqual([]);
+    expect(supabase.rpc).not.toHaveBeenCalled();
+  });
+});
+
+describe('who sees a round’s criteria and dates', () => {
+  const INFO = [{ round_id: 'r1', athlete_id: 'me', is_me: true }] as SelectionInfo[];
+  const answer = (data: unknown) => (supabase.rpc as jest.Mock).mockResolvedValue({ data, error: null });
+
+  async function info() {
+    const hook = await renderHook(() => useMySelectionInfo());
+    await act(async () => {});
+    return hook;
+  }
+
+  const CASES: [string, Partial<Auth>, boolean][] = [
+    ['an athlete', auth(profile('athlete')), true],
+    ['a guardian', auth(profile('guardian')), true],
+    ['a coach who also plays', auth(profile('coach', { extra_roles: ['athlete'] })), true],
+    ['a coach placed in a team as an athlete', auth(profile('coach'), { memberships: inGroup('athlete') }), true],
+    ['a coach', auth(profile('coach'), { memberships: inGroup('coach') }), false],
+    ['an admin', auth(profile('admin')), false],
+    ['a manager', auth(profile('manager'), { memberships: inGroup('manager') }), false],
+    ['the committee', auth(profile('committee')), false],
+    ['a physio', auth(profile('physio')), false],
+    ['a guest', auth(profile('guest')), false],
+    ['a temporary helper', auth(profile('volunteer')), false],
+    ['an athlete waiting for approval', auth(profile('athlete', { status: 'pending' })), false],
+    ['someone signed out', auth(null), false],
+  ];
+
+  it.each(CASES)('%s', async (_name, who, expected) => {
+    mockAuth = who;
+    expect((await renderHook(() => useCanSeeSelectionInfo())).result.current).toBe(expected);
+    answer(INFO);
+    const { result } = await info();
+    expect(result.current.selectionInfo).toEqual(expected ? INFO : []);
+    expect((supabase.rpc as jest.Mock).mock.calls).toEqual(expected ? [['my_selection_info']] : []);
+  });
+
+  it.each(CASES.filter(([, , expected]) => expected))('not %s while the feature is off', async (_name, who) => {
+    mockAuth = who;
+    mockOn = false;
+    expect((await renderHook(() => useCanSeeSelectionInfo())).result.current).toBe(false);
+    answer(INFO);
+    const { result } = await info();
+    await act(async () => {
+      await result.current.reloadSelectionInfo();
+    });
+    expect(result.current.selectionInfo).toEqual([]);
+    expect(supabase.rpc).not.toHaveBeenCalled();
+  });
+
+  it('gives none when the database answers nothing, and reads again when asked', async () => {
+    mockAuth = auth(profile('athlete'));
+    answer(null);
+    const { result } = await info();
+    expect(result.current.selectionInfo).toEqual([]);
+    answer(INFO);
+    await act(async () => {
+      await result.current.reloadSelectionInfo();
+    });
+    expect(result.current.selectionInfo).toEqual(INFO);
   });
 });

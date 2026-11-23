@@ -16,7 +16,14 @@ import { Button, Card, PressableCard } from '@/components/ui';
 import { Spacing } from '@/constants/theme';
 import { useTheme } from '@/hooks/use-theme';
 import { useAbsencesToReview, useLeadsAGroup } from '@/lib/absences';
-import { roundsLabel, useMySelectionRounds } from '@/lib/assessments';
+import {
+  roundsLabel,
+  selectionInfoLabel,
+  useMySelectionInfo,
+  useMySelectionRounds,
+  useMySelectionTodos,
+} from '@/lib/assessments';
+import { clubToday } from '@/lib/club-time';
 import { useConductTodos } from '@/lib/conduct';
 import { safeguardingPostsLabel } from '@/lib/safeguarding-posts';
 import { committeeCheckDue, isDatedExemption, statisticianCheckDue } from '@/lib/safety';
@@ -168,6 +175,8 @@ export default function HomeScreen() {
   const { policyReviews, reloadPolicyReviews } = useMyPolicyReviews();
   const { conflictDeclaration, reloadConflictDeclaration } = useMyConflictDeclaration();
   const { selectionRounds, reloadSelectionRounds } = useMySelectionRounds();
+  const { selectionTodos, reloadSelectionTodos } = useMySelectionTodos();
+  const { selectionInfo, reloadSelectionInfo } = useMySelectionInfo();
   const canReadRegisters = useCanReadRegisters() && features.registers;
   const canSendSurveys = useCanSendSurveys();
   const surveysWaiting = surveysToAnswer(mySurveys).length;
@@ -240,6 +249,7 @@ export default function HomeScreen() {
     surveys: features.surveys ? mySurveys : [],
     medicalReviews,
     policyReviews,
+    selectionTodos,
     conflictDeclaration,
   });
 
@@ -295,6 +305,8 @@ export default function HomeScreen() {
       reloadPolicyReviews(),
       reloadConflictDeclaration(),
       reloadSelectionRounds(),
+      reloadSelectionTodos(),
+      reloadSelectionInfo(),
       reloadMySurveys(),
       reloadAbsencesToReview(),
       loadAthletes(),
@@ -623,6 +635,15 @@ export default function HomeScreen() {
             <ThemedText type="smallBold">Selection assessments</ThemedText>
             <ThemedText type="small" themeColor="textSecondary">
               {roundsLabel(selectionRounds)}
+            </ThemedText>
+          </PressableCard>
+        ) : null}
+
+        {selectionInfo.length > 0 ? (
+          <PressableCard onPress={() => router.push('/selection')}>
+            <ThemedText type="smallBold">Selection</ThemedText>
+            <ThemedText type="small" themeColor="textSecondary">
+              {selectionInfoLabel(selectionInfo, clubToday())}
             </ThemedText>
           </PressableCard>
         ) : null}

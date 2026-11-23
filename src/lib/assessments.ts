@@ -216,6 +216,74 @@ export type SelectionAudit = {
   athletes: AuditAthlete[];
 };
 
+/** A date in a round's process, as an admin sees it, standing or taken off. */
+export type Milestone = {
+  id: string;
+  title: string;
+  /** "2026-12-01" style. */
+  due_on: string;
+  /** Whether athletes and their parents see it. */
+  shared: boolean;
+  done_at: string | null;
+  done_by_name: string | null;
+  removed_at: string | null;
+  removed_by_name: string | null;
+  created_by_name: string | null;
+  created_at: string;
+  /** Days past its date when it was done, or so far if it isn't; 0 on time. */
+  days_late: number;
+};
+
+/** A date in a round's process, as its panel sees it. */
+export type RoundDate = { id: string; title: string; due_on: string; done: boolean };
+
+/** A selection to-do: a date that is close or overdue, or athletes with nothing written. */
+export type SelectionTodo = {
+  kind: 'date' | 'thin';
+  round_id: string;
+  round_name: string;
+  milestone_id: string | null;
+  title: string | null;
+  due_on: string;
+  /** For 'thin': athletes the member can assess with nothing written yet. */
+  athletes: number | null;
+  /** An admin who isn't on the panel: they open the round's set-up, not its assessments. */
+  for_admin: boolean;
+};
+
+/** A date athletes and their parents are shown. */
+export type SharedDate = { title: string; due_on: string; done: boolean };
+
+/** A round as an athlete in it, or their parent, sees it: criteria and dates only. */
+export type SelectionInfo = {
+  round_id: string;
+  round_name: string;
+  team_name: string;
+  athlete_id: string;
+  athlete_name: string | null;
+  is_me: boolean;
+  starts_on: string;
+  ends_on: string;
+  criteria: Criteria;
+  dates: SharedDate[];
+};
+
+/** How many of the group's sessions an athlete was marked at during a round. */
+export type RoundAttendance = { sessions: number; attended: number };
+
+export const MAX_MILESTONES = 12;
+export const MAX_MILESTONE_TITLE = 60;
+
+/** Dates most selection processes have, offered as a start. */
+export const MILESTONE_SUGGESTIONS = [
+  'Criteria shared with athletes',
+  'Trials',
+  'Observations complete',
+  'Panel meeting',
+  'Teams named',
+  'Feedback offered',
+];
+
 // ---------------------------------------------------------------------------
 // Criteria
 
@@ -512,7 +580,7 @@ const plural = (n: number, one: string, many: string) => `${n} ${n === 1 ? one :
  * who did what and when, with counts, and never a rating, a line of evidence
  * or the name of a criterion.
  */
-export function selectionAuditReport(audit: SelectionAudit): Report {
+export function selectionAuditReport(audit: SelectionAudit, dates: Milestone[] = []): Report {
   const { round } = audit;
   const groups = round.criteria_groups;
   const onPanel = audit.panel.filter((m) => !m.removed_at);
@@ -548,6 +616,30 @@ export function selectionAuditReport(audit: SelectionAudit): Report {
             ? { cells: ['Round closed', day(round.closed_at), round.closed_by_name ?? ''] }
             : { cells: ['Round closed', 'Still open', ''], flag: round.ends_on < round.today },
         ],
+      },
+      {
+        title: 'Dates',
+        note: 'The dates set for this round, with when each was marked done and by whom. “Late” is days past the date: when it was marked done, or so far.',
+        columns: [
+          { label: 'Date', width: 3 },
+          { label: 'Due', width: 1.5 },
+          { label: 'Done', width: 3 },
+          { label: 'Late' },
+          { label: 'Athletes and parents see it', width: 2 },
+        ],
+        rows: dates.map((m) => ({
+          cells: [
+            m.removed_at
+              ? `${m.title} (taken off ${day(m.removed_at)}${m.removed_by_name ? ` by ${m.removed_by_name}` : ''})`
+              : m.title,
+            day(m.due_on),
+            m.done_at ? `${day(m.done_at)}${m.done_by_name ? ` by ${m.done_by_name}` : ''}` : m.removed_at ? '' : 'Not yet',
+            m.days_late > 0 && !(m.removed_at && !m.done_at) ? plural(m.days_late, 'day', 'days') : '',
+            m.shared ? 'Yes' : 'No',
+          ],
+          flag: !m.removed_at && m.days_late > 0,
+        })),
+        empty: 'No dates were set for this round.',
       },
       {
         title: 'The panel',
@@ -761,4 +853,109 @@ export function panelNotes(member: PanelMember) {
       ? 'No access now: stood down, left or without a current check'
       : null,
   ].filter((n): n is string => n !== null);
+}
+
+// ---------------------------------------------------------------------------
+// Dates, reminders and what athletes and parents see
+
+/** What stops a date being saved, or null. The database checks the same. */
+export function milestoneProblem(title: string, dueOn: string | null): string | null {
+  if (!title.trim()) return 'Name the date, such as Teams named.';
+  if (title.trim().length > MAX_MILESTONE_TITLE) return `Keep the name to ${MAX_MILESTONE_TITLE} characters.`;
+  if (!dueOn) return 'Choose the day.';
+  return null;
+}
+
+/** When a date falls, in words: "Done", "Today", "In 3 days", "5 days overdue". */
+export function dueLabel(date: { due_on: string; done: boolean }, today: string) {
+  if (date.done) return 'Done';
+  const days = daysBetween(today, date.due_on);
+  if (days === 0) return 'Today';
+  if (days === 1) return 'Tomorrow';
+  if (days > 1) return `In ${days} days`;
+  return `${plural(-days, 'day', 'days')} overdue`;
+}
+
+/** Whether a date is past and not done. */
+export function isOverdue(date: { due_on: string; done: boolean }, today: string) {
+  return !date.done && date.due_on < today;
+}
+
+/** What an admin reads under a date: when it's due, who marked it done, who sees it. */
+export function milestoneLine(m: Milestone, today: string) {
+  const when = m.done_at
+    ? `Done ${day(m.done_at)}${m.done_by_name ? ` by ${m.done_by_name}` : ''}${
+        m.days_late > 0 ? `, ${plural(m.days_late, 'day', 'days')} late` : ''
+      }`
+    : dueLabel({ due_on: m.due_on, done: false }, today);
+  return `${formatDateString(m.due_on)} · ${when} · ${
+    m.shared ? 'athletes and parents see it' : 'panel and admins only'
+  }`;
+}
+
+/** The line about attendance on an athlete's assessment, or null with no sessions. */
+export function attendanceLine(attendance: RoundAttendance | null) {
+  if (!attendance || attendance.sessions === 0) return null;
+  return `Marked at ${attendance.attended} of ${plural(attendance.sessions, 'session', 'sessions')} in this round`;
+}
+
+/** The selection to-dos for the member: panel members and admins, when it's on. */
+export function useMySelectionTodos() {
+  const on = useAssessmentsOn();
+  const eligible = useCanBeSelector() && on;
+  const [todos, setTodos] = useState<SelectionTodo[]>([]);
+  const load = useCallback(async () => {
+    if (!eligible) return;
+    const { data } = await supabase.rpc('my_selection_todos');
+    setTodos((data as SelectionTodo[] | null) ?? []);
+  }, [eligible]);
+  useFocusEffect(
+    useCallback(() => {
+      load();
+    }, [load]),
+  );
+  return { selectionTodos: eligible ? todos : [], reloadSelectionTodos: load };
+}
+
+/** Whether the member plays, or looks after someone who does: who may see a round's criteria and dates. */
+export function useCanSeeSelectionInfo() {
+  const { profile, memberships } = useAuth();
+  const on = useAssessmentsOn();
+  if (!on || profile?.status !== 'approved') return false;
+  return hasRole(profile, 'athlete', 'guardian') || memberships.some((m) => m.team_role === 'athlete');
+}
+
+/** The open rounds the member, or their children, are in: criteria and shared dates. */
+export function useMySelectionInfo() {
+  const eligible = useCanSeeSelectionInfo();
+  const [info, setInfo] = useState<SelectionInfo[]>([]);
+  const load = useCallback(async () => {
+    if (!eligible) return;
+    const { data } = await supabase.rpc('my_selection_info');
+    setInfo((data as SelectionInfo[] | null) ?? []);
+  }, [eligible]);
+  useFocusEffect(
+    useCallback(() => {
+      load();
+    }, [load]),
+  );
+  return { selectionInfo: eligible ? info : [], reloadSelectionInfo: load };
+}
+
+/** Whose round it is, for the heading: "Your selection" or "Jordan’s selection". */
+export function selectionInfoOwner(info: SelectionInfo) {
+  if (info.is_me) return 'You';
+  return info.athlete_name ?? 'Your child';
+}
+
+/** What Home says under Selections for an athlete or parent. */
+export function selectionInfoLabel(info: SelectionInfo[], today: string) {
+  if (info.length === 0) return '';
+  const next = info
+    .flatMap((i) => i.dates)
+    .filter((d) => !d.done && d.due_on >= today)
+    .sort((a, b) => a.due_on.localeCompare(b.due_on))[0];
+  const rounds = [...new Set(info.map((i) => i.round_name))];
+  const name = rounds.length === 1 ? rounds[0] : `${rounds.length} selection rounds`;
+  return next ? `${name} · next: ${next.title}, ${formatDateString(next.due_on)}` : `${name} · criteria and dates`;
 }

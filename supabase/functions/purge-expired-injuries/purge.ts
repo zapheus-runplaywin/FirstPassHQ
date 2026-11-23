@@ -158,11 +158,18 @@ export async function runPurge(supabase: PurgeClient, logger: Logger): Promise<R
   const { data: surveys, error: surveysError } = await supabase.rpc('purge_expired_surveys');
   if (surveysError) return failed('removing old surveys', surveysError.message);
 
+  // Selection rounds past the club's keep period, with their assessments.
+  const { data: assessments, error: assessmentsError } = await supabase.rpc('purge_expired_assessments');
+  // PGRST202: the migration adding it hasn't reached this project yet.
+  if (assessmentsError && assessmentsError.code !== 'PGRST202') {
+    return failed('removing old selection assessments', assessmentsError.message);
+  }
+
   // Counts go to the function's logs, not to whoever called it.
   logger.log(`Purged ${names.length} document(s) and ${purged} injury record(s)`);
   logger.log(`Removed ${cleared.length} cleared injury file(s); marked ${marked} document(s)`);
   logger.log(
-    `Removed ${certificates.length} certificate file(s) and ${planFiles.length} session plan file(s); old records: ${JSON.stringify(records)}; old surveys: ${JSON.stringify(surveys)}`,
+    `Removed ${certificates.length} certificate file(s) and ${planFiles.length} session plan file(s); old records: ${JSON.stringify(records)}; old surveys: ${JSON.stringify(surveys)}; old selection rounds: ${JSON.stringify(assessments ?? null)}`,
   );
   // A run that removed everything but couldn't say so fails, so the workflow
   // shows it: otherwise admins would be told it stopped when it hadn't.
@@ -175,6 +182,7 @@ export async function runPurge(supabase: PurgeClient, logger: Logger): Promise<R
     session_plan_files: planFiles.length,
     records,
     surveys,
+    assessments: assessments ?? null,
   });
   if (!recorded) return Response.json({ error: 'Failed while recording the run' }, { status: 500 });
   return Response.json({ ok: true });

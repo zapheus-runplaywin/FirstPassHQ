@@ -273,6 +273,8 @@ const WHO_OPENS: Record<string, PersonaName[]> = {
   'assessments/round': SELECTORS,
   'assessments/athlete': SELECTORS,
   'assessments/observe': SELECTORS,
+  // The criteria and shared dates of a round: athletes, and parents and guardians.
+  selection: union(ATHLETES, GUARDIANS),
 };
 
 /**
@@ -424,6 +426,12 @@ describe('selection assessments off', () => {
     },
     20000,
   );
+
+  it('sends athletes and parents home from the criteria and dates', async () => {
+    setClubFeatures({ kpis: true, registers: true });
+    await expectTurnedAway('athlete', 'selection', 'index');
+    await expectTurnedAway('guardian', 'selection', 'index');
+  }, 20000);
 });
 
 describe('captains’ polls off', () => {

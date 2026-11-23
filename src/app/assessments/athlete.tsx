@@ -7,12 +7,14 @@ import { ThemedText } from '@/components/themed-text';
 import { Button, Card, ErrorText } from '@/components/ui';
 import { Spacing } from '@/constants/theme';
 import {
+  attendanceLine,
   buildPicture,
   contextLabels,
   ratingLines,
   tallyLabel,
   type AthleteAssessment,
   type Observation,
+  type RoundAttendance,
 } from '@/lib/assessments';
 import { formatDateString } from '@/lib/injuries';
 import { supabase } from '@/lib/supabase';
@@ -26,6 +28,7 @@ import { supabase } from '@/lib/supabase';
 export default function AthleteAssessmentScreen() {
   const { round, athlete } = useLocalSearchParams<{ round: string; athlete: string }>();
   const [assessment, setAssessment] = useState<AthleteAssessment | null>(null);
+  const [attendance, setAttendance] = useState<RoundAttendance | null>(null);
   const [error, setError] = useState<string | null>(null);
   const [refreshing, setRefreshing] = useState(false);
 
@@ -38,7 +41,12 @@ export default function AthleteAssessmentScreen() {
       setError(loadError.message);
       return;
     }
+    // Two counts from attendance, and nothing else: never an absence or its reason.
+    const { data: counts } = await supabase
+      .rpc('athlete_round_attendance', { p_round_id: round, p_athlete_id: athlete })
+      .maybeSingle();
     setError(null);
+    setAttendance((counts as RoundAttendance | null) ?? null);
     setAssessment(data as AthleteAssessment);
   }, [round, athlete]);
 
@@ -63,6 +71,7 @@ export default function AthleteAssessmentScreen() {
   }
 
   const picture = buildPicture(assessment.criteria, assessment.observations);
+  const attended = attendanceLine(attendance);
 
   function observe(params: { id?: string; corrects?: string } = {}) {
     router.push({ pathname: '/assessments/observe', params: { round, athlete, ...params } });
@@ -80,6 +89,11 @@ export default function AthleteAssessmentScreen() {
               picture.selectors
             } ${picture.selectors === 1 ? 'selector' : 'selectors'}`}
       </ThemedText>
+      {attended ? (
+        <ThemedText type="small" themeColor="textSecondary">
+          {attended}
+        </ThemedText>
+      ) : null}
       <ErrorText>{error}</ErrorText>
       {assessment.closed ? null : <Button title="Add an observation" onPress={() => observe()} />}
 
