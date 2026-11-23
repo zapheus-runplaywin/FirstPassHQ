@@ -21,7 +21,7 @@ import { SafeAreaView } from 'react-native-safe-area-context';
 
 import { PoweredByFirstPass } from '@/components/firstpass-logo';
 import { ThemedView } from '@/components/themed-view';
-import { MaxContentWidth, Spacing } from '@/constants/theme';
+import { MaxContentWidth, MaxWideContentWidth, Spacing } from '@/constants/theme';
 
 /** Space left above a focused field when it is scrolled into view. */
 const FOCUS_MARGIN = 96;
@@ -47,6 +47,7 @@ export function Screen({
   gap = Spacing.four,
   stickyHeaderIndices,
   showVersion = false,
+  wide = false,
 }: {
   children: ReactNode;
   refreshing?: boolean;
@@ -59,6 +60,11 @@ export function Screen({
   stickyHeaderIndices?: number[];
   /** Shows the app's version and build under "Powered by" (src/components/app-version.tsx). */
   showVersion?: boolean;
+  /**
+   * Lets the screen use a tablet's width, for screens laid out with Columns or
+   * CardGrid (src/components/columns.tsx). Other screens stay MaxContentWidth.
+   */
+  wide?: boolean;
 }) {
   const scrollRef = useRef<ScrollViewInstance>(null);
   // Screens stay mounted underneath the one on top, and keyboard events reach
@@ -132,7 +138,7 @@ export function Screen({
       <RevealFocusedInput value={revealFocusedInput}>
         <ThemedView style={styles.container}>
           <SafeAreaView
-            style={styles.safeArea}
+            style={[styles.safeArea, wide && styles.wide]}
             edges={withTopInset ? undefined : ['bottom', 'left', 'right']}>
             <ScrollView
               ref={scrollRef}
@@ -188,6 +194,9 @@ const styles = StyleSheet.create({
     flex: 1,
     width: '100%',
     maxWidth: MaxContentWidth,
+  },
+  wide: {
+    maxWidth: MaxWideContentWidth,
   },
   content: {
     padding: Spacing.four,

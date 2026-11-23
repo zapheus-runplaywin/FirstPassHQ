@@ -1,6 +1,7 @@
-import { useEffect, useState } from 'react';
+import { useEffect, useState, type ReactNode } from 'react';
 import { Pressable, StyleSheet, View } from 'react-native';
 
+import { CardGrid, useInCardGrid } from '@/components/columns';
 import { ThemedText } from '@/components/themed-text';
 import { Spacing } from '@/constants/theme';
 import { useTheme } from '@/hooks/use-theme';
@@ -62,49 +63,65 @@ export function AttendanceRegister({
           There are no athletes in this squad or team yet.
         </ThemedText>
       ) : null}
-      {register.map((mark) => (
-        <View
-          key={mark.profile_id}
-          style={[styles.row, { backgroundColor: theme.backgroundElement }]}>
-          <View style={styles.name}>
-            <ThemedText type="small" numberOfLines={1}>
-              {withNoAppLabel(mark.full_name ?? 'Unnamed athlete', noApp.has(mark.profile_id))}
-            </ThemedText>
-            {away[mark.profile_id] ? (
-              <ThemedText type="small" themeColor="textSecondary" numberOfLines={3}>
-                {away[mark.profile_id]}
+      {/* Two or three athletes a row on a tablet, so a whole squad fits on one screen. */}
+      <CardGrid>
+        {register.map((mark) => (
+          <RegisterRow key={mark.profile_id}>
+            <View style={styles.name}>
+              <ThemedText type="small" numberOfLines={1}>
+                {withNoAppLabel(mark.full_name ?? 'Unnamed athlete', noApp.has(mark.profile_id))}
               </ThemedText>
-            ) : null}
-          </View>
-          {onChange ? (
-            <View style={styles.toggle}>
-              <Choice
-                label="Present"
-                selected={mark.present === true}
-                colour={theme.accent}
-                textColour={theme.onAccent}
-                onPress={() => onChange(mark.profile_id, true)}
-              />
-              <Choice
-                label="Absent"
-                selected={mark.present === false}
-                colour={ABSENT}
-                textColour="#000000"
-                onPress={() => onChange(mark.profile_id, false)}
-              />
+              {away[mark.profile_id] ? (
+                <ThemedText type="small" themeColor="textSecondary" numberOfLines={3}>
+                  {away[mark.profile_id]}
+                </ThemedText>
+              ) : null}
             </View>
-          ) : (
-            <ThemedText
-              type="small"
-              style={{
-                color:
-                  mark.present === null ? theme.textSecondary : mark.present ? theme.tint : ABSENT,
-              }}>
-              {mark.present === null ? 'Not marked' : mark.present ? 'Present' : 'Absent'}
-            </ThemedText>
-          )}
-        </View>
-      ))}
+            {onChange ? (
+              <View style={styles.toggle}>
+                <Choice
+                  label="Present"
+                  selected={mark.present === true}
+                  colour={theme.accent}
+                  textColour={theme.onAccent}
+                  onPress={() => onChange(mark.profile_id, true)}
+                />
+                <Choice
+                  label="Absent"
+                  selected={mark.present === false}
+                  colour={ABSENT}
+                  textColour="#000000"
+                  onPress={() => onChange(mark.profile_id, false)}
+                />
+              </View>
+            ) : (
+              <ThemedText
+                type="small"
+                style={{
+                  color:
+                    mark.present === null
+                      ? theme.textSecondary
+                      : mark.present
+                        ? theme.tint
+                        : ABSENT,
+                }}>
+                {mark.present === null ? 'Not marked' : mark.present ? 'Present' : 'Absent'}
+              </ThemedText>
+            )}
+          </RegisterRow>
+        ))}
+      </CardGrid>
+    </View>
+  );
+}
+
+/** One athlete's line; as tall as the others in its row on a tablet. */
+function RegisterRow({ children }: { children: ReactNode }) {
+  const theme = useTheme();
+  const inGrid = useInCardGrid();
+  return (
+    <View style={[styles.row, inGrid && styles.fill, { backgroundColor: theme.backgroundElement }]}>
+      {children}
     </View>
   );
 }
@@ -149,6 +166,9 @@ const styles = StyleSheet.create({
     paddingRight: Spacing.two,
     paddingVertical: Spacing.two,
     minHeight: 56,
+  },
+  fill: {
+    flexGrow: 1,
   },
   name: {
     flex: 1,

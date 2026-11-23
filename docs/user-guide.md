@@ -254,6 +254,9 @@ rises to make room for the Thunder logo beneath it.
 Whatever the club's look, "Powered by" and the FirstPass HQ logo stay at the foot of every
 screen.
 
+HQ also works on an iPad or an Android tablet, installed the same way. See [Using HQ on a
+tablet](#using-hq-on-a-tablet).
+
 <img src="user-guide/opening.png" width="210" alt="Opening screen: FirstPass 1P HQ mark with the club logo beneath, and the app's version and build at the foot">
 
 #### Which version you have
@@ -519,6 +522,28 @@ Once you're approved, the home screen is where everything starts. From the top:
 Pull down on the home screen, the calendar and most lists to refresh them.
 
 <img src="user-guide/home-athlete.png" width="210" alt="Athlete home screen">
+
+### Using HQ on a tablet
+
+HQ runs on iPads and Android tablets as a full tablet app, so a coach can take attendance or
+look over a squad on a bigger screen at training. Everything works the same as on a phone; screens
+just use the extra room so there's less scrolling:
+
+- **Upright**, the home screen keeps To do, Messages and Coming up at the top, then puts the cards
+  two a row.
+- **On its side**, To do, Messages and Coming up sit on the left and the other cards on the right,
+  two a row. Raise a concern and the links at the bottom stay below both.
+- **Lists of cards** sit two or three a row: injuries, past attendance sessions and athletes'
+  attendance, a squad or team's people and its games.
+- **Taking attendance**, the register shows two or three athletes a row, each with Present and
+  Absent, so a whole squad fits on the screen.
+- **Forms and messages** stay a comfortable reading width in the middle of the screen.
+
+The layout follows the window, not the device: turn the tablet and it changes straight away. On an
+iPad sharing the screen with another app, a narrow window gets the phone layout. Phones always stay
+upright.
+
+<img src="user-guide/home-tablet.png" width="210" alt="Coach home screen on an upright iPad: To do, Messages and Coming up across the top, then the cards two a row">
 
 ### Your own tasks
 

@@ -125,3 +125,9 @@ export const Spacing = {
 } as const;
 
 export const MaxContentWidth = 800;
+
+/**
+ * How wide a screen laid out in columns or a card grid gets on a tablet
+ * (Screen's `wide`). Forms and reading stay at MaxContentWidth.
+ */
+export const MaxWideContentWidth = 1240;

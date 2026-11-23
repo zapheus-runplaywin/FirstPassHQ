@@ -10,6 +10,7 @@
     "ios": {
       "icon": "./assets/images/icon.png",
       "bundleIdentifier": "au.pivt.firstpass.hq",
+      "supportsTablet": true,
       "usesAppleSignIn": true,
       "config": {
         "usesNonExemptEncryption": false

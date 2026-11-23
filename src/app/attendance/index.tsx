@@ -2,6 +2,7 @@ import { router, useFocusEffect } from 'expo-router';
 import { useCallback, useState } from 'react';
 import { StyleSheet, View } from 'react-native';
 
+import { CardGrid } from '@/components/columns';
 import { Screen } from '@/components/screen';
 import { ThemedText } from '@/components/themed-text';
 import { Button, Card, ChipGroup, ErrorText, PressableCard } from '@/components/ui';
@@ -191,7 +192,7 @@ function Sessions({ sessions }: { sessions: AttendanceSession[] | null }) {
     );
   }
   return (
-    <View style={styles.list}>
+    <CardGrid>
       {sessions.map((s) => (
         <PressableCard
           key={s.id}
@@ -211,7 +212,7 @@ function Sessions({ sessions }: { sessions: AttendanceSession[] | null }) {
           <ThemedText type="small">{presentLabel(s.present_count, s.marked_count)}</ThemedText>
         </PressableCard>
       ))}
-    </View>
+    </CardGrid>
   );
 }
 
@@ -232,7 +233,7 @@ function Athletes({
     );
   }
   return (
-    <View style={styles.list}>
+    <CardGrid>
       {athletes.map((a) => (
         <PressableCard
           key={a.profile_id}
@@ -256,7 +257,7 @@ function Athletes({
           </ThemedText>
         </PressableCard>
       ))}
-    </View>
+    </CardGrid>
   );
 }
 
