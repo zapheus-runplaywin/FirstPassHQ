@@ -6,8 +6,6 @@
 // and scripts/check-build-settings.js finds them sound. Without them the
 // build skips it and goes ahead with crash reports off, instead of failing for
 // want of a Sentry token. scripts/test-check-build-settings.py tests this.
-const { withSentry } = require('@sentry/react-native/expo');
-
 const { crashReportSettings } = require('./scripts/check-build-settings');
 
 /** The Sentry build step's settings for a build with these environment variables. */
@@ -23,5 +21,10 @@ function sentryOptions(env) {
   };
 }
 
-module.exports = ({ config }) => withSentry(config, sentryOptions(process.env));
+module.exports = ({ config }) => {
+  // Loaded here, not at the top, so sentryOptions can be tested without the
+  // app's packages installed (the "Tests" workflow's database job has none).
+  const { withSentry } = require('@sentry/react-native/expo');
+  return withSentry(config, sentryOptions(process.env));
+};
 module.exports.sentryOptions = sentryOptions;
