@@ -28,7 +28,7 @@ case "$*" in
       { tr -d ' \n' <src/constants/build-info.json; echo; } >>dist/_expo/static/js/bundle.js
     fi ;;
   *sentry-expo-upload-sourcemaps*)
-    echo "uploaded $* with ${SENTRY_AUTH_TOKEN:-no token}" >>"$STUB_DIR/uploaded"
+    echo "uploaded $* with ${SENTRY_AUTH_TOKEN:-no token} dsn=${EXPO_PUBLIC_SENTRY_DSN:-none} org=${SENTRY_ORG:-none} project=${SENTRY_PROJECT:-none} url=${SENTRY_URL:-none}" >>"$STUB_DIR/uploaded"
     [ -z "${STUB_UPLOAD_FAILS:-}" ] ;;
   *" update "*) echo published >>"$STUB_DIR/published" ;;
 esac
@@ -94,7 +94,8 @@ $CRASH" "$DOTENV"
 check 'an update with crash reports is published' "$status:$(published)" '0:yes'
 check 'it has the Sentry address' "$(bundle "SENTRY_DSN=$SENTRY_DSN")" 1
 check 'it never has the Sentry token' "$(bundle sntrys_)" 0
-check 'its source maps go to Sentry with the token' "$(uploaded)" "uploaded sentry-expo-upload-sourcemaps dist with $SENTRY_TOKEN"
+check 'its source maps go to Sentry with the token, the address, the organisation and the project' "$(uploaded)" \
+  "uploaded sentry-expo-upload-sourcemaps dist with $SENTRY_TOKEN dsn=$SENTRY_DSN org=pivt-media project=firstpass-hq url=https://de.sentry.io/"
 
 run 'without crash reports' "$LIVE" "$DOTENV
 EXPO_PUBLIC_SENTRY_DSN=https://ffffffffffffffffffffffffffffffff@o1.ingest.de.sentry.io/9"

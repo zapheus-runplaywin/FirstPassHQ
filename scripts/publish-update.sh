@@ -102,7 +102,14 @@ eas update --skip-bundler --channel "$channel" --environment "$channel" --messag
 
 # The update's source maps, so its crash reports point at our code. The update
 # is out already, so a failed upload only warns.
+# The uploader reads the organisation from app.config.js, which needs both
+# settings, and SENTRY_ORG and SENTRY_PROJECT are given too in case it doesn't.
 if [ -n "$sentry_dsn" ]; then
-  SENTRY_AUTH_TOKEN=$sentry_token npx sentry-expo-upload-sourcemaps dist \
+  sentry_org=$(EXPO_PUBLIC_SENTRY_DSN=$sentry_dsn SENTRY_AUTH_TOKEN=$sentry_token node -e '
+    console.log(require(process.argv[1]).crashReportSettings(process.env).organization || "")' \
+    "$(cd "$(dirname "$0")" && pwd)/check-build-settings.js")
+  EXPO_PUBLIC_SENTRY_DSN=$sentry_dsn SENTRY_AUTH_TOKEN=$sentry_token \
+    SENTRY_ORG=$sentry_org SENTRY_PROJECT=firstpass-hq SENTRY_URL=https://de.sentry.io/ \
+    npx sentry-expo-upload-sourcemaps dist \
     || echo "The source maps didn't reach Sentry, so this update's crash reports won't show our code's lines."
 fi

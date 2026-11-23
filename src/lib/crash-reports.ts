@@ -13,13 +13,25 @@ import { redact } from '@/lib/log';
  * stops a build, and scripts/publish-update.sh an update, with one but not the
  * other.
  *
- * Nothing about a person is sent. A report keeps only the fields listed in
- * KEPT below; every text in it passes through scrubText (emails, ids, dates,
- * long numbers, quoted text, tokens, web addresses' queries, and the signed-in
- * member's own name and email are removed); there are no breadcrumbs, no
- * screenshots, no request details, no IP address and no member id. The only
- * id is a random one made for this install, so repeat crashes from one phone
- * group together without saying whose phone it is.
+ * Reports from the app's own code (JavaScript errors, "Something went
+ * wrong") pass through scrubReport before they leave the phone: only the
+ * fields listed in KEPT are kept; every text passes through scrubText (emails,
+ * ids, dates, long numbers, quoted text, tokens, web addresses' queries, and
+ * the signed-in member's own name and email are removed) and error messages
+ * also through scrubNames. There are no breadcrumbs, screenshots, request
+ * details, extra details or member id. The only id is a random one made for
+ * this install, so repeat crashes from one phone group together without saying
+ * whose phone it is.
+ *
+ * A crash in the phone's native code is different: Sentry's native part sends
+ * it the next time the app opens, and Sentry's React Native SDK does not pass
+ * native events through beforeSend ("Filtering" in Sentry's React Native
+ * docs). So those reports are limited only by the options below: no
+ * breadcrumbs (maxBreadcrumbs reaches the native part too), sendDefaultPii off
+ * (no IP address or phone name), no screenshots or view hierarchy. They carry
+ * the native crash's reason and stack, the phone and app details, the tags set
+ * here and the install id. Sentry's server-side scrubbers and "Prevent storing
+ * of IP addresses" (docs/beta-builds.md, "Crash reports") cover them too.
  */
 
 /** Sentry's EU addresses look like https://<key>@o<number>.ingest.de.sentry.io/<number>. */
@@ -97,6 +109,50 @@ export function scrubText(text: string): string {
     .slice(0, 1000);
 }
 
+/**
+ * Words an error message may start or use that are not names. Any other word
+ * with a capital letter followed by small letters, such as "Priya" in "Check
+ * the phone number for Priya", is taken out of error messages: the database
+ * can name another member in an error, and the scrubber only knows the
+ * signed-in member's own name. Identifiers such as TypeError or useAuth are
+ * left alone.
+ */
+const COMMON_WORDS = new Set(
+  (
+    'a an the this that these those it its is are was were be been you your you\'ve you\'re we our they their ' +
+    'he she his her there here what which who when where why how not no none nothing all any some each every ' +
+    'and or but if then else for from to of on in at by with without into onto about after before again ' +
+    'cannot can can\'t could couldn\'t would wouldn\'t should shouldn\'t must may might will won\'t do does ' +
+    'did don\'t doesn\'t didn\'t has have had hasn\'t haven\'t isn\'t aren\'t wasn\'t weren\'t only also too ' +
+    'error errors exception failed failure fatal invalid invariant violation unexpected unhandled unknown ' +
+    'unable missing maximum minimum rendered render rendering component components element elements hook ' +
+    'hooks objects object array string number boolean function undefined null value values property ' +
+    'properties key keys type types promise rejection network request requests response fetch timeout ' +
+    'timed load loading loaded save saving saved upload uploading download downloading attempt attempted ' +
+    'tried try retry check checking please text view image images screen screens route routes navigation ' +
+    'navigator module modules native bridge react hermes expo supabase sentry json http https api app ' +
+    'apps file files folder storage database row rows column columns table tables query permission ' +
+    'permissions denied refused allowed access token session sign signed signing out log logged member ' +
+    'members club clubs team teams squad squads coach athlete guardian admin admins committee message ' +
+    'messages survey surveys injury injuries already named name names add added remove removed open closed ' +
+    'new old first last next previous one two three up down left right yes ok'
+  ).split(' '),
+);
+
+/** Error message words that look like names taken out (see COMMON_WORDS). */
+export function scrubNames(text: string): string {
+  // A capital, small letters, and parts joined by an apostrophe or hyphen (O’Brien, Mary-Jane).
+  const word = /(?<![\p{L}\p{N}_$.])\p{Lu}\p{Ll}*(?:['’-]\p{Lu}?\p{Ll}+)*(?![\p{L}\p{N}_$])/gu;
+  return text.replace(word, (found) =>
+    found.length < 2 || COMMON_WORDS.has(found.toLowerCase().replace(/’/g, "'")) ? found : '[name]',
+  );
+}
+
+/** An error's message: scrubText, then anything that looks like a name taken out. */
+function scrubMessage(text: string) {
+  return scrubNames(scrubText(text));
+}
+
 /** Every string in `value` scrubbed, and every personal key redacted (the app log's rule). */
 function scrubDeep(value: unknown, depth = 0): unknown {
   if (typeof value === 'string') return scrubText(value);
@@ -158,7 +214,7 @@ export function scrubReport<T extends object>(event: T, installId: string | null
         const mechanism = value.mechanism as Report | undefined;
         return {
           ...(typeof value.type === 'string' ? { type: scrubText(value.type) } : {}),
-          ...(typeof value.value === 'string' ? { value: scrubText(value.value) } : {}),
+          ...(typeof value.value === 'string' ? { value: scrubMessage(value.value) } : {}),
           ...(value.stacktrace ? { stacktrace: stacktrace(value.stacktrace) } : {}),
           ...(mechanism ? { mechanism: pick(mechanism, ['type', 'handled', 'synthetic', 'exception_id', 'parent_id', 'source', 'is_exception_group']) } : {}),
         };
@@ -175,10 +231,10 @@ export function scrubReport<T extends object>(event: T, installId: string | null
     };
   }
 
-  if (typeof e.message === 'string') out.message = scrubText(e.message);
+  if (typeof e.message === 'string') out.message = scrubMessage(e.message);
   const logentry = e.logentry as Report | undefined;
   if (logentry && typeof logentry.message === 'string') {
-    out.logentry = { message: scrubText(logentry.message) };
+    out.logentry = { message: scrubMessage(logentry.message) };
   }
 
   const contexts: Report = {};
@@ -197,7 +253,8 @@ export function scrubReport<T extends object>(event: T, installId: string | null
   }
   out.tags = tags;
 
-  if (e.extra && typeof e.extra === 'object') out.extra = scrubDeep(e.extra);
+  // No extra details: the app sets none, and Sentry puts a captured object's
+  // own fields there (such as a database error's message, which can name someone).
   out.breadcrumbs = [];
   out.user = installId ? { id: installId } : {};
   return out as T;

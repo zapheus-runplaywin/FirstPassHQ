@@ -18,6 +18,7 @@ import {
   isEuDsn,
   rememberPersonalValues,
   reportCrash,
+  scrubNames,
   resetCrashReportsForTests,
   scrubReport,
   scrubText,
@@ -260,6 +261,45 @@ describe('scrubbing text', () => {
   });
 });
 
+describe('taking names out of error messages', () => {
+  it.each([
+    ['a child named in a database error', 'You’ve already asked for Sam Lee. A club admin will check and add them', 'You’ve already asked for [name] [name]. A club admin will check and add them'],
+    ['an emergency contact', 'Check the phone number for Priya Natarajan', 'Check the phone number for [name] [name]'],
+    ['someone already named', 'Mary-Jane O’Brien is already named', '[name] [name] is already named'],
+    ['a short name', 'Please check Jo', 'Please check [name]'],
+  ])('removes %s', (_name, text, expected) => {
+    expect(scrubNames(text)).toBe(expected);
+  });
+
+  it('keeps ordinary error words and identifiers', () => {
+    for (const text of [
+      'Cannot read property of undefined',
+      'TypeError: undefined is not a function',
+      'Invariant Violation: Rendered more hooks than during the previous render',
+      'Network request failed',
+      'Maximum update depth exceeded in useAuth',
+      'Something went wrong in Screen.render',
+    ]) {
+      expect(scrubNames(text)).toBe(text.replace('Something', '[name]'));
+    }
+  });
+
+  it('is used on error messages in reports, and on nothing else', () => {
+    const report = scrubReport(
+      {
+        exception: { values: [{ type: 'Error', value: 'Check the phone number for Priya' }] },
+        message: 'Saving Priya',
+        tags: { screen: '/injuries/[id]' },
+        contexts: { device: { model: 'Pixel' } },
+      },
+      null,
+    ) as { exception: { values: { value: string }[] }; message: string; contexts: unknown };
+    expect(report.exception.values[0].value).toBe('Check the phone number for [name]');
+    expect(report.message).toBe('Saving [name]');
+    expect(report.contexts).toEqual({ device: { model: 'Pixel' } });
+  });
+});
+
 describe('scrubbing a report', () => {
   const event = {
     event_id: '0123456789abcdef0123456789abcdef',
@@ -345,9 +385,20 @@ describe('scrubbing a report', () => {
     });
   });
 
-  it('keeps only its own tags, and redacts and scrubs extra details', () => {
+  it('keeps only its own tags, and drops extra details', () => {
     expect(scrubbed.tags).toEqual({ build: 760, screen: '/injuries/[id]', 'event.origin': 'javascript' });
-    expect(scrubbed.extra).toEqual({ full_name: '[redacted]', member_id: '[id]', count: 3, nested: { note: '[redacted]' } });
+    expect(scrubbed.extra).toBeUndefined();
+  });
+
+  it('drops a captured database error’s own fields, which can name someone', () => {
+    const report = scrubReport(
+      {
+        exception: { values: [{ type: 'Error', value: 'Object captured as exception with keys: code, details, hint, message' }] },
+        extra: { __serialized__: { message: 'Check the phone number for Priya Natarajan', code: 'P0001' } },
+      },
+      null,
+    );
+    expect(JSON.stringify(report)).not.toMatch(/Priya|Natarajan/);
   });
 
   it('copes with reports that have odd shapes', () => {
@@ -355,7 +406,7 @@ describe('scrubbing a report', () => {
     const deep: Record<string, unknown> = {};
     let at = deep;
     for (let i = 0; i < 10; i++) at = at.next = {} as Record<string, unknown>;
-    expect(JSON.stringify(scrubReport({ extra: { deep, list: Array.from({ length: 80 }, () => 1) } }, null))).toContain('[…]');
+    expect(JSON.stringify(scrubReport({ contexts: { react: { componentStack: { deep, list: Array.from({ length: 80 }, () => 1) } } } }, null))).toContain('[…]');
   });
 });
 

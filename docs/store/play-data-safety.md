@@ -64,7 +64,9 @@ app without it, or can't turn it off.
 - **Crash reports** (row 23) go to Sentry, in its EU data centre, as a service provider for
   FirstPass, so they are collected, not shared. Diagnostics covers the phone model, system version
   and app version on each report. The report carries a random id made for that install, never a
-  member id, so it is declared under Device or other IDs too. Answer these rows only once the
+  member id, so it is declared under Device or other IDs too. A crash in the phone's own code
+  (not the app's JavaScript) skips the app's filter, so its text is scrubbed by Sentry's own
+  server-side scrubbing instead; it still carries no member id. Answer these rows only once the
   build you are submitting has crash reports (both Sentry settings on expo.dev, see
   `docs/beta-builds.md`, "Crash reports"); a build without them sends none.
 - **The app log** (row 22) leaves the phone only when the member sends it themselves with **Send

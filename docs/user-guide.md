@@ -4465,8 +4465,14 @@ Germany for 30 days, and only FirstPass reads them.
   phone's model and system version, the name of the screen (such as "injuries/[id]", never which
   injury), and a random id made for that copy of the app so repeat crashes from one phone group
   together without saying whose phone it is.
-- **Taken out on the phone, before anything is sent,** and the same for every member, adult or
-  child. Tests on every change check that a sample member's details never survive into a report.
+- **Taken out on the phone, before anything is sent,** for errors in the app's own code (most
+  reports), and the same for every member, adult or child. Tests on every change check that a
+  sample member's details never survive into a report.
+- **A crash deep in the phone's own code** (such as the app closing the moment it opens) is
+  reported by Sentry's built-in part the next time the app opens, without that filter. It holds
+  the crash's technical reason from the phone's system, the phone and app details, the screen's
+  name and the random id, never screenshots, taps, the phone's name or its IP address, and
+  Sentry removes anything that looks like a password or card number.
 - **The app's own log stays on the phone.** It leaves only if the member sends it themselves with
   **Send app log** (see [When something goes wrong](#when-something-goes-wrong)). The app keeps
   names, emails, health details and passwords out of it.

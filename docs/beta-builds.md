@@ -138,10 +138,15 @@ before the first screen.
 
 Builds with both crash report settings send a report to [Sentry](https://sentry.io), in its EU
 data centre, when the app crashes or shows "Something went wrong"
-(`src/lib/crash-reports.ts`). Nothing about a person is in a report: no names, emails, dates of
-birth, member ids, message text or tokens, no breadcrumbs, no screenshots and no IP address.
-[data-handling.md](data-handling.md#crash-reports) lists what is and isn't sent, and
-`src/lib/__tests__/crash-reports.test.ts` tests it.
+(`src/lib/crash-reports.ts`). Reports from the app's own code are filtered on the phone: no
+names, emails, dates of birth, member ids, message text or tokens. Native crashes are sent by
+Sentry's native part without that filter, limited by its options (no breadcrumbs, screenshots,
+phone name or IP address). [data-handling.md](data-handling.md#crash-reports) lists what is and
+isn't sent, and `src/lib/__tests__/crash-reports.test.ts` tests the filter.
+
+**The Sentry project's settings** (Settings, Projects, firstpass-hq, Security & Privacy) must have
+**Data Scrubber**, **Use Default Scrubbers** and **Prevent Storing of IP Addresses** on.
+`data-handling.md` and the privacy page say they are.
 
 | Variable on expo.dev | Visibility | Preview and Production | What it is |
 | --- | --- | --- | --- |
