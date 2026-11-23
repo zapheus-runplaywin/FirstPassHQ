@@ -1,4 +1,5 @@
 import { useCanTakeAttendance, useCanViewAttendance } from '@/lib/attendance';
+import { useCanBeSelector } from '@/lib/assessments';
 import { useAuth } from '@/lib/auth';
 import { useCanSeeCheckIns, useIsCheckInAthlete, useIsCheckInCoach } from '@/lib/check-ins';
 import { useIsGoalAthlete, useIsGoalCoach } from '@/lib/goals';
@@ -49,6 +50,8 @@ export function useRouteAccess() {
   const canCheckTraining = useCanCheckTraining();
   const canReadReports = useCanReadReports();
   const registersOn = useFeature('registers');
+  const assessmentsOn = useFeature('selectionAssessments');
+  const canBeSelector = useCanBeSelector();
 
   const isGuardian = holds('guardian');
   const isAthlete = holds('athlete') || inGroupAs('athlete');
@@ -166,6 +169,13 @@ export function useRouteAccess() {
     editRegisters: registersOn && isAdmin,
     reviewPolicy: registersOn && holds('admin', 'committee', 'coach', 'manager', 'physio', 'statistician'),
     declareConflicts: registersOn && (holds('committee', 'coach') || inGroupAs('coach')),
+
+    // Selection assessments, when the club turns them on: the people who can
+    // sit on a round's panel (coaches, and admins and guests with a current
+    // check that an admin adds).
+    // The database decides who is on which panel; admins set rounds up and
+    // read an audit report, never an assessment.
+    assessments: assessmentsOn && canBeSelector,
   };
 }
 

@@ -123,6 +123,20 @@ const FEATURE_ROUTES: FeatureCase[] = [
       'declare-conflicts',
     ],
   },
+  {
+    feature: 'selectionAssessments',
+    offByDefault: true,
+    routes: [
+      'assessments/index',
+      'assessments/round',
+      'assessments/athlete',
+      'assessments/observe',
+      'admin/assessments/index',
+      'admin/assessments/criteria',
+      'admin/assessments/round',
+      'admin/assessments/audit',
+    ],
+  },
 ];
 
 /**

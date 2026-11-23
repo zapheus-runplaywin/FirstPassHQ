@@ -90,6 +90,11 @@ export function adminMenuItems({ features, squads, membersDetail }: MenuOptions)
       detail: 'Sports Integrity Australia courses each role must complete, and who has',
       href: '/admin/training',
     },
+    features.selectionAssessments && {
+      title: 'Selection assessments',
+      detail: 'Assessment criteria, selection rounds, their panels and the audit report',
+      href: '/admin/assessments',
+    },
     features.kpis && {
       title: 'Season KPI reviews',
       detail: 'The dates each season’s KPIs are reviewed',

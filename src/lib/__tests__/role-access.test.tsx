@@ -103,6 +103,7 @@ function allFeatures(): Features {
     integrity: true,
     kpis: true,
     registers: true,
+    selectionAssessments: true,
   };
 }
 

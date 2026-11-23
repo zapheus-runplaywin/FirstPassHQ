@@ -55,7 +55,7 @@ afterEach(() => {
 // the role guards decide.
 beforeEach(() => {
   resetClub();
-  setClubFeatures({ kpis: true, registers: true, trainingLoad: true });
+  setClubFeatures({ kpis: true, registers: true, trainingLoad: true, selectionAssessments: true });
 });
 
 // ---------------------------------------------------------------------------
@@ -183,6 +183,13 @@ const REGISTER_READERS = union(COMMITTEE, ADMINS);
 const POLICY_REVIEWERS = union(ADMINS, COMMITTEE, COACHES, MANAGERS, PHYSIOS, STATISTICIANS);
 const CONFLICT_DECLARERS = union(COMMITTEE, COACHES);
 
+/**
+ * Who could sit on a selection panel: coaches (by role or by place in a
+ * group) and admins. A guest needs a current check, which the sample guest
+ * doesn't hold; the database decides who is on which panel.
+ */
+const SELECTORS = union(COACHES, ADMINS);
+
 const WHO_OPENS: Record<string, PersonaName[]> = {
   'messages/index': CLUB_MEMBERS,
   'messages/[id]': CLUB_MEMBERS,
@@ -262,6 +269,10 @@ const WHO_OPENS: Record<string, PersonaName[]> = {
   'registers/policy': ADMINS,
   'registers/conflict': ADMINS,
   'declare-conflicts': CONFLICT_DECLARERS,
+  'assessments/index': SELECTORS,
+  'assessments/round': SELECTORS,
+  'assessments/athlete': SELECTORS,
+  'assessments/observe': SELECTORS,
 };
 
 /**
@@ -401,6 +412,18 @@ describe('registers off', () => {
     await expectTurnedAway('committee', route, 'index');
     await expectTurnedAway('coach', route, 'index');
   }, 20000);
+});
+
+describe('selection assessments off', () => {
+  it.each(['assessments/index', 'assessments/round', 'assessments/athlete', 'assessments/observe'])(
+    'sends even admins and coaches home from %s',
+    async (route) => {
+      setClubFeatures({ kpis: true, registers: true });
+      await expectTurnedAway('admin', route, 'index');
+      await expectTurnedAway('coach', route, 'index');
+    },
+    20000,
+  );
 });
 
 describe('captains’ polls off', () => {

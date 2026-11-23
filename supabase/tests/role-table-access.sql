@@ -454,7 +454,9 @@ insert into revoked_tables values
   ('season_kpi_measures'), ('season_kpi_reviews'), ('session_plan_views'), ('session_plan_notices'),
   ('surveys'), ('survey_questions'), ('survey_recipients'), ('survey_responses'), ('survey_answers'),
   ('join_password_attempts'), ('former_partner_roles'), ('game_pair_attempts'), ('policy_register'),
-  ('conflict_declarations'), ('guardian_link_codes'), ('guardian_link_code_attempts');
+  ('conflict_declarations'), ('guardian_link_codes'), ('guardian_link_code_attempts'),
+  ('assessment_criteria'), ('selection_rounds'), ('selection_round_panel'), ('assessment_observations'),
+  ('assessment_observation_ratings');
 grant select on revoked_tables to authenticated;
 select pg_temp.ok(t || ': signed-in members have no privilege on it',
   has_table_privilege('authenticated', 'public.' || t, 'select') or has_table_privilege('authenticated', 'public.' || t, 'insert')
