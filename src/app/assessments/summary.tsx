@@ -1,4 +1,4 @@
-import { useFocusEffect, useLocalSearchParams } from 'expo-router';
+import { router, useFocusEffect, useLocalSearchParams } from 'expo-router';
 import { useCallback, useState } from 'react';
 import { StyleSheet, View } from 'react-native';
 
@@ -10,6 +10,7 @@ import { Spacing } from '@/constants/theme';
 import {
   MAX_SUMMARY_TEXT,
   myObservationsLine,
+  nextToSign,
   setSummaryRating,
   summaryComparison,
   summaryCoverage,
@@ -17,6 +18,9 @@ import {
   summarySheetReport,
   summaryStart,
   type AssessmentSummary,
+  type RoundSheet,
+  type SheetAthlete,
+  type SummaryStatus,
   type SummaryDraft,
 } from '@/lib/assessments';
 import { formatDateString } from '@/lib/injuries';
@@ -34,6 +38,7 @@ export default function SummaryScreen() {
   const { round, athlete } = useLocalSearchParams<{ round: string; athlete: string }>();
   const [summary, setSummary] = useState<AssessmentSummary | null>(null);
   const [draft, setDraft] = useState<SummaryDraft | null>(null);
+  const [next, setNext] = useState<SheetAthlete | null>(null);
   const [open, setOpen] = useState<string[]>([]);
   const [busy, setBusy] = useState(false);
   const [saved, setSaved] = useState(false);
@@ -53,6 +58,12 @@ export default function SummaryScreen() {
     setError(null);
     setSummary(loaded);
     setDraft(summaryStart(loaded));
+    // The next athlete whose summary is still to sign, to move on without going back.
+    const { data: sheet } = await supabase.rpc('selection_round_sheet', { p_round_id: round });
+    const { data: statuses } = await supabase.rpc('selection_round_summaries', { p_round_id: round });
+    setNext(
+      nextToSign((sheet as RoundSheet | null)?.athletes ?? [], (statuses as SummaryStatus[] | null) ?? [], athlete),
+    );
   }, [round, athlete]);
 
   useFocusEffect(
@@ -118,6 +129,15 @@ export default function SummaryScreen() {
     setBusy(false);
   }
 
+  const onwards =
+    next && !summary.closed ? (
+      <Button
+        title={`Next: ${next.name ?? 'Athlete'}`}
+        variant="secondary"
+        onPress={() => router.replace({ pathname: '/assessments/summary', params: { round, athlete: next.id } })}
+      />
+    ) : null;
+
   const heading = (
     <>
       <ThemedText type="subtitle">{summary.athlete_name ?? 'Athlete'}</ThemedText>
@@ -143,6 +163,7 @@ export default function SummaryScreen() {
           The PDF is for the panel only.
         </ThemedText>
         <ErrorText>{error}</ErrorText>
+        {onwards}
         <ReportView report={summarySheetReport(summary)} buttonOnly />
         {compared.selectors.map((s) => (
           <Card key={s.name} style={styles.card}>
@@ -245,8 +266,7 @@ export default function SummaryScreen() {
     <Screen refreshing={refreshing} onRefresh={onRefresh}>
       {heading}
       <ThemedText type="small" themeColor="textSecondary">
-        Your own view of this athlete across the round. You write it without seeing anyone else’s
-        summary, and see theirs once you sign yours.
+        Your own view across the round. You see the other selectors’ summaries once you sign yours.
         {summary.others_signed > 0
           ? ` ${summary.others_signed} other ${summary.others_signed === 1 ? 'selector has' : 'selectors have'} signed.`
           : ''}
@@ -351,6 +371,7 @@ export default function SummaryScreen() {
         onConfirm={() => save(true)}
         busy={busy}
       />
+      {onwards}
     </Screen>
   );
 }

@@ -19,6 +19,7 @@ import { useTheme } from '@/hooks/use-theme';
 import { useAbsencesToReview, useLeadsAGroup } from '@/lib/absences';
 import {
   roundsLabel,
+  selectionHomeHref,
   selectionInfoLabel,
   useMySelectionInfo,
   useMySelectionRounds,
@@ -642,7 +643,7 @@ export default function HomeScreen() {
               ) : null}
 
               {selectionRounds.length > 0 ? (
-                <PressableCard onPress={() => router.push('/assessments')}>
+                <PressableCard onPress={() => router.push(selectionHomeHref(selectionRounds))}>
                   <ThemedText type="smallBold">Selection assessments</ThemedText>
                   <ThemedText type="small" themeColor="textSecondary">
                     {roundsLabel(selectionRounds)}
