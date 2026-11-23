@@ -4,7 +4,7 @@ import { StyleSheet, View } from 'react-native';
 
 import { Screen } from '@/components/screen';
 import { ThemedText } from '@/components/themed-text';
-import { Button, Card, ChipGroup, ErrorText } from '@/components/ui';
+import { Button, Card, ChipGroup, ErrorText, PressableCard } from '@/components/ui';
 import { Spacing } from '@/constants/theme';
 import {
   attendanceLine,
@@ -12,12 +12,16 @@ import {
   contextLabels,
   feedbackStatusLine,
   ratingLines,
+  roundGameLine,
+  roundGameTitle,
   tallyLabel,
   type AthleteAssessment,
   type AthleteFeedback,
   type Observation,
   type RoundAttendance,
+  type RoundGame,
 } from '@/lib/assessments';
+import { fetchGameStats, statLines, type GameStats } from '@/lib/game-stats';
 import { formatDateString } from '@/lib/injuries';
 import { supabase } from '@/lib/supabase';
 
@@ -34,7 +38,11 @@ export default function AthleteAssessmentScreen() {
   const [feedback, setFeedback] = useState<AthleteFeedback | null>(null);
   const [error, setError] = useState<string | null>(null);
   const [refreshing, setRefreshing] = useState(false);
-  const [tab, setTab] = useState<'picture' | 'observations'>('picture');
+  const [games, setGames] = useState<RoundGame[]>([]);
+  // The game that is open on the Games tab, and its figures once fetched (null when there are none).
+  const [openGame, setOpenGame] = useState<string | null>(null);
+  const [stats, setStats] = useState<Record<string, GameStats | null>>({});
+  const [tab, setTab] = useState<'picture' | 'observations' | 'games'>('picture');
 
   const load = useCallback(async () => {
     const { data, error: loadError } = await supabase.rpc('athlete_assessment', {
@@ -51,7 +59,10 @@ export default function AthleteAssessmentScreen() {
       .maybeSingle();
     // Feedback for the athlete: the head coach writes it, the panel reads it once shared.
     const { data: shared } = await supabase.rpc('athlete_feedback', { p_round_id: round, p_athlete_id: athlete });
+    // The games the athlete played during the round: which and when. Figures are fetched for one game when it is opened.
+    const { data: played } = await supabase.rpc('selection_round_games', { p_round_id: round, p_athlete_id: athlete });
     setError(null);
+    setGames((played as RoundGame[] | null) ?? []);
     setFeedback((shared as AthleteFeedback | null) ?? null);
     setAttendance((counts as RoundAttendance | null) ?? null);
     setAssessment(data as AthleteAssessment);
@@ -80,7 +91,16 @@ export default function AthleteAssessmentScreen() {
   const picture = buildPicture(assessment.criteria, assessment.observations);
   const attended = attendanceLine(attendance);
 
-  function observe(params: { id?: string; corrects?: string } = {}) {
+  async function toggleGame(game: RoundGame) {
+    const opening = openGame !== game.fixture_id;
+    setOpenGame(opening ? game.fixture_id : null);
+    if (opening && game.recorded && !(game.fixture_id in stats)) {
+      const fetched = await fetchGameStats(athlete, game.fixture_id);
+      setStats((known) => ({ ...known, [game.fixture_id]: fetched }));
+    }
+  }
+
+  function observe(params: { id?: string; corrects?: string; context?: string; on?: string } = {}) {
     router.push({ pathname: '/assessments/observe', params: { round, athlete, ...params } });
   }
 
@@ -124,17 +144,77 @@ export default function AthleteAssessmentScreen() {
         />
       ) : null}
 
-      {picture.observations > 0 ? (
+      {picture.observations > 0 || games.length > 0 ? (
         <>
           <ChipGroup
             options={[
-              { value: 'picture', label: 'The picture so far' },
-              { value: 'observations', label: `Observations (${picture.observations})` },
+              { value: 'picture' as const, label: 'The picture so far' },
+              { value: 'observations' as const, label: `Observations (${picture.observations})` },
+              ...(games.length > 0 ? [{ value: 'games' as const, label: `Games (${games.length})` }] : []),
             ]}
             selected={[tab]}
             onToggle={setTab}
           />
-          {tab === 'picture' ? (
+          {tab === 'games' ? (
+            <>
+              {games.map((game) => {
+                const isOpen = openGame === game.fixture_id;
+                const figures = stats[game.fixture_id];
+                return (
+                  <PressableCard key={game.fixture_id} onPress={() => toggleGame(game)}>
+                    <ThemedText type="smallBold">{roundGameTitle(game)}</ThemedText>
+                    {!isOpen ? (
+                      <ThemedText type="small" themeColor="textSecondary">
+                        {roundGameLine(game)}
+                      </ThemedText>
+                    ) : (
+                      <>
+                        {!game.recorded ? (
+                          <ThemedText type="small" themeColor="textSecondary">
+                            This game wasn’t recorded in FirstPass Vantage, so there are no stats.
+                          </ThemedText>
+                        ) : figures === undefined ? (
+                          <ThemedText type="small" themeColor="textSecondary">
+                            Getting the stats…
+                          </ThemedText>
+                        ) : figures === null ? (
+                          <ThemedText type="small" themeColor="textSecondary">
+                            No stats for this athlete in this game.
+                          </ThemedText>
+                        ) : (
+                          statLines(figures).map((line) => (
+                            <View key={line.label} style={styles.stat}>
+                              <ThemedText type="small" themeColor="textSecondary">
+                                {line.label}
+                              </ThemedText>
+                              <ThemedText type="small" style={styles.statValue}>
+                                {line.value}
+                              </ThemedText>
+                            </View>
+                          ))
+                        )}
+                        {assessment.closed ? null : (
+                          <Button
+                            title="Write about this game"
+                            variant="secondary"
+                            onPress={() => observe({ context: 'game', on: game.played_on })}
+                          />
+                        )}
+                      </>
+                    )}
+                  </PressableCard>
+                );
+              })}
+              <ThemedText type="small" themeColor="textSecondary">
+                Stats are this athlete’s own, from games recorded during the round. Only their
+                coaches and this panel see them.
+              </ThemedText>
+            </>
+          ) : picture.observations === 0 ? (
+            <ThemedText type="small" themeColor="textSecondary">
+              Nothing written yet. A line after training or a game is enough.
+            </ThemedText>
+          ) : tab === 'picture' ? (
             <>
           {picture.groups
             .filter((group) => group.count > 0)
@@ -231,4 +311,6 @@ function ObservationCard({
 
 const styles = StyleSheet.create({
   card: { gap: Spacing.one },
+  stat: { flexDirection: 'row', justifyContent: 'space-between', gap: Spacing.three },
+  statValue: { flexShrink: 1, textAlign: 'right' },
 });

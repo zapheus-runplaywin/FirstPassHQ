@@ -28,11 +28,14 @@ const NOT_RATED = '0';
  * that is locked (opened with the id it corrects).
  */
 export default function ObserveScreen() {
-  const { round, athlete, id, corrects } = useLocalSearchParams<{
+  // `context` and `on` start a new observation about a game from the athlete's Games tab.
+  const { round, athlete, id, corrects, context: startContext, on: startOn } = useLocalSearchParams<{
     round: string;
     athlete: string;
     id?: string;
     corrects?: string;
+    context?: string;
+    on?: string;
   }>();
   const [assessment, setAssessment] = useState<AthleteAssessment | null>(null);
   const [context, setContext] = useState<ObservationContext | null>('training');
@@ -65,10 +68,12 @@ export default function ObserveScreen() {
             loaded.criteria.groups.filter((g) => g.items.some((i) => rated.has(i.key))).map((g) => g.key),
           );
         } else {
-          setObservedOn(loaded.today);
+          if (CONTEXTS.some((c) => c.value === startContext)) setContext(startContext as ObservationContext);
+          // A day in the round, never one still to come: the form's own check covers the rest.
+          setObservedOn(startOn && /^\d{4}-\d{2}-\d{2}$/.test(startOn) && startOn <= loaded.today ? startOn : loaded.today);
         }
       });
-  }, [round, athlete, id]);
+  }, [round, athlete, id, startContext, startOn]);
 
   if (!assessment) {
     return (
