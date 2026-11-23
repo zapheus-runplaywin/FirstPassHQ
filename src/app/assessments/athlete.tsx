@@ -2,6 +2,7 @@ import { router, useFocusEffect, useLocalSearchParams } from 'expo-router';
 import { useCallback, useState } from 'react';
 import { StyleSheet, View } from 'react-native';
 
+import { CardGrid } from '@/components/columns';
 import { Screen } from '@/components/screen';
 import { ThemedText } from '@/components/themed-text';
 import { Button, Card, ChipGroup, ErrorText, PressableCard } from '@/components/ui';
@@ -157,54 +158,56 @@ export default function AthleteAssessmentScreen() {
           />
           {tab === 'games' ? (
             <>
-              {games.map((game) => {
-                const isOpen = openGame === game.fixture_id;
-                const figures = stats[game.fixture_id];
-                return (
-                  <PressableCard key={game.fixture_id} onPress={() => toggleGame(game)}>
-                    <ThemedText type="smallBold">{roundGameTitle(game)}</ThemedText>
-                    {!isOpen ? (
-                      <ThemedText type="small" themeColor="textSecondary">
-                        {roundGameLine(game)}
-                      </ThemedText>
-                    ) : (
-                      <>
-                        {!game.recorded ? (
-                          <ThemedText type="small" themeColor="textSecondary">
-                            This game wasn’t recorded in FirstPass Vantage, so there are no stats.
-                          </ThemedText>
-                        ) : figures === undefined ? (
-                          <ThemedText type="small" themeColor="textSecondary">
-                            Getting the stats…
-                          </ThemedText>
-                        ) : figures === null ? (
-                          <ThemedText type="small" themeColor="textSecondary">
-                            No stats for this athlete in this game.
-                          </ThemedText>
-                        ) : (
-                          statLines(figures).map((line) => (
-                            <View key={line.label} style={styles.stat}>
-                              <ThemedText type="small" themeColor="textSecondary">
-                                {line.label}
-                              </ThemedText>
-                              <ThemedText type="small" style={styles.statValue}>
-                                {line.value}
-                              </ThemedText>
-                            </View>
-                          ))
-                        )}
-                        {assessment.closed ? null : (
-                          <Button
-                            title="Write about this game"
-                            variant="secondary"
-                            onPress={() => observe({ context: 'game', on: game.played_on })}
-                          />
-                        )}
-                      </>
-                    )}
-                  </PressableCard>
-                );
-              })}
+              <CardGrid gap={Spacing.four}>
+                {games.map((game) => {
+                  const isOpen = openGame === game.fixture_id;
+                  const figures = stats[game.fixture_id];
+                  return (
+                    <PressableCard key={game.fixture_id} onPress={() => toggleGame(game)}>
+                      <ThemedText type="smallBold">{roundGameTitle(game)}</ThemedText>
+                      {!isOpen ? (
+                        <ThemedText type="small" themeColor="textSecondary">
+                          {roundGameLine(game)}
+                        </ThemedText>
+                      ) : (
+                        <>
+                          {!game.recorded ? (
+                            <ThemedText type="small" themeColor="textSecondary">
+                              This game wasn’t recorded in FirstPass Vantage, so there are no stats.
+                            </ThemedText>
+                          ) : figures === undefined ? (
+                            <ThemedText type="small" themeColor="textSecondary">
+                              Getting the stats…
+                            </ThemedText>
+                          ) : figures === null ? (
+                            <ThemedText type="small" themeColor="textSecondary">
+                              No stats for this athlete in this game.
+                            </ThemedText>
+                          ) : (
+                            statLines(figures).map((line) => (
+                              <View key={line.label} style={styles.stat}>
+                                <ThemedText type="small" themeColor="textSecondary">
+                                  {line.label}
+                                </ThemedText>
+                                <ThemedText type="small" style={styles.statValue}>
+                                  {line.value}
+                                </ThemedText>
+                              </View>
+                            ))
+                          )}
+                          {assessment.closed ? null : (
+                            <Button
+                              title="Write about this game"
+                              variant="secondary"
+                              onPress={() => observe({ context: 'game', on: game.played_on })}
+                            />
+                          )}
+                        </>
+                      )}
+                    </PressableCard>
+                  );
+                })}
+              </CardGrid>
               <ThemedText type="small" themeColor="textSecondary">
                 Stats are this athlete’s own, from games recorded during the round. Only their
                 coaches and this panel see them.

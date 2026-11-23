@@ -285,6 +285,18 @@ describe('the Games tab on an athlete’s assessment', () => {
     await pullToRefresh();
     expect(rpcCalls('selection_round_games')).toHaveLength(2);
   });
+
+  it('puts the games two a row on a tablet, and one a row on a phone', async () => {
+    await openAthlete([game(), game({ fixture_id: 'fx2', opponent: 'Planets' })]);
+    await press(/^Games \(2\)/);
+    expect(screen.queryByTestId('card-grid-2')).toBeNull();
+    const layout = (width: number) => ({ nativeEvent: { layout: { width, height: 600, x: 0, y: 0 } } });
+    await fireEvent(screen.getByTestId('card-grid-1'), 'layout', layout(772));
+    expect(screen.getByTestId('card-grid-2')).toBeTruthy();
+    expect(screen.getByText(/Planets/)).toBeTruthy();
+    await fireEvent(screen.getByTestId('card-grid-2'), 'layout', layout(382));
+    expect(screen.getByTestId('card-grid-1')).toBeTruthy();
+  });
 });
 
 describe('an observation started from a game', () => {
