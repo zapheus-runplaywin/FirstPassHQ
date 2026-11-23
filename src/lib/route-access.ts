@@ -1,5 +1,5 @@
 import { useCanTakeAttendance, useCanViewAttendance } from '@/lib/attendance';
-import { useCanBeSelector } from '@/lib/assessments';
+import { useCanBeSelector, useCanSeeSelectionInfo } from '@/lib/assessments';
 import { useAuth } from '@/lib/auth';
 import { useCanSeeCheckIns, useIsCheckInAthlete, useIsCheckInCoach } from '@/lib/check-ins';
 import { useIsGoalAthlete, useIsGoalCoach } from '@/lib/goals';
@@ -52,6 +52,7 @@ export function useRouteAccess() {
   const registersOn = useFeature('registers');
   const assessmentsOn = useFeature('selectionAssessments');
   const canBeSelector = useCanBeSelector();
+  const canSeeSelectionInfo = useCanSeeSelectionInfo();
 
   const isGuardian = holds('guardian');
   const isAthlete = holds('athlete') || inGroupAs('athlete');
@@ -176,6 +177,10 @@ export function useRouteAccess() {
     // The database decides who is on which panel; admins set rounds up and
     // read an audit report, never an assessment.
     assessments: assessmentsOn && canBeSelector,
+    // Athletes, and parents and guardians, read a round's criteria and the
+    // dates the club shares; the database shows a parent only their own
+    // verified children's rounds, and never an assessment.
+    selectionInfo: canSeeSelectionInfo,
   };
 }
 

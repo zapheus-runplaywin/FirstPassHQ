@@ -5,9 +5,18 @@ import { StyleSheet, View } from 'react-native';
 import { MonthDateField } from '@/components/month-date-field';
 import { Screen } from '@/components/screen';
 import { ThemedText } from '@/components/themed-text';
-import { Button, Card, ChipGroup, ErrorText, TextField } from '@/components/ui';
+import { Button, Card, ChipGroup, ErrorText, PressableCard, TextField } from '@/components/ui';
 import { Spacing } from '@/constants/theme';
-import { panelNotes, type AdminRound, type PanelChoice } from '@/lib/assessments';
+import {
+  MAX_MILESTONES,
+  isOverdue,
+  milestoneLine,
+  panelNotes,
+  type AdminRound,
+  type Milestone,
+  type PanelChoice,
+} from '@/lib/assessments';
+import { clubToday } from '@/lib/club-time';
 import { formatDateString } from '@/lib/injuries';
 import { supabase } from '@/lib/supabase';
 import { teamLabel, useTeams } from '@/lib/use-teams';
@@ -22,6 +31,7 @@ export default function AdminRoundScreen() {
   const { id } = useLocalSearchParams<{ id?: string }>();
   const teams = useTeams();
   const [round, setRound] = useState<AdminRound | null>(null);
+  const [dates, setDates] = useState<Milestone[]>([]);
   const [choices, setChoices] = useState<PanelChoice[] | null>(null);
   const [loaded, setLoaded] = useState(!id);
   const [teamId, setTeamId] = useState<string | null>(null);
@@ -43,6 +53,10 @@ export default function AdminRoundScreen() {
       return;
     }
     const found = ((data as AdminRound[] | null) ?? []).find((r) => r.id === id) ?? null;
+    const { data: dateRows } = found
+      ? await supabase.rpc('admin_selection_milestones', { p_round_id: id })
+      : { data: null };
+    setDates((dateRows as Milestone[] | null) ?? []);
     setRound(found);
     setLoaded(true);
   }, [id]);
@@ -140,6 +154,9 @@ export default function AdminRoundScreen() {
 
   const onPanel = round?.panel.filter((m) => !m.removed_at) ?? [];
   const left = round?.panel.filter((m) => m.removed_at) ?? [];
+  const today = clubToday();
+  const standing = dates.filter((m) => !m.removed_at);
+  const takenOff = dates.filter((m) => m.removed_at);
 
   return (
     <Screen>
@@ -181,6 +198,43 @@ export default function AdminRoundScreen() {
 
       {round ? (
         <>
+          <ThemedText type="subtitle">Dates</ThemedText>
+          <ThemedText type="small" themeColor="textSecondary">
+            The steps in this round and when each is due. The panel and admins get a to-do from
+            a week before, until an admin marks it done.
+          </ThemedText>
+          {standing.length === 0 ? (
+            <ThemedText type="small">No dates yet.</ThemedText>
+          ) : (
+            standing.map((m) => {
+              const late = isOverdue({ due_on: m.due_on, done: !!m.done_at }, today);
+              return (
+                <PressableCard
+                  key={m.id}
+                  onPress={() =>
+                    router.push({ pathname: '/admin/assessments/milestone', params: { round: round.id, id: m.id } })
+                  }>
+                  <ThemedText type="smallBold">{m.title}</ThemedText>
+                  <ThemedText type={late ? 'smallBold' : 'small'} themeColor={late ? 'text' : 'textSecondary'}>
+                    {milestoneLine(m, today)}
+                  </ThemedText>
+                </PressableCard>
+              );
+            })
+          )}
+          {round.closed_at || standing.length >= MAX_MILESTONES ? null : (
+            <Button
+              title="Add a date"
+              variant="secondary"
+              onPress={() => router.push({ pathname: '/admin/assessments/milestone', params: { round: round.id } })}
+            />
+          )}
+          {takenOff.length > 0 ? (
+            <ThemedText type="small" themeColor="textSecondary">
+              Taken off: {takenOff.map((m) => m.title).join(', ')}. They stay in the audit report.
+            </ThemedText>
+          ) : null}
+
           <ThemedText type="subtitle">Panel</ThemedText>
           <ThemedText type="small" themeColor="textSecondary">
             Only the panel reads and writes this round’s assessments. Nobody on it can assess

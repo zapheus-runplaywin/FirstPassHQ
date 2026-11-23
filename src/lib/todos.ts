@@ -1,5 +1,6 @@
 import type { Href } from 'expo-router';
 
+import type { SelectionTodo } from '@/lib/assessments';
 import { slotTitle } from '@/lib/awards';
 import { clubDay } from '@/lib/club-time';
 import { formatShortDay } from '@/lib/format';
@@ -111,6 +112,7 @@ export function buildTodos({
   surveys = [],
   medicalReviews = [],
   policyReviews = [],
+  selectionTodos = [],
   conflictDeclaration = null,
   today = new Date(),
 }: {
@@ -179,6 +181,8 @@ export function buildTodos({
   medicalReviews?: MedicalReview[];
   /** Policies the member owns whose review is due within 30 days or overdue. */
   policyReviews?: PolicyReview[];
+  /** Selection dates close or overdue, and athletes with nothing written near a round's end. */
+  selectionTodos?: SelectionTodo[];
   /** The member's conflict-of-interest declaration this season, if they make one. */
   conflictDeclaration?: MyConflictDeclaration | null;
   today?: Date;
@@ -753,6 +757,34 @@ export function buildTodos({
       href: { pathname: '/registers/review', params: { id: policy.id } },
       dueOn: policy.review_on,
     });
+  }
+
+  // Selection rounds: a date that is close or overdue, for the panel and for
+  // admins (who mark it done), and athletes nobody has written about as the
+  // round's last two weeks run out.
+  for (const todo of selectionTodos) {
+    if (todo.kind === 'date') {
+      todos.push({
+        key: `selection-date-${todo.milestone_id}`,
+        title: `${todo.title ?? 'Selection date'}: ${todo.round_name}`,
+        detail: `${todo.due_on < toDateString(today) ? 'Was due' : 'Due'} ${formatDateString(todo.due_on)}${
+          todo.for_admin ? '. Mark it done when it is' : ''
+        }`,
+        href: todo.for_admin
+          ? { pathname: '/admin/assessments/round', params: { id: todo.round_id } }
+          : { pathname: '/assessments/round', params: { id: todo.round_id } },
+        dueOn: todo.due_on,
+      });
+    } else {
+      const n = todo.athletes ?? 0;
+      todos.push({
+        key: `selection-thin-${todo.round_id}`,
+        title: `${n} ${n === 1 ? 'athlete has' : 'athletes have'} nothing written yet: ${todo.round_name}`,
+        detail: `The round ends ${formatDateString(todo.due_on)}`,
+        href: { pathname: '/assessments/round', params: { id: todo.round_id } },
+        dueOn: todo.due_on,
+      });
+    }
   }
 
   if (conflictDeclaration?.required && !conflictDeclaration.declared_at) {

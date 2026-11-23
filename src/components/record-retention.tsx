@@ -37,6 +37,8 @@ type Retention = {
   award_votes_months: number;
   /** Months after it closes an award and its results are kept; 0 keeps them for good. */
   awards_months: number;
+  /** Months after it ends a selection round and its assessments are kept. */
+  assessments_months: number;
 };
 
 type SurveyRetention = Pick<Retention, 'surveys_months' | 'shared_surveys_months' | 'team_polls_months'>;
@@ -59,6 +61,7 @@ async function loadRetention() {
     { data: surveys },
     { data: moreData },
     { data: medicalMonths },
+    { data: assessmentMonths },
   ] = await Promise.all([
     supabase.rpc('record_retention').maybeSingle(),
     supabase.rpc('child_messages_keep_months'),
@@ -66,6 +69,7 @@ async function loadRetention() {
     supabase.rpc('survey_retention').maybeSingle(),
     supabase.rpc('more_record_retention').maybeSingle(),
     supabase.rpc('medical_keep_months'),
+    supabase.rpc('assessment_keep_months'),
   ]);
   if (!data) return null;
   const survey = surveys as SurveyRetention | null;
@@ -76,6 +80,7 @@ async function loadRetention() {
       | 'child_messages_months'
       | 'injury_documents_days'
       | 'medical_months'
+      | 'assessments_months'
       | keyof SurveyRetention
       | keyof MoreRetention
     >),
@@ -89,6 +94,7 @@ async function loadRetention() {
     safeguarding_months: more?.safeguarding_months ?? 360,
     award_votes_months: more?.award_votes_months ?? 12,
     awards_months: more?.awards_months ?? 120,
+    assessments_months: typeof assessmentMonths === 'number' ? assessmentMonths : 12,
   } as Retention;
 }
 
@@ -194,6 +200,12 @@ const laterPeriods: { key: PeriodKey; label: string; note: string; choices: numb
     note: 'From when the award closes, with every vote. At least as long as who voted for whom. Recommended: 10 years.',
     choices: [36, 60, 120, 240, 0],
   },
+  {
+    key: 'assessments_months',
+    label: 'Selection assessments',
+    note: 'A selection round with its panel, dates and every observation, from the day the round ends, or the day it was closed if that was later. A round stays while a concern names anyone assessed in it. Recommended: 1 year, long enough to answer a question or appeal about a selection.',
+    choices: [12, 24, 36, 60, 84],
+  },
 ];
 
 /** The choices, plus the club's saved period when it's one no longer offered. */
@@ -283,7 +295,10 @@ export function RecordRetention() {
     const { error: medicalError } = firstError || surveyError || moreError
       ? { error: null }
       : await supabase.rpc('admin_set_medical_keep_months', { p_months: draft.medical_months });
-    const rpcError = firstError ?? surveyError ?? moreError ?? medicalError;
+    const { error: assessmentError } = firstError || surveyError || moreError || medicalError
+      ? { error: null }
+      : await supabase.rpc('admin_set_assessment_keep_months', { p_months: draft.assessments_months });
+    const rpcError = firstError ?? surveyError ?? moreError ?? medicalError ?? assessmentError;
     if (rpcError) {
       setError(rpcError.message ?? 'That didn’t save. Try again.');
       return;

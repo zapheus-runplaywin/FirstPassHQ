@@ -135,6 +135,8 @@ const FEATURE_ROUTES: FeatureCase[] = [
       'admin/assessments/criteria',
       'admin/assessments/round',
       'admin/assessments/audit',
+      'admin/assessments/milestone',
+      'selection',
     ],
   },
 ];
@@ -155,6 +157,7 @@ const OPENED_BY: Record<string, PersonaName> = {
   'goals/game': 'athlete',
   'goals/team': 'coach',
   'declare-conflicts': 'committee',
+  selection: 'athlete',
 };
 const openerOf = (route: string): PersonaName => OPENED_BY[route] ?? 'admin';
 

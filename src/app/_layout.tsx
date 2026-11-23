@@ -253,6 +253,9 @@ function RootStack() {
             <Stack.Screen name="assessments/athlete" options={{ title: 'Assessment' }} />
             <Stack.Screen name="assessments/observe" options={{ title: 'Observation' }} />
           </Stack.Protected>
+          <Stack.Protected guard={can.selectionInfo}>
+            <Stack.Screen name="selection" options={{ title: 'Selection' }} />
+          </Stack.Protected>
           <Stack.Protected guard={can.open}>
             <Stack.Screen name="declaration" options={{ title: 'Exemption declaration' }} />
             <Stack.Screen name="wwcc-application" options={{ title: 'Check application' }} />
@@ -370,6 +373,7 @@ function RootStack() {
               <Stack.Screen name="admin/assessments/index" options={{ title: 'Selection assessments' }} />
               <Stack.Screen name="admin/assessments/criteria" options={{ title: 'Assessment criteria' }} />
               <Stack.Screen name="admin/assessments/round" options={{ title: 'Selection round' }} />
+              <Stack.Screen name="admin/assessments/milestone" options={{ title: 'Selection date' }} />
               <Stack.Screen name="admin/assessments/audit" options={{ title: 'Selection audit report' }} />
             </Stack.Protected>
             <Stack.Protected guard={features.kpis}>

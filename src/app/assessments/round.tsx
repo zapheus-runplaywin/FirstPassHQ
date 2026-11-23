@@ -3,8 +3,9 @@ import { useCallback, useState } from 'react';
 
 import { Screen } from '@/components/screen';
 import { ThemedText } from '@/components/themed-text';
-import { ErrorText, PressableCard } from '@/components/ui';
-import { athleteLine, roundDates, type RoundSheet } from '@/lib/assessments';
+import { Card, ErrorText, PressableCard } from '@/components/ui';
+import { athleteLine, dueLabel, isOverdue, roundDates, type RoundDate, type RoundSheet } from '@/lib/assessments';
+import { formatDateString } from '@/lib/injuries';
 import { supabase } from '@/lib/supabase';
 
 /**
@@ -15,6 +16,7 @@ import { supabase } from '@/lib/supabase';
 export default function RoundScreen() {
   const { id } = useLocalSearchParams<{ id: string }>();
   const [sheet, setSheet] = useState<RoundSheet | null>(null);
+  const [dates, setDates] = useState<RoundDate[]>([]);
   const [error, setError] = useState<string | null>(null);
   const [refreshing, setRefreshing] = useState(false);
 
@@ -24,7 +26,9 @@ export default function RoundScreen() {
       setError(loadError.message);
       return;
     }
+    const { data: dateRows } = await supabase.rpc('selection_round_dates', { p_round_id: id });
     setError(null);
+    setDates((dateRows as RoundDate[] | null) ?? []);
     setSheet(data as RoundSheet);
   }, [id]);
 
@@ -58,6 +62,19 @@ export default function RoundScreen() {
         {sheet.closed ? ' · closed, so nothing more can be added' : ''}
       </ThemedText>
       <ErrorText>{error}</ErrorText>
+      {dates.length > 0 ? (
+        <Card>
+          <ThemedText type="smallBold">Dates</ThemedText>
+          {dates.map((date) => {
+            const late = isOverdue(date, sheet.today);
+            return (
+              <ThemedText key={date.id} type={late ? 'smallBold' : 'small'} themeColor={late ? 'text' : 'textSecondary'}>
+                {formatDateString(date.due_on)} · {date.title} · {dueLabel(date, sheet.today)}
+              </ThemedText>
+            );
+          })}
+        </Card>
+      ) : null}
       {sheet.athletes.length === 0 ? (
         <ThemedText type="small" themeColor="textSecondary">
           There are no athletes in {sheet.team_name} for you to assess.

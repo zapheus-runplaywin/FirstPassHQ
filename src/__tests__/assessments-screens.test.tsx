@@ -1190,8 +1190,10 @@ describe('the Selection audit report', () => {
 
   it('asks for the round’s audit and nothing that holds an assessment', async () => {
     await openAudit();
-    expect(assessmentRpcs()).toEqual(['admin_selection_audit']);
+    // The round's dates come with it: titles, days and who marked them done.
+    expect(assessmentRpcs()).toEqual(['admin_selection_audit', 'admin_selection_milestones']);
     expect(onlyRpcCall('admin_selection_audit')).toEqual({ p_round_id: 'r1' });
+    expect(onlyRpcCall('admin_selection_milestones')).toEqual({ p_round_id: 'r1' });
   });
 
   it('builds the report again on pull to refresh', async () => {
@@ -1202,7 +1204,7 @@ describe('the Selection audit report', () => {
 
   it('shows the round, the panel, what each selector wrote and the evidence about each athlete', async () => {
     await openAudit();
-    for (const title of ['The round', 'The panel', 'What each selector wrote', 'Evidence about each athlete']) {
+    for (const title of ['The round', 'Dates', 'The panel', 'What each selector wrote', 'Evidence about each athlete']) {
       expect(screen.getByText(title)).toBeTruthy();
     }
     expect(screen.getByText('Jordan Junior (under 18)')).toBeTruthy();
