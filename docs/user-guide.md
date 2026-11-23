@@ -2821,7 +2821,9 @@ committee member.
 **A guest as an independent selector.** If the club uses [selection
 assessments](#selection-assessments), an admin can put a guest with a current check on a selection
 round's panel, such as a selector from outside the club. They get **Selection assessments** on
-their home screen for that round, and nothing else changes.
+their home screen for that round, and nothing else changes. A guest with no other role in the club
+is shown to admins as **Independent** on the round's panel and in its audit report (see [Selection
+assessments for admins](#selection-assessments-for-admins) for the steps).
 
 <img src="user-guide/guest-home.png" width="210" alt="Guest home screen">
 <img src="user-guide/guest-details-check.png" width="210" alt="A guest's Your details with the optional Working With Children Check">
@@ -4017,15 +4019,30 @@ its start and end, and closing it). The number beside Dates and Panel is how man
 
 **The panel.** The panel starts as the group's coaches who hold a current Working With Children
 Check. Open the round and tap **Panel** to change it: **Add a selector** offers the club's other coaches, admins and
-guests, and only those with a current check can be added (a guest is how you add an independent
-selector; see [Guests](#guests)). **Take … off the panel** removes someone; what they wrote stays.
+guests, and only those with a current check can be added. **Take … off the panel** removes
+someone; what they wrote stays.
 Every change is kept with who made it and when, under **No longer on the panel** and in the audit
 report. The round also tells you when a panel member has declared a conflict of interest this
 season (if the club uses the [registers](#policy-and-conflict-registers)), how many athletes in the
 round they can't assess because they're the athlete's parent or guardian, and when one has lost
 access because they were stood down, left or their check lapsed.
 
-<img src="user-guide/admin-assessments-round.png" width="210" alt="A selection round's Panel tab for an admin: its panel, adding a selector and who has left the panel">
+**An independent selector.** To put someone from outside the club on a panel:
+
+1. Ask them to sign in to HQ with the club's code and request to join as a **Guest** (see [Ask
+   to join the club](#ask-to-join-the-club)), then approve them (see [Guests](#guests)).
+2. Record their Working With Children Check on their member page, or have them send it in from
+   **Your details**.
+3. Open the round, tap **Panel**, then **Add a selector**. A guest who holds no other role shows
+   as **(guest)**; tap **Add … (guest)**.
+
+On the panel they are marked **Independent: a guest with no other role in the club**, and the
+audit report's panel says the same, so the committee or the governing body can see the panel had
+an independent selector and what they did. The mark goes if the person later takes another role
+in the club or joins a squad or team. An independent selector sees **Selection assessments** for
+that round and nothing else of the club beyond what any guest sees.
+
+<img src="user-guide/admin-assessments-round.png" width="210" alt="A selection round's Panel tab for an admin: its panel with an independent selector marked, adding a guest as a selector, and who has left the panel">
 
 **Dates.** Open the round and, on its **Dates** tab, tap **Add a date** for each step in your process:
 type what happens or choose a suggestion (**Criteria shared with athletes**, **Trials**,
@@ -4066,8 +4083,8 @@ selection work was done, not what was said:
 - **Dates**: each date set for the round, when it was due, when it was marked done and by whom,
   how many days late, whether athletes and parents saw it, and any date taken off with who took
   it off. A date that is late is in red.
-- **The panel**: everyone who has been on it, who added and removed them and when, and the notes
-  above. A selector with a declared conflict or no access is in red.
+- **The panel**: everyone who has been on it, who added and removed them and when, which of them
+  are independent, and the notes above. A selector with a declared conflict or no access is in red.
 - **What each selector wrote**: how many observations, about how many athletes and across how many
   groups of criteria, their first and last, how many weeks they wrote in, how many were at
   training, games and trials, how many had a rating but no evidence, how many were written more

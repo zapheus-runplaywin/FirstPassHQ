@@ -10,6 +10,7 @@ import { Button, Card, ChipGroup, ErrorText, PressableCard, TextField } from '@/
 import { Spacing } from '@/constants/theme';
 import {
   MAX_MILESTONES,
+  isIndependentChoice,
   isOverdue,
   milestoneLine,
   panelNotes,
@@ -305,7 +306,8 @@ export default function AdminRoundScreen() {
               <ThemedText type="smallBold">Add a selector</ThemedText>
               <ThemedText type="small" themeColor="textSecondary">
                 Coaches, admins and guests can be selectors. Each needs a current Working With
-                Children Check. A guest is how you add an independent selector.
+                Children Check. For an independent selector, approve the person as a Guest and
+                record their check on their member page: they then show here as (guest).
               </ThemedText>
               {choices.length === 0 ? (
                 <ThemedText type="small">There is nobody else to add.</ThemedText>
@@ -314,7 +316,7 @@ export default function AdminRoundScreen() {
                   person.cleared ? (
                     <Button
                       key={person.profile_id}
-                      title={`Add ${person.name ?? 'Member'}`}
+                      title={`Add ${person.name ?? 'Member'}${isIndependentChoice(person) ? ' (guest)' : ''}`}
                       variant="secondary"
                       busy={busy}
                       onPress={() =>
@@ -336,7 +338,9 @@ export default function AdminRoundScreen() {
               <ThemedText type="smallBold">No longer on the panel</ThemedText>
               {left.map((member) => (
                 <ThemedText key={`${member.profile_id}-${member.added_at}`} type="small" themeColor="textSecondary">
-                  {member.name}: added {formatDateString(member.added_at.slice(0, 10))}, removed{' '}
+                  {member.name}
+                  {member.independent ? ' (independent)' : ''}: added{' '}
+                  {formatDateString(member.added_at.slice(0, 10))}, removed{' '}
                   {formatDateString((member.removed_at ?? '').slice(0, 10))}
                   {member.removed_by_name ? ` by ${member.removed_by_name}` : ''}
                 </ThemedText>
