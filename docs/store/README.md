@@ -18,7 +18,7 @@ guide doesn't change, because nothing a member sees or does changes.
 | [public-pages/support.md](public-pages/support.md) | Support page | 1 |
 | [public-pages/delete-account.md](public-pages/delete-account.md) | Delete-my-account page | 1 |
 | `apple-privacy-labels.md`, `apple-listing.md` | Apple's privacy questions and listing, age rating, export compliance | 2, Fri 27 Nov |
-| `screenshots/` | Store screenshots and Google's feature graphic, sample people only | 3, Fri 4 Dec |
+| `screenshots/` | Store screenshots and Google's feature graphic, sample people only. HQ runs as an iPad app (`supportsTablet` in `app.json`), so the App Store needs a 13-inch iPad set (2064 × 2752 or 2048 × 2732) as well as the iPhone set, and Play takes 7-inch and 10-inch tablet sets | 3, Fri 4 Dec |
 
 The public pages are published by the small site in the Vantage and Vision repo (`apps/site`,
 work item W9), which copies these Markdown files word for word. They are plain Markdown on

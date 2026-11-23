@@ -2,6 +2,7 @@ import { router, useFocusEffect } from 'expo-router';
 import { useCallback, useEffect, useState } from 'react';
 import { Pressable, StyleSheet, View } from 'react-native';
 
+import { CardGrid, Columns } from '@/components/columns';
 import { ConcernLights } from '@/components/concern-lights';
 import { EventGrid } from '@/components/event-card';
 import { HomeHeader } from '@/components/home-header';
@@ -360,7 +361,7 @@ export default function HomeScreen() {
   const studioOnly = heldRoles.length > 0 && heldRoles.every((r) => r === 'studio');
 
   return (
-    <Screen withTopInset refreshing={refreshing} onRefresh={onRefresh} showVersion>
+    <Screen withTopInset refreshing={refreshing} onRefresh={onRefresh} showVersion wide>
       <HomeHeader
         name={name}
         roles={
@@ -412,444 +413,457 @@ export default function HomeScreen() {
 
         {/* Main order: To do, Messages, Coming up, check-ins, attendance, Injuries, Session
             plans, Concerns, Reports or Administration. Raise a concern stays last. */}
-        {approved ? (
-          <TodoList todos={todos} personalTasks={personalTasks} onToggleTask={setTaskDone} />
-        ) : null}
-
-        {getsMessages && features.messages ? (
-          <PressableCard onPress={() => router.push('/messages')}>
-            <View style={styles.cardTitleRow}>
-              <ThemedText type="smallBold">Messages</ThemedText>
-              {unreadCount > 0 ? (
-                <View style={[styles.badge, { backgroundColor: theme.accent }]}>
-                  <ThemedText type="smallBold" style={{ color: theme.onAccent }}>
-                    {unreadCount}
-                  </ThemedText>
-                </View>
+        {/* On a tablet: To do, Messages and Coming up on the left, every other card in a
+            grid on the right (src/components/columns.tsx). A phone stacks them in this order. */}
+        <Columns
+          firstFlex={2}
+          secondFlex={3}
+          first={
+            <>
+              {approved ? (
+                <TodoList todos={todos} personalTasks={personalTasks} onToggleTask={setTaskDone} />
               ) : null}
-            </View>
-            <ThemedText type="small" themeColor="textSecondary">
-              {unreadCount === 0
-                ? 'No new messages'
-                : `${unreadCount} new ${unreadCount === 1 ? 'message' : 'messages'}`}
-            </ThemedText>
-          </PressableCard>
-        ) : null}
 
-        {approved && features.calendar ? (
-          <View style={styles.section}>
-            <View style={styles.sectionHeader}>
-              <ThemedText type="smallBold">Coming up</ThemedText>
-              <Pressable accessibilityRole="button" onPress={() => router.push('/calendar')}>
-                <ThemedText type="small" style={{ color: theme.tint }}>
-                  Full calendar
-                </ThemedText>
-              </Pressable>
-            </View>
-            {events === null ? null : events.length === 0 ? (
-              <ThemedText type="small" themeColor="textSecondary">
-                Nothing on the calendar yet.
-              </ThemedText>
-            ) : (
-              <EventGrid events={events.slice(0, UPCOMING_COUNT)} showDay />
-            )}
-          </View>
-        ) : null}
-
-        {features.checkIns && myCheckIn !== undefined ? (
-          <PressableCard onPress={() => router.push('/check-in')}>
-            <ThemedText type="smallBold">Daily check-in</ThemedText>
-            <ThemedText type="small" themeColor="textSecondary">
-              {myCheckIn ? '✓ Done for today' : 'Not done yet today'}
-            </ThemedText>
-          </PressableCard>
-        ) : null}
-
-        {features.checkIns && canSeeCheckIns ? (
-          <PressableCard onPress={() => router.push('/check-ins')}>
-            <ThemedText type="smallBold">Check-ins</ThemedText>
-            <ThemedText type="small" themeColor="textSecondary">
-              {isCheckInCoach && checkInSummary.length > 0
-                ? checkInSummaryLabel(checkInSummary)
-                : checkInOverviewLabel(checkInOverview)}
-            </ThemedText>
-          </PressableCard>
-        ) : null}
-
-        {features.attendance && (canTakeAttendance || canViewAttendance) ? (
-          <PressableCard onPress={() => router.push('/attendance')}>
-            <ThemedText type="smallBold">Attendance</ThemedText>
-            <ThemedText type="small" themeColor="textSecondary">
-              {canTakeAttendance
-                ? 'Take attendance and see past sessions'
-                : 'See athletes’ attendance'}
-            </ThemedText>
-          </PressableCard>
-        ) : null}
-
-        {features.attendance && isAthlete && session ? (
-          <PressableCard
-            onPress={() =>
-              router.push({ pathname: '/attendance/family/[id]', params: { id: session.user.id } })
-            }>
-            <ThemedText type="smallBold">My attendance</ThemedText>
-            <ThemedText type="small" themeColor="textSecondary">
-              Your sessions, and tell your coaches if you’ll be away
-            </ThemedText>
-          </PressableCard>
-        ) : null}
-
-        {features.injuries && (canSeeInjuries || canLogInjuries) ? (
-          <PressableCard onPress={() => router.push('/injuries')}>
-            <View style={styles.cardTitleRow}>
-              <ThemedText type="smallBold">Injuries</ThemedText>
-              {injuriesWaiting > 0 ? (
-                <View style={[styles.badge, { backgroundColor: theme.accent }]}>
-                  <ThemedText type="smallBold" style={{ color: theme.onAccent }}>
-                    {injuriesWaiting}
-                  </ThemedText>
-                </View>
-              ) : null}
-            </View>
-            <ThemedText type="small" themeColor="textSecondary">
-              {canSeeInjuries
-                ? injuriesSummary(openInjuries)
-                : 'Log an injury at training or a game'}
-            </ThemedText>
-          </PressableCard>
-        ) : null}
-
-        {features.sessionPlans && (plans.canAdd || plans.shared > 0) ? (
-          <PressableCard onPress={() => router.push('/session-plans')}>
-            <View style={styles.cardTitleRow}>
-              <ThemedText type="smallBold">Session plans</ThemedText>
-              {plans.newShared > 0 ? (
-                <View style={[styles.badge, { backgroundColor: theme.accent }]}>
-                  <ThemedText type="smallBold" style={{ color: theme.onAccent }}>
-                    {plans.newShared}
-                  </ThemedText>
-                </View>
-              ) : null}
-            </View>
-            <ThemedText type="small" themeColor="textSecondary">
-              {plans.newShared > 0
-                ? `${plans.newShared} new ${plans.newShared === 1 ? 'plan' : 'plans'} shared with you`
-                : plans.canAdd
-                  ? 'Add a plan before or after a session'
-                  : 'Plans your coaches have shared'}
-            </ThemedText>
-          </PressableCard>
-        ) : null}
-
-        {handlesConcerns ? (
-          <PressableCard onPress={() => router.push('/concerns')}>
-            <ThemedText type="smallBold">Concerns</ThemedText>
-            <ThemedText type="small" themeColor="textSecondary">
-              {newConcerns > 0
-                ? `${newConcerns} new ${newConcerns === 1 ? 'concern' : 'concerns'} to look at`
-                : 'The concerns register'}
-            </ThemedText>
-            <ConcernLights counts={concernCounts} />
-          </PressableCard>
-        ) : null}
-
-        {canReadReports && !isAdmin ? (
-          <PressableCard onPress={() => router.push('/admin/reports')}>
-            <ThemedText type="smallBold">Reports</ThemedText>
-            <ThemedText type="small" themeColor="textSecondary">
-              The club’s checks, medical details checks, training, attendance and award results
-            </ThemedText>
-          </PressableCard>
-        ) : null}
-
-        {isAdmin ? (
-          <PressableCard onPress={() => router.push('/administration')}>
-            <ThemedText type="smallBold">Administration</ThemedText>
-            <ThemedText type="small" themeColor="textSecondary">
-              {pendingRequestsLabel(pendingCount)}
-            </ThemedText>
-          </PressableCard>
-        ) : null}
-
-        {/* Cards outside the main order, in their earlier order. */}
-
-        {features.surveys && (canSendSurveys || mySurveys.length > 0) ? (
-          <PressableCard onPress={() => router.push('/surveys')}>
-            <View style={styles.cardTitleRow}>
-              <ThemedText type="smallBold">Surveys</ThemedText>
-              {surveysWaiting > 0 ? (
-                <View style={[styles.badge, { backgroundColor: theme.accent }]}>
-                  <ThemedText type="smallBold" style={{ color: theme.onAccent }}>
-                    {surveysWaiting}
-                  </ThemedText>
-                </View>
-              ) : null}
-            </View>
-            <ThemedText type="small" themeColor="textSecondary">
-              {surveysWaiting > 0
-                ? `${surveysWaiting} to answer`
-                : canSendSurveys
-                  ? 'Send a survey and see results'
-                  : 'Nothing to answer'}
-            </ThemedText>
-          </PressableCard>
-        ) : null}
-
-        {features.awards && approved && awardSlots.length > 0 ? (
-          <PressableCard onPress={() => router.push('/awards')}>
-            <ThemedText type="smallBold">Awards</ThemedText>
-            <ThemedText type="small" themeColor="textSecondary">
-              {awardsLabel(awardSlots.length, awardSlots.filter((s) => !s.voted).length)}
-            </ThemedText>
-          </PressableCard>
-        ) : null}
-
-        {features.integrity && ((myTraining ?? []).length > 0 || clubHasTraining) ? (
-          <PressableCard onPress={() => router.push('/training')}>
-            <View style={styles.cardTitleRow}>
-              <ThemedText type="smallBold">Integrity training</ThemedText>
-              {certificatesToCheck > 0 ? (
-                <View style={[styles.badge, { backgroundColor: theme.accent }]}>
-                  <ThemedText type="smallBold" style={{ color: theme.onAccent }}>
-                    {certificatesToCheck}
-                  </ThemedText>
-                </View>
-              ) : null}
-            </View>
-            <ThemedText type="small" themeColor="textSecondary">
-              {trainingLabel(myTraining ?? [], certificatesToCheck)}
-            </ThemedText>
-          </PressableCard>
-        ) : null}
-
-        {features.kpis && (kpiPeople ?? []).some((p) => !p.archived) ? (
-          <PressableCard onPress={() => router.push('/kpis')}>
-            <ThemedText type="smallBold">Season KPIs</ThemedText>
-            <ThemedText type="small" themeColor="textSecondary">
-              {kpisLabel(kpiPeople ?? [])}
-            </ThemedText>
-          </PressableCard>
-        ) : null}
-
-        {selectionRounds.length > 0 ? (
-          <PressableCard onPress={() => router.push(selectionHomeHref(selectionRounds))}>
-            <ThemedText type="smallBold">Selection assessments</ThemedText>
-            <ThemedText type="small" themeColor="textSecondary">
-              {roundsLabel(selectionRounds)}
-            </ThemedText>
-          </PressableCard>
-        ) : null}
-
-        {selectionInfo.length > 0 ? (
-          <PressableCard onPress={() => router.push('/selection')}>
-            <ThemedText type="smallBold">Selection</ThemedText>
-            <ThemedText type="small" themeColor="textSecondary">
-              {selectionInfoLabel(selectionInfo, clubToday())}
-            </ThemedText>
-          </PressableCard>
-        ) : null}
-
-        {canReadRegisters ? (
-          <PressableCard onPress={() => router.push('/registers')}>
-            <ThemedText type="smallBold">Registers</ThemedText>
-            <ThemedText type="small" themeColor="textSecondary">
-              The club’s policies and conflicts of interest
-            </ThemedText>
-          </PressableCard>
-        ) : null}
-
-        {isGuardian && !profile?.verified_at ? (
-          // An admin can still verify an approved guardian in person with this code.
-          <Card>
-            <ThemedText type="smallBold">Confirm who you are</ThemedText>
-            <ThemedText type="small" themeColor="textSecondary">
-              A club admin verifies you before linking you to your child, against PlayHQ, by
-              sighting your ID, or with this code in person or over a channel they already trust.
-              Never share it with anyone else.
-            </ThemedText>
-            <VerificationCode />
-          </Card>
-        ) : null}
-
-        {isGuardian ? (
-          // Their children, and adding another (a link code, or a child who
-          // won't use the app), sit behind one card so Home stays short.
-          <PressableCard onPress={() => router.push('/children')}>
-            <ThemedText type="smallBold">Guardian of</ThemedText>
-            <ThemedText type="small" themeColor="textSecondary">
-              {guardianOfText(athletes.map((a) => a.name))}
-            </ThemedText>
-            <ThemedText type="small" themeColor="tint">
-              {athletes.length > 0 ? 'Add another child' : 'Add your child'}
-            </ThemedText>
-          </PressableCard>
-        ) : null}
-
-        {isGuardian && features.goals && athletes.length > 0 ? (
-          // Guardians aren't in a squad, so their athletes' game goals open from here.
-          <View style={styles.section}>
-            <ThemedText type="smallBold">Game goals</ThemedText>
-            {athletes.map((a) => (
-              <PressableCard
-                key={a.id}
-                onPress={() =>
-                  router.push({
-                    pathname: '/goals/athlete/[id]',
-                    params: { id: a.id, name: a.name, view: 'guardian' },
-                  })
-                }>
-                <ThemedText type="smallBold">{a.name}</ThemedText>
-                <ThemedText type="small" themeColor="textSecondary">
-                  Game goals and reflections
-                </ThemedText>
-              </PressableCard>
-            ))}
-          </View>
-        ) : null}
-
-        {isGuardian && athletes.length > 0 ? (
-          <View style={styles.section}>
-            <ThemedText type="smallBold">Consent</ThemedText>
-            {athletes.map((a) => (
-              <PressableCard
-                key={a.id}
-                onPress={() => router.push({ pathname: '/consent/[id]', params: { id: a.id } })}>
-                <ThemedText type="smallBold">{a.name}</ThemedText>
-                <ThemedText
-                  type="small"
-                  themeColor={a.needsConsent ? 'tint' : 'textSecondary'}>
-                  {consentSummary(a)}
-                </ThemedText>
-              </PressableCard>
-            ))}
-          </View>
-        ) : null}
-
-        {isGuardian && athletes.length > 0 && profile?.verified_at ? (
-          <View style={styles.section}>
-            <ThemedText type="smallBold">Medical and emergency</ThemedText>
-            {athletes.map((a) => (
-              <PressableCard
-                key={a.id}
-                onPress={() => router.push({ pathname: '/medical/[id]', params: { id: a.id } })}>
-                <ThemedText type="smallBold">{a.name}</ThemedText>
-                <ThemedText type="small" themeColor="textSecondary">
-                  Emergency contacts, allergies, conditions, medications and an action plan
-                </ThemedText>
-              </PressableCard>
-            ))}
-          </View>
-        ) : null}
-
-        {isGuardian && features.attendance && athletes.length > 0 ? (
-          <View style={styles.section}>
-            <ThemedText type="smallBold">Attendance</ThemedText>
-            {athletes.map((a) => (
-              <PressableCard
-                key={a.id}
-                onPress={() =>
-                  router.push({
-                    pathname: '/attendance/family/[id]',
-                    params: { id: a.id, name: a.name },
-                  })
-                }>
-                <ThemedText type="smallBold">{a.name}</ThemedText>
-                <ThemedText type="small" themeColor="textSecondary">
-                  Their sessions, and tell their coaches if they’ll be away
-                </ThemedText>
-              </PressableCard>
-            ))}
-          </View>
-        ) : null}
-
-        {isGuardian && features.checkIns && athletes.length > 0 ? (
-          <View style={styles.section}>
-            <ThemedText type="smallBold">Check-ins</ThemedText>
-            {athletes.map((a) => (
-              <PressableCard
-                key={a.id}
-                onPress={() =>
-                  router.push({
-                    pathname: '/check-ins/athlete/[id]',
-                    params: { id: a.id, name: a.name },
-                  })
-                }>
-                <ThemedText type="smallBold">{a.name}</ThemedText>
-                <ThemedText type="small" themeColor="textSecondary">
-                  Their daily check-ins and notes from the last four weeks
-                </ThemedText>
-              </PressableCard>
-            ))}
-          </View>
-        ) : null}
-
-        {isGuardian && athletes.length > 0 ? (
-          <View style={styles.section}>
-            <ThemedText type="smallBold">What’s changed</ThemedText>
-            {athletes.map((a) => (
-              <PressableCard
-                key={a.id}
-                onPress={() =>
-                  router.push({ pathname: '/activity/[id]', params: { id: a.id, name: a.name } })
-                }>
-                <View style={styles.cardTitleRow}>
-                  <ThemedText type="smallBold">{a.name}</ThemedText>
-                  {(activityNew[a.id] ?? 0) > 0 ? (
-                    <View style={[styles.badge, { backgroundColor: theme.accent }]}>
-                      <ThemedText type="smallBold" style={{ color: theme.onAccent }}>
-                        {activityNew[a.id]}
-                      </ThemedText>
-                    </View>
-                  ) : null}
-                </View>
-                <ThemedText type="small" themeColor="textSecondary">
-                  New coaches, managers and physios, guardians, consents and shared documents
-                </ThemedText>
-              </PressableCard>
-            ))}
-          </View>
-        ) : null}
-
-        {isGuardian && athletes.length > 0 && profile?.verified_at ? (
-          <View style={styles.section}>
-            <ThemedText type="smallBold">Who has viewed their records</ThemedText>
-            {athletes.map((a) => (
-              <PressableCard
-                key={a.id}
-                onPress={() =>
-                  router.push({ pathname: '/records/[id]', params: { id: a.id, name: a.name } })
-                }>
-                <ThemedText type="smallBold">{a.name}</ThemedText>
-                <ThemedText type="small" themeColor="textSecondary">
-                  Who at the club opened their injuries, check-ins, game goals, season KPIs, named survey answers, medical details or member record
-                </ThemedText>
-              </PressableCard>
-            ))}
-          </View>
-        ) : null}
-
-        {showGroups ? (
-          <View style={styles.section}>
-            <ThemedText type="smallBold">{club.squads ? 'My squads and teams' : 'My teams'}</ThemedText>
-            {memberships.length === 0 ? (
-              <ThemedText type="small" themeColor="textSecondary">
-                You are not in a {club.squads ? 'squad' : 'team'} yet.
-              </ThemedText>
-            ) : (
-              sortMemberships(memberships).map((m) => (
-                <PressableCard
-                  key={m.team.id}
-                  onPress={() => router.push({ pathname: '/team/[id]', params: { id: m.team.id } })}>
-                  <ThemedText type="smallBold">{m.team.name}</ThemedText>
+              {getsMessages && features.messages ? (
+                <PressableCard onPress={() => router.push('/messages')}>
+                  <View style={styles.cardTitleRow}>
+                    <ThemedText type="smallBold">Messages</ThemedText>
+                    {unreadCount > 0 ? (
+                      <View style={[styles.badge, { backgroundColor: theme.accent }]}>
+                        <ThemedText type="smallBold" style={{ color: theme.onAccent }}>
+                          {unreadCount}
+                        </ThemedText>
+                      </View>
+                    ) : null}
+                  </View>
                   <ThemedText type="small" themeColor="textSecondary">
-                    {m.team.kind === 'squad' ? 'Squad' : 'Team'} ·{' '}
-                    {teamPositionLabel(m.team_role, m.coach_title, m.selection)}
+                    {unreadCount === 0
+                      ? 'No new messages'
+                      : `${unreadCount} new ${unreadCount === 1 ? 'message' : 'messages'}`}
                   </ThemedText>
                 </PressableCard>
-              ))
-            )}
-          </View>
-        ) : null}
+              ) : null}
+
+              {approved && features.calendar ? (
+                <View style={styles.section}>
+                  <View style={styles.sectionHeader}>
+                    <ThemedText type="smallBold">Coming up</ThemedText>
+                    <Pressable accessibilityRole="button" onPress={() => router.push('/calendar')}>
+                      <ThemedText type="small" style={{ color: theme.tint }}>
+                        Full calendar
+                      </ThemedText>
+                    </Pressable>
+                  </View>
+                  {events === null ? null : events.length === 0 ? (
+                    <ThemedText type="small" themeColor="textSecondary">
+                      Nothing on the calendar yet.
+                    </ThemedText>
+                  ) : (
+                    <EventGrid events={events.slice(0, UPCOMING_COUNT)} showDay />
+                  )}
+                </View>
+              ) : null}
+            </>
+          }
+          second={
+            <CardGrid gap={Spacing.four}>
+              {features.checkIns && myCheckIn !== undefined ? (
+                <PressableCard onPress={() => router.push('/check-in')}>
+                  <ThemedText type="smallBold">Daily check-in</ThemedText>
+                  <ThemedText type="small" themeColor="textSecondary">
+                    {myCheckIn ? '✓ Done for today' : 'Not done yet today'}
+                  </ThemedText>
+                </PressableCard>
+              ) : null}
+
+              {features.checkIns && canSeeCheckIns ? (
+                <PressableCard onPress={() => router.push('/check-ins')}>
+                  <ThemedText type="smallBold">Check-ins</ThemedText>
+                  <ThemedText type="small" themeColor="textSecondary">
+                    {isCheckInCoach && checkInSummary.length > 0
+                      ? checkInSummaryLabel(checkInSummary)
+                      : checkInOverviewLabel(checkInOverview)}
+                  </ThemedText>
+                </PressableCard>
+              ) : null}
+
+              {features.attendance && (canTakeAttendance || canViewAttendance) ? (
+                <PressableCard onPress={() => router.push('/attendance')}>
+                  <ThemedText type="smallBold">Attendance</ThemedText>
+                  <ThemedText type="small" themeColor="textSecondary">
+                    {canTakeAttendance
+                      ? 'Take attendance and see past sessions'
+                      : 'See athletes’ attendance'}
+                  </ThemedText>
+                </PressableCard>
+              ) : null}
+
+              {features.attendance && isAthlete && session ? (
+                <PressableCard
+                  onPress={() =>
+                    router.push({ pathname: '/attendance/family/[id]', params: { id: session.user.id } })
+                  }>
+                  <ThemedText type="smallBold">My attendance</ThemedText>
+                  <ThemedText type="small" themeColor="textSecondary">
+                    Your sessions, and tell your coaches if you’ll be away
+                  </ThemedText>
+                </PressableCard>
+              ) : null}
+
+              {features.injuries && (canSeeInjuries || canLogInjuries) ? (
+                <PressableCard onPress={() => router.push('/injuries')}>
+                  <View style={styles.cardTitleRow}>
+                    <ThemedText type="smallBold">Injuries</ThemedText>
+                    {injuriesWaiting > 0 ? (
+                      <View style={[styles.badge, { backgroundColor: theme.accent }]}>
+                        <ThemedText type="smallBold" style={{ color: theme.onAccent }}>
+                          {injuriesWaiting}
+                        </ThemedText>
+                      </View>
+                    ) : null}
+                  </View>
+                  <ThemedText type="small" themeColor="textSecondary">
+                    {canSeeInjuries
+                      ? injuriesSummary(openInjuries)
+                      : 'Log an injury at training or a game'}
+                  </ThemedText>
+                </PressableCard>
+              ) : null}
+
+              {features.sessionPlans && (plans.canAdd || plans.shared > 0) ? (
+                <PressableCard onPress={() => router.push('/session-plans')}>
+                  <View style={styles.cardTitleRow}>
+                    <ThemedText type="smallBold">Session plans</ThemedText>
+                    {plans.newShared > 0 ? (
+                      <View style={[styles.badge, { backgroundColor: theme.accent }]}>
+                        <ThemedText type="smallBold" style={{ color: theme.onAccent }}>
+                          {plans.newShared}
+                        </ThemedText>
+                      </View>
+                    ) : null}
+                  </View>
+                  <ThemedText type="small" themeColor="textSecondary">
+                    {plans.newShared > 0
+                      ? `${plans.newShared} new ${plans.newShared === 1 ? 'plan' : 'plans'} shared with you`
+                      : plans.canAdd
+                        ? 'Add a plan before or after a session'
+                        : 'Plans your coaches have shared'}
+                  </ThemedText>
+                </PressableCard>
+              ) : null}
+
+              {handlesConcerns ? (
+                <PressableCard onPress={() => router.push('/concerns')}>
+                  <ThemedText type="smallBold">Concerns</ThemedText>
+                  <ThemedText type="small" themeColor="textSecondary">
+                    {newConcerns > 0
+                      ? `${newConcerns} new ${newConcerns === 1 ? 'concern' : 'concerns'} to look at`
+                      : 'The concerns register'}
+                  </ThemedText>
+                  <ConcernLights counts={concernCounts} />
+                </PressableCard>
+              ) : null}
+
+              {canReadReports && !isAdmin ? (
+                <PressableCard onPress={() => router.push('/admin/reports')}>
+                  <ThemedText type="smallBold">Reports</ThemedText>
+                  <ThemedText type="small" themeColor="textSecondary">
+                    The club’s checks, medical details checks, training, attendance and award results
+                  </ThemedText>
+                </PressableCard>
+              ) : null}
+
+              {isAdmin ? (
+                <PressableCard onPress={() => router.push('/administration')}>
+                  <ThemedText type="smallBold">Administration</ThemedText>
+                  <ThemedText type="small" themeColor="textSecondary">
+                    {pendingRequestsLabel(pendingCount)}
+                  </ThemedText>
+                </PressableCard>
+              ) : null}
+
+              {/* Cards outside the main order, in their earlier order. */}
+
+              {features.surveys && (canSendSurveys || mySurveys.length > 0) ? (
+                <PressableCard onPress={() => router.push('/surveys')}>
+                  <View style={styles.cardTitleRow}>
+                    <ThemedText type="smallBold">Surveys</ThemedText>
+                    {surveysWaiting > 0 ? (
+                      <View style={[styles.badge, { backgroundColor: theme.accent }]}>
+                        <ThemedText type="smallBold" style={{ color: theme.onAccent }}>
+                          {surveysWaiting}
+                        </ThemedText>
+                      </View>
+                    ) : null}
+                  </View>
+                  <ThemedText type="small" themeColor="textSecondary">
+                    {surveysWaiting > 0
+                      ? `${surveysWaiting} to answer`
+                      : canSendSurveys
+                        ? 'Send a survey and see results'
+                        : 'Nothing to answer'}
+                  </ThemedText>
+                </PressableCard>
+              ) : null}
+
+              {features.awards && approved && awardSlots.length > 0 ? (
+                <PressableCard onPress={() => router.push('/awards')}>
+                  <ThemedText type="smallBold">Awards</ThemedText>
+                  <ThemedText type="small" themeColor="textSecondary">
+                    {awardsLabel(awardSlots.length, awardSlots.filter((s) => !s.voted).length)}
+                  </ThemedText>
+                </PressableCard>
+              ) : null}
+
+              {features.integrity && ((myTraining ?? []).length > 0 || clubHasTraining) ? (
+                <PressableCard onPress={() => router.push('/training')}>
+                  <View style={styles.cardTitleRow}>
+                    <ThemedText type="smallBold">Integrity training</ThemedText>
+                    {certificatesToCheck > 0 ? (
+                      <View style={[styles.badge, { backgroundColor: theme.accent }]}>
+                        <ThemedText type="smallBold" style={{ color: theme.onAccent }}>
+                          {certificatesToCheck}
+                        </ThemedText>
+                      </View>
+                    ) : null}
+                  </View>
+                  <ThemedText type="small" themeColor="textSecondary">
+                    {trainingLabel(myTraining ?? [], certificatesToCheck)}
+                  </ThemedText>
+                </PressableCard>
+              ) : null}
+
+              {features.kpis && (kpiPeople ?? []).some((p) => !p.archived) ? (
+                <PressableCard onPress={() => router.push('/kpis')}>
+                  <ThemedText type="smallBold">Season KPIs</ThemedText>
+                  <ThemedText type="small" themeColor="textSecondary">
+                    {kpisLabel(kpiPeople ?? [])}
+                  </ThemedText>
+                </PressableCard>
+              ) : null}
+
+              {selectionRounds.length > 0 ? (
+                <PressableCard onPress={() => router.push(selectionHomeHref(selectionRounds))}>
+                  <ThemedText type="smallBold">Selection assessments</ThemedText>
+                  <ThemedText type="small" themeColor="textSecondary">
+                    {roundsLabel(selectionRounds)}
+                  </ThemedText>
+                </PressableCard>
+              ) : null}
+
+              {selectionInfo.length > 0 ? (
+                <PressableCard onPress={() => router.push('/selection')}>
+                  <ThemedText type="smallBold">Selection</ThemedText>
+                  <ThemedText type="small" themeColor="textSecondary">
+                    {selectionInfoLabel(selectionInfo, clubToday())}
+                  </ThemedText>
+                </PressableCard>
+              ) : null}
+
+              {canReadRegisters ? (
+                <PressableCard onPress={() => router.push('/registers')}>
+                  <ThemedText type="smallBold">Registers</ThemedText>
+                  <ThemedText type="small" themeColor="textSecondary">
+                    The club’s policies and conflicts of interest
+                  </ThemedText>
+                </PressableCard>
+              ) : null}
+
+              {isGuardian && !profile?.verified_at ? (
+                // An admin can still verify an approved guardian in person with this code.
+                <Card>
+                  <ThemedText type="smallBold">Confirm who you are</ThemedText>
+                  <ThemedText type="small" themeColor="textSecondary">
+                    A club admin verifies you before linking you to your child, against PlayHQ, by
+                    sighting your ID, or with this code in person or over a channel they already trust.
+                    Never share it with anyone else.
+                  </ThemedText>
+                  <VerificationCode />
+                </Card>
+              ) : null}
+
+              {isGuardian ? (
+                // Their children, and adding another (a link code, or a child who
+                // won't use the app), sit behind one card so Home stays short.
+                <PressableCard onPress={() => router.push('/children')}>
+                  <ThemedText type="smallBold">Guardian of</ThemedText>
+                  <ThemedText type="small" themeColor="textSecondary">
+                    {guardianOfText(athletes.map((a) => a.name))}
+                  </ThemedText>
+                  <ThemedText type="small" themeColor="tint">
+                    {athletes.length > 0 ? 'Add another child' : 'Add your child'}
+                  </ThemedText>
+                </PressableCard>
+              ) : null}
+
+              {isGuardian && features.goals && athletes.length > 0 ? (
+                // Guardians aren't in a squad, so their athletes' game goals open from here.
+                <View style={styles.section}>
+                  <ThemedText type="smallBold">Game goals</ThemedText>
+                  {athletes.map((a) => (
+                    <PressableCard
+                      key={a.id}
+                      onPress={() =>
+                        router.push({
+                          pathname: '/goals/athlete/[id]',
+                          params: { id: a.id, name: a.name, view: 'guardian' },
+                        })
+                      }>
+                      <ThemedText type="smallBold">{a.name}</ThemedText>
+                      <ThemedText type="small" themeColor="textSecondary">
+                        Game goals and reflections
+                      </ThemedText>
+                    </PressableCard>
+                  ))}
+                </View>
+              ) : null}
+
+              {isGuardian && athletes.length > 0 ? (
+                <View style={styles.section}>
+                  <ThemedText type="smallBold">Consent</ThemedText>
+                  {athletes.map((a) => (
+                    <PressableCard
+                      key={a.id}
+                      onPress={() => router.push({ pathname: '/consent/[id]', params: { id: a.id } })}>
+                      <ThemedText type="smallBold">{a.name}</ThemedText>
+                      <ThemedText
+                        type="small"
+                        themeColor={a.needsConsent ? 'tint' : 'textSecondary'}>
+                        {consentSummary(a)}
+                      </ThemedText>
+                    </PressableCard>
+                  ))}
+                </View>
+              ) : null}
+
+              {isGuardian && athletes.length > 0 && profile?.verified_at ? (
+                <View style={styles.section}>
+                  <ThemedText type="smallBold">Medical and emergency</ThemedText>
+                  {athletes.map((a) => (
+                    <PressableCard
+                      key={a.id}
+                      onPress={() => router.push({ pathname: '/medical/[id]', params: { id: a.id } })}>
+                      <ThemedText type="smallBold">{a.name}</ThemedText>
+                      <ThemedText type="small" themeColor="textSecondary">
+                        Emergency contacts, allergies, conditions, medications and an action plan
+                      </ThemedText>
+                    </PressableCard>
+                  ))}
+                </View>
+              ) : null}
+
+              {isGuardian && features.attendance && athletes.length > 0 ? (
+                <View style={styles.section}>
+                  <ThemedText type="smallBold">Attendance</ThemedText>
+                  {athletes.map((a) => (
+                    <PressableCard
+                      key={a.id}
+                      onPress={() =>
+                        router.push({
+                          pathname: '/attendance/family/[id]',
+                          params: { id: a.id, name: a.name },
+                        })
+                      }>
+                      <ThemedText type="smallBold">{a.name}</ThemedText>
+                      <ThemedText type="small" themeColor="textSecondary">
+                        Their sessions, and tell their coaches if they’ll be away
+                      </ThemedText>
+                    </PressableCard>
+                  ))}
+                </View>
+              ) : null}
+
+              {isGuardian && features.checkIns && athletes.length > 0 ? (
+                <View style={styles.section}>
+                  <ThemedText type="smallBold">Check-ins</ThemedText>
+                  {athletes.map((a) => (
+                    <PressableCard
+                      key={a.id}
+                      onPress={() =>
+                        router.push({
+                          pathname: '/check-ins/athlete/[id]',
+                          params: { id: a.id, name: a.name },
+                        })
+                      }>
+                      <ThemedText type="smallBold">{a.name}</ThemedText>
+                      <ThemedText type="small" themeColor="textSecondary">
+                        Their daily check-ins and notes from the last four weeks
+                      </ThemedText>
+                    </PressableCard>
+                  ))}
+                </View>
+              ) : null}
+
+              {isGuardian && athletes.length > 0 ? (
+                <View style={styles.section}>
+                  <ThemedText type="smallBold">What’s changed</ThemedText>
+                  {athletes.map((a) => (
+                    <PressableCard
+                      key={a.id}
+                      onPress={() =>
+                        router.push({ pathname: '/activity/[id]', params: { id: a.id, name: a.name } })
+                      }>
+                      <View style={styles.cardTitleRow}>
+                        <ThemedText type="smallBold">{a.name}</ThemedText>
+                        {(activityNew[a.id] ?? 0) > 0 ? (
+                          <View style={[styles.badge, { backgroundColor: theme.accent }]}>
+                            <ThemedText type="smallBold" style={{ color: theme.onAccent }}>
+                              {activityNew[a.id]}
+                            </ThemedText>
+                          </View>
+                        ) : null}
+                      </View>
+                      <ThemedText type="small" themeColor="textSecondary">
+                        New coaches, managers and physios, guardians, consents and shared documents
+                      </ThemedText>
+                    </PressableCard>
+                  ))}
+                </View>
+              ) : null}
+
+              {isGuardian && athletes.length > 0 && profile?.verified_at ? (
+                <View style={styles.section}>
+                  <ThemedText type="smallBold">Who has viewed their records</ThemedText>
+                  {athletes.map((a) => (
+                    <PressableCard
+                      key={a.id}
+                      onPress={() =>
+                        router.push({ pathname: '/records/[id]', params: { id: a.id, name: a.name } })
+                      }>
+                      <ThemedText type="smallBold">{a.name}</ThemedText>
+                      <ThemedText type="small" themeColor="textSecondary">
+                        Who at the club opened their injuries, check-ins, game goals, season KPIs, named survey answers, medical details or member record
+                      </ThemedText>
+                    </PressableCard>
+                  ))}
+                </View>
+              ) : null}
+
+              {showGroups ? (
+                <View style={styles.section}>
+                  <ThemedText type="smallBold">{club.squads ? 'My squads and teams' : 'My teams'}</ThemedText>
+                  {memberships.length === 0 ? (
+                    <ThemedText type="small" themeColor="textSecondary">
+                      You are not in a {club.squads ? 'squad' : 'team'} yet.
+                    </ThemedText>
+                  ) : (
+                    sortMemberships(memberships).map((m) => (
+                      <PressableCard
+                        key={m.team.id}
+                        onPress={() => router.push({ pathname: '/team/[id]', params: { id: m.team.id } })}>
+                        <ThemedText type="smallBold">{m.team.name}</ThemedText>
+                        <ThemedText type="small" themeColor="textSecondary">
+                          {m.team.kind === 'squad' ? 'Squad' : 'Team'} ·{' '}
+                          {teamPositionLabel(m.team_role, m.coach_title, m.selection)}
+                        </ThemedText>
+                      </PressableCard>
+                    ))
+                  )}
+                </View>
+              ) : null}
+            </CardGrid>
+          }
+        />
         </>
       )}
 

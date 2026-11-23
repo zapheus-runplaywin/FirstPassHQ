@@ -3,6 +3,7 @@ import { useCallback, useState } from 'react';
 import { StyleSheet, View } from 'react-native';
 
 import { GoalGames, useGoalGames } from '@/components/goal-games';
+import { CardGrid } from '@/components/columns';
 import { Screen } from '@/components/screen';
 import { ThemedText } from '@/components/themed-text';
 import { Button, Card, PressableCard } from '@/components/ui';
@@ -164,36 +165,39 @@ export default function TeamScreen() {
             No one has been added yet.
           </ThemedText>
         ) : (
-          roster.map((member) => {
-            const goals = athleteGoals.get(member.profile_id);
-            const name = member.full_name ?? 'Unnamed member';
-            const position = (
-              <ThemedText type="small" themeColor="textSecondary">
-                {positionLabel(member)}
-              </ThemedText>
-            );
-            if (!goals) {
-              return (
-                <Card key={member.profile_id}>
-                  <ThemedText type="smallBold">{name}</ThemedText>
-                  {position}
-                </Card>
+          // Two or three people a row on a tablet.
+          <CardGrid>
+            {roster.map((member) => {
+              const goals = athleteGoals.get(member.profile_id);
+              const name = member.full_name ?? 'Unnamed member';
+              const position = (
+                <ThemedText type="small" themeColor="textSecondary">
+                  {positionLabel(member)}
+                </ThemedText>
               );
-            }
-            return (
-              <PressableCard
-                key={member.profile_id}
-                onPress={() =>
-                  router.push({
-                    pathname: '/goals/athlete/[id]',
-                    params: { id: member.profile_id, name, team: id },
-                  })
-                }>
-                <AthleteGoalsRow name={name} goals={goals} />
-                {position}
-              </PressableCard>
-            );
-          })
+              if (!goals) {
+                return (
+                  <Card key={member.profile_id}>
+                    <ThemedText type="smallBold">{name}</ThemedText>
+                    {position}
+                  </Card>
+                );
+              }
+              return (
+                <PressableCard
+                  key={member.profile_id}
+                  onPress={() =>
+                    router.push({
+                      pathname: '/goals/athlete/[id]',
+                      params: { id: member.profile_id, name, team: id },
+                    })
+                  }>
+                  <AthleteGoalsRow name={name} goals={goals} />
+                  {position}
+                </PressableCard>
+              );
+            })}
+          </CardGrid>
         )}
         {canSeeMedical && roster?.some((m) => m.team_role === 'athlete') ? (
           <Button
@@ -233,19 +237,21 @@ function TeamGoalGames({ games, readOnly = false }: { games: CoachTeamGame[]; re
           </ThemedText>
         </Card>
       ) : null}
-      {games.map((game) => (
-        <PressableCard
-          key={game.fixture_id}
-          onPress={() =>
-            router.push({ pathname: '/goals/team', params: { fixture: game.fixture_id } })
-          }>
-          <ThemedText type="smallBold">{gameTitle(game)}</ThemedText>
-          <ThemedText type="small" themeColor="textSecondary">
-            {game.is_next ? 'Next game' : 'Last game'} · {formatShortDay(new Date(game.starts_at))}
-          </ThemedText>
-          <ThemedText type="small">{teamGoalsLine(game)}</ThemedText>
-        </PressableCard>
-      ))}
+      <CardGrid>
+        {games.map((game) => (
+          <PressableCard
+            key={game.fixture_id}
+            onPress={() =>
+              router.push({ pathname: '/goals/team', params: { fixture: game.fixture_id } })
+            }>
+            <ThemedText type="smallBold">{gameTitle(game)}</ThemedText>
+            <ThemedText type="small" themeColor="textSecondary">
+              {game.is_next ? 'Next game' : 'Last game'} · {formatShortDay(new Date(game.starts_at))}
+            </ThemedText>
+            <ThemedText type="small">{teamGoalsLine(game)}</ThemedText>
+          </PressableCard>
+        ))}
+      </CardGrid>
     </View>
   );
 }

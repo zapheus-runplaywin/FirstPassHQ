@@ -1,11 +1,15 @@
 /**
  * Marks the portrait screen as optional on Android.
  *
- * The app is portrait only ("orientation": "portrait" in app.json). Android then
- * treats android.hardware.screen.portrait as a required hardware feature, and
- * Google Play hides the app from tablets, Chromebooks and XR headsets that
- * don't report it. Declaring the feature with required="false" keeps the app
- * portrait wherever it runs and lets those devices install it.
+ * Phones keep the app upright ("orientation": "portrait" in app.json). Android
+ * 16 and later ignore that on tablets and foldables (600dp and wider), which
+ * turn and resize it like any app, and HQ lays itself out for them
+ * (src/hooks/use-layout.ts). iPads turn it too ("supportsTablet").
+ *
+ * Asking for portrait makes Android treat android.hardware.screen.portrait as
+ * a required hardware feature, and Google Play hides the app from tablets,
+ * Chromebooks and XR headsets that don't report it. Declaring the feature with
+ * required="false" keeps phones upright and lets those devices install it.
  */
 const { withAndroidManifest } = require('expo/config-plugins');
 
