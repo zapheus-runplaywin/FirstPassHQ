@@ -12,6 +12,7 @@ import {
   athleteFilters,
   athleteLine,
   dueLabel,
+  feedbackStatusLine,
   filterAthletes,
   isOverdue,
   nextRoundDate,
@@ -19,6 +20,7 @@ import {
   summariesDue,
   summaryStatusLine,
   type AthleteFilter,
+  type FeedbackStatus,
   type RoundDate,
   type RoundSheet,
   type SummaryStatus,
@@ -38,6 +40,7 @@ export default function RoundScreen() {
   const [sheet, setSheet] = useState<RoundSheet | null>(null);
   const [dates, setDates] = useState<RoundDate[]>([]);
   const [summaries, setSummaries] = useState<SummaryStatus[]>([]);
+  const [feedback, setFeedback] = useState<FeedbackStatus[]>([]);
   const [showDates, setShowDates] = useState(false);
   const [filter, setFilter] = useState<AthleteFilter>('all');
   const [search, setSearch] = useState('');
@@ -53,7 +56,10 @@ export default function RoundScreen() {
     const { data: dateRows } = await supabase.rpc('selection_round_dates', { p_round_id: id });
     // Where each athlete's summaries stand: the member's own, and a count.
     const { data: summaryRows } = await supabase.rpc('selection_round_summaries', { p_round_id: id });
+    // Where each athlete's feedback stands; a draft shows to the head coach only.
+    const { data: feedbackRows } = await supabase.rpc('selection_round_feedback', { p_round_id: id });
     setError(null);
+    setFeedback((feedbackRows as FeedbackStatus[] | null) ?? []);
     setDates((dateRows as RoundDate[] | null) ?? []);
     setSummaries((summaryRows as SummaryStatus[] | null) ?? []);
     setSheet(data as RoundSheet);
@@ -138,7 +144,14 @@ export default function RoundScreen() {
       ) : (
         shown.map((athlete) => {
           const line = athleteLine(athlete, groups, sheet.today, sheet.closed);
-          const summary = summaryStatusLine(summaries.find((s) => s.athlete_id === athlete.id));
+          // One line for the summaries and the feedback, so a row stays short.
+          const summary =
+            [
+              summaryStatusLine(summaries.find((s) => s.athlete_id === athlete.id)),
+              feedbackStatusLine(feedback.find((f) => f.athlete_id === athlete.id)),
+            ]
+              .filter(Boolean)
+              .join(' · ') || null;
           const name = athlete.name ?? 'Athlete';
           return (
             <View key={athlete.id} style={styles.row}>

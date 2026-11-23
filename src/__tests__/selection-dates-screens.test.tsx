@@ -460,7 +460,13 @@ describe('a round’s dates, for the panel', () => {
   it('asks for the round’s dates, and nothing an admin reads', async () => {
     await openRound(PANEL_DATES);
     expect(onlyRpcCall('selection_round_dates')).toEqual({ p_round_id: 'r1' });
-    expect(assessmentRpcs()).toEqual(['selection_round_sheet', 'selection_round_dates', 'selection_round_summaries']);
+    // Where feedback stands comes with it: a state for each athlete, never the words.
+    expect(assessmentRpcs()).toEqual([
+      'selection_round_sheet',
+      'selection_round_dates',
+      'selection_round_summaries',
+      'selection_round_feedback',
+    ]);
   });
 
   it('shows only the next date still to do until the card is tapped', async () => {
@@ -663,7 +669,8 @@ describe('Selection, for an athlete or a parent', () => {
 
   it('asks only for the member’s own selection information', async () => {
     await openSelection('athlete', [info()]);
-    expect(assessmentRpcs()).toEqual(['my_selection_info']);
+    // And feedback the head coach shared with them, if any.
+    expect(assessmentRpcs().sort()).toEqual(['my_selection_feedback', 'my_selection_info']);
     expect(rpcCalls('my_selection_info')).toEqual([{}]);
   });
 
