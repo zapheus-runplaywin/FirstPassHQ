@@ -27,6 +27,9 @@ jest.mock('expo-file-system', () => {
       if (MockFile.failWrites) throw new Error('disk full');
       files.set(this.uri, (options?.append ? (files.get(this.uri) ?? '') : '') + text);
     }
+    textSync() {
+      return files.get(this.uri) ?? '';
+    }
     delete() {
       files.delete(this.uri);
     }
@@ -43,7 +46,7 @@ jest.mock('expo-file-system', () => {
     }
     create() {}
   }
-  return { File: MockFile, Directory: MockDirectory, Paths: { document: { uri: 'doc:' } }, __files: files };
+  return { File: MockFile, Directory: MockDirectory, Paths: { document: { uri: 'doc:' }, cache: { uri: 'cache:' } }, __files: files };
 });
 
 type Log = typeof import('@/lib/log');
@@ -276,5 +279,42 @@ describe('starting the app log', () => {
     expect(previous).toHaveBeenCalledWith(crash, true);
     installed!('just text', false);
     expect(written()).toContain('[app] Uncaught error {"error":"just text","stack":null}');
+  });
+});
+
+describe('the log "Send app log" shares', () => {
+  const SHARED = 'cache:/firstpass-hq-app-log.txt';
+
+  it('is nothing when there is no log yet', () => {
+    expect(log.shareableLog()).toBeNull();
+    expect(fsMock().__files.has(SHARED)).toBe(false);
+  });
+
+  it('puts every log file in one file, oldest line first, writing waiting lines first', () => {
+    fsMock().__files.set('doc:/logs/app.2.log', 'oldest\n');
+    fsMock().__files.set('doc:/logs/app.1.log', 'older\n');
+    log.logger('x').info('newest');
+    const file = log.shareableLog();
+    expect(file?.uri).toBe(SHARED);
+    const text = fsMock().__files.get(SHARED)!;
+    expect(text.startsWith('oldest\nolder\n')).toBe(true);
+    expect(text).toContain('INFO  [x] newest');
+  });
+
+  it('keeps only the newest part, starting at a whole line, and replaces an earlier copy', () => {
+    fsMock().__files.set(SHARED, 'stale');
+    const line = `${'a'.repeat(99)}\n`;
+    fsMock().__files.set('doc:/logs/app.1.log', line.repeat(40000)); // about 4 MB
+    fsMock().__files.set('doc:/logs/app.2.log', 'too old to send\n');
+    fsMock().__files.set('doc:/logs/app.log', `${'b'.repeat(99)}\n`.repeat(20000)); // about 2 MB
+    log.shareableLog();
+    const text = fsMock().__files.get(SHARED)!;
+    expect(text.length).toBeLessThanOrEqual(log.SHARE_BYTES);
+    expect(text.length).toBeGreaterThan(log.SHARE_BYTES - 100);
+    expect(text).not.toContain('stale');
+    expect(text).not.toContain('too old');
+    expect(text.startsWith('a')).toBe(true);
+    expect(text.split('\n')[0]).toHaveLength(99);
+    expect(text.endsWith(`${'b'.repeat(99)}\n`)).toBe(true);
   });
 });

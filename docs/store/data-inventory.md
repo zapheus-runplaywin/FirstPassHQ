@@ -6,8 +6,9 @@ whether it leaves the club's own Supabase project. The other files in `docs/stor
 this one. If they disagree, this file wins, and this file must match the code.
 
 Checked against `main` at commit `7ceb1aa` (17 Nov 2026, after #217), and row 1 again at
-`ba4c638` (18 Nov, after Sign in with Apple #219 and its revoke on delete #221). A row for crash
-reports (W2) is added only after it merges, because the pack describes what is merged.
+`ba4c638` (18 Nov, after Sign in with Apple #219 and its revoke on delete #221). Row 23 and the
+change to row 22 (crash reports and Send app log, W2) are added in the pull request that builds
+them.
 
 ## Where the data is
 
@@ -22,7 +23,9 @@ reports (W2) is added only after it merges, because the pack describes what is m
   club's data only to fix a fault, make a copy the club asked for, or when the law requires it
   ([data-handling.md](../data-handling.md), "Who can read it").
 - **No advertising, analytics or tracking library** is in `package.json`, and the app does not
-  read the advertising ID. **To confirm in W8:** the merged Android manifest of the first store
+  read the advertising ID. The one third-party kit that sends data off the phone is Sentry's
+  crash reporting (`@sentry/react-native`, row 23), with tracing, session replay, screenshots and
+  breadcrumbs off. **To confirm in W8:** the merged Android manifest of the first store
   build has no `com.google.android.gms.permission.AD_ID` permission.
 
 ## Keep periods
@@ -60,7 +63,8 @@ about a member named in a concern is removed while it names them (legal hold,
 | 19 | Push notification token and notification settings | `push_tokens`, `push_settings` (`20261007090000_push_notifications.sql`, `20261112050000_todo_push_notifications.sql`), `src/lib/push.ts` | Send to-do and join-request notifications | Nobody in the app | Until the account is deleted or the phone stops using it | **Yes.** The token and the notification's title and text go to Expo's push service, then Apple or Google, to reach the phone. Titles can name a person (for example a join request shows the new member's name, or their email if they gave no name). They never include injury details |
 | 20 | Awards votes | `award_votes` (`20261008010000_fixtures_and_awards.sql`) | Club awards | Results: members. Who voted for whom: admins | Who voted: 1 year after the award closes. Awards: 10 years | No |
 | 21 | Game stats recorded in FirstPass Vantage (not this app) | `games`, `game_events` (`20261015000100_game_stats.sql`) | Coaching; live stream graphics | Coaches and statisticians; Studio operators for live or final games | Not in the keep periods today | **Yes, if the club streams games:** FirstPass Studio shows an athlete by name with their stats only with a publish consent, given by a verified parent for an under 18 (`20261113010100_studio_access.sql`, `20261115000600_publish_consent_needs_guardian.sql`) |
-| 22 | On the phone only: the sign-in session, the club codes used, the cached club look, and the app's own log | `src/lib/secure-session-store.ts` (encrypted), AsyncStorage, `src/lib/log.ts` (at most 200 MB, names, emails, health and tokens redacted) | Stay signed in; switch clubs; find faults | Nobody else. The log never leaves the phone | Until the app is removed. `android.allowBackup` is `false` in `app.json`, so none of it goes into Android backups | No |
+| 22 | On the phone only: the sign-in session, the club codes used, the cached club look, the app's own log, and the random crash report install id | `src/lib/secure-session-store.ts` (encrypted), AsyncStorage, `src/lib/log.ts` (at most 200 MB, names, emails, health and tokens redacted) | Stay signed in; switch clubs; find faults | Nobody else. The log leaves the phone only when the member sends it with **Send app log** in Your details (`src/app/my-details.tsx`), through the share sheet to whoever they choose | Until the app is removed. `android.allowBackup` is `false` in `app.json`, so none of it goes into Android backups | Only if the member sends the log |
+| 23 | Crash reports: the error's kind and scrubbed message, the code's stack, app version and build, phone model and system version, the screen's pattern (such as `injuries/[id]`), and a random install id | `src/lib/crash-reports.ts` (JavaScript errors: only the fields in `KEPT`; every text scrubbed of emails, ids, dates, long numbers, quoted text, tokens and the signed-in member's own name and emails, and capitalised non-common words removed from error messages; no breadcrumbs, screenshots, request or extra details, IP address or member id. Native crashes are sent by Sentry's native SDK without that filter: native reason and stack, phone and app details, tags, install id; no breadcrumbs, screenshots, phone name or IP via `sendDefaultPii: false`), started in `src/app/_layout.tsx`; Sentry's server-side scrubbers and Prevent Storing of IP Addresses on | Find and fix crashes | FirstPass only | 30 days in Sentry (free plan) | **Yes,** to Sentry's EU data centre (Germany), only in builds with `EXPO_PUBLIC_SENTRY_DSN` and `SENTRY_AUTH_TOKEN` set. Nothing in a report identifies the member or the club. Apple: "Crash data" and "Other diagnostic data", not linked to the user, not tracking (`app.json` `ios.privacyManifests`) |
 
 ## What the app reads from elsewhere, sending no member data
 

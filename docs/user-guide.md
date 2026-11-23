@@ -108,6 +108,7 @@ What each role sees on its home screen:
 | To-do list and calendar                |    ✓    |        ✓        |      ✓       |     ✓      |       ✓       |       ✓       |    ✓    |       ✓       |
 | Your own personal tasks                |    ✓    |        ✓        |      ✓       |     ✓      |       ✓       |       ✓       |    ✓    |       ✓       |
 | To-do notifications on your phone      |    ✓    |        ✓        |      ✓       |     ✓      |       ✓       |       ✓       |    ✓    |       ✓       |
+| Send the app log when something's wrong |    ✓    |        ✓        |      ✓       |     ✓      |       ✓       |       ✓       |    ✓    |       ✓       |
 | My squads and teams                    |    ✓    |        ✓        |      ✓       |     ✓      |  If in one    |       ✓       | Heading only |   If in one   |
 | Read and archive messages, mark read or unread |    ✓    |        ✓        |      ✓       |     ✓      |       ✓       |       ✓*      |         |       ✓       |
 | Send messages                          | Captains† |                 |  Own groups  | Own groups |   Whole club  |               |         |     Anyone    |
@@ -602,6 +603,26 @@ To stop them, tap **Your details** at the bottom of the home screen and turn off
 notifications**. It saves straight away and only changes your own notifications. If your phone is
 blocking notifications from the app, Your details says so and **Open phone settings** takes you
 there to allow them.
+
+### When something goes wrong
+
+If the app hits a problem it can't carry on from, it shows **Something went wrong** in place of
+the screen, with **Restart the app** and **Try again**. Nothing you saved is lost.
+
+- **The app tells FirstPass by itself.** It sends a crash report to FirstPass's fault-finding
+  service, with nothing about you in it: no names, emails, messages or anything else you or the
+  club entered (see [Crash reports](#crash-reports)).
+- **Send app log.** If the app isn't working as it should and someone helping you asks for it,
+  tap **Your details** at the bottom of the home screen, then **Send app log** under "Help with a
+  problem". Your phone's share sheet opens with the app's log, a text file of what the app did on
+  this phone, and you choose where it goes, such as an email to the club's admin or to FirstPass.
+  The app keeps names, emails, health details and passwords out of its log, and the log goes only
+  where you send it. It isn't on the web version of the app.
+- **Admins** checking that crash reports work see **Send a test crash report** there too, in
+  builds that send crash reports. It sends one report marked as a test.
+
+<img src="user-guide/something-went-wrong.png" width="210" alt="Something went wrong, with Restart the app and Try again">
+<img src="user-guide/send-app-log.png" width="210" alt="Your details: Help with a problem and the Send app log button">
 
 ### Messages
 
@@ -4145,6 +4166,7 @@ once saved, only replaced or removed, and anyone who gets it wrong five times in
 | Your profile and squads | You, the people in your squads and teams (names and positions only), and admins. Your name also shows to anyone choosing who a concern is about if you're a coach, manager, physio, committee member, admin or temporary helper, and on absences you report. The committee and admins see every athlete's name on the whole-club register, attendance histories and absences, every coach's and manager's name under Season KPIs, and the name of everyone who must complete a training course. |
 | Preferred name and title | You and admins; your preferred name then shows wherever your name does.                                                 |
 | To-do notifications     | Only you, on the phones you're signed in on. They name the to-do but never injury details or reviewers' notes. Your on/off choice is yours alone. |
+| Crash reports and the app log | Crash reports: FirstPass only, in Sentry, for 30 days, with nothing that says who you are. The app log: nobody, unless you send it with **Send app log**; then whoever you send it to. |
 | Your own personal tasks | Only you. Not your parents or guardians, coaches, the committee or admins. They can't be shared or sent to anyone. |
 | Captains                | Club captains: every member. A team's captains: the people in it, and admins. Squads have none.                                     |
 | Pilot features and pilot squads and teams | Admins only, in Club features. Members just see whether a feature is in their app. |
@@ -4428,6 +4450,34 @@ Working With Children Check, and another admin must do it.
   The same rules still apply: only screened committee members and admins with a current check see
   them, and coaches and physios don't. If the app can't tell how old a departed athlete was, it
   treats them as under 18.
+
+### Crash reports
+
+When the app crashes, or shows "Something went wrong", it sends a crash report so FirstPass can
+fix the fault. Reports go to Sentry, a fault-finding service, are stored in its EU data centre in
+Germany for 30 days, and only FirstPass reads them.
+
+- **Nothing about a child, or anyone else, is in a report.** No names, emails, dates of birth,
+  phone numbers, member ids, roles, teams, guardian links, injuries, check-ins, concerns, or
+  message, survey or note text. No screenshots, no recording of what was tapped, and not the
+  phone's name or IP address.
+- **What is sent:** the kind of error, where in the app's code it happened, the app's version, the
+  phone's model and system version, the name of the screen (such as "injuries/[id]", never which
+  injury), and a random id made for that copy of the app so repeat crashes from one phone group
+  together without saying whose phone it is.
+- **Taken out on the phone, before anything is sent,** for errors in the app's own code (most
+  reports), and the same for every member, adult or child. Tests on every change check that a
+  sample member's details never survive into a report.
+- **A crash deep in the phone's own code** (such as the app closing the moment it opens) is
+  reported by Sentry's built-in part the next time the app opens, without that filter. It holds
+  the crash's technical reason from the phone's system, the phone and app details, the screen's
+  name and the random id, never screenshots, taps, the phone's name or its IP address, and
+  Sentry removes anything that looks like a password or card number.
+- **The app's own log stays on the phone.** It leaves only if the member sends it themselves with
+  **Send app log** (see [When something goes wrong](#when-something-goes-wrong)). The app keeps
+  names, emails, health details and passwords out of it.
+
+The full list of what is and isn't sent is in [data-handling.md](data-handling.md#crash-reports).
 
 ### For parents and guardians
 
@@ -4885,6 +4935,8 @@ goes wrong, and how the club gets it all back. The full statement is in
   it; it opens a club's data only to fix a fault, make a copy the club asked for, or when the law
   requires it, and tells the club's admins when it has. Supabase staff only under Supabase's own
   terms. Nobody else, and the app has no advertising or tracking.
+- **Crash reports** go to Sentry's EU data centre for 30 days with nothing about any member in them
+  (see [Crash reports](#crash-reports)).
 - **If something goes wrong**, FirstPass tells the club's admins within 72 hours of finding out
   what happened and whose data it affected, and helps the club decide who else to tell.
 - **Getting all your data.** An admin asks FirstPass in writing, and within 14 days gets a full

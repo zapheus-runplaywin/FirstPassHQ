@@ -4,3 +4,12 @@ jest.mock('@/lib/supabase', () => ({
   supabase: { rpc: jest.fn(), from: jest.fn(), auth: {}, storage: { from: jest.fn() } },
   connectToClub: jest.fn(),
 }));
+
+// Unit tests never send crash reports. src/lib/__tests__/crash-reports.test.ts
+// checks what the app would pass to Sentry through these.
+jest.mock('@sentry/react-native', () => ({
+  init: jest.fn(),
+  setTag: jest.fn(),
+  setUser: jest.fn(),
+  captureException: jest.fn(),
+}));

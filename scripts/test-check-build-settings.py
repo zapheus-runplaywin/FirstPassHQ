@@ -12,7 +12,13 @@ app stopped the moment it opened. So this checks that a build:
   malformed; when a key is a secret or service_role key, has expired or
   belongs to another project than its address; when the demo club has only
   one of its two settings; and when the demo club is the live club's project;
-- never prints a key.
+- is stopped when crash reports have only one of their two settings, a
+  Sentry address outside the EU, or a token that is personal, unreadable or
+  for an organisation outside the EU, and goes ahead with both or neither;
+- never prints a key or the Sentry token.
+
+And that app.config.js uploads source maps to Sentry only when crash reports
+are on, so a build without the Sentry token doesn't fail.
 
 And that the check stays wired up: package.json runs it as EAS's
 eas-build-pre-install script, it needs nothing but Node (EAS runs it before
@@ -36,6 +42,9 @@ LIVE_KEY = 'EXPO_PUBLIC_SUPABASE_ANON_KEY'
 DEMO_URL = 'EXPO_PUBLIC_DEMO_CLUB_URL'
 DEMO_KEY = 'EXPO_PUBLIC_DEMO_CLUB_ANON_KEY'
 
+CRASH_DSN = 'EXPO_PUBLIC_SENTRY_DSN'
+CRASH_TOKEN = 'SENTRY_AUTH_TOKEN'
+
 FAR_FUTURE = 4102444800  # 1 January 2100
 
 
@@ -48,6 +57,16 @@ def key(project: str, role: str = 'anon', expires: int = FAR_FUTURE) -> str:
     claims = {'iss': 'supabase', 'ref': project, 'role': role, 'iat': 1700000000, 'exp': expires}
     return '.'.join([part({'alg': 'HS256', 'typ': 'JWT'}), part(claims), 'signature-not-checked'])
 
+
+def sentry_token(region: str = 'https://de.sentry.io', org: str = 'pivt-media') -> str:
+    """A token shaped like a Sentry organisation token: readable details and a secret."""
+    details = {'iat': 1795000000.5, 'url': 'https://sentry.io', 'region_url': region, 'org': org}
+    return 'sntrys_' + base64.b64encode(json.dumps(details).encode()).decode().rstrip('=') + '_c2VjcmV0LW5vdC1jaGVja2Vk'
+
+
+EU_DSN = 'https://0123456789abcdef0123456789abcdef@o4508000000000001.ingest.de.sentry.io/4508000000000002'
+US_DSN = EU_DSN.replace('.de.', '.us.')
+CRASH = {CRASH_DSN: EU_DSN, CRASH_TOKEN: sentry_token()}
 
 LIVE = {LIVE_URL: 'https://liveclub.supabase.co', LIVE_KEY: key('liveclub')}
 DEMO = {DEMO_URL: 'https://testclub.supabase.co', DEMO_KEY: key('testclub')}
@@ -81,6 +100,9 @@ GOES_AHEAD = {
         {LIVE_URL: 'https://data.club.example', LIVE_KEY: key('liveclub')},
         ['https://data.club.example'],
     ),
+    'no crash report settings': (BOTH, ['Crash reports are off']),
+    'both crash report settings, in the EU': ({**BOTH, **CRASH}, ['Crash reports are on', 'EU']),
+    'crash report settings that are only blank': ({**BOTH, CRASH_DSN: ' ', CRASH_TOKEN: ''}, ['Crash reports are off']),
 }
 
 STOPPED = {
@@ -130,6 +152,39 @@ STOPPED = {
         [DEMO_KEY, 'service_role'],
     ),
     'a slash after the demo address': ({**BOTH, DEMO_URL: DEMO[DEMO_URL] + '/'}, [DEMO_URL, 'alone']),
+    'the Sentry address without its token': (
+        {**BOTH, CRASH_DSN: EU_DSN},
+        [f'{CRASH_TOKEN} is missing', 'half set up', 'crash reports off'],
+    ),
+    'the Sentry token without its address': (
+        {**BOTH, CRASH_TOKEN: sentry_token()},
+        [f'{CRASH_DSN} is missing', 'half set up'],
+    ),
+    'a Sentry address in the US': ({**BOTH, **CRASH, CRASH_DSN: US_DSN}, [CRASH_DSN, "US data centre", 'EU']),
+    'an older Sentry address, in the US': (
+        {**BOTH, **CRASH, CRASH_DSN: 'https://0123456789abcdef0123456789abcdef@o1.ingest.sentry.io/2'},
+        [CRASH_DSN, 'US data centre'],
+    ),
+    'something else for the Sentry address': (
+        {**BOTH, **CRASH, CRASH_DSN: 'https://example.com/1'},
+        [CRASH_DSN, 'not a Sentry address in the EU'],
+    ),
+    'a slash after the Sentry address': ({**BOTH, **CRASH, CRASH_DSN: EU_DSN + '/'}, [CRASH_DSN, 'not a Sentry address']),
+    'a space in the Sentry address': ({**BOTH, **CRASH, CRASH_DSN: EU_DSN + ' x'}, [CRASH_DSN, 'space']),
+    'a personal Sentry token': ({**BOTH, **CRASH, CRASH_TOKEN: 'sntryu_abc123'}, [CRASH_TOKEN, 'personal token', 'organisation token']),
+    'something else for the Sentry token': ({**BOTH, **CRASH, CRASH_TOKEN: 'abc123'}, [CRASH_TOKEN, 'not a Sentry organisation token']),
+    'a Sentry token with unreadable details': (
+        {**BOTH, **CRASH, CRASH_TOKEN: 'sntrys_bm90IGpzb24_secret'},
+        [CRASH_TOKEN, 'not a Sentry organisation token'],
+    ),
+    'a Sentry token for an organisation in the US': (
+        {**BOTH, **CRASH, CRASH_TOKEN: sentry_token('https://us.sentry.io')},
+        [CRASH_TOKEN, 'outside the EU'],
+    ),
+    'a Sentry token with no organisation': (
+        {**BOTH, **CRASH, CRASH_TOKEN: sentry_token(org='')},
+        [CRASH_TOKEN, 'not a Sentry organisation token'],
+    ),
 }
 
 
@@ -149,10 +204,33 @@ def main() -> int:
         for name, (settings, named) in cases.items():
             status, output = check(settings)
             result(status == wanted and all(text in output for text in named), f'a build {verb} with {name}', output)
-            secrets = [value for setting, value in settings.items() if setting.endswith('_KEY') and len(value) > 20]
+            secrets = [value for setting, value in settings.items()
+                       if (setting.endswith('_KEY') or setting == CRASH_TOKEN) and len(value) > 12]
             if any(value.strip() in output for value in secrets if 'https://' not in value):
                 printed_keys.append(name)
-    result(not printed_keys, 'no key is printed, whatever is wrong', ', '.join(printed_keys))
+    result(not printed_keys, 'no key or token is printed, whatever is wrong', ', '.join(printed_keys))
+
+    # app.config.js uploads source maps only when crash reports are on, and
+    # names the Sentry organisation from the token.
+    def sentry_options(settings: dict[str, str]) -> dict:
+        script = 'console.log(JSON.stringify(require("./app.config.js").sentryOptions(process.env)))'
+        status, output = run(['node', '-e', script], settings)
+        return json.loads(output) if status == 0 else {'error': output}
+
+    on = sentry_options({**BOTH, **CRASH})
+    result(on == {'url': 'https://de.sentry.io/', 'project': 'firstpass-hq', 'organization': 'pivt-media',
+                  'disableAutoUpload': False},
+           'a build with crash reports uploads its source maps to Sentry in the EU', json.dumps(on))
+    for name, settings in (('no crash report settings', BOTH),
+                           ('only the Sentry address', {**BOTH, CRASH_DSN: EU_DSN}),
+                           ('a Sentry address in the US', {**BOTH, **CRASH, CRASH_DSN: US_DSN})):
+        off = sentry_options(settings)
+        result(off.get('disableAutoUpload') is True and 'organization' not in off,
+               f'a build with {name} uploads nothing to Sentry, so it needs no token', json.dumps(off))
+    app = json.loads((ROOT / 'app.json').read_text())
+    plugins = [p if isinstance(p, str) else p[0] for p in app['expo']['plugins']]
+    result(not any(p.startswith('@sentry/') for p in plugins),
+           "app.json doesn't add Sentry's build step a second time, without app.config.js's settings", ', '.join(plugins))
 
     status, output = run(['node', str(SCRIPT)], {'EAS_BUILD_PROFILE': 'production'})
     result('"production" environment' in output and 'docs/beta-builds.md' in output,
@@ -176,6 +254,9 @@ def main() -> int:
     unread = [name for name in (LIVE_URL, LIVE_KEY, DEMO_URL, DEMO_KEY)
               if f'process.env.{name}' not in clubs or name not in source]
     result(not unread, 'the check and the app read the same four settings', ', '.join(unread))
+    layout = (ROOT / 'src' / 'app' / '_layout.tsx').read_text()
+    result(f'process.env.{CRASH_DSN}' in layout and CRASH_DSN in source and CRASH_TOKEN in source,
+           'the check and the app read the same Sentry address')
     result('if (!homeUrl || !homeKey)' in clubs and 'throw new Error' in clubs,
            'the app still refuses to start without the live club, which is why the build must have it')
 

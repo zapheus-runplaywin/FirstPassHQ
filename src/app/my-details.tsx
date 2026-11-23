@@ -1,4 +1,5 @@
 import { router } from 'expo-router';
+import * as Sharing from 'expo-sharing';
 import { useState } from 'react';
 import { Platform, StyleSheet, Switch, View } from 'react-native';
 
@@ -9,7 +10,9 @@ import { Button, Card, ErrorText, PressableCard, TextField } from '@/components/
 import { Spacing } from '@/constants/theme';
 import { useTheme } from '@/hooks/use-theme';
 import { useAuth } from '@/lib/auth';
+import { crashReportsOn, reportCrash } from '@/lib/crash-reports';
 import { canHoldTitle, staffTitle } from '@/lib/labels';
+import { shareableLog } from '@/lib/log';
 import { openNotificationSettings, useTodoNotifications } from '@/lib/push';
 import { supabase } from '@/lib/supabase';
 import { hasRole, rolesOf } from '@/lib/roles';
@@ -116,6 +119,7 @@ export default function MyDetailsScreen() {
         </PressableCard>
       ) : null}
       {profile?.status === 'approved' ? <Notifications /> : null}
+      {Platform.OS !== 'web' ? <AppLog /> : null}
       <PolicyLinks intro="The club’s policies:" />
     </Screen>
   );
@@ -167,6 +171,69 @@ function Notifications() {
         </>
       ) : null}
       <ErrorText>{error}</ErrorText>
+    </View>
+  );
+}
+
+/**
+ * "Send app log": the phone's share sheet with the newest part of the app's
+ * own log (src/lib/log.ts), for when support asks for it. The log keeps
+ * names, emails, health details and tokens out.
+ */
+function AppLog() {
+  const { isAdmin } = useAuth();
+  const [error, setError] = useState<string | null>(null);
+  const [busy, setBusy] = useState(false);
+  const [testSent, setTestSent] = useState(false);
+
+  // For an admin to check crash reports reach Sentry (docs/beta-builds.md, "Crash reports").
+  function sendTestReport() {
+    reportCrash(new Error('Test crash report from Your details'));
+    setTestSent(true);
+  }
+
+  async function send() {
+    setError(null);
+    setBusy(true);
+    try {
+      const file = shareableLog();
+      if (!file) {
+        setError('There’s no app log on this phone yet.');
+        return;
+      }
+      await Sharing.shareAsync(file.uri, {
+        mimeType: 'text/plain',
+        UTI: 'public.plain-text',
+        dialogTitle: 'App log',
+      });
+    } catch {
+      setError('Couldn’t open the share sheet. Try again.');
+    } finally {
+      setBusy(false);
+    }
+  }
+
+  return (
+    <View style={styles.section}>
+      <ThemedText type="smallBold">Help with a problem</ThemedText>
+      <ThemedText type="small" themeColor="textSecondary">
+        If the app isn’t working as it should, send its log to whoever is helping you, such as by
+        email. The log notes what the app did on this phone, and the app keeps names, emails,
+        health details and passwords out of it. It goes only where you send it.
+      </ThemedText>
+      <Button title="Send app log" variant="secondary" onPress={send} busy={busy} />
+      <ErrorText>{error}</ErrorText>
+      {isAdmin && crashReportsOn() ? (
+        <>
+          <Button title="Send a test crash report" variant="secondary" onPress={sendTestReport} />
+          {testSent ? (
+            <ThemedText type="small" themeColor="textSecondary">
+              Sent. It shows in Sentry within a few minutes, as “Test crash report from Your
+              details”.
+            </ThemedText>
+          ) : null}
+        </>
+      ) : null}
     </View>
   );
 }

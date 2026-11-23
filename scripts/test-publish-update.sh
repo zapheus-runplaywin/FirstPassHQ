@@ -2,7 +2,9 @@
 # Tests scripts/publish-update.sh with stand-ins for EAS and Expo: an update is
 # built with the channel's live project and its demo club (when it has one),
 # never with the .env test clubs, and is refused when the demo club points at
-# the live project or the .env address leaks in some other way. Run by the
+# the live project or the .env address leaks in some other way. Crash reports
+# go in only with both Sentry settings from EAS, in the EU, and the update's
+# source maps then go to Sentry. Run by the
 # "Tests" workflow; it reaches no network.
 set -uo pipefail
 
@@ -25,6 +27,9 @@ case "$*" in
     if [ -f src/constants/build-info.json ]; then
       { tr -d ' \n' <src/constants/build-info.json; echo; } >>dist/_expo/static/js/bundle.js
     fi ;;
+  *sentry-expo-upload-sourcemaps*)
+    echo "uploaded $* with ${SENTRY_AUTH_TOKEN:-no token} dsn=${EXPO_PUBLIC_SENTRY_DSN:-none} org=${SENTRY_ORG:-none} project=${SENTRY_PROJECT:-none} url=${SENTRY_URL:-none}" >>"$STUB_DIR/uploaded"
+    [ -z "${STUB_UPLOAD_FAILS:-}" ] ;;
   *" update "*) echo published >>"$STUB_DIR/published" ;;
 esac
 STUB
@@ -32,10 +37,10 @@ chmod +x "$work/bin/npx"
 
 # run <name> <eas env> <.env>: publishes from a folder with that .env.
 run() {
-  rm -rf "$work/app" "$work/published"; mkdir -p "$work/app"
+  rm -rf "$work/app" "$work/published" "$work/uploaded"; mkdir -p "$work/app"
   printf '%s\n' "$2" >"$work/eas-env"
   printf '%s\n' "$3" >"$work/app/.env"
-  (cd "$work/app" && STUB_DIR=$work PATH="$work/bin:$PATH" \
+  (cd "$work/app" && STUB_DIR=$work PATH="$work/bin:$PATH" STUB_UPLOAD_FAILS=${STUB_UPLOAD_FAILS:-} \
     "$root/scripts/publish-update.sh" production "Test update" >"$work/out" 2>&1)
   status=$?
 }
@@ -74,6 +79,49 @@ check 'and says why' "$(grep -c 'points at the live project' "$work/out")" 1
 
 run 'no live project' "$DEMO" "$DOTENV"
 check 'an environment with no live project is refused' "$status:$(published)" '1:no'
+
+# Crash reports: the Sentry address comes from the EAS environment with its
+# token, never from .env, and the update's source maps go to Sentry afterwards.
+SENTRY_DSN=https://0123456789abcdef0123456789abcdef@o4508000000000001.ingest.de.sentry.io/4508000000000002
+token() { printf 'sntrys_%s_c2VjcmV0' "$(printf '{"iat": 1, "url": "https://sentry.io", "region_url": "%s", "org": "pivt-media"}' "$1" | base64 | tr -d '\n=')"; }
+SENTRY_TOKEN=$(token https://de.sentry.io)
+CRASH="EXPO_PUBLIC_SENTRY_DSN=$SENTRY_DSN
+SENTRY_AUTH_TOKEN=$SENTRY_TOKEN"
+uploaded() { cat "$work/uploaded" 2>/dev/null || echo none; }
+
+run 'with crash reports' "$LIVE
+$CRASH" "$DOTENV"
+check 'an update with crash reports is published' "$status:$(published)" '0:yes'
+check 'it has the Sentry address' "$(bundle "SENTRY_DSN=$SENTRY_DSN")" 1
+check 'it never has the Sentry token' "$(bundle sntrys_)" 0
+check 'its source maps go to Sentry with the token, the address, the organisation and the project' "$(uploaded)" \
+  "uploaded sentry-expo-upload-sourcemaps dist with $SENTRY_TOKEN dsn=$SENTRY_DSN org=pivt-media project=firstpass-hq url=https://de.sentry.io/"
+
+run 'without crash reports' "$LIVE" "$DOTENV
+EXPO_PUBLIC_SENTRY_DSN=https://ffffffffffffffffffffffffffffffff@o1.ingest.de.sentry.io/9"
+check 'an update without crash reports is published' "$status:$(published)" '0:yes'
+check 'it has no Sentry address, not even the .env one' "$(bundle SENTRY_DSN)" 0
+check 'and uploads nothing to Sentry' "$(uploaded)" none
+
+run 'Sentry address without its token' "$LIVE
+EXPO_PUBLIC_SENTRY_DSN=$SENTRY_DSN" "$DOTENV"
+check 'a Sentry address without its token (a Secret token) is refused' "$status:$(published)" '1:no'
+check 'and says to make the token Sensitive' "$(grep -c 'Sensitive rather than Secret' "$work/out")" 1
+
+run 'Sentry token without its address' "$LIVE
+SENTRY_AUTH_TOKEN=$SENTRY_TOKEN" "$DOTENV"
+check 'a Sentry token without its address is refused' "$status:$(published)" '1:no'
+
+run 'Sentry in the US' "$LIVE
+EXPO_PUBLIC_SENTRY_DSN=${SENTRY_DSN/.de./.us.}
+SENTRY_AUTH_TOKEN=$(token https://us.sentry.io)" "$DOTENV"
+check 'crash reports outside the EU are refused' "$status:$(published)" '1:no'
+check 'and nothing goes to Sentry' "$(uploaded)" none
+
+STUB_UPLOAD_FAILS=1 run 'source maps upload fails' "$LIVE
+$CRASH" "$DOTENV"
+check 'a failed source map upload still leaves the update published' "$status:$(published)" '0:yes'
+check 'and says so' "$(grep -c "didn't reach Sentry" "$work/out")" 1
 
 # The build number: worked out from the app folder's git history, built into
 # the update, and the committed file put back afterwards.

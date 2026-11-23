@@ -17,7 +17,11 @@
  *   gives full access to a club's data), has not expired, and belongs to the
  *   project at its address;
  * - the demo club has both of its settings or neither, and is never the live
- *   club's own project.
+ *   club's own project;
+ * - crash reports (src/lib/crash-reports.ts) have both of their settings or
+ *   neither: the Sentry address must be in Sentry's EU data centre, and the
+ *   token must be an organisation token for an organisation stored in the EU.
+ *   With neither, the build goes ahead with crash reports off.
  *
  * It must run with Node alone: EAS runs it before it installs any packages.
  */
@@ -37,6 +41,14 @@ const DEMO = {
   url: 'EXPO_PUBLIC_DEMO_CLUB_URL',
   key: 'EXPO_PUBLIC_DEMO_CLUB_ANON_KEY',
 };
+
+const CRASH = {
+  dsn: 'EXPO_PUBLIC_SENTRY_DSN',
+  token: 'SENTRY_AUTH_TOKEN',
+};
+
+/** Sentry's EU addresses look like https://<key>@o<number>.ingest.de.sentry.io/<number>. */
+const EU_DSN = /^https:\/\/[0-9a-f]{32}@o\d+\.ingest\.de\.sentry\.io\/\d+$/;
 
 /** A URL when the text is one, or null. */
 function parse(address) {
@@ -106,6 +118,83 @@ function keyProblem(name, value, url, now) {
   return null;
 }
 
+/** What is wrong with the Sentry address, or null. */
+function dsnProblem(value) {
+  if (/[\s"']/.test(value)) return `${CRASH.dsn} has a space or a quote in it`;
+  if (EU_DSN.test(value)) return null;
+  const url = parse(value);
+  if (url && /(^|\.)sentry\.io$/.test(url.host) && !url.host.endsWith('.de.sentry.io')) {
+    return (
+      `${CRASH.dsn} is in Sentry's US data centre. Crash reports must be stored in the EU: ` +
+      'create the Sentry organisation with EU data storage and use its address'
+    );
+  }
+  return (
+    `${CRASH.dsn} is not a Sentry address in the EU. ` +
+    'It looks like https://<32 letters and digits>@o123.ingest.de.sentry.io/456'
+  );
+}
+
+/** The details inside a Sentry organisation token, or null when it isn't one. */
+function tokenDetails(value) {
+  const match = /^sntrys_([A-Za-z0-9+/=]+)_[A-Za-z0-9+/=_-]+$/.exec(value);
+  if (!match) return null;
+  try {
+    const found = JSON.parse(Buffer.from(match[1], 'base64').toString('utf8'));
+    return found && typeof found === 'object' ? found : null;
+  } catch {
+    return null;
+  }
+}
+
+/** What is wrong with the Sentry token, or null. */
+function tokenProblem(value) {
+  if (/[\s"']/.test(value)) return `${CRASH.token} has a space or a quote in it`;
+  if (value.startsWith('sntryu_')) {
+    return (
+      `${CRASH.token} is a personal token. Use an organisation token, made in Sentry under ` +
+      'Settings, Auth Tokens'
+    );
+  }
+  const found = tokenDetails(value);
+  if (!found || typeof found.org !== 'string' || !found.org) {
+    return `${CRASH.token} is not a Sentry organisation token. It starts with sntrys_`;
+  }
+  if (parse(`${found.region_url ?? ''}`)?.host !== 'de.sentry.io') {
+    return (
+      `${CRASH.token} belongs to an organisation stored outside the EU. ` +
+      'Crash reports must be stored in the EU'
+    );
+  }
+  return null;
+}
+
+/** What is wrong with the crash report settings. Neither of them is fine: reports are off. */
+function crashProblems(env) {
+  const dsn = (env[CRASH.dsn] ?? '').trim();
+  const token = (env[CRASH.token] ?? '').trim();
+  if (!dsn && !token) return [];
+  if (!dsn || !token) {
+    const [missing, set] = dsn ? [CRASH.token, CRASH.dsn] : [CRASH.dsn, CRASH.token];
+    return [
+      `${missing} is missing, so crash reports would be half set up. Add it, or remove ${set} ` +
+        'to build with crash reports off',
+    ];
+  }
+  return [dsnProblem(env[CRASH.dsn]), tokenProblem(env[CRASH.token])].filter(Boolean);
+}
+
+/**
+ * Whether this build sends crash reports, and the Sentry organisation its
+ * token belongs to. Read by app.config.js, which uploads source maps only when
+ * reports are on.
+ */
+function crashReportSettings(env) {
+  const on = !!(env[CRASH.dsn] ?? '').trim() && crashProblems(env).length === 0;
+  const details = on ? tokenDetails(env[CRASH.token].trim()) : null;
+  return { on, organization: details ? details.org : null };
+}
+
 /** A club's address and key, as the build would put them in the app. */
 function settings(env, club) {
   return { url: env[club.url] ?? '', key: env[club.key] ?? '' };
@@ -160,6 +249,7 @@ function problems(env, now = Date.now()) {
   if (hasDemoKey && demo.key.trim() === live.key.trim()) {
     found.push(`${DEMO.key} is the live club's key. Use the test project's public key`);
   }
+  found.push(...crashProblems(env));
   return found;
 }
 
@@ -182,10 +272,17 @@ function main(env) {
       `Club settings are in place: the live club is ${settings(env, LIVE).url}, ` +
         (demo.url ? `and the demo club is ${demo.url}.` : 'and this build has no demo club.'),
     );
+    console.log(
+      crashReportSettings(env).on
+        ? 'Crash reports are on, sent to Sentry in the EU.'
+        : 'Crash reports are off: this build has no Sentry settings.',
+    );
     return 0;
   }
   const environment = environmentName(env);
-  console.error('This build was stopped before it started, because its app would not work:');
+  console.error(
+    'This build was stopped before it started, because its app would not work as it should:',
+  );
   for (const problem of found) console.error(`- ${problem}.`);
   console.error(
     `Fix ${found.length === 1 ? 'it' : 'them'} on expo.dev, under Environment variables, ` +
@@ -195,6 +292,6 @@ function main(env) {
   return 1;
 }
 
-module.exports = { problems };
+module.exports = { problems, crashReportSettings, EU_DSN };
 
 if (require.main === module) process.exit(main(process.env));

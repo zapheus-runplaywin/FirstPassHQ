@@ -3,7 +3,7 @@
 Play Console > FirstPass HQ > Policy > App content > Data safety. Answers in the order the form
 asks, each from [data-inventory.md](data-inventory.md) (row numbers in brackets). Google's
 definitions: "collected" means sent off the phone; sending data to a service provider that
-processes it for us (Supabase, Expo's push service) is not "shared"
+processes it for us (Supabase, Expo's push service, Sentry for crash reports) is not "shared"
 ([Data safety help](https://support.google.com/googleplay/android-developer/answer/10787469)).
 
 Before you submit, check that the form's wording still matches. Google changes it now and then;
@@ -14,8 +14,8 @@ thread so the file is updated.
 
 | Question | Answer | Why |
 | --- | --- | --- |
-| Does your app collect or share any of the required user data types? | **Yes** | Rows 1 to 20 |
-| Is all of the user data collected by your app encrypted in transit? | **Yes** | HTTPS/TLS to Supabase and to Expo's push service |
+| Does your app collect or share any of the required user data types? | **Yes** | Rows 1 to 20 and 23 |
+| Is all of the user data collected by your app encrypted in transit? | **Yes** | HTTPS/TLS to Supabase, to Expo's push service and to Sentry |
 | Which of the following methods of account creation does your app support? | **OAuth** (Sign in with Google; Sign in with Apple on iPhone, #219) | `src/lib/sign-in.ts` |
 | Delete account URL | The public delete page, **to confirm** when W9 publishes it (planned `https://firstpass-hq.expo.app/delete-account`) | [public-pages/delete-account.md](public-pages/delete-account.md) |
 | Do you provide a way for users to request that some or all of their data is deleted, without requiring them to delete their account? | **No** | The app deletes the whole account; other requests go to the club's admin, which is not a self-serve path. Answer Yes only if you want to offer it by email |
@@ -25,8 +25,10 @@ thread so the file is updated.
 ## Data types
 
 Every type below is **collected, not shared**, **not processed ephemerally** (it is stored), and
-used only for the purposes named. None is used for advertising, marketing, analytics,
-personalisation or fraud prevention. "Required" means a member can't use the app without it.
+used only for the purposes named. None is used for advertising, marketing, personalisation or
+tracking. The only "Analytics" purpose is crash reports (row 23), which Google's definition of
+analytics covers ("to diagnose and fix bugs or crashes"). "Required" means a member can't use the
+app without it, or can't turn it off.
 
 | Category | Data type | Collected? | Required or optional | Purposes | Rows |
 | --- | --- | --- | --- | --- | --- |
@@ -52,10 +54,24 @@ personalisation or fraud prevention. "Required" means a member can't use the app
 | App activity | In-app search history, Installed apps, Other actions | No | | | |
 | Web browsing | Web browsing history | No | | | |
 | Location | Approximate, Precise | No | | | |
-| App info and performance | Crash logs, Diagnostics, Other app performance data | **No** today. The app log stays on the phone (row 22). Change to Yes when W2 crash reporting merges | | | 22 |
-| Device or other IDs | Device or other IDs | Yes | Optional (only if the member allows notifications) | App functionality | 19 |
+| App info and performance | Crash logs | Yes | Required (builds with crash reports send them; there's no switch) | Analytics | 23 |
+| App info and performance | Diagnostics | Yes | Required | Analytics | 23 |
+| App info and performance | Other app performance data | No | Performance tracing is off | | |
+| Device or other IDs | Device or other IDs | Yes | Required (the random install id on crash reports). Push tokens are optional, only if the member allows notifications | App functionality (push tokens), Analytics (install id) | 19, 23 |
 
 ### Notes for the form
+
+- **Crash reports** (row 23) go to Sentry, in its EU data centre, as a service provider for
+  FirstPass, so they are collected, not shared. Diagnostics covers the phone model, system version
+  and app version on each report. The report carries a random id made for that install, never a
+  member id, so it is declared under Device or other IDs too. A crash in the phone's own code
+  (not the app's JavaScript) skips the app's filter, so its text is scrubbed by Sentry's own
+  server-side scrubbing instead; it still carries no member id. Answer these rows only once the
+  build you are submitting has crash reports (both Sentry settings on expo.dev, see
+  `docs/beta-builds.md`, "Crash reports"); a build without them sends none.
+- **The app log** (row 22) leaves the phone only when the member sends it themselves with **Send
+  app log**, to whoever they choose. Google doesn't count data the user sends to someone else
+  through the share sheet as collected by the app.
 
 - **Push tokens.** Google's examples for "Device or other IDs" are installation and device ids;
   a push token is declared there to be safe. The token and notification text pass through

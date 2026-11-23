@@ -60,6 +60,13 @@ The app keeps the club's information in its own database, separate from every
 other club, hosted by [hosting provider] in [location]. Only the people above
 can see it, and only through the app.
 
+When the app crashes, it sends a crash report to FirstPass, the app's maker,
+through Sentry, which stores it in the European Union for 30 days. A report
+says what went wrong in the app and on what kind of phone. Names, emails,
+dates of birth, member ids, messages and anything else members or the club
+entered are taken out on the phone before it is sent, so a report can't say
+who it came from.
+
 ## How long we keep it
 
 The app removes old records each night once the club has switched this on.
