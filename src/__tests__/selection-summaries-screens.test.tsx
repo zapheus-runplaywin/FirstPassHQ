@@ -904,6 +904,7 @@ describe('who has signed, for an admin', () => {
       { teams: [{ id: 't1', name: '17 & Under squad', sort_order: 1, kind: 'squad', season: 2027, squad_id: null, selections_completed_at: null }] },
       { rpcs: { admin_selection_rounds: [round] } },
     );
+    await press('Reports');
     expect(screen.getByText(/What a summary says stays with the panel\./)).toBeTruthy();
     expect(assessmentRpcs()).not.toContain('admin_selection_summaries');
     await press('Summaries signed');
@@ -952,9 +953,9 @@ describe('summaries in the Selection audit report', () => {
 
   it('shows each selector’s counts and every reopening', async () => {
     await openAudit(ADMIN_SUMMARIES);
-    expect(screen.getByText('Summaries')).toBeTruthy();
+    await press('Summaries');
     expect(screen.getByText('Signed late: 2')).toBeTruthy();
-    expect(screen.getByText('Summaries reopened')).toBeTruthy();
+    await press('Summaries reopened');
     expect(screen.getAllByText('Reopened by: Sample admin')).toHaveLength(1);
   });
 

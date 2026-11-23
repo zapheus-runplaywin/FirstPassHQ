@@ -2,11 +2,11 @@ import { useState } from 'react';
 import { StyleSheet, View } from 'react-native';
 
 import { ThemedText } from '@/components/themed-text';
-import { Button, Card, ErrorText } from '@/components/ui';
+import { Button, Card, ErrorText, PressableCard } from '@/components/ui';
 import { Spacing } from '@/constants/theme';
 import { useClub } from '@/lib/club';
 import { clubToday } from '@/lib/club-time';
-import { reportPdf, type Report } from '@/lib/pdf';
+import { foldedLine, reportPdf, type Report } from '@/lib/pdf';
 import { fileSlug, sharePdf } from '@/lib/reports';
 
 /**
@@ -17,16 +17,23 @@ export function ReportView({
   report,
   action,
   buttonOnly = false,
+  folded = false,
 }: {
   report: Report;
   /** Shows only the PDF button, for a screen that lays the same facts out its own way. */
   buttonOnly?: boolean;
+  /**
+   * For a report with many sections: each section shows as one line (its title, how many
+   * rows, how many are flagged) and opens when tapped, one at a time. The PDF is unchanged.
+   */
+  folded?: boolean;
   /** Replaces the Export PDF button, such as Send return. Runs after the PDF is shared. */
   action?: { title: string; note: string; disabled?: boolean; onShared: () => Promise<void> | void };
 }) {
   const club = useClub();
   const [exporting, setExporting] = useState(false);
   const [error, setError] = useState<string | null>(null);
+  const [open, setOpen] = useState<number | null>(null);
 
   async function exportPdf() {
     setExporting(true);
@@ -78,38 +85,59 @@ export function ReportView({
       </ThemedText>
       <ErrorText>{error}</ErrorText>
 
-      {(buttonOnly ? [] : report.sections).map((section, s) => (
-        <View key={`${section.title}-${s}`} style={styles.section}>
-          <ThemedText type="smallBold">{section.title}</ThemedText>
-          {section.note ? (
-            <ThemedText type="small" themeColor="textSecondary">
-              {section.note}
-            </ThemedText>
-          ) : null}
-          {section.rows.length === 0 ? (
-            <ThemedText type="small" themeColor="textSecondary">
-              {section.empty ?? 'Nothing to show.'}
-            </ThemedText>
-          ) : (
-            section.rows.map((row, r) => (
-              <Card key={r}>
-                <ThemedText type="smallBold" themeColor={row.flag ? 'tint' : undefined}>
-                  {row.cells[0]}
+      {(buttonOnly ? [] : report.sections).map((section, s) => {
+        if (folded && open !== s) {
+          return (
+            <PressableCard key={`${section.title}-${s}`} onPress={() => setOpen(s)}>
+              <ThemedText type="smallBold">{section.title}</ThemedText>
+              <ThemedText type="small" themeColor="textSecondary">
+                {foldedLine(section)}
+              </ThemedText>
+            </PressableCard>
+          );
+        }
+        return (
+          <View key={`${section.title}-${s}`} style={styles.section}>
+            {folded ? (
+              <PressableCard onPress={() => setOpen(null)}>
+                <ThemedText type="smallBold">{section.title}</ThemedText>
+                <ThemedText type="small" themeColor="textSecondary">
+                  Tap to close
                 </ThemedText>
-                {section.columns.slice(1).map((column, c) => {
-                  const value = row.cells[c + 1];
-                  if (!value) return null;
-                  return (
-                    <ThemedText key={column.label} type="small" themeColor="textSecondary">
-                      {column.label}: {value.replace(/\n/g, ', ')}
-                    </ThemedText>
-                  );
-                })}
-              </Card>
-            ))
-          )}
-        </View>
-      ))}
+              </PressableCard>
+            ) : (
+              <ThemedText type="smallBold">{section.title}</ThemedText>
+            )}
+            {section.note ? (
+              <ThemedText type="small" themeColor="textSecondary">
+                {section.note}
+              </ThemedText>
+            ) : null}
+            {section.rows.length === 0 ? (
+              <ThemedText type="small" themeColor="textSecondary">
+                {section.empty ?? 'Nothing to show.'}
+              </ThemedText>
+            ) : (
+              section.rows.map((row, r) => (
+                <Card key={r}>
+                  <ThemedText type="smallBold" themeColor={row.flag ? 'tint' : undefined}>
+                    {row.cells[0]}
+                  </ThemedText>
+                  {section.columns.slice(1).map((column, c) => {
+                    const value = row.cells[c + 1];
+                    if (!value) return null;
+                    return (
+                      <ThemedText key={column.label} type="small" themeColor="textSecondary">
+                        {column.label}: {value.replace(/\n/g, ', ')}
+                      </ThemedText>
+                    );
+                  })}
+                </Card>
+              ))
+            )}
+          </View>
+        );
+      })}
 
       {report.footnote ? (
         <ThemedText type="small" themeColor="textSecondary">

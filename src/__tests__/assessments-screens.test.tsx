@@ -994,6 +994,7 @@ describe('a round and its panel, for an admin', () => {
 
   it('shows counts for the round, never an assessment', async () => {
     await openRound();
+    await press('Details');
     expect(screen.getByText('17 & Under squad · 14 athletes · 22 observations')).toBeTruthy();
     expect(screen.getByDisplayValue('2027 selection phase')).toBeTruthy();
     expect(screen.queryByText('Squad or team')).toBeNull();
@@ -1008,6 +1009,7 @@ describe('a round and its panel, for an admin', () => {
 
   it('lists the panel with who added each, and what the admin should know', async () => {
     await openRound();
+    await press(/^Panel \(/);
     expect(screen.getByText(`Added ${d('2026-10-05')} by Sample admin`)).toBeTruthy();
     expect(screen.getByText(`Added ${d('2026-10-05')}`)).toBeTruthy();
     expect(screen.getByText('Declared a conflict of interest this season')).toBeTruthy();
@@ -1017,6 +1019,7 @@ describe('a round and its panel, for an admin', () => {
 
   it('keeps who has left the panel, with who removed them', async () => {
     await openRound();
+    await press(/^Panel \(/);
     expect(screen.getByText('No longer on the panel')).toBeTruthy();
     expect(
       screen.getByText(`Drew Lapsed: added ${d('2026-10-05')}, removed ${d('2026-10-12')} by Sample admin`),
@@ -1026,18 +1029,21 @@ describe('a round and its panel, for an admin', () => {
 
   it('says when nobody is on the panel, and shows no list of leavers when none have left', async () => {
     await openRound(adminRound({ panel: [] }));
+    await press(/^Panel \(/);
     expect(screen.getByText('Nobody is on the panel.')).toBeTruthy();
     expect(screen.queryByText('No longer on the panel')).toBeNull();
   });
 
   it('offers no removal for a panel member whose account is gone', async () => {
     await openRound(adminRound({ panel: [panelMember({ profile_id: null, name: 'Former Coach' })] }));
+    await press(/^Panel \(/);
     expect(screen.getByText('Former Coach')).toBeTruthy();
     expect(screen.queryByText(/^Take .* off the panel$/)).toBeNull();
   });
 
   it('takes a selector off the panel', async () => {
     await openRound();
+    await press(/^Panel \(/);
     await press('Take Casey Coach off the panel');
     expect(onlyRpcCall('admin_remove_selection_panel_member')).toEqual({ p_round_id: 'r1', p_profile_id: 'c1' });
     expect(rpcCalls('admin_selection_rounds')).toHaveLength(2);
@@ -1045,6 +1051,7 @@ describe('a round and its panel, for an admin', () => {
 
   it('offers only people with a current check as selectors, and adds one', async () => {
     await openRound();
+    await press(/^Panel \(/);
     expect(rpcNames()).not.toContain('admin_selection_panel_choices');
     await press('Add a selector');
     expect(onlyRpcCall('admin_selection_panel_choices')).toEqual({ p_round_id: 'r1' });
@@ -1062,6 +1069,7 @@ describe('a round and its panel, for an admin', () => {
 
   it('says when there is nobody else to add, and names someone without a name or a check as Member', async () => {
     await openRound(adminRound(), { rpcs: { admin_selection_rounds: [adminRound()], admin_selection_panel_choices: null } });
+    await press(/^Panel \(/);
     await press('Add a selector');
     expect(screen.getByText('There is nobody else to add.')).toBeTruthy();
     await openRound(adminRound(), {
@@ -1070,22 +1078,25 @@ describe('a round and its panel, for an admin', () => {
         admin_selection_panel_choices: [{ profile_id: 'g4', name: null, roles: ['guest'], cleared: false }],
       },
     });
+    await press(/^Panel \(/);
     await press('Add a selector');
     expect(screen.getByText('Member: needs a current Working With Children Check first')).toBeTruthy();
   });
 
   it.each([
-    ['admin_selection_panel_choices', 'Add a selector'],
-    ['admin_remove_selection_panel_member', 'Take Casey Coach off the panel'],
-    ['admin_close_selection_round', 'Close the round'],
-  ])('shows the database’s refusal of %s', async (fn, button) => {
+    ['admin_selection_panel_choices', /^Panel \(/, 'Add a selector'],
+    ['admin_remove_selection_panel_member', /^Panel \(/, 'Take Casey Coach off the panel'],
+    ['admin_close_selection_round', 'Details', 'Close the round'],
+  ])('shows the database’s refusal of %s', async (fn, tab, button) => {
     await openRound(adminRound(), { rpcErrors: { [fn]: 'Only admins can change a selection round' } });
+    await press(tab);
     await press(button);
     expect(screen.getByText('Only admins can change a selection round')).toBeTruthy();
   });
 
   it('saves a changed name and dates under the round’s id, and says so', async () => {
     await openRound();
+    await press('Details');
     await fill('Name', '2027 trials');
     await pickDay(0, 2026, 10, 6);
     await press('Save');
@@ -1101,6 +1112,7 @@ describe('a round and its panel, for an admin', () => {
 
   it('won’t save a round with no name', async () => {
     await openRound();
+    await press('Details');
     await fill('Name', '  ');
     await press('Save');
     expect(screen.getByText('Choose a name.')).toBeTruthy();
@@ -1109,6 +1121,7 @@ describe('a round and its panel, for an admin', () => {
 
   it('shows why a save was refused', async () => {
     await openRound(adminRound(), { rpcErrors: { admin_save_selection_round: 'The round can’t start after its first observation' } });
+    await press('Details');
     await press('Save');
     expect(screen.getByText('The round can’t start after its first observation')).toBeTruthy();
     expect(screen.queryByText('Saved.')).toBeNull();
@@ -1116,6 +1129,7 @@ describe('a round and its panel, for an admin', () => {
 
   it('closes an open round', async () => {
     await openRound();
+    await press('Details');
     expect(screen.getByText(/Close the round once the teams are named/)).toBeTruthy();
     await press('Close the round');
     expect(onlyRpcCall('admin_close_selection_round')).toEqual({ p_round_id: 'r1', p_closed: true });
@@ -1123,6 +1137,7 @@ describe('a round and its panel, for an admin', () => {
 
   it('opens a closed round again', async () => {
     await openRound(adminRound({ closed_at: '2026-10-15T03:00:00Z' }));
+    await press('Details');
     expect(screen.getByText(/This round is closed: the panel can still read it/)).toBeTruthy();
     await press('Open the round again');
     expect(onlyRpcCall('admin_close_selection_round')).toEqual({ p_round_id: 'r1', p_closed: false });
@@ -1130,8 +1145,61 @@ describe('a round and its panel, for an admin', () => {
 
   it('opens the audit report', async () => {
     await openRound();
+    await press('Reports');
     await press('Selection audit report');
     expect(screen.getByText('screen:admin/assessments/audit')).toBeTruthy();
+  });
+
+  it('opens on its dates, with the panel, reports and details one tap away each', async () => {
+    await openRound();
+    expect(screen.getByText('Dates (0)')).toBeTruthy();
+    expect(screen.getByText('Panel (2)')).toBeTruthy();
+    expect(screen.getByText('Add a date')).toBeTruthy();
+    // Nothing from the other tabs until it is asked for.
+    expect(screen.queryByText('Take Casey Coach off the panel')).toBeNull();
+    expect(screen.queryByText('Selection audit report')).toBeNull();
+    expect(screen.queryByDisplayValue('2027 selection phase')).toBeNull();
+    expect(screen.queryByText('Close the round')).toBeNull();
+    await press('Panel (2)');
+    expect(screen.getByText('Take Casey Coach off the panel')).toBeTruthy();
+    expect(screen.queryByText('Add a date')).toBeNull();
+    await press('Reports');
+    expect(screen.getByText('Selection audit report')).toBeTruthy();
+    expect(screen.queryByText('Take Casey Coach off the panel')).toBeNull();
+    await press('Details');
+    expect(screen.getByDisplayValue('2027 selection phase')).toBeTruthy();
+    expect(screen.getByText('Close the round')).toBeTruthy();
+    expect(screen.queryByText('Selection audit report')).toBeNull();
+  });
+
+  it('leaves a message on the tab it was about', async () => {
+    await openRound(adminRound(), { rpcErrors: { admin_remove_selection_panel_member: 'Only admins can change a selection round' } });
+    await press('Panel (2)');
+    await press('Take Casey Coach off the panel');
+    expect(screen.getByText('Only admins can change a selection round')).toBeTruthy();
+    await press('Details');
+    expect(screen.queryByText('Only admins can change a selection round')).toBeNull();
+    await press('Save');
+    expect(screen.getByText('Saved.')).toBeTruthy();
+    await press('Dates (0)');
+    expect(screen.queryByText('Saved.')).toBeNull();
+  });
+
+  it('keeps what was typed in Details while another tab is looked at', async () => {
+    await openRound();
+    await press('Details');
+    await fill('Name', '2027 trials');
+    await press('Reports');
+    await press('Details');
+    expect(screen.getByDisplayValue('2027 trials')).toBeTruthy();
+  });
+
+  it('puts the panel two a row on a tablet', async () => {
+    await openRound();
+    await press('Panel (2)');
+    await fireEvent(screen.getByTestId('card-grid-1'), 'layout', { nativeEvent: { layout: { width: 772, height: 600, x: 0, y: 0 } } });
+    expect(screen.getByTestId('card-grid-2')).toBeTruthy();
+    expect(screen.getByText('Take Casey Coach off the panel')).toBeTruthy();
   });
 
   it('says when the round can’t be found, or why it couldn’t load', async () => {
@@ -1241,11 +1309,19 @@ describe('the Selection audit report', () => {
     for (const title of ['The round', 'Dates', 'The panel', 'What each selector wrote', 'Evidence about each athlete']) {
       expect(screen.getByText(title)).toBeTruthy();
     }
+    // Folded: each section is one line until it is tapped, and one is open at a time.
+    expect(screen.queryByText('Jordan Junior (under 18)')).toBeNull();
+    await press('Evidence about each athlete');
     expect(screen.getByText('Jordan Junior (under 18)')).toBeTruthy();
+    await press('What each selector wrote');
+    expect(screen.queryByText('Jordan Junior (under 18)')).toBeNull();
     expect(screen.getByText(/3 \/ 1 \/ 0 \/ 0/)).toBeTruthy();
+    expect(screen.getByText(/1 panel member has written nothing yet/)).toBeTruthy();
+    await press('The panel');
     expect(screen.getByText(/Declared a conflict of interest this season/)).toBeTruthy();
     expect(screen.getByText(/it holds no ratings, evidence, recommendations or names of criteria/)).toBeTruthy();
-    expect(screen.getByText(/1 panel member has written nothing yet/)).toBeTruthy();
+    await press('The panel');
+    expect(screen.queryByText(/Declared a conflict of interest this season/)).toBeNull();
   });
 
   it('exports the same report as a landscape PDF, with no rating or criterion in it', async () => {

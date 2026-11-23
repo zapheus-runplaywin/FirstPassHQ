@@ -2,6 +2,7 @@ import { router, useFocusEffect, useLocalSearchParams } from 'expo-router';
 import { useCallback, useState } from 'react';
 import { StyleSheet, View } from 'react-native';
 
+import { CardGrid } from '@/components/columns';
 import { MonthDateField } from '@/components/month-date-field';
 import { Screen } from '@/components/screen';
 import { ThemedText } from '@/components/themed-text';
@@ -22,8 +23,9 @@ import { supabase } from '@/lib/supabase';
 import { teamLabel, useTeams } from '@/lib/use-teams';
 
 /**
- * Opens a selection round for a squad or team, or (with an id) changes its
- * name and dates, manages its panel, closes it and opens its audit report.
+ * Opens a selection round for a squad or team, or (with an id) shows it in
+ * four short tabs: its dates, its panel, its reports, and its details (name,
+ * dates, closing).
  * The panel is the only way to read a round's assessments, so every change
  * to it is kept and shown here.
  */
@@ -43,6 +45,14 @@ export default function AdminRoundScreen() {
   const [busy, setBusy] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [notice, setNotice] = useState<string | null>(null);
+  const [tab, setTab] = useState<'dates' | 'panel' | 'reports' | 'details'>('dates');
+
+  /** Each part of a round is its own tab, so a message about one doesn't follow to the next. */
+  function openTab(next: typeof tab) {
+    setTab(next);
+    setError(null);
+    setNotice(null);
+  }
 
   const load = useCallback(async () => {
     if (!id) return;
@@ -158,30 +168,8 @@ export default function AdminRoundScreen() {
   const standing = dates.filter((m) => !m.removed_at);
   const takenOff = dates.filter((m) => m.removed_at);
 
-  return (
-    <Screen>
-      {round ? (
-        <ThemedText type="small" themeColor="textSecondary">
-          {round.team_name} · {round.athletes} {round.athletes === 1 ? 'athlete' : 'athletes'} ·{' '}
-          {round.observations} {round.observations === 1 ? 'observation' : 'observations'}
-          {round.closed_at ? ` · closed ${formatDateString(round.closed_at.slice(0, 10))}` : ''}
-        </ThemedText>
-      ) : (
-        <>
-          <ThemedText type="small" themeColor="textSecondary">
-            A round covers one squad or team’s selection phase. It takes a copy of the criteria
-            as they are now, and its panel starts as the group’s coaches who hold a current
-            Working With Children Check. You can add other selectors once it is open.
-          </ThemedText>
-          <ChipGroup
-            label="Squad or team"
-            options={teams.map((t) => ({ value: t.id, label: teamLabel(t, teams) }))}
-            selected={teamId ? [teamId] : []}
-            onToggle={setTeamId}
-          />
-        </>
-      )}
-
+  const form = (
+    <>
       <TextField
         label="Name"
         value={name}
@@ -191,36 +179,74 @@ export default function AdminRoundScreen() {
       />
       <MonthDateField label="Starts" value={startsOn} onChange={setStartsOn} />
       <MonthDateField label="Ends" value={endsOn} onChange={setEndsOn} />
-
       <ErrorText>{error}</ErrorText>
       {notice ? <ThemedText type="small">{notice}</ThemedText> : null}
       <Button title={id ? 'Save' : 'Open round'} onPress={save} busy={saving} />
+    </>
+  );
 
-      {round ? (
+  if (!round) {
+    return (
+      <Screen>
+        <ThemedText type="small" themeColor="textSecondary">
+          A round covers one squad or team’s selection phase. It takes a copy of the criteria
+          as they are now, and its panel starts as the group’s coaches who hold a current
+          Working With Children Check. You can add other selectors once it is open.
+        </ThemedText>
+        <ChipGroup
+          label="Squad or team"
+          options={teams.map((t) => ({ value: t.id, label: teamLabel(t, teams) }))}
+          selected={teamId ? [teamId] : []}
+          onToggle={setTeamId}
+        />
+        {form}
+      </Screen>
+    );
+  }
+
+  return (
+    <Screen>
+      <ThemedText type="small" themeColor="textSecondary">
+        {round.team_name} · {round.athletes} {round.athletes === 1 ? 'athlete' : 'athletes'} ·{' '}
+        {round.observations} {round.observations === 1 ? 'observation' : 'observations'}
+        {round.closed_at ? ` · closed ${formatDateString(round.closed_at.slice(0, 10))}` : ''}
+      </ThemedText>
+      <ChipGroup
+        options={[
+          { value: 'dates' as const, label: `Dates (${standing.length})` },
+          { value: 'panel' as const, label: `Panel (${onPanel.length})` },
+          { value: 'reports' as const, label: 'Reports' },
+          { value: 'details' as const, label: 'Details' },
+        ]}
+        selected={[tab]}
+        onToggle={openTab}
+      />
+      {tab === 'details' ? null : <ErrorText>{error}</ErrorText>}
+
+      {tab === 'dates' ? (
         <>
-          <ThemedText type="subtitle">Dates</ThemedText>
-          <ThemedText type="small" themeColor="textSecondary">
-            The steps in this round and when each is due. The panel and admins get a to-do from
-            a week before, until an admin marks it done.
-          </ThemedText>
           {standing.length === 0 ? (
-            <ThemedText type="small">No dates yet.</ThemedText>
+            <ThemedText type="small">
+              No dates yet. Add the steps in this round and when each is due.
+            </ThemedText>
           ) : (
-            standing.map((m) => {
-              const late = isOverdue({ due_on: m.due_on, done: !!m.done_at }, today);
-              return (
-                <PressableCard
-                  key={m.id}
-                  onPress={() =>
-                    router.push({ pathname: '/admin/assessments/milestone', params: { round: round.id, id: m.id } })
-                  }>
-                  <ThemedText type="smallBold">{m.title}</ThemedText>
-                  <ThemedText type={late ? 'smallBold' : 'small'} themeColor={late ? 'text' : 'textSecondary'}>
-                    {milestoneLine(m, today)}
-                  </ThemedText>
-                </PressableCard>
-              );
-            })
+            <CardGrid gap={Spacing.four}>
+              {standing.map((m) => {
+                const late = isOverdue({ due_on: m.due_on, done: !!m.done_at }, today);
+                return (
+                  <PressableCard
+                    key={m.id}
+                    onPress={() =>
+                      router.push({ pathname: '/admin/assessments/milestone', params: { round: round.id, id: m.id } })
+                    }>
+                    <ThemedText type="smallBold">{m.title}</ThemedText>
+                    <ThemedText type={late ? 'smallBold' : 'small'} themeColor={late ? 'text' : 'textSecondary'}>
+                      {milestoneLine(m, today)}
+                    </ThemedText>
+                  </PressableCard>
+                );
+              })}
+            </CardGrid>
           )}
           {round.closed_at || standing.length >= MAX_MILESTONES ? null : (
             <Button
@@ -229,44 +255,47 @@ export default function AdminRoundScreen() {
               onPress={() => router.push({ pathname: '/admin/assessments/milestone', params: { round: round.id } })}
             />
           )}
-          {takenOff.length > 0 ? (
-            <ThemedText type="small" themeColor="textSecondary">
-              Taken off: {takenOff.map((m) => m.title).join(', ')}. They stay in the audit report.
-            </ThemedText>
-          ) : null}
-
-          <ThemedText type="subtitle">Panel</ThemedText>
           <ThemedText type="small" themeColor="textSecondary">
-            Only the panel reads and writes this round’s assessments. Nobody on it can assess
-            their own child. Every change here is kept and shows in the audit report.
+            The panel and admins get a to-do from a week before each date, until an admin marks
+            it done.
+            {takenOff.length > 0
+              ? ` Taken off: ${takenOff.map((m) => m.title).join(', ')}. They stay in the audit report.`
+              : ''}
           </ThemedText>
+        </>
+      ) : null}
+
+      {tab === 'panel' ? (
+        <>
           {onPanel.length === 0 ? (
             <ThemedText type="small">Nobody is on the panel.</ThemedText>
           ) : (
-            onPanel.map((member) => (
-              <Card key={`${member.profile_id}-${member.added_at}`} style={styles.card}>
-                <ThemedText type="smallBold">{member.name}</ThemedText>
-                <ThemedText type="small" themeColor="textSecondary">
-                  Added {formatDateString(member.added_at.slice(0, 10))}
-                  {member.added_by_name ? ` by ${member.added_by_name}` : ''}
-                </ThemedText>
-                {panelNotes(member).map((note) => (
-                  <ThemedText key={note} type="small">
-                    {note}
+            <CardGrid gap={Spacing.four}>
+              {onPanel.map((member) => (
+                <Card key={`${member.profile_id}-${member.added_at}`} style={styles.card}>
+                  <ThemedText type="smallBold">{member.name}</ThemedText>
+                  <ThemedText type="small" themeColor="textSecondary">
+                    Added {formatDateString(member.added_at.slice(0, 10))}
+                    {member.added_by_name ? ` by ${member.added_by_name}` : ''}
                   </ThemedText>
-                ))}
-                {member.profile_id ? (
-                  <Button
-                    title={`Take ${member.name} off the panel`}
-                    variant="secondary"
-                    busy={busy}
-                    onPress={() =>
-                      change('admin_remove_selection_panel_member', { p_profile_id: member.profile_id })
-                    }
-                  />
-                ) : null}
-              </Card>
-            ))
+                  {panelNotes(member).map((note) => (
+                    <ThemedText key={note} type="small">
+                      {note}
+                    </ThemedText>
+                  ))}
+                  {member.profile_id ? (
+                    <Button
+                      title={`Take ${member.name} off the panel`}
+                      variant="secondary"
+                      busy={busy}
+                      onPress={() =>
+                        change('admin_remove_selection_panel_member', { p_profile_id: member.profile_id })
+                      }
+                    />
+                  ) : null}
+                </Card>
+              ))}
+            </CardGrid>
           )}
 
           {choices === null ? (
@@ -314,8 +343,15 @@ export default function AdminRoundScreen() {
               ))}
             </>
           ) : null}
+          <ThemedText type="small" themeColor="textSecondary">
+            Only the panel reads and writes this round’s assessments. Nobody on it can assess
+            their own child. Every change here is kept and shows in the audit report.
+          </ThemedText>
+        </>
+      ) : null}
 
-          <ThemedText type="subtitle">Audit and closing</ThemedText>
+      {tab === 'reports' ? (
+        <>
           <Button
             title="Selection audit report"
             onPress={() => router.push({ pathname: '/admin/assessments/audit', params: { id: round.id } })}
@@ -329,6 +365,12 @@ export default function AdminRoundScreen() {
             Who has signed their summary of each athlete, and when. You can reopen one signed by
             mistake. What a summary says stays with the panel.
           </ThemedText>
+        </>
+      ) : null}
+
+      {tab === 'details' ? (
+        <>
+          {form}
           <ThemedText type="small" themeColor="textSecondary">
             {round.closed_at
               ? 'This round is closed: the panel can still read it, and nothing can be added.'
