@@ -155,7 +155,7 @@ What each role sees on its home screen:
 | Manage absence reasons                 |         |                 |              |            |               |               |         |       ✓       |
 | Invite members (QR code and link)      |         |                 |              |            |               |               |         |       ✓       |
 | Policy and conflict registers (when turned on) |  |                 | Declare conflicts; review policies they own | Review policies they own | Read both; declare conflicts; review policies they own | Review policies they own |  | Read and change both; record any review |
-| Selection assessments (when turned on) | In a round: see the criteria, the dates the club shares, and feedback the head coach shares with them (no replies) | See them for their child under 18, with the same feedback | On a round's panel: read the panel's observations and add their own, never about their own child; write and sign their own summary of each athlete, and see the other selectors' signed summaries once theirs is signed; see the round's dates, with to-dos as they come close. The head coach can reopen a signed summary, and writes and shares feedback for each athlete |  |  |  | On a panel if an admin adds them, with a current check | Set criteria and recommendations, open rounds, choose panels, set the round's dates and mark them done, see who has signed their summaries and reopen one, see who was given feedback and when (never the words), build the audit report; read assessments and summaries only if on the panel |
+| Selection assessments (when turned on) | In a round: see the criteria, the dates the club shares, and feedback the head coach shares with them (no replies) | See them for their child under 18, with the same feedback | On a round's panel: read the panel's observations and add their own, never about their own child; write and sign their own summary of each athlete, and see the other selectors' signed summaries once theirs is signed; see the round's dates, with to-dos as they come close; see each athlete's own stats from games played in the round. The head coach can reopen a signed summary, and writes and shares feedback for each athlete |  |  |  | On a panel if an admin adds them, with a current check | Set criteria and recommendations, open rounds, choose panels, set the round's dates and mark them done, see who has signed their summaries and reopen one, see who was given feedback and when (never the words), build the audit report; read assessments and summaries only if on the panel |
 | Administration                         |         |                 |              |            |               |               |         |       ✓       |
 
 ‡‡ The Child Safety Officer or the Complaints Manager asks; an admin who isn't the one asking, the
@@ -1081,7 +1081,9 @@ take it down; your coaches can remove any comment.
 
 **Game stats.** When a statistician records your game in FirstPass Vantage, your coaches see your
 own figures from it beside your goals, to help them comment on how it went. You and your parents
-or guardians don't see them in the app; your coach can talk them through with you.
+or guardians don't see them in the app; your coach can talk them through with you. If the club
+uses selection assessments, the selectors on your selection round's panel also see your figures
+from games played during the round.
 
 <img src="user-guide/goals-athlete.png" width="210" alt="Game goals: the next game and played games">
 <img src="user-guide/goals-set.png" width="210" alt="Adding a goal for the next game">
@@ -1833,6 +1835,16 @@ you can share feedback with each athlete.
   closes the round. Only the head coach writes it, and nobody writes it for their own child. Write
   nothing about health, injuries or wellbeing.
 
+- **Games.** When the athlete has played games during the round, their assessment has a **Games**
+  tab beside **The picture so far** and **Observations**. Tap a game to see the athlete's own
+  **game stats** from the recording in FirstPass Vantage (time on court and positions, shooting,
+  feeds, gains, turnovers, rebounds and Net Points), then **Write about this game** to add an
+  observation for that day. A game nobody recorded is listed without stats. Every selector on the
+  panel sees the same figures, for games between the round's first and last day only. They're
+  one athlete's figures, never a comparison.
+
+  <img src="user-guide/assessments-games.png" width="210" alt="The Games tab on an athlete's assessment: a game open with the athlete's stats and Write about this game">
+
 - **Dates and reminders.** When an admin sets dates for the round, such as **Observations
   complete** or **Panel meeting**, the top of the round shows the next one still to do and how
   close it is; tap it to see them all, in bold once overdue. From a week before, each is on your to-do list (amber in the last three days,
@@ -1857,7 +1869,7 @@ you can share feedback with each athlete.
 - **Under 18s.** Each time you open the assessment of an athlete under 18 it's recorded in their
   record views, which their parents can read (see [Who has viewed your child's
   records](#who-has-viewed-your-childs-records)). It records that you opened it, not what it says.
-- **Not for wellbeing.** Check-ins, training load and injuries never show here, and a worry about a
+- **Not for wellbeing.** Check-ins, training load and injuries never show here (game stats from the round's games do, on the Games tab), and a worry about a
   child's safety doesn't belong in an observation: raise a concern from Home instead.
 - **When it ends.** Once an admin closes the round you can still read it, and nothing more can be
   added, signed or reopened, so sign your summaries before then. You lose access if you're taken off the panel, stood down, or your check lapses.
@@ -2068,7 +2080,9 @@ don't have PlayHQ games, so their pages don't show goals.
 - When a statistician recorded the game in FirstPass Vantage and finished it, the played game
   shows the athlete's **Game stats** under their goals: time on court and positions, shooting,
   feeds, gains, turnovers and rebounds, and their **Net Points** for the game. Only the
-  athlete's coaches see them: the athlete and their parents or guardians don't.
+  athlete's coaches see them, and the selectors on the panel of a selection round the game was
+  played in (see [Selection assessments](#selection-assessments)): the athlete and their parents
+  or guardians don't.
   The whole team's stats stay in FirstPass Vision (see [Watching live game
   stats](#watching-live-game-stats)). An athlete shows no stats when the lineup in Vantage has
   their name spelt differently from HQ, or when two athletes in the team share a name.
@@ -4507,7 +4521,7 @@ once saved, only replaced or removed, and anyone who gets it wrong five times in
 | Medical and emergency details | The athlete; an under 18's verified parents and guardians, who keep them (an athlete 18 or over keeps their own); and the coaches, managers and physios of the athlete's current squads and teams (the Head Physio for every athlete), for an under 18 only once a parent or guardian has given consent for injuries and health information. Not admins or the committee. Each view by a coach, manager or physio is recorded, and the athlete 18 or over, or an under 18's parents and guardians, see who and when. Checked once a year by whoever keeps them; admins see who has checked and when, but not the details. Removed when nobody has checked them for the club's chosen time (Record keeping), and deleted with the athlete's account. |
 | Who opened injury documents | The athlete, their guardians and admins: every view and share, by whom, their role and when, and each photo consent. |
 | Who has viewed a child's records | For an athlete under 18: their verified parents or guardians (until the athlete turns 18) and admins. Lists every time someone other than the athlete or their guardians opened the athlete's injuries, injury documents, check-ins, game goals, season KPIs, named survey answers, selection assessment (and a selector's summary of them) or member record, and every time an admin built a selection audit report, or opened the list of signed summaries, for a round they are in. Opening a child's records is recorded whoever you are; nobody can switch it off or delete entries by hand, and old entries are removed only under the club's Record keeping settings. |
-| Selection assessments | Only the panel of the athlete's selection round, while each is approved, not stood down and holds a current check: every observation, its ratings and evidence. Each selector's summary of an athlete is theirs alone until they sign it; a selector sees the other selectors' signed summaries of that athlete only once their own is signed, and can then save the completed sheet as a PDF. The head coach of the squad or team, or an admin, can reopen a signed summary, and every reopening is kept. A panel member never sees or writes the assessment or summary of an athlete they are a parent or guardian of, or their own. Admins see the criteria, the rounds, the panels and counts, and see who has signed which summaries and when, and build the Selection audit report (counts and dates, never a rating, evidence, recommendation or criterion); an admin reads an assessment or a summary only if they're on that panel. The committee, managers, physios and other coaches see nothing of them. An athlete in an open round, and the verified parents of one under 18, see the round's criteria and the dates the club chooses to share, never an observation, a count or who is on the panel. Feedback is written by the head coach of the round's squad or team only (never for their own child) and is theirs alone while a draft; once shared it is read by the athlete, the verified parents and guardians of an athlete under 18, and the round's panel, in open and closed rounds, until the head coach takes it back. Nobody can reply to it. Admins see who was given feedback, when, by whom and whether it was read, never what it says. The panel also sees two attendance counts for each athlete (sessions held in the round and sessions marked at), never an absence or its reason. |
+| Selection assessments | Only the panel of the athlete's selection round, while each is approved, not stood down and holds a current check: every observation, its ratings and evidence. Each selector's summary of an athlete is theirs alone until they sign it; a selector sees the other selectors' signed summaries of that athlete only once their own is signed, and can then save the completed sheet as a PDF. The head coach of the squad or team, or an admin, can reopen a signed summary, and every reopening is kept. A panel member never sees or writes the assessment or summary of an athlete they are a parent or guardian of, or their own. Admins see the criteria, the rounds, the panels and counts, and see who has signed which summaries and when, and build the Selection audit report (counts and dates, never a rating, evidence, recommendation or criterion); an admin reads an assessment or a summary only if they're on that panel. The committee, managers, physios and other coaches see nothing of them. An athlete in an open round, and the verified parents of one under 18, see the round's criteria and the dates the club chooses to share, never an observation, a count or who is on the panel. Feedback is written by the head coach of the round's squad or team only (never for their own child) and is theirs alone while a draft; once shared it is read by the athlete, the verified parents and guardians of an athlete under 18, and the round's panel, in open and closed rounds, until the head coach takes it back. Nobody can reply to it. Admins see who was given feedback, when, by whom and whether it was read, never what it says. The panel also sees two attendance counts for each athlete (sessions held in the round and sessions marked at), never an absence or its reason, and each selector who can assess an athlete sees that athlete's own stats from recorded games played between the round's first and last day. |
 | Consents for a child    | The athlete, their parents or guardians and admins, with every consent given and withdrawn. Only a verified parent or guardian can give or withdraw one. FirstPass Studio sees only whether an athlete of a streamed game may be named with their own stats. |
 | Club policies           | Everyone signed in, including people asking to join.                                                                        |
 | App version and build   | Everyone, signed in or not: it's the app's own version, not anything about you or the club. |
@@ -4516,7 +4530,7 @@ once saved, only replaced or removed, and anyone who gets it wrong five times in
 | An athlete's own stats from a recorded game | The athlete's current coaches only, on the played game's goals page, once the recording is finished. Only that athlete's own figures: time on court and positions, shooting, feeds, gains, turnovers, rebounds and Net Points. Not the athlete, their parents or guardians, team mates, other parents, managers, physios, statisticians, the committee or admins. Nothing is shown when a team mate has the same name. The figures are worked out when the page opens and aren't stored with the goals. |
 | The list of recorded games | Admins only, under **Games** in Administration: each game's teams, round, status, who recorded it and how many events it holds. No stats and no athletes. |
 | Season KPIs, progress and reviews | An athlete's: the athlete, their coaches in that squad or team, their parents or guardians (read only, until 18) and admins (read only). Not teammates, the committee or physios. A coach's or manager's: them, the committee and admins, and an assistant coach's head coach. Only those who set KPIs change them, record results and write reviews; the person records progress, confirms reviews and adds their own view. A coach's or manager's KPIs and reviews are kept under their name if they delete their account, and stay on the admin report. |
-| Live game stats         | Admins and statisticians (while their statistician role isn't paused for a check): every game the club records. The coaches and managers of the game's squad or team, and of the squad a team belongs to, see the team's games at every stage and who has opened each, and the stats once they open the game in FirstPass Vision, without a pair code (a shadow statistician still pairs with the code in Vantage). Members with the Studio role (while not stood down), through FirstPass Studio: games with a PlayHQ game that are live or finished, their setup, the recorded stats and the athletes of the game's squad or team, never a shadow statistician's stats, pair codes or who paired. The same people can save a game's report or its video markers file from Vision or Vantage, and coaches and managers see their team's season so far in Vision, with PlayHQ's score and shooting for games nobody recorded. At a venue streaming with FirstPass Studio, a statistician's tablet that someone at the Studio Mac has allowed can also send the game's stats to Studio over the venue link; it shows nobody anything they couldn't already see. Athletes, guardians, physios and the committee don't see any of it; an athlete's own figures after the game show only to their coaches (see the row above). |
+| Live game stats         | Admins and statisticians (while their statistician role isn't paused for a check): every game the club records. The coaches and managers of the game's squad or team, and of the squad a team belongs to, see the team's games at every stage and who has opened each, and the stats once they open the game in FirstPass Vision, without a pair code (a shadow statistician still pairs with the code in Vantage). Members with the Studio role (while not stood down), through FirstPass Studio: games with a PlayHQ game that are live or finished, their setup, the recorded stats and the athletes of the game's squad or team, never a shadow statistician's stats, pair codes or who paired. The same people can save a game's report or its video markers file from Vision or Vantage, and coaches and managers see their team's season so far in Vision, with PlayHQ's score and shooting for games nobody recorded. At a venue streaming with FirstPass Studio, a statistician's tablet that someone at the Studio Mac has allowed can also send the game's stats to Studio over the venue link; it shows nobody anything they couldn't already see. Athletes, guardians, physios and the committee don't see any of it; an athlete's own figures after the game show only to their coaches, and to the selectors on the panel of a selection round the game was played in (see the row above and Selection assessments). |
 | Team goals              | The team's athletes, their guardians, its coaches (while their check is current and they aren't stood down) and admins. Only its coaches set and review them. Athletes and coaches in the team can comment; guardians and admins read the comments. Managers and physios placed in the team don't see them. |
 | Integrity training courses | The committee and admins see every course and who it's set for. Each member sees the courses set for them, and parents and guardians their child's. |
 | Integrity training certificates | The member, their parents or guardians, the committee and admins. Coaches, managers and physios don't see them. Certificates can't be changed or removed once sent. |
@@ -4794,10 +4808,13 @@ Working With Children Check, and another admin must do it.
 - **You can tell the club your child will be away**, so an absence you didn't report stands out
   (see [Your child's attendance](#your-childs-attendance)).
 - **Your child's own game stats are for their coaches.** After a game recorded in FirstPass
-  Vantage, your child's own figures show beside their game goals to their current coaches, and to
-  nobody else. Your child and you don't see them in the app, and nor do other families, team
-  mates, managers, physios, the committee or admins. There is no ranking or comparison with other
-  athletes. A coach opening them is on the list of who has viewed your child's records.
+  Vantage, your child's own figures show beside their game goals to their current coaches. If the
+  club uses selection assessments, the selectors on the panel of your child's selection round see
+  the same figures for games played during the round, and only while they are on that panel with
+  a current check; a selector who is your child's parent or guardian doesn't. Nobody else sees
+  them: not your child or you in the app, and not other families, team
+  mates, managers, physios, the committee or admins who aren't on the panel. There is no ranking or comparison with other
+  athletes. A coach or selector opening them is on the list of who has viewed your child's records.
 - **Your child's stats go on a stream only if you agree.** When the club streams its games with
   FirstPass Studio, your child is named with their own game stats only once you've given consent
   for **Stats on live streams**; otherwise the stream shows team totals. You can withdraw it at any
@@ -4841,7 +4858,8 @@ Working With Children Check, and another admin must do it.
   holds a current check. A selector who is your child's parent or guardian can't read or add to
   your child's assessment. There are no scores or rankings, and your child's check-ins, training
   load and injuries never show there; selectors see only how many of the round's sessions your
-  child was marked at, never why one was missed. At the end of the round each selector writes
+  child was marked at, never why one was missed, and your child's own stats from games played
+  during the round. At the end of the round each selector writes
   and signs their own summary of your child without seeing the others', and a signed one can't be
   quietly changed: reopening it is recorded. Admins see only counts in an audit report. You
   and your child see the round's criteria and the dates the club shares under **Selection**. The
@@ -4877,8 +4895,9 @@ Working With Children Check, and another admin must do it.
   the totals, never who picked what.
 - **Your own tasks are just for you.** Tasks you add to your to-do list are private reminders:
   nobody else can see them, and they can't be shared, liked or sent to anyone.
-- **Your game stats stay with your coaches.** After a recorded game only your coaches see your own
-  figures, beside your goals. Team mates never see yours, you never see theirs, and nothing ranks
+- **Your game stats stay with your coaches and selectors.** After a recorded game only your
+  coaches see your own figures, beside your goals, and, during a selection round, the selectors on
+  its panel. Team mates never see yours, you never see theirs, and nothing ranks
   you against anyone.
 - **You're told who sees what you write**: on the check-in, on injury reports, on game goals and
   when you join. Your coaches see your check-ins and injuries once a parent or guardian agrees.
@@ -4982,7 +5001,8 @@ Working With Children Check, and another admin must do it.
   locked, only the head coach or an admin can reopen it, and each reopening is kept with who did
   it. Only a selector who has signed can save an athlete's completed sheet as a PDF, and admins
   see who signed and when, never what. There are no scores or rankings, and nothing
-  from check-ins, training load or injuries shows there. Opening a child's assessment or a summary
+  from check-ins, training load or injuries shows there. The panel sees an athlete's own game
+  stats for games played during the round, and nobody off the panel gains them. Opening a child's assessment or a summary
   of them, building an audit report, and opening the list of signed summaries all go in that
   child's record views. A
   child in a round, and their verified parents, are shown the criteria, the dates you
@@ -4993,11 +5013,13 @@ Working With Children Check, and another admin must do it.
   Rounds are removed under Record keeping a year after they end unless you choose longer, and
   stay while a concern names anyone assessed in them (see
   [Selection assessments](#selection-assessments-for-admins)).
-- **An athlete's game stats stay with their coaches.** Stats recorded on game day are about
+- **An athlete's game stats stay with their coaches and selectors.** Stats recorded on game day are about
   children. In HQ an athlete's own figures from a finished game show only to their current
-  coaches, beside the game's goals; the athlete, their parents or guardians and team mates don't
+  coaches, beside the game's goals, and, when you use selection assessments, to the selectors you
+  put on the panel of a round the game was played in, on the athlete's assessment; the athlete, their parents or guardians and team mates don't
   see them. The app's server checks who is asking each time and sends only that one athlete's
-  figures, and a lapsed or stood-down coach gets none. Admins
+  figures, and a lapsed or stood-down coach or selector gets none. A selector sees figures only for games between the
+  round's first and last day, never for their own child, and loses them when taken off the panel. Admins
   see which games were recorded (**Games** in Administration), not the stats.
 - **Copies of game stats that leave the app.** A game report saved or printed from FirstPass
   Vision, and a video markers file saved from Vision or Vantage, name players beside their stats.
@@ -5307,7 +5329,7 @@ The screens below show a made-up game, Hawks v Kestrels.
 | **Statisticians** | Record games, or help with a game someone else records | Can open any game the club records |
 | **Coaches and managers** | | Follow their squad's or team's games, and the games of the teams in a squad they coach or manage |
 | **Admins** | Can record and help, like a statistician | Can open any game the club records |
-| **Everyone else** | | No access: athletes, parents and guardians, physios, the committee, guests and temporary helpers don't see game stats there. In HQ, an athlete's coaches see that athlete's own figures beside their game goals after the game (see [Game goals](#game-goals)) |
+| **Everyone else** | | No access: athletes, parents and guardians, physios, the committee, guests and temporary helpers don't see game stats there. In HQ, an athlete's coaches see that athlete's own figures beside their game goals after the game (see [Game goals](#game-goals)), and the selectors on a selection round's panel see them for games played in the round |
 
 A statistician needs a current Working With Children Check, an application being assessed or an
 exemption, and a coach or manager needs the checks their role already needs. A paused role or a
@@ -5535,7 +5557,8 @@ answer, the season shows the recorded games alone.
 - **Only the people who need it.** Game stats are about athletes, many of them under 18, so only
   the people in the table above see them, each only while their role is current. Athletes,
   parents and guardians, physios and the committee don't. In HQ, after a finished game, an athlete's coaches
-  also see that athlete's own figures beside their game goals; the athlete and their parents or
+  also see that athlete's own figures beside their game goals, and so do the selectors on the
+  panel of a selection round the game was played in; the athlete and their parents or
   guardians don't.
 - **Nothing else from HQ.** Vantage reads only what a game needs: the teams, the team's PlayHQ
   games and its athletes' names. Vision reads only the games a coach or manager may see. Neither

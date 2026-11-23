@@ -441,7 +441,7 @@ describe('the athlete’s own stats from the recorded game, for their coaches', 
     expect(screen.getByText('2 (2 attacking, 0 defending)')).toBeTruthy();
     expect(screen.getByText('Net Points')).toBeTruthy();
     expect(screen.getByText('+12.5')).toBeTruthy();
-    expect(screen.getByText('From the game recorded in FirstPass Vantage. Only the athlete’s coaches see these.')).toBeTruthy();
+    expect(screen.getByText('From the game recorded in FirstPass Vantage. Only the athlete’s coaches see these, and their selectors during a selection round.')).toBeTruthy();
   });
 
   // Coaches only (Matt, 22 November 2026): the app doesn't ask for the athlete or a parent, and
