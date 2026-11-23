@@ -26,7 +26,7 @@ create temp view public_tables as
 -- them from the app's roles on purpose, so they must stay ungranted.
 create temp table through_functions(name text);
 insert into through_functions values
-  ('absence_reviews'), ('assessment_criteria'), ('assessment_observation_ratings'), ('assessment_observations'), ('attendance_absences'), ('child_activity_seen'), ('club_setup_code_attempts'), ('club_setup_codes'), ('concern_about_members'), ('concern_guardian_views'), ('conduct_acceptances'), ('conflict_declarations'),
+  ('absence_reviews'), ('assessment_criteria'), ('assessment_summaries'), ('assessment_summary_events'), ('assessment_observation_ratings'), ('assessment_observations'), ('attendance_absences'), ('child_activity_seen'), ('club_setup_code_attempts'), ('club_setup_codes'), ('concern_about_members'), ('concern_guardian_views'), ('conduct_acceptances'), ('conflict_declarations'),
   ('former_partner_roles'), ('game_pair_attempts'), ('group_membership_changes'), ('guardian_link_code_attempts'), ('guardian_link_codes'), ('injury_log_seen'),
   ('join_password_attempts'), ('load_flag_reviews'), ('medical_profiles'), ('message_access_requests'), ('message_access_views'), ('no_app_child_requests'), ('policy_register'), ('purge_runs'), ('push_settings'), ('push_todo_log'), ('record_access_log'), ('safeguarding_post_holders'), ('season_kpi_measures'), ('selection_round_milestones'), ('selection_round_panel'), ('selection_rounds'),
   ('season_kpi_review_notes'), ('season_kpi_review_points'), ('season_kpi_reviews'), ('season_kpis'),

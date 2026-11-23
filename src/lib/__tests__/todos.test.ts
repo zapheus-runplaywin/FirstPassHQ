@@ -1241,6 +1241,43 @@ describe('selection rounds', () => {
     );
   });
 
+  const summaries = (extra: Partial<SelectionTodo> = {}): SelectionTodo =>
+    date({ kind: 'summaries', milestone_id: null, title: null, due_on: '2026-10-24', athletes: 4, ...extra });
+
+  it('counts the summaries a selector still has to sign as the round ends, and never names anyone', () => {
+    expect(only(todos({ selectionTodos: [summaries()] }))).toEqual({
+      key: 'selection-summaries-r1',
+      title: 'Sign your 4 summaries: 2027 selection phase',
+      detail: `The round ends ${formatDateString('2026-10-24')}`,
+      href: { pathname: '/assessments/round', params: { id: 'r1' } },
+      dueOn: '2026-10-24',
+    });
+    expect(only(todos({ selectionTodos: [summaries({ athletes: 1 })] })).title).toBe(
+      'Sign your summary: 2027 selection phase',
+    );
+    expect(only(todos({ selectionTodos: [summaries({ athletes: null })] })).title).toBe(
+      'Sign your 0 summaries: 2027 selection phase',
+    );
+  });
+
+  it('keeps the summaries to-do, in red, once the round’s last day has passed', () => {
+    const late = only(todos({ selectionTodos: [summaries({ due_on: '2026-10-17' })] }));
+    expect(late.detail).toBe(`The round ended ${formatDateString('2026-10-17')}`);
+    expect(late.alert).toEqual({ level: 'red', label: 'Overdue' });
+    expect(only(todos({ selectionTodos: [summaries({ due_on: '2026-10-18' })] })).detail).toBe(
+      `The round ends ${formatDateString('2026-10-18')}`,
+    );
+  });
+
+  it('leaves out a kind of selection to-do this version doesn’t know', () => {
+    const unknown = { ...date(), kind: 'feedback' } as unknown as SelectionTodo;
+    expect(todos({ selectionTodos: [unknown] })).toEqual([]);
+    expect(keys(todos({ selectionTodos: [unknown, thin(), summaries()] }))).toEqual([
+      'selection-thin-r1',
+      'selection-summaries-r1',
+    ]);
+  });
+
   it('has one to-do per date and one per round, and none without any', () => {
     expect(
       keys(todos({ selectionTodos: [date(), date({ milestone_id: 'm2' }), thin(), thin({ round_id: 'r2' })] })),

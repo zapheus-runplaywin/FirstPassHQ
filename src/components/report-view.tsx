@@ -16,8 +16,11 @@ import { fileSlug, sharePdf } from '@/lib/reports';
 export function ReportView({
   report,
   action,
+  buttonOnly = false,
 }: {
   report: Report;
+  /** Shows only the PDF button, for a screen that lays the same facts out its own way. */
+  buttonOnly?: boolean;
   /** Replaces the Export PDF button, such as Send return. Runs after the PDF is shared. */
   action?: { title: string; note: string; disabled?: boolean; onShared: () => Promise<void> | void };
 }) {
@@ -44,13 +47,13 @@ export function ReportView({
 
   return (
     <View style={styles.report}>
-      {report.subtitle ? (
+      {report.subtitle && !buttonOnly ? (
         <ThemedText type="small" themeColor="textSecondary">
           {report.subtitle}
         </ThemedText>
       ) : null}
 
-      {report.stats?.length ? (
+      {report.stats?.length && !buttonOnly ? (
         <View style={styles.stats}>
           {report.stats.map((stat) => (
             <Card key={stat.label} style={styles.stat}>
@@ -75,7 +78,7 @@ export function ReportView({
       </ThemedText>
       <ErrorText>{error}</ErrorText>
 
-      {report.sections.map((section, s) => (
+      {(buttonOnly ? [] : report.sections).map((section, s) => (
         <View key={`${section.title}-${s}`} style={styles.section}>
           <ThemedText type="smallBold">{section.title}</ThemedText>
           {section.note ? (

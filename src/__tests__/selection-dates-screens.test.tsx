@@ -460,7 +460,7 @@ describe('a round’s dates, for the panel', () => {
   it('asks for the round’s dates, and nothing an admin reads', async () => {
     await openRound(PANEL_DATES);
     expect(onlyRpcCall('selection_round_dates')).toEqual({ p_round_id: 'r1' });
-    expect(assessmentRpcs()).toEqual(['selection_round_sheet', 'selection_round_dates']);
+    expect(assessmentRpcs()).toEqual(['selection_round_sheet', 'selection_round_dates', 'selection_round_summaries']);
   });
 
   it('lists each date with how close it is', async () => {

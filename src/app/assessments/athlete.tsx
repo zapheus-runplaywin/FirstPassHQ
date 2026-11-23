@@ -4,7 +4,7 @@ import { StyleSheet, View } from 'react-native';
 
 import { Screen } from '@/components/screen';
 import { ThemedText } from '@/components/themed-text';
-import { Button, Card, ErrorText } from '@/components/ui';
+import { Button, Card, ChipGroup, ErrorText } from '@/components/ui';
 import { Spacing } from '@/constants/theme';
 import {
   attendanceLine,
@@ -31,6 +31,7 @@ export default function AthleteAssessmentScreen() {
   const [attendance, setAttendance] = useState<RoundAttendance | null>(null);
   const [error, setError] = useState<string | null>(null);
   const [refreshing, setRefreshing] = useState(false);
+  const [tab, setTab] = useState<'picture' | 'observations'>('picture');
 
   const load = useCallback(async () => {
     const { data, error: loadError } = await supabase.rpc('athlete_assessment', {
@@ -96,10 +97,29 @@ export default function AthleteAssessmentScreen() {
       ) : null}
       <ErrorText>{error}</ErrorText>
       {assessment.closed ? null : <Button title="Add an observation" onPress={() => observe()} />}
+      <Button
+        title="My summary"
+        variant="secondary"
+        onPress={() => router.push({ pathname: '/assessments/summary', params: { round, athlete } })}
+      />
+      <ThemedText type="small" themeColor="textSecondary">
+        Your own view at the end of the round: a step for each of the criteria, a recommendation
+        and a few words, which you sign. You see the other selectors’ summaries once you have
+        signed yours.
+      </ThemedText>
 
       {picture.observations > 0 ? (
         <>
-          <ThemedText type="subtitle">The picture so far</ThemedText>
+          <ChipGroup
+            options={[
+              { value: 'picture', label: 'The picture so far' },
+              { value: 'observations', label: `Observations (${picture.observations})` },
+            ]}
+            selected={[tab]}
+            onToggle={setTab}
+          />
+          {tab === 'picture' ? (
+            <>
           {picture.groups
             .filter((group) => group.count > 0)
             .map((group) => {
@@ -132,17 +152,18 @@ export default function AthleteAssessmentScreen() {
               Nothing yet on: {picture.missing.join(', ')}
             </ThemedText>
           ) : null}
-
-          <ThemedText type="subtitle">Observations</ThemedText>
-          {assessment.observations.map((o) => (
-            <ObservationCard
-              key={o.id}
-              observation={o}
-              assessment={assessment}
-              onChange={() => observe({ id: o.id })}
-              onCorrect={() => observe({ corrects: o.id })}
-            />
-          ))}
+            </>
+          ) : (
+            assessment.observations.map((o) => (
+              <ObservationCard
+                key={o.id}
+                observation={o}
+                assessment={assessment}
+                onChange={() => observe({ id: o.id })}
+                onCorrect={() => observe({ corrects: o.id })}
+              />
+            ))
+          )}
         </>
       ) : (
         <ThemedText type="small" themeColor="textSecondary">

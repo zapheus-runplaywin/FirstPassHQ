@@ -4,7 +4,16 @@ import { useCallback, useState } from 'react';
 import { Screen } from '@/components/screen';
 import { ThemedText } from '@/components/themed-text';
 import { Card, ErrorText, PressableCard } from '@/components/ui';
-import { athleteLine, dueLabel, isOverdue, roundDates, type RoundDate, type RoundSheet } from '@/lib/assessments';
+import {
+  athleteLine,
+  dueLabel,
+  isOverdue,
+  roundDates,
+  summaryStatusLine,
+  type RoundDate,
+  type RoundSheet,
+  type SummaryStatus,
+} from '@/lib/assessments';
 import { formatDateString } from '@/lib/injuries';
 import { supabase } from '@/lib/supabase';
 
@@ -17,6 +26,7 @@ export default function RoundScreen() {
   const { id } = useLocalSearchParams<{ id: string }>();
   const [sheet, setSheet] = useState<RoundSheet | null>(null);
   const [dates, setDates] = useState<RoundDate[]>([]);
+  const [summaries, setSummaries] = useState<SummaryStatus[]>([]);
   const [error, setError] = useState<string | null>(null);
   const [refreshing, setRefreshing] = useState(false);
 
@@ -27,8 +37,11 @@ export default function RoundScreen() {
       return;
     }
     const { data: dateRows } = await supabase.rpc('selection_round_dates', { p_round_id: id });
+    // Where each athlete's summaries stand: the member's own, and a count.
+    const { data: summaryRows } = await supabase.rpc('selection_round_summaries', { p_round_id: id });
     setError(null);
     setDates((dateRows as RoundDate[] | null) ?? []);
+    setSummaries((summaryRows as SummaryStatus[] | null) ?? []);
     setSheet(data as RoundSheet);
   }, [id]);
 
@@ -82,6 +95,7 @@ export default function RoundScreen() {
       ) : (
         sheet.athletes.map((athlete) => {
           const line = athleteLine(athlete, groups, sheet.today, sheet.closed);
+          const summary = summaryStatusLine(summaries.find((s) => s.athlete_id === athlete.id));
           return (
             <PressableCard
               key={athlete.id}
@@ -92,6 +106,11 @@ export default function RoundScreen() {
               <ThemedText type={line.nudge ? 'smallBold' : 'small'} themeColor={line.nudge ? 'text' : 'textSecondary'}>
                 {line.text}
               </ThemedText>
+              {summary ? (
+                <ThemedText type="small" themeColor="textSecondary">
+                  {summary}
+                </ThemedText>
+              ) : null}
             </PressableCard>
           );
         })

@@ -320,6 +320,15 @@ export default function AdminRoundScreen() {
             title="Selection audit report"
             onPress={() => router.push({ pathname: '/admin/assessments/audit', params: { id: round.id } })}
           />
+          <Button
+            title="Summaries signed"
+            variant="secondary"
+            onPress={() => router.push({ pathname: '/admin/assessments/summaries', params: { id: round.id } })}
+          />
+          <ThemedText type="small" themeColor="textSecondary">
+            Who has signed their summary of each athlete, and when. You can reopen one signed by
+            mistake. What a summary says stays with the panel.
+          </ThemedText>
           <ThemedText type="small" themeColor="textSecondary">
             {round.closed_at
               ? 'This round is closed: the panel can still read it, and nothing can be added.'

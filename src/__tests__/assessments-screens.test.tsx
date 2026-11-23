@@ -432,8 +432,22 @@ describe('an athlete’s assessment', () => {
     expect(screen.getByText(/1 observation from 1 selector/)).toBeTruthy();
   });
 
+  it('opens on the picture, and shows the observations instead on their tab', async () => {
+    await openAthlete();
+    expect(screen.getByText('Observations (3)')).toBeTruthy();
+    expect(screen.getByText('Nothing yet on: Team focus')).toBeTruthy();
+    expect(screen.queryByText('Won three intercepts in the second quarter')).toBeNull();
+    await press('Observations (3)');
+    expect(screen.getByText('Won three intercepts in the second quarter')).toBeTruthy();
+    expect(screen.queryByText('Nothing yet on: Team focus')).toBeNull();
+    await press('The picture so far');
+    expect(screen.getByText('Nothing yet on: Team focus')).toBeTruthy();
+    expect(screen.queryByText('Won three intercepts in the second quarter')).toBeNull();
+  });
+
   it('lists each observation with its day, where, who, criteria and evidence', async () => {
     await openAthlete();
+    await press(/^Observations \(/);
     expect(screen.getByText(`${d('2026-10-17')} · Training · You`)).toBeTruthy();
     expect(screen.getByText(`${d('2026-10-10')} · Game · Sam Selector`)).toBeTruthy();
     expect(screen.getByText('Accepts feedback: Meets standard')).toBeTruthy();
@@ -443,6 +457,7 @@ describe('an athlete’s assessment', () => {
 
   it('offers Change on the member’s own while it is open, a correction once locked, and nothing on others’', async () => {
     await openAthlete();
+    await press(/^Observations \(/);
     expect(screen.getAllByText('Change')).toHaveLength(1);
     expect(screen.getAllByText('Add a correction')).toHaveLength(1);
   });
@@ -450,12 +465,14 @@ describe('an athlete’s assessment', () => {
   it('opens Change with the observation, and a correction with the one it corrects', async () => {
     const push = jest.spyOn(router, 'push').mockImplementation(() => {});
     await openAthlete();
+    await press(/^Observations \(/);
     await press('Change');
     expect(push).toHaveBeenLastCalledWith({
       pathname: '/assessments/observe',
       params: { round: 'r1', athlete: 'a1', id: 'o3' },
     });
     await openAthlete();
+    await press(/^Observations \(/);
     await press('Add a correction');
     expect(push).toHaveBeenLastCalledWith({
       pathname: '/assessments/observe',
@@ -477,6 +494,7 @@ describe('an athlete’s assessment', () => {
         ],
       }),
     );
+    await press(/^Observations \(/);
     expect(screen.getByText(`Corrects the observation of ${d('2026-10-10')}`)).toBeTruthy();
     expect(screen.getByText('Corrects an earlier observation')).toBeTruthy();
   });
@@ -493,6 +511,7 @@ describe('an athlete’s assessment', () => {
 
   it('takes nothing more once the round is closed', async () => {
     await openAthlete(assessment({ closed: true }));
+    await press(/^Observations \(/);
     expect(screen.getByText(/2027 selection phase · closed/)).toBeTruthy();
     expect(screen.queryByText('Add an observation')).toBeNull();
     expect(screen.queryByText('Add a correction')).toBeNull();
@@ -1191,7 +1210,12 @@ describe('the Selection audit report', () => {
   it('asks for the round’s audit and nothing that holds an assessment', async () => {
     await openAudit();
     // The round's dates come with it: titles, days and who marked them done.
-    expect(assessmentRpcs()).toEqual(['admin_selection_audit', 'admin_selection_milestones']);
+    // And who has signed their summaries: names, counts and dates.
+    expect(assessmentRpcs()).toEqual([
+      'admin_selection_audit',
+      'admin_selection_milestones',
+      'admin_selection_summaries',
+    ]);
     expect(onlyRpcCall('admin_selection_audit')).toEqual({ p_round_id: 'r1' });
     expect(onlyRpcCall('admin_selection_milestones')).toEqual({ p_round_id: 'r1' });
   });
@@ -1210,7 +1234,7 @@ describe('the Selection audit report', () => {
     expect(screen.getByText('Jordan Junior (under 18)')).toBeTruthy();
     expect(screen.getByText(/3 \/ 1 \/ 0 \/ 0/)).toBeTruthy();
     expect(screen.getByText(/Declared a conflict of interest this season/)).toBeTruthy();
-    expect(screen.getByText(/it holds no ratings, evidence or names of criteria/)).toBeTruthy();
+    expect(screen.getByText(/it holds no ratings, evidence, recommendations or names of criteria/)).toBeTruthy();
     expect(screen.getByText(/1 panel member has written nothing yet/)).toBeTruthy();
   });
 

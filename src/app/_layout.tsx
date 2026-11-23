@@ -252,6 +252,7 @@ function RootStack() {
             <Stack.Screen name="assessments/round" options={{ title: 'Selection round' }} />
             <Stack.Screen name="assessments/athlete" options={{ title: 'Assessment' }} />
             <Stack.Screen name="assessments/observe" options={{ title: 'Observation' }} />
+            <Stack.Screen name="assessments/summary" options={{ title: 'Summary' }} />
           </Stack.Protected>
           <Stack.Protected guard={can.selectionInfo}>
             <Stack.Screen name="selection" options={{ title: 'Selection' }} />
@@ -375,6 +376,7 @@ function RootStack() {
               <Stack.Screen name="admin/assessments/round" options={{ title: 'Selection round' }} />
               <Stack.Screen name="admin/assessments/milestone" options={{ title: 'Selection date' }} />
               <Stack.Screen name="admin/assessments/audit" options={{ title: 'Selection audit report' }} />
+              <Stack.Screen name="admin/assessments/summaries" options={{ title: 'Summaries signed' }} />
             </Stack.Protected>
             <Stack.Protected guard={features.kpis}>
               <Stack.Screen name="admin/reports/kpis" options={{ title: 'Season KPIs report' }} />
