@@ -1,10 +1,10 @@
 import { useFocusEffect, useLocalSearchParams } from 'expo-router';
 import { useCallback, useState } from 'react';
-import { StyleSheet } from 'react-native';
+import { StyleSheet, View } from 'react-native';
 
 import { Screen } from '@/components/screen';
 import { ThemedText } from '@/components/themed-text';
-import { Card, ConfirmDelete, ErrorText } from '@/components/ui';
+import { Card, ConfirmDelete, ErrorText, PressableCard } from '@/components/ui';
 import { Spacing } from '@/constants/theme';
 import { type AdminSummaries } from '@/lib/assessments';
 import { formatDateString } from '@/lib/injuries';
@@ -12,12 +12,13 @@ import { supabase } from '@/lib/supabase';
 
 /**
  * Who has signed their summaries in a round, for an admin: counts for each
- * selector, then each signed summary by selector and athlete with its date,
+ * selector; tapping one lists what they signed, by athlete and date, each of
  * which the admin can reopen. Nothing a summary says is here.
  */
 export default function AdminSummariesScreen() {
   const { id } = useLocalSearchParams<{ id: string }>();
   const [summaries, setSummaries] = useState<AdminSummaries | null>(null);
+  const [open, setOpen] = useState<string[]>([]);
   const [busy, setBusy] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [refreshing, setRefreshing] = useState(false);
@@ -69,59 +70,60 @@ export default function AdminSummariesScreen() {
       </ThemedText>
       <ErrorText>{error}</ErrorText>
 
+      <ThemedText type="small" themeColor="textSecondary">
+        {summaries.signed.length === 0
+          ? 'Nobody has signed a summary yet.'
+          : summaries.closed
+            ? 'Tap a selector to see what they signed. The round is closed, so a summary can’t be reopened. Open the round again first.'
+            : 'Tap a selector to see what they signed. Reopen one if they signed by mistake: they can change it and must sign again. Each reopening is kept in the audit report.'}
+      </ThemedText>
       {summaries.selectors.map((s) => {
         const toStart = Math.max(0, s.athletes - s.signed - s.drafts);
+        const signed = summaries.signed.filter((one) => one.selector_name === s.name);
+        const isOpen = open.includes(s.name);
         return (
-          <Card key={s.name} style={styles.card}>
-            <ThemedText type="smallBold">
-              {s.name}
-              {s.on_panel ? '' : ' (not on the panel now)'}
-            </ThemedText>
-            <ThemedText type="small" themeColor="textSecondary">
-              Signed {s.signed} of {s.athletes}
-              {s.signed_late > 0 ? `, ${s.signed_late} after the last day` : ''}
-              {s.drafts > 0 ? ` · ${s.drafts} in draft` : ''}
-              {s.on_panel && toStart > 0 ? ` · ${toStart} not started` : ''}
-              {s.reopened > 0 ? ` · reopened ${s.reopened === 1 ? 'once' : `${s.reopened} times`}` : ''}
-            </ThemedText>
-          </Card>
-        );
-      })}
-
-      <ThemedText type="subtitle">Signed summaries</ThemedText>
-      {summaries.signed.length === 0 ? (
-        <ThemedText type="small" themeColor="textSecondary">
-          Nobody has signed a summary yet.
-        </ThemedText>
-      ) : (
-        <>
-          <ThemedText type="small" themeColor="textSecondary">
-            {summaries.closed
-              ? 'The round is closed, so a summary can’t be reopened. Open the round again first.'
-              : 'Reopen one if a selector signed by mistake: they can change it and must sign again. Each reopening is kept in the audit report.'}
-          </ThemedText>
-          {summaries.signed.map((s) => (
-            <Card key={s.id} style={styles.card}>
+          <View key={s.name} style={styles.card}>
+            <PressableCard
+              onPress={() => setOpen((names) => (isOpen ? names.filter((n) => n !== s.name) : [...names, s.name]))}>
               <ThemedText type="smallBold">
-                {s.selector_name} about {s.athlete_name ?? 'an athlete'}
+                {s.name}
+                {s.on_panel ? '' : ' (not on the panel now)'}
               </ThemedText>
               <ThemedText type="small" themeColor="textSecondary">
-                Signed {formatDateString(s.signed_at.slice(0, 10))}
-                {s.late ? ', after the last day' : ''}
+                Signed {s.signed} of {s.athletes}
+                {s.signed_late > 0 ? `, ${s.signed_late} after the last day` : ''}
+                {s.drafts > 0 ? ` · ${s.drafts} in draft` : ''}
+                {s.on_panel && toStart > 0 ? ` · ${toStart} not started` : ''}
+                {s.reopened > 0 ? ` · reopened ${s.reopened === 1 ? 'once' : `${s.reopened} times`}` : ''}
               </ThemedText>
-              {summaries.closed ? null : (
-                <ConfirmDelete
-                  title="Reopen"
-                  warning={`${s.selector_name} can change this summary and must sign it again.`}
-                  confirmTitle={`Reopen ${s.selector_name}’s summary about ${s.athlete_name ?? 'this athlete'}`}
-                  onConfirm={() => reopen(s.id)}
-                  busy={busy}
-                />
-              )}
-            </Card>
-          ))}
-        </>
-      )}
+            </PressableCard>
+            {isOpen && signed.length === 0 ? (
+              <ThemedText type="small" themeColor="textSecondary">
+                {s.name} has signed nothing yet.
+              </ThemedText>
+            ) : null}
+            {isOpen
+              ? signed.map((one) => (
+                  <Card key={one.id} style={styles.card}>
+                    <ThemedText type="small">
+                      About {one.athlete_name ?? 'an athlete'} · signed {formatDateString(one.signed_at.slice(0, 10))}
+                      {one.late ? ', after the last day' : ''}
+                    </ThemedText>
+                    {summaries.closed ? null : (
+                      <ConfirmDelete
+                        title="Reopen"
+                        warning={`${s.name} can change this summary and must sign it again.`}
+                        confirmTitle={`Reopen ${s.name}’s summary about ${one.athlete_name ?? 'this athlete'}`}
+                        onConfirm={() => reopen(one.id)}
+                        busy={busy}
+                      />
+                    )}
+                  </Card>
+                ))
+              : null}
+          </View>
+        );
+      })}
 
       {summaries.reopenings.length > 0 ? (
         <>

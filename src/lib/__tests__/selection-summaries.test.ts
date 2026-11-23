@@ -23,6 +23,7 @@ import {
   setSummaryRating,
   starterCriteria,
   summariesAuditSections,
+  summaryComparison,
   summaryCoverage,
   summaryProblem,
   summarySheetReport,
@@ -375,6 +376,66 @@ describe('the completed sheet', () => {
   it('shows a blank for a step the scale doesn’t have', () => {
     const odd = summarySheetReport(summary({ mine: { ...MINE, ratings: [{ item_key: 'passing', rating: 9 }] } }));
     expect(odd.sections[0].rows[0].cells).toEqual(['Passing', '']);
+  });
+});
+
+describe('the signed summaries on screen', () => {
+  const compared = summaryComparison(summary({ mine: MINE, others: [OTHER] }));
+
+  it('gives each selector’s recommendation, words and signing day', () => {
+    expect(compared.selectors).toEqual([
+      {
+        name: 'Casey Coach',
+        recommendation: 'Select',
+        strengths: 'Reads the play early',
+        priorities: 'Left-hand pass',
+        comments: null,
+        signedOn: d('2026-11-28'),
+      },
+      {
+        name: 'Ola Selector',
+        recommendation: 'Not selected this time',
+        strengths: null,
+        priorities: 'Catching under pressure',
+        comments: 'Seen at two trials only',
+        signedOn: d('2026-11-30'),
+      },
+    ]);
+  });
+
+  it('puts every selector’s step for one of the criteria on a line, and names the rest', () => {
+    expect(compared.groups).toEqual([
+      {
+        key: 'technical-ability',
+        name: 'Technical ability',
+        rated: [
+          { key: 'passing', name: 'Passing', steps: 'Casey Coach: Exceeds standard · Ola Selector: Meets standard' },
+          { key: 'catching', name: 'Catching', steps: 'Ola Selector: Below standard' },
+        ],
+        unrated: [],
+      },
+      {
+        key: 'coachability',
+        name: 'Coachability',
+        rated: [{ key: 'accepts-feedback', name: 'Accepts feedback', steps: 'Casey Coach: Meets standard' }],
+        unrated: [],
+      },
+    ]);
+    const alone = summaryComparison(summary({ mine: { ...MINE, ratings: [{ item_key: 'passing', rating: 9 }] } }));
+    expect(alone.groups[0]).toMatchObject({ rated: [], unrated: ['Passing', 'Catching'] });
+    expect(alone.groups[1].unrated).toEqual(['Accepts feedback']);
+  });
+
+  it('leaves out the reader’s own draft, and names them “You” without a name', () => {
+    expect(summaryComparison(summary({ mine: { ...MINE, signed_at: null }, others: [OTHER] })).selectors.map((s) => s.name)).toEqual([
+      'Ola Selector',
+    ]);
+    expect(summaryComparison(summary({ mine: MINE, my_name: null })).selectors[0].name).toBe('You');
+    expect(summaryComparison(summary()).selectors).toEqual([]);
+  });
+
+  it('holds no total, count or order', () => {
+    expect(JSON.stringify(compared)).not.toMatch(/total|average|score|rank/i);
   });
 });
 

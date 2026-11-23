@@ -5,12 +5,13 @@ import { StyleSheet, View } from 'react-native';
 import { ReportView } from '@/components/report-view';
 import { Screen } from '@/components/screen';
 import { ThemedText } from '@/components/themed-text';
-import { Button, ChipGroup, ConfirmDelete, ErrorText, PressableCard, TextField } from '@/components/ui';
+import { Button, Card, ChipGroup, ConfirmDelete, ErrorText, PressableCard, TextField } from '@/components/ui';
 import { Spacing } from '@/constants/theme';
 import {
   MAX_SUMMARY_TEXT,
   myObservationsLine,
   setSummaryRating,
+  summaryComparison,
   summaryCoverage,
   summaryProblem,
   summarySheetReport,
@@ -130,6 +131,7 @@ export default function SummaryScreen() {
   // Signed: locked, and the whole sheet shows.
   if (signedAt && summary.mine) {
     const mine = summary.mine;
+    const compared = summaryComparison(summary);
     return (
       <Screen refreshing={refreshing} onRefresh={onRefresh}>
         {heading}
@@ -141,7 +143,54 @@ export default function SummaryScreen() {
           The PDF is for the panel only.
         </ThemedText>
         <ErrorText>{error}</ErrorText>
-        <ReportView report={summarySheetReport(summary)} />
+        <ReportView report={summarySheetReport(summary)} buttonOnly />
+        {compared.selectors.map((s) => (
+          <Card key={s.name} style={styles.card}>
+            <ThemedText type="smallBold">
+              {s.name}
+              {s.recommendation ? `: ${s.recommendation}` : ''}
+            </ThemedText>
+            {s.strengths ? <ThemedText type="small">Strengths: {s.strengths}</ThemedText> : null}
+            {s.priorities ? <ThemedText type="small">Development priorities: {s.priorities}</ThemedText> : null}
+            {s.comments ? <ThemedText type="small">Comments: {s.comments}</ThemedText> : null}
+            <ThemedText type="small" themeColor="textSecondary">
+              Signed {s.signedOn}
+            </ThemedText>
+          </Card>
+        ))}
+        <ThemedText type="smallBold">Against the criteria</ThemedText>
+        <ThemedText type="small" themeColor="textSecondary">
+          Tap a group to see each selector’s step. Only criteria someone gave a step are listed.
+        </ThemedText>
+        {compared.groups.map((group) => {
+          const isOpen = open.includes(group.key);
+          return (
+            <PressableCard
+              key={group.key}
+              onPress={() => setOpen((keys) => (isOpen ? keys.filter((k) => k !== group.key) : [...keys, group.key]))}>
+              <ThemedText type="smallBold">
+                {group.name} ({group.rated.length} of {group.rated.length + group.unrated.length})
+              </ThemedText>
+              {isOpen ? (
+                <>
+                  {group.rated.map((item) => (
+                    <View key={item.key}>
+                      <ThemedText type="small">{item.name}</ThemedText>
+                      <ThemedText type="small" themeColor="textSecondary">
+                        {item.steps}
+                      </ThemedText>
+                    </View>
+                  ))}
+                  {group.unrated.length > 0 ? (
+                    <ThemedText type="small" themeColor="textSecondary">
+                      No step from anyone: {group.unrated.join(', ')}
+                    </ThemedText>
+                  ) : null}
+                </>
+              ) : null}
+            </PressableCard>
+          );
+        })}
         {summary.can_reopen ? (
           <>
             <ThemedText type="smallBold">Reopen a summary</ThemedText>
@@ -308,4 +357,5 @@ export default function SummaryScreen() {
 
 const styles = StyleSheet.create({
   group: { gap: Spacing.two },
+  card: { gap: Spacing.one },
 });

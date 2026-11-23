@@ -385,11 +385,33 @@ describe('a signed summary', () => {
   it('shows the member’s own and the other signed summaries side by side', async () => {
     await openSigned();
     expect(screen.getByText(/1 other selector has signed one\./)).toBeTruthy();
+    // Each selector's recommendation and words come first.
+    expect(screen.getByText('Casey Coach: Select')).toBeTruthy();
+    expect(screen.getByText('Ola Selector: Not selected this time')).toBeTruthy();
+    expect(screen.getByText('Strengths: Reads the play early')).toBeTruthy();
+    expect(screen.getByText('Development priorities: Catching under pressure')).toBeTruthy();
+    expect(screen.getByText(`Signed ${d('2026-10-17')}`)).toBeTruthy();
+    expect(screen.getByText(`Signed ${d('2026-10-16')}`)).toBeTruthy();
+  });
+
+  it('folds the criteria away, and an open group lists only what someone gave a step', async () => {
+    await openSigned();
+    expect(screen.getByText('Technical ability (2 of 2)')).toBeTruthy();
+    expect(screen.getByText('Coachability (1 of 1)')).toBeTruthy();
+    expect(screen.queryByText('Casey Coach: Exceeds standard')).toBeNull();
+    await press('Technical ability (2 of 2)');
     expect(screen.getByText('Casey Coach: Exceeds standard')).toBeTruthy(); // Passing
     expect(screen.getByText('Ola Selector: Below standard')).toBeTruthy(); // Catching
-    expect(screen.getByText('Recommends: Select')).toBeTruthy();
-    expect(screen.getByText('Recommends: Not selected this time')).toBeTruthy();
-    expect(screen.getByText('Development priorities: Catching under pressure')).toBeTruthy();
+    expect(screen.queryByText(/No step from anyone/)).toBeNull();
+    await press('Technical ability (2 of 2)');
+    expect(screen.queryByText('Casey Coach: Exceeds standard')).toBeNull();
+  });
+
+  it('names in one line the criteria nobody gave a step, and puts two selectors’ steps on one line', async () => {
+    await openSigned({ others: [{ ...OTHER, ratings: [{ item_key: 'passing', rating: 2 }] }] });
+    await press('Technical ability (1 of 2)');
+    expect(screen.getByText('Casey Coach: Exceeds standard · Ola Selector: Meets standard')).toBeTruthy();
+    expect(screen.getByText('No step from anyone: Catching')).toBeTruthy();
   });
 
   it('says when nobody else has signed yet', async () => {
@@ -682,15 +704,23 @@ describe('who has signed, for an admin', () => {
 
   it('lists each signed summary by selector and athlete with its day, and nothing it says', async () => {
     await openSummaries();
-    expect(screen.getByText('Casey Coach about Jordan Junior')).toBeTruthy();
-    expect(screen.getByText(`Signed ${d('2026-10-17')}`)).toBeTruthy();
-    expect(screen.getByText('Ola Selector about an athlete')).toBeTruthy();
-    expect(screen.getByText(`Signed ${d('2026-10-16')}, after the last day`)).toBeTruthy();
+    // Folded under each selector until tapped.
+    expect(screen.queryByText(/^About /)).toBeNull();
+    await press('Casey Coach');
+    expect(screen.getByText(`About Jordan Junior · signed ${d('2026-10-17')}`)).toBeTruthy();
+    expect(screen.getAllByText(/^About /)).toHaveLength(1);
+    await press('Ola Selector');
+    expect(screen.getByText(`About an athlete · signed ${d('2026-10-16')}, after the last day`)).toBeTruthy();
+    await press('Drew Lapsed (not on the panel now)');
+    expect(screen.getByText('Drew Lapsed has signed nothing yet.')).toBeTruthy();
+    await press('Casey Coach');
+    expect(screen.getAllByText(/^About /)).toHaveLength(1);
     expect(screen.queryByText(/standard|Passing|Recommend|Not selected|Strengths/)).toBeNull();
   });
 
   it('reopens one after confirming, then reads the list again', async () => {
     await openSummaries();
+    await press('Casey Coach');
     await press('Reopen');
     expect(screen.getByText('Casey Coach can change this summary and must sign it again.')).toBeTruthy();
     expect(rpcCalls('reopen_assessment_summary')).toEqual([]);
@@ -701,13 +731,15 @@ describe('who has signed, for an admin', () => {
 
   it('names an unnamed athlete plainly when reopening', async () => {
     await openSummaries();
-    await press('Reopen', 1);
+    await press('Ola Selector');
+    await press('Reopen');
     await press('Reopen Ola Selector’s summary about this athlete');
     expect(onlyRpcCall('reopen_assessment_summary')).toEqual({ p_summary_id: 's2' });
   });
 
   it('shows the database’s refusal to reopen', async () => {
     await openSummaries(ADMIN_SUMMARIES, { rpcErrors: { reopen_assessment_summary: 'This summary isn’t signed' } });
+    await press('Casey Coach');
     await press('Reopen');
     await press('Reopen Casey Coach’s summary about Jordan Junior');
     expect(screen.getByText('This summary isn’t signed')).toBeTruthy();
@@ -716,7 +748,9 @@ describe('who has signed, for an admin', () => {
 
   it('offers no reopening on a closed round, and says why', async () => {
     await openSummaries({ ...ADMIN_SUMMARIES, closed: true });
-    expect(screen.getByText('The round is closed, so a summary can’t be reopened. Open the round again first.')).toBeTruthy();
+    expect(screen.getByText(/The round is closed, so a summary can’t be reopened\. Open the round again first\./)).toBeTruthy();
+    await press('Casey Coach');
+    expect(screen.getByText(`About Jordan Junior · signed ${d('2026-10-17')}`)).toBeTruthy();
     expect(screen.queryByText('Reopen')).toBeNull();
   });
 
@@ -735,7 +769,7 @@ describe('who has signed, for an admin', () => {
   it('shows why it couldn’t load', async () => {
     await openSummaries(null, { rpcErrors: { admin_selection_summaries: 'Only admins can see who has signed' } });
     expect(screen.getByText('Only admins can see who has signed')).toBeTruthy();
-    expect(screen.queryByText('Signed summaries')).toBeNull();
+    expect(screen.queryByText('Casey Coach')).toBeNull();
   });
 
   it('reads it again on pull to refresh', async () => {

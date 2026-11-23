@@ -1716,15 +1716,15 @@ athlete's assessment over the round.
    yet**, or nothing for 14 days, is in bold so nobody is judged on one session.
 2. Tap an athlete. **The picture so far** shows, for each of the criteria, how often it has been
    seen, by how many selectors, and the steps given in words, such as "Meets standard ×2, Exceeds
-   standard ×1", and what nobody has written about yet. Under it is every observation, newest
-   first.
+   standard ×1", and what nobody has written about yet. Tap **Observations** beside it for every
+   observation, newest first.
 3. Tap **Add an observation**. Choose where you saw it (**Training**, **Game**, **Trial** or
    **Other**) and the day, open a group of criteria and tap a step for each thing you saw (one is
    enough; **Seen, not rated** tags it without a step), and write a line of **evidence**: what you
    saw, as if the athlete may read it one day. Tap **Add observation**.
 
 <img src="user-guide/assessments-round.png" width="210" alt="A selection round's dates and athletes, with how much is written about each">
-<img src="user-guide/assessments-athlete.png" width="210" alt="An athlete's assessment: sessions attended, the picture so far and the observations">
+<img src="user-guide/assessments-athlete.png" width="210" alt="An athlete's assessment: sessions attended, My summary, and the picture so far with the observations on a second tab">
 <img src="user-guide/assessments-observe.png" width="210" alt="Adding an observation: where, when, the criteria and the evidence">
 <img src="user-guide/assessments-todo.png" width="210" alt="A selector's to-do list with a selection date coming up">
 
@@ -1741,11 +1741,13 @@ the paper assessment sheet.
    when the club lists any.
 
 <img src="user-guide/assessments-summary.png" width="210" alt="A selector's summary of an athlete: steps against the criteria, a recommendation and a few words">
-<img src="user-guide/assessments-summary-signed.png" width="210" alt="A signed summary: every selector's signed summary side by side, with Export PDF">
+<img src="user-guide/assessments-summary-signed.png" width="210" alt="A signed summary: Export PDF, each selector's recommendation and words, and a group of criteria open with their steps side by side">
 
 - **Independent first.** You write your summary without seeing anyone else's. The screen tells you
   only how many other selectors have signed. Once you sign yours, it shows every signed summary
-  for that athlete side by side, ready for the panel meeting.
+  for that athlete, ready for the panel meeting: each selector's recommendation and words first,
+  then the groups of criteria. Tap a group to see each selector's step side by side; only
+  criteria someone gave a step are listed.
 - **Signed means locked.** A signed summary can't be changed. If you signed by mistake, the head
   coach of the squad or team, or an admin, can reopen it; you then change it and sign again, and
   the reopening is kept in the audit report. The head coach reopens one from the athlete's signed
@@ -3953,14 +3955,14 @@ holds up to 12 dates.
 **Summaries signed.** Each selector writes and signs their own summary of each athlete they can
 assess (see [Selection assessments](#selection-assessments)). Open the round and tap **Summaries
 signed** to see, for each selector, how many they've signed out of how many, how many were signed
-after the round's last day, how many are in draft or not started, and each signed summary by
-selector and athlete with its day. You never see what a summary says. If a selector signed one by
+after the round's last day, and how many are in draft or not started. Tap a selector to list what
+they signed, by athlete and day. You never see what a summary says. If a selector signed one by
 mistake, tap **Reopen** beside it and confirm: they change it and sign again, and the reopening is
 kept with your name and the day. A closed round's summaries can't be reopened; open the round
 again first. Opening this screen for a round with athletes under 18 is recorded in each child's
 record views, like the audit report.
 
-<img src="user-guide/admin-assessments-summaries.png" width="210" alt="Summaries signed, for an admin: each selector's counts and the signed summaries, with Reopen">
+<img src="user-guide/admin-assessments-summaries.png" width="210" alt="Summaries signed, for an admin: each selector's counts, with one selector open to show what they signed and Reopen">
 
 **Selection audit report.** Open the round and tap **Selection audit report**, then **Export
 PDF** for a copy for the committee, an appeal or the governing body. It shows how the selection

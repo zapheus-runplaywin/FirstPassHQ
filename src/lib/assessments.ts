@@ -1247,3 +1247,65 @@ export function summariesAuditSections(summaries: AdminSummaries): ReportSection
     },
   ];
 }
+
+/** One signed summary's words, for the screen. */
+export type ComparedSelector = {
+  name: string;
+  recommendation: string | null;
+  strengths: string | null;
+  priorities: string | null;
+  comments: string | null;
+  signedOn: string;
+};
+
+/** A group of criteria in the comparison: the items someone gave a step, and the rest by name. */
+export type ComparedGroup = {
+  key: string;
+  name: string;
+  rated: { key: string; name: string; steps: string }[];
+  unrated: string[];
+};
+
+/**
+ * The signed summaries of an athlete laid out for a phone: each selector's
+ * recommendation and words first, then for each group only the criteria
+ * someone gave a step, as "Sam Rivera: Exceeds standard · Jess Okafor: Meets
+ * standard". The same facts as the PDF, with no total or score.
+ */
+export function summaryComparison(summary: AssessmentSummary): { selectors: ComparedSelector[]; groups: ComparedGroup[] } {
+  const mine = summary.mine && summary.mine.signed_at ? summary.mine : null;
+  const signed: { name: string; body: SummaryBody }[] = [
+    ...(mine ? [{ name: summary.my_name ?? 'You', body: mine as SummaryBody }] : []),
+    ...summary.others.map((o) => ({ name: o.author_name, body: o as SummaryBody })),
+  ];
+  return {
+    selectors: signed.map(({ name, body }) => ({
+      name,
+      recommendation: body.recommendation,
+      strengths: body.strengths,
+      priorities: body.priorities,
+      comments: body.comments,
+      signedOn: day(body.signed_at),
+    })),
+    groups: summary.criteria.groups.map((group) => {
+      const items = group.items.map((item) => ({
+        key: item.key,
+        name: item.name,
+        steps: signed
+          .map(({ name, body }) => {
+            const rating = body.ratings.find((r) => r.item_key === item.key);
+            const step = rating ? group.scale[rating.rating - 1] : undefined;
+            return step ? `${name}: ${step}` : null;
+          })
+          .filter((line): line is string => line !== null)
+          .join(' · '),
+      }));
+      return {
+        key: group.key,
+        name: group.name,
+        rated: items.filter((item) => item.steps),
+        unrated: items.filter((item) => !item.steps).map((item) => item.name),
+      };
+    }),
+  };
+}
