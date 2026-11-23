@@ -81,3 +81,6 @@ price claims in these fields; the text has none.
 - App icon: 512 × 512 PNG, from the brand kit's HQ mark.
 - Feature graphic: 1024 × 500.
 - Phone screenshots: at least 2, sample people only, made with `thunder/screenshots`.
+- Tablet screenshots: HQ runs as a tablet app (see "Using HQ on a tablet" in the user guide), so
+  add at least 4 for 7-inch and 4 for 10-inch tablets, between 1,080 and 7,680 px. Play shows them
+  to people on tablets. Made with `thunder/screenshots` at tablet widths (`fixtures/tablet.mjs`).

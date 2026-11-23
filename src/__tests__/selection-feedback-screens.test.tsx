@@ -456,6 +456,12 @@ describe('reaching feedback', () => {
     });
   }
 
+  it('lists the athletes in a card grid: one a row on a phone, more across on a tablet', async () => {
+    await openRound([]);
+    expect(screen.getByTestId('card-grid-1')).toBeTruthy();
+    expect(screen.getByLabelText('Add an observation about Athlete 1')).toBeTruthy();
+  });
+
   it('asks where the round’s feedback stands', async () => {
     await openRound([]);
     expect(onlyRpcCall('selection_round_feedback')).toEqual({ p_round_id: 'r1' });

@@ -2,6 +2,7 @@ import { router, useFocusEffect } from 'expo-router';
 import { useCallback, useState } from 'react';
 import { StyleSheet, View } from 'react-native';
 
+import { CardGrid } from '@/components/columns';
 import { InjuryCard } from '@/components/injury-card';
 import { Screen } from '@/components/screen';
 import { ThemedText } from '@/components/themed-text';
@@ -87,10 +88,10 @@ export default function InjuriesScreen() {
       <Section title="Injured athletes" injuries={others} showAthlete />
 
       <ThemedText type="small" themeColor="textSecondary">
-        Injury records are private. Only the athlete, their guardians, their coaches, physios,
-        the committee and admins can see them. An athlete under 18 shows to their coaches, physios
-        and the committee members cleared to work with children only once a parent or guardian
-        gives consent.
+        Injury records are private. Only the athlete, their guardians, their coaches, physios, the
+        committee and admins can see them. An athlete under 18 shows to their coaches, physios and
+        the committee members cleared to work with children only once a parent or guardian gives
+        consent.
       </ThemedText>
     </Screen>
   );
@@ -109,9 +110,11 @@ function Section({
   return (
     <View style={styles.section}>
       <ThemedText type="smallBold">{title}</ThemedText>
-      {injuries.map((injury) => (
-        <InjuryCard key={injury.id} injury={injury} showAthlete={showAthlete} />
-      ))}
+      <CardGrid>
+        {injuries.map((injury) => (
+          <InjuryCard key={injury.id} injury={injury} showAthlete={showAthlete} />
+        ))}
+      </CardGrid>
     </View>
   );
 }

@@ -2,6 +2,7 @@ import { router, useFocusEffect, useLocalSearchParams } from 'expo-router';
 import { useCallback, useState } from 'react';
 import { Pressable, StyleSheet, View } from 'react-native';
 
+import { CardGrid } from '@/components/columns';
 import { Screen } from '@/components/screen';
 import { ThemedText } from '@/components/themed-text';
 import { ChipGroup, ErrorText, PressableCard, TextField } from '@/components/ui';
@@ -142,7 +143,9 @@ export default function RoundScreen() {
           No athlete matches.
         </ThemedText>
       ) : (
-        shown.map((athlete) => {
+        // One athlete a row on a phone, two or three across on a tablet.
+        <CardGrid gap={Spacing.four}>
+          {shown.map((athlete) => {
           const line = athleteLine(athlete, groups, sheet.today, sheet.closed);
           // One line for the summaries and the feedback, so a row stays short.
           const summary =
@@ -181,7 +184,8 @@ export default function RoundScreen() {
               )}
             </View>
           );
-        })
+          })}
+        </CardGrid>
       )}
       {sheet.hidden > 0 ? (
         <ThemedText type="small" themeColor="textSecondary">

@@ -2,6 +2,7 @@ import { router, useFocusEffect, useLocalSearchParams } from 'expo-router';
 import { useCallback, useState } from 'react';
 import { StyleSheet, View } from 'react-native';
 
+import { CardGrid } from '@/components/columns';
 import { ReportView } from '@/components/report-view';
 import { Screen } from '@/components/screen';
 import { ThemedText } from '@/components/themed-text';
@@ -165,6 +166,7 @@ export default function SummaryScreen() {
         <ErrorText>{error}</ErrorText>
         {onwards}
         <ReportView report={summarySheetReport(summary)} buttonOnly />
+        <CardGrid gap={Spacing.four}>
         {compared.selectors.map((s) => (
           <Card key={s.name} style={styles.card}>
             <ThemedText type="smallBold">
@@ -179,6 +181,7 @@ export default function SummaryScreen() {
             </ThemedText>
           </Card>
         ))}
+        </CardGrid>
         <ThemedText type="smallBold">Against the criteria</ThemedText>
         <ThemedText type="small" themeColor="textSecondary">
           Tap a group to see each selector’s step. Only criteria someone gave a step are listed.

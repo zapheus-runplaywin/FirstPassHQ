@@ -10,6 +10,7 @@ import {
   type ViewProps,
 } from 'react-native';
 
+import { useInCardGrid } from '@/components/columns';
 import { useRevealFocusedInput } from '@/components/screen';
 import { ThemedText } from '@/components/themed-text';
 import { BrandFonts, Spacing } from '@/constants/theme';
@@ -20,8 +21,18 @@ const DANGER = '#FF5A5A';
 
 export function Card({ style, ...rest }: ViewProps) {
   const theme = useTheme();
+  // In a CardGrid row, every card is as tall as the tallest.
+  const inGrid = useInCardGrid();
   return (
-    <View style={[styles.card, { backgroundColor: theme.backgroundElement }, style]} {...rest} />
+    <View
+      style={[
+        styles.card,
+        inGrid && styles.fill,
+        { backgroundColor: theme.backgroundElement },
+        style,
+      ]}
+      {...rest}
+    />
   );
 }
 
@@ -39,6 +50,7 @@ export function PressableCard({
   actions?: { label: string; onPress: () => void }[];
 }) {
   const theme = useTheme();
+  const inGrid = useInCardGrid();
   return (
     <Pressable
       accessibilityRole="button"
@@ -52,6 +64,7 @@ export function PressableCard({
       onPress={onPress}
       style={({ pressed }) => [
         styles.card,
+        inGrid && styles.fill,
         { backgroundColor: pressed ? theme.backgroundSelected : theme.backgroundElement },
       ]}>
       {children}
@@ -212,6 +225,9 @@ const styles = StyleSheet.create({
     padding: Spacing.three,
     borderRadius: 12,
     gap: Spacing.one,
+  },
+  fill: {
+    flexGrow: 1,
   },
   button: {
     height: 48,
