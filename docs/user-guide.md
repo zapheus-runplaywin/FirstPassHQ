@@ -4011,8 +4011,12 @@ round's criteria under **Selection** on their home screen, so check them before 
 name and its start and end dates (a year at most), and tap **Open round**. A squad or team has one
 open round at a time. The round's athletes are the athletes in that squad or team.
 
+**A round's four tabs.** Open a round and it shows one short tab at a time: **Dates** (where it
+opens), **Panel**, **Reports** (the audit report and Summaries signed) and **Details** (its name,
+its start and end, and closing it). The number beside Dates and Panel is how many it has.
+
 **The panel.** The panel starts as the group's coaches who hold a current Working With Children
-Check. Open the round to change it: **Add a selector** offers the club's other coaches, admins and
+Check. Open the round and tap **Panel** to change it: **Add a selector** offers the club's other coaches, admins and
 guests, and only those with a current check can be added (a guest is how you add an independent
 selector; see [Guests](#guests)). **Take … off the panel** removes someone; what they wrote stays.
 Every change is kept with who made it and when, under **No longer on the panel** and in the audit
@@ -4021,9 +4025,9 @@ season (if the club uses the [registers](#policy-and-conflict-registers)), how m
 round they can't assess because they're the athlete's parent or guardian, and when one has lost
 access because they were stood down, left or their check lapsed.
 
-<img src="user-guide/admin-assessments-round.png" width="210" alt="A selection round for an admin: its panel, adding a selector and who has left the panel">
+<img src="user-guide/admin-assessments-round.png" width="210" alt="A selection round's Panel tab for an admin: its panel, adding a selector and who has left the panel">
 
-**Dates.** Open the round and, under **Dates**, tap **Add a date** for each step in your process:
+**Dates.** Open the round and, on its **Dates** tab, tap **Add a date** for each step in your process:
 type what happens or choose a suggestion (**Criteria shared with athletes**, **Trials**,
 **Observations complete**, **Panel meeting**, **Teams named**, **Feedback offered**), choose the
 day, and choose who sees it: **Athletes and parents too**, or **Panel and admins only**. A round
@@ -4036,12 +4040,12 @@ holds up to 12 dates.
 - Athletes in the round and the verified parents of those under 18 see the dates you share, and
   **Done** beside each once you mark it.
 
-<img src="user-guide/admin-assessments-dates.png" width="210" alt="A selection round's dates for an admin: each with its day, whether it is done and who sees it">
+<img src="user-guide/admin-assessments-dates.png" width="210" alt="A selection round's Dates tab for an admin: each date with its day, whether it is done and who sees it">
 <img src="user-guide/admin-assessments-date.png" width="210" alt="Adding a date to a selection round: what happens, the day and who sees it">
 
 **Summaries signed.** Each selector writes and signs their own summary of each athlete they can
-assess (see [Selection assessments](#selection-assessments)). Open the round and tap **Summaries
-signed** to see, for each selector, how many they've signed out of how many, how many were signed
+assess (see [Selection assessments](#selection-assessments)). Open the round, tap **Reports**, then
+**Summaries signed** to see, for each selector, how many they've signed out of how many, how many were signed
 after the round's last day, and how many are in draft or not started. Tap a selector to list what
 they signed, by athlete and day. You never see what a summary says. If a selector signed one by
 mistake, tap **Reopen** beside it and confirm: they change it and sign again, and the reopening is
@@ -4051,9 +4055,11 @@ record views, like the audit report.
 
 <img src="user-guide/admin-assessments-summaries.png" width="210" alt="Summaries signed, for an admin: each selector's counts, with one selector open to show what they signed and Reopen">
 
-**Selection audit report.** Open the round and tap **Selection audit report**, then **Export
-PDF** for a copy for the committee, an appeal or the governing body. It shows how the selection
-work was done, not what was said:
+**Selection audit report.** Open the round, tap **Reports**, then **Selection audit report**, then
+**Export PDF** for a copy for the committee, an appeal or the governing body. On screen each part
+is one line, with how many lines it holds and how many are in red (**to look at**); tap a part to
+open it, and tap it again to close it. The PDF always holds every part in full. It shows how the
+selection work was done, not what was said:
 
 - **The round**: when it was opened and by whom, how many criteria it uses, its dates, and when it
   was closed (in red if it's still open after its end date).
@@ -4084,12 +4090,12 @@ The report never holds a rating, a line of evidence, a recommendation, a word of
 ranks athletes. Building it for a round with athletes under 18 is recorded in each child's record
 views.
 
-<img src="user-guide/admin-assessments-audit.png" width="210" alt="The Selection audit report: the round and the start of its dates">
-<img src="user-guide/admin-assessments-audit-selectors.png" width="210" alt="The Selection audit report: what each selector wrote, as counts and dates">
-<img src="user-guide/admin-assessments-audit-feedback.png" width="210" alt="The Selection audit report: feedback shared, with the day, who shared it, when it was first read and how often it was taken back">
+<img src="user-guide/admin-assessments-audit.png" width="210" alt="The Selection audit report: its counts, Export PDF and each part folded to one line">
+<img src="user-guide/admin-assessments-audit-selectors.png" width="210" alt="The Selection audit report with What each selector wrote open: counts and dates for each selector">
+<img src="user-guide/admin-assessments-audit-feedback.png" width="210" alt="The Selection audit report with Feedback shared open: the day, who shared it, when it was first read and how often it was taken back">
 
 **Closing a round.** Once the teams are named, the summaries are signed and the head coach has
-shared any feedback, tap **Close the round**. The panel can still read it and nothing more can be
+shared any feedback, open the round's **Details** tab and tap **Close the round**. The panel can still read it and nothing more can be
 added, signed or shared; athletes and parents keep the feedback already shared with them. **Open the round again** if it was closed too soon. Naming the
 teams is still done in [Squads, teams and selections](#squads-teams-and-selections).
 

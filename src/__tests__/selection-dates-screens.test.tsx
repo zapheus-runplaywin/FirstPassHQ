@@ -206,19 +206,19 @@ describe('a round’s dates, for an admin', () => {
   it('keeps a date taken off out of the list, and says it stays in the audit report', async () => {
     await openRound();
     expect(screen.queryByText('Trial day')).toBeNull();
-    expect(screen.getByText('Taken off: Trial day. They stay in the audit report.')).toBeTruthy();
+    expect(screen.getByText(/Taken off: Trial day\. They stay in the audit report\.$/)).toBeTruthy();
   });
 
   it('says when there are none yet, and offers to add one', async () => {
     await openRound([]);
-    expect(screen.getByText('No dates yet.')).toBeTruthy();
-    expect(screen.queryByText(/^Taken off:/)).toBeNull();
+    expect(screen.getByText('No dates yet. Add the steps in this round and when each is due.')).toBeTruthy();
+    expect(screen.queryByText(/Taken off:/)).toBeNull();
     expect(screen.getByText('Add a date')).toBeTruthy();
   });
 
   it('treats no answer as no dates', async () => {
     await openRound(null);
-    expect(screen.getByText('No dates yet.')).toBeTruthy();
+    expect(screen.getByText('No dates yet. Add the steps in this round and when each is due.')).toBeTruthy();
   });
 
   it('opens a new date for the round', async () => {
@@ -605,7 +605,7 @@ describe('dates in the Selection audit report', () => {
 
   it('lists each date with when it was done and by whom, and keeps the one taken off', async () => {
     await openAudit(DATES);
-    expect(screen.getByText('Dates')).toBeTruthy();
+    await press('Dates');
     expect(screen.getByText(new RegExp(`${d('2026-10-07')} by Sample admin`))).toBeTruthy();
     expect(screen.getAllByText(/Not yet/)).toHaveLength(2);
     expect(screen.getByText(new RegExp(`Trial day \\(taken off ${d('2026-10-08')} by Sample admin\\)`))).toBeTruthy();

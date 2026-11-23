@@ -16,7 +16,7 @@ import { supabase } from '@/lib/supabase';
 /**
  * The Selection audit report for a round: how the selection work was done
  * (its dates, the panel, what each selector wrote and when, how much evidence there is
- * about each athlete, who signed their summaries, who was given feedback), never what was said. On screen and as a PDF.
+ * about each athlete, who signed their summaries, who was given feedback), never what was said. On screen (one section open at a time) and as a PDF.
  */
 export default function SelectionAuditScreen() {
   const { id } = useLocalSearchParams<{ id: string }>();
@@ -61,7 +61,7 @@ export default function SelectionAuditScreen() {
   return (
     <Screen refreshing={refreshing} onRefresh={onRefresh}>
       <ErrorText>{error}</ErrorText>
-      {audit ? <ReportView report={selectionAuditReport(audit, dates, summaries, feedback)} /> : null}
+      {audit ? <ReportView folded report={selectionAuditReport(audit, dates, summaries, feedback)} /> : null}
     </Screen>
   );
 }

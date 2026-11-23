@@ -690,7 +690,7 @@ describe('feedback in the Selection audit report', () => {
 
   it('shows who was given feedback, when, by whom, when it was read and how often it was taken back', async () => {
     await openAudit(RECORD);
-    expect(screen.getByText('Feedback shared')).toBeTruthy();
+    await press('Feedback shared');
     expect(screen.getByText(/2 of 3 athletes have feedback shared now\. What it says is not shown\./)).toBeTruthy();
     expect(screen.getByText('Jordan Junior')).toBeTruthy();
     expect(screen.getByText(`Shared: ${d('2026-10-17')}`)).toBeTruthy();
@@ -705,6 +705,8 @@ describe('feedback in the Selection audit report', () => {
   it('says when none has been shared', async () => {
     await openAudit({ athletes: 3, shared: [] });
     expect(screen.getByText('No feedback has been shared.')).toBeTruthy();
+    await press('Feedback shared');
+    expect(screen.getAllByText('No feedback has been shared.')).toHaveLength(1);
     expect(screen.getByText(/0 of 3 athletes have feedback shared now/)).toBeTruthy();
   });
 
