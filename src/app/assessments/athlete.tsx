@@ -10,9 +10,11 @@ import {
   attendanceLine,
   buildPicture,
   contextLabels,
+  feedbackStatusLine,
   ratingLines,
   tallyLabel,
   type AthleteAssessment,
+  type AthleteFeedback,
   type Observation,
   type RoundAttendance,
 } from '@/lib/assessments';
@@ -29,6 +31,7 @@ export default function AthleteAssessmentScreen() {
   const { round, athlete } = useLocalSearchParams<{ round: string; athlete: string }>();
   const [assessment, setAssessment] = useState<AthleteAssessment | null>(null);
   const [attendance, setAttendance] = useState<RoundAttendance | null>(null);
+  const [feedback, setFeedback] = useState<AthleteFeedback | null>(null);
   const [error, setError] = useState<string | null>(null);
   const [refreshing, setRefreshing] = useState(false);
   const [tab, setTab] = useState<'picture' | 'observations'>('picture');
@@ -46,7 +49,10 @@ export default function AthleteAssessmentScreen() {
     const { data: counts } = await supabase
       .rpc('athlete_round_attendance', { p_round_id: round, p_athlete_id: athlete })
       .maybeSingle();
+    // Feedback for the athlete: the head coach writes it, the panel reads it once shared.
+    const { data: shared } = await supabase.rpc('athlete_feedback', { p_round_id: round, p_athlete_id: athlete });
     setError(null);
+    setFeedback((shared as AthleteFeedback | null) ?? null);
     setAttendance((counts as RoundAttendance | null) ?? null);
     setAssessment(data as AthleteAssessment);
   }, [round, athlete]);
@@ -102,6 +108,21 @@ export default function AthleteAssessmentScreen() {
         variant="secondary"
         onPress={() => router.push({ pathname: '/assessments/summary', params: { round, athlete } })}
       />
+
+      {feedback && (feedback.can_write || feedback.feedback) ? (
+        <Button
+          title={
+            feedback.feedback
+              ? (feedbackStatusLine({
+                  state: feedback.feedback.shared_at ? 'shared' : 'draft',
+                  seen: feedback.feedback.seen_at !== null,
+                }) ?? 'Feedback')
+              : 'Write feedback'
+          }
+          variant="secondary"
+          onPress={() => router.push({ pathname: '/assessments/feedback', params: { round, athlete } })}
+        />
+      ) : null}
 
       {picture.observations > 0 ? (
         <>

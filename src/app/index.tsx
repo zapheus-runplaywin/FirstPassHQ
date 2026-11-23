@@ -21,6 +21,7 @@ import {
   roundsLabel,
   selectionHomeHref,
   selectionInfoLabel,
+  useMySelectionFeedback,
   useMySelectionInfo,
   useMySelectionRounds,
   useMySelectionTodos,
@@ -179,6 +180,7 @@ export default function HomeScreen() {
   const { selectionRounds, reloadSelectionRounds } = useMySelectionRounds();
   const { selectionTodos, reloadSelectionTodos } = useMySelectionTodos();
   const { selectionInfo, reloadSelectionInfo } = useMySelectionInfo();
+  const { selectionFeedback, reloadSelectionFeedback } = useMySelectionFeedback();
   const canReadRegisters = useCanReadRegisters() && features.registers;
   const canSendSurveys = useCanSendSurveys();
   const surveysWaiting = surveysToAnswer(mySurveys).length;
@@ -309,6 +311,7 @@ export default function HomeScreen() {
       reloadSelectionRounds(),
       reloadSelectionTodos(),
       reloadSelectionInfo(),
+      reloadSelectionFeedback(),
       reloadMySurveys(),
       reloadAbsencesToReview(),
       loadAthletes(),
@@ -651,11 +654,11 @@ export default function HomeScreen() {
                 </PressableCard>
               ) : null}
 
-              {selectionInfo.length > 0 ? (
+              {selectionInfo.length > 0 || selectionFeedback.length > 0 ? (
                 <PressableCard onPress={() => router.push('/selection')}>
                   <ThemedText type="smallBold">Selection</ThemedText>
                   <ThemedText type="small" themeColor="textSecondary">
-                    {selectionInfoLabel(selectionInfo, clubToday())}
+                    {selectionInfoLabel(selectionInfo, clubToday(), selectionFeedback)}
                   </ThemedText>
                 </PressableCard>
               ) : null}

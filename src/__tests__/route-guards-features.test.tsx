@@ -132,6 +132,7 @@ const FEATURE_ROUTES: FeatureCase[] = [
       'assessments/athlete',
       'assessments/observe',
       'assessments/summary',
+      'assessments/feedback',
       'admin/assessments/index',
       'admin/assessments/criteria',
       'admin/assessments/round',

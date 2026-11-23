@@ -1219,10 +1219,12 @@ describe('the Selection audit report', () => {
     await openAudit();
     // The round's dates come with it: titles, days and who marked them done.
     // And who has signed their summaries: names, counts and dates.
+    // And who was given feedback and when: never what it says.
     expect(assessmentRpcs()).toEqual([
       'admin_selection_audit',
       'admin_selection_milestones',
       'admin_selection_summaries',
+      'admin_selection_feedback',
     ]);
     expect(onlyRpcCall('admin_selection_audit')).toEqual({ p_round_id: 'r1' });
     expect(onlyRpcCall('admin_selection_milestones')).toEqual({ p_round_id: 'r1' });

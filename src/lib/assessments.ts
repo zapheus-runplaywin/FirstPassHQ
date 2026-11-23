@@ -617,6 +617,7 @@ export function selectionAuditReport(
   audit: SelectionAudit,
   dates: Milestone[] = [],
   summaries: AdminSummaries | null = null,
+  feedback: AdminFeedback | null = null,
 ): Report {
   const { round } = audit;
   const groups = round.criteria_groups;
@@ -758,6 +759,7 @@ export function selectionAuditReport(
         empty: 'There are no athletes in the round.',
       },
       ...(summaries ? summariesAuditSections(summaries) : []),
+      ...(feedback ? [feedbackAuditSection(feedback)] : []),
     ],
     footnote: [
       'This report shows how the selection work was done, not what was said: it holds no ratings, evidence, recommendations or names of criteria, and nothing in it ranks athletes.',
@@ -997,7 +999,11 @@ export function selectionInfoOwner(info: SelectionInfo) {
 }
 
 /** What Home says under Selections for an athlete or parent. */
-export function selectionInfoLabel(info: SelectionInfo[], today: string) {
+export function selectionInfoLabel(info: SelectionInfo[], today: string, feedback: { round_id: string }[] = []) {
+  // Feedback leads, unless it is from an earlier round and a new one is open.
+  if (feedback.some((f) => info.length === 0 || info.some((i) => i.round_id === f.round_id))) {
+    return 'Feedback from the coach';
+  }
   if (info.length === 0) return '';
   const next = info
     .flatMap((i) => i.dates)
@@ -1379,4 +1385,146 @@ export function nextToSign(athletes: SheetAthlete[], statuses: SummaryStatus[], 
   const at = athletes.findIndex((a) => a.id === currentId);
   const order = [...athletes.slice(at + 1), ...athletes.slice(0, Math.max(at, 0))];
   return order.find((a) => a.id !== currentId && summaryOf(statuses, a.id) !== 'signed') ?? null;
+}
+
+// ---------------------------------------------------------------------------
+// Feedback: what the head coach chooses to share with an athlete
+
+export const MAX_FEEDBACK_TEXT = 1000;
+
+/** An athlete's feedback in a round, as a panel member who can assess them sees it. */
+export type AthleteFeedback = {
+  round_id: string;
+  round_name: string;
+  closed: boolean;
+  athlete_id: string;
+  athlete_name: string | null;
+  is_minor: boolean;
+  /** The head coach, while the round is open. */
+  can_write: boolean;
+  /** Null when nothing is written, or for anyone but the head coach while it is a draft. */
+  feedback: {
+    went_well: string;
+    work_on: string;
+    author_name: string;
+    shared_at: string | null;
+    seen_at: string | null;
+    updated_at: string;
+  } | null;
+};
+
+/** Where an athlete's feedback stands, for a round's list. */
+export type FeedbackStatus = { athlete_id: string; state: 'draft' | 'shared'; seen: boolean };
+
+/** Feedback shared with the member, or with their child. */
+export type SharedFeedback = {
+  round_id: string;
+  round_name: string;
+  team_name: string;
+  athlete_id: string;
+  athlete_name: string | null;
+  is_me: boolean;
+  went_well: string;
+  work_on: string;
+  shared_on: string;
+  from_name: string;
+};
+
+/** What an admin is shown about a round's feedback: who, when and whether it was read, never the words. */
+export type AdminFeedback = {
+  athletes: number;
+  shared: {
+    athlete_name: string | null;
+    shared_at: string | null;
+    shared_by_name: string | null;
+    seen_at: string | null;
+    withdrawn: number;
+  }[];
+};
+
+/** Why feedback can't be saved or shared yet, or null. */
+export function feedbackProblem(wentWell: string, workOn: string, share: boolean): string | null {
+  if (wentWell.length > MAX_FEEDBACK_TEXT || workOn.length > MAX_FEEDBACK_TEXT) {
+    return `Keep each box to ${MAX_FEEDBACK_TEXT} characters`;
+  }
+  if (share && !wentWell.trim() && !workOn.trim()) return 'Write some feedback before you share it';
+  return null;
+}
+
+/** What a round's list, and the athlete's assessment, say about their feedback; null with none. */
+export function feedbackStatusLine(status: Pick<FeedbackStatus, 'state' | 'seen'> | undefined) {
+  if (!status) return null;
+  if (status.state === 'draft') return 'Feedback is a draft';
+  return status.seen ? 'Feedback shared and read' : 'Feedback shared, not read yet';
+}
+
+/** Who reads feedback once it is shared, for the head coach before they share. */
+export function feedbackReaders(feedback: Pick<AthleteFeedback, 'athlete_name' | 'is_minor'>) {
+  const name = feedback.athlete_name ?? 'The athlete';
+  return feedback.is_minor
+    ? `${name} and their verified parents and guardians will read this under Selection. Nobody can reply in the app. You can take it back to change it.`
+    : `${name} will read this under Selection. Nobody can reply in the app. You can take it back to change it.`;
+}
+
+/**
+ * The next athlete in a round's list, after this one and wrapping round,
+ * with no feedback shared; null when there is no other.
+ */
+export function nextForFeedback(athletes: SheetAthlete[], statuses: FeedbackStatus[], currentId: string) {
+  const at = athletes.findIndex((a) => a.id === currentId);
+  const order = [...athletes.slice(at + 1), ...athletes.slice(0, Math.max(at, 0))];
+  const shared = (id: string) => statuses.some((s) => s.athlete_id === id && s.state === 'shared');
+  return order.find((a) => a.id !== currentId && !shared(a.id)) ?? null;
+}
+
+/** The Feedback part of the Selection audit report: who was given feedback and when. */
+export function feedbackAuditSection(feedback: AdminFeedback): ReportSection {
+  const now = feedback.shared.filter((f) => f.shared_at).length;
+  return {
+    title: 'Feedback shared',
+    note: `Feedback the head coach shared with an athlete and, under 18, their verified parents. ${now} of ${plural(
+      feedback.athletes,
+      'athlete has',
+      'athletes have',
+    )} feedback shared now. What it says is not shown.`,
+    columns: [
+      { label: 'Athlete', width: 2.4 },
+      { label: 'Shared', width: 1.5 },
+      { label: 'By', width: 2 },
+      { label: 'First read', width: 1.5 },
+      { label: 'Taken back' },
+    ],
+    rows: feedback.shared.map((f) => ({
+      cells: [
+        f.athlete_name ?? 'Athlete',
+        f.shared_at ? day(f.shared_at) : 'Taken back',
+        f.shared_by_name ?? '',
+        f.shared_at ? (f.seen_at ? day(f.seen_at) : 'Not yet') : '',
+        f.withdrawn === 0 ? '' : plural(f.withdrawn, 'time', 'times'),
+      ],
+    })),
+    empty: 'No feedback has been shared.',
+  };
+}
+
+/** Feedback shared with the member or their children, in open and closed rounds. */
+export function useMySelectionFeedback() {
+  const eligible = useCanSeeSelectionInfo();
+  const [feedback, setFeedback] = useState<SharedFeedback[]>([]);
+  const load = useCallback(async () => {
+    if (!eligible) return;
+    const { data } = await supabase.rpc('my_selection_feedback');
+    setFeedback((data as SharedFeedback[] | null) ?? []);
+  }, [eligible]);
+  useFocusEffect(
+    useCallback(() => {
+      load();
+    }, [load]),
+  );
+  return { selectionFeedback: eligible ? feedback : [], reloadSelectionFeedback: load };
+}
+
+/** Whose feedback it is, for its heading: "Feedback for you" or "Feedback for Jordan". */
+export function feedbackHeading(feedback: SharedFeedback) {
+  return feedback.is_me ? 'Feedback for you' : `Feedback for ${feedback.athlete_name ?? 'your child'}`;
 }

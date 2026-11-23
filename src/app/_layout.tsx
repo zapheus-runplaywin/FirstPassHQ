@@ -253,6 +253,7 @@ function RootStack() {
             <Stack.Screen name="assessments/athlete" options={{ title: 'Assessment' }} />
             <Stack.Screen name="assessments/observe" options={{ title: 'Observation' }} />
             <Stack.Screen name="assessments/summary" options={{ title: 'Summary' }} />
+            <Stack.Screen name="assessments/feedback" options={{ title: 'Feedback' }} />
           </Stack.Protected>
           <Stack.Protected guard={can.selectionInfo}>
             <Stack.Screen name="selection" options={{ title: 'Selection' }} />
