@@ -24,6 +24,8 @@ import {
   makeCriteria,
   newKey,
   observationProblem,
+  INDEPENDENT_NOTE,
+  isIndependentChoice,
   panelNotes,
   ratingLines,
   removeGroup,
@@ -518,6 +520,43 @@ describe('what an admin is told about the panel', () => {
 
   it('doesn’t report lost access for someone already off the panel', () => {
     expect(panelNotes(member({ can_assess: false, removed_at: '2026-11-20T00:00:00Z' }))).toEqual([]);
+  });
+
+  it('says first when a selector is independent, and keeps it for one who has left', () => {
+    expect(panelNotes(member({ independent: true }))).toEqual(['Independent: a guest with no other role in the club']);
+    expect(panelNotes(member({ independent: true, declared_conflict: true }))).toEqual([
+      'Independent: a guest with no other role in the club',
+      'Declared a conflict of interest this season',
+    ]);
+    expect(panelNotes(member({ independent: true, removed_at: '2026-11-20T00:00:00Z' }))).toEqual([INDEPENDENT_NOTE]);
+    expect(panelNotes(member({ independent: false }))).toEqual([]);
+  });
+
+  it('counts only a guest with no other role as an independent choice', () => {
+    const person = (roles: string[]) => ({ profile_id: 'g1', name: 'Indy', roles, cleared: true });
+    expect(isIndependentChoice(person(['guest']))).toBe(true);
+    expect(isIndependentChoice(person(['guest', 'coach']))).toBe(false);
+    expect(isIndependentChoice(person(['coach', 'guest']))).toBe(false);
+    expect(isIndependentChoice(person(['coach']))).toBe(false);
+    expect(isIndependentChoice(person(['admin']))).toBe(false);
+    expect(isIndependentChoice(person([]))).toBe(false);
+  });
+
+  it('puts the independent note in the audit report’s panel, without flagging it', () => {
+    const report = selectionAuditReport({
+      round: {
+        id: 'r1', name: 'R', team_name: 'T', season: 2027, starts_on: '2026-11-16', ends_on: '2026-12-20',
+        opened_at: '2026-11-15T02:00:00Z', opened_by_name: null, closed_at: null, closed_by_name: null,
+        criteria_groups: 1, criteria_items: 1, athletes: 0, observations: 0, today: '2026-11-23',
+      },
+      panel: [member({ name: 'Indy Independent', independent: true }), member()],
+      selectors: [],
+      athletes: [],
+    });
+    const panel = report.sections.find((section) => section.title === 'The panel')!;
+    expect(panel.rows[0].cells[3]).toBe('Independent: a guest with no other role in the club');
+    expect(panel.rows[0].flag).toBe(false);
+    expect(panel.rows[1].cells[3]).toBe('');
   });
 
   it('counts only the people on the panel now in a round’s line', () => {

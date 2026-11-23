@@ -158,6 +158,8 @@ export type PanelMember = {
   can_assess: boolean;
   /** Athletes in the round they are a parent or guardian of. */
   own_children: number;
+  /** A guest with no other role in the club and no squad or team: a selector from outside it. */
+  independent?: boolean;
 };
 
 /** A round as an admin sees it: its panel and counts, never an assessment. */
@@ -893,8 +895,16 @@ export function adminRoundLine(round: AdminRound) {
 }
 
 /** What an admin is told beside a panel member, or nothing. */
+export const INDEPENDENT_NOTE = 'Independent: a guest with no other role in the club';
+
+/** Whether someone an admin could add would be an independent selector: a guest and nothing else. */
+export function isIndependentChoice(person: PanelChoice) {
+  return person.roles.length === 1 && person.roles[0] === 'guest';
+}
+
 export function panelNotes(member: PanelMember) {
   return [
+    member.independent ? INDEPENDENT_NOTE : null,
     member.declared_conflict ? 'Declared a conflict of interest this season' : null,
     member.own_children > 0
       ? `Can’t assess ${plural(member.own_children, 'athlete', 'athletes')} in this round: their own child`

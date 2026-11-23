@@ -1055,16 +1055,59 @@ describe('a round and its panel, for an admin', () => {
     expect(rpcNames()).not.toContain('admin_selection_panel_choices');
     await press('Add a selector');
     expect(onlyRpcCall('admin_selection_panel_choices')).toEqual({ p_round_id: 'r1' });
-    expect(screen.getByText('Add Indy Independent')).toBeTruthy();
+    // A guest and nothing else is how a club adds an independent selector, and is marked.
+    expect(screen.getByText('Add Indy Independent (guest)')).toBeTruthy();
+    expect(screen.queryByText('Add Indy Independent')).toBeNull();
     expect(screen.getByText('Add Member')).toBeTruthy();
     expect(screen.getByText('Nico Nocheck: needs a current Working With Children Check first')).toBeTruthy();
     expect(screen.queryByText('Add Nico Nocheck')).toBeNull();
-    expect(screen.getByText(/A guest is how you add an independent selector/)).toBeTruthy();
-    await press('Add Indy Independent');
+    expect(screen.getByText(/For an independent selector, approve the person as a Guest and record their check/)).toBeTruthy();
+    await press('Add Indy Independent (guest)');
     expect(onlyRpcCall('admin_add_selection_panel_member')).toEqual({ p_round_id: 'r1', p_profile_id: 'g1' });
     // The list closes, so it is read again next time.
     expect(screen.getByText('Add a selector')).toBeTruthy();
-    expect(screen.queryByText('Add Indy Independent')).toBeNull();
+    expect(screen.queryByText('Add Indy Independent (guest)')).toBeNull();
+  });
+
+  it('marks nobody as a guest who also holds another role', async () => {
+    await openRound(adminRound(), {
+      rpcs: {
+        admin_selection_rounds: [adminRound()],
+        admin_selection_panel_choices: [
+          { profile_id: 'g5', name: 'Gus Guestcoach', roles: ['guest', 'coach'], cleared: true },
+          { profile_id: 'g6', name: 'Ada Admin', roles: ['admin'], cleared: true },
+        ],
+      },
+    });
+    await press(/^Panel \(/);
+    await press('Add a selector');
+    expect(screen.getByText('Add Gus Guestcoach')).toBeTruthy();
+    expect(screen.getByText('Add Ada Admin')).toBeTruthy();
+    expect(screen.queryByText(/\(guest\)$/)).toBeNull();
+  });
+
+  it('says which panel members are independent, on the panel and among those who left', async () => {
+    await openRound(
+      adminRound({
+        panel: [
+          panelMember(),
+          panelMember({ profile_id: 'g1', name: 'Indy Independent', independent: true }),
+          panelMember({ profile_id: 'g7', name: 'Olly Outside', independent: true, removed_at: '2026-10-12T01:00:00Z', removed_by_name: 'Sample admin' }),
+          panelMember({ profile_id: 'c3', name: 'Drew Lapsed', removed_at: '2026-10-12T01:00:00Z', removed_by_name: 'Sample admin' }),
+        ],
+      }),
+    );
+    await press(/^Panel \(/);
+    expect(screen.getAllByText('Independent: a guest with no other role in the club')).toHaveLength(1);
+    expect(screen.getByText(new RegExp(`^Olly Outside \\(independent\\): added ${d('2026-10-05')}, removed`))).toBeTruthy();
+    expect(screen.getByText(new RegExp(`^Drew Lapsed: added ${d('2026-10-05')}, removed`))).toBeTruthy();
+  });
+
+  it('shows no independent note from a database not yet updated', async () => {
+    await openRound();
+    await press(/^Panel \(/);
+    expect(screen.queryByText(/Independent/)).toBeNull();
+    expect(screen.queryByText(/\(independent\)/)).toBeNull();
   });
 
   it('says when there is nobody else to add, and names someone without a name or a check as Member', async () => {
