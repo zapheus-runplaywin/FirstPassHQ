@@ -15,6 +15,7 @@ import { SafeAreaView } from 'react-native-safe-area-context';
 import { FormSection } from '@/components/form-section';
 import { RaiseConcernLink } from '@/components/safeguarding';
 import { Screen } from '@/components/screen';
+import { SwipeAction } from '@/components/swipe-action';
 import { ThemedText } from '@/components/themed-text';
 import { ThemedView } from '@/components/themed-view';
 import { Button, ErrorText } from '@/components/ui';
@@ -26,6 +27,7 @@ import {
   type ChatGroup,
   type ChatGroupMember,
   type ChatPost,
+  hiddenLine,
   mergePosts,
   peopleCount,
   postingNote,
@@ -47,7 +49,9 @@ const REFRESH_MS = 15000;
  * under-18s in their own squad's or team's groups while a coach is in them).
  * Opening it marks its posts read. Tapping a post opens it on its own, with
  * its read receipts for its sender and a way to report it. The group's
- * coaches can remove a post; its text is kept for safeguarding.
+ * coaches swipe a post to hide it from everyone but its author, the coaches
+ * and the author's parents (greyed out for them), or to show it again; its
+ * text is kept for safeguarding.
  */
 export default function ChatGroupScreen() {
   const { id } = useLocalSearchParams<{ id: string }>();
@@ -63,8 +67,6 @@ export default function ChatGroupScreen() {
   const [body, setBody] = useState('');
   const [posting, setPosting] = useState(false);
   const [hiding, setHiding] = useState(false);
-  // The post a coach is about to remove, waiting for them to confirm.
-  const [removing, setRemoving] = useState<string | null>(null);
   const [error, setError] = useState<string | null>(null);
   const [keyboardHeight, setKeyboardHeight] = useState(0);
   const listRef = useRef<FlatList<ChatPost>>(null);
@@ -149,13 +151,12 @@ export default function ChatGroupScreen() {
     listRef.current?.scrollToOffset({ offset: 0, animated: true });
   }
 
-  async function removePost(messageId: string) {
-    const { error: removeError } = await supabase.rpc('remove_chat_post', {
+  async function setPostHidden(messageId: string, hide: boolean) {
+    const { error: hideError } = await supabase.rpc(hide ? 'remove_chat_post' : 'show_chat_post', {
       p_message_id: messageId,
     });
-    setRemoving(null);
-    if (removeError) {
-      setError(removeError.message);
+    if (hideError) {
+      setError(hideError.message);
       return;
     }
     await load();
@@ -191,14 +192,20 @@ export default function ChatGroupScreen() {
   const note = readOnlyNote(group.read_only_reason);
 
   function renderPost({ item: p }: { item: ChatPost }) {
-    const removed = p.body_removed || !!p.removed_by_name;
-    return (
+    // A post a coach hid: only its author, the group's coaches and the
+    // author's parents still get it, greyed out.
+    const hidden = !!p.removed_by_name;
+    const row = (swiped?: () => boolean) => (
       <View style={[styles.postRow, p.mine ? styles.mineRow : undefined]}>
         <Pressable
           accessibilityRole="button"
-          onPress={() => router.push({ pathname: '/messages/[id]', params: { id: p.id } })}
+          onPress={() => {
+            if (swiped?.()) return;
+            router.push({ pathname: '/messages/[id]', params: { id: p.id } });
+          }}
           style={({ pressed }) => [
             styles.bubble,
+            hidden ? styles.hidden : undefined,
             {
               backgroundColor: pressed
                 ? theme.backgroundSelected
@@ -208,17 +215,29 @@ export default function ChatGroupScreen() {
             },
           ]}>
           {p.mine ? null : (
-            <ThemedText type="smallBold" style={{ color: theme.tint }} numberOfLines={1}>
+            <ThemedText
+              type="smallBold"
+              style={hidden ? undefined : { color: theme.tint }}
+              themeColor={hidden ? 'textSecondary' : undefined}
+              numberOfLines={1}>
               {p.sender_name}
             </ThemedText>
           )}
           <ThemedText
             type="small"
-            themeColor={removed ? 'textSecondary' : undefined}
-            style={removed ? styles.removed : undefined}
+            themeColor={hidden || p.body_removed ? 'textSecondary' : undefined}
+            style={p.body_removed ? styles.italic : undefined}
             selectable>
             {p.body}
           </ThemedText>
+          {hidden ? (
+            <ThemedText
+              type="small"
+              themeColor="textSecondary"
+              style={[styles.meta, styles.italic]}>
+              {hiddenLine(p.removed_by_name)}
+            </ThemedText>
+          ) : null}
           <ThemedText type="small" themeColor="textSecondary" style={styles.meta}>
             {formatSentAt(new Date(p.created_at))}
             {p.mine && p.recipient_count
@@ -226,35 +245,15 @@ export default function ChatGroupScreen() {
               : ''}
           </ThemedText>
         </Pressable>
-        {group?.can_remove && !p.removed_by_name ? (
-          removing === p.id ? (
-            <View style={[styles.confirm, { backgroundColor: theme.backgroundElement }]}>
-              <ThemedText type="small">
-                Remove this post for everyone? Its text is kept for the club’s safeguarding
-                contacts.
-              </ThemedText>
-              <View style={styles.actions}>
-                <Pressable accessibilityRole="button" onPress={() => removePost(p.id)} hitSlop={8}>
-                  <ThemedText type="smallBold" style={{ color: theme.tint }}>
-                    Remove
-                  </ThemedText>
-                </Pressable>
-                <Pressable accessibilityRole="button" onPress={() => setRemoving(null)} hitSlop={8}>
-                  <ThemedText type="small" themeColor="textSecondary">
-                    Keep
-                  </ThemedText>
-                </Pressable>
-              </View>
-            </View>
-          ) : (
-            <Pressable accessibilityRole="button" onPress={() => setRemoving(p.id)} hitSlop={8}>
-              <ThemedText type="small" style={{ color: theme.tint }}>
-                Remove post
-              </ThemedText>
-            </Pressable>
-          )
-        ) : null}
       </View>
+    );
+    // The group's coaches swipe a post to hide it, or a hidden one to show it again.
+    return group?.can_remove ? (
+      <SwipeAction label={hidden ? 'Show' : 'Hide'} onAction={() => setPostHidden(p.id, !hidden)}>
+        {(swiped) => row(swiped)}
+      </SwipeAction>
+    ) : (
+      row()
     );
   }
 
@@ -425,21 +424,14 @@ const styles = StyleSheet.create({
     paddingVertical: Spacing.two,
     gap: 2,
   },
-  removed: {
+  italic: {
     fontStyle: 'italic',
+  },
+  hidden: {
+    opacity: 0.55,
   },
   meta: {
     fontSize: 12,
-  },
-  confirm: {
-    maxWidth: '85%',
-    borderRadius: 12,
-    padding: Spacing.two,
-    gap: Spacing.one,
-  },
-  actions: {
-    flexDirection: 'row',
-    gap: Spacing.four,
   },
   footNote: {
     textAlign: 'center',

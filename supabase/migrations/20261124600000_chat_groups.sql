@@ -372,6 +372,42 @@ $$;
 
 revoke execute on function public.chat_can_remove(public.chat_groups, uuid) from public, anon, authenticated;
 
+-- Whether a post a coach hid is hidden from the signed-in member. A hidden
+-- post stays with its author, the group's coaches (who can show it again) and
+-- the author's own verified parents or guardians, greyed out; everyone else
+-- in the group, and their parents' copies, lose it (Matt, 24 November 2026:
+-- "swipe to hide for everyone other than the coach and the author"). Its text
+-- is kept for the Child Safety Officer. False for every other message.
+create or replace function public.chat_post_hidden_from_me(p_message_id uuid)
+returns boolean
+language sql
+stable
+security definer
+set search_path = ''
+as $$
+  select exists (
+    select 1
+    from public.messages m
+    join public.chat_groups g on g.id = m.chat_group_id
+    where m.id = p_message_id
+      and m.audience = 'chat'
+      and m.removed_at is not null
+      and m.sender_id is distinct from auth.uid()
+      and not public.chat_can_remove(g, auth.uid())
+      and not exists (
+        select 1
+        from public.guardianships gs
+        join public.profiles gp on gp.id = gs.guardian_id
+        where gs.athlete_id = m.sender_id
+          and gs.guardian_id = auth.uid()
+          and gp.status = 'approved'
+          and gp.verified_at is not null
+      )
+  );
+$$;
+
+revoke execute on function public.chat_post_hidden_from_me(uuid) from public, anon, authenticated;
+
 -- A group's name as members see it.
 create or replace function public.chat_group_name(p_group public.chat_groups)
 returns text
@@ -494,11 +530,12 @@ begin
     select distinct on (m.chat_group_id) m.chat_group_id, m.created_at, m.body, m.sender_name
     from public.messages m
     join mine g on g.id = m.chat_group_id
-    where (m.sender_id = v_me.id and not public.is_stood_down())
+    where not public.chat_post_hidden_from_me(m.id)
+      and ((m.sender_id = v_me.id and not public.is_stood_down())
       or exists (
         select 1 from public.message_recipients r
         where r.message_id = m.id and r.profile_id = v_me.id and r.chat_group_id = m.chat_group_id
-      )
+      ))
     order by m.chat_group_id, m.created_at desc
   )
   select g.id, g.kind, g.group_name, g.team_id,
@@ -513,7 +550,8 @@ begin
     g.n_people,
     exists (select 1 from public.chat_group_hidden h where h.group_id = g.id and h.profile_id = v_me.id),
     (select count(*)::int from public.message_recipients r
-      where r.profile_id = v_me.id and r.chat_group_id = g.id and r.unread),
+      where r.profile_id = v_me.id and r.chat_group_id = g.id and r.unread
+        and not public.chat_post_hidden_from_me(r.message_id)),
     lp.created_at, lp.body, coalesce(lp.sender_name, 'Club')
   from mine g
   left join last_posts lp on lp.chat_group_id = g.id
@@ -537,7 +575,8 @@ returns table (
   mine boolean,
   -- Removed after the club's keep period.
   body_removed boolean,
-  -- Removed by a coach: the text isn't shown.
+  -- Hidden by a coach: only its author, the group's coaches and the author's
+  -- parents still get it, greyed out.
   removed_by_name text,
   read_count int,
   recipient_count int
@@ -549,9 +588,7 @@ set search_path = ''
 as $$
   select * from (
     select m.id, m.sender_id, coalesce(m.sender_name, 'Club'),
-      case when m.removed_at is not null
-        then 'Removed by ' || coalesce(m.removed_by_name, 'a coach')
-        else m.body end,
+      m.body,
       m.created_at,
       m.sender_id = auth.uid(),
       m.body_removed_at is not null,
@@ -563,6 +600,7 @@ as $$
     from public.messages m
     where m.chat_group_id = p_group_id
       and (p_before is null or m.created_at < p_before)
+      and not public.chat_post_hidden_from_me(m.id)
       and public.chat_groups_on()
       and not public.chat_minor_unguarded(auth.uid())
       and (
@@ -816,10 +854,11 @@ $$;
 revoke execute on function public.set_chat_group_hidden(uuid, boolean) from public, anon;
 grant execute on function public.set_chat_group_hidden(uuid, boolean) to authenticated;
 
--- A coach removes a post from a group. Members then see "Removed by <name>"
--- in place of its text. Nothing is deleted: the text stays with the message
--- for the Child Safety Officer and Complaints Manager (approved message
--- access), a concern that reported it, and legal hold.
+-- A coach hides a post (a swipe in the app). It then stays only with its
+-- author, the group's coaches and the author's parents, greyed out with who
+-- hid it (chat_post_hidden_from_me). Nothing is deleted: the text stays with
+-- the message for the Child Safety Officer and Complaints Manager (approved
+-- message access), a concern that reported it, and legal hold.
 create or replace function public.remove_chat_post(p_message_id uuid)
 returns void
 language plpgsql
@@ -839,7 +878,7 @@ begin
   end if;
   select * into v_group from public.chat_groups where id = v_message.chat_group_id;
   if v_group.id is null or not public.chat_can_remove(v_group, auth.uid()) then
-    raise exception 'Only the group''s coaches can remove posts';
+    raise exception 'Only the group''s coaches can hide posts';
   end if;
   if v_message.removed_at is not null then
     return;
@@ -852,6 +891,37 @@ $$;
 
 revoke execute on function public.remove_chat_post(uuid) from public, anon;
 grant execute on function public.remove_chat_post(uuid) to authenticated;
+
+-- A coach shows a hidden post to the group again.
+create or replace function public.show_chat_post(p_message_id uuid)
+returns void
+language plpgsql
+security definer
+set search_path = ''
+as $$
+declare
+  v_message public.messages;
+  v_group public.chat_groups;
+begin
+  if auth.uid() is null or not public.chat_groups_on() then
+    raise exception 'Chat groups are turned off for the club';
+  end if;
+  select * into v_message from public.messages where id = p_message_id and audience = 'chat';
+  if v_message.id is null then
+    raise exception 'That post doesn''t exist';
+  end if;
+  select * into v_group from public.chat_groups where id = v_message.chat_group_id;
+  if v_group.id is null or not public.chat_can_remove(v_group, auth.uid()) then
+    raise exception 'Only the group''s coaches can hide posts';
+  end if;
+  update public.messages
+  set removed_at = null, removed_by = null, removed_by_name = null
+  where id = p_message_id and removed_at is not null;
+end;
+$$;
+
+revoke execute on function public.show_chat_post(uuid) from public, anon;
+grant execute on function public.show_chat_post(uuid) to authenticated;
 
 -- When a parent or guardian is linked to a child, they get a copy of every
 -- group post the child was sent or wrote, naming the child, as they would
@@ -1142,7 +1212,10 @@ as $$
     and not (
       public.chat_minor_unguarded(auth.uid())
       and exists (select 1 from public.messages m where m.id = p_message_id and m.audience = 'chat')
-    );
+    )
+    -- A group post a coach hid stays only with its author, the group's
+    -- coaches and the author's parents.
+    and not public.chat_post_hidden_from_me(p_message_id);
 $$;
 
 -- "Mark all read" in the Inbox leaves group posts alone: they're read by

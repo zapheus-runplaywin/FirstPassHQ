@@ -110,9 +110,20 @@ export function postingNote(hasUnder18s: boolean) {
     : 'Everyone in the group sees your post. Posts are kept like other messages.';
 }
 
-/** What a removed post says in place of its text. */
-export function removedLine(name: string | null) {
-  return `Removed by ${name ?? 'a coach'}`;
+/** The line on a post a coach hid, for those who still see it. */
+export function hiddenLine(name: string | null) {
+  return `Hidden by ${name ?? 'a coach'}. Only its author, the group’s coaches and the author’s parents see it.`;
+}
+
+/** How far a post slides to show its action, in points. */
+export const SWIPE_ACTION_WIDTH = 88;
+
+/**
+ * Whether a post let go after a swipe stays open on its action: dragged past
+ * half the action's width, or flicked left.
+ */
+export function swipeStaysOpen(dx: number, vx: number) {
+  return dx < -SWIPE_ACTION_WIDTH / 2 || vx < -0.5;
 }
 
 /** The groups shown in the Groups tab, and the ones the member hid. */
