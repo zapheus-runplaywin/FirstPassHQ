@@ -3760,6 +3760,7 @@ You see each group's members and how many posts it has, never the posts, unless 
 **Close the group** keeps every post but stops new ones; **Open the group again** undoes it.
 Groups are never deleted.
 
+<img src="user-guide/admin-groups-tab.png" width="210" alt="New group at the top of Messages › Groups, for admins">
 <img src="user-guide/admin-chat-group.png" width="210" alt="Setting up a chat group for a squad, with the warning that it includes members under 18">
 
 ### Messages to the club or a role
