@@ -32,6 +32,11 @@ export type MessageAccessRequest = {
   concern_open: boolean;
   requested_by_name: string;
   requested_post: MessageAccessPost;
+  /**
+   * The person asking was an admin acting in the post, because nobody named
+   * in it could act. Missing from an older server.
+   */
+  requested_acting?: boolean;
   subject_name: string;
   subject_link: MessageAccessLink;
   from_date: string;
@@ -84,6 +89,14 @@ export const postLabels: Record<MessageAccessPost, string> = {
   child_safety_officer: 'Child Safety Officer',
   complaints_manager: 'Complaints Manager',
 };
+
+/** "Child Safety Officer", or "Child Safety Officer (acting)" for an acting admin. */
+export function requestedPostLabel(
+  request: Pick<MessageAccessRequest, 'requested_post' | 'requested_acting'>,
+): string {
+  const label = postLabels[request.requested_post];
+  return request.requested_acting === true ? `${label} (acting)` : label;
+}
 
 export const linkLabels: Record<MessageAccessLink, string> = {
   about: 'Who the concern is about',

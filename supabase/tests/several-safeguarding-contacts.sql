@@ -71,7 +71,7 @@ select pg_temp.ok('links saved with them',
 -- Everyone signed in sees every contact.
 select pg_temp.as_member('32');
 select pg_temp.ok('an athlete sees both Child Safety Officers',
-  (select child_safety_officers = '[{"id": "00000000-0000-0000-0000-000000000011", "name": "Casey Coach"}, {"id": "00000000-0000-0000-0000-000000000014", "name": "Finley Physio"}]'::jsonb
+  (select child_safety_officers = '[{"id": "00000000-0000-0000-0000-000000000011", "name": "Casey Coach", "acting": false}, {"id": "00000000-0000-0000-0000-000000000014", "name": "Finley Physio", "acting": false}]'::jsonb
    from public.safeguarding_contacts()), true);
 select pg_temp.ok('and both Complaints Managers',
   (select jsonb_array_length(complaints_managers) = 2 from public.safeguarding_contacts()), true);

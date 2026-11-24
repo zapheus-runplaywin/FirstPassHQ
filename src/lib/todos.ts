@@ -642,7 +642,7 @@ export function buildTodos({
       todos.push({
         key: 'child-safety-officer',
         title: 'Name a Child Safety Officer',
-        detail: 'Nobody with a current check holds it. Under Safeguarding',
+        detail: 'Nobody with a current check holds it, so admins act in it. Under Safeguarding',
         href: '/admin/safeguarding',
       });
     }
@@ -650,7 +650,7 @@ export function buildTodos({
       todos.push({
         key: 'complaints-manager',
         title: 'Name a Complaints Manager',
-        detail: 'Nobody with a current check holds it. Under Safeguarding',
+        detail: 'Nobody with a current check holds it, so admins act in it. Under Safeguarding',
         href: '/admin/safeguarding',
       });
     }

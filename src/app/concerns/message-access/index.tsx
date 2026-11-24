@@ -9,7 +9,7 @@ import { Spacing } from '@/constants/theme';
 import { formatDateString } from '@/lib/injuries';
 import {
   type MessageAccessRequest,
-  postLabels,
+  requestedPostLabel,
   requestStatusLine,
   splitRequests,
 } from '@/lib/message-access';
@@ -92,7 +92,7 @@ function Section({
               {formatDateString(r.to_date)}
             </ThemedText>
             <ThemedText type="small" themeColor="textSecondary">
-              Asked by {r.requested_by_name} ({postLabels[r.requested_post]}){' '}
+              Asked by {r.requested_by_name} ({requestedPostLabel(r)}){' '}
               {localDay(r.created_at)}
             </ThemedText>
             <ThemedText type="small" themeColor={r.can_decide ? 'tint' : 'textSecondary'}>

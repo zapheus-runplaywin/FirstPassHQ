@@ -130,6 +130,19 @@ describe('contactNames', () => {
     ).toEqual(['First Officer', 'Second Officer']);
   });
 
+  it('marks an admin acting in an empty post, and only when the server says so', () => {
+    const acting = {
+      ...base,
+      child_safety_officers: [{ id: 'a1', name: 'Avery Admin', acting: true }],
+      complaints_managers: [
+        { id: 'm1', name: 'Morgan Manager', acting: false },
+        { id: 'm2', name: 'Sam Second' },
+      ],
+    };
+    expect(contactNames(acting, 'officers')).toEqual(['Avery Admin (acting)']);
+    expect(contactNames(acting, 'managers')).toEqual(['Morgan Manager', 'Sam Second']);
+  });
+
   it('uses the single name from an older server, and nobody when there are none', () => {
     expect(contactNames(base, 'officers')).toEqual(['First Officer']);
     expect(contactNames(base, 'managers')).toEqual([]);

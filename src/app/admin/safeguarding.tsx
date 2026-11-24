@@ -295,7 +295,9 @@ export default function SafeguardingScreen() {
         messages. The Child Safety Officers, the Complaints Managers and admins see every concern,
         except one about themselves. Name each an adult with a current Working With Children
         Check. A larger club can name up to {MAX_PER_POST} people in each post. Nobody can hold
-        both posts, so a concern about one person can always go to another.
+        both posts, so a concern about one person can always go to another. While nobody named
+        in a post can act, each admin with a current check acts in it, with its full powers, and
+        is shown as acting until you name someone.
       </ThemedText>
       <PeoplePicker
         label="Child Safety Officer"

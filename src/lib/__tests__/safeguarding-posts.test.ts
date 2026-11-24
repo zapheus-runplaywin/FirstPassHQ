@@ -4,7 +4,9 @@
  * docs/user-guide.md).
  */
 import {
+  heldOrActing,
   safeguardingPostLabels,
+  safeguardingPostTitle,
   safeguardingPostsFrom,
   safeguardingPostsLabel,
 } from '@/lib/safeguarding-posts';
@@ -42,7 +44,39 @@ describe('safeguardingPostsFrom', () => {
   });
 });
 
+describe('heldOrActing', () => {
+  it('lists posts held or acted in, once each, in the fixed order', () => {
+    expect(heldOrActing(['wwc_registration_officer'], ['child_safety_officer'])).toEqual([
+      'child_safety_officer',
+      'wwc_registration_officer',
+    ]);
+    expect(heldOrActing(['complaints_manager'], ['complaints_manager'])).toEqual(['complaints_manager']);
+    expect(heldOrActing([], [])).toEqual([]);
+  });
+});
+
+describe('safeguardingPostTitle', () => {
+  it('adds "(acting)" only to a post an admin acts in', () => {
+    expect(safeguardingPostTitle('complaints_manager')).toBe('Complaints Manager');
+    expect(safeguardingPostTitle('complaints_manager', ['child_safety_officer'])).toBe(
+      'Complaints Manager',
+    );
+    expect(safeguardingPostTitle('child_safety_officer', ['child_safety_officer'])).toBe(
+      'Child Safety Officer (acting)',
+    );
+  });
+});
+
 describe('safeguardingPostsLabel', () => {
+  it('marks acting posts in the titles line', () => {
+    expect(
+      safeguardingPostsLabel(
+        ['wwc_registration_officer', 'child_safety_officer'],
+        ['wwc_registration_officer'],
+      ),
+    ).toBe('Child Safety Officer · WWC Registration Officer (acting)');
+  });
+
   it('names each post the way Administration > Safeguarding does', () => {
     expect(safeguardingPostLabels).toEqual({
       child_safety_officer: 'Child Safety Officer',

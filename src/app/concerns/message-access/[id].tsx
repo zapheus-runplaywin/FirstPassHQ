@@ -15,7 +15,7 @@ import {
   MIN_NOTE,
   type MessageAccessLogEntry,
   type MessageAccessRequest,
-  postLabels,
+  requestedPostLabel,
   requestStatusLine,
   timeLeft,
 } from '@/lib/message-access';
@@ -137,7 +137,7 @@ export default function MessageAccessRequestScreen() {
         <Detail label="How they’re involved" value={linkLabels[request.subject_link]} />
         <Detail
           label="Asked by"
-          value={`${request.requested_by_name} (${postLabels[request.requested_post]}), ${localDay(request.created_at)}`}
+          value={`${request.requested_by_name} (${requestedPostLabel(request)}), ${localDay(request.created_at)}`}
         />
         <Detail label="Why" value={request.reason} />
         <ThemedText

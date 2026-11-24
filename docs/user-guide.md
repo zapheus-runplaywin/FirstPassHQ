@@ -66,6 +66,10 @@ The Child Safety Officer also sees every athlete's wellbeing flags: the day and 
 each low check-in, never the answers or notes (see [Wellbeing flags](#wellbeing-flags)), and,
 when the club turns on Training load flags, training load patterns for children (see [Training load
 patterns](#training-load-patterns)).
+While nobody named in a post can act (none named, or every one's check has lapsed or they're stood
+down), each admin with a current check acts in it, with the post's full powers, and is shown as
+**Child Safety Officer (acting)**, **Complaints Manager (acting)** or **WWC Registration Officer
+(acting)** until someone is named (see [Acting in an empty post](#acting-in-an-empty-post)).
 
 **Squads and teams.** Each season, members join a **squad** (at West Coast Thunder: Mixed Open
 Squad, Open Squad, 20 & Under Squad, 17 & Under Squad, Lightning Academy). At selections, admins name
@@ -158,7 +162,8 @@ What each role sees on its home screen:
 | Selection assessments (when turned on) | In a round: see the criteria, the dates the club shares, and feedback the head coach shares with them (no replies) | See them for their child under 18, with the same feedback | On a round's panel: read the panel's observations and add their own, never about their own child; write and sign their own summary of each athlete, and see the other selectors' signed summaries once theirs is signed; see the round's dates, with to-dos as they come close; see each athlete's own stats from games played in the round. The head coach can reopen a signed summary, and writes and shares feedback for each athlete |  |  |  | On a panel if an admin adds them, with a current check | Set criteria and recommendations, open rounds, choose panels, set the round's dates and mark them done, see who has signed their summaries and reopen one, see who was given feedback and when (never the words), build the audit report; read assessments and summaries only if on the panel |
 | Administration                         |         |                 |              |            |               |               |         |       ✓       |
 
-‡‡ The Child Safety Officer or the Complaints Manager asks; an admin who isn't the one asking, the
+‡‡ The Child Safety Officer or the Complaints Manager (or an admin acting in the post while nobody
+named can act) asks; an admin who isn't the one asking, the
 member it's about or the person the concern is about answers. Admins don't otherwise read
 messages they didn't send or get (see [Reading a member's messages for a concern](#reading-a-members-messages-for-a-concern)).
 
@@ -598,7 +603,9 @@ the club's Child Safety Officer sees "Statistician" and, beneath it, "Child Safe
   season's teams you play in. It goes when the season is archived or you move teams.
 - **Safeguarding posts**: "Child Safety Officer", "Complaints Manager" or "WWC Registration
   Officer", when an admin names you in **Administration > Safeguarding**. A post you hold but
-  can't act in right now (your check has lapsed, or you're stood down) isn't shown.
+  can't act in right now (your check has lapsed, or you're stood down) isn't shown. An admin
+  acting in a post nobody named can act in sees it with "(acting)", such as "Child Safety Officer
+  (acting)".
 
 Titles come from what admins and coaches set, so there's nothing to fill in.
 
@@ -2492,7 +2499,9 @@ green counts on the card for new, in progress and recently closed concerns: the 
 concern's notes and steps (**Referred to** the governing body or Police, **Being looked into**,
 **Closed** with a note), and **Export the register as a PDF**. A concern about a child shows the
 child's verified parents and guardians, with their email. A concern about you is never shown
-to you. Whichever post you hold shows as a title under your roles on the home screen. The Child Safety Officer also has **Wellbeing flags** (see [Wellbeing
+to you. Whichever post you hold shows as a title under your roles on the home screen. While nobody
+named in a post can act, the club's admins act in it, shown as "(acting)" (see [Acting in an empty
+post](#acting-in-an-empty-post)). The Child Safety Officer also has **Wellbeing flags** (see [Wellbeing
 flags](#wellbeing-flags)). If your check lapses, Concerns, wellbeing flags and their to-dos go
 until a renewed check is recorded.
 
@@ -4260,6 +4269,31 @@ Manager) only when nobody in that post can act.
 Each of the three sees their post as a title under their roles on their home screen, such as
 "Statistician" with "Child Safety Officer" beneath it, and loses the title at the same time.
 
+#### Acting in an empty post
+
+While nobody named in a post can act (nobody is named, or every one named has a lapsed check or is
+stood down), each admin with a current check (or an exemption that applies) who isn't stood down
+acts in it, with the post's full powers, so the club is never without one:
+
+- **Child Safety Officer (acting)**: everything the Child Safety Officer does, including
+  [Wellbeing flags](#wellbeing-flags), [Training load patterns](#training-load-patterns) and
+  asking to [read a member's messages for a concern](#reading-a-members-messages-for-a-concern).
+- **Complaints Manager (acting)**: asking to read a member's messages for a concern.
+- **WWC Registration Officer (acting)**: the title only, since admins already keep the club's
+  check records.
+
+Admins see concerns whether or not they act, as always. Acting shows as "(acting)" everywhere:
+the title under your roles on the home screen, the club's contacts members see when they raise a
+concern ("Child Safety Officer: Alex Admin (acting)"), and on any request to read messages you
+make while acting, which is kept that way for good. An admin without a current check doesn't act.
+Acting ends the moment someone named in the post can act again, in that post only. Your to-do
+list keeps asking you to name a Child Safety Officer or Complaints Manager while you act, because
+acting is a stopgap: the posts exist so concerns don't rest with the admins alone. A concern
+about you is still never shown to you, acting or not.
+
+<img src="user-guide/home-titles-acting.png" width="210" alt="An admin's home screen with Child Safety Officer (acting), Complaints Manager (acting) and WWC Registration Officer (acting) under Admin">
+<img src="user-guide/contacts-acting.png" width="210" alt="Raise a concern listing the admin as Child Safety Officer (acting) and Complaints Manager (acting)">
+
 The **WWC Registration Officer** is an admin or committee member with a current check (or an
 exemption that applies) who keeps
 the club's Working With Children Check records, registers members' cards with the club through
@@ -4424,7 +4458,8 @@ Nobody reads messages they didn't send or get, admins included. When a concern n
 **Child Safety Officer** or the **Complaints Manager** (any of them, if the club has named more than
 one) can ask to read one member's messages, and an admin answers.
 
-**Asking** (the Child Safety Officer or the Complaints Manager): open an open concern and tap
+**Asking** (the Child Safety Officer or the Complaints Manager, or an admin [acting in the
+post](#acting-in-an-empty-post), shown on the request as "(acting)"): open an open concern and tap
 **Ask to read messages**. Choose whose messages: someone the concern is about (each is offered on
 their own), who raised it (unless
 they hid their name) or **Someone else involved** (search for them and say how in the reason).
@@ -4535,7 +4570,7 @@ once saved, only replaced or removed, and anyone who gets it wrong five times in
 | Volunteer exemptions and declarations | The volunteer (their own) and admins, and committee members with a current check in the Working With Children Checks report (read only). Kept under the member's name if they delete their account; the exemption ends that day. |
 | Temporary helpers' task, dates and policy acceptance | The volunteer and admins. Temporary helpers see nothing of the club's members, squads, calendar or messages. If a helper deletes their account, their policy acceptance and any exemption declaration are kept under their name; their task and dates go with the account. |
 | Concerns                | The Child Safety Officers, the Complaints Managers and admins, never anyone a concern is about when they were named from the list (a concern can name up to 10 people, and none of them sees it) (a concern that only describes someone in words is not hidden from anyone who handles concerns). Whoever raised it sees its status. A hidden name is never shown to them. The traffic-light counts on the Concerns card follow the same rule: counts only, and never a concern about the person looking. |
-| Requests to read a member's messages, and who read what | The person who asked, admins and the Child Safety Officers and Complaints Managers, never the member whose messages were asked for or anyone the concern is about. Approval opens the messages to the person who asked only, for 24 hours. Every list and message opened is logged with the request, apart from the record views parents read. Never removed. |
+| Requests to read a member's messages, and who read what | The person who asked, admins and the Child Safety Officers and Complaints Managers (including admins [acting in an empty post](#acting-in-an-empty-post), whose requests say "(acting)"), never the member whose messages were asked for or anyone the concern is about. Approval opens the messages to the person who asked only, for 24 hours. Every list and message opened is logged with the request, apart from the record views parents read. Never removed. |
 | A child's parents and guardians on a concern | The Child Safety Officers, the Complaints Managers and admins, on a concern naming that child under 18 (each child's, when it names several): verified parents and guardians only, with their email, never to anyone the concern is about. Each look is kept with the concern for those who handle it, not in the child's record views. |
 | Safeguarding contacts   | Everyone signed in, including guests and people waiting for approval.                                                       |
 | Committee checks date   | Everyone signed in. Only admins change it, and only to bring it forward; who changed it and when is kept. |
@@ -4546,8 +4581,8 @@ once saved, only replaced or removed, and anyone who gets it wrong five times in
 | Survey totals shared with a team | When a coach, manager or captain shares a poll's results with the squad or team: everyone it went to and their parents or guardians, once results show. Only how many picked each choice and average ratings: never names, written answers or who has answered. |
 | Who has answered a survey | Named surveys: whoever can see the results sees who hasn't answered yet. Anonymous and name-optional surveys: only how many have answered. Each member sees whether they've answered themselves. |
 | Daily check-in answers, notes and training sessions | The athlete, their guardians and their coaches. For an athlete under 18, their coaches only once a parent or guardian consents, and until then their check-ins count in no average. The committee, physios and admins see only group averages of check-in answers, hidden below 3 check-ins (over three days, in Trends), and nothing of training sessions; teammates see none. |
-| Training load flags (when turned on) | The athlete (their own flags, gently worded) and their coaches, who also see the numbers and each other's notes. For an athlete under 18, coaches only once a parent or guardian consents to check-ins. Parents and guardians see only that a coach talked with their child, when and what about, never the flags, numbers or note. The Child Safety Officer sees patterns for under 18s, not numbers or notes. The committee, managers, physios and admins see none. |
-| Wellbeing flags | Only the Child Safety Officer: for every athlete, selected or not, the day and lowest score of each check-in scoring 2 or less in the last 14 days, never the answers or notes. Under 18s only once a parent or guardian consents to check-ins. |
+| Training load flags (when turned on) | The athlete (their own flags, gently worded) and their coaches, who also see the numbers and each other's notes. For an athlete under 18, coaches only once a parent or guardian consents to check-ins. Parents and guardians see only that a coach talked with their child, when and what about, never the flags, numbers or note. The Child Safety Officer (or admins acting in the post) sees patterns for under 18s, not numbers or notes. The committee, managers, physios and admins see none. |
+| Wellbeing flags | Only the Child Safety Officer (or, while nobody named can act, admins [acting in the post](#acting-in-an-empty-post)): for every athlete, selected or not, the day and lowest score of each check-in scoring 2 or less in the last 14 days, never the answers or notes. Under 18s only once a parent or guardian consents to check-ins. |
 | Injuries and documents  | For an athlete under 18 whose parents haven't given consent for injuries: only the athlete, their guardians and admins. Otherwise the athlete, their guardians, their coaches, the physios who look after them (the Head Physio and physios in their squad or team), the committee (or only the committee members the club chose under **Injuries are seen by**) and admins. For an athlete under 18, only committee members with a current Working With Children Check or a parent volunteer exemption, and admins unless their own check has been missing or expired for over 30 days. Managers don't see injuries, including ones they log. A coach, manager or physio who logs an injury sees it only as their role already allows. Whoever takes attendance (coaches, managers, the committee and admins) sees only that an athlete is **Injured** and their expected return date, whatever the consent. While a clearance waits for the committee, any committee member or admin who could accept it can share its documents; everyone else views them in the app. |
 | Medical and emergency details | The athlete; an under 18's verified parents and guardians, who keep them (an athlete 18 or over keeps their own); and the coaches, managers and physios of the athlete's current squads and teams (the Head Physio for every athlete), for an under 18 only once a parent or guardian has given consent for injuries and health information. Not admins or the committee. Each view by a coach, manager or physio is recorded, and the athlete 18 or over, or an under 18's parents and guardians, see who and when. Checked once a year by whoever keeps them; admins see who has checked and when, but not the details. Removed when nobody has checked them for the club's chosen time (Record keeping), and deleted with the athlete's account. |
 | Who opened injury documents | The athlete, their guardians and admins: every view and share, by whom, their role and when, and each photo consent. |
@@ -4622,7 +4657,10 @@ handling it the child's verified parents and guardians, so they reach the right 
 is kept with the concern, not in the child's record views, so a parent the concern may be about
 is never tipped off. The Child Safety Officer, Complaints Manager and WWC Registration Officer
 each see their post as a title on their own home screen, so they always know the post is theirs
-and while they can act in it.
+and while they can act in it. A post is never left empty: while nobody named in it can act, each
+admin with a current check acts in it with its full powers, marked "(acting)" on their home
+screen, in the contacts members see and on any request to read messages they make, until the club
+names someone (see [Acting in an empty post](#acting-in-an-empty-post)).
 
 ### Who counts as a child
 

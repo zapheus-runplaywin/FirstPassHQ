@@ -31,9 +31,34 @@ export function safeguardingPostsFrom(row: unknown): SafeguardingPost[] {
   return ORDER.filter((post) => held[post] === true);
 }
 
-/** "Child Safety Officer · WWC Registration Officer", or '' for none. */
-export function safeguardingPostsLabel(posts: SafeguardingPost[]): string {
+/**
+ * Every post the member holds or acts in, in the fixed order. An admin acts
+ * in a post (`my_acting_safeguarding_posts()`, read with
+ * `safeguardingPostsFrom`) while nobody named in it can act, with its full
+ * powers, until someone is named (Matt, 24 November 2026).
+ */
+export function heldOrActing(
+  held: SafeguardingPost[],
+  acting: SafeguardingPost[],
+): SafeguardingPost[] {
+  return ORDER.filter((post) => held.includes(post) || acting.includes(post));
+}
+
+/** "Child Safety Officer (acting)" for a post an admin acts in, else its name. */
+export function safeguardingPostTitle(post: SafeguardingPost, acting: SafeguardingPost[] = []) {
+  const label = safeguardingPostLabels[post];
+  return acting.includes(post) ? `${label} (acting)` : label;
+}
+
+/**
+ * "Child Safety Officer · WWC Registration Officer", or '' for none. A post in
+ * `acting` reads "Child Safety Officer (acting)".
+ */
+export function safeguardingPostsLabel(
+  posts: SafeguardingPost[],
+  acting: SafeguardingPost[] = [],
+): string {
   return ORDER.filter((post) => posts.includes(post))
-    .map((post) => safeguardingPostLabels[post])
+    .map((post) => safeguardingPostTitle(post, acting))
     .join(' · ');
 }

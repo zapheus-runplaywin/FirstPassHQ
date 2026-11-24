@@ -819,6 +819,26 @@ describe('buildTodos', () => {
       ]);
     });
 
+    it('asks for an empty safeguarding post to be named, saying admins act meanwhile', () => {
+      const list = todos({
+        safety: safety({ child_safety_officer_missing: 1, complaints_manager_missing: 1 }),
+      });
+      expect(list.map((t) => [t.key, t.title, t.detail, t.href])).toEqual([
+        [
+          'child-safety-officer',
+          'Name a Child Safety Officer',
+          'Nobody with a current check holds it, so admins act in it. Under Safeguarding',
+          '/admin/safeguarding',
+        ],
+        [
+          'complaints-manager',
+          'Name a Complaints Manager',
+          'Nobody with a current check holds it, so admins act in it. Under Safeguarding',
+          '/admin/safeguarding',
+        ],
+      ]);
+    });
+
     it('opens the people each member to-do is about, never the whole member list', () => {
       const list = todos({
         pendingCount: 2,
