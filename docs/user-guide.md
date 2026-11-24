@@ -4592,9 +4592,10 @@ admins after 7 days.
   named in the concern, or can't act (no current check, or stood down), is passed over straight
   away and the next step is reached; the concern notes **Passed over** with the reason.
 - A chain can't loop: it can't come back to its own post, name a post or person twice (A to B, B
-  to C, C to B), or have anything after Admins. Each post's chain is separate, so the Child
-  Safety Officer can back up the Complaints Manager and the Complaints Manager can back up the
-  Child Safety Officer: a concern only ever follows its own lead post's chain.
+  to C, C to B), or have anything after Admins. One post can back up the other, such as the Child
+  Safety Officer in the Complaints Manager's chain, but not both ways: while the Child Safety
+  Officer backs up the Complaints Manager, the Child Safety Officer's chain can't name the
+  Complaints Manager, and the screen says why.
 - Someone reached by name (not a post holder or admin) sees **Concerns** on their home screen
   with only the concerns escalated to them, while they stay open. They can record steps but can't
   change who a concern is about or ask to read messages. Each time they open one, it's kept with

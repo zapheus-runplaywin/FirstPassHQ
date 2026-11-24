@@ -154,14 +154,32 @@ function node(step: ChainStep) {
   return step.post ?? step.person;
 }
 
+/** The other lead post. */
+export function otherLead(lead: LeadPost): LeadPost {
+  return lead === 'complaints_manager' ? 'child_safety_officer' : 'complaints_manager';
+}
+
+/**
+ * Whether the other post's chain already names this chain's post: then this
+ * chain can't name the other post back. One post may back up the other, but
+ * not both ways (Matt, 24 November 2026).
+ */
+function backedUpByOther(lead: LeadPost, otherSteps: ChainStep[]) {
+  return otherSteps.some((s) => s.post === lead);
+}
+
 /**
  * The posts the next step could name: never the chain's own lead post, nothing
- * already in the chain, and nothing at all once Admins are in it.
+ * already in the chain, not the other post when it already has this one as
+ * its backup, and nothing at all once Admins are in it.
  */
-export function postsForNextStep(lead: LeadPost, steps: ChainStep[]): StepPost[] {
+export function postsForNextStep(lead: LeadPost, steps: ChainStep[], otherSteps: ChainStep[] = []): StepPost[] {
   if (steps.some((s) => s.post === 'admins') || steps.length >= MAX_STEPS) return [];
   return (['child_safety_officer', 'complaints_manager', 'admins'] as StepPost[]).filter(
-    (p) => p !== lead && !steps.some((s) => s.post === p),
+    (p) =>
+      p !== lead &&
+      !steps.some((s) => s.post === p) &&
+      !(p === otherLead(lead) && backedUpByOther(lead, otherSteps)),
   );
 }
 
@@ -173,9 +191,10 @@ export function canAddPerson(steps: ChainStep[]) {
 /**
  * What's wrong with a chain, in the database's words, or null: at most 4
  * steps, waits of 1 to 30 days, nothing twice, never back to its own lead
- * post, and nothing after Admins.
+ * post, not the other post when it already has this one as its backup, and
+ * nothing after Admins.
  */
-export function chainProblem(lead: LeadPost, steps: ChainStep[]): string | null {
+export function chainProblem(lead: LeadPost, steps: ChainStep[], otherSteps: ChainStep[] = []): string | null {
   if (steps.length > MAX_STEPS) return 'A chain has at most 4 steps';
   const seen = new Set<string>([lead]);
   for (const [i, step] of steps.entries()) {
@@ -183,6 +202,9 @@ export function chainProblem(lead: LeadPost, steps: ChainStep[]): string | null 
       return 'Wait between 1 and 30 days before each step';
     }
     if (seen.has(node(step))) return 'A chain can’t come back to a post or person already in it';
+    if (step.post === otherLead(lead) && backedUpByOther(lead, otherSteps)) {
+      return `${POST_LABELS[lead]} already backs up the ${POST_LABELS[otherLead(lead)]}, so it can’t be the other way round too`;
+    }
     seen.add(node(step));
     if (step.post === 'admins' && i < steps.length - 1) {
       return 'Admins are the last stop, so nothing can come after them';

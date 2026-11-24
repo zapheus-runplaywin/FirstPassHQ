@@ -18,6 +18,7 @@ import {
   type ConcernTimes,
   DEFAULT_CONCERN_TIMES,
   type LeadPost,
+  otherLead,
   POST_LABELS,
   postsForNextStep,
   type StepPost,
@@ -110,7 +111,7 @@ export default function ConcernTimesScreen() {
   }
 
   async function saveChain(lead: LeadPost, steps: ChainStep[]) {
-    const problem = chainProblem(lead, steps);
+    const problem = chainProblem(lead, steps, chains[otherLead(lead)]);
     if (problem) {
       setError(problem);
       return;
@@ -174,6 +175,7 @@ export default function ConcernTimesScreen() {
           key={tab}
           lead={tab}
           steps={chains[tab]}
+          otherSteps={chains[otherLead(tab)]}
           escalateDays={times.concern_escalate_days}
           people={people}
           busy={busy}
@@ -188,6 +190,7 @@ export default function ConcernTimesScreen() {
 function ChainEditor({
   lead,
   steps: savedSteps,
+  otherSteps,
   escalateDays,
   people,
   busy,
@@ -195,6 +198,8 @@ function ChainEditor({
 }: {
   lead: LeadPost;
   steps: ChainStep[];
+  /** The other post's saved chain: if it names this post, this one can't name it back. */
+  otherSteps: ChainStep[];
   escalateDays: number;
   people: PickablePerson[];
   busy: boolean;
@@ -211,7 +216,9 @@ function ChainEditor({
     setSteps(savedSteps);
   }
 
-  const posts = postsForNextStep(lead, steps);
+  const posts = postsForNextStep(lead, steps, otherSteps);
+  const other = otherLead(lead);
+  const backsUpOther = otherSteps.some((s) => s.post === lead);
   const personOk = canAddPerson(steps);
   const waitDays = /^\d+$/.test(wait.trim()) ? Number(wait) : NaN;
   const changed = JSON.stringify(chainPayload(steps)) !== JSON.stringify(chainPayload(savedSteps));
@@ -241,6 +248,11 @@ function ChainEditor({
         whose people are all named in the concern, or can’t act, is passed over straight away and
         noted on the concern. A chain never comes back to its own post or to anyone already in it.
       </ThemedText>
+      {backsUpOther ? (
+        <ThemedText type="small" themeColor="textSecondary">
+          {`The ${LEAD_LABELS[lead]} already backs up the ${LEAD_LABELS[other]}, so this chain can’t name the ${LEAD_LABELS[other]}: one can back up the other, but not both ways.`}
+        </ThemedText>
+      ) : null}
 
       {steps.map((s, i) => (
         <Card key={`${s.post ?? s.person}`} testID={`chain-step-${i + 1}`}>

@@ -188,10 +188,24 @@ describe('the escalation chains', () => {
     ]);
   });
 
-  it('lets the Child Safety Officer’s chain name the Complaints Manager as backup', async () => {
+  it('won’t let the Child Safety Officer’s chain name the Complaints Manager they already back up', async () => {
     await openTimes();
     await press('Child Safety Officer chain');
     expect(screen.getByText('A concern the Child Safety Officer leads, once Urgent: Admins after 7 days.')).toBeTruthy();
+    expect(
+      screen.getByText(
+        'The Child Safety Officer already backs up the Complaints Manager, so this chain can’t name the Complaints Manager: one can back up the other, but not both ways.',
+      ),
+    ).toBeTruthy();
+    const add = within(screen.getByText('Add step 1').parent!);
+    expect(add.queryByText('Complaints Manager')).toBeNull();
+    expect(add.getByText('Admins')).toBeTruthy();
+  });
+
+  it('lets the Child Safety Officer’s chain name the Complaints Manager when it isn’t the other way round', async () => {
+    await openTimes({ admin_escalation_chains: [] });
+    await press('Child Safety Officer chain');
+    expect(screen.queryByText(/so this chain can’t name/)).toBeNull();
     await press('Complaints Manager');
     await press('Add step');
     await press('Save chain');
