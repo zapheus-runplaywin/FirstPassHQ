@@ -149,7 +149,7 @@ insert into storage.objects (bucket_id, name) values
 update public.club_settings set retention_enabled = false where id;
 select pg_temp.ok('switch off: no documents listed', (select count(*) = 0 from public.expired_injury_documents()), true);
 select pg_temp.ok('switch off: purge removes nothing', public.purge_expired_injuries() = 0, true);
-select pg_temp.ok('switch off: every injury kept', (select count(*) = 7 from public.injuries where id::text like 'd1%' or id::text like 'c2%'), true);
+select pg_temp.ok('switch off: every injury kept', (select count(*) = 7 from public.injuries where id::text like 'd1000000-%' or id::text like 'c2000000-%'), true);
 select pg_temp.ok('switch off: the 13-month injury the old rule removed is kept', (select count(*) = 1 from public.injuries where id = 'd1000000-0000-0000-0000-000000000001'), true);
 
 -- On, with the default 7 years.
