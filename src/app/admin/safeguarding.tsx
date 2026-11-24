@@ -11,6 +11,7 @@ import { Spacing } from '@/constants/theme';
 import { useTheme } from '@/hooks/use-theme';
 import { isMinor } from '@/lib/age';
 import { PROFILE_COLUMNS } from '@/lib/auth';
+import { formatPhone, phoneProblem, typePhone } from '@/lib/phone';
 import {
   type PickablePerson,
   withoutPerson,
@@ -63,6 +64,10 @@ export default function SafeguardingScreen() {
   const [savedWwcOfficers, setSavedWwcOfficers] = useState<PickablePerson[]>([]);
   const [bodyName, setBodyName] = useState('');
   const [bodyPhone, setBodyPhone] = useState('');
+  // Whether to say what's wrong with the number: not while it's being typed,
+  // but once the field is left, and straight away for one saved before the
+  // app checked numbers (an email address, say), so an admin sees to fix it.
+  const [showPhoneProblem, setShowPhoneProblem] = useState(false);
   const [bodyUrl, setBodyUrl] = useState('');
   const [policyUrl, setPolicyUrl] = useState('');
   const [minorPhotos, setMinorPhotos] = useState(false);
@@ -147,7 +152,8 @@ export default function SafeguardingScreen() {
     setSavedStatisticianFrom(statsFrom);
     const contacts = contactsResult.data as SafeguardingContacts | null;
     setBodyName(contacts?.governing_body_name ?? '');
-    setBodyPhone(contacts?.governing_body_phone ?? '');
+    setBodyPhone(formatPhone(contacts?.governing_body_phone ?? ''));
+    setShowPhoneProblem(true);
     setBodyUrl(contacts?.governing_body_url ?? '');
     setPolicyUrl(contacts?.policy_url ?? '');
     const exempt = new Set(
@@ -184,14 +190,21 @@ export default function SafeguardingScreen() {
     }, [load]),
   );
 
+  const bodyPhoneProblem = phoneProblem(bodyPhone);
+
   async function save() {
+    if (bodyPhoneProblem) {
+      setShowPhoneProblem(true);
+      setError(`Governing body phone: ${bodyPhoneProblem}`);
+      return;
+    }
     setBusy(true);
     setError(null);
     const { error: rpcError } = await supabase.rpc('admin_set_safeguarding_contacts', {
       p_child_safety_officer_ids: officers.map((p) => p.id),
       p_complaints_manager_ids: managers.map((p) => p.id),
       p_governing_body_name: bodyName,
-      p_governing_body_phone: bodyPhone,
+      p_governing_body_phone: formatPhone(bodyPhone),
       p_governing_body_url: bodyUrl,
       p_policy_url: policyUrl,
     });
@@ -389,10 +402,20 @@ export default function SafeguardingScreen() {
         <TextField
           label="Phone or hotline"
           value={bodyPhone}
-          onChangeText={setBodyPhone}
+          onChangeText={(text) => {
+            setBodyPhone(typePhone(bodyPhone, text));
+            setShowPhoneProblem(false);
+          }}
+          onBlur={() => {
+            setBodyPhone(formatPhone(bodyPhone));
+            setShowPhoneProblem(true);
+          }}
+          placeholder="For example, 1800 123 456"
           keyboardType="phone-pad"
+          autoComplete="tel"
           maxLength={30}
         />
+        {showPhoneProblem && bodyPhoneProblem ? <ErrorText>{bodyPhoneProblem}</ErrorText> : null}
         <TextField
           label="Complaints form link"
           value={bodyUrl}

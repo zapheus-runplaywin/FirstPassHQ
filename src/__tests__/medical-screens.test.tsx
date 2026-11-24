@@ -138,6 +138,22 @@ describe('an athlete 18 or over, their own details', () => {
     open.mockRestore();
   });
 
+  it('shows each number spaced for reading, local or from overseas (25 November 2026)', async () => {
+    await openMedical(
+      'athlete',
+      medical({
+        emergency_contacts: [
+          { name: 'Sam Sample', relationship: 'Aunt', phone: '0400000001' },
+          { name: 'Ali Sample', relationship: 'Dad', phone: '(08)91234567' },
+          { name: 'Kim Sample', relationship: 'Mum', phone: '+6491234567' },
+        ],
+      }),
+    );
+    expect(screen.getByText('0400 000 001')).toBeTruthy();
+    expect(screen.getByText('(08) 9123 4567')).toBeTruthy();
+    expect(screen.getByText('+64 9 123 4567')).toBeTruthy();
+  });
+
   it('changes and saves every section, leaving out blank contacts', async () => {
     await openMedical('athlete', medical());
     await fireEvent.press(screen.getByText('Change details'));

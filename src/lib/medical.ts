@@ -113,9 +113,7 @@ export function contactsError(contacts: EmergencyContact[]): string | null {
 }
 
 /** A phone number as a link the phone can call. */
-export function telLink(phone: string) {
-  return `tel:${phone.replace(/[^0-9+]/g, '')}`;
-}
+export { telLink } from '@/lib/phone';
 
 /** Whether anything beyond the contacts has been written down. */
 export function hasHealthNotes(profile: Pick<MedicalProfile, MedicalSectionKey>) {

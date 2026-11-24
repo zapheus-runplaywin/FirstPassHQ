@@ -7,6 +7,7 @@ import { ThemedText } from '@/components/themed-text';
 import { Button, Card, ErrorText, TextField } from '@/components/ui';
 import { Spacing } from '@/constants/theme';
 import { formatDateTime } from '@/lib/format';
+import { formatPhone } from '@/lib/phone';
 import {
   checkLine,
   cleanContacts,
@@ -245,7 +246,7 @@ export default function MedicalScreen() {
               accessibilityLabel={`Call ${c.name}`}
               onPress={() => Linking.openURL(telLink(c.phone))}>
               <ThemedText type="small" themeColor="tint">
-                {c.phone}
+                {formatPhone(c.phone)}
               </ThemedText>
             </Pressable>
           </Card>

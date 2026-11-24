@@ -210,7 +210,8 @@ describe('Safeguarding settings', () => {
     expect(within(fieldGroup('Complaints Manager')).getByText('Sample admin  ✕')).toBeTruthy();
     expect(within(fieldGroup('WWC Registration Officer')).getByText('Sample admin  ✕')).toBeTruthy();
     expect(input('Name').props.value).toBe('Netball WA');
-    expect(input('Phone or hotline').props.value).toBe('08 9000 0000');
+    // Saved as "08 9000 0000"; shown spaced the Australian way (25 November 2026).
+    expect(input('Phone or hotline').props.value).toBe('(08) 9000 0000');
     expect(input('Complaints form link').props.value).toBe('https://netballwa.example/complaints');
     expect(input('Child safeguarding policy (link)').props.value).toBe('https://club.example/safeguarding');
     expect(input('Privacy policy (link)').props.value).toBe('https://club.example/privacy');
@@ -338,6 +339,79 @@ describe('Safeguarding settings', () => {
     expect(screen.getByText('That’s the most (5). Take someone off to add another.')).toBeTruthy();
     await fireEvent.press(screen.getByLabelText('Take Sample a off Complaints Manager'));
     expect(screen.queryByText('That’s the most (5). Take someone off to add another.')).toBeNull();
+  });
+
+  describe('governing body phone (25 November 2026)', () => {
+    const PHONE = 'Phone or hotline';
+    const blur = async () => {
+      await fireEvent(input(PHONE), 'blur');
+    };
+
+    it('spaces a number as it is typed and saves it spaced', async () => {
+      await openSafeguarding();
+      await type(PHONE, '');
+      for (const digit of '0412345678') {
+        await type(PHONE, `${input(PHONE).props.value as string}${digit}`);
+      }
+      expect(input(PHONE).props.value).toBe('0412 345 678');
+      await type(PHONE, '0891234567');
+      expect(input(PHONE).props.value).toBe('(08) 9123 4567');
+      await type(PHONE, '+442079460958');
+      expect(input(PHONE).props.value).toBe('+44 20 7946 0958');
+      await type(PHONE, '+61891234567');
+      expect(input(PHONE).props.value).toBe('+61 8 9123 4567');
+      await saveSafeguarding();
+      expect(callsTo('admin_set_safeguarding_contacts')[0].p_governing_body_phone).toBe('+61 8 9123 4567');
+    });
+
+    it('refuses an email address, says why, and saves nothing', async () => {
+      await openSafeguarding();
+      await type(PHONE, 'safe@netballwa.com.au');
+      // Not while typing...
+      expect(screen.queryByText(/looks like an email address/)).toBeNull();
+      // ...but once the field is left.
+      await blur();
+      expect(
+        screen.getByText('That looks like an email address. Enter a phone number, such as 0412 345 678.'),
+      ).toBeTruthy();
+      await saveSafeguarding();
+      expect(rpcNames().filter((n) => n.startsWith('admin_set_'))).toEqual([]);
+      expect(
+        screen.getByText(
+          'Governing body phone: That looks like an email address. Enter a phone number, such as 0412 345 678.',
+        ),
+      ).toBeTruthy();
+      expect(screen).toHavePathname('/admin/safeguarding');
+    });
+
+    it('asks for an area code, and refuses words', async () => {
+      await openSafeguarding();
+      await type(PHONE, '9123 4567');
+      await blur();
+      expect(screen.getByText('Add the area code, such as (08) 9123 4567.')).toBeTruthy();
+      await type(PHONE, 'ring the office');
+      await blur();
+      expect(screen.getByText('A phone number has only digits and spaces, such as 0412 345 678.')).toBeTruthy();
+    });
+
+    it('flags an email address saved before the check straight away, and keeps it until fixed', async () => {
+      await openSafeguarding({ safeguarding_contacts: { ...SAVED_CONTACTS, governing_body_phone: 'old@example.com' } });
+      expect(input(PHONE).props.value).toBe('old@example.com');
+      expect(screen.getByText(/looks like an email address/)).toBeTruthy();
+      await type(PHONE, '1800955900');
+      await blur();
+      expect(screen.queryByText(/looks like an email address/)).toBeNull();
+      await saveSafeguarding();
+      expect(callsTo('admin_set_safeguarding_contacts')[0].p_governing_body_phone).toBe('1800 955 900');
+    });
+
+    it('can be left blank', async () => {
+      await openSafeguarding();
+      await type(PHONE, '');
+      await blur();
+      await saveSafeguarding();
+      expect(callsTo('admin_set_safeguarding_contacts')[0].p_governing_body_phone).toBe('');
+    });
   });
 
   it('finds people by email as well as name', async () => {
