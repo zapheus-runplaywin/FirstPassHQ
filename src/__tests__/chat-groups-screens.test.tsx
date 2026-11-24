@@ -577,16 +577,25 @@ describe('admins’ chat groups', () => {
         },
       },
     );
-    expect(screen.getByText('3 people now. It follows squad and team changes.')).toBeTruthy();
+    expect(screen.getByText('3 people now. It follows squad, team and post changes.')).toBeTruthy();
     expect(screen.getByText('⚠ This group includes members under 18')).toBeTruthy();
     expect(screen.getByText(/1 member is under 18/)).toBeTruthy();
     await fireEvent.changeText(screen.getByPlaceholderText('Such as Selectors'), 'Selectors');
-    // Club roles until a team is chosen, then only roles people hold in teams.
-    expect(screen.getByText('Committee')).toBeTruthy();
-    await fireEvent.press(screen.getByText('Committee'));
+    // Club roles and posts sit beside squads and teams (Matt, 24 November 2026).
+    expect(screen.queryByText('Only these roles in them (optional)')).toBeNull();
+    await fireEvent.press(screen.getByText('Admins'));
+    await fireEvent.press(screen.getByText('Child Safety Officer'));
     await fireEvent.press(screen.getByText(TEAM.name));
-    expect(screen.queryByText('Committee')).toBeNull();
-    await fireEvent.press(screen.getByText('Coaches'));
+    // Once a squad or team is chosen, its roles can be narrowed too.
+    expect(screen.getByText('Only these roles in them (optional)')).toBeTruthy();
+    const coaches = screen.getAllByText('Coaches');
+    expect(coaches).toHaveLength(2);
+    await fireEvent.press(coaches[1]);
+    expect(
+      screen.getByText(
+        `Coaches in ${TEAM.name}, all admins and the Child Safety Officer, plus 1 person`,
+      ),
+    ).toBeTruthy();
     // With an under 18 in it, the first Save only asks again.
     await fireEvent.press(screen.getByText('Save'));
     await settle();
@@ -601,8 +610,17 @@ describe('admins’ chat groups', () => {
         p_roles: ['coach'],
         p_team_ids: [TEAM.id],
         p_people: ['admin'],
+        p_club_roles: ['admin'],
+        p_posts: ['child_safety_officer'],
       },
     ]);
+    expect(rpcCalls('admin_chat_group_preview').at(-1)).toEqual({
+      p_roles: ['coach'],
+      p_team_ids: [TEAM.id],
+      p_people: ['admin'],
+      p_club_roles: ['admin'],
+      p_posts: ['child_safety_officer'],
+    });
     expect(back).toHaveBeenCalled();
     back.mockRestore();
   });
@@ -647,6 +665,74 @@ describe('admins’ chat groups', () => {
       { p_id: 'g-selectors', p_closed: true },
     ]);
     back.mockRestore();
+  });
+
+  it('opens a group saved before club roles sat beside squads with its roles as club roles', async () => {
+    const back = jest.spyOn(router, 'back').mockImplementation(() => {});
+    await openScreen(
+      'admin',
+      { 'admin/chat-groups/edit': AdminChatGroupEdit },
+      '/admin/chat-groups/edit?id=g-committee',
+      {
+        teams: [TEAM],
+        profiles: [{ id: 'admin', full_name: 'Sample admin', email: null }],
+      },
+      {
+        rpcs: {
+          admin_chat_groups: [
+            {
+              ...ADMIN_GROUP,
+              id: 'g-committee',
+              name: 'Committee chat',
+              roles: ['committee'],
+              team_ids: [],
+              people: [],
+              club_roles: [],
+              posts: ['complaints_manager'],
+            },
+          ],
+          admin_chat_group_preview: [{ member_count: 4, under_18_count: 0 }],
+        },
+      },
+    );
+    expect(screen.getByText('The committee and the Complaints Manager')).toBeTruthy();
+    expect(screen.queryByText('Only these roles in them (optional)')).toBeNull();
+    await fireEvent.press(screen.getByText('Save'));
+    await settle();
+    expect(rpcCalls('admin_save_chat_group')).toEqual([
+      {
+        p_id: 'g-committee',
+        p_name: 'Committee chat',
+        p_roles: [],
+        p_team_ids: [],
+        p_people: [],
+        p_club_roles: ['committee'],
+        p_posts: ['complaints_manager'],
+      },
+    ]);
+    back.mockRestore();
+  });
+
+  it('drops roles in squads when the last squad or team is taken off', async () => {
+    await openScreen(
+      'admin',
+      { 'admin/chat-groups/edit': AdminChatGroupEdit },
+      '/admin/chat-groups/edit?id=g-selectors',
+      {
+        teams: [TEAM],
+        profiles: [{ id: 'admin', full_name: 'Sample admin', email: null }],
+      },
+      {
+        rpcs: {
+          admin_chat_groups: [ADMIN_GROUP],
+          admin_chat_group_preview: [{ member_count: 5, under_18_count: 0 }],
+        },
+      },
+    );
+    expect(screen.getByText(`Coaches in ${TEAM.name}, plus 1 person`)).toBeTruthy();
+    await fireEvent.press(screen.getByText(TEAM.name));
+    expect(screen.queryByText('Only these roles in them (optional)')).toBeNull();
+    expect(screen.getByText('1 person')).toBeTruthy();
   });
 });
 

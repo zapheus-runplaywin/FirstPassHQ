@@ -1,6 +1,7 @@
--- Tests for 20261124600000_chat_groups.sql: chat groups in Messages. Run on a
--- database with the migrations and seed-members.sql loaded. Prints one line
--- per check.
+-- Tests for 20261124600000_chat_groups.sql and the migrations after it
+-- (hiding posts, showing new groups, club roles and posts): chat groups in
+-- Messages. Run on a database with the migrations and seed-members.sql
+-- loaded. Prints one line per check.
 --
 -- The rules under test, each for every kind of member, both ways:
 --   - the Chat groups switch is off until an admin turns it on;
@@ -16,7 +17,9 @@
 --     the coaches and the author's parents; the text is kept; coaches can
 --     show them again;
 --   - hiding a group marks its posts read without touching receipts;
---   - admins set up groups but don't read groups they aren't in;
+--   - admins set up groups but don't read groups they aren't in; their groups
+--     can add club roles and posts (which follow whoever is in them) to
+--     squads and teams;
 --   - nothing is ever deleted.
 --
 -- Sample Squad (a1): head coach Casey (11), assistant coaches Drew (12, lapsed
@@ -381,6 +384,55 @@ select pg_temp.fails('automatic groups can''t be closed', $s$select public.admin
 select public.admin_set_chat_group_closed(pg_temp.g('committee'), false);
 select pg_temp.as_member('22');
 select pg_temp.eq('opened again, Harper can post', pg_temp.post('reopened', 'committee', 'Back again'), 'posted');
+
+-- Club roles and posts alongside squads and teams (Matt, 24 November 2026:
+-- "We should be able to add non squad/team roles like admin and complaints
+-- manager or child safety officer").
+select pg_temp.ok('anon cannot save groups with club roles', has_function_privilege('anon', 'public.admin_save_chat_group(uuid, text, public.app_role[], uuid[], uuid[], public.app_role[], text[])', 'execute'), false);
+select pg_temp.ok('members can call the new save and preview (admins only inside)',
+  has_function_privilege('authenticated', 'public.admin_save_chat_group(uuid, text, public.app_role[], uuid[], uuid[], public.app_role[], text[])', 'execute')
+  and has_function_privilege('authenticated', 'public.admin_chat_group_preview(public.app_role[], uuid[], uuid[], public.app_role[], text[])', 'execute'), true);
+select pg_temp.as_member('11');
+select pg_temp.fails('a coach can''t set up a group with club roles', $s$select public.admin_save_chat_group(null, 'Mine', '{}', '{}', '{}', '{admin}', '{}')$s$, '%Only admins%');
+select pg_temp.fails('a coach can''t preview one', $s$select public.admin_chat_group_preview('{}', '{}', '{}', '{admin}', '{}')$s$, '%Only admins%');
+select pg_temp.as_member('01');
+select pg_temp.fails('guests can''t be a club role', $s$select public.admin_save_chat_group(null, 'Guests', '{}', '{}', '{}', '{guest}', '{}')$s$, '%don''t get messages%');
+select pg_temp.fails('only known posts', $s$select public.admin_save_chat_group(null, 'Odd', '{}', '{}', '{}', '{}', '{president}')$s$, '%Choose Child Safety Officer%');
+select pg_temp.fails('someone must still be chosen', $s$select public.admin_save_chat_group(null, 'Empty', '{}', '{}', '{}', '{}', '{}')$s$, '%Choose roles, posts%');
+select pg_temp.ok('roles in squads are ignored without squads', (select member_count = 0 from public.admin_chat_group_preview('{coach}', '{}', '{}', '{}', '{}')), true);
+-- The squad's coaches (Casey and Morgan; Drew's check has lapsed) and the
+-- club's admins.
+insert into grp values ('coaches admins', public.admin_save_chat_group(null, 'Coaches and admins', '{coach}', array[pg_temp.id('a1')], '{}', '{admin}', '{}'));
+select pg_temp.eq('squad coaches plus every admin', pg_temp.people('coaches admins'), '01,02,11,42');
+select pg_temp.ok('the admin screen lists its club roles', (select club_roles = '{admin}' and roles = '{coach}' and posts = '{}' from public.admin_chat_groups() where id = pg_temp.g('coaches admins')), true);
+select pg_temp.as_member('02');
+select pg_temp.ok('Blair, an admin, sees it', (pg_temp.mine('coaches admins')).id is not null, true);
+select pg_temp.as_member('21');
+select pg_temp.ok('Gale on the committee doesn''t', (pg_temp.mine('coaches admins')).id is null, true);
+select pg_temp.as_member('01');
+-- Posts follow whoever is in them now.
+insert into grp values ('posts', public.admin_save_chat_group(null, 'Safeguarding', '{}', '{}', '{}', '{}', '{child_safety_officer,complaints_manager,head_physio}'));
+select pg_temp.ok('the admin screen lists its posts', (select posts = '{child_safety_officer,complaints_manager,head_physio}' from public.admin_chat_groups() where id = pg_temp.g('posts')), true);
+select pg_temp.eq('nobody in the posts: Alex acting in them (Blair has no check)', pg_temp.people('posts'), '01');
+insert into public.safeguarding_post_holders (post, profile_id) values ('child_safety_officer', pg_temp.id('11'));
+select pg_temp.eq('Casey named Child Safety Officer: Casey, and Alex still acting as Complaints Manager', pg_temp.people('posts'), '01,11');
+insert into public.safeguarding_post_holders (post, profile_id) values ('complaints_manager', pg_temp.id('13'));
+select pg_temp.eq('Emery named Complaints Manager: just the two holders', pg_temp.people('posts'), '11,13');
+update public.profiles set head_physio = true where id = pg_temp.id('14');
+select pg_temp.eq('Finley as Head Physio joins', pg_temp.people('posts'), '11,13,14');
+update public.profiles set head_physio = false where id = pg_temp.id('14');
+select pg_temp.eq('and leaves when no longer Head Physio', pg_temp.people('posts'), '11,13');
+select pg_temp.as_member('13');
+select pg_temp.eq('Emery posts to the safeguarding group', pg_temp.post('posts 1', 'posts', 'Can we meet Thursday?'), 'posted');
+select pg_temp.eq('Casey gets it', pg_temp.got('posts 1'), '11');
+select pg_temp.as_member('01');
+select pg_temp.ok('Alex, no longer acting, isn''t in it', coalesce((pg_temp.mine('posts')).is_member, false), false);
+-- An app not yet updated saves with the old call: club roles and posts stay.
+select public.admin_save_chat_group(pg_temp.g('coaches admins'), 'Coaches and admins', '{coach}', array[pg_temp.id('a1')], '{}');
+select pg_temp.eq('the old save keeps its club roles', pg_temp.people('coaches admins'), '01,02,11,42');
+-- Groups saved before keep their roles across the club.
+select pg_temp.eq('the committee group still has the committee', pg_temp.people('committee'), '01,21,22,23');
+delete from public.safeguarding_post_holders where profile_id in (pg_temp.id('11'), pg_temp.id('13'));
 
 -- ---------------------------------------------------------------------------
 -- Switched off again: paused, nothing deleted
