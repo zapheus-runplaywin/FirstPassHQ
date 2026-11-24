@@ -1346,7 +1346,8 @@ them or react to them. If you're under 18, your parents or guardians can read th
 **Your details** (from the home screen) has **Medical and emergency details**: up to three
 emergency contacts, and your allergies, conditions, medications and action plan, such as what to do
 if you have an asthma attack or a reaction. They're for your safety at training and games. Tap a
-contact's phone number to call them.
+contact's phone number to call them. Numbers are shown spaced for reading, such as 0412 345 678,
+(08) 9123 4567 or +64 9 123 4567.
 
 If you're 18 or over you keep them yourself: tap **Change details**, fill in what's needed, and
 tap **Save**. Each contact needs a name and a phone number. If you're under 18 your parents or
@@ -4443,6 +4444,19 @@ Add the sport's **governing body**: its name, phone or hotline, and complaints f
 club's **safeguarding policy** link too. Everyone sees these on **Raise a concern**. Links must
 start with https://.
 
+The phone or hotline must be a phone number, and the app spaces it as you type so it's easy to
+read: a mobile as 0412 345 678, a landline with its area code as (08) 9123 4567, and 1800, 1300 and
+13 numbers as 1800 123 456 and 13 12 34. A +61 number shows as +61 8 9123 4567, and a number from
+overseas starts with + and its country code, such as +64 9 123 4567 or +44 20 7946 0958. An email
+address, words or a local number with no area code can't be saved, and the screen says what to
+change. If one was saved before the app checked, the screen points it out until you fix it.
+
+<img src="user-guide/admin-safeguarding-phone.png" width="210" alt="A landline spaced as (08) 9123 4567"> <img src="user-guide/admin-safeguarding-phone-overseas.png" width="210" alt="A UK number spaced as +44 20 7946 0958"> <img src="user-guide/admin-safeguarding-phone-email.png" width="210" alt="An email address refused in the phone field">
+
+Members see the number spaced the same way on **Raise a concern**, and tap it to call.
+
+<img src="user-guide/safeguarding-contacts-phone.png" width="210" alt="The governing body's number on Raise a concern">
+
 Under **Club policies**, add links to the club's **child safeguarding policy**, **privacy
 policy** and **code of conduct**, hosted on your club's website, and the **policy version**. The
 links show on Join, Your details and the parents' consent screen. Each parent's consent is
@@ -4825,7 +4839,8 @@ database, from the message itself, so it can't be altered on the way and survive
 being removed later. Those handling a concern can name anyone in the club as who it's about,
 children included, while the form members use to raise one lists only adults with club roles. Police
 (000), Kids Helpline, the Safe Sport Hotline and the governing body's contacts are shown on the same
-screen. Every concern and every step taken is kept in the [concerns
+screen; the governing body's number must be a real phone number (an email address can't be saved
+there) and is shown spaced so it's easy to read and call. Every concern and every step taken is kept in the [concerns
 register](#the-concerns-register), which prints as a PDF. Each concern has a short reference, such
 as C-0007, so it can be named without its details. A concern about a child shows those
 handling it the child's verified parents and guardians, so they reach the right parent. Who looked

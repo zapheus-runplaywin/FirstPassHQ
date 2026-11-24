@@ -7,6 +7,7 @@ import { Spacing } from '@/constants/theme';
 import { contactNames, helplines, useSafeguardingContacts } from '@/lib/concerns';
 import { namesLine } from '@/lib/people-picker';
 import { formatDateTime } from '@/lib/format';
+import { formatPhone, telLink } from '@/lib/phone';
 import { useTheme } from '@/hooks/use-theme';
 
 /**
@@ -24,7 +25,7 @@ export function SafeguardingContactsCard() {
       </ThemedText>
     </Pressable>
   );
-  const phone = (number: string) => link(number, `tel:${number.replace(/\s/g, '')}`);
+  const phone = (number: string) => link(number, telLink(number));
   const officers = contactNames(contacts, 'officers');
   const managers = contactNames(contacts, 'managers');
 
@@ -47,7 +48,9 @@ export function SafeguardingContactsCard() {
         {contacts?.governing_body_name ? (
           <View>
             <ThemedText type="small">{contacts.governing_body_name}</ThemedText>
-            {contacts.governing_body_phone ? phone(contacts.governing_body_phone) : null}
+            {contacts.governing_body_phone
+              ? phone(formatPhone(contacts.governing_body_phone))
+              : null}
             {contacts.governing_body_url
               ? link('Complaints form', contacts.governing_body_url)
               : null}
