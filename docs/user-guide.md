@@ -70,6 +70,10 @@ While nobody named in a post can act (none named, or every one's check has lapse
 down), each admin with a current check acts in it, with the post's full powers, and is shown as
 **Child Safety Officer (acting)**, **Complaints Manager (acting)** or **WWC Registration Officer
 (acting)** until someone is named (see [Acting in an empty post](#acting-in-an-empty-post)).
+A concern with nothing recorded for too long is chased as Important, then Urgent, and then goes
+along the club's escalation chain to another post, a named adult or the admins, so any adult with a
+current check may be asked to handle one concern (see [Concern clocks and
+escalation](#concern-clocks-and-escalation)).
 
 **Squads and teams.** Each season, members join a **squad** (at West Coast Thunder: Mixed Open
 Squad, Open Squad, 20 & Under Squad, 17 & Under Squad, Lightning Academy). At selections, admins name
@@ -2690,7 +2694,10 @@ only. Admins see every injury, unless their own check has been missing or expire
 days (see [Approving members](#approving-members)): then they see adults' injuries only. Athletes who have left the club stay listed under **Including
 cleared** for 12 months. When a coach or physio endorses a clearance, it appears under **Waiting
 for your sign-off** and in the to-do list of every committee member who sees injuries and every admin, except the person
-who endorsed it and the athlete's own parents or guardians. Open it, check the proof, then:
+who endorsed it and the athlete's own parents or guardians. The to-do turns amber **Important**
+once a clearance has waited 3 days since its last update, and red **Urgent** after 7 (the club can
+change both under [Concern clocks and escalation](#concern-clocks-and-escalation)). Open it, check
+the proof, then:
 
 - **Accept clearance** clears the athlete to train and play, or
 - **Send back** with a note.
@@ -4367,6 +4374,9 @@ with ✕ to replace them. Your to-do list asks you to name a Child Safety Office
 Manager) only when nobody in that post can act.
 Each of the three sees their post as a title under their roles on their home screen, such as
 "Statistician" with "Child Safety Officer" beneath it, and loses the title at the same time.
+**Concern times and escalation**, under the two posts, sets how long concerns, requests to read
+messages and clearances can wait, and each post's escalation chain (see [Concern clocks and
+escalation](#concern-clocks-and-escalation)).
 
 #### Acting in an empty post
 
@@ -4551,6 +4561,54 @@ an auditor.
 Every concern has a short reference, such as **C-0007**, shown in the register, on the concern and
 to whoever raised it. A message access request names the concern by its reference alone.
 
+#### Concern clocks and escalation
+
+Every open concern has a clock, so none can sit untouched. Recording any step (a referral, a note
+or a status change) starts it again. The times below are the club's starting times; admins change
+them under **Administration > Safeguarding > Concern times and escalation**.
+
+| Nothing recorded for | What happens |
+| --- | --- |
+| 24 hours after it's raised | **Nothing recorded on C-0007 yet**, in red, for the post that leads it. |
+| 48 hours, on a concern that may involve a child's safety | **Refer C-0007 or record why not**, marked **Urgent**. |
+| 7 days since the last step | **C-0007 has had nothing recorded for a while**, amber **Important**. |
+| 14 days since the last step | **C-0007 is urgent: nothing recorded for too long**, marked **Urgent**, and escalation starts. |
+
+The **Complaints Manager** leads a concern, and the **Child Safety Officer** leads one that may
+involve a child's safety. Only the people in the leading post are chased at first; an admin acting
+in an empty post is chased as that post. Each to-do names the concern by its reference only,
+never what it says or who it's about, and comes as a push to members who allow to-do
+notifications (once for Important, once a day for the others).
+
+**Escalation.** Once a concern is Urgent (or a new one is late), it goes to the next person in its
+lead post's **escalation chain**, one step at a time, each after its own wait. A chain has up to 4
+steps, each a post (the other safeguarding post) or one named adult with a current check, and
+**Admins** are always the last stop: 7 days after the last step if the chain doesn't end with
+them. Everyone reached sees **Escalated to you** on the to-do and keeps being chased until a step
+is recorded. The lead post is still chased too. With no chain set, an Urgent concern goes to the
+admins after 7 days.
+
+- A concern never goes to anyone named in it under **Who it's about**. A step whose people are all
+  named in the concern, or can't act (no current check, or stood down), is passed over straight
+  away and the next step is reached; the concern notes **Passed over** with the reason.
+- A chain can't loop: it can't come back to its own post, name a post or person twice (A to B, B
+  to C, C to B), or have anything after Admins. Each post's chain is separate, so the Child
+  Safety Officer can back up the Complaints Manager and the Complaints Manager can back up the
+  Child Safety Officer: a concern only ever follows its own lead post's chain.
+- Someone reached by name (not a post holder or admin) sees **Concerns** on their home screen
+  with only the concerns escalated to them, while they stay open. They can record steps but can't
+  change who a concern is about or ask to read messages. Each time they open one, it's kept with
+  the concern as **Looked at by**.
+
+A concern that has escalated shows an **Escalation** card with each step, the day and who it
+reached or passed over. An admin who'd rather not wait can name someone new in the post at any
+time; the clock and chain carry on.
+
+<img src="user-guide/concern-clock-todos.png" width="210" alt="To-dos: C-0007 is urgent, escalated to you, and C-0009 has had nothing recorded for a while">
+<img src="user-guide/concern-escalation.png" width="210" alt="A concern's Escalation card: escalated to the Child Safety Officer, then passed over a committee member named in the concern">
+<img src="user-guide/concern-times.png" width="210" alt="Concern times: how long each step can wait">
+<img src="user-guide/escalation-chain.png" width="210" alt="The Complaints Manager's escalation chain: Child Safety Officer after 7 days, then a named committee member, then Admins">
+
 ### Reading a member's messages for a concern
 
 Nobody reads messages they didn't send or get, admins included. When a concern needs it, the
@@ -4567,7 +4625,9 @@ future), say why you need to read them without the concern's details, and tap **
 admin**. You can't ask about yourself or on a closed concern, and only one request for the same
 person and concern can wait at a time.
 
-**Answering** (an admin): a red **Answer N requests to read messages** to-do appears, and
+**Answering** (an admin): a red **Answer N requests to read messages** to-do appears (marked
+**Important** once the oldest has waited 24 hours, and **Urgent** after 48, or the club's own
+times under [Concern clocks and escalation](#concern-clocks-and-escalation)), and
 **Concerns** has a **Message access** button. Open the request to see its reference, the concern's
 reference and whether it's open, who asked and in which post, whose messages, the dates and why.
 You don't need to open the concern. Write your justification (to approve) or your reasons (to
@@ -4668,7 +4728,8 @@ once saved, only replaced or removed, and anyone who gets it wrong five times in
 | Check applications, receipts and declarations | The member (their own application and declaration, not the receipt) and admins. Committee members with a current check read the applications in the Working With Children Checks report, never the receipts. Kept, with the receipt, if the member deletes their account. |
 | Volunteer exemptions and declarations | The volunteer (their own) and admins, and committee members with a current check in the Working With Children Checks report (read only). Kept under the member's name if they delete their account; the exemption ends that day. |
 | Temporary helpers' task, dates and policy acceptance | The volunteer and admins. Temporary helpers see nothing of the club's members, squads, calendar or messages. If a helper deletes their account, their policy acceptance and any exemption declaration are kept under their name; their task and dates go with the account. |
-| Concerns                | The Child Safety Officers, the Complaints Managers and admins, never anyone a concern is about when they were named from the list (a concern can name up to 10 people, and none of them sees it) (a concern that only describes someone in words is not hidden from anyone who handles concerns). Whoever raised it sees its status. A hidden name is never shown to them. The traffic-light counts on the Concerns card follow the same rule: counts only, and never a concern about the person looking. |
+| Concerns                | The Child Safety Officers, the Complaints Managers and admins, never anyone a concern is about when they were named from the list (a concern can name up to 10 people, and none of them sees it) (a concern that only describes someone in words is not hidden from anyone who handles concerns). Whoever raised it sees its status. A hidden name is never shown to them. The traffic-light counts on the Concerns card follow the same rule: counts only, and never a concern about the person looking. Someone a concern was [escalated](#concern-clocks-and-escalation) to by name sees that concern only, while it's open, and each look is kept with it. Escalation never reaches anyone the concern is about. |
+| Escalation chains and concern times | Admins set them. Each concern's **Escalation** steps are seen by those who handle it. To-dos and pushes about a late concern give its reference only. |
 | Requests to read a member's messages, and who read what | The person who asked, admins and the Child Safety Officers and Complaints Managers (including admins [acting in an empty post](#acting-in-an-empty-post), whose requests say "(acting)"), never the member whose messages were asked for or anyone the concern is about. Approval opens the messages to the person who asked only, for 24 hours. Every list and message opened is logged with the request, apart from the record views parents read. Never removed. |
 | A child's parents and guardians on a concern | The Child Safety Officers, the Complaints Managers and admins, on a concern naming that child under 18 (each child's, when it names several): verified parents and guardians only, with their email, never to anyone the concern is about. Each look is kept with the concern for those who handle it, not in the child's record views. |
 | Safeguarding contacts   | Everyone signed in, including guests and people waiting for approval.                                                       |
@@ -4761,6 +4822,16 @@ and while they can act in it. A post is never left empty: while nobody named in 
 admin with a current check acts in it with its full powers, marked "(acting)" on their home
 screen, in the contacts members see and on any request to read messages they make, until the club
 names someone (see [Acting in an empty post](#acting-in-an-empty-post)).
+
+No concern can sit untouched. Each has a clock: nothing recorded within 24 hours chases the post
+that leads it (the Child Safety Officer for a child's safety), a child's concern not referred or
+explained within 48 hours is marked Urgent, and an open concern with no step for 7 days is
+Important, then Urgent at 14. An Urgent concern then goes, one step at a time, along the club's
+escalation chain and finally to the admins, never to anyone named in it and never round in a
+loop. Every step reached or passed over is kept with the concern, and anyone it reaches by name
+sees only that concern, with each look recorded. Requests to read messages and injury clearances
+waiting to be signed off are marked Important, then Urgent, the same way. The club sets the times
+(see [Concern clocks and escalation](#concern-clocks-and-escalation)).
 
 ### Who counts as a child
 

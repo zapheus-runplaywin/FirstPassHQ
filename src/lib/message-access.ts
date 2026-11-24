@@ -206,13 +206,24 @@ export type MessageAccessTodo = {
   to_decide: number;
   open_access: number;
   only_one_admin: boolean;
+  /**
+   * How long the oldest request the member can answer has waited, against the
+   * club's times: Important, then Urgent. Null while it's on time.
+   */
+  late?: 'important' | 'urgent' | null;
 };
 
 const NO_TODO: MessageAccessTodo = {
   to_decide: 0,
   open_access: 0,
   only_one_admin: false,
+  late: null,
 };
+
+/** A lateness the database sent, or null for anything else. */
+export function lateFrom(value: unknown): 'important' | 'urgent' | null {
+  return value === 'important' || value === 'urgent' ? value : null;
+}
 
 /** The signed-in member's message access to-dos, refreshed when the screen is shown. */
 export function useMessageAccessTodo(enabled: boolean) {
@@ -222,9 +233,12 @@ export function useMessageAccessTodo(enabled: boolean) {
       setTodo(NO_TODO);
       return;
     }
-    const { data } = await supabase.rpc('message_access_todo');
+    const [{ data }, { data: late }] = await Promise.all([
+      supabase.rpc('message_access_todo'),
+      supabase.rpc('message_access_late'),
+    ]);
     const row = Array.isArray(data) ? data[0] : data;
-    setTodo((row as MessageAccessTodo | null) ?? NO_TODO);
+    setTodo({ ...((row as MessageAccessTodo | null) ?? NO_TODO), late: lateFrom(late) });
   }, [enabled]);
   useFocusEffect(
     useCallback(() => {

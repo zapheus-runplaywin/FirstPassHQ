@@ -4,7 +4,8 @@ import type { KpiReviewTodo } from '@/lib/kpis';
 import type { MedicalReview } from '@/lib/medical';
 import type { MyConflictDeclaration, PolicyReview } from '@/lib/registers';
 import type { MySurvey } from '@/lib/surveys';
-import { buildTodos, dueAlert, sortByAlert, type Todo, URGENT } from '@/lib/todos';
+import type { ConcernClock } from '@/lib/concerns';
+import { buildTodos, concernClockTodo, dueAlert, sortByAlert, type Todo, URGENT } from '@/lib/todos';
 import type { MyTraining } from '@/lib/training';
 import type { AwardSlot, CoachTeamGame, GoalGame, Injury, MyWwccSubmission } from '@/lib/types';
 import type { SafetyTodos } from '@/lib/use-pending-requests';
@@ -319,7 +320,65 @@ describe('buildTodos', () => {
     expect(sorted.slice(1).map((t) => t.alert?.level)).toEqual(['red', 'red']);
   });
 
+  describe('concern clocks', () => {
+    const clock = (extra: Partial<ConcernClock> = {}): ConcernClock => ({
+      concern_id: 'c1',
+      reference: 'C-0007',
+      stage: 'important',
+      clock_from: '2026-11-01T00:00:00Z',
+      escalated: false,
+      ...extra,
+    });
+
+    it('chases each stage by reference only, opening the concern', () => {
+      expect(concernClockTodo(clock({ stage: 'new_late' }))).toEqual({
+        key: 'concern-clock-c1',
+        title: 'Nothing recorded on C-0007 yet',
+        detail: 'You lead this concern',
+        href: '/concerns/c1',
+        alert: { level: 'red', label: 'Late' },
+      });
+      expect(concernClockTodo(clock({ stage: 'refer' }))).toMatchObject({
+        title: 'Refer C-0007 or record why not',
+        alert: URGENT,
+      });
+      expect(concernClockTodo(clock({ stage: 'important' }))).toMatchObject({
+        title: 'C-0007 has had nothing recorded for a while',
+        alert: { level: 'amber', label: 'Important' },
+      });
+      expect(concernClockTodo(clock({ stage: 'urgent' }))).toMatchObject({
+        title: 'C-0007 is urgent: nothing recorded for too long',
+        alert: URGENT,
+      });
+    });
+
+    it('says when it was escalated to the member', () => {
+      expect(concernClockTodo(clock({ escalated: true })).detail).toBe('Escalated to you');
+    });
+
+    it('lists every clock, after new concerns and before message requests', () => {
+      const list = todos({
+        newConcerns: 1,
+        concernClocks: [clock(), clock({ concern_id: 'c2', stage: 'urgent' })],
+        messageAccess: { to_decide: 1, open_access: 0, only_one_admin: false },
+      });
+      expect(keys(list)).toEqual(['concerns', 'concern-clock-c1', 'concern-clock-c2', 'message-access-decide']);
+    });
+
+    it('adds nothing without clocks', () => {
+      expect(todos({ concernClocks: [] })).toEqual([]);
+    });
+  });
+
   describe('message access requests', () => {
+    it('marks a request waiting too long Important, then Urgent', () => {
+      const late = (l: 'important' | 'urgent' | null) =>
+        todos({ messageAccess: { to_decide: 1, open_access: 0, only_one_admin: false, late: l } })[0].alert;
+      expect(late('important')).toEqual({ level: 'red', label: 'Important' });
+      expect(late('urgent')).toEqual(URGENT);
+      expect(late(null)).toEqual({ level: 'red', label: 'Waiting' });
+    });
+
     const access = (extra: Partial<{ to_decide: number; open_access: number; only_one_admin: boolean }>) => ({
       to_decide: 0,
       open_access: 0,
@@ -553,6 +612,46 @@ describe('buildTodos', () => {
         detail: 'Ankle · waiting for your sign-off',
         href: { pathname: '/injuries/[id]', params: { id: 'i1' } },
       });
+    });
+
+    it('marks a clearance waiting past the club’s times Important, then Urgent', () => {
+      const waiting = (sent: string, times?: { clearance_important_days: number; clearance_urgent_days: number }) =>
+        only(todos({ injuries: [injury({ waiting_for_me: true, last_update_at: sent })], concernTimes: times })).alert;
+      // TODAY is 18 October, midday in Perth: 04:00 UTC.
+      expect(waiting('2026-10-17T04:00:00Z')).toBeUndefined();
+      expect(waiting('2026-10-15T04:00:00Z')).toEqual({ level: 'amber', label: 'Important' });
+      expect(waiting('2026-10-11T04:00:00Z')).toEqual({ level: 'red', label: 'Urgent' });
+      // The club's own times.
+      expect(waiting('2026-10-17T04:00:00Z', { clearance_important_days: 1, clearance_urgent_days: 2 })).toEqual({
+        level: 'amber',
+        label: 'Important',
+      });
+    });
+
+    it('counts from when the injury was logged when nothing was added since', () => {
+      expect(only(todos({ injuries: [injury({ waiting_for_me: true, created_at: '2026-10-17T04:00:00Z' })] })).alert).toBeUndefined();
+    });
+
+    it('marks several clearances by the latest one', () => {
+      const todo = only(
+        todos({
+          injuries: [
+            injury({ waiting_for_me: true, last_update_at: '2026-10-17T04:00:00Z' }),
+            injury({ id: 'i2', waiting_for_me: true, last_update_at: '2026-10-14T04:00:00Z' }),
+          ],
+        }),
+      );
+      expect(todo.alert).toEqual({ level: 'amber', label: 'Important' });
+      expect(
+        only(
+          todos({
+            injuries: [
+              injury({ waiting_for_me: true, last_update_at: '2026-10-17T04:00:00Z' }),
+              injury({ id: 'i2', waiting_for_me: true, last_update_at: '2026-10-01T04:00:00Z' }),
+            ],
+          }),
+        ).alert,
+      ).toEqual({ level: 'red', label: 'Urgent' });
     });
 
     it('groups several clearances and names each athlete once', () => {

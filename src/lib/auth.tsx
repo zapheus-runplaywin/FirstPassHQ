@@ -86,6 +86,11 @@ type AuthState = {
    */
   actingSafeguardingPosts: SafeguardingPost[];
   /**
+   * A concern was escalated to the member by name, and is still open, so they
+   * handle it (only it) from the concerns register.
+   */
+  hasEscalatedConcerns: boolean;
+  /**
    * A child under 18 waiting for a parent or guardian: asking to join, or
    * approved with no verified guardian linked (locked). Their link code, to
    * share with a parent or guardian; null for everyone else.
@@ -127,6 +132,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   const [isSafeguardingOfficer, setIsSafeguardingOfficer] = useState(false);
   const [safeguardingPosts, setSafeguardingPosts] = useState<SafeguardingPost[]>([]);
   const [actingSafeguardingPosts, setActingSafeguardingPosts] = useState<SafeguardingPost[]>([]);
+  const [hasEscalatedConcerns, setHasEscalatedConcerns] = useState(false);
   const [committeeSeesInjuries, setCommitteeSeesInjuries] = useState(true);
   const [committeeChecksFrom, setCommitteeChecksFrom] = useState<string | null>(null);
   const [linkCode, setLinkCode] = useState<LinkCode | null>(null);
@@ -144,6 +150,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       setIsSafeguardingOfficer(false);
       setSafeguardingPosts([]);
       setActingSafeguardingPosts([]);
+      setHasEscalatedConcerns(false);
       setCommitteeSeesInjuries(true);
       setCommitteeChecksFrom(null);
       setLinkCode(null);
@@ -165,6 +172,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       submissionResult,
       postsResult,
       actingResult,
+      escalatedResult,
     ] = await Promise.all([
       supabase.from('profiles').select(PROFILE_COLUMNS).eq('id', userId).single(),
       supabase
@@ -185,6 +193,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       supabase.rpc('my_wwcc_submission').maybeSingle(),
       supabase.rpc('my_safeguarding_posts').maybeSingle(),
       supabase.rpc('my_acting_safeguarding_posts').maybeSingle(),
+      supabase.rpc('has_escalated_concerns'),
     ]);
     setProfile((profileResult.data as Profile | null) ?? null);
     setMemberships((membershipResult.data as unknown as TeamMembership[] | null) ?? []);
@@ -197,6 +206,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     const acting = safeguardingPostsFrom(actingResult.data);
     setSafeguardingPosts(heldOrActing(safeguardingPostsFrom(postsResult.data), acting));
     setActingSafeguardingPosts(acting);
+    setHasEscalatedConcerns(escalatedResult.data === true);
     // False only when the club chose committee members and left this one out.
     setCommitteeSeesInjuries(committeeInjuriesResult.data !== false);
     setCommitteeChecksFrom(
@@ -285,6 +295,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
         isSafeguardingOfficer,
         safeguardingPosts,
         actingSafeguardingPosts,
+        hasEscalatedConcerns,
         committeeSeesInjuries,
         committeeChecksFrom,
         waitingForGuardian,

@@ -145,6 +145,7 @@ type Rows = {
   isSafeguardingOfficer?: unknown;
   safeguardingPosts?: unknown;
   actingPosts?: unknown;
+  hasEscalatedConcerns?: unknown;
   committeeSeesInjuries?: unknown;
   committeeChecksFrom?: unknown;
   linkCode?: unknown;
@@ -212,6 +213,7 @@ beforeEach(() => {
     if (fn === 'is_safeguarding_officer') return query({ data: rows.isSafeguardingOfficer ?? false });
     if (fn === 'my_safeguarding_posts') return query({ data: rows.safeguardingPosts ?? null });
     if (fn === 'my_acting_safeguarding_posts') return query({ data: rows.actingPosts ?? null });
+    if (fn === 'has_escalated_concerns') return query({ data: rows.hasEscalatedConcerns ?? false });
     if (fn === 'my_committee_sees_injuries') return query({ data: rows.committeeSeesInjuries ?? true });
     if (fn === 'committee_checks_from') return query({ data: rows.committeeChecksFrom ?? null });
     if (fn === 'my_link_code') return query({ data: rows.linkCode ?? null });
@@ -473,6 +475,7 @@ describe('loading the member', () => {
       isClubCaptain: true,
       isSafeguardingOfficer: true,
       safeguardingPosts: { complaints_manager: true },
+      hasEscalatedConcerns: true,
       committeeSeesInjuries: false,
       exemption: exemption(),
       application: application(),
@@ -485,6 +488,7 @@ describe('loading the member', () => {
     expect(result.current.auth.wwccSubmission).toEqual(submission());
     expect(result.current.auth.committeeChecksFrom).toBe('2027-01-11');
     expect(result.current.auth.safeguardingPosts).toEqual(['complaints_manager']);
+    expect(result.current.auth.hasEscalatedConcerns).toBe(true);
 
     await act(async () => {
       authListener?.('SIGNED_OUT', null);
@@ -498,6 +502,7 @@ describe('loading the member', () => {
     expect(result.current.auth.isClubCaptain).toBe(false);
     expect(result.current.auth.isSafeguardingOfficer).toBe(false);
     expect(result.current.auth.safeguardingPosts).toEqual([]);
+    expect(result.current.auth.hasEscalatedConcerns).toBe(false);
     expect(result.current.auth.committeeSeesInjuries).toBe(true);
   });
 
@@ -1082,6 +1087,17 @@ describe('club captains and safeguarding contacts', () => {
   ])('isSafeguardingOfficer when the database says %j → %s', async (value, expected) => {
     const auth = await authFor({ profile: profile('committee'), isSafeguardingOfficer: value });
     expect(auth.isSafeguardingOfficer).toBe(expected);
+  });
+
+  test.each([
+    [true, true],
+    [false, false],
+    [null, false],
+    ['true', false],
+  ])('hasEscalatedConcerns when the database says %j → %s', async (value, expected) => {
+    const auth = await authFor({ profile: profile('coach'), hasEscalatedConcerns: value });
+    expect(auth.hasEscalatedConcerns).toBe(expected);
+    expect(supabase.rpc).toHaveBeenCalledWith('has_escalated_concerns');
   });
 
   test.each([

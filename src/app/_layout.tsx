@@ -338,6 +338,7 @@ function RootStack() {
             <Stack.Screen name="admin/club/options" options={{ title: 'Club options' }} />
             <Stack.Screen name="admin/club/records" options={{ title: 'Record keeping' }} />
             <Stack.Screen name="admin/safeguarding" options={{ title: 'Safeguarding' }} />
+            <Stack.Screen name="admin/concern-times" options={{ title: 'Concern times' }} />
             <Stack.Screen name="admin/conduct" options={{ title: 'Code of conduct' }} />
             <Stack.Screen name="admin/club-password" options={{ title: 'Club password' }} />
             <Stack.Screen name="admin/invite" options={{ title: 'Invite members' }} />

@@ -83,6 +83,7 @@ describe('admin screens', () => {
     'admin/club/options',
     'admin/club/records',
     'admin/safeguarding',
+    'admin/concern-times',
     'admin/reports/index',
     'admin/reports/wwcc',
     'admin/reports/under-18s',

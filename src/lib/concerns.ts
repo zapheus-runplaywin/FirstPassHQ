@@ -158,6 +158,58 @@ export function useNewConcerns(handles: boolean) {
 }
 
 /**
+ * How a concern's clock stands for the member chased about it: nothing
+ * recorded after the club's first-action time ('new_late'), a child's concern
+ * not yet referred ('refer'), or no step for the club's Important or Urgent
+ * time. `escalated` when it reached the member by escalation.
+ */
+export type ConcernClockStage = 'new_late' | 'refer' | 'important' | 'urgent';
+
+export type ConcernClock = {
+  concern_id: string;
+  reference: string;
+  stage: ConcernClockStage;
+  clock_from: string;
+  escalated: boolean;
+};
+
+const CLOCK_STAGES: ConcernClockStage[] = ['new_late', 'refer', 'important', 'urgent'];
+
+/** The concerns the signed-in member is chased about, refreshed when the screen is shown. */
+export function useConcernClocks(handles: boolean) {
+  const [clocks, setClocks] = useState<ConcernClock[]>([]);
+  useFocusEffect(
+    useCallback(() => {
+      if (!handles) return;
+      supabase
+        .rpc('my_concern_clocks')
+        .then(({ data }) =>
+          setClocks(((data as ConcernClock[] | null) ?? []).filter((c) => CLOCK_STAGES.includes(c.stage))),
+        );
+    }, [handles]),
+  );
+  return handles ? clocks : [];
+}
+
+/** One step on a concern's escalation: who it reached, or why it passed someone by. */
+export type ConcernEscalation = {
+  reached_at: string;
+  target_name: string;
+  skipped: boolean;
+  reason: string | null;
+};
+
+/** A look at a concern by someone who handles it only because it was escalated to them. */
+export type ConcernEscalatedView = { viewer_name: string; viewed_at: string };
+
+/** One escalation step as a line for the concern screen. */
+export function escalationLine(step: ConcernEscalation): string {
+  return step.skipped
+    ? `Passed over ${step.target_name}${step.reason ? `: ${step.reason}` : ''}`
+    : `Escalated to ${step.target_name}`;
+}
+
+/**
  * The home screen's traffic lights: red for new concerns nobody has acted on,
  * orange for open ones someone has (a note, a referral or a status change),
  * green for those closed in the last 4 weeks. Counts only.

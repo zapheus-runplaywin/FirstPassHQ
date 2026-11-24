@@ -317,6 +317,11 @@ export default function SafeguardingScreen() {
         max={MAX_PER_POST}
         placeholder="Name or email"
       />
+      <Button
+        title="Concern times and escalation"
+        variant="secondary"
+        onPress={() => router.push('/admin/concern-times')}
+      />
 
       <PeoplePicker
         label="WWC Registration Officer"
