@@ -11,7 +11,7 @@
 
 import * as engine from '@firstpass/engine';
 
-import { anonKey, athleteFigures, configOf, handleStats, plain, recordOf, type Access, type Deps, type EventRow } from '../stats';
+import { anonKey, athleteFigures, athleteMoments, configOf, handleStats, MAX_MOMENTS, plain, recordOf, type Access, type Deps, type EventRow } from '../stats';
 
 const GAME = '0b6c8f8e-3f7a-4d1e-9a51-2a7c1d9e4b10';
 const ATHLETE = '00000000-0000-0000-0000-000000000011';
@@ -91,6 +91,82 @@ describe('athleteFigures', () => {
   it('gives a bench player who never came on their name but no minutes', () => {
     const r = rows().filter((e) => !(e.type === 'lineup_change' && (e.payload as { detail: string }).detail.startsWith('Zoe')));
     expect(figuresFor(['Zoe Hart'], false, r)).toBeNull();
+  });
+});
+
+const momentsFor = (names: string[], r = rows()) => athleteMoments(engine, recordOf(engine, r), names);
+
+describe('athleteMoments', () => {
+  it('lists what the athlete did, in order, with the quarter and the time left', () => {
+    expect(momentsFor(['ava smith'])).toEqual([
+      { quarter: 1, left: 590, kind: 'goal', position: 'GS' },
+      { quarter: 1, left: 580, kind: 'rebound', position: 'GS', detail: 'offensive' },
+      { quarter: 1, left: 575, kind: 'goal', position: 'GS' },
+    ]);
+  });
+
+  it('follows the player, not the position, through a substitution, with the cause of a gain or turnover', () => {
+    expect(momentsFor(['Mia Tran'])).toEqual([
+      { quarter: 1, left: 580, kind: 'miss', position: 'GA' },
+      { quarter: 1, left: 500, kind: 'gain', position: 'GA', detail: 'Intercept' },
+      { quarter: 1, left: 480, kind: 'turnover', position: 'GA', detail: 'Bad pass' },
+      { quarter: 1, left: 470, kind: 'feed', position: 'GA' },
+    ]);
+    expect(momentsFor(['zoe hart'])).toEqual([
+      { quarter: 1, left: 300, kind: 'goal', position: 'GA' },
+      { quarter: 1, left: 200, kind: 'turnover', position: 'GA', detail: 'Footwork' },
+    ]);
+  });
+
+  it('holds nothing of the opposition or a team mate, and no name', () => {
+    const text = JSON.stringify(momentsFor(['ava smith']));
+    for (const leak of ['Mia', 'Zoe', 'Ava', 'Storm', 'them', 'lineup']) expect(text).not.toContain(leak);
+    expect(momentsFor(['ava smith']).every((m) => m.position === 'GS')).toBe(true);
+  });
+
+  it('counts a defensive rebound off their miss, centre passes, touches and penalties', () => {
+    const r = rows();
+    const at = (n: number, payload: object): EventRow => ({ id: `primary-x${n}`, game_id: GAME, stream: 'primary', seq: 100 + n, type: 'action', payload, recorded_at: '2026-11-14T09:09:00Z' });
+    r.splice(
+      r.length - 1,
+      0,
+      at(1, { period: 1, clockMs: 100_000, team: 'them', player: null, action: 'Miss', rebound: 'theirs', rebounder: 'GS' }),
+      at(2, { period: 1, clockMs: 90_000, team: 'us', player: 'GS', action: 'Receive' }),
+      at(3, { period: 1, clockMs: 80_000, team: 'us', player: 'GS', action: 'Touch' }),
+      at(4, { period: 1, clockMs: 70_400, team: 'us', player: 'GS', action: 'Penalty', cause: 'Contact' }),
+      at(5, { period: 1, clockMs: 60_000, team: 'us', player: '?', action: 'Goal' }),
+    );
+    r.forEach((row, i) => (row.seq = i + 1));
+    expect(momentsFor(['ava smith'], r).slice(3)).toEqual([
+      { quarter: 1, left: 100, kind: 'rebound', position: 'GS', detail: 'defensive' },
+      { quarter: 1, left: 90, kind: 'centre pass', position: 'GS' },
+      { quarter: 1, left: 80, kind: 'touch', position: 'GS' },
+      { quarter: 1, left: 70, kind: 'penalty', position: 'GS', detail: 'Contact' },
+    ]);
+  });
+
+  it("leaves out what a helper statistician's correction deleted", () => {
+    const r = rows();
+    const goal = r.find((row) => row.type === 'action' && (row.payload as { action: string }).action === 'Goal')!;
+    r.push({ id: 'helper:h1-1', game_id: GAME, stream: 'helper:h1', seq: 1, type: 'correction', payload: { target: goal.id, op: 'delete' }, recorded_at: '2026-11-14T09:20:00Z' });
+    expect(momentsFor(['ava smith'], r).filter((m) => m.kind === 'goal')).toHaveLength(1);
+  });
+
+  it('has nothing for someone the lineup never held, or with no names to go by', () => {
+    expect(momentsFor(['someone else'])).toEqual([]);
+    expect(momentsFor([])).toEqual([]);
+    expect(momentsFor(['  '])).toEqual([]);
+  });
+
+  it('stops at the most it will send', () => {
+    const r = rows();
+    const many = Array.from({ length: MAX_MOMENTS + 20 }, (_, n): EventRow => ({
+      id: `primary-m${n}`, game_id: GAME, stream: 'primary', seq: 200 + n, type: 'action',
+      payload: { period: 1, clockMs: 140_000, team: 'us', player: 'GS', action: 'Touch' }, recorded_at: '2026-11-14T09:09:30Z',
+    }));
+    r.splice(r.length - 1, 0, ...many);
+    r.forEach((row, i) => (row.seq = i + 1));
+    expect(momentsFor(['ava smith'], r)).toHaveLength(MAX_MOMENTS);
   });
 });
 
@@ -181,6 +257,39 @@ describe('handleStats', () => {
   it('answers the same for an athlete who did not play', async () => {
     const res = await handleStats(post(ask), setup({ ...ALLOWED!, names: ['someone else'] }));
     expect(await res.json()).toEqual({ stats: null });
+  });
+
+  it('adds the athlete’s moments only when asked for them', async () => {
+    const plainAnswer = await (await handleStats(post(ask), setup())).json();
+    expect(plainAnswer).not.toHaveProperty('moments');
+    const res = await handleStats(post({ ...ask, moments: true }), setup());
+    const text = await res.text();
+    const answer = JSON.parse(text);
+    expect(answer.stats.goals).toBe(2);
+    expect(answer.moments).toEqual([
+      { quarter: 1, left: 590, kind: 'goal', position: 'GS' },
+      { quarter: 1, left: 580, kind: 'rebound', position: 'GS', detail: 'offensive' },
+      { quarter: 1, left: 575, kind: 'goal', position: 'GS' },
+    ]);
+    for (const leak of ['Mia', 'Zoe', 'Ava', 'Storm', 'lineup', 'clockMs']) expect(text).not.toContain(leak);
+    // Anything but true is not a request for them.
+    for (const moments of ['true', 1, 'yes', null]) {
+      expect(await (await handleStats(post({ ...ask, moments }), setup())).json()).not.toHaveProperty('moments');
+    }
+  });
+
+  it('gives no moments, and reads no events, when the database says no', async () => {
+    for (const access of [null, { ...ALLOWED!, names: [] }]) {
+      const deps = setup(access);
+      const res = await handleStats(post({ ...ask, moments: true }), deps);
+      expect(await res.json()).toEqual({ stats: null, moments: [] });
+      expect(deps.events).not.toHaveBeenCalled();
+    }
+  });
+
+  it('gives no moments for an athlete who did not play', async () => {
+    const res = await handleStats(post({ ...ask, moments: true }), setup({ ...ALLOWED!, names: ['someone else'] }));
+    expect(await res.json()).toEqual({ stats: null, moments: [] });
   });
 
   it('says only that it failed when the database does, and logs no names', async () => {

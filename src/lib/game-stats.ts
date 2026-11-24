@@ -63,6 +63,108 @@ export async function fetchGameStats(athleteId: string, fixtureId: string): Prom
   }
 }
 
+/**
+ * One thing the athlete did in a recorded game, and when on the game clock:
+ * the club's game-stats function gives them with the stats to the same
+ * people. It holds no name and nothing about anyone else.
+ */
+export type GameMoment = {
+  quarter: number;
+  /** Seconds left on the quarter clock. */
+  left: number;
+  kind: MomentKind;
+  position: string;
+  detail?: string;
+};
+
+export type MomentKind = 'goal' | 'miss' | 'gain' | 'turnover' | 'feed' | 'centre pass' | 'touch' | 'penalty' | 'rebound';
+
+/** The kinds, in the order their chips show, each with the word for several of them. */
+export const MOMENT_KINDS: readonly { kind: MomentKind; label: string }[] = [
+  { kind: 'goal', label: 'Goals' },
+  { kind: 'miss', label: 'Misses' },
+  { kind: 'feed', label: 'Feeds' },
+  { kind: 'gain', label: 'Gains' },
+  { kind: 'turnover', label: 'Turnovers' },
+  { kind: 'rebound', label: 'Rebounds' },
+  { kind: 'centre pass', label: 'Centre passes' },
+  { kind: 'penalty', label: 'Penalties' },
+  { kind: 'touch', label: 'Touches' },
+];
+
+const KINDS = new Set<string>(MOMENT_KINDS.map((k) => k.kind));
+
+/** Only moments shaped as expected, so an answer from a newer function can't break the screen. */
+function momentsOf(value: unknown): GameMoment[] {
+  if (!Array.isArray(value)) return [];
+  return value.filter(
+    (m): m is GameMoment =>
+      !!m &&
+      typeof m === 'object' &&
+      Number.isFinite((m as GameMoment).quarter) &&
+      Number.isFinite((m as GameMoment).left) &&
+      KINDS.has((m as GameMoment).kind) &&
+      typeof (m as GameMoment).position === 'string',
+  );
+}
+
+/**
+ * The athlete's figures and their own moments in the game, for a selector
+ * looking at a game in a selection round. Either is empty when there is
+ * nothing to show, and the moments are empty until the club's game-stats
+ * function is one that sends them.
+ */
+export async function fetchGameEvidence(
+  athleteId: string,
+  fixtureId: string,
+): Promise<{ stats: GameStats | null; moments: GameMoment[] }> {
+  try {
+    const { data, error } = await supabase.functions.invoke('game-stats', {
+      body: { athleteId, fixtureId, moments: true },
+    });
+    if (error) {
+      log.warn('Game stats not available', { kind: error.name, reason: error.message });
+      return { stats: null, moments: [] };
+    }
+    const answer = data as { stats?: GameStats | null; moments?: unknown } | null;
+    const stats = answer?.stats && typeof answer.stats === 'object' ? answer.stats : null;
+    return { stats, moments: stats ? momentsOf(answer?.moments) : [] };
+  } catch (err) {
+    log.warn('Game stats not available', { reason: err instanceof Error ? err.message : 'unknown' });
+    return { stats: null, moments: [] };
+  }
+}
+
+/** Such as "Q2 · 4:05 left". */
+export function momentTime(moment: Pick<GameMoment, 'quarter' | 'left'>) {
+  const left = Math.max(0, Math.round(moment.left));
+  return `Q${moment.quarter} · ${Math.floor(left / 60)}:${String(left % 60).padStart(2, '0')} left`;
+}
+
+/** Such as "Gain (intercept) at GD" or "Rebound (defensive) at GK". */
+export function momentLabel(moment: Pick<GameMoment, 'kind' | 'position' | 'detail'>) {
+  const what = moment.kind === 'turnover' ? 'Turnover' : moment.kind.charAt(0).toUpperCase() + moment.kind.slice(1);
+  const detail = moment.detail?.trim();
+  return `${what}${detail ? ` (${detail.toLowerCase()})` : ''} at ${moment.position}`;
+}
+
+/** The kinds this athlete has moments of, in chip order, each with how many. */
+export function momentChips(moments: GameMoment[]): { kind: MomentKind; label: string; count: number }[] {
+  return MOMENT_KINDS.map((k) => ({ ...k, count: moments.filter((m) => m.kind === k.kind).length })).filter(
+    (k) => k.count > 0,
+  );
+}
+
+/**
+ * How an observation about a moment starts, so the selector only adds what
+ * they saw: such as "v Stars, Q2 4:05 left, gain (intercept) at GD: ".
+ */
+export function momentEvidence(opponent: string | null | undefined, moment: GameMoment) {
+  const game = opponent?.trim() ? `v ${opponent.trim()}, ` : '';
+  const label = momentLabel(moment);
+  return `${game}${momentTime(moment).replace(' · ', ' ')}, ${label.charAt(0).toLowerCase()}${label.slice(1)}: `;
+}
+
 function plural(n: number, one: string, many: string) {
   return `${n} ${n === 1 ? one : many}`;
 }

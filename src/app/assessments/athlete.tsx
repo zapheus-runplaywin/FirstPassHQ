@@ -1,6 +1,6 @@
 import { router, useFocusEffect, useLocalSearchParams } from 'expo-router';
 import { useCallback, useState } from 'react';
-import { StyleSheet, View } from 'react-native';
+import { Pressable, StyleSheet, View } from 'react-native';
 
 import { CardGrid } from '@/components/columns';
 import { Screen } from '@/components/screen';
@@ -22,7 +22,17 @@ import {
   type RoundAttendance,
   type RoundGame,
 } from '@/lib/assessments';
-import { fetchGameStats, statLines, type GameStats } from '@/lib/game-stats';
+import {
+  fetchGameEvidence,
+  momentChips,
+  momentEvidence,
+  momentLabel,
+  momentTime,
+  statLines,
+  type GameMoment,
+  type GameStats,
+  type MomentKind,
+} from '@/lib/game-stats';
 import { formatDateString } from '@/lib/injuries';
 import { supabase } from '@/lib/supabase';
 
@@ -43,6 +53,9 @@ export default function AthleteAssessmentScreen() {
   // The game that is open on the Games tab, and its figures once fetched (null when there are none).
   const [openGame, setOpenGame] = useState<string | null>(null);
   const [stats, setStats] = useState<Record<string, GameStats | null>>({});
+  const [moments, setMoments] = useState<Record<string, GameMoment[]>>({});
+  // The kind of moment listed for the open game: none until a chip is tapped, so the card stays short.
+  const [momentKind, setMomentKind] = useState<MomentKind | null>(null);
   const [tab, setTab] = useState<'picture' | 'observations' | 'games'>('picture');
 
   const load = useCallback(async () => {
@@ -95,13 +108,15 @@ export default function AthleteAssessmentScreen() {
   async function toggleGame(game: RoundGame) {
     const opening = openGame !== game.fixture_id;
     setOpenGame(opening ? game.fixture_id : null);
+    setMomentKind(null);
     if (opening && game.recorded && !(game.fixture_id in stats)) {
-      const fetched = await fetchGameStats(athlete, game.fixture_id);
-      setStats((known) => ({ ...known, [game.fixture_id]: fetched }));
+      const fetched = await fetchGameEvidence(athlete, game.fixture_id);
+      setStats((known) => ({ ...known, [game.fixture_id]: fetched.stats }));
+      setMoments((known) => ({ ...known, [game.fixture_id]: fetched.moments }));
     }
   }
 
-  function observe(params: { id?: string; corrects?: string; context?: string; on?: string } = {}) {
+  function observe(params: { id?: string; corrects?: string; context?: string; on?: string; about?: string } = {}) {
     router.push({ pathname: '/assessments/observe', params: { round, athlete, ...params } });
   }
 
@@ -162,6 +177,7 @@ export default function AthleteAssessmentScreen() {
                 {games.map((game) => {
                   const isOpen = openGame === game.fixture_id;
                   const figures = stats[game.fixture_id];
+                  const listed = moments[game.fixture_id] ?? [];
                   return (
                     <PressableCard key={game.fixture_id} onPress={() => toggleGame(game)}>
                       <ThemedText type="smallBold">{roundGameTitle(game)}</ThemedText>
@@ -195,6 +211,52 @@ export default function AthleteAssessmentScreen() {
                               </View>
                             ))
                           )}
+                          {figures && listed.length > 0 ? (
+                            <View style={styles.moments}>
+                              <ChipGroup
+                                label="Moments"
+                                options={momentChips(listed).map((k) => ({
+                                  value: k.kind,
+                                  label: `${k.label} (${k.count})`,
+                                }))}
+                                selected={momentKind ? [momentKind] : []}
+                                onToggle={(kind) => setMomentKind((now) => (now === kind ? null : kind))}
+                              />
+                              {momentKind === null ? (
+                                <ThemedText type="small" themeColor="textSecondary">
+                                  Tap a kind for each one’s quarter and time on the game clock, to find it
+                                  in the video.
+                                </ThemedText>
+                              ) : (
+                                listed
+                                  .filter((m) => m.kind === momentKind)
+                                  .map((m, n) => (
+                                    <Pressable
+                                      key={n}
+                                      accessibilityRole={assessment.closed ? undefined : 'button'}
+                                      disabled={assessment.closed}
+                                      onPress={() =>
+                                        observe({
+                                          context: 'game',
+                                          on: game.played_on,
+                                          about: momentEvidence(game.opponent, m),
+                                        })
+                                      }
+                                      style={styles.moment}>
+                                      <ThemedText type="small">{momentTime(m)}</ThemedText>
+                                      <ThemedText type="small" themeColor="textSecondary" style={styles.statValue}>
+                                        {momentLabel(m)}
+                                      </ThemedText>
+                                    </Pressable>
+                                  ))
+                              )}
+                              {momentKind !== null && !assessment.closed ? (
+                                <ThemedText type="small" themeColor="textSecondary">
+                                  Tap a moment to write about it.
+                                </ThemedText>
+                              ) : null}
+                            </View>
+                          ) : null}
                           {assessment.closed ? null : (
                             <Button
                               title="Write about this game"
@@ -316,4 +378,6 @@ const styles = StyleSheet.create({
   card: { gap: Spacing.one },
   stat: { flexDirection: 'row', justifyContent: 'space-between', gap: Spacing.three },
   statValue: { flexShrink: 1, textAlign: 'right' },
+  moments: { gap: Spacing.one, marginTop: Spacing.two },
+  moment: { flexDirection: 'row', justifyContent: 'space-between', gap: Spacing.three, paddingVertical: Spacing.one },
 });

@@ -166,7 +166,7 @@ const invoke = () => (supabase as unknown as { functions: { invoke: jest.Mock } 
 
 async function openAthlete(
   games: RoundGame[] | null,
-  options: { stats?: GameStats | null; failed?: boolean; assessment?: AthleteAssessment } = {},
+  options: { stats?: GameStats | null; failed?: boolean; assessment?: AthleteAssessment; moments?: unknown } = {},
 ) {
   await openScreen(
     'coach',
@@ -176,7 +176,7 @@ async function openAthlete(
     {
       rpcs: { athlete_assessment: options.assessment ?? ASSESSMENT, selection_round_games: games },
       functions: {
-        'game-stats': options.failed ? { error: { name: 'FunctionsHttpError', message: 'nope' } } : { data: { stats: options.stats ?? null } },
+        'game-stats': options.failed ? { error: { name: 'FunctionsHttpError', message: 'nope' } } : { data: { stats: options.stats ?? null, ...(options.moments === undefined ? {} : { moments: options.moments }) } },
       },
     } as BackendOptions,
   );
@@ -223,7 +223,7 @@ describe('the Games tab on an athlete’s assessment', () => {
     await press('Games (2)');
     await press(`v Stars · ${d('2026-10-17')}`);
     expect(invoke()).toHaveBeenCalledTimes(1);
-    expect(invoke()).toHaveBeenCalledWith('game-stats', { body: { athleteId: 'a1', fixtureId: 'fx1' } });
+    expect(invoke()).toHaveBeenCalledWith('game-stats', { body: { athleteId: 'a1', fixtureId: 'fx1', moments: true } });
     expect(screen.getByText('Time on court')).toBeTruthy();
     expect(screen.getByText('45 min · GA, GS')).toBeTruthy();
     expect(screen.queryByText('17 & Under A · Round 5 · tap for the game stats')).toBeTruthy();
@@ -299,6 +299,99 @@ describe('the Games tab on an athlete’s assessment', () => {
   });
 });
 
+describe('the athlete’s moments in a recorded game', () => {
+  const MOMENTS = [
+    { quarter: 1, left: 590, kind: 'goal', position: 'GS' },
+    { quarter: 1, left: 500, kind: 'gain', position: 'GA', detail: 'Intercept' },
+    { quarter: 2, left: 245, kind: 'goal', position: 'GA' },
+    { quarter: 3, left: 5, kind: 'turnover', position: 'GA', detail: 'Bad pass' },
+  ];
+  async function openGame(options: Parameters<typeof openAthlete>[1] = {}) {
+    await openAthlete([game()], { stats: STATS, moments: MOMENTS, ...options });
+    await press('Games (1)');
+    await press(`v Stars · ${d('2026-10-17')}`);
+  }
+
+  it('offers each kind with how many, and lists none until one is tapped', async () => {
+    await openGame();
+    expect(screen.getByText('Moments')).toBeTruthy();
+    expect(screen.getByText('Goals (2)')).toBeTruthy();
+    expect(screen.getByText('Gains (1)')).toBeTruthy();
+    expect(screen.getByText('Turnovers (1)')).toBeTruthy();
+    expect(screen.queryByText(/^Feeds \(/)).toBeNull();
+    expect(screen.getByText(/Tap a kind for each one’s quarter and time on the game clock/)).toBeTruthy();
+    expect(screen.queryByText('Q1 · 9:50 left')).toBeNull();
+  });
+
+  it('lists one kind at a time with the quarter, the time left and the position, and folds again', async () => {
+    await openGame();
+    await press('Goals (2)');
+    expect(screen.getByText('Q1 · 9:50 left')).toBeTruthy();
+    expect(screen.getByText('Goal at GS')).toBeTruthy();
+    expect(screen.getByText('Q2 · 4:05 left')).toBeTruthy();
+    expect(screen.queryByText('Q1 · 8:20 left')).toBeNull();
+    await press('Gains (1)');
+    expect(screen.getByText('Q1 · 8:20 left')).toBeTruthy();
+    expect(screen.getByText('Gain (intercept) at GA')).toBeTruthy();
+    expect(screen.queryByText('Q1 · 9:50 left')).toBeNull();
+    await press('Gains (1)');
+    expect(screen.queryByText('Q1 · 8:20 left')).toBeNull();
+  });
+
+  it('starts an observation about a moment, saying where in the game it is', async () => {
+    const push = jest.spyOn(router, 'push').mockImplementation(() => {});
+    await openGame();
+    await press('Turnovers (1)');
+    await press('Q3 · 0:05 left');
+    expect(push).toHaveBeenLastCalledWith({
+      pathname: '/assessments/observe',
+      params: { round: 'r1', athlete: 'a1', context: 'game', on: '2026-10-17', about: 'v Stars, Q3 0:05 left, turnover (bad pass) at GA: ' },
+    });
+    push.mockRestore();
+  });
+
+  it('lists moments in a closed round but starts nothing from them', async () => {
+    const push = jest.spyOn(router, 'push').mockImplementation(() => {});
+    await openGame({ assessment: { ...ASSESSMENT, closed: true } as unknown as AthleteAssessment });
+    await press('Goals (2)');
+    await press('Q1 · 9:50 left');
+    expect(push).not.toHaveBeenCalled();
+    expect(screen.queryByText('Tap a moment to write about it.')).toBeNull();
+    push.mockRestore();
+  });
+
+  it('folds the list when another game is opened', async () => {
+    await openAthlete([game(), game({ fixture_id: 'fx2', opponent: 'Planets' })], { stats: STATS, moments: MOMENTS });
+    await press('Games (2)');
+    await press(`v Stars · ${d('2026-10-17')}`);
+    await press('Goals (2)');
+    await press(`v Planets · ${d('2026-10-17')}`);
+    expect(screen.queryByText('Q1 · 9:50 left')).toBeNull();
+    expect(screen.getByText(/Tap a kind/)).toBeTruthy();
+  });
+
+  it.each([
+    ['none are sent, as from a function not yet updated', undefined],
+    ['the list is empty', []],
+    ['the answer is not a list', 'lots'],
+  ])('shows the stats and no Moments when %s', async (_, moments) => {
+    await openGame({ moments });
+    expect(screen.getByText('Time on court')).toBeTruthy();
+    expect(screen.queryByText('Moments')).toBeNull();
+  });
+
+  it('shows no moments without stats, whatever the answer holds', async () => {
+    await openGame({ stats: null });
+    expect(screen.getByText('No stats for this athlete in this game.')).toBeTruthy();
+    expect(screen.queryByText('Moments')).toBeNull();
+  });
+
+  it('leaves out a moment it can’t read', async () => {
+    await openGame({ moments: [...MOMENTS, { quarter: 'x', left: 1, kind: 'goal', position: 'GS' }, { quarter: 1, left: 1, kind: 'dance', position: 'GS' }, null] });
+    expect(screen.getByText('Goals (2)')).toBeTruthy();
+  });
+});
+
 describe('an observation started from a game', () => {
   async function openObserve(query: string) {
     await openScreen('coach', { 'assessments/observe': ObserveScreen }, `/assessments/observe?round=r1&athlete=a1${query}`, {}, {
@@ -316,6 +409,16 @@ describe('an observation started from a game', () => {
   it('is about a game, on the game’s day', async () => {
     await openObserve('&context=game&on=2026-10-17');
     expect(await saved()).toMatchObject({ p_context: 'game', p_observed_on: '2026-10-17' });
+  });
+
+  it('starts with where in the game the moment is, for the selector to finish', async () => {
+    await openObserve(`&context=game&on=2026-10-17&about=${encodeURIComponent('v Stars, Q3 0:05 left, turnover at GA: ')}`);
+    expect(screen.getByDisplayValue('v Stars, Q3 0:05 left, turnover at GA: ')).toBeTruthy();
+  });
+
+  it('starts empty when it isn’t about a moment', async () => {
+    await openObserve('&context=game&on=2026-10-17');
+    expect(screen.queryByDisplayValue(/Q3/)).toBeNull();
   });
 
   it('is at training today when opened the usual way', async () => {

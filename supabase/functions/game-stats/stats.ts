@@ -159,12 +159,77 @@ export function athleteFigures(engine: Engine, config: GameConfig, events: GameE
   return figures;
 }
 
+/** One thing the athlete did in the game, and when on the game clock. Never anyone else, and no name. */
+export interface AthleteMoment {
+  quarter: number;
+  /** Seconds left on the quarter clock, as the statistician's tablet showed it. */
+  left: number;
+  kind: 'goal' | 'miss' | 'gain' | 'turnover' | 'feed' | 'centre pass' | 'touch' | 'penalty' | 'rebound';
+  /** The position they held then. */
+  position: string;
+  /** Such as "Intercept" for a gain, or "offensive" for a rebound. */
+  detail?: string;
+}
+
+/** A game holds a few hundred events for a whole team; one athlete's share is far below this. */
+export const MAX_MOMENTS = 300;
+
+const MOMENT_OF: Record<string, AthleteMoment['kind']> = {
+  Goal: 'goal',
+  Miss: 'miss',
+  'Won it': 'gain',
+  'Lost it': 'turnover',
+  Feed: 'feed',
+  Receive: 'centre pass',
+  Touch: 'touch',
+  Penalty: 'penalty',
+};
+
+/**
+ * The athlete's own moments in the game, in the order they happened: what
+ * they did, the quarter and the time left on its clock, so a selector can
+ * find it in the club's video of the game. Found as their figures are: by
+ * who held the position when it was recorded. Corrections are applied and
+ * deleted events left out. Nothing about a team mate or the opposition.
+ */
+export function athleteMoments(engine: Engine, events: GameEvent[], names: string[]): AthleteMoment[] {
+  const wanted = new Set(names.map(plain).filter(Boolean));
+  if (!wanted.size) return [];
+  const mine = (label: string | undefined) => !!label && wanted.has(plain(label));
+  const lineups = engine.lineupsAt(events);
+  const moments: AthleteMoment[] = [];
+
+  for (const e of engine.liveEvents(events)) {
+    if (e.type !== 'action') continue;
+    const a = e.payload;
+    const lineup = lineups.get(e.id);
+    const quarter = Number.isFinite(a.period) ? a.period : 0;
+    const left = Math.max(0, Math.round((Number.isFinite(a.clockMs) ? a.clockMs : 0) / 1000));
+    const kind = MOMENT_OF[a.action];
+    if (kind && a.team === 'us' && a.player && a.player !== '?' && mine(lineup?.[a.player])) {
+      const moment: AthleteMoment = { quarter, left, kind, position: a.player };
+      if (typeof a.cause === 'string' && a.cause) moment.detail = a.cause;
+      moments.push(moment);
+    }
+    // A rebound is recorded on the miss, ours or theirs, with which of our players took it.
+    if (a.action === 'Miss' && a.rebounder && a.rebounder !== '?' && mine(lineup?.[a.rebounder])) {
+      moments.push({ quarter, left, kind: 'rebound', position: a.rebounder, detail: a.team === 'us' ? 'offensive' : 'defensive' });
+    }
+    if (moments.length >= MAX_MOMENTS) break;
+  }
+  return moments.slice(0, MAX_MOMENTS);
+}
+
 /**
  * POST { athleteId, fixtureId } as a signed-in member. Answers { stats } with
  * the athlete's figures, or { stats: null } when there is nothing the caller
  * may see: no finished recording, not their athlete, the athlete didn't play,
  * or a shared name. The same answer for each, so it says nothing about games
  * the caller can't see.
+ *
+ * With `moments: true` in the body it also answers { moments }: the same
+ * athlete's own moments in the game (athleteMoments), for the same callers
+ * and under the same check. Empty whenever stats is null.
  */
 export async function handleStats(request: Request, deps: Deps): Promise<Response> {
   if (request.method === 'OPTIONS') return new Response('ok', { headers: cors });
@@ -172,7 +237,7 @@ export async function handleStats(request: Request, deps: Deps): Promise<Respons
   const authorization = request.headers.get('authorization') ?? '';
   if (!/^Bearer \S+/i.test(authorization)) return json(401, { error: 'Sign in first.' });
 
-  let body: { athleteId?: unknown; fixtureId?: unknown };
+  let body: { athleteId?: unknown; fixtureId?: unknown; moments?: unknown };
   try {
     body = await request.json();
   } catch {
@@ -185,10 +250,13 @@ export async function handleStats(request: Request, deps: Deps): Promise<Respons
 
   try {
     const access = await deps.access(authorization, athleteId, fixtureId);
-    if (!access || !Array.isArray(access.names) || access.names.length === 0) return json(200, { stats: null });
+    const withMoments = body.moments === true;
+    const nothing = withMoments ? { stats: null, moments: [] } : { stats: null };
+    if (!access || !Array.isArray(access.names) || access.names.length === 0) return json(200, nothing);
     const events = recordOf(deps.engine, await deps.events(access.game_id));
     const stats = athleteFigures(deps.engine, configOf(access.config), events, access.names, access.net_points === true);
-    return json(200, { stats });
+    if (!withMoments) return json(200, { stats });
+    return json(200, { stats, moments: stats ? athleteMoments(deps.engine, events, access.names) : [] });
   } catch (err) {
     // Counts and ids only: never an event or a name.
     deps.logger.error('game-stats failed', err instanceof Error ? err.message : 'unknown error');
