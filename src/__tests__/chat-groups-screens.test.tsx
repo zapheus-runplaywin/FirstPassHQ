@@ -197,6 +197,45 @@ describe('the Groups tab', () => {
     expect(screen.getByText('Read only')).toBeTruthy();
   });
 
+  it('offers admins a New group button, even when they’re in no groups', async () => {
+    const push = jest.spyOn(router, 'push').mockImplementation(() => {});
+    await openList('admin', []);
+    await fireEvent.press(screen.getByText('Groups'));
+    await settle();
+    expect(screen.getByText(/You’re not in any chat groups yet/)).toBeTruthy();
+    await fireEvent.press(screen.getByText('New group'));
+    expect(push).toHaveBeenCalledWith('/admin/chat-groups/edit');
+    push.mockRestore();
+  });
+
+  it('shows the New group button above an admin’s groups too', async () => {
+    await openList('admin', [group()]);
+    await fireEvent.press(screen.getByText('Groups'));
+    await settle();
+    expect(screen.getByText('New group')).toBeTruthy();
+  });
+
+  it.each(['coach', 'manager', 'guardian', 'athlete'] as const)(
+    'gives a %s no New group button',
+    async (who) => {
+      await openList(who, [group()]);
+      await fireEvent.press(screen.getByText('Groups'));
+      await settle();
+      expect(screen.queryByText('New group')).toBeNull();
+    },
+  );
+
+  it('keeps Inbox, Sent, Archived and Groups on one line', async () => {
+    await openList('coach', [group({ unread_count: 12 })]);
+    const line = screen.container.queryAll(
+      (n) => n.props.horizontal === true && n.props.contentContainerStyle?.flexDirection === 'row',
+    );
+    expect(line).toHaveLength(1);
+    for (const tab of ['Inbox', 'Sent', 'Archived', 'Groups (12)']) {
+      expect(screen.getByText(tab).props.numberOfLines).toBe(1);
+    }
+  });
+
   it('says so when the member is in no groups', async () => {
     await openList('athlete', []);
     await fireEvent.press(screen.getByText('Groups'));
@@ -386,6 +425,16 @@ describe('a chat group', () => {
     expect(rpcCalls('set_chat_group_hidden')).toEqual([
       { p_group_id: 'g-captains', p_hidden: false },
     ]);
+  });
+
+  it('shows a group an admin set up with nobody else in it yet, without a box to post in', async () => {
+    await openGroup('admin', group({ kind: 'custom', name: 'Just me', member_count: 1 }), {
+      posts: [],
+      members: [MEMBERS[0]],
+    });
+    expect(screen.container.queryAll((n) => n.type === 'TextInput')).toHaveLength(0);
+    expect(screen.getByText(/^Nobody else is in this group yet\./)).toBeTruthy();
+    expect(screen.getByText('No posts yet.')).toBeTruthy();
   });
 
   it('says so when the group isn’t available', async () => {

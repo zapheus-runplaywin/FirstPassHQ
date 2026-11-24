@@ -3741,7 +3741,8 @@ Switch on **Chat groups** in [Club features](#club-settings) (it starts off). Ev
 then gets its automatic groups (see [Chat groups](#chat-groups)), and **Administration › Chat
 groups** lists the groups admins set up.
 
-Tap **New group**, give it a name, and choose who is in it:
+Tap **New group** (it's also at the top of **Messages › Groups** for admins), give it a name, and
+choose who is in it:
 
 - **Squads and teams** (optional): everyone in them, or only the **roles** you tick in them
   (athletes, coaches, managers or physios).
@@ -3751,7 +3752,8 @@ Tap **New group**, give it a name, and choose who is in it:
 
 The screen says how many people that is now. If any of them are under 18, a warning says how
 many, and **Save** asks once more (**Save with under 18s in it**) before setting it up. Who is in it is worked out
-each time someone posts, so it follows squad and team changes. Guests and temporary helpers are
+each time someone posts, so it follows squad and team changes. The group shows in its members'
+**Messages › Groups** straight away; posting starts once someone besides you is in it. Guests and temporary helpers are
 never in a group, and nor is anyone stood down. Members under 18 read an admin's group but can't post
 in it, and their parents or guardians get a copy of every post.
 
@@ -3759,6 +3761,7 @@ You see each group's members and how many posts it has, never the posts, unless 
 **Close the group** keeps every post but stops new ones; **Open the group again** undoes it.
 Groups are never deleted.
 
+<img src="user-guide/admin-groups-tab.png" width="210" alt="New group at the top of Messages › Groups, for admins">
 <img src="user-guide/admin-chat-group.png" width="210" alt="Setting up a chat group for a squad, with the warning that it includes members under 18">
 
 ### Messages to the club or a role

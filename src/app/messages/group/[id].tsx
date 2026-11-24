@@ -32,6 +32,7 @@ import {
   peopleCount,
   postingNote,
   POSTS_PAGE,
+  ALONE_NOTE,
   readOnlyNote,
   UNDER_18_POSTING_NOTE,
 } from '@/lib/chat-groups';
@@ -190,6 +191,10 @@ export default function ChatGroupScreen() {
   }
 
   const note = readOnlyNote(group.read_only_reason);
+  // A group an admin set up shows before anyone else is in it; posting waits
+  // until someone is.
+  const alone = group.member_count < 2;
+  const canPost = group.can_post && !alone;
 
   function renderPost({ item: p }: { item: ChatPost }) {
     // A post a coach hid: only its author, the group's coaches and the
@@ -258,11 +263,13 @@ export default function ChatGroupScreen() {
   }
 
   // In an upside-down list the header sits at the foot, under the newest post.
-  const footNote = group.can_post
-    ? under18
-      ? UNDER_18_POSTING_NOTE
-      : postingNote(members.some((m) => m.under_18))
-    : note;
+  const footNote = alone
+    ? ALONE_NOTE
+    : canPost
+      ? under18
+        ? UNDER_18_POSTING_NOTE
+        : postingNote(members.some((m) => m.under_18))
+      : note;
 
   return (
     <ThemedView style={styles.container}>
@@ -336,12 +343,12 @@ export default function ChatGroupScreen() {
           ListEmptyComponent={
             <ThemedText type="small" themeColor="textSecondary" style={styles.empty}>
               No posts yet.
-              {group.can_post ? ' Start the conversation below.' : ''}
+              {canPost ? ' Start the conversation below.' : ''}
             </ThemedText>
           }
         />
 
-        {group.can_post ? (
+        {canPost ? (
           <View style={[styles.composer, { borderTopColor: theme.backgroundElement }]}>
             <ErrorText>{error}</ErrorText>
             <View style={styles.row}>

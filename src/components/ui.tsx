@@ -3,6 +3,7 @@ import {
   ActivityIndicator,
   Keyboard,
   Pressable,
+  ScrollView,
   StyleSheet,
   TextInput,
   View,
@@ -145,38 +146,60 @@ export function ChipGroup<T extends string>({
   options,
   selected,
   onToggle,
+  oneLine = false,
 }: {
   label?: string;
   options: { value: T; label: string }[];
   selected: T[];
   onToggle: (value: T) => void;
+  /**
+   * Keeps the chips on one line, tighter, as tabs. If they still don't fit
+   * (large text sizes), the line scrolls sideways rather than wrapping.
+   */
+  oneLine?: boolean;
 }) {
   const theme = useTheme();
+  const chips = options.map((option) => {
+    const isSelected = selected.includes(option.value);
+    return (
+      <Pressable
+        key={option.value}
+        accessibilityRole="button"
+        accessibilityState={{ selected: isSelected }}
+        onPress={() => onToggle(option.value)}
+        style={[
+          styles.chip,
+          oneLine && styles.tightChip,
+          {
+            backgroundColor: isSelected ? theme.accent : theme.backgroundElement,
+          },
+        ]}>
+        <ThemedText
+          type="small"
+          numberOfLines={oneLine ? 1 : undefined}
+          style={isSelected ? { color: theme.onAccent } : undefined}>
+          {option.label}
+        </ThemedText>
+      </Pressable>
+    );
+  });
+  if (oneLine) {
+    return (
+      <View style={styles.field}>
+        {label ? <ThemedText type="smallBold">{label}</ThemedText> : null}
+        <ScrollView
+          horizontal
+          showsHorizontalScrollIndicator={false}
+          contentContainerStyle={styles.chipLine}>
+          {chips}
+        </ScrollView>
+      </View>
+    );
+  }
   return (
     <View style={styles.field}>
       {label ? <ThemedText type="smallBold">{label}</ThemedText> : null}
-      <View style={styles.chips}>
-        {options.map((option) => {
-          const isSelected = selected.includes(option.value);
-          return (
-            <Pressable
-              key={option.value}
-              accessibilityRole="button"
-              accessibilityState={{ selected: isSelected }}
-              onPress={() => onToggle(option.value)}
-              style={[
-                styles.chip,
-                {
-                  backgroundColor: isSelected ? theme.accent : theme.backgroundElement,
-                },
-              ]}>
-              <ThemedText type="small" style={isSelected ? { color: theme.onAccent } : undefined}>
-                {option.label}
-              </ThemedText>
-            </Pressable>
-          );
-        })}
-      </View>
+      <View style={styles.chips}>{chips}</View>
     </View>
   );
 }
@@ -262,6 +285,13 @@ const styles = StyleSheet.create({
     paddingHorizontal: Spacing.three,
     paddingVertical: Spacing.two,
     borderRadius: 999,
+  },
+  tightChip: {
+    paddingHorizontal: 12,
+  },
+  chipLine: {
+    flexDirection: 'row',
+    gap: Spacing.two,
   },
   confirm: {
     gap: Spacing.three,

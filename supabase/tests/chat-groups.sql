@@ -330,6 +330,13 @@ select pg_temp.fails('in teams, only team roles', $s$select public.admin_save_ch
 select pg_temp.ok('the committee plus Alex comes to four people', (select member_count = 4 and under_18_count = 0 from public.admin_chat_group_preview('{committee}', '{}', array[pg_temp.id('01')])), true);
 insert into grp values ('committee', public.admin_save_chat_group(null, 'Committee chat', '{committee}', '{}', array[pg_temp.id('01')]));
 select pg_temp.fails('names are unique among open groups', $s$select public.admin_save_chat_group(null, 'committee CHAT', '{committee}', '{}', '{}')$s$, '%already a group called%');
+-- A group an admin sets up shows straight away, even with only them in it
+-- (Matt, 24 November 2026); posting waits for someone else.
+insert into grp values ('just me', public.admin_save_chat_group(null, 'Just me', '{}', '{}', array[pg_temp.id('01')]));
+select pg_temp.ok('Alex sees the group he set up with only himself in it', (pg_temp.mine('just me')).member_count = 1, true);
+select pg_temp.ok('and can open it', exists (select 1 from public.chat_group_members(pg_temp.g('just me'))), true);
+select pg_temp.fails('but can''t post until someone else is in it', $s$select public.post_to_chat_group(pg_temp.g('just me'), 'Hello?')$s$, '%Nobody else is in this group yet%');
+select public.admin_set_chat_group_closed(pg_temp.g('just me'), true);
 select pg_temp.eq('committee group members', pg_temp.people('committee'), '01,21,22,23');
 select pg_temp.eq('Alex posts in it', pg_temp.post('committee 1', 'committee', 'AGM agenda attached'), 'posted');
 select pg_temp.as_member('22');
