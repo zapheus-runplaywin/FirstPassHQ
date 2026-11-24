@@ -3741,7 +3741,8 @@ Switch on **Chat groups** in [Club features](#club-settings) (it starts off). Ev
 then gets its automatic groups (see [Chat groups](#chat-groups)), and **Administration › Chat
 groups** lists the groups admins set up.
 
-Tap **New group**, give it a name, and choose who is in it:
+Tap **New group** (it's also at the top of **Messages › Groups** for admins), give it a name, and
+choose who is in it:
 
 - **Squads and teams** (optional): everyone in them, or only the **roles** you tick in them
   (athletes, coaches, managers or physios).

@@ -37,10 +37,13 @@ import {
   movedToInbox,
 } from '@/lib/inbox';
 import { supabase } from '@/lib/supabase';
+import { hasRole } from '@/lib/roles';
 import type { InboxMessage, SentMessage } from '@/lib/types';
 
 export default function MessagesScreen() {
-  const { session } = useAuth();
+  const { session, profile } = useAuth();
+  // Admins set up groups in Administration; the Groups tab offers it too.
+  const isAdmin = !!profile && hasRole(profile, 'admin');
   const canSend = useCanSendMessages();
   const groupsOn = useChatGroupsOn();
   const theme = useTheme();
@@ -157,7 +160,7 @@ export default function MessagesScreen() {
       ) : box === 'archived' ? (
         <Archived messages={archived} onMoveToInbox={moveToInbox} />
       ) : box === 'groups' && groupsOn ? (
-        <Groups groups={groups} />
+        <Groups groups={groups} canSetUp={isAdmin} />
       ) : (
         <Sent messages={sent} />
       )}
@@ -344,19 +347,30 @@ function Sent({ messages }: { messages: SentMessage[] | null }) {
   );
 }
 
-function Groups({ groups }: { groups: ChatGroup[] | null }) {
+function Groups({ groups, canSetUp }: { groups: ChatGroup[] | null; canSetUp: boolean }) {
   if (groups === null) return null;
+  const setUp = canSetUp ? (
+    <Button
+      title="New group"
+      variant="secondary"
+      onPress={() => router.push('/admin/chat-groups/edit')}
+    />
+  ) : null;
   if (groups.length === 0) {
     return (
-      <ThemedText type="small" themeColor="textSecondary">
-        You’re not in any chat groups yet. Each squad’s and team’s coaches, managers, captains and
-        physios get groups of their own, and admins can set up others.
-      </ThemedText>
+      <View style={styles.list}>
+        {setUp}
+        <ThemedText type="small" themeColor="textSecondary">
+          You’re not in any chat groups yet. Each squad’s and team’s coaches, managers, captains and
+          physios get groups of their own, and admins can set up others.
+        </ThemedText>
+      </View>
     );
   }
   const { shown, hidden } = splitHidden(groups);
   return (
     <View style={styles.list}>
+      {setUp}
       {shown.length === 0 ? (
         <ThemedText type="small" themeColor="textSecondary">
           You’ve hidden all your groups. They’re under Hidden groups.

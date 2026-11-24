@@ -197,6 +197,34 @@ describe('the Groups tab', () => {
     expect(screen.getByText('Read only')).toBeTruthy();
   });
 
+  it('offers admins a New group button, even when they’re in no groups', async () => {
+    const push = jest.spyOn(router, 'push').mockImplementation(() => {});
+    await openList('admin', []);
+    await fireEvent.press(screen.getByText('Groups'));
+    await settle();
+    expect(screen.getByText(/You’re not in any chat groups yet/)).toBeTruthy();
+    await fireEvent.press(screen.getByText('New group'));
+    expect(push).toHaveBeenCalledWith('/admin/chat-groups/edit');
+    push.mockRestore();
+  });
+
+  it('shows the New group button above an admin’s groups too', async () => {
+    await openList('admin', [group()]);
+    await fireEvent.press(screen.getByText('Groups'));
+    await settle();
+    expect(screen.getByText('New group')).toBeTruthy();
+  });
+
+  it.each(['coach', 'manager', 'guardian', 'athlete'] as const)(
+    'gives a %s no New group button',
+    async (who) => {
+      await openList(who, [group()]);
+      await fireEvent.press(screen.getByText('Groups'));
+      await settle();
+      expect(screen.queryByText('New group')).toBeNull();
+    },
+  );
+
   it('says so when the member is in no groups', async () => {
     await openList('athlete', []);
     await fireEvent.press(screen.getByText('Groups'));
