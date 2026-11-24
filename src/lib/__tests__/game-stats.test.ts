@@ -9,10 +9,16 @@ import {
   adminGameStatus,
   adminGameTitle,
   fetchAdminGames,
+  fetchGameEvidence,
   fetchGameStats,
+  momentChips,
+  momentEvidence,
+  momentLabel,
+  momentTime,
   minutesLabel,
   netPointsLabel,
   statLines,
+  type GameMoment,
   type GameStats,
 } from '@/lib/game-stats';
 import { supabase } from '@/lib/supabase';
@@ -157,5 +163,76 @@ describe('fetchAdminGames', () => {
   it('passes on why the list couldn’t be read', async () => {
     rpc.mockResolvedValue({ data: null, error: { message: 'permission denied' } });
     await expect(fetchAdminGames()).rejects.toThrow('permission denied');
+  });
+});
+
+describe('an athlete’s moments in a game', () => {
+  const GOAL: GameMoment = { quarter: 1, left: 590, kind: 'goal', position: 'GS' };
+  const GAIN: GameMoment = { quarter: 2, left: 245, kind: 'gain', position: 'GD', detail: 'Intercept' };
+  const REBOUND: GameMoment = { quarter: 4, left: 0, kind: 'rebound', position: 'GK', detail: 'defensive' };
+
+  it('asks the game-stats function for the moments too, and gives both', async () => {
+    invoke.mockResolvedValue({ data: { stats: SHOOTER, moments: [GOAL, GAIN] }, error: null });
+    await expect(fetchGameEvidence('a1', 'f1')).resolves.toEqual({ stats: SHOOTER, moments: [GOAL, GAIN] });
+    expect(invoke).toHaveBeenCalledWith('game-stats', { body: { athleteId: 'a1', fixtureId: 'f1', moments: true } });
+  });
+
+  it('gives the stats and no moments from a function that doesn’t send them yet', async () => {
+    invoke.mockResolvedValue({ data: { stats: SHOOTER }, error: null });
+    await expect(fetchGameEvidence('a1', 'f1')).resolves.toEqual({ stats: SHOOTER, moments: [] });
+  });
+
+  it('keeps only moments it can read', async () => {
+    invoke.mockResolvedValue({
+      data: { stats: SHOOTER, moments: [GOAL, null, 'x', { ...GOAL, kind: 'dance' }, { ...GOAL, quarter: 'one' }, { ...GOAL, left: null }, { ...GOAL, position: 3 }, REBOUND] },
+      error: null,
+    });
+    expect((await fetchGameEvidence('a1', 'f1')).moments).toEqual([GOAL, REBOUND]);
+  });
+
+  it.each<[string, unknown]>([
+    ['no stats, even with moments in the answer', { data: { stats: null, moments: [GOAL] }, error: null }],
+    ['an empty answer', { data: null, error: null }],
+    ['the function failing', { data: null, error: { name: 'FunctionsHttpError', message: '500' } }],
+  ])('gives nothing for %s', async (_l, answer) => {
+    invoke.mockResolvedValue(answer);
+    await expect(fetchGameEvidence('a1', 'f1')).resolves.toEqual({ stats: null, moments: [] });
+  });
+
+  it('gives nothing when the server can’t be reached at all', async () => {
+    invoke.mockRejectedValue(new Error('offline'));
+    await expect(fetchGameEvidence('a1', 'f1')).resolves.toEqual({ stats: null, moments: [] });
+    invoke.mockRejectedValue('offline');
+    await expect(fetchGameEvidence('a1', 'f1')).resolves.toEqual({ stats: null, moments: [] });
+  });
+
+  it('says the quarter and the time left on its clock', () => {
+    expect(momentTime(GOAL)).toBe('Q1 · 9:50 left');
+    expect(momentTime(GAIN)).toBe('Q2 · 4:05 left');
+    expect(momentTime(REBOUND)).toBe('Q4 · 0:00 left');
+    expect(momentTime({ quarter: 3, left: -4 })).toBe('Q3 · 0:00 left');
+  });
+
+  it('says what it was, why, and where they were playing', () => {
+    expect(momentLabel(GOAL)).toBe('Goal at GS');
+    expect(momentLabel(GAIN)).toBe('Gain (intercept) at GD');
+    expect(momentLabel(REBOUND)).toBe('Rebound (defensive) at GK');
+    expect(momentLabel({ kind: 'turnover', position: 'C', detail: ' ' })).toBe('Turnover at C');
+    expect(momentLabel({ kind: 'centre pass', position: 'WA' })).toBe('Centre pass at WA');
+  });
+
+  it('offers only the kinds there are, in a fixed order, with how many', () => {
+    expect(momentChips([GAIN, GOAL, GOAL, REBOUND])).toEqual([
+      { kind: 'goal', label: 'Goals', count: 2 },
+      { kind: 'gain', label: 'Gains', count: 1 },
+      { kind: 'rebound', label: 'Rebounds', count: 1 },
+    ]);
+    expect(momentChips([])).toEqual([]);
+  });
+
+  it('starts an observation with the game, the time and the moment', () => {
+    expect(momentEvidence('Stars', GAIN)).toBe('v Stars, Q2 4:05 left, gain (intercept) at GD: ');
+    expect(momentEvidence(null, GOAL)).toBe('Q1 9:50 left, goal at GS: ');
+    expect(momentEvidence('  ', GOAL)).toBe('Q1 9:50 left, goal at GS: ');
   });
 });

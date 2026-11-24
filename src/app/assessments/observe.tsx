@@ -28,14 +28,16 @@ const NOT_RATED = '0';
  * that is locked (opened with the id it corrects).
  */
 export default function ObserveScreen() {
-  // `context` and `on` start a new observation about a game from the athlete's Games tab.
-  const { round, athlete, id, corrects, context: startContext, on: startOn } = useLocalSearchParams<{
+  // `context`, `on` and `about` start a new observation about a game, or one moment in it,
+  // from the athlete's Games tab.
+  const { round, athlete, id, corrects, context: startContext, on: startOn, about } = useLocalSearchParams<{
     round: string;
     athlete: string;
     id?: string;
     corrects?: string;
     context?: string;
     on?: string;
+    about?: string;
   }>();
   const [assessment, setAssessment] = useState<AthleteAssessment | null>(null);
   const [context, setContext] = useState<ObservationContext | null>('training');
@@ -71,9 +73,11 @@ export default function ObserveScreen() {
           if (CONTEXTS.some((c) => c.value === startContext)) setContext(startContext as ObservationContext);
           // A day in the round, never one still to come: the form's own check covers the rest.
           setObservedOn(startOn && /^\d{4}-\d{2}-\d{2}$/.test(startOn) && startOn <= loaded.today ? startOn : loaded.today);
+          // Where and when in the game, for the selector to finish with what they saw.
+          if (typeof about === 'string' && about) setNote(about.slice(0, MAX_EVIDENCE));
         }
       });
-  }, [round, athlete, id, startContext, startOn]);
+  }, [round, athlete, id, startContext, startOn, about]);
 
   if (!assessment) {
     return (

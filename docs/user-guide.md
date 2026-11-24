@@ -1842,8 +1842,15 @@ you can share feedback with each athlete.
   observation for that day. A game nobody recorded is listed without stats. Every selector on the
   panel sees the same figures, for games between the round's first and last day only. They're
   one athlete's figures, never a comparison.
+- **Moments.** Under a recorded game's stats, **Moments** shows what the athlete did as chips with
+  a count, such as **Goals (12)**, **Gains (3)** or **Turnovers (2)**. Tap one to list each moment
+  with its quarter, the time left on the game clock and the position they were playing, such as
+  "Q2 · 4:05 left, Gain (intercept) at GD", so you can find it in the club's video of the game.
+  Tap a moment to start an observation that already says which game and when; you add what you
+  saw. HQ holds no video and makes no file: the moments are the athlete's own, with nobody else
+  named, and go to the same people as the stats.
 
-  <img src="user-guide/assessments-games.png" width="210" alt="The Games tab on an athlete's assessment: a game open with the athlete's stats and Write about this game">
+  <img src="user-guide/assessments-games.png" width="210" alt="The Games tab on an athlete's assessment: a game open with the athlete's stats, their gains listed under Moments with quarter and time, and Write about this game">
 
 - **Dates and reminders.** When an admin sets dates for the round, such as **Observations
   complete** or **Panel meeting**, the top of the round shows the next one still to do and how
@@ -4833,7 +4840,8 @@ Working With Children Check, and another admin must do it.
 - **Your child's own game stats are for their coaches.** After a game recorded in FirstPass
   Vantage, your child's own figures show beside their game goals to their current coaches. If the
   club uses selection assessments, the selectors on the panel of your child's selection round see
-  the same figures for games played during the round, and only while they are on that panel with
+  the same figures for games played during the round, with a list of what your child did and
+  when in the game (their own moments only, no video), and only while they are on that panel with
   a current check; a selector who is your child's parent or guardian doesn't. Nobody else sees
   them: not your child or you in the app, and not other families, team
   mates, managers, physios, the committee or admins who aren't on the panel. There is no ranking or comparison with other
@@ -4920,7 +4928,7 @@ Working With Children Check, and another admin must do it.
   nobody else can see them, and they can't be shared, liked or sent to anyone.
 - **Your game stats stay with your coaches and selectors.** After a recorded game only your
   coaches see your own figures, beside your goals, and, during a selection round, the selectors on
-  its panel. Team mates never see yours, you never see theirs, and nothing ranks
+  its panel, who can also see what you did and when in the game. Team mates never see yours, you never see theirs, and nothing ranks
   you against anyone.
 - **You're told who sees what you write**: on the check-in, on injury reports, on game goals and
   when you join. Your coaches see your check-ins and injuries once a parent or guardian agrees.
@@ -5040,8 +5048,8 @@ Working With Children Check, and another admin must do it.
   children. In HQ an athlete's own figures from a finished game show only to their current
   coaches, beside the game's goals, and, when you use selection assessments, to the selectors you
   put on the panel of a round the game was played in, on the athlete's assessment; the athlete, their parents or guardians and team mates don't
-  see them. The app's server checks who is asking each time and sends only that one athlete's
-  figures, and a lapsed or stood-down coach or selector gets none. A selector sees figures only for games between the
+  see them. A selector also sees that athlete's own moments in the game (what they did, the quarter and the time on the clock), with no video and nobody else named. The app's server checks who is asking each time and sends only that one athlete's
+  figures and moments, and a lapsed or stood-down coach or selector gets none. A selector sees figures only for games between the
   round's first and last day, never for their own child, and loses them when taken off the panel. Admins
   see which games were recorded (**Games** in Administration), not the stats.
 - **Copies of game stats that leave the app.** A game report saved or printed from FirstPass
