@@ -130,6 +130,7 @@ export default function MessagesScreen() {
           <Button title="New message" onPress={() => router.push('/messages/new')} />
         ) : null}
         <ChipGroup
+          oneLine
           options={messageBoxes(canSend, groupsOn, groupsUnread(groups ?? []))}
           selected={[box]}
           onToggle={(next) => {

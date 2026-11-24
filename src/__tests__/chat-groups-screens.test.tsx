@@ -225,6 +225,17 @@ describe('the Groups tab', () => {
     },
   );
 
+  it('keeps Inbox, Sent, Archived and Groups on one line', async () => {
+    await openList('coach', [group({ unread_count: 12 })]);
+    const line = screen.container.queryAll(
+      (n) => n.props.horizontal === true && n.props.contentContainerStyle?.flexDirection === 'row',
+    );
+    expect(line).toHaveLength(1);
+    for (const tab of ['Inbox', 'Sent', 'Archived', 'Groups (12)']) {
+      expect(screen.getByText(tab).props.numberOfLines).toBe(1);
+    }
+  });
+
   it('says so when the member is in no groups', async () => {
     await openList('athlete', []);
     await fireEvent.press(screen.getByText('Groups'));
