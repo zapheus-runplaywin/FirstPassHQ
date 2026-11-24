@@ -11,8 +11,8 @@
  *   in them), told that their parents get a copy, and otherwise a note and no
  *   box (AGENTS.md, "No social media features for children", reassessed
  *   24 November 2026);
- * - the group's coaches can remove a post, after confirming; nobody else is
- *   offered it;
+ * - the group's coaches swipe a post to hide it (or show it again); nobody
+ *   else is offered it;
  * - members can hide a group, and hidden groups fold away;
  * - admins set up groups by roles, squads and teams, and people.
  */
@@ -114,7 +114,7 @@ const POSTS: ChatPost[] = [
     id: 'p2',
     sender_id: 'someone',
     sender_name: 'Sample captain',
-    body: 'Removed by Sample coach',
+    body: 'Bring the cones',
     created_at: '2026-11-24T07:05:00Z',
     mine: false,
     body_removed: false,
@@ -252,11 +252,24 @@ async function scrollToOldest() {
   await settle();
 }
 
+/** The group's coach's swipe action on each post, newest first. */
+function swipeRows() {
+  return screen.container.queryAll(
+    (n) => n.props.accessibilityActions?.[0]?.name === 'swipeAction',
+  );
+}
+
+async function swipeAction(row: ReturnType<typeof swipeRows>[number]) {
+  await fireEvent(row, 'accessibilityAction', { nativeEvent: { actionName: 'swipeAction' } });
+  await settle();
+}
+
 describe('a chat group', () => {
   it('shows its posts, marks them read and lets an adult post', async () => {
     await openGroup('coach', group());
     expect(screen.getByText('Warm-up at 5:30')).toBeTruthy();
-    expect(screen.getByText('Removed by Sample coach')).toBeTruthy();
+    expect(screen.getByText('Bring the cones')).toBeTruthy();
+    expect(screen.getByText(/^Hidden by Sample coach\./)).toBeTruthy();
     expect(rpcCalls('mark_chat_group_read')).toEqual([{ p_group_id: 'g-captains' }]);
     expect(
       screen.getByText(/Members under 18 are in it, so their parents or guardians get a copy/),
@@ -302,7 +315,7 @@ describe('a chat group', () => {
     ).toBeTruthy();
     // No list of who else is in it, only a way to hide it or report a post.
     expect(screen.getByText('Hide it, or report a post')).toBeTruthy();
-    expect(screen.queryByText('Remove post')).toBeNull();
+    expect(screen.queryByText('Hide')).toBeNull();
   });
 
   it('gives an under-18 no box where they read only', async () => {
@@ -328,22 +341,30 @@ describe('a chat group', () => {
     expect(screen.getByText(note)).toBeTruthy();
   });
 
-  it('lets the group’s coach remove a post after confirming, but not one already removed', async () => {
+  it('lets the group’s coach swipe a post to hide it, or a hidden one to show it again', async () => {
     await openGroup('coach', group({ can_remove: true }));
-    expect(screen.getAllByText('Remove post')).toHaveLength(1);
-    await fireEvent.press(screen.getByText('Remove post'));
-    expect(screen.getByText(/Remove this post for everyone\?/)).toBeTruthy();
-    await fireEvent.press(screen.getByText('Keep'));
+    // Behind each post, shown only once it's swiped left: Hide, or Show on a hidden one.
+    expect(swipeRows().map((r) => r.props.accessibilityActions[0].label)).toEqual(['Show', 'Hide']);
+    await fireEvent.press(screen.getByText('Hide'));
     expect(rpcCalls('remove_chat_post')).toHaveLength(0);
-    await fireEvent.press(screen.getByText('Remove post'));
-    await fireEvent.press(screen.getByText('Remove'));
-    await settle();
+    await swipeAction(swipeRows()[1]);
     expect(rpcCalls('remove_chat_post')).toEqual([{ p_message_id: 'p1' }]);
+    await swipeAction(swipeRows()[0]);
+    expect(rpcCalls('show_chat_post')).toEqual([{ p_message_id: 'p2' }]);
   });
 
-  it('offers nobody else a way to remove posts', async () => {
+  it('shows the database’s refusal to hide a post', async () => {
+    await openGroup('coach', group({ can_remove: true }), {
+      errors: { remove_chat_post: 'Only the group’s coaches can hide posts' },
+    });
+    await swipeAction(swipeRows()[1]);
+    expect(screen.getByText('Only the group’s coaches can hide posts')).toBeTruthy();
+  });
+
+  it('offers nobody else a way to hide posts', async () => {
     await openGroup('manager', group({ can_remove: false }));
-    expect(screen.queryByText('Remove post')).toBeNull();
+    expect(screen.queryByText('Hide')).toBeNull();
+    expect(screen.queryByText('Show')).toBeNull();
   });
 
   it('hides the group and goes back, or shows a hidden one again', async () => {
@@ -603,13 +624,14 @@ describe('a group post opened on its own', () => {
     chat_group_id: 'g-captains',
   };
 
-  it('shows who removed it instead of its text, and no inbox buttons for a member’s own copy', async () => {
+  it('shows a hidden post greyed out with who hid it, and no inbox buttons for a member’s own copy', async () => {
     await openScreen('coach', { 'messages/[id]': MessageScreen }, '/messages/msg-1', {
       messages: [POST],
       message_recipients: [COPY],
     });
-    expect(screen.getByText('Removed by Sample coach')).toBeTruthy();
-    expect(screen.queryByText('Something a coach removed')).toBeNull();
+    // Only its author, the group's coaches and the author's parents still get it.
+    expect(screen.getByText('Something a coach removed')).toBeTruthy();
+    expect(screen.getByText(/^Hidden from the group by Sample coach\./)).toBeTruthy();
     expect(screen.getByText(`To ${TEAM.name} coaches and captains`)).toBeTruthy();
     expect(screen.queryByText('Archive')).toBeNull();
     expect(screen.getByText('Report this message')).toBeTruthy();

@@ -9,8 +9,10 @@ import {
   peopleCount,
   postingNote,
   readOnlyNote,
-  removedLine,
+  hiddenLine,
   splitHidden,
+  SWIPE_ACTION_WIDTH,
+  swipeStaysOpen,
   TEAM_ROLES,
   under18Note,
   useChatGroupsOn,
@@ -18,7 +20,7 @@ import {
   type ChatPost,
 } from '@/lib/chat-groups';
 import { useFeature } from '@/lib/club';
-import { messageBoxes, shownBody } from '@/lib/inbox';
+import { hiddenNote, messageBoxes } from '@/lib/inbox';
 
 jest.mock('@/lib/club', () => ({ useFeature: jest.fn() }));
 
@@ -97,23 +99,17 @@ describe('notes', () => {
   });
 
   it('names who removed a post, in the group and on the message', () => {
-    expect(removedLine('Casey Coach')).toBe('Removed by Casey Coach');
-    expect(removedLine(null)).toBe('Removed by a coach');
-    expect(
-      shownBody({
-        body: 'Secret',
-        removed_at: '2026-11-24T00:00:00Z',
-        removed_by_name: 'Casey',
-      }),
-    ).toBe('Removed by Casey');
-    expect(
-      shownBody({
-        body: 'Secret',
-        removed_at: '2026-11-24T00:00:00Z',
-        removed_by_name: null,
-      }),
-    ).toBe('Removed by a coach');
-    expect(shownBody({ body: 'Hello', removed_at: null, removed_by_name: null })).toBe('Hello');
+    expect(hiddenLine('Casey Coach')).toBe(
+      'Hidden by Casey Coach. Only its author, the group’s coaches and the author’s parents see it.',
+    );
+    expect(hiddenLine(null)).toMatch(/^Hidden by a coach\./);
+    expect(hiddenNote({ removed_at: '2026-11-24T00:00:00Z', removed_by_name: 'Casey' })).toBe(
+      'Hidden from the group by Casey. Only its author, the group’s coaches and the author’s parents see it.',
+    );
+    expect(hiddenNote({ removed_at: '2026-11-24T00:00:00Z', removed_by_name: null })).toMatch(
+      /^Hidden from the group by a coach\./,
+    );
+    expect(hiddenNote({ removed_at: null, removed_by_name: null })).toBeNull();
   });
 
   it('tells an admin about the under-18s a group takes in', () => {
@@ -197,5 +193,15 @@ describe('mergePosts', () => {
 
   it('orders posts sent in the same minute by id', () => {
     expect(mergePosts([], [post('a', 1), post('b', 1)]).map((p) => p.id)).toEqual(['b', 'a']);
+  });
+});
+
+describe('swipeStaysOpen', () => {
+  it('stays open past half the action, or on a flick left', () => {
+    expect(swipeStaysOpen(-SWIPE_ACTION_WIDTH / 2 - 1, 0)).toBe(true);
+    expect(swipeStaysOpen(-SWIPE_ACTION_WIDTH / 2, 0)).toBe(false);
+    expect(swipeStaysOpen(-10, -0.6)).toBe(true);
+    expect(swipeStaysOpen(-10, -0.5)).toBe(false);
+    expect(swipeStaysOpen(0, 0)).toBe(false);
   });
 });

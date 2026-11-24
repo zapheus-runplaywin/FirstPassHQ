@@ -12,7 +12,9 @@
 --   - members under 18 post only in their own squad's or team's automatic
 --     groups while a coach is in them; in admins' groups they read only
 --     (privacy and social media assessment, reassessed 24 November 2026);
---   - the group's coaches remove posts; the text is kept;
+--   - the group's coaches hide posts, which then stay only with the author,
+--     the coaches and the author's parents; the text is kept; coaches can
+--     show them again;
 --   - hiding a group marks its posts read without touching receipts;
 --   - admins set up groups but don't read groups they aren't in;
 --   - nothing is ever deleted.
@@ -73,10 +75,10 @@ select pg_temp.ok('anon cannot save groups', has_function_privilege('anon', 'pub
 select pg_temp.ok('members can list, post, read, hide and remove', bool_and(has_function_privilege('authenticated', f, 'execute')), true)
 from unnest(array['public.my_chat_groups()', 'public.post_to_chat_group(uuid, text)', 'public.chat_group_posts(uuid, timestamptz)',
   'public.chat_group_members(uuid)', 'public.mark_chat_group_read(uuid)', 'public.set_chat_group_hidden(uuid, boolean)',
-  'public.remove_chat_post(uuid)']) f;
+  'public.remove_chat_post(uuid)', 'public.show_chat_post(uuid)']) f;
 select pg_temp.ok('the inner rules aren''t for the app to call', bool_or(has_function_privilege('authenticated', f, 'execute')), false)
 from unnest(array['public.chat_group_people(public.chat_groups)', 'public.chat_can_post(public.chat_groups, uuid)',
-  'public.chat_can_remove(public.chat_groups, uuid)', 'public.chat_group_coach_led(public.chat_groups)',
+  'public.chat_can_remove(public.chat_groups, uuid)', 'public.chat_post_hidden_from_me(uuid)', 'public.chat_group_coach_led(public.chat_groups)',
   'public.ensure_automatic_chat_groups()', 'public.chat_staff_ok(uuid)',
   'public.chat_group_draft(text, public.app_role[], uuid[], uuid[])']) f;
 select pg_temp.ok('members can''t read the group tables directly', has_table_privilege('authenticated', 'public.chat_groups', 'select') or has_table_privilege('authenticated', 'public.chat_group_hidden', 'select'), false);
@@ -260,12 +262,32 @@ select pg_temp.fails('only group posts can be removed', $s$select public.remove_
 select pg_temp.as_member('11');
 select pg_temp.ok('Casey can remove posts in his groups', (pg_temp.mine('captains')).can_remove, true);
 select public.remove_chat_post(pg_temp.p('captains 2'));
-select pg_temp.eq('members see who removed it', (select body from public.chat_group_posts(pg_temp.g('captains')) where id = pg_temp.p('captains 2')), 'Removed by Casey Coach');
+select pg_temp.ok('the coach who hid it still sees it, text and who hid it', (select body = 'I''ll bring the cones' and removed_by_name = 'Casey Coach' from public.chat_group_posts(pg_temp.g('captains')) where id = pg_temp.p('captains 2')), true);
 select pg_temp.ok('the text is kept', (select body = 'I''ll bring the cones' and removed_by = pg_temp.id('11') from public.messages where id = pg_temp.p('captains 2')), true);
 select public.remove_chat_post(pg_temp.p('captains 2'));
-select pg_temp.ok('removing twice keeps the first removal', (select count(*) = 1 from public.messages where id = pg_temp.p('captains 2') and removed_by_name = 'Casey Coach'), true);
+select pg_temp.ok('hiding twice keeps the first', (select count(*) = 1 from public.messages where id = pg_temp.p('captains 2') and removed_by_name = 'Casey Coach'), true);
 select pg_temp.as_member('31');
-select pg_temp.eq('Jordan sees it removed too', (select body from public.chat_group_posts(pg_temp.g('captains')) where id = pg_temp.p('captains 2')), 'Removed by Casey Coach');
+select pg_temp.ok('Jordan, its author, still sees it, marked hidden', (select body = 'I''ll bring the cones' and removed_by_name = 'Casey Coach' from public.chat_group_posts(pg_temp.g('captains')) where id = pg_temp.p('captains 2')), true);
+select pg_temp.as_member('41');
+select pg_temp.ok('Logan, the author''s parent, keeps his copy', public.is_message_recipient(pg_temp.p('captains 2')), true);
+select pg_temp.as_member('11');
+select public.remove_chat_post(pg_temp.p('captains 1'));
+select pg_temp.as_member('31');
+select pg_temp.ok('a hidden post is gone for the rest of the group', exists (select 1 from public.chat_group_posts(pg_temp.g('captains')) where id = pg_temp.p('captains 1')), false);
+select pg_temp.ok('including opening it on its own', public.is_message_recipient(pg_temp.p('captains 1')), false);
+select pg_temp.ok('and it isn''t the group''s last post for them', (pg_temp.mine('captains')).last_post is distinct from 'Warm-up at 5:30', true);
+select pg_temp.as_member('41');
+select pg_temp.ok('the other members'' parents lose their copies', public.is_message_recipient(pg_temp.p('captains 1')), false);
+select pg_temp.as_member('11');
+select pg_temp.ok('its author still sees it', exists (select 1 from public.chat_group_posts(pg_temp.g('captains')) where id = pg_temp.p('captains 1') and removed_by_name is not null), true);
+select pg_temp.as_member('31');
+select pg_temp.fails('Jordan can''t show it again', $s$select public.show_chat_post(pg_temp.p('captains 1'))$s$, '%Only the group''s coaches%');
+select pg_temp.as_member('11');
+select public.show_chat_post(pg_temp.p('captains 1'));
+select pg_temp.as_member('31');
+select pg_temp.ok('shown again, the group sees it', exists (select 1 from public.chat_group_posts(pg_temp.g('captains')) where id = pg_temp.p('captains 1') and removed_by_name is null), true);
+select pg_temp.as_member('41');
+select pg_temp.ok('and the parents'' copies come back', public.is_message_recipient(pg_temp.p('captains 1')), true);
 
 -- ---------------------------------------------------------------------------
 -- Reading and hiding

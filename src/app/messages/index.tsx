@@ -35,7 +35,6 @@ import {
   messageBoxes,
   moveBetween,
   movedToInbox,
-  shownBody,
 } from '@/lib/inbox';
 import { supabase } from '@/lib/supabase';
 import type { InboxMessage, SentMessage } from '@/lib/types';
@@ -287,8 +286,12 @@ function MessageCard({
         To {audienceLabel(message.audience, message.audience_role, message.audience_label)}
       </ThemedText>
       <GuardianCopy label={guardianCopyLabel(message.sender_id, for_children, for_child_names)} />
-      <ThemedText type="small" numberOfLines={2}>
-        {shownBody(message)}
+      <ThemedText
+        type="small"
+        numberOfLines={2}
+        themeColor={message.removed_at ? 'textSecondary' : undefined}>
+        {message.removed_at ? `Hidden by ${message.removed_by_name ?? 'a coach'}: ` : ''}
+        {message.body}
       </ThemedText>
       {message.answer_options ? (
         <ThemedText type="smallBold" style={{ color: theme.tint }}>

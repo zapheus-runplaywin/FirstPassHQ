@@ -17,7 +17,7 @@ import {
   MESSAGE_COLUMNS,
   RECIPIENT_COLUMNS,
 } from '@/lib/messages';
-import { shownBody } from '@/lib/inbox';
+import { hiddenNote } from '@/lib/inbox';
 import { supabase } from '@/lib/supabase';
 import type { InboxMessage, Message, MessageReceipt } from '@/lib/types';
 
@@ -124,10 +124,15 @@ export default function MessageScreen() {
         ) : null}
       </View>
 
-      <Card>
+      <Card style={message.removed_at ? styles.hidden : undefined}>
         <ThemedText selectable themeColor={message.removed_at ? 'textSecondary' : undefined}>
-          {shownBody(message)}
+          {message.body}
         </ThemedText>
+        {message.removed_at ? (
+          <ThemedText type="small" themeColor="textSecondary">
+            {hiddenNote(message)}
+          </ThemedText>
+        ) : null}
       </Card>
 
       {message.answer_options ? <MessageQuestionCard messageId={message.id} /> : null}
@@ -141,7 +146,12 @@ export default function MessageScreen() {
             busy={moving}
             onPress={toggleArchived}
           />
-          <Button title="Mark as unread" variant="secondary" busy={markingUnread} onPress={markUnread} />
+          <Button
+            title="Mark as unread"
+            variant="secondary"
+            busy={markingUnread}
+            onPress={markUnread}
+          />
         </View>
       ) : null}
 
@@ -184,6 +194,10 @@ function Receipts({ receipts }: { receipts: MessageReceipt[] }) {
 }
 
 const styles = StyleSheet.create({
+  hidden: {
+    opacity: 0.6,
+    gap: Spacing.one,
+  },
   header: {
     gap: Spacing.one,
   },
