@@ -10,6 +10,7 @@ import type { FeatureKey, Features } from '@/lib/club';
 // Every switch in FEATURES (src/lib/club.tsx); the type check fails if one is missing.
 const KEYS = Object.keys({
   messages: true,
+  chatGroups: true,
   calendar: true,
   checkIns: true,
   trainingLoad: true,
@@ -38,6 +39,7 @@ describe('adminMenuItems', () => {
       'Absence reasons',
       'Awards',
       'Calendars',
+      'Chat groups',
       'Club brand',
       'Club captains',
       'Club features',

@@ -11,7 +11,13 @@ import { Spacing } from '@/constants/theme';
 import { useTheme } from '@/hooks/use-theme';
 import { useAuth } from '@/lib/auth';
 import { formatDateTime, formatSentAt } from '@/lib/format';
-import { audienceLabel, guardianCopyLabel, MESSAGE_COLUMNS, RECIPIENT_COLUMNS } from '@/lib/messages';
+import {
+  audienceLabel,
+  guardianCopyLabel,
+  MESSAGE_COLUMNS,
+  RECIPIENT_COLUMNS,
+} from '@/lib/messages';
+import { shownBody } from '@/lib/inbox';
 import { supabase } from '@/lib/supabase';
 import type { InboxMessage, Message, MessageReceipt } from '@/lib/types';
 
@@ -119,12 +125,15 @@ export default function MessageScreen() {
       </View>
 
       <Card>
-        <ThemedText selectable>{message.body}</ThemedText>
+        <ThemedText selectable themeColor={message.removed_at ? 'textSecondary' : undefined}>
+          {shownBody(message)}
+        </ThemedText>
       </Card>
 
       {message.answer_options ? <MessageQuestionCard messageId={message.id} /> : null}
 
-      {copy ? (
+      {/* A post in one of the member's chat groups is read in its group. */}
+      {copy && !copy.chat_group_id ? (
         <View style={styles.buttons}>
           <Button
             title={copy.archived_at ? 'Move to inbox' : 'Archive'}

@@ -331,7 +331,8 @@ export type RosterEntry = {
 
 /** Who a group message went to: everyone, one role, or a squad or team. */
 /** 'notice' is the club telling a family about a change, such as a guardian linked. */
-export type MessageAudience = 'club' | 'role' | 'group' | 'notice';
+/** 'chat' is a post in a chat group; audience_label names the group. */
+export type MessageAudience = 'club' | 'role' | 'group' | 'notice' | 'chat';
 
 export type Message = {
   id: string;
@@ -345,6 +346,9 @@ export type Message = {
   created_at: string;
   /** The answers to the question it asks, or null when it asks none. */
   answer_options?: string[] | null;
+  /** A chat group post one of the group's coaches removed. Its text isn't shown. */
+  removed_at?: string | null;
+  removed_by_name?: string | null;
 };
 
 /** A message in the member's inbox. */
@@ -363,6 +367,8 @@ export type InboxMessage = {
   /** For a guardian's copy: the children it was sent for. Null when it's the member's own. */
   for_children: string[] | null;
   for_child_names: string[] | null;
+  /** Set on a member's own copy of a chat group post, which lives in Groups. */
+  chat_group_id?: string | null;
   message: Message;
 };
 

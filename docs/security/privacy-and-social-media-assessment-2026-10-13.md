@@ -119,6 +119,7 @@ and tied to that purpose:
 | Feature | What members can post | Why it isn't social interaction |
 | --- | --- | --- |
 | Messages | Coaches, managers, the committee, admins and captains send notices to squads, teams, roles or the club, and may ask one question with 2 to 4 answers they set | One way: no replies, no written answers, no direct messages, no threads. A question takes one tap from the answers the sender set, once; only the sender's side (the sender and the group's coaches and managers) and the member's own parents see who answered what. Nobody else reads a message they weren't sent; the Child Safety Officer or Complaints Manager can read one member's messages for an open concern only when an admin who isn't involved approves it, for 24 hours, with every message opened logged. Parents get a copy of every message to or from a child and can answer for their child. |
+| Chat groups (off unless an admin switches them on) | Adults in a group post back and forth. A member under 18 posts only in an automatic group of their own squad or team (its coaches and captains, coaches and managers, or coaches and physios) while one of its coaches is in it; in groups admins set up, they read only | Each group is a fixed set of people the club chose by role, squad or team, not people members find or follow. Every post a child can see or write is copied to the child's parents, and the group's coaches can remove any post (the text is kept for safeguarding). Members can't make groups, invite anyone, message one person, or see who is in a group while under 18. See "Chat groups" below. |
 | Daily check-ins | An athlete's scores and an optional note | Seen only by the athlete, their parents and their coaches (with a parent's consent for under 18s). Never shown to other athletes. |
 | Game goals and reflections | An athlete's own goals and how the game went; coaches comment | Coaching between an athlete and their coaches, read by parents. Other athletes don't see them. |
 | Team goals | Coaches set goals for a game; athletes and coaches in the team comment | Inside one coach-led team, about one game, read by parents. Coaches can remove any comment. No likes, sharing or following. |
@@ -138,7 +139,9 @@ For members under 18, the app must never have:
 
 - replies to messages (written answers of any kind), or direct messages
   between members. Picking one of the answers the sender set on a question
-  is allowed: see "Questions on messages" below;
+  is allowed: see "Questions on messages" in section 1. Posting in a
+  coach-led chat group of their own squad or team is allowed: see "Chat
+  groups" below;
 - feeds, timelines or stories;
 - profile pictures, or profiles members can browse;
 - following, friends or contacts lists;
@@ -149,6 +152,62 @@ Any comment feature must sit inside a coach-led squad or team, be about a
 coaching item, be readable by parents and guardians, and be removable by
 coaches. This rule is also in `AGENTS.md`, so every change to the app is
 checked against it.
+
+### Chat groups (reassessed 24 November 2026)
+
+Matt asked for chat groups that admins set up for roles, squads and teams
+and named people, and automatic groups for each squad's and team's coaches
+and managers, each team's coaches and captains, each squad's and team's
+coaches and physios (with any Head Physio), and all managers. Captains can be
+under 18, so he was asked how children take part, and chose that under 18s
+can write too (24 November 2026), which reopened this assessment before the
+feature was built. Built in `20261124600000_chat_groups.sql`, behind the
+**Chat groups** switch, off by default:
+
+- **Where a child can write.** Only in an automatic group of their own squad
+  or team, and only while one of its coaches (cleared, not stood down) is in
+  it. That is the "comment feature inside a coach-led squad or team" the
+  design rule already allows. In groups admins set up, which can span the
+  club, a child reads only.
+- **Two-deep.** Every post in a group with a child in it, the child's own
+  posts included, is copied to each of the child's verified parents and
+  guardians, in their own inbox, naming the child. A child is never in a
+  conversation that only one adult sees. A child with no verified parent
+  or guardian linked has their groups hidden and can't post until one is
+  (Matt, 24 November 2026); posts still reach them meanwhile, and a parent
+  or guardian linked later gets a copy of every group post the child was
+  sent or wrote.
+- **Removable by coaches.** The group's coaches (in an admin's group, its
+  coaches and admins) can remove any post. Members see who removed it; the
+  text is kept, so the Child Safety Officer or Complaints Manager can still
+  read it under an approved request, and a concern can still report it.
+- **No contact outside the club's structure.** Members can't make groups,
+  add anyone, message one person, follow anyone or see a member list while
+  under 18. Who is in a group is worked out from squads, teams, captaincies
+  and roles the club sets, and a child leaves when they leave the team.
+- **Everything else messages do still applies.** Posts are messages: never
+  deleted by members, kept for the club's keep period (7 years when a child
+  is involved, by default), covered by legal hold, and admins don't read
+  groups they aren't in.
+
+**Still not an age-restricted social media platform.** The purpose of the
+app is unchanged: a club administration tool. Chat groups are a messaging
+feature, a kind of service the Rules exclude, between people the club has
+already put together to run a team. They add no way to find, link to or
+follow other users, no profiles, no feeds and no likes, and nothing a child
+writes is seen outside their own squad or team and their own parents. The
+nearest services eSafety lists, such as WhatsApp and Messenger, are not
+age-restricted, and HQ is narrower than either. The club should still
+re-run eSafety's self-assessment tool when it next reviews this document.
+
+**Child safety rules this keeps.** Netball's two-deep rule for electronic
+communication (parents copied on every post), coach-led spaces, and the
+club's ability to look into a concern (posts kept, removals named).
+
+**What would reopen this:** under 18s writing in groups that aren't coach-led
+or that span squads and teams, groups members can create or join themselves,
+a member list or profiles shown to under 18s, posts reaching people outside
+the group, removing a post's text for good, or one-to-one chat.
 
 ### What would change this
 

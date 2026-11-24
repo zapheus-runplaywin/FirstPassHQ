@@ -8,7 +8,7 @@ import type { AppRole, MessageAudience, Team } from '@/lib/types';
 import { hasRole } from '@/lib/roles';
 
 export const MESSAGE_COLUMNS =
-  'id, sender_id, sender_name, body, audience, audience_role, audience_label, created_at, answer_options';
+  'id, sender_id, sender_name, body, audience, audience_role, audience_label, created_at, answer_options, removed_at, removed_by_name';
 
 /** Who a message went to, such as "Everyone in the club" or "Open Squad". */
 export function audienceLabel(
@@ -28,7 +28,7 @@ export function audienceLabel(
 
 /** Columns of the member's own copy of a message. */
 export const RECIPIENT_COLUMNS =
-  'read_at, unread, archived_at, for_children, for_child_names, answer';
+  'read_at, unread, archived_at, for_children, for_child_names, answer, chat_group_id';
 
 /**
  * Why a parent or guardian got their copy of a message, naming the children

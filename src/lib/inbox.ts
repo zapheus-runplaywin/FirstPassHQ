@@ -8,16 +8,31 @@
  * Nothing is ever deleted. Archiving moves only the member's own copy: the
  * sender, the other recipients and parents' copies are untouched.
  */
-import type { InboxMessage } from '@/lib/types';
+import type { InboxMessage, Message } from '@/lib/types';
 
-/** The three tabs at the top of Messages. Sent shows only for members who can send. */
-export type MessageBox = 'inbox' | 'sent' | 'archived';
+/** A message's text as members see it: a post a coach removed shows who removed it instead. */
+export function shownBody(message: Pick<Message, 'body' | 'removed_at' | 'removed_by_name'>) {
+  return message.removed_at ? `Removed by ${message.removed_by_name ?? 'a coach'}` : message.body;
+}
 
-export function messageBoxes(canSend: boolean): { value: MessageBox; label: string }[] {
+/**
+ * The tabs at the top of Messages. Sent shows only for members who can send,
+ * and Groups only while the club has chat groups on.
+ */
+export type MessageBox = 'inbox' | 'sent' | 'archived' | 'groups';
+
+export function messageBoxes(
+  canSend: boolean,
+  groupsOn = false,
+  groupsUnread = 0,
+): { value: MessageBox; label: string }[] {
   return [
     { value: 'inbox', label: 'Inbox' },
     ...(canSend ? [{ value: 'sent' as const, label: 'Sent' }] : []),
     { value: 'archived', label: 'Archived' },
+    ...(groupsOn
+      ? [{ value: 'groups' as const, label: groupsUnread > 0 ? `Groups (${groupsUnread})` : 'Groups' }]
+      : []),
   ];
 }
 

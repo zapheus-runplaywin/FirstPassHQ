@@ -26,6 +26,7 @@ jest.mock('@/lib/club', () => ({
 function features(overrides: Partial<Features> = {}): Features {
   return {
     messages: true,
+    chatGroups: true,
     calendar: true,
     checkIns: true,
     trainingLoad: true,

@@ -12,6 +12,13 @@ import { supabase } from '@/lib/supabase';
 /** Features an admin can turn on and off for the club. */
 export const FEATURES = [
   { key: 'messages', label: 'Messages', detail: 'Group messages with read receipts' },
+  {
+    key: 'chatGroups',
+    label: 'Chat groups',
+    detail:
+      'Groups in Messages where adults talk back and forth: automatic ones for each squad’s and team’s coaches, managers, captains and physios, and groups admins set up. Members under 18 read only, with parents copied.',
+    offByDefault: true,
+  },
   { key: 'calendar', label: 'Calendar', detail: 'Club, squad and team calendars and fixtures' },
   { key: 'checkIns', label: 'Daily check-ins', detail: 'Athletes’ wellbeing check-ins and trends' },
   {

@@ -115,6 +115,7 @@ What each role sees on its home screen:
 | My squads and teams                    |    ✓    |        ✓        |      ✓       |     ✓      |  If in one    |       ✓       | Heading only |   If in one   |
 | Read and archive messages, mark read or unread |    ✓    |        ✓        |      ✓       |     ✓      |       ✓       |       ✓*      |         |       ✓       |
 | Send messages                          | Captains† |                 |  Own groups  | Own groups |   Whole club  |               |         |     Anyone    |
+| Chat groups (when switched on)         | Captains‖ |                 |      ✓‖      |     ✓‖     |  If added‖    |      ✓‖       |         | ✓, sets up groups‖ |
 | Answer a message's question            |    ✓    | Own, and for their athlete |      ✓       |     ✓      |       ✓       |       ✓       |         |       ✓       |
 | See who answered a message's question  | Captains, their own† |   Their athlete's   |  Own groups  | Own groups | Their own |               |         |   Their own   |
 | Answer a request to read a member's messages (for a concern) |         |                 |              |            |               |               |         |  If not involved‡‡ |
@@ -172,6 +173,13 @@ vice captains their own team. Captains and vice captains can also send polls wit
 own team. Messages and polls from captains under 18 are copied to
 their parents or guardians.
 
+‖ Chat groups, when an admin switches them on: every squad's and team's coaches and managers, its
+coaches and physios (with any Head Physio), each team's coaches and captains, and all managers get
+groups automatically, and admins set up others for roles, squads and teams, or named people. Adults
+in a group talk back and forth. Members under 18 post only in their own squad's or team's groups
+while a coach is in them, and read admins' groups; their parents or guardians get a copy of every
+post. The group's coaches can remove a post (see [Chat groups](#chat-groups)).
+
 \* Physios get messages sent to the Physio role and to the squads and teams they're in. They get
 messages sent to everyone in the club only when an admin turns on **Physios get club messages** in
 Club options.
@@ -225,7 +233,7 @@ with a parent or guardian, the people who can help, **Raise a concern**, and the
 club and Delete account links (see [Ask to join the club](#ask-to-join-the-club)).
 
 Admins can turn off Messages, Calendar, Daily check-ins, Injuries, Attendance, Session plans,
-Surveys, Captains' polls, Awards, Live streams, Game goals and Integrity training for the whole club in **Club features**. A feature that's off disappears for every role.
+Surveys, Captains' polls, Awards, Live streams, Game goals and Integrity training for the whole club in **Club features**, and turn on Chat groups, which start off. A feature that's off disappears for every role.
 A feature that's on can also be on for **pilot teams only**, to try it with one squad or team
 first: it then shows for the people in the pilot squads and teams (and the teams of a pilot squad),
 the parents and guardians of their athletes, admins and committee, and for nobody else (see
@@ -690,6 +698,57 @@ concern](#reading-a-members-messages-for-a-concern)). Nobody is told when that h
 <img src="user-guide/inbox.png" width="210" alt="Messages inbox with Inbox, Archived and Mark all read">
 <img src="user-guide/inbox-archived.png" width="210" alt="The Archived tab, with a message swiped back to the inbox">
 <img src="user-guide/message-mark-unread.png" width="210" alt="An open message with Archive and Mark as unread">
+
+### Chat groups
+
+When an admin switches on **Chat groups**, a **Groups** tab sits beside Inbox, Sent and Archived in
+Messages, with the number of unread posts. Each group lists its latest post. A group works like a
+messaging app: it opens at the newest post and marks its posts read, your own posts sit on the
+right and everyone else's on the left with their name, and the box to write in stays at the
+bottom. Scroll up for older posts; they load as you go, back to **Start of the group**. New posts
+show while you have the group open. Type in **Write a message** and tap **Post**: everyone in the
+group sees it. Tap a post to open it on its own, where **Report this message** raises a concern
+about it and, for your own posts, you see who has read it (the count also shows under the post).
+
+You're put in groups automatically:
+
+- **Coaches and managers** of each squad and team you coach or manage.
+- **Coaches and captains** of each team you coach, captain or vice captain.
+- **Coaches and physios** of each squad and team you coach or look after as its physio, with every
+  **Head Physio**. It shows once the squad or team has a physio, or the club has a Head Physio.
+- **All managers**, for everyone managing a current squad or team.
+
+Admins can set up other groups too, such as a selectors' group or one for a squad's athletes. You
+come and go with your squads and teams: when you join one, you see what's posted from then on, and
+when you leave, you keep what was posted while you were in it, read only. Coaches and managers are
+in their groups only while they hold a current check (or an exemption or application) and aren't
+stood down, as for their other messages.
+
+**Members under 18** post only in their own squad's or team's automatic groups, such as their
+team's coaches and captains, and only while one of its coaches is in the group. In groups an admin
+set up, they read only. Their parents or guardians get a copy of every post in their groups, their
+own posts included, in their inbox. Under 18s don't see the list of who else is in a group. A
+member under 18 with no verified parent or guardian linked has their groups hidden, and can't
+post, until one is. Posts still reach them meanwhile, and when a parent or guardian is linked they
+get a copy of every group post the child was sent or wrote, so nothing went unseen.
+
+**The group's coaches can remove a post**, after confirming. Everyone then sees "Removed by" and the
+coach's name instead of the text. The text isn't deleted: it's kept like every message, for the
+Child Safety Officer or Complaints Manager if a concern needs it. In a group an admin set up, its
+coaches and admins can remove posts.
+
+**About this group** at the top lists who is in it (not for members under 18) and holds **Hide
+this group**, which moves it to **Hidden groups** at the end of the list.
+New posts still reach you, already marked read, and nobody sees that you hid it; your read receipt
+is only set when you open the group. **Show in my groups** brings it back.
+
+Posts are messages: they can't be deleted, they're kept for the club's keep period for messages,
+and the Child Safety Officer or Complaints Manager can read them under an approved request, like
+any other message. They don't show in your Inbox or Sent, and **Mark all read** in the Inbox
+leaves them alone.
+
+<img src="user-guide/chat-groups.png" width="210" alt="The Groups tab in Messages, with unread posts and Hidden groups">
+<img src="user-guide/chat-group.png" width="210" alt="A coaches and captains group opened at its newest posts, with a post a coach removed and the box to write in at the bottom">
 
 ### Surveys
 
@@ -1224,6 +1283,11 @@ see who has read it in **Sent**. If you're under 18, your
 parents or guardians get a copy of every message you send.
 
 <img src="user-guide/captain-new-message.png" width="210" alt="A captain writing a message to their team">
+
+If the club uses chat groups, captains and vice captains are also in their team's **coaches and
+captains** group under **Messages › Groups**, to talk things through with the coaches. If you're
+under 18, you can post there while one of the team's coaches is in the group, and your parents or
+guardians get a copy of every post (see [Chat groups](#chat-groups)).
 
 Captains and vice captains can also send a poll to their own team, for example to find a
 night everyone is free for a team dinner or to check who's coming to a social event. Open
@@ -1980,6 +2044,10 @@ or through a parent, as now.
 
 <img src="user-guide/message-question-new.png" width="210" alt="Asking a question in a new message">
 <img src="user-guide/message-question-answers.png" width="210" alt="The answers to a question, with Not sure first to follow up">
+
+If the club uses chat groups, you're in your squads' and teams' groups with their managers, captains
+and physios under **Messages › Groups**, and you can remove any post in them (see [Chat
+groups](#chat-groups)).
 
 ### Choosing captains
 
@@ -3657,6 +3725,32 @@ Admins can also choose any team's captains and vice captains, the same way coach
 
 <img src="user-guide/club-captains.png" width="210" alt="Choosing the club captains">
 
+### Chat groups for admins
+
+Switch on **Chat groups** in [Club features](#club-settings) (it starts off). Every squad and team
+then gets its automatic groups (see [Chat groups](#chat-groups)), and **Administration › Chat
+groups** lists the groups admins set up.
+
+Tap **New group**, give it a name, and choose who is in it:
+
+- **Squads and teams** (optional): everyone in them, or only the **roles** you tick in them
+  (athletes, coaches, managers or physios).
+- **Roles across the club**, when no squads or teams are chosen, such as all committee members.
+- **People** by name, on top of the rest. You're added to start with, so you can post; take
+  yourself off if you're only setting it up for others.
+
+The screen says how many people that is now. If any of them are under 18, a warning says how
+many, and **Save** asks once more (**Save with under 18s in it**) before setting it up. Who is in it is worked out
+each time someone posts, so it follows squad and team changes. Guests and temporary helpers are
+never in a group, and nor is anyone stood down. Members under 18 read an admin's group but can't post
+in it, and their parents or guardians get a copy of every post.
+
+You see each group's members and how many posts it has, never the posts, unless you're in it.
+**Close the group** keeps every post but stops new ones; **Open the group again** undoes it.
+Groups are never deleted.
+
+<img src="user-guide/admin-chat-group.png" width="210" alt="Setting up a chat group for a squad, with the warning that it includes members under 18">
+
 ### Messages to the club or a role
 
 Admins can send a message to **Everyone**, to **A role** (such as all guardians or all coaches), or
@@ -3879,7 +3973,9 @@ icon (FirstPass HQ) and the splash screen are part of the app build and don't ch
 
 - **Features**: switch off any of Messages, Calendar, Daily check-ins, Injuries, Attendance,
   Session plans, Surveys, Captains' polls, Awards, Live streams, Game goals, Integrity training,
-  Season KPIs and the policy and conflict registers (see below). Switching
+  Season KPIs and the policy and conflict registers (see below). **Chat groups** start off; switching
+  them off hides Groups and stops new posts, and keeps every post (parents' copies stay in their
+  inbox). Switching
   off **Captains' polls** stops captains sending new polls and leaves the rest of Surveys on; polls
   already sent stay readable. A switched-off feature disappears from every member's home screen, to-do list and menus,
   and its Administration pages are hidden. Nothing is deleted, so switching it back on brings
@@ -4575,6 +4671,7 @@ once saved, only replaced or removed, and anyone who gets it wrong five times in
 | Safeguarding contacts   | Everyone signed in, including guests and people waiting for approval.                                                       |
 | Committee checks date   | Everyone signed in. Only admins change it, and only to bring it forward; who changed it and when is kept. |
 | Messages                | The people they were sent to and the sender. Not admins, unless an admin approved the Child Safety Officer's or Complaints Manager's request to read one member's messages for a concern; then only the person who asked, read only, for 24 hours, with every message opened logged. Archiving moves only the member's own copy, and messages are never deleted by members. A stood-down member doesn't see the messages they sent, or the ones they got as a coach, manager, physio, committee member or admin. Guardians of athletes under 18 get a copy of every message sent to their athlete, and of every message their athlete sends as a captain. Guests don't get messages; physios get messages sent to the Physio role and to their squads and teams, and whole-club messages only if an admin turns that on. |
+| Chat group posts        | The people in the group when it was posted, and the parents and guardians of anyone under 18 in it (a copy naming the child). Admins don't read groups they aren't in; they see an admin's group's members and post count. Someone who joins later doesn't see earlier posts; someone who leaves keeps theirs, read only. A removed post shows who removed it; its text is kept like any message, for an approved message access request or a concern. Who is in a group: adults in it; under 18s don't see the list. |
 | Read receipts           | The sender. A receipt means the member opened the message: **Mark all read**, **Mark as unread** and archiving change only the member's own inbox, never what the sender sees. A child who doesn't use the app shows as read once one of their parents has read their copy. |
 | Answers to a message's question | Who gave which answer, who answered for a child and when: the sender (a captain too) while not stood down, and the squad or team's coaches and managers. Each member sees their own answer; parents and guardians see their child's, who gave it and when. Other members see nothing, or only how many picked each answer if the sender shares the totals. Answers are kept with the message. |
 | Survey answers          | Whoever sent the survey. The committee and admins for their own surveys and ones a coach or manager shared with them. A coach or manager's survey to their own squad or team is seen by them while they still coach or manage it, by admins unless it's a quick poll (up to 5 questions with choices or ratings), and by the committee if they shared it. A captain's poll is seen by the captain while they're captain, and by the squad or team's coaches and managers. Named answers show the member's name; parents and guardians of an athlete under 18 also read their child's named answers. Anonymous answers, and name-optional answers given without a name, are kept with no name, no member and no time, so nobody can see who gave them, admins included; their results show only once the survey has closed, or everyone has answered, and at least 3 people have answered. Named results show once 3 people have answered, a club survey's chosen 20%, 50% or 80%, or everyone when everyone must answer; every survey's results show once it closes. Members never see each other's answers. Whoever sees the results can download them as a PDF or spreadsheet, except captains. |
@@ -4857,7 +4954,11 @@ Working With Children Check, and another admin must do it.
   code with you; you enter it, and an admin checks who you are before linking you (see [Locked
   until a parent or guardian is linked](#locked-until-a-parent-or-guardian-is-linked)).
 - **You see what your child sees.** You get a copy of every message sent to your child, and of every
-  message your child sends as a captain, and each copy names the child it's for. You can read their daily check-ins and notes, their game
+  message your child sends as a captain, and each copy names the child it's for. If the club uses
+  chat groups, you also get a copy of every post in your child's groups, your child's own posts
+  included. Your child's groups stay hidden from them until a verified parent or guardian is
+  linked, and when you're linked you get a copy of every group post they were sent or wrote
+  before then. You can read their daily check-ins and notes, their game
   goals, their season KPIs and reviews, and their injuries, and whether they were at each session.
 - **You're told when something changes.** A new coach, manager or physio in your child's group,
   your child moving group, a guardian linked or unlinked, a consent changing or an injury document
@@ -4942,7 +5043,11 @@ Working With Children Check, and another admin must do it.
 ### For children and young people
 
 - **Nobody can message you privately.** There are no direct messages and no replies. Messages go to
-  whole squads, teams or roles, and your parents or guardians get a copy. A message can ask a
+  whole squads, teams or roles, and your parents or guardians get a copy. If the club uses chat
+  groups, you can post in your own squad's or team's groups, such as your team's coaches and
+  captains, only while a coach is in the group; your parents or guardians get a copy of every post,
+  yours too, and the coaches can remove any post. Your groups stay hidden until a verified parent
+  or guardian is linked to you. Groups an admin sets up are read only for you. A message can ask a
   question with answers to tap, but there's nothing to type, your teammates never see what you
   picked, and your parents or guardians see your answer and can give it for you.
 - **Session plans are read only.** Plans your coaches share can't be replied to, liked or passed
@@ -4994,6 +5099,11 @@ Working With Children Check, and another admin must do it.
 
 ### For coaches, managers, physios and volunteers
 
+- **Chat groups with children are yours to lead.** An under 18 can post in your squad's or team's
+  groups only while you (or another of its coaches) are in the group, and their parents or
+  guardians get a copy of every post. Keep it about the team, and remove a post that isn't right:
+  members see that you removed it, and the club keeps the text. Raise anything worrying as a concern
+  (see [Chat groups](#chat-groups)).
 - **Selection assessments are for the panel only.** If the club uses them, you read and write an
   athlete's assessment only while you're on that selection round's panel, approved, not stood down
   and holding a current check, and never for an athlete you're a parent or guardian of. Opening an
@@ -5279,7 +5389,10 @@ Working With Children Check, and another admin must do it.
   was taken back, so the club can show when athletes were told. The Selection audit
   report gives the process as counts and dates, as a PDF.
 - **Two-deep messaging is enforced by the app**, not just by policy: no direct messages or replies,
-  and guardians copied on everything to and from a child. Members can archive a message but never
+  and guardians copied on everything to and from a child. The one place a child writes back is a
+  chat group of their own squad or team, and only while one of its coaches is in it, with every
+  post copied to the child's parents and removable by the coaches (text kept), so the child is
+  never alone with an adult. Members can archive a message but never
   delete one, and archiving moves only their own copy, so a child archiving a message never takes it
   from their parents' copy or from the club's records.
 - **Reading someone's messages takes two people and leaves a trail.** Admins don't read messages
