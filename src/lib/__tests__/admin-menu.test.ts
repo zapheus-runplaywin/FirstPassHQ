@@ -48,7 +48,6 @@ describe('adminMenuItems', () => {
       'Code of conduct',
       'Fixtures',
       'Games',
-      'Injury report',
       'Integrity training',
       'Invite members',
       'Members',
