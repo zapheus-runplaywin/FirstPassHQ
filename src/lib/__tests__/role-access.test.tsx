@@ -89,6 +89,7 @@ jest.mock('expo-router', () => {
 function allFeatures(): Features {
   return {
     messages: true,
+    chatGroups: true,
     calendar: true,
     checkIns: true,
     trainingLoad: true,

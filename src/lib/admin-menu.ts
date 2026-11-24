@@ -80,6 +80,12 @@ export function adminMenuItems({ features, squads, membersDetail }: MenuOptions)
       detail: 'Choose the athletes who can message the whole club',
       href: '/admin/captains',
     },
+    features.messages &&
+      features.chatGroups && {
+        title: 'Chat groups',
+        detail: 'Set up chat groups for roles, squads and teams, or named people',
+        href: '/admin/chat-groups',
+      },
     features.awards && {
       title: 'Awards',
       detail: 'Create award votes, see results and copy annual awards',

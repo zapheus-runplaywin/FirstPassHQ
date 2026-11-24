@@ -132,6 +132,9 @@ function RootStack() {
           <Stack.Protected guard={features.messages && can.readMessages}>
             <Stack.Screen name="messages/index" options={{ title: 'Messages' }} />
             <Stack.Screen name="messages/[id]" options={{ title: 'Message' }} />
+            <Stack.Protected guard={features.chatGroups}>
+              <Stack.Screen name="messages/group/[id]" options={{ title: 'Group' }} />
+            </Stack.Protected>
             <Stack.Protected guard={can.sendMessages}>
               <Stack.Screen name="messages/new" options={{ title: 'New message' }} />
             </Stack.Protected>
@@ -345,6 +348,10 @@ function RootStack() {
             <Stack.Screen name="admin/place/[id]" options={{ title: 'Place members' }} />
             <Stack.Protected guard={features.messages}>
               <Stack.Screen name="admin/captains" options={{ title: 'Club captains' }} />
+            </Stack.Protected>
+            <Stack.Protected guard={features.messages && features.chatGroups}>
+              <Stack.Screen name="admin/chat-groups/index" options={{ title: 'Chat groups' }} />
+              <Stack.Screen name="admin/chat-groups/edit" options={{ title: 'Chat group' }} />
             </Stack.Protected>
             <Stack.Screen name="admin/reports/under-18s" options={{ title: 'Under 18s' }} />
             <Stack.Protected guard={features.calendar}>

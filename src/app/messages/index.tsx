@@ -2,6 +2,7 @@ import { router, useFocusEffect } from 'expo-router';
 import { useCallback, useState } from 'react';
 import { Pressable, StyleSheet, View } from 'react-native';
 
+import { FormSection } from '@/components/form-section';
 import { Screen } from '@/components/screen';
 import { SwipeRow } from '@/components/swipe-row';
 import { ThemedText } from '@/components/themed-text';
@@ -9,6 +10,13 @@ import { Button, ChipGroup, PressableCard } from '@/components/ui';
 import { Spacing } from '@/constants/theme';
 import { useTheme } from '@/hooks/use-theme';
 import { useAuth } from '@/lib/auth';
+import {
+  type ChatGroup,
+  groupsUnread,
+  lastPostLine,
+  splitHidden,
+  useChatGroupsOn,
+} from '@/lib/chat-groups';
 import { formatSentAt } from '@/lib/format';
 import { questionTag } from '@/lib/message-questions';
 import {
@@ -27,6 +35,7 @@ import {
   messageBoxes,
   moveBetween,
   movedToInbox,
+  shownBody,
 } from '@/lib/inbox';
 import { supabase } from '@/lib/supabase';
 import type { InboxMessage, SentMessage } from '@/lib/types';
@@ -34,8 +43,10 @@ import type { InboxMessage, SentMessage } from '@/lib/types';
 export default function MessagesScreen() {
   const { session } = useAuth();
   const canSend = useCanSendMessages();
+  const groupsOn = useChatGroupsOn();
   const theme = useTheme();
   const [box, setBox] = useState<MessageBox>('inbox');
+  const [groups, setGroups] = useState<ChatGroup[] | null>(null);
   const [inbox, setInbox] = useState<InboxMessage[] | null>(null);
   const [archived, setArchived] = useState<InboxMessage[] | null>(null);
   const [sent, setSent] = useState<SentMessage[] | null>(null);
@@ -46,15 +57,19 @@ export default function MessagesScreen() {
 
   const load = useCallback(async () => {
     if (!userId) return;
+    // Posts in the member's own chat groups show in Groups, not here. A
+    // parent's copy of a post to their child does show here.
     const copies = () =>
       supabase
         .from('message_recipients')
         .select(`${RECIPIENT_COLUMNS}, message:messages (${MESSAGE_COLUMNS})`)
-        .eq('profile_id', userId);
-    const [inboxResult, archivedResult, sentResult] = await Promise.all([
+        .eq('profile_id', userId)
+        .is('chat_group_id', null);
+    const [inboxResult, archivedResult, sentResult, groupsResult] = await Promise.all([
       copies().is('archived_at', null).order('created_at', { ascending: false }).limit(100),
       copies().not('archived_at', 'is', null).order('created_at', { ascending: false }).limit(100),
       canSend ? supabase.rpc('my_sent_messages') : Promise.resolve({ data: [] }),
+      groupsOn ? supabase.rpc('my_chat_groups') : Promise.resolve({ data: [] }),
     ]);
     // A message the member can no longer read (for example a club message to a
     // physio after the club setting was turned off) comes back without its body.
@@ -63,7 +78,8 @@ export default function MessagesScreen() {
     setInbox(readable(inboxResult.data).filter((r) => !isArchived(r)));
     setArchived(readable(archivedResult.data).filter(isArchived));
     setSent((sentResult.data as SentMessage[] | null) ?? []);
-  }, [userId, canSend]);
+    setGroups((groupsResult.data as ChatGroup[] | null) ?? []);
+  }, [userId, canSend, groupsOn]);
 
   useFocusEffect(
     useCallback(() => {
@@ -112,7 +128,7 @@ export default function MessagesScreen() {
           <Button title="New message" onPress={() => router.push('/messages/new')} />
         ) : null}
         <ChipGroup
-          options={messageBoxes(canSend)}
+          options={messageBoxes(canSend, groupsOn, groupsUnread(groups ?? []))}
           selected={[box]}
           onToggle={(next) => {
             setBox(next);
@@ -141,6 +157,8 @@ export default function MessagesScreen() {
         <Inbox messages={inbox} onMarkAllRead={markAllRead} onArchive={archive} />
       ) : box === 'archived' ? (
         <Archived messages={archived} onMoveToInbox={moveToInbox} />
+      ) : box === 'groups' && groupsOn ? (
+        <Groups groups={groups} />
       ) : (
         <Sent messages={sent} />
       )}
@@ -270,7 +288,7 @@ function MessageCard({
       </ThemedText>
       <GuardianCopy label={guardianCopyLabel(message.sender_id, for_children, for_child_names)} />
       <ThemedText type="small" numberOfLines={2}>
-        {message.body}
+        {shownBody(message)}
       </ThemedText>
       {message.answer_options ? (
         <ThemedText type="smallBold" style={{ color: theme.tint }}>
@@ -320,6 +338,82 @@ function Sent({ messages }: { messages: SentMessage[] | null }) {
         </PressableCard>
       ))}
     </View>
+  );
+}
+
+function Groups({ groups }: { groups: ChatGroup[] | null }) {
+  if (groups === null) return null;
+  if (groups.length === 0) {
+    return (
+      <ThemedText type="small" themeColor="textSecondary">
+        You’re not in any chat groups yet. Each squad’s and team’s coaches, managers, captains and
+        physios get groups of their own, and admins can set up others.
+      </ThemedText>
+    );
+  }
+  const { shown, hidden } = splitHidden(groups);
+  return (
+    <View style={styles.list}>
+      {shown.length === 0 ? (
+        <ThemedText type="small" themeColor="textSecondary">
+          You’ve hidden all your groups. They’re under Hidden groups.
+        </ThemedText>
+      ) : (
+        shown.map((group) => <GroupCard key={group.id} group={group} />)
+      )}
+      {hidden.length > 0 ? (
+        <FormSection
+          title="Hidden groups"
+          summary={`${hidden.length} hidden. Posts still reach you, marked read.`}>
+          {hidden.map((group) => (
+            <GroupCard key={group.id} group={group} />
+          ))}
+        </FormSection>
+      ) : null}
+    </View>
+  );
+}
+
+function GroupCard({ group }: { group: ChatGroup }) {
+  const theme = useTheme();
+  return (
+    <PressableCard
+      onPress={() =>
+        router.push({
+          pathname: '/messages/group/[id]',
+          params: { id: group.id },
+        })
+      }>
+      <View style={styles.row}>
+        {group.unread_count > 0 ? (
+          <View
+            style={[styles.unreadDot, { backgroundColor: theme.accent }]}
+            accessibilityLabel={`${group.unread_count} unread`}
+          />
+        ) : null}
+        <ThemedText type="smallBold" style={styles.grow} numberOfLines={1}>
+          {group.name}
+        </ThemedText>
+        {group.last_post_at ? (
+          <ThemedText type="small" themeColor="textSecondary">
+            {formatSentAt(new Date(group.last_post_at))}
+          </ThemedText>
+        ) : null}
+      </View>
+      <ThemedText type="small" themeColor="textSecondary" numberOfLines={2}>
+        {lastPostLine(group)}
+      </ThemedText>
+      {group.unread_count > 0 || !group.can_post ? (
+        <ThemedText type="small" themeColor="textSecondary">
+          {[
+            group.unread_count > 0 ? `${group.unread_count} unread` : null,
+            group.can_post ? null : 'Read only',
+          ]
+            .filter(Boolean)
+            .join(' · ')}
+        </ThemedText>
+      ) : null}
+    </PressableCard>
   );
 }
 

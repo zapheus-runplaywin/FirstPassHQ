@@ -131,7 +131,7 @@ describe('admin screens', () => {
   // Every admin screen, not just the sample above: a new admin screen that
   // isn't inside the isAdmin guard fails here.
   describe('every admin screen on disk', () => {
-    beforeEach(() => setClubFeatures({ kpis: true, selectionAssessments: true }));
+    beforeEach(() => setClubFeatures({ kpis: true, selectionAssessments: true, chatGroups: true }));
 
     it.each(ADMIN_ROUTES.filter((r) => !COMMITTEE_REPORTS.includes(r)))(
       'the committee can’t open %s',

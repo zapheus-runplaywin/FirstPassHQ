@@ -55,7 +55,13 @@ afterEach(() => {
 // the role guards decide.
 beforeEach(() => {
   resetClub();
-  setClubFeatures({ kpis: true, registers: true, trainingLoad: true, selectionAssessments: true });
+  setClubFeatures({
+    kpis: true,
+    registers: true,
+    trainingLoad: true,
+    selectionAssessments: true,
+    chatGroups: true,
+  });
 });
 
 // ---------------------------------------------------------------------------
@@ -193,6 +199,8 @@ const SELECTORS = union(COACHES, ADMINS);
 const WHO_OPENS: Record<string, PersonaName[]> = {
   'messages/index': CLUB_MEMBERS,
   'messages/[id]': CLUB_MEMBERS,
+  // Everyone who reads messages has a Groups tab; the database decides which groups.
+  'messages/group/[id]': CLUB_MEMBERS,
   'messages/new': MESSAGE_SENDERS,
 
   'surveys/index': CLUB_MEMBERS,
