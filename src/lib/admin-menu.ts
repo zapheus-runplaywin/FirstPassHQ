@@ -120,11 +120,6 @@ export function adminMenuItems({ features, squads, membersDetail }: MenuOptions)
       detail: 'The reasons members choose when they report an absence',
       href: '/admin/absence-reasons',
     },
-    features.injuries && {
-      title: 'Injury report',
-      detail: 'Injuries and their status, as a PDF or CSV',
-      href: '/admin/injuries',
-    },
     {
       title: 'Club password',
       detail: 'New members need it to ask to join',
