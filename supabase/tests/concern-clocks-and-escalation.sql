@@ -161,11 +161,19 @@ select pg_temp.fails('a post or a person, not both',
 select pg_temp.ok('a refused chain leaves nothing saved', (select count(*) = 0 from public.escalation_steps), true);
 select pg_temp.works('the Complaints Manager''s chain: Child Safety Officer after 7 days, then Gale after 7',
   format($s$ select public.admin_set_escalation_chain('complaints_manager', '[{"post": "child_safety_officer", "wait_days": 7}, {"person": "%s", "wait_days": 7}]') $s$, pg_temp.id('21')));
-select pg_temp.works('each post can back up the other: a concern only ever follows its own lead''s chain',
+-- One post may back up the other, but not both ways (Matt, 24 November 2026:
+-- a circular redundancy; 20261124900000).
+select pg_temp.fails('the Child Safety Officer''s chain can''t name the Complaints Manager, who already has them as backup',
   $s$ select public.admin_set_escalation_chain('child_safety_officer', '[{"post": "complaints_manager", "wait_days": 3}]') $s$);
+select pg_temp.fails('nor further down its chain',
+  format($s$ select public.admin_set_escalation_chain('child_safety_officer', '[{"person": "%s", "wait_days": 3}, {"post": "complaints_manager", "wait_days": 3}]') $s$, pg_temp.id('21')));
+select pg_temp.ok('the refusal leaves the Complaints Manager''s chain as it was',
+  (select count(*) = 2 from public.escalation_steps where lead_post = 'complaints_manager'), true);
+select pg_temp.works('the Child Safety Officer''s chain: straight to Admins after 3 days',
+  $s$ select public.admin_set_escalation_chain('child_safety_officer', '[{"post": "admins", "wait_days": 3}]') $s$);
 select pg_temp.ok('the admin sees both chains, named',
   (select string_agg(lead_post || ':' || step_no || ':' || target_name, ',' order by lead_post, step_no) from public.admin_escalation_chains())
-  = 'child_safety_officer:1:Complaints Manager,complaints_manager:1:Child Safety Officer,complaints_manager:2:Gale Committee', true);
+  = 'child_safety_officer:1:Admins,complaints_manager:1:Child Safety Officer,complaints_manager:2:Gale Committee', true);
 select pg_temp.ok('the admin can pick anyone who could hold a post: Gale, with a check',
   exists (select 1 from public.admin_escalation_people() where id = pg_temp.id('21')), true);
 select pg_temp.ok('but not a child, or an admin with no check',
@@ -286,3 +294,18 @@ select pg_temp.ok('nothing for the athlete',
 select set_config('request.jwt.claim.sub', '', false);
 select pg_temp.works('the push list runs with nobody signed in', format($s$ select count(*) from public.member_todos(%L, now() + interval '49 hours') $s$, pg_temp.id('01')));
 select pg_temp.ok('the push list leaves no one signed in afterwards', coalesce(current_setting('request.jwt.claim.sub', true), '') = '', true);
+
+-- The other way round: with the Complaints Manager as the Child Safety
+-- Officer's backup, the Complaints Manager's chain can't name the Child Safety
+-- Officer.
+reset role;
+select pg_temp.as_member('01');
+select pg_temp.works('clearing the Complaints Manager''s chain',
+  $s$ select public.admin_set_escalation_chain('complaints_manager', '[]') $s$);
+select pg_temp.works('the Complaints Manager backs up the Child Safety Officer',
+  $s$ select public.admin_set_escalation_chain('child_safety_officer', '[{"post": "complaints_manager", "wait_days": 7}]') $s$);
+select pg_temp.fails('so the Child Safety Officer can''t back up the Complaints Manager too',
+  $s$ select public.admin_set_escalation_chain('complaints_manager', '[{"post": "child_safety_officer", "wait_days": 7}]') $s$);
+select pg_temp.works('a person and Admins still can',
+  format($s$ select public.admin_set_escalation_chain('complaints_manager', '[{"person": "%s", "wait_days": 7}, {"post": "admins", "wait_days": 7}]') $s$, pg_temp.id('21')));
+reset role;

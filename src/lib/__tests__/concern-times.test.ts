@@ -7,6 +7,7 @@
  */
 import {
   canAddPerson,
+  otherLead,
   type ChainRow,
   type ChainStep,
   chainPayload,
@@ -120,6 +121,13 @@ describe('the next step', () => {
     expect(postsForNextStep('complaints_manager', [CSO])).toEqual(['admins']);
   });
 
+  it('never offers the other post when it already has this one as backup (not both ways)', () => {
+    expect(postsForNextStep('child_safety_officer', [], [CSO])).toEqual(['admins']);
+    expect(postsForNextStep('complaints_manager', [], [CM])).toEqual(['admins']);
+    // The other chain naming someone else, or Admins, changes nothing.
+    expect(postsForNextStep('child_safety_officer', [], [GALE, ADMINS])).toEqual(['complaints_manager', 'admins']);
+  });
+
   it('offers nothing after Admins, or once the chain has 4 steps', () => {
     expect(postsForNextStep('complaints_manager', [ADMINS])).toEqual([]);
     expect(canAddPerson([ADMINS])).toBe(false);
@@ -146,6 +154,17 @@ describe('chainProblem', () => {
     expect(chainProblem('complaints_manager', [CSO, GALE, { ...GALE, wait_days: 5 }])).toBe(
       'A chain can’t come back to a post or person already in it',
     );
+  });
+
+  it('refuses naming the other post when it already has this one as backup', () => {
+    expect(chainProblem('child_safety_officer', [CM], [CSO, GALE])).toBe(
+      'Child Safety Officer already backs up the Complaints Manager, so it can’t be the other way round too',
+    );
+    expect(chainProblem('complaints_manager', [GALE, CSO], [CM])).toBe(
+      'Complaints Manager already backs up the Child Safety Officer, so it can’t be the other way round too',
+    );
+    expect(chainProblem('child_safety_officer', [CM], [GALE])).toBeNull();
+    expect(chainProblem('child_safety_officer', [GALE], [CSO])).toBeNull();
   });
 
   it('refuses anything after Admins', () => {
@@ -205,5 +224,12 @@ describe('clearanceLateness', () => {
     expect(clearanceLateness(undefined, times, now)).toBeNull();
     expect(clearanceLateness('not a date', times, now)).toBeNull();
     expect(clearanceLateness('2026-11-25T00:00:00Z', times, now)).toBeNull();
+  });
+});
+
+describe('otherLead', () => {
+  it('is the other safeguarding post', () => {
+    expect(otherLead('complaints_manager')).toBe('child_safety_officer');
+    expect(otherLead('child_safety_officer')).toBe('complaints_manager');
   });
 });
