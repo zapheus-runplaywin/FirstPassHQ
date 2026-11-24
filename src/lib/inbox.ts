@@ -10,9 +10,14 @@
  */
 import type { InboxMessage, Message } from '@/lib/types';
 
-/** A message's text as members see it: a post a coach removed shows who removed it instead. */
-export function shownBody(message: Pick<Message, 'body' | 'removed_at' | 'removed_by_name'>) {
-  return message.removed_at ? `Removed by ${message.removed_by_name ?? 'a coach'}` : message.body;
+/**
+ * The note on a group post a coach hid, for the few who still see it. Others
+ * in the group, and their parents, no longer get it at all.
+ */
+export function hiddenNote(message: Pick<Message, 'removed_at' | 'removed_by_name'>) {
+  return message.removed_at
+    ? `Hidden from the group by ${message.removed_by_name ?? 'a coach'}. Only its author, the group’s coaches and the author’s parents see it.`
+    : null;
 }
 
 /**
@@ -31,7 +36,12 @@ export function messageBoxes(
     ...(canSend ? [{ value: 'sent' as const, label: 'Sent' }] : []),
     { value: 'archived', label: 'Archived' },
     ...(groupsOn
-      ? [{ value: 'groups' as const, label: groupsUnread > 0 ? `Groups (${groupsUnread})` : 'Groups' }]
+      ? [
+          {
+            value: 'groups' as const,
+            label: groupsUnread > 0 ? `Groups (${groupsUnread})` : 'Groups',
+          },
+        ]
       : []),
   ];
 }

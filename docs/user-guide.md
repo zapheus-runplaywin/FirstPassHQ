@@ -178,7 +178,7 @@ coaches and physios (with any Head Physio), each team's coaches and captains, an
 groups automatically, and admins set up others for roles, squads and teams, or named people. Adults
 in a group talk back and forth. Members under 18 post only in their own squad's or team's groups
 while a coach is in them, and read admins' groups; their parents or guardians get a copy of every
-post. The group's coaches can remove a post (see [Chat groups](#chat-groups)).
+post. The group's coaches can hide a post (see [Chat groups](#chat-groups)).
 
 \* Physios get messages sent to the Physio role and to the squads and teams they're in. They get
 messages sent to everyone in the club only when an admin turns on **Physios get club messages** in
@@ -732,10 +732,12 @@ member under 18 with no verified parent or guardian linked has their groups hidd
 post, until one is. Posts still reach them meanwhile, and when a parent or guardian is linked they
 get a copy of every group post the child was sent or wrote, so nothing went unseen.
 
-**The group's coaches can remove a post**, after confirming. Everyone then sees "Removed by" and the
-coach's name instead of the text. The text isn't deleted: it's kept like every message, for the
-Child Safety Officer or Complaints Manager if a concern needs it. In a group an admin set up, its
-coaches and admins can remove posts.
+**The group's coaches can hide a post**: swipe it left and tap **Hide**. It then disappears for
+everyone else in the group, and from the copies their parents got. Only the post's author, the
+group's coaches and the author's own parents still see it, greyed out with "Hidden by" and the
+coach's name. Swipe a hidden post and tap **Show** to put it back for everyone. Nothing is deleted:
+the text is kept like every message, for the Child Safety Officer or Complaints Manager if a concern
+needs it. In a group an admin set up, its coaches and admins can hide posts.
 
 **About this group** at the top lists who is in it (not for members under 18) and holds **Hide
 this group**, which moves it to **Hidden groups** at the end of the list.
@@ -748,7 +750,8 @@ any other message. They don't show in your Inbox or Sent, and **Mark all read** 
 leaves them alone.
 
 <img src="user-guide/chat-groups.png" width="210" alt="The Groups tab in Messages, with unread posts and Hidden groups">
-<img src="user-guide/chat-group.png" width="210" alt="A coaches and captains group opened at its newest posts, with a post a coach removed and the box to write in at the bottom">
+<img src="user-guide/chat-group.png" width="210" alt="A coaches and captains group opened at its newest posts, with a post the coach hid greyed out and the box to write in at the bottom">
+<img src="user-guide/chat-group-swipe.png" width="210" alt="A coach swiping a post left to show Hide">
 
 ### Surveys
 
@@ -2046,8 +2049,8 @@ or through a parent, as now.
 <img src="user-guide/message-question-answers.png" width="210" alt="The answers to a question, with Not sure first to follow up">
 
 If the club uses chat groups, you're in your squads' and teams' groups with their managers, captains
-and physios under **Messages › Groups**, and you can remove any post in them (see [Chat
-groups](#chat-groups)).
+and physios under **Messages › Groups**, and you can hide any post in them by swiping it (see
+[Chat groups](#chat-groups)).
 
 ### Choosing captains
 
@@ -4671,7 +4674,7 @@ once saved, only replaced or removed, and anyone who gets it wrong five times in
 | Safeguarding contacts   | Everyone signed in, including guests and people waiting for approval.                                                       |
 | Committee checks date   | Everyone signed in. Only admins change it, and only to bring it forward; who changed it and when is kept. |
 | Messages                | The people they were sent to and the sender. Not admins, unless an admin approved the Child Safety Officer's or Complaints Manager's request to read one member's messages for a concern; then only the person who asked, read only, for 24 hours, with every message opened logged. Archiving moves only the member's own copy, and messages are never deleted by members. A stood-down member doesn't see the messages they sent, or the ones they got as a coach, manager, physio, committee member or admin. Guardians of athletes under 18 get a copy of every message sent to their athlete, and of every message their athlete sends as a captain. Guests don't get messages; physios get messages sent to the Physio role and to their squads and teams, and whole-club messages only if an admin turns that on. |
-| Chat group posts        | The people in the group when it was posted, and the parents and guardians of anyone under 18 in it (a copy naming the child). Admins don't read groups they aren't in; they see an admin's group's members and post count. Someone who joins later doesn't see earlier posts; someone who leaves keeps theirs, read only. A removed post shows who removed it; its text is kept like any message, for an approved message access request or a concern. Who is in a group: adults in it; under 18s don't see the list. |
+| Chat group posts        | The people in the group when it was posted, and the parents and guardians of anyone under 18 in it (a copy naming the child). Admins don't read groups they aren't in; they see an admin's group's members and post count. Someone who joins later doesn't see earlier posts; someone who leaves keeps theirs, read only. A post a coach hid stays only with its author, the group's coaches and the author's parents, greyed out with who hid it; its text is kept like any message, for an approved message access request or a concern. Who is in a group: adults in it; under 18s don't see the list. |
 | Read receipts           | The sender. A receipt means the member opened the message: **Mark all read**, **Mark as unread** and archiving change only the member's own inbox, never what the sender sees. A child who doesn't use the app shows as read once one of their parents has read their copy. |
 | Answers to a message's question | Who gave which answer, who answered for a child and when: the sender (a captain too) while not stood down, and the squad or team's coaches and managers. Each member sees their own answer; parents and guardians see their child's, who gave it and when. Other members see nothing, or only how many picked each answer if the sender shares the totals. Answers are kept with the message. |
 | Survey answers          | Whoever sent the survey. The committee and admins for their own surveys and ones a coach or manager shared with them. A coach or manager's survey to their own squad or team is seen by them while they still coach or manage it, by admins unless it's a quick poll (up to 5 questions with choices or ratings), and by the committee if they shared it. A captain's poll is seen by the captain while they're captain, and by the squad or team's coaches and managers. Named answers show the member's name; parents and guardians of an athlete under 18 also read their child's named answers. Anonymous answers, and name-optional answers given without a name, are kept with no name, no member and no time, so nobody can see who gave them, admins included; their results show only once the survey has closed, or everyone has answered, and at least 3 people have answered. Named results show once 3 people have answered, a club survey's chosen 20%, 50% or 80%, or everyone when everyone must answer; every survey's results show once it closes. Members never see each other's answers. Whoever sees the results can download them as a PDF or spreadsheet, except captains. |
@@ -5046,7 +5049,7 @@ Working With Children Check, and another admin must do it.
   whole squads, teams or roles, and your parents or guardians get a copy. If the club uses chat
   groups, you can post in your own squad's or team's groups, such as your team's coaches and
   captains, only while a coach is in the group; your parents or guardians get a copy of every post,
-  yours too, and the coaches can remove any post. Your groups stay hidden until a verified parent
+  yours too, and the coaches can hide any post (you still see your own, greyed out). Your groups stay hidden until a verified parent
   or guardian is linked to you. Groups an admin sets up are read only for you. A message can ask a
   question with answers to tap, but there's nothing to type, your teammates never see what you
   picked, and your parents or guardians see your answer and can give it for you.
@@ -5101,8 +5104,9 @@ Working With Children Check, and another admin must do it.
 
 - **Chat groups with children are yours to lead.** An under 18 can post in your squad's or team's
   groups only while you (or another of its coaches) are in the group, and their parents or
-  guardians get a copy of every post. Keep it about the team, and remove a post that isn't right:
-  members see that you removed it, and the club keeps the text. Raise anything worrying as a concern
+  guardians get a copy of every post. Keep it about the team, and swipe to hide a post that isn't
+  right: it goes from everyone but its author, the coaches and the author's parents, and the club
+  keeps the text. Raise anything worrying as a concern
   (see [Chat groups](#chat-groups)).
 - **Selection assessments are for the panel only.** If the club uses them, you read and write an
   athlete's assessment only while you're on that selection round's panel, approved, not stood down
@@ -5391,7 +5395,7 @@ Working With Children Check, and another admin must do it.
 - **Two-deep messaging is enforced by the app**, not just by policy: no direct messages or replies,
   and guardians copied on everything to and from a child. The one place a child writes back is a
   chat group of their own squad or team, and only while one of its coaches is in it, with every
-  post copied to the child's parents and removable by the coaches (text kept), so the child is
+  post copied to the child's parents and able to be hidden by the coaches (text kept), so the child is
   never alone with an adult. Members can archive a message but never
   delete one, and archiving moves only their own copy, so a child archiving a message never takes it
   from their parents' copy or from the club's records.
