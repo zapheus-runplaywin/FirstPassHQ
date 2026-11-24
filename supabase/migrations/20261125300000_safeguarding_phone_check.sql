@@ -57,7 +57,7 @@ end;
 $$;
 
 revoke execute on function public.is_phone_number(text) from public, anon;
-grant execute on function public.is_phone_number(text) to authenticated, service_role;
+grant execute on function public.is_phone_number(text) to authenticated;
 
 create or replace function public.admin_set_safeguarding_contacts(
   p_child_safety_officer_ids uuid[],
