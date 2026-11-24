@@ -224,7 +224,7 @@ export function buildTodos({
     todos.push({
       key: 'second-admin',
       title: 'Add a second admin',
-      detail: 'So a request or concern about you has someone else to answer it',
+      detail: "A backup when you're away, and someone to verify your own check",
       href: '/admin',
       alert: { level: 'amber', label: 'Needs checking' },
     });

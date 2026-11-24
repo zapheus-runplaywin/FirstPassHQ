@@ -350,6 +350,7 @@ describe('buildTodos', () => {
       expect(todos({ messageAccess: access({ only_one_admin: true }) })[0]).toMatchObject({
         key: 'second-admin',
         title: 'Add a second admin',
+        detail: "A backup when you're away, and someone to verify your own check",
         alert: { level: 'amber' },
       });
     });

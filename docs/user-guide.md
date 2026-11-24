@@ -4441,8 +4441,9 @@ refuse), at least 10 characters, then tap **Approve for 24 hours** or **Refuse**
 kept with the request for good. You can't answer a request you made, one for your own messages, or
 one on a concern about you; nobody sees a request in those cases. If no admin is free to answer (for
 example the only other admin is the one it's about, or is stood down), another safeguarding
-officer (any Child Safety Officer or Complaints Manager who isn't involved) answers instead. A club with only one admin gets an **Add a second admin** to-do for this
-reason.
+officer (any Child Safety Officer or Complaints Manager who isn't involved) answers instead. A club with only one admin gets an **Add a second admin** to-do. A second admin is
+a backup when the first is away or stood down, and the only person who can verify the first
+admin's Working With Children Check or change their date of birth or card details.
 
 **Reading** (the person who asked, for 24 hours from approval): a **Read the messages you were
 approved to read** to-do appears. Open the request and tap **Show the messages** to list every
