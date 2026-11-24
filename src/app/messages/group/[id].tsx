@@ -1,13 +1,24 @@
 import { router, Stack, useFocusEffect, useLocalSearchParams } from 'expo-router';
-import { useCallback, useState } from 'react';
-import { Pressable, StyleSheet, View } from 'react-native';
+import { useCallback, useEffect, useRef, useState } from 'react';
+import {
+  ActivityIndicator,
+  FlatList,
+  Keyboard,
+  Platform,
+  Pressable,
+  StyleSheet,
+  TextInput,
+  View,
+} from 'react-native';
+import { SafeAreaView } from 'react-native-safe-area-context';
 
 import { FormSection } from '@/components/form-section';
 import { RaiseConcernLink } from '@/components/safeguarding';
 import { Screen } from '@/components/screen';
 import { ThemedText } from '@/components/themed-text';
-import { Button, ErrorText, PressableCard, TextField } from '@/components/ui';
-import { Spacing } from '@/constants/theme';
+import { ThemedView } from '@/components/themed-view';
+import { Button, ErrorText } from '@/components/ui';
+import { BrandFonts, MaxContentWidth, Spacing } from '@/constants/theme';
 import { useTheme } from '@/hooks/use-theme';
 import { isMinor } from '@/lib/age';
 import { useAuth } from '@/lib/auth';
@@ -15,8 +26,10 @@ import {
   type ChatGroup,
   type ChatGroupMember,
   type ChatPost,
+  mergePosts,
   peopleCount,
   postingNote,
+  POSTS_PAGE,
   readOnlyNote,
   UNDER_18_POSTING_NOTE,
 } from '@/lib/chat-groups';
@@ -24,14 +37,17 @@ import { formatSentAt } from '@/lib/format';
 import { supabase } from '@/lib/supabase';
 
 const MAX_LENGTH = 4000;
+/** How often an open group looks for new posts. */
+const REFRESH_MS = 15000;
 
 /**
- * One chat group: its posts, oldest first, and a box to post in for those
- * who can (adults in it, and under-18s in their own squad's or team's groups
- * while a coach is in them). Opening it marks its posts read. Tapping a post
- * opens it on its own, with its read receipts for its sender and a way to
- * report it. The group's coaches can remove a post; its text is kept for
- * safeguarding.
+ * One chat group, laid out like a messaging app: it opens at the newest post
+ * with the box to write in at the foot, and older posts load as the member
+ * scrolls up. Only those who can post get the box (adults in it, and
+ * under-18s in their own squad's or team's groups while a coach is in them).
+ * Opening it marks its posts read. Tapping a post opens it on its own, with
+ * its read receipts for its sender and a way to report it. The group's
+ * coaches can remove a post; its text is kept for safeguarding.
  */
 export default function ChatGroupScreen() {
   const { id } = useLocalSearchParams<{ id: string }>();
@@ -39,7 +55,10 @@ export default function ChatGroupScreen() {
   const { profile } = useAuth();
   const under18 = !!profile && isMinor(profile.date_of_birth, profile.under_17);
   const [group, setGroup] = useState<ChatGroup | null | undefined>(undefined);
+  // Newest first: the list is drawn upside down so it starts at the newest.
   const [posts, setPosts] = useState<ChatPost[]>([]);
+  const [olderLeft, setOlderLeft] = useState(false);
+  const [loadingOlder, setLoadingOlder] = useState(false);
   const [members, setMembers] = useState<ChatGroupMember[]>([]);
   const [body, setBody] = useState('');
   const [posting, setPosting] = useState(false);
@@ -47,8 +66,12 @@ export default function ChatGroupScreen() {
   // The post a coach is about to remove, waiting for them to confirm.
   const [removing, setRemoving] = useState<string | null>(null);
   const [error, setError] = useState<string | null>(null);
-  const [refreshing, setRefreshing] = useState(false);
+  const [keyboardHeight, setKeyboardHeight] = useState(0);
+  const listRef = useRef<FlatList<ChatPost>>(null);
+  const firstLoad = useRef(true);
 
+  // The group, its members and its latest posts, joined with any older posts
+  // already loaded.
   const load = useCallback(async () => {
     const [groupsResult, postsResult, membersResult] = await Promise.all([
       supabase.rpc('my_chat_groups'),
@@ -57,8 +80,13 @@ export default function ChatGroupScreen() {
       supabase.rpc('chat_group_members', { p_group_id: id }),
     ]);
     const found = ((groupsResult.data as ChatGroup[] | null) ?? []).find((g) => g.id === id);
+    const latest = (postsResult.data as ChatPost[] | null) ?? [];
     setGroup(found ?? null);
-    setPosts((postsResult.data as ChatPost[] | null) ?? []);
+    setPosts((shown) => mergePosts(shown, latest));
+    if (firstLoad.current) {
+      firstLoad.current = false;
+      setOlderLeft(latest.length >= POSTS_PAGE);
+    }
     setMembers((membersResult.data as ChatGroupMember[] | null) ?? []);
     if (found) await supabase.rpc('mark_chat_group_read', { p_group_id: id });
   }, [id]);
@@ -66,8 +94,39 @@ export default function ChatGroupScreen() {
   useFocusEffect(
     useCallback(() => {
       load();
+      const timer = setInterval(load, REFRESH_MS);
+      return () => clearInterval(timer);
     }, [load]),
   );
+
+  async function loadOlder() {
+    const oldest = posts[posts.length - 1];
+    if (!olderLeft || loadingOlder || !oldest) return;
+    setLoadingOlder(true);
+    const { data } = await supabase.rpc('chat_group_posts', {
+      p_group_id: id,
+      p_before: oldest.created_at,
+    });
+    const page = (data as ChatPost[] | null) ?? [];
+    setPosts((shown) => mergePosts(shown, page));
+    setOlderLeft(page.length >= POSTS_PAGE);
+    setLoadingOlder(false);
+  }
+
+  // The box to write in sits on the keyboard.
+  useEffect(() => {
+    const ios = Platform.OS === 'ios';
+    const shown = Keyboard.addListener(ios ? 'keyboardWillShow' : 'keyboardDidShow', (event) =>
+      setKeyboardHeight(event.endCoordinates.height),
+    );
+    const hidden = Keyboard.addListener(ios ? 'keyboardWillHide' : 'keyboardDidHide', () =>
+      setKeyboardHeight(0),
+    );
+    return () => {
+      shown.remove();
+      hidden.remove();
+    };
+  }, []);
 
   async function post() {
     if (!body.trim()) {
@@ -87,6 +146,7 @@ export default function ChatGroupScreen() {
     }
     setBody('');
     await load();
+    listRef.current?.scrollToOffset({ offset: 0, animated: true });
   }
 
   async function removePost(messageId: string) {
@@ -117,12 +177,6 @@ export default function ChatGroupScreen() {
     await load();
   }
 
-  async function onRefresh() {
-    setRefreshing(true);
-    await load();
-    setRefreshing(false);
-  }
-
   if (group === undefined) return null;
   if (group === null) {
     return (
@@ -136,159 +190,297 @@ export default function ChatGroupScreen() {
 
   const note = readOnlyNote(group.read_only_reason);
 
-  return (
-    <Screen refreshing={refreshing} onRefresh={onRefresh}>
-      <Stack.Screen options={{ title: group.name }} />
-
-      {members.length > 0 ? (
-        <FormSection title="Who’s in this group" summary={peopleCount(members.length)}>
-          {members.map((m) => (
-            <View key={m.profile_id} style={styles.row}>
-              <ThemedText type="small" style={styles.grow} numberOfLines={1}>
-                {m.full_name ?? 'Unnamed member'}
-                {m.under_18 ? ' (under 18, reads only)' : ''}
-              </ThemedText>
-              {m.detail ? (
-                <ThemedText type="small" themeColor="textSecondary" numberOfLines={1}>
-                  {m.detail}
-                </ThemedText>
-              ) : null}
-            </View>
-          ))}
-        </FormSection>
-      ) : null}
-
-      {posts.length === 0 ? (
-        <ThemedText type="small" themeColor="textSecondary">
-          No posts yet.
-          {group.can_post ? ' Start the conversation below.' : ''}
-        </ThemedText>
-      ) : (
-        <View style={styles.list}>
-          {posts.map((p) => (
-            <PressableCard
-              key={p.id}
-              onPress={() =>
-                router.push({
-                  pathname: '/messages/[id]',
-                  params: { id: p.id },
-                })
-              }>
-              <View style={styles.row}>
-                <ThemedText
-                  type="smallBold"
-                  style={[styles.grow, p.mine ? { color: theme.tint } : undefined]}
-                  numberOfLines={1}>
-                  {p.mine ? 'You' : p.sender_name}
-                </ThemedText>
-                <ThemedText type="small" themeColor="textSecondary">
-                  {formatSentAt(new Date(p.created_at))}
-                </ThemedText>
-              </View>
-              <ThemedText
-                type="small"
-                themeColor={p.body_removed || p.removed_by_name ? 'textSecondary' : undefined}
-                selectable>
-                {p.body}
-              </ThemedText>
-              {p.mine && p.recipient_count ? (
-                <ThemedText type="small" themeColor="textSecondary">
-                  Read by {p.read_count ?? 0} of {p.recipient_count}
-                </ThemedText>
-              ) : null}
-              {group.can_remove && !p.removed_by_name ? (
-                removing === p.id ? (
-                  <View style={styles.row}>
-                    <ThemedText type="small" style={styles.grow}>
-                      Remove this post for everyone? Its text is kept for the club’s safeguarding
-                      contacts.
-                    </ThemedText>
-                    <Pressable
-                      accessibilityRole="button"
-                      onPress={() => removePost(p.id)}
-                      hitSlop={8}>
-                      <ThemedText type="smallBold" style={{ color: theme.tint }}>
-                        Remove
-                      </ThemedText>
-                    </Pressable>
-                    <Pressable
-                      accessibilityRole="button"
-                      onPress={() => setRemoving(null)}
-                      hitSlop={8}>
-                      <ThemedText type="small" themeColor="textSecondary">
-                        Keep
-                      </ThemedText>
-                    </Pressable>
-                  </View>
-                ) : (
-                  <Pressable
-                    accessibilityRole="button"
-                    onPress={() => setRemoving(p.id)}
-                    hitSlop={8}>
-                    <ThemedText type="small" style={{ color: theme.tint }}>
-                      Remove post
-                    </ThemedText>
-                  </Pressable>
-                )
-              ) : null}
-            </PressableCard>
-          ))}
-        </View>
-      )}
-
-      {group.can_post ? (
-        <View style={styles.field}>
-          <TextField
-            label="Post to the group"
-            value={body}
-            onChangeText={setBody}
-            placeholder="Write a message"
-            multiline
-            maxLength={MAX_LENGTH}
-          />
-          {body.length > MAX_LENGTH - 200 ? (
-            <ThemedText type="small" themeColor="textSecondary">
-              {MAX_LENGTH - body.length} characters left
+  function renderPost({ item: p }: { item: ChatPost }) {
+    const removed = p.body_removed || !!p.removed_by_name;
+    return (
+      <View style={[styles.postRow, p.mine ? styles.mineRow : undefined]}>
+        <Pressable
+          accessibilityRole="button"
+          onPress={() => router.push({ pathname: '/messages/[id]', params: { id: p.id } })}
+          style={({ pressed }) => [
+            styles.bubble,
+            {
+              backgroundColor: pressed
+                ? theme.backgroundSelected
+                : p.mine
+                  ? theme.backgroundSelected
+                  : theme.backgroundElement,
+            },
+          ]}>
+          {p.mine ? null : (
+            <ThemedText type="smallBold" style={{ color: theme.tint }} numberOfLines={1}>
+              {p.sender_name}
             </ThemedText>
-          ) : null}
-          <ThemedText type="small" themeColor="textSecondary">
-            {under18 ? UNDER_18_POSTING_NOTE : postingNote(members.some((m) => m.under_18))}
+          )}
+          <ThemedText
+            type="small"
+            themeColor={removed ? 'textSecondary' : undefined}
+            style={removed ? styles.removed : undefined}
+            selectable>
+            {p.body}
           </ThemedText>
-          <ErrorText>{error}</ErrorText>
-          <Button title="Post" onPress={post} busy={posting} />
-        </View>
-      ) : note ? (
-        <ThemedText type="small" themeColor="textSecondary">
-          {note}
-        </ThemedText>
-      ) : null}
+          <ThemedText type="small" themeColor="textSecondary" style={styles.meta}>
+            {formatSentAt(new Date(p.created_at))}
+            {p.mine && p.recipient_count
+              ? ` · Read by ${p.read_count ?? 0} of ${p.recipient_count}`
+              : ''}
+          </ThemedText>
+        </Pressable>
+        {group?.can_remove && !p.removed_by_name ? (
+          removing === p.id ? (
+            <View style={[styles.confirm, { backgroundColor: theme.backgroundElement }]}>
+              <ThemedText type="small">
+                Remove this post for everyone? Its text is kept for the club’s safeguarding
+                contacts.
+              </ThemedText>
+              <View style={styles.actions}>
+                <Pressable accessibilityRole="button" onPress={() => removePost(p.id)} hitSlop={8}>
+                  <ThemedText type="smallBold" style={{ color: theme.tint }}>
+                    Remove
+                  </ThemedText>
+                </Pressable>
+                <Pressable accessibilityRole="button" onPress={() => setRemoving(null)} hitSlop={8}>
+                  <ThemedText type="small" themeColor="textSecondary">
+                    Keep
+                  </ThemedText>
+                </Pressable>
+              </View>
+            </View>
+          ) : (
+            <Pressable accessibilityRole="button" onPress={() => setRemoving(p.id)} hitSlop={8}>
+              <ThemedText type="small" style={{ color: theme.tint }}>
+                Remove post
+              </ThemedText>
+            </Pressable>
+          )
+        ) : null}
+      </View>
+    );
+  }
 
-      <Button
-        title={group.hidden ? 'Show in my groups' : 'Hide this group'}
-        variant="secondary"
-        busy={hiding}
-        onPress={toggleHidden}
-      />
-      <ThemedText type="small" themeColor="textSecondary">
-        {group.hidden
-          ? 'Hidden: new posts still reach you, already marked read.'
-          : 'Hiding moves it to Hidden groups. New posts still reach you, already marked read.'}
-      </ThemedText>
-      <RaiseConcernLink label="Worried about a post? Open it and report it, or raise a concern" />
-    </Screen>
+  // In an upside-down list the header sits at the foot, under the newest post.
+  const footNote = group.can_post
+    ? under18
+      ? UNDER_18_POSTING_NOTE
+      : postingNote(members.some((m) => m.under_18))
+    : note;
+
+  return (
+    <ThemedView style={styles.container}>
+      <Stack.Screen options={{ title: group.name }} />
+      <SafeAreaView
+        edges={keyboardHeight > 0 ? ['left', 'right'] : ['bottom', 'left', 'right']}
+        // The box to write in rides on the keyboard, on both platforms, as in
+        // Screen (src/components/screen.tsx).
+        style={[styles.safeArea, keyboardHeight > 0 ? { paddingBottom: keyboardHeight } : null]}>
+        <View style={[styles.details, { borderBottomColor: theme.backgroundElement }]}>
+          <FormSection
+            title="About this group"
+            summary={members.length ? peopleCount(members.length) : 'Hide it, or report a post'}>
+            {members.map((m) => (
+              <View key={m.profile_id} style={styles.row}>
+                <ThemedText type="small" style={styles.grow} numberOfLines={1}>
+                  {m.full_name ?? 'Unnamed member'}
+                  {m.under_18 ? ' (under 18)' : ''}
+                </ThemedText>
+                {m.detail ? (
+                  <ThemedText type="small" themeColor="textSecondary" numberOfLines={1}>
+                    {m.detail}
+                  </ThemedText>
+                ) : null}
+              </View>
+            ))}
+            <Button
+              title={group.hidden ? 'Show in my groups' : 'Hide this group'}
+              variant="secondary"
+              busy={hiding}
+              onPress={toggleHidden}
+            />
+            <ThemedText type="small" themeColor="textSecondary">
+              {group.hidden
+                ? 'Hidden: new posts still reach you, already marked read.'
+                : 'Hiding moves it to Hidden groups. New posts still reach you, already marked read.'}
+            </ThemedText>
+            <RaiseConcernLink label="Worried about a post? Open it and report it, or raise a concern" />
+          </FormSection>
+        </View>
+
+        <FlatList
+          ref={listRef}
+          testID="chat-posts"
+          style={styles.grow}
+          contentContainerStyle={styles.list}
+          data={posts}
+          inverted
+          keyExtractor={(p) => p.id}
+          renderItem={renderPost}
+          keyboardShouldPersistTaps="handled"
+          keyboardDismissMode="interactive"
+          onEndReached={loadOlder}
+          onEndReachedThreshold={0.3}
+          ListHeaderComponent={
+            footNote ? (
+              <ThemedText type="small" themeColor="textSecondary" style={styles.footNote}>
+                {footNote}
+              </ThemedText>
+            ) : undefined
+          }
+          ListFooterComponent={
+            loadingOlder ? (
+              <ActivityIndicator style={styles.older} />
+            ) : posts.length && !olderLeft ? (
+              <ThemedText type="small" themeColor="textSecondary" style={styles.older}>
+                Start of the group
+              </ThemedText>
+            ) : undefined
+          }
+          ListEmptyComponent={
+            <ThemedText type="small" themeColor="textSecondary" style={styles.empty}>
+              No posts yet.
+              {group.can_post ? ' Start the conversation below.' : ''}
+            </ThemedText>
+          }
+        />
+
+        {group.can_post ? (
+          <View style={[styles.composer, { borderTopColor: theme.backgroundElement }]}>
+            <ErrorText>{error}</ErrorText>
+            <View style={styles.row}>
+              <TextInput
+                accessibilityLabel="Post to the group"
+                value={body}
+                onChangeText={setBody}
+                placeholder="Write a message"
+                placeholderTextColor={theme.textSecondary}
+                multiline
+                rows={1}
+                maxLength={MAX_LENGTH}
+                style={[
+                  styles.input,
+                  { backgroundColor: theme.backgroundElement, color: theme.text },
+                ]}
+              />
+              <Pressable
+                accessibilityRole="button"
+                accessibilityLabel="Post"
+                disabled={posting}
+                onPress={post}
+                style={({ pressed }) => [
+                  styles.send,
+                  { backgroundColor: theme.accent, opacity: posting || pressed ? 0.7 : 1 },
+                ]}>
+                {posting ? (
+                  <ActivityIndicator color={theme.onAccent} />
+                ) : (
+                  <ThemedText type="smallBold" style={{ color: theme.onAccent }}>
+                    Post
+                  </ThemedText>
+                )}
+              </Pressable>
+            </View>
+            {body.length > MAX_LENGTH - 200 ? (
+              <ThemedText type="small" themeColor="textSecondary">
+                {MAX_LENGTH - body.length} characters left
+              </ThemedText>
+            ) : null}
+          </View>
+        ) : null}
+      </SafeAreaView>
+    </ThemedView>
   );
 }
 
 const styles = StyleSheet.create({
-  list: {
-    gap: Spacing.two,
+  container: {
+    flex: 1,
+    alignItems: 'center',
   },
-  field: {
+  safeArea: {
+    flex: 1,
+    width: '100%',
+    maxWidth: MaxContentWidth,
+  },
+  details: {
+    paddingHorizontal: Spacing.four,
+    paddingVertical: Spacing.three,
+    borderBottomWidth: StyleSheet.hairlineWidth,
+  },
+  list: {
+    flexGrow: 1,
+    gap: Spacing.two,
+    paddingHorizontal: Spacing.four,
+    paddingVertical: Spacing.three,
+  },
+  postRow: {
+    alignItems: 'flex-start',
     gap: Spacing.one,
+  },
+  mineRow: {
+    alignItems: 'flex-end',
+  },
+  bubble: {
+    maxWidth: '85%',
+    borderRadius: 16,
+    paddingHorizontal: Spacing.three,
+    paddingVertical: Spacing.two,
+    gap: 2,
+  },
+  removed: {
+    fontStyle: 'italic',
+  },
+  meta: {
+    fontSize: 12,
+  },
+  confirm: {
+    maxWidth: '85%',
+    borderRadius: 12,
+    padding: Spacing.two,
+    gap: Spacing.one,
+  },
+  actions: {
+    flexDirection: 'row',
+    gap: Spacing.four,
+  },
+  footNote: {
+    textAlign: 'center',
+    paddingTop: Spacing.two,
+  },
+  older: {
+    textAlign: 'center',
+    paddingVertical: Spacing.two,
+  },
+  empty: {
+    textAlign: 'center',
+    paddingVertical: Spacing.four,
+  },
+  composer: {
+    borderTopWidth: StyleSheet.hairlineWidth,
+    paddingHorizontal: Spacing.four,
+    paddingVertical: Spacing.two,
+    gap: Spacing.one,
+  },
+  input: {
+    flex: 1,
+    minHeight: 44,
+    maxHeight: 132,
+    borderRadius: 22,
+    paddingHorizontal: Spacing.three,
+    paddingTop: 11,
+    paddingBottom: 11,
+    fontFamily: BrandFonts.regular,
+    fontSize: 16,
+  },
+  send: {
+    height: 44,
+    minWidth: 64,
+    borderRadius: 22,
+    paddingHorizontal: Spacing.three,
+    alignItems: 'center',
+    justifyContent: 'center',
   },
   row: {
     flexDirection: 'row',
-    alignItems: 'center',
+    alignItems: 'flex-end',
     gap: Spacing.two,
   },
   grow: {

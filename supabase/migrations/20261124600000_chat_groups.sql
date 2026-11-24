@@ -524,9 +524,10 @@ $$;
 revoke execute on function public.my_chat_groups() from public, anon;
 grant execute on function public.my_chat_groups() to authenticated;
 
--- A group's posts the signed-in member sent or was sent, oldest first (the
--- latest 200). Read counts are for the member's own posts only.
-create or replace function public.chat_group_posts(p_group_id uuid)
+-- A group's posts the signed-in member sent or was sent, oldest first, 50 at a
+-- time: the latest, or with p_before the 50 before that time, as the member
+-- scrolls up. Read counts are for the member's own posts only.
+create or replace function public.chat_group_posts(p_group_id uuid, p_before timestamptz default null)
 returns table (
   id uuid,
   sender_id uuid,
@@ -561,6 +562,7 @@ as $$
         (select count(*)::int from public.message_recipients r where r.message_id = m.id) end
     from public.messages m
     where m.chat_group_id = p_group_id
+      and (p_before is null or m.created_at < p_before)
       and public.chat_groups_on()
       and not public.chat_minor_unguarded(auth.uid())
       and (
@@ -574,13 +576,13 @@ as $$
         )
       )
     order by m.created_at desc
-    limit 200
+    limit 50
   ) latest
   order by created_at;
 $$;
 
-revoke execute on function public.chat_group_posts(uuid) from public, anon;
-grant execute on function public.chat_group_posts(uuid) to authenticated;
+revoke execute on function public.chat_group_posts(uuid, timestamptz) from public, anon;
+grant execute on function public.chat_group_posts(uuid, timestamptz) to authenticated;
 
 -- Who is in a group, for adults in it, and for admins looking at their own
 -- groups. Under-18s don't see the list.

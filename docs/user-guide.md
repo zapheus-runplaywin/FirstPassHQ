@@ -695,10 +695,13 @@ concern](#reading-a-members-messages-for-a-concern)). Nobody is told when that h
 ### Chat groups
 
 When an admin switches on **Chat groups**, a **Groups** tab sits beside Inbox, Sent and Archived in
-Messages, with the number of unread posts. Each group lists its latest post, and opening it shows
-every post from oldest to newest and marks them read. Type in **Post to the group** and tap
-**Post**: everyone in the group sees it. Tap a post to open it on its own, where **Report this
-message** raises a concern about it and, for your own posts, you see who has read it.
+Messages, with the number of unread posts. Each group lists its latest post. A group works like a
+messaging app: it opens at the newest post and marks its posts read, your own posts sit on the
+right and everyone else's on the left with their name, and the box to write in stays at the
+bottom. Scroll up for older posts; they load as you go, back to **Start of the group**. New posts
+show while you have the group open. Type in **Write a message** and tap **Post**: everyone in the
+group sees it. Tap a post to open it on its own, where **Report this message** raises a concern
+about it and, for your own posts, you see who has read it (the count also shows under the post).
 
 You're put in groups automatically:
 
@@ -727,7 +730,8 @@ coach's name instead of the text. The text isn't deleted: it's kept like every m
 Child Safety Officer or Complaints Manager if a concern needs it. In a group an admin set up, its
 coaches and admins can remove posts.
 
-**Hide this group** at the bottom of a group moves it to **Hidden groups** at the end of the list.
+**About this group** at the top lists who is in it (not for members under 18) and holds **Hide
+this group**, which moves it to **Hidden groups** at the end of the list.
 New posts still reach you, already marked read, and nobody sees that you hid it; your read receipt
 is only set when you open the group. **Show in my groups** brings it back.
 
@@ -737,7 +741,7 @@ any other message. They don't show in your Inbox or Sent, and **Mark all read** 
 leaves them alone.
 
 <img src="user-guide/chat-groups.png" width="210" alt="The Groups tab in Messages, with unread posts and Hidden groups">
-<img src="user-guide/chat-group.png" width="210" alt="A coaches and captains group, with a post a coach removed">
+<img src="user-guide/chat-group.png" width="210" alt="A coaches and captains group opened at its newest posts, with a post a coach removed and the box to write in at the bottom">
 
 ### Surveys
 

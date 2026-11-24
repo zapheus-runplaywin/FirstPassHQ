@@ -67,11 +67,11 @@ $$ begin insert into posts values (label, public.post_to_chat_group(pg_temp.g(gr
 -- ---------------------------------------------------------------------------
 select pg_temp.ok('anon cannot list groups', has_function_privilege('anon', 'public.my_chat_groups()', 'execute'), false);
 select pg_temp.ok('anon cannot post', has_function_privilege('anon', 'public.post_to_chat_group(uuid, text)', 'execute'), false);
-select pg_temp.ok('anon cannot read posts', has_function_privilege('anon', 'public.chat_group_posts(uuid)', 'execute'), false);
+select pg_temp.ok('anon cannot read posts', has_function_privilege('anon', 'public.chat_group_posts(uuid, timestamptz)', 'execute'), false);
 select pg_temp.ok('anon cannot remove posts', has_function_privilege('anon', 'public.remove_chat_post(uuid)', 'execute'), false);
 select pg_temp.ok('anon cannot save groups', has_function_privilege('anon', 'public.admin_save_chat_group(uuid, text, public.app_role[], uuid[], uuid[])', 'execute'), false);
 select pg_temp.ok('members can list, post, read, hide and remove', bool_and(has_function_privilege('authenticated', f, 'execute')), true)
-from unnest(array['public.my_chat_groups()', 'public.post_to_chat_group(uuid, text)', 'public.chat_group_posts(uuid)',
+from unnest(array['public.my_chat_groups()', 'public.post_to_chat_group(uuid, text)', 'public.chat_group_posts(uuid, timestamptz)',
   'public.chat_group_members(uuid)', 'public.mark_chat_group_read(uuid)', 'public.set_chat_group_hidden(uuid, boolean)',
   'public.remove_chat_post(uuid)']) f;
 select pg_temp.ok('the inner rules aren''t for the app to call', bool_or(has_function_privilege('authenticated', f, 'execute')), false)
@@ -288,6 +288,10 @@ select public.mark_chat_group_read(pg_temp.g('staff'));
 select pg_temp.ok('opening the group sets Emery''s receipts', (select bool_and(read_at is not null) from public.message_recipients where profile_id = pg_temp.id('13') and chat_group_id = pg_temp.g('staff')), true);
 select pg_temp.as_member('11');
 select pg_temp.ok('Casey''s post shows read by 1 of 2', (select read_count = 1 and recipient_count = 2 from public.chat_group_posts(pg_temp.g('staff')) where id = pg_temp.p('staff hello')), true);
+select pg_temp.ok('the latest page has the newest post', exists (select 1 from public.chat_group_posts(pg_temp.g('staff')) where id = pg_temp.p('staff 2')), true);
+select pg_temp.ok('scrolling up gives only older posts', (select bool_and(created_at < (select created_at from public.messages where id = pg_temp.p('staff 2'))) and count(*) > 0 from public.chat_group_posts(pg_temp.g('staff'), (select created_at from public.messages where id = pg_temp.p('staff 2')))), true);
+select pg_temp.ok('and not the newest', exists (select 1 from public.chat_group_posts(pg_temp.g('staff'), (select created_at from public.messages where id = pg_temp.p('staff 2'))) where id = pg_temp.p('staff 2')), false);
+select pg_temp.ok('nothing before the first post', exists (select 1 from public.chat_group_posts(pg_temp.g('staff'), (select min(created_at) from public.messages where chat_group_id = pg_temp.g('staff')))), false);
 
 -- ---------------------------------------------------------------------------
 -- Admins' groups

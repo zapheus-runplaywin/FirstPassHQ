@@ -5,6 +5,7 @@ import {
   groupsUnread,
   keepChoosableRoles,
   lastPostLine,
+  mergePosts,
   peopleCount,
   postingNote,
   readOnlyNote,
@@ -14,6 +15,7 @@ import {
   under18Note,
   useChatGroupsOn,
   type ChatGroup,
+  type ChatPost,
 } from '@/lib/chat-groups';
 import { useFeature } from '@/lib/club';
 import { messageBoxes, shownBody } from '@/lib/inbox';
@@ -160,5 +162,40 @@ describe('useChatGroupsOn', () => {
     expect(useChatGroupsOn()).toBe(false);
     feature.mockImplementation((key: string) => key !== 'messages');
     expect(useChatGroupsOn()).toBe(false);
+  });
+});
+
+describe('mergePosts', () => {
+  const post = (id: string, minute: number, body = id): ChatPost => ({
+    id,
+    sender_id: 's',
+    sender_name: 'Sam',
+    body,
+    created_at: new Date(Date.UTC(2026, 10, 24, 9, minute)).toISOString(),
+    mine: false,
+    body_removed: false,
+    removed_by_name: null,
+    read_count: null,
+    recipient_count: null,
+  });
+
+  it('puts the newest first, each post once', () => {
+    const merged = mergePosts([post('b', 2), post('a', 1)], [post('c', 3), post('b', 2)]);
+    expect(merged.map((p) => p.id)).toEqual(['c', 'b', 'a']);
+  });
+
+  it('adds an older page below what is shown', () => {
+    const merged = mergePosts([post('c', 3), post('b', 2)], [post('a', 1)]);
+    expect(merged.map((p) => p.id)).toEqual(['c', 'b', 'a']);
+  });
+
+  it('takes the newer copy of a post, so a removal shows', () => {
+    const merged = mergePosts([post('a', 1, 'Hello')], [post('a', 1, 'Removed by Cam')]);
+    expect(merged).toHaveLength(1);
+    expect(merged[0].body).toBe('Removed by Cam');
+  });
+
+  it('orders posts sent in the same minute by id', () => {
+    expect(mergePosts([], [post('a', 1), post('b', 1)]).map((p) => p.id)).toEqual(['b', 'a']);
   });
 });

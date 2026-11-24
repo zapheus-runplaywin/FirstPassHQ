@@ -206,3 +206,19 @@ export function lastPostLine(group: Pick<ChatGroup, 'last_post' | 'last_sender'>
   if (!group.last_post) return 'No posts yet';
   return `${group.last_sender ?? 'Club'}: ${group.last_post}`;
 }
+
+/** How many posts `chat_group_posts` returns at a time. */
+export const POSTS_PAGE = 50;
+
+/**
+ * Joins posts already on screen with a page just loaded (the latest, or an
+ * older one), newest first for the conversation list, each post once. A post
+ * in the new page replaces the one on screen, so a removal shows.
+ */
+export function mergePosts(shown: ChatPost[], page: ChatPost[]): ChatPost[] {
+  const byId = new Map(shown.map((p) => [p.id, p]));
+  for (const p of page) byId.set(p.id, p);
+  return [...byId.values()].sort(
+    (a, b) => Date.parse(b.created_at) - Date.parse(a.created_at) || b.id.localeCompare(a.id),
+  );
+}

@@ -24,7 +24,13 @@ import AdminChatGroups from '@/app/admin/chat-groups/index';
 import MessageScreen from '@/app/messages/[id]';
 import ChatGroupScreen from '@/app/messages/group/[id]';
 import MessagesScreen from '@/app/messages/index';
-import type { AdminChatGroup, ChatGroup, ChatGroupMember, ChatPost } from '@/lib/chat-groups';
+import {
+  type AdminChatGroup,
+  type ChatGroup,
+  type ChatGroupMember,
+  type ChatPost,
+  POSTS_PAGE,
+} from '@/lib/chat-groups';
 import { supabase } from '@/lib/supabase';
 
 import {
@@ -240,6 +246,12 @@ async function openGroup(
   );
 }
 
+/** Scrolls the upside-down list of posts up to the oldest one shown. */
+async function scrollToOldest() {
+  await fireEvent(screen.getByTestId('chat-posts'), 'endReached', { distanceFromEnd: 0 });
+  await settle();
+}
+
 describe('a chat group', () => {
   it('shows its posts, marks them read and lets an adult post', async () => {
     await openGroup('coach', group());
@@ -276,8 +288,9 @@ describe('a chat group', () => {
 
   it('lists who is in it for adults, and notes under-18s', async () => {
     await openGroup('coach', group());
-    await fireEvent.press(screen.getByText('Who’s in this group'));
-    expect(screen.getByText('Sample captain (under 18, reads only)')).toBeTruthy();
+    expect(screen.getByText('2 people')).toBeTruthy();
+    await fireEvent.press(screen.getByText('About this group'));
+    expect(screen.getByText('Sample captain (under 18)')).toBeTruthy();
     expect(screen.getByText('Captain')).toBeTruthy();
   });
 
@@ -287,7 +300,8 @@ describe('a chat group', () => {
     expect(
       screen.getByText(/Your parents or guardians get a copy of everything posted here/),
     ).toBeTruthy();
-    expect(screen.queryByText('Who’s in this group')).toBeNull();
+    // No list of who else is in it, only a way to hide it or report a post.
+    expect(screen.getByText('Hide it, or report a post')).toBeTruthy();
     expect(screen.queryByText('Remove post')).toBeNull();
   });
 
@@ -335,6 +349,7 @@ describe('a chat group', () => {
   it('hides the group and goes back, or shows a hidden one again', async () => {
     const back = jest.spyOn(router, 'back').mockImplementation(() => {});
     await openGroup('coach', group());
+    await fireEvent.press(screen.getByText('About this group'));
     await fireEvent.press(screen.getByText('Hide this group'));
     await settle();
     expect(rpcCalls('set_chat_group_hidden')).toEqual([
@@ -344,6 +359,7 @@ describe('a chat group', () => {
 
     (supabase.rpc as jest.Mock).mockClear();
     await openGroup('coach', group({ hidden: true }));
+    await fireEvent.press(screen.getByText('About this group'));
     await fireEvent.press(screen.getByText('Show in my groups'));
     await settle();
     expect(rpcCalls('set_chat_group_hidden')).toEqual([
@@ -373,8 +389,37 @@ describe('a chat group', () => {
     await openGroup('coach', group(), {
       posts: [{ ...POSTS[0], mine: true, read_count: 2, recipient_count: 3 }],
     });
-    expect(screen.getByText('You')).toBeTruthy();
-    expect(screen.getByText('Read by 2 of 3')).toBeTruthy();
+    // The member's own posts don't carry their name, as in a messaging app.
+    expect(screen.queryByText(POSTS[0].sender_name)).toBeNull();
+    expect(screen.getByText(/Read by 2 of 3/)).toBeTruthy();
+  });
+
+  it('opens at the newest post and loads older ones as the member scrolls up', async () => {
+    const page = Array.from({ length: POSTS_PAGE }, (_, i) => ({
+      ...POSTS[0],
+      id: `p${i}`,
+      body: `Post ${i}`,
+      created_at: new Date(Date.UTC(2026, 10, 24, 0, i)).toISOString(),
+    }));
+    await openGroup('coach', group(), { posts: page });
+    // Drawn upside down, newest first, so it starts at the newest post.
+    const list = screen.getByTestId('chat-posts');
+    expect(list.props.inverted).toBe(true);
+    expect(screen.getByText(`Post ${POSTS_PAGE - 1}`)).toBeTruthy();
+    expect(screen.queryByText('Start of the group')).toBeNull();
+    await scrollToOldest();
+    expect(rpcCalls('chat_group_posts').at(-1)).toEqual({
+      p_group_id: 'g-captains',
+      p_before: page[0].created_at,
+    });
+  });
+
+  it('says where the group starts and asks for nothing older', async () => {
+    await openGroup('coach', group());
+    expect(screen.getByText('Start of the group')).toBeTruthy();
+    const before = rpcCalls('chat_group_posts').length;
+    await scrollToOldest();
+    expect(rpcCalls('chat_group_posts')).toHaveLength(before);
   });
 });
 
