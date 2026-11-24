@@ -144,6 +144,7 @@ type Rows = {
   submission?: MyWwccSubmission | null;
   isSafeguardingOfficer?: unknown;
   safeguardingPosts?: unknown;
+  actingPosts?: unknown;
   committeeSeesInjuries?: unknown;
   committeeChecksFrom?: unknown;
   linkCode?: unknown;
@@ -210,6 +211,7 @@ beforeEach(() => {
     if (fn === 'my_wwcc_submission') return query({ data: rows.submission ?? null });
     if (fn === 'is_safeguarding_officer') return query({ data: rows.isSafeguardingOfficer ?? false });
     if (fn === 'my_safeguarding_posts') return query({ data: rows.safeguardingPosts ?? null });
+    if (fn === 'my_acting_safeguarding_posts') return query({ data: rows.actingPosts ?? null });
     if (fn === 'my_committee_sees_injuries') return query({ data: rows.committeeSeesInjuries ?? true });
     if (fn === 'committee_checks_from') return query({ data: rows.committeeChecksFrom ?? null });
     if (fn === 'my_link_code') return query({ data: rows.linkCode ?? null });
@@ -346,12 +348,37 @@ describe('loading the member', () => {
       },
     });
     expect(auth.safeguardingPosts).toEqual(['child_safety_officer', 'wwc_registration_officer']);
+    expect(auth.actingSafeguardingPosts).toEqual([]);
     expect(supabase.rpc).toHaveBeenCalledWith('my_safeguarding_posts');
+  });
+
+  it('marks the posts an admin acts in because nobody named can act', async () => {
+    const auth = await authFor({
+      profile: profile('admin'),
+      safeguardingPosts: {
+        child_safety_officer: false,
+        complaints_manager: true,
+        wwc_registration_officer: false,
+      },
+      actingPosts: {
+        child_safety_officer: true,
+        complaints_manager: false,
+        wwc_registration_officer: true,
+      },
+    });
+    expect(auth.safeguardingPosts).toEqual([
+      'child_safety_officer',
+      'complaints_manager',
+      'wwc_registration_officer',
+    ]);
+    expect(auth.actingSafeguardingPosts).toEqual(['child_safety_officer', 'wwc_registration_officer']);
+    expect(supabase.rpc).toHaveBeenCalledWith('my_acting_safeguarding_posts');
   });
 
   it('holds no safeguarding posts when the club has none set', async () => {
     const auth = await authFor({ profile: profile('coach'), safeguardingPosts: null });
     expect(auth.safeguardingPosts).toEqual([]);
+    expect(auth.actingSafeguardingPosts).toEqual([]);
   });
 
   it('shows no member, groups or safeguarding contacts while loading', async () => {
@@ -361,6 +388,7 @@ describe('loading the member', () => {
       isClubCaptain: true,
       isSafeguardingOfficer: true,
       safeguardingPosts: { child_safety_officer: true },
+      actingPosts: { complaints_manager: true },
       committeeSeesInjuries: false,
       exemption: exemption(),
       committeeChecksFrom: '2027-01-11',
@@ -385,6 +413,7 @@ describe('loading the member', () => {
     expect(result.current.isClubCaptain).toBe(false);
     expect(result.current.isSafeguardingOfficer).toBe(false);
     expect(result.current.safeguardingPosts).toEqual([]);
+    expect(result.current.actingSafeguardingPosts).toEqual([]);
     expect(result.current.exemption).toBeNull();
     expect(result.current.committeeChecksFrom).toBeNull();
     await act(async () => release());

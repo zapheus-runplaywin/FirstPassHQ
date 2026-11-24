@@ -798,6 +798,9 @@ export type CoachTeamGame = {
   reviewed_count: number;
 };
 
+/** One person in a safeguarding post, from `safeguarding_contacts`. */
+export type SafeguardingContactPerson = { id: string; name: string; acting?: boolean };
+
 /** Who to talk to about a child's safety, from `safeguarding_contacts`. */
 export type SafeguardingContacts = {
   child_safety_officer_id: string | null;
@@ -808,10 +811,13 @@ export type SafeguardingContacts = {
   governing_body_phone: string | null;
   governing_body_url: string | null;
   policy_url: string | null;
-  /** Every Child Safety Officer who can act now (a club can name up to 5). */
-  child_safety_officers?: { id: string; name: string }[];
-  /** Every Complaints Manager who can act now. */
-  complaints_managers?: { id: string; name: string }[];
+  /**
+   * Every Child Safety Officer who can act now (a club can name up to 5), or,
+   * when none can, the admins acting in the post (`acting: true`).
+   */
+  child_safety_officers?: SafeguardingContactPerson[];
+  /** Every Complaints Manager who can act now, or the admins acting. */
+  complaints_managers?: SafeguardingContactPerson[];
 };
 
 export type ConcernStatus = 'received' | 'referred' | 'under_review' | 'closed';

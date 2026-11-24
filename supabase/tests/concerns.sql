@@ -109,7 +109,10 @@ update public.profiles set wwcc_expires_on = public.club_today() - 1 where id = 
 select pg_temp.as_member('13');
 select pg_temp.ok('lapsed officer sees nothing', (select count(*) = 0 from public.concern_register()), true);
 select pg_temp.as_member('61');
-select pg_temp.ok('lapsed officer not shown as a contact', (select complaints_manager_name is null from public.safeguarding_contacts()), true);
+select pg_temp.ok('lapsed officer not shown as a contact', (select not (complaints_managers @> '[{"id": "00000000-0000-0000-0000-000000000013"}]') from public.safeguarding_contacts()), true);
+-- With nobody able to act as Complaints Manager, the admin with a check acts
+-- in it (20261124200000_acting_safeguarding_posts.sql).
+select pg_temp.ok('an admin acting in the post is shown, marked acting', (select complaints_managers = '[{"id": "00000000-0000-0000-0000-000000000001", "name": "Alex Admin", "acting": true}]' from public.safeguarding_contacts()), true);
 
 -- Ten a day.
 select pg_temp.as_member('32');

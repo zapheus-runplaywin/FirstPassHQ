@@ -118,6 +118,7 @@ export function matchPeople(people: ConcernPerson[], typed: string, max: number)
 /**
  * The names of the club's Child Safety Officers or Complaints Managers who
  * can act now, from `safeguarding_contacts` (one name from an older server).
+ * An admin acting in an empty post reads "Avery Admin (acting)".
  */
 export function contactNames(
   contacts: SafeguardingContacts | null | undefined,
@@ -125,7 +126,7 @@ export function contactNames(
 ): string[] {
   if (!contacts) return [];
   const list = post === 'officers' ? contacts.child_safety_officers : contacts.complaints_managers;
-  if (list) return list.map((p) => p.name);
+  if (list) return list.map((p) => (p.acting === true ? `${p.name} (acting)` : p.name));
   const one = post === 'officers' ? contacts.child_safety_officer_name : contacts.complaints_manager_name;
   return one ? [one] : [];
 }

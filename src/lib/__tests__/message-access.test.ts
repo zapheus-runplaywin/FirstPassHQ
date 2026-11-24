@@ -10,6 +10,7 @@ import {
   defaultRange,
   MAX_DAYS,
   type MessageAccessRequest,
+  requestedPostLabel,
   requestProblem,
   requestStatusLine,
   splitRequests,
@@ -58,6 +59,24 @@ function request(extra: Partial<MessageAccessRequest> = {}): MessageAccessReques
     ...extra,
   };
 }
+
+describe('requestedPostLabel', () => {
+  it('names the post the person asking holds', () => {
+    expect(requestedPostLabel({ requested_post: 'child_safety_officer' })).toBe('Child Safety Officer');
+    expect(requestedPostLabel({ requested_post: 'complaints_manager', requested_acting: false })).toBe(
+      'Complaints Manager',
+    );
+  });
+
+  it('says when an admin asked while acting in an empty post', () => {
+    expect(requestedPostLabel({ requested_post: 'child_safety_officer', requested_acting: true })).toBe(
+      'Child Safety Officer (acting)',
+    );
+    expect(requestedPostLabel({ requested_post: 'complaints_manager', requested_acting: true })).toBe(
+      'Complaints Manager (acting)',
+    );
+  });
+});
 
 describe('defaultRange', () => {
   it('is the last 30 days up to today', () => {

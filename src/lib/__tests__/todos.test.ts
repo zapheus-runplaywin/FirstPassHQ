@@ -350,6 +350,7 @@ describe('buildTodos', () => {
       expect(todos({ messageAccess: access({ only_one_admin: true }) })[0]).toMatchObject({
         key: 'second-admin',
         title: 'Add a second admin',
+        detail: "A backup when you're away, and someone to verify your own check",
         alert: { level: 'amber' },
       });
     });
@@ -815,6 +816,26 @@ describe('buildTodos', () => {
         '1 athlete turns 18 this month',
         'Old records are kept forever',
         '3 members have had no team or role for 2 years',
+      ]);
+    });
+
+    it('asks for an empty safeguarding post to be named, saying admins act meanwhile', () => {
+      const list = todos({
+        safety: safety({ child_safety_officer_missing: 1, complaints_manager_missing: 1 }),
+      });
+      expect(list.map((t) => [t.key, t.title, t.detail, t.href])).toEqual([
+        [
+          'child-safety-officer',
+          'Name a Child Safety Officer',
+          'Nobody with a current check holds it, so admins act in it. Under Safeguarding',
+          '/admin/safeguarding',
+        ],
+        [
+          'complaints-manager',
+          'Name a Complaints Manager',
+          'Nobody with a current check holds it, so admins act in it. Under Safeguarding',
+          '/admin/safeguarding',
+        ],
       ]);
     });
 

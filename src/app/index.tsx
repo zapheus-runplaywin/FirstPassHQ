@@ -128,6 +128,7 @@ export default function HomeScreen() {
     isAdmin,
     isSafeguardingOfficer,
     safeguardingPosts,
+    actingSafeguardingPosts,
     waitingForGuardian,
     isLocked,
     refresh,
@@ -376,7 +377,7 @@ export default function HomeScreen() {
           approved && profile
             ? [
                 captainTitle(captaincies, memberships, isClubCaptain),
-                safeguardingPostsLabel(safeguardingPosts),
+                safeguardingPostsLabel(safeguardingPosts, actingSafeguardingPosts),
               ]
                 .filter(Boolean)
                 .join(' · ')
