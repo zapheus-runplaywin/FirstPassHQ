@@ -3752,7 +3752,8 @@ choose who is in it:
 
 The screen says how many people that is now. If any of them are under 18, a warning says how
 many, and **Save** asks once more (**Save with under 18s in it**) before setting it up. Who is in it is worked out
-each time someone posts, so it follows squad and team changes. Guests and temporary helpers are
+each time someone posts, so it follows squad and team changes. The group shows in its members'
+**Messages › Groups** straight away; posting starts once someone besides you is in it. Guests and temporary helpers are
 never in a group, and nor is anyone stood down. Members under 18 read an admin's group but can't post
 in it, and their parents or guardians get a copy of every post.
 

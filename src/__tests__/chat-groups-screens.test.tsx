@@ -427,6 +427,16 @@ describe('a chat group', () => {
     ]);
   });
 
+  it('shows a group an admin set up with nobody else in it yet, without a box to post in', async () => {
+    await openGroup('admin', group({ kind: 'custom', name: 'Just me', member_count: 1 }), {
+      posts: [],
+      members: [MEMBERS[0]],
+    });
+    expect(screen.container.queryAll((n) => n.type === 'TextInput')).toHaveLength(0);
+    expect(screen.getByText(/^Nobody else is in this group yet\./)).toBeTruthy();
+    expect(screen.getByText('No posts yet.')).toBeTruthy();
+  });
+
   it('says so when the group isn’t available', async () => {
     await openScreen(
       'coach',
