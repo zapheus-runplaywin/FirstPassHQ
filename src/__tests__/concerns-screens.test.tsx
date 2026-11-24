@@ -846,3 +846,62 @@ describe('wellbeing flags', () => {
     });
   });
 });
+
+// ---------------------------------------------------------------------------
+// Escalation: a concern with nothing recorded for too long goes to the next
+// person in its lead post's chain (supabase/tests/concern-clocks-and-escalation.sql).
+
+describe('escalation', () => {
+  const ESCALATIONS = [
+    { reached_at: '2026-10-30T01:00:00Z', target_name: 'Child Safety Officer', skipped: false, reason: null },
+    {
+      reached_at: '2026-11-06T01:00:00Z',
+      target_name: 'Sample Committee',
+      skipped: true,
+      reason: 'Nobody in this step could take it: everyone is named in the concern or can’t act',
+    },
+  ];
+  // A coach a concern was escalated to by name: no post, not an admin.
+  const named: Persona = { ...personas.coach, rpcs: { has_escalated_concerns: true } };
+
+  it('shows each step, and who looked because it reached them by name', async () => {
+    await openConcern(officer, concern(), [], {
+      concern_escalation_history: ESCALATIONS,
+      concern_escalated_view_log: [{ viewer_name: 'Sample Committee', viewed_at: '2026-11-07T01:00:00Z' }],
+    });
+    const card = within(screen.getByTestId('concern-escalations'));
+    expect(card.getByText(`${formatDateString('2026-10-30')}: Escalated to Child Safety Officer`)).toBeTruthy();
+    expect(card.getByText(/: Passed over Sample Committee: Nobody in this step could take it/)).toBeTruthy();
+    expect(card.getByText(`Looked at by Sample Committee (${formatDateString('2026-11-07')})`)).toBeTruthy();
+  });
+
+  it('shows nothing about escalation for a concern that never escalated', async () => {
+    await openConcern(officer, concern());
+    expect(screen.queryByTestId('concern-escalations')).toBeNull();
+  });
+
+  it('notes each look, and the database keeps only those by someone named in a chain', async () => {
+    await openConcern(named, concern());
+    expect(rpcCalls()).toContainEqual(['note_escalated_concern_view', { p_concern_id: 'con-1' }]);
+  });
+
+  it('notes no look at a concern the member can’t see', async () => {
+    await openConcern(named, null);
+    expect(rpcCalls().map(([n]) => n)).not.toContain('note_escalated_concern_view');
+  });
+
+  it('lets someone it reached by name record steps, but not change who it’s about', async () => {
+    await openConcern(named, concern());
+    expect(screen.getByText('Add note')).toBeTruthy();
+    expect(screen.queryByText('Who it’s about')).toBeNull();
+    expect(screen.queryByText('Ask to read messages')).toBeNull();
+  });
+
+  it('lists their escalated concerns in the register, without the officers’ tools', async () => {
+    await openRegister(named, [concern()]);
+    expect(screen.getByText(/^Concerns escalated to you by name/)).toBeTruthy();
+    expect(screen.getByText('Shouted at the under 12s')).toBeTruthy();
+    expect(screen.queryByText('Export the register as a PDF')).toBeNull();
+    expect(screen.queryByText('Message access')).toBeNull();
+  });
+});

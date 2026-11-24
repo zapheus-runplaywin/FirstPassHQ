@@ -21,7 +21,7 @@ import { useWellbeingFlagAlerts } from '@/lib/wellbeing-flags';
  * and admins. Nobody sees a concern about themselves.
  */
 export default function ConcernsScreen() {
-  const { isAdmin, isSafeguardingOfficer } = useAuth();
+  const { isAdmin, isSafeguardingOfficer, hasEscalatedConcerns } = useAuth();
   // The route guard lets only these in; this keeps the register's controls
   // to them even so. The database returns no concerns to anyone else.
   const handles = isAdmin || isSafeguardingOfficer;
@@ -100,6 +100,12 @@ export default function ConcernsScreen() {
             />
           ) : null}
         </>
+      ) : hasEscalatedConcerns ? (
+        <ThemedText type="small" themeColor="textSecondary">
+          Concerns escalated to you by name because nothing was recorded on them in time. Record
+          what you do on each one. You see them only while they’re open, and each look is kept with
+          the concern.
+        </ThemedText>
       ) : null}
       <Section title="Open" concerns={open} empty="No open concerns." />
       <Section title="Closed" concerns={closed} empty="None closed yet." />

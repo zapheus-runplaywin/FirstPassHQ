@@ -26,8 +26,15 @@ import type { AppRole, TeamRole } from '@/lib/types';
  * leads to the screen, and the user guide's role tables.
  */
 export function useRouteAccess() {
-  const { profile, memberships, isAdmin, isSafeguardingOfficer, waitingForGuardian, isLocked } =
-    useAuth();
+  const {
+    profile,
+    memberships,
+    isAdmin,
+    isSafeguardingOfficer,
+    hasEscalatedConcerns,
+    waitingForGuardian,
+    isLocked,
+  } = useAuth();
   const approved = profile?.status === 'approved';
   const inGroupAs = (...roles: TeamRole[]) =>
     approved && memberships.some((m) => roles.includes(m.team_role));
@@ -140,8 +147,9 @@ export function useRouteAccess() {
     reports: canReadReports,
 
     // The concerns register: admins, the Child Safety Officer and the
-    // Complaints Manager.
-    concerns: isAdmin || isSafeguardingOfficer,
+    // Complaints Manager, and anyone a concern was escalated to by name (who
+    // sees only that concern).
+    concerns: isAdmin || isSafeguardingOfficer || hasEscalatedConcerns,
 
     // A child's consents, what's changed around them and who has viewed their
     // records: their parents and guardians, and admins.

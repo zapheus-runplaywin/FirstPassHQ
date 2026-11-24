@@ -3,6 +3,8 @@ import type { Href } from 'expo-router';
 import type { SelectionTodo } from '@/lib/assessments';
 import { slotTitle } from '@/lib/awards';
 import { clubDay } from '@/lib/club-time';
+import type { ConcernClock } from '@/lib/concerns';
+import { clearanceLateness, type ConcernTimes, DEFAULT_CONCERN_TIMES } from '@/lib/concern-times';
 import { formatShortDay } from '@/lib/format';
 import { gamePhase, gameTitle } from '@/lib/goals';
 import { formatDateString, type LoggedInjury, toDateString } from '@/lib/injuries';
@@ -16,6 +18,31 @@ import { dueLabel, isOutstanding, type MyTraining } from '@/lib/training';
 import type { AwardSlot, CoachTeamGame, GoalGame, Injury, MyWwccSubmission } from '@/lib/types';
 import type { SafetyTodos } from '@/lib/use-pending-requests';
 import { seasonLabel } from '@/lib/use-teams';
+
+/**
+ * A concern the member is chased about, as a to-do: references only, never
+ * details. The titles match the push the database sends.
+ */
+export function concernClockTodo(clock: ConcernClock): Todo {
+  const ref = clock.reference;
+  const byStage: Record<ConcernClock['stage'], { title: string; alert: TodoAlert }> = {
+    refer: { title: `Refer ${ref} or record why not`, alert: URGENT },
+    new_late: { title: `Nothing recorded on ${ref} yet`, alert: { level: 'red', label: 'Late' } },
+    important: {
+      title: `${ref} has had nothing recorded for a while`,
+      alert: { level: 'amber', label: 'Important' },
+    },
+    urgent: { title: `${ref} is urgent: nothing recorded for too long`, alert: URGENT },
+  };
+  const { title, alert } = byStage[clock.stage];
+  return {
+    key: `concern-clock-${clock.concern_id}`,
+    title,
+    detail: clock.escalated ? 'Escalated to you' : 'You lead this concern',
+    href: `/concerns/${clock.concern_id}` as Href,
+    alert,
+  };
+}
 
 /** Something the member still has to do, shown at the top of the home screen. */
 export type Todo = {
@@ -101,6 +128,7 @@ export function buildTodos({
   ownCheck = null,
   wwccSubmission = null,
   newConcerns = 0,
+  concernClocks = [],
   messageAccess = null,
   wellbeingFlagAlerts = 0,
   loadPatternAlerts = 0,
@@ -114,6 +142,7 @@ export function buildTodos({
   policyReviews = [],
   selectionTodos = [],
   conflictDeclaration = null,
+  concernTimes = DEFAULT_CONCERN_TIMES,
   today = new Date(),
 }: {
   userId: string | undefined;
@@ -155,12 +184,19 @@ export function buildTodos({
   wwccSubmission?: MyWwccSubmission | null;
   /** Concerns nobody has acted on yet, for the people who handle them. */
   newConcerns?: number;
+  /** Concerns late, to refer, Important or Urgent, or escalated to the member. */
+  concernClocks?: ConcernClock[];
   /**
    * Message access requests waiting for the member's answer, the member's own
    * approved access still open, and (for admins) whether the club has only one
    * admin, who couldn't answer a request about themselves.
    */
-  messageAccess?: { to_decide: number; open_access: number; only_one_admin: boolean } | null;
+  messageAccess?: {
+    to_decide: number;
+    open_access: number;
+    only_one_admin: boolean;
+    late?: 'important' | 'urgent' | null;
+  } | null;
   /** Athletes flagged on 3 or more days in the last 7, for the Child Safety Officer. */
   wellbeingFlagAlerts?: number;
   /** Children whose training load shows a pattern, for the Child Safety Officer. */
@@ -185,6 +221,8 @@ export function buildTodos({
   selectionTodos?: SelectionTodo[];
   /** The member's conflict-of-interest declaration this season, if they make one. */
   conflictDeclaration?: MyConflictDeclaration | null;
+  /** The club's times, for how long a clearance can wait for sign-off. */
+  concernTimes?: Pick<ConcernTimes, 'clearance_important_days' | 'clearance_urgent_days'>;
   today?: Date;
 }): Todo[] {
   const todos: Todo[] = [];
@@ -200,6 +238,9 @@ export function buildTodos({
     });
   }
 
+  // Concerns past the club's times, or escalated to the member.
+  for (const clock of concernClocks) todos.push(concernClockTodo(clock));
+
   // A safeguarding officer is waiting to look into a concern.
   if (messageAccess && messageAccess.to_decide > 0) {
     const n = messageAccess.to_decide;
@@ -208,7 +249,12 @@ export function buildTodos({
       title: `Answer ${n} ${n === 1 ? 'request' : 'requests'} to read messages`,
       detail: 'From the Child Safety Officer or Complaints Manager, for a concern',
       href: '/concerns/message-access',
-      alert: { level: 'red', label: 'Waiting' },
+      alert:
+        messageAccess.late === 'urgent'
+          ? URGENT
+          : messageAccess.late === 'important'
+            ? { level: 'red', label: 'Important' }
+            : { level: 'red', label: 'Waiting' },
     });
   }
   if (messageAccess && messageAccess.open_access > 0) {
@@ -368,7 +414,16 @@ export function buildTodos({
   }
 
   // Return-to-play sign-offs hold an athlete out of training until they are done.
+  // One waiting longer than the club's times is Important, then Urgent.
   const toSignOff = injuries.filter((i) => i.waiting_for_me);
+  const lateness = toSignOff.map((i) =>
+    clearanceLateness(i.last_update_at ?? i.created_at, concernTimes, today),
+  );
+  const signOffAlert: TodoAlert | undefined = lateness.includes('urgent')
+    ? { level: 'red', label: 'Urgent' }
+    : lateness.includes('important')
+      ? { level: 'amber', label: 'Important' }
+      : undefined;
   if (toSignOff.length === 1) {
     const injury = toSignOff[0];
     todos.push({
@@ -376,6 +431,7 @@ export function buildTodos({
       title: `Review ${injury.athlete_name ?? 'an athlete'}’s clearance`,
       detail: `${injury.body_area} · waiting for your sign-off`,
       href: { pathname: '/injuries/[id]', params: { id: injury.id } },
+      ...(signOffAlert ? { alert: signOffAlert } : {}),
     });
   } else if (toSignOff.length > 1) {
     todos.push({
@@ -383,6 +439,7 @@ export function buildTodos({
       title: `Review ${toSignOff.length} injury clearances`,
       detail: waitingLabel(uniqueNames(toSignOff.map((i) => i.athlete_name ?? 'An athlete'))),
       href: '/injuries',
+      ...(signOffAlert ? { alert: signOffAlert } : {}),
     });
   }
 

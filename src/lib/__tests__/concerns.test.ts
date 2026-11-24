@@ -3,7 +3,7 @@
  * the concerns register PDF (`concernsReport`), from "The concerns register"
  * in section 10 of docs/user-guide.md.
  */
-import { concernsReport, matchPeople } from '@/lib/concerns';
+import { concernsReport, escalationLine, matchPeople } from '@/lib/concerns';
 import type { Concern } from '@/lib/types';
 
 jest.mock('@/lib/supabase', () => ({ supabase: {} }));
@@ -85,5 +85,25 @@ describe('concernsReport', () => {
 
   it('prints just what happened when no message was reported', () => {
     expect(whatHappened(concern())).toBe('Strange message');
+  });
+});
+
+describe('escalationLine', () => {
+  const step = {
+    reached_at: '2026-11-20T01:00:00Z',
+    target_name: 'Child Safety Officer',
+    skipped: false,
+    reason: null,
+  };
+
+  it('names who a concern was escalated to', () => {
+    expect(escalationLine(step)).toBe('Escalated to Child Safety Officer');
+  });
+
+  it('says why a step passed someone over', () => {
+    expect(escalationLine({ ...step, skipped: true, reason: 'Nobody could take it' })).toBe(
+      'Passed over Child Safety Officer: Nobody could take it',
+    );
+    expect(escalationLine({ ...step, skipped: true })).toBe('Passed over Child Safety Officer');
   });
 });

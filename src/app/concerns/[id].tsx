@@ -13,6 +13,9 @@ import {
   concernAboutNames,
   concernEventLabels,
   concernStatusLabels,
+  escalationLine,
+  type ConcernEscalatedView,
+  type ConcernEscalation,
   type ConcernGuardian,
   type ConcernGuardianView,
   type ConcernPerson,
@@ -34,12 +37,14 @@ import type { Concern, ConcernEvent, ConcernEventKind, ConcernStatus } from '@/l
 export default function ConcernScreen() {
   const { id } = useLocalSearchParams<{ id: string }>();
   const contacts = useSafeguardingContacts();
-  const { isSafeguardingOfficer } = useAuth();
+  const { isAdmin, isSafeguardingOfficer } = useAuth();
   const [concern, setConcern] = useState<Concern | null | undefined>(undefined);
   const [history, setHistory] = useState<ConcernEvent[]>([]);
   const [people, setPeople] = useState<ConcernPerson[]>([]);
   const [guardians, setGuardians] = useState<ConcernGuardian[]>([]);
   const [guardianViews, setGuardianViews] = useState<ConcernGuardianView[]>([]);
+  const [escalations, setEscalations] = useState<ConcernEscalation[]>([]);
+  const [escalatedViews, setEscalatedViews] = useState<ConcernEscalatedView[]>([]);
   const [note, setNote] = useState('');
   const [status, setStatus] = useState<ConcernStatus | null>(null);
   const [busy, setBusy] = useState<string | null>(null);
@@ -71,6 +76,16 @@ export default function ConcernScreen() {
         ? await supabase.rpc('concern_guardian_views', { p_concern_id: id })
         : { data: [] };
     setGuardianViews((viewsResult.data as ConcernGuardianView[] | null) ?? []);
+    if (!found) return;
+    // A look by someone who has it only because it was escalated to them by
+    // name is kept with the concern (the database ignores anyone else's).
+    await supabase.rpc('note_escalated_concern_view', { p_concern_id: id });
+    const [escalationResult, escalatedViewResult] = await Promise.all([
+      supabase.rpc('concern_escalation_history', { p_concern_id: id }),
+      supabase.rpc('concern_escalated_view_log', { p_concern_id: id }),
+    ]);
+    setEscalations((escalationResult.data as ConcernEscalation[] | null) ?? []);
+    setEscalatedViews((escalatedViewResult.data as ConcernEscalatedView[] | null) ?? []);
   }, [id]);
 
   useFocusEffect(
@@ -239,6 +254,28 @@ export default function ConcernScreen() {
         )}
       </View>
 
+      {escalations.length > 0 ? (
+        <Card testID="concern-escalations">
+          <ThemedText type="smallBold">Escalation</ThemedText>
+          {escalations.map((step) => (
+            <ThemedText key={`${step.reached_at}${step.target_name}`} type="small">
+              {`${localDay(step.reached_at)}: ${escalationLine(step)}`}
+            </ThemedText>
+          ))}
+          <ThemedText type="small" themeColor="textSecondary">
+            Nothing was recorded for longer than the club allows, so it went to the next person in the
+            club’s escalation chain. Recording a step starts the clock again.
+          </ThemedText>
+          {escalatedViews.length > 0 ? (
+            <ThemedText type="small" themeColor="textSecondary">
+              {`Looked at by ${escalatedViews
+                .map((v) => `${v.viewer_name} (${localDay(v.viewed_at)})`)
+                .join(', ')}`}
+            </ThemedText>
+          ) : null}
+        </Card>
+      ) : null}
+
       <View style={styles.group}>
         <ThemedText type="smallBold">Record what you did</ThemedText>
         <TextField
@@ -308,18 +345,22 @@ export default function ConcernScreen() {
         </View>
       ) : null}
 
-      <PeoplePicker
-        label="Who it’s about"
-        hint="Name every member it’s about, so none of them can see it, even if they’re an admin or handle concerns. Each change is saved straight away and kept in the history. If you name yourself, you lose it too."
-        people={people}
-        selected={aboutPeople}
-        onAdd={(p) => changeAbout(p.id, true)}
-        onRemove={(p) => changeAbout(p.id, false)}
-        max={MAX_ABOUT}
-        searchLabel="Search members"
-        noneChosen="No member named."
-        disabled={busy === 'about'}
-      />
+      {/* Someone it was escalated to by name records steps, but naming people
+          needs the club's member list, which only admins and the posts see. */}
+      {isAdmin || isSafeguardingOfficer ? (
+        <PeoplePicker
+          label="Who it’s about"
+          hint="Name every member it’s about, so none of them can see it, even if they’re an admin or handle concerns. Each change is saved straight away and kept in the history. If you name yourself, you lose it too."
+          people={people}
+          selected={aboutPeople}
+          onAdd={(p) => changeAbout(p.id, true)}
+          onRemove={(p) => changeAbout(p.id, false)}
+          max={MAX_ABOUT}
+          searchLabel="Search members"
+          noneChosen="No member named."
+          disabled={busy === 'about'}
+        />
+      ) : null}
       <ErrorText>{aboutError}</ErrorText>
     </Screen>
   );

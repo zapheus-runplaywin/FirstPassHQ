@@ -81,7 +81,8 @@ import {
 } from '@/lib/labels';
 import { useMessageAccessTodo } from '@/lib/message-access';
 import { supabase } from '@/lib/supabase';
-import { useConcernCounts, useNewConcerns } from '@/lib/concerns';
+import { useConcernTimes } from '@/lib/concern-times';
+import { useConcernClocks, useConcernCounts, useNewConcerns } from '@/lib/concerns';
 import { useCanReadReports } from '@/lib/report-access';
 import { usePersonalTasks } from '@/lib/personal-tasks';
 import { useSessionPlanSummary } from '@/lib/session-plans';
@@ -129,6 +130,7 @@ export default function HomeScreen() {
     isSafeguardingOfficer,
     safeguardingPosts,
     actingSafeguardingPosts,
+    hasEscalatedConcerns,
     waitingForGuardian,
     isLocked,
     refresh,
@@ -136,9 +138,13 @@ export default function HomeScreen() {
   } = useAuth();
   // Admins reach Reports from Administration; checked committee members from here.
   const canReadReports = useCanReadReports();
-  // Admins and the two safeguarding officers handle concerns members raise.
-  const handlesConcerns = isAdmin || isSafeguardingOfficer;
+  // Admins and the two safeguarding officers handle concerns members raise,
+  // and so does anyone a concern was escalated to by name (that one only).
+  const handlesConcerns = isAdmin || isSafeguardingOfficer || hasEscalatedConcerns;
   const newConcerns = useNewConcerns(handlesConcerns);
+  const concernClocks = useConcernClocks(handlesConcerns);
+  // How long a clearance can wait for sign-off before it's Important, then Urgent.
+  const concernTimes = useConcernTimes(!!session);
   const concernCounts = useConcernCounts(handlesConcerns);
   const messageAccess = useMessageAccessTodo(handlesConcerns);
   const { switchClub } = useClubChoice();
@@ -237,6 +243,8 @@ export default function HomeScreen() {
     // A guest's card is optional: one sent back shows in My details, not as a to-do.
     wwccSubmission: isGuest(profile, paused?.roles) ? null : wwccSubmission,
     newConcerns,
+    concernClocks,
+    concernTimes,
     messageAccess,
     wellbeingFlagAlerts: wellbeingFlags.repeated,
     loadPatternAlerts: loadPatterns,

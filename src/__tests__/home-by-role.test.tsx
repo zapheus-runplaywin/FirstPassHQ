@@ -409,6 +409,49 @@ describe('administration and concerns', () => {
     expect(screen.queryByText(ITEMS.administration)).toBeNull();
   });
 
+  it('a coach a concern was escalated to by name has Concerns, chased by reference only', async () => {
+    await openHome({
+      ...personas.coach,
+      rpcs: {
+        has_escalated_concerns: true,
+        my_concern_clocks: [
+          { concern_id: 'c1', reference: 'C-0007', stage: 'urgent', clock_from: '2026-10-01T00:00:00Z', escalated: true },
+        ],
+      },
+    });
+    expect(screen.getByText(ITEMS.concerns)).toBeTruthy();
+    expect(screen.getByText('C-0007 is urgent: nothing recorded for too long')).toBeTruthy();
+    expect(screen.getByText('Escalated to you')).toBeTruthy();
+    expect(screen.queryByText(ITEMS.administration)).toBeNull();
+  });
+
+  it('a coach with nothing escalated has no Concerns, and isn’t chased', async () => {
+    await openHome({
+      ...personas.coach,
+      rpcs: {
+        my_concern_clocks: [
+          { concern_id: 'c1', reference: 'C-0007', stage: 'urgent', clock_from: '2026-10-01T00:00:00Z', escalated: true },
+        ],
+      },
+    });
+    expect(screen.queryByText(ITEMS.concerns)).toBeNull();
+    expect(screen.queryByText(/C-0007/)).toBeNull();
+  });
+
+  it('chases the lead about a concern with nothing recorded for too long', async () => {
+    await openHome({
+      ...personas.coach,
+      isSafeguardingOfficer: true,
+      rpcs: {
+        my_concern_clocks: [
+          { concern_id: 'c1', reference: 'C-0009', stage: 'important', clock_from: '2026-10-01T00:00:00Z', escalated: false },
+        ],
+      },
+    });
+    expect(screen.getByText('C-0009 has had nothing recorded for a while')).toBeTruthy();
+    expect(screen.getByText('You lead this concern')).toBeTruthy();
+  });
+
   it('an admin who also coaches sees both Administration and their squads', async () => {
     const adminCoach: Persona = {
       ...personas.coach,

@@ -105,6 +105,7 @@ function auth(
     captaincies?: GroupCaptain[];
     isClubCaptain?: boolean;
     isSafeguardingOfficer?: boolean;
+    hasEscalatedConcerns?: boolean;
     committeeSeesInjuries?: boolean;
     exemption?: Auth['exemption'];
     wwccApplication?: Auth['wwccApplication'];
@@ -128,6 +129,7 @@ function auth(
     isSafeguardingOfficer: extra.isSafeguardingOfficer ?? false,
     safeguardingPosts: [],
     actingSafeguardingPosts: [],
+    hasEscalatedConcerns: extra.hasEscalatedConcerns ?? false,
     waitingForGuardian: null,
     isLocked: false,
     committeeSeesInjuries: extra.committeeSeesInjuries ?? true,
@@ -250,6 +252,11 @@ const CASES: [string, Auth, Key[]][] = [
   [
     'a manager who is the Child Safety Officer',
     auth(profile('manager'), { memberships: [member('manager')], isSafeguardingOfficer: true }),
+    ['readMessages', 'sendMessages', 'answerSurveys', 'sendSurveys', 'surveyResults', 'injuries', 'logInjury', 'attendance', 'takeAttendance', 'awards', 'kpis', 'training', 'concerns', 'medical', 'teamMedical', 'reviewPolicy'],
+  ],
+  [
+    'a manager a concern was escalated to by name',
+    auth(profile('manager'), { memberships: [member('manager')], hasEscalatedConcerns: true }),
     ['readMessages', 'sendMessages', 'answerSurveys', 'sendSurveys', 'surveyResults', 'injuries', 'logInjury', 'attendance', 'takeAttendance', 'awards', 'kpis', 'training', 'concerns', 'medical', 'teamMedical', 'reviewPolicy'],
   ],
   [

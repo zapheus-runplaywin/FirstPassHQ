@@ -8,6 +8,7 @@
 import {
   accessOpen,
   defaultRange,
+  lateFrom,
   MAX_DAYS,
   type MessageAccessRequest,
   requestedPostLabel,
@@ -192,5 +193,15 @@ describe('splitRequests', () => {
     const { waiting, answered } = splitRequests(list);
     expect(waiting.map((r) => r.id)).toEqual(['a', 'c']);
     expect(answered.map((r) => r.id)).toEqual(['b', 'd']);
+  });
+});
+
+describe('lateFrom', () => {
+  it('keeps only the two levels the database sends', () => {
+    expect(lateFrom('important')).toBe('important');
+    expect(lateFrom('urgent')).toBe('urgent');
+    expect(lateFrom(null)).toBeNull();
+    expect(lateFrom('soon')).toBeNull();
+    expect(lateFrom(1)).toBeNull();
   });
 });
