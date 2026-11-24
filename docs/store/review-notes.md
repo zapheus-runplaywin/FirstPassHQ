@@ -44,7 +44,8 @@ boxes for username, password and other instructions.
 
 ## TestFlight: beta app review and "What to test"
 
-App Store Connect > TestFlight > Test information.
+App Store Connect > TestFlight > Test Information. Every field, step by step:
+[TestFlight external testing](../testflight-external-testing.md).
 
 - **Sign-in required:** yes. Username and password as above.
 - **Beta app description:**
@@ -52,7 +53,7 @@ App Store Connect > TestFlight > Test information.
 > FirstPass HQ runs netball clubs: messages, attendance, injuries, Working With Children Checks
 > and child safety, for admins, coaches, managers, athletes and parents.
 
-- **What to test** (build A):
+- **What to test** (first external build; later builds use their release notes):
 
 > Sign in to the DEMO club as each role and check you see what that role should. Report anything
 > that looks wrong, or a screen you expected and couldn't reach, through TestFlight's feedback.

@@ -26,6 +26,13 @@ eas.json
 - no build sends TestFlight "What to test" text (--what-to-test): EAS accepts
   it only on Expo's Enterprise plan and refuses the submission otherwise.
 
+app.json (docs/testflight-external-testing.md)
+- the iPhone app says it uses no non-exempt encryption
+  (ios.config.usesNonExemptEncryption false). Without that answer in the
+  build, App Store Connect holds every new build at "Missing Compliance"
+  until someone answers the export question by hand, and external testers
+  get nothing.
+
 It also checks a few broken configurations are caught. Run by the "Tests"
 workflow."""
 
@@ -38,6 +45,7 @@ from pathlib import Path
 ROOT = Path(__file__).resolve().parent.parent
 EAS = ROOT / 'eas.json'
 WORKFLOW = ROOT / '.github' / 'workflows' / 'beta-build.yml'
+APP = ROOT / 'app.json'
 
 CLOSED_TRACK = 'alpha'
 ANDROID_CHOICES = {
@@ -114,6 +122,15 @@ def eas_problems(eas: dict) -> list[str]:
     return found
 
 
+def app_problems(app: dict) -> list[str]:
+    found = []
+    ios = app.get('expo', {}).get('ios', {})
+    if ios.get('config', {}).get('usesNonExemptEncryption') is not False:
+        found.append('app.json must set ios.config.usesNonExemptEncryption to false, or every '
+                     'TestFlight build waits at "Missing Compliance"')
+    return found
+
+
 def android_step(text: str) -> str:
     match = re.search(r'- name: Build for Android\n(.*?)(?=\n      - name:|\Z)', text, re.S)
     return match.group(1) if match else ''
@@ -168,13 +185,14 @@ def workflow_problems(text: str) -> list[str]:
 def main() -> int:
     eas = json.loads(EAS.read_text())
     workflow = WORKFLOW.read_text()
+    app = json.loads(APP.read_text())
     failures = 0
 
-    for problem in eas_problems(eas) + workflow_problems(workflow):
+    for problem in eas_problems(eas) + workflow_problems(workflow) + app_problems(app):
         print(f'FAIL: {problem}')
         failures += 1
     if not failures:
-        print('PASS: eas.json and the Beta build workflow match the store build runbooks')
+        print('PASS: eas.json, app.json and the Beta build workflow match the store build runbooks')
 
     def broken_eas(change) -> dict:
         copy_ = copy.deepcopy(eas)
@@ -195,6 +213,20 @@ def main() -> int:
     }
     for name, change in eas_cases.items():
         if eas_problems(broken_eas(change)):
+            print(f'PASS: catches {name}')
+        else:
+            print(f'FAIL: does not catch {name}')
+            failures += 1
+
+    app_cases = {
+        'export compliance answer removed': lambda a: a['expo']['ios'].pop('config'),
+        'app says it uses non-exempt encryption': lambda a: a['expo']['ios']['config'].update(usesNonExemptEncryption=True),
+        'export compliance answer written as text': lambda a: a['expo']['ios']['config'].update(usesNonExemptEncryption='false'),
+    }
+    for name, change in app_cases.items():
+        broken_app = copy.deepcopy(app)
+        change(broken_app)
+        if app_problems(broken_app):
             print(f'PASS: catches {name}')
         else:
             print(f'FAIL: does not catch {name}')

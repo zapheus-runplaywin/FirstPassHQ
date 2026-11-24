@@ -11,7 +11,8 @@ to be installed on your computer once the one-time setup below is done.
 | iOS      |                            | A store build (`production` profile), sent on to TestFlight                        | The TestFlight app, after you add them as testers            |
 
 The Google Play choices need the one-time Play Console setup in
-[Google Play closed testing](play-closed-testing.md) first.
+[Google Play closed testing](play-closed-testing.md) first. Testers outside the Apple team need the TestFlight setup in
+[TestFlight external testing](testflight-external-testing.md).
 
 Both use the live Supabase project (see [Test and live](environments.md)). Each build counts towards
 the Expo plan's monthly builds, so the workflow only runs when you start it.
@@ -55,7 +56,8 @@ the Expo plan's monthly builds, so the workflow only runs when you start it.
 
 1. In GitHub, open **Actions > Beta build > Run workflow**.
 2. Pick **android**, **ios** or **both**. For Android, pick how testers get it (the table above);
-   it starts on `link`. For iOS you can add a note on what testers should try.
+   it starts on `link`. For iOS, type what testers should try in App Store Connect instead (the
+   workflow can't send it: Expo accepts that text only on its Enterprise plan).
 3. When the run finishes, its summary has a link to each build on expo.dev.
 
 - **Android, `link`:** when the build is done, share its expo.dev page with testers. It has an
@@ -63,9 +65,9 @@ the Expo plan's monthly builds, so the workflow only runs when you start it.
 - **Android, Play closed test:** the build page shows the submission to Google Play once the build
   is done. A draft waits in **Closed testing - Alpha** until you roll it out. Testers update from
   the Play Store. See [Google Play closed testing](play-closed-testing.md).
-- **iOS:** Apple processes the build before it appears in TestFlight. Add testers in App Store
-  Connect under **TestFlight**. People in your Apple team can test straight away; anyone else needs
-  Apple's beta review the first time.
+- **iOS:** Apple processes the build before it appears in TestFlight. People in your Apple team
+  can test straight away; anyone else needs Apple's beta review the first time. See
+  [TestFlight external testing](testflight-external-testing.md).
 
 Small fixes that don't add a native library don't need a new build: publish them over the air with
 `scripts/publish-update.sh` (see [Test and live](environments.md#day-to-day)).
