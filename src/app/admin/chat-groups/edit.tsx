@@ -11,10 +11,13 @@ import { useTheme } from '@/hooks/use-theme';
 import { useAuth } from '@/lib/auth';
 import {
   type AdminChatGroup,
-  choosableRoles,
+  CLUB_POSTS,
+  type ClubPost,
+  CLUB_ROLES,
+  clubRolesOf,
   groupRuleSummary,
-  keepChoosableRoles,
   peopleCount,
+  TEAM_ROLES,
   under18Note,
 } from '@/lib/chat-groups';
 import { pluralRoleLabels } from '@/lib/labels';
@@ -28,9 +31,10 @@ type Person = { id: string; full_name: string | null; email: string | null };
 
 /**
  * Sets up or changes an admin's chat group: a name, and who is in it. Roles
- * across the club; or squads and teams, everyone in them or only some roles;
- * and named people on top. Who is in it is worked out when each post is
- * sent, so it follows squad and team changes.
+ * across the club, club posts (Child Safety Officer and the like), squads and
+ * teams (everyone in them or only some roles) and named people, all added
+ * together. Who is in it is worked out when each post is sent, so it follows
+ * squad, team and post changes.
  */
 export default function EditChatGroupScreen() {
   const { id } = useLocalSearchParams<{ id?: string }>();
@@ -39,6 +43,10 @@ export default function EditChatGroupScreen() {
   const teams = useTeams();
   const [loaded, setLoaded] = useState(!id);
   const [name, setName] = useState('');
+  // Roles across the club, and club posts.
+  const [clubRoles, setClubRoles] = useState<AppRole[]>([]);
+  const [posts, setPosts] = useState<ClubPost[]>([]);
+  // Roles in the chosen squads and teams; empty for everyone in them.
   const [roles, setRoles] = useState<AppRole[]>([]);
   const [teamIds, setTeamIds] = useState<string[]>([]);
   const [people, setPeople] = useState<PickablePerson[]>([]);
@@ -72,7 +80,10 @@ export default function EditChatGroupScreen() {
       const group = ((groupsResult.data as AdminChatGroup[] | null) ?? []).find((g) => g.id === id);
       if (group) {
         setName(group.name);
-        setRoles(group.roles);
+        const teamsChosen = group.team_ids.length > 0;
+        setRoles(teamsChosen ? group.roles : []);
+        setClubRoles(clubRolesOf(group.roles, teamsChosen, group.club_roles));
+        setPosts(group.posts ?? []);
         setTeamIds(group.team_ids);
         setPeople(pickable.filter((p) => group.people.includes(p.id)));
         setClosedAt(group.closed_at);
@@ -100,6 +111,8 @@ export default function EditChatGroupScreen() {
         p_roles: roles,
         p_team_ids: teamIds,
         p_people: people.map((p) => p.id),
+        p_club_roles: clubRoles,
+        p_posts: posts,
       })
       .then(({ data }) => {
         if (!current) return;
@@ -110,18 +123,18 @@ export default function EditChatGroupScreen() {
     return () => {
       current = false;
     };
-  }, [roles, teamIds, people]);
+  }, [roles, teamIds, people, clubRoles, posts]);
 
   function toggleTeam(teamId: string) {
     const next = teamIds.includes(teamId)
       ? teamIds.filter((t) => t !== teamId)
       : [...teamIds, teamId];
     setTeamIds(next);
-    setRoles((r) => keepChoosableRoles(r, next.length > 0));
+    if (next.length === 0) setRoles([]);
   }
 
   function toggleRole(role: AppRole) {
-    setRoles((r) => (r.includes(role) ? r.filter((x) => x !== role) : [...r, role]));
+    setRoles((r) => toggled(r, role));
   }
 
   async function save() {
@@ -138,6 +151,8 @@ export default function EditChatGroupScreen() {
       p_roles: roles,
       p_team_ids: teamIds,
       p_people: people.map((p) => p.id),
+      p_club_roles: clubRoles,
+      p_posts: posts,
     });
     setBusy(false);
     if (saveError) {
@@ -179,6 +194,18 @@ export default function EditChatGroupScreen() {
       />
 
       <ChipGroup
+        label="Club roles (optional)"
+        options={CLUB_ROLES.map((r) => ({ value: r, label: pluralRoleLabels[r] }))}
+        selected={clubRoles}
+        onToggle={(r) => setClubRoles((list) => toggled(list, r))}
+      />
+      <ChipGroup
+        label="Club posts (optional)"
+        options={CLUB_POSTS}
+        selected={posts}
+        onToggle={(p) => setPosts((list) => toggled(list, p))}
+      />
+      <ChipGroup
         label="Squads and teams (optional)"
         options={teams.map((t) => ({
           value: t.id,
@@ -187,15 +214,14 @@ export default function EditChatGroupScreen() {
         selected={teamIds}
         onToggle={toggleTeam}
       />
-      <ChipGroup
-        label={teamIds.length ? 'Only these roles in them (optional)' : 'Roles across the club'}
-        options={choosableRoles(teamIds.length > 0).map((r) => ({
-          value: r,
-          label: pluralRoleLabels[r],
-        }))}
-        selected={roles}
-        onToggle={toggleRole}
-      />
+      {teamIds.length ? (
+        <ChipGroup
+          label="Only these roles in them (optional)"
+          options={TEAM_ROLES.map((r) => ({ value: r, label: pluralRoleLabels[r] }))}
+          selected={roles}
+          onToggle={toggleRole}
+        />
+      ) : null}
       <PeoplePicker
         label="People"
         hint="Anyone else to add by name."
@@ -208,11 +234,11 @@ export default function EditChatGroupScreen() {
 
       <View style={styles.summary}>
         <ThemedText type="smallBold">
-          {groupRuleSummary(roles, teamNames, people.length)}
+          {groupRuleSummary(roles, teamNames, people.length, { clubRoles, posts })}
         </ThemedText>
         {preview ? (
           <ThemedText type="small" themeColor="textSecondary">
-            {peopleCount(preview.member_count)} now. It follows squad and team changes.
+            {peopleCount(preview.member_count)} now. It follows squad, team and post changes.
           </ThemedText>
         ) : null}
         <ThemedText type="small" themeColor="textSecondary">
@@ -264,3 +290,7 @@ const styles = StyleSheet.create({
     borderWidth: 2,
   },
 });
+
+function toggled<T>(list: T[], value: T): T[] {
+  return list.includes(value) ? list.filter((x) => x !== value) : [...list, value];
+}

@@ -3742,17 +3742,26 @@ then gets its automatic groups (see [Chat groups](#chat-groups)), and **Administ
 groups** lists the groups admins set up.
 
 Tap **New group** (it's also at the top of **Messages › Groups** for admins), give it a name, and
-choose who is in it:
+choose who is in it. Everything you choose adds together:
 
-- **Squads and teams** (optional): everyone in them, or only the **roles** you tick in them
-  (athletes, coaches, managers or physios).
-- **Roles across the club**, when no squads or teams are chosen, such as all committee members.
+- **Club roles** (optional): everyone in the club with a role, such as all admins or the whole
+  committee.
+- **Club posts** (optional): the **Child Safety Officer**, **Complaints Manager**, **WWC
+  Registration Officer** or **Head Physio**. A post brings in whoever holds it now, or the admins
+  acting in it while nobody named can act, and follows changes to who holds it.
+- **Squads and teams** (optional): everyone in them, or only the **roles** you then tick in them
+  (athletes, coaches, managers or physios). Physios here means the physios placed in that squad
+  or team; add the Head Physio as a club post.
 - **People** by name, on top of the rest. You're added to start with, so you can post; take
   yourself off if you're only setting it up for others.
 
+For example, "Coaches in Open Squad, all admins and the Child Safety Officer" is the squad's
+coaches with every admin and the Child Safety Officer. Coaches and managers count while their
+Working with Children Check is cleared.
+
 The screen says how many people that is now. If any of them are under 18, a warning says how
 many, and **Save** asks once more (**Save with under 18s in it**) before setting it up. Who is in it is worked out
-each time someone posts, so it follows squad and team changes. The group shows in its members'
+each time someone posts, so it follows squad, team and post changes. The group shows in its members'
 **Messages › Groups** straight away; posting starts once someone besides you is in it. Guests and temporary helpers are
 never in a group, and nor is anyone stood down. Members under 18 read an admin's group but can't post
 in it, and their parents or guardians get a copy of every post.
@@ -3762,7 +3771,8 @@ You see each group's members and how many posts it has, never the posts, unless 
 Groups are never deleted.
 
 <img src="user-guide/admin-groups-tab.png" width="210" alt="New group at the top of Messages › Groups, for admins">
-<img src="user-guide/admin-chat-group.png" width="210" alt="Setting up a chat group for a squad, with the warning that it includes members under 18">
+<img src="user-guide/admin-chat-group.png" width="210" alt="Setting up a chat group: club roles, club posts, and a squad">
+<img src="user-guide/admin-chat-group-warning.png" width="210" alt="Who the group takes in, with the warning that it includes members under 18">
 
 ### Messages to the club or a role
 

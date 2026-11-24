@@ -1,9 +1,9 @@
 import {
-  choosableRoles,
+  CLUB_POSTS,
   CLUB_ROLES,
+  clubRolesOf,
   groupRuleSummary,
   groupsUnread,
-  keepChoosableRoles,
   lastPostLine,
   mergePosts,
   peopleCount,
@@ -121,17 +121,33 @@ describe('notes', () => {
 });
 
 describe('who an admin’s group takes in', () => {
-  it('offers club roles without squads or teams, and team roles with them', () => {
-    expect(choosableRoles(false)).toBe(CLUB_ROLES);
-    expect(choosableRoles(true)).toBe(TEAM_ROLES);
+  it('offers club roles without guests, helpers or Studio, and team roles in squads', () => {
+    expect(CLUB_ROLES).toEqual(expect.arrayContaining(['admin', 'committee', 'physio']));
     expect(CLUB_ROLES).not.toContain('guest');
     expect(CLUB_ROLES).not.toContain('volunteer');
     expect(CLUB_ROLES).not.toContain('studio');
+    expect(TEAM_ROLES).toEqual(['coach', 'manager', 'physio', 'athlete']);
   });
 
-  it('drops roles that no longer fit once squads or teams are chosen', () => {
-    expect(keepChoosableRoles(['committee', 'coach'], true)).toEqual(['coach']);
-    expect(keepChoosableRoles(['committee', 'coach'], false)).toEqual(['committee', 'coach']);
+  it('offers the safeguarding posts and Head Physio', () => {
+    expect(CLUB_POSTS.map((p) => p.label)).toEqual([
+      'Child Safety Officer',
+      'Complaints Manager',
+      'WWC Registration Officer',
+      'Head Physio',
+    ]);
+  });
+
+  it('reads club roles from groups saved before they could sit beside squads', () => {
+    // No squads: roles were the club roles.
+    expect(clubRolesOf(['committee'], false)).toEqual(['committee']);
+    expect(clubRolesOf(['committee'], false, ['admin', 'committee'])).toEqual([
+      'committee',
+      'admin',
+    ]);
+    // With squads, roles are the roles in them.
+    expect(clubRolesOf(['coach'], true, ['admin'])).toEqual(['admin']);
+    expect(clubRolesOf(['coach'], true)).toEqual([]);
   });
 
   it('describes the choice in words', () => {
@@ -146,6 +162,23 @@ describe('who an admin’s group takes in', () => {
       'Coaches and managers in Open A, plus 2 people',
     );
     expect(groupRuleSummary([], [], 1)).toBe('1 person');
+  });
+
+  it('adds club roles and posts to squads and teams', () => {
+    expect(groupRuleSummary(['coach'], ['Open Squad'], 1, { clubRoles: ['admin'] })).toBe(
+      'Coaches in Open Squad and all admins, plus 1 person',
+    );
+    expect(
+      groupRuleSummary([], [], 0, {
+        clubRoles: ['admin', 'committee'],
+        posts: ['complaints_manager', 'child_safety_officer'],
+      }),
+    ).toBe('All admins and committee, the Child Safety Officer and the Complaints Manager');
+    expect(groupRuleSummary([], [], 0, { posts: ['head_physio'] })).toBe('The Head Physio');
+    expect(groupRuleSummary([], [], 0, { clubRoles: ['committee'] })).toBe('The committee');
+    expect(groupRuleSummary(['committee'], [], 0, { clubRoles: ['admin'] })).toBe(
+      'All committee and admins',
+    );
   });
 });
 

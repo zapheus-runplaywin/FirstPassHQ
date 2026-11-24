@@ -76,6 +76,10 @@ export type AdminChatGroup = {
   created_by_name: string | null;
   created_at: string;
   closed_at: string | null;
+  /** Roles across the club, whatever squads or teams are chosen. Missing before 20261125200000. */
+  club_roles?: AppRole[];
+  /** Club posts, which follow whoever is in them. Missing before 20261125200000. */
+  posts?: ClubPost[];
 };
 
 /** Whether the club has chat groups on (Messages on too). Off until an admin turns it on. */
@@ -163,48 +167,75 @@ export const CLUB_ROLES: AppRole[] = [
 /** Roles an admin can pick inside chosen squads and teams: the roles people hold there. */
 export const TEAM_ROLES: AppRole[] = ['coach', 'manager', 'physio', 'athlete'];
 
-/** The roles that can be chosen, given whether squads or teams are chosen. */
-export function choosableRoles(teamsChosen: boolean) {
-  return teamsChosen ? TEAM_ROLES : CLUB_ROLES;
-}
-
-/** Keeps only the roles that still make sense once squads or teams are chosen or cleared. */
-export function keepChoosableRoles(roles: AppRole[], teamsChosen: boolean) {
-  const allowed = choosableRoles(teamsChosen);
-  return roles.filter((r) => allowed.includes(r));
-}
-
 function joinWords(words: string[]) {
   if (words.length <= 1) return words.join('');
   return `${words.slice(0, -1).join(', ')} and ${words[words.length - 1]}`;
 }
 
-/**
- * Who an admin's group takes in, in words, such as "Coaches and managers in
- * Open A and 20 & Under, plus 2 people".
- */
-export function groupRuleSummary(
-  roles: AppRole[],
-  teamNames: string[],
-  peopleCountChosen: number,
-): string {
-  const roleWords = joinWords(
+/** Club posts an admin can put in a group. Each follows whoever is in it now. */
+export type ClubPost =
+  | 'child_safety_officer'
+  | 'complaints_manager'
+  | 'wwc_officer'
+  | 'head_physio';
+
+export const CLUB_POSTS: { value: ClubPost; label: string }[] = [
+  { value: 'child_safety_officer', label: 'Child Safety Officer' },
+  { value: 'complaints_manager', label: 'Complaints Manager' },
+  { value: 'wwc_officer', label: 'WWC Registration Officer' },
+  { value: 'head_physio', label: 'Head Physio' },
+];
+
+function roleWords(roles: AppRole[]) {
+  return joinWords(
     roles.map((r, i) => {
       const label = pluralRoleLabels[r];
       return i === 0 ? label : label.toLowerCase();
     }),
   );
-  let main = '';
+}
+
+/**
+ * A group's roles across the club. Groups saved before club roles could sit
+ * beside squads keep them in `roles` when no squads or teams are chosen.
+ */
+export function clubRolesOf(roles: AppRole[], teamsChosen: boolean, clubRoles: AppRole[] = []) {
+  if (teamsChosen) return clubRoles;
+  return [...roles, ...clubRoles.filter((r) => !roles.includes(r))];
+}
+
+/**
+ * Who an admin's group takes in, in words, such as "Coaches in Open A, all
+ * admins, the Child Safety Officer, plus 2 people".
+ */
+export function groupRuleSummary(
+  roles: AppRole[],
+  teamNames: string[],
+  peopleCountChosen: number,
+  club: { clubRoles?: AppRole[]; posts?: ClubPost[] } = {},
+): string {
+  const parts: string[] = [];
   if (teamNames.length > 0) {
-    main =
+    parts.push(
       roles.length > 0
-        ? `${roleWords} in ${joinWords(teamNames)}`
-        : `Everyone in ${joinWords(teamNames)}`;
-  } else if (roles.length > 0) {
-    main = `All ${roleWords.toLowerCase()}`;
-    // "All committee" reads oddly; "All admins and committee" is fine.
-    if (roles.length === 1 && roles[0] === 'committee') main = 'The committee';
+        ? `${roleWords(roles)} in ${joinWords(teamNames)}`
+        : `Everyone in ${joinWords(teamNames)}`,
+    );
   }
+  const clubRoles = clubRolesOf(roles, teamNames.length > 0, club.clubRoles);
+  if (clubRoles.length > 0) {
+    // "All committee" reads oddly; "All admins and committee" is fine.
+    parts.push(
+      clubRoles.length === 1 && clubRoles[0] === 'committee'
+        ? 'the committee'
+        : `all ${roleWords(clubRoles).toLowerCase()}`,
+    );
+  }
+  for (const post of CLUB_POSTS) {
+    if (club.posts?.includes(post.value)) parts.push(`the ${post.label}`);
+  }
+  const joined = joinWords(parts);
+  const main = joined.charAt(0).toUpperCase() + joined.slice(1);
   if (peopleCountChosen === 0) return main || 'Nobody chosen yet';
   const people = peopleCount(peopleCountChosen);
   return main ? `${main}, plus ${people}` : people;

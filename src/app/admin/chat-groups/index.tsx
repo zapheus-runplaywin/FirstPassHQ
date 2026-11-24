@@ -64,7 +64,10 @@ export default function AdminChatGroupsScreen() {
                   {g.closed_at ? ' (closed)' : ''}
                 </ThemedText>
                 <ThemedText type="small" themeColor="textSecondary">
-                  {groupRuleSummary(g.roles, teamNames, g.people.length)}
+                  {groupRuleSummary(g.roles, teamNames, g.people.length, {
+                    clubRoles: g.club_roles,
+                    posts: g.posts,
+                  })}
                 </ThemedText>
                 <ThemedText type="small" themeColor="textSecondary">
                   {peopleCount(g.member_count)}
