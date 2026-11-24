@@ -73,7 +73,6 @@ const TILES: Tile[] = [
   { title: 'Fixtures', route: 'admin/fixtures', needs: ['calendar', 'awards', 'goals'] },
   { title: 'Calendars', route: 'admin/calendars', needs: ['calendar'] },
   { title: 'Absence reasons', route: 'admin/absence-reasons', needs: ['attendance'] },
-  { title: 'Injury report', route: 'admin/injuries', needs: ['injuries'] },
   { title: 'Club password', route: 'admin/club-password' },
 ];
 
@@ -124,6 +123,14 @@ it('has no Affiliation tile, even for a club that turned the old switch on', asy
   await openAdministration();
   expect(screen.queryByText('Affiliation')).toBeNull();
   expect(screen.queryByText(/association/i)).toBeNull();
+});
+
+it('has no Injury report tile: the report opens from Reports > Injuries', async () => {
+  // Removed on 24 November 2026: it duplicated Injuries under Reports, which opens the same screen.
+  setClubFeatures(EVERY_FEATURE_ON);
+  await openAdministration();
+  expect(screen.queryByText('Injury report')).toBeNull();
+  expect(screen.getByText('Reports')).toBeTruthy();
 });
 
 describe.each(TILES.filter((t) => t.needs))('$title', ({ title, needs }) => {

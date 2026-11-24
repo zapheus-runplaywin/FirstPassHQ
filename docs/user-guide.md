@@ -3708,13 +3708,13 @@ them. Opening an under 18's KPIs is recorded for their parents.
 
 ### Injury report
 
-**Injury report** lists injuries reported or cleared in the last few months (3 by default), plus
+**Injuries** under [Reports](#reports) (when Injuries is on) opens the **Injury report**. It lists injuries reported or cleared in the last few months (3 by default), plus
 every injury not yet cleared, with totals. **Export PDF** saves it as a PDF, like the other
 [Reports](#reports): injuries not yet cleared first, then those cleared, with each one's
 restrictions, expected return and who endorsed and cleared it. Medical documents aren't included.
 **Export CSV** saves the same list for a spreadsheet, with each athlete's email address, when they
 left, when the injury was cleared and how many updates and documents it has. Both open the share sheet so you can save to
-OneDrive or attach to an email. It's also listed under **Reports**.
+OneDrive or attach to an email.
 
 <img src="user-guide/injury-report.png" width="210" alt="Injury report">
 
