@@ -98,10 +98,10 @@ function serve(feeds: Record<string, string>) {
 
 async function open(
   who: Who,
-  { calendars = [] as unknown[], feeds = {} as Record<string, string>, ...options }: BackendOptions & { calendars?: unknown[]; feeds?: Record<string, string> } = {},
+  { calendars = [] as unknown[], feeds = {} as Record<string, string>, url = '/attendance/new', ...options }: BackendOptions & { calendars?: unknown[]; feeds?: Record<string, string>; url?: string } = {},
 ) {
   serve(feeds);
-  await openScreen(who, { 'attendance/new': TakeAttendanceScreen }, '/attendance/new', { teams: TEAMS, calendars, fixtures: [] }, {
+  await openScreen(who, { 'attendance/new': TakeAttendanceScreen }, url, { teams: TEAMS, calendars, fixtures: [] }, {
     ...options,
     rpcs: {
       attendance_roster: ROSTER,
@@ -472,5 +472,63 @@ describe('today’s calendar', () => {
     await settle();
     expect(field('Session').props.value).toBe('Umpiring clinic');
     expect(screen.queryByText(/^Sunday training · /)).toBeNull();
+  });
+});
+
+// ---------------------------------------------------------------------------
+// Opened from a session on the calendar ("A session's page" in section 3 of
+// docs/user-guide.md): the group and the session start chosen.
+
+describe('opened from a session', () => {
+  const FEEDS = { 'https://example.test/club.ics': CLUB_ICS, 'https://example.test/team.ics': TEAM_ICS };
+  const TOMORROW = 'tomorrow:2026-10-19T01:30:00.000Z';
+  const from = (team: string, event: string) =>
+    `/attendance/new?team=${encodeURIComponent(team)}&event=${encodeURIComponent(event)}`;
+
+  it('an admin, who would otherwise pick a group first, starts with the session’s team', async () => {
+    await open('admin', { calendars: CALENDARS, feeds: FEEDS, url: from(TEAM_B.id, TOMORROW) });
+    expect(argsOf('attendance_roster')).toEqual([{ p_team_id: TEAM_B.id }]);
+    expect(screen.getByText('0 of 3 present · 3 not marked')).toBeTruthy();
+  });
+
+  it('the session is the one saved, with its name and start time, not the one on now', async () => {
+    await open('coach', { calendars: CALENDARS, feeds: FEEDS, url: from(TEAM.id, TOMORROW) });
+    expect(screen.getByDisplayValue('Monday training')).toBeTruthy();
+    // It isn't among today's events, so its time is spelled out.
+    expect(screen.getByText(/^From the calendar: /)).toBeTruthy();
+    expect(screen.queryByText(/^Suggested from the calendar/)).toBeNull();
+    await markAll([true, true, true]);
+    await save();
+    expect(argsOf('save_attendance')[0]).toMatchObject({
+      p_team_id: TEAM.id,
+      p_name: 'Monday training',
+      p_held_at: '2026-10-19T01:30:00.000Z',
+    });
+  });
+
+  it('a club-wide session opens whole-club attendance', async () => {
+    await open('committee', { calendars: CALENDARS, feeds: FEEDS, url: from('club', 'later:2026-10-18T10:00:00.000Z') });
+    expect(argsOf('attendance_roster')).toEqual([{ p_team_id: null }]);
+    expect(screen.getByDisplayValue('Presentation night')).toBeTruthy();
+  });
+
+  it('choosing another group lets go of the session', async () => {
+    await open('coach', { calendars: CALENDARS, feeds: FEEDS, url: from(TEAM.id, TOMORROW) });
+    await fireEvent.press(screen.getByText(SQUAD.name));
+    await settle();
+    expect(screen.queryByDisplayValue('Monday training')).toBeNull();
+    expect(screen.queryByText(/^From the calendar: /)).toBeNull();
+  });
+
+  it('a group the member isn’t offered is ignored: they choose as usual', async () => {
+    await open('committee', { url: from('someone-elses-team', TOMORROW) });
+    expect(screen.getByText('Who is it for?')).toBeTruthy();
+    expect(rpcNames()).not.toContain('attendance_roster');
+  });
+
+  it('a session that is no longer on the calendar leaves the name to type', async () => {
+    await open('coach', { calendars: CALENDARS, feeds: FEEDS, url: from(TEAM.id, 'gone:2026-10-18T00:00:00.000Z') });
+    expect(screen.queryByText(/^From the calendar: /)).toBeNull();
+    expect(argsOf('attendance_roster')).toEqual([{ p_team_id: TEAM.id }]);
   });
 });

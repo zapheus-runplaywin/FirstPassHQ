@@ -25,6 +25,9 @@ type CalendarRow = {
   url: string;
   clubWide: boolean;
   color: string;
+  /** The squads and teams the calendar is for. */
+  teamIds: string[];
+  forAthletes: boolean;
 };
 
 /**
@@ -117,13 +120,13 @@ async function fetchEvents(
   const { data } = await supabase
     .from('calendars')
     .select(
-      'id, name, url, color, team:teams (name, kind), calendar_audiences (kind, role, post, team_id, team:teams (kind))',
+      'id, name, url, color, team:teams (id, name, kind), calendar_audiences (kind, role, post, team_id, team:teams (kind))',
     )
     .order('created_at');
   const calendars: CalendarRow[] = (data ?? []).map((row) => {
     // A squad's or team's calendar added before calendars had audiences shows
     // under the squad's or team's name.
-    const team = row.team as unknown as { name: string; kind: GroupKind } | null;
+    const team = row.team as unknown as { id?: string; name: string; kind: GroupKind } | null;
     const rows = (row.calendar_audiences ?? []) as unknown as (AudienceRow & {
       team: { kind: GroupKind } | null;
     })[];
@@ -138,6 +141,8 @@ async function fetchEvents(
       // Calendars not shown to everyone get their own colour and filter, like a squad's.
       clubWide: shownTo.everyone,
       color: calendarColorHex(row.color, colourAudience(shownTo, teamKinds)),
+      teamIds: [...new Set([...shownTo.teamIds, ...(team?.id ? [team.id] : [])])],
+      forAthletes: shownTo.roles.includes('athlete'),
     };
   });
 
@@ -203,6 +208,7 @@ async function fetchFixtures(rangeStart: Date, rangeEnd: Date): Promise<Calendar
       calendarName: f.team_name,
       clubWide: false,
       color: calendarColorHex(null, team?.kind ?? 'team'),
+      teamIds: f.team_id ? [f.team_id] : [],
     };
   });
 }

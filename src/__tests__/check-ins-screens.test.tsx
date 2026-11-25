@@ -130,8 +130,8 @@ const rpcNames = () => ((supabase.rpc as jest.Mock).mock.calls as [string][]).ma
  * the member could see everything: the screen must still only show what
  * their role allows.
  */
-async function openCheckIns(who: Who, rpcs: Record<string, unknown> = {}) {
-  await openScreen(who, { 'check-ins/index': CheckInsScreen }, '/check-ins', { teams: [TEAM] }, {
+async function openCheckIns(who: Who, rpcs: Record<string, unknown> = {}, url = '/check-ins') {
+  await openScreen(who, { 'check-ins/index': CheckInsScreen }, url, { teams: [TEAM] }, {
     rpcs: {
       check_in_summary: SUMMARY,
       check_in_board: BOARD,
@@ -283,6 +283,26 @@ describe('the check-ins screen', () => {
     setClubFeatures({ squads: false });
     await openCheckIns('committee');
     expect(screen.getByText(/^Average scores out of 5 for each team\./)).toBeTruthy();
+  });
+});
+
+
+describe('opened from a session on the calendar', () => {
+  const SECOND = { ...SUMMARY[0], team_id: 'team-second', team_name: 'Second team' };
+  const boardTeams = () =>
+    ((supabase.rpc as jest.Mock).mock.calls as [string, { p_team_id?: string }][])
+      .filter(([name]) => name === 'check_in_board')
+      .map(([, args]) => args.p_team_id);
+
+  it('starts on the session’s squad or team when the coach has it', async () => {
+    await openCheckIns('coach', { check_in_summary: [SUMMARY[0], SECOND] }, '/check-ins?team=team-second');
+    expect(boardTeams().pop()).toBe('team-second');
+  });
+
+  it('starts on their first as usual for a team that isn’t theirs', async () => {
+    await openCheckIns('coach', { check_in_summary: [SUMMARY[0], SECOND] }, '/check-ins?team=someone-elses');
+    expect(boardTeams()).toEqual(expect.arrayContaining([TEAM.id]));
+    expect(boardTeams()).not.toContain('someone-elses');
   });
 });
 

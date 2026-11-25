@@ -21,6 +21,7 @@ import { useTheme } from '@/hooks/use-theme';
 import type { CalendarEvent } from '@/lib/calendar';
 import { formatEventTime, formatShortDay } from '@/lib/format';
 import type { PersonalTask } from '@/lib/personal-tasks';
+import type { SessionAction } from '@/lib/session';
 import { laterLabel, needsYouGroups, startTime, todayLabel, whenLabel } from '@/lib/today';
 import { todoIcon } from '@/lib/todo-icons';
 import type { Todo } from '@/lib/todos';
@@ -98,7 +99,16 @@ export function Greeting({
  * The next thing on the member's calendar, with its time large enough to read
  * at arm's length. The whole card opens the event.
  */
-export function NextUp({ event, now }: { event: CalendarEvent | null; now: Date }) {
+export function NextUp({
+  event,
+  now,
+  actions = [],
+}: {
+  event: CalendarEvent | null;
+  now: Date;
+  /** What the member can do about it from here, such as Can't make it (src/lib/session.ts). */
+  actions?: SessionAction[];
+}) {
   const theme = useTheme();
   if (!event) {
     return (
@@ -113,7 +123,7 @@ export function NextUp({ event, now }: { event: CalendarEvent | null; now: Date 
     );
   }
   const dated = whenLabel(event, now);
-  return (
+  const card = (
     <Pressable
       testID="next-up"
       accessibilityRole="button"
@@ -149,6 +159,27 @@ export function NextUp({ event, now }: { event: CalendarEvent | null; now: Date 
       </View>
       <Icon name="chevron-right" size={20} color={theme.textSecondary} />
     </Pressable>
+  );
+  if (actions.length === 0) return card;
+  return (
+    <View style={styles.nextUpWithActions}>
+      {card}
+      <View style={styles.nextUpActions} testID="next-up-actions">
+        {actions.map((action) => (
+          <Pressable
+            key={action.key}
+            accessibilityRole="button"
+            onPress={() => router.push(action.href)}
+            style={({ pressed }) => [
+              styles.nextUpAction,
+              { backgroundColor: pressed ? theme.backgroundSelected : theme.backgroundElement },
+            ]}>
+            <Icon name={action.icon} size={14} color={theme.tint} />
+            <ThemedText type="smallBold">{action.title}</ThemedText>
+          </Pressable>
+        ))}
+      </View>
+    </View>
   );
 }
 
@@ -388,6 +419,22 @@ const styles = StyleSheet.create({
     padding: Spacing.three,
     borderRadius: 12,
     borderLeftWidth: 4,
+  },
+  nextUpWithActions: {
+    gap: Spacing.two,
+  },
+  nextUpActions: {
+    flexDirection: 'row',
+    flexWrap: 'wrap',
+    gap: Spacing.two,
+  },
+  nextUpAction: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: Spacing.one,
+    paddingHorizontal: Spacing.three,
+    paddingVertical: Spacing.two,
+    borderRadius: 999,
   },
   nextUpText: {
     flex: 1,

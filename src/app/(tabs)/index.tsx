@@ -29,6 +29,8 @@ import { useAuth } from '@/lib/auth';
 import { useClub } from '@/lib/club';
 import { useClubChoice } from '@/lib/club-choice';
 import { useHome, type SingleScreen } from '@/lib/home';
+import { sessionActions } from '@/lib/session';
+import { useSessionBasics } from '@/lib/use-session-actions';
 import type { HomeCard } from '@/lib/home-layout';
 import { upcoming } from '@/lib/today';
 
@@ -43,6 +45,9 @@ export default function TodayScreen() {
   return home.single ? <OneScreen which={home.single} /> : <Today />;
 }
 
+/** How many shortcuts sit under Next up: enough for two children and a register. */
+const NEXT_UP_ACTIONS = 3;
+
 /** The cards that come before everything else on Today. */
 const LEADS: HomeCard[] = ['verification', 'concerns'];
 
@@ -53,9 +58,24 @@ function Today() {
   // A tablet on its side: the calendar on the left, what needs you on the right.
   const sideBySide = useWideLayout(COLUMNS_MIN_WIDTH);
   const { next, later, laterTitle } = upcoming(home.events ?? [], now);
+  // The two things most people do about a session, one tap from Today. Its
+  // plan and check-ins are on the session's own page.
+  const { approved, isGuardian, ...basics } = useSessionBasics();
+  const nextActions =
+    next && approved
+      ? sessionActions(next, {
+          ...basics,
+          now,
+          children: isGuardian ? home.children.map((c) => ({ id: c.id, name: c.name })) : [],
+          plans: [],
+          checkIns: [],
+        })
+          .filter((a) => a.kind === 'absence' || a.kind === 'attendance')
+          .slice(0, NEXT_UP_ACTIONS)
+      : [];
 
   const nextUp = club.features.calendar && home.events !== null ? (
-    <NextUp event={next} now={now} />
+    <NextUp event={next} now={now} actions={nextActions} />
   ) : null;
   const laterEvents =
     club.features.calendar && home.events !== null && next ? (

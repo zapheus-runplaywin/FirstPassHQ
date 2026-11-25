@@ -1,4 +1,4 @@
-import { router } from 'expo-router';
+import { router, useLocalSearchParams } from 'expo-router';
 import { useEffect, useState } from 'react';
 import { Pressable, StyleSheet, View } from 'react-native';
 
@@ -16,7 +16,7 @@ import { formatSentAt } from '@/lib/format';
 import { useLedGroups } from '@/lib/messages';
 import { supabase } from '@/lib/supabase';
 import type { AttendanceMark, Team } from '@/lib/types';
-import { useEvents } from '@/lib/use-events';
+import { useEvent, useEvents } from '@/lib/use-events';
 import { teamLabel, topGroups, useTeams } from '@/lib/use-teams';
 
 type NearbySession = { id: string; name: string; held_at: string; taken_by_name: string | null };
@@ -29,6 +29,11 @@ const BEFORE_START_MS = 60 * 60 * 1000;
 const AFTER_END_MS = 30 * 60 * 1000;
 
 export default function TakeAttendanceScreen() {
+  // Opened from a session on the calendar: its squad or team (or the whole
+  // club) and the session itself start chosen. Only a group this member is
+  // offered below can be chosen this way, and the database checks the save.
+  const params = useLocalSearchParams<{ team?: string; event?: string }>();
+  const startEvent = useEvent(params.event);
   const teams = useTeams();
   // The squads and teams the member coaches or manages; every one for admins.
   const ledGroups = useLedGroups(teams);
@@ -39,6 +44,10 @@ export default function TakeAttendanceScreen() {
   const [choice, setChoice] = useState<string | null>(null);
   const [editedName, setEditedName] = useState<string | null>(null);
   const [chosenEvent, setChosenEvent] = useState<CalendarEvent | null>(null);
+  // The session the register was opened from counts as chosen, until another
+  // group is picked.
+  const [linkOff, setLinkOff] = useState(false);
+  const linked = linkOff ? null : (startEvent ?? null);
   const [takenAt] = useState(() => new Date());
   // The marks made by hand: everyone starts unmarked (see `register` below).
   const [marks, setMarks] = useState<AttendanceMark[] | null>(null);
@@ -47,7 +56,11 @@ export default function TakeAttendanceScreen() {
   const [error, setError] = useState<string | null>(null);
 
   // Coaches and managers who lead one group start with it chosen.
-  const selected = choice ?? (ledGroups.length === 1 ? ledGroups[0].id : null);
+  const offered =
+    params.team === CLUB ||
+    (!!params.team && (ledIds.has(params.team) || otherSquads.some((t) => t.id === params.team)));
+  const selected =
+    choice ?? (offered ? params.team! : null) ?? (ledGroups.length === 1 ? ledGroups[0].id : null);
   const team =
     selected && selected !== CLUB ? (teams.find((t) => t.id === selected) ?? null) : null;
   const { today, now: eventNow } = useCalendarEvents(
@@ -55,7 +68,8 @@ export default function TakeAttendanceScreen() {
   );
 
   // The event on now is suggested as the session until something else is chosen.
-  const event = chosenEvent ?? eventNow;
+  const picked = chosenEvent ?? linked;
+  const event = picked ?? eventNow;
   const name = editedName ?? event?.title ?? '';
   const heldAt = (event?.start ?? takenAt).toISOString();
   const teamId = selected === CLUB ? null : selected;
@@ -106,6 +120,7 @@ export default function TakeAttendanceScreen() {
   function choose(value: string) {
     setChoice(value);
     setChosenEvent(null);
+    setLinkOff(true);
     setMarks(null);
     setNearby([]);
     setError(null);
@@ -187,9 +202,14 @@ export default function TakeAttendanceScreen() {
             placeholder="For example, Tuesday training"
             maxLength={100}
           />
-          {event && !chosenEvent && editedName === null ? (
+          {event && !picked && editedName === null ? (
             <ThemedText type="small" themeColor="textSecondary">
               Suggested from the calendar: it’s on now, from {formatSentAt(event.start)}.
+            </ThemedText>
+          ) : null}
+          {picked && !today.some((e) => e.id === picked.id) ? (
+            <ThemedText type="small" themeColor="textSecondary">
+              From the calendar: {formatSentAt(picked.start)}.
             </ThemedText>
           ) : null}
           {today.length > 0 ? (

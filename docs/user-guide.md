@@ -561,6 +561,10 @@ the top:
 - **Next up**: the next event on your calendars that hasn't finished, with when it is (Now, Today,
   Tonight, Tomorrow, or its day), its start time, name and place. Tap it to open the event. With
   nothing ahead it says "Nothing on the calendar yet." It shows when the club uses the calendar.
+  Under it are the one or two things you're most likely to do about that session: **Can't make
+  it** for an athlete, **(your child's name) can't make it** for a parent or guardian, and, on the
+  day, **Take attendance** for its coaches and managers. They're the same shortcuts as on the
+  session's page (see [A session's page](#a-sessions-page)), which also has its plan and check-ins.
 - **Needs you**: your to-do list, with how many things are on it. These are things you need to
   do, such as your daily check-in, the code of conduct to accept, an
   award vote, integrity training due, goals to set or reflect on for a game, an injury past its
@@ -585,6 +589,10 @@ the top:
 - **+ Add a task** and **Your tasks**, under the list (see [Your own tasks](#your-own-tasks)).
 - **Later this week**: up to four more events from the next 7 days. When the week has nothing
   else, **Coming up** shows the next two instead. Tap **Full calendar** to see them all.
+
+<img src="user-guide/today-next-up.png" width="210" alt="An athlete's Today with Can't make it under Next up">
+<img src="user-guide/today-next-up-coach.png" width="210" alt="A coach's Today on the day of training, with Take attendance under Next up">
+<img src="user-guide/today-next-up-parent.png" width="210" alt="A parent's Today with a Can't make it shortcut for each child under Next up">
 
 While a selection round is running, **Selection assessments** (for the round's panel) or
 **Selection** (for an athlete in the round and their parents) also sits on Today, just above
@@ -951,6 +959,31 @@ the address.
 <img src="user-guide/calendar.png" width="210" alt="Calendar list view">
 <img src="user-guide/calendar-month.png" width="210" alt="Calendar month view">
 <img src="user-guide/event.png" width="210" alt="Event details">
+
+#### A session's page
+
+Under when and where it is, a training session, game or club event shows what you can do about
+it. You see only what applies to you, so most members see one or two cards and some see none:
+
+| Card | Who sees it | What it does |
+| --- | --- | --- |
+| **Can't make it** | Athletes in the session's squad or team, until the session ends. For a session on a calendar shared with everyone in the club or with **Athletes**, every athlete. | Opens **Report an absence** with the session's day already chosen (see [Your attendance and absences](#your-attendance-and-absences)). |
+| **(Your child's name) can't make it** | Parents and guardians, one card for each child, when you're in the session's squad or team, or the session is on a calendar shared with everyone or with **Athletes**. | The same, for that child (see [Your child's attendance](#your-childs-attendance)). |
+| **Take attendance** | The squad's or team's coaches and managers, and admins, on the day of the session and for 7 days after. For a session on a calendar shared with everyone or with **Athletes** and no squad or team of its own, everyone who takes attendance. | Opens the register with the squad or team (or **Whole club**) chosen and the session's name filled in (see [Taking attendance](#taking-attendance)). |
+| **Session plan** | Anyone who can already read a plan written for that squad or team on that day: the coach who wrote it and everyone it's shared with. | Opens the plan. |
+| **Add a session plan** | The squad's or team's coaches, and admins, while there's no plan for it that they can read. | Starts a plan with the squad or team, name, day, times and place filled in from the session (see [Session plans](#session-plans)). |
+| **Check-ins** | The squad's or team's coaches, on the day. | Says how many athletes have checked in today and how many are flagged, and opens that squad's or team's check-ins (see [Athletes' check-ins](#athletes-check-ins)). |
+
+The cards are shortcuts and nothing more: each opens a screen you could already reach from your
+tabs, and that screen's own rules decide what you see and can save. So a card never shows you
+anything new, and a card is missing while the club has its feature switched off (Attendance,
+Session plans or Daily check-ins). **Can't make it** and **Take attendance** are also under
+**Next up** on Today. An event on a calendar shared only with other roles or a safeguarding
+post, such as a committee meeting, isn't a session athletes attend, so it has no cards.
+
+<img src="user-guide/session-athlete.png" width="210" alt="A training session as an athlete sees it: when and where, then Can't make it and the session plan shared with them">
+<img src="user-guide/session-coach.png" width="210" alt="The same session as its coach sees it: Take attendance, the session plan and today's check-ins">
+<img src="user-guide/session-parent.png" width="210" alt="The same session as a parent sees it: one Can't make it card for each child, and the session plan">
 <img src="user-guide/calendar-fixtures.png" width="210" alt="Matches from PlayHQ in the calendar">
 <img src="user-guide/calendar-shared.png" width="210" alt="A physio's calendar with the calendar shared with physios and statisticians">
 
@@ -1445,6 +1478,10 @@ out of the details. An injury isn't an absence: report it under **Injuries**, an
 to support the team. **Withdraw** takes an absence back if your plans change. An
 absence your parent or guardian reported shows here too, and you can withdraw it.
 
+The quickest way to say you'll miss one session is **Can't make it**, under **Next up** on Today
+or on the session's page in the calendar: it opens the same form with that session's day chosen,
+so you only pick the reason (see [A session's page](#a-sessions-page)).
+
 <img src="user-guide/attendance-family.png" width="210" alt="An athlete's own attendance and reported absences">
 <img src="user-guide/report-absence.png" width="210" alt="Reporting an absence">
 
@@ -1457,6 +1494,8 @@ the session's name, its squad or team and its day. A plan shared between 8 pm an
 wake your phone: its notification arrives at 7 am. Each plan shows the session, the day, who
 wrote it, and any photos or files, such as a drills sheet. Plans are read only: nobody can reply to
 them or react to them. If you're under 18, your parents or guardians can read the same plans.
+A plan shared with you for a session also shows as **Session plan** on that session's page in the
+calendar (see [A session's page](#a-sessions-page)).
 
 <img src="user-guide/session-plans-athlete.png" width="210" alt="Session plans shared with an athlete">
 
@@ -1796,6 +1835,10 @@ parents or guardians see what you report. An absent session that matches a repor
 **Absent, reported**. If plans change, tap **Withdraw** next to an absence you or your child
 reported. You stop seeing your child's attendance on their 18th birthday.
 
+For one session, tap **(your child's name) can't make it** under **Next up** on Today or on the
+session's page in the calendar: the form opens for that child with the session's day chosen (see
+[A session's page](#a-sessions-page)).
+
 <img src="user-guide/family-attendance.png" width="210" alt="Attendance, first on a child's page">
 
 ### Questions in your child's messages
@@ -1816,7 +1859,8 @@ When a coach shares a session plan with your child's squad or team, you can read
 notifications, it gets one the first time a plan is shared with your child's squad or team;
 either way, look for the number on **Session plans**. A plan shared between 8 pm and 7 am doesn't
 wake your phone or your child's: the notification arrives at 7 am. You see the same plans your
-child does, and nobody can reply to them.
+child does, and nobody can reply to them. A plan for a session also shows as **Session plan** on
+that session's page in the calendar.
 
 ### Your child's season KPIs
 
@@ -2238,6 +2282,9 @@ show, and count, only once a parent or guardian has given consent for their chec
 doesn't use the app never checks in, so they're not shown or counted, and they're not on the game
 goals board either. A squad
 drops out once its squad phase is complete, and if that was your only group the card goes too.
+On the day of a session, the same count for its squad or team is on the session's page in the
+calendar, and tapping it opens that squad's or team's check-ins (see [A session's
+page](#a-sessions-page)).
 
 - **Day by day** lists today's (or yesterday's) check-ins for a squad or team: athletes to check
   in with first, with what scored low and any note, then those feeling good, then who hasn't
@@ -2503,7 +2550,10 @@ its athletes' details, as with check-ins; the Head Physio sees every athlete's.
 
 ### Taking attendance
 
-1. Tap **Attendance**, then **Take attendance**.
+1. Tap **Attendance**, then **Take attendance**. Or tap **Take attendance** under **Next up** on
+   Today, or on the session's page in the calendar, on the day or up to 7 days after: the squad or
+   team and the session's name are then chosen for you, and a session from an earlier day says
+   "From the calendar" with its day and time (see [A session's page](#a-sessions-page)).
 2. Choose the squad or team (it's already chosen if you lead only one). You can also choose
    **Whole squad** for any current squad (**Another team**, in a club without squads), or
    **Whole club** for club events, where every approved athlete is on the register.
@@ -2600,7 +2650,10 @@ Keep a plan for each session, before or after it, so the club has a record of wh
 Head coaches and assistant coaches can both add plans, for the squads and teams they coach. Adding
 a plan, being shared one and being told about one all need a current check or exemption.
 
-1. Tap **Session plans** in the **Team** tab, then **Add a session plan**.
+1. Tap **Session plans** in the **Team** tab, then **Add a session plan**. Or open the session in
+   the calendar and tap **Add a session plan**: the squad or team, name, day, times and place are
+   filled in from the session, so you can go straight to step 4 (see [A session's
+   page](#a-sessions-page)).
 2. Choose the squad or team.
 3. To save typing, tap a session under **Fill in from the calendar**: it fills in the name, day,
    times and place from your squad or team's calendar and the club's (the 8 sessions closest to

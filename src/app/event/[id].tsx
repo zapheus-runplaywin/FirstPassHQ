@@ -1,9 +1,11 @@
 import * as Clipboard from 'expo-clipboard';
 import * as Linking from 'expo-linking';
-import { useLocalSearchParams } from 'expo-router';
+import { router, useLocalSearchParams } from 'expo-router';
 import { useEffect, useState, type ReactNode } from 'react';
 import { Platform, Pressable, StyleSheet, View } from 'react-native';
 
+import { CardGrid } from '@/components/columns';
+import { FeatureCard } from '@/components/home/feature-card';
 import { Screen } from '@/components/screen';
 import { ThemedText } from '@/components/themed-text';
 import { Card } from '@/components/ui';
@@ -11,11 +13,14 @@ import { Spacing } from '@/constants/theme';
 import { useTheme } from '@/hooks/use-theme';
 import { formatDay, formatEventTime } from '@/lib/format';
 import { useEvent } from '@/lib/use-events';
+import { useSessionActions } from '@/lib/use-session-actions';
 
 export default function EventScreen() {
   const { id } = useLocalSearchParams<{ id: string }>();
   const event = useEvent(id);
   const theme = useTheme();
+  // What this member can do about the session: each opens a screen with its own rule.
+  const actions = useSessionActions(event);
 
   if (event === undefined) return <Screen>{null}</Screen>;
   if (event === null) {
@@ -62,6 +67,22 @@ export default function EventScreen() {
           </View>
         ) : null}
       </Card>
+
+      {actions.length > 0 ? (
+        <View style={styles.actions} testID="session-actions">
+          <CardGrid gap={Spacing.two}>
+            {actions.map((action) => (
+              <FeatureCard
+                key={action.key}
+                icon={action.icon}
+                title={action.title}
+                detail={action.detail}
+                onPress={() => router.push(action.href)}
+              />
+            ))}
+          </CardGrid>
+        </View>
+      ) : null}
 
       {notes ? (
         <Card>
@@ -151,6 +172,9 @@ function linkify(text: string) {
 const styles = StyleSheet.create({
   header: {
     gap: Spacing.one,
+  },
+  actions: {
+    gap: Spacing.two,
   },
   detail: {
     gap: Spacing.half,

@@ -34,7 +34,7 @@ import {
   usePlanGroups,
 } from '@/lib/session-plans';
 import { supabase } from '@/lib/supabase';
-import { useEvents } from '@/lib/use-events';
+import { useEvent, useEvents } from '@/lib/use-events';
 import { teamLabel, useTeams } from '@/lib/use-teams';
 
 const dayQuickPicks = [
@@ -53,6 +53,24 @@ const CALENDAR_CHOICES = 8;
  * new session.
  */
 export default function EditSessionPlanScreen() {
+  const params = useLocalSearchParams<{ id?: string; copy?: string; team?: string; event?: string }>();
+  // Opened from a session on the calendar (a new plan only): its squad or
+  // team, time and place start filled in, as choosing it below would. The
+  // form waits for the session, so it is filled in before anything is typed.
+  const fromSession = !!params.event && !params.id && !params.copy;
+  const opened = useEvent(fromSession ? params.event : undefined);
+  if (fromSession && opened === undefined) return <Screen>{null}</Screen>;
+  return <PlanForm startEvent={fromSession ? (opened ?? null) : null} startTeam={params.team} />;
+}
+
+function PlanForm({
+  startEvent,
+  startTeam,
+}: {
+  startEvent: CalendarEvent | null;
+  /** The squad or team to start with, when it is one they can add plans for. */
+  startTeam: string | undefined;
+}) {
   const params = useLocalSearchParams<{ id?: string; copy?: string }>();
   const { isAdmin } = useAuth();
   const theme = useTheme();
@@ -64,19 +82,29 @@ export default function EditSessionPlanScreen() {
   // changes the same plan rather than adding another.
   const [planId, setPlanId] = useState<string | null>(params.id ?? null);
   const [loaded, setLoaded] = useState(!params.id && !params.copy);
-  const [groupChoice, setGroupChoice] = useState<string | null>(null);
-  const [title, setTitle] = useState('');
-  const [sessionOn, setSessionOn] = useState<string | null>(clubToday());
-  const [startText, setStartText] = useState('');
-  const [endText, setEndText] = useState('');
-  const [location, setLocation] = useState('');
+  const [groupChoice, setGroupChoice] = useState<string | null>(
+    startEvent && startTeam ? startTeam : null,
+  );
+  const [title, setTitle] = useState(startEvent?.title ?? '');
+  const [sessionOn, setSessionOn] = useState<string | null>(
+    startEvent ? toDateString(startEvent.start) : clubToday(),
+  );
+  const [startText, setStartText] = useState(
+    startEvent && !startEvent.allDay ? timeOf(startEvent.start) : '',
+  );
+  const [endText, setEndText] = useState(
+    startEvent && !startEvent.allDay && startEvent.end.getTime() > startEvent.start.getTime()
+      ? timeOf(startEvent.end)
+      : '',
+  );
+  const [location, setLocation] = useState(startEvent?.location ?? '');
   const [notes, setNotes] = useState('');
   const [runBy, setRunBy] = useState('');
   const [shareCoaches, setShareCoaches] = useState(true);
   const [shareAthletes, setShareAthletes] = useState(false);
   const [coachIds, setCoachIds] = useState<string[]>([]);
   const [coaches, setCoaches] = useState<PlanCoach[]>([]);
-  const [fromEvent, setFromEvent] = useState<CalendarEvent | null>(null);
+  const [fromEvent, setFromEvent] = useState<CalendarEvent | null>(startEvent);
   const [existingFiles, setExistingFiles] = useState<SessionPlanFile[]>([]);
   const [filesToCopy, setFilesToCopy] = useState<SessionPlanFile[]>([]);
   const [attachments, setAttachments] = useState<PlanAttachment[]>([]);

@@ -44,7 +44,22 @@ describe('parseIcs', () => {
       calendarName: 'Open A',
       clubWide: false,
       color: '#336699',
+      // Who the calendar is for: nobody in particular unless the calendar says so.
+      teamIds: [],
+      forAthletes: false,
     });
+  });
+
+  it('marks each event with who its calendar is for', () => {
+    const text = ics(['UID:t1', 'DTSTART:20261020T090000Z', 'DTEND:20261020T103000Z', 'SUMMARY:Training']);
+    const [event] = parseIcs(
+      text,
+      { ...CALENDAR, teamIds: ['team-1', 'team-2'], forAthletes: true },
+      OCTOBER[0],
+      OCTOBER[1],
+    );
+    expect(event.teamIds).toEqual(['team-1', 'team-2']);
+    expect(event.forAthletes).toBe(true);
   });
 
   it('fills in a missing title and leaves out blank details', () => {

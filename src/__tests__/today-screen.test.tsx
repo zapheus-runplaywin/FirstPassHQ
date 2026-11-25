@@ -10,6 +10,7 @@ import { act, fireEvent, screen, within } from 'expo-router/testing-library';
 import { AppState, type AppStateStatus } from 'react-native';
 
 import TodayScreen from '@/app/(tabs)/index';
+import { clubDay } from '@/lib/club-time';
 import { todayLabel } from '@/lib/today';
 
 import { clearCalls } from './helpers/forms';
@@ -126,6 +127,71 @@ describe('Next up', () => {
     await openToday('athlete', [match('f1', 'Sharks', at(0, 18), { venue: null })]);
     const card = screen.getByTestId('next-up');
     expect(card.props.accessibilityLabel).toMatch(/Open A v Sharks$/);
+  });
+
+  // What the member can do about the next session, one tap from Today
+  // (src/lib/session.ts has the rules for every kind of member).
+  describe('shortcuts under it', () => {
+    const tonight = () => [match('f1', 'Sharks', at(0, 18, 30))];
+    const actions = () => {
+      const row = screen.queryByTestId('next-up-actions');
+      return row ? within(row).getAllByRole('button').map((b) => within(b).getByText(/./).props.children) : [];
+    };
+    const parentInTeam: Persona = {
+      ...personas.guardian,
+      memberships: [{ team_role: 'guardian', coach_title: null, selection: null, team: TEAM }],
+    };
+
+    it.each<[string, PersonaName | Persona, string[]]>([
+      ['an athlete', 'athlete', ['Can’t make it']],
+      ['a parent whose child is in the team', parentInTeam, ['Sample Child can’t make it']],
+      ['a parent whose child isn’t', 'guardian', []],
+      // The plan and check-ins are on the session's page, not here.
+      ['the coach', 'coach', ['Take attendance']],
+      ['the manager', 'manager', ['Take attendance']],
+      ['the physio', 'physio', []],
+      ['an admin', 'admin', ['Take attendance']],
+      ['a committee member', 'committee', []],
+      ['a guest', 'guest', []],
+    ])('%s has the shortcuts for them', async (_label, who, expected) => {
+      await openToday(who, tonight());
+      expect(actions()).toEqual(expected);
+    });
+
+    it('Can’t make it opens the absence form on the session’s day', async () => {
+      await openToday('athlete', [match('f1', 'Sharks', at(1, 9))]);
+      await fireEvent.press(screen.getByText('Can’t make it'));
+      expect(push).toHaveBeenCalledWith({
+        pathname: '/attendance/absence',
+        params: { id: 'athlete', day: clubDay(at(1, 9)) },
+      });
+    });
+
+    it('Take attendance opens the register for that team and session', async () => {
+      await openToday('coach', tonight());
+      await fireEvent.press(screen.getByText('Take attendance'));
+      expect(push).toHaveBeenCalledWith({
+        pathname: '/attendance/new',
+        params: { team: TEAM.id, event: 'fixture:f1' },
+      });
+    });
+
+    it('a coach isn’t offered attendance for tomorrow’s session', async () => {
+      await openToday('coach', [match('f1', 'Sharks', at(1, 9))]);
+      expect(actions()).toEqual([]);
+    });
+
+    it('the card itself still opens the session', async () => {
+      await openToday('athlete', tonight());
+      await fireEvent.press(screen.getByTestId('next-up'));
+      expect(push).toHaveBeenCalledWith({ pathname: '/event/[id]', params: { id: 'fixture:f1' } });
+    });
+
+    it('nothing is offered while the club has Attendance switched off', async () => {
+      setClubFeatures({ attendance: false });
+      await openToday('athlete', tonight());
+      expect(actions()).toEqual([]);
+    });
   });
 
   it('says so, plainly, with nothing on the calendar', async () => {
