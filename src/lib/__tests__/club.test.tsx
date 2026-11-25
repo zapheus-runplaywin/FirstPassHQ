@@ -17,7 +17,6 @@ import {
   ClubProvider,
   defaultLogo,
   FEATURES,
-  firstPassLogo,
   offByDefault,
   resolveClub,
   useClub,
@@ -39,8 +38,6 @@ let mockChosen: { code: string; name: string } | null = { code: 'THUNDER', name:
 jest.mock('@/lib/club-choice', () => ({ useClubChoice: () => ({ club: mockChosen }) }));
 
 /** The values constantsClubMock gives the logos. */
-const HQ_ON_DARK = 1;
-const HQ_ON_LIGHT = 2;
 const MARK_ON_DARK = 4;
 const MARK_ON_LIGHT = 5;
 
@@ -158,14 +155,13 @@ describe('resolveClub', () => {
   });
 });
 
-describe('the logos for a background', () => {
+describe('the FirstPass mark that stands in for a club logo', () => {
   it.each([
-    ['#0F172A', HQ_ON_DARK, MARK_ON_DARK],
-    ['#000000', HQ_ON_DARK, MARK_ON_DARK],
-    ['#FFFFFF', HQ_ON_LIGHT, MARK_ON_LIGHT],
-    ['#F1C40F', HQ_ON_LIGHT, MARK_ON_LIGHT],
-  ])('on %s', (background, hq, mark) => {
-    expect(firstPassLogo(background)).toBe(hq);
+    ['#0F172A', MARK_ON_DARK],
+    ['#000000', MARK_ON_DARK],
+    ['#FFFFFF', MARK_ON_LIGHT],
+    ['#F1C40F', MARK_ON_LIGHT],
+  ])('on %s', (background, mark) => {
     expect(defaultLogo(background)).toBe(mark);
   });
 });

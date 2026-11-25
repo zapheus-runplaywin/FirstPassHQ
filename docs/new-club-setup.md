@@ -145,4 +145,4 @@ the club's own), and approve members as they ask to join. **Club > People > Invi
 the club's QR code, code and link to share. Members scan it or enter the code, sign in, and ask to
 join with the club password.
 
-The "Powered by" FirstPass HQ logo at the foot of every screen, the app icon, splash screen and app name are the same for every club.
+The app icon, splash screen and app name are the same for every club. Inside the app there is no FirstPass logo: every screen carries the club's own look.

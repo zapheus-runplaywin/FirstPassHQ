@@ -15,7 +15,7 @@ import {
 } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
 
-import { PoweredByFirstPass } from "@/components/firstpass-logo";
+import { AppVersion } from "@/components/app-version";
 import { ThemedText } from "@/components/themed-text";
 import { ThemedView } from "@/components/themed-view";
 import { isDemoClub } from "@/constants/clubs";
@@ -236,7 +236,10 @@ export default function SignInScreen() {
           </View>
         </View>
 
-        <PoweredByFirstPass showVersion />
+        {/* Which version and build this is, for testers. */}
+        <View style={styles.version}>
+          <AppVersion />
+        </View>
       </SafeAreaView>
     </ThemedView>
   );
@@ -246,6 +249,9 @@ const styles = StyleSheet.create({
   container: {
     flex: 1,
     alignItems: "center",
+  },
+  version: {
+    paddingVertical: Spacing.two,
   },
   safeArea: {
     flex: 1,

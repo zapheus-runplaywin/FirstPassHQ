@@ -332,12 +332,25 @@ describe.each(BY_ROLE)('$who', ({ who, tabs, today = [], hubs = {}, me = [] }) =
     expect(screen.getAllByText('Raise a concern')).toHaveLength(2);
   });
 
-  it('has the app’s version and build at the foot of Today, under Powered by', async () => {
+  // Matt, 26 November 2026: no FirstPass logo inside the app; the app icon and
+  // the opening screen carry the brand. The version stays where a tester can
+  // find it, at the foot of Me.
+  it('has no FirstPass logo on any tab, and the app’s version and build at the foot of Me only', async () => {
     await openHome(who);
-    expect(screen.getByLabelText('Powered by FirstPass HQ')).toBeTruthy();
+    expect(screen.queryByLabelText('Powered by FirstPass HQ')).toBeNull();
+    expect(screen.queryByText('Powered by')).toBeNull();
+    expect(screen.queryByTestId('app-version')).toBeNull();
+    for (const hub of Object.keys(hubs)) {
+      await openTab(who, `/${hub}`);
+      expect(screen.queryByText('Powered by')).toBeNull();
+      expect(screen.queryByTestId('app-version')).toBeNull();
+    }
+    await openTab(who, '/me');
+    expect(screen.queryByLabelText('Powered by FirstPass HQ')).toBeNull();
+    expect(screen.queryByText('Powered by')).toBeNull();
     expect(screen.getByTestId('app-version')).toBeTruthy();
     expect(screen.getByText(/^Version /)).toBeTruthy();
-  });
+  }, 20000);
 });
 
 // People with one job to do keep one screen and no tab bar.
@@ -360,9 +373,10 @@ describe.each(ONE_SCREEN)('$who', ({ who, sees }) => {
     expect(screen.getByText('Raise a concern')).toBeTruthy();
   });
 
-  it('has the app’s version and build at the foot, under Powered by', async () => {
+  it('has the app’s version and build at the foot, and no FirstPass logo', async () => {
     await openHome(who);
-    expect(screen.getByLabelText('Powered by FirstPass HQ')).toBeTruthy();
+    expect(screen.queryByLabelText('Powered by FirstPass HQ')).toBeNull();
+    expect(screen.queryByText('Powered by')).toBeNull();
     expect(screen.getByTestId('app-version')).toBeTruthy();
     expect(screen.getByText(/^Version /)).toBeTruthy();
   });

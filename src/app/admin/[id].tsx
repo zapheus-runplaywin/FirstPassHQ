@@ -4,6 +4,7 @@ import { Linking, Pressable, StyleSheet, View } from 'react-native';
 
 import { FocusAnchor } from '@/components/focus-anchor';
 import { GuardianHistory } from '@/components/guardian-history';
+import { JoinRequestSummary, type JoinAnswer } from '@/components/join-request';
 import { NoAppChildAdmin } from '@/components/no-app-child';
 import { Screen } from '@/components/screen';
 import { ScreeningNotices } from '@/components/screening-notices';
@@ -26,6 +27,14 @@ import { useTheme } from '@/hooks/use-theme';
 import { formatDate, isMinor, parseDate } from '@/lib/age';
 import { PROFILE_COLUMNS, useAuth } from '@/lib/auth';
 import { unlocksChild } from '@/lib/guardian-links';
+import {
+  askedLine,
+  canApproveHere,
+  firstNameOf,
+  JOIN_SUMMARY_ACTION,
+  joinChecks,
+  opensOnJoinSummary,
+} from '@/lib/join-request';
 import { useSquads } from '@/lib/club';
 import {
   canHoldTitle,
@@ -176,6 +185,11 @@ export default function MemberScreen() {
   const [deleting, setDeleting] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [dobRecord, setDobRecord] = useState<DobRecord | null>(null);
+  // A join request opens on its summary; the full record is one tap away.
+  const [fullRecord, setFullRecord] = useState(false);
+  const [declining, setDeclining] = useState(false);
+  // They already have places in this season's squads and teams.
+  const [hasPlaces, setHasPlaces] = useState(false);
 
   useEffect(() => {
     (async () => {
@@ -293,6 +307,7 @@ export default function MemberScreen() {
       setChildGroups(groupsOf);
 
       const existing = teamsResult.data ?? [];
+      setHasPlaces(existing.length > 0);
       if (profile.status === 'approved' || existing.length > 0) {
         setRole(profile.role);
         setExtraRoles(profile.extra_roles ?? []);
@@ -327,15 +342,22 @@ export default function MemberScreen() {
   const inTeams = teamRolesHeld.length > 0;
   const isAthlete = roles.includes('athlete');
   const isGuardian = roles.includes('guardian');
+  // A guest needs no check, but can record one to be named Child Safety
+  // Officer or Complaints Manager (Matt, 21 November 2026).
+  const isGuest = roles.includes('guest');
+  // The two roles that can't be approved without a date of birth an admin has
+  // checked: an athlete, to know whether they're a child, and a guest, who
+  // must be an adult.
+  const hasDateOfBirth = isAthlete || isGuest;
 
-  // An athlete with no checked date of birth yet: the field starts from the
-  // date they entered at Join, for the admin to check against PlayHQ or ID.
-  // Only for athletes, the one role whose field shows, so no unchecked date
+  // An athlete or guest with no checked date of birth yet: the field starts
+  // from the date they entered at Join, for the admin to check against PlayHQ
+  // or ID. Only for them, the roles whose field shows, so no unchecked date
   // is ever saved for anyone else.
   const declaredDob = !member?.date_of_birth ? (member?.declared_date_of_birth ?? null) : null;
   const dateOfBirth =
     typedDateOfBirth ??
-    formatDate(member?.date_of_birth ?? (isAthlete ? declaredDob : null));
+    formatDate(member?.date_of_birth ?? (hasDateOfBirth ? declaredDob : null));
   const isPhysio = roles.includes('physio');
   const dob = parseDate(dateOfBirth);
   // The card as saved, and whether the fields still show it.
@@ -348,9 +370,6 @@ export default function MemberScreen() {
   const minor = isMinor(dob, under18);
   const hasGuardians = isAthlete && minor;
   const isVolunteer = roles.includes('volunteer');
-  // A guest needs no check, but can record one to be named Child Safety
-  // Officer or Complaints Manager (Matt, 21 November 2026).
-  const isGuest = roles.includes('guest');
   const needsWwcc =
     isGuest ||
     roles.some((r) => wwccRoles.includes(r)) ||
@@ -790,12 +809,20 @@ export default function MemberScreen() {
     memberTodoDone(todo, member, {
       hasVerifiedGuardian: savedGuardianIds.some((g) => unlocksChild(personOf(g))),
     });
+  // A join request opens as one decision: the checks, what Approve will give
+  // them, then Approve. It saves exactly as the full record below does.
+  const canSummarise = opensOnJoinSummary(member, {
+    isSelf,
+    hasPlaces,
+    forAnotherSection: !!section && section !== 'approve',
+  });
+  const onSummary = canSummarise && !fullRecord;
   // What the to-do that opened the page needs, shown just above that part.
   const todoCard = todo ? (
     <Card testID="todo-banner">
       <ThemedText type="smallBold">{todoDone ? 'Done' : 'To do'}</ThemedText>
       <ThemedText type="small" themeColor={todoDone ? 'textSecondary' : 'tint'}>
-        {todoDone ?? memberTodoCopy[todo].action}
+        {todoDone ?? (onSummary ? JOIN_SUMMARY_ACTION : memberTodoCopy[todo].action)}
       </ThemedText>
     </Card>
   ) : null;
@@ -838,9 +865,102 @@ export default function MemberScreen() {
       .map((t) => ({ ...selection[t.id], team: t })),
   );
 
+  if (onSummary) {
+    const checks = joinChecks({
+      member,
+      roles,
+      dob,
+      parents: guardianIds.map((g) => ({ name: linkName(g), unlocks: unlocksChild(personOf(g)) })),
+      codeEnteredBy: requestsForChild.map((r) => linkName(r.guardian_id)),
+      children: [...new Set([...requestsByParent.map((r) => r.athlete_id), ...guardianOf])].map(
+        (c) => ({ name: linkName(c), approved: personOf(c)?.status === 'approved' }),
+      ),
+      comboProblem,
+      hasOpenExemption: !!openExemption,
+    });
+    const places = teams
+      .filter((t) => t.id in selection)
+      .map((t) => {
+        const coachTitle = selection[t.id].coach_title;
+        return `${teamLabel(t, teams)}${coachTitle ? ` (${coachTitleLabels[coachTitle]})` : ''}`;
+      });
+    const answers: JoinAnswer[] = [
+      { label: roles.length > 1 ? 'Roles' : 'Role', value: rolesLabel(roles) },
+      // Where they'll be placed. A parent is rarely in a squad, so theirs shows only if they are.
+      ...(places.length > 0 || roles.some((r) => isTeamRole(r) && r !== 'guardian')
+        ? [
+            {
+              label:
+                places.length > 1
+                  ? usesSquads
+                    ? 'Squads and teams'
+                    : 'Teams'
+                  : usesSquads
+                    ? 'Squad'
+                    : 'Team',
+              value: places.length > 0 ? places.join(', ') : 'None yet: choose one in the full record',
+            },
+          ]
+        : []),
+      ...(member.preferred_name ? [{ label: 'Preferred name', value: member.preferred_name }] : []),
+      { label: 'Sign-in email', value: member.email || '—' },
+      { label: 'PlayHQ email', value: member.playhq_email || 'Not given' },
+    ];
+    // Its own key, so the full record opens at its top, not where the summary was scrolled to.
+    return (
+      <Screen key="summary">
+        <Stack.Screen options={{ title: member.full_name || member.email || 'Member' }} />
+        {todoCard}
+        <JoinRequestSummary
+          asked={askedLine(member, requestedTeam ? teamLabel(requestedTeam, teams) : null)}
+          askedOn={member.join_requested_at ? localDay(member.join_requested_at) : null}
+          firstName={firstNameOf(member)}
+          checks={checks}
+          answers={answers}
+          canApprove={canApproveHere(checks)}
+          verify={
+            member.verified_at
+              ? null
+              : { code, onCode: setCode, onCheck: verify, busy: verifying, error: verifyError }
+          }
+          reason={reason}
+          onReason={setReason}
+          declining={declining}
+          onDecline={() => {
+            // The first tap shows the reasons; with one chosen, the next turns it down.
+            if (!declining) {
+              setDeclining(true);
+              setError(null);
+              return;
+            }
+            save('rejected');
+          }}
+          onApprove={() => save('approved')}
+          onFullRecord={() => {
+            setError(null);
+            setFullRecord(true);
+          }}
+          saving={saving === 'approved' || saving === 'rejected' ? saving : null}
+          error={error}
+        />
+      </Screen>
+    );
+  }
+
   return (
-    <Screen>
+    <Screen key="record">
       <Stack.Screen options={{ title: member.full_name || member.email || 'Member' }} />
+
+      {canSummarise ? (
+        <Button
+          title="Back to the request’s summary"
+          variant="secondary"
+          onPress={() => {
+            setError(null);
+            setFullRecord(false);
+          }}
+        />
+      ) : null}
 
       {section === 'approve' ? todoCard : null}
 
@@ -1087,7 +1207,7 @@ export default function MemberScreen() {
 
       <FocusAnchor active={section === 'date-of-birth'}>{todoCard}</FocusAnchor>
 
-      {isAthlete ? (
+      {hasDateOfBirth ? (
         <View style={styles.group}>
           <TextField
             label="Date of birth"
@@ -1105,9 +1225,11 @@ export default function MemberScreen() {
           ) : null}
           {dob ? (
             <ThemedText type="small" themeColor="textSecondary">
-              {minor
-                ? 'Under 18, so their app stays locked until a verified parent or guardian is linked.'
-                : '18 or over.'}
+              {!minor
+                ? '18 or over.'
+                : isAthlete
+                  ? 'Under 18, so their app stays locked until a verified parent or guardian is linked.'
+                  : 'Under 18. Guests must be 18 or over: approve them as an athlete with a parent or guardian linked instead.'}
             </ThemedText>
           ) : dob === null ? (
             <ThemedText type="small" themeColor="textSecondary">

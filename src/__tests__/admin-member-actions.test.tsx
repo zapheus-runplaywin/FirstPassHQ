@@ -17,6 +17,7 @@ import type { NoAppChildRequest } from '@/lib/no-app-child';
 import { localDay } from '@/lib/reports';
 import { supabase } from '@/lib/supabase';
 import type {
+  AppRole,
   Profile,
   ScreeningNotice,
   StandDown,
@@ -30,6 +31,7 @@ import {
   fieldFor,
   inSection,
   isChosen,
+  openFullRecord,
   press,
   pressInSection,
   rpcsNamed,
@@ -108,7 +110,11 @@ const CHILD: Profile = { ...morePersonas.under18Athlete.profile, full_name: 'Sam
 
 type Placement = { team_id: string; team_role: string; coach_title: string | null; selection: string | null };
 
-/** Opens `target`'s page for an admin, with what the database holds about them. */
+/**
+ * Opens `target`'s page for an admin, with what the database holds about them.
+ * A join request opens on its summary (join-request-screen.test.tsx); these
+ * tests are about the full record behind it, so they open that.
+ */
 async function openMember(
   target: Profile,
   {
@@ -171,6 +177,7 @@ async function openMember(
       rpcErrors,
     },
   );
+  await openFullRecord();
 }
 
 /** The arguments admin_save_member was sent. */
@@ -578,7 +585,28 @@ describe('approving a request', () => {
     expect(fieldFor('Date of birth').props.value).toBe('01/04/2012');
   });
 
-  it('never fills in the date they entered for someone who isn’t an athlete', async () => {
+  // Only an athlete and a guest are approved on a date of birth (the database
+  // refuses either without one an admin has checked), so only they have the
+  // field, and nobody else ever has the date they entered saved as checked.
+  it.each<AppRole>(['guardian', 'coach', 'manager', 'physio', 'committee', 'statistician', 'admin'])(
+    'never fills in the date they entered for someone asking to be a %s',
+    async (asked) => {
+      await openMember({
+        ...PENDING_CHILD,
+        id: 'pending-adult',
+        requested_role: asked,
+        requested_team_id: null,
+        declared_date_of_birth: '1980-04-01',
+        guardian_email: null,
+      });
+      expect(screen.queryByText('Date of birth')).toBeNull();
+      await press('Approve');
+      const details = adminWrites().find(([name]) => name === 'admin_set_member_details');
+      expect(details?.[1]).toMatchObject({ p_date_of_birth: null });
+    },
+  );
+
+  it('starts a guest’s date of birth from the date they entered, so a guest can be approved', async () => {
     const PENDING_GUEST: Profile = {
       ...PENDING_CHILD,
       id: 'pending-guest',
@@ -588,14 +616,34 @@ describe('approving a request', () => {
       guardian_email: null,
     };
     await openMember(PENDING_GUEST);
-    expect(screen.queryByText('Date of birth')).toBeNull();
+    expect(fieldFor('Date of birth').props.value).toBe('01/04/1980');
+    expect(
+      screen.getByText(
+        'The date they entered when they asked to join. Check it against PlayHQ or ID before you save.',
+      ),
+    ).toBeTruthy();
+    expect(screen.getByText('18 or over.')).toBeTruthy();
+    // A guest never has parents and guardians to link.
+    expect(screen.queryByText('Parents and guardians')).toBeNull();
     await press('Approve');
     const details = adminWrites().find(([name]) => name === 'admin_set_member_details');
-    expect(details?.[1]).toMatchObject({ p_date_of_birth: null });
+    expect(details?.[1]).toMatchObject({ p_date_of_birth: '1980-04-01' });
+    expect(savedMember()).toMatchObject({ p_role: 'guest', p_under_17: false, p_guardian_ids: [] });
+  });
+
+  it('says a guest under 18 can’t be approved as a guest', async () => {
+    await openMember({ ...PENDING_CHILD, id: 'young-guest', requested_role: 'guest', requested_team_id: null });
+    expect(fieldFor('Date of birth').props.value).toBe('01/04/2012');
+    expect(
+      screen.getByText(
+        'Under 18. Guests must be 18 or over: approve them as an athlete with a parent or guardian linked instead.',
+      ),
+    ).toBeTruthy();
+    expect(screen.queryByText('Parents and guardians')).toBeNull();
   });
 
   it('starts from the date they entered once an admin makes them an athlete', async () => {
-    await openMember({ ...PENDING_CHILD, id: 'asked-as-guest', requested_role: 'guest', requested_team_id: null });
+    await openMember({ ...PENDING_CHILD, id: 'asked-as-parent', requested_role: 'guardian', requested_team_id: null });
     expect(screen.queryByText('Date of birth')).toBeNull();
     await pressInSection('Role', 'Athlete');
     expect(fieldFor('Date of birth').props.value).toBe('01/04/2012');

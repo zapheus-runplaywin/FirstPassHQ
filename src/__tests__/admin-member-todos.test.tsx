@@ -14,9 +14,11 @@ import { router } from 'expo-router';
 
 import MemberScreen from '@/app/admin/[id]';
 import MembersScreen from '@/app/admin/index';
+import { JOIN_SUMMARY_ACTION } from '@/lib/join-request';
 import { memberPageHref, memberTodoCopy, type MemberTodoKind } from '@/lib/member-todos';
 import type { Profile, VolunteerExemption, WwccApplication } from '@/lib/types';
 
+import { openFullRecord } from './helpers/admin-screens';
 import { openScreen, personas, resetClub } from './helpers/harness';
 
 jest.mock('@/lib/club', () => jest.requireActual('./helpers/harness').clubModuleMock());
@@ -292,13 +294,25 @@ async function openPage(target: Profile | null, kind: MemberTodoKind, id = targe
 }
 
 describe('a member’s page opened from a to-do', () => {
-  it('says what the join request needs, above the approval', async () => {
+  it('says what the join request needs, above the request’s summary and above the full record', async () => {
     await openPage(M.newChild, 'join');
     expect(screen.getByText('To do')).toBeTruthy();
+    expect(screen.getByText(JOIN_SUMMARY_ACTION)).toBeTruthy();
+    expect(screen.getByTestId('join-request')).toBeTruthy();
+    // The decision is the whole page, so it opens at the top.
+    expect(screen.queryByTestId('focus-anchor')).toBeNull();
+
+    await openFullRecord();
     expect(screen.getByText(memberTodoCopy.join.action)).toBeTruthy();
     expect(screen.getByText('Approve')).toBeTruthy();
-    // The approval is the whole page, so it opens at the top.
     expect(screen.queryByTestId('focus-anchor')).toBeNull();
+  });
+
+  it('opens a waiting member at another to-do’s part of the full record, not the summary', async () => {
+    await openPage({ ...M.newChild, date_of_birth: null }, 'dob');
+    expect(screen.queryByTestId('join-request')).toBeNull();
+    expect(screen.getByText(memberTodoCopy.dob.action)).toBeTruthy();
+    expect(screen.getAllByTestId('focus-anchor')).toHaveLength(1);
   });
 
   it.each<[MemberTodoKind, Profile]>([

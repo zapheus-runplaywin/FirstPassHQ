@@ -108,7 +108,6 @@ function Today() {
     <Screen
       tab
       wide
-      showVersion
       refreshing={home.refreshing}
       onRefresh={home.onRefresh}
       header={

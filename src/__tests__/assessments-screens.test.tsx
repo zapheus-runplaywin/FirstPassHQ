@@ -12,7 +12,7 @@
  * guards are in route-guards-roles.test.tsx and route-guards-features.test.tsx.
  */
 import { router } from 'expo-router';
-import { act, fireEvent, screen } from 'expo-router/testing-library';
+import { act, fireEvent, screen, within } from 'expo-router/testing-library';
 import { Text } from 'react-native';
 import * as Sharing from 'expo-sharing';
 
@@ -275,7 +275,12 @@ describe('Home', () => {
     expect(screen.getByText('Selection assessments')).toBeTruthy();
     expect(screen.getByText('2027 selection phase · 14 athletes')).toBeTruthy();
     await openScreen('admin', { club: inTabs(ClubHubScreen) }, '/club', {}, { rpcs });
-    expect(screen.getByText('Selection assessments')).toBeTruthy();
+    // An admin's Club tab is in areas: the card is in Season, which opens where it is.
+    expect(screen.queryByText('Selection assessments')).toBeNull();
+    const season = within(screen.getByTestId('club-area-season'));
+    await fireEvent.press(season.getAllByRole('button')[0]);
+    expect(season.getByText('Selection assessments')).toBeTruthy();
+    expect(season.getByText('2027 selection phase · 14 athletes')).toBeTruthy();
   });
 
   it('has no copy in Me, which is for the member’s own things', async () => {

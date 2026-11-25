@@ -2,7 +2,7 @@ import AsyncStorage from '@react-native-async-storage/async-storage';
 import { createContext, use, useCallback, useEffect, useMemo, useState, type ReactNode } from 'react';
 import { Platform } from 'react-native';
 
-import { ClubDefaults, DefaultLogo, FirstPass } from '@/constants/club';
+import { ClubDefaults, DefaultLogo } from '@/constants/club';
 import { Colors, contrastRatio, isHexColour, makeColors, type Palette } from '@/constants/theme';
 import { useClubChoice } from '@/lib/club-choice';
 import { clubProfileCacheKey } from '@/lib/club-logos';
@@ -130,11 +130,6 @@ export function logoUrl(path: string) {
 
 function isDark(background: string) {
   return contrastRatio(background, '#FFFFFF') >= contrastRatio(background, '#000000');
-}
-
-/** The FirstPass HQ logo whose lettering reads on this background. */
-export function firstPassLogo(background: string) {
-  return isDark(background) ? FirstPass.hqOnDark : FirstPass.hqOnLight;
 }
 
 /** The FirstPass mark that stands in for a club logo on this background. */
