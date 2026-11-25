@@ -10,9 +10,11 @@ import { useWideLayout } from '@/hooks/use-layout';
 import { useTheme } from '@/hooks/use-theme';
 import { useAuth } from '@/lib/auth';
 import { useClub } from '@/lib/club';
+import { clubWaitingTotal } from '@/lib/club-areas';
 import { HomeProvider, useHome } from '@/lib/home';
 import { defaultHub, HUB_TITLES, HUBS, tabsFor, type HubName } from '@/lib/home-layout';
 import { useRouteAccess } from '@/lib/route-access';
+import { useClubAreas } from '@/lib/use-club-areas';
 
 /**
  * The tab bar: Today, Calendar, Messages, the member's hub (Team, Family or
@@ -110,6 +112,8 @@ function TabBar() {
     hub,
   });
   const childChanges = Object.values(activityNew).reduce((sum, n) => sum + n, 0);
+  // Work waiting in the Club tab's areas, such as requests to join.
+  const clubWaiting = clubWaitingTotal(useClubAreas());
   const badgeStyle = {
     backgroundColor: theme.accent,
     color: theme.onAccent,
@@ -165,7 +169,12 @@ function TabBar() {
               tabBarIcon: tabIcon(HUB_ICONS[name]),
               // One hub button: the others are reached from the switch at its top.
               href: tabs.includes(name) ? undefined : null,
-              tabBarBadge: name === 'family' && childChanges > 0 ? childChanges : undefined,
+              tabBarBadge:
+                name === 'family' && childChanges > 0
+                  ? childChanges
+                  : name === 'club' && clubWaiting > 0
+                    ? clubWaiting
+                    : undefined,
             }}
           />
         </Tabs.Protected>

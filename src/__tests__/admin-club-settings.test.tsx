@@ -703,7 +703,7 @@ describe('Team pilot', () => {
 
   it('asks for squads or teams first when the club has none', async () => {
     await openClub('features');
-    expect(screen.getByText('Add squads or teams in Administration first.')).toBeTruthy();
+    expect(screen.getByText('Add squads or teams first: in the Club tab, under People.')).toBeTruthy();
   });
 
   it('shows a refused pilot save, saves nothing after it and doesn’t say it saved', async () => {

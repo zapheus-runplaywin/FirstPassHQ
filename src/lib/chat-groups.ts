@@ -105,7 +105,7 @@ export function readOnlyNote(reason: ReadOnlyReason | null): string | null {
 
 /** A group an admin set up that nobody else is in yet. */
 export const ALONE_NOTE =
-  'Nobody else is in this group yet. An admin can add people in Administration › Chat groups, then you can start the conversation.';
+  'Nobody else is in this group yet. An admin can add people in Club › Club setup › Chat groups, then you can start the conversation.';
 
 /** What a member under 18 is told above the box they post in. */
 export const UNDER_18_POSTING_NOTE =

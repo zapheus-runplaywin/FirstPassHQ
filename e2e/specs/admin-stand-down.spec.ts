@@ -47,7 +47,8 @@ test('an admin stands a coach down with a reason, and the member page then offer
 
   await expect(page.getByText(`Hi ${admin.full_name}`)).toBeVisible();
   await openTab(page, 'Club');
-  await page.getByRole('button', { name: /^Administration/ }).click();
+  // Nothing is waiting, so the admin opens People themselves.
+  await page.getByRole('button', { name: /^People/ }).click();
   await page.getByRole('button', { name: /^Members/ }).click();
   await page.getByRole('button', { name: new RegExp(`^${coach.full_name}`) }).click();
 

@@ -148,7 +148,7 @@ export default function ClubFeaturesScreen() {
           />
         ) : (
           <ThemedText type="small" themeColor="textSecondary">
-            Add squads or teams in Administration first.
+            Add squads or teams first: in the Club tab, under People.
           </ThemedText>
         )}
         {summary ? (

@@ -5,7 +5,7 @@ import { expect, test } from '../support/test';
 // What a member can do about a session, from Today and from the session's own
 // page ("A session's page" in section 3 of docs/user-guide.md).
 
-/** The club's absence reasons, from Administration. */
+/** The club's absence reasons, from Club setup. */
 const reasons = [
   { id: uuid(601), name: 'Planned event', active: true, sort_order: 1 },
   { id: uuid(602), name: 'Illness', active: true, sort_order: 2 },

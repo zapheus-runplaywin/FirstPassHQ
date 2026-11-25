@@ -78,6 +78,18 @@ async function openTab(
   await renderRouter({ appDir: 'src/app', overrides }, { initialUrl: url });
   await settle();
   expect(screen).toHavePathname(url);
+  if (url === '/club') await openAreas();
+}
+
+/**
+ * Opens every area of the Club tab that is closed, so what is inside each can
+ * be checked. The areas themselves are checked in club-hub.test.tsx.
+ */
+async function openAreas() {
+  for (const area of screen.queryAllByRole('button', { expanded: false })) {
+    await fireEvent.press(area);
+  }
+  await settle();
 }
 
 /** Opens the app on Today. */
@@ -91,6 +103,7 @@ async function goTo(url: string) {
   });
   await settle();
   expect(screen).toHavePathname(url);
+  if (url === '/club') await openAreas();
 }
 
 /** The tabs in the bar, left to right. None for someone who keeps one screen. */
@@ -113,7 +126,8 @@ const ITEMS = {
   integrity: 'Certificates and everyone’s progress',
   concerns: 'The concerns register',
   reports: 'Checks, medical details, training, attendance and awards',
-  administration: 'Administration',
+  // The admin's own menu, in the Club tab's areas: something only it has.
+  adminMenu: 'New members need it to ask to join',
   guardianOf: 'Guardian of',
   // With a child linked: one card for each child, and adding another.
   child: 'Sample Child',
@@ -248,7 +262,7 @@ const BY_ROLE: {
         'checkIns',
         'takeAttendance',
         'injuries',
-        'administration',
+        'adminMenu',
         'sendSurveys',
         'integrity',
       ],
@@ -265,7 +279,7 @@ const BY_ROLE: {
         'checkIns',
         'takeAttendance',
         'injuries',
-        'administration',
+        'adminMenu',
         'sendSurveys',
         'integrity',
       ],
@@ -358,7 +372,8 @@ describe.each(ONE_SCREEN)('$who', ({ who, sees }) => {
 // The order of each tab. Today: what is next, then what needs you. A hub: its
 // lead (squads, or the children), then the cards in the order Home had them
 // (Matt, 2026-11-12): check-ins, attendance, Injuries, Session plans,
-// Concerns, Administration (Reports for the committee), then the rest.
+// Concerns, Administration (Reports for the committee), then the rest. Club
+// groups what it holds into areas (item 7 of the redesign).
 
 /** Every piece of text on the screen, top to bottom. */
 function textsInOrder(): string[] {
@@ -455,22 +470,36 @@ describe('the order of each tab', () => {
     ]);
   });
 
-  it('an admin’s Club: Concerns, the health cards, Administration, then surveys and integrity training', async () => {
+  it('an admin’s Club: People, Safety and conduct, Season, Reports, then Club setup', async () => {
     await openTab('admin', '/club');
     expectInOrder([
-      'Concerns',
+      'People',
+      'Members',
       'Check-ins',
       'Attendance',
       'Injuries',
-      'Administration',
       'Surveys',
+      'Safety and conduct',
+      'Concerns',
+      'Code of conduct',
       'Integrity training',
+      'Season',
+      'Seasons',
+      // The registers are off, so Reports is the only thing in its area and shows as itself.
+      'Reports',
+      'Club setup',
+      'Club features',
+      'Club password',
     ]);
   });
 
-  it('a committee member’s Club: Reports where Administration would be', async () => {
+  it('a committee member’s Club: People, then integrity training and Reports as they are', async () => {
     await openTab('committee', '/club');
-    expectInOrder(['Check-ins', 'Attendance', 'Injuries', 'Reports', 'Surveys', 'Integrity training']);
+    expectInOrder(['People', 'Check-ins', 'Attendance', 'Injuries', 'Surveys', 'Integrity training', 'Reports']);
+    // An area with one thing in it is that thing, and the committee has no admin's menu.
+    expect(screen.queryByText('Safety and conduct')).toBeNull();
+    expect(screen.queryByText('Reports and registers')).toBeNull();
+    expect(screen.queryByText('Club setup')).toBeNull();
   });
 
   it('an athlete who also coaches checks in from Me, and sees others’ check-ins in Team', async () => {
@@ -580,19 +609,19 @@ describe('more than one hub', () => {
     await renderRouter({ appDir: 'src/app', overrides }, { initialUrl: '/club' });
     await settle();
     expect(screen).toHavePathname('/');
-    expect(screen.queryByText(ITEMS.administration)).toBeNull();
+    expect(screen.queryByText(ITEMS.adminMenu)).toBeNull();
   });
 
-  it('an admin who also coaches has Administration in Club and their squads in Team', async () => {
+  it('an admin who also coaches has the admin’s menu in Club and their squads in Team', async () => {
     await openHome(adminCoach);
     expect(screen.getByText('Admin, Coach · Head Coach, Open A')).toBeTruthy();
     await goTo('/club');
-    expect(screen.getByText(ITEMS.administration)).toBeTruthy();
+    expect(screen.getByText(ITEMS.adminMenu)).toBeTruthy();
     expect(screen.getByText(ITEMS.takeAttendance)).toBeTruthy();
     await goTo('/team');
     expect(screen.getByText(ITEMS.groups)).toBeTruthy();
     expect(screen.getByText(ITEMS.takeAttendance)).toBeTruthy();
-    expect(screen.queryByText(ITEMS.administration)).toBeNull();
+    expect(screen.queryByText(ITEMS.adminMenu)).toBeNull();
   });
 
   it('a coach who is also a guardian has what each role would show', async () => {
@@ -652,11 +681,10 @@ describe('counts on the tabs', () => {
     expect(badge('Family')).toBeNull();
   });
 
-  it('Team and Club never carry a count', async () => {
+  // Club counts the work waiting in its areas: club-hub.test.tsx.
+  it('Team never carries a count', async () => {
     await openHome('coach', { ...CLUB_TRAINING, message_recipients: UNREAD });
     expect(badge('Team')).toBeNull();
-    await openHome('admin', { ...CLUB_TRAINING, message_recipients: UNREAD });
-    expect(badge('Club')).toBeNull();
   });
 });
 
@@ -676,12 +704,19 @@ describe('an empty hub', () => {
 });
 
 describe('administration and concerns', () => {
-  it('only an approved admin has the Administration card, and it opens Administration', async () => {
+  it('only an approved admin has the admin’s menu in Club, and Everything, A to Z opens it as one list', async () => {
     await openTab('admin', '/club');
-    await fireEvent.press(screen.getByText(ITEMS.administration));
+    expect(screen.getByText(ITEMS.adminMenu)).toBeTruthy();
+    await fireEvent.press(screen.getByText('Everything, A to Z'));
     await act(async () => {});
     expect(screen.getByText('screen:administration')).toBeTruthy();
     expect(screen).toHavePathname('/administration');
+  });
+
+  it('nobody but an admin is offered Everything, A to Z', async () => {
+    await openTab('committee', '/club');
+    expect(screen.queryByText('Everything, A to Z')).toBeNull();
+    expect(screen.queryByText(ITEMS.adminMenu)).toBeNull();
   });
 
   it('shows the safeguarding posts a member holds under their roles', async () => {
@@ -716,7 +751,7 @@ describe('administration and concerns', () => {
     expect(screen.getByText(ITEMS.concerns)).toBeTruthy();
     expect(tabBar()).toEqual(['Today', 'Calendar', 'Messages', 'Team', 'Me']);
     await goTo('/team');
-    expect(screen.queryByText(ITEMS.administration)).toBeNull();
+    expect(screen.queryByText(ITEMS.adminMenu)).toBeNull();
   });
 
   it('the Concerns card opens the register', async () => {
@@ -778,9 +813,13 @@ describe('reports', () => {
     expect(screen).toHavePathname('/admin/reports');
   });
 
-  it('an admin reaches Reports from Administration, so has no Reports card in Club', async () => {
+  it('an admin opens Reports from Reports and registers in Club, and has no second Reports card', async () => {
     await openTab('admin', '/club');
     expect(screen.queryByText(ITEMS.reports)).toBeNull();
+    expect(screen.getAllByText('Reports')).toHaveLength(1);
+    await fireEvent.press(screen.getByText('Governance and compliance reports to save as PDFs'));
+    await act(async () => {});
+    expect(screen).toHavePathname('/admin/reports');
   });
 });
 

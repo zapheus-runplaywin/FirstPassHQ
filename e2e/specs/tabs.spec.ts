@@ -63,7 +63,7 @@ test('a guest has Today, Calendar and Me, and no Messages or hub', async ({ page
   await page.goto('/club');
   await expect(page.getByText(`Hi ${guest.full_name}`)).toBeVisible();
   await expect(page).toHaveURL(/127\.0\.0\.1:\d+\/$/);
-  await expect(page.getByRole('button', { name: /^Administration/ })).toHaveCount(0);
+  await expect(page.getByRole('button', { name: /^(People|Club setup)/ })).toHaveCount(0);
 });
 
 test('a member waiting for approval keeps one screen, with no tab bar', async ({ page }) => {

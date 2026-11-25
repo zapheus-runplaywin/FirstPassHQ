@@ -43,7 +43,7 @@ import type { InboxMessage, SentMessage } from '@/lib/types';
 
 export default function MessagesScreen() {
   const { session, profile } = useAuth();
-  // Admins set up groups in Administration; the Groups tab offers it too.
+  // Admins set up groups from the Club tab (Club setup); the Groups tab offers it too.
   const isAdmin = !!profile && hasRole(profile, 'admin');
   const canSend = useCanSendMessages();
   const groupsOn = useChatGroupsOn();

@@ -3,7 +3,7 @@ import { eq, type Handler } from '../support/fake-supabase';
 import { samplePeople, u17Squad, uuid } from '../support/people';
 import { expect, test } from '../support/test';
 
-/** The club's absence reasons, from Administration. */
+/** The club's absence reasons, from Club setup. */
 const reasons = [
   { id: uuid(601), name: 'Planned event', active: true, sort_order: 1 },
   { id: uuid(602), name: 'Illness', active: true, sort_order: 2 },
@@ -139,7 +139,7 @@ test('a guardian reads the copy of a message to their child, with no way to repl
   // register on Today or in Family.
   await expect(tab(page, 'Team')).toHaveCount(0);
   await expect(tab(page, 'Club')).toHaveCount(0);
-  const staffCards = [/^Administration/, /^Attendance Take attendance/, /^Concerns/, /^Check-ins/, /^Session plans Add/];
+  const staffCards = [/^People/, /^Club setup/, /^Attendance Take attendance/, /^Concerns/, /^Check-ins/, /^Session plans Add/];
   for (const card of staffCards) {
     await expect(page.getByRole('button', { name: card })).toHaveCount(0);
   }

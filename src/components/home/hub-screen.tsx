@@ -2,12 +2,14 @@ import { StyleSheet } from 'react-native';
 
 import { CardGrid } from '@/components/columns';
 import { HomeCardView, SECTION_CARDS } from '@/components/home/cards';
+import { ClubHub } from '@/components/home/club-hub';
 import { HubSwitch, TabHeader } from '@/components/home/tab-header';
 import { Screen } from '@/components/screen';
 import { ThemedText } from '@/components/themed-text';
 import { Spacing } from '@/constants/theme';
 import { useHome } from '@/lib/home';
 import { HUB_TITLES, type HomeCard, type HubName } from '@/lib/home-layout';
+import { useClubAreas } from '@/lib/use-club-areas';
 
 /** What each hub leads with, before its other cards. */
 const LEADS: Record<HubName, HomeCard[]> = {
@@ -38,10 +40,14 @@ const EMPTY: Record<HubName, string> = {
  * Club for the committee and admins. Someone with more than one gets a switch
  * at the top. Every card here opens a screen that has its own rule for who may
  * open it (src/lib/route-access.ts).
+ *
+ * Club groups what it holds into areas (src/components/home/club-hub.tsx).
  */
 export function HubScreen({ hub }: { hub: HubName }) {
   const home = useHome();
-  const cards = home.cards(hub);
+  const areas = useClubAreas();
+  const inAreas = hub === 'club';
+  const cards = inAreas ? [] : home.cards(hub);
   // A parent with no child linked yet starts with adding one.
   const nothingToLead = !LEADS[hub].some((card) => cards.includes(card));
   const leads = (nothingToLead ? [...LEADS[hub], ...LAST[hub]] : LEADS[hub]).filter((card) =>
@@ -60,6 +66,7 @@ export function HubScreen({ hub }: { hub: HubName }) {
       onRefresh={home.onRefresh}
       header={<TabHeader title={HUB_TITLES[hub]} />}>
       <HubSwitch hubs={home.hubs} current={hub} />
+      {inAreas ? <ClubHub areas={areas} /> : null}
       {leads.map((card) => (
         <HomeCardView key={card} card={card} />
       ))}
@@ -76,7 +83,7 @@ export function HubScreen({ hub }: { hub: HubName }) {
       {last.map((card) => (
         <HomeCardView key={card} card={card} />
       ))}
-      {cards.length === 0 ? (
+      {cards.length === 0 && (!inAreas || areas.length === 0) ? (
         <ThemedText type="small" themeColor="textSecondary" style={styles.empty}>
           {EMPTY[hub]}
         </ThemedText>

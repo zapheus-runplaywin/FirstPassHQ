@@ -762,7 +762,7 @@ export function buildTodos({
       todos.push({
         key: 'records-removal-off',
         title: 'Old records are kept forever',
-        detail: 'Switch on Remove old records in Administration, under Record keeping',
+        detail: 'Switch on Remove old records in the Club tab, under Club setup, Record keeping',
         href: '/admin/club/records',
       });
     }

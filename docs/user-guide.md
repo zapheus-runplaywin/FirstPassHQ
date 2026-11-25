@@ -185,7 +185,7 @@ What each role can see and do:
 | Invite members (QR code and link)      |         |                 |              |            |               |               |         |       ✓       |
 | Policy and conflict registers (when turned on) |  |                 | Declare conflicts; review policies they own | Review policies they own | Read both; declare conflicts; review policies they own | Review policies they own |  | Read and change both; record any review |
 | Selection assessments (when turned on) | In a round: see the criteria, the dates the club shares, and feedback the head coach shares with them (no replies) | See them for their child under 18, with the same feedback | On a round's panel: read the panel's observations and add their own, never about their own child; write and sign their own summary of each athlete, and see the other selectors' signed summaries once theirs is signed; see the round's dates, with to-dos as they come close; see each athlete's own stats from games played in the round. The head coach can reopen a signed summary, and writes and shares feedback for each athlete |  |  |  | On a panel if an admin adds them, with a current check | Set criteria and recommendations, open rounds, choose panels, set the round's dates and mark them done, see who has signed their summaries and reopen one, see who was given feedback and when (never the words), build the audit report; read assessments and summaries only if on the panel |
-| Administration                         |         |                 |              |            |               |               |         |       ✓       |
+| The admin's areas of the Club tab (members, safeguarding set-up, seasons, club set-up) and its search |         |                 |              |            |               |               |         |       ✓       |
 
 ‡‡ The Child Safety Officer or the Complaints Manager (or an admin acting in the post while nobody
 named can act) asks; an admin who isn't the one asking, the
@@ -455,7 +455,7 @@ A brand-new club has no admin to approve anyone, so FirstPass gives the person s
 up a one-time **setup code**. While the club has no admin and a code is waiting, **Request to
 join** shows **Setting up this club?** under your name. Enter your name and the 12-character code,
 such as 7KQ4-MD2P-XY9Z, and tap **Become the club's admin**. You go back as an
-approved admin, with **Administration** in the **Club** tab, and approve everyone else from there, including
+approved admin, with the admin's areas in the **Club** tab, and approve everyone else from **People > Members** there, including
 other admins.
 
 The code works once, lasts 7 days unless FirstPass says otherwise, and stops working the moment
@@ -525,7 +525,7 @@ on:
 | **Messages** | Your inbox, what you've sent and your chat groups, with the number of unread messages on the tab | Everyone who gets messages (not guests), when the club uses messages |
 | **Team** | Your squads and teams, and the work of looking after them | Athletes, coaches, managers and physios |
 | **Family** | Your children, with the number of changes since you last looked on the tab | Parents and guardians |
-| **Club** | Running the club | Committee members and admins |
+| **Club** | Running the club, in areas, with the number of things waiting for you on the tab | Committee members and admins |
 | **Me** | Your own things, safety and your account | Everyone |
 
 Team, Family and Club share the fourth place in the row. If you have more than one, such as a
@@ -623,12 +623,20 @@ in every club and is never mistaken for a link.
   **Injuries**, plus **Session plans**, **Season KPIs** and **Selection** when there's something
   in them, then **My squads and teams**, and **Add another child** at the end (see
   [Parents and guardians](#5-parents-and-guardians)).
-- **Club** has **Concerns** (for the people who handle them), **Check-ins** (the club's
-  averages), **Attendance**, **Injuries**, **Reports** (for committee members with a current
-  check) or **Administration** (for admins, who find Reports inside it), **Surveys**, **Integrity
-  training**, **Season KPIs** and **Registers**, plus **Session plans** once one is shared with
-  you. Committee members and admins see **My squads and teams** only when they're in a squad or
-  team, for example as a coach too, and then it's in their Team tab.
+- **Club** groups what you look after into up to five areas, each a row that names what's inside
+  and opens where it is when you tap it (tap again to close it):
+  **People** (**Check-ins** (the club's averages), **Attendance**, **Injuries** and **Surveys**),
+  **Safety and conduct** (**Concerns**, for the people who handle them, and **Integrity
+  training**), **Season** (**Session plans** once one is shared with you, **Season KPIs**, and
+  **Selection assessments** while you're on a round's panel) and **Reports and registers**
+  (**Reports**, for committee members with a current check, and **Registers**). Admins have more
+  in each area, and a fifth, **Club setup** (see [The Club tab for admins](#the-club-tab-for-admins)).
+  An area shows only what you have: one with a single thing in it shows that thing in its place,
+  and if you have five things or fewer they're simply listed, with no areas. A number on an
+  area's row counts what's waiting for you inside it, and whatever is waiting shows under the row
+  without opening it; the **Club** tab's button carries the total. Committee members and admins
+  see **My squads and teams** only when they're in a squad or team, for example as a coach too,
+  and then it's in their Team tab.
 
 #### Me
 
@@ -723,7 +731,7 @@ the club's Child Safety Officer sees "Statistician" and, beneath it, "Child Safe
 - **Captaincy**: "Club Captain", "Captain, Open A" or "Vice Captain, 20 & Under", for the current
   season's teams you play in. It goes when the season is archived or you move teams.
 - **Safeguarding posts**: "Child Safety Officer", "Complaints Manager" or "WWC Registration
-  Officer", when an admin names you in **Administration > Safeguarding**. A post you hold but
+  Officer", when an admin names you in **Club > Safety and conduct > Safeguarding**. A post you hold but
   can't act in right now (your check has lapsed, or you're stood down) isn't shown. An admin
   acting in a post nobody named can act in sees it with "(acting)", such as "Child Safety Officer
   (acting)".
@@ -2796,8 +2804,15 @@ post](#acting-in-an-empty-post)). The Child Safety Officer also has **Wellbeing 
 flags](#wellbeing-flags)). If your check lapses, Concerns, wellbeing flags and their to-dos go
 until a renewed check is recorded.
 
+Your **Club** tab groups what you look after into areas (see [Team, Family and
+Club](#team-family-and-club)): **People** holds **Check-ins**, **Attendance**, **Injuries** and
+**Surveys**; **Integrity training** and **Reports** follow, each inside its own area once there's
+more than one thing in it (**Reports and registers** when the club uses the registers). Tap an
+area to open it where it is. With five things or fewer, the tab simply lists them. The search and
+the areas for running the club are for admins only.
+
 <img src="user-guide/today-committee.png" width="210" alt="A committee member's Today with nothing waiting">
-<img src="user-guide/club-committee.png" width="210" alt="A committee member's Club tab: Check-ins, Attendance, Injuries and Surveys">
+<img src="user-guide/club-committee.png" width="210" alt="A committee member's Club tab with four things, listed as they are: Check-ins, Attendance, Injuries and Surveys">
 
 ### Messages to the club
 
@@ -3000,7 +3015,7 @@ card numbers, so a committee member exempted with a reason (such as a treasurer 
 with children), one still to get a check before the committee checks date, and one whose role is
 paused or stood down sees no Reports card. The reports give names, not email addresses.
 
-<img src="user-guide/club-committee-reports.png" width="210" alt="The Reports card in a committee member's Club tab">
+<img src="user-guide/club-committee-reports.png" width="210" alt="A committee member's Club tab with more in it: People, then Integrity training and the Reports card">
 <img src="user-guide/committee-reports.png" width="210" alt="Reports for a committee member with a current check">
 
 ### The registers
@@ -3276,9 +3291,9 @@ member, and doesn't replace the club's own membership or registration process.
 
 Admins can do everything above except endorse injury clearances (they accept them, like the
 committee, and endorse only if they're also a coach or physio), read athletes' check-in answers or
-set their game goals (unless they also coach them), plus run the club's set-up from **Administration** in the **Club**
-tab. Administration lists its items alphabetically, and **Members** shows how many join requests
-are waiting. Admins' to-do lists include join requests waiting for approval and clearances waiting for
+set their game goals (unless they also coach them), plus run the club from the **Club** tab (see
+[The Club tab for admins](#the-club-tab-for-admins)), where **Members** shows how many join
+requests are waiting. Admins' to-do lists include join requests waiting for approval and clearances waiting for
 sign-off, plus child-safety follow-ups: new concerns (marked **Urgent** and always first), athletes with no date of birth, athletes under 18
 locked out because no verified parent or guardian is linked, Working With Children Checks to sort out, volunteer exemptions that end within
 60 days, athletes turning 18 within 30 days, Screening Unit notices still to report to the
@@ -3321,13 +3336,49 @@ or an exemption with a reason that another admin records, like committee members
 [Approving members](#approving-members)).
 
 <img src="user-guide/today-admin.png" width="210" alt="An admin's Today: the Concerns card, then what needs them">
-<img src="user-guide/club-admin.png" width="210" alt="An admin's Club tab: Concerns, Check-ins, Attendance, Injuries and Administration with a request waiting">
-<img src="user-guide/administration.png" width="210" alt="Administration menu">
 <img src="user-guide/admin-safety-todos.png" width="210" alt="An admin's to-do list split into Now and When you can: Working With Children Checks to sort out in red, then a join request, athletes under 18 locked out and an athlete turning 18">
+
+### The Club tab for admins
+
+An admin's **Club** tab holds everything for running the club, in five areas. Each area is a row
+that names the first few things inside and counts the rest; tap it to open it where it is, and
+tap it again to close it.
+
+| Area | What's inside |
+| --- | --- |
+| **People** | **Members**, **Check-ins**, **Attendance**, **Injuries**, **Surveys**, **Squads and teams** (**Teams** in a club without squads), **Invite members** and **Club captains** |
+| **Safety and conduct** | **Concerns**, **Safeguarding**, **Code of conduct**, **Integrity training** (certificates to check and everyone's progress) and **Integrity training courses** (the courses each role must complete) |
+| **Season** | **Selection assessments** (while you're on a round's panel), **Session plans**, **Season KPIs**, **Seasons**, **Fixtures**, **Games**, **Selection rounds and criteria**, **Awards** and **Season KPI reviews** |
+| **Reports and registers** | **Reports** and **Registers** |
+| **Club setup** | **Club features**, **Club options**, **Club brand**, **Calendars**, **Chat groups**, **Absence reasons**, **Record keeping** and **Club password** |
+
+Anything that belongs to a feature the club has switched off isn't listed, and an area left with
+one thing in it shows that thing in its place (with the registers off, **Reports** sits in the
+tab on its own). This guide names a screen by where it is, such as **Club > People > Members**.
+
+- **What's waiting.** A number on an area's row counts what's waiting inside it: join requests
+  (Members), new concerns, certificates to check, injuries waiting for you, new session plans and
+  surveys to answer. Whatever is waiting shows under the row without opening the area, with its
+  line in bold and a **!** in a circle, so one tap opens it. The **Club** tab's button carries the
+  total.
+- **Search.** **Find a member or a setting**, at the top, searches both as you type. A setting is
+  found by its name or by what it does, from the start of any word: "time zone" finds **Club
+  options**, "logo" finds **Club brand**, "escalation" finds **Safeguarding**. A member is found by name, preferred name, sign-in
+  email or PlayHQ email, once you've typed two letters; tap one to open their page. It lists six
+  members and says how many more match. Tap the **×** to clear the search and get the areas back.
+  The search only looks through what's in your own Club tab, and only admins have it: nobody else
+  can search the club's members.
+- **Everything, A to Z**, at the foot, lists every admin screen alphabetically on one page.
+
+<img src="user-guide/club-admin.png" width="210" alt="An admin's Club tab: the search, then People, Safety and conduct, Season and Reports and registers, each naming what is inside, with Club setup below">
+<img src="user-guide/club-admin-waiting.png" width="210" alt="An admin's Club tab with a join request waiting: People has a count, and Members shows under it without opening the area">
+<img src="user-guide/club-admin-open.png" width="210" alt="Club setup opened where it is: Club features, Club options, Club brand, Calendars and the rest">
+<img src="user-guide/club-admin-search.png" width="210" alt="Searching the Club tab for cal: Calendars, then the members whose names match, each with their roles">
+<img src="user-guide/administration.png" width="210" alt="Everything, A to Z: every admin screen in one alphabetical list">
 
 ### Inviting members
 
-**Administration > Invite members** shows the club's QR code, club code and invite link. Put the
+**Club > People > Invite members** shows the club's QR code, club code and invite link. Put the
 QR code on a screen or a printed sign at training, or tap **Share invite** to send the link and
 code by message or email (**Copy link** copies just the link). Scanning the code or opening the
 link opens FirstPass HQ with your club picked, ready to sign in. People still ask to join, with the
@@ -3939,11 +3990,11 @@ it. If every reason is off, members report absences without one. The **Attendanc
 absences by these reasons (see [Reports](#reports)). Injuries aren't an absence reason: injured
 athletes are still expected at training, and their injury is recorded under **Injuries**.
 
-<img src="user-guide/admin-absence-reasons.png" width="210" alt="Absence reasons in Administration">
+<img src="user-guide/admin-absence-reasons.png" width="210" alt="Absence reasons, from Club setup">
 
 ### Club captains
 
-**Club captains** in Administration (when Messages is on) lists the athletes in the current season's squads and teams.
+**Club > People > Club captains** (when Messages is on) lists the athletes in the current season's squads and teams.
 Tap the athletes who are club captains (yellow means chosen) and tap **Save club captains**. Club
 captains can message everyone in the club until that season is archived; choose new ones each
 season. If last season is still running alongside the new one, pick the season first. Athletes
@@ -3957,7 +4008,7 @@ Admins can also choose any team's captains and vice captains, the same way coach
 ### Chat groups for admins
 
 Switch on **Chat groups** in [Club features](#club-settings) (it starts off). Every squad and team
-then gets its automatic groups (see [Chat groups](#chat-groups)), and **Administration › Chat
+then gets its automatic groups (see [Chat groups](#chat-groups)), and **Club › Club setup › Chat
 groups** lists the groups admins set up.
 
 Tap **New group** (it's also at the top of **Messages › Groups** for admins), give it a name, and
@@ -4005,7 +4056,7 @@ concern](#reading-a-members-messages-for-a-concern)).
 
 ### Integrity training
 
-**Integrity training** in Administration lists the courses members must complete each season, with
+**Club > Safety and conduct > Integrity training courses** lists the courses members must complete each season, with
 how many are approved. Tap **Add training** and fill in:
 
 - **Course**, such as "Safeguarding in Sport", with optional **Details** and a **Course link**
@@ -4034,13 +4085,13 @@ such course is copied with its due date a year on, and its squads and teams matc
 squad to a squad, a team to a team) in the new season; archived courses aren't copied. Check each
 copied course's squads and teams, then archive last season's courses once everyone is done.
 
-<img src="user-guide/training-admin.png" width="210" alt="Administration: integrity training for the season">
+<img src="user-guide/training-admin.png" width="210" alt="Integrity training courses for the season">
 <img src="user-guide/training-edit.png" width="210" alt="Adding a course with its link and due date">
 <img src="user-guide/training-edit-who.png" width="210" alt="Setting who must complete a course">
 
 ### Season KPI reviews
 
-When Season KPIs are on, **Season KPI reviews** in Administration sets when each season's KPIs are
+When Season KPIs are on, **Club > Season > Season KPI reviews** sets when each season's KPIs are
 reviewed. Pick the season, tap **Add a review date**, name it (such as "Mid-season review") and
 pick the date. Tap one to change it. A date can be removed only while nobody has written or confirmed a review for it. From a week before each date, whoever set a person's KPIs gets a to-do to write their
 review, and the person then confirms it was done.
@@ -4076,7 +4127,7 @@ for everyone, for example one added by mistake. It can't be undone.
 
 ### Reports
 
-**Reports** in Administration has governance and compliance reports. Committee members with a
+**Reports**, in the Club tab's **Reports and registers** area, has governance and compliance reports. Committee members with a
 current check, a check application in force or a volunteer exemption read the Working With
 Children Checks, Medical details checks, Integrity training, Attendance and Award results reports
 too, from **Reports** in their **Club** tab, read only (see [Reports for the
@@ -4157,7 +4208,7 @@ everyone ever stood down, newest first, with the
 The PDFs hold members' personal details, such as dates of birth, check numbers and email
 addresses, so keep them somewhere only the committee can reach.
 
-<img src="user-guide/reports.png" width="210" alt="Reports in Administration">
+<img src="user-guide/reports.png" width="210" alt="Reports">
 <img src="user-guide/report-wwcc.png" width="210" alt="Working With Children Checks report">
 <img src="user-guide/report-pdf.png" width="210" alt="The Working With Children Checks report saved as a PDF">
 <img src="user-guide/report-under-18s.png" width="210" alt="Under 18s and their guardians report">
@@ -4171,7 +4222,7 @@ addresses, so keep them somewhere only the committee can reach.
 
 ### Club settings
 
-The club's settings are on four pages in Administration, each with its own **Save**:
+The club's settings are on four pages in **Club > Club setup**, each with its own **Save**:
 
 - [Club brand](#club-brand): the club's name, logo and colours.
 - [Club features](#club-features): which features are on, who sees each one, and the training
@@ -4220,7 +4271,7 @@ icon (FirstPass HQ) and the splash screen are part of the app build and don't ch
   inbox). Switching
   off **Captains' polls** stops captains sending new polls and leaves the rest of Surveys on; polls
   already sent stay readable. A switched-off feature disappears from every member's tabs, to-do list and menus,
-  and its Administration pages are hidden. Nothing is deleted, so switching it back on brings
+  and its pages in the Club tab are hidden. Nothing is deleted, so switching it back on brings
   everything back.
 - **Switching off pauses work under way.** Anything part-way through stays exactly where it was
   and carries on from there when the feature is switched back on. For **Injuries**, every injury,
@@ -4256,7 +4307,7 @@ icon (FirstPass HQ) and the splash screen are part of the app build and don't ch
   to the whole club, such as a message or survey, still reaches people outside the pilot, but they
   can't open it while the feature is pilot-only, so keep pilot sends to the pilot teams.
 - **Season KPIs**: off unless you turn it on. It adds **Season KPIs** to the Club, Team, Me and Family tabs of the
-  committee, coaches, managers, athletes and parents, **Season KPI reviews** to Administration and
+  committee, coaches, managers, athletes and parents, **Season KPI reviews** to the admin's Season area and
   the **Season KPIs** report (see [Season KPIs](#season-kpis)).
 - **Training load flags**: off unless you turn it on, and only while Daily check-ins is on. It
   gives coaches prompts to talk with an athlete from the sessions they log (see [Training
@@ -4271,8 +4322,8 @@ icon (FirstPass HQ) and the splash screen are part of the app build and don't ch
   tab for the committee and admins, policy review to-dos for policy owners, and a to-do each
   season for the committee and coaches to declare conflicts of interest (see [Policy and conflict
   registers](#policy-and-conflict-registers)).
-- **Selection assessments**: off unless you turn it on. It adds **Selection assessments** to
-  Administration, and to **Today** for anyone you put on a selection round's panel (see
+- **Selection assessments**: off unless you turn it on. It adds **Selection rounds and criteria** to
+  the admin's Season area, and **Selection assessments** to **Today** for anyone you put on a selection round's panel (see
   [Selection assessments](#selection-assessments-for-admins)). Like other features it can be on
   for pilot squads and teams only.
 
@@ -4342,7 +4393,7 @@ yet](#15-not-in-the-app-yet)).
 
 ### Selection assessments for admins
 
-Turned on in [Club features](#club-features), **Selection assessments** in Administration is
+Turned on in [Club features](#club-features), **Club > Season > Selection rounds and criteria** is
 where you set up the club's selection criteria, open a selection round for a squad or team, choose
 its panel and audit how the work was done. Selectors do the assessing (see [Selection
 assessments](#selection-assessments)). **As an admin you don't read assessments**: you see counts
@@ -4360,7 +4411,7 @@ you don't want one on a summary. A round keeps the criteria it opened with, so a
 afterwards. Athletes in an open round, and the verified parents of those under 18, see that
 round's criteria under **Selection** on **Today**, so check them before you open a round.
 
-<img src="user-guide/admin-assessments.png" width="210" alt="Administration, Selection assessments: the criteria and the rounds">
+<img src="user-guide/admin-assessments.png" width="210" alt="Selection rounds and criteria: the criteria and the rounds">
 <img src="user-guide/admin-assessments-criteria.png" width="210" alt="The assessment criteria: a group with its scale and items">
 
 **Opening a round.** Tap **Open a selection round**, choose the squad or team, give the round a
@@ -4480,7 +4531,7 @@ when athletes were told aren't in the app yet (see [Not in the app yet](#15-not-
 ### Record keeping
 
 A club should keep personal information only while it needs it. **Record keeping**, in
-Administration, sets how long the club keeps each kind of record, for everyone, adults
+**Club > Club setup**, sets how long the club keeps each kind of record, for everyone, adults
 and children alike. Each setting says which period is recommended, and a club that hasn't saved
 its periods starts on those.
 
@@ -4586,7 +4637,7 @@ Tap **Save keep periods** to save.
 
 ### Safeguarding contacts
 
-**Administration > Safeguarding** names the club's **Child Safety Officer**, **Complaints
+**Club > Safety and conduct > Safeguarding** names the club's **Child Safety Officer**, **Complaints
 Manager** and **WWC Registration Officer**. A larger club can name up to 5 people in each post;
 each person named acts in the post exactly as a single holder would. Search for each by name or
 email and tap them to add them: they show straight away in the box under that search, with a ✕ to
@@ -4725,13 +4776,13 @@ injuries straight away.
 
 <img src="user-guide/admin-injury-committee.png" width="210" alt="Safeguarding settings: injuries seen by chosen committee members">
 
-**Code of conduct** in Administration lists who still has to accept the code of conduct this
+**Club > Safety and conduct > Code of conduct** lists who still has to accept the code of conduct this
 season and who has, with the date and, for an under 18, the parent or guardian who accepted. An
 under 18 whose linked parents or guardians aren't verified yet shows **waiting for a parent or
 guardian to be verified**: verify one of them and they can accept it. Tap
 someone to see every season they've accepted it and the words accepted.
 
-<img src="user-guide/admin-conduct.png" width="210" alt="Administration: who has accepted the code of conduct this season">
+<img src="user-guide/admin-conduct.png" width="210" alt="Code of conduct: who has accepted it this season">
 
 <img src="user-guide/admin-safeguarding.png" width="210" alt="Safeguarding settings: two Child Safety Officers and a Complaints Manager, each shown under their search">
 <img src="user-guide/admin-wwc-officer.png" width="210" alt="Safeguarding settings: two WWC Registration Officers">
@@ -4810,7 +4861,7 @@ to whoever raised it. A message access request names the concern by its referenc
 
 Every open concern has a clock, so none can sit untouched. Recording any step (a referral, a note
 or a status change) starts it again. The times below are the club's starting times; admins change
-them under **Administration > Safeguarding > Concern times and escalation**.
+them under **Club > Safety and conduct > Safeguarding > Concern times and escalation**.
 
 | Nothing recorded for | What happens |
 | --- | --- |
@@ -4975,6 +5026,7 @@ once saved, only replaced or removed, and anyone who gets it wrong five times in
 | ----------------------- | --------------------------------------------------------------------------------------------------------------------------- |
 | Your profile and squads | You, the people in your squads and teams (names and positions only), and admins. Your name also shows to anyone choosing who a concern is about if you're a coach, manager, physio, committee member, admin or temporary helper, and on absences you report. The committee and admins see every athlete's name on the whole-club register, attendance histories and absences, every coach's and manager's name under Season KPIs, and the name of everyone who must complete a training course. |
 | Preferred name and title | You and admins; your preferred name then shows wherever your name does.                                                 |
+| Searching the club's members by name or email | Admins only: from the search at the top of their Club tab, and in the Members list. Nobody else can search the club's members, and the Club tab's search only looks through what is in the admin's own tab. |
 | To-do notifications     | Only you, on the phones you're signed in on. They name the to-do but never injury details or reviewers' notes. Your on/off choice is yours alone. |
 | Your own personal tasks | Only you. Not your parents or guardians, coaches, the committee or admins. They can't be shared or sent to anyone. |
 | Captains                | Club captains: every member. A team's captains: the people in it, and admins. Squads have none.                                     |
@@ -5020,7 +5072,7 @@ once saved, only replaced or removed, and anyone who gets it wrong five times in
 | Code of conduct acceptances | The member, their parents or guardians and admins: each season's acceptance, who accepted it, when, the words and the policy version. Kept under the member's name if they delete their account. |
 | Game goals and reflections | The athlete, their guardians and their coaches. Only the athlete and their coaches set goals, and only the athlete reflects; guardians just read them. The committee, managers, physios and admins don't see them. |
 | An athlete's own stats from a recorded game | The athlete's current coaches only, on the played game's goals page, once the recording is finished. Only that athlete's own figures: time on court and positions, shooting, feeds, gains, turnovers, rebounds and Net Points. Not the athlete, their parents or guardians, team mates, other parents, managers, physios, statisticians, the committee or admins. Nothing is shown when a team mate has the same name. The figures are worked out when the page opens and aren't stored with the goals. |
-| The list of recorded games | Admins only, under **Games** in Administration: each game's teams, round, status, who recorded it and how many events it holds. No stats and no athletes. |
+| The list of recorded games | Admins only, under **Club > Season > Games**: each game's teams, round, status, who recorded it and how many events it holds. No stats and no athletes. |
 | Season KPIs, progress and reviews | An athlete's: the athlete, their coaches in that squad or team, their parents or guardians (read only, until 18) and admins (read only). Not teammates, the committee or physios. A coach's or manager's: them, the committee and admins, and an assistant coach's head coach. Only those who set KPIs change them, record results and write reviews; the person records progress, confirms reviews and adds their own view. A coach's or manager's KPIs and reviews are kept under their name if they delete their account, and stay on the admin report. |
 | Live game stats         | Admins and statisticians (while their statistician role isn't paused for a check): every game the club records. The coaches and managers of the game's squad or team, and of the squad a team belongs to, see the team's games at every stage and who has opened each, and the stats once they open the game in FirstPass Vision, without a pair code (a shadow statistician still pairs with the code in Vantage). Members with the Studio role (while not stood down), through FirstPass Studio: games with a PlayHQ game that are live or finished, their setup, the recorded stats and the athletes of the game's squad or team, never a shadow statistician's stats, pair codes or who paired. The same people can save a game's report or its video markers file from Vision or Vantage, and coaches and managers see their team's season so far in Vision, with PlayHQ's score and shooting for games nobody recorded. At a venue streaming with FirstPass Studio, a statistician's tablet that someone at the Studio Mac has allowed can also send the game's stats to Studio over the venue link; it shows nobody anything they couldn't already see. Athletes, guardians, physios and the committee don't see any of it; an athlete's own figures after the game show only to their coaches, and to the selectors on the panel of a selection round the game was played in (see the row above and Selection assessments). |
 | Team goals              | The team's athletes, their guardians, its coaches (while their check is current and they aren't stood down) and admins. Only its coaches set and review them. Athletes and coaches in the team can comment; guardians and admins read the comments. Managers and physios placed in the team don't see them. |
@@ -5545,7 +5597,7 @@ Working With Children Check, and another admin must do it.
   see them. A selector also sees that athlete's own moments in the game (what they did, the quarter and the time on the clock), with no video and nobody else named. The app's server checks who is asking each time and sends only that one athlete's
   figures and moments, and a lapsed or stood-down coach or selector gets none. A selector sees figures only for games between the
   round's first and last day, never for their own child, and loses them when taken off the panel. Admins
-  see which games were recorded (**Games** in Administration), not the stats.
+  see which games were recorded (**Club > Season > Games**), not the stats.
 - **Copies of game stats that leave the app.** A game report saved or printed from FirstPass
   Vision, and a video markers file saved from Vision or Vantage, name players beside their stats.
   Only someone who can already see that game can make one, and each carries a line saying it is
@@ -5687,7 +5739,7 @@ Working With Children Check, and another admin must do it.
   report shows which children still need a parent's consent. Clubs that don't already have members
   sign the code of conduct, for example in PlayHQ, can turn on **Code of conduct each season**:
   every member then accepts it in the app each season, a verified parent or guardian for an under
-  18, and **Code of conduct** in Administration shows who still has to.
+  18, and **Club > Safety and conduct > Code of conduct** shows who still has to.
 - **Safeguarding education.** **Add the safeguarding induction** in Integrity training sets Sport
   Integrity Australia's Child Safeguarding in Sport Induction for coaches, managers, physios and
   the committee, and the committee checks each certificate.
