@@ -138,3 +138,36 @@ export function needsYouGroups(
     { title: 'When you can', entries: rest },
   ];
 }
+
+// ---------------------------------------------------------------------------
+// Safeguarding
+
+/** The concerns register and the screens under it (src/app/concerns). */
+const CONCERNS = '/concerns';
+
+/**
+ * A to-do about safeguarding: a new concern, one past the club's times or
+ * escalated, a request to read messages, a block in a chat group, athletes
+ * flagged again and again, a child's training load. They are the to-dos that
+ * open the concerns register or a screen under it.
+ */
+export function isSafeguardingTodo(todo: Pick<Todo, 'href'>) {
+  const path = typeof todo.href === 'string' ? todo.href : todo.href.pathname;
+  return path === CONCERNS || path.startsWith(`${CONCERNS}/`) || path.startsWith(`${CONCERNS}?`);
+}
+
+/**
+ * Today's to-dos in two: safeguarding work, which leads the day in its own
+ * panel (most pressing first), and everything else, which stays under "Needs
+ * you" in the order it came. Every to-do is in exactly one of the two.
+ */
+export function splitSafeguarding(todos: Todo[]): { safeguarding: Todo[]; rest: Todo[] } {
+  return {
+    safeguarding: sortByAlert(
+      todos.filter(isSafeguardingTodo),
+      (todo) => todo.alert,
+      (todo) => todo.dueOn,
+    ),
+    rest: todos.filter((todo) => !isSafeguardingTodo(todo)),
+  };
+}

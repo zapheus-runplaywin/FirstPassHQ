@@ -11,16 +11,18 @@ import type { PersonalTask } from '@/lib/personal-tasks';
 import {
   COMING_UP_COUNT,
   GROUP_FROM,
+  isSafeguardingTodo,
   LATER_COUNT,
   LATER_DAYS,
   laterLabel,
   needsYouGroups,
+  splitSafeguarding,
   startTime,
   todayLabel,
   upcoming,
   whenLabel,
 } from '@/lib/today';
-import { URGENT, type Todo } from '@/lib/todos';
+import { buildTodos, URGENT, type Todo } from '@/lib/todos';
 
 jest.mock('@/lib/auth', () => ({ useAuth: jest.fn() }));
 jest.mock('@/lib/club', () => ({ useClub: jest.fn(), useFeature: jest.fn() }));
@@ -315,5 +317,104 @@ describe('needsYouGroups', () => {
         }
       }),
     );
+  });
+});
+
+describe('safeguarding to-dos', () => {
+  it.each([
+    '/concerns',
+    '/concerns/c1',
+    '/concerns/message-access',
+    '/concerns/blocks',
+    '/concerns/wellbeing',
+    '/concerns/load',
+    '/concerns?filter=new',
+  ])('%s is safeguarding work', (href) => {
+    expect(isSafeguardingTodo({ href: href as Todo['href'] })).toBe(true);
+  });
+
+  it('a link given as a pathname with params counts by its pathname', () => {
+    expect(isSafeguardingTodo({ href: { pathname: '/concerns/[id]', params: { id: 'c1' } } as Todo['href'] })).toBe(true);
+    expect(isSafeguardingTodo({ href: { pathname: '/conduct/[id]', params: { id: 'me' } } as Todo['href'] })).toBe(false);
+  });
+
+  it.each([
+    '/concern/new',
+    '/concernsx',
+    '/admin',
+    '/admin/safeguarding',
+    '/check-in',
+    '/check-ins',
+    '/registers/policies',
+    '/',
+  ])('%s is not', (href) => {
+    expect(isSafeguardingTodo({ href: href as Todo['href'] })).toBe(false);
+  });
+
+  /** Everything a safeguarding officer who is also an admin can be asked at once. */
+  const everything = () =>
+    buildTodos({
+      userId: 'me',
+      injuries: [],
+      pendingCount: 2,
+      needsCheckIn: true,
+      flaggedAthletes: 1,
+      today: NOW,
+      newConcerns: 2,
+      concernClocks: [
+        { concern_id: 'c1', reference: 'C-0007', stage: 'important', clock_from: '2026-10-01T00:00:00Z', escalated: false },
+        { concern_id: 'c2', reference: 'C-0009', stage: 'refer', clock_from: '2026-10-01T00:00:00Z', escalated: true },
+      ],
+      messageAccess: { to_decide: 1, open_access: 1, only_one_admin: true, late: null },
+      chatBlocksWaiting: 1,
+      wellbeingFlagAlerts: 3,
+      loadPatternAlerts: 1,
+    });
+
+  it('takes every to-do about concerns into the panel, and leaves the rest under Needs you', () => {
+    const { safeguarding, rest } = splitSafeguarding(everything());
+    expect(safeguarding.map((t) => t.key).sort()).toEqual(
+      [
+        'chat-blocks',
+        'concern-clock-c1',
+        'concern-clock-c2',
+        'concerns',
+        'load-patterns',
+        'message-access-decide',
+        'message-access-open',
+        'wellbeing-flags',
+      ].sort(),
+    );
+    // Adding a second admin, approving members, the member's own check-in and
+    // the coach's flagged athletes aren't the register's work.
+    expect(rest.map((t) => t.key)).toEqual(expect.arrayContaining(['second-admin', 'join-requests', 'check-in', 'check-in-flags']));
+    expect(rest.some(isSafeguardingTodo)).toBe(false);
+  });
+
+  it('loses nothing and repeats nothing', () => {
+    const all = everything();
+    const { safeguarding, rest } = splitSafeguarding(all);
+    expect([...safeguarding, ...rest].map((t) => t.key).sort()).toEqual(all.map((t) => t.key).sort());
+    expect(new Set([...safeguarding, ...rest].map((t) => t.key)).size).toBe(all.length);
+  });
+
+  it('puts the most pressing first in the panel: urgent, then red, then amber, then the rest', () => {
+    const { safeguarding } = splitSafeguarding(everything());
+    const levels = safeguarding.map((t) => (t.alert?.label === URGENT.label ? 'urgent' : (t.alert?.level ?? 'none')));
+    const rank = { urgent: 0, red: 1, amber: 2, none: 3 } as const;
+    expect([...levels].sort((a, b) => rank[a] - rank[b])).toEqual(levels);
+    expect(levels[0]).toBe('urgent');
+    expect(levels[levels.length - 1]).toBe('none');
+  });
+
+  it('keeps the rest in the order it came', () => {
+    const list = [todo('a'), todo('new', { href: '/concerns', alert: URGENT }), todo('b'), todo('c')];
+    expect(splitSafeguarding(list).rest.map((t) => t.key)).toEqual(['a', 'b', 'c']);
+  });
+
+  it('with no safeguarding work, the panel has nothing and Needs you has everything', () => {
+    const list = [todo('a'), todo('b')];
+    expect(splitSafeguarding(list)).toEqual({ safeguarding: [], rest: list });
+    expect(splitSafeguarding([])).toEqual({ safeguarding: [], rest: [] });
   });
 });

@@ -58,8 +58,9 @@ each of their roles can.
 its **Complaints Manager** (a larger club can name up to 5 people in each, and nobody can hold
 both). Any approved adult with a current check can be named, guests included, but not temporary
 helpers. They're not separate roles: each keeps their own role and also
-sees and acts on the concerns members raise, with new ones as an **Urgent** to-do and red, orange
-and green counts on their Concerns card (see [The concerns register](#the-concerns-register)).
+sees and acts on the concerns members raise. Their **Today** leads with a **Safeguarding** panel:
+red, orange and green counts for the register, and new concerns marked **Urgent** (see [The
+concerns register](#the-concerns-register)).
 Each sees their post as a title under their roles on Today, as does the **WWC
 Registration Officer**.
 The Child Safety Officer also sees every athlete's wellbeing flags: the day and lowest score of
@@ -556,8 +557,13 @@ the top:
   name](#your-preferred-name)).
 - **Anything that can't wait.** A notice when one of your roles is paused or about to pause, with
   **Add your card**; **Confirm who you are**, with your 6-digit code, for a parent or guardian not
-  yet verified; and, for the people who handle them, the **Concerns** card (see [The concerns
-  register](#the-concerns-register)).
+  yet verified; and, for the people who handle concerns, the **Safeguarding** panel: the concerns
+  register's three counts, then every piece of safeguarding work that is waiting, most pressing
+  first (a new concern, a concern with nothing recorded for too long, a request to read messages,
+  a block in a chat group, athletes flagged again and again, a child's training load). It shows
+  counts and references only, never what a concern says. Tap its heading for the register, or a
+  line for that piece of work. With nothing waiting it says so in one line. This work isn't
+  repeated under **Needs you** (see [The concerns register](#the-concerns-register)).
 - **Next up**: the next event on your calendars that hasn't finished, with when it is (Now, Today,
   Tonight, Tomorrow, or its day), its start time, name and place. Tap it to open the event. With
   nothing ahead it says "Nothing on the calendar yet." It shows when the club uses the calendar.
@@ -738,7 +744,7 @@ the club's Child Safety Officer sees "Statistician" and, beneath it, "Child Safe
 
 Titles come from what admins and coaches set, so there's nothing to fill in.
 
-<img src="user-guide/today-titles.png" width="210" alt="Today for a statistician with Child Safety Officer and WWC Registration Officer under their role, and the Concerns card at the top">
+<img src="user-guide/today-titles.png" width="210" alt="Today for a statistician with Child Safety Officer and WWC Registration Officer under their role, and the Safeguarding panel at the top">
 
 <img src="user-guide/your-details.png" width="210" alt="Your details: preferred name, title and to-do notifications">
 <img src="user-guide/your-details-coach.png" width="210" alt="Your details for a coach: the title the app sets from their teams">
@@ -2808,9 +2814,10 @@ exemption. The code of conduct, your own integrity training, award votes, person
 
 Any committee member with a current check (or a volunteer exemption, not an exemption with a
 reason) can be named by an admin as the club's Child Safety Officer, Complaints Manager or WWC
-Registration Officer. If you're the Child Safety Officer or Complaints Manager, **Today** and your **Club** tab
-also have **Concerns** (see [The concerns register](#the-concerns-register)), with red, orange and
-green counts on the card for new, in progress and recently closed concerns: the register, each
+Registration Officer. If you're the Child Safety Officer or Complaints Manager, **Today** leads with
+the **Safeguarding** panel and your **Club** tab, if you have one, has **Concerns** (see [The
+concerns register](#the-concerns-register)), with red, orange and
+green counts for new, in progress and recently closed concerns: the register, each
 concern's notes and steps (**Referred to** the governing body or Police, **Being looked into**,
 **Closed** with a note), and **Export the register as a PDF**. A concern about a child shows the
 child's verified parents and guardians, with their email. A concern about you is never shown
@@ -3352,7 +3359,7 @@ Because admins can read every child's records, they need a current Working With 
 or an exemption with a reason that another admin records, like committee members (see
 [Approving members](#approving-members)).
 
-<img src="user-guide/today-admin.png" width="210" alt="An admin's Today: the Concerns card, then what needs them">
+<img src="user-guide/today-admin.png" width="210" alt="An admin's Today: the Safeguarding panel, then what's next and what needs them">
 <img src="user-guide/admin-safety-todos.png" width="210" alt="An admin's to-do list split into Now and When you can: Working With Children Checks to sort out in red, then a join request, athletes under 18 locked out and an athlete turning 18">
 
 ### The Club tab for admins
@@ -4857,13 +4864,17 @@ someone to see every season they've accepted it and the words accepted.
 
 ### The concerns register
 
-The Child Safety Officers, the Complaints Managers and admins open **Concerns** from the top of **Today**, or from the **Club** tab if they have one.
-New concerns also appear in their to-do list as **Look at N new concerns**, marked **Urgent** in
-red at the very top, until someone records something about them. Open concerns are listed first,
+The Child Safety Officers, the Complaints Managers and admins have a **Safeguarding** panel at the
+top of **Today**, before the calendar and before **Needs you**. Tap its heading to open the
+register; **Concerns** in the **Club** tab opens it too, for those with a Club tab.
+New concerns appear in the panel as **Look at N new concerns**, marked **Urgent** in
+red, until someone records something about them. The rest of the safeguarding work is listed in
+the panel under it, most pressing first, and none of it is repeated under **Needs you**. While any
+of it is waiting, Today doesn't say "You're set for today". Open concerns are listed first,
 newest at the top. Nobody sees a concern about themselves.
 
-The **Concerns** card shows three traffic lights, each a count with a word
-beside it:
+The panel, and the **Concerns** card in the Club tab, show three traffic lights, each a count
+with a word beside it:
 
 | Light | Word | What it counts |
 | --- | --- | --- |
@@ -4872,13 +4883,13 @@ beside it:
 | Green | **Closed, 4 weeks** | Concerns closed in the last 4 weeks. |
 
 So a concern moves from red to orange the moment anyone records a referral, a note or a status
-change, and to green when it's closed. A light with nothing in it is dimmed. The card shows counts
-only, never what a concern says or who it's about, and a concern about you is never counted on
-your card, just as it's never shown to you. Members who don't handle concerns don't have the card
-at all.
+change, and to green when it's closed. A light with nothing in it is dimmed. The panel and the card
+show counts and concern references only, never what a concern says or who it's about, and a
+concern about you is never counted for you, just as it's never shown to you. Members who don't
+handle concerns have neither the panel nor the card.
 
-<img src="user-guide/concerns-urgent-todo.png" width="210" alt="An admin's to-do list with Look at 1 new concern marked Urgent at the top">
-<img src="user-guide/concerns-lights.png" width="210" alt="The Concerns card: 1 new in red, 2 in progress in orange, 1 closed in the last 4 weeks in green">
+<img src="user-guide/concerns-urgent-todo.png" width="210" alt="An admin's Today: the Safeguarding panel with Look at 1 new concern marked Urgent, above Next up">
+<img src="user-guide/concerns-lights.png" width="210" alt="The Concerns card in the Club tab: 1 new in red, 2 in progress in orange, 1 closed in the last 4 weeks in green">
 
 Open a concern to see what was raised, by whom (unless they hid their name), how to contact them,
 and where it was raised from. A concern raised with **Report this message** shows the **Reported
@@ -4960,8 +4971,8 @@ admins after 7 days.
   Safety Officer in the Complaints Manager's chain, but not both ways: while the Child Safety
   Officer backs up the Complaints Manager, the Child Safety Officer's chain can't name the
   Complaints Manager, and the screen says why.
-- Someone reached by name (not a post holder or admin) sees **Concerns** at the top of **Today**
-  with only the concerns escalated to them, while they stay open. They can record steps but can't
+- Someone reached by name (not a post holder or admin) sees the **Safeguarding** panel at the top
+  of **Today** with only the concerns escalated to them, while they stay open. They can record steps but can't
   change who a concern is about or ask to read messages. Each time they open one, it's kept with
   the concern as **Looked at by**.
 
@@ -4969,7 +4980,7 @@ A concern that has escalated shows an **Escalation** card with each step, the da
 reached or passed over. An admin who'd rather not wait can name someone new in the post at any
 time; the clock and chain carry on.
 
-<img src="user-guide/concern-clock-todos.png" width="210" alt="To-dos: C-0007 is urgent, escalated to you, and C-0009 has had nothing recorded for a while">
+<img src="user-guide/concern-clock-todos.png" width="210" alt="The Safeguarding panel: a new concern, C-0008 is urgent and escalated to you, C-0009 has had nothing recorded for a while, and an athlete flagged 3 times this week">
 <img src="user-guide/concern-escalation.png" width="210" alt="A concern's Escalation card: escalated to the Child Safety Officer, then passed over a committee member named in the concern">
 <img src="user-guide/concern-times.png" width="210" alt="Concern times: how long each step can wait">
 <img src="user-guide/escalation-chain.png" width="210" alt="The Complaints Manager's escalation chain: Child Safety Officer after 7 days, then a named committee member, then Admins">
@@ -4990,7 +5001,8 @@ future), say why you need to read them without the concern's details, and tap **
 admin**. You can't ask about yourself or on a closed concern, and only one request for the same
 person and concern can wait at a time.
 
-**Answering** (an admin): a red **Answer N requests to read messages** to-do appears (marked
+**Answering** (an admin): a red **Answer N requests to read messages** line appears in the
+Safeguarding panel on Today (marked
 **Important** once the oldest has waited 24 hours, and **Urgent** after 48, or the club's own
 times under [Concern clocks and escalation](#concern-clocks-and-escalation)), and
 **Concerns** has a **Message access** button. Open the request to see its reference, the concern's
@@ -5026,7 +5038,8 @@ never removed, so a later audit can follow each one from request to reading.
 
 When the club uses chat groups and a member blocks someone (see [Chat groups](#chat-groups)), the
 admins, the Child Safety Officers and the Complaints Managers (and admins [acting in an empty
-post](#acting-in-an-empty-post)) get a to-do, **Follow up a block in chat groups**, and a phone
+post](#acting-in-an-empty-post)) get a line in the Safeguarding panel on Today, **Follow up a block
+in chat groups**, and a phone
 notification where to-do notifications are on. The notification names nobody. Nobody is told about
 a block they're part of, whether they blocked or were blocked.
 
@@ -5050,8 +5063,8 @@ Safety Officer.
 
 **Concerns > Wellbeing flags** lists the last 14 days, one card per athlete, with the day and the
 lowest score of each flagged check-in. The four answers and the athlete's note are never shown.
-Anyone flagged on 3 days in the last 7 is listed first, and the to-do list says **Look at N
-athletes flagged 3 times this week** until the run of low scores stops. An athlete under 18 shows
+Anyone flagged on 3 days in the last 7 is listed first, and the Safeguarding panel on Today says
+**Look at N athletes flagged 3 times this week** until the run of low scores stops. An athlete under 18 shows
 only once a parent or guardian has given consent for check-ins, the same consent their coaches
 need, and each time you open the page it's recorded in that child's record views. If you're
 worried, talk to the athlete or their parent, or **Raise a concern** from the same page. The page
@@ -5071,8 +5084,8 @@ welfare look:
 
 You see the pattern and when it started, never their sessions, numbers or coaches' notes. A child
 shows once a parent has given consent for check-ins, and each time you open the page it's recorded
-in that child's record views. Your to-do list says **Look at N children's training load** while any
-are listed. Most patterns are simply a busy few weeks: if you're worried, talk to their coach or
+in that child's record views. The Safeguarding panel on Today says **Look at N children's training
+load** while any are listed. Most patterns are simply a busy few weeks: if you're worried, talk to their coach or
 parent, or **Raise a concern** from the same page.
 
 <img src="user-guide/training-load-patterns.png" width="210" alt="Training load patterns for the Child Safety Officer">
@@ -5836,11 +5849,13 @@ Working With Children Check, and another admin must do it.
 - **Reports for your records.** The Working With Children Checks report follows the Screening
   Unit's record layout: every check with the name on the card, date of birth, card number, expiry
   and validation, plus every exemption, notice and stand-down. The under 18s report lists every child, their guardians and how often their records were viewed in the last 12 months. Each saves as a PDF.
-  The concerns register, on the Concerns card for the Child Safety Officer, Complaints Manager and
-  admins, exports as a PDF listing every concern and what was done, except any about the person exporting it.
-- **Nothing raised sits unseen.** A new concern is an **Urgent** red to-do at the top of the list
-  for the Child Safety Officer, the Complaints Manager and admins until someone acts on it. The
-  Concerns card's traffic lights show at a glance how many are new (red), in progress (orange) and
+  The concerns register, opened from the Safeguarding panel on Today by the Child Safety Officer,
+  Complaints Manager and admins, exports as a PDF listing every concern and what was done, except any about the person exporting it.
+- **Nothing raised sits unseen.** Safeguarding leads Today for the Child Safety Officer, the
+  Complaints Manager and admins: a panel above the calendar and every other to-do. A new concern
+  is marked **Urgent** in red there until someone acts on it, and while any safeguarding work is
+  waiting Today never says "You're set for today". The
+  panel's traffic lights show at a glance how many are new (red), in progress (orange) and
   closed in the last 4 weeks (green). They're counts only, and never include a concern about the
   person looking.
 

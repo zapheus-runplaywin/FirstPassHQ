@@ -125,6 +125,8 @@ const ITEMS = {
   myAttendance: 'My attendance',
   integrity: 'Certificates and everyone’s progress',
   concerns: 'The concerns register',
+  // On Today the register leads as the safeguarding panel, with its work in it (redesign item 10).
+  safeguardingPanel: 'Concerns register',
   reports: 'Checks, medical details, training, attendance and awards',
   // The admin's own menu, in the Club tab's areas: something only it has.
   adminMenu: 'New members need it to ask to join',
@@ -255,7 +257,7 @@ const BY_ROLE: {
     who: 'admin',
     tabs: ['Today', 'Calendar', 'Messages', 'Club', 'Me'],
     // Safeguarding work leads Today, and is in the Club hub too.
-    today: ['concerns'],
+    today: ['safeguardingPanel'],
     hubs: {
       club: [
         'concerns',
@@ -272,7 +274,7 @@ const BY_ROLE: {
     // An expired check doesn't pause the admin role.
     who: 'adminExpiredCheck',
     tabs: ['Today', 'Calendar', 'Messages', 'Club', 'Me'],
-    today: ['concerns'],
+    today: ['safeguardingPanel'],
     hubs: {
       club: [
         'concerns',
@@ -421,9 +423,9 @@ describe('the order of each tab', () => {
     expectInOrder(['Raise a concern', 'Next up', 'Needs you']);
   });
 
-  it('an admin’s Today leads with Concerns, ahead of what is next', async () => {
+  it('an admin’s Today leads with Safeguarding, ahead of what is next', async () => {
     await openHome('admin');
-    expectInOrder(['Raise a concern', 'Concerns', 'Next up', 'Needs you']);
+    expectInOrder(['Raise a concern', 'Safeguarding', 'Next up', 'Needs you']);
   });
 
   // Cards lead with where things stand (HQ redesign, item 6).
@@ -760,22 +762,23 @@ describe('administration and concerns', () => {
     expect(screen.getByTestId('home-titles')).toHaveTextContent('Complaints Manager');
   });
 
-  it('a safeguarding officer who isn’t an admin has Concerns on Today, but no Club hub', async () => {
+  it('a safeguarding officer who isn’t an admin has Safeguarding on Today, but no Club hub', async () => {
     await openHome({ ...personas.coach, isSafeguardingOfficer: true });
-    expect(screen.getByText(ITEMS.concerns)).toBeTruthy();
+    expect(screen.getByTestId('safeguarding-panel')).toBeTruthy();
+    expect(screen.getByTestId('concern-lights')).toBeTruthy();
     expect(tabBar()).toEqual(['Today', 'Calendar', 'Messages', 'Team', 'Me']);
     await goTo('/team');
     expect(screen.queryByText(ITEMS.adminMenu)).toBeNull();
   });
 
-  it('the Concerns card opens the register', async () => {
+  it('the Safeguarding panel opens the register', async () => {
     await openHome('admin');
-    await fireEvent.press(screen.getByText(ITEMS.concerns));
+    await fireEvent.press(screen.getByText(ITEMS.safeguardingPanel));
     await act(async () => {});
     expect(screen).toHavePathname('/concerns');
   });
 
-  it('a coach a concern was escalated to by name has Concerns, chased by reference only', async () => {
+  it('a coach a concern was escalated to by name has Safeguarding, chased by reference only', async () => {
     await openHome({
       ...personas.coach,
       rpcs: {
@@ -785,9 +788,9 @@ describe('administration and concerns', () => {
         ],
       },
     });
-    expect(screen.getByText(ITEMS.concerns)).toBeTruthy();
-    expect(screen.getByText('C-0007 is urgent: nothing recorded for too long')).toBeTruthy();
-    expect(screen.getByText('Escalated to you')).toBeTruthy();
+    const panel = within(screen.getByTestId('safeguarding-panel'));
+    expect(panel.getByText('C-0007 is urgent: nothing recorded for too long')).toBeTruthy();
+    expect(panel.getByText('Escalated to you')).toBeTruthy();
   });
 
   it('a coach with nothing escalated has no Concerns, and isn’t chased', async () => {
@@ -799,7 +802,7 @@ describe('administration and concerns', () => {
         ],
       },
     });
-    expect(screen.queryByText(ITEMS.concerns)).toBeNull();
+    expect(screen.queryByTestId('safeguarding-panel')).toBeNull();
     expect(screen.queryByText(/C-0007/)).toBeNull();
   });
 

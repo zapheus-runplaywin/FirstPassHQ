@@ -24,6 +24,7 @@ import {
   LaterEvents,
   NeedsYou,
   NextUp,
+  SafeguardingPanel,
 } from '@/components/home/today';
 import { HomeHeader } from '@/components/home-header';
 import { SafeguardingContactsCard } from '@/components/safeguarding';
@@ -42,7 +43,7 @@ import { useHome, type SingleScreen } from '@/lib/home';
 import { sessionActions } from '@/lib/session';
 import { useSessionBasics } from '@/lib/use-session-actions';
 import type { HomeCard } from '@/lib/home-layout';
-import { upcoming } from '@/lib/today';
+import { splitSafeguarding, upcoming } from '@/lib/today';
 
 /**
  * Today, the first tab: where the member needs to be next and what needs
@@ -59,7 +60,10 @@ export default function TodayScreen() {
 const NEXT_UP_ACTIONS = 3;
 
 /** The cards that come before everything else on Today. */
-const LEADS: HomeCard[] = ['verification', 'concerns'];
+const LEADS: HomeCard[] = ['verification'];
+
+/** Today shows this card as the safeguarding panel, with the safeguarding to-dos in it. */
+const AS_PANEL: HomeCard = 'concerns';
 
 /**
  * The daily check-in over Today: the to-do opens it as a sheet, and once it
@@ -122,7 +126,12 @@ function Today() {
         onOpenCalendar={() => router.navigate('/calendar')}
       />
     ) : null;
-  const cards = home.cards('today');
+  const cards = home.cards('today').filter((card) => card !== AS_PANEL);
+  // Safeguarding work leads the day in its own panel, for the people the
+  // concerns register is open to; everything else stays under Needs you.
+  const registerOpen = home.cards('today').includes(AS_PANEL);
+  const { safeguarding, rest } = splitSafeguarding(home.todos);
+  const showPanel = registerOpen || safeguarding.length > 0;
   // The work of these weeks (a selection round that is running) sits with what needs you.
   const needsYou = (
     <>
@@ -132,7 +141,8 @@ function Today() {
           <HomeCardView key={card} card={card} />
         ))}
       <NeedsYou
-        todos={home.todos}
+        todos={rest}
+        otherWork={safeguarding.length > 0}
         personalTasks={home.personalTasks}
         onToggleTask={home.setTaskDone}
         onCheckIn={openCheckIn}
@@ -166,6 +176,9 @@ function Today() {
         .map((card) => (
           <HomeCardView key={card} card={card} />
         ))}
+      {showPanel ? (
+        <SafeguardingPanel todos={safeguarding} counts={registerOpen ? home.concernCounts : null} />
+      ) : null}
 
       {sideBySide ? (
         <Columns
