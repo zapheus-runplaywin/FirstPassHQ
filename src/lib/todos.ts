@@ -3,6 +3,7 @@ import type { Href } from 'expo-router';
 import type { SelectionTodo } from '@/lib/assessments';
 import { slotTitle } from '@/lib/awards';
 import { clubDay } from '@/lib/club-time';
+import { blocksTodoTitle } from '@/lib/chat-blocks';
 import type { ConcernClock } from '@/lib/concerns';
 import { clearanceLateness, type ConcernTimes, DEFAULT_CONCERN_TIMES } from '@/lib/concern-times';
 import { formatShortDay } from '@/lib/format';
@@ -130,6 +131,7 @@ export function buildTodos({
   newConcerns = 0,
   concernClocks = [],
   messageAccess = null,
+  chatBlocksWaiting = 0,
   wellbeingFlagAlerts = 0,
   loadPatternAlerts = 0,
   loadFlags = 0,
@@ -197,6 +199,11 @@ export function buildTodos({
     only_one_admin: boolean;
     late?: 'important' | 'urgent' | null;
   } | null;
+  /**
+   * Blocks in chat groups no admin, Child Safety Officer or Complaints Manager
+   * has followed up yet, leaving out any the member is part of.
+   */
+  chatBlocksWaiting?: number;
   /** Athletes flagged on 3 or more days in the last 7, for the Child Safety Officer. */
   wellbeingFlagAlerts?: number;
   /** Children whose training load shows a pattern, for the Child Safety Officer. */
@@ -272,6 +279,17 @@ export function buildTodos({
       title: 'Add a second admin',
       detail: "A backup when you're away, and someone to verify your own check",
       href: '/admin',
+      alert: { level: 'amber', label: 'Needs checking' },
+    });
+  }
+
+  // A member blocked someone in a chat group: check in with them.
+  if (chatBlocksWaiting > 0) {
+    todos.push({
+      key: 'chat-blocks',
+      title: blocksTodoTitle(chatBlocksWaiting),
+      detail: 'A member blocked someone. Check in with them',
+      href: '/concerns/blocks',
       alert: { level: 'amber', label: 'Needs checking' },
     });
   }

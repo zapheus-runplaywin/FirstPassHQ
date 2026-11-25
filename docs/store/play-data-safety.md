@@ -48,7 +48,7 @@ personalisation or fraud prevention. "Required" means a member can't use the app
 | Calendar | Calendar events | No | The app reads the club's calendar, not the phone's | | |
 | Contacts | Contacts | No | | | |
 | App activity | App interactions | Yes | Required (attendance, read receipts, who opened a child's records) | App functionality, Fraud prevention, security and compliance | 11, 12, 18 |
-| App activity | Other user-generated content | Yes | Optional (game goals, surveys, session plans, concerns, award votes) | App functionality | 13, 14, 15, 17, 20 |
+| App activity | Other user-generated content | Yes | Optional (game goals, surveys, session plans, concerns, award votes, blocks in chat groups) | App functionality, Fraud prevention, security and compliance (blocks are followed up for safeguarding) | 13, 14, 15, 17, 20, 23 |
 | App activity | In-app search history, Installed apps, Other actions | No | | | |
 | Web browsing | Web browsing history | No | | | |
 | Location | Approximate, Precise | No | | | |
@@ -61,6 +61,9 @@ personalisation or fraud prevention. "Required" means a member can't use the app
   a push token is declared there to be safe. The token and notification text pass through
   Expo's push service and Apple or Google to reach the phone. That is a service provider
   delivering for us, so it is not "shared".
+- **Messages: Other in-app messages** covers club messages, the answer a member picks to a
+  message's question, and chat group posts when a club turns chat groups on (row 12). All are
+  text only; members share no photos or files in messages.
 - **Health info** covers injuries, medical and emergency details, and the daily check-in's
   soreness, stress and mood. The app is a club administration tool, not a medical service.
 - **Game stats** (row 21) are recorded in FirstPass Vantage, not this app, and are declared on

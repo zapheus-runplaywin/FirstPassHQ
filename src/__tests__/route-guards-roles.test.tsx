@@ -201,6 +201,8 @@ const WHO_OPENS: Record<string, PersonaName[]> = {
   'messages/[id]': CLUB_MEMBERS,
   // Everyone who reads messages has a Groups tab; the database decides which groups.
   'messages/group/[id]': CLUB_MEMBERS,
+  // Blocked people in chat groups: everyone who reads groups.
+  'messages/blocked': CLUB_MEMBERS,
   'messages/new': MESSAGE_SENDERS,
 
   'surveys/index': CLUB_MEMBERS,
@@ -255,6 +257,8 @@ const WHO_OPENS: Record<string, PersonaName[]> = {
   'concerns/report': union(ADMINS, ['safeguardingOfficer']),
   'concerns/wellbeing': union(ADMINS, ['safeguardingOfficer']),
   'concerns/load': union(ADMINS, ['safeguardingOfficer']),
+  // Blocks in chat groups: admins and the two safeguarding officers follow them up.
+  'concerns/blocks': union(ADMINS, ['safeguardingOfficer']),
   // Message access requests: the officers ask, admins answer; the database
   // keeps each request from the member it's about.
   'concerns/message-access/index': union(ADMINS, ['safeguardingOfficer']),

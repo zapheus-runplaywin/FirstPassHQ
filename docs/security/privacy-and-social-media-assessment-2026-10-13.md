@@ -193,6 +193,19 @@ feature was built. Built in `20261124600000_chat_groups.sql`, behind the
   is involved, by default), covered by legal hold, and admins don't read
   groups they aren't in.
 
+- **Blocking (added 25 November 2026, Matt: "Just add the blocking
+  feature ... Ensure admin and safeguarding get alerted").** A member can
+  block the author of a post in their groups, so that person's posts stop
+  showing to them (`20261125400000_chat_blocks.sql`). It is a safety
+  control, not a social feature: it only takes away what one member sees,
+  adds no way to find or contact anyone, and deletes nothing. A child can
+  block anyone; an adult can't block a child, so what a child writes stays
+  in front of the adults in their group. A block never hides a parent's
+  copy of a post to or from their child. Every block goes to the admins, the
+  Child Safety Officer and the Complaints Manager (never to either member)
+  as a to-do until one of them records a follow-up, because a child blocking
+  an adult can be the first sign something is wrong.
+
 **Still not an age-restricted social media platform.** The purpose of the
 app is unchanged: a club administration tool. Chat groups are a messaging
 feature, a kind of service the Rules exclude, between people the club has
