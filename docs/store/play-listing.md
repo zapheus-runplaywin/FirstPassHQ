@@ -30,7 +30,7 @@ name.
 > • Team chat groups with your managers, captains and physios, if your club turns them on
 >
 > FOR ATHLETES AND PARENTS
-> • The club calendar and your team's events on the home screen
+> • What's next on your calendar, the moment you open the app
 > • A to-do list: check-ins, surveys, clearances and training to complete
 > • Report an injury, upload the clearance letter and follow it to return to play
 > • Report an absence before the session

@@ -6,7 +6,7 @@ club at a time, picked by its **club code**:
 
 - The first open shows **Find your club**, where members type their club's code. A link such as
   `firstpasshq://club/HAWKS` fills it in. The app remembers the club after that.
-- **Change club** on the sign-in screen and **Switch club** at the foot of the home screen go back
+- **Change club** on the sign-in screen and **Switch club** in the Me tab go back
   to the code screen. Every club's sign-in stays saved on the device, so people in two clubs
   switch without signing in again.
 - Each club's look (Club settings) is saved on the device per club, so one club never opens in
@@ -113,7 +113,7 @@ one-time **setup code** instead. Nothing is typed into the SQL editor.
 2. Send the code privately to the person setting the club up.
 3. They open the app, enter the club code, sign in with Google or Apple, tap **Request to join**,
    and enter their name and the code under **Setting up this club?**. **Administration** appears
-   on their home screen.
+   in their Club tab.
 
 The code works once, and only while the club has no approved admin. Once it has one, the script
 refuses and the box is gone from the app: the admin approves everyone else, including other

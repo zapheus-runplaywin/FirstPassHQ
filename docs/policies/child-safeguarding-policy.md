@@ -46,8 +46,8 @@ guardian consents in the app.
 
 ## Raising a concern
 
-Anyone can raise a concern in the app, from the home screen, the check-in
-screen, any injury or any message, and can ask for their name not to be shown.
+Anyone can raise a concern in the app, from the top of every tab, the Me tab,
+the check-in screen, any injury or any message, and can ask for their name not to be shown.
 It goes to the Child Safety Officer, the Complaints Manager and admins, never
 to the person it's about. You can also contact them directly, or:
 
