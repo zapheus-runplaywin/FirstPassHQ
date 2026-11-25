@@ -43,7 +43,7 @@ each of their roles can.
 | Role          | Who it's for                                                                                         |
 | ------------- | ---------------------------------------------------------------------------------------------------- |
 | **Athlete**   | Registered players aged 13 and over (nobody under 13 signs in to the app this year). Some are club captains, or captains or vice captains of a team. They see their own attendance and can report an absence. An athlete under 18 can't use the app until a verified parent or guardian is linked to them: until then they see only a link code to share with one (see [Ask to join the club](#ask-to-join-the-club)). A child with no phone, or who won't use the app, can be added by an admin with no sign-in of their own, at any age under 18, and their parent or guardian does everything for them (see [A child who won't use the app](#a-child-who-wont-use-the-app)). |
-| **Guardian**  | Parents and guardians of athletes under 18. They ask to be linked to their child by entering the link code from their child's app, or ask the club to add a child who won't use the app (later children from the **Guardian of** card in the Family tab), and follow their children into and out of their squads and teams. They see their child's attendance and can report an absence for them, and see what has changed around their child. If the club asks, they accept the club's code of conduct for their child each season. |
+| **Guardian**  | Parents and guardians of athletes under 18. They ask to be linked to their child by entering the link code from their child's app, or ask the club to add a child who won't use the app (later children from **Add another child** in the Family tab), and follow their children into and out of their squads and teams. They see their child's attendance and can report an absence for them, and see what has changed around their child. If the club asks, they accept the club's code of conduct for their child each season. |
 | **Coach**     | Head coaches and assistant coaches. Both have the same permissions, except that a head coach sets Season KPIs for the group's assistant coaches; otherwise the title only shows who is who. The app gives each coach a title from their team, or their squad until they're in a team, such as "Head Coach, Open A". Need a current Working With Children Check; the role pauses while it's expired, and they add the renewed card from Today for an admin to check (see [Sending in your own check](#sending-in-your-own-check)). Someone who has applied for one, new or a renewal, can work while it's assessed (see [Checks applied for](#checks-applied-for)). A parent volunteering at their child's club, a volunteer under 18, or a short-term visitor or national event helper from outside WA has an exemption instead (see [Volunteer exemptions](#volunteer-exemptions)). |
 | **Manager**   | Squad and team managers. The app gives each manager a title from their team, or their squad until they're in a team, such as "Manager, 17 & Under". Need a current Working With Children Check; the role pauses while it's expired, and they add the renewed card from Today for an admin to check (see [Sending in your own check](#sending-in-your-own-check)). Someone who has applied for one, new or a renewal, can work while it's assessed (see [Checks applied for](#checks-applied-for)). A parent volunteering at their child's club, a volunteer under 18, or a short-term visitor or national event helper from outside WA has an exemption instead (see [Volunteer exemptions](#volunteer-exemptions)). |
 | **Committee** | Club committee members. Each can add a title, such as President or Secretary, shown with their role. Only committee members and admins can add their own title. Need a current Working With Children Check, or an application being assessed, unless an admin exempts them with a reason (not if they also coach, manage or physio); the role pauses if a recorded check expires or was recorded without an expiry date, and they add the renewed card from Today for an admin to check. Committee members approved before checks were needed keep the role without one only until the club's **committee checks date**. Those with a current check, an application in force or a volunteer exemption also read most of the club's governance reports. |
@@ -603,12 +603,14 @@ something new or waiting for you.
   captains have **Surveys** to send a poll. Coaches read their athletes' check-ins from
   **Check-ins**, and physios see the club's averages there. While you're on a selection round's
   panel, **Selection assessments** is here as well as on Today.
-- **Family** starts with one **Guardian of** card naming your children, which opens **Your
-  children** to add another. Then comes a card for each child under **Game goals** (when the club
-  uses them), **Consent**, **Medical and emergency**, **Attendance**, **Check-ins**, **What's
-  changed** and **Who has viewed their records**, then **Injuries**, plus **Session plans**,
-  **Season KPIs** and **Selection** when there's something in them, and **My squads and teams**
-  at the end (see [Parents and guardians](#5-parents-and-guardians)).
+- **Family** starts with one card for each of your children. The card says where things stand
+  for that child (consent, a current injury, medical details to add or check, changes since you
+  last looked) and opens the child's own page, which has **Attendance**, **Game goals**,
+  **Check-ins**, **Injuries**, **Consent**, **Medical and emergency**, **What's changed** and
+  **Who has viewed their records** for that child, always in that order. Under the children come
+  **Injuries**, plus **Session plans**, **Season KPIs** and **Selection** when there's something
+  in them, then **My squads and teams**, and **Add another child** at the end (see
+  [Parents and guardians](#5-parents-and-guardians)).
 - **Club** has **Concerns** (for the people who handle them), **Check-ins** (the club's
   averages), **Attendance**, **Injuries**, **Reports** (for committee members with a current
   check) or **Administration** (for admins, who find Reports inside it), **Surveys**, **Integrity
@@ -1532,9 +1534,9 @@ until you've entered the code of a child under 18 who has been approved. Your ch
 stays locked until a verified parent or guardian is linked to them. A guardian can be linked to
 more than one athlete, and an athlete can have more than one guardian.
 
-To add another child later, tap **Guardian of** in the **Family** tab. It opens **Your children**,
-where you enter their code under **Add another child** (**Enter your child's code** until you have
-a child linked). An admin then links you from your page or the child's.
+To add another child later, tap **Add another child** at the end of the **Family** tab. It opens
+**Your children**, where you enter their code under **Add another child** (**Enter your child's
+code** until you have a child linked). An admin then links you from your page or the child's.
 
 Whenever a guardian is linked to or unlinked from your child, you and your child's other guardians
 get a message from **Club safeguarding** in **Messages**, naming the guardian and the admin who made
@@ -1543,12 +1545,44 @@ Safety Officer or an admin.
 
 <img src="user-guide/message-guardian-notice.png" width="210" alt="The message guardians get when another guardian is unlinked">
 
-The **Family** tab shows who you're the guardian of in one **Guardian of** card at the top. Until an admin links
-you, it says "Nobody yet" and asks for your child's link code. Tap it to open **Your children**,
-which holds both ways to add a child: their link code, and asking the club to add a child who
-won't use the app.
+Until an admin links you to a child, the **Family** tab starts with a **Guardian of** card that
+says "Nobody yet" and asks for your child's link code. Tap it to open **Your children**, which
+holds both ways to add a child: their link code, and asking the club to add a child who won't use
+the app. Once a child is linked, the same screen opens from **Add another child** at the end of
+the tab.
 
 <img src="user-guide/guardian-children.png" width="210" alt="Your children: the children a parent is linked to, adding another with a link code, and a child who won't use the app">
+
+#### Your children in the Family tab
+
+The **Family** tab has one card for each child you're linked to. A card shows the child's name
+and where things stand for them:
+
+- **Consent**, such as "Check-ins: yes · Injuries: yes". It shows in the club's colour while you
+  still have a consent to give.
+- A line for each thing that needs a look: a current injury, medical and emergency details to add
+  or check, and how many changes there have been since you last looked (the number also shows on
+  the card and on the Family tab).
+
+Tap a card to open that child's page. It has everything for that one child, in the same order
+every time, so you always know where to look:
+
+| On the child's page | What it opens |
+| --- | --- |
+| **Attendance** | Their sessions, and where you tell their coaches they'll be away (see [Your child's attendance](#your-childs-attendance)). |
+| **Game goals** | Their goals and reflections for each game. |
+| **Check-ins** | Their daily check-ins and notes from the last four weeks. |
+| **Injuries** | Their current injuries, in the injuries list you already use. |
+| **Consent** | The consents you've given or still need to give (see [Giving consent](#giving-consent)). |
+| **Medical and emergency** | Emergency contacts, allergies, conditions and medications, once you're verified (see [Your child's medical and emergency details](#your-childs-medical-and-emergency-details)). |
+| **What's changed** | New adults in their groups, guardians, consents and shared documents (see [What's changed for your child](#whats-changed-for-your-child)). |
+| **Who has viewed their records** | Everyone at the club who opened their records, once you're verified (see [Who has viewed your child's records](#who-has-viewed-your-childs-records)). |
+
+A row is left out while the club has that feature switched off. The page only ever shows your own
+children: a link to another child's page shows "This child isn't linked to you".
+
+<img src="user-guide/family-guardian.png" width="210" alt="A parent's Family tab: a card for each child, then Injuries, squads and teams, and Add another child">
+<img src="user-guide/child-page.png" width="210" alt="The top of a child's page: Attendance, Game goals, Check-ins, Injuries, Consent and Medical and emergency">
 
 As a guardian you:
 
@@ -1560,15 +1594,15 @@ As a guardian you:
   they send to their team or the club. These copies say "Copied to you because Jordan sent
   it".
 - **See your athlete's daily check-ins**, including any note they write, and the training
-  sessions they log with their weekly load. Tap your athlete under **Check-ins** in the **Family**
-  tab to see the last four weeks. Your athlete is told that you can read their notes.
+  sessions they log with their weekly load. Open your athlete's card in the **Family** tab and
+  tap **Check-ins** to see the last four weeks. Your athlete is told that you can read their notes.
 - **See the calendar and matches** of your child's squads and teams. You follow your child into
   and out of them by yourself: when an admin puts your child in a squad or team you join it, and
   when your child leaves it you leave too, unless another of your children is still in it.
 - **See your athlete's game goals and reflections**: the goals they and their coaches set for
   each game, how your athlete thinks each one went, their coaches' comments and the team goals (see
-  [Game goals](#game-goals)). Tap your athlete under **Game goals** in the **Family** tab to see all
-  their games. You can't set goals or reflect: your athlete and their coaches do that in the app.
+  [Game goals](#game-goals)). Open your athlete's card in the **Family** tab and tap **Game goals**
+  to see all their games. You can't set goals or reflect: your athlete and their coaches do that in the app.
   When a game was recorded in FirstPass Vantage, your athlete's coaches also see your athlete's
   own stats from it beside the goals. You and your athlete don't see those figures in the app.
 - **Report and update injuries** for your athlete, and ask for clearance, exactly as an athlete
@@ -1596,7 +1630,6 @@ As a guardian you:
   [Integrity training](#integrity-training)).
 
 <img src="user-guide/today-guardian.png" width="210" alt="A guardian's Today with nothing waiting">
-<img src="user-guide/family-guardian.png" width="210" alt="A guardian's Family tab: Guardian of, then Game goals and Consent for each child">
 <img src="user-guide/training-guardian.png" width="210" alt="A guardian's view of their athlete's training, one sent back">
 <img src="user-guide/goals-guardian.png" width="210" alt="An athlete's games, opened by their guardian">
 <img src="user-guide/goals-guardian-played.png" width="210" alt="A guardian reading their athlete's goals, reflections and coach comments">
@@ -1611,8 +1644,8 @@ and you do everything for them.
 
 1. When you ask to join as **Guardian**, answer **Will your child use the app?** with **No, they
    won't use the app**, and give your child's name, date of birth and squad or team instead of a
-   link code. Already in the club? Tap **Guardian of** in the **Family** tab, then **Add a child who won't use
-   the app**.
+   link code. Already in the club? Tap **Add another child** in the **Family** tab (**Guardian of** until
+   a child is linked), then **Add a child who won't use the app**.
 2. A club admin verifies who you are and checks your child's details against PlayHQ, then adds
    your child, linked to you. If you were still waiting, you're approved at the same time. Until
    then **Your children** (the waiting screen while you're still waiting) shows what you asked for,
@@ -1639,8 +1672,8 @@ account if they want to keep using the app.
 
 ### Giving consent
 
-Once you're linked and verified, **Consent** in the **Family** tab lists each child under 18, and
-your to-do list says **Give consent for** them until you have answered the questions the club
+Once you're linked and verified, each child under 18 has **Consent** on their page (tap their
+card in the **Family** tab), and your to-do list says **Give consent for** them until you have answered the questions the club
 needs: injuries always, and check-ins while the club uses Daily check-ins. Open it to
 choose who else sees two kinds of information about your child, and whether live streams may
 name them with their own stats:
@@ -1694,8 +1727,8 @@ you're asked each time (see [Injury documents and photos](#injury-documents-and-
 
 ### Your child's medical and emergency details
 
-Once you're verified, **Medical and emergency** in the **Family** tab lists each child under 18.
-Open one and tap **Change details** to add up to three emergency contacts and your child's
+Once you're verified, each child under 18 has **Medical and emergency** on their page (tap their
+card in the **Family** tab). Open it and tap **Change details** to add up to three emergency contacts and your child's
 allergies, conditions, medications and action plan, then **Save**. Any of your child's verified
 parents or guardians can change them, and your child can read them. Their coaches, managers and
 physios see them once you've given consent for injuries and health information; admins and the
@@ -1711,7 +1744,7 @@ checked for a while (2 years unless the club chose longer) are removed, and the 
 them once the check is due. Admins see whether each child's details have been
 checked, but not what they say.
 
-<img src="user-guide/medical-family.png" width="210" alt="Consent and Medical and emergency in a parent's Family tab">
+<img src="user-guide/medical-family.png" width="210" alt="Consent and Medical and emergency on a child's page">
 <img src="user-guide/medical-edit.png" width="210" alt="A parent changing their child's emergency contacts">
 
 ### The code of conduct for your child
@@ -1733,8 +1766,8 @@ for yourself as well.
 
 ### Who has viewed your child's records
 
-Once you're verified, **Who has viewed their records** in the **Family** tab lists each child under
-18. Open it to see everyone at the club who opened your child's injuries, injury documents,
+Once you're verified, each child under 18 has **Who has viewed their records** at the end of
+their page (tap their card in the **Family** tab). Open it to see everyone at the club who opened your child's injuries, injury documents,
 check-ins, game goals, season KPIs, named survey answers, medical and emergency details, selection assessment or member record in the app: their name, their role (coach, manager, physio, admin,
 committee or safeguarding contact, or member for anyone else, such as a manager reading named
 survey answers), what they opened and when, newest first. Sharing an injury
@@ -1745,12 +1778,12 @@ listed, and opening the same thing again within 30 minutes counts once. The list
 yours to see on your child's 18th birthday. If anything on it worries you, raise a concern (see
 [Raising a concern](#raising-a-concern)).
 
-<img src="user-guide/records-family.png" width="210" alt="Who has viewed their records in a parent's Family tab">
+<img src="user-guide/records-family.png" width="210" alt="Who has viewed their records at the end of a child's page">
 <img src="user-guide/records-guardian.png" width="210" alt="A parent's list of who has viewed their child's records">
 
 ### Your child's attendance
 
-**Attendance** in the **Family** tab lists each child under 18. Open it to see the sessions their
+**Attendance** is first on each child's page (tap their card in the **Family** tab). Open it to see the sessions their
 coaches took attendance for in the last 4 weeks, 3 months or 12 months, and whether your child was
 marked **Present** or **Absent**. You see only your child's marks, never other children's. If your child was marked absent and you didn't expect it,
 ask their coach, or raise a concern if it worries you.
@@ -1763,7 +1796,7 @@ parents or guardians see what you report. An absent session that matches a repor
 **Absent, reported**. If plans change, tap **Withdraw** next to an absence you or your child
 reported. You stop seeing your child's attendance on their 18th birthday.
 
-<img src="user-guide/family-attendance.png" width="210" alt="Medical and emergency, Attendance and Check-ins in a parent's Family tab">
+<img src="user-guide/family-attendance.png" width="210" alt="Attendance, first on a child's page">
 
 ### Questions in your child's messages
 
@@ -1849,8 +1882,9 @@ diagnosis. If you're worried about your child's training, talk to their coach.
 
 ### What's changed for your child
 
-**What's changed** in the **Family** tab lists each child under 18, with a number when something has
-happened since you last looked. The Family tab itself carries the same number. Open it to see, newest first:
+**What's changed** is on each child's page (tap their card in the **Family** tab), with a number
+when something has happened since you last looked. The child's card and the Family tab itself
+carry the same number. Open it to see, newest first:
 
 - a coach, manager or physio added to, or no longer in, a squad or team your child is in (from when
   your child joined it)
@@ -3496,7 +3530,7 @@ Their parent or guardian does everything for them (see
 [A child who won't use the app](#a-child-who-wont-use-the-app)). Only you can add one, and only for
 a parent who is verified.
 
-1. A parent asks, when they join or from **Guardian of** in their **Family** tab, with the child's name, date of birth and
+1. A parent asks, when they join or from **Add another child** in their **Family** tab, with the child's name, date of birth and
    squad or team. In **Members** they show under **Waiting for approval** or **Parents asking to be
    linked**, with "Asked to add Sam Small, who won't use the app".
 2. Open the parent's page and verify who they are, as for any parent.
@@ -5560,7 +5594,7 @@ Working With Children Check, and another admin must do it.
   club's database.
 - **Record views are logged.** Every time someone other than a child or their guardians opens an
   under 18's injuries, injury documents, check-ins, game goals, season KPIs, named survey answers or member record, it's recorded.
-  Admins see the list on the child's member page, and parents and guardians in their Family tab.
+  Admins see the list on the child's member page, and parents and guardians on their child's page in the Family tab.
 - **Medical details are checked every year.** Each athlete 18 or over, and a verified parent or
   guardian for each under 18, is reminded to check their medical and emergency details once a year.
   The **Medical details checks** report shows admins who is up to date, due, overdue or has nothing

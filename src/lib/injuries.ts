@@ -127,7 +127,7 @@ export function useLoggedInjuries() {
 }
 
 /** A summary for the home card, such as "2 injured · 1 waiting for you". */
-export function injuriesSummary(injuries: Injury[]) {
+export function injuriesSummary(injuries: Pick<Injury, 'waiting_for_me'>[]) {
   const waiting = injuries.filter((i) => i.waiting_for_me).length;
   const parts = [
     injuries.length === 0

@@ -51,6 +51,8 @@ const overrides = placeholderScreens(
   '(tabs)/family',
   '(tabs)/club',
   '(tabs)/me',
+  // A parent's child: opened from the child's card in Family.
+  'child/[id]',
 );
 
 /** The club has integrity training set, so the committee and admins have a card for it. */
@@ -112,6 +114,9 @@ const ITEMS = {
   reports: 'The club’s checks, medical details checks, training, attendance and award results',
   administration: 'Administration',
   guardianOf: 'Guardian of',
+  // With a child linked: one card for each child, and adding another.
+  child: 'Sample Child',
+  addChild: 'Add another child',
   consent: 'Consent',
   whatsChanged: 'What’s changed',
   recordViews: 'Who has viewed their records',
@@ -175,17 +180,9 @@ const BY_ROLE: {
     who: 'guardian',
     tabs: ['Today', 'Calendar', 'Messages', 'Family', 'Me'],
     hubs: {
-      family: [
-        'guardianOf',
-        'childGoals',
-        'consent',
-        'childAttendance',
-        'childCheckIns',
-        'whatsChanged',
-        'recordViews',
-        'injuries',
-        'groups',
-      ],
+      // What each child has (consent, attendance, game goals and the rest)
+      // is on the child's own page, opened from their card.
+      family: ['child', 'injuries', 'groups', 'addChild'],
     },
   },
   {
@@ -464,19 +461,22 @@ describe('the order of each tab', () => {
     expect(screen.queryByText(ITEMS.dailyCheckIn)).toBeNull();
   });
 
-  it('a guardian’s Family: their children first, then the rest, then squads', async () => {
+  it('a guardian’s Family: their children first, then the rest, squads, and adding a child last', async () => {
     await openTab('guardian', '/family');
+    expectInOrder(['Sample Child', 'Injuries', 'My squads and teams', 'Add another child']);
+  });
+
+  it('a child’s page: day to day first, then consent and medical, then who has been near their records', async () => {
+    await openTab('guardian', '/child/child-1');
     expectInOrder([
-      'Guardian of',
+      'Attendance',
       'Game goals',
+      'Check-ins',
+      'Injuries',
       'Consent',
       'Medical and emergency',
-      'Attendance',
-      'Check-ins',
       'What’s changed',
       'Who has viewed their records',
-      'Injuries',
-      'My squads and teams',
     ]);
   });
 });
@@ -523,7 +523,7 @@ describe('more than one hub', () => {
     await settle();
     expect(screen).toHavePathname('/family');
     expect(tabBar()).toEqual(['Today', 'Calendar', 'Messages', 'Family', 'Me']);
-    expect(screen.getByText(ITEMS.guardianOf)).toBeTruthy();
+    expect(screen.getByText(ITEMS.child)).toBeTruthy();
   });
 
   it('remembers the hub last opened, the next time the app opens', async () => {
@@ -573,10 +573,11 @@ describe('more than one hub', () => {
   it('a coach who is also a guardian has what each role would show', async () => {
     await openTab(coachParent, '/team');
     expect(screen.getByText(ITEMS.takeAttendance)).toBeTruthy();
-    expect(screen.queryByText(ITEMS.guardianOf)).toBeNull();
+    expect(screen.queryByText(ITEMS.child)).toBeNull();
+    expect(screen.queryByText(ITEMS.addChild)).toBeNull();
     await goTo('/family');
-    expect(screen.getByText(ITEMS.consent)).toBeTruthy();
-    expect(screen.getByText(ITEMS.guardianOf)).toBeTruthy();
+    expect(screen.getByText(ITEMS.child)).toBeTruthy();
+    expect(screen.getByText(ITEMS.addChild)).toBeTruthy();
   });
 });
 
@@ -845,24 +846,38 @@ describe('members waiting for approval', () => {
 });
 
 describe('parents and guardians', () => {
-  it('have one Guardian of card that opens their children and adding another', async () => {
+  it('have one card that opens their children and adding another', async () => {
     await openTab('guardian', '/family');
     // The link code and child-without-the-app forms live behind the card, not in the hub.
     expect(screen.queryByText('Child’s code')).toBeNull();
     expect(screen.queryByText('Enter code')).toBeNull();
     expect(screen.queryByText('Child who won’t use the app')).toBeNull();
-    await fireEvent.press(screen.getByText(ITEMS.guardianOf));
+    await fireEvent.press(screen.getByText(ITEMS.addChild));
     await act(async () => {});
     expect(screen).toHavePathname('/children');
   });
 
-  it('get a consent card for each child in Family, and the consent to-do on Today', async () => {
+  it('have one card for each child, which opens the child’s page', async () => {
+    await openTab('guardian', '/family');
+    // What each child has is on their page, not repeated in the hub.
+    for (const item of ['consent', 'whatsChanged', 'recordViews', 'childAttendance'] as Item[]) {
+      expect(screen.queryByText(ITEMS[item])).toBeNull();
+    }
+    await fireEvent.press(screen.getByText(ITEMS.child));
+    await settle();
+    expect(screen).toHavePathname('/child/child-1');
+    for (const item of ['consent', 'whatsChanged', 'recordViews', 'childAttendance'] as Item[]) {
+      expect(screen.getByText(ITEMS[item])).toBeTruthy();
+    }
+  });
+
+  it('see where consent stands on each child’s card in Family, and the consent to-do on Today', async () => {
     await openHome('guardian');
     expect(screen.getByText('Give consent for Sample Child')).toBeTruthy();
     await goTo('/family');
     // And can add another child with their code.
     expect(screen.getByText('Add another child')).toBeTruthy();
-    expect(screen.getByText(ITEMS.consent)).toBeTruthy();
+    expect(screen.getByText(ITEMS.child)).toBeTruthy();
     expect(screen.getByText('Check-ins: not given · Injuries: not given')).toBeTruthy();
   });
 
@@ -932,10 +947,11 @@ describe('parents and guardians', () => {
         ...personas.guardian,
         profile: { ...personas.guardian.profile!, verified_at: null },
       },
-      '/family',
+      '/child/child-1',
     );
     expect(screen.getByText(ITEMS.consent)).toBeTruthy();
     expect(screen.queryByText(ITEMS.recordViews)).toBeNull();
+    expect(screen.queryByText('Medical and emergency')).toBeNull();
   });
 
   it('a guardian who isn’t approved keeps one screen, with none of their child’s cards', async () => {
@@ -944,7 +960,7 @@ describe('parents and guardians', () => {
       profile: { ...personas.guardian.profile!, status: 'pending' },
     });
     expect(tabBar()).toEqual([]);
-    for (const item of ['guardianOf', 'consent', 'whatsChanged', 'recordViews'] as Item[]) {
+    for (const item of ['guardianOf', 'child', 'addChild', 'consent', 'whatsChanged', 'recordViews'] as Item[]) {
       expect(screen.queryByText(ITEMS[item])).toBeNull();
     }
   });
@@ -1080,19 +1096,19 @@ describe('feature switches', () => {
     { feature: 'checkIns', who: 'admin', item: 'checkIns', tab: '/club' },
     { feature: 'checkIns', who: 'coach', item: 'checkIns', tab: '/team' },
     { feature: 'checkIns', who: 'athlete', item: 'dailyCheckIn', tab: '/me' },
-    { feature: 'checkIns', who: 'guardian', item: 'childCheckIns', tab: '/family' },
+    { feature: 'checkIns', who: 'guardian', item: 'childCheckIns', tab: '/child/child-1' },
     { feature: 'injuries', who: 'admin', item: 'injuries', tab: '/club' },
     { feature: 'injuries', who: 'athlete', item: 'injuries', tab: '/me' },
     { feature: 'injuries', who: 'manager', item: 'logInjuries', tab: '/team' },
     { feature: 'attendance', who: 'admin', item: 'takeAttendance', tab: '/club' },
     { feature: 'attendance', who: 'coach', item: 'takeAttendance', tab: '/team' },
     { feature: 'attendance', who: 'athlete', item: 'myAttendance', tab: '/me' },
-    { feature: 'attendance', who: 'guardian', item: 'childAttendance', tab: '/family' },
+    { feature: 'attendance', who: 'guardian', item: 'childAttendance', tab: '/child/child-1' },
     { feature: 'calendar', who: 'admin', item: 'nextUp', tab: '/' },
     { feature: 'calendar', who: 'guest', item: 'nextUp', tab: '/' },
     { feature: 'integrity', who: 'admin', item: 'integrity', tab: '/club' },
     { feature: 'integrity', who: 'committee', item: 'integrity', tab: '/club' },
-    { feature: 'goals', who: 'guardian', item: 'childGoals', tab: '/family' },
+    { feature: 'goals', who: 'guardian', item: 'childGoals', tab: '/child/child-1' },
   ];
 
   it.each(cases)('$feature off: $who has no "$item" in $tab', async ({ feature, who, item, tab }) => {
@@ -1135,8 +1151,10 @@ describe('feature switches', () => {
   it('turning goals off keeps the guardian’s card for their child', async () => {
     setClubFeatures({ goals: false });
     await openTab('guardian', '/family');
-    expect(screen.getByText(ITEMS.guardianOf)).toBeTruthy();
+    expect(screen.getByText(ITEMS.child)).toBeTruthy();
+    await goTo('/child/child-1');
     expect(screen.getByText(ITEMS.consent)).toBeTruthy();
+    expect(screen.queryByText(ITEMS.childGoals)).toBeNull();
   });
 
   it('session plans off hides the card even when the database would let a coach add one', async () => {

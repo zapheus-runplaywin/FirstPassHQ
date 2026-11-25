@@ -272,6 +272,7 @@ function RootStack() {
           <Stack.Screen name="concern/new" options={{ title: 'Raise a concern' }} />
           <Stack.Protected guard={can.family}>
             <Stack.Screen name="children" options={{ title: 'Your children' }} />
+            <Stack.Screen name="child/[id]" options={{ title: 'Your child' }} />
             <Stack.Screen name="consent/[id]" options={{ title: 'Consent' }} />
             <Stack.Screen name="records/[id]" options={{ title: 'Who has viewed their records' }} />
             <Stack.Screen name="activity/[id]" options={{ title: 'What’s changed' }} />

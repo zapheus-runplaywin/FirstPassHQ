@@ -8,8 +8,10 @@ import { router } from 'expo-router';
 import type { ReactNode } from 'react';
 import { StyleSheet, View } from 'react-native';
 
+import { CardGrid } from '@/components/columns';
 import { ConcernLights } from '@/components/concern-lights';
 import { VerificationCode } from '@/components/home/banners';
+import { ChildCard } from '@/components/home/child-links';
 import { FeatureCard } from '@/components/home/feature-card';
 import { ThemedText } from '@/components/themed-text';
 import { Card } from '@/components/ui';
@@ -23,7 +25,6 @@ import { guardianOfText } from '@/lib/guardian-links';
 import { useHome } from '@/lib/home';
 import {
   awardsLabel,
-  consentSummary,
   kpisLabel,
   sortMemberships,
   trainingLabel,
@@ -277,155 +278,56 @@ function Verification() {
 }
 
 /**
- * A parent's children, and adding another (a link code, or a child who won't
- * use the app), behind one card.
+ * Adding a child (a link code, or a child who won't use the app) and the list
+ * of a parent's children, behind one card. With a child linked, each child has
+ * their own card above, so this one says what it is for.
  */
 function GuardianOf() {
   const { children } = useHome();
+  if (children.length > 0) {
+    return (
+      <FeatureCard
+        icon="user-plus"
+        title="Add another child"
+        detail="With their link code, or a child who won’t use the app"
+        onPress={() => router.push('/children')}
+      />
+    );
+  }
   return (
     <FeatureCard
       icon="users"
       title="Guardian of"
-      detail={guardianOfText(children.map((a) => a.name))}
+      detail={guardianOfText([])}
       onPress={() => router.push('/children')}>
       <ThemedText type="small" themeColor="tint">
-        {children.length > 0 ? 'Add another child' : 'Add your child'}
+        Add your child
       </ThemedText>
     </FeatureCard>
   );
 }
 
-/** Everything a parent or guardian opens for each child, a section for each kind. */
+/**
+ * A parent or guardian's children, one card each. A card says where things
+ * stand for that child and opens their page, where everything for them is.
+ */
 function Children() {
-  const { profile } = useAuth();
   const { features } = useClub();
-  const { children, activityNew } = useHome();
-  const verified = !!profile?.verified_at;
+  const { children, activityNew, openInjuries, medicalReviews } = useHome();
   return (
-    <>
-      {features.goals ? (
-        // Guardians aren't in a squad, so their athletes' game goals open from here.
-        <View style={styles.section}>
-          <ThemedText type="smallBold">Game goals</ThemedText>
-          {children.map((a) => (
-            <FeatureCard
-              key={a.id}
-              icon="target"
-              title={a.name}
-              detail="Game goals and reflections"
-              onPress={() =>
-                router.push({
-                  pathname: '/goals/athlete/[id]',
-                  params: { id: a.id, name: a.name, view: 'guardian' },
-                })
-              }
-            />
-          ))}
-        </View>
-      ) : null}
-
-      <View style={styles.section}>
-        <ThemedText type="smallBold">Consent</ThemedText>
-        {children.map((a) => (
-          <FeatureCard
-            key={a.id}
-            icon="check-square"
-            title={a.name}
-            detail={consentSummary(a)}
-            detailColor={a.needsConsent ? 'tint' : 'textSecondary'}
-            onPress={() => router.push({ pathname: '/consent/[id]', params: { id: a.id } })}
-          />
-        ))}
-      </View>
-
-      {verified ? (
-        <View style={styles.section}>
-          <ThemedText type="smallBold">Medical and emergency</ThemedText>
-          {children.map((a) => (
-            <FeatureCard
-              key={a.id}
-              icon="heart"
-              title={a.name}
-              detail="Emergency contacts, allergies, conditions, medications and an action plan"
-              onPress={() => router.push({ pathname: '/medical/[id]', params: { id: a.id } })}
-            />
-          ))}
-        </View>
-      ) : null}
-
-      {features.attendance ? (
-        <View style={styles.section}>
-          <ThemedText type="smallBold">Attendance</ThemedText>
-          {children.map((a) => (
-            <FeatureCard
-              key={a.id}
-              icon="clipboard"
-              title={a.name}
-              detail="Their sessions, and tell their coaches if they’ll be away"
-              onPress={() =>
-                router.push({
-                  pathname: '/attendance/family/[id]',
-                  params: { id: a.id, name: a.name },
-                })
-              }
-            />
-          ))}
-        </View>
-      ) : null}
-
-      {features.checkIns ? (
-        <View style={styles.section}>
-          <ThemedText type="smallBold">Check-ins</ThemedText>
-          {children.map((a) => (
-            <FeatureCard
-              key={a.id}
-              icon="activity"
-              title={a.name}
-              detail="Their daily check-ins and notes from the last four weeks"
-              onPress={() =>
-                router.push({
-                  pathname: '/check-ins/athlete/[id]',
-                  params: { id: a.id, name: a.name },
-                })
-              }
-            />
-          ))}
-        </View>
-      ) : null}
-
-      <View style={styles.section}>
-        <ThemedText type="smallBold">What’s changed</ThemedText>
-        {children.map((a) => (
-          <FeatureCard
-            key={a.id}
-            icon="clock"
-            title={a.name}
-            detail="New coaches, managers and physios, guardians, consents and shared documents"
-            badge={activityNew[a.id] ?? 0}
-            onPress={() =>
-              router.push({ pathname: '/activity/[id]', params: { id: a.id, name: a.name } })
-            }
-          />
-        ))}
-      </View>
-
-      {verified ? (
-        <View style={styles.section}>
-          <ThemedText type="smallBold">Who has viewed their records</ThemedText>
-          {children.map((a) => (
-            <FeatureCard
-              key={a.id}
-              icon="eye"
-              title={a.name}
-              detail="Who at the club opened their injuries, check-ins, game goals, season KPIs, named survey answers, medical details or member record"
-              onPress={() =>
-                router.push({ pathname: '/records/[id]', params: { id: a.id, name: a.name } })
-              }
-            />
-          ))}
-        </View>
-      ) : null}
-    </>
+    <CardGrid gap={Spacing.two}>
+      {children.map((child) => (
+        <ChildCard
+          key={child.id}
+          child={child}
+          facts={{
+            newActivity: activityNew[child.id] ?? 0,
+            injuries: features.injuries ? openInjuries : [],
+            medicalReviews,
+          }}
+        />
+      ))}
+    </CardGrid>
   );
 }
 

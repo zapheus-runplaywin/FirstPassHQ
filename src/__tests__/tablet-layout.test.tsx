@@ -1,7 +1,7 @@
 /**
  * HQ on a tablet ("Using HQ on a tablet" in section 3 of docs/user-guide.md).
  * Today puts what is next beside what needs you on an iPad on its side, a
- * hub's cards and the busiest coach lists (attendance sessions, a team's
+ * hub's cards, a parent's children and the busiest coach lists (attendance sessions, a team's
  * people) sit two or three a row. A phone sees one column.
  */
 import { router } from 'expo-router';
@@ -10,6 +10,7 @@ import { Dimensions } from 'react-native';
 
 import AttendanceScreen from '@/app/attendance/index';
 import TodayScreen from '@/app/(tabs)/index';
+import FamilyHubScreen from '@/app/(tabs)/family';
 import TeamHubScreen from '@/app/(tabs)/team';
 import TeamScreen from '@/app/team/[id]';
 import type { AttendanceSession, RosterEntry } from '@/lib/types';
@@ -159,6 +160,41 @@ describe('A hub on a tablet', () => {
     await open();
     await fireEvent.press(screen.getByText('Take attendance and see past sessions'));
     expect(push).toHaveBeenCalledWith('/attendance');
+  });
+});
+
+describe('Family on a tablet', () => {
+  const twoChildren = [
+    { athlete_id: 'c1', full_name: 'First Child', data: true, health: true, publish: false, can_consent: true },
+    { athlete_id: 'c2', full_name: 'Second Child', data: true, health: true, publish: false, can_consent: true },
+  ];
+  const open = () =>
+    openScreen('guardian', { family: inTabs(FamilyHubScreen) }, '/family', {}, {
+      rpcs: { my_child_consents: twoChildren },
+    });
+
+  it('upright, puts the children’s cards two a row', async () => {
+    setWindowWidth(IPAD_UPRIGHT);
+    await open();
+    // The children's grid leads the hub; the other cards have a grid of their own below.
+    await layOut(screen.getAllByTestId('card-grid-1')[0], IPAD_UPRIGHT - 48);
+    const [row] = screen.getByTestId('card-grid-2').children as Node[];
+    expect(within(row).getAllByText(/^(First|Second) Child$/).map((t) => t.props.children)).toEqual([
+      'First Child',
+      'Second Child',
+    ]);
+  });
+
+  it('on a phone, one under the other, and each opens the child’s page', async () => {
+    setWindowWidth(PHONE);
+    await open();
+    expect(screen.queryByTestId('card-grid-2')).toBeNull();
+    const order = screen
+      .getAllByText(/^(First Child|Second Child|Injuries|Add another child)$/)
+      .map((t) => t.props.children);
+    expect(order).toEqual(['First Child', 'Second Child', 'Injuries', 'Add another child']);
+    await fireEvent.press(screen.getByText('Second Child'));
+    expect(push).toHaveBeenCalledWith({ pathname: '/child/[id]', params: { id: 'c2', name: 'Second Child' } });
   });
 });
 

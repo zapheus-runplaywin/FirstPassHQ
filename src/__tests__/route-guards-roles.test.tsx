@@ -272,6 +272,8 @@ const WHO_OPENS: Record<string, PersonaName[]> = {
   'concerns/message-access/[id]': union(ADMINS, ['safeguardingOfficer']),
 
   children: union(GUARDIANS, ADMINS),
+  // A child's page shows a child only to their own parents (src/__tests__/child-screen.test.tsx).
+  'child/[id]': union(GUARDIANS, ADMINS),
   'consent/[id]': union(GUARDIANS, ADMINS),
   'records/[id]': union(GUARDIANS, ADMINS),
   'medical/[id]': MEDICAL_READERS,

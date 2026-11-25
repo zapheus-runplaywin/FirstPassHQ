@@ -13,8 +13,16 @@ import { HUB_TITLES, type HomeCard, type HubName } from '@/lib/home-layout';
 const LEADS: Record<HubName, HomeCard[]> = {
   // Your squads and teams, then the tools for looking after them.
   team: ['groups'],
-  // Your children first.
-  family: ['guardianOf', 'children'],
+  // Your children first, one card each.
+  family: ['children'],
+  club: [],
+};
+
+/** What each hub ends with, after its other cards. */
+const LAST: Record<HubName, HomeCard[]> = {
+  team: [],
+  // Adding another child is rare once a child is linked.
+  family: ['guardianOf'],
   club: [],
 };
 
@@ -34,8 +42,13 @@ const EMPTY: Record<HubName, string> = {
 export function HubScreen({ hub }: { hub: HubName }) {
   const home = useHome();
   const cards = home.cards(hub);
-  const leads = LEADS[hub].filter((card) => cards.includes(card));
-  const rest = cards.filter((card) => !leads.includes(card));
+  // A parent with no child linked yet starts with adding one.
+  const nothingToLead = !LEADS[hub].some((card) => cards.includes(card));
+  const leads = (nothingToLead ? [...LEADS[hub], ...LAST[hub]] : LEADS[hub]).filter((card) =>
+    cards.includes(card),
+  );
+  const last = LAST[hub].filter((card) => cards.includes(card) && !leads.includes(card));
+  const rest = cards.filter((card) => !leads.includes(card) && !last.includes(card));
   const tiles = rest.filter((card) => !SECTION_CARDS.includes(card));
   const sections = rest.filter((card) => SECTION_CARDS.includes(card));
 
@@ -58,6 +71,9 @@ export function HubScreen({ hub }: { hub: HubName }) {
         </CardGrid>
       ) : null}
       {sections.map((card) => (
+        <HomeCardView key={card} card={card} />
+      ))}
+      {last.map((card) => (
         <HomeCardView key={card} card={card} />
       ))}
       {cards.length === 0 ? (

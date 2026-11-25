@@ -55,9 +55,12 @@ test('a guardian sees their child in Family and reports them away tomorrow', asy
   await expect(page.getByText(`Hi ${guardian.full_name}`)).toBeVisible();
   // Their children are in the Family tab.
   await openTab(page, 'Family');
-  await expect(page.getByText('Guardian of', { exact: true })).toBeVisible();
-  await expect(page.getByRole('button', { name: `${minor.full_name} Game goals and reflections` })).toBeVisible();
-  await page.getByRole('button', { name: `${minor.full_name} Their sessions, and tell their coaches if they’ll be away` }).click();
+  // One card for each child, which opens the child's own page.
+  await expect(page.getByRole('button', { name: /^Add another child/ })).toBeVisible();
+  await page.getByRole('button', { name: new RegExp(`^${minor.full_name}`) }).click();
+  await expect(page).toHaveURL(new RegExp(`/child/${minor.id}`));
+  await expect(page.getByRole('button', { name: 'Game goals Game goals and reflections' })).toBeVisible();
+  await page.getByRole('button', { name: 'Attendance Their sessions, and tell their coaches if they’ll be away' }).click();
 
   // Their child's attendance, where they report and withdraw absences.
   await expect(page.getByText('None coming up.')).toBeVisible();
@@ -141,7 +144,7 @@ test('a guardian reads the copy of a message to their child, with no way to repl
     await expect(page.getByRole('button', { name: card })).toHaveCount(0);
   }
   await openTab(page, 'Family');
-  await expect(page.getByText('Guardian of', { exact: true })).toBeVisible();
+  await expect(page.getByRole('button', { name: /^Add another child/ })).toBeVisible();
   for (const card of staffCards) {
     await expect(page.getByRole('button', { name: card })).toHaveCount(0);
   }

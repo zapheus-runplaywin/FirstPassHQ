@@ -14,6 +14,7 @@ import { fireEvent, screen } from 'expo-router/testing-library';
 import { Linking } from 'react-native';
 
 import FamilyScreen from '@/app/(tabs)/family';
+import ChildScreen from '@/app/child/[id]';
 import TodayScreen from '@/app/(tabs)/index';
 import MedicalScreen from '@/app/medical/[id]';
 import TeamMedicalScreen from '@/app/medical/team/[id]';
@@ -399,9 +400,9 @@ describe('a squad or team’s page', () => {
   });
 });
 
-describe('Family for a parent or guardian', () => {
-  it('lists each child’s medical and emergency details once verified', async () => {
-    await openScreen('guardian', { family: FamilyHub, 'medical/[id]': MedicalScreen }, '/family', { guardianships: [] }, {
+describe('A child’s page for a parent or guardian', () => {
+  it('has the child’s medical and emergency details once verified', async () => {
+    await openScreen('guardian', { 'child/[id]': ChildScreen, 'medical/[id]': MedicalScreen }, '/child/child-1', { guardianships: [] }, {
       rpcs: { medical_profile: medical({ athlete_id: 'child-1', role: 'guardian' }) },
     });
     expect(screen.getByText('Medical and emergency')).toBeTruthy();
@@ -411,8 +412,14 @@ describe('Family for a parent or guardian', () => {
   });
 
   it('doesn’t until an admin has verified them', async () => {
-    await openScreen({ ...personas.guardian, profile: { ...personas.guardian.profile!, verified_at: null } }, { family: FamilyHub }, '/family');
+    await openScreen({ ...personas.guardian, profile: { ...personas.guardian.profile!, verified_at: null } }, { 'child/[id]': ChildScreen }, '/child/child-1');
     expect(screen.getByText('Consent')).toBeTruthy();
+    expect(screen.queryByText('Medical and emergency')).toBeNull();
+  });
+
+  it('Family shows the child’s card, not their medical details', async () => {
+    await openScreen('guardian', { family: FamilyHub }, '/family');
+    expect(screen.getByText('Sample Child')).toBeTruthy();
     expect(screen.queryByText('Medical and emergency')).toBeNull();
   });
 });

@@ -7,8 +7,7 @@
  * The rules for who sees each card are the ones the single Home screen had.
  * Where a card goes is src/lib/home-layout.ts.
  */
-import { useFocusEffect } from 'expo-router';
-import { createContext, use, useCallback, useState, type ReactNode } from 'react';
+import { createContext, use, useState, type ReactNode } from 'react';
 
 import { useAbsencesToReview, useLeadsAGroup } from '@/lib/absences';
 import {
@@ -34,12 +33,7 @@ import { useClub } from '@/lib/club';
 import { useConcernTimes } from '@/lib/concern-times';
 import { useConcernClocks, useConcernCounts, useNewConcerns } from '@/lib/concerns';
 import { useConductTodos } from '@/lib/conduct';
-import {
-  asksCheckIns,
-  type ChildConsent,
-  consentTodoDetail,
-  needsConsent,
-} from '@/lib/consents';
+import { type MyChild, useMyChildren } from '@/lib/children';
 import { reflectionsToAnswer, useCoachTeamGames, useGoalBoard, useMyGoals } from '@/lib/goals';
 import { ownCheckReason, rolesHeldLabel } from '@/lib/home-labels';
 import {
@@ -73,7 +67,6 @@ import { useCanReadReports } from '@/lib/report-access';
 import { hasRole, rolesOf } from '@/lib/roles';
 import { safeguardingPostsLabel } from '@/lib/safeguarding-posts';
 import { useSessionPlanSummary } from '@/lib/session-plans';
-import { supabase } from '@/lib/supabase';
 import { surveysToAnswer, useCanSendSurveys, useMySurveys } from '@/lib/surveys';
 import { buildTodos } from '@/lib/todos';
 import { useClubHasTraining, useMyTraining, useTrainingToReview } from '@/lib/training';
@@ -83,16 +76,7 @@ import { useWellbeingFlagAlerts } from '@/lib/wellbeing-flags';
 import { isGuest } from '@/lib/wwcc-submissions';
 
 /** A child a parent or guardian looks after, with the consents in force for them. */
-export type HomeChild = {
-  id: string;
-  name: string;
-  data: boolean;
-  health: boolean;
-  canConsent: boolean;
-  checkInsOn: boolean;
-  needsConsent: boolean;
-  consentDetail: string;
-};
+export type HomeChild = MyChild;
 
 /**
  * People with one job to do keep one screen and no tab bar: a temporary
@@ -142,7 +126,11 @@ function useHomeData() {
   // ...and children whose training load shows a pattern.
   const loadPatterns = useLoadPatternAlerts(wellbeingFlags.isOfficer && features.trainingLoad);
   const [refreshing, setRefreshing] = useState(false);
-  const [children, setChildren] = useState<HomeChild[]>([]);
+  const approved = profile?.status === 'approved';
+  const isGuardian = approved && hasRole(profile, 'guardian');
+  // The athletes a parent or guardian looks after, and how many changes each
+  // has had since their guardian last looked.
+  const { children, activityNew, reloadChildren } = useMyChildren(isGuardian);
   const { events, reload: reloadEvents } = useEvents();
   const { unreadCount, reloadUnread } = useUnreadCount();
   const { pendingCount, reloadPending } = usePendingRequests();
@@ -243,44 +231,6 @@ function useHomeData() {
     conflictDeclaration,
   });
 
-  const approved = profile?.status === 'approved';
-  const isGuardian = approved && hasRole(profile, 'guardian');
-  // How many changes each child has had since their guardian last looked.
-  const [activityNew, setActivityNew] = useState<Record<string, number>>({});
-
-  // The athletes a parent or guardian looks after.
-  const loadChildren = useCallback(async () => {
-    if (!isGuardian) return;
-    // Each child under 18 with the consents in force for them.
-    const [{ data }, activity] = await Promise.all([
-      supabase.rpc('my_child_consents'),
-      supabase.rpc('child_activity_new'),
-    ]);
-    const counts: Record<string, number> = {};
-    for (const row of (activity.data as { athlete_id: string; new_count: number }[] | null) ?? []) {
-      counts[row.athlete_id] = row.new_count;
-    }
-    setActivityNew(counts);
-    setChildren(
-      ((data as ChildConsent[] | null) ?? []).map((a) => ({
-        id: a.athlete_id,
-        name: a.full_name ?? 'Unnamed athlete',
-        data: a.data,
-        health: a.health,
-        canConsent: a.can_consent,
-        checkInsOn: asksCheckIns(a),
-        needsConsent: needsConsent(a),
-        consentDetail: consentTodoDetail(a),
-      })),
-    );
-  }, [isGuardian]);
-
-  useFocusEffect(
-    useCallback(() => {
-      loadChildren();
-    }, [loadChildren]),
-  );
-
   async function onRefresh() {
     setRefreshing(true);
     await Promise.all([
@@ -301,7 +251,7 @@ function useHomeData() {
       reloadSelectionFeedback(),
       reloadMySurveys(),
       reloadAbsencesToReview(),
-      loadChildren(),
+      reloadChildren(),
       reloadEvents(),
       reloadUnread(),
       reloadInjuries(),
@@ -452,6 +402,7 @@ function useHomeData() {
     selectionFeedback,
     children,
     activityNew,
+    medicalReviews,
   };
 }
 

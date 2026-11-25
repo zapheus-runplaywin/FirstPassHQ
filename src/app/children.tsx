@@ -13,7 +13,8 @@ import { supabase } from '@/lib/supabase';
 /**
  * A parent or guardian's children, and the two ways to add another: their
  * child's link code, or asking the club to add a child who won't use the app.
- * Opened from the Guardian of card on Home, so Home stays short.
+ * Opened from Add another child (Guardian of, before a child is linked) in
+ * the Family tab, so the tab stays short.
  */
 export default function ChildrenScreen() {
   const [names, setNames] = useState<string[] | null>(null);
