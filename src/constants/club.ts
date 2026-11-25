@@ -19,10 +19,6 @@ export const FirstPass = {
   /** The brand guide's dark-theme panels (`surface-soft`) and secondary text (`ink-muted`). */
   panel: '#1E293B',
   inkMuted: '#CBD5E1',
-  /** The FirstPass HQ logo, for deep navy and other dark backgrounds. */
-  hqOnDark: require('@/assets/images/firstpass-hq-dark.png'),
-  /** The FirstPass HQ logo, for white and other light backgrounds. */
-  hqOnLight: require('@/assets/images/firstpass-hq-light.png'),
   /** The splash screen image: the 1P HQ mark in the middle of a square. */
   splash: require('@/assets/images/splash-logo.png'),
 } as const;

@@ -20,7 +20,7 @@ import {
 import { useFocusEffect, useIsFocused } from 'expo-router';
 import { SafeAreaView } from 'react-native-safe-area-context';
 
-import { PoweredByFirstPass } from '@/components/firstpass-logo';
+import { AppVersion } from '@/components/app-version';
 import { ThemedView } from '@/components/themed-view';
 import { MaxContentWidth, MaxWideContentWidth, Spacing } from '@/constants/theme';
 
@@ -64,7 +64,7 @@ export function Screen({
   gap?: number;
   /** Children (by position) that stay pinned to the top while scrolling past them. */
   stickyHeaderIndices?: number[];
-  /** Shows the app's version and build under "Powered by" (src/components/app-version.tsx). */
+  /** Shows the app's version and build in small print at the foot (src/components/app-version.tsx). */
   showVersion?: boolean;
   /**
    * Lets the screen use a tablet's width, for screens laid out with Columns or
@@ -74,8 +74,9 @@ export function Screen({
   /**
    * Set on the screens inside the tab bar (src/app/(tabs)). They have no
    * navigation header, so they keep clear of the status bar themselves; the
-   * tab bar already keeps clear of the bottom of the phone; and "Powered by"
-   * goes to the end of what scrolls, so it doesn't sit on top of the tab bar.
+   * tab bar already keeps clear of the bottom of the phone; and the version,
+   * where one shows, goes to the end of what scrolls, so it doesn't sit on top
+   * of the tab bar.
    */
   tab?: boolean;
   /** Stays at the top while the rest scrolls, such as a tab's title bar. */
@@ -191,10 +192,19 @@ export function Screen({
                 ) : undefined
               }>
               {children}
-              {tab ? <PoweredByFirstPass showVersion={showVersion} /> : null}
+              {tab && showVersion ? <AppVersion /> : null}
             </ScrollView>
-            {/* FirstPass stays at the foot of every screen; it steps aside for the keyboard. */}
-            {tab || keyboardHeight > 0 ? null : <PoweredByFirstPass showVersion={showVersion} />}
+            {/*
+              No FirstPass logo inside the app: the app icon and the opening
+              screen carry the brand (Matt, 26 November 2026). The version
+              stays at the foot of the few screens that show it, and steps
+              aside for the keyboard.
+            */}
+            {showVersion && !tab && keyboardHeight === 0 ? (
+              <View style={styles.version}>
+                <AppVersion />
+              </View>
+            ) : null}
           </SafeAreaView>
         </ThemedView>
       </RevealFocusedInput>
@@ -222,5 +232,8 @@ const styles = StyleSheet.create({
   },
   content: {
     padding: Spacing.four,
+  },
+  version: {
+    paddingVertical: Spacing.two,
   },
 });

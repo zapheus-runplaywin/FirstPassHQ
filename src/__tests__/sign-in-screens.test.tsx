@@ -121,6 +121,9 @@ describe('finding the club', () => {
     await open('/choose-club');
     expect(screen.getByTestId('app-version')).toBeTruthy();
     expect(screen.getByText(/^Version /)).toBeTruthy();
+    // No "Powered by" footer: only the FirstPass mark at the top, before a club is chosen.
+    expect(screen.queryByText('Powered by')).toBeNull();
+    expect(screen.getByLabelText('FirstPass')).toBeTruthy();
   });
 
   it('names the club as its code is typed, ignoring case and spaces', async () => {
@@ -220,9 +223,10 @@ describe('signing in', () => {
     expect(screen.getByText(/^Not West Coast Thunder\?/)).toBeTruthy();
   });
 
-  it('shows the app’s version and build under Powered by', async () => {
+  it('shows the app’s version and build at the foot, and no FirstPass logo', async () => {
     await open('/sign-in', { 'club-code': 'THUNDER' });
-    expect(screen.getByLabelText('Powered by FirstPass HQ')).toBeTruthy();
+    expect(screen.queryByLabelText('Powered by FirstPass HQ')).toBeNull();
+    expect(screen.queryByText('Powered by')).toBeNull();
     expect(screen.getByTestId('app-version')).toBeTruthy();
     expect(screen.getByText(/^Version /)).toBeTruthy();
   });

@@ -1,12 +1,11 @@
 /**
  * The version and build in small print (src/components/app-version.tsx), on
- * the opening screen and under "Powered by" on Find your club, sign-in and home.
+ * the opening screen and at the foot of Find your club, sign-in and Me.
  */
 import { render, screen } from '@testing-library/react-native';
 import { StyleSheet } from 'react-native';
 
 import { AppVersion } from '@/components/app-version';
-import { PoweredByFirstPass } from '@/components/firstpass-logo';
 import { appVersionLines } from '@/lib/app-version';
 
 jest.mock('@/global.css', () => ({}));
@@ -53,19 +52,5 @@ describe('AppVersion', () => {
     lines.mockReturnValue([]);
     await render(<AppVersion />);
     expect(screen.queryByTestId('app-version')).toBeNull();
-  });
-});
-
-describe('PoweredByFirstPass', () => {
-  it('leaves the version off by default, as on most screens', async () => {
-    await render(<PoweredByFirstPass />);
-    expect(screen.getByLabelText('Powered by FirstPass HQ')).toBeTruthy();
-    expect(screen.queryByTestId('app-version')).toBeNull();
-  });
-
-  it('shows the version under the logo when asked', async () => {
-    await render(<PoweredByFirstPass showVersion />);
-    expect(screen.getByLabelText('Powered by FirstPass HQ')).toBeTruthy();
-    expect(screen.getByText('Version 1.0.0 (23) · Build 714')).toBeTruthy();
   });
 });

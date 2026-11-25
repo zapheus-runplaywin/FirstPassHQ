@@ -709,8 +709,6 @@ export function constantsClubMock() {
     gold: '#F1C40F',
     panel: '#1E293B',
     inkMuted: '#CBD5E1',
-    hqOnDark: 1,
-    hqOnLight: 2,
     splash: 3,
   };
   return {

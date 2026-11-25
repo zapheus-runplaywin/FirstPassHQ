@@ -291,8 +291,8 @@ Once you pick your club and sign in it switches to West Coast Thunder's logo and
 remembers them. From then on, each time the app opens, the 1P HQ mark appears in the middle, then
 rises to make room for the Thunder logo beneath it.
 
-Whatever the club's look, "Powered by" and the FirstPass HQ logo stay at the foot of every
-screen.
+Inside the app the look is the club's own. The FirstPass HQ name and mark show on the app's icon
+and the opening screen, and on Find your club before a club is picked, and nowhere else.
 
 HQ also works on an iPad or an Android tablet, installed the same way. See [Using HQ on a
 tablet](#using-hq-on-a-tablet).
@@ -303,7 +303,7 @@ tablet](#using-hq-on-a-tablet).
 
 The opening screen shows the app's version and build in small print at the foot, such as
 **Version 1.0.0 (23) · Build 755**, and so do Find your club, the sign-in screen and the foot of
-Today and Me, under "Powered by". When the club has sent a fix over the air since you installed,
+the **Me** tab (or of your one screen, if you have no tabs yet). When the club has sent a fix over the air since you installed,
 a second line names it, such as **Update 1a2b3c4d · 20 Nov 2026**. If something goes wrong, or the
 club asks which version you're testing, read these lines out or send a screenshot of them.
 
@@ -354,7 +354,7 @@ sign in with Apple, the app keeps the name Apple shares and fills it in on the j
 
 If you picked the wrong club, tap **Change club** under the buttons.
 
-<img src="user-guide/sign-in.png" width="210" alt="Sign-in screen on Android, with Continue with Google, and the version and build under Powered by">
+<img src="user-guide/sign-in.png" width="210" alt="Sign-in screen on Android, with Continue with Google, and the version and build at the foot">
 
 The picture shows the Android screen; on iPhone, Apple's white **Continue with Apple** button sits
 above **Continue with Google**. The two buttons match: both white, the same size, each with its
@@ -4245,8 +4245,8 @@ so leave them filled in.
   "Thunder") finds the club's teams when importing PlayHQ fixtures and names exported files.
 - **Logo**: **Choose logo** to upload a square PNG or JPEG up to 2 MB. It shows at the top of Today
   and on the sign-in screen, and under the FirstPass 1P mark when the app opens. **Use the FirstPass
-  mark** goes back to the built-in FirstPass 1P mark. "Powered by" and the FirstPass HQ logo always
-  stay at the foot of every screen, and the 1P mark on the opening screen.
+  mark** goes back to the built-in FirstPass 1P mark. The 1P mark always stays on the app's icon
+  and the opening screen, whatever the club's look.
 - **Colours**: type a colour code such as `#FFCD00` for the **background** and the **hero
   colour** (buttons, links and highlights), and choose **Light text** or **Dark text** to suit the
   background. Panels and the softer text for details are worked out from these (on the built-in deep navy
