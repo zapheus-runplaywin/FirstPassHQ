@@ -116,7 +116,22 @@ export function injuredLabel(expectedReturn: string | null) {
  * `enabled` false until a group is chosen.
  */
 export function useAwayNotes(teamId: string | null, heldAt: string | null, enabled = true) {
-  const [away, setAway] = useState<Record<string, string>>({});
+  return useAwayOn(teamId, heldAt, enabled).notes;
+}
+
+const NOBODY: string[] = [];
+
+/**
+ * The register notes for a session's day (see `useAwayNotes`), and who was
+ * reported away that day: `reportedAway` holds their profile ids, so a new
+ * register can start them as Absent. Injured athletes are not in it, because
+ * they still come along.
+ */
+export function useAwayOn(teamId: string | null, heldAt: string | null, enabled = true) {
+  const [away, setAway] = useState<{ notes: Record<string, string>; reportedAway: string[] }>({
+    notes: {},
+    reportedAway: NOBODY,
+  });
   const day = heldAt ? clubDay(heldAt) : null;
   useEffect(() => {
     if (!enabled || !day) return;
@@ -130,18 +145,19 @@ export function useAwayNotes(teamId: string | null, heldAt: string | null, enabl
       for (const i of (injured.data as InjuredOnDay[] | null) ?? []) {
         notes[i.profile_id] = injuredLabel(i.expected_return);
       }
-      for (const a of (absences.data as AbsenceOnDay[] | null) ?? []) {
+      const reported = (absences.data as AbsenceOnDay[] | null) ?? [];
+      for (const a of reported) {
         notes[a.profile_id] = notes[a.profile_id]
           ? `${notes[a.profile_id]} · ${awayLabel(a)}`
           : awayLabel(a);
       }
-      setAway(notes);
+      setAway({ notes, reportedAway: [...new Set(reported.map((a) => a.profile_id))] });
     });
     return () => {
       current = false;
     };
   }, [teamId, day, enabled]);
-  return enabled ? away : {};
+  return enabled ? away : { notes: {}, reportedAway: NOBODY };
 }
 
 /** An absence reported or withdrawn since the coach or manager last reviewed. */

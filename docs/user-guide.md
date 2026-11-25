@@ -2480,7 +2480,9 @@ its athletes' details, as with check-ins; the Head Physio sees every athlete's.
    marked before you can save a new session (when correcting one later, athletes can stay **Not
    marked**). Athletes whose
    absence was reported for that day show **Away** under their name, with the reason and any
-   details. Injured athletes show **Injured** and when they're expected back, and nothing else about the
+   details, and start already marked **Absent**: a line above the register says how many were
+   filled in for you. Tap **Present** for anyone who came after all; **Mark the rest present**
+   leaves them Absent. Injured athletes show **Injured** and when they're expected back, and nothing else about the
    injury, even while the club has Injuries switched off. Injured athletes are still expected to come and support the team, so mark them like
    anyone else. A child who doesn't use the app shows **No app** beside their name: mark them like
    anyone else; their parent sees the marks (see [A child who won't use the app](#a-child-who-wont-use-the-app)).
@@ -2491,7 +2493,7 @@ shows who took it, in case it's a duplicate. You can open that record, or carry 
 session.
 
 <img src="user-guide/take-attendance.png" width="210" alt="Taking attendance">
-<img src="user-guide/take-attendance-notes.png" width="210" alt="The register with an injured athlete and two reported absences">
+<img src="user-guide/take-attendance-notes.png" width="210" alt="The register with an injured athlete and two reported absences, already marked Absent">
 
 ### Attendance records
 

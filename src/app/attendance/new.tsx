@@ -9,8 +9,8 @@ import { Button, Card, ChipGroup, ErrorText, TextField } from '@/components/ui';
 import { Spacing } from '@/constants/theme';
 import { useTheme } from '@/hooks/use-theme';
 import type { CalendarEvent } from '@/lib/calendar';
-import { useAwayNotes } from '@/lib/absences';
-import { marksToSave } from '@/lib/attendance';
+import { useAwayOn } from '@/lib/absences';
+import { filledFromAbsences, marksToSave, withReportedAbsences } from '@/lib/attendance';
 import { useSquads } from '@/lib/club';
 import { formatSentAt } from '@/lib/format';
 import { useLedGroups } from '@/lib/messages';
@@ -40,7 +40,8 @@ export default function TakeAttendanceScreen() {
   const [editedName, setEditedName] = useState<string | null>(null);
   const [chosenEvent, setChosenEvent] = useState<CalendarEvent | null>(null);
   const [takenAt] = useState(() => new Date());
-  const [register, setRegister] = useState<AttendanceMark[] | null>(null);
+  // The marks made by hand: everyone starts unmarked (see `register` below).
+  const [marks, setMarks] = useState<AttendanceMark[] | null>(null);
   const [nearby, setNearby] = useState<NearbySession[]>([]);
   const [saving, setSaving] = useState(false);
   const [error, setError] = useState<string | null>(null);
@@ -58,7 +59,12 @@ export default function TakeAttendanceScreen() {
   const name = editedName ?? event?.title ?? '';
   const heldAt = (event?.start ?? takenAt).toISOString();
   const teamId = selected === CLUB ? null : selected;
-  const away = useAwayNotes(teamId, heldAt, !!selected);
+  const { notes: away, reportedAway } = useAwayOn(teamId, heldAt, !!selected);
+  // What the screen shows and saves: athletes reported away that day start as
+  // Absent, until someone marks them by hand. Worked out each time, so it
+  // follows the session's day when another event is chosen.
+  const register = marks ? withReportedAbsences(marks, reportedAway) : null;
+  const filled = marks ? filledFromAbsences(marks, reportedAway) : [];
 
   // The athletes in the chosen squad, team or club, all unmarked.
   useEffect(() => {
@@ -68,7 +74,7 @@ export default function TakeAttendanceScreen() {
       .rpc('attendance_roster', { p_team_id: selected === CLUB ? null : selected })
       .then(({ data }) => {
         if (!current) return;
-        setRegister(
+        setMarks(
           ((data as { profile_id: string; full_name: string | null }[] | null) ?? []).map((r) => ({
             ...r,
             present: null,
@@ -100,17 +106,24 @@ export default function TakeAttendanceScreen() {
   function choose(value: string) {
     setChoice(value);
     setChosenEvent(null);
-    setRegister(null);
+    setMarks(null);
     setNearby([]);
     setError(null);
   }
 
   function mark(profileId: string, present: boolean) {
-    setRegister((r) => r?.map((m) => (m.profile_id === profileId ? { ...m, present } : m)) ?? r);
+    setMarks((r) => r?.map((m) => (m.profile_id === profileId ? { ...m, present } : m)) ?? r);
   }
 
+  /** Everyone not marked yet is here. Athletes filled in as Absent keep that mark. */
   function markRestPresent() {
-    setRegister((r) => r?.map((m) => (m.present === null ? { ...m, present: true } : m)) ?? r);
+    const keep = new Set(filled);
+    setMarks(
+      (r) =>
+        r?.map((m) =>
+          m.present === null && !keep.has(m.profile_id) ? { ...m, present: true } : m,
+        ) ?? r,
+    );
   }
 
   async function save() {
@@ -198,6 +211,14 @@ export default function TakeAttendanceScreen() {
 
           {register ? (
             <>
+              {filled.length > 0 ? (
+                <ThemedText type="small" themeColor="textSecondary">
+                  {filled.length === 1
+                    ? '1 athlete reported away is marked Absent for you.'
+                    : `${filled.length} athletes reported away are marked Absent for you.`}{' '}
+                  Tap Present for anyone who came after all.
+                </ThemedText>
+              ) : null}
               <AttendanceRegister register={register} onChange={mark} away={away} />
               {unmarked > 0 ? (
                 <Button

@@ -292,6 +292,99 @@ describe('marking and saving', () => {
   });
 });
 
+describe('reported absences are filled in', () => {
+  const BEA_AWAY = {
+    absences_on: [{ profile_id: 'a2', category: 'Illness', reason: null, from_day: '2026-10-18', to_day: '2026-10-18', reported_by_name: 'Sample Guardian' }],
+  };
+  /** Each athlete's mark, in the register's order: true present, false absent, null not marked. */
+  const marks = () => {
+    const chosen = screen.getAllByRole('radio').map((r) => !!r.props.accessibilityState?.selected);
+    // Each athlete has Present, then Absent.
+    return ROSTER.map((_, i) => (chosen[i * 2] ? true : chosen[i * 2 + 1] ? false : null));
+  };
+
+  it('an athlete reported away starts as Absent, and the screen says so', async () => {
+    await open('coach', { rpcs: BEA_AWAY });
+    expect(marks()).toEqual([null, false, null]);
+    expect(screen.getByText(/^1 athlete reported away is marked Absent for you\./)).toBeTruthy();
+    expect(screen.getByText('0 of 3 present · 2 not marked')).toBeTruthy();
+  });
+
+  it('counts more than one', async () => {
+    await open('coach', {
+      rpcs: { absences_on: [...BEA_AWAY.absences_on, { ...BEA_AWAY.absences_on[0], profile_id: 'a3' }] },
+    });
+    expect(marks()).toEqual([null, false, false]);
+    expect(screen.getByText(/^2 athletes reported away are marked Absent for you\./)).toBeTruthy();
+  });
+
+  it('nobody reported away: everyone starts unmarked and nothing is said', async () => {
+    await open('coach');
+    expect(marks()).toEqual([null, null, null]);
+    expect(screen.queryByText(/reported away/)).toBeNull();
+  });
+
+  it('an injured athlete is not filled in: they still come along', async () => {
+    await open('coach', { rpcs: { injured_on: [{ profile_id: 'a1', expected_return: null }] } });
+    expect(marks()).toEqual([null, null, null]);
+  });
+
+  it('Mark the rest present leaves them Absent, and that is what is saved', async () => {
+    await open('coach', { rpcs: BEA_AWAY });
+    await type('Session', 'Training');
+    await fireEvent.press(screen.getByText('Mark the rest present'));
+    expect(marks()).toEqual([true, false, true]);
+    await save();
+    expect(argsOf('save_attendance')[0]?.p_marks).toEqual([
+      { profile_id: 'a1', present: true },
+      { profile_id: 'a2', present: false },
+      { profile_id: 'a3', present: true },
+    ]);
+  });
+
+  it('they came after all: Present wins, and the note about filling in goes', async () => {
+    await open('coach', { rpcs: BEA_AWAY });
+    await type('Session', 'Training');
+    const present = screen.getAllByRole('radio').filter((r) => within(r).queryByText('Present'));
+    await fireEvent.press(present[1]);
+    expect(marks()).toEqual([null, true, null]);
+    expect(screen.queryByText(/reported away is marked Absent/)).toBeNull();
+    // The reason they were reported away stays on their line.
+    expect(screen.getByText('Away: Illness')).toBeTruthy();
+    await fireEvent.press(screen.getByText('Mark the rest present'));
+    await save();
+    expect(argsOf('save_attendance')[0]?.p_marks).toEqual([
+      { profile_id: 'a1', present: true },
+      { profile_id: 'a2', present: true },
+      { profile_id: 'a3', present: true },
+    ]);
+  });
+
+  it('marking them Absent by hand keeps them Absent', async () => {
+    await open('coach', { rpcs: BEA_AWAY });
+    const absent = screen.getAllByRole('radio').filter((r) => within(r).queryByText('Absent'));
+    await fireEvent.press(absent[1]);
+    expect(marks()).toEqual([null, false, null]);
+    expect(screen.queryByText(/reported away is marked Absent/)).toBeNull();
+  });
+
+  it('with everyone else reported away, the register can be saved without a tap on anyone', async () => {
+    await open('coach', {
+      rpcs: { absences_on: ROSTER.map((r) => ({ ...BEA_AWAY.absences_on[0], profile_id: r.profile_id })) },
+    });
+    await type('Session', 'Training');
+    expect(screen.queryByText('Mark the rest present')).toBeNull();
+    await save();
+    expect(argsOf('save_attendance')[0]?.p_marks).toEqual(ROSTER.map((r) => ({ profile_id: r.profile_id, present: false })));
+  });
+
+  it('an absence for someone outside this register changes nothing', async () => {
+    await open('coach', { rpcs: { absences_on: [{ ...BEA_AWAY.absences_on[0], profile_id: 'someone-else' }] } });
+    expect(marks()).toEqual([null, null, null]);
+    expect(screen.queryByText(/reported away/)).toBeNull();
+  });
+});
+
 describe('attendance already taken nearby', () => {
   const NEARBY = [{ id: 'sess-earlier', name: 'Morning session', held_at: '2026-10-18T00:30:00Z', taken_by_name: 'Sample manager' }];
 
