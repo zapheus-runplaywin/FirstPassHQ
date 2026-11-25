@@ -39,6 +39,17 @@ export async function press(text: string | RegExp) {
   await untilQuiet();
 }
 
+/**
+ * A join request opens on its summary: opens the full record behind it, for
+ * the tests about the full record. Does nothing on any other member's page.
+ */
+export async function openFullRecord() {
+  const button = screen.queryByText('Full record') ?? screen.queryByText('Open the full record');
+  if (!button) return;
+  await fireEvent.press(button);
+  await untilQuiet();
+}
+
 /** How many calls the screen has made to the database so far. */
 function requestsSoFar() {
   return (supabase.rpc as jest.Mock).mock.calls.length + (supabase.from as jest.Mock).mock.calls.length;

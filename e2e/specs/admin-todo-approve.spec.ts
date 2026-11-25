@@ -36,11 +36,11 @@ test('an admin taps the join request to-do and lands on that member’s approval
   // The home screen's own To do heading stays mounted underneath, so look in the card.
   const card = page.getByTestId('todo-banner');
   await expect(card.getByText('To do', { exact: true })).toBeVisible();
-  await expect(card.getByText(/^Check who they are, choose their role/)).toBeVisible();
+  await expect(card.getByText(/^Read the checks, then Approve or Don’t approve/)).toBeVisible();
   await expect(page.getByText('Waiting for approval', { exact: true })).toHaveCount(0);
   expect(new URL(page.url()).pathname).toBe(`/admin/${pending.id}`);
 
-  await page.getByRole('button', { name: 'Approve', exact: true }).click();
+  await page.getByRole('button', { name: 'Approve Jordan', exact: true }).click();
   await expect.poll(() => backend.rpcCalls('admin_save_member').length).toBe(1);
   expect(backend.rpcCalls('admin_save_member')[0]).toMatchObject({
     p_profile_id: pending.id,

@@ -12,6 +12,8 @@
  */
 import { screen } from 'expo-router/testing-library';
 
+import { openFullRecord } from './helpers/admin-screens';
+
 import MemberScreen from '@/app/admin/[id]';
 import { supabase } from '@/lib/supabase';
 import type { Profile, StandDown } from '@/lib/types';
@@ -240,11 +242,22 @@ describe('a member’s page for an admin', () => {
     expect(screen.queryByText('Working With Children Check')).toBeNull();
   });
 
-  it('offers Approve and Don’t approve for someone waiting, never Remove access', async () => {
+  it('opens someone waiting on their request’s summary, with the full record behind it', async () => {
     await openMember(p('pending'));
+    expect(screen.getByTestId('join-request')).toBeTruthy();
+    expect(screen.getByText('Asked to join as an athlete')).toBeTruthy();
+    expect(screen.getByText('Approve Sample')).toBeTruthy();
+    expect(screen.getByText('Full record')).toBeTruthy();
+    // Only the decision: nothing else from the full record is on the summary.
+    expect(shown()).toEqual(['dontApprove']);
+
+    await openFullRecord();
+    expect(screen.queryByTestId('join-request')).toBeNull();
+    // Approve and Don’t approve for someone waiting, never Remove access.
     expect(shown()).toEqual(['deleteMember', 'approve', 'dontApprove', 'verify']);
     expect(screen.getByText('Reason if not approving')).toBeTruthy();
     expect(screen.getByText('Asked to join as')).toBeTruthy();
+    expect(screen.getByText('Back to the request’s summary')).toBeTruthy();
   });
 
   it('says so when the member isn’t found', async () => {

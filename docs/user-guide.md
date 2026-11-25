@@ -354,7 +354,7 @@ sign in with Apple, the app keeps the name Apple shares and fills it in on the j
 
 If you picked the wrong club, tap **Change club** under the buttons.
 
-<img src="user-guide/sign-in.png" width="210" alt="Sign-in screen on Android, with Continue with Google, and the version and build at the foot">
+<img src="user-guide/sign-in.png" width="210" alt="Sign-in screen on Android, with Continue with Google, and the app's version at the foot">
 
 The picture shows the Android screen; on iPhone, Apple's white **Continue with Apple** button sits
 above **Continue with Google**. The two buttons match: both white, the same size, each with its
@@ -3308,7 +3308,8 @@ Tapping a to-do about members takes you to the job, not the whole member list. W
 person, such as one join request or one athlete with no date of birth, their page opens straight
 away with a **To do** card at the top saying what to do, scrolled to the part you need: the date of
 birth, the Working With Children Check, Screening Unit notices, parents and guardians, the physio
-title or **Delete member**. A join request opens at the top, since the whole page is the approval.
+title or **Delete member**. A join request opens on its summary: the checks, then **Approve** (see
+[Approving members](#approving-members)).
 When it's about several people, it opens a list of just them, with why each is there; tap one to
 open their page the same way, and come back for the next. **Show all members** opens the full
 list. If someone has already dealt with it, the list says **All done**, and a page opened from an
@@ -3316,7 +3317,7 @@ old to-do says **Done** (for example "Already approved") instead of asking again
 member isn't in the club any more.
 
 <img src="user-guide/todo-members-list.png" width="210" alt="Approve 2 join requests opens just the two people waiting, with what to do">
-<img src="user-guide/todo-member-join.png" width="210" alt="One join request opens that member's page with a To do card above the approval">
+<img src="user-guide/todo-member-join.png" width="210" alt="One join request opens that request's summary, with a To do card above the checks">
 <img src="user-guide/todo-member-dob.png" width="210" alt="A to-do to add one athlete's date of birth opens their page at Date of birth, with the To do card just above it">
 <img src="user-guide/todo-member-done.png" width="210" alt="An old join request to-do for someone already approved says Done">
 <img src="user-guide/todo-members-all-done.png" width="210" alt="Checks to sort out after someone else sorted them says All done">
@@ -3415,19 +3416,67 @@ linked"), an athlete with no date of birth, an athlete about to turn 18, a card 
 validated over a year ago, or a card not registered with the club. They also show "Needs checking" in the main list. Open someone to fix it; once saved,
 they drop off the list.
 
-Open a request to see the person's sign-in email, PlayHQ email, the date of birth they gave and
-what they asked for. An athlete under 18 also shows the guardian email they gave. In the
-waiting list, "Says they're under 18" marks an athlete whose date of birth makes them a child, and
-each request says who entered whose link code: "Sam Lee entered their code" under a child,
-"Entered Riley Lee's code" under a parent, or that nobody has yet.
-Check them against PlayHQ, then:
+In the waiting list, "Says they're under 18" marks an athlete whose date of birth makes them a
+child, and each request says who entered whose link code: "Sam Lee entered their code" under a
+child, "Entered Riley Lee's code" under a parent, or that nobody has yet.
+
+**A request on one screen.** Open a request and it shows as one decision, in the order you make
+it:
+
+- **What they asked for**, at the top: "Asked to join as an athlete · 17 & Under Squad", and the
+  day they asked.
+- **Checks.** What has to be right before you approve them, each with a mark. A green tick is
+  done. A bold line with a **!** in a circle has to be sorted out first, and **Approve** isn't
+  offered until it is. An **i** is something to check yourself or to know. The checks are:
+  - **Who they are.** Whether they're verified, how and when. A parent or guardian has to be
+    verified first: type the 6-digit code from their app into **Their code** and tap **Check
+    code**, right there (see **Verifying someone** below for the other ways). For anyone else,
+    check them against PlayHQ.
+  - **Date of birth**, for an athlete or a guest: the date they gave and their age, to check
+    against PlayHQ or ID. Approving records it as the checked date, with your name. With no date,
+    add it in the full record first.
+  - **Under 18.** For an athlete under 18, that their app stays locked until a verified parent or
+    guardian is linked, and where that is up to: which parents have entered their code, that
+    nobody has yet (with the guardian email they gave), or that a verified parent is linked. You
+    can approve a child before a parent is linked; they stay locked until one is.
+  - **Under 13.** Nobody under 13 can be approved, so the request has no **Approve**. Tap **Don't
+    approve**.
+  - **Their child**, for a parent or guardian: the approved child whose code they entered
+    ("Approving links them"), or that their child is still waiting and is approved first, or that
+    they haven't entered a code yet.
+  - **Working With Children Check**, for a coach, manager, physio, statistician, committee member
+    or admin: the card on record and when it expires, or an exemption. With none, record their
+    card, an application or an exemption in the full record first.
+- **What approving gives them**: their role, the squad or team they asked for (a coach starts as
+  **Head Coach** there), their preferred name, sign-in email and PlayHQ email.
+- **Approve**, with their name, such as **Approve Robin**. It saves exactly what the full record
+  would: their checked date of birth, role and squad. No check is skipped: anything the club's
+  rules still refuse shows in red and nothing is saved.
+- **Don't approve** shows the reasons. Choose one, which the member sees, and tap **Don't
+  approve** again.
+- **Full record** opens the member's whole page, for anything else: another role, a different
+  squad or team, a different date of birth, linking a parent by hand, a Working With Children
+  Check or exemption, recording that you sighted ID, or deleting the request. **Back to the
+  request's summary**, at the top of the full record, returns with what you changed. When a check
+  is in the way, the button reads **Open the full record**.
+
+A temporary helper's request opens on the full record, because they're set up there in steps
+(step 5 below).
+
+<img src="user-guide/join-request.png" width="210" alt="A join request on one screen: Asked to join as an athlete, the checks with the date of birth they gave and the locked-until-a-parent rule, then their role and squad. Approve, Don't approve and Full record follow">
+<img src="user-guide/join-request-parent.png" width="210" alt="A parent's request: not verified yet in bold with Their code and Check code under the checks, and Open the full record in place of Approve">
+<img src="user-guide/join-request-decline.png" width="210" alt="The foot of a request after Don't approve: the reasons to choose from, which the member sees, above Approve, Don't approve and Full record">
 
 Nobody under 13 can be approved this year, whatever role they asked for. The app turns away a
 date of birth under 13 when someone asks to join, but if either the date they gave or the date
-you check makes them under 13 today, **Approve** says "They're under 13. FirstPass HQ is for
-members aged 13 and over, so decline their request." Decline it (choose **Other** as the reason)
+you check makes them under 13 today, the request's summary has no **Approve**, and in the full
+record **Approve** says "They're under 13. FirstPass HQ is for members aged 13 and over, so
+decline their request." Decline it (choose **Other** as the reason)
 and let their family know. Members approved before this rule keep their approval. From their 13th
 birthday they can ask again.
+
+In the full record, which also shows the person's sign-in email, PlayHQ email, the date of birth
+they gave, the guardian email an athlete under 18 gave and what they asked for:
 
 1. Choose their **Role**.
 2. Choose their **Squads** and, once teams are named, **Teams**. An athlete is in one squad and
@@ -3437,12 +3486,13 @@ birthday they can ask again.
    **Training partner**. For physios, choose **Physio** or **Head Physio** under **Physio title**,
    and place them in the squads or teams they look after. Only the Head Physio looks after every
    athlete; a physio in no squad or team sees no athletes.
-3. For athletes, check their date of birth against PlayHQ or ID. **Date of birth** starts with the
+3. For athletes and guests, check their date of birth against PlayHQ or ID. **Date of birth** starts with the
    date they entered when they asked to join, marked as theirs and not yet checked; it's saved as
    the checked date, with your name, only when you save their page. If PlayHQ or ID shows a
    different date, type the right one (DD/MM/YYYY) and the page notes the one they gave. If you
    clear the field, **Use the date they entered** puts theirs back. The page shows who recorded the
-   date and when. Anyone under 18 gets a **Parents and guardians** section. You can approve a child
+   date and when. A guest has to be 18 or over, and the page says so under a date that makes them
+   younger. An athlete under 18 gets a **Parents and guardians** section. You can approve a child
    before a parent or guardian is linked: their app stays locked, showing only their link code,
    until a verified one is, and the section says **Locked** while it is. Each parent or guardian
    who entered the child's code is listed there: tap **Link them** once they're approved and
@@ -3515,6 +3565,8 @@ The app won't approve or save:
 
 - an athlete without a date of birth. Athletes approved before this was needed keep their access,
   show "No date of birth" under **Needs checking**, and need one the next time you save them;
+- a guest without a date of birth, or under 18: approve them as an athlete with a parent or
+  guardian linked instead;
 - a new parent or guardian who isn't verified, or who hasn't entered the link code of an approved
   child under 18 (approve the child first). Parents and guardians approved before link codes keep
   their approval;
@@ -3609,7 +3661,7 @@ club** or **Other**) and tap **Don't approve**. They see the reason and can requ
 <img src="user-guide/members.png" width="210" alt="Members list with Needs checking at the top">
 <img src="user-guide/members-inactive.png" width="210" alt="Members list with a member under No team or role for 2 years, showing when they were last active">
 <img src="user-guide/member-approve.png" width="210" alt="Approving a guardian's request">
-<img src="user-guide/member-new.png" width="210" alt="Approving an athlete's request">
+<img src="user-guide/member-new.png" width="210" alt="The full record of an athlete's request: Back to the request's summary at the top, then their details and Role">
 
 <img src="user-guide/member-date-of-birth.png" width="210" alt="A child's request, with the date of birth they gave and the role and squad they asked for">
 <img src="user-guide/member-date-checked.png" width="210" alt="Date of birth started from the date the child gave, marked to check against PlayHQ or ID, with the guardian search started from the email the child gave">
@@ -5241,6 +5293,10 @@ before.
 - **An admin checks every link.** The admin verifies who the parent is and approves them, or links
   an approved, verified parent from the child's page. Only then does the child's app open. An admin
   can't link themselves to a child.
+- **The admin sees it before approving.** A child's join request lists its checks above
+  **Approve**: the date of birth the child gave, to check against PlayHQ or ID, and that their app
+  stays locked until a verified parent or guardian is linked, with who has entered their code so
+  far. A parent's request can't be approved until they're verified and one of their children is.
 - **It locks again if the last parent goes.** If a child's last verified parent or guardian is
   unlinked, loses access or deletes their account, the child is locked again with a new code, and
   every admin gets a **Club safeguarding** message.
