@@ -81,11 +81,14 @@ export function RaiseConcernLink({
   context,
   label,
   messageId,
+  onOpen,
 }: {
   context?: string;
   label?: string;
   /** The message being reported, so the concern keeps a copy of it. */
   messageId?: string;
+  /** Called as the concern form opens, such as to close the sheet the link is on. */
+  onOpen?: () => void;
 }) {
   const theme = useTheme();
   const params: Record<string, string> = {};
@@ -94,7 +97,10 @@ export function RaiseConcernLink({
   return (
     <Pressable
       accessibilityRole="link"
-      onPress={() => router.push({ pathname: '/concern/new', params })}
+      onPress={() => {
+        onOpen?.();
+        router.push({ pathname: '/concern/new', params });
+      }}
       style={styles.link}>
       <ThemedText type="small" style={{ color: theme.tint }}>
         {label ?? 'Worried about something? Raise a concern'}

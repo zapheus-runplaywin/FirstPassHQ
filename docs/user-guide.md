@@ -1230,29 +1230,45 @@ Once a day, answer four questions on a scale of 1 (bad) to 5 (good):
 - How stressed are you?
 - How's your mood?
 
-You can add a note for your coach, such as "tight calves after Sunday's game". The line under the
-note says who can read it: your coaches if you're 18 or over; if you're under 18, your parents or
-guardians, and your coaches once a parent or guardian has given consent. Tap
-**Save check-in**. It takes about thirty seconds. You can change today's answers until the end of
-the day with **Update check-in**.
+**Four taps on Today.** Tap **Do your daily check-in** under **Needs you** and the check-in opens
+over Today. Tap a number for each question: the words for your answer show beside the question,
+and the count at the top goes from **0 of 4** to **4 of 4**. **The last answer saves it.** There is
+no Save button: the check-in closes and Today says **Check-in saved for today** for a few seconds,
+with **Change** beside it. Close the check-in before the last answer (the cross, or a tap outside
+it) and nothing is saved.
+
+**A mistaken tap.** Tap **Change** and the check-in opens with your answers. Each new tap saves
+straight away, and **Done** closes it. A check-in is never removed once it's saved, only changed.
+
+**A note, your last two weeks and your training log** are on the full check-in. Tap **Add a note**
+or **Last two weeks** on the check-in (the answers you've given come with you), or open **Daily
+check-in** in **Me**. There you can add a note for your coach, such as "tight calves after Sunday's
+game". The line under the note says who can read it: your coaches if you're 18 or over; if you're
+under 18, your parents or guardians, and your coaches once a parent or guardian has given consent.
+Tap **Save check-in**. You can change today's answers and note until the end of the day with
+**Update check-in**.
 
 Your coaches see your answers so they can adjust training (if you're under 18, once a parent or
 guardian has given consent). A score of 2 or less on any question
 flags you so a coach knows to check in with you. The club's Child Safety Officer also sees that
 you were flagged, the day and your lowest score, but never your answers or note, so someone still
 notices if you're not in a squad or team (if you're under 18, once a parent or guardian has given
-consent). Below the form you can see your last two weeks, with low scores marked.
+consent). The check-in says who sees your answers before you answer. On the full check-in, below
+the form, you can see your last two weeks, with low scores marked.
 
 Until you've checked in, "Do your daily check-in" stays in your to-do list.
 
 **If you'd like to talk to someone.** The club's **Child Safety Officer** is its welfare contact
-for athletes, whatever your age and whether or not you're in a squad or team. Under the check-in,
+for athletes, whatever your age and whether or not you're in a squad or team. At the foot of the
+check-in, on Today and on the full check-in,
 **Something worrying you? Tell the club safely** raises a concern that goes to them (and the
 Complaints Manager and admins), not to your coaches or parents. You don't have to explain much: a
 line such as "I'd like to talk to someone" is enough, and you can hide your name (see [Raising a
 concern](#raising-a-concern)). Kids Helpline (1800 55 1800) is free, any time.
 
-<img src="user-guide/check-in.png" width="210" alt="Daily check-in form and history">
+<img src="user-guide/check-in-sheet.png" width="210" alt="The daily check-in over Today: 2 of 4 answered, Saves when you answer the last one, and the words for each answer beside its question">
+<img src="user-guide/check-in-saved.png" width="210" alt="Today after the last answer: You're set for today, and Check-in saved for today with Change">
+<img src="user-guide/check-in.png" width="210" alt="The full check-in: the form, the note and the last two weeks">
 <img src="user-guide/check-in-note.png" width="210" alt="Check-in note, saying who can read it">
 
 ### Training sessions

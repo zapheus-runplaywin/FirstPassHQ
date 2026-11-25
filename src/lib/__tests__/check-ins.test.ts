@@ -1,8 +1,14 @@
 import {
+  allAnswered,
+  answeredCount,
+  answersFromParams,
+  answersToParams,
   checkInOverviewLabel,
+  checkInPrivacy,
   checkInSummaryLabel,
   checkInTotals,
   flaggedAreas,
+  noAnswers,
   scoresLine,
   today,
 } from '@/lib/check-ins';
@@ -113,6 +119,57 @@ describe('checkInOverviewLabel', () => {
   it('adds up every group', () => {
     expect(checkInOverviewLabel([overview(40, 30), overview(20, 12)])).toBe(
       '42 of 60 athletes checked in today',
+    );
+  });
+});
+
+describe('the answers while a check-in is filled in', () => {
+  it('counts the questions answered, and is complete only with all four', () => {
+    expect(answeredCount(noAnswers)).toBe(0);
+    expect(allAnswered(noAnswers)).toBe(false);
+    const three = { sleep: 4, soreness: null, stress: 1, mood: 5 };
+    expect(answeredCount(three)).toBe(3);
+    expect(allAnswered(three)).toBe(false);
+    const four = { ...three, soreness: 2 };
+    expect(answeredCount(four)).toBe(4);
+    expect(allAnswered(four)).toBe(true);
+  });
+
+  it('carries the answers given so far as route params, and reads them back', () => {
+    const answers = { sleep: 4, soreness: null, stress: 1, mood: null };
+    expect(answersToParams(answers)).toEqual({ sleep: '4', stress: '1' });
+    expect(answersFromParams(answersToParams(answers))).toEqual({ sleep: 4, stress: 1 });
+    expect(answersToParams(noAnswers)).toEqual({});
+    expect(answersFromParams({})).toEqual({});
+  });
+
+  it.each<[string, Record<string, string | string[] | undefined>]>([
+    ['out of range', { sleep: '0', soreness: '6', stress: '-1', mood: '10' }],
+    ['not whole numbers', { sleep: '4.5', soreness: '2e0', stress: 'abc', mood: '' }],
+    ['padded', { sleep: ' 4', soreness: '4 ', stress: '04', mood: '+4' }],
+    ['given twice', { sleep: ['4', '5'], mood: ['3'] }],
+    ['missing', { sleep: undefined }],
+  ])('leaves out answers in a link that are %s', (_label, params) => {
+    expect(answersFromParams(params)).toEqual({});
+  });
+
+  it('ignores params that aren’t one of the four questions', () => {
+    expect(answersFromParams({ sleep: '5', note: 'hello', athlete_id: 'someone-else', day: '2026-01-01' })).toEqual({
+      sleep: 5,
+    });
+  });
+});
+
+describe('checkInPrivacy', () => {
+  it('says the coaches see an adult’s answers', () => {
+    expect(checkInPrivacy(false)).toBe(
+      'Your coaches see your answers so they can adjust training, and a low score lets them know to check in with you.',
+    );
+  });
+
+  it('says an athlete under 18’s coaches see them once a parent or guardian agrees', () => {
+    expect(checkInPrivacy(true)).toBe(
+      'Your coaches see your answers so they can adjust training, and a low score lets them know to check in with you. As you’re under 18, they see them once a parent or guardian agrees.',
     );
   });
 });

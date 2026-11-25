@@ -1,18 +1,27 @@
-import { router, useFocusEffect } from 'expo-router';
+import { router, useFocusEffect, useLocalSearchParams } from 'expo-router';
 import { useCallback, useState } from 'react';
-import { Pressable, StyleSheet, View } from 'react-native';
+import { StyleSheet, View } from 'react-native';
 
 import { CheckInHistory } from '@/components/check-in-history';
+import { CheckInScale } from '@/components/check-in-scale';
 import { RaiseConcernLink } from '@/components/safeguarding';
 import { SessionLogSection } from '@/components/session-log-form';
 import { Screen } from '@/components/screen';
 import { ThemedText } from '@/components/themed-text';
 import { Button, ErrorText, TextField } from '@/components/ui';
 import { Spacing } from '@/constants/theme';
-import { useTheme } from '@/hooks/use-theme';
 import { isMinor } from '@/lib/age';
 import { useAuth } from '@/lib/auth';
-import { CHECK_IN_COLUMNS, checkInQuestions, today } from '@/lib/check-ins';
+import {
+  CHECK_IN_COLUMNS,
+  allAnswered,
+  answersFromParams,
+  checkInPrivacy,
+  checkInQuestions,
+  noAnswers,
+  today,
+  type CheckInAnswers,
+} from '@/lib/check-ins';
 import { toDateString } from '@/lib/injuries';
 import { supabase } from '@/lib/supabase';
 import type { CheckIn, CheckInScores } from '@/lib/types';
@@ -20,15 +29,13 @@ import type { CheckIn, CheckInScores } from '@/lib/types';
 /** How many days of history an athlete sees. */
 const HISTORY_DAYS = 14;
 
-type Answers = { [K in keyof CheckInScores]: number | null };
-
-const unanswered: Answers = { sleep: null, soreness: null, stress: null, mood: null };
-
 export default function CheckInScreen() {
   const { session, profile } = useAuth();
   const userId = session?.user.id;
   const [history, setHistory] = useState<CheckIn[] | null>(null);
-  const [edited, setEdited] = useState<Answers | null>(null);
+  // The answers already tapped on Today's check-in sheet, when "Add a note" brought them here.
+  const started = answersFromParams(useLocalSearchParams());
+  const [edited, setEdited] = useState<CheckInAnswers | null>(null);
   const [note, setNote] = useState<string | null>(null);
   const [saving, setSaving] = useState(false);
   const [error, setError] = useState<string | null>(null);
@@ -54,7 +61,7 @@ export default function CheckInScreen() {
 
   // Today's saved check-in fills the form, so it can be changed.
   const saved = history?.find((c) => c.day === today()) ?? null;
-  const answers: Answers = edited ?? (saved ? { ...saved } : unanswered);
+  const answers: CheckInAnswers = edited ?? { ...(saved ? { ...saved } : noAnswers), ...started };
   const noteValue = note ?? saved?.note ?? '';
 
   function answer(key: keyof CheckInScores, value: number) {
@@ -62,7 +69,7 @@ export default function CheckInScreen() {
   }
 
   async function save() {
-    if (checkInQuestions.some((q) => answers[q.key] === null)) {
+    if (!allAnswered(answers)) {
       setError('Answer all four questions.');
       return;
     }
@@ -87,15 +94,11 @@ export default function CheckInScreen() {
   return (
     <Screen>
       <ThemedText type="small" themeColor="textSecondary">
-        Thirty seconds a day. Your coaches see your answers so they can adjust training, and a low
-        score lets them know to check in with you.
-        {profile && isMinor(profile.date_of_birth, profile.under_17)
-          ? ' As you’re under 18, they see them once a parent or guardian agrees.'
-          : ''}
+        {`Thirty seconds a day. ${checkInPrivacy(!!profile && isMinor(profile.date_of_birth, profile.under_17))}`}
       </ThemedText>
 
       {checkInQuestions.map((q) => (
-        <Scale
+        <CheckInScale
           key={q.key}
           question={q.question}
           answers={q.answers}
@@ -136,90 +139,8 @@ export default function CheckInScreen() {
   );
 }
 
-/** A question answered on a scale of 1 (bad) to 5 (good). */
-function Scale({
-  question,
-  answers,
-  value,
-  onChange,
-}: {
-  question: string;
-  answers: string[];
-  value: number | null;
-  onChange: (value: number) => void;
-}) {
-  const theme = useTheme();
-  return (
-    <View style={styles.section}>
-      <View style={styles.questionRow}>
-        <ThemedText type="smallBold">{question}</ThemedText>
-        <ThemedText type="small" themeColor="textSecondary">
-          {value ? answers[value - 1] : ''}
-        </ThemedText>
-      </View>
-      <View style={styles.scale}>
-        {answers.map((label, index) => {
-          const score = index + 1;
-          const selected = value === score;
-          return (
-            <Pressable
-              key={label}
-              accessibilityRole="button"
-              accessibilityLabel={`${score}: ${label}`}
-              accessibilityState={{ selected }}
-              onPress={() => onChange(score)}
-              style={({ pressed }) => [
-                styles.score,
-                {
-                  backgroundColor: selected
-                    ? theme.accent
-                    : pressed
-                      ? theme.backgroundSelected
-                      : theme.backgroundElement,
-                },
-              ]}>
-              <ThemedText type="smallBold" style={selected ? { color: theme.onAccent } : undefined}>
-                {score}
-              </ThemedText>
-            </Pressable>
-          );
-        })}
-      </View>
-      <View style={styles.ends}>
-        <ThemedText type="small" themeColor="textSecondary">
-          {answers[0]}
-        </ThemedText>
-        <ThemedText type="small" themeColor="textSecondary">
-          {answers[answers.length - 1]}
-        </ThemedText>
-      </View>
-    </View>
-  );
-}
-
 const styles = StyleSheet.create({
   section: {
     gap: Spacing.two,
-  },
-  questionRow: {
-    flexDirection: 'row',
-    justifyContent: 'space-between',
-    alignItems: 'baseline',
-    gap: Spacing.two,
-  },
-  scale: {
-    flexDirection: 'row',
-    gap: Spacing.two,
-  },
-  score: {
-    flex: 1,
-    height: 48,
-    borderRadius: 12,
-    alignItems: 'center',
-    justifyContent: 'center',
-  },
-  ends: {
-    flexDirection: 'row',
-    justifyContent: 'space-between',
   },
 });

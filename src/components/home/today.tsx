@@ -255,11 +255,14 @@ export function NeedsYou({
   todos,
   personalTasks = [],
   onToggleTask,
+  onCheckIn,
   now,
 }: {
   todos: Todo[];
   personalTasks?: PersonalTask[];
   onToggleTask?: (task: PersonalTask, done: boolean) => void;
+  /** Opens the daily check-in over Today, in place of its own page. */
+  onCheckIn?: () => void;
   now: Date;
 }) {
   const theme = useTheme();
@@ -308,7 +311,11 @@ export function NeedsYou({
                     key={entry.todo.key}
                     accessibilityRole="button"
                     accessibilityHint="Opens it so you can tick it off"
-                    onPress={() => router.push(entry.todo.href)}
+                    onPress={() =>
+                      entry.todo.key === CHECK_IN_TODO && onCheckIn
+                        ? onCheckIn()
+                        : router.push(entry.todo.href)
+                    }
                     style={({ pressed }) => [
                       styles.todoRow,
                       index > 0 && divider,
@@ -370,6 +377,36 @@ export function NeedsYou({
           </ThemedText>
         </Pressable>
       </View>
+    </View>
+  );
+}
+
+/** The to-do that the check-in sheet answers (src/lib/todos.ts). */
+export const CHECK_IN_TODO = 'check-in';
+
+/** How long "Check-in saved for today" stays on Today, with Change beside it. */
+export const CHECK_IN_SAVED_MS = 10_000;
+
+/**
+ * Said for a few seconds once the check-in sheet has saved, with the way to
+ * correct a mistaken tap. A check-in is never removed, only changed.
+ */
+export function CheckInSaved({ onChange }: { onChange: () => void }) {
+  const theme = useTheme();
+  return (
+    <View
+      testID="check-in-saved"
+      accessibilityLiveRegion="polite"
+      style={[styles.undo, { backgroundColor: theme.backgroundElement }]}>
+      <Icon name="check" size={16} color={theme.positive} />
+      <ThemedText type="small" themeColor="textSecondary" style={styles.grow} numberOfLines={1}>
+        Check-in saved for today
+      </ThemedText>
+      <Pressable accessibilityRole="button" hitSlop={8} onPress={onChange}>
+        <ThemedText type="smallBold" style={{ color: theme.tint }}>
+          Change
+        </ThemedText>
+      </Pressable>
     </View>
   );
 }

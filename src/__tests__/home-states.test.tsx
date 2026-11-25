@@ -885,10 +885,13 @@ describe('the to-do list', () => {
     expect(within(row).getAllByText(/^\d+$/).map((n) => String(n.props.children))).toEqual(['5']);
   });
 
-  it('opens a club item where it’s done', async () => {
+  it('opens the daily check-in over Today, not on a screen of its own', async () => {
     await openHome('athlete', { check_ins: [] });
     await fireEvent.press(screen.getByText('Do your daily check-in'));
-    expect(push).toHaveBeenCalledWith('/check-in');
+    // The sheet and what it does are in check-in-sheet.test.tsx. Every other
+    // club item opens where it's done, as the next tests show.
+    expect(screen.getByTestId('check-in-sheet')).toBeTruthy();
+    expect(push).not.toHaveBeenCalled();
   });
 
   it('tells admins when nobody can endorse an athlete’s clearance, and opens the club’s physios', async () => {
