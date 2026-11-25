@@ -104,7 +104,7 @@ function useHomeData() {
     isLocked,
     refresh,
   } = useAuth();
-  // Admins reach Reports from Administration; checked committee members from the Club hub.
+  // Admins reach Reports from their menu in the Club tab; checked committee members from its Reports card.
   const canReadReports = useCanReadReports();
   // Admins and the two safeguarding officers handle concerns members raise,
   // and so does anyone a concern was escalated to by name (that one only).

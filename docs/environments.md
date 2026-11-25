@@ -167,7 +167,7 @@ EXPO_PUBLIC_TEST_CLUB_3_ANON_KEY=<its anon public key>
 
 Restart `npx expo start`, choose **Switch club**, enter `HAWKS`, and sign in with Google. Then run
 `supabase/test-data.sql` in that project's **SQL Editor** to become its admin and add sample
-people. In **Administration > Club settings**, give the club its own name, colours and logo so the
+people. In **Club > Club setup > Club brand**, give the club its own name, colours and logo so the
 clubs are easy to tell apart. Do the same for `FALCONS`.
 
 `scripts/publish-update.sh` leaves these clubs out of every update and checks that it did.
@@ -254,7 +254,7 @@ who can't sign in. To see a screen as an athlete, coach or guardian in Expo Go:
    Open A gets sample PlayHQ games (PlayHQ games belong to teams, not squads): one in 3 days, a bye, and 12 played games with sample goals, reflections,
    coach comments and team goals. Running it again moves the games so one is always coming up.
 2. In Expo Go, sign out and sign in with a second Google account. Ask to join as an **Athlete**.
-3. Sign back in as yourself, approve the request in **Administration > Members**, put the new
+3. Sign back in as yourself, approve the request in **Club > People > Members**, put the new
    athlete in the **Open Squad** (current season) and, under **Teams**, in **Open A** as a final
    team athlete.
 4. Sign in as the athlete and tap **Open A** under **My squads and teams** to set goals for the next

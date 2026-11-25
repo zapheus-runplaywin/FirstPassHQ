@@ -1,8 +1,9 @@
 /**
- * adminMenuItems: the Administration screen's menu, sorted alphabetically by
- * title (Matt, 19 November 2026: "there are so many"). The screen test
- * (src/__tests__/administration-by-feature.test.tsx) checks each tile shows
- * and opens; these check the order, the live Members line and the switches.
+ * adminMenuItems: the admin's menu, sorted alphabetically by title (Matt, 19
+ * November 2026: "there are so many"), as "Everything, A to Z" lists it. The
+ * screen test (src/__tests__/administration-by-feature.test.tsx) checks each
+ * tile shows and opens; these check the order, the live Members line and the
+ * switches. The Club tab's areas are in club-areas.test.ts.
  */
 import { adminMenuItems } from '@/lib/admin-menu';
 import type { FeatureKey, Features } from '@/lib/club';
@@ -48,7 +49,7 @@ describe('adminMenuItems', () => {
       'Code of conduct',
       'Fixtures',
       'Games',
-      'Integrity training',
+      'Integrity training courses',
       'Invite members',
       'Members',
       'Record keeping',
@@ -56,7 +57,7 @@ describe('adminMenuItems', () => {
       'Safeguarding',
       'Season KPI reviews',
       'Seasons',
-      'Selection assessments',
+      'Selection rounds and criteria',
       'Squads and teams',
     ]);
   });
@@ -105,11 +106,32 @@ describe('adminMenuItems', () => {
       squads: true,
       membersDetail: '3 requests waiting for approval',
     });
-    expect(items.find((i) => i.title === 'Members')).toEqual({
+    expect(items.find((i) => i.title === 'Members')).toMatchObject({
       title: 'Members',
       detail: '3 requests waiting for approval',
       href: '/admin',
+      icon: 'users',
+      short: 'members',
     });
+  });
+
+  it('gives every item an icon, a short name and words to find it by', () => {
+    // The type check keeps each icon to one the app has (IconName).
+    const items = adminMenuItems({ features: allFeatures(true), squads: true, membersDetail: '' });
+    for (const item of items) {
+      expect(item.icon.length).toBeGreaterThan(0);
+      expect(item.short.length).toBeGreaterThan(0);
+      expect(Array.isArray(item.keywords)).toBe(true);
+    }
+    // A short name is how the item reads inside a sentence, and no two are the same.
+    expect(new Set(items.map((i) => i.short)).size).toBe(items.length);
+  });
+
+  it('names nothing the same as a card the Club tab shows beside it', () => {
+    // Integrity training and Selection assessments are cards there too.
+    const list = titles(allFeatures(true));
+    expect(list).not.toContain('Integrity training');
+    expect(list).not.toContain('Selection assessments');
   });
 
   it('gives every item its own screen', () => {

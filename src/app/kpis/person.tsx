@@ -137,8 +137,8 @@ export default function KpiPersonScreen() {
 
       {sheet.reviews.length === 0 && sheet.can_edit ? (
         <ThemedText type="small" themeColor="textSecondary">
-          No review dates have been set for this season yet. An admin adds them under
-          Administration, Season KPI reviews.
+          No review dates have been set for this season yet. An admin adds them in the
+          Club tab, under Season, Season KPI reviews.
         </ThemedText>
       ) : null}
 

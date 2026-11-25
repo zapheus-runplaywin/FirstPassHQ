@@ -1,5 +1,6 @@
 /**
- * The Administration screen's tiles (src/app/administration.tsx): which show
+ * The tiles of "Everything, A to Z" (src/app/administration.tsx), which the
+ * Club tab opens from its foot: which show
  * with each feature switch, and that every tile opens a screen the root
  * layout's guards let an admin into, so a tile never leads nowhere. Tiles are
  * sorted alphabetically by title (Matt, 19 November 2026).
@@ -68,7 +69,7 @@ const TILES: Tile[] = [
   { title: 'Games', route: 'admin/games' },
   { title: 'Club captains', route: 'admin/captains', needs: ['messages'] },
   { title: 'Awards', route: 'admin/awards/index', needs: ['awards'] },
-  { title: 'Integrity training', route: 'admin/training/index', needs: ['integrity'] },
+  { title: 'Integrity training courses', route: 'admin/training/index', needs: ['integrity'] },
   { title: 'Season KPI reviews', route: 'admin/kpi-reviews', needs: ['kpis'] },
   { title: 'Fixtures', route: 'admin/fixtures', needs: ['calendar', 'awards', 'goals'] },
   { title: 'Calendars', route: 'admin/calendars', needs: ['calendar'] },

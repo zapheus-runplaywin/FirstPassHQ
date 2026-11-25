@@ -3,7 +3,7 @@ import { eq } from '../support/fake-supabase';
 import { openSquad, samplePeople } from '../support/people';
 import { expect, test } from '../support/test';
 
-test('an admin approves a member waiting for approval from Administration > Members', async ({ page }) => {
+test('an admin approves a member waiting for approval from Club > People > Members', async ({ page }) => {
   const { admin, pending } = samplePeople();
   const people = [admin, pending];
 
@@ -30,7 +30,8 @@ test('an admin approves a member waiting for approval from Administration > Memb
 
   await expect(page.getByText(`Hi ${admin.full_name}`)).toBeVisible();
   await openTab(page, 'Club');
-  await page.getByRole('button', { name: /^Administration/ }).click();
+  // The request shows under People without opening the area.
+  await expect(page.getByRole('button', { name: /^People/ })).toHaveAttribute('aria-expanded', 'false');
   await page.getByRole('button', { name: 'Members 1 request waiting for approval' }).click();
 
   await expect(page.getByText('Waiting for approval', { exact: true })).toBeVisible();

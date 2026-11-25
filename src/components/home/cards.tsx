@@ -163,6 +163,11 @@ function Reports() {
   );
 }
 
+/**
+ * The admin's menu as one card. The Club tab shows the menu itself, in its
+ * areas (src/components/home/club-hub.tsx), so this only shows if the card is
+ * ever placed anywhere else.
+ */
 function Administration() {
   const { pendingCount } = useHome();
   return (

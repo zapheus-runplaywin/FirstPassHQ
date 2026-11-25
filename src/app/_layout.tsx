@@ -335,7 +335,7 @@ function RootStack() {
             </Stack.Protected>
           </Stack.Protected>
           <Stack.Protected guard={isAdmin}>
-            <Stack.Screen name="administration" options={{ title: 'Administration' }} />
+            <Stack.Screen name="administration" options={{ title: 'Everything, A to Z' }} />
             <Stack.Screen name="admin/index" options={{ title: 'Members' }} />
             <Stack.Screen name="admin/[id]" options={{ title: 'Member' }} />
             <Stack.Screen name="admin/wwcc-receipt" options={{ title: 'Application receipt' }} />
