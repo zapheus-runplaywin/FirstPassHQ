@@ -1,7 +1,7 @@
 # Policy templates
 
 Plain-English starting points for the three policies the app links to under
-**Administration > Safeguarding**. Each club adapts them, publishes them on its
+**Club > Safety and conduct > Safeguarding**. Each club adapts them, publishes them on its
 own website, and pastes the links into the app. They are templates, not legal
 advice: have your committee review them, and get advice where the notes say so.
 

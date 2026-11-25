@@ -17,7 +17,7 @@ workflow, and check the test project isn't paused, the day before each submissio
 
 | Account | Signs in as | What to look at |
 | --- | --- | --- |
-| `admin@demo.firstpass.example` | Admin | Administration: approving members, squads and teams, club settings, keep periods |
+| `admin@demo.firstpass.example` | Admin | The Club tab: approving members, squads and teams, club settings, keep periods |
 | `headcoach@demo.firstpass.example` | Head coach of the 20 & Under team, current Working With Children Check | Messages to the team, attendance, injured athletes and restrictions, session plans |
 | `athlete19@demo.firstpass.example` | Athlete aged 19 | Today's to-do list, calendar, daily check-in, reporting an injury or absence |
 | `guardian@demo.firstpass.example` | Verified parent of `athlete16@` | Only their own child's records; who opened them; consents |

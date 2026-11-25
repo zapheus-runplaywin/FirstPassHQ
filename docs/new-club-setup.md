@@ -112,8 +112,8 @@ one-time **setup code** instead. Nothing is typed into the SQL editor.
    Running it again makes a new code and cancels the last.
 2. Send the code privately to the person setting the club up.
 3. They open the app, enter the club code, sign in with Google or Apple, tap **Request to join**,
-   and enter their name and the code under **Setting up this club?**. **Administration** appears
-   in their Club tab.
+   and enter their name and the code under **Setting up this club?**. The admin's areas (People, Club
+   setup and the rest) appear in their Club tab.
 
 The code works once, and only while the club has no approved admin. Once it has one, the script
 refuses and the box is gone from the app: the admin approves everyone else, including other
@@ -123,7 +123,7 @@ the "Tests" workflow runs both.
 
 ## 5. Set up the club in the app
 
-The admin opens **Administration > Club settings** and sets:
+The admin opens the **Club** tab, then **Club setup** (Club brand, Club features and Club options), and sets:
 
 - **Club name** and **short name**. The short name finds the club's teams in PlayHQ fixtures and
   names exported files.
@@ -138,10 +138,10 @@ The admin opens **Administration > Club settings** and sets:
   Injuries, Attendance and Awards can each be switched off. Nothing is deleted when a feature is
   off.
 
-Then, still in **Administration**: set a **Club password**, open **Squads and teams** and choose a starting setup, add
+Then, still in the **Club** tab: set a **Club password** (Club setup), open **Squads and teams** (People) and choose a starting setup, add
 **Calendars**, check **Absence reasons** (the starting list includes **West Coast Fever**, Western
 Australia's Super Netball team: switch it off, or any other reason that isn't the club's, and add
-the club's own), and approve members as they ask to join. **Administration > Invite members** shows
+the club's own), and approve members as they ask to join. **Club > People > Invite members** shows
 the club's QR code, code and link to share. Members scan it or enter the code, sign in, and ask to
 join with the club password.
 
