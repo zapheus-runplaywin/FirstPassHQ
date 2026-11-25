@@ -134,6 +134,7 @@ function RootStack() {
             <Stack.Screen name="messages/[id]" options={{ title: 'Message' }} />
             <Stack.Protected guard={features.chatGroups}>
               <Stack.Screen name="messages/group/[id]" options={{ title: 'Group' }} />
+              <Stack.Screen name="messages/blocked" options={{ title: 'Blocked people' }} />
             </Stack.Protected>
             <Stack.Protected guard={can.sendMessages}>
               <Stack.Screen name="messages/new" options={{ title: 'New message' }} />
@@ -286,6 +287,9 @@ function RootStack() {
             <Stack.Screen name="concerns/report" options={{ title: 'Concerns register' }} />
             <Stack.Screen name="concerns/wellbeing" options={{ title: 'Wellbeing flags' }} />
             <Stack.Screen name="concerns/load" options={{ title: 'Training load patterns' }} />
+            <Stack.Protected guard={features.chatGroups}>
+              <Stack.Screen name="concerns/blocks" options={{ title: 'Blocks in chat groups' }} />
+            </Stack.Protected>
             <Stack.Screen
               name="concerns/message-access/index"
               options={{ title: 'Message access' }}

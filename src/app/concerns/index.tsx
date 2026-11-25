@@ -7,6 +7,7 @@ import { ThemedText } from '@/components/themed-text';
 import { Button, PressableCard } from '@/components/ui';
 import { Spacing } from '@/constants/theme';
 import { useAuth } from '@/lib/auth';
+import { useChatBlocksWaiting } from '@/lib/chat-blocks';
 import { useClub } from '@/lib/club';
 import { concernAboutLine, concernStatusLabels } from '@/lib/concerns';
 import { useLoadPatternAlerts } from '@/lib/load-monitoring';
@@ -31,6 +32,7 @@ export default function ConcernsScreen() {
   const wellbeing = useWellbeingFlagAlerts(handles && features.checkIns);
   const loadOn = wellbeing.isOfficer && features.trainingLoad;
   const loadPatterns = useLoadPatternAlerts(loadOn);
+  const blocksWaiting = useChatBlocksWaiting(handles && features.chatGroups);
   const [concerns, setConcerns] = useState<Concern[] | null>(null);
   const [refreshing, setRefreshing] = useState(false);
 
@@ -72,6 +74,17 @@ export default function ConcernsScreen() {
             variant="secondary"
             onPress={() => router.push('/concerns/message-access')}
           />
+          {features.chatGroups ? (
+            <Button
+              title={
+                blocksWaiting > 0
+                  ? `Blocks in chat groups (${blocksWaiting} to follow up)`
+                  : 'Blocks in chat groups'
+              }
+              variant="secondary"
+              onPress={() => router.push('/concerns/blocks')}
+            />
+          ) : null}
           <Button
             title="Export the register as a PDF"
             variant="secondary"

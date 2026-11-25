@@ -5,11 +5,13 @@ import { StyleSheet, View } from 'react-native';
 import { RaiseConcernLink } from '@/components/safeguarding';
 import { Screen } from '@/components/screen';
 import { ThemedText } from '@/components/themed-text';
-import { Button, Card } from '@/components/ui';
+import { Button, Card, ConfirmDelete, ErrorText } from '@/components/ui';
 import { MessageQuestionCard } from '@/components/message-question';
 import { Spacing } from '@/constants/theme';
 import { useTheme } from '@/hooks/use-theme';
 import { useAuth } from '@/lib/auth';
+import { blockWarning, canOfferBlock } from '@/lib/chat-blocks';
+import { useClub } from '@/lib/club';
 import { formatDateTime, formatSentAt } from '@/lib/format';
 import {
   audienceLabel,
@@ -30,6 +32,11 @@ export default function MessageScreen() {
   const [refreshing, setRefreshing] = useState(false);
   const [markingUnread, setMarkingUnread] = useState(false);
   const [moving, setMoving] = useState(false);
+  // Whether the member blocks this post's author in chat groups, once known.
+  const [blocked, setBlocked] = useState<boolean | null>(null);
+  const [blocking, setBlocking] = useState(false);
+  const [blockError, setBlockError] = useState<string | null>(null);
+  const { features } = useClub();
   // The "opened" mark, so "Mark as unread" can't land before it.
   const markedRead = useRef<PromiseLike<unknown>>(Promise.resolve());
 
@@ -44,9 +51,26 @@ export default function MessageScreen() {
         .maybeSingle(),
     ]);
     const loaded = (data as Message | null) ?? null;
+    const ownCopy = (own.data as Omit<InboxMessage, 'message'> | null) ?? null;
     setMessage(loaded);
-    setCopy((own.data as Omit<InboxMessage, 'message'> | null) ?? null);
+    setCopy(ownCopy);
     if (!loaded) return;
+    if (
+      features.chatGroups &&
+      canOfferBlock({
+        isChatPost: loaded.audience === 'chat',
+        inMyGroup: !!ownCopy?.chat_group_id,
+        senderId: loaded.sender_id,
+        myId: session?.user.id,
+      })
+    ) {
+      const { data: isBlocked } = await supabase.rpc('chat_member_blocked', {
+        p_profile_id: loaded.sender_id,
+      });
+      setBlocked(!!isBlocked);
+    } else {
+      setBlocked(null);
+    }
     // Opening a message marks it read. Does nothing for its sender.
     markedRead.current = supabase.rpc('mark_message_read', { p_message_id: id }).then(() => {});
     // Read receipts are for the sender only.
@@ -54,7 +78,7 @@ export default function MessageScreen() {
       const { data: rows } = await supabase.rpc('message_receipts', { p_message_id: id });
       setReceipts((rows as MessageReceipt[] | null) ?? []);
     }
-  }, [id, session]);
+  }, [id, session, features.chatGroups]);
 
   useFocusEffect(
     useCallback(() => {
@@ -85,6 +109,23 @@ export default function MessageScreen() {
     setMoving(false);
     if (router.canGoBack()) router.back();
     else router.replace('/messages');
+  }
+
+  // Blocks or unblocks the post's author in the member's chat groups. Admins
+  // and the safeguarding officers are told about a block.
+  async function setAuthorBlocked(block: boolean) {
+    if (!message?.sender_id) return;
+    setBlocking(true);
+    setBlockError(null);
+    const { error } = block
+      ? await supabase.rpc('block_chat_member', { p_message_id: message.id })
+      : await supabase.rpc('unblock_chat_member', { p_profile_id: message.sender_id });
+    setBlocking(false);
+    if (error) {
+      setBlockError(error.message);
+      return;
+    }
+    setBlocked(block);
   }
 
   async function onRefresh() {
@@ -156,6 +197,33 @@ export default function MessageScreen() {
       ) : null}
 
       {receipts ? <Receipts receipts={receipts} /> : null}
+      {blocked !== null ? (
+        <View style={styles.buttons}>
+          <ErrorText>{blockError}</ErrorText>
+          {blocked ? (
+            <>
+              <ThemedText type="small" themeColor="textSecondary">
+                You’ve blocked {message.sender_name ?? 'this member'}: their posts don’t show in your
+                groups.
+              </ThemedText>
+              <Button
+                title={`Unblock ${message.sender_name ?? 'this member'}`}
+                variant="secondary"
+                busy={blocking}
+                onPress={() => setAuthorBlocked(false)}
+              />
+            </>
+          ) : (
+            <ConfirmDelete
+              title={`Block ${message.sender_name ?? 'this member'}`}
+              warning={blockWarning(message.sender_name ?? 'this member')}
+              confirmTitle="Block"
+              busy={blocking}
+              onConfirm={() => setAuthorBlocked(true)}
+            />
+          )}
+        </View>
+      ) : null}
       <RaiseConcernLink
         context={`Message from ${message.sender_name ?? 'the club'}, ${formatDateTime(new Date(message.created_at))}`}
         label="Report this message"

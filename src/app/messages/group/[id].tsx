@@ -308,6 +308,14 @@ export default function ChatGroupScreen() {
                 : 'Hiding moves it to Hidden groups. New posts still reach you, already marked read.'}
             </ThemedText>
             <RaiseConcernLink label="Worried about a post? Open it and report it, or raise a concern" />
+            <Button
+              title="Blocked people"
+              variant="secondary"
+              onPress={() => router.push('/messages/blocked')}
+            />
+            <ThemedText type="small" themeColor="textSecondary">
+              To block someone, open one of their posts. You stop seeing their posts in your groups.
+            </ThemedText>
           </FormSection>
         </View>
 

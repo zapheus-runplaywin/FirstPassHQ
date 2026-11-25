@@ -126,7 +126,13 @@ const FEATURE_ROUTES: FeatureCase[] = [
   {
     feature: 'chatGroups',
     offByDefault: true,
-    routes: ['messages/group/[id]', 'admin/chat-groups/index', 'admin/chat-groups/edit'],
+    routes: [
+      'messages/group/[id]',
+      'messages/blocked',
+      'concerns/blocks',
+      'admin/chat-groups/index',
+      'admin/chat-groups/edit',
+    ],
   },
   {
     feature: 'selectionAssessments',

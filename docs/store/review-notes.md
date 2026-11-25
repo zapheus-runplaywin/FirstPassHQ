@@ -74,8 +74,9 @@ App Store Connect > TestFlight > Test information.
 > managers, the committee and admins to whole squads, teams or roles. A club can also turn on
 > chat groups (off by default) for groups the club sets up by squad, team and role: under 18s
 > post only in their own team's group while a coach is in it, the group's coaches can hide any
-> post, and any member can report a post to the club's Child Safety Officer. Parents get a copy
-> of every message and group post to or from their child.
+> post, any member can report a post to the club's Child Safety Officer or block its author (the
+> club's admins and safeguarding officers are told of every block), and parents get a copy of
+> every message and group post to or from their child.
 >
 > The app contains no ads, tracking or purchases. Members delete their account in the app: Delete
 > account, at the bottom of the home screen.
@@ -85,7 +86,7 @@ App Store Connect > TestFlight > Test information.
 | Question | Answer | Source |
 | --- | --- | --- |
 | Why is a club's app public? | It serves any netball club; the club code picks the club, and DEMO shows it working. Not verified with Apple. If Apple objects, unlisted distribution is the fallback (tab D4) | `src/constants/clubs.ts`, `src/app/choose-club.tsx` |
-| How is user content moderated? | Messages come only from coaches, managers, the committee and admins, to whole groups. Chat groups are off unless a club turns them on, and hold only people the club puts together by squad, team and role; members can't make or join groups. A group's coaches (and in an admin's group, its admins) swipe a post to hide it from the group; the text is kept for safeguarding. Any member opens a message or post and taps Report this message, which raises a concern with the club's Child Safety Officer. Admins can close a group or remove a member's access. There are no direct messages | User guide: Messages, Chat groups, Raise a concern, Approving members; #294, #295 |
+| How is user content moderated? | Messages come only from coaches, managers, the committee and admins, to whole groups. Chat groups are off unless a club turns them on, and hold only people the club puts together by squad, team and role; members can't make or join groups. A group's coaches (and in an admin's group, its admins) swipe a post to hide it from the group; the text is kept for safeguarding. Any member opens a message or post and taps Report this message, which raises a concern with the club's Child Safety Officer. Any member can block someone in their groups, and the club's admins and safeguarding officers are told and follow it up. Admins can close a group or remove a member's access. There are no direct messages | User guide: Messages, Chat groups, Blocks in chat groups, Raise a concern, Approving members; #294, #295 |
 | Can children talk to strangers? | No. A member under 18 posts only in their own squad's or team's automatic chat group while one of its coaches is in it, reads only in other groups, can't see who else is in a group, and has groups hidden until a verified parent is linked. Their parents get a copy of every post in those groups, their child's own included | `20261124600000_chat_groups.sql`; privacy and social media assessment, section 2, "Chat groups" |
 | Can I delete my account? | Yes: Delete account at the bottom of the home screen, then Delete my account permanently | `src/app/delete-account.tsx` |
 | Which sign-in methods are there? | Continue with Google, and Continue with Apple (Sign in with Apple) on iPhone and iPad. A member who chose Hide My Email isn't required to give a PlayHQ email. Parents and guardians still give the email they registered their child with, whatever the sign-in, because it is how the club checks an adult before linking them to a child | `src/lib/sign-in.ts`, `src/app/join.tsx` (#219) |
@@ -102,7 +103,7 @@ What HQ has, for App Review Information or a reviewer's question:
 | --- | --- | --- |
 | A way to filter objectionable material | Nobody outside the club can post: every member is approved by the club's admins, and chat groups hold only people the club puts together. A group's coaches hide posts with a swipe. No automatic word filter | Approving members; Chat groups |
 | A way to report offensive content | Report this message on any message or group post raises a concern with the club's Child Safety Officer | User guide, Raise a concern |
-| A way to block abusive users | No per-member block. Members can't be contacted outside the club's own groups, a member can hide any group, coaches hide posts, and admins can close a group or remove a member's access. **If Apple asks for a block button, tell the thread**: a "mute this member in groups" switch is the smallest fix | Chat groups; Approving members |
+| A way to block abusive users | Open any post in a chat group and tap Block: that member's posts stop showing to you, and Blocked people lists them with Unblock. Every block is told to the club's admins, Child Safety Officer and Complaints Manager, who follow it up. An adult can't block a member under 18 (they ask a coach to hide the post or raise a concern). Admins can also close a group or remove a member's access | Chat groups, Blocks in chat groups; `20261125400000_chat_blocks.sql` |
 | Published contact details | pivtmedia@gmail.com on the support page | [public-pages/support.md](public-pages/support.md) |
 
 In Apple's age rating questions (App Information > Age Rating), answer **Yes** to user-generated

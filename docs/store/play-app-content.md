@@ -54,8 +54,9 @@ The IARC questionnaire. The category and answers are below; the exact question w
   **to confirm**): any member can open a message or post and tap **Report this message**, which
   raises a concern with the club's Child Safety Officer; a group's coaches (and in an admin's
   group, its admins) swipe a post to hide it from the group (#295, the text is kept for
-  safeguarding); admins can close a group or remove a member's access. There is no automatic
-  word filter.
+  safeguarding); any member can block a post's author, and every block is told to the admins
+  and safeguarding officers to follow up (an adult can't block a member under 18); admins can
+  close a group or remove a member's access. There is no automatic word filter.
 - **Does the app share the user's current physical location with other users?** **No.**
 - **Does the app allow users to purchase digital goods?** **No.**
 - **Does the app contain unrestricted internet access (a browser)?** **No.** Links open in the

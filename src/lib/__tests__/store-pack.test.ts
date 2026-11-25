@@ -33,6 +33,8 @@ const outdated = [
   /\bor reply to messages\b/i,
   /there are no replies/i,
   /group messages only/i,
+  // Blocking merged with 20261125400000_chat_blocks.sql.
+  /no per-member block/i,
 ];
 
 describe('the store pack', () => {
@@ -61,6 +63,20 @@ describe('the store pack', () => {
       expect(text).toMatch(/parents? gets? a copy|copied to (the child's verified )?parents/i);
     },
   );
+
+  it('tells Apple and Play members can block, and who is told', () => {
+    expect(existsSync('supabase/migrations/20261125400000_chat_blocks.sql')).toBe(true);
+    for (const file of ['review-notes.md', 'play-app-content.md', 'public-pages/privacy.md']) {
+      const text = read(file).replace(/\s+/g, ' ');
+      expect({ file, block: /block/i.test(text), told: /Child Safety Officer/.test(text) }).toEqual({
+        file,
+        block: true,
+        told: true,
+      });
+    }
+    const inventory = read('data-inventory.md');
+    expect(inventory).toMatch(/^\| 23 \| Blocks in chat groups.*`chat_blocks`/m);
+  });
 
   it('lists chat group posts and their tables in the data inventory', () => {
     const row12 = read('data-inventory.md')

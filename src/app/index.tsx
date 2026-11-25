@@ -79,6 +79,7 @@ import {
   staffTitle,
   teamPositionLabel,
 } from '@/lib/labels';
+import { useChatBlocksWaiting } from '@/lib/chat-blocks';
 import { useMessageAccessTodo } from '@/lib/message-access';
 import { supabase } from '@/lib/supabase';
 import { useConcernTimes } from '@/lib/concern-times';
@@ -150,6 +151,10 @@ export default function HomeScreen() {
   const { switchClub } = useClubChoice();
   const club = useClub();
   const { features } = club;
+  // Blocks in chat groups, for admins and the two safeguarding officers.
+  const chatBlocksWaiting = useChatBlocksWaiting(
+    (isAdmin || isSafeguardingOfficer) && features.chatGroups,
+  );
   // The Child Safety Officer sees athletes flagged again and again.
   const wellbeingFlags = useWellbeingFlagAlerts(handlesConcerns && features.checkIns);
   // ...and children whose training load shows a pattern.
@@ -246,6 +251,7 @@ export default function HomeScreen() {
     concernClocks,
     concernTimes,
     messageAccess,
+    chatBlocksWaiting,
     wellbeingFlagAlerts: wellbeingFlags.repeated,
     loadPatternAlerts: loadPatterns,
     loadFlags,

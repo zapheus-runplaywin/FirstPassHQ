@@ -120,6 +120,8 @@ What each role sees on its home screen:
 | Read and archive messages, mark read or unread |    ✓    |        ✓        |      ✓       |     ✓      |       ✓       |       ✓*      |         |       ✓       |
 | Send messages                          | Captains† |                 |  Own groups  | Own groups |   Whole club  |               |         |     Anyone    |
 | Chat groups (when switched on)         | Captains‖ |                 |      ✓‖      |     ✓‖     |  If added‖    |      ✓‖       |         | ✓, sets up groups‖ |
+| Block and unblock someone in chat groups | Captains‖ |                 |      ✓‖      |     ✓‖     |  If added‖    |      ✓‖       |         |       ✓‖      |
+| Follow up blocks in chat groups        |         |                 |              |            |               |               |         | ✓, and the safeguarding officers‖ |
 | Answer a message's question            |    ✓    | Own, and for their athlete |      ✓       |     ✓      |       ✓       |       ✓       |         |       ✓       |
 | See who answered a message's question  | Captains, their own† |   Their athlete's   |  Own groups  | Own groups | Their own |               |         |   Their own   |
 | Answer a request to read a member's messages (for a concern) |         |                 |              |            |               |               |         |  If not involved‡‡ |
@@ -182,7 +184,10 @@ coaches and physios (with any Head Physio), each team's coaches and captains, an
 groups automatically, and admins set up others for roles, squads and teams, or named people. Adults
 in a group talk back and forth. Members under 18 post only in their own squad's or team's groups
 while a coach is in them, and read admins' groups; their parents or guardians get a copy of every
-post. The group's coaches can hide a post (see [Chat groups](#chat-groups)).
+post. The group's coaches can hide a post. Anyone in a group can block someone whose posts they
+don't want to see, except that an adult can't block a member under 18; admins, the Child Safety
+Officer and the Complaints Manager are told and follow it up (see [Chat groups](#chat-groups) and
+[Blocks in chat groups](#blocks-in-chat-groups)).
 
 \* Physios get messages sent to the Physio role and to the squads and teams they're in. They get
 messages sent to everyone in the club only when an admin turns on **Physios get club messages** in
@@ -743,6 +748,24 @@ coach's name. Swipe a hidden post and tap **Show** to put it back for everyone. 
 the text is kept like every message, for the Child Safety Officer or Complaints Manager if a concern
 needs it. In a group an admin set up, its coaches and admins can hide posts.
 
+**Blocking someone.** If you don't want to see someone's posts, open one of their posts and tap
+**Block** with their name, then **Block** again. Their posts then disappear from all your groups,
+with the last post and unread count. It only changes what you see: they aren't told, they still see
+your posts, everyone else still sees theirs, and nothing is deleted. Club messages from them still
+reach your Inbox. **Your club's admins, Child Safety Officer and Complaints Manager are told** that
+you blocked them, so someone can check you're OK; they see who blocked whom and in which group, never
+the posts. To unblock, open one of their posts and tap **Unblock**, or open **About this group ›
+Blocked people** and tap **Unblock** beside their name.
+
+- A member under 18 can block anyone, adults included.
+- An adult can't block a member under 18, because what a child writes must stay in front of the
+  adults in their group. If a child's posts worry you, ask the group's coach to hide the post, or
+  raise a concern.
+- Blocking never hides a parent's or guardian's copy of a post to or from their child: parents
+  always see everything in their child's groups.
+- If someone is bothering you, report the post too (**Report this message**), so the Child Safety
+  Officer can look into it.
+
 **About this group** at the top lists who is in it (not for members under 18) and holds **Hide
 this group**, which moves it to **Hidden groups** at the end of the list.
 New posts still reach you, already marked read, and nobody sees that you hid it; your read receipt
@@ -756,6 +779,8 @@ leaves them alone.
 <img src="user-guide/chat-groups.png" width="210" alt="The Groups tab in Messages, with unread posts and Hidden groups">
 <img src="user-guide/chat-group.png" width="210" alt="A coaches and captains group opened at its newest posts, with a post the coach hid greyed out and the box to write in at the bottom">
 <img src="user-guide/chat-group-swipe.png" width="210" alt="A coach swiping a post left to show Hide">
+<img src="user-guide/chat-block.png" width="210" alt="A group post opened on its own, with Block asking once more and saying who is told">
+<img src="user-guide/chat-blocked-people.png" width="210" alt="Blocked people, with Unblock beside each name">
 
 ### Surveys
 
@@ -4685,6 +4710,24 @@ never removed, so a later audit can follow each one from request to reading.
 <img src="user-guide/message-access-answer.png" width="210" alt="An admin answering a request with a justification">
 <img src="user-guide/message-access-read.png" width="210" alt="Reading the messages under an approved request, with the time left">
 
+### Blocks in chat groups
+
+When the club uses chat groups and a member blocks someone (see [Chat groups](#chat-groups)), the
+admins, the Child Safety Officers and the Complaints Managers (and admins [acting in an empty
+post](#acting-in-an-empty-post)) get a to-do, **Follow up a block in chat groups**, and a phone
+notification where to-do notifications are on. The notification names nobody. Nobody is told about
+a block they're part of, whether they blocked or were blocked.
+
+**Concerns › Blocks in chat groups** lists them, waiting ones first: who blocked whom, with
+"(under 18)" beside a child, the day, the group, whether they've since unblocked, and the
+follow-up. It never shows the posts; if you need them for a concern, ask through
+[Message access](#reading-a-members-messages-for-a-concern). Check in with the member who
+blocked (for a child, with their parent too), then write what you did, if you like, and tap **Mark as
+followed up**. The to-do goes for everyone once one of you has followed it up, and who did it and
+when is kept. A block that's a worry about a child becomes a concern: raise one.
+
+<img src="user-guide/chat-blocks-register.png" width="210" alt="Blocks in chat groups: a block waiting for a follow-up, with a note box">
+
 ### Wellbeing flags
 
 A score of 2 or less on any daily check-in question flags the athlete to their coaches. Once a
@@ -4764,6 +4807,7 @@ once saved, only replaced or removed, and anyone who gets it wrong five times in
 | Committee checks date   | Everyone signed in. Only admins change it, and only to bring it forward; who changed it and when is kept. |
 | Messages                | The people they were sent to and the sender. Not admins, unless an admin approved the Child Safety Officer's or Complaints Manager's request to read one member's messages for a concern; then only the person who asked, read only, for 24 hours, with every message opened logged. Archiving moves only the member's own copy, and messages are never deleted by members. A stood-down member doesn't see the messages they sent, or the ones they got as a coach, manager, physio, committee member or admin. Guardians of athletes under 18 get a copy of every message sent to their athlete, and of every message their athlete sends as a captain. Guests don't get messages; physios get messages sent to the Physio role and to their squads and teams, and whole-club messages only if an admin turns that on. |
 | Chat group posts        | The people in the group when it was posted, and the parents and guardians of anyone under 18 in it (a copy naming the child). Admins don't read groups they aren't in; they see an admin's group's members and post count. Someone who joins later doesn't see earlier posts; someone who leaves keeps theirs, read only. A post a coach hid stays only with its author, the group's coaches and the author's parents, greyed out with who hid it; its text is kept like any message, for an approved message access request or a concern. Who is in a group: adults in it; under 18s don't see the list. |
+| Blocks in chat groups   | The member who blocked sees their own in Blocked people; the member blocked isn't told. Admins, the Child Safety Officers and the Complaints Managers see who blocked whom, when, in which group, any unblocking and the follow-up, never the posts, and never a block they're part of. Kept until either member's account is deleted. |
 | Read receipts           | The sender. A receipt means the member opened the message: **Mark all read**, **Mark as unread** and archiving change only the member's own inbox, never what the sender sees. A child who doesn't use the app shows as read once one of their parents has read their copy. |
 | Answers to a message's question | Who gave which answer, who answered for a child and when: the sender (a captain too) while not stood down, and the squad or team's coaches and managers. Each member sees their own answer; parents and guardians see their child's, who gave it and when. Other members see nothing, or only how many picked each answer if the sender shares the totals. Answers are kept with the message. |
 | Survey answers          | Whoever sent the survey. The committee and admins for their own surveys and ones a coach or manager shared with them. A coach or manager's survey to their own squad or team is seen by them while they still coach or manage it, by admins unless it's a quick poll (up to 5 questions with choices or ratings), and by the committee if they shared it. A captain's poll is seen by the captain while they're captain, and by the squad or team's coaches and managers. Named answers show the member's name; parents and guardians of an athlete under 18 also read their child's named answers. Anonymous answers, and name-optional answers given without a name, are kept with no name, no member and no time, so nobody can see who gave them, admins included; their results show only once the survey has closed, or everyone has answered, and at least 3 people have answered. Named results show once 3 people have answered, a club survey's chosen 20%, 50% or 80%, or everyone when everyone must answer; every survey's results show once it closes. Members never see each other's answers. Whoever sees the results can download them as a PDF or spreadsheet, except captains. |
@@ -5496,7 +5540,10 @@ Working With Children Check, and another admin must do it.
   and guardians copied on everything to and from a child. The one place a child writes back is a
   chat group of their own squad or team, and only while one of its coaches is in it, with every
   post copied to the child's parents and able to be hidden by the coaches (text kept), so the child is
-  never alone with an adult. Members can archive a message but never
+  never alone with an adult. A child can block anyone whose posts they don't want to see, an adult
+  can't block a child, a block never hides a parent's copy, and every block is told to the admins,
+  the Child Safety Officer and the Complaints Manager to follow up (see [Blocks in chat
+  groups](#blocks-in-chat-groups)). Members can archive a message but never
   delete one, and archiving moves only their own copy, so a child archiving a message never takes it
   from their parents' copy or from the club's records.
 - **Reading someone's messages takes two people and leaves a trail.** Admins don't read messages
