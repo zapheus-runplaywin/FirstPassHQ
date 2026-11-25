@@ -380,6 +380,7 @@ function useHomeData() {
     reloadUnread,
     // What the cards say.
     myCheckIn,
+    reloadMyCheckIn,
     isCheckInCoach,
     checkInSummary,
     checkInOverview,

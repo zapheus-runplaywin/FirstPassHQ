@@ -57,6 +57,52 @@ export function scoresLine(scores: CheckInScores) {
   return checkInQuestions.map((q) => `${q.label} ${scores[q.key]}`).join(' · ');
 }
 
+/** The four answers while a check-in is being filled in: null until answered. */
+export type CheckInAnswers = { [K in keyof CheckInScores]: number | null };
+
+export const noAnswers: CheckInAnswers = { sleep: null, soreness: null, stress: null, mood: null };
+
+/** How many of the four questions have an answer. */
+export function answeredCount(answers: CheckInAnswers) {
+  return checkInQuestions.filter((q) => answers[q.key] !== null).length;
+}
+
+/** All four are answered, so the check-in can be saved. */
+export function allAnswered(answers: CheckInAnswers): answers is CheckInScores {
+  return answeredCount(answers) === checkInQuestions.length;
+}
+
+/**
+ * The answers carried from the check-in sheet to the full check-in, as route
+ * params such as `{ sleep: '4' }`. Anything that isn't a whole score from 1 to
+ * 5 is left out, so a hand-typed link can't put a bad value in the form.
+ */
+export function answersFromParams(params: Record<string, string | string[] | undefined>) {
+  const answers: Partial<CheckInScores> = {};
+  for (const q of checkInQuestions) {
+    const value = params[q.key];
+    if (typeof value === 'string' && /^[1-5]$/.test(value)) answers[q.key] = Number(value);
+  }
+  return answers;
+}
+
+/** The answers given so far, as route params for the full check-in. */
+export function answersToParams(answers: CheckInAnswers) {
+  const params: Record<string, string> = {};
+  for (const q of checkInQuestions) {
+    const value = answers[q.key];
+    if (value !== null) params[q.key] = String(value);
+  }
+  return params;
+}
+
+/** Who sees an athlete's answers, said before they answer. */
+export function checkInPrivacy(minor: boolean) {
+  return `Your coaches see your answers so they can adjust training, and a low score lets them know to check in with you.${
+    minor ? ' As you’re under 18, they see them once a parent or guardian agrees.' : ''
+  }`;
+}
+
 /** Today in the member's own time zone, such as "2026-10-07". */
 export function today() {
   return clubToday();

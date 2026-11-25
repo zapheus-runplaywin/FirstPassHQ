@@ -279,7 +279,7 @@ describe('what leads Today', () => {
   /** The pieces of Today, top to bottom. */
   function order() {
     return screen
-      .getAllByText(/^(Confirm who you are|Concerns|Next up|Selection assessments|Selection|Needs you|Later this week)$/)
+      .getAllByText(/^(Confirm who you are|Safeguarding|Next up|Selection assessments|Selection|Needs you|Later this week)$/)
       .map((t) => String(t.props.children));
   }
 
@@ -306,7 +306,7 @@ describe('what leads Today', () => {
 
   it('safeguarding work comes before the calendar', async () => {
     await openToday('admin', [], { check_ins: [] });
-    expect(order().slice(0, 2)).toEqual(['Concerns', 'Next up']);
+    expect(order().slice(0, 2)).toEqual(['Safeguarding', 'Next up']);
   });
 
   it('a selection round that is running sits with what needs the panel, under what is next', async () => {

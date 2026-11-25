@@ -2,6 +2,7 @@ import { router, useFocusEffect } from 'expo-router';
 import { useCallback, useEffect, useState } from 'react';
 import { AppState, Pressable, StyleSheet, View } from 'react-native';
 
+import { CheckInSheet } from '@/components/check-in-sheet';
 import { Columns } from '@/components/columns';
 import { WaitingForGuardian } from '@/components/guardian-link';
 import {
@@ -15,7 +16,16 @@ import {
 } from '@/components/home/banners';
 import { HomeCardView } from '@/components/home/cards';
 import { TabHeader } from '@/components/home/tab-header';
-import { ClubAndDate, Greeting, LaterEvents, NeedsYou, NextUp } from '@/components/home/today';
+import {
+  CHECK_IN_SAVED_MS,
+  CheckInSaved,
+  ClubAndDate,
+  Greeting,
+  LaterEvents,
+  NeedsYou,
+  NextUp,
+  SafeguardingPanel,
+} from '@/components/home/today';
 import { HomeHeader } from '@/components/home-header';
 import { SafeguardingContactsCard } from '@/components/safeguarding';
 import { Screen } from '@/components/screen';
@@ -25,6 +35,7 @@ import { VolunteerOnboarding } from '@/components/volunteer-onboarding';
 import { Spacing } from '@/constants/theme';
 import { COLUMNS_MIN_WIDTH, useWideLayout } from '@/hooks/use-layout';
 import { useTheme } from '@/hooks/use-theme';
+import { isMinor } from '@/lib/age';
 import { useAuth } from '@/lib/auth';
 import { useClub } from '@/lib/club';
 import { useClubChoice } from '@/lib/club-choice';
@@ -32,7 +43,7 @@ import { useHome, type SingleScreen } from '@/lib/home';
 import { sessionActions } from '@/lib/session';
 import { useSessionBasics } from '@/lib/use-session-actions';
 import type { HomeCard } from '@/lib/home-layout';
-import { upcoming } from '@/lib/today';
+import { splitSafeguarding, upcoming } from '@/lib/today';
 
 /**
  * Today, the first tab: where the member needs to be next and what needs
@@ -49,12 +60,41 @@ export default function TodayScreen() {
 const NEXT_UP_ACTIONS = 3;
 
 /** The cards that come before everything else on Today. */
-const LEADS: HomeCard[] = ['verification', 'concerns'];
+const LEADS: HomeCard[] = ['verification'];
+
+/** Today shows this card as the safeguarding panel, with the safeguarding to-dos in it. */
+const AS_PANEL: HomeCard = 'concerns';
+
+/**
+ * The daily check-in over Today: the to-do opens it as a sheet, and once it
+ * has saved, Today says so for a few seconds with the way to change it.
+ */
+function useCheckInSheet() {
+  const [open, setOpen] = useState(false);
+  // When the sheet last saved, while Today is still saying so.
+  const [savedAt, setSavedAt] = useState<number | null>(null);
+  useEffect(() => {
+    if (savedAt === null) return;
+    const timer = setTimeout(() => setSavedAt(null), CHECK_IN_SAVED_MS);
+    return () => clearTimeout(timer);
+  }, [savedAt]);
+  // Leaving Today ends it: the check-in is changed from its own page after that.
+  useFocusEffect(useCallback(() => () => setSavedAt(null), []));
+  return { open, setOpen, saved: savedAt !== null, setSavedAt };
+}
 
 function Today() {
   const home = useHome();
   const club = useClub();
   const now = useNow();
+  const { profile } = useAuth();
+  const checkIn = useCheckInSheet();
+  const { reloadMyCheckIn } = home;
+  function openCheckIn() {
+    // In case it was done or changed on another phone since Today last loaded.
+    reloadMyCheckIn();
+    checkIn.setOpen(true);
+  }
   // A tablet on its side: the calendar on the left, what needs you on the right.
   const sideBySide = useWideLayout(COLUMNS_MIN_WIDTH);
   const { next, later, laterTitle } = upcoming(home.events ?? [], now);
@@ -86,7 +126,12 @@ function Today() {
         onOpenCalendar={() => router.navigate('/calendar')}
       />
     ) : null;
-  const cards = home.cards('today');
+  const cards = home.cards('today').filter((card) => card !== AS_PANEL);
+  // Safeguarding work leads the day in its own panel, for the people the
+  // concerns register is open to; everything else stays under Needs you.
+  const registerOpen = home.cards('today').includes(AS_PANEL);
+  const { safeguarding, rest } = splitSafeguarding(home.todos);
+  const showPanel = registerOpen || safeguarding.length > 0;
   // The work of these weeks (a selection round that is running) sits with what needs you.
   const needsYou = (
     <>
@@ -96,11 +141,14 @@ function Today() {
           <HomeCardView key={card} card={card} />
         ))}
       <NeedsYou
-        todos={home.todos}
+        todos={rest}
+        otherWork={safeguarding.length > 0}
         personalTasks={home.personalTasks}
         onToggleTask={home.setTaskDone}
+        onCheckIn={openCheckIn}
         now={now}
       />
+      {checkIn.saved ? <CheckInSaved onChange={openCheckIn} /> : null}
     </>
   );
 
@@ -128,6 +176,9 @@ function Today() {
         .map((card) => (
           <HomeCardView key={card} card={card} />
         ))}
+      {showPanel ? (
+        <SafeguardingPanel todos={safeguarding} counts={registerOpen ? home.concernCounts : null} />
+      ) : null}
 
       {sideBySide ? (
         <Columns
@@ -148,6 +199,18 @@ function Today() {
           {laterEvents}
         </>
       )}
+
+      {checkIn.open ? (
+        <CheckInSheet
+          existing={home.myCheckIn ?? null}
+          minor={!!profile && isMinor(profile.date_of_birth, profile.under_17)}
+          onSaved={async () => {
+            await reloadMyCheckIn();
+            checkIn.setSavedAt(Date.now());
+          }}
+          onClose={() => checkIn.setOpen(false)}
+        />
+      ) : null}
     </Screen>
   );
 }

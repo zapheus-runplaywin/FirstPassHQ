@@ -9,6 +9,7 @@ import { router } from 'expo-router';
 import { useState } from 'react';
 import { Pressable, StyleSheet, View } from 'react-native';
 
+import { ConcernLights, concernLightsLabel } from '@/components/concern-lights';
 import { CountBadge, IconSquare } from '@/components/home/feature-card';
 import { Icon } from '@/components/icon';
 import { TaskRow } from '@/components/task-row';
@@ -19,6 +20,7 @@ import { StatusColours } from '@/constants/status';
 import { BrandFonts, Spacing } from '@/constants/theme';
 import { useTheme } from '@/hooks/use-theme';
 import type { CalendarEvent } from '@/lib/calendar';
+import type { ConcernCounts } from '@/lib/concerns';
 import { formatEventTime, formatShortDay } from '@/lib/format';
 import type { PersonalTask } from '@/lib/personal-tasks';
 import type { SessionAction } from '@/lib/session';
@@ -255,11 +257,17 @@ export function NeedsYou({
   todos,
   personalTasks = [],
   onToggleTask,
+  onCheckIn,
+  otherWork = false,
   now,
 }: {
   todos: Todo[];
   personalTasks?: PersonalTask[];
   onToggleTask?: (task: PersonalTask, done: boolean) => void;
+  /** Opens the daily check-in over Today, in place of its own page. */
+  onCheckIn?: () => void;
+  /** Something else on Today is waiting (the safeguarding panel), so an empty list isn't "set for today". */
+  otherWork?: boolean;
   now: Date;
 }) {
   const theme = useTheme();
@@ -273,8 +281,6 @@ export function NeedsYou({
     onToggleTask?.(task, done);
   }
 
-  const divider = { borderTopWidth: 1, borderTopColor: theme.backgroundSelected };
-
   return (
     <View style={styles.section} testID="needs-you">
       {count > 0 ? (
@@ -285,7 +291,7 @@ export function NeedsYou({
           <CountBadge count={count} />
         </View>
       ) : null}
-      {count === 0 ? <AllDone /> : null}
+      {count === 0 && !otherWork ? <AllDone /> : null}
       {groups.map((group) =>
         group.entries.length === 0 ? null : (
           <View key={group.title ?? 'all'} style={styles.group}>
@@ -304,37 +310,14 @@ export function NeedsYou({
                     divider={index > 0}
                   />
                 ) : (
-                  <Pressable
+                  <TodoRow
                     key={entry.todo.key}
-                    accessibilityRole="button"
-                    accessibilityHint="Opens it so you can tick it off"
-                    onPress={() => router.push(entry.todo.href)}
-                    style={({ pressed }) => [
-                      styles.todoRow,
-                      index > 0 && divider,
-                      pressed && { backgroundColor: theme.backgroundSelected },
-                    ]}>
-                    <AlertEdge alert={entry.todo.alert} />
-                    <IconSquare name={todoIcon(entry.todo.href)} />
-                    <View style={styles.rowText}>
-                      <View style={styles.titleRow}>
-                        <AlertIcon alert={entry.todo.alert} />
-                        <ThemedText type="smallBold" style={styles.shrink}>
-                          {entry.todo.title}
-                        </ThemedText>
-                      </View>
-                      <ThemedText type="small" themeColor="textSecondary">
-                        {entry.todo.detail}
-                      </ThemedText>
-                      {/* Under the words, so a long title keeps the row's width. */}
-                      {entry.todo.alert ? (
-                        <View style={styles.alertBadge}>
-                          <AlertBadge alert={entry.todo.alert} />
-                        </View>
-                      ) : null}
-                    </View>
-                    <Icon name="chevron-right" size={18} color={theme.textSecondary} />
-                  </Pressable>
+                    todo={entry.todo}
+                    divider={index > 0}
+                    onPress={
+                      entry.todo.key === CHECK_IN_TODO && onCheckIn ? onCheckIn : undefined
+                    }
+                  />
                 ),
               )}
             </Card>
@@ -370,6 +353,140 @@ export function NeedsYou({
           </ThemedText>
         </Pressable>
       </View>
+    </View>
+  );
+}
+
+/** One of the club's jobs for the member: its warning, what it is, and where it's done. */
+function TodoRow({
+  todo,
+  divider,
+  onPress,
+}: {
+  todo: Todo;
+  /** A line above it, when it isn't the first in its list. */
+  divider: boolean;
+  /** In place of opening the to-do's screen. */
+  onPress?: () => void;
+}) {
+  const theme = useTheme();
+  return (
+    <Pressable
+      accessibilityRole="button"
+      accessibilityHint="Opens it so you can tick it off"
+      onPress={onPress ?? (() => router.push(todo.href))}
+      style={({ pressed }) => [
+        styles.todoRow,
+        divider && { borderTopWidth: 1, borderTopColor: theme.backgroundSelected },
+        pressed && { backgroundColor: theme.backgroundSelected },
+      ]}>
+      <AlertEdge alert={todo.alert} />
+      <IconSquare name={todoIcon(todo.href)} />
+      <View style={styles.rowText}>
+        <View style={styles.titleRow}>
+          <AlertIcon alert={todo.alert} />
+          <ThemedText type="smallBold" style={styles.shrink}>
+            {todo.title}
+          </ThemedText>
+        </View>
+        <ThemedText type="small" themeColor="textSecondary">
+          {todo.detail}
+        </ThemedText>
+        {/* Under the words, so a long title keeps the row's width. */}
+        {todo.alert ? (
+          <View style={styles.alertBadge}>
+            <AlertBadge alert={todo.alert} />
+          </View>
+        ) : null}
+      </View>
+      <Icon name="chevron-right" size={18} color={theme.textSecondary} />
+    </Pressable>
+  );
+}
+
+/**
+ * Safeguarding, before anything else on Today, for the people the concerns
+ * register is open to (admins, the safeguarding posts and anyone acting in
+ * one, and someone a concern was escalated to): the register's three counts,
+ * then each piece of safeguarding work that is waiting, most pressing first.
+ * Counts and references only, so nothing a concern says shows at a glance.
+ */
+export function SafeguardingPanel({
+  todos,
+  counts,
+}: {
+  /** The safeguarding to-dos, most pressing first (splitSafeguarding). */
+  todos: Todo[];
+  /** The register's counts, for someone it is open to. */
+  counts: ConcernCounts | null;
+}) {
+  const theme = useTheme();
+  return (
+    <View style={styles.section} testID="safeguarding-panel">
+      <Card style={styles.list}>
+        <Pressable
+          accessibilityRole="button"
+          accessibilityLabel={
+            counts
+              ? `Safeguarding. ${concernLightsLabel(counts)}. Opens the concerns register`
+              : 'Safeguarding. Opens the concerns register'
+          }
+          onPress={() => router.push('/concerns')}
+          style={({ pressed }) => [
+            styles.panelHead,
+            pressed && { backgroundColor: theme.backgroundSelected },
+          ]}>
+          <View style={styles.panelTitle}>
+            <Icon name="shield" size={18} color={theme.text} />
+            <ThemedText type="smallBold" style={styles.grow}>
+              Safeguarding
+            </ThemedText>
+            <ThemedText type="small" themeColor="textSecondary">
+              Concerns register
+            </ThemedText>
+            <Icon name="chevron-right" size={18} color={theme.textSecondary} />
+          </View>
+          {counts ? <ConcernLights counts={counts} /> : null}
+          {todos.length === 0 ? (
+            <ThemedText type="small" themeColor="textSecondary" testID="safeguarding-quiet">
+              Nothing is waiting on you.
+            </ThemedText>
+          ) : null}
+        </Pressable>
+        {todos.map((todo) => (
+          <TodoRow key={todo.key} todo={todo} divider />
+        ))}
+      </Card>
+    </View>
+  );
+}
+
+/** The to-do that the check-in sheet answers (src/lib/todos.ts). */
+export const CHECK_IN_TODO = 'check-in';
+
+/** How long "Check-in saved for today" stays on Today, with Change beside it. */
+export const CHECK_IN_SAVED_MS = 10_000;
+
+/**
+ * Said for a few seconds once the check-in sheet has saved, with the way to
+ * correct a mistaken tap. A check-in is never removed, only changed.
+ */
+export function CheckInSaved({ onChange }: { onChange: () => void }) {
+  const theme = useTheme();
+  return (
+    <View
+      testID="check-in-saved"
+      accessibilityLiveRegion="polite"
+      style={[styles.undo, { backgroundColor: theme.backgroundElement }]}>
+      <Icon name="check" size={16} color={theme.positive} />
+      <ThemedText type="small" themeColor="textSecondary" style={styles.grow} numberOfLines={1}>
+        Check-in saved for today
+      </ThemedText>
+      <Pressable accessibilityRole="button" hitSlop={8} onPress={onChange}>
+        <ThemedText type="smallBold" style={{ color: theme.tint }}>
+          Change
+        </ThemedText>
+      </Pressable>
     </View>
   );
 }
@@ -517,6 +634,15 @@ const styles = StyleSheet.create({
   },
   grow: {
     flex: 1,
+  },
+  panelHead: {
+    gap: Spacing.two,
+    padding: Spacing.three,
+  },
+  panelTitle: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: Spacing.two,
   },
   undo: {
     flexDirection: 'row',
