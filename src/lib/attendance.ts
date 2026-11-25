@@ -60,3 +60,18 @@ export function filledFromAbsences(register: AttendanceMark[], reportedAway: str
   const away = new Set(reportedAway);
   return register.filter((m) => m.present === null && away.has(m.profile_id)).map((m) => m.profile_id);
 }
+
+/** How far back a card's attendance count looks. */
+export const CARD_ATTENDANCE_WEEKS = 4;
+
+/**
+ * Where an athlete's attendance stands, for the card that opens it:
+ * "At 11 of 12 sessions in 4 weeks". Null with no sessions to count, so the
+ * card says what it opens instead.
+ */
+export function attendanceCountLabel(sessions: { present: boolean }[] | null | undefined) {
+  if (!sessions || sessions.length === 0) return null;
+  const present = sessions.filter((s) => s.present).length;
+  const total = sessions.length;
+  return `At ${present} of ${total} ${total === 1 ? 'session' : 'sessions'} in ${CARD_ATTENDANCE_WEEKS} weeks`;
+}

@@ -6,8 +6,7 @@
 import { router } from 'expo-router';
 
 import { CardGrid } from '@/components/columns';
-import { FeatureCard } from '@/components/home/feature-card';
-import { ThemedText } from '@/components/themed-text';
+import { FeatureCard, StatusLine } from '@/components/home/feature-card';
 import { Spacing } from '@/constants/theme';
 import { useAuth } from '@/lib/auth';
 import { childLinks, childStatus, type ChildFacts, type MyChild } from '@/lib/children';
@@ -22,15 +21,13 @@ export function ChildCard({ child, facts }: { child: MyChild; facts: ChildFacts 
       icon="user"
       title={child.name}
       detail={consent.text}
-      detailColor={consent.attention ? 'tint' : 'textSecondary'}
+      detailTone={consent.attention ? 'attention' : 'quiet'}
       badge={facts.newActivity}
       onPress={() =>
         router.push({ pathname: '/child/[id]', params: { id: child.id, name: child.name } })
       }>
       {rest.map((line) => (
-        <ThemedText key={line.key} type="small" themeColor={line.attention ? 'tint' : 'textSecondary'}>
-          {line.text}
-        </ThemedText>
+        <StatusLine key={line.key} text={line.text} tone={line.attention ? 'attention' : 'quiet'} />
       ))}
     </FeatureCard>
   );
@@ -55,7 +52,7 @@ export function ChildLinks({ child, facts }: { child: MyChild; facts: ChildFacts
           icon={link.icon}
           title={link.title}
           detail={link.detail}
-          detailColor={link.attention ? 'tint' : 'textSecondary'}
+          detailTone={link.attention ? 'attention' : 'quiet'}
           badge={link.badge}
           onPress={() => router.push(link.href)}
         />

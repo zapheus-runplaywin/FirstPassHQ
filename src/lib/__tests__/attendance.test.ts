@@ -1,4 +1,5 @@
 import {
+  attendanceCountLabel,
   filledFromAbsences,
   marksToSave,
   percent,
@@ -87,5 +88,20 @@ describe('reported absences in a new register', () => {
     const before = JSON.stringify(register);
     withReportedAbsences(register, ['a1', 'a2']);
     expect(JSON.stringify(register)).toBe(before);
+  });
+});
+
+describe('the attendance count on a card', () => {
+  it('counts the sessions the athlete was at', () => {
+    expect(attendanceCountLabel([{ present: true }, { present: true }, { present: false }])).toBe(
+      'At 2 of 3 sessions in 4 weeks',
+    );
+    expect(attendanceCountLabel([{ present: false }])).toBe('At 0 of 1 session in 4 weeks');
+  });
+
+  it('says nothing with no sessions to count, so the card says what it opens', () => {
+    expect(attendanceCountLabel([])).toBeNull();
+    expect(attendanceCountLabel(null)).toBeNull();
+    expect(attendanceCountLabel(undefined)).toBeNull();
   });
 });

@@ -6,6 +6,9 @@ import { ClubDefaults, FirstPass } from '@/constants/club';
 
 export type ClubColours = { background: string; text: string; hero: string };
 
+/** The greens "done" is shown in: the first for light panels, the second for dark. */
+export const StatusGreens = ['#166534', '#5BD68A'] as const;
+
 /**
  * The app's palette, worked out from the club's three colours. The app has
  * one theme: the club's. Panels and secondary text are blends of the
@@ -15,10 +18,11 @@ export function makeColors({ background, text, hero }: ClubColours) {
   // On FirstPass's own deep navy and white, panels and secondary text use the
   // brand guide's dark-theme colours rather than blends.
   const brand = same(background, FirstPass.navy) && same(text, '#FFFFFF');
+  const panel = brand ? FirstPass.panel : mix(background, text, 0.11);
   return {
     text,
     background,
-    backgroundElement: brand ? FirstPass.panel : mix(background, text, 0.11),
+    backgroundElement: panel,
     backgroundSelected: mix(background, text, 0.18),
     textSecondary: brand ? FirstPass.inkMuted : mix(text, background, 0.286),
     /** Links, back buttons and other coloured text. */
@@ -27,7 +31,27 @@ export function makeColors({ background, text, hero }: ClubColours) {
     accent: hero,
     /** Text on a filled button: black or white, whichever reads better. */
     onAccent: contrastRatio(hero, '#000000') >= contrastRatio(hero, '#FFFFFF') ? '#000000' : '#FFFFFF',
+    /**
+     * Something that needs the member, such as consent still to give. It is
+     * the text colour, shown in bold with a mark beside it, and never the
+     * club's colour: on a gold club a warning mustn't look like a link.
+     */
+    attention: text,
+    /**
+     * Done, or all clear: whichever green reads better on a panel. On the few
+     * mid-tone clubs where neither reads well enough as text, it is the text
+     * colour, and the tick beside it still says "done".
+     */
+    positive: positiveOn(panel, text),
   };
+}
+
+function positiveOn(panel: string, text: string) {
+  const green = StatusGreens.reduce<string>(
+    (best, next) => (contrastRatio(next, panel) > contrastRatio(best, panel) ? next : best),
+    StatusGreens[0],
+  );
+  return contrastRatio(green, panel) >= 4.5 ? green : text;
 }
 
 export type Palette = ReturnType<typeof makeColors>;

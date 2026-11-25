@@ -406,7 +406,7 @@ describe('A child’s page for a parent or guardian', () => {
       rpcs: { medical_profile: medical({ athlete_id: 'child-1', role: 'guardian' }) },
     });
     expect(screen.getByText('Medical and emergency')).toBeTruthy();
-    await fireEvent.press(screen.getByText('Emergency contacts, allergies, conditions, medications and an action plan'));
+    await fireEvent.press(screen.getByText('Emergency contacts and medical details'));
     await settle();
     expect(callsTo('medical_profile')).toEqual([{ p_athlete_id: 'child-1' }]);
   });

@@ -11,6 +11,7 @@ import { useClub } from '@/lib/club';
 import { useOpenInjuries } from '@/lib/injuries';
 import { useMyMedicalReviews } from '@/lib/medical';
 import { hasRole } from '@/lib/roles';
+import { useAttendanceCount } from '@/lib/use-attendance-count';
 
 /**
  * One child's page, opened from their card in the Family tab: everything
@@ -33,13 +34,24 @@ export default function ChildScreen() {
   );
   const [refreshing, setRefreshing] = useState(false);
 
+  const child = children.find((c) => c.id === id);
+  // Asked only for a child the database has listed as theirs.
+  const { attendance, reloadAttendance } = useAttendanceCount(
+    child?.id,
+    !!child && features.attendance,
+  );
+
   async function onRefresh() {
     setRefreshing(true);
-    await Promise.all([reloadChildren(), reloadInjuries(), reloadMedicalReviews()]);
+    await Promise.all([
+      reloadChildren(),
+      reloadInjuries(),
+      reloadMedicalReviews(),
+      reloadAttendance(),
+    ]);
     setRefreshing(false);
   }
 
-  const child = children.find((c) => c.id === id);
   // Until the list is back the title is the name the card passed; it is never
   // shown for a child who turns out not to be theirs.
   const waiting = isGuardian && !loaded;
@@ -54,6 +66,7 @@ export default function ChildScreen() {
             newActivity: activityNew[child.id] ?? 0,
             injuries: features.injuries ? openInjuries : [],
             medicalReviews,
+            attendance,
           }}
         />
       ) : waiting ? null : (

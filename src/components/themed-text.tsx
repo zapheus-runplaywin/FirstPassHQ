@@ -23,6 +23,8 @@ export function ThemedText({ style, type = 'default', themeColor, ...rest }: The
         type === 'link' && styles.link,
         type === 'linkPrimary' && styles.linkPrimary,
         type === 'code' && styles.code,
+        // What needs the member is in bold, in the text colour (never the club's).
+        themeColor === 'attention' && (type === 'small' || type === 'default') && styles.attention,
         style,
       ]}
       {...rest}
@@ -31,6 +33,9 @@ export function ThemedText({ style, type = 'default', themeColor, ...rest }: The
 }
 
 const styles = StyleSheet.create({
+  attention: {
+    fontFamily: BrandFonts.bold,
+  },
   small: {
     fontFamily: BrandFonts.regular,
     fontSize: 14,

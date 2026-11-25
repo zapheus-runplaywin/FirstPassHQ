@@ -17,6 +17,7 @@ import { ThemedText } from '@/components/themed-text';
 import { Card } from '@/components/ui';
 import { Spacing } from '@/constants/theme';
 import { roundsLabel, selectionHomeHref, selectionInfoLabel } from '@/lib/assessments';
+import { attendanceCountLabel } from '@/lib/attendance';
 import { useAuth } from '@/lib/auth';
 import { checkInOverviewLabel, checkInSummaryLabel } from '@/lib/check-ins';
 import { useClub } from '@/lib/club';
@@ -32,6 +33,7 @@ import {
 import type { HomeCard } from '@/lib/home-layout';
 import { injuriesSummary } from '@/lib/injuries';
 import { teamPositionLabel } from '@/lib/labels';
+import { useAttendanceCount } from '@/lib/use-attendance-count';
 import { pendingRequestsLabel } from '@/lib/use-pending-requests';
 
 /** One of the old Home cards, by name. */
@@ -46,7 +48,8 @@ function DailyCheckIn() {
     <FeatureCard
       icon="smile"
       title="Daily check-in"
-      detail={myCheckIn ? '✓ Done for today' : 'Not done yet today'}
+      detail={myCheckIn ? 'Done for today' : 'Not done yet today'}
+      detailTone={myCheckIn ? 'done' : 'quiet'}
       onPress={() => router.push('/check-in')}
     />
   );
@@ -84,12 +87,13 @@ function Attendance() {
 
 function MyAttendance() {
   const { session } = useAuth();
+  const { attendance } = useAttendanceCount(session?.user.id, !!session);
   if (!session) return null;
   return (
     <FeatureCard
       icon="check-square"
       title="My attendance"
-      detail="Your sessions, and tell your coaches if you’ll be away"
+      detail={attendanceCountLabel(attendance) ?? 'Your sessions and absences'}
       onPress={() =>
         router.push({ pathname: '/attendance/family/[id]', params: { id: session.user.id } })
       }
@@ -153,7 +157,7 @@ function Reports() {
     <FeatureCard
       icon="bar-chart-2"
       title="Reports"
-      detail="The club’s checks, medical details checks, training, attendance and award results"
+      detail="Checks, medical details, training, attendance and awards"
       onPress={() => router.push('/admin/reports')}
     />
   );
@@ -256,7 +260,7 @@ function Registers() {
     <FeatureCard
       icon="folder"
       title="Registers"
-      detail="The club’s policies and conflicts of interest"
+      detail="Policies and conflicts of interest"
       onPress={() => router.push('/registers')}
     />
   );

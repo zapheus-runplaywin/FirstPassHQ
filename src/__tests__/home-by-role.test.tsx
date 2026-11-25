@@ -15,6 +15,7 @@ import AsyncStorage from '@react-native-async-storage/async-storage';
 import { router } from 'expo-router';
 import { act, fireEvent, renderRouter, screen, within } from 'expo-router/testing-library';
 
+import { argsOf, rpcNames } from './helpers/forms';
 import {
   CHILD_CONSENTS,
   personas,
@@ -111,7 +112,7 @@ const ITEMS = {
   myAttendance: 'My attendance',
   integrity: 'Certificates and everyone’s progress',
   concerns: 'The concerns register',
-  reports: 'The club’s checks, medical details checks, training, attendance and award results',
+  reports: 'Checks, medical details, training, attendance and awards',
   administration: 'Administration',
   guardianOf: 'Guardian of',
   // With a child linked: one card for each child, and adding another.
@@ -120,9 +121,9 @@ const ITEMS = {
   consent: 'Consent',
   whatsChanged: 'What’s changed',
   recordViews: 'Who has viewed their records',
-  childGoals: 'Game goals and reflections',
-  childAttendance: 'Their sessions, and tell their coaches if they’ll be away',
-  childCheckIns: 'Their daily check-ins and notes from the last four weeks',
+  childGoals: 'Goals and reflections',
+  childAttendance: 'Their sessions and absences',
+  childCheckIns: 'Check-ins and notes, last four weeks',
   groups: 'My squads and teams',
   yourDetails: 'Your details',
   yourTasks: 'Your own list of things to remember',
@@ -395,6 +396,30 @@ describe('the order of each tab', () => {
     await openHome('admin');
     expectInOrder(['Raise a concern', 'Concerns', 'Next up', 'Needs you']);
   });
+
+  // Cards lead with where things stand (HQ redesign, item 6).
+  it('an athlete’s My attendance says how many sessions they were at, asking only about themselves', async () => {
+    await openTab(
+      { ...personas.athlete, rpcs: { ...personas.athlete.rpcs, athlete_attendance: [{ present: true }, { present: false }] } },
+      '/me',
+    );
+    expect(screen.getByText('At 1 of 2 sessions in 4 weeks')).toBeTruthy();
+    expect(argsOf('athlete_attendance').map((args) => args?.p_profile_id)).toEqual(['athlete']);
+  });
+
+  it('with no sessions yet, My attendance says what it opens', async () => {
+    await openTab('athlete', '/me');
+    expect(screen.getByText('Your sessions and absences')).toBeTruthy();
+  });
+
+  it.each<PersonaName>(['coach', 'manager', 'guardian', 'committee', 'admin', 'physio', 'guest'])(
+    '%s, with no My attendance card, isn’t asked the database for attendance',
+    async (who) => {
+      await openTab(who, '/me');
+      expect(screen.queryByText('My attendance')).toBeNull();
+      expect(rpcNames()).not.toContain('athlete_attendance');
+    },
+  );
 
   it('an athlete’s Me: details, check-in, attendance, injuries, tasks, safety, then account', async () => {
     await openTab('athlete', '/me');
@@ -1221,16 +1246,16 @@ describe('feature switches', () => {
   it('the registers stay hidden until an admin turns them on', async () => {
     setClubFeatures({});
     await openTab('committee', '/club');
-    expect(screen.queryByText('The club’s policies and conflicts of interest')).toBeNull();
+    expect(screen.queryByText('Policies and conflicts of interest')).toBeNull();
     setClubFeatures({ registers: true });
     await openTab('admin', '/club');
-    expect(screen.getByText('The club’s policies and conflicts of interest')).toBeTruthy();
+    expect(screen.getByText('Policies and conflicts of interest')).toBeTruthy();
   });
 
   it('a committee member opens the registers from Club', async () => {
     setClubFeatures({ registers: true });
     await openTab('committee', '/club');
-    await fireEvent.press(screen.getByText('The club’s policies and conflicts of interest'));
+    await fireEvent.press(screen.getByText('Policies and conflicts of interest'));
     await act(async () => {});
     expect(screen.getByText('screen:registers/index')).toBeTruthy();
     expect(screen).toHavePathname('/registers');
@@ -1244,10 +1269,10 @@ describe('feature switches', () => {
       ['guardian', '/family'],
     ] as const) {
       await openHome(who);
-      expect(screen.queryByText('The club’s policies and conflicts of interest')).toBeNull();
+      expect(screen.queryByText('Policies and conflicts of interest')).toBeNull();
       for (const url of [hub, '/me']) {
         await goTo(url);
-        expect(screen.queryByText('The club’s policies and conflicts of interest')).toBeNull();
+        expect(screen.queryByText('Policies and conflicts of interest')).toBeNull();
       }
     }
   }, 20000);

@@ -31,6 +31,39 @@ export function IconSquare({ name }: { name: IconName }) {
 }
 
 /**
+ * How a line on a card reads: quietly, as something that needs the member, or
+ * as done. Never in the club's colour, which is kept for buttons, links and
+ * the current tab.
+ */
+export type StatusTone = 'quiet' | 'attention' | 'done';
+
+/** One line saying where something is up to, with a mark when it isn't quiet. */
+export function StatusLine({ text, tone = 'quiet' }: { text: string; tone?: StatusTone }) {
+  const theme = useTheme();
+  if (tone === 'quiet') {
+    return (
+      <ThemedText type="small" themeColor="textSecondary">
+        {text}
+      </ThemedText>
+    );
+  }
+  const done = tone === 'done';
+  return (
+    <View style={styles.status}>
+      <Icon
+        name={done ? 'check' : 'alert-circle'}
+        size={14}
+        color={done ? theme.positive : theme.attention}
+        style={styles.statusMark}
+      />
+      <ThemedText type="small" themeColor={done ? 'positive' : 'attention'} style={styles.statusText}>
+        {text}
+      </ThemedText>
+    </View>
+  );
+}
+
+/**
  * One feature in a hub or in Me: an icon, its name, a line saying where it's
  * up to, a count when something is waiting, and the whole row opens it.
  */
@@ -38,7 +71,7 @@ export function FeatureCard({
   icon,
   title,
   detail,
-  detailColor = 'textSecondary',
+  detailTone = 'quiet',
   badge = 0,
   onPress,
   children,
@@ -46,7 +79,7 @@ export function FeatureCard({
   icon: IconName;
   title: string;
   detail?: string;
-  detailColor?: 'textSecondary' | 'tint';
+  detailTone?: StatusTone;
   badge?: number;
   onPress: () => void;
   /** More under the detail line, such as the concern traffic lights. */
@@ -67,11 +100,7 @@ export function FeatureCard({
       <IconSquare name={icon} />
       <View style={styles.text}>
         <ThemedText type="smallBold">{title}</ThemedText>
-        {detail ? (
-          <ThemedText type="small" themeColor={detailColor}>
-            {detail}
-          </ThemedText>
-        ) : null}
+        {detail ? <StatusLine text={detail} tone={detailTone} /> : null}
         {children}
       </View>
       <CountBadge count={badge} />
@@ -101,6 +130,19 @@ const styles = StyleSheet.create({
   text: {
     flex: 1,
     gap: Spacing.half,
+    minWidth: 0,
+  },
+  status: {
+    flexDirection: 'row',
+    alignItems: 'flex-start',
+    gap: Spacing.one,
+  },
+  // Level with the first line of the text beside it.
+  statusMark: {
+    marginTop: 3,
+  },
+  statusText: {
+    flex: 1,
     minWidth: 0,
   },
   badge: {
