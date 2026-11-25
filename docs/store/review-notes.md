@@ -70,9 +70,12 @@ App Store Connect > TestFlight > Test information.
 > clear them to play. The app gives no diagnosis or treatment.
 >
 > Athletes under 18 can't use the app until a verified parent or guardian is linked. There are no
-> direct messages, replies, feeds, profile pictures or likes. Messages go from coaches, managers,
-> the committee and admins to whole squads, teams or roles, and parents get a copy of every
-> message to or from their child.
+> direct messages, feeds, profile pictures, likes or following. Messages go from coaches,
+> managers, the committee and admins to whole squads, teams or roles. A club can also turn on
+> chat groups (off by default) for groups the club sets up by squad, team and role: under 18s
+> post only in their own team's group while a coach is in it, the group's coaches can hide any
+> post, and any member can report a post to the club's Child Safety Officer. Parents get a copy
+> of every message and group post to or from their child.
 >
 > The app contains no ads, tracking or purchases. Members delete their account in the app: Delete
 > account, at the bottom of the home screen.
@@ -82,7 +85,27 @@ App Store Connect > TestFlight > Test information.
 | Question | Answer | Source |
 | --- | --- | --- |
 | Why is a club's app public? | It serves any netball club; the club code picks the club, and DEMO shows it working. Not verified with Apple. If Apple objects, unlisted distribution is the fallback (tab D4) | `src/constants/clubs.ts`, `src/app/choose-club.tsx` |
-| How is user content moderated? | Only coaches, managers, the committee and admins send messages, to whole groups, and admins can remove anyone's access. There are no replies or direct messages. Anyone can raise a concern with the club's Child Safety Officer from Raise a concern | User guide: Messages, Raise a concern, Approving members |
+| How is user content moderated? | Messages come only from coaches, managers, the committee and admins, to whole groups. Chat groups are off unless a club turns them on, and hold only people the club puts together by squad, team and role; members can't make or join groups. A group's coaches (and in an admin's group, its admins) swipe a post to hide it from the group; the text is kept for safeguarding. Any member opens a message or post and taps Report this message, which raises a concern with the club's Child Safety Officer. Admins can close a group or remove a member's access. There are no direct messages | User guide: Messages, Chat groups, Raise a concern, Approving members; #294, #295 |
+| Can children talk to strangers? | No. A member under 18 posts only in their own squad's or team's automatic chat group while one of its coaches is in it, reads only in other groups, can't see who else is in a group, and has groups hidden until a verified parent is linked. Their parents get a copy of every post in those groups, their child's own included | `20261124600000_chat_groups.sql`; privacy and social media assessment, section 2, "Chat groups" |
 | Can I delete my account? | Yes: Delete account at the bottom of the home screen, then Delete my account permanently | `src/app/delete-account.tsx` |
 | Which sign-in methods are there? | Continue with Google, and Continue with Apple (Sign in with Apple) on iPhone and iPad. A member who chose Hide My Email isn't required to give a PlayHQ email. Parents and guardians still give the email they registered their child with, whatever the sign-in, because it is how the club checks an adult before linking them to a child | `src/lib/sign-in.ts`, `src/app/join.tsx` (#219) |
 | Is health data used for anything else? | No. It is seen only by the athlete, their parents, their coaches and physios (for under 18s only with a parent's consent) and admins | [data-inventory.md](data-inventory.md) rows 7 to 9 |
+
+## App Store: user-generated content (Guideline 1.2) and age rating
+
+Apple asks apps with content members write to have a way to report it, to act on reports, to
+block abusive users, and to give contact details
+([App Review Guidelines 1.2](https://developer.apple.com/app-store/review/guidelines/#user-generated-content)).
+What HQ has, for App Review Information or a reviewer's question:
+
+| Apple asks for | What HQ has | Where |
+| --- | --- | --- |
+| A way to filter objectionable material | Nobody outside the club can post: every member is approved by the club's admins, and chat groups hold only people the club puts together. A group's coaches hide posts with a swipe. No automatic word filter | Approving members; Chat groups |
+| A way to report offensive content | Report this message on any message or group post raises a concern with the club's Child Safety Officer | User guide, Raise a concern |
+| A way to block abusive users | No per-member block. Members can't be contacted outside the club's own groups, a member can hide any group, coaches hide posts, and admins can close a group or remove a member's access. **If Apple asks for a block button, tell the thread**: a "mute this member in groups" switch is the smallest fix | Chat groups; Approving members |
+| Published contact details | pivtmedia@gmail.com on the support page | [public-pages/support.md](public-pages/support.md) |
+
+In Apple's age rating questions (App Information > Age Rating), answer **Yes** to user-generated
+content and to messaging or chat, and **No** to unrestricted web access and advertising. The
+exact wording is **to confirm** when you open it. Step 2's `apple-listing.md` takes these answers
+over.

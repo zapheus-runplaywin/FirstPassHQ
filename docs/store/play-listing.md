@@ -27,6 +27,7 @@ name.
 > • Attendance at training and games, and absences athletes report ahead of time
 > • Injured athletes in your team and their current restrictions
 > • Session plans, game goals and athletes' training load
+> • Team chat groups with your managers, captains and physios, if your club turns them on
 >
 > FOR ATHLETES AND PARENTS
 > • The club calendar and your team's events on the home screen
@@ -45,7 +46,9 @@ name.
 > BUILT FOR CHILD SAFETY
 > • Athletes under 18 stay locked until a verified parent or guardian is linked
 > • Parents get a copy of every message to or from their child
-> • No direct messages, replies, feeds, profile pictures or likes
+> • No direct messages, feeds, profile pictures, likes or following
+> • Chat groups only if your club turns them on. Under 18s post only in their own team's
+>   coach-led group, coaches can hide any post, and parents get a copy of every post
 > • Parents see who opened their child's records
 > • Anyone can raise a concern with the club's Child Safety Officer
 >
@@ -54,7 +57,7 @@ name.
 > FirstPass HQ needs a club code from your club. To bring FirstPass HQ to your club, contact us
 > through the support page.
 
-The full description is about 1,870 characters. Google doesn't allow emoji or "best", "#1" or
+The full description is about 2,100 characters. Google doesn't allow emoji or "best", "#1" or
 price claims in these fields; the text has none.
 
 ## Categorisation

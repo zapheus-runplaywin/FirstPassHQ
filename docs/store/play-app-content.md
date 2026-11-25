@@ -31,13 +31,31 @@ The IARC questionnaire. The category and answers are below; the exact question w
 
 - **Email address for IARC:** pivtmedia@gmail.com.
 - **Category:** All other app types (utility, productivity, communication). Not a game, not
-  social networking: HQ is a club administration tool with group messages only.
+  social networking: HQ is a club administration tool. Its messages go to groups the club sets
+  up; members can't find, follow or privately message anyone.
 - **Violence, fear, sexuality, language, controlled substances, crude humour, gambling:** No to
   each.
-- **Does the app allow users to interact or exchange content with other users?** **Yes.** Group
-  messages from coaches, managers, the committee and admins to squads, teams and roles. There
-  are no direct messages and no replies, and for under 18s every message is copied to their
-  parents (user guide, Messages; `docs/security/privacy-and-social-media-assessment-2026-10-13.md`).
+- **Does the app allow users to interact or exchange content with other users?** **Yes.** Two
+  ways, both text only:
+  - **Messages** from coaches, managers, the committee and admins to whole squads, teams and
+    roles. Members can't reply in writing; a message may ask one question with answers the
+    sender sets, and members pick one.
+  - **Chat groups**, only if a club admin turns them on (Club features, off by default). Members
+    post back and forth in groups the club sets up by squad, team and role, never ones members
+    make or join themselves. Under 18s post only in their own squad's or team's automatic group
+    while one of its coaches is in it, and read only in other groups. Every post in a group
+    with a child in it is copied to the child's verified parents, and a child with no verified
+    parent linked can't see or post in groups until one is.
+  - There are no direct messages, no feeds, no profile pictures, no likes and no following, and
+    no way to contact a member outside the club's own squads, teams and roles. For under 18s
+    every message and group post is copied to their parents (user guide, Messages and Chat
+    groups; `docs/security/privacy-and-social-media-assessment-2026-10-13.md`, section 2).
+- **If the questionnaire asks how users' content is moderated or reported** (the wording is
+  **to confirm**): any member can open a message or post and tap **Report this message**, which
+  raises a concern with the club's Child Safety Officer; a group's coaches (and in an admin's
+  group, its admins) swipe a post to hide it from the group (#295, the text is kept for
+  safeguarding); admins can close a group or remove a member's access. There is no automatic
+  word filter.
 - **Does the app share the user's current physical location with other users?** **No.**
 - **Does the app allow users to purchase digital goods?** **No.**
 - **Does the app contain unrestricted internet access (a browser)?** **No.** Links open in the
@@ -50,8 +68,10 @@ The IARC questionnaire. The category and answers are below; the exact question w
 
 - **Target age groups:** tick **13 to 15, 16 to 17, and 18 and over**. Leave every group under 13
   unticked. Google says the 13 to 17 groups "may be considered to include children in some
-  locales", and Play asks extra questions; the app's design (no ads, no direct messages, parent
-  approval, parent copies of messages) answers them.
+  locales", and Play asks extra questions; the app's design answers them: no ads, no direct
+  messages, feeds or profiles, parent approval before an under 18 can use the app, parents
+  copied on every message and chat group post, and under 18s posting only in their own
+  coach-led team group when the club has chat groups on.
 - **No Families Policy.** With no group under 13, the "committed to the Play Families Policy"
   box in the Data safety form stays unticked.
 - **Why not 12-year-olds this year:** Google's

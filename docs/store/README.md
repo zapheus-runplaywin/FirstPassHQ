@@ -61,3 +61,9 @@ to a store:
 When a pull request changes what the app collects, who sees it, how long it's kept or how
 deletion works, it updates `data-inventory.md` and the files that quote it in the same pull
 request.
+
+The same goes for a change to how members talk to each other (messages, questions, chat groups)
+or how that is moderated: the listing's child safety lines, the content rating and target
+audience answers, the review notes and the privacy page's "The app is not social media" all
+describe it. `src/lib/__tests__/store-pack.test.ts` fails if any of them again claims there are
+no replies or that only staff send messages while chat groups exist.
