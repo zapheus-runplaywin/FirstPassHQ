@@ -88,7 +88,7 @@ contacts, the calendar on the phone, health platforms (Apple Health, Health Conn
 
 ## Deleting an account
 
-**Delete account** at the bottom of the home screen (`src/app/index.tsx`) opens
+**Delete account** in the Me tab (`src/app/(tabs)/me.tsx`; at the foot of the one screen people waiting for approval see, `src/app/(tabs)/index.tsx`) opens
 `src/app/delete-account.tsx`, which calls `delete_my_account`
 (`20261007110000_delete_members.sql`) and so `delete_member_now`
 (`20261023130000_legal_hold.sql`). It deletes the sign-in account and the profile. 46 tables

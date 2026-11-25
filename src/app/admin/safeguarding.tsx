@@ -304,7 +304,7 @@ export default function SafeguardingScreen() {
   return (
     <Screen>
       <ThemedText type="small" themeColor="textSecondary">
-        Members can raise a concern from their home screen, the check-in screen, injuries and
+        Members can raise a concern from the top of every tab, the check-in screen, injuries and
         messages. The Child Safety Officers, the Complaints Managers and admins see every concern,
         except one about themselves. Name each an adult with a current Working With Children
         Check. A larger club can name up to {MAX_PER_POST} people in each post. Nobody can hold

@@ -1,4 +1,4 @@
-import { openApp } from '../support/app';
+import { openApp, openTab } from '../support/app';
 import { eq } from '../support/fake-supabase';
 import { openSquad, openSquadAthletes, samplePeople, TODAY, uuid } from '../support/people';
 import { expect, test } from '../support/test';
@@ -43,6 +43,7 @@ test('a coach takes attendance for their squad', async ({ page }) => {
   });
 
   await expect(page.getByText(`Hi ${coach.full_name}`)).toBeVisible();
+  await openTab(page, 'Team');
   await page.getByRole('button', { name: /^Attendance Take attendance/ }).click();
   await page.getByRole('button', { name: 'Take attendance', exact: true }).click();
 

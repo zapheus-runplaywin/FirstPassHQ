@@ -3,6 +3,7 @@ import { useCallback, useState } from 'react';
 import { Pressable, StyleSheet, View } from 'react-native';
 
 import { FormSection } from '@/components/form-section';
+import { TabHeader } from '@/components/home/tab-header';
 import { Screen } from '@/components/screen';
 import { SwipeRow } from '@/components/swipe-row';
 import { ThemedText } from '@/components/themed-text';
@@ -124,7 +125,11 @@ export default function MessagesScreen() {
   }
 
   return (
-    <Screen refreshing={refreshing} onRefresh={onRefresh}>
+    <Screen
+      tab
+      header={<TabHeader title="Messages" />}
+      refreshing={refreshing}
+      onRefresh={onRefresh}>
       <View style={styles.actions}>
         {canSend ? (
           <Button title="New message" onPress={() => router.push('/messages/new')} />

@@ -2,6 +2,7 @@ import { useMemo, useState } from 'react';
 import { Platform, StyleSheet, View } from 'react-native';
 
 import { AgendaRow, agendaRows } from '@/components/agenda';
+import { TabHeader } from '@/components/home/tab-header';
 import { MonthGrid } from '@/components/month-grid';
 import { Screen, useScrollToY } from '@/components/screen';
 import { ThemedText } from '@/components/themed-text';
@@ -156,9 +157,11 @@ export default function CalendarScreen() {
     ) : null,
   ].filter((item) => item !== null);
 
+  const header = <TabHeader title="Calendar" />;
+
   if (events !== null && events.length === 0) {
     return (
-      <Screen refreshing={refreshing} onRefresh={onRefresh} gap={Spacing.three}>
+      <Screen tab header={header} refreshing={refreshing} onRefresh={onRefresh} gap={Spacing.three}>
         {top}
         <ThemedText type="small" themeColor="textSecondary">
           Nothing on the calendar yet.
@@ -175,7 +178,7 @@ export default function CalendarScreen() {
       ? monthEvents.filter((e) => dayKey(e.start) === monthDay)
       : monthEvents;
     return (
-      <Screen refreshing={refreshing} onRefresh={onRefresh} gap={Spacing.three}>
+      <Screen tab header={header} refreshing={refreshing} onRefresh={onRefresh} gap={Spacing.three}>
         {top}
         <MonthGrid
           month={month}
@@ -243,6 +246,8 @@ export default function CalendarScreen() {
 
   return (
     <Screen
+      tab
+      header={header}
       refreshing={refreshing}
       onRefresh={onRefresh}
       gap={Spacing.three}

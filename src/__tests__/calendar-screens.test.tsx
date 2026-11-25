@@ -14,7 +14,7 @@ import * as Linking from 'expo-linking';
 import { router } from 'expo-router';
 import { fireEvent, screen } from 'expo-router/testing-library';
 
-import CalendarScreen from '@/app/calendar';
+import CalendarScreen from '@/app/(tabs)/calendar';
 import EventScreen from '@/app/event/[id]';
 import { formatDay } from '@/lib/format';
 

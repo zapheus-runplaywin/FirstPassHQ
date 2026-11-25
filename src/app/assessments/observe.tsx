@@ -214,7 +214,7 @@ export default function ObserveScreen() {
 
       <ThemedText type="small" themeColor="textSecondary">
         Write as if the athlete may read it one day. A worry about a child’s safety is raised as a
-        concern from Home, not here.
+        concern from Today, not here.
       </ThemedText>
 
       <ErrorText>{error}</ErrorText>

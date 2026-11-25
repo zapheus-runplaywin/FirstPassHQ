@@ -357,7 +357,7 @@ export default function SummaryScreen() {
       />
       <ThemedText type="small" themeColor="textSecondary">
         Write as if the athlete may read it one day. Nothing about health, injuries or wellbeing
-        goes here, and a worry about a child’s safety is raised as a concern from Home instead.
+        goes here, and a worry about a child’s safety is raised as a concern from Today instead.
       </ThemedText>
 
       <ErrorText>{error}</ErrorText>

@@ -24,7 +24,10 @@ import AthleteAssessmentScreen from '@/app/assessments/athlete';
 import AssessmentsScreen from '@/app/assessments/index';
 import ObserveScreen from '@/app/assessments/observe';
 import RoundScreen from '@/app/assessments/round';
-import HomeScreen from '@/app/index';
+import ClubHubScreen from '@/app/(tabs)/club';
+import TodayScreen from '@/app/(tabs)/index';
+import MeScreen from '@/app/(tabs)/me';
+import TeamHubScreen from '@/app/(tabs)/team';
 import {
   makeCriteria,
   starterCriteria,
@@ -42,6 +45,7 @@ import { formatDateString } from '@/lib/injuries';
 import { clearCalls, fieldLabelled, onlyRpcCall, pushTo, rpcCalls, rpcNames } from './helpers/calls';
 import { readPdf } from './helpers/documents';
 import {
+  inTabs,
   openScreen,
   refreshControl,
   resetClub,
@@ -51,6 +55,9 @@ import {
   type Persona,
   type PersonaName,
 } from './helpers/harness';
+
+/** Today, with what the tabs share loaded around it. */
+const HomeScreen = inTabs(TodayScreen);
 
 jest.mock('@/lib/club', () => jest.requireActual('./helpers/harness').clubModuleMock());
 jest.mock('@/lib/club-choice', () => jest.requireActual('./helpers/harness').clubChoiceModuleMock());
@@ -260,6 +267,29 @@ describe('Home', () => {
     await openHome('coach', [myRound(), myRound({ id: 'r2', name: 'Open squad selections' })]);
     await press('Selection assessments');
     expect(screen.getByText('screen:assessments/index')).toBeTruthy();
+  });
+
+  it('keeps the card with a coach’s squads in Team too, and in Club for an admin on a panel', async () => {
+    const rpcs = { my_selection_rounds: [myRound()] };
+    await openScreen('coach', { team: inTabs(TeamHubScreen) }, '/team', {}, { rpcs });
+    expect(screen.getByText('Selection assessments')).toBeTruthy();
+    expect(screen.getByText('2027 selection phase · 14 athletes')).toBeTruthy();
+    await openScreen('admin', { club: inTabs(ClubHubScreen) }, '/club', {}, { rpcs });
+    expect(screen.getByText('Selection assessments')).toBeTruthy();
+  });
+
+  it('has no copy in Me, which is for the member’s own things', async () => {
+    await openScreen('coach', { me: inTabs(MeScreen) }, '/me', {}, {
+      rpcs: { my_selection_rounds: [myRound()] },
+    });
+    expect(screen.queryByText('Selection assessments')).toBeNull();
+  });
+
+  it('shows nothing in Team to a coach who is on no panel', async () => {
+    await openScreen('coach', { team: inTabs(TeamHubScreen) }, '/team', {}, {
+      rpcs: { my_selection_rounds: [] },
+    });
+    expect(screen.queryByText('Selection assessments')).toBeNull();
   });
 
   it('shows nothing to a coach who is on no panel', async () => {
@@ -551,7 +581,7 @@ describe('adding an observation', () => {
     expect(screen.getByText(d(TODAY))).toBeTruthy();
     expect(screen.getByText('Passing, Catching')).toBeTruthy();
     expect(screen.queryByText('Seen, not rated')).toBeNull();
-    expect(screen.getByText(/A worry about a child’s safety is raised as a\s+concern from Home, not here\./)).toBeTruthy();
+    expect(screen.getByText(/A worry about a child’s safety is raised as a\s+concern from Today, not here\./)).toBeTruthy();
   });
 
   it('sends where, when, the steps chosen and the evidence, then goes back', async () => {

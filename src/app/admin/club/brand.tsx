@@ -190,7 +190,7 @@ export default function ClubBrandScreen() {
           />
         </Card>
         <ThemedText type="small" themeColor="textSecondary">
-          A square PNG with a see-through background, up to 2 MB. It shows on the home screen, the
+          A square PNG with a see-through background, up to 2 MB. It shows at the top of Today, on the
           sign-in screen and under the FirstPass 1P mark when the app opens. Until you add one,
           the FirstPass 1P mark stands in. The app icon and splash screen are part of the app build.
         </ThemedText>

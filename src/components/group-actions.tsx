@@ -82,7 +82,7 @@ export function GroupActions({ group, onChange }: { group: Team; onChange: () =>
       <Card style={styles.panel}>
         <ThemedText type="smallBold">Remove {group.name} from this season?</ThemedText>
         <ThemedText type="small">
-          {squad ? 'It and its teams leave' : 'It leaves'} this season’s lists, home screens and
+          {squad ? 'It and its teams leave' : 'It leaves'} this season’s lists, everyone’s tabs and
           coaches’ to-dos. Members, attendance and other records are kept, and you can bring it back
           further down this screen.
         </ThemedText>

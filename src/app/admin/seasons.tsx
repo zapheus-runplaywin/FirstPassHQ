@@ -140,7 +140,7 @@ export default function SeasonsScreen() {
                 <Card style={styles.confirm}>
                   <ThemedText type="smallBold">Archive {seasonLabel(s.season)}?</ThemedText>
                   <ThemedText type="small">
-                    Its squads and teams leave everyone’s home screen, calendars, messages and
+                    Its squads and teams leave everyone’s tabs, calendars, messages and
                     coaches’ to-dos. Attendance, injuries and check-ins are kept, and you can bring
                     the season back.
                   </ThemedText>

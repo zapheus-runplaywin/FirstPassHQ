@@ -216,7 +216,7 @@ export default function JoinScreen() {
         setSaving(false);
         await refresh();
         setError(
-          `Your request is sent, but your child wasn’t: ${childError.message} You can add them from Home.`,
+          `Your request is sent, but your child wasn’t: ${childError.message} You can add them from the next screen.`,
         );
         return;
       }
@@ -231,7 +231,7 @@ export default function JoinScreen() {
         setSaving(false);
         await refresh();
         setError(
-          `Your request is sent, but the code didn’t work: ${codeError?.message ?? String(codeRefused)} You can enter it again from Home.`,
+          `Your request is sent, but the code didn’t work: ${codeError?.message ?? String(codeRefused)} You can enter it again from the next screen.`,
         );
         return;
       }
@@ -463,7 +463,7 @@ export default function JoinScreen() {
           />
           <ThemedText type="small" themeColor="textSecondary">
             Your child under 18 sees this code in their app when they ask to join. If they haven’t
-            yet, leave it blank and enter it from Home later. A club admin checks who you are and
+            yet, leave it blank and enter it later. A club admin checks who you are and
             links you to the child whose code you enter, and you’ll follow them into their {word}s.
           </ThemedText>
         </>

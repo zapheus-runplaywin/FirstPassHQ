@@ -1,4 +1,4 @@
-import { openApp } from '../support/app';
+import { openApp, openTab, tab } from '../support/app';
 import { eq, type Handler } from '../support/fake-supabase';
 import { samplePeople, u17Squad, uuid } from '../support/people';
 import { expect, test } from '../support/test';
@@ -20,7 +20,7 @@ function guardianOf(child: { id: string; full_name: string }): Handler {
   };
 }
 
-test('a guardian sees their child on Home and reports them away tomorrow', async ({ page }) => {
+test('a guardian sees their child in Family and reports them away tomorrow', async ({ page }) => {
   const { guardian, minor } = samplePeople();
   const absences: object[] = [];
   const family = guardianOf(minor);
@@ -53,6 +53,8 @@ test('a guardian sees their child on Home and reports them away tomorrow', async
   });
 
   await expect(page.getByText(`Hi ${guardian.full_name}`)).toBeVisible();
+  // Their children are in the Family tab.
+  await openTab(page, 'Family');
   await expect(page.getByText('Guardian of', { exact: true })).toBeVisible();
   await expect(page.getByRole('button', { name: `${minor.full_name} Game goals and reflections` })).toBeVisible();
   await page.getByRole('button', { name: `${minor.full_name} Their sessions, and tell their coaches if they’ll be away` }).click();
@@ -130,14 +132,23 @@ test('a guardian reads the copy of a message to their child, with no way to repl
   });
 
   await expect(page.getByText(`Hi ${guardian.full_name}`)).toBeVisible();
+  // No Team or Club tab, and nothing for coaches, admins or the concerns
+  // register on Today or in Family.
+  await expect(tab(page, 'Team')).toHaveCount(0);
+  await expect(tab(page, 'Club')).toHaveCount(0);
+  const staffCards = [/^Administration/, /^Attendance Take attendance/, /^Concerns/, /^Check-ins/, /^Session plans Add/];
+  for (const card of staffCards) {
+    await expect(page.getByRole('button', { name: card })).toHaveCount(0);
+  }
+  await openTab(page, 'Family');
   await expect(page.getByText('Guardian of', { exact: true })).toBeVisible();
-  // Nothing for coaches, admins or the concerns register.
-  for (const card of [/^Administration/, /^Attendance Take attendance/, /^Concerns/, /^Check-ins/, /^Session plans Add/]) {
+  for (const card of staffCards) {
     await expect(page.getByRole('button', { name: card })).toHaveCount(0);
   }
   expect(backend.called('rpc/absences_to_review')).toBe(false);
 
-  await page.getByRole('button', { name: 'Messages 1 1 new message' }).click();
+  await expect(tab(page, 'Messages')).toContainText('1');
+  await openTab(page, 'Messages');
   // Guardians can't send messages.
   await expect(page.getByText(`Copied to you as ${minor.full_name}’s parent or guardian`)).toBeVisible();
   await expect(page.getByRole('button', { name: 'New message', exact: true })).toHaveCount(0);

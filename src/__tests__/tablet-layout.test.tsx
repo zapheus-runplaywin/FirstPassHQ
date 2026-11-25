@@ -1,20 +1,24 @@
 /**
  * HQ on a tablet ("Using HQ on a tablet" in section 3 of docs/user-guide.md).
- * Home puts To do, Messages and Coming up beside the other cards on an iPad on
- * its side, and the busiest coach lists (attendance sessions, a team's people)
- * sit two or three a row. A phone sees exactly what it saw before.
+ * Today puts what is next beside what needs you on an iPad on its side, a
+ * hub's cards and the busiest coach lists (attendance sessions, a team's
+ * people) sit two or three a row. A phone sees one column.
  */
 import { router } from 'expo-router';
 import { fireEvent, screen, within } from 'expo-router/testing-library';
 import { Dimensions } from 'react-native';
 
 import AttendanceScreen from '@/app/attendance/index';
-import HomeScreen from '@/app/index';
+import TodayScreen from '@/app/(tabs)/index';
+import TeamHubScreen from '@/app/(tabs)/team';
 import TeamScreen from '@/app/team/[id]';
 import type { AttendanceSession, RosterEntry } from '@/lib/types';
 
 import { clearCalls } from './helpers/forms';
-import { openScreen, resetClub, TEAM, TEAM_B, DONE_SQUAD } from './helpers/harness';
+import { inTabs, openScreen, resetClub, TEAM, TEAM_B, DONE_SQUAD } from './helpers/harness';
+
+/** Today, with what the tabs share loaded around it. */
+const HomeScreen = inTabs(TodayScreen);
 
 jest.mock('@/lib/club', () => jest.requireActual('./helpers/harness').clubModuleMock());
 jest.mock('@/lib/club-choice', () => jest.requireActual('./helpers/harness').clubChoiceModuleMock());
@@ -60,53 +64,94 @@ async function layOut(grid: Node, width: number) {
 const hasText = (node: Node, text: string) => within(node).queryAllByText(text).length > 0;
 
 // ---------------------------------------------------------------------------
-// Home
+// Today and the hubs
 
-describe('Home on a tablet', () => {
-  const open = () => openScreen('coach', { index: HomeScreen }, '/');
+/** Matches in the calendar: one later today, one in two days. */
+const FIXTURES = [
+  { id: 'f1', opponent: 'Sharks', starts_at: '2026-10-18T09:00:00Z' },
+  { id: 'f2', opponent: 'Rays', starts_at: '2026-10-20T09:00:00Z' },
+].map((f) => ({
+  ...f,
+  team_id: TEAM.id,
+  team_name: TEAM.name,
+  round_name: 'Round 6',
+  grade_name: null,
+  time_tbc: false,
+  venue: 'Court 1',
+  court: null,
+  is_home: true,
+  team: { kind: 'team' },
+}));
 
-  it('on an iPad on its side, puts To do, Messages and Coming up on the left, the rest on the right', async () => {
+describe('Today on a tablet', () => {
+  const open = () =>
+    openScreen('athlete', { index: HomeScreen }, '/', { fixtures: FIXTURES, check_ins: [] });
+
+  it('on an iPad on its side, puts what is next on the left and what needs you on the right', async () => {
     setWindowWidth(IPAD_SIDEWAYS);
     await open();
     const [left, right] = screen.getByTestId('columns').children as Node[];
-    expect(hasText(left, 'No new messages')).toBe(true);
-    expect(hasText(left, 'Coming up')).toBe(true);
-    expect(hasText(left, 'Take attendance and see past sessions')).toBe(false);
-    expect(hasText(right, 'Take attendance and see past sessions')).toBe(true);
-    expect(hasText(right, 'Injuries')).toBe(true);
-    expect(hasText(right, 'No new messages')).toBe(false);
-    // Raise a concern and the footer stay below both columns, on every screen size.
+    expect(within(left).getByTestId('next-up')).toBeTruthy();
+    expect(hasText(left, 'Later this week')).toBe(true);
+    expect(within(left).queryByTestId('needs-you')).toBeNull();
+    expect(within(right).getByTestId('needs-you')).toBeTruthy();
+    expect(hasText(right, 'Do your daily check-in')).toBe(true);
+    expect(within(right).queryByTestId('next-up')).toBeNull();
+    // Raise a concern stays at the top, above both columns, on every screen size.
     expect(hasText(screen.getByTestId('columns'), 'Raise a concern')).toBe(false);
     expect(screen.getByText('Raise a concern')).toBeTruthy();
-    expect(screen.getByText('Sign out')).toBeTruthy();
   });
 
-  it('upright, keeps one column and puts the cards two a row', async () => {
-    setWindowWidth(IPAD_UPRIGHT);
+  it.each([
+    ['upright', IPAD_UPRIGHT],
+    ['on a phone', PHONE],
+  ])('%s, keeps one column: what is next, what needs you, then later this week', async (_l, width) => {
+    setWindowWidth(width);
     await open();
     expect(screen.queryByTestId('columns')).toBeNull();
+    const order = screen
+      .getAllByText(/^(Raise a concern|Open A v Sharks|Do your daily check-in|Later this week)$/)
+      .map((t) => t.props.children);
+    expect(order).toEqual(['Raise a concern', 'Open A v Sharks', 'Do your daily check-in', 'Later this week']);
+  });
+});
+
+describe('A hub on a tablet', () => {
+  const open = () => openScreen('coach', { team: inTabs(TeamHubScreen) }, '/team');
+
+  it('upright, puts the cards two a row', async () => {
+    setWindowWidth(IPAD_UPRIGHT);
+    await open();
     // Screen width (820) less the screen's padding.
     await layOut(screen.getByTestId('card-grid-1'), IPAD_UPRIGHT - 48);
     const grid = screen.getByTestId('card-grid-2');
     expect(hasText(grid, 'Take attendance and see past sessions')).toBe(true);
-    expect(hasText(grid, 'No new messages')).toBe(false);
+    // The member's squads lead the hub, above the grid.
+    expect(hasText(grid, 'My squads and teams')).toBe(false);
+    expect(screen.getByText('My squads and teams')).toBeTruthy();
   });
 
-  it('on a phone, shows the same cards in the same order as before, one a row', async () => {
+  it('on its side, three a row', async () => {
+    setWindowWidth(IPAD_SIDEWAYS);
+    await open();
+    await layOut(screen.getByTestId('card-grid-1'), IPAD_SIDEWAYS - 48);
+    const [row] = screen.getByTestId('card-grid-3').children as Node[];
+    expect(
+      within(row)
+        .getAllByText(/^(Check-ins|Attendance|Injuries)$/)
+        .map((t) => t.props.children),
+    ).toEqual(['Check-ins', 'Attendance', 'Injuries']);
+  });
+
+  it('on a phone, one a row, in the same order', async () => {
     setWindowWidth(PHONE);
     await open();
-    expect(screen.queryByTestId('columns')).toBeNull();
     await layOut(screen.getByTestId('card-grid-1'), PHONE - 48);
     expect(screen.getByTestId('card-grid-1')).toBeTruthy();
     const order = screen
-      .getAllByText(/^(No new messages|Coming up|Take attendance and see past sessions|Raise a concern)$/)
+      .getAllByText(/^(My squads and teams|Check-ins|Attendance|Injuries|Surveys)$/)
       .map((t) => t.props.children);
-    expect(order).toEqual([
-      'No new messages',
-      'Coming up',
-      'Take attendance and see past sessions',
-      'Raise a concern',
-    ]);
+    expect(order).toEqual(['My squads and teams', 'Check-ins', 'Attendance', 'Injuries', 'Surveys']);
   });
 
   it('opens a card from the grid', async () => {

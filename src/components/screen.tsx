@@ -14,6 +14,7 @@ import {
   ScrollView,
   StyleSheet,
   TextInput,
+  View,
   type ScrollViewInstance,
 } from 'react-native';
 import { useFocusEffect, useIsFocused } from 'expo-router';
@@ -22,6 +23,9 @@ import { SafeAreaView } from 'react-native-safe-area-context';
 import { PoweredByFirstPass } from '@/components/firstpass-logo';
 import { ThemedView } from '@/components/themed-view';
 import { MaxContentWidth, MaxWideContentWidth, Spacing } from '@/constants/theme';
+
+/** A tab screen's safe edges: the tab bar looks after the bottom. */
+const TAB_EDGES = ['top', 'left', 'right'] as const;
 
 /** Space left above a focused field when it is scrolled into view. */
 const FOCUS_MARGIN = 96;
@@ -48,6 +52,8 @@ export function Screen({
   stickyHeaderIndices,
   showVersion = false,
   wide = false,
+  tab = false,
+  header,
 }: {
   children: ReactNode;
   refreshing?: boolean;
@@ -65,6 +71,15 @@ export function Screen({
    * CardGrid (src/components/columns.tsx). Other screens stay MaxContentWidth.
    */
   wide?: boolean;
+  /**
+   * Set on the screens inside the tab bar (src/app/(tabs)). They have no
+   * navigation header, so they keep clear of the status bar themselves; the
+   * tab bar already keeps clear of the bottom of the phone; and "Powered by"
+   * goes to the end of what scrolls, so it doesn't sit on top of the tab bar.
+   */
+  tab?: boolean;
+  /** Stays at the top while the rest scrolls, such as a tab's title bar. */
+  header?: ReactNode;
 }) {
   const scrollRef = useRef<ScrollViewInstance>(null);
   // Screens stay mounted underneath the one on top, and keyboard events reach
@@ -139,7 +154,8 @@ export function Screen({
         <ThemedView style={styles.container}>
           <SafeAreaView
             style={[styles.safeArea, wide && styles.wide]}
-            edges={withTopInset ? undefined : ['bottom', 'left', 'right']}>
+            edges={tab ? TAB_EDGES : withTopInset ? undefined : ['bottom', 'left', 'right']}>
+            {header ? <View style={styles.header}>{header}</View> : null}
             <ScrollView
               ref={scrollRef}
               contentContainerStyle={[
@@ -175,9 +191,10 @@ export function Screen({
                 ) : undefined
               }>
               {children}
+              {tab ? <PoweredByFirstPass showVersion={showVersion} /> : null}
             </ScrollView>
             {/* FirstPass stays at the foot of every screen; it steps aside for the keyboard. */}
-            {keyboardHeight > 0 ? null : <PoweredByFirstPass showVersion={showVersion} />}
+            {tab || keyboardHeight > 0 ? null : <PoweredByFirstPass showVersion={showVersion} />}
           </SafeAreaView>
         </ThemedView>
       </RevealFocusedInput>
@@ -197,6 +214,11 @@ const styles = StyleSheet.create({
   },
   wide: {
     maxWidth: MaxWideContentWidth,
+  },
+  header: {
+    paddingHorizontal: Spacing.four,
+    paddingTop: Spacing.three,
+    paddingBottom: Spacing.two,
   },
   content: {
     padding: Spacing.four,

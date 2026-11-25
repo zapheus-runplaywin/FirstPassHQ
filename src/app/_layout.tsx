@@ -8,6 +8,7 @@ import { StatusBar } from 'expo-status-bar';
 import { useCallback, useEffect, useMemo, useState, type ReactNode } from 'react';
 
 import { BrandIntro } from '@/components/brand-intro';
+import { iconFonts } from '@/components/icon';
 import { rootStackOptions } from '@/constants/navigation';
 import { BrandFonts, contrastRatio } from '@/constants/theme';
 import { useTheme } from '@/hooks/use-theme';
@@ -94,11 +95,12 @@ function RootStack() {
   const { club } = useClubChoice();
   // Who can open each member screen: see src/lib/route-access.ts.
   const can = useRouteAccess();
-  // Montserrat; if it fails to load the app carries on in the system font.
+  // Montserrat and the icons; if they fail to load the app carries on in the system font.
   const [fontsLoaded, fontError] = useFonts({
     Montserrat_400Regular,
     Montserrat_700Bold,
     Montserrat_800ExtraBold,
+    ...iconFonts,
   });
   const loading = authLoading || !ready || !(fontsLoaded || fontError);
   const [introDone, setIntroDone] = useState(false);
@@ -115,7 +117,8 @@ function RootStack() {
     <>
       <Stack screenOptions={rootStackOptions}>
         <Stack.Protected guard={!!session}>
-          <Stack.Screen name="index" options={{ headerShown: false }} />
+          {/* Today, Calendar, Messages, the hubs and Me: src/app/(tabs)/_layout.tsx. */}
+          <Stack.Screen name="(tabs)" options={{ headerShown: false }} />
           <Stack.Protected guard={can.join}>
             <Stack.Screen name="join" options={{ title: 'Request to join' }} />
           </Stack.Protected>
@@ -126,11 +129,9 @@ function RootStack() {
             <Stack.Screen name="team/captains/[id]" options={{ title: 'Captains' }} />
           </Stack.Protected>
           <Stack.Protected guard={features.calendar && can.open}>
-            <Stack.Screen name="calendar" options={{ title: 'Calendar' }} />
             <Stack.Screen name="event/[id]" options={{ title: 'Event' }} />
           </Stack.Protected>
           <Stack.Protected guard={features.messages && can.readMessages}>
-            <Stack.Screen name="messages/index" options={{ title: 'Messages' }} />
             <Stack.Screen name="messages/[id]" options={{ title: 'Message' }} />
             <Stack.Protected guard={features.chatGroups}>
               <Stack.Screen name="messages/group/[id]" options={{ title: 'Group' }} />
