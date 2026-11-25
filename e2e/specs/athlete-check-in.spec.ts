@@ -67,5 +67,5 @@ test('an athlete does the daily check-in', async ({ page }) => {
   await expect(page.getByRole('button', { name: /^Do your daily check-in/ })).toHaveCount(0);
   await expect(page.getByText('You’re set for today')).toBeVisible();
   await openTab(page, 'Me');
-  await expect(page.getByRole('button', { name: 'Daily check-in ✓ Done for today' })).toBeVisible();
+  await expect(page.getByRole('button', { name: 'Daily check-in Done for today' })).toBeVisible();
 });

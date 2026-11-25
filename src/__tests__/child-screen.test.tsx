@@ -14,7 +14,7 @@ import { act, fireEvent, screen } from 'expo-router/testing-library';
 
 import ChildScreen from '@/app/child/[id]';
 
-import { clearCalls, rpcNames } from './helpers/forms';
+import { argsOf, clearCalls, rpcNames } from './helpers/forms';
 import {
   CHILD_CONSENTS,
   openScreen,
@@ -107,6 +107,23 @@ describe('a parent on their child’s page', () => {
     expect(push).toHaveBeenCalledWith(href);
   });
 
+  it('says how many sessions the child was at, asking only about that child', async () => {
+    await open('guardian', 'child-1', {
+      rpcs: {
+        my_child_consents: [CHILD, SIBLING],
+        athlete_attendance: [{ present: true }, { present: true }, { present: false }],
+      },
+    });
+    expect(screen.getByText('At 2 of 3 sessions in 4 weeks')).toBeTruthy();
+    expect(argsOf('athlete_attendance').map((c) => c?.p_profile_id)).toEqual(['child-1']);
+  });
+
+  it('doesn’t ask for attendance while the club has it switched off', async () => {
+    setClubFeatures({ attendance: false });
+    await open('guardian', 'child-1', { rpcs: { my_child_consents: [CHILD] } });
+    expect(rpcNames()).not.toContain('athlete_attendance');
+  });
+
   it('with two children, shows only the one whose page it is', async () => {
     await open('guardian', 'child-2', {
       rpcs: {
@@ -184,6 +201,8 @@ describe('a child who isn’t theirs', () => {
     await open('guardian', 'someone-elses-child', { rpcs: { my_child_consents: [CHILD] } });
     expect(screen.getByText(NOT_THEIRS)).toBeTruthy();
     expect(shownRows()).toEqual([]);
+    // Nothing is asked about a child who isn't theirs.
+    expect(rpcNames()).not.toContain('athlete_attendance');
     // Not even the name the link carried.
     expect(screen.queryByText('Typed Name')).toBeNull();
     await fireEvent.press(screen.getByText('Your children'));
@@ -217,6 +236,7 @@ describe('a child who isn’t theirs', () => {
     expect(shownRows()).toEqual([]);
     expect(rpcNames()).not.toContain('my_child_consents');
     expect(rpcNames()).not.toContain('my_medical_reviews');
+    expect(rpcNames()).not.toContain('athlete_attendance');
   });
 
   it.each<PersonaName>(['coachGuardian', 'adminGuardian'])(

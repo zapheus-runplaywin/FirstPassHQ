@@ -203,9 +203,32 @@ describe('a child’s page', () => {
     });
   });
 
-  it('counts new changes on What’s changed', () => {
+  it('counts new changes on What’s changed, and says so', () => {
     const changes = links({ facts: { ...QUIET, newActivity: 4 } }).find((l) => l.key === 'changes')!;
     expect(changes.badge).toBe(4);
+    expect(changes.detail).toBe('4 changes since you last looked');
+    expect(links().find((l) => l.key === 'changes')!.detail).toBe(
+      'People around them, consents and shared documents',
+    );
+  });
+
+  // Each row leads with where things stand when there is something to say,
+  // and otherwise a few words on what it opens (the screen explains the rest).
+  it('says how many sessions the child was at in the last four weeks', () => {
+    const attendance = (sessions: { present: boolean }[] | null) =>
+      links({ facts: { ...QUIET, attendance: sessions } }).find((l) => l.key === 'attendance')!.detail;
+    expect(attendance([{ present: true }, { present: false }, { present: true }])).toBe(
+      'At 2 of 3 sessions in 4 weeks',
+    );
+    expect(attendance([{ present: true }])).toBe('At 1 of 1 session in 4 weeks');
+    // No sessions yet, or the count hasn't loaded: what the row opens.
+    expect(attendance([])).toBe('Their sessions and absences');
+    expect(attendance(null)).toBe('Their sessions and absences');
+    expect(links().find((l) => l.key === 'attendance')!.detail).toBe('Their sessions and absences');
+  });
+
+  it('keeps every row’s words short', () => {
+    for (const link of links()) expect(link.detail.length).toBeLessThanOrEqual(52);
   });
 
   it('shows this child’s injuries on Injuries, with those waiting for the parent', () => {
@@ -239,7 +262,7 @@ describe('a child’s page', () => {
     }).find((l) => l.key === 'medical')!;
     expect(medical).toMatchObject({ detail: 'Medical details to add', attention: true });
     expect(links().find((l) => l.key === 'medical')).toMatchObject({
-      detail: 'Emergency contacts, allergies, conditions, medications and an action plan',
+      detail: 'Emergency contacts and medical details',
       attention: false,
     });
   });

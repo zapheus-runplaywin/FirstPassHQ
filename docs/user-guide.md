@@ -601,7 +601,11 @@ Needs you.
 #### Team, Family and Club
 
 Each holds the cards for that part of what you do. A number in the club's colour on a card means
-something new or waiting for you.
+something new or waiting for you. Under a card's name, one short line says where things stand,
+such as "9 of 12 checked in today" or "At 11 of 12 sessions in 4 weeks". A line in bold with a
+**!** in a circle beside it needs you, and a green tick means done. Neither uses the club's
+colour, which is kept for buttons, links and the tab you're on, so what needs you looks the same
+in every club and is never mistaken for a link.
 
 - **Team** starts with **My squads and teams** (**My teams** in a club without squads): tap one
   to see who's in it. A team's page also has its [game goals](#game-goals) for its athletes and
@@ -1465,7 +1469,8 @@ only your coaches and managers can download them. Polls are on unless an admin s
 ### Your attendance and absences
 
 **My attendance** in the **Me** tab shows every session your coaches took attendance for, and
-whether you were marked **Present** or **Absent**, over 4 weeks, 3 months or 12 months. You see only
+whether you were marked **Present** or **Absent**, over 4 weeks, 3 months or 12 months. The card
+itself says where you stand, such as "At 11 of 12 sessions in 4 weeks". You see only
 your own marks, not anyone else's. If you're under 18, your parents or guardians see the same.
 
 If you'll be away, tap **Report an absence**, choose the first and last day, pick a reason from your
@@ -1597,18 +1602,18 @@ the tab.
 The **Family** tab has one card for each child you're linked to. A card shows the child's name
 and where things stand for them:
 
-- **Consent**, such as "Check-ins: yes · Injuries: yes". It shows in the club's colour while you
-  still have a consent to give.
-- A line for each thing that needs a look: a current injury, medical and emergency details to add
-  or check, and how many changes there have been since you last looked (the number also shows on
-  the card and on the Family tab).
+- **Consent**, such as "Check-ins: yes · Injuries: yes". It shows in bold, with a **!** in a
+  circle beside it, while you still have a consent to give.
+- A line for each thing that needs a look, in bold with the same mark: a current injury, medical
+  and emergency details to add or check, and how many changes there have been since you last
+  looked (the number also shows on the card and on the Family tab).
 
 Tap a card to open that child's page. It has everything for that one child, in the same order
 every time, so you always know where to look:
 
 | On the child's page | What it opens |
 | --- | --- |
-| **Attendance** | Their sessions, and where you tell their coaches they'll be away (see [Your child's attendance](#your-childs-attendance)). |
+| **Attendance** | Their sessions, and where you tell their coaches they'll be away (see [Your child's attendance](#your-childs-attendance)). The row says how many sessions they were at in the last 4 weeks, such as "At 11 of 12 sessions in 4 weeks". |
 | **Game goals** | Their goals and reflections for each game. |
 | **Check-ins** | Their daily check-ins and notes from the last four weeks. |
 | **Injuries** | Their current injuries, in the injuries list you already use. |

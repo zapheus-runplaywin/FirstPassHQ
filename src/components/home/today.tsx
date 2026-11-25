@@ -434,6 +434,8 @@ const styles = StyleSheet.create({
     gap: Spacing.one,
     paddingHorizontal: Spacing.three,
     paddingVertical: Spacing.two,
+    // Tall enough for a thumb.
+    minHeight: 44,
     borderRadius: 999,
   },
   nextUpText: {

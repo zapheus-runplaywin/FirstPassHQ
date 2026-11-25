@@ -10,6 +10,7 @@ import { useFocusEffect, type Href } from 'expo-router';
 import { useCallback, useState } from 'react';
 
 import type { IconName } from '@/components/icon';
+import { attendanceCountLabel } from '@/lib/attendance';
 import { asksCheckIns, type ChildConsent, consentTodoDetail, needsConsent } from '@/lib/consents';
 import { consentSummary } from '@/lib/home-labels';
 import { formatDateString, injuriesSummary } from '@/lib/injuries';
@@ -84,6 +85,8 @@ export type ChildFacts = {
   injuries: Pick<Injury, 'athlete_id' | 'waiting_for_me'>[];
   /** Medical details that need adding or their yearly check, for any of their children. */
   medicalReviews: Pick<MedicalReview, 'athlete_id' | 'status' | 'due_on'>[];
+  /** This child's sessions in the last four weeks, on their own page. */
+  attendance?: { present: boolean }[] | null;
 };
 
 export type ChildStatusLine = {
@@ -174,7 +177,7 @@ export function childLinks(
       key: 'attendance',
       icon: 'clipboard',
       title: 'Attendance',
-      detail: 'Their sessions, and tell their coaches if they’ll be away',
+      detail: attendanceCountLabel(facts.attendance) ?? 'Their sessions and absences',
       attention: false,
       badge: 0,
       href: { pathname: '/attendance/family/[id]', params: { id, name } },
@@ -184,7 +187,7 @@ export function childLinks(
       key: 'goals',
       icon: 'target',
       title: 'Game goals',
-      detail: 'Game goals and reflections',
+      detail: 'Goals and reflections',
       attention: false,
       badge: 0,
       href: { pathname: '/goals/athlete/[id]', params: { id, name, view: 'guardian' } },
@@ -193,7 +196,7 @@ export function childLinks(
       key: 'checkIns',
       icon: 'activity',
       title: 'Check-ins',
-      detail: 'Their daily check-ins and notes from the last four weeks',
+      detail: 'Check-ins and notes, last four weeks',
       attention: false,
       badge: 0,
       href: { pathname: '/check-ins/athlete/[id]', params: { id, name } },
@@ -220,9 +223,7 @@ export function childLinks(
       key: 'medical',
       icon: 'heart',
       title: 'Medical and emergency',
-      detail: review
-        ? medicalLine(review)
-        : 'Emergency contacts, allergies, conditions, medications and an action plan',
+      detail: review ? medicalLine(review) : 'Emergency contacts and medical details',
       attention: !!review,
       badge: 0,
       href: { pathname: '/medical/[id]', params: { id } },
@@ -231,7 +232,10 @@ export function childLinks(
       key: 'changes',
       icon: 'clock',
       title: 'What’s changed',
-      detail: 'New coaches, managers and physios, guardians, consents and shared documents',
+      detail:
+        facts.newActivity > 0
+          ? changesLabel(facts.newActivity)
+          : 'People around them, consents and shared documents',
       attention: false,
       badge: facts.newActivity,
       href: { pathname: '/activity/[id]', params: { id, name } },
@@ -240,8 +244,7 @@ export function childLinks(
       key: 'records',
       icon: 'eye',
       title: 'Who has viewed their records',
-      detail:
-        'Who at the club opened their injuries, check-ins, game goals, season KPIs, named survey answers, medical details or member record',
+      detail: 'Everyone at the club who opened them',
       attention: false,
       badge: 0,
       href: { pathname: '/records/[id]', params: { id, name } },
