@@ -1,5 +1,5 @@
 /**
- * Chat groups (src/app/messages/index.tsx's Groups tab, messages/group/[id]
+ * Chat groups (src/app/(tabs)/messages.tsx's Groups tab, messages/group/[id]
  * and the admin screens in admin/chat-groups).
  *
  * The database decides who is in each group and who can post
@@ -23,7 +23,7 @@ import AdminChatGroupEdit from '@/app/admin/chat-groups/edit';
 import AdminChatGroups from '@/app/admin/chat-groups/index';
 import MessageScreen from '@/app/messages/[id]';
 import ChatGroupScreen from '@/app/messages/group/[id]';
-import MessagesScreen from '@/app/messages/index';
+import MessagesScreen from '@/app/(tabs)/messages';
 import {
   type AdminChatGroup,
   type ChatGroup,

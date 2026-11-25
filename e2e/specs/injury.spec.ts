@@ -1,4 +1,4 @@
-import { openApp } from '../support/app';
+import { openApp, openTab } from '../support/app';
 import { eq, type FakeRequest } from '../support/fake-supabase';
 import { openSquad, samplePeople, uuid } from '../support/people';
 import { expect, test } from '../support/test';
@@ -77,6 +77,8 @@ test('an athlete reports their own injury, and it opens with their next steps', 
   });
 
   await expect(page.getByText(`Hi ${athlete.full_name}`)).toBeVisible();
+  // An athlete's own injuries are with their own things, in Me.
+  await openTab(page, 'Me');
   await page.getByRole('button', { name: 'Injuries No current injuries' }).click();
   await expect(page.getByText('No current injuries.')).toBeVisible();
   await page.getByRole('button', { name: 'Report an injury' }).click();
@@ -143,6 +145,8 @@ test('a coach has Log an injury but no Report an injury, and their athlete’s i
   });
 
   await expect(page.getByText(`Hi ${coach.full_name}`)).toBeVisible();
+  // A coach's athletes' injuries are with their squads, in Team.
+  await openTab(page, 'Team');
   await page.getByRole('button', { name: 'Injuries 1 current injury' }).click();
   await expect(page.getByText('Injured athletes', { exact: true })).toBeVisible();
   await expect(page.getByRole('button', { name: 'Report an injury' })).toHaveCount(0);
@@ -186,6 +190,7 @@ test('a coach logs an injury at training for one of their athletes', async ({ pa
   });
 
   await expect(page.getByText(`Hi ${coach.full_name}`)).toBeVisible();
+  await openTab(page, 'Team');
   await page.getByRole('button', { name: 'Injuries No current injuries' }).click();
   await page.getByRole('button', { name: 'Log an injury' }).click();
   await expect(page).toHaveURL(/\/injuries\/log$/);

@@ -1,4 +1,4 @@
-import { router, useFocusEffect } from 'expo-router';
+import { router, useFocusEffect, useLocalSearchParams } from 'expo-router';
 import { useCallback, useEffect, useState } from 'react';
 import { StyleSheet, View } from 'react-native';
 
@@ -57,6 +57,7 @@ function yesterday() {
 
 export default function CheckInsScreen() {
   const theme = useTheme();
+  const params = useLocalSearchParams<{ team?: string }>();
   const teams = useTeams();
   const usesSquads = useSquads();
   const isCoach = useIsCheckInCoach();
@@ -71,7 +72,10 @@ export default function CheckInsScreen() {
   const [board, setBoard] = useState<CheckInBoardRow[] | null>(null);
   const [refreshing, setRefreshing] = useState(false);
 
-  const selected = choice ?? checkInSummary[0]?.team_id ?? null;
+  // Opened from a session on the calendar, that squad or team starts chosen
+  // (when it is one of theirs).
+  const wanted = checkInSummary.find((s) => s.team_id === params.team)?.team_id;
+  const selected = choice ?? wanted ?? checkInSummary[0]?.team_id ?? null;
   const dayString = day === 'today' ? today() : yesterday();
   const { checkInOverview, reloadCheckInOverview } = useCheckInOverview(dayString);
 

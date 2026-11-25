@@ -208,8 +208,8 @@ export default function SurveyScreen() {
             <Card>
               <ThemedText type="small">
                 Because you might not give your name, nobody can reply to what you write here. If
-                something is worrying you, tell a coach or parent, or use Raise a concern on the
-                home screen.
+                something is worrying you, tell a coach or parent, or use Raise a concern at the
+                top of Today.
               </ThemedText>
             </Card>
           ) : null}

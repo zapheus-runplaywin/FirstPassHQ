@@ -1,4 +1,4 @@
-import { openApp } from '../support/app';
+import { openApp, openTab } from '../support/app';
 import { eq } from '../support/fake-supabase';
 import { openSquad, samplePeople, TODAY_ISO_DAY, uuid } from '../support/people';
 import { expect, test } from '../support/test';
@@ -36,7 +36,8 @@ test('an athlete does the daily check-in', async ({ page }) => {
   });
 
   await expect(page.getByText(`Hi ${athlete.full_name}`)).toBeVisible();
-  await page.getByRole('button', { name: 'Daily check-in Not done yet today' }).click();
+  // Today lists it as something that needs them.
+  await page.getByRole('button', { name: /^Do your daily check-in/ }).click();
 
   await expect(page.getByText('How did you sleep?').filter({ visible: true })).toBeVisible();
   // Saving with questions unanswered is refused before anything is sent.
@@ -62,6 +63,9 @@ test('an athlete does the daily check-in', async ({ page }) => {
     p_note: 'Tight hamstring after Saturday',
   });
 
-  // Back on Home, today's check-in is done.
+  // Back on Today, nothing is left to do, and Me shows today's check-in as done.
+  await expect(page.getByRole('button', { name: /^Do your daily check-in/ })).toHaveCount(0);
+  await expect(page.getByText('You’re set for today')).toBeVisible();
+  await openTab(page, 'Me');
   await expect(page.getByRole('button', { name: 'Daily check-in ✓ Done for today' })).toBeVisible();
 });

@@ -1,6 +1,7 @@
 /**
- * The Home screen's states that home-by-role.test.tsx doesn't cover
- * (src/app/index.tsx): asking to join, waiting for approval (with the
+ * The states of Today (and the one screen people with one job to do keep in
+ * its place) that home-by-role.test.tsx doesn't cover
+ * (src/app/(tabs)/index.tsx): asking to join, waiting for approval (with the
  * verification code, an under-18 athlete's link code for a parent, and a
  * parent's box for their child's code), a locked child, a request
  * turned down for each reason, roles paused for each reason, the committee
@@ -14,7 +15,8 @@ import { fireEvent, screen, within } from 'expo-router/testing-library';
 
 import { Share } from 'react-native';
 
-import HomeScreen from '@/app/index';
+import TodayScreen from '@/app/(tabs)/index';
+import MeScreen from '@/app/(tabs)/me';
 import { formatDateString } from '@/lib/injuries';
 import { taskDetail, type PersonalTask } from '@/lib/personal-tasks';
 import { supabase } from '@/lib/supabase';
@@ -28,6 +30,7 @@ import type {
 
 import { argsOf, clearCalls, field, recordTable, rpcNames, type } from './helpers/forms';
 import {
+  inTabs,
   openScreen,
   personas,
   resetClub,
@@ -54,6 +57,8 @@ jest.mock('@react-native-async-storage/async-storage', () =>
 jest.mock('@/global.css', () => ({}));
 jest.mock('expo-clipboard', () => ({ setStringAsync: jest.fn(async () => true) }));
 
+const HomeScreen = inTabs(TodayScreen);
+
 let push: jest.SpyInstance;
 
 beforeEach(() => {
@@ -72,6 +77,15 @@ async function openHome(
   await openScreen(who, { index: HomeScreen }, '/', tables, options);
 }
 
+/** Me, where a member's own details, tasks and account are. */
+async function openMe(
+  who: PersonaName | Persona,
+  tables: Record<string, unknown[]> = {},
+  options: BackendOptions = {},
+) {
+  await openScreen(who, { me: inTabs(MeScreen) }, '/me', tables, options);
+}
+
 function withProfile(base: Persona, extra: Partial<Profile>): Persona {
   return { ...base, profile: { ...base.profile!, ...extra } };
 }
@@ -86,8 +100,8 @@ describe('asking to join', () => {
     await openHome(newcomer);
     expect(screen.getByText('Request to join the club')).toBeTruthy();
     expect(screen.queryByText('Waiting for approval')).toBeNull();
-    expect(screen.queryByText('To do')).toBeNull();
-    expect(screen.queryByText('Coming up')).toBeNull();
+    expect(screen.queryByTestId('needs-you')).toBeNull();
+    expect(screen.queryByTestId('next-up')).toBeNull();
     // The code is only shown once they've asked.
     expect(rpcNames()).not.toContain('my_verification_code');
     await fireEvent.press(screen.getByText('Request to join'));
@@ -411,14 +425,16 @@ describe('a locked child', () => {
     for (const hidden of [
       'Waiting for approval',
       'Edit request',
-      'To do',
-      'Coming up',
+      'Needs you',
+      'Next up',
       'My squads and teams',
       'Messages',
       'Your details',
     ]) {
       expect(screen.queryByText(hidden)).toBeNull();
     }
+    expect(screen.queryByTestId('needs-you')).toBeNull();
+    expect(screen.queryByTestId('next-up')).toBeNull();
     // The header doesn't call them an athlete yet.
     expect(screen.queryByText('Athlete')).toBeNull();
   });
@@ -428,7 +444,9 @@ describe('a locked child', () => {
       rpcs: { my_link_code: { waiting: false, code: null, expires_at: null, parents_waiting: [] } },
     });
     expect(screen.queryByText('Waiting for your parent or guardian')).toBeNull();
-    expect(screen.getByText('Your details')).toBeTruthy();
+    // Today, as every other athlete has it.
+    expect(screen.getByTestId('needs-you')).toBeTruthy();
+    expect(screen.getByText('Athlete')).toBeTruthy();
   });
 });
 
@@ -539,7 +557,7 @@ describe('paused roles', () => {
   it('a coach whose exemption applies is not paused', async () => {
     await openHome(exemptCoach(exemption({ valid: true })));
     expect(screen.queryByText('Coach paused')).toBeNull();
-    expect(screen.getByText('Open A')).toBeTruthy();
+    expect(screen.getByText('Coach · Head Coach, Open A')).toBeTruthy();
   });
 });
 
@@ -668,7 +686,7 @@ describe('a lodged check application', () => {
   it('keeps a coach coaching while their application is in force', async () => {
     await openHome(appliedCoach(application()));
     expect(screen.queryByText('Coach paused')).toBeNull();
-    expect(screen.getByText('Open A')).toBeTruthy();
+    expect(screen.getByText('Coach · Head Coach, Open A')).toBeTruthy();
     expect(screen.queryByText('Confirm your Working With Children Check application')).toBeNull();
   });
 
@@ -861,7 +879,7 @@ describe('the to-do list', () => {
   it('counts every item on the badge', async () => {
     await openHome('athlete', { personal_tasks: TASKS, check_ins: [] });
     // The heading's badge: four tasks and the check-in.
-    const heading = screen.getByText('To do');
+    const heading = screen.getByText('Needs you');
     let row = heading.parent!;
     while (!within(row).queryByText('5')) row = row.parent!;
     expect(within(row).getAllByText(/^\d+$/).map((n) => String(n.props.children))).toEqual(['5']);
@@ -920,9 +938,26 @@ describe('the to-do list', () => {
     expect(screen.queryByText(/^Nobody can endorse/)).toBeNull();
   });
 
-  it('says they’re caught up when there’s nothing', async () => {
+  it('says they’re set for today when there’s nothing, once, with no empty list', async () => {
     await openHome('committee');
-    expect(screen.getByText('✓ You’re all caught up.')).toBeTruthy();
+    expect(screen.getByTestId('all-done')).toBeTruthy();
+    expect(screen.getByText('You’re set for today')).toBeTruthy();
+    expect(screen.getByText('Nothing needs you right now.')).toBeTruthy();
+    expect(screen.queryByText('Needs you')).toBeNull();
+  });
+
+  it('doesn’t say so while anything is left', async () => {
+    await openHome('athlete', { check_ins: [] });
+    expect(screen.queryByTestId('all-done')).toBeNull();
+    expect(screen.getByText('Needs you')).toBeTruthy();
+  });
+
+  it('adds a task, and opens the member’s own list', async () => {
+    await openHome('committee');
+    await fireEvent.press(screen.getByText('Add a task'));
+    expect(push).toHaveBeenCalledWith('/tasks/new');
+    await fireEvent.press(screen.getByText('Your tasks'));
+    expect(push).toHaveBeenCalledWith('/tasks');
   });
 
   it('ticking off a task saves it as done and offers Undo, which puts it back', async () => {
@@ -942,11 +977,50 @@ describe('the to-do list', () => {
 });
 
 // ---------------------------------------------------------------------------
-// The footer
+// Me, and the links at the foot of the one screen
 
-describe('the footer', () => {
+describe('Me', () => {
+  it('opens Your details, Your tasks and Delete account', async () => {
+    await openMe('athlete');
+    await fireEvent.press(screen.getByText('Your details'));
+    expect(push).toHaveBeenCalledWith('/my-details');
+    await fireEvent.press(screen.getByText('Your tasks'));
+    expect(push).toHaveBeenCalledWith('/tasks');
+    await fireEvent.press(screen.getByText('Delete account'));
+    expect(push).toHaveBeenCalledWith('/delete-account');
+  });
+
+  it('signs out', async () => {
+    await openMe('athlete');
+    await fireEvent.press(screen.getByText('Sign out'));
+    await settle();
+    expect((supabase.auth as unknown as { signOut: jest.Mock }).signOut).toHaveBeenCalled();
+  });
+
+  it('shows the member’s name and roles', async () => {
+    await openMe('coach');
+    expect(screen.getByText(personas.coach.profile!.full_name!)).toBeTruthy();
+    expect(screen.getByText('Coach · Head Coach, Open A')).toBeTruthy();
+  });
+
+  it('counts the member’s own tasks on Your tasks', async () => {
+    await openMe('athlete', { personal_tasks: TASKS });
+    expect(screen.getByText('4 to do')).toBeTruthy();
+    expect(screen.queryByText('Your own list of things to remember')).toBeNull();
+  });
+
+  it('raises a concern from Safety, and lists who to talk to', async () => {
+    await openMe('athlete');
+    expect(screen.getByText('Safety')).toBeTruthy();
+    const [, card] = screen.getAllByText('Raise a concern');
+    await fireEvent.press(card);
+    expect(push).toHaveBeenCalledWith('/concern/new');
+  });
+});
+
+describe('the one screen’s links', () => {
   it('opens Your details and Delete account', async () => {
-    await openHome('athlete');
+    await openHome('pending');
     await fireEvent.press(screen.getByText('Your details'));
     expect(push).toHaveBeenCalledWith('/my-details');
     await fireEvent.press(screen.getByText('Delete account'));
@@ -954,11 +1028,21 @@ describe('the footer', () => {
   });
 
   it('signs out', async () => {
-    await openHome('athlete');
+    await openHome('pending');
     await fireEvent.press(screen.getByText('Sign out'));
     await settle();
     expect((supabase.auth as unknown as { signOut: jest.Mock }).signOut).toHaveBeenCalled();
   });
+
+  it('a member with the tabs has those links in Me, not on Today', async () => {
+    await openHome('athlete');
+    for (const link of ['Your details', 'Sign out', 'Switch club', 'Delete account']) {
+      expect(screen.queryByText(link)).toBeNull();
+    }
+  });
+});
+
+describe('Today’s header', () => {
 
   it('shows an approved guardian their code until an admin verifies them', async () => {
     await openHome(withProfile(personas.guardian, { verified_at: null }), {}, {

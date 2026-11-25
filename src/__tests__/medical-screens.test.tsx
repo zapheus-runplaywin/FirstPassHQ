@@ -13,7 +13,9 @@
 import { fireEvent, screen } from 'expo-router/testing-library';
 import { Linking } from 'react-native';
 
-import HomeScreen from '@/app/index';
+import FamilyScreen from '@/app/(tabs)/family';
+import ChildScreen from '@/app/child/[id]';
+import TodayScreen from '@/app/(tabs)/index';
 import MedicalScreen from '@/app/medical/[id]';
 import TeamMedicalScreen from '@/app/medical/team/[id]';
 import MyDetailsScreen from '@/app/my-details';
@@ -24,6 +26,7 @@ import type { MedicalProfile, MedicalReview, MedicalView, TeamMedicalRow } from 
 import { supabase } from '@/lib/supabase';
 
 import {
+  inTabs,
   openScreen,
   personas,
   resetClub,
@@ -32,6 +35,11 @@ import {
   type Persona,
   type PersonaName,
 } from './helpers/harness';
+
+/** Today, with what the tabs share loaded around it. */
+const HomeScreen = inTabs(TodayScreen);
+/** The Family hub, where a parent's children are. */
+const FamilyHub = inTabs(FamilyScreen);
 
 jest.mock('@/lib/club', () => jest.requireActual('./helpers/harness').clubModuleMock());
 jest.mock('@/lib/club-choice', () => jest.requireActual('./helpers/harness').clubChoiceModuleMock());
@@ -392,9 +400,9 @@ describe('a squad or team’s page', () => {
   });
 });
 
-describe('Home for a parent or guardian', () => {
-  it('lists each child’s medical and emergency details once verified', async () => {
-    await openScreen('guardian', { index: HomeScreen, 'medical/[id]': MedicalScreen }, '/', { guardianships: [] }, {
+describe('A child’s page for a parent or guardian', () => {
+  it('has the child’s medical and emergency details once verified', async () => {
+    await openScreen('guardian', { 'child/[id]': ChildScreen, 'medical/[id]': MedicalScreen }, '/child/child-1', { guardianships: [] }, {
       rpcs: { medical_profile: medical({ athlete_id: 'child-1', role: 'guardian' }) },
     });
     expect(screen.getByText('Medical and emergency')).toBeTruthy();
@@ -404,7 +412,14 @@ describe('Home for a parent or guardian', () => {
   });
 
   it('doesn’t until an admin has verified them', async () => {
-    await openScreen({ ...personas.guardian, profile: { ...personas.guardian.profile!, verified_at: null } }, { index: HomeScreen }, '/');
+    await openScreen({ ...personas.guardian, profile: { ...personas.guardian.profile!, verified_at: null } }, { 'child/[id]': ChildScreen }, '/child/child-1');
+    expect(screen.getByText('Consent')).toBeTruthy();
+    expect(screen.queryByText('Medical and emergency')).toBeNull();
+  });
+
+  it('Family shows the child’s card, not their medical details', async () => {
+    await openScreen('guardian', { family: FamilyHub }, '/family');
+    expect(screen.getByText('Sample Child')).toBeTruthy();
     expect(screen.queryByText('Medical and emergency')).toBeNull();
   });
 });

@@ -61,7 +61,7 @@ export default function WwccApplicationScreen() {
         <ThemedText type="small" themeColor="textSecondary">
           You accepted this on {localDay(application.declared_at)}.
           {application.status === 'in_force'
-            ? ' It counts as your check until your card arrives. Add your card from the home screen as soon as it does, for a club admin to check.'
+            ? ' It counts as your check until your card arrives. Add your card from Today as soon as it does, for a club admin to check.'
             : application.status === 'lapsed'
               ? ' It has lapsed because nobody at the club confirmed it’s still being assessed. Ask a club admin to check it.'
               : ' It no longer counts. Talk to a club admin.'}

@@ -1,7 +1,7 @@
 # FirstPass HQ
 
 FirstPass HQ, FirstPass's sports club app for iOS and Android, first built for West Coast Thunder. Members sign in with Google (or Apple on iPhone), an admin approves them
-and adds them to a team, and the home screen shows their team.
+and adds them to a team, and the Team tab shows their team.
 
 Built with [Expo](https://expo.dev) (React Native) and [Supabase](https://supabase.com) on the
 free tier.
@@ -70,7 +70,7 @@ skipped. The revoke can't succeed in Expo Go, because Apple issues the code to E
 A club's first admin uses a one-time setup code. Make one with the project's database connection
 string, then sign in to the app, tap **Request to join** and enter your name and the code under
 **Setting up this club?**. After that you approve everyone else, including other admins, from
-**Members** on the home screen. The code works once, and only while the club has no admin
+**Administration** in the Club tab. The code works once, and only while the club has no admin
 ([docs/new-club-setup.md](docs/new-club-setup.md#4-make-the-first-admin)).
 
 ```bash
@@ -80,7 +80,7 @@ CLUB_DB_URL='postgresql://...' scripts/first-admin-code.sh
 ### 5. Add the club calendar
 
 In Outlook, publish the club calendar (Settings > Calendar > Shared calendars > Publish a
-calendar) and copy the ICS link. In the app, open **Calendars** from the home screen, paste it
+calendar) and copy the ICS link. In the app, open **Administration** in the Club tab, then **Calendars**, paste it
 in and choose **Everyone**. Team calendars work the same way: pick the team instead.
 
 ## Run it

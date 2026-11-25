@@ -1,5 +1,5 @@
 /**
- * What the message screens (src/app/messages/index.tsx and [id].tsx) show
+ * What the message screens (src/app/(tabs)/messages.tsx and [id].tsx) show
  * each kind of member once they're open.
  *
  * Coaches, managers, captains, the committee and admins send messages
@@ -15,7 +15,7 @@ import { router } from 'expo-router';
 import { fireEvent, screen } from 'expo-router/testing-library';
 
 import MessageScreen from '@/app/messages/[id]';
-import MessagesScreen from '@/app/messages/index';
+import MessagesScreen from '@/app/(tabs)/messages';
 import { supabase } from '@/lib/supabase';
 import type { MessageQuestion } from '@/lib/message-questions';
 import type { InboxMessage, Message, MessageReceipt, SentMessage } from '@/lib/types';

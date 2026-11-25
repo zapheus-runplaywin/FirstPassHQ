@@ -1,6 +1,6 @@
 import type { Page } from '@playwright/test';
 
-import { openApp } from '../support/app';
+import { openApp, openTab } from '../support/app';
 import { openSquad, samplePeople, uuid } from '../support/people';
 import { expect, test } from '../support/test';
 
@@ -88,7 +88,9 @@ async function openSurvey(page: Page, detail: ReturnType<typeof survey>) {
     },
   });
   await expect(page.getByText(`Hi ${athlete.full_name}`)).toBeVisible();
-  await page.getByRole('button', { name: 'Surveys 1 1 to answer' }).click();
+  // A survey to answer is on Today's list; the Surveys card itself is in Me.
+  await openTab(page, 'Me');
+  await page.getByRole('button', { name: /^Surveys 1 to answer/ }).click();
   await page.getByRole('button', { name: new RegExp(`^${detail.title}`) }).click();
   // The list behind it also shows the title, so wait for the survey itself:
   // it asks for the survey when the screen comes into focus.

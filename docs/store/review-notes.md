@@ -19,7 +19,7 @@ workflow, and check the test project isn't paused, the day before each submissio
 | --- | --- | --- |
 | `admin@demo.firstpass.example` | Admin | Administration: approving members, squads and teams, club settings, keep periods |
 | `headcoach@demo.firstpass.example` | Head coach of the 20 & Under team, current Working With Children Check | Messages to the team, attendance, injured athletes and restrictions, session plans |
-| `athlete19@demo.firstpass.example` | Athlete aged 19 | Home screen to-do list, calendar, daily check-in, reporting an injury or absence |
+| `athlete19@demo.firstpass.example` | Athlete aged 19 | Today's to-do list, calendar, daily check-in, reporting an injury or absence |
 | `guardian@demo.firstpass.example` | Verified parent of `athlete16@` | Only their own child's records; who opened them; consents |
 | `athlete16@demo.firstpass.example` | Athlete aged 16, linked to a verified parent | The under 18 rules |
 
@@ -79,7 +79,7 @@ App Store Connect > TestFlight > Test information.
 > every message and group post to or from their child.
 >
 > The app contains no ads, tracking or purchases. Members delete their account in the app: Delete
-> account, at the bottom of the home screen.
+> account, in the Me tab.
 
 ## Questions a reviewer may ask
 
@@ -88,7 +88,7 @@ App Store Connect > TestFlight > Test information.
 | Why is a club's app public? | It serves any netball club; the club code picks the club, and DEMO shows it working. Not verified with Apple. If Apple objects, unlisted distribution is the fallback (tab D4) | `src/constants/clubs.ts`, `src/app/choose-club.tsx` |
 | How is user content moderated? | Messages come only from coaches, managers, the committee and admins, to whole groups. Chat groups are off unless a club turns them on, and hold only people the club puts together by squad, team and role; members can't make or join groups. A group's coaches (and in an admin's group, its admins) swipe a post to hide it from the group; the text is kept for safeguarding. Any member opens a message or post and taps Report this message, which raises a concern with the club's Child Safety Officer. Any member can block someone in their groups, and the club's admins and safeguarding officers are told and follow it up. Admins can close a group or remove a member's access. There are no direct messages | User guide: Messages, Chat groups, Blocks in chat groups, Raise a concern, Approving members; #294, #295 |
 | Can children talk to strangers? | No. A member under 18 posts only in their own squad's or team's automatic chat group while one of its coaches is in it, reads only in other groups, can't see who else is in a group, and has groups hidden until a verified parent is linked. Their parents get a copy of every post in those groups, their child's own included | `20261124600000_chat_groups.sql`; privacy and social media assessment, section 2, "Chat groups" |
-| Can I delete my account? | Yes: Delete account at the bottom of the home screen, then Delete my account permanently | `src/app/delete-account.tsx` |
+| Can I delete my account? | Yes: Delete account in the Me tab, then Delete my account permanently | `src/app/delete-account.tsx` |
 | Which sign-in methods are there? | Continue with Google, and Continue with Apple (Sign in with Apple) on iPhone and iPad. A member who chose Hide My Email isn't required to give a PlayHQ email. Parents and guardians still give the email they registered their child with, whatever the sign-in, because it is how the club checks an adult before linking them to a child | `src/lib/sign-in.ts`, `src/app/join.tsx` (#219) |
 | Is health data used for anything else? | No. It is seen only by the athlete, their parents, their coaches and physios (for under 18s only with a parent's consent) and admins | [data-inventory.md](data-inventory.md) rows 7 to 9 |
 

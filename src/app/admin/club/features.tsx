@@ -88,7 +88,7 @@ export default function ClubFeaturesScreen() {
   return (
     <Screen>
       <ThemedText type="small" themeColor="textSecondary">
-        Turned-off features disappear from everyone’s app, including the home screen and to-dos.
+        Turned-off features disappear from everyone’s app, including the tabs and to-dos.
         Nothing is deleted, so turning one back on brings its records back. A feature that’s on
         can show for everyone or only for pilot teams, to try it with one team first.
       </ThemedText>

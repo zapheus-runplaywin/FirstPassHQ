@@ -1,6 +1,6 @@
 # Push notifications
 
-Members get a push notification when something new appears on their home screen to-do list or a
+Members get a push notification when something new appears on their to-do list on Today or a
 session plan is first shared with them, and admins get one for each new join request. Members turn to-do notifications off in **Your details**.
 
 ## How it works
@@ -9,7 +9,7 @@ session plan is first shared with them, and admins get one for each new join req
   signs in (`register_push_device`), along with the club code, so a tapped notification opens the
   club it came from.
 - Every 5 minutes a `pg_cron` job in each club's database (`send-todo-pushes`) works out each
-  member's to-do list with `member_todos`, which calls the same functions as the home screen, and
+  member's to-do list with `member_todos`, which calls the same functions as Today, and
   sends anything new through Expo's free push service with `pg_net`. No server or paid service is
   involved.
 - Nothing is sent between 8 pm and 7 am in the club's time zone (`club_settings.timezone`,

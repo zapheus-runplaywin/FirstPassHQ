@@ -43,8 +43,8 @@ type FeatureCase = {
 };
 
 const FEATURE_ROUTES: FeatureCase[] = [
-  { feature: 'calendar', routes: ['calendar', 'event/[id]', 'admin/calendars'] },
-  { feature: 'messages', routes: ['messages/index', 'messages/new', 'messages/[id]'] },
+  { feature: 'calendar', routes: ['(tabs)/calendar', 'event/[id]', 'admin/calendars'] },
+  { feature: 'messages', routes: ['(tabs)/messages', 'messages/new', 'messages/[id]'] },
   {
     feature: 'surveys',
     routes: ['surveys/index', 'surveys/new', 'surveys/[id]', 'surveys/results'],
@@ -187,14 +187,14 @@ describe.each(FEATURE_ROUTES)('the $feature switch', ({ feature, routes, offByDe
 
   it.each(cases)('off: an admin can’t open $route', async ({ route }) => {
     setClubFeatures({ [feature]: false });
-    await expectTurnedAway('admin', route, 'index');
+    await expectTurnedAway('admin', route, '(tabs)/index');
   });
 
   const memberOnly = cases.filter(({ who }) => who !== 'admin');
   if (memberOnly.length > 0) {
     it.each(memberOnly)('off: the $who who uses $route can’t open it', async ({ route, who }) => {
       setClubFeatures({ [feature]: false });
-      await expectTurnedAway(who, route, 'index');
+      await expectTurnedAway(who, route, '(tabs)/index');
     });
   }
 
@@ -207,13 +207,13 @@ describe.each(FEATURE_ROUTES)('the $feature switch', ({ feature, routes, offByDe
   if (memberRoutes.length > 0) {
     it.each(memberRoutes)('off: a coach can’t open $route either', async ({ route }) => {
       setClubFeatures({ [feature]: false });
-      await expectTurnedAway('coach', route, 'index');
+      await expectTurnedAway('coach', route, '(tabs)/index');
     });
   }
 
   it(offByDefault ? 'starts off until an admin turns it on' : 'starts on', async () => {
     setClubFeatures({});
-    if (offByDefault) await expectTurnedAway(openerOf(routes[0]), routes[0], 'index');
+    if (offByDefault) await expectTurnedAway(openerOf(routes[0]), routes[0], '(tabs)/index');
     else await expectReaches(openerOf(routes[0]), routes[0]);
   });
 });
@@ -221,7 +221,7 @@ describe.each(FEATURE_ROUTES)('the $feature switch', ({ feature, routes, offByDe
 describe('fixtures', () => {
   it('can’t be opened once calendar, awards and game goals are all off', async () => {
     setClubFeatures({ calendar: false, awards: false, goals: false });
-    await expectTurnedAway('admin', 'admin/fixtures', 'index');
+    await expectTurnedAway('admin', 'admin/fixtures', '(tabs)/index');
   });
 
   it.each(['calendar', 'awards', 'goals'])('open while %s alone is on', async (feature) => {
@@ -230,7 +230,7 @@ describe('fixtures', () => {
   });
 
   it('stay admin-only while every feature is on', async () => {
-    await expectTurnedAway('coach', 'admin/fixtures', 'index');
+    await expectTurnedAway('coach', 'admin/fixtures', '(tabs)/index');
   });
 });
 
@@ -246,13 +246,13 @@ describe('features that are off never open for anyone', () => {
   describe.each(everyone)('%s', (who) => {
     it.each(gated)('can’t open %s', async (route) => {
       setClubFeatures(ALL_OFF);
-      await expectTurnedAway(who, route, 'index');
+      await expectTurnedAway(who, route, '(tabs)/index');
     });
   });
 
   it('still leaves the screens that no switch controls', async () => {
     setClubFeatures(ALL_OFF);
-    for (const route of ['index', 'concern/new', 'tasks/index', 'my-details', 'administration']) {
+    for (const route of ['(tabs)/index', 'concern/new', 'tasks/index', 'my-details', 'administration']) {
       await expectReaches('admin', route);
     }
   });

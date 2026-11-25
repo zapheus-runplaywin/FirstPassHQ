@@ -68,6 +68,6 @@ personalisation or fraud prevention. "Required" means a member can't use the app
   soreness, stress and mood. The app is a club administration tool, not a medical service.
 - **Game stats** (row 21) are recorded in FirstPass Vantage, not this app, and are declared on
   Vantage's form.
-- **Data deletion.** Members delete their account in the app (Delete account, at the bottom of
-  the home screen) or through the public delete page. Some records are kept by the club for set
+- **Data deletion.** Members delete their account in the app (Delete account, in the
+  Me tab) or through the public delete page. Some records are kept by the club for set
   periods; the delete page lists them.

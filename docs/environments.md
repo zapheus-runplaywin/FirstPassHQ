@@ -57,7 +57,7 @@ Until these secrets exist the workflows only warn and carry on updating the live
    into your `.env` (replacing the live ones).
 2. Run `npx expo start`, open the app in Expo Go and sign in with Google once.
 3. In the test project's **SQL Editor**, run `supabase/test-data.sql`. You become an admin, and the
-   squads fill with sample people. Pull down on the home screen to see them.
+   squads fill with sample people. Pull down on Today to see them.
 
 ### 4. Point the installed apps at the live project
 

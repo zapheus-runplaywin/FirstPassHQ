@@ -732,6 +732,23 @@ export function constantsClubMock() {
 // Loaded when first used, so this file's own checks don't need the app's providers.
 const auth = () => jest.requireActual('@/lib/auth') as typeof import('@/lib/auth');
 
+const home = () => jest.requireActual('@/lib/home') as typeof import('@/lib/home');
+
+/**
+ * A tab's screen (Today, a hub or Me) with what the tabs share loaded around
+ * it, as the tab bar's layout does (src/app/(tabs)/_layout.tsx).
+ */
+export function inTabs(Screen: ComponentType): ComponentType {
+  return function Tab() {
+    const { HomeProvider } = home();
+    return (
+      <HomeProvider>
+        <Screen />
+      </HomeProvider>
+    );
+  };
+}
+
 /**
  * The root of a one-screen app: the real AuthProvider, and nothing until the
  * member has loaded, as the real root layout does. Leaves out the real
@@ -829,7 +846,8 @@ export function routeFiles(dir = APP_DIR): string[] {
       if (entry.isDirectory()) return routeFiles(full);
       if (!/\.tsx?$/.test(entry.name)) return [];
       const route = full.slice(APP_DIR.length + 1).replace(/\.tsx?$/, '');
-      return route === '_layout' ? [] : [route];
+      // Layouts stay real: the root one, and the tab bar's in (tabs).
+      return /(^|\/)_layout$/.test(route) ? [] : [route];
     })
     .sort();
 }
@@ -857,7 +875,14 @@ export const ROUTES = routeFiles();
 
 /** The URL that opens a route file, with any [param] filled in. */
 export function urlOf(route: string) {
-  return '/' + route.replace(/\[[^\]]+\]/g, 'x1').replace(/(^|\/)index$/, '');
+  return (
+    '/' +
+    route
+      // A group such as (tabs) is a folder, not part of the address.
+      .replace(/\([^)]+\)\//g, '')
+      .replace(/\[[^\]]+\]/g, 'x1')
+      .replace(/(^|\/)index$/, '')
+  );
 }
 
 /** Screens anyone can open, signed in or not. */

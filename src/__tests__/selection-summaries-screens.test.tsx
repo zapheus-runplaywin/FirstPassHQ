@@ -25,7 +25,7 @@ import AdminSummariesScreen from '@/app/admin/assessments/summaries';
 import AthleteAssessmentScreen from '@/app/assessments/athlete';
 import RoundScreen from '@/app/assessments/round';
 import SummaryScreen from '@/app/assessments/summary';
-import HomeScreen from '@/app/index';
+import TodayScreen from '@/app/(tabs)/index';
 import {
   makeCriteria,
   type AdminRound,
@@ -43,6 +43,7 @@ import { formatDateString } from '@/lib/injuries';
 import { clearCalls, fieldLabelled, onlyRpcCall, pushTo, rpcCalls, rpcNames } from './helpers/calls';
 import { readPdf } from './helpers/documents';
 import {
+  inTabs,
   openScreen,
   refreshControl,
   resetClub,
@@ -52,6 +53,9 @@ import {
   type Persona,
   type PersonaName,
 } from './helpers/harness';
+
+/** Today, with what the tabs share loaded around it. */
+const HomeScreen = inTabs(TodayScreen);
 
 jest.mock('@/lib/club', () => jest.requireActual('./helpers/harness').clubModuleMock());
 jest.mock('@/lib/club-choice', () => jest.requireActual('./helpers/harness').clubChoiceModuleMock());

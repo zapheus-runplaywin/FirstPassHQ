@@ -20,7 +20,9 @@ import MilestoneScreen from '@/app/admin/assessments/milestone';
 import AdminRoundScreen from '@/app/admin/assessments/round';
 import AthleteAssessmentScreen from '@/app/assessments/athlete';
 import RoundScreen from '@/app/assessments/round';
-import HomeScreen from '@/app/index';
+import FamilyScreen from '@/app/(tabs)/family';
+import TodayScreen from '@/app/(tabs)/index';
+import MeScreen from '@/app/(tabs)/me';
 import SelectionScreen from '@/app/selection';
 import {
   makeCriteria,
@@ -38,6 +40,7 @@ import { formatDateString } from '@/lib/injuries';
 import { clearCalls, fieldLabelled, onlyRpcCall, pushTo, rpcCalls, rpcNames } from './helpers/calls';
 import { readPdf } from './helpers/documents';
 import {
+  inTabs,
   openScreen,
   refreshControl,
   resetClub,
@@ -47,6 +50,9 @@ import {
   type Persona,
   type PersonaName,
 } from './helpers/harness';
+
+/** Today, with what the tabs share loaded around it. */
+const HomeScreen = inTabs(TodayScreen);
 
 jest.mock('@/lib/club', () => jest.requireActual('./helpers/harness').clubModuleMock());
 jest.mock('@/lib/club-choice', () => jest.requireActual('./helpers/harness').clubChoiceModuleMock());
@@ -770,6 +776,21 @@ describe('Home', () => {
   it('gives a parent the card for their child’s round', async () => {
     await openHome('guardian', { my_selection_info: [info({ is_me: false })] });
     expect(screen.getByText('Selection')).toBeTruthy();
+  });
+
+  it('keeps the card with an athlete’s own things in Me, and with a parent’s children in Family', async () => {
+    await openScreen('athlete', { me: inTabs(MeScreen) }, '/me', {}, { rpcs: { my_selection_info: [info()] } });
+    expect(screen.getByText('Selection')).toBeTruthy();
+    expect(screen.getByText(`2027 selection phase · next: Teams named, ${d('2026-10-28')}`)).toBeTruthy();
+    await openScreen('guardian', { family: inTabs(FamilyScreen) }, '/family', {}, {
+      rpcs: { my_selection_info: [info({ is_me: false })] },
+    });
+    expect(screen.getByText('Selection')).toBeTruthy();
+  });
+
+  it('shows no card in Me to an athlete in no open round', async () => {
+    await openScreen('athlete', { me: inTabs(MeScreen) }, '/me', {}, { rpcs: { my_selection_info: [] } });
+    expect(screen.queryByText('Selection')).toBeNull();
   });
 
   it('shows no card to an athlete in no open round', async () => {

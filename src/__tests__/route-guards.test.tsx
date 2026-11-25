@@ -49,7 +49,7 @@ beforeEach(() => resetClub());
 
 it('finds the app’s screens on disk', () => {
   // Guards against the file walk silently finding nothing and every sweep passing.
-  expect(ROUTES).toEqual(expect.arrayContaining(['index', 'administration', 'admin/club/brand', 'sign-in']));
+  expect(ROUTES).toEqual(expect.arrayContaining(['(tabs)/index', 'administration', 'admin/club/brand', 'sign-in']));
   expect(ADMIN_ROUTES.length).toBeGreaterThan(30);
   expect(MEMBER_ROUTES.length).toBeGreaterThan(50);
 });
@@ -113,7 +113,7 @@ describe('admin screens', () => {
 
   describe.each(turnedAway)('%s', (who) => {
     it.each(REPRESENTATIVE)('never lands on %s, and is sent home', async (route) => {
-      await expectTurnedAway(who, route, 'index');
+      await expectTurnedAway(who, route, '(tabs)/index');
     });
   });
 
@@ -137,12 +137,12 @@ describe('admin screens', () => {
     it.each(ADMIN_ROUTES.filter((r) => !COMMITTEE_REPORTS.includes(r)))(
       'the committee can’t open %s',
       async (route) => {
-        await expectTurnedAway('committee', route, 'index');
+        await expectTurnedAway('committee', route, '(tabs)/index');
       },
     );
 
     it.each(ADMIN_ROUTES)('a stood-down admin can’t open %s', async (route) => {
-      await expectTurnedAway('stoodDownAdmin', route, 'index');
+      await expectTurnedAway('stoodDownAdmin', route, '(tabs)/index');
     });
 
     it.each(ADMIN_ROUTES)('an admin opens %s with every feature on', async (route) => {
@@ -166,7 +166,7 @@ describe('committee reports', () => {
     it.each(['admin/reports/under-18s', 'admin/injuries', 'admin/reports/session-plans', 'admin/reports/kpis', 'admin/index', 'admin/club/brand', 'admin/club/features', 'admin/club/options', 'admin/club/records'])(
       'never lands on %s, and is sent home',
       async (route) => {
-        await expectTurnedAway(who, route, 'index');
+        await expectTurnedAway(who, route, '(tabs)/index');
       },
     );
   });
@@ -176,7 +176,7 @@ describe('committee reports', () => {
     '%s',
     (who) => {
       it.each(COMMITTEE_REPORTS)('never lands on %s, and is sent home', async (route) => {
-        await expectTurnedAway(who, route, 'index');
+        await expectTurnedAway(who, route, '(tabs)/index');
       });
     },
   );
@@ -184,7 +184,7 @@ describe('committee reports', () => {
   it('a committee member reads a report only while its feature is on', async () => {
     setClubFeatures({ attendance: false, awards: false, integrity: false });
     for (const route of ['admin/reports/attendance', 'admin/reports/awards', 'admin/reports/integrity']) {
-      await expectTurnedAway('committee', route, 'index');
+      await expectTurnedAway('committee', route, '(tabs)/index');
     }
     await expectReaches('committee', 'admin/reports/wwcc');
   });
@@ -200,7 +200,7 @@ describe('signed-out members', () => {
 
   it('only see choose-club before a club is picked, never sign-in or the home screen', async () => {
     setClubChosen(false);
-    for (const route of ['index', 'sign-in', 'administration', 'messages/index']) {
+    for (const route of ['(tabs)/index', 'sign-in', 'administration', '(tabs)/messages']) {
       await expectTurnedAway('signedOut', route, 'choose-club');
     }
   });
@@ -216,13 +216,13 @@ describe('signed-out members', () => {
 
 describe('signed-in members', () => {
   it.each(['sign-in', 'choose-club'])('are sent home from %s', async (route) => {
-    await expectTurnedAway('athlete', route, 'index');
+    await expectTurnedAway('athlete', route, '(tabs)/index');
   });
 
   it('a member waiting for approval has the home and join screens, never admin ones', async () => {
-    await expectReaches('pending', 'index');
+    await expectReaches('pending', '(tabs)/index');
     await expectReaches('pending', 'join');
-    await expectTurnedAway('pending', 'administration', 'index');
+    await expectTurnedAway('pending', 'administration', '(tabs)/index');
   });
 });
 

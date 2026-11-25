@@ -68,6 +68,9 @@ const mockCalendar: { events: CalendarEvent[] } = { events: [] };
 const mockShowPast = jest.fn();
 jest.mock('@/lib/use-events', () => ({
   useEvents: () => ({ events: mockCalendar.events, showPast: mockShowPast }),
+  // One event by id: null when it isn't on the calendar, as the real hook answers.
+  useEvent: (id: string | undefined) =>
+    id ? (mockCalendar.events.find((e) => e.id === id) ?? null) : undefined,
 }));
 
 type Who = PersonaName | Persona;
@@ -903,5 +906,63 @@ describe('using a plan again', () => {
     expect(
       screen.getByText('Drills.pdf couldn’t be copied. Attach it again. The plan is saved; tap Save again to send the rest.'),
     ).toBeTruthy();
+  });
+});
+
+// ---------------------------------------------------------------------------
+// Opened from a session on the calendar ("A session's page" in section 3 of
+// docs/user-guide.md): a new plan starts with that session filled in.
+
+describe('adding a plan from a session', () => {
+  const SESSION: CalendarEvent = {
+    id: 'e-session',
+    title: '17 & Under A training',
+    start: new Date('2026-10-22T09:00:00Z'),
+    end: new Date('2026-10-22T10:30:00Z'),
+    allDay: false,
+    location: 'Stadium court 3',
+    description: null,
+    calendarId: 'cal-b',
+    calendarName: TEAM_B.name,
+    clubWide: false,
+    color: '#000000',
+    teamIds: [TEAM_B.id],
+  };
+  const from = (team: string, event = SESSION.id) =>
+    `/session-plans/edit?team=${encodeURIComponent(team)}&event=${encodeURIComponent(event)}`;
+
+  it('an admin’s plan starts with the session’s team, name, day, times and place', async () => {
+    mockCalendar.events = [SESSION];
+    await openForm('admin', from(TEAM_B.id));
+    expect(screen.getByDisplayValue('17 & Under A training')).toBeTruthy();
+    expect(screen.getByDisplayValue('Stadium court 3')).toBeTruthy();
+    await type('Warm up, drills, focus areas, anything you want to record', 'Passing drills');
+    await press('Save session plan');
+    expect(saved()).toMatchObject({
+      p_id: null,
+      p_team_id: TEAM_B.id,
+      p_title: '17 & Under A training',
+      p_session_on: '2026-10-22',
+      p_location: 'Stadium court 3',
+    });
+    expect(saved().p_starts_at).toMatch(/^\d{2}:\d{2}$/);
+    expect(saved().p_ends_at).toMatch(/^\d{2}:\d{2}$/);
+  });
+
+  it('a coach can’t be given a team they don’t coach this way: their own team stays chosen', async () => {
+    mockCalendar.events = [SESSION];
+    await openForm('coach', from(TEAM_B.id));
+    await type('Warm up, drills, focus areas, anything you want to record', 'Passing drills');
+    await press('Save session plan');
+    // The only group a coach is offered is the one they coach.
+    expect(saved()).toMatchObject({ p_team_id: TEAM.id });
+  });
+
+  it('a session that is no longer on the calendar opens an empty form', async () => {
+    await openForm('coach', from(TEAM.id, 'gone'));
+    expect(screen.queryByDisplayValue('17 & Under A training')).toBeNull();
+    await fillMinimum();
+    await press('Save session plan');
+    expect(saved()).toMatchObject({ p_team_id: TEAM.id, p_title: 'Tuesday training', p_session_on: '2026-10-18' });
   });
 });

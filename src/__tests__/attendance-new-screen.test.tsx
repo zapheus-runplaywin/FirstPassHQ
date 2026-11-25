@@ -98,10 +98,10 @@ function serve(feeds: Record<string, string>) {
 
 async function open(
   who: Who,
-  { calendars = [] as unknown[], feeds = {} as Record<string, string>, ...options }: BackendOptions & { calendars?: unknown[]; feeds?: Record<string, string> } = {},
+  { calendars = [] as unknown[], feeds = {} as Record<string, string>, url = '/attendance/new', ...options }: BackendOptions & { calendars?: unknown[]; feeds?: Record<string, string>; url?: string } = {},
 ) {
   serve(feeds);
-  await openScreen(who, { 'attendance/new': TakeAttendanceScreen }, '/attendance/new', { teams: TEAMS, calendars, fixtures: [] }, {
+  await openScreen(who, { 'attendance/new': TakeAttendanceScreen }, url, { teams: TEAMS, calendars, fixtures: [] }, {
     ...options,
     rpcs: {
       attendance_roster: ROSTER,
@@ -292,6 +292,99 @@ describe('marking and saving', () => {
   });
 });
 
+describe('reported absences are filled in', () => {
+  const BEA_AWAY = {
+    absences_on: [{ profile_id: 'a2', category: 'Illness', reason: null, from_day: '2026-10-18', to_day: '2026-10-18', reported_by_name: 'Sample Guardian' }],
+  };
+  /** Each athlete's mark, in the register's order: true present, false absent, null not marked. */
+  const marks = () => {
+    const chosen = screen.getAllByRole('radio').map((r) => !!r.props.accessibilityState?.selected);
+    // Each athlete has Present, then Absent.
+    return ROSTER.map((_, i) => (chosen[i * 2] ? true : chosen[i * 2 + 1] ? false : null));
+  };
+
+  it('an athlete reported away starts as Absent, and the screen says so', async () => {
+    await open('coach', { rpcs: BEA_AWAY });
+    expect(marks()).toEqual([null, false, null]);
+    expect(screen.getByText(/^1 athlete reported away is marked Absent for you\./)).toBeTruthy();
+    expect(screen.getByText('0 of 3 present · 2 not marked')).toBeTruthy();
+  });
+
+  it('counts more than one', async () => {
+    await open('coach', {
+      rpcs: { absences_on: [...BEA_AWAY.absences_on, { ...BEA_AWAY.absences_on[0], profile_id: 'a3' }] },
+    });
+    expect(marks()).toEqual([null, false, false]);
+    expect(screen.getByText(/^2 athletes reported away are marked Absent for you\./)).toBeTruthy();
+  });
+
+  it('nobody reported away: everyone starts unmarked and nothing is said', async () => {
+    await open('coach');
+    expect(marks()).toEqual([null, null, null]);
+    expect(screen.queryByText(/reported away/)).toBeNull();
+  });
+
+  it('an injured athlete is not filled in: they still come along', async () => {
+    await open('coach', { rpcs: { injured_on: [{ profile_id: 'a1', expected_return: null }] } });
+    expect(marks()).toEqual([null, null, null]);
+  });
+
+  it('Mark the rest present leaves them Absent, and that is what is saved', async () => {
+    await open('coach', { rpcs: BEA_AWAY });
+    await type('Session', 'Training');
+    await fireEvent.press(screen.getByText('Mark the rest present'));
+    expect(marks()).toEqual([true, false, true]);
+    await save();
+    expect(argsOf('save_attendance')[0]?.p_marks).toEqual([
+      { profile_id: 'a1', present: true },
+      { profile_id: 'a2', present: false },
+      { profile_id: 'a3', present: true },
+    ]);
+  });
+
+  it('they came after all: Present wins, and the note about filling in goes', async () => {
+    await open('coach', { rpcs: BEA_AWAY });
+    await type('Session', 'Training');
+    const present = screen.getAllByRole('radio').filter((r) => within(r).queryByText('Present'));
+    await fireEvent.press(present[1]);
+    expect(marks()).toEqual([null, true, null]);
+    expect(screen.queryByText(/reported away is marked Absent/)).toBeNull();
+    // The reason they were reported away stays on their line.
+    expect(screen.getByText('Away: Illness')).toBeTruthy();
+    await fireEvent.press(screen.getByText('Mark the rest present'));
+    await save();
+    expect(argsOf('save_attendance')[0]?.p_marks).toEqual([
+      { profile_id: 'a1', present: true },
+      { profile_id: 'a2', present: true },
+      { profile_id: 'a3', present: true },
+    ]);
+  });
+
+  it('marking them Absent by hand keeps them Absent', async () => {
+    await open('coach', { rpcs: BEA_AWAY });
+    const absent = screen.getAllByRole('radio').filter((r) => within(r).queryByText('Absent'));
+    await fireEvent.press(absent[1]);
+    expect(marks()).toEqual([null, false, null]);
+    expect(screen.queryByText(/reported away is marked Absent/)).toBeNull();
+  });
+
+  it('with everyone else reported away, the register can be saved without a tap on anyone', async () => {
+    await open('coach', {
+      rpcs: { absences_on: ROSTER.map((r) => ({ ...BEA_AWAY.absences_on[0], profile_id: r.profile_id })) },
+    });
+    await type('Session', 'Training');
+    expect(screen.queryByText('Mark the rest present')).toBeNull();
+    await save();
+    expect(argsOf('save_attendance')[0]?.p_marks).toEqual(ROSTER.map((r) => ({ profile_id: r.profile_id, present: false })));
+  });
+
+  it('an absence for someone outside this register changes nothing', async () => {
+    await open('coach', { rpcs: { absences_on: [{ ...BEA_AWAY.absences_on[0], profile_id: 'someone-else' }] } });
+    expect(marks()).toEqual([null, null, null]);
+    expect(screen.queryByText(/reported away/)).toBeNull();
+  });
+});
+
 describe('attendance already taken nearby', () => {
   const NEARBY = [{ id: 'sess-earlier', name: 'Morning session', held_at: '2026-10-18T00:30:00Z', taken_by_name: 'Sample manager' }];
 
@@ -379,5 +472,63 @@ describe('today’s calendar', () => {
     await settle();
     expect(field('Session').props.value).toBe('Umpiring clinic');
     expect(screen.queryByText(/^Sunday training · /)).toBeNull();
+  });
+});
+
+// ---------------------------------------------------------------------------
+// Opened from a session on the calendar ("A session's page" in section 3 of
+// docs/user-guide.md): the group and the session start chosen.
+
+describe('opened from a session', () => {
+  const FEEDS = { 'https://example.test/club.ics': CLUB_ICS, 'https://example.test/team.ics': TEAM_ICS };
+  const TOMORROW = 'tomorrow:2026-10-19T01:30:00.000Z';
+  const from = (team: string, event: string) =>
+    `/attendance/new?team=${encodeURIComponent(team)}&event=${encodeURIComponent(event)}`;
+
+  it('an admin, who would otherwise pick a group first, starts with the session’s team', async () => {
+    await open('admin', { calendars: CALENDARS, feeds: FEEDS, url: from(TEAM_B.id, TOMORROW) });
+    expect(argsOf('attendance_roster')).toEqual([{ p_team_id: TEAM_B.id }]);
+    expect(screen.getByText('0 of 3 present · 3 not marked')).toBeTruthy();
+  });
+
+  it('the session is the one saved, with its name and start time, not the one on now', async () => {
+    await open('coach', { calendars: CALENDARS, feeds: FEEDS, url: from(TEAM.id, TOMORROW) });
+    expect(screen.getByDisplayValue('Monday training')).toBeTruthy();
+    // It isn't among today's events, so its time is spelled out.
+    expect(screen.getByText(/^From the calendar: /)).toBeTruthy();
+    expect(screen.queryByText(/^Suggested from the calendar/)).toBeNull();
+    await markAll([true, true, true]);
+    await save();
+    expect(argsOf('save_attendance')[0]).toMatchObject({
+      p_team_id: TEAM.id,
+      p_name: 'Monday training',
+      p_held_at: '2026-10-19T01:30:00.000Z',
+    });
+  });
+
+  it('a club-wide session opens whole-club attendance', async () => {
+    await open('committee', { calendars: CALENDARS, feeds: FEEDS, url: from('club', 'later:2026-10-18T10:00:00.000Z') });
+    expect(argsOf('attendance_roster')).toEqual([{ p_team_id: null }]);
+    expect(screen.getByDisplayValue('Presentation night')).toBeTruthy();
+  });
+
+  it('choosing another group lets go of the session', async () => {
+    await open('coach', { calendars: CALENDARS, feeds: FEEDS, url: from(TEAM.id, TOMORROW) });
+    await fireEvent.press(screen.getByText(SQUAD.name));
+    await settle();
+    expect(screen.queryByDisplayValue('Monday training')).toBeNull();
+    expect(screen.queryByText(/^From the calendar: /)).toBeNull();
+  });
+
+  it('a group the member isn’t offered is ignored: they choose as usual', async () => {
+    await open('committee', { url: from('someone-elses-team', TOMORROW) });
+    expect(screen.getByText('Who is it for?')).toBeTruthy();
+    expect(rpcNames()).not.toContain('attendance_roster');
+  });
+
+  it('a session that is no longer on the calendar leaves the name to type', async () => {
+    await open('coach', { calendars: CALENDARS, feeds: FEEDS, url: from(TEAM.id, 'gone:2026-10-18T00:00:00.000Z') });
+    expect(screen.queryByText(/^From the calendar: /)).toBeNull();
+    expect(argsOf('attendance_roster')).toEqual([{ p_team_id: TEAM.id }]);
   });
 });

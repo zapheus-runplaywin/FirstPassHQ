@@ -1,4 +1,4 @@
-import { openApp } from '../support/app';
+import { openApp, openTab } from '../support/app';
 import { eq } from '../support/fake-supabase';
 import { openSquad, samplePeople } from '../support/people';
 import { expect, test } from '../support/test';
@@ -29,6 +29,7 @@ test('an admin approves a member waiting for approval from Administration > Memb
   });
 
   await expect(page.getByText(`Hi ${admin.full_name}`)).toBeVisible();
+  await openTab(page, 'Club');
   await page.getByRole('button', { name: /^Administration/ }).click();
   await page.getByRole('button', { name: 'Members 1 request waiting for approval' }).click();
 

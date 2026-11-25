@@ -13,10 +13,12 @@ import { supabase } from '@/lib/supabase';
 /** An athlete, or their parent or guardian, tells the club they'll be away. */
 export default function ReportAbsenceScreen() {
   const { session } = useAuth();
-  const { id, name } = useLocalSearchParams<{ id: string; name?: string }>();
+  const { id, name, day } = useLocalSearchParams<{ id: string; name?: string; day?: string }>();
   const today = clubToday();
-  const [from, setFrom] = useState(today);
-  const [to, setTo] = useState(today);
+  // Opened from a session on the calendar, the dates start on that session's day.
+  const start = day && /^\d{4}-\d{2}-\d{2}$/.test(day) ? day : today;
+  const [from, setFrom] = useState(start);
+  const [to, setTo] = useState(start);
   const { reasons } = useAbsenceReasons(true);
   const [category, setCategory] = useState<string | null>(null);
   const [reason, setReason] = useState('');

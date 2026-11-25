@@ -50,12 +50,12 @@ beforeEach(() => {
 });
 afterEach(() => back.mockRestore());
 
-async function openAbsence(reasons: AbsenceReason[] | null) {
+async function openAbsence(reasons: AbsenceReason[] | null, day = '') {
   mockReasons = reasons;
   await openScreen(
     'guardian',
     { 'attendance/absence': ReportAbsenceScreen },
-    '/attendance/absence?id=child-1&name=Sample%20Child',
+    `/attendance/absence?id=child-1&name=Sample%20Child${day ? `&day=${day}` : ''}`,
     {},
     { rpcs: { report_absence: null } },
   );
@@ -112,5 +112,21 @@ describe('reporting an absence', () => {
       expect.objectContaining({ p_athlete_id: 'child-1', p_category_id: null }),
     ]);
     expect(back).toHaveBeenCalledTimes(1);
+  });
+
+  it('opened from a session on the calendar, starts on that session’s day', async () => {
+    await openAbsence([], '2026-10-24');
+    await fireEvent.press(screen.getByText('Report absence'));
+    expect(argsOf('report_absence')).toEqual([
+      expect.objectContaining({ p_athlete_id: 'child-1', p_from: '2026-10-24', p_to: '2026-10-24' }),
+    ]);
+  });
+
+  it.each(['tomorrow', '2026-13-99x', '24/10/2026'])('ignores a day that isn’t a date (%s) and starts today', async (day) => {
+    await openAbsence([], encodeURIComponent(day));
+    await fireEvent.press(screen.getByText('Report absence'));
+    expect(argsOf('report_absence')).toEqual([
+      expect.objectContaining({ p_from: '2026-10-18', p_to: '2026-10-18' }),
+    ]);
   });
 });

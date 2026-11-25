@@ -15,6 +15,15 @@ export type CalendarEvent = {
   clubWide: boolean;
   /** The calendar's colour, as a hex string. */
   color: string;
+  /**
+   * The squads and teams the calendar is for, when it is for any: a squad's
+   * or team's own calendar, or a match. Empty for the club calendar and for
+   * calendars shown by role. Only used to offer the right shortcuts on a
+   * session (src/lib/session.ts); it gives nobody access to anything.
+   */
+  teamIds?: string[];
+  /** Whether the calendar is shown to every athlete, by their role. Used as `teamIds` is. */
+  forAthletes?: boolean;
 };
 
 /** Stops a runaway rule (e.g. an endless daily event) from freezing the app. */
@@ -31,7 +40,14 @@ const MAX_STEPS_PER_EVENT = 20000;
  */
 export function parseIcs(
   icsText: string,
-  calendar: { id: string; name: string; clubWide: boolean; color: string },
+  calendar: {
+    id: string;
+    name: string;
+    clubWide: boolean;
+    color: string;
+    teamIds?: string[];
+    forAthletes?: boolean;
+  },
   rangeStart: Date,
   rangeEnd: Date,
 ): CalendarEvent[] {
@@ -84,6 +100,8 @@ export function parseIcs(
       calendarName: calendar.name,
       clubWide: calendar.clubWide,
       color: calendar.color,
+      teamIds: calendar.teamIds ?? [],
+      forAthletes: calendar.forAthletes ?? false,
     });
     return true;
   };

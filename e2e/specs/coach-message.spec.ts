@@ -1,4 +1,4 @@
-import { openApp } from '../support/app';
+import { openApp, openTab } from '../support/app';
 import { eq, type Handler } from '../support/fake-supabase';
 import { openSquad, openSquadAthletes, samplePeople, TODAY, u17Squad, uuid } from '../support/people';
 import { expect, test } from '../support/test';
@@ -46,10 +46,7 @@ test('a coach messages their squad, and sees who has read it', async ({ page }) 
   });
 
   await expect(page.getByText(`Hi ${coach.full_name}`)).toBeVisible();
-  await page.getByRole('button', { name: 'Messages No new messages' }).click();
-  // Exact: "New message" is also part of the Home card's name ("Messages No new
-  // messages"), which can still be showing when the click starts. Playwright then
-  // picks the card, which Home hides a moment later, and waits for it until timeout.
+  await openTab(page, 'Messages');
   await page.getByRole('button', { name: 'New message', exact: true }).click();
 
   // Their one squad is chosen for them; coaches can't message the club or a role.
@@ -118,7 +115,7 @@ test('an athlete has no New message button, and /messages/new sends them Home', 
 
   const backend = await openApp(page, { me: athlete, teams: [openSquad], memberships });
   await expect(page.getByText(`Hi ${athlete.full_name}`)).toBeVisible();
-  await page.getByRole('button', { name: 'Messages No new messages' }).click();
+  await openTab(page, 'Messages');
   await expect(page.getByText('No messages in your inbox.', { exact: false })).toBeVisible();
   await expect(page.getByText('Archived', { exact: true })).toBeVisible();
   await expect(page.getByRole('button', { name: 'New message', exact: true })).toHaveCount(0);

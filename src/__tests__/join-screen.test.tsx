@@ -497,7 +497,7 @@ describe('parents and guardians', () => {
     expect(rpcNames()).toContain('submit_join_request');
     expect(
       screen.getByText(
-        'Your request is sent, but the code didn’t work: Too many wrong codes. Try again in 40 minutes. You can enter it again from Home.',
+        'Your request is sent, but the code didn’t work: Too many wrong codes. Try again in 40 minutes. You can enter it again from the next screen.',
       ),
     ).toBeTruthy();
     expect(back).not.toHaveBeenCalled();
@@ -546,7 +546,7 @@ describe('parents and guardians', () => {
     await send();
     expect(
       screen.getByText(
-        'Your request is sent, but your child wasn’t: You’ve already asked for Sam Small. You can add them from Home.',
+        'Your request is sent, but your child wasn’t: You’ve already asked for Sam Small. You can add them from the next screen.',
       ),
     ).toBeTruthy();
     expect(back).not.toHaveBeenCalled();

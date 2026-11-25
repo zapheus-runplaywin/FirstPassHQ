@@ -14,15 +14,20 @@ import * as Linking from 'expo-linking';
 import { router } from 'expo-router';
 import { fireEvent, screen } from 'expo-router/testing-library';
 
-import CalendarScreen from '@/app/calendar';
+import CalendarScreen from '@/app/(tabs)/calendar';
 import EventScreen from '@/app/event/[id]';
 import { formatDay } from '@/lib/format';
 
 import { clearCalls, recordTable } from './helpers/forms';
 import {
   openScreen,
+  personas,
   resetClub,
+  setClubFeatures,
   settle,
+  TEAM,
+  type BackendOptions,
+  type Persona,
   type PersonaName,
 } from './helpers/harness';
 
@@ -376,5 +381,244 @@ describe('one event', () => {
     await openEvent('fixture:f9', 'pending');
     expect(screen.getByText('This event is no longer on the calendar.')).toBeTruthy();
     expect(fetchMock).not.toHaveBeenCalled();
+  });
+});
+
+// ---------------------------------------------------------------------------
+// What a member can do about a session, from its page ("A session's page" in
+// section 3 of docs/user-guide.md). The rules are in src/lib/session.ts and
+// tested there for every kind of member; here each kind of member opens a
+// real session of the team and sees only their own shortcuts.
+
+describe('what a member can do about a session', () => {
+  /** Open A's match later today (TODAY is 10 am on 18 October in Perth). */
+  const TODAY_MATCH = { ...FIXTURES[0], id: 'today', team_id: TEAM.id, starts_at: '2026-10-18T09:00:00Z' };
+  const NEXT_WEEK = { ...TODAY_MATCH, id: 'next-week', starts_at: '2026-10-24T02:00:00Z' };
+  const TITLES = [
+    'Can’t make it',
+    'Sample Child can’t make it',
+    'Take attendance',
+    'Session plan',
+    'Add a session plan',
+    'Check-ins',
+  ];
+  const shown = () => TITLES.filter((t) => screen.queryByText(t) !== null);
+
+  /** A parent who has followed their child into Open A. */
+  const parentInTeam: Persona = {
+    ...personas.guardian,
+    memberships: [{ team_role: 'guardian', coach_title: null, selection: null, team: TEAM }],
+  };
+  const CHECK_INS = [
+    { team_id: TEAM.id, team_name: TEAM.name, team_kind: 'team', squad_id: null, athlete_count: 10, checked_in_count: 7, flagged_count: 1 },
+  ];
+
+  async function openSession(who: PersonaName | Persona, match = TODAY_MATCH, options: BackendOptions = {}) {
+    serve(FEEDS);
+    await openScreen(who, { 'event/[id]': EventScreen }, `/event/${encodeURIComponent(`fixture:${match.id}`)}`, { calendars: CALENDARS }, {
+      ...options,
+      tableHandlers: { fixtures: () => [match], ...options.tableHandlers },
+    });
+    await settle();
+    expect(screen.getByText('Open A v Sample Storm')).toBeTruthy();
+  }
+
+  it.each<[string, PersonaName | Persona, string[]]>([
+    ['an athlete in the team', 'athlete', ['Can’t make it']],
+    ['a parent whose child is in the team', parentInTeam, ['Sample Child can’t make it']],
+    ['a parent whose child is not in the team', 'guardian', []],
+    ['the team’s coach', 'coach', ['Take attendance', 'Add a session plan', 'Check-ins']],
+    ['the team’s manager', 'manager', ['Take attendance']],
+    ['the team’s physio', 'physio', []],
+    ['a committee member', 'committee', []],
+    ['an admin', 'admin', ['Take attendance', 'Add a session plan']],
+    ['a guest', 'guest', []],
+    ['a coach who is stood down', 'stoodDownCoach', []],
+    ['a coach whose check has expired', 'coachExpiredCheck', []],
+  ])('%s has the shortcuts for them', async (_label, who, expected) => {
+    await openSession(who, TODAY_MATCH, { rpcs: { check_in_summary: CHECK_INS } });
+    expect(shown()).toEqual(expected);
+  });
+
+  it('an athlete says they can’t make it, with the session’s day filled in', async () => {
+    await openSession('athlete', NEXT_WEEK);
+    await fireEvent.press(screen.getByText('Can’t make it'));
+    expect(push).toHaveBeenCalledWith({
+      pathname: '/attendance/absence',
+      params: { id: 'athlete', day: '2026-10-24' },
+    });
+  });
+
+  it('a parent says their child can’t make it', async () => {
+    await openSession(parentInTeam, NEXT_WEEK);
+    await fireEvent.press(screen.getByText('Sample Child can’t make it'));
+    expect(push).toHaveBeenCalledWith({
+      pathname: '/attendance/absence',
+      params: { id: 'child-1', name: 'Sample Child', day: '2026-10-24' },
+    });
+  });
+
+  it('a coach takes attendance for this team and this session', async () => {
+    await openSession('coach');
+    await fireEvent.press(screen.getByText('Take attendance'));
+    expect(push).toHaveBeenCalledWith({
+      pathname: '/attendance/new',
+      params: { team: TEAM.id, event: 'fixture:today' },
+    });
+  });
+
+  it('a coach isn’t offered attendance for a session that hasn’t come yet', async () => {
+    await openSession('coach', NEXT_WEEK);
+    expect(shown()).toEqual(['Add a session plan']);
+  });
+
+  it('a coach sees how many have checked in, and opens the team’s check-ins', async () => {
+    await openSession('coach', TODAY_MATCH, { rpcs: { check_in_summary: CHECK_INS } });
+    expect(screen.getByText('7 of 10 checked in today · 1 flagged')).toBeTruthy();
+    await fireEvent.press(screen.getByText('Check-ins'));
+    expect(push).toHaveBeenCalledWith({ pathname: '/check-ins', params: { team: TEAM.id } });
+  });
+
+  it('an athlete opens the plan a coach shared for this session', async () => {
+    await openSession('athlete', TODAY_MATCH, {
+      rpcs: {
+        shared_session_plans: [
+          { id: 'plan-1', team_id: TEAM.id, title: 'Centre pass set plays', session_on: '2026-10-18' },
+          { id: 'plan-2', team_id: TEAM.id, title: 'Another day', session_on: '2026-10-20' },
+        ],
+      },
+    });
+    expect(screen.getByText('Centre pass set plays')).toBeTruthy();
+    expect(screen.queryByText('Another day')).toBeNull();
+    await fireEvent.press(screen.getByText('Session plan'));
+    expect(push).toHaveBeenCalledWith({ pathname: '/session-plans/[id]', params: { id: 'plan-1' } });
+  });
+
+  it('a coach with a plan for the session opens it, and isn’t asked to add another', async () => {
+    await openSession('coach', TODAY_MATCH, {
+      tableHandlers: {
+        session_plans: () => [{ id: 'plan-9', team_id: TEAM.id, title: 'My plan', session_on: '2026-10-18' }],
+      },
+    });
+    expect(shown()).toEqual(['Take attendance', 'Session plan']);
+  });
+
+  it('a coach adds a plan with the team and session filled in', async () => {
+    await openSession('coach');
+    await fireEvent.press(screen.getByText('Add a session plan'));
+    expect(push).toHaveBeenCalledWith({
+      pathname: '/session-plans/edit',
+      params: { team: TEAM.id, event: 'fixture:today' },
+    });
+  });
+
+  it.each([
+    ['attendance', 'coach', ['Add a session plan', 'Check-ins']],
+    ['attendance', 'athlete', []],
+    ['sessionPlans', 'coach', ['Take attendance', 'Check-ins']],
+    ['checkIns', 'coach', ['Take attendance', 'Add a session plan']],
+  ] as const)('with %s switched off, %s has: %j', async (feature, who, expected) => {
+    setClubFeatures({ [feature]: false });
+    await openSession(who, TODAY_MATCH, { rpcs: { check_in_summary: CHECK_INS } });
+    expect(shown()).toEqual(expected);
+  });
+
+  it('a session that has finished no longer offers Can’t make it', async () => {
+    // Its own id: events already loaded are kept by id.
+    await openSession('athlete', { ...TODAY_MATCH, id: 'this-morning', starts_at: '2026-10-18T00:00:00Z' });
+    expect(shown()).toEqual([]);
+  });
+
+  // Sessions from the club's own calendars: who each calendar is shown to
+  // decides whether it is a session athletes attend (src/lib/session.ts).
+  describe('on a calendar an admin has added', () => {
+    const audience = (kind: string, value: Partial<AudienceRow> = {}): AudienceRow => ({
+      kind,
+      role: null,
+      post: null,
+      team_id: null,
+      team: null,
+      ...value,
+    });
+
+    /** Opens a session at 5 pm today on a calendar shown to that audience. Each has its own id. */
+    async function openOn(who: PersonaName | Persona, uid: string, calendar: Partial<CalendarRow>) {
+      const url = `https://example.test/${uid}.ics`;
+      serve({ [url]: ics({ uid, summary: 'Evening session', start: '20261018T090000Z', end: '20261018T103000Z' }) });
+      const row: CalendarRow = { id: `cal-${uid}`, name: 'Sessions', url, color: null, team: null, calendar_audiences: [], ...calendar };
+      await openScreen(who, { 'event/[id]': EventScreen }, `/event/${encodeURIComponent(`${uid}:2026-10-18T09:00:00.000Z`)}`, { calendars: [row] }, {
+        tableHandlers: { fixtures: () => [] },
+      });
+      await settle();
+      expect(screen.getByText('Evening session')).toBeTruthy();
+    }
+
+    it('shown to a team: its athlete can say they can’t make it, and its coach takes its register', async () => {
+      const toTeam = { calendar_audiences: [audience('team', { team_id: TEAM.id, team: { kind: 'team' } })] };
+      await openOn('athlete', 'to-team-athlete', toTeam);
+      expect(shown()).toEqual(['Can’t make it']);
+    });
+
+    it('shown to a team: its coach takes that team’s register', async () => {
+      await openOn('coach', 'to-team-coach', {
+        calendar_audiences: [audience('team', { team_id: TEAM.id, team: { kind: 'team' } })],
+      });
+      await fireEvent.press(screen.getByText('Take attendance'));
+      expect(push).toHaveBeenCalledWith({
+        pathname: '/attendance/new',
+        params: { team: TEAM.id, event: 'to-team-coach:2026-10-18T09:00:00.000Z' },
+      });
+    });
+
+    it('shown to another team: nobody in Open A is offered anything', async () => {
+      const elsewhere = { calendar_audiences: [audience('team', { team_id: 'team-x', team: { kind: 'team' } })] };
+      await openOn('athlete', 'elsewhere-athlete', elsewhere);
+      expect(shown()).toEqual([]);
+    });
+
+    it('a team’s calendar from before calendars had audiences works the same way', async () => {
+      await openOn('athlete', 'old-team', {
+        team: { id: TEAM.id, name: TEAM.name, kind: 'team' } as CalendarRow['team'],
+      });
+      expect(shown()).toEqual(['Can’t make it']);
+    });
+
+    it('shown to everyone: any athlete can say they can’t make it', async () => {
+      await openOn('athlete', 'everyone-athlete', { calendar_audiences: [audience('everyone')] });
+      expect(shown()).toEqual(['Can’t make it']);
+    });
+
+    it('shown to everyone: a committee member takes the whole club’s register', async () => {
+      await openOn('committee', 'everyone-committee', { calendar_audiences: [audience('everyone')] });
+      await fireEvent.press(screen.getByText('Take attendance'));
+      expect(push).toHaveBeenCalledWith({
+        pathname: '/attendance/new',
+        params: { team: 'club', event: 'everyone-committee:2026-10-18T09:00:00.000Z' },
+      });
+    });
+
+    it('shown to athletes by role: any athlete can say they can’t make it', async () => {
+      await openOn('athlete', 'athletes-role', { calendar_audiences: [audience('role', { role: 'athlete' })] });
+      expect(shown()).toEqual(['Can’t make it']);
+    });
+
+    // A committee meeting isn't a session athletes attend.
+    it.each<PersonaName>(['committee', 'admin', 'coach', 'athlete', 'guardian'])(
+      'shown only to the committee: %s is offered nothing',
+      async (who) => {
+        await openOn(who, `committee-only-${who}`, {
+          calendar_audiences: [audience('role', { role: 'committee' })],
+        });
+        expect(shown()).toEqual([]);
+        expect(screen.queryByTestId('session-actions')).toBeNull();
+      },
+    );
+
+    it('shown only to a safeguarding post: nothing is offered', async () => {
+      await openOn('admin', 'post-only', {
+        calendar_audiences: [audience('post', { post: 'child_safety_officer' })],
+      });
+      expect(shown()).toEqual([]);
+    });
   });
 });

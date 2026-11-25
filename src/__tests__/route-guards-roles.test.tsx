@@ -197,7 +197,13 @@ const CONFLICT_DECLARERS = union(COMMITTEE, COACHES);
 const SELECTORS = union(COACHES, ADMINS);
 
 const WHO_OPENS: Record<string, PersonaName[]> = {
-  'messages/index': CLUB_MEMBERS,
+  // The hubs in the tab bar (src/lib/home-layout.ts): Team for people who
+  // play, coach, manage or are a physio, by role or by a place in a squad or
+  // team; Family for parents and guardians; Club for the committee and admins.
+  '(tabs)/team': union(ATHLETES, COACHES, MANAGERS, PHYSIOS),
+  '(tabs)/family': GUARDIANS,
+  '(tabs)/club': union(COMMITTEE, ADMINS),
+  '(tabs)/messages': CLUB_MEMBERS,
   'messages/[id]': CLUB_MEMBERS,
   // Everyone who reads messages has a Groups tab; the database decides which groups.
   'messages/group/[id]': CLUB_MEMBERS,
@@ -266,6 +272,8 @@ const WHO_OPENS: Record<string, PersonaName[]> = {
   'concerns/message-access/[id]': union(ADMINS, ['safeguardingOfficer']),
 
   children: union(GUARDIANS, ADMINS),
+  // A child's page shows a child only to their own parents (src/__tests__/child-screen.test.tsx).
+  'child/[id]': union(GUARDIANS, ADMINS),
   'consent/[id]': union(GUARDIANS, ADMINS),
   'records/[id]': union(GUARDIANS, ADMINS),
   'medical/[id]': MEDICAL_READERS,
@@ -296,10 +304,9 @@ const WHO_OPENS: Record<string, PersonaName[]> = {
  * A child waiting for a parent or guardian only has those in OPEN_WHILE_WAITING.
  */
 const EVERYONE_SIGNED_IN = [
-  'index',
+  '(tabs)/index',
   'join',
   'team/[id]',
-  'calendar',
   'event/[id]',
   'declaration',
   'wwcc-application',
@@ -313,21 +320,52 @@ const EVERYONE_SIGNED_IN = [
   'delete-account',
 ];
 
+/**
+ * People with one job to do keep one screen and no tab bar, so no Me tab:
+ * waiting for approval or turned down, a child waiting for a parent, a
+ * temporary helper, and someone whose only role is Studio. Their account
+ * links stay on that one screen.
+ */
+const ONE_SCREEN: PersonaName[] = [
+  'pending',
+  'rejected',
+  'pendingAdmin',
+  'volunteer',
+  'studio',
+  'stoodDownStudio',
+  'waitingChild',
+  'lockedChild',
+];
+
 /** What a child waiting for a parent or guardian can open: their link code, help, and leaving. */
 const OPEN_WHILE_WAITING: Record<string, PersonaName[]> = {
-  index: WAITING_FOR_GUARDIAN,
+  '(tabs)/index': WAITING_FOR_GUARDIAN,
   'concern/new': WAITING_FOR_GUARDIAN,
   'delete-account': WAITING_FOR_GUARDIAN,
   // Changing the request, until they're approved.
   join: ['waitingChild'],
 };
 
+const ME = '(tabs)/me';
+
+/**
+ * Tabs every member with the tab bar has, whatever their role. People who keep
+ * one screen have no bar to get back with, so these send them to that screen
+ * (until this layout, a member waiting for approval who typed the calendar's
+ * address got an empty calendar).
+ */
+const TABS_FOR_ALL = [ME, '(tabs)/calendar'];
+
 // ---------------------------------------------------------------------------
 
 describe('the route table', () => {
   it('covers every member screen on disk, so a new screen must be placed in it', () => {
-    const placed = [...Object.keys(WHO_OPENS), ...EVERYONE_SIGNED_IN].sort();
+    const placed = [...Object.keys(WHO_OPENS), ...EVERYONE_SIGNED_IN, ...TABS_FOR_ALL].sort();
     expect(placed).toEqual([...MEMBER_ROUTES].sort());
+  });
+
+  it('covers every member screen on disk, with Me', () => {
+    expect(MEMBER_ROUTES).toContain(ME);
   });
 
   it('names only real screens and sample members', () => {
@@ -372,7 +410,7 @@ describe.each(Object.entries(WHO_OPENS))('%s', (route, who) => {
 
   if (turnedAway.length > 0) {
     it.each(turnedAway)('sends %s home', async (p) => {
-      await expectTurnedAway(p, route, 'index');
+      await expectTurnedAway(p, route, '(tabs)/index');
     });
   }
 });
@@ -389,9 +427,23 @@ describe.each(EVERYONE_SIGNED_IN)('%s', (route) => {
 
   if (turnedAway.length > 0) {
     it.each(turnedAway)('sends %s home', async (p) => {
-      await expectTurnedAway(p, route, 'index');
+      await expectTurnedAway(p, route, '(tabs)/index');
     });
   }
+});
+
+// Me and Calendar are for every approved member with the tab bar, whatever
+// their role: guests and members whose roles are all paused included.
+describe.each(TABS_FOR_ALL)('%s', (route) => {
+  const reaches = SIGNED_IN.filter((p) => !ONE_SCREEN.includes(p));
+
+  it.each(reaches)('opens for %s', async (p) => {
+    await expectReaches(p, route);
+  });
+
+  it.each(ONE_SCREEN)('sends %s back to their one screen', async (p) => {
+    await expectTurnedAway(p, route, '(tabs)/index');
+  });
 });
 
 describe('Season KPIs off', () => {
@@ -399,8 +451,8 @@ describe('Season KPIs off', () => {
     'sends even the committee and coaches home from %s',
     async (route) => {
       setClubFeatures({});
-      await expectTurnedAway('committee', route, 'index');
-      await expectTurnedAway('coach', route, 'index');
+      await expectTurnedAway('committee', route, '(tabs)/index');
+      await expectTurnedAway('coach', route, '(tabs)/index');
     },
   );
 });
@@ -408,8 +460,8 @@ describe('Season KPIs off', () => {
 describe('training load flags off', () => {
   it('sends even coaches home from the training load list', async () => {
     setClubFeatures({ kpis: true, registers: true });
-    await expectTurnedAway('coach', 'check-ins/load', 'index');
-    await expectTurnedAway('assistantCoach', 'check-ins/load', 'index');
+    await expectTurnedAway('coach', 'check-ins/load', '(tabs)/index');
+    await expectTurnedAway('assistantCoach', 'check-ins/load', '(tabs)/index');
   });
 });
 
@@ -424,9 +476,9 @@ describe('registers off', () => {
     'declare-conflicts',
   ])('sends even admins, the committee and coaches home from %s', async (route) => {
     setClubFeatures({ kpis: true });
-    await expectTurnedAway('admin', route, 'index');
-    await expectTurnedAway('committee', route, 'index');
-    await expectTurnedAway('coach', route, 'index');
+    await expectTurnedAway('admin', route, '(tabs)/index');
+    await expectTurnedAway('committee', route, '(tabs)/index');
+    await expectTurnedAway('coach', route, '(tabs)/index');
   }, 20000);
 });
 
@@ -435,23 +487,23 @@ describe('selection assessments off', () => {
     'sends even admins and coaches home from %s',
     async (route) => {
       setClubFeatures({ kpis: true, registers: true });
-      await expectTurnedAway('admin', route, 'index');
-      await expectTurnedAway('coach', route, 'index');
+      await expectTurnedAway('admin', route, '(tabs)/index');
+      await expectTurnedAway('coach', route, '(tabs)/index');
     },
     20000,
   );
 
   it('sends athletes and parents home from the criteria and dates', async () => {
     setClubFeatures({ kpis: true, registers: true });
-    await expectTurnedAway('athlete', 'selection', 'index');
-    await expectTurnedAway('guardian', 'selection', 'index');
+    await expectTurnedAway('athlete', 'selection', '(tabs)/index');
+    await expectTurnedAway('guardian', 'selection', '(tabs)/index');
   }, 20000);
 });
 
 describe('captains’ polls off', () => {
   it('a captain can no longer send polls, but keeps their polls’ results and still answers surveys', async () => {
     setClubFeatures({ kpis: true, registers: true, captainPolls: false });
-    await expectTurnedAway('captain', 'surveys/new', 'index');
+    await expectTurnedAway('captain', 'surveys/new', '(tabs)/index');
     await expectReaches('captain', 'surveys/results');
     await expectReaches('captain', 'surveys/index');
   });

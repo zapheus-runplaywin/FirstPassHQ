@@ -1,4 +1,4 @@
-import { openApp } from '../support/app';
+import { openApp, openTab } from '../support/app';
 import { eq } from '../support/fake-supabase';
 import { openSquad, openSquadAthletes, samplePeople, TODAY, uuid } from '../support/people';
 import { expect, test } from '../support/test';
@@ -43,6 +43,7 @@ test('a coach takes attendance for their squad', async ({ page }) => {
   });
 
   await expect(page.getByText(`Hi ${coach.full_name}`)).toBeVisible();
+  await openTab(page, 'Team');
   await page.getByRole('button', { name: /^Attendance Take attendance/ }).click();
   await page.getByRole('button', { name: 'Take attendance', exact: true }).click();
 
@@ -79,4 +80,43 @@ test('a coach takes attendance for their squad', async ({ page }) => {
   await expect(page).toHaveURL(new RegExp(`/attendance/${sessionId}$`));
   await expect(page.getByText('2 of 3 present', { exact: true })).toBeVisible();
   await expect(page.getByRole('button', { name: 'Change attendance' })).toBeVisible();
+});
+
+test('an athlete reported away starts as Absent, and the coach marks the rest', async ({ page }) => {
+  const { coach } = samplePeople();
+  const [bo, kai, lena] = openSquadAthletes;
+
+  const backend = await openApp(page, {
+    me: coach,
+    teams: [openSquad],
+    memberships: [{ team_role: 'coach', coach_title: 'head_coach', selection: null, team: openSquad }],
+    handle: (req) => {
+      if (req.rpc === 'attendance_roster') return openSquadAthletes;
+      if (req.rpc === 'absences_on') {
+        return [{ profile_id: kai.profile_id, category: 'Illness', reason: null, from_day: '2026-01-01', to_day: '2099-01-01', reported_by_name: 'Sample Guardian' }];
+      }
+      if (req.rpc === 'save_attendance') return uuid(702);
+      return undefined;
+    },
+  });
+
+  await openTab(page, 'Team');
+  await page.getByRole('button', { name: /^Attendance Take attendance/ }).click();
+  await page.getByRole('button', { name: 'Take attendance', exact: true }).click();
+
+  // Kai's absence was reported, so the register opens with Kai already Absent.
+  await expect(page.getByText(/^1 athlete reported away is marked Absent for you\./)).toBeVisible();
+  await expect(page.getByText('Away: Illness')).toBeVisible();
+  await expect(page.getByText('0 of 3 present · 2 not marked')).toBeVisible();
+  await page.getByPlaceholder('For example, Tuesday training').fill('Sunday skills session');
+  await page.getByRole('button', { name: 'Mark the rest present' }).click();
+  await expect(page.getByText('2 of 3 present', { exact: true })).toBeVisible();
+  await page.getByRole('button', { name: 'Save attendance' }).click();
+
+  await expect.poll(() => backend.rpcCalls('save_attendance').length).toBe(1);
+  expect(backend.rpcCalls('save_attendance')[0].p_marks).toEqual([
+    { profile_id: bo.profile_id, present: true },
+    { profile_id: kai.profile_id, present: false },
+    { profile_id: lena.profile_id, present: true },
+  ]);
 });

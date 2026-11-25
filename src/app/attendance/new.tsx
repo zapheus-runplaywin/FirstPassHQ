@@ -1,4 +1,4 @@
-import { router } from 'expo-router';
+import { router, useLocalSearchParams } from 'expo-router';
 import { useEffect, useState } from 'react';
 import { Pressable, StyleSheet, View } from 'react-native';
 
@@ -9,14 +9,14 @@ import { Button, Card, ChipGroup, ErrorText, TextField } from '@/components/ui';
 import { Spacing } from '@/constants/theme';
 import { useTheme } from '@/hooks/use-theme';
 import type { CalendarEvent } from '@/lib/calendar';
-import { useAwayNotes } from '@/lib/absences';
-import { marksToSave } from '@/lib/attendance';
+import { useAwayOn } from '@/lib/absences';
+import { filledFromAbsences, marksToSave, withReportedAbsences } from '@/lib/attendance';
 import { useSquads } from '@/lib/club';
 import { formatSentAt } from '@/lib/format';
 import { useLedGroups } from '@/lib/messages';
 import { supabase } from '@/lib/supabase';
 import type { AttendanceMark, Team } from '@/lib/types';
-import { useEvents } from '@/lib/use-events';
+import { useEvent, useEvents } from '@/lib/use-events';
 import { teamLabel, topGroups, useTeams } from '@/lib/use-teams';
 
 type NearbySession = { id: string; name: string; held_at: string; taken_by_name: string | null };
@@ -29,6 +29,11 @@ const BEFORE_START_MS = 60 * 60 * 1000;
 const AFTER_END_MS = 30 * 60 * 1000;
 
 export default function TakeAttendanceScreen() {
+  // Opened from a session on the calendar: its squad or team (or the whole
+  // club) and the session itself start chosen. Only a group this member is
+  // offered below can be chosen this way, and the database checks the save.
+  const params = useLocalSearchParams<{ team?: string; event?: string }>();
+  const startEvent = useEvent(params.event);
   const teams = useTeams();
   // The squads and teams the member coaches or manages; every one for admins.
   const ledGroups = useLedGroups(teams);
@@ -39,14 +44,23 @@ export default function TakeAttendanceScreen() {
   const [choice, setChoice] = useState<string | null>(null);
   const [editedName, setEditedName] = useState<string | null>(null);
   const [chosenEvent, setChosenEvent] = useState<CalendarEvent | null>(null);
+  // The session the register was opened from counts as chosen, until another
+  // group is picked.
+  const [linkOff, setLinkOff] = useState(false);
+  const linked = linkOff ? null : (startEvent ?? null);
   const [takenAt] = useState(() => new Date());
-  const [register, setRegister] = useState<AttendanceMark[] | null>(null);
+  // The marks made by hand: everyone starts unmarked (see `register` below).
+  const [marks, setMarks] = useState<AttendanceMark[] | null>(null);
   const [nearby, setNearby] = useState<NearbySession[]>([]);
   const [saving, setSaving] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
   // Coaches and managers who lead one group start with it chosen.
-  const selected = choice ?? (ledGroups.length === 1 ? ledGroups[0].id : null);
+  const offered =
+    params.team === CLUB ||
+    (!!params.team && (ledIds.has(params.team) || otherSquads.some((t) => t.id === params.team)));
+  const selected =
+    choice ?? (offered ? params.team! : null) ?? (ledGroups.length === 1 ? ledGroups[0].id : null);
   const team =
     selected && selected !== CLUB ? (teams.find((t) => t.id === selected) ?? null) : null;
   const { today, now: eventNow } = useCalendarEvents(
@@ -54,11 +68,17 @@ export default function TakeAttendanceScreen() {
   );
 
   // The event on now is suggested as the session until something else is chosen.
-  const event = chosenEvent ?? eventNow;
+  const picked = chosenEvent ?? linked;
+  const event = picked ?? eventNow;
   const name = editedName ?? event?.title ?? '';
   const heldAt = (event?.start ?? takenAt).toISOString();
   const teamId = selected === CLUB ? null : selected;
-  const away = useAwayNotes(teamId, heldAt, !!selected);
+  const { notes: away, reportedAway } = useAwayOn(teamId, heldAt, !!selected);
+  // What the screen shows and saves: athletes reported away that day start as
+  // Absent, until someone marks them by hand. Worked out each time, so it
+  // follows the session's day when another event is chosen.
+  const register = marks ? withReportedAbsences(marks, reportedAway) : null;
+  const filled = marks ? filledFromAbsences(marks, reportedAway) : [];
 
   // The athletes in the chosen squad, team or club, all unmarked.
   useEffect(() => {
@@ -68,7 +88,7 @@ export default function TakeAttendanceScreen() {
       .rpc('attendance_roster', { p_team_id: selected === CLUB ? null : selected })
       .then(({ data }) => {
         if (!current) return;
-        setRegister(
+        setMarks(
           ((data as { profile_id: string; full_name: string | null }[] | null) ?? []).map((r) => ({
             ...r,
             present: null,
@@ -100,17 +120,25 @@ export default function TakeAttendanceScreen() {
   function choose(value: string) {
     setChoice(value);
     setChosenEvent(null);
-    setRegister(null);
+    setLinkOff(true);
+    setMarks(null);
     setNearby([]);
     setError(null);
   }
 
   function mark(profileId: string, present: boolean) {
-    setRegister((r) => r?.map((m) => (m.profile_id === profileId ? { ...m, present } : m)) ?? r);
+    setMarks((r) => r?.map((m) => (m.profile_id === profileId ? { ...m, present } : m)) ?? r);
   }
 
+  /** Everyone not marked yet is here. Athletes filled in as Absent keep that mark. */
   function markRestPresent() {
-    setRegister((r) => r?.map((m) => (m.present === null ? { ...m, present: true } : m)) ?? r);
+    const keep = new Set(filled);
+    setMarks(
+      (r) =>
+        r?.map((m) =>
+          m.present === null && !keep.has(m.profile_id) ? { ...m, present: true } : m,
+        ) ?? r,
+    );
   }
 
   async function save() {
@@ -174,9 +202,14 @@ export default function TakeAttendanceScreen() {
             placeholder="For example, Tuesday training"
             maxLength={100}
           />
-          {event && !chosenEvent && editedName === null ? (
+          {event && !picked && editedName === null ? (
             <ThemedText type="small" themeColor="textSecondary">
               Suggested from the calendar: it’s on now, from {formatSentAt(event.start)}.
+            </ThemedText>
+          ) : null}
+          {picked && !today.some((e) => e.id === picked.id) ? (
+            <ThemedText type="small" themeColor="textSecondary">
+              From the calendar: {formatSentAt(picked.start)}.
             </ThemedText>
           ) : null}
           {today.length > 0 ? (
@@ -198,6 +231,14 @@ export default function TakeAttendanceScreen() {
 
           {register ? (
             <>
+              {filled.length > 0 ? (
+                <ThemedText type="small" themeColor="textSecondary">
+                  {filled.length === 1
+                    ? '1 athlete reported away is marked Absent for you.'
+                    : `${filled.length} athletes reported away are marked Absent for you.`}{' '}
+                  Tap Present for anyone who came after all.
+                </ThemedText>
+              ) : null}
               <AttendanceRegister register={register} onChange={mark} away={away} />
               {unmarked > 0 ? (
                 <Button

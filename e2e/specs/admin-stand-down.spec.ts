@@ -1,4 +1,4 @@
-import { openApp } from '../support/app';
+import { openApp, openTab } from '../support/app';
 import { eq } from '../support/fake-supabase';
 import { openSquad, samplePeople, TODAY, uuid } from '../support/people';
 import { expect, test } from '../support/test';
@@ -46,6 +46,7 @@ test('an admin stands a coach down with a reason, and the member page then offer
   });
 
   await expect(page.getByText(`Hi ${admin.full_name}`)).toBeVisible();
+  await openTab(page, 'Club');
   await page.getByRole('button', { name: /^Administration/ }).click();
   await page.getByRole('button', { name: /^Members/ }).click();
   await page.getByRole('button', { name: new RegExp(`^${coach.full_name}`) }).click();

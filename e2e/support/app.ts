@@ -44,3 +44,26 @@ export async function openApp(page: Page, options: AppOptions = {}) {
   await page.goto(path);
   return backend;
 }
+
+/** The tabs in the bar at the bottom of the screen, left to right. */
+export type Tab = 'Today' | 'Calendar' | 'Messages' | 'Team' | 'Family' | 'Club' | 'Me';
+
+const TAB_PATHS: Record<Tab, string> = {
+  Today: '/',
+  Calendar: '/calendar',
+  Messages: '/messages',
+  Team: '/team',
+  Family: '/family',
+  Club: '/club',
+  Me: '/me',
+};
+
+/** A tab's button in the bar. */
+export function tab(page: Page, name: Tab) {
+  return page.locator(`a[role="tab"][href="${TAB_PATHS[name]}"]`);
+}
+
+/** Taps a tab in the bar, as a member does to move between Today, their hub and Me. */
+export async function openTab(page: Page, name: Tab) {
+  await tab(page, name).click();
+}

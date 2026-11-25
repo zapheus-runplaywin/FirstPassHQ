@@ -1,16 +1,19 @@
 /**
- * What each role sees on the home screen (src/app/index.tsx), from the role
- * table in section 1 of docs/user-guide.md and the code's own rules.
+ * What each role sees in the tabs (src/app/(tabs)): which tabs they have, and
+ * what is on Today, in their hub (Team, Family or Club) and in Me, from the
+ * role table in section 1 of docs/user-guide.md and the code's own rules.
  *
- * The real home screen renders inside the real root layout, with every other
- * screen swapped for a placeholder, and the real AuthProvider working out
+ * The real tabs render inside the real root layout, with every other screen
+ * (Calendar and Messages included) swapped for a placeholder, and the real AuthProvider working out
  * each member's usable roles from a fake backend that returns nothing but the
  * member themselves (and, where a test says so, a few rows). Cards that only
  * show when the database has something for the member (awards open to them,
  * surveys sent to them, shared session plans, KPIs) are checked by seeding
  * that data, never assumed from the role.
  */
-import { act, fireEvent, renderRouter, screen } from 'expo-router/testing-library';
+import AsyncStorage from '@react-native-async-storage/async-storage';
+import { router } from 'expo-router';
+import { act, fireEvent, renderRouter, screen, within } from 'expo-router/testing-library';
 
 import {
   CHILD_CONSENTS,
@@ -42,26 +45,63 @@ jest.mock('@react-native-async-storage/async-storage', () =>
 jest.mock('@/global.css', () => ({}));
 jest.mock('expo-font', () => ({ ...jest.requireActual('expo-font'), useFonts: () => [true, null] }));
 
-const overrides = placeholderScreens('index');
+const overrides = placeholderScreens(
+  '(tabs)/index',
+  '(tabs)/team',
+  '(tabs)/family',
+  '(tabs)/club',
+  '(tabs)/me',
+  // A parent's child: opened from the child's card in Family.
+  'child/[id]',
+);
 
 /** The club has integrity training set, so the committee and admins have a card for it. */
 const CLUB_TRAINING = { training_requirements: [{ id: 'req-1' }] };
 
-async function openHome(who: PersonaName | Persona, tables: Record<string, unknown[]> = CLUB_TRAINING) {
-  jest.useFakeTimers({ now: TODAY });
-  signInAs(typeof who === 'string' ? personas[who] : who, tables);
-  await renderRouter({ appDir: 'src/app', overrides }, { initialUrl: '/' });
+async function settle() {
   for (let i = 0; i < 8; i++) {
     await act(async () => {
       await Promise.resolve();
     });
   }
-  expect(screen).toHavePathname('/');
+}
+
+/** Opens the app for a member on one tab: Today unless `url` names another. */
+async function openTab(
+  who: PersonaName | Persona,
+  url = '/',
+  tables: Record<string, unknown[]> = CLUB_TRAINING,
+) {
+  jest.useFakeTimers({ now: TODAY });
+  signInAs(typeof who === 'string' ? personas[who] : who, tables);
+  await renderRouter({ appDir: 'src/app', overrides }, { initialUrl: url });
+  await settle();
+  expect(screen).toHavePathname(url);
+}
+
+/** Opens the app on Today. */
+const openHome = (who: PersonaName | Persona, tables?: Record<string, unknown[]>) =>
+  openTab(who, '/', tables);
+
+/** Switches tab, as tapping it in the bar does. */
+async function goTo(url: string) {
+  await act(async () => {
+    router.navigate(url);
+  });
+  await settle();
+  expect(screen).toHavePathname(url);
+}
+
+/** The tabs in the bar, left to right. None for someone who keeps one screen. */
+function tabBar(): string[] {
+  return screen
+    .queryAllByLabelText(/, tab, \d of \d$/)
+    .map((tab) => String(tab.props.accessibilityLabel).replace(/, tab, \d of \d$/, ''));
 }
 
 /** Each card or section, by text only it shows. */
 const ITEMS = {
-  messages: 'No new messages',
+  nextUp: 'Next up',
   sendSurveys: 'Send a survey and see results',
   dailyCheckIn: 'Not done yet today',
   checkIns: 'See how squads and teams are feeling',
@@ -73,8 +113,10 @@ const ITEMS = {
   concerns: 'The concerns register',
   reports: 'The club’s checks, medical details checks, training, attendance and award results',
   administration: 'Administration',
-  comingUp: 'Coming up',
   guardianOf: 'Guardian of',
+  // With a child linked: one card for each child, and adding another.
+  child: 'Sample Child',
+  addChild: 'Add another child',
   consent: 'Consent',
   whatsChanged: 'What’s changed',
   recordViews: 'Who has viewed their records',
@@ -82,154 +124,225 @@ const ITEMS = {
   childAttendance: 'Their sessions, and tell their coaches if they’ll be away',
   childCheckIns: 'Their daily check-ins and notes from the last four weeks',
   groups: 'My squads and teams',
-  raiseConcern: 'Raise a concern',
+  yourDetails: 'Your details',
+  yourTasks: 'Your own list of things to remember',
+  contacts: 'If a child is in danger now, call 000.',
+  signOut: 'Sign out',
+  switchClub: 'Switch club',
+  deleteAccount: 'Delete account',
   waiting: 'Waiting for approval',
 } as const;
 
 type Item = keyof typeof ITEMS;
 const ALL_ITEMS = Object.keys(ITEMS) as Item[];
 
+/** What is on the tab being looked at (a tab that isn't showing is hidden from the queries). */
 function expectOnly(sees: Item[]) {
   const shown = ALL_ITEMS.filter((item) => screen.queryAllByText(ITEMS[item]).length > 0);
   expect(shown.sort()).toEqual([...sees].sort());
 }
 
-beforeEach(() => resetClub());
+/** Me always has the member's details, tasks, the safety contacts and their account. */
+const ME: Item[] = ['yourDetails', 'yourTasks', 'contacts', 'signOut', 'switchClub', 'deleteAccount'];
+/** The one screen keeps its account links at the foot. */
+const ONE_SCREEN_LINKS: Item[] = ['yourDetails', 'signOut', 'switchClub', 'deleteAccount'];
+
+beforeEach(async () => {
+  resetClub();
+  // The hub a member last opened is remembered on the device.
+  await AsyncStorage.clear();
+});
 
 // ---------------------------------------------------------------------------
-// Every card and section, role by role, with every feature on.
+// Every card and section, role by role, with every feature on: which tabs the
+// member has, and what is on Today, in their hub and in Me. Everything the one
+// Home screen used to show a role is in one of them (the lists below are that
+// screen's cards, moved; Messages and the calendar became tabs).
 
-const BY_ROLE: { who: PersonaName; sees: Item[] }[] = [
+type Hub = 'team' | 'family' | 'club';
+
+const BY_ROLE: {
+  who: PersonaName;
+  tabs: string[];
+  /** Today, besides Next up and the list of what needs them. */
+  today?: Item[];
+  hubs?: Partial<Record<Hub, Item[]>>;
+  /** Me, besides what everyone has there. */
+  me?: Item[];
+}[] = [
   {
     who: 'athlete',
-    sees: ['messages', 'dailyCheckIn', 'injuries', 'myAttendance', 'comingUp', 'groups', 'raiseConcern'],
+    tabs: ['Today', 'Calendar', 'Messages', 'Team', 'Me'],
+    hubs: { team: ['groups'] },
+    me: ['dailyCheckIn', 'myAttendance', 'injuries'],
   },
   {
     who: 'guardian',
-    sees: [
-      'messages',
-      'injuries',
-      'comingUp',
-      'guardianOf',
-      'childGoals',
-      'consent',
-      'childAttendance',
-      'childCheckIns',
-      'whatsChanged',
-      'recordViews',
-      'groups',
-      'raiseConcern',
-    ],
+    tabs: ['Today', 'Calendar', 'Messages', 'Family', 'Me'],
+    hubs: {
+      // What each child has (consent, attendance, game goals and the rest)
+      // is on the child's own page, opened from their card.
+      family: ['child', 'injuries', 'groups', 'addChild'],
+    },
   },
   {
     who: 'coach',
-    sees: [
-      'messages',
-      'sendSurveys',
-      'checkIns',
-      'injuries',
-      'takeAttendance',
-      'comingUp',
-      'groups',
-      'raiseConcern',
-    ],
+    tabs: ['Today', 'Calendar', 'Messages', 'Team', 'Me'],
+    hubs: { team: ['groups', 'checkIns', 'takeAttendance', 'injuries', 'sendSurveys'] },
   },
   {
     // Managers don't see injuries (section 11), only log them, and only take attendance.
     who: 'manager',
-    sees: ['messages', 'sendSurveys', 'logInjuries', 'takeAttendance', 'comingUp', 'groups', 'raiseConcern'],
+    tabs: ['Today', 'Calendar', 'Messages', 'Team', 'Me'],
+    hubs: { team: ['groups', 'takeAttendance', 'logInjuries', 'sendSurveys'] },
   },
   {
     // Averages only; no surveys to send, no attendance.
     who: 'physio',
-    sees: ['messages', 'checkIns', 'injuries', 'comingUp', 'groups', 'raiseConcern'],
+    tabs: ['Today', 'Calendar', 'Messages', 'Team', 'Me'],
+    hubs: { team: ['groups', 'checkIns', 'injuries'] },
   },
   {
-    // Not in a squad, so no squads section.
+    // Not in a squad, so no Team hub and no squads section.
     who: 'committee',
-    sees: [
-      'messages',
-      'sendSurveys',
-      'checkIns',
-      'injuries',
-      'takeAttendance',
-      'integrity',
-      'reports',
-      'comingUp',
-      'raiseConcern',
-    ],
+    tabs: ['Today', 'Calendar', 'Messages', 'Club', 'Me'],
+    hubs: {
+      club: ['checkIns', 'takeAttendance', 'injuries', 'reports', 'sendSurveys', 'integrity'],
+    },
   },
   {
     // The reports name children: a committee member exempted with a reason
     // has no Reports card (customer review C14).
     who: 'committeeExempt',
-    sees: ['messages', 'sendSurveys', 'checkIns', 'injuries', 'takeAttendance', 'integrity', 'comingUp', 'raiseConcern'],
+    tabs: ['Today', 'Calendar', 'Messages', 'Club', 'Me'],
+    hubs: { club: ['checkIns', 'takeAttendance', 'injuries', 'sendSurveys', 'integrity'] },
   },
   {
     who: 'committeeBeforeChecksDate',
-    sees: ['messages', 'sendSurveys', 'checkIns', 'injuries', 'takeAttendance', 'integrity', 'comingUp', 'raiseConcern'],
+    tabs: ['Today', 'Calendar', 'Messages', 'Club', 'Me'],
+    hubs: { club: ['checkIns', 'takeAttendance', 'injuries', 'sendSurveys', 'integrity'] },
   },
   {
     // The club chose who on the committee sees injuries and left them out
     // (customer review R7): no Injuries card.
     who: 'committeeNotChosen',
-    sees: ['messages', 'sendSurveys', 'checkIns', 'takeAttendance', 'integrity', 'reports', 'comingUp', 'raiseConcern'],
+    tabs: ['Today', 'Calendar', 'Messages', 'Club', 'Me'],
+    hubs: { club: ['checkIns', 'takeAttendance', 'reports', 'sendSurveys', 'integrity'] },
   },
   {
     who: 'committeeVolunteerExempt',
-    sees: ['messages', 'sendSurveys', 'checkIns', 'injuries', 'takeAttendance', 'integrity', 'reports', 'comingUp', 'raiseConcern'],
+    tabs: ['Today', 'Calendar', 'Messages', 'Club', 'Me'],
+    hubs: {
+      club: ['checkIns', 'takeAttendance', 'injuries', 'reports', 'sendSurveys', 'integrity'],
+    },
   },
   {
     who: 'admin',
-    sees: [
-      'messages',
-      'sendSurveys',
-      'checkIns',
-      'injuries',
-      'takeAttendance',
-      'integrity',
-      'concerns',
-      'administration',
-      'comingUp',
-      'raiseConcern',
-    ],
+    tabs: ['Today', 'Calendar', 'Messages', 'Club', 'Me'],
+    // Safeguarding work leads Today, and is in the Club hub too.
+    today: ['concerns'],
+    hubs: {
+      club: [
+        'concerns',
+        'checkIns',
+        'takeAttendance',
+        'injuries',
+        'administration',
+        'sendSurveys',
+        'integrity',
+      ],
+    },
   },
   {
     // An expired check doesn't pause the admin role.
     who: 'adminExpiredCheck',
-    sees: [
-      'messages',
-      'sendSurveys',
-      'checkIns',
-      'injuries',
-      'takeAttendance',
-      'integrity',
-      'concerns',
-      'administration',
-      'comingUp',
-      'raiseConcern',
-    ],
+    tabs: ['Today', 'Calendar', 'Messages', 'Club', 'Me'],
+    today: ['concerns'],
+    hubs: {
+      club: [
+        'concerns',
+        'checkIns',
+        'takeAttendance',
+        'injuries',
+        'administration',
+        'sendSurveys',
+        'integrity',
+      ],
+    },
   },
-  // Guests can only look: the calendar and squads.
-  { who: 'guest', sees: ['comingUp', 'groups', 'raiseConcern'] },
-  // Paused roles leave a guest: nothing the role gave, and no Administration.
-  { who: 'stoodDownAdmin', sees: ['comingUp', 'groups', 'raiseConcern'] },
-  { who: 'stoodDownCoach', sees: ['comingUp', 'groups', 'raiseConcern'] },
-  { who: 'coachExpiredCheck', sees: ['comingUp', 'groups', 'raiseConcern'] },
-  // Temporary helpers see only their onboarding steps and Raise a concern.
-  { who: 'volunteer', sees: ['raiseConcern'] },
-  // Studio on its own isn't a club member: what the role is for, and Raise a concern.
-  { who: 'studio', sees: ['raiseConcern'] },
-  { who: 'stoodDownStudio', sees: ['raiseConcern'] },
-  { who: 'pending', sees: ['waiting', 'raiseConcern'] },
-  { who: 'pendingAdmin', sees: ['waiting', 'raiseConcern'] },
-  { who: 'rejected', sees: ['raiseConcern'] },
+  // Guests can only look: the calendar, and their squads in Me. No messages, no hub.
+  { who: 'guest', tabs: ['Today', 'Calendar', 'Me'], me: ['groups'] },
+  // Paused roles leave a guest: nothing the role gave, and no Club or Team hub.
+  { who: 'stoodDownAdmin', tabs: ['Today', 'Calendar', 'Me'], me: ['groups'] },
+  { who: 'stoodDownCoach', tabs: ['Today', 'Calendar', 'Me'], me: ['groups'] },
+  { who: 'coachExpiredCheck', tabs: ['Today', 'Calendar', 'Me'], me: ['groups'] },
 ];
 
-describe.each(BY_ROLE)('$who', ({ who, sees }) => {
-  it(`sees only: ${sees.join(', ')}`, async () => {
+describe.each(BY_ROLE)('$who', ({ who, tabs, today = [], hubs = {}, me = [] }) => {
+  it(`has the tabs ${tabs.join(', ')}`, async () => {
     await openHome(who);
-    expectOnly(sees);
+    expect(tabBar()).toEqual(tabs);
+  });
+
+  it(`sees on Today only: ${['what’s next and what needs them', ...today].join(', ')}`, async () => {
+    await openHome(who);
+    expectOnly(['nextUp', ...today]);
+    expect(screen.getByTestId('needs-you')).toBeTruthy();
+    // Raise a concern is at the top of every tab.
+    expect(screen.getByText('Raise a concern')).toBeTruthy();
+  });
+
+  for (const [hub, sees] of Object.entries(hubs)) {
+    it(`sees in ${hub} only: ${sees.join(', ')}`, async () => {
+      await openTab(who, `/${hub}`);
+      expectOnly(sees);
+      expect(screen.getByText('Raise a concern')).toBeTruthy();
+    });
+  }
+
+  it(`has no hub but ${Object.keys(hubs).join(', ') || 'none'}: the others send them back to Today`, async () => {
+    for (const hub of (['team', 'family', 'club'] as Hub[]).filter((h) => !(h in hubs))) {
+      jest.useFakeTimers({ now: TODAY });
+      signInAs(personas[who], CLUB_TRAINING);
+      await renderRouter({ appDir: 'src/app', overrides }, { initialUrl: `/${hub}` });
+      await settle();
+      expect(screen).toHavePathname('/');
+    }
+  }, 20000);
+
+  it(`sees in Me only: ${['their details, tasks, safety contacts and account', ...me].join(', ')}`, async () => {
+    await openTab(who, '/me');
+    expectOnly([...ME, ...me]);
+    // At the top of the tab, and first under Safety.
+    expect(screen.getAllByText('Raise a concern')).toHaveLength(2);
+  });
+
+  it('has the app’s version and build at the foot of Today, under Powered by', async () => {
+    await openHome(who);
+    expect(screen.getByLabelText('Powered by FirstPass HQ')).toBeTruthy();
+    expect(screen.getByTestId('app-version')).toBeTruthy();
+    expect(screen.getByText(/^Version /)).toBeTruthy();
+  });
+});
+
+// People with one job to do keep one screen and no tab bar.
+const ONE_SCREEN: { who: PersonaName; sees: Item[] }[] = [
+  // Temporary helpers see only their onboarding steps and Raise a concern.
+  { who: 'volunteer', sees: [] },
+  // Studio on its own isn't a club member: what the role is for, and Raise a concern.
+  { who: 'studio', sees: [] },
+  { who: 'stoodDownStudio', sees: [] },
+  { who: 'pending', sees: ['waiting'] },
+  { who: 'pendingAdmin', sees: ['waiting'] },
+  { who: 'rejected', sees: [] },
+];
+
+describe.each(ONE_SCREEN)('$who', ({ who, sees }) => {
+  it(`keeps one screen with no tab bar, and sees only: ${['Raise a concern', ...sees].join(', ')}`, async () => {
+    await openHome(who);
+    expect(tabBar()).toEqual([]);
+    expectOnly([...sees, ...ONE_SCREEN_LINKS]);
+    expect(screen.getByText('Raise a concern')).toBeTruthy();
   });
 
   it('has the app’s version and build at the foot, under Powered by', async () => {
@@ -241,10 +354,10 @@ describe.each(BY_ROLE)('$who', ({ who, sees }) => {
 });
 
 // ---------------------------------------------------------------------------
-// The order of the home screen (Matt, 2026-11-12): To do, Messages, Coming up,
-// check-ins, attendance, Injuries, Session plans, Concerns, Administration
-// (Reports for the committee), then the cards outside that list in their
-// earlier order, the guardian and squad sections, and Raise a concern last.
+// The order of each tab. Today: what is next, then what needs you. A hub: its
+// lead (squads, or the children), then the cards in the order Home had them
+// (Matt, 2026-11-12): check-ins, attendance, Injuries, Session plans,
+// Concerns, Administration (Reports for the committee), then the rest.
 
 /** Every piece of text on the screen, top to bottom. */
 function textsInOrder(): string[] {
@@ -272,104 +385,274 @@ function expectInOrder(headings: string[]) {
   expect(sorted).toEqual(headings);
 }
 
-describe('home screen order', () => {
-  it('an athlete: To do, calendar, messages, check-in, attendance, injuries, then squads', async () => {
+describe('the order of each tab', () => {
+  it('Today: Raise a concern at the top, then what is next, then what needs you', async () => {
     await openHome('athlete');
+    expectInOrder(['Raise a concern', 'Next up', 'Needs you']);
+  });
+
+  it('an admin’s Today leads with Concerns, ahead of what is next', async () => {
+    await openHome('admin');
+    expectInOrder(['Raise a concern', 'Concerns', 'Next up', 'Needs you']);
+  });
+
+  it('an athlete’s Me: details, check-in, attendance, injuries, tasks, safety, then account', async () => {
+    await openTab('athlete', '/me');
     expectInOrder([
-      'To do',
-      'Messages',
-      'Coming up',
+      'Your details',
       'Daily check-in',
       'My attendance',
       'Injuries',
-      'My squads and teams',
-      'Raise a concern',
+      'Your tasks',
+      'Safety',
+      'Account',
+      'Switch club',
+      'Sign out',
+      'Delete account',
     ]);
   });
 
-  it('a coach: session plans after injuries, surveys after the main list', async () => {
-    await openHome({
-      ...personas.coach,
-      rpcs: { session_plan_summary: [{ can_add: true, shared: 0, new_shared: 0 }] },
-    });
+  it('a coach’s Team: squads, then check-ins, attendance, injuries, session plans, surveys', async () => {
+    await openTab(
+      {
+        ...personas.coach,
+        rpcs: { session_plan_summary: [{ can_add: true, shared: 0, new_shared: 0 }] },
+      },
+      '/team',
+    );
     expectInOrder([
-      'To do',
-      'Messages',
-      'Coming up',
+      'My squads and teams',
       'Check-ins',
       'Attendance',
       'Injuries',
       'Session plans',
       'Surveys',
-      'My squads and teams',
-      'Raise a concern',
     ]);
   });
 
-  it('an admin: Concerns then Administration, then surveys and integrity training', async () => {
-    await openHome('admin');
+  it('an admin’s Club: Concerns, the health cards, Administration, then surveys and integrity training', async () => {
+    await openTab('admin', '/club');
     expectInOrder([
-      'To do',
-      'Messages',
-      'Coming up',
+      'Concerns',
       'Check-ins',
       'Attendance',
       'Injuries',
-      'Concerns',
       'Administration',
       'Surveys',
       'Integrity training',
-      'Raise a concern',
     ]);
   });
 
-  it('a committee member: Reports where Administration would be', async () => {
-    await openHome('committee');
-    expectInOrder([
-      'To do',
-      'Messages',
-      'Coming up',
-      'Check-ins',
-      'Attendance',
-      'Injuries',
-      'Reports',
-      'Surveys',
-      'Integrity training',
-      'Raise a concern',
-    ]);
+  it('a committee member’s Club: Reports where Administration would be', async () => {
+    await openTab('committee', '/club');
+    expectInOrder(['Check-ins', 'Attendance', 'Injuries', 'Reports', 'Surveys', 'Integrity training']);
   });
 
-  it('an athlete who checks in and sees others’ check-ins has both together', async () => {
+  it('an athlete who also coaches checks in from Me, and sees others’ check-ins in Team', async () => {
     const athleteCoach: Persona = {
       ...personas.coach,
       profile: { ...personas.coach.profile!, extra_roles: ['athlete'] },
     };
-    await openHome(athleteCoach);
-    const texts = textsInOrder();
-    expect(texts.indexOf('Check-ins')).toBe(texts.indexOf('Daily check-in') + 2);
+    await openTab(athleteCoach, '/me');
+    expect(screen.getByText(ITEMS.dailyCheckIn)).toBeTruthy();
+    expect(screen.queryByText(ITEMS.checkIns)).toBeNull();
+    await goTo('/team');
+    expect(screen.getByText(ITEMS.checkIns)).toBeTruthy();
+    expect(screen.queryByText(ITEMS.dailyCheckIn)).toBeNull();
   });
 
-  it('a guardian: the main cards, then their children, then squads', async () => {
-    await openHome('guardian');
+  it('a guardian’s Family: their children first, then the rest, squads, and adding a child last', async () => {
+    await openTab('guardian', '/family');
+    expectInOrder(['Sample Child', 'Injuries', 'My squads and teams', 'Add another child']);
+  });
+
+  it('a child’s page: day to day first, then consent and medical, then who has been near their records', async () => {
+    await openTab('guardian', '/child/child-1');
     expectInOrder([
-      'To do',
-      'Messages',
-      'Coming up',
-      'Injuries',
-      'Guardian of',
-      'Consent',
       'Attendance',
+      'Game goals',
       'Check-ins',
+      'Injuries',
+      'Consent',
+      'Medical and emergency',
       'What’s changed',
-      'My squads and teams',
-      'Raise a concern',
+      'Who has viewed their records',
     ]);
+  });
+});
+
+// ---------------------------------------------------------------------------
+// Someone with two jobs has two hubs: one button in the bar, a switch at the
+// top of the hub, and the bar remembers the one they last opened.
+
+describe('more than one hub', () => {
+  const adminCoach: Persona = {
+    ...personas.coach,
+    profile: { ...personas.coach.profile!, role: 'admin', extra_roles: ['coach'] },
+  };
+  const coachParent: Persona = {
+    ...personas.coach,
+    profile: { ...personas.coach.profile!, extra_roles: ['guardian'] },
+    rpcs: { my_child_consents: CHILD_CONSENTS },
+  };
+
+  /** The switch at the top of a hub: each hub in it, and the one selected. */
+  function hubSwitch() {
+    return ['Team', 'Family', 'Club'].flatMap((hub) =>
+      screen.queryAllByRole('tab', { name: hub }).map((tab) => ({
+        hub,
+        selected: !!tab.props.accessibilityState?.selected,
+      })),
+    );
+  }
+
+  it('the bar shows the hub for their main role first', async () => {
+    await openHome(adminCoach);
+    expect(tabBar()).toEqual(['Today', 'Calendar', 'Messages', 'Club', 'Me']);
+    await openHome(coachParent);
+    expect(tabBar()).toEqual(['Today', 'Calendar', 'Messages', 'Team', 'Me']);
+  });
+
+  it('the switch at the top of a hub opens the other, and the bar follows', async () => {
+    await openTab(coachParent, '/team');
+    expect(hubSwitch()).toEqual([
+      { hub: 'Team', selected: true },
+      { hub: 'Family', selected: false },
+    ]);
+    await fireEvent.press(screen.getByRole('tab', { name: 'Family' }));
+    await settle();
+    expect(screen).toHavePathname('/family');
+    expect(tabBar()).toEqual(['Today', 'Calendar', 'Messages', 'Family', 'Me']);
+    expect(screen.getByText(ITEMS.child)).toBeTruthy();
+  });
+
+  it('remembers the hub last opened, the next time the app opens', async () => {
+    await openTab(coachParent, '/family');
+    await openHome(coachParent);
+    expect(tabBar()).toEqual(['Today', 'Calendar', 'Messages', 'Family', 'Me']);
+  });
+
+  it('remembers it for that member only', async () => {
+    await openTab(coachParent, '/family');
+    // Another coach-parent on the same phone starts on their own main hub.
+    const session = coachParent.session!;
+    await openHome({
+      ...coachParent,
+      session: { ...session, user: { ...session.user, id: 'another-coach-parent' } },
+      profile: { ...coachParent.profile!, id: 'another-coach-parent' },
+    });
+    expect(tabBar()).toEqual(['Today', 'Calendar', 'Messages', 'Team', 'Me']);
+  });
+
+  it('someone with one hub has no switch', async () => {
+    await openTab('coach', '/team');
+    expect(hubSwitch()).toEqual([]);
+  });
+
+  it('a hub that isn’t theirs sends them back to Today', async () => {
+    jest.useFakeTimers({ now: TODAY });
+    signInAs(personas.coach, CLUB_TRAINING);
+    await renderRouter({ appDir: 'src/app', overrides }, { initialUrl: '/club' });
+    await settle();
+    expect(screen).toHavePathname('/');
+    expect(screen.queryByText(ITEMS.administration)).toBeNull();
+  });
+
+  it('an admin who also coaches has Administration in Club and their squads in Team', async () => {
+    await openHome(adminCoach);
+    expect(screen.getByText('Admin, Coach · Head Coach, Open A')).toBeTruthy();
+    await goTo('/club');
+    expect(screen.getByText(ITEMS.administration)).toBeTruthy();
+    expect(screen.getByText(ITEMS.takeAttendance)).toBeTruthy();
+    await goTo('/team');
+    expect(screen.getByText(ITEMS.groups)).toBeTruthy();
+    expect(screen.getByText(ITEMS.takeAttendance)).toBeTruthy();
+    expect(screen.queryByText(ITEMS.administration)).toBeNull();
+  });
+
+  it('a coach who is also a guardian has what each role would show', async () => {
+    await openTab(coachParent, '/team');
+    expect(screen.getByText(ITEMS.takeAttendance)).toBeTruthy();
+    expect(screen.queryByText(ITEMS.child)).toBeNull();
+    expect(screen.queryByText(ITEMS.addChild)).toBeNull();
+    await goTo('/family');
+    expect(screen.getByText(ITEMS.child)).toBeTruthy();
+    expect(screen.getByText(ITEMS.addChild)).toBeTruthy();
+  });
+});
+
+// ---------------------------------------------------------------------------
+// The counts on the tab bar: unread messages, and what has changed for a
+// parent's children.
+
+describe('counts on the tabs', () => {
+  /** The count on a tab's button, or null with none. */
+  function badge(tab: string) {
+    const button = screen.getByLabelText(new RegExp(`^${tab}, .*tab, \\d of \\d$`));
+    const counts = within(button).queryAllByText(/^\d+$/);
+    return counts.length > 0 ? String(counts[0].props.children) : null;
+  }
+
+  const UNREAD = [{ message_id: 'm1' }, { message_id: 'm2' }];
+
+  it('Messages counts the messages the member hasn’t opened', async () => {
+    await openHome('athlete', { ...CLUB_TRAINING, message_recipients: UNREAD });
+    expect(badge('Messages')).toBe('2');
+  });
+
+  it('Messages has no count with nothing unread', async () => {
+    await openHome('athlete');
+    expect(badge('Messages')).toBeNull();
+  });
+
+  it('Family counts what has changed for a parent’s children since they last looked', async () => {
+    await openHome({
+      ...personas.guardian,
+      rpcs: {
+        ...personas.guardian.rpcs,
+        child_activity_new: [
+          { athlete_id: 'child-1', new_count: 2 },
+          { athlete_id: 'child-2', new_count: 1 },
+        ],
+      },
+    });
+    expect(badge('Family')).toBe('3');
+    await goTo('/family');
+    // And the same count sits on that child's "What's changed".
+    expect(screen.getByText('2')).toBeTruthy();
+  });
+
+  it('Family has no count with nothing new', async () => {
+    await openHome('guardian');
+    expect(badge('Family')).toBeNull();
+  });
+
+  it('Team and Club never carry a count', async () => {
+    await openHome('coach', { ...CLUB_TRAINING, message_recipients: UNREAD });
+    expect(badge('Team')).toBeNull();
+    await openHome('admin', { ...CLUB_TRAINING, message_recipients: UNREAD });
+    expect(badge('Club')).toBeNull();
+  });
+});
+
+describe('an empty hub', () => {
+  it('says so, instead of showing nothing', async () => {
+    // A committee member with every feature the Club hub holds switched off.
+    setClubFeatures({
+      checkIns: false,
+      attendance: false,
+      injuries: false,
+      surveys: false,
+      integrity: false,
+    });
+    await openTab('committeeExempt', '/club');
+    expect(screen.getByText('Nothing for the club yet.')).toBeTruthy();
   });
 });
 
 describe('administration and concerns', () => {
   it('only an approved admin has the Administration card, and it opens Administration', async () => {
-    await openHome('admin');
+    await openTab('admin', '/club');
     await fireEvent.press(screen.getByText(ITEMS.administration));
     await act(async () => {});
     expect(screen.getByText('screen:administration')).toBeTruthy();
@@ -403,10 +686,19 @@ describe('administration and concerns', () => {
     expect(screen.getByTestId('home-titles')).toHaveTextContent('Complaints Manager');
   });
 
-  it('a safeguarding officer who isn’t an admin has Concerns, but not Administration', async () => {
+  it('a safeguarding officer who isn’t an admin has Concerns on Today, but no Club hub', async () => {
     await openHome({ ...personas.coach, isSafeguardingOfficer: true });
     expect(screen.getByText(ITEMS.concerns)).toBeTruthy();
+    expect(tabBar()).toEqual(['Today', 'Calendar', 'Messages', 'Team', 'Me']);
+    await goTo('/team');
     expect(screen.queryByText(ITEMS.administration)).toBeNull();
+  });
+
+  it('the Concerns card opens the register', async () => {
+    await openHome('admin');
+    await fireEvent.press(screen.getByText(ITEMS.concerns));
+    await act(async () => {});
+    expect(screen).toHavePathname('/concerns');
   });
 
   it('a coach a concern was escalated to by name has Concerns, chased by reference only', async () => {
@@ -422,7 +714,6 @@ describe('administration and concerns', () => {
     expect(screen.getByText(ITEMS.concerns)).toBeTruthy();
     expect(screen.getByText('C-0007 is urgent: nothing recorded for too long')).toBeTruthy();
     expect(screen.getByText('Escalated to you')).toBeTruthy();
-    expect(screen.queryByText(ITEMS.administration)).toBeNull();
   });
 
   it('a coach with nothing escalated has no Concerns, and isn’t chased', async () => {
@@ -451,31 +742,19 @@ describe('administration and concerns', () => {
     expect(screen.getByText('C-0009 has had nothing recorded for a while')).toBeTruthy();
     expect(screen.getByText('You lead this concern')).toBeTruthy();
   });
-
-  it('an admin who also coaches sees both Administration and their squads', async () => {
-    const adminCoach: Persona = {
-      ...personas.coach,
-      profile: { ...personas.coach.profile!, role: 'admin', extra_roles: ['coach'] },
-    };
-    await openHome(adminCoach);
-    expect(screen.getByText(ITEMS.administration)).toBeTruthy();
-    expect(screen.getByText(ITEMS.groups)).toBeTruthy();
-    expect(screen.getByText(ITEMS.takeAttendance)).toBeTruthy();
-    expect(screen.getByText('Admin, Coach · Head Coach, Open A')).toBeTruthy();
-  });
 });
 
 describe('reports', () => {
-  it('a committee member with a check opens Reports from home', async () => {
-    await openHome('committee');
+  it('a committee member with a check opens Reports from Club', async () => {
+    await openTab('committee', '/club');
     await fireEvent.press(screen.getByText('Reports'));
     await act(async () => {});
     expect(screen.getByText('screen:admin/reports/index')).toBeTruthy();
     expect(screen).toHavePathname('/admin/reports');
   });
 
-  it('an admin reaches Reports from Administration, so has no Reports card on home', async () => {
-    await openHome('admin');
+  it('an admin reaches Reports from Administration, so has no Reports card in Club', async () => {
+    await openTab('admin', '/club');
     expect(screen.queryByText(ITEMS.reports)).toBeNull();
   });
 });
@@ -494,6 +773,7 @@ describe('paused roles', () => {
     await openHome('coachExpiredCheck');
     expect(screen.getByText('Coach paused')).toBeTruthy();
     expect(screen.getByText(/Your Working With Children Check has expired/)).toBeTruthy();
+    await goTo('/me');
     expect(screen.queryByText(TEAM.name)).toBeNull();
     expect(screen.getByText('You are not in a squad yet.')).toBeTruthy();
   });
@@ -501,6 +781,7 @@ describe('paused roles', () => {
   it('a coach with a current check sees their team', async () => {
     await openHome('coach');
     expect(screen.queryByText('Coach paused')).toBeNull();
+    await goTo('/team');
     expect(screen.getByText(TEAM.name)).toBeTruthy();
   });
 });
@@ -509,7 +790,8 @@ describe('temporary helpers', () => {
   it('see the onboarding steps, none of the club’s features or members', async () => {
     await openHome('volunteer');
     expect(screen.getByText('You’re approved to help')).toBeTruthy();
-    expect(screen.queryByText(/^To do$/)).toBeNull();
+    expect(screen.queryByText('Needs you')).toBeNull();
+    expect(screen.queryByText(ITEMS.nextUp)).toBeNull();
     expect(screen.queryByText(ITEMS.groups)).toBeNull();
   });
 });
@@ -519,9 +801,9 @@ describe('Studio operators', () => {
     await openHome('studio');
     expect(screen.getByText('You can show this club’s live game stats')).toBeTruthy();
     expect(screen.getByText(/Sign in to this club from FirstPass Studio/)).toBeTruthy();
-    expect(screen.queryByText(/^To do$/)).toBeNull();
+    expect(screen.queryByText('Needs you')).toBeNull();
     expect(screen.queryByText(ITEMS.groups)).toBeNull();
-    expect(screen.queryByText(ITEMS.comingUp)).toBeNull();
+    expect(screen.queryByText(ITEMS.nextUp)).toBeNull();
   });
 
   it('see that the role is paused while stood down', async () => {
@@ -530,10 +812,11 @@ describe('Studio operators', () => {
     expect(screen.queryByText('You can show this club’s live game stats')).toBeNull();
   });
 
-  it('a manager who also runs Studio keeps their own Home', async () => {
+  it('a manager who also runs Studio keeps their own tabs', async () => {
     await openHome('managerStudio');
     expect(screen.queryByText('You can show this club’s live game stats')).toBeNull();
-    expect(screen.getByText(ITEMS.comingUp)).toBeTruthy();
+    expect(screen.getByText(ITEMS.nextUp)).toBeTruthy();
+    expect(tabBar()).toEqual(['Today', 'Calendar', 'Messages', 'Team', 'Me']);
   });
 });
 
@@ -542,7 +825,8 @@ describe('members waiting for approval', () => {
     await openHome('pending');
     expect(screen.getByText('Your code')).toBeTruthy();
     expect(screen.getByText('Edit request')).toBeTruthy();
-    expect(screen.queryByText(/^To do$/)).toBeNull();
+    expect(screen.queryByText('Needs you')).toBeNull();
+    expect(screen.queryByText(ITEMS.nextUp)).toBeNull();
   });
 
   it('a member turned down sees why and can ask again', async () => {
@@ -550,27 +834,51 @@ describe('members waiting for approval', () => {
     expect(screen.getByText('Request not approved')).toBeTruthy();
     expect(screen.getByText('Request again')).toBeTruthy();
   });
+
+  it.each(['/team', '/family', '/club', '/me'])('are sent back from %s to their one screen', async (url) => {
+    jest.useFakeTimers({ now: TODAY });
+    signInAs(personas.pending, CLUB_TRAINING);
+    await renderRouter({ appDir: 'src/app', overrides }, { initialUrl: url });
+    await settle();
+    expect(screen).toHavePathname('/');
+    expect(screen.getByText('Your code')).toBeTruthy();
+  });
 });
 
 describe('parents and guardians', () => {
-  it('have one Guardian of card that opens their children and adding another', async () => {
-    await openHome('guardian');
-    // The link code and child-without-the-app forms live behind the card, not on Home.
+  it('have one card that opens their children and adding another', async () => {
+    await openTab('guardian', '/family');
+    // The link code and child-without-the-app forms live behind the card, not in the hub.
     expect(screen.queryByText('Child’s code')).toBeNull();
     expect(screen.queryByText('Enter code')).toBeNull();
     expect(screen.queryByText('Child who won’t use the app')).toBeNull();
-    await fireEvent.press(screen.getByText(ITEMS.guardianOf));
+    await fireEvent.press(screen.getByText(ITEMS.addChild));
     await act(async () => {});
     expect(screen).toHavePathname('/children');
   });
 
-  it('get a consent card for each child, and the consent to-do', async () => {
+  it('have one card for each child, which opens the child’s page', async () => {
+    await openTab('guardian', '/family');
+    // What each child has is on their page, not repeated in the hub.
+    for (const item of ['consent', 'whatsChanged', 'recordViews', 'childAttendance'] as Item[]) {
+      expect(screen.queryByText(ITEMS[item])).toBeNull();
+    }
+    await fireEvent.press(screen.getByText(ITEMS.child));
+    await settle();
+    expect(screen).toHavePathname('/child/child-1');
+    for (const item of ['consent', 'whatsChanged', 'recordViews', 'childAttendance'] as Item[]) {
+      expect(screen.getByText(ITEMS[item])).toBeTruthy();
+    }
+  });
+
+  it('see where consent stands on each child’s card in Family, and the consent to-do on Today', async () => {
     await openHome('guardian');
+    expect(screen.getByText('Give consent for Sample Child')).toBeTruthy();
+    await goTo('/family');
     // And can add another child with their code.
     expect(screen.getByText('Add another child')).toBeTruthy();
-    expect(screen.getByText(ITEMS.consent)).toBeTruthy();
+    expect(screen.getByText(ITEMS.child)).toBeTruthy();
     expect(screen.getByText('Check-ins: not given · Injuries: not given')).toBeTruthy();
-    expect(screen.getByText('Give consent for Sample Child')).toBeTruthy();
   });
 
   it('aren’t asked for check-in consent while Daily check-ins is off for their child', async () => {
@@ -587,9 +895,10 @@ describe('parents and guardians', () => {
         ],
       },
     });
+    expect(screen.queryByText('Give consent for Sample Child')).toBeNull();
+    await goTo('/family');
     expect(screen.getByText('Injuries: yes')).toBeTruthy();
     expect(screen.queryByText(/^Check-ins:/)).toBeNull();
-    expect(screen.queryByText('Give consent for Sample Child')).toBeNull();
   });
 
   it('are asked only for health consent while check-ins are off, and told so', async () => {
@@ -619,11 +928,12 @@ describe('parents and guardians', () => {
     });
     expect(screen.getByText('Give consent for Sample Child')).toBeTruthy();
     expect(screen.getByText('Choose who sees their check-ins')).toBeTruthy();
+    await goTo('/family');
     expect(screen.getByText('Check-ins: not given · Injuries: yes')).toBeTruthy();
   });
 
   it('with no child linked yet, are asked for their child’s link code, and see nothing of a child', async () => {
-    await openHome({ ...personas.guardian, rpcs: { my_child_consents: [] } });
+    await openTab({ ...personas.guardian, rpcs: { my_child_consents: [] } }, '/family');
     expect(screen.getByText(/^Nobody yet\. Enter your child’s link code/)).toBeTruthy();
     expect(screen.getByText('Add your child')).toBeTruthy();
     for (const item of ['consent', 'whatsChanged', 'recordViews', 'childAttendance'] as Item[]) {
@@ -632,33 +942,27 @@ describe('parents and guardians', () => {
   });
 
   it('only a verified guardian sees who has viewed their child’s records', async () => {
-    await openHome({
-      ...personas.guardian,
-      profile: { ...personas.guardian.profile!, verified_at: null },
-    });
+    await openTab(
+      {
+        ...personas.guardian,
+        profile: { ...personas.guardian.profile!, verified_at: null },
+      },
+      '/child/child-1',
+    );
     expect(screen.getByText(ITEMS.consent)).toBeTruthy();
     expect(screen.queryByText(ITEMS.recordViews)).toBeNull();
+    expect(screen.queryByText('Medical and emergency')).toBeNull();
   });
 
-  it('a guardian who isn’t approved sees none of their child’s cards', async () => {
+  it('a guardian who isn’t approved keeps one screen, with none of their child’s cards', async () => {
     await openHome({
       ...personas.guardian,
       profile: { ...personas.guardian.profile!, status: 'pending' },
     });
-    for (const item of ['guardianOf', 'consent', 'whatsChanged', 'recordViews'] as Item[]) {
+    expect(tabBar()).toEqual([]);
+    for (const item of ['guardianOf', 'child', 'addChild', 'consent', 'whatsChanged', 'recordViews'] as Item[]) {
       expect(screen.queryByText(ITEMS[item])).toBeNull();
     }
-  });
-
-  it('a coach who is also a guardian sees what each role would show', async () => {
-    await openHome({
-      ...personas.coach,
-      profile: { ...personas.coach.profile!, extra_roles: ['guardian'] },
-      rpcs: { my_child_consents: CHILD_CONSENTS },
-    });
-    expect(screen.getByText(ITEMS.takeAttendance)).toBeTruthy();
-    expect(screen.getByText(ITEMS.consent)).toBeTruthy();
-    expect(screen.getByText(ITEMS.guardianOf)).toBeTruthy();
   });
 });
 
@@ -684,59 +988,72 @@ describe('captains', () => {
     expect(screen.queryByTestId('home-titles')).toBeNull();
   });
 
-  it('can send polls to their team while captains’ polls are on', async () => {
-    await openHome(captain);
+  it('can send polls to their team from Team while captains’ polls are on', async () => {
+    await openTab(captain, '/team');
     expect(screen.getByText(ITEMS.sendSurveys)).toBeTruthy();
   });
 
   it('can’t once captains’ polls are off', async () => {
     setClubFeatures({ captainPolls: false });
-    await openHome(captain);
+    await openTab(captain, '/team');
+    expect(screen.queryByText(ITEMS.sendSurveys)).toBeNull();
+    await goTo('/me');
     expect(screen.queryByText(ITEMS.sendSurveys)).toBeNull();
   });
 
   it('an athlete who isn’t a captain can’t send surveys', async () => {
-    await openHome('athlete');
+    await openTab('athlete', '/team');
+    expect(screen.queryByText(ITEMS.sendSurveys)).toBeNull();
+    await goTo('/me');
     expect(screen.queryByText(ITEMS.sendSurveys)).toBeNull();
   });
 });
 
 describe('cards that need something from the club', () => {
-  it('members see Surveys only when there is one for them', async () => {
-    await openHome({
-      ...personas.athlete,
-      rpcs: {
-        my_surveys: [
-          {
-            id: 's1',
-            title: 'Training nights',
-            identity: 'named',
-            opens_at: '2026-10-10T00:00:00Z',
-            closes_at: '2026-10-25T00:00:00Z',
-            created_by_name: 'Sample coach',
-            for_child_names: null,
-            from_child: false,
-            responded: false,
-            is_open: true,
-            everyone_answers: false,
-          },
-        ],
-      },
-    });
+  const SURVEY = {
+    id: 's1',
+    title: 'Training nights',
+    identity: 'named',
+    opens_at: '2026-10-10T00:00:00Z',
+    closes_at: '2026-10-25T00:00:00Z',
+    created_by_name: 'Sample coach',
+    for_child_names: null,
+    from_child: false,
+    responded: false,
+    is_open: true,
+    everyone_answers: false,
+  };
+
+  it('members see Surveys in Me only when there is one for them', async () => {
+    await openTab({ ...personas.athlete, rpcs: { my_surveys: [SURVEY] } }, '/me');
     expect(screen.getByText('1 to answer')).toBeTruthy();
+    await openTab('athlete', '/me');
+    expect(screen.queryByText('Surveys')).toBeNull();
+  });
+
+  it('a coach with a survey to answer has Surveys in Me as well as in Team', async () => {
+    await openTab({ ...personas.coach, rpcs: { my_surveys: [SURVEY] } }, '/me');
+    expect(screen.getByText('Surveys')).toBeTruthy();
+    await goTo('/team');
+    expect(screen.getByText('Surveys')).toBeTruthy();
   });
 
   it('the committee and admins have no integrity card while the club has no training set', async () => {
-    await openHome('admin', {});
+    await openTab('admin', '/club', {});
     expect(screen.queryByText(ITEMS.integrity)).toBeNull();
   });
 
-  it('coaches see Session plans only when the database lets them add one', async () => {
-    await openHome({
-      ...personas.coach,
-      rpcs: { session_plan_summary: [{ can_add: true, shared: 0, new_shared: 0 }] },
-    });
+  it('coaches see Session plans in Team only when the database lets them add one', async () => {
+    await openTab(
+      {
+        ...personas.coach,
+        rpcs: { session_plan_summary: [{ can_add: true, shared: 0, new_shared: 0 }] },
+      },
+      '/team',
+    );
     expect(screen.getByText('Add a plan before or after a session')).toBeTruthy();
+    await openTab('coach', '/team');
+    expect(screen.queryByText('Session plans')).toBeNull();
   });
 
   it('a guardian has a to-do for an injury a coach logged for their child, until they open it', async () => {
@@ -769,57 +1086,86 @@ describe('cards that need something from the club', () => {
 });
 
 // ---------------------------------------------------------------------------
-// Feature switches: a feature that's off disappears for every role.
+// Feature switches: a feature that's off disappears for every role, from
+// whichever tab it lives in.
 
 describe('feature switches', () => {
-  const cases: { feature: string; who: PersonaName; item: Item }[] = [
-    { feature: 'messages', who: 'admin', item: 'messages' },
-    { feature: 'messages', who: 'athlete', item: 'messages' },
-    { feature: 'surveys', who: 'admin', item: 'sendSurveys' },
-    { feature: 'surveys', who: 'coach', item: 'sendSurveys' },
-    { feature: 'checkIns', who: 'admin', item: 'checkIns' },
-    { feature: 'checkIns', who: 'coach', item: 'checkIns' },
-    { feature: 'checkIns', who: 'athlete', item: 'dailyCheckIn' },
-    { feature: 'checkIns', who: 'guardian', item: 'childCheckIns' },
-    { feature: 'injuries', who: 'admin', item: 'injuries' },
-    { feature: 'injuries', who: 'athlete', item: 'injuries' },
-    { feature: 'injuries', who: 'manager', item: 'logInjuries' },
-    { feature: 'attendance', who: 'admin', item: 'takeAttendance' },
-    { feature: 'attendance', who: 'coach', item: 'takeAttendance' },
-    { feature: 'attendance', who: 'athlete', item: 'myAttendance' },
-    { feature: 'attendance', who: 'guardian', item: 'childAttendance' },
-    { feature: 'calendar', who: 'admin', item: 'comingUp' },
-    { feature: 'calendar', who: 'guest', item: 'comingUp' },
-    { feature: 'integrity', who: 'admin', item: 'integrity' },
-    { feature: 'integrity', who: 'committee', item: 'integrity' },
-    { feature: 'goals', who: 'guardian', item: 'childGoals' },
+  const cases: { feature: string; who: PersonaName; item: Item; tab: string }[] = [
+    { feature: 'surveys', who: 'admin', item: 'sendSurveys', tab: '/club' },
+    { feature: 'surveys', who: 'coach', item: 'sendSurveys', tab: '/team' },
+    { feature: 'checkIns', who: 'admin', item: 'checkIns', tab: '/club' },
+    { feature: 'checkIns', who: 'coach', item: 'checkIns', tab: '/team' },
+    { feature: 'checkIns', who: 'athlete', item: 'dailyCheckIn', tab: '/me' },
+    { feature: 'checkIns', who: 'guardian', item: 'childCheckIns', tab: '/child/child-1' },
+    { feature: 'injuries', who: 'admin', item: 'injuries', tab: '/club' },
+    { feature: 'injuries', who: 'athlete', item: 'injuries', tab: '/me' },
+    { feature: 'injuries', who: 'manager', item: 'logInjuries', tab: '/team' },
+    { feature: 'attendance', who: 'admin', item: 'takeAttendance', tab: '/club' },
+    { feature: 'attendance', who: 'coach', item: 'takeAttendance', tab: '/team' },
+    { feature: 'attendance', who: 'athlete', item: 'myAttendance', tab: '/me' },
+    { feature: 'attendance', who: 'guardian', item: 'childAttendance', tab: '/child/child-1' },
+    { feature: 'calendar', who: 'admin', item: 'nextUp', tab: '/' },
+    { feature: 'calendar', who: 'guest', item: 'nextUp', tab: '/' },
+    { feature: 'integrity', who: 'admin', item: 'integrity', tab: '/club' },
+    { feature: 'integrity', who: 'committee', item: 'integrity', tab: '/club' },
+    { feature: 'goals', who: 'guardian', item: 'childGoals', tab: '/child/child-1' },
   ];
 
-  it.each(cases)('$feature off: $who has no "$item"', async ({ feature, who, item }) => {
+  it.each(cases)('$feature off: $who has no "$item" in $tab', async ({ feature, who, item, tab }) => {
     setClubFeatures({ [feature]: false });
-    await openHome(who);
+    await openTab(who, tab);
     expect(screen.queryByText(ITEMS[item])).toBeNull();
   });
 
-  it.each(cases)('$feature on: $who has "$item"', async ({ feature, who, item }) => {
+  it.each(cases)('$feature on: $who has "$item" in $tab', async ({ feature, who, item, tab }) => {
+    setClubFeatures({ [feature]: true });
+    await openTab(who, tab);
+    expect(screen.getAllByText(ITEMS[item]).length).toBeGreaterThan(0);
+  });
+
+  const tabCases: { feature: string; who: PersonaName; tab: string }[] = [
+    { feature: 'messages', who: 'admin', tab: 'Messages' },
+    { feature: 'messages', who: 'athlete', tab: 'Messages' },
+    { feature: 'calendar', who: 'admin', tab: 'Calendar' },
+    { feature: 'calendar', who: 'guest', tab: 'Calendar' },
+  ];
+
+  it.each(tabCases)('$feature off: $who has no $tab tab', async ({ feature, who, tab }) => {
+    setClubFeatures({ [feature]: false });
+    await openHome(who);
+    expect(tabBar()).not.toContain(tab);
+  });
+
+  it.each(tabCases)('$feature on: $who has the $tab tab', async ({ feature, who, tab }) => {
     setClubFeatures({ [feature]: true });
     await openHome(who);
-    expect(screen.getAllByText(ITEMS[item]).length).toBeGreaterThan(0);
+    expect(tabBar()).toContain(tab);
+  });
+
+  it('a guest never has the Messages tab', async () => {
+    setClubFeatures({ messages: true });
+    await openHome('guest');
+    expect(tabBar()).not.toContain('Messages');
   });
 
   it('turning goals off keeps the guardian’s card for their child', async () => {
     setClubFeatures({ goals: false });
-    await openHome('guardian');
-    expect(screen.getByText(ITEMS.guardianOf)).toBeTruthy();
+    await openTab('guardian', '/family');
+    expect(screen.getByText(ITEMS.child)).toBeTruthy();
+    await goTo('/child/child-1');
     expect(screen.getByText(ITEMS.consent)).toBeTruthy();
+    expect(screen.queryByText(ITEMS.childGoals)).toBeNull();
   });
 
   it('session plans off hides the card even when the database would let a coach add one', async () => {
     setClubFeatures({ sessionPlans: false });
-    await openHome({
-      ...personas.coach,
-      rpcs: { session_plan_summary: [{ can_add: true, shared: 2, new_shared: 1 }] },
-    });
+    await openTab(
+      {
+        ...personas.coach,
+        rpcs: { session_plan_summary: [{ can_add: true, shared: 2, new_shared: 1 }] },
+      },
+      '/team',
+    );
     expect(screen.queryByText(/Session plans/)).toBeNull();
   });
 
@@ -845,11 +1191,12 @@ describe('feature switches', () => {
         ],
       },
     };
-    await openHome(voter);
+    await openTab(voter, '/me');
     expect(screen.getByText('1 vote waiting for you')).toBeTruthy();
     setClubFeatures({ awards: false });
-    await openHome(voter);
+    await openTab(voter, '/me');
     expect(screen.queryByText('1 vote waiting for you')).toBeNull();
+    await goTo('/');
     expect(screen.queryByText(/Best and fairest/)).toBeNull();
   });
 
@@ -863,37 +1210,45 @@ describe('feature switches', () => {
       },
     };
     setClubFeatures({});
-    await openHome(withKpis);
+    await openTab(withKpis, '/me');
     expect(screen.queryByText('Season KPIs')).toBeNull();
     setClubFeatures({ kpis: true });
-    await openHome(withKpis);
+    await openTab(withKpis, '/me');
     expect(screen.getByText('Season KPIs')).toBeTruthy();
     expect(screen.getByText('2 of yours')).toBeTruthy();
   });
 
   it('the registers stay hidden until an admin turns them on', async () => {
     setClubFeatures({});
-    await openHome('committee');
+    await openTab('committee', '/club');
     expect(screen.queryByText('The club’s policies and conflicts of interest')).toBeNull();
     setClubFeatures({ registers: true });
-    await openHome('admin');
+    await openTab('admin', '/club');
     expect(screen.getByText('The club’s policies and conflicts of interest')).toBeTruthy();
   });
 
-  it('a committee member opens the registers from home', async () => {
+  it('a committee member opens the registers from Club', async () => {
     setClubFeatures({ registers: true });
-    await openHome('committee');
+    await openTab('committee', '/club');
     await fireEvent.press(screen.getByText('The club’s policies and conflicts of interest'));
     await act(async () => {});
     expect(screen.getByText('screen:registers/index')).toBeTruthy();
     expect(screen).toHavePathname('/registers');
   });
 
-  it('coaches, athletes and parents have no registers card', async () => {
+  it('coaches, athletes and parents have no registers card in any tab', async () => {
     setClubFeatures({ registers: true });
-    for (const who of ['coach', 'athlete', 'guardian'] as const) {
+    for (const [who, hub] of [
+      ['coach', '/team'],
+      ['athlete', '/team'],
+      ['guardian', '/family'],
+    ] as const) {
       await openHome(who);
       expect(screen.queryByText('The club’s policies and conflicts of interest')).toBeNull();
+      for (const url of [hub, '/me']) {
+        await goTo(url);
+        expect(screen.queryByText('The club’s policies and conflicts of interest')).toBeNull();
+      }
     }
   }, 20000);
 
@@ -930,6 +1285,13 @@ describe('concern traffic lights', () => {
     expect(screen.getByText('Closed, 4 weeks')).toBeTruthy();
   });
 
+  it('and on the same card in Club', async () => {
+    await openTab({ ...personas.admin, rpcs: { ...personas.admin.rpcs, ...COUNTS } }, '/club');
+    expect(screen.getByTestId('concern-lights').props.accessibilityLabel).toBe(
+      '2 new, 3 in progress, 0 closed in the last 4 weeks',
+    );
+  });
+
   it('a safeguarding officer who isn’t an admin sees them too', async () => {
     await openHome({
       ...personas.coach,
@@ -949,13 +1311,17 @@ describe('concern traffic lights', () => {
     expect(screen.queryByText('Urgent')).toBeNull();
   });
 
-  it.each(['coach', 'committee', 'athlete', 'guardian'] as const)(
-    'a %s who doesn’t handle concerns has no lights',
-    async (who) => {
-      await openHome({ ...personas[who], rpcs: { ...personas[who].rpcs, ...COUNTS } });
-      expect(screen.queryByTestId('concern-lights')).toBeNull();
-    },
-  );
+  it.each([
+    ['coach', '/team'],
+    ['committee', '/club'],
+    ['athlete', '/team'],
+    ['guardian', '/family'],
+  ] as const)('a %s who doesn’t handle concerns has no lights, on Today or in %s', async (who, hub) => {
+    await openHome({ ...personas[who], rpcs: { ...personas[who].rpcs, ...COUNTS } });
+    expect(screen.queryByTestId('concern-lights')).toBeNull();
+    await goTo(hub);
+    expect(screen.queryByTestId('concern-lights')).toBeNull();
+  });
 
   it('a new concern is an Urgent to-do at the top of the list', async () => {
     await openHome({ ...personas.admin, rpcs: { ...personas.admin.rpcs, new_concerns_count: 1 } });

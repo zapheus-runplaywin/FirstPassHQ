@@ -68,7 +68,7 @@ afterEach(() => {
 });
 
 // ---------------------------------------------------------------------------
-// Your children: opened from the Guardian of card on Home
+// Your children: opened from Add another child in the Family tab
 
 describe('your children', () => {
   const twoChildren = [

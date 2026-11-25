@@ -9,7 +9,7 @@ Each role starts on a new page when the viewer supports page breaks.
 
 <!-- Maintainers: this guide must match the app. See "Keeping this guide up to date" at the end. -->
 
-**Child safety comes first.** Anyone signed in can **Raise a concern** from the home screen, and the
+**Child safety comes first.** Anyone signed in can **Raise a concern** from the top of every tab, and the
 club's Child Safety Officer and Complaints Manager act on it. If a child is in danger now, call
 000. [Section 12](#12-child-safety-and-safeguarding) explains every protection the app gives
 children, for parents, committees, boards and the sport's governing body.
@@ -43,11 +43,11 @@ each of their roles can.
 | Role          | Who it's for                                                                                         |
 | ------------- | ---------------------------------------------------------------------------------------------------- |
 | **Athlete**   | Registered players aged 13 and over (nobody under 13 signs in to the app this year). Some are club captains, or captains or vice captains of a team. They see their own attendance and can report an absence. An athlete under 18 can't use the app until a verified parent or guardian is linked to them: until then they see only a link code to share with one (see [Ask to join the club](#ask-to-join-the-club)). A child with no phone, or who won't use the app, can be added by an admin with no sign-in of their own, at any age under 18, and their parent or guardian does everything for them (see [A child who won't use the app](#a-child-who-wont-use-the-app)). |
-| **Guardian**  | Parents and guardians of athletes under 18. They ask to be linked to their child by entering the link code from their child's app, or ask the club to add a child who won't use the app (later children from the **Guardian of** card on Home), and follow their children into and out of their squads and teams. They see their child's attendance and can report an absence for them, and see what has changed around their child. If the club asks, they accept the club's code of conduct for their child each season. |
-| **Coach**     | Head coaches and assistant coaches. Both have the same permissions, except that a head coach sets Season KPIs for the group's assistant coaches; otherwise the title only shows who is who. The app gives each coach a title from their team, or their squad until they're in a team, such as "Head Coach, Open A". Need a current Working With Children Check; the role pauses while it's expired, and they add the renewed card from their home screen for an admin to check (see [Sending in your own check](#sending-in-your-own-check)). Someone who has applied for one, new or a renewal, can work while it's assessed (see [Checks applied for](#checks-applied-for)). A parent volunteering at their child's club, a volunteer under 18, or a short-term visitor or national event helper from outside WA has an exemption instead (see [Volunteer exemptions](#volunteer-exemptions)). |
-| **Manager**   | Squad and team managers. The app gives each manager a title from their team, or their squad until they're in a team, such as "Manager, 17 & Under". Need a current Working With Children Check; the role pauses while it's expired, and they add the renewed card from their home screen for an admin to check (see [Sending in your own check](#sending-in-your-own-check)). Someone who has applied for one, new or a renewal, can work while it's assessed (see [Checks applied for](#checks-applied-for)). A parent volunteering at their child's club, a volunteer under 18, or a short-term visitor or national event helper from outside WA has an exemption instead (see [Volunteer exemptions](#volunteer-exemptions)). |
-| **Committee** | Club committee members. Each can add a title, such as President or Secretary, shown with their role. Only committee members and admins can add their own title. Need a current Working With Children Check, or an application being assessed, unless an admin exempts them with a reason (not if they also coach, manage or physio); the role pauses if a recorded check expires or was recorded without an expiry date, and they add the renewed card from their home screen for an admin to check. Committee members approved before checks were needed keep the role without one only until the club's **committee checks date**. Those with a current check, an application in force or a volunteer exemption also read most of the club's governance reports. |
-| **Physio**    | The club's physiotherapists. A physio can be placed in squads or teams to look after their athletes, and one can be the **Head Physio**, who looks after every athlete. Need a current Working With Children Check; the role pauses while it's expired, and they add the renewed card from their home screen for an admin to check (see [Sending in your own check](#sending-in-your-own-check)). Someone who has applied for one, new or a renewal, can work while it's assessed (see [Checks applied for](#checks-applied-for)). A parent volunteering at their child's club, a volunteer under 18, or a short-term visitor or national event helper from outside WA has an exemption instead (see [Volunteer exemptions](#volunteer-exemptions)). |
+| **Guardian**  | Parents and guardians of athletes under 18. They ask to be linked to their child by entering the link code from their child's app, or ask the club to add a child who won't use the app (later children from **Add another child** in the Family tab), and follow their children into and out of their squads and teams. They see their child's attendance and can report an absence for them, and see what has changed around their child. If the club asks, they accept the club's code of conduct for their child each season. |
+| **Coach**     | Head coaches and assistant coaches. Both have the same permissions, except that a head coach sets Season KPIs for the group's assistant coaches; otherwise the title only shows who is who. The app gives each coach a title from their team, or their squad until they're in a team, such as "Head Coach, Open A". Need a current Working With Children Check; the role pauses while it's expired, and they add the renewed card from Today for an admin to check (see [Sending in your own check](#sending-in-your-own-check)). Someone who has applied for one, new or a renewal, can work while it's assessed (see [Checks applied for](#checks-applied-for)). A parent volunteering at their child's club, a volunteer under 18, or a short-term visitor or national event helper from outside WA has an exemption instead (see [Volunteer exemptions](#volunteer-exemptions)). |
+| **Manager**   | Squad and team managers. The app gives each manager a title from their team, or their squad until they're in a team, such as "Manager, 17 & Under". Need a current Working With Children Check; the role pauses while it's expired, and they add the renewed card from Today for an admin to check (see [Sending in your own check](#sending-in-your-own-check)). Someone who has applied for one, new or a renewal, can work while it's assessed (see [Checks applied for](#checks-applied-for)). A parent volunteering at their child's club, a volunteer under 18, or a short-term visitor or national event helper from outside WA has an exemption instead (see [Volunteer exemptions](#volunteer-exemptions)). |
+| **Committee** | Club committee members. Each can add a title, such as President or Secretary, shown with their role. Only committee members and admins can add their own title. Need a current Working With Children Check, or an application being assessed, unless an admin exempts them with a reason (not if they also coach, manage or physio); the role pauses if a recorded check expires or was recorded without an expiry date, and they add the renewed card from Today for an admin to check. Committee members approved before checks were needed keep the role without one only until the club's **committee checks date**. Those with a current check, an application in force or a volunteer exemption also read most of the club's governance reports. |
+| **Physio**    | The club's physiotherapists. A physio can be placed in squads or teams to look after their athletes, and one can be the **Head Physio**, who looks after every athlete. Need a current Working With Children Check; the role pauses while it's expired, and they add the renewed card from Today for an admin to check (see [Sending in your own check](#sending-in-your-own-check)). Someone who has applied for one, new or a renewal, can work while it's assessed (see [Checks applied for](#checks-applied-for)). A parent volunteering at their child's club, a volunteer under 18, or a short-term visitor or national event helper from outside WA has an exemption instead (see [Volunteer exemptions](#volunteer-exemptions)). |
 | **Guest**     | Anyone else the club lets in, such as partners and sponsors. Guests must be 18 or over. They see the club calendar and any calendar an admin shares with guests, keep their own tasks and can raise a concern. They aren't in squads or teams, get no messages, don't vote and aren't asked for a Working With Children Check or the code of conduct. A guest can add a check if they have one, which is optional, and a guest with a current check can be named Child Safety Officer or Complaints Manager. |
 | **Statistician** | The people who record live game stats on a tablet in FirstPass Vantage, which coaches watch live in FirstPass Vision. Statisticians see every game the club records; a game's coaches and managers see their own squad's or team's, and a squad's coaches and managers also see the games of its teams. Any member can hold it alongside another role, such as a manager or an athlete who isn't playing. Need a current Working With Children Check, an application being assessed, or a volunteer exemption such as a parent at their child's games, unless an admin exempts them with a reason, such as only recording opens games; the role pauses if a recorded check expires. Statisticians approved before checks were needed keep the role without one only until the club's **statistician checks date**. The role pauses while a member is stood down. |
 | **Studio** | The people who run the club's live streams in FirstPass Studio, which shows the club's live game stats on screen. Studio signs in to the club with this person's own Google account and reads only the stats the club records for its PlayHQ games, live and finished, and the line-ups for them; it can't change anything. Someone whose only role is Studio, such as a streamer from outside the club, isn't a club member: they see none of the club's features, members or messages. A member can also hold it alongside their own roles. No Working With Children Check is needed, because a Studio operator isn't with the team and never sees contact details, injuries or anything else sensitive. The role pauses while a member is stood down (see [Studio](#studio)). |
@@ -60,7 +60,7 @@ both). Any approved adult with a current check can be named, guests included, bu
 helpers. They're not separate roles: each keeps their own role and also
 sees and acts on the concerns members raise, with new ones as an **Urgent** to-do and red, orange
 and green counts on their Concerns card (see [The concerns register](#the-concerns-register)).
-Each sees their post as a title under their roles on the home screen, as does the **WWC
+Each sees their post as a title under their roles on Today, as does the **WWC
 Registration Officer**.
 The Child Safety Officer also sees every athlete's wellbeing flags: the day and lowest score of
 each low check-in, never the answers or notes (see [Wellbeing flags](#wellbeing-flags)), and,
@@ -97,19 +97,37 @@ together:
 - Nobody endorses or accepts an injury clearance for themselves or their own child, and whoever
   endorsed a clearance can't also accept it.
 
-The home screen lists every role someone holds, such as "Coach, Guardian", and shows what each of
-those roles would show on its own.
+Today lists every role someone holds under their name, such as "Coach, Guardian", and the tabs
+show what each of those roles would show on its own. Someone who looks after more than one thing,
+such as a coach who is also a parent, has a **Team** and **Family** switch at the top of their
+fourth tab (see [The tabs](#the-tabs)).
 
-<img src="user-guide/home-two-roles.png" width="210" alt="Home screen of a coach who is also a guardian">
+<img src="user-guide/hub-two-roles.png" width="210" alt="The Team tab of a coach who is also a guardian, with the switch between Team and Family at the top">
 
 **Captains.** Admins choose **club captains** from the season's athletes, and admins or a team's
 coaches choose its **captains** and **vice captains**. Squads don't have captains. Captains stay
 athletes; captaincy only adds the right to send messages and polls. Club captains can message the
 whole club, and captains and vice captains can message and send polls to their own team. Captaincy
-shows as a title under the athlete's role on their home screen, like "Captain, Open A". It
+shows as a title under the athlete's role on Today, like "Captain, Open A". It
 ends when the season is archived, or when the athlete moves to another team.
 
-What each role sees on its home screen:
+The tabs each role has along the bottom of the app (see [The tabs](#the-tabs)):
+
+| Role | Tabs |
+| ---- | ---- |
+| Athlete | Today, Calendar, Messages, Team, Me |
+| Guardian | Today, Calendar, Messages, Family, Me |
+| Coach, manager, physio | Today, Calendar, Messages, Team, Me |
+| Committee, admin | Today, Calendar, Messages, Club, Me |
+| Statistician with no other role | Today, Calendar, Messages, Me |
+| Guest | Today, Calendar, Me |
+| Temporary helper, Studio with no other role, anyone waiting to join, and an athlete under 18 waiting for a parent or guardian | One screen, no tabs |
+
+Someone with more than one role has the tabs of each: a coach who is also a parent has Team and
+Family, and swaps between them with the switch at the top of that tab. A role that is paused
+gives no tab. Calendar and Messages go when the club switches those features off.
+
+What each role can see and do:
 
 | Feature                                | Athlete |     Guardian    |    Coach     |  Manager   |   Committee   |     Physio    |  Guest  |     Admin     |
 | -------------------------------------- | :-----: | :-------------: | :----------: | :--------: | :-----------: | :-----------: | :-----: | :-----------: |
@@ -227,17 +245,17 @@ Statisticians have no column of their own: on its own the role gives what every 
 every match the club imports from PlayHQ in their calendar and messages to the Statistician role
 (see [Statisticians](#statisticians)).
 
-Studio has no column either. Studio on its own shows none of these but a preferred name: the home
-screen says what the role is for, with **Raise a concern** and the Your details, Switch club and
+Studio has no column either. Studio on its own shows none of these but a preferred name: the app
+is one screen, with no tabs, that says what the role is for, with **Raise a concern** and the Your details, Switch club and
 Delete account links. Added to another role, it changes nothing in HQ (see [Studio](#studio)).
 
 Temporary helpers see none of these but a preferred name. They aren't necessarily club members,
-and they use the app only to complete onboarding: their home screen shows only the steps to be
+and they use the app only to complete onboarding: it is one screen, with no tabs, showing only the steps to be
 cleared to help, **Raise a concern**, and the Your details, Switch club and Delete account links
 (see [Temporary helpers](#temporary-helpers)).
 
 Athletes under 18 waiting for a parent or guardian see none of these either. Until an admin links
-a verified parent or guardian to them, their home screen shows only their **link code** to share
+a verified parent or guardian to them, the app is one screen showing only their **link code** to share
 with a parent or guardian, the people who can help, **Raise a concern**, and the Sign out, Switch
 club and Delete account links (see [Ask to join the club](#ask-to-join-the-club)).
 
@@ -284,8 +302,8 @@ tablet](#using-hq-on-a-tablet).
 #### Which version you have
 
 The opening screen shows the app's version and build in small print at the foot, such as
-**Version 1.0.0 (23) · Build 755**, and so do Find your club, the sign-in screen and the foot of the
-home screen, under "Powered by". When the club has sent a fix over the air since you installed,
+**Version 1.0.0 (23) · Build 755**, and so do Find your club, the sign-in screen and the foot of
+Today and Me, under "Powered by". When the club has sent a fix over the air since you installed,
 a second line names it, such as **Update 1a2b3c4d · 20 Nov 2026**. If something goes wrong, or the
 club asks which version you're testing, read these lines out or send a screenshot of them.
 
@@ -344,8 +362,8 @@ company's logo beside the words.
 
 ### Belonging to more than one club
 
-If you're in two clubs that both use FirstPass HQ, tap **Switch club** at the foot of the home
-screen and enter the other club's code. You ask to join each club separately, and each club only
+If you're in two clubs that both use FirstPass HQ, tap **Switch club** in the **Me** tab (at the
+foot of the screen while you're waiting to join) and enter the other club's code. You ask to join each club separately, and each club only
 sees what you do in that club. After that, **Switch club** lists **Your clubs**: tap one to go
 straight back to it. The app stays signed in to each club, so switching doesn't need another
 sign-in.
@@ -360,7 +378,8 @@ Perth Pumpkins).
 
 ### Ask to join the club
 
-The first time you sign in, the home screen asks you to request to join. Tap **Request to join**
+The first time you sign in, the app opens on one screen that asks you to request to join. Until
+you're approved the app is this one screen; the tabs come once you're in. Tap **Request to join**
 and fill in:
 
 - **Your name** is filled in from your Google account, or from the name Apple shared the first
@@ -383,7 +402,7 @@ and fill in:
   squad or team instead of a link code (see [A child who won't use the app](#a-child-who-wont-use-the-app)).
 - **Your child's link code**: parents and guardians whose child will use the app. Your child under
   18 sees a 6-letter code, such as 7KQ-4MD, in their app once they've asked to join. Enter it here,
-  or leave it blank and enter it from your home screen later.
+  or leave it blank and enter it from the waiting screen later.
 - **Club password**: if the club has set one, ask a club admin for it. Five wrong tries in a row
   lock you out of asking for 15 minutes.
 
@@ -404,7 +423,7 @@ sent their request, the app gives them a link code to share with that parent or 
 app stays locked for the child until an admin links a verified parent or guardian to them.
 
 Tap **Send request**. A parent or guardian who entered a code that didn't work is told so: the
-request is still sent, and they can enter the code again from their home screen.
+request is still sent, and they can enter the code again from the waiting screen.
 
 #### Under 13
 
@@ -423,7 +442,7 @@ The club checks too, on the same day: the club's, which starts at midnight in th
 zone (see [Club options](#club-options)). So on your 13th birthday you can join from midnight,
 club time.
 
-<img src="user-guide/new-member-home.png" width="210" alt="Home screen before asking to join">
+<img src="user-guide/new-member-home.png" width="210" alt="The first screen, before asking to join">
 <img src="user-guide/join.png" width="210" alt="Request to join form">
 <img src="user-guide/join-under-18.png" width="210" alt="Asking to join as an athlete under 18, with a date of birth and a parent's email">
 <img src="user-guide/join-guardian.png" width="210" alt="Request to join as a guardian, with the child's link code and no squad to pick">
@@ -435,8 +454,8 @@ club time.
 A brand-new club has no admin to approve anyone, so FirstPass gives the person setting the club
 up a one-time **setup code**. While the club has no admin and a code is waiting, **Request to
 join** shows **Setting up this club?** under your name. Enter your name and the 12-character code,
-such as 7KQ4-MD2P-XY9Z, and tap **Become the club's admin**. You go back to the home screen as an
-approved admin, with **Administration** on it, and approve everyone else from there, including
+such as 7KQ4-MD2P-XY9Z, and tap **Become the club's admin**. You go back as an
+approved admin, with **Administration** in the **Club** tab, and approve everyone else from there, including
 other admins.
 
 The code works once, lasts 7 days unless FirstPass says otherwise, and stops working the moment
@@ -450,11 +469,11 @@ the box and asks to join as usual.
 ### Wait for approval
 
 An admin checks your request against the club's PlayHQ registrations, sets your role and adds you
-to your squad. Pull down on the home screen to check again, or tap **Edit request** to change
+to your squad. Pull down on the waiting screen to check again, or tap **Edit request** to change
 what you sent.
 
 If the admin can't match you to a registration, they may ask you for the **6-digit code** shown on
-your home screen. The code proves who you are, so the admin needs to get it from you in person or
+your waiting screen. The code proves who you are, so the admin needs to get it from you in person or
 over a channel they already trust. Only ever give it to a club admin, and never share it with
 anyone else.
 
@@ -473,14 +492,14 @@ club** and **Delete account**. That stays true after an admin approves you, and 
 last verified parent or guardian leaves the club or is unlinked: you get a new code to share. It
 opens as soon as a verified parent or guardian is linked, or on your 18th birthday.
 
-**Parents and guardians: your child's code.** While you wait, your home screen has **Enter your
+**Parents and guardians: your child's code.** While you wait, the waiting screen has **Enter your
 child's code**. Type the code from your child's app and tap **Enter code**. The card then lists
 each child whose code you've entered, until an admin links you. After five wrong codes in an hour,
 you have to wait before trying again. An admin verifies who you are, checks you're the child's
 parent or guardian and approves you once your child is approved, and approving you links you to
 the child whose code you entered.
 
-If your request isn't approved, the home screen says why and you can tap **Request again** after
+If your request isn't approved, the screen says why and you can tap **Request again** after
 fixing your details.
 
 <img src="user-guide/waiting-for-approval.png" width="210" alt="Waiting for approval with a verification code">
@@ -493,57 +512,136 @@ fixing your details.
 
 ## 3. Things everyone can do
 
-### The home screen
+### The tabs
 
-Once you're approved, the home screen is where everything starts. From the top:
+Once you're approved, the app has a row of tabs along the bottom (down the left side on a tablet).
+Everyone has **Today** and **Me**. The others depend on your role and what the club has switched
+on:
 
-- **To do**: things you need to do, such as your daily check-in, the code of conduct to accept, an
+| Tab | What's in it | Who has it |
+| --- | --- | --- |
+| **Today** | What's next on your calendar and what needs you | Everyone |
+| **Calendar** | Your calendars (see [Calendar](#calendar)) | Everyone, when the club uses the calendar |
+| **Messages** | Your inbox, what you've sent and your chat groups, with the number of unread messages on the tab | Everyone who gets messages (not guests), when the club uses messages |
+| **Team** | Your squads and teams, and the work of looking after them | Athletes, coaches, managers and physios |
+| **Family** | Your children, with the number of changes since you last looked on the tab | Parents and guardians |
+| **Club** | Running the club | Committee members and admins |
+| **Me** | Your own things, safety and your account | Everyone |
+
+Team, Family and Club share the fourth place in the row. If you have more than one, such as a
+coach who is also a parent, the tab opens the one for your main role, and a switch at its top
+(such as **Team** and **Family**) swaps between them. The app remembers the one you used last.
+
+- **Raise a concern** is at the top right of every tab, for anyone signed in (see [Raising a
+  concern](#raising-a-concern)).
+- Opening something from a tab, such as a message, an event or an injury, covers the tabs until
+  you go back.
+- Pull down on any tab and most lists to refresh them.
+- People with one job to do have one screen and no tabs: someone waiting to join, an athlete
+  under 18 waiting for a parent or guardian, a temporary helper, and someone whose only role is
+  Studio. That screen has **Raise a concern** and the Sign out, Switch club and Delete account
+  links at its foot, with Your details for everyone but the athlete under 18.
+
+<img src="user-guide/today-athlete.png" width="210" alt="An athlete's Today: the next event, one thing that needs them, and later this week, with the tabs along the bottom">
+<img src="user-guide/team-coach.png" width="210" alt="A coach's Team tab: their squad, Check-ins, Attendance, Injuries with one waiting, and Surveys">
+<img src="user-guide/me-athlete.png" width="210" alt="An athlete's Me tab: Your details, Daily check-in, My attendance, Injuries and Your tasks">
+
+#### Today
+
+Today is where the app opens. It answers two questions: what's next, and what needs you. From
+the top:
+
+- **The club's logo, the date and Raise a concern.**
+- **Hi, and your name**, with your roles and any titles under it (see [Your preferred
+  name](#your-preferred-name)).
+- **Anything that can't wait.** A notice when one of your roles is paused or about to pause, with
+  **Add your card**; **Confirm who you are**, with your 6-digit code, for a parent or guardian not
+  yet verified; and, for the people who handle them, the **Concerns** card (see [The concerns
+  register](#the-concerns-register)).
+- **Next up**: the next event on your calendars that hasn't finished, with when it is (Now, Today,
+  Tonight, Tomorrow, or its day), its start time, name and place. Tap it to open the event. With
+  nothing ahead it says "Nothing on the calendar yet." It shows when the club uses the calendar.
+  Under it are the one or two things you're most likely to do about that session: **Can't make
+  it** for an athlete, **(your child's name) can't make it** for a parent or guardian, and, on the
+  day, **Take attendance** for its coaches and managers. They're the same shortcuts as on the
+  session's page (see [A session's page](#a-sessions-page)), which also has its plan and check-ins.
+- **Needs you**: your to-do list, with how many things are on it. These are things you need to
+  do, such as your daily check-in, the code of conduct to accept, an
   award vote, integrity training due, goals to set or reflect on for a game, an injury past its
   expected return date, an injury a coach, manager or physio logged for you or your child, a KPI review to confirm or, for coaches, physios and the committee, an
   injury clearance to sign off, and, for coaches and managers, new or changed absences to review.
   Tap an item to go straight to it: a to-do about a member opens that member's page at the job
   (see [Admins](#10-admins)). Each item disappears once it's done. When there's nothing,
-  it says "✓ You're all caught up." Your own [personal tasks](#your-own-tasks) come after the
-  club's items.
+  it says "You're set for today. Nothing needs you right now." Your own [personal
+  tasks](#your-own-tasks) are in the same list, marked **Personal**.
   Anything overdue has a **red circle with !**, a red **Overdue** label and a red bar down its
   left edge, and moves to the top of the list. Anything due today or in the next 3 days has an
   **amber triangle with !**, an amber **Due soon** label and an amber bar, and comes next. This
   covers every to-do with a due date: your own tasks, integrity training, KPI reviews you write, game
   goals (due on game day) and an injury past its expected return date. For admins, Working With
   Children Checks work the same way (see [Admins](#10-admins)).
+  A list of six or more with warnings in it is split in two: **Now**, for anything urgent, overdue
+  or due soon, and **When you can**, for the rest.
   A new concern is more urgent than anything else: for the Child Safety Officer, the Complaints
   Manager and admins, **Look at N new concerns** has the red circle, a red **Urgent** label and the
   red bar, and always sits at the very top, above anything overdue (see [The concerns
   register](#the-concerns-register)).
-- **Messages**, with the number of new messages, when the club uses messages.
-- **Coming up**: the next six events from your calendars, when the club uses the calendar. Tap
-  **Full calendar** to see them all.
-- **Cards** for the features your role uses, in this order: Daily check-in, Check-ins,
-  Attendance, My attendance, Injuries, Session plans, Concerns, and Reports or Administration.
-  After those come Surveys, Awards, Integrity training, Season KPIs, Selection assessments (only
-  for someone on a selection round's panel), Selection (for an athlete in an open selection round
-  and their parents) and Registers. Athletes fill
-  in their own check-in from **Daily check-in**.
-  Coaches read their athletes' check-ins from **Check-ins**, and committee members, physios and
-  admins see the club's averages there. Parents and guardians see their child's check-ins from
-  the cards for each child instead (see [Parents and guardians](#5-parents-and-guardians)). The
-  Awards card shows while an award vote is open to you, and Session plans once a coach has shared
-  one with you. **Reports** is for committee members with a current check (admins find Reports in
-  Administration). A number in the club's colour means something new or waiting for you.
-- **Parents and guardians** then see one **Guardian of** card naming their children, which opens
-  **Your children** to add another, and a card for each child under **Game goals** (when the club
-  uses them), **Consent**, **Medical and emergency**, **Attendance**, **Check-ins**, **What's changed** and
-  **Who has viewed their records** (see [Parents and guardians](#5-parents-and-guardians)).
-- **My squads and teams** (**My teams** in a club without squads): tap one to see who's in it. A
-  team's page also has its [game goals](#game-goals) for its athletes and coaches. Committee
-  members and admins only see this when they're in a squad or team, for example as a coach too.
-- **Raise a concern**, for anyone signed in (see [Raising a concern](#raising-a-concern)).
-- **Your details**, **Sign out**, **Switch club** and **Delete account** at the bottom. An athlete
-  under 18 waiting for a parent or guardian doesn't have Your details.
+- **+ Add a task** and **Your tasks**, under the list (see [Your own tasks](#your-own-tasks)).
+- **Later this week**: up to four more events from the next 7 days. When the week has nothing
+  else, **Coming up** shows the next two instead. Tap **Full calendar** to see them all.
 
-Pull down on the home screen, the calendar and most lists to refresh them.
+<img src="user-guide/today-next-up.png" width="210" alt="An athlete's Today with Can't make it under Next up">
+<img src="user-guide/today-next-up-coach.png" width="210" alt="A coach's Today on the day of training, with Take attendance under Next up">
+<img src="user-guide/today-next-up-parent.png" width="210" alt="A parent's Today with a Can't make it shortcut for each child under Next up">
 
-<img src="user-guide/home-athlete.png" width="210" alt="Athlete home screen">
+While a selection round is running, **Selection assessments** (for the round's panel) or
+**Selection** (for an athlete in the round and their parents) also sits on Today, just above
+Needs you.
+
+#### Team, Family and Club
+
+Each holds the cards for that part of what you do. A number in the club's colour on a card means
+something new or waiting for you.
+
+- **Team** starts with **My squads and teams** (**My teams** in a club without squads): tap one
+  to see who's in it. A team's page also has its [game goals](#game-goals) for its athletes and
+  coaches. Coaches, managers and physios then have **Check-ins**, **Attendance**, **Injuries**,
+  **Session plans**, **Surveys** (to send one and see results) and **Season KPIs** (for the people
+  they set them for). Athletes have **Session plans** here once a coach has shared one, and
+  captains have **Surveys** to send a poll. Coaches read their athletes' check-ins from
+  **Check-ins**, and physios see the club's averages there. While you're on a selection round's
+  panel, **Selection assessments** is here as well as on Today.
+- **Family** starts with one card for each of your children. The card says where things stand
+  for that child (consent, a current injury, medical details to add or check, changes since you
+  last looked) and opens the child's own page, which has **Attendance**, **Game goals**,
+  **Check-ins**, **Injuries**, **Consent**, **Medical and emergency**, **What's changed** and
+  **Who has viewed their records** for that child, always in that order. Under the children come
+  **Injuries**, plus **Session plans**, **Season KPIs** and **Selection** when there's something
+  in them, then **My squads and teams**, and **Add another child** at the end (see
+  [Parents and guardians](#5-parents-and-guardians)).
+- **Club** has **Concerns** (for the people who handle them), **Check-ins** (the club's
+  averages), **Attendance**, **Injuries**, **Reports** (for committee members with a current
+  check) or **Administration** (for admins, who find Reports inside it), **Surveys**, **Integrity
+  training**, **Season KPIs** and **Registers**, plus **Session plans** once one is shared with
+  you. Committee members and admins see **My squads and teams** only when they're in a squad or
+  team, for example as a coach too, and then it's in their Team tab.
+
+#### Me
+
+Me holds your own things, whatever your role:
+
+- **Your name and roles**, then **Your details** (see [Your preferred name](#your-preferred-name)).
+- **Your own cards**: **Daily check-in**, **My attendance** and **Injuries** for athletes,
+  **Surveys** when you have one to answer or have answered one, **Awards** while an award vote is
+  open to you, your own **Integrity training** and **Season KPIs**, and **Selection** while your
+  squad or team is in a selection round.
+- **Your tasks** (see [Your own tasks](#your-own-tasks)).
+- **Safety**: **Raise a concern**, then the club's safeguarding contacts and the helplines.
+- **Account**: **Switch club**, **Sign out** and **Delete account**.
+
+Someone with no fourth tab, such as a guest, finds **My squads and teams** here too.
+
+<img src="user-guide/me-safety.png" width="210" alt="The end of the Me tab: helplines under Safety, then Switch club, Sign out and Delete account under Account">
 
 ### Using HQ on a tablet
 
@@ -551,10 +649,11 @@ HQ runs on iPads and Android tablets as a full tablet app, so a coach can take a
 look over a squad on a bigger screen at training. Everything works the same as on a phone; screens
 just use the extra room so there's less scrolling:
 
-- **Upright**, the home screen keeps To do, Messages and Coming up at the top, then puts the cards
+- **The tabs** run down the left side instead of along the bottom.
+- **Upright**, Today is one column, as on a phone, and the cards in Team, Family, Club and Me sit
   two a row.
-- **On its side**, To do, Messages and Coming up sit on the left and the other cards on the right,
-  two a row. Raise a concern and the links at the bottom stay below both.
+- **On its side**, Today puts Next up and the rest of the week on the left and Needs you on the
+  right, and the cards in Team, Family, Club and Me sit three a row.
 - **Lists of cards** sit two or three a row: injuries, past attendance sessions and athletes'
   attendance, a squad or team's people and its games.
 - **Taking attendance**, the register shows two or three athletes a row, each with Present and
@@ -565,16 +664,17 @@ The layout follows the window, not the device: turn the tablet and it changes st
 iPad sharing the screen with another app, a narrow window gets the phone layout. Phones always stay
 upright.
 
-<img src="user-guide/home-tablet.png" width="210" alt="Coach home screen on an upright iPad: To do, Messages and Coming up across the top, then the cards two a row">
+<img src="user-guide/today-tablet-sideways.png" width="420" alt="A manager's Today on an iPad on its side: the tabs down the left, Next up and Later this week in one column and Needs you in the other">
+<img src="user-guide/team-tablet.png" width="320" alt="A coach's Team tab on an upright iPad: the tabs down the left and the cards two a row">
 
 ### Your own tasks
 
 You can add your own tasks to your to-do list, such as "Wash my training kit" or "Book a physio
 follow-up". They sit under what the club needs from you, marked **Personal**, soonest due first.
 A task that's overdue or due within 3 days gets the red or amber warning and moves up the list
-with the club's items (see [The home screen](#the-home-screen)).
+with the club's items (see [Today](#today)).
 
-- **Add one**: tap **+ Add a task** at the bottom of your to-do list and say what it is. To give
+- **Add one**: tap **+ Add a task** under your to-do list on Today and say what it is. To give
   it a due date, tap a day in the week (the arrows move a week at a time); leave it for no due
   date, or tap **Remove due date** to take one off. Then tap **Add task**.
 - **Tick it off**: tap the circle next to it. It leaves your list, and **Undo** puts it back if
@@ -582,7 +682,7 @@ with the club's items (see [The home screen](#the-home-screen)).
 - **Change it or mark it done**: tap the task, change it and tap **Save**, or tap **Mark as done**
   when you've finished it. The note under the button says it: marking it done there deletes the
   task, so it won't come back.
-- **See them all**: tap **Your tasks** for everything still to do and the last 30 you ticked off.
+- **See them all**: tap **Your tasks**, on Today or in the Me tab, for everything still to do and the last 30 you ticked off.
   Tap a ticked-off task's circle to put it back on your list, or **Delete done tasks** (then
   **Delete them**) to clear them. **Add a task** is at the top of this screen too.
 
@@ -598,8 +698,8 @@ mark them done from the task, clear your done tasks, or delete your account.
 
 ### Your preferred name
 
-The home screen greets you by name. To be called something else, such as a nickname, tap **Your
-details** at the bottom of the home screen, enter your **Preferred name** and tap **Save**. Leave it
+Today greets you by name. To be called something else, such as a nickname, tap **Your
+details** in the **Me** tab, enter your **Preferred name** and tap **Save**. Leave it
 blank to go back to your full name. Admins still see your full name, with your preferred name on
 your member page, and can search for you by either.
 
@@ -613,7 +713,7 @@ coach or manage. Until you're in a team, it names your squad. If you coach more 
 lists them all, like "Assistant Coach, Open A and Open". Only an admin can change whether you're a
 head or assistant coach.
 
-Other titles show on their own line under your roles on the home screen, so a statistician who is
+Other titles show on their own line under your roles on Today, so a statistician who is
 the club's Child Safety Officer sees "Statistician" and, beneath it, "Child Safety Officer":
 
 - **Captaincy**: "Club Captain", "Captain, Open A" or "Vice Captain, 20 & Under", for the current
@@ -626,7 +726,7 @@ the club's Child Safety Officer sees "Statistician" and, beneath it, "Child Safe
 
 Titles come from what admins and coaches set, so there's nothing to fill in.
 
-<img src="user-guide/home-titles.png" width="210" alt="Home screen of a statistician with Child Safety Officer and WWC Registration Officer under their role">
+<img src="user-guide/today-titles.png" width="210" alt="Today for a statistician with Child Safety Officer and WWC Registration Officer under their role, and the Concerns card at the top">
 
 <img src="user-guide/your-details.png" width="210" alt="Your details: preferred name, title and to-do notifications">
 <img src="user-guide/your-details-coach.png" width="210" alt="Your details for a coach: the title the app sets from their teams">
@@ -634,7 +734,7 @@ Titles come from what admins and coaches set, so there's nothing to fill in.
 ### To-do notifications
 
 On an installed app, your phone gets a notification when something new appears on your
-[to-do list](#the-home-screen), such as a clearance to sign off, a survey to answer, an award vote opening, training
+[to-do list](#today), such as a clearance to sign off, a survey to answer, an award vote opening, training
 to complete or, for athletes, the day's check-in. Tap the notification to go straight to it. The
 first time, your phone asks whether the app may send notifications: tap **Allow**.
 
@@ -643,7 +743,7 @@ first time, your phone asks whether the app may send notifications: tap **Allow*
 - Each to-do is sent once. Daily items, such as the check-in, come once a day while they're
   still to do; admins' child-safety and records follow-ups come once a month. A new concern or
   a newly reported absence sends again even if the earlier one is still on your list.
-- Your own [personal tasks](#your-own-tasks) stay on the home screen and aren't sent.
+- Your own [personal tasks](#your-own-tasks) stay on Today and aren't sent.
 - A session plan shared with you for the first time sends its own notification (see [Session
   plans from your coaches](#session-plans-from-your-coaches)). It keeps the same quiet hours: a
   plan shared between 8 pm and 7 am is there to read straight away, and its notification arrives
@@ -652,7 +752,7 @@ first time, your phone asks whether the app may send notifications: tap **Allow*
   notes. Open the app to see those.
 - If you belong to more than one club, tapping a notification opens the club it came from.
 
-To stop them, tap **Your details** at the bottom of the home screen and turn off **To-do
+To stop them, tap **Your details** in the **Me** tab and turn off **To-do
 notifications**. It saves straight away and only changes your own notifications. If your phone is
 blocking notifications from the app, Your details says so and **Open phone settings** takes you
 there to allow them.
@@ -660,7 +760,7 @@ there to allow them.
 ### Messages
 
 Messages from your coaches, managers, captains, the committee and the club arrive in
-**Messages**. Unread messages have a dot in the club's colour, and the home card shows how many
+**Messages**. Unread messages have a dot in the club's colour, and the **Messages** tab shows how many
 are new. Opening a message marks it as read, and the
 sender can see that you've read it.
 
@@ -787,10 +887,10 @@ leaves them alone.
 The committee and admins send surveys to everyone, a role, or a squad or team. Coaches and
 managers send surveys and quick polls to their own squads and teams, and captains and vice captains
 send polls to their own team, for example to find a night everyone is free. A survey you need
-to answer shows in your to-do list until you answer it or it closes, and the **Surveys** card on
-the home screen counts how many are waiting.
+to answer shows in your to-do list until you answer it or it closes, and the **Surveys** card in
+the **Me** tab counts how many are waiting.
 
-<img src="user-guide/survey-home.png" width="210" alt="Home screen with a survey to answer">
+<img src="user-guide/survey-today.png" width="210" alt="Today with a survey to answer under Needs you">
 
 Each survey says at the top how your answers are kept:
 
@@ -859,6 +959,31 @@ the address.
 <img src="user-guide/calendar.png" width="210" alt="Calendar list view">
 <img src="user-guide/calendar-month.png" width="210" alt="Calendar month view">
 <img src="user-guide/event.png" width="210" alt="Event details">
+
+#### A session's page
+
+Under when and where it is, a training session, game or club event shows what you can do about
+it. You see only what applies to you, so most members see one or two cards and some see none:
+
+| Card | Who sees it | What it does |
+| --- | --- | --- |
+| **Can't make it** | Athletes in the session's squad or team, until the session ends. For a session on a calendar shared with everyone in the club or with **Athletes**, every athlete. | Opens **Report an absence** with the session's day already chosen (see [Your attendance and absences](#your-attendance-and-absences)). |
+| **(Your child's name) can't make it** | Parents and guardians, one card for each child, when you're in the session's squad or team, or the session is on a calendar shared with everyone or with **Athletes**. | The same, for that child (see [Your child's attendance](#your-childs-attendance)). |
+| **Take attendance** | The squad's or team's coaches and managers, and admins, on the day of the session and for 7 days after. For a session on a calendar shared with everyone or with **Athletes** and no squad or team of its own, everyone who takes attendance. | Opens the register with the squad or team (or **Whole club**) chosen and the session's name filled in (see [Taking attendance](#taking-attendance)). |
+| **Session plan** | Anyone who can already read a plan written for that squad or team on that day: the coach who wrote it and everyone it's shared with. | Opens the plan. |
+| **Add a session plan** | The squad's or team's coaches, and admins, while there's no plan for it that they can read. | Starts a plan with the squad or team, name, day, times and place filled in from the session (see [Session plans](#session-plans)). |
+| **Check-ins** | The squad's or team's coaches, on the day. | Says how many athletes have checked in today and how many are flagged, and opens that squad's or team's check-ins (see [Athletes' check-ins](#athletes-check-ins)). |
+
+The cards are shortcuts and nothing more: each opens a screen you could already reach from your
+tabs, and that screen's own rules decide what you see and can save. So a card never shows you
+anything new, and a card is missing while the club has its feature switched off (Attendance,
+Session plans or Daily check-ins). **Can't make it** and **Take attendance** are also under
+**Next up** on Today. An event on a calendar shared only with other roles or a safeguarding
+post, such as a committee meeting, isn't a session athletes attend, so it has no cards.
+
+<img src="user-guide/session-athlete.png" width="210" alt="A training session as an athlete sees it: when and where, then Can't make it and the session plan shared with them">
+<img src="user-guide/session-coach.png" width="210" alt="The same session as its coach sees it: Take attendance, the session plan and today's check-ins">
+<img src="user-guide/session-parent.png" width="210" alt="The same session as a parent sees it: one Can't make it card for each child, and the session plan">
 <img src="user-guide/calendar-fixtures.png" width="210" alt="Matches from PlayHQ in the calendar">
 <img src="user-guide/calendar-shared.png" width="210" alt="A physio's calendar with the calendar shared with physios and statisticians">
 
@@ -906,7 +1031,7 @@ Integrity Australia's Safeguarding in Sport or anti-doping courses, with a due d
 set for roles (for example athletes and coaches), across the whole club or only some squads and
 teams, so junior and senior athletes can have different courses.
 
-Training you still need to complete shows in your **To do** list with its due date, and on the
+Training you still need to complete shows in your to-do list on Today with its due date, and on the
 **Integrity training** card. If you have more than two courses outstanding, the to-do list shows
 them as one item with the soonest due date that says whose they are, such as "Complete 3
 integrity training courses for you and Jordan"; open it to see each course. To complete it:
@@ -926,7 +1051,7 @@ The training then shows **Waiting to be checked** until a committee member or ad
 upload a new certificate. Certificates can't be removed once they're sent, so the club keeps a
 record. Overdue training says **Overdue since** its due date.
 
-<img src="user-guide/training-athlete-home.png" width="210" alt="Integrity training in an athlete's to-do list">
+<img src="user-guide/training-athlete-today.png" width="210" alt="Integrity training in an athlete's to-do list">
 <img src="user-guide/training-athlete.png" width="210" alt="An athlete's integrity training">
 <img src="user-guide/training-submit.png" width="210" alt="One certificate ticked for three courses">
 
@@ -991,7 +1116,8 @@ all as a PDF for the board.
 - **Past seasons.** When an admin archives a season, its KPIs, results and reviews stay, under
   **Past seasons**, and can be read but not changed. KPIs don't carry over to the next season.
 
-Open **Season KPIs** on the home screen. **Yours** lists your own KPIs in each squad or team you're
+Open **Season KPIs**: it's in **Me** for your own, in **Team** for the people you set them for, in
+**Family** for your children's and in **Club** for the committee. **Yours** lists your own KPIs in each squad or team you're
 in; below are the people you set KPIs for, by squad or team, with how many results and reviews are
 in.
 
@@ -1007,7 +1133,8 @@ managers'.
 
 ### Raising a concern
 
-**Raise a concern**, at the bottom of the home screen, is for anyone signed in: athletes, parents,
+**Raise a concern** is at the top of every tab, under **Safety** in the **Me** tab, and on the one
+screen people see before they're approved. It's for anyone signed in: athletes, parents,
 coaches, guests and people still waiting for approval. Use it for anything that worries you about a
 child or about how someone at the club behaves. You don't need to be sure. The same link is on the
 daily check-in screen, on every injury and, as **Report this message**, on every message, so the
@@ -1042,7 +1169,7 @@ looked into or Closed. Quote the reference if you talk to the club about it.
 
 ### Deleting your account
 
-**Delete account** at the bottom of the home screen permanently deletes your account at the club
+**Delete account**, under **Account** in the **Me** tab, permanently deletes your account at the club
 you're in: your profile, your squad and team places, guardian links, your personal tasks and your
 messages inbox. Messages you sent to a group stay with the people who received them. Tap
 **Delete my account**, then **Delete my account permanently** to confirm. If you signed in with
@@ -1075,12 +1202,12 @@ FirstPass HQ.
 
 ## 4. Athletes
 
-Athletes see Messages, Daily check-in, My attendance and Injuries on their home screen, plus
-Session plans once a coach has shared one, Awards while a vote is open, Integrity training and
-Season KPIs when the club uses them, their calendar and squads. Game goals are on each team's
-page.
+Athletes have the Today, Calendar, Messages, Team and Me tabs. **Me** has Daily check-in, My
+attendance and Injuries, plus Awards while a vote is open, and Integrity training and Season KPIs
+when the club uses them. **Team** has your squads and teams, and Session plans once a coach has
+shared one. Game goals are on each team's page.
 
-<img src="user-guide/todo-athlete.png" width="210" alt="Athlete home screen with to-do items">
+<img src="user-guide/todo-athlete.png" width="210" alt="An athlete's Today with an overdue injury update and the daily check-in under Needs you">
 
 ### Daily check-in
 
@@ -1148,7 +1275,7 @@ check-ins, after the club's period under Record keeping.
 ### Game goals
 
 **Game goals** uses the club's PlayHQ fixtures, which belong to teams, so they start once you're
-picked for a team. Tap your team under **My squads and teams** on the home screen: its page shows
+picked for a team. Tap your team under **My squads and teams** in the **Team** tab: its page shows
 the team's games at the top and the people in it underneath.
 
 - **Before a game:** in the 7 days before your next game, open it under **Next game** and add
@@ -1191,7 +1318,7 @@ from games played during the round.
 ### Your season KPIs
 
 If the club uses [Season KPIs](#season-kpis), your coaches may set you KPIs or OKRs for the season
-in your squad or team. Open **Season KPIs** on the home screen and pick the squad or team under
+in your squad or team. Open **Season KPIs** in the **Me** tab and pick the squad or team under
 **Yours**. Type where you're up to on a number and tap **Save**, or tap **Mark as done**, as the
 season goes. At each review date, read what your coach wrote, tap **Confirm this review was done**,
 and add **Your own view** if you want to. Your coaches record the result at the end of the season.
@@ -1323,7 +1450,7 @@ guardians get a copy of every post (see [Chat groups](#chat-groups)).
 
 Captains and vice captains can also send a poll to their own team, for example to find a
 night everyone is free for a team dinner or to check who's coming to a social event. Open
-**Surveys** from the home screen, tap **New survey**, choose your team, and add up to 5
+**Surveys** from the **Team** tab, tap **New survey**, choose your team, and add up to 5
 questions, each **One choice** or **Several choices**. Choose **Named** to see who picked what and
 who hasn't answered yet. Choose **Everyone must answer** if you need an answer from everyone, and
 **Share results with the squad or team** to let your teammates see the totals (see [Surveys and
@@ -1337,7 +1464,7 @@ only your coaches and managers can download them. Polls are on unless an admin s
 
 ### Your attendance and absences
 
-**My attendance** on your home screen shows every session your coaches took attendance for, and
+**My attendance** in the **Me** tab shows every session your coaches took attendance for, and
 whether you were marked **Present** or **Absent**, over 4 weeks, 3 months or 12 months. You see only
 your own marks, not anyone else's. If you're under 18, your parents or guardians see the same.
 
@@ -1351,24 +1478,30 @@ out of the details. An injury isn't an absence: report it under **Injuries**, an
 to support the team. **Withdraw** takes an absence back if your plans change. An
 absence your parent or guardian reported shows here too, and you can withdraw it.
 
+The quickest way to say you'll miss one session is **Can't make it**, under **Next up** on Today
+or on the session's page in the calendar: it opens the same form with that session's day chosen,
+so you only pick the reason (see [A session's page](#a-sessions-page)).
+
 <img src="user-guide/attendance-family.png" width="210" alt="An athlete's own attendance and reported absences">
 <img src="user-guide/report-absence.png" width="210" alt="Reporting an absence">
 
 ### Session plans from your coaches
 
-When a coach shares a session plan with your squad or team, **Session plans** shows on your home
-screen, with a number for plans you haven't opened yet. If your phone gets the app's
+When a coach shares a session plan with your squad or team, **Session plans** shows in the **Team**
+tab, with a number for plans you haven't opened yet. If your phone gets the app's
 notifications, it also gets one the first time a plan is shared with you, saying who shared it,
 the session's name, its squad or team and its day. A plan shared between 8 pm and 7 am doesn't
 wake your phone: its notification arrives at 7 am. Each plan shows the session, the day, who
 wrote it, and any photos or files, such as a drills sheet. Plans are read only: nobody can reply to
 them or react to them. If you're under 18, your parents or guardians can read the same plans.
+A plan shared with you for a session also shows as **Session plan** on that session's page in the
+calendar (see [A session's page](#a-sessions-page)).
 
 <img src="user-guide/session-plans-athlete.png" width="210" alt="Session plans shared with an athlete">
 
 ### Medical and emergency details
 
-**Your details** (from the home screen) has **Medical and emergency details**: up to three
+**Your details** (in the **Me** tab) has **Medical and emergency details**: up to three
 emergency contacts, and your allergies, conditions, medications and action plan, such as what to do
 if you have an asthma attack or a reaction. They're for your safety at training and games. Tap a
 contact's phone number to call them. Numbers are shown spaced for reading, such as 0412 345 678,
@@ -1403,7 +1536,7 @@ you've checked (but not what your details say) in the [Medical details checks](#
 ### Selection
 
 If the club uses selection assessments and your squad or team is in a selection round,
-**Selection** shows on your home screen with the round's next date. Tap it to see:
+**Selection** shows on **Today** and in the **Me** tab with the round's next date. Tap it to see:
 
 - **Dates**: the steps the club has chosen to share, such as when trials are and when teams are
   named, each with its day and **Done** once it has happened.
@@ -1415,7 +1548,7 @@ against these criteria. There's no score or ranking. You don't see what selector
 there's nothing to answer or send here; ask your coach if you have a question about selection.
 
 **Feedback from your coach.** The head coach can share feedback with you: **What went well** and
-**What to work on**. When they do, the **Selection** card on your home screen says **Feedback from
+**What to work on**. When they do, the **Selection** card says **Feedback from
 the coach**, and the feedback is at the top of the screen with who it's from and the day. If
 you're under 18, your verified parents and guardians read the same feedback. You can't reply in
 the app; talk to your coach about it. The coach can see whether it has been read. Feedback stays
@@ -1433,16 +1566,16 @@ account, on iPhone) and ask to join
 as **Guardian**, entering the email they used to register their athlete with PlayHQ and, if you
 have it, your child's **link code**: the 6-letter code your child's app shows them once they've
 asked to join (see [Ask to join the club](#ask-to-join-the-club)). An admin verifies who you are
-(against PlayHQ, by sighting your ID, or with the 6-digit code on your home screen, shown under
+(against PlayHQ, by sighting your ID, or with the 6-digit code at the top of **Today** (or on your waiting screen), shown under
 **Confirm who you are** until you're verified), checks you're the parent or guardian of the child
 whose code you entered, and approves you, which links you to them. An admin can't approve you
 until you've entered the code of a child under 18 who has been approved. Your child's app
 stays locked until a verified parent or guardian is linked to them. A guardian can be linked to
 more than one athlete, and an athlete can have more than one guardian.
 
-To add another child later, tap **Guardian of** on your home screen. It opens **Your children**,
-where you enter their code under **Add another child** (**Enter your child's code** until you have
-a child linked). An admin then links you from your page or the child's.
+To add another child later, tap **Add another child** at the end of the **Family** tab. It opens
+**Your children**, where you enter their code under **Add another child** (**Enter your child's
+code** until you have a child linked). An admin then links you from your page or the child's.
 
 Whenever a guardian is linked to or unlinked from your child, you and your child's other guardians
 get a message from **Club safeguarding** in **Messages**, naming the guardian and the admin who made
@@ -1451,12 +1584,44 @@ Safety Officer or an admin.
 
 <img src="user-guide/message-guardian-notice.png" width="210" alt="The message guardians get when another guardian is unlinked">
 
-The home screen shows who you're the guardian of in one **Guardian of** card. Until an admin links
-you, it says "Nobody yet" and asks for your child's link code. Tap it to open **Your children**,
-which holds both ways to add a child: their link code, and asking the club to add a child who
-won't use the app.
+Until an admin links you to a child, the **Family** tab starts with a **Guardian of** card that
+says "Nobody yet" and asks for your child's link code. Tap it to open **Your children**, which
+holds both ways to add a child: their link code, and asking the club to add a child who won't use
+the app. Once a child is linked, the same screen opens from **Add another child** at the end of
+the tab.
 
 <img src="user-guide/guardian-children.png" width="210" alt="Your children: the children a parent is linked to, adding another with a link code, and a child who won't use the app">
+
+#### Your children in the Family tab
+
+The **Family** tab has one card for each child you're linked to. A card shows the child's name
+and where things stand for them:
+
+- **Consent**, such as "Check-ins: yes · Injuries: yes". It shows in the club's colour while you
+  still have a consent to give.
+- A line for each thing that needs a look: a current injury, medical and emergency details to add
+  or check, and how many changes there have been since you last looked (the number also shows on
+  the card and on the Family tab).
+
+Tap a card to open that child's page. It has everything for that one child, in the same order
+every time, so you always know where to look:
+
+| On the child's page | What it opens |
+| --- | --- |
+| **Attendance** | Their sessions, and where you tell their coaches they'll be away (see [Your child's attendance](#your-childs-attendance)). |
+| **Game goals** | Their goals and reflections for each game. |
+| **Check-ins** | Their daily check-ins and notes from the last four weeks. |
+| **Injuries** | Their current injuries, in the injuries list you already use. |
+| **Consent** | The consents you've given or still need to give (see [Giving consent](#giving-consent)). |
+| **Medical and emergency** | Emergency contacts, allergies, conditions and medications, once you're verified (see [Your child's medical and emergency details](#your-childs-medical-and-emergency-details)). |
+| **What's changed** | New adults in their groups, guardians, consents and shared documents (see [What's changed for your child](#whats-changed-for-your-child)). |
+| **Who has viewed their records** | Everyone at the club who opened their records, once you're verified (see [Who has viewed your child's records](#who-has-viewed-your-childs-records)). |
+
+A row is left out while the club has that feature switched off. The page only ever shows your own
+children: a link to another child's page shows "This child isn't linked to you".
+
+<img src="user-guide/family-guardian.png" width="210" alt="A parent's Family tab: a card for each child, then Injuries, squads and teams, and Add another child">
+<img src="user-guide/child-page.png" width="210" alt="The top of a child's page: Attendance, Game goals, Check-ins, Injuries, Consent and Medical and emergency">
 
 As a guardian you:
 
@@ -1468,15 +1633,15 @@ As a guardian you:
   they send to their team or the club. These copies say "Copied to you because Jordan sent
   it".
 - **See your athlete's daily check-ins**, including any note they write, and the training
-  sessions they log with their weekly load. Tap your athlete under **Check-ins** on the home
-  screen to see the last four weeks. Your athlete is told that you can read their notes.
+  sessions they log with their weekly load. Open your athlete's card in the **Family** tab and
+  tap **Check-ins** to see the last four weeks. Your athlete is told that you can read their notes.
 - **See the calendar and matches** of your child's squads and teams. You follow your child into
   and out of them by yourself: when an admin puts your child in a squad or team you join it, and
   when your child leaves it you leave too, unless another of your children is still in it.
 - **See your athlete's game goals and reflections**: the goals they and their coaches set for
   each game, how your athlete thinks each one went, their coaches' comments and the team goals (see
-  [Game goals](#game-goals)). Tap your athlete under **Game goals** on the home screen to see all
-  their games. You can't set goals or reflect: your athlete and their coaches do that in the app.
+  [Game goals](#game-goals)). Open your athlete's card in the **Family** tab and tap **Game goals**
+  to see all their games. You can't set goals or reflect: your athlete and their coaches do that in the app.
   When a game was recorded in FirstPass Vantage, your athlete's coaches also see your athlete's
   own stats from it beside the goals. You and your athlete don't see those figures in the app.
 - **Report and update injuries** for your athlete, and ask for clearance, exactly as an athlete
@@ -1503,7 +1668,7 @@ As a guardian you:
   training** screen under their name, and you upload their certificates exactly as they would (see
   [Integrity training](#integrity-training)).
 
-<img src="user-guide/guardian-home.png" width="210" alt="Guardian home screen">
+<img src="user-guide/today-guardian.png" width="210" alt="A guardian's Today with nothing waiting">
 <img src="user-guide/training-guardian.png" width="210" alt="A guardian's view of their athlete's training, one sent back">
 <img src="user-guide/goals-guardian.png" width="210" alt="An athlete's games, opened by their guardian">
 <img src="user-guide/goals-guardian-played.png" width="210" alt="A guardian reading their athlete's goals, reflections and coach comments">
@@ -1518,11 +1683,11 @@ and you do everything for them.
 
 1. When you ask to join as **Guardian**, answer **Will your child use the app?** with **No, they
    won't use the app**, and give your child's name, date of birth and squad or team instead of a
-   link code. Already in the club? Tap **Guardian of** on your home screen, then **Add a child who won't use
-   the app**.
+   link code. Already in the club? Tap **Add another child** in the **Family** tab (**Guardian of** until
+   a child is linked), then **Add a child who won't use the app**.
 2. A club admin verifies who you are and checks your child's details against PlayHQ, then adds
    your child, linked to you. If you were still waiting, you're approved at the same time. Until
-   then **Your children** (your home screen while you're still waiting) shows what you asked for,
+   then **Your children** (the waiting screen while you're still waiting) shows what you asked for,
    and you can **Withdraw** it.
 3. You get the usual **Club safeguarding** message naming the admin who linked you.
 
@@ -1542,12 +1707,12 @@ When your child turns 18 your access ends as it does for any child, and they joi
 account if they want to keep using the app.
 
 <img src="user-guide/no-app-child-join.png" width="210" alt="A parent asking to join, with their child who won't use the app">
-<img src="user-guide/no-app-child-home.png" width="210" alt="A parent's home screen showing the child they asked the club to add">
+<img src="user-guide/no-app-child-home.png" width="210" alt="A parent's waiting screen showing the child they asked the club to add">
 
 ### Giving consent
 
-Once you're linked and verified, **Consent** on your home screen lists each child under 18, and
-your to-do list says **Give consent for** them until you have answered the questions the club
+Once you're linked and verified, each child under 18 has **Consent** on their page (tap their
+card in the **Family** tab), and your to-do list says **Give consent for** them until you have answered the questions the club
 needs: injuries always, and check-ins while the club uses Daily check-ins. Open it to
 choose who else sees two kinds of information about your child, and whether live streams may
 name them with their own stats:
@@ -1596,13 +1761,13 @@ withdraws it. Photos of injuries are separate:
 you're asked each time (see [Injury documents and photos](#injury-documents-and-photos)).
 
 <img src="user-guide/consent.png" width="210" alt="A parent giving consent for their child's check-ins and injuries">
-<img src="user-guide/consent-home.png" width="210" alt="Home screen with Give consent in the to-do list">
+<img src="user-guide/consent-today.png" width="210" alt="Today with Give consent for each child under Needs you">
 <img src="user-guide/consent-feature-off.png" width="210" alt="Consent screen while the club has daily check-ins turned off, with the earlier consent kept">
 
 ### Your child's medical and emergency details
 
-Once you're verified, **Medical and emergency** on your home screen lists each child under 18.
-Open one and tap **Change details** to add up to three emergency contacts and your child's
+Once you're verified, each child under 18 has **Medical and emergency** on their page (tap their
+card in the **Family** tab). Open it and tap **Change details** to add up to three emergency contacts and your child's
 allergies, conditions, medications and action plan, then **Save**. Any of your child's verified
 parents or guardians can change them, and your child can read them. Their coaches, managers and
 physios see them once you've given consent for injuries and health information; admins and the
@@ -1618,7 +1783,7 @@ checked for a while (2 years unless the club chose longer) are removed, and the 
 them once the check is due. Admins see whether each child's details have been
 checked, but not what they say.
 
-<img src="user-guide/medical-home.png" width="210" alt="Medical and emergency on a parent's home screen">
+<img src="user-guide/medical-family.png" width="210" alt="Consent and Medical and emergency on a child's page">
 <img src="user-guide/medical-edit.png" width="210" alt="A parent changing their child's emergency contacts">
 
 ### The code of conduct for your child
@@ -1635,13 +1800,13 @@ shows who accepted it and when. Until an admin has verified you, you can't accep
 child, and your child's screen says **Waiting for verification**. If you also coach, manage or sit on the committee, you accept it
 for yourself as well.
 
-<img src="user-guide/conduct-home.png" width="210" alt="A parent who coaches, with both code of conduct to-dos">
+<img src="user-guide/conduct-today.png" width="210" alt="A parent who coaches, with both code of conduct to-dos">
 <img src="user-guide/conduct-child.png" width="210" alt="A parent accepting the code of conduct for their child">
 
 ### Who has viewed your child's records
 
-Once you're verified, **Who has viewed their records** on your home screen lists each child under
-18. Open it to see everyone at the club who opened your child's injuries, injury documents,
+Once you're verified, each child under 18 has **Who has viewed their records** at the end of
+their page (tap their card in the **Family** tab). Open it to see everyone at the club who opened your child's injuries, injury documents,
 check-ins, game goals, season KPIs, named survey answers, medical and emergency details, selection assessment or member record in the app: their name, their role (coach, manager, physio, admin,
 committee or safeguarding contact, or member for anyone else, such as a manager reading named
 survey answers), what they opened and when, newest first. Sharing an injury
@@ -1652,12 +1817,12 @@ listed, and opening the same thing again within 30 minutes counts once. The list
 yours to see on your child's 18th birthday. If anything on it worries you, raise a concern (see
 [Raising a concern](#raising-a-concern)).
 
-<img src="user-guide/records-home.png" width="210" alt="Who has viewed their records on a parent's home screen">
+<img src="user-guide/records-family.png" width="210" alt="Who has viewed their records at the end of a child's page">
 <img src="user-guide/records-guardian.png" width="210" alt="A parent's list of who has viewed their child's records">
 
 ### Your child's attendance
 
-**Attendance** on your home screen lists each child under 18. Open it to see the sessions their
+**Attendance** is first on each child's page (tap their card in the **Family** tab). Open it to see the sessions their
 coaches took attendance for in the last 4 weeks, 3 months or 12 months, and whether your child was
 marked **Present** or **Absent**. You see only your child's marks, never other children's. If your child was marked absent and you didn't expect it,
 ask their coach, or raise a concern if it worries you.
@@ -1670,7 +1835,11 @@ parents or guardians see what you report. An absent session that matches a repor
 **Absent, reported**. If plans change, tap **Withdraw** next to an absence you or your child
 reported. You stop seeing your child's attendance on their 18th birthday.
 
-<img src="user-guide/records-home.png" width="210" alt="Attendance, What's changed and Who has viewed their records on a parent's home screen">
+For one session, tap **(your child's name) can't make it** under **Next up** on Today or on the
+session's page in the calendar: the form opens for that child with the session's day chosen (see
+[A session's page](#a-sessions-page)).
+
+<img src="user-guide/family-attendance.png" width="210" alt="Attendance, first on a child's page">
 
 ### Questions in your child's messages
 
@@ -1686,15 +1855,16 @@ do. You can't answer a question your child sent as captain.
 ### Your child's session plans
 
 When a coach shares a session plan with your child's squad or team, you can read it too, under
-**Session plans** on your home screen, until your child turns 18. If your phone gets the app's
+**Session plans** in the **Family** tab, until your child turns 18. If your phone gets the app's
 notifications, it gets one the first time a plan is shared with your child's squad or team;
 either way, look for the number on **Session plans**. A plan shared between 8 pm and 7 am doesn't
 wake your phone or your child's: the notification arrives at 7 am. You see the same plans your
-child does, and nobody can reply to them.
+child does, and nobody can reply to them. A plan for a session also shows as **Session plan** on
+that session's page in the calendar.
 
 ### Your child's season KPIs
 
-If the club uses [Season KPIs](#season-kpis), **Season KPIs** on your home screen lists your child
+If the club uses [Season KPIs](#season-kpis), **Season KPIs** in the **Family** tab lists your child
 under **Your children**, for each squad or team they have KPIs in. You can read their KPIs, their
 progress, the results and the reviews, including what your child wrote, but you can't change
 anything. Only your child confirms their reviews. Their teammates and the committee don't see
@@ -1720,7 +1890,7 @@ your child sent it, so you can see what they asked. You don't see their teammate
 ### Your child's selection
 
 If the club uses selection assessments and your child under 18 is in a squad or team with a
-selection round open, **Selection** shows on your home screen once you're verified as their parent
+selection round open, **Selection** shows on **Today** and in the **Family** tab once you're verified as their parent
 or guardian. It shows what your child sees: the **dates** the club shares, such as when trials are
 and when teams are named, and **what the selectors look for**, with your child's name on the round.
 With more than one child in a round, each has their own block.
@@ -1756,8 +1926,9 @@ diagnosis. If you're worried about your child's training, talk to their coach.
 
 ### What's changed for your child
 
-**What's changed** on your home screen lists each child under 18, with a number when something has
-happened since you last looked. Open it to see, newest first:
+**What's changed** is on each child's page (tap their card in the **Family** tab), with a number
+when something has happened since you last looked. The child's card and the Family tab itself
+carry the same number. Open it to see, newest first:
 
 - a coach, manager or physio added to, or no longer in, a squad or team your child is in (from when
   your child joined it)
@@ -1787,26 +1958,27 @@ role joins up, like "Head Coach, Open A and Open" or "Head Coach, Open A · Mana
 After an admin marks a squad's **squad phase complete**, coaches look after only the
 athletes in their named teams. Before that, they look after everyone in the squad.
 
-<img src="user-guide/coach-home.png" width="210" alt="Coach home screen with a clearance to review">
+<img src="user-guide/today-coach.png" width="210" alt="A coach's Today with a clearance to review">
+<img src="user-guide/team-coach.png" width="210" alt="A coach's Team tab: their squad, Check-ins, Attendance, Injuries with one waiting, and Surveys">
 
 Coaches and managers need a current Working With Children Check, recorded by an admin, before
 they're approved (or an exemption or a lodged application recorded for them; the role stays paused
 until they accept its declaration). The check is looked at every time you use the app: once the expiry date has
-passed, your coach or manager role pauses and your home screen says so. You keep your squad and
-team places, though they're hidden from your home screen until the role comes back, along with
-the Messages, Attendance and Check-ins cards, so you can't read messages while paused; the
+passed, your coach or manager role pauses and **Today** says so. You keep your squad and
+team places, though the **Team** tab goes until the role comes back, along with
+Messages, Attendance and Check-ins, so you can't read messages while paused; the
 database closes your groups' rosters, calendars and fixtures too, not just the screen. Everything
 returns as soon as an admin accepts the renewed card you send in, or records it themselves (see
 [Sending in your own check](#sending-in-your-own-check)). Renew it well before it expires; you
 get a to-do 60 days ahead to send in the renewed card, admins are reminded 60 days ahead, and 60
 days before a parent or under-18 exemption ends.
 
-<img src="user-guide/role-paused.png" width="210" alt="Home screen of a coach whose check has expired, saying the coach role is paused, with Add your card">
+<img src="user-guide/role-paused.png" width="210" alt="Today for a coach whose check has expired: the coach role is paused, with Add your card, and only the Today, Calendar and Me tabs">
 
 ### Sending in your own check
 
 When your role is paused because your check has expired or isn't recorded, the paused card on
-your home screen has **Add your card**, and your to-do list has **Add your Working With Children
+**Today** has **Add your card**, and your to-do list has **Add your Working With Children
 Check** in red. Both open **Your Working With Children Check**: enter the **Card number**, the
 **Expires** date (DD/MM/YYYY) and the **Name on the card** as it appears on the card, and tap
 **Send to a club admin**. The same goes for a committee member, statistician or admin who needs a
@@ -1815,7 +1987,7 @@ Check** in amber, so you can send the new card before your role pauses.
 
 The card you send counts for nothing yet: your role stays paused. A club admin checks it with the
 Working with Children Screening Unit (online, or by sighting the card) and accepts it, and your
-role comes back straight away. Your home screen shows the card you sent while it waits; tap
+role comes back straight away. **Today** shows the card you sent while it waits; tap
 **Change what you sent** to correct it. If the admin sends it back, for example because the Screening
 Unit shows a different expiry, you get a to-do, **Send your Working With Children Check again**,
 with their note. An expired card, or an expiry more than three years away, is refused.
@@ -1829,7 +2001,7 @@ manager or physio role can be). A stood-down member can't send a card in: the st
 card, is why their role is paused.
 
 <img src="user-guide/wwcc-send.png" width="210" alt="A paused coach entering their Working With Children Check card number, expiry and name on the card">
-<img src="user-guide/wwcc-sent-waiting.png" width="210" alt="Home screen of a paused coach whose card is waiting for a club admin to check it">
+<img src="user-guide/wwcc-sent-waiting.png" width="210" alt="Today for a paused coach whose card is waiting for a club admin to check it">
 
 ### Declaring conflicts of interest
 
@@ -1850,7 +2022,8 @@ date (see [Reviewing a policy you own](#reviewing-a-policy-you-own)).
 ### Selection assessments
 
 If the club turns on selection assessments and an admin puts you on a selection round's panel,
-**Selection assessments** shows on your home screen. A round covers one squad or team's selection
+**Selection assessments** shows on **Today**, and in your **Team** tab (or **Club**, for a
+committee member or admin who doesn't coach). A round covers one squad or team's selection
 phase. Instead of filling in a sheet for each athlete at the end, you add a short **observation**
 whenever you see something worth noting, at training, a game or a trial, and they build each
 athlete's assessment over the round.
@@ -1878,7 +2051,7 @@ athlete**: type part of a name.
 <img src="user-guide/assessments-round.png" width="210" alt="A selection round: the next date, the filters, and each athlete with a + to add an observation">
 <img src="user-guide/assessments-athlete.png" width="210" alt="An athlete's assessment: sessions attended, My summary, and the picture so far with the observations on a second tab">
 <img src="user-guide/assessments-observe.png" width="210" alt="Adding an observation: what you saw, where, when and the criteria">
-<img src="user-guide/assessments-todo.png" width="210" alt="A selector's to-do list with a selection date coming up">
+<img src="user-guide/assessments-todo.png" width="210" alt="A selector's Today: Selection assessments, and a to-do for a selection date coming up">
 
 **Your summary.** Near the end of the round, write your own summary of each athlete. It replaces
 the paper assessment sheet.
@@ -1981,7 +2154,7 @@ you can share feedback with each athlete.
   record views, which their parents can read (see [Who has viewed your child's
   records](#who-has-viewed-your-childs-records)). It records that you opened it, not what it says.
 - **Not for wellbeing.** Check-ins, training load and injuries never show here (game stats from the round's games do, on the Games tab), and a worry about a
-  child's safety doesn't belong in an observation: raise a concern from Home instead.
+  child's safety doesn't belong in an observation: use **Raise a concern** at the top of any tab instead.
 - **When it ends.** Once an admin closes the round you can still read it, and nothing more can be
   added, signed or reopened, so sign your summaries before then. You lose access if you're taken off the panel, stood down, or your check lapses.
 
@@ -2001,7 +2174,7 @@ or physio role starts once you agree, and the club keeps the words you agreed to
 
 The exemption ends by itself when your child turns 18, stops being an athlete at the club or is
 no longer linked to you, or, for a volunteer under 18, on your 18th birthday. Your role then pauses
-and your home screen asks you to apply for a check. A parent's exemption doesn't cover overnight
+and **Today** asks you to apply for a check. A parent's exemption doesn't cover overnight
 camps or trips, such as a tour or state championships: you need a check for those.
 
 Someone who doesn't normally live in WA, such as a visiting interstate or national coach, has two
@@ -2036,7 +2209,7 @@ you agree, and the club keeps the words you agreed to.
 
 It counts as your check until an admin records your card, which ends it. An admin confirms with
 the Screening Unit every 30 days that it's still being assessed; if nobody does for 90 days it
-lapses, your role pauses and your home screen says so. A notice from the Screening Unit stops it
+lapses, your role pauses and **Today** says so. A notice from the Screening Unit stops it
 straight away.
 
 <img src="user-guide/wwcc-application-declaration.png" width="210" alt="The declaration a coach accepts for their lodged Working With Children Check application">
@@ -2109,6 +2282,9 @@ show, and count, only once a parent or guardian has given consent for their chec
 doesn't use the app never checks in, so they're not shown or counted, and they're not on the game
 goals board either. A squad
 drops out once its squad phase is complete, and if that was your only group the card goes too.
+On the day of a session, the same count for its squad or team is on the session's page in the
+calendar, and tapping it opens that squad's or team's check-ins (see [A session's
+page](#a-sessions-page)).
 
 - **Day by day** lists today's (or yesterday's) check-ins for a squad or team: athletes to check
   in with first, with what scored low and any note, then those feeling good, then who hasn't
@@ -2233,7 +2409,7 @@ last played game.
 
 ### Setting season KPIs
 
-If the club uses [Season KPIs](#season-kpis), open **Season KPIs** on the home screen. Under each
+If the club uses [Season KPIs](#season-kpis), open **Season KPIs** in the **Team** tab. Under each
 squad or team you coach are its athletes and, if you're its head coach, its assistant coaches. Head
 and assistant coaches can both set athletes' KPIs. Of the coaches, only a head coach sets
 assistants'; the committee and admins can set them too.
@@ -2374,7 +2550,10 @@ its athletes' details, as with check-ins; the Head Physio sees every athlete's.
 
 ### Taking attendance
 
-1. Tap **Attendance**, then **Take attendance**.
+1. Tap **Attendance**, then **Take attendance**. Or tap **Take attendance** under **Next up** on
+   Today, or on the session's page in the calendar, on the day or up to 7 days after: the squad or
+   team and the session's name are then chosen for you, and a session from an earlier day says
+   "From the calendar" with its day and time (see [A session's page](#a-sessions-page)).
 2. Choose the squad or team (it's already chosen if you lead only one). You can also choose
    **Whole squad** for any current squad (**Another team**, in a club without squads), or
    **Whole club** for club events, where every approved athlete is on the register.
@@ -2385,7 +2564,9 @@ its athletes' details, as with check-ins; the Head Physio sees every athlete's.
    marked before you can save a new session (when correcting one later, athletes can stay **Not
    marked**). Athletes whose
    absence was reported for that day show **Away** under their name, with the reason and any
-   details. Injured athletes show **Injured** and when they're expected back, and nothing else about the
+   details, and start already marked **Absent**: a line above the register says how many were
+   filled in for you. Tap **Present** for anyone who came after all; **Mark the rest present**
+   leaves them Absent. Injured athletes show **Injured** and when they're expected back, and nothing else about the
    injury, even while the club has Injuries switched off. Injured athletes are still expected to come and support the team, so mark them like
    anyone else. A child who doesn't use the app shows **No app** beside their name: mark them like
    anyone else; their parent sees the marks (see [A child who won't use the app](#a-child-who-wont-use-the-app)).
@@ -2396,7 +2577,7 @@ shows who took it, in case it's a duplicate. You can open that record, or carry 
 session.
 
 <img src="user-guide/take-attendance.png" width="210" alt="Taking attendance">
-<img src="user-guide/take-attendance-notes.png" width="210" alt="The register with an injured athlete and two reported absences">
+<img src="user-guide/take-attendance-notes.png" width="210" alt="The register with an injured athlete and two reported absences, already marked Absent">
 
 ### Attendance records
 
@@ -2409,8 +2590,8 @@ session.
   or withdrawn for athletes in the squads and teams you coach or manage since you last tapped
   **Mark as reviewed** (the last 7 days, the first time), each marked **New** or **Withdrawn**,
   with the days, reason, details, who told the club and when. Tap **Mark as reviewed** once you've
-  read them; opening the screen doesn't clear them. Until then, your **To do** list on the home
-  screen says **Review N new or changed absences**, and tapping it opens this screen. Absences you
+  read them; opening the screen doesn't clear them. Until then, your to-do list on **Today**
+  says **Review N new or changed absences**, and tapping it opens this screen. Absences you
   reported or withdrew yourself aren't included, and nor are absences that ended more than two
   weeks ago.
 - **Away in the next 4 weeks** lists the absences athletes or their parents have
@@ -2427,8 +2608,8 @@ session.
 ### Surveys and polls for your squad or team
 
 Coaches and managers can send a survey, or a one-question poll such as "Can you come to an extra
-session on Friday?", to the squads and teams they coach or manage. Open **Surveys** from the home
-screen and tap **New survey**. It works the same way as for the committee (see [Surveys for the
+session on Friday?", to the squads and teams they coach or manage. Open **Surveys** from the **Team**
+tab and tap **New survey**. It works the same way as for the committee (see [Surveys for the
 club](#surveys-for-the-club)), except that **Send to** only offers your own groups; if you lead
 just one, it's picked for you. A **Named** survey with one **One choice** question makes a quick
 poll, and shows who hasn't answered yet.
@@ -2469,7 +2650,10 @@ Keep a plan for each session, before or after it, so the club has a record of wh
 Head coaches and assistant coaches can both add plans, for the squads and teams they coach. Adding
 a plan, being shared one and being told about one all need a current check or exemption.
 
-1. Tap **Session plans** on your home screen, then **Add a session plan**.
+1. Tap **Session plans** in the **Team** tab, then **Add a session plan**. Or open the session in
+   the calendar and tap **Add a session plan**: the squad or team, name, day, times and place are
+   filled in from the session, so you can go straight to step 4 (see [A session's
+   page](#a-sessions-page)).
 2. Choose the squad or team.
 3. To save typing, tap a session under **Fill in from the calendar**: it fills in the name, day,
    times and place from your squad or team's calendar and the club's (the 8 sessions closest to
@@ -2504,7 +2688,7 @@ whom. **Use again for another session**, on your own plans and on plans shared w
 new plan copied from this one, files included, for today, in a squad or team you coach. You can't
 delete a plan: ask an admin if one was added by mistake.
 
-<img src="user-guide/session-plans-home.png" width="210" alt="Session plans on a coach's home screen, with one new shared plan">
+<img src="user-guide/session-plans-team.png" width="210" alt="Session plans in a coach's Team tab, with one new shared plan">
 <img src="user-guide/session-plans-mine.png" width="210" alt="My plans">
 <img src="user-guide/session-plans-shared.png" width="210" alt="Plans shared with a coach">
 <img src="user-guide/session-plan-new.png" width="210" alt="Adding a session plan, with sessions from the calendar">
@@ -2517,7 +2701,7 @@ delete a plan: ask an admin if one was added by mistake.
 ## 7. Managers
 
 Managers look after the logistics of their squads and teams. The app titles you from your team, or
-your squad until you're in a team, like "Manager, 17 & Under", and your home screen shows your role
+your squad until you're in a team, like "Manager, 17 & Under", and **Today** shows your role
 and title together, like "Manager · Manager, 17 & Under". As a manager you can:
 
 - **Send messages** to the squads and teams you manage, and see read receipts, the same way as
@@ -2552,13 +2736,14 @@ absence's reason, and **Injured, back** with the date for an injured athlete, wh
 choices, and nothing else about the injury. Managers don't see athletes' attendance histories,
 check-ins, injury records, game goals, team goals or session plans.
 
-While your check has expired, or an exemption has ended or hasn't been accepted yet, your home
-screen says **Manager (paused)** and the Messages, Attendance and My squads and teams cards are
+While your check has expired, or an exemption has ended or hasn't been accepted yet, **Today**
+says **Manager (paused)** and Messages and the **Team** tab, with Attendance and My squads and teams, are
 hidden: you can't read or send messages, take attendance or open your groups until an admin accepts
 the renewed card you send in, or records it (see [Sending in your own check](#sending-in-your-own-check)), and the database closes those too, not just the screen. A stand-down removes
 your squad and team places for the season; lifting it puts them back.
 
-<img src="user-guide/manager-home.png" width="210" alt="Manager home screen">
+<img src="user-guide/today-manager.png" width="210" alt="A manager's Today">
+<img src="user-guide/team-manager.png" width="210" alt="A manager's Team tab: their squad, Attendance, Injuries and Surveys">
 <img src="user-guide/attendance-warning.png" width="210" alt="Warning that attendance may already have been taken">
 
 <div style="page-break-before: always"></div>
@@ -2569,44 +2754,45 @@ Committee members oversee the club's athletes without seeing anyone's private ch
 Like coaches, they need a current Working With Children Check, recorded by an admin, unless an
 admin exempts them with a reason. A committee member who also coaches, manages or is a physio
 can't be exempted. If a check an admin recorded expires, or was recorded without an expiry date,
-the committee role pauses until the renewed one is recorded. Add the renewed card from your home
-screen for an admin to check (see [Sending in your own check](#sending-in-your-own-check)); the
+the committee role pauses until the renewed one is recorded. Add the renewed card from **Today**
+for an admin to check (see [Sending in your own check](#sending-in-your-own-check)); the
 card about the committee checks date has **Add your card** too.
 
 Committee members approved before checks were needed keep their role without one until the
 club's **committee checks date**, set under Safeguarding as **Committee checks required from** (90
-days after the rule started, unless an admin brought it forward). Until then their home screen
+days after the rule started, unless an admin brought it forward). Until then **Today**
 says when the role will pause, and admins' to-do list already counts them as missing a check. From
 that day, a committee member with no check and no exemption has their committee role paused until
 an admin records a check or exempts them.
 
 When you ask to join, choose **Committee**; no squad, team or card number is asked for. Add your
 title later under **Your details** (such as President, Secretary or Treasurer), or an admin adds
-it on your member page. The home screen header lists every role you hold, then your title, then
+it on your member page. **Today** lists every role you hold under your name, then your title, then
 any coach or manager title, such as "Coach, Committee · President · Head Coach, Open A". While the
-committee role is paused the header reads "Committee (paused)" without the title (the title is
+committee role is paused it reads "Committee (paused)" without the title (the title is
 kept), and the Messages, Check-ins, Injuries, Attendance, Season KPIs, certificate-checking and
 Reports cards, the committee calendar and club-wide messaging go until an admin records a check or an
 exemption. The code of conduct, your own integrity training, award votes, personal tasks and
 **Raise a concern** stay.
 
-<img src="user-guide/committee-check-due.png" width="210" alt="A committee member's home screen saying when they need a check">
+<img src="user-guide/committee-check-due.png" width="210" alt="A committee member's Today saying when they need a check">
 
 Any committee member with a current check (or a volunteer exemption, not an exemption with a
 reason) can be named by an admin as the club's Child Safety Officer, Complaints Manager or WWC
-Registration Officer. If you're the Child Safety Officer or Complaints Manager, your home screen
-also has **Concerns** (see [The concerns register](#the-concerns-register)), with red, orange and
+Registration Officer. If you're the Child Safety Officer or Complaints Manager, **Today** and your **Club** tab
+also have **Concerns** (see [The concerns register](#the-concerns-register)), with red, orange and
 green counts on the card for new, in progress and recently closed concerns: the register, each
 concern's notes and steps (**Referred to** the governing body or Police, **Being looked into**,
 **Closed** with a note), and **Export the register as a PDF**. A concern about a child shows the
 child's verified parents and guardians, with their email. A concern about you is never shown
-to you. Whichever post you hold shows as a title under your roles on the home screen. While nobody
+to you. Whichever post you hold shows as a title under your roles on **Today**. While nobody
 named in a post can act, the club's admins act in it, shown as "(acting)" (see [Acting in an empty
 post](#acting-in-an-empty-post)). The Child Safety Officer also has **Wellbeing flags** (see [Wellbeing
 flags](#wellbeing-flags)). If your check lapses, Concerns, wellbeing flags and their to-dos go
 until a renewed check is recorded.
 
-<img src="user-guide/committee-home.png" width="210" alt="Committee home screen">
+<img src="user-guide/today-committee.png" width="210" alt="A committee member's Today with nothing waiting">
+<img src="user-guide/club-committee.png" width="210" alt="A committee member's Club tab: Check-ins, Attendance, Injuries and Surveys">
 
 ### Messages to the club
 
@@ -2625,7 +2811,7 @@ Committee members and admins make surveys and read their results. Coaches' and m
 polls and captains' polls stay with the team, so they don't show here. Admins also see every
 coach or manager survey that's longer than 5 questions or has a written answer, and the committee
 sees the ones a coach shares with them. Open **Surveys** from the
-home screen and tap **New survey**.
+**Club** tab and tap **New survey**.
 
 1. Give it a title, and an introduction if you like.
 2. Choose how answers are kept: **Anonymous**, **Named** or **Name optional**. This can't be
@@ -2760,7 +2946,7 @@ how many members are approved and how many certificates are waiting. Open one to
 who must complete it, filter to **Still to do**, **Waiting** or **Approved**, and **Export CSV**
 for Sports Integrity Australia or the club's records.
 
-<img src="user-guide/training-committee-home.png" width="210" alt="Committee home with certificates to check">
+<img src="user-guide/training-committee-today.png" width="210" alt="A committee member's Today with certificates to check">
 <img src="user-guide/training-review.png" width="210" alt="Certificates waiting to be checked">
 <img src="user-guide/training-send-back.png" width="210" alt="Sending a certificate back with a note">
 <img src="user-guide/training-progress.png" width="210" alt="Everyone's progress on each course">
@@ -2779,7 +2965,7 @@ person's squad session. Reviewing new absences stays with the group's coaches an
 ### Season KPIs for coaches and managers
 
 If the club uses [Season KPIs](#season-kpis), the committee sets the KPIs and OKRs for every squad
-and team's coaches and managers. Open **Season KPIs** on the home screen: each squad or team lists
+and team's coaches and managers. Open **Season KPIs** in the **Club** tab: each squad or team lists
 its coaches and managers. Tap one to add a KPI or OKR, follow their progress, write their reviews
 and record the results, the same way coaches do for athletes (see [Setting season
 KPIs](#setting-season-kpis)); never for yourself. That includes each assistant coach's development
@@ -2794,7 +2980,7 @@ manager's KPIs as a PDF for the board (see [Reports](#reports)).
 ### Reports for the committee
 
 A committee member with a current check, a check application in force or a volunteer exemption has
-**Reports** on the home screen. It opens the same reports admins use (see [Reports](#reports)), to
+**Reports** in the **Club** tab. It opens the same reports admins use (see [Reports](#reports)), to
 read and save as PDFs for a committee or board meeting:
 
 - **Working With Children Checks**, with exemptions, check applications (never the receipts),
@@ -2809,13 +2995,13 @@ card numbers, so a committee member exempted with a reason (such as a treasurer 
 with children), one still to get a check before the committee checks date, and one whose role is
 paused or stood down sees no Reports card. The reports give names, not email addresses.
 
-<img src="user-guide/committee-home-reports.png" width="210" alt="The Reports card on a committee member's home screen">
+<img src="user-guide/club-committee-reports.png" width="210" alt="The Reports card in a committee member's Club tab">
 <img src="user-guide/committee-reports.png" width="210" alt="Reports for a committee member with a current check">
 
 ### The registers
 
-If the club turns on the policy and conflict registers, committee members have **Registers** on
-the home screen. **Policies** lists each club policy with its owner, version and next review date,
+If the club turns on the policy and conflict registers, committee members have **Registers** in
+the **Club** tab. **Policies** lists each club policy with its owner, version and next review date,
 soonest first, marked **Overdue for review** or **Review due within 30 days**, with **Open** for
 its link. **Conflicts of interest** shows this season's declarations from the committee and
 coaches: who declared a conflict and what it is, who declared none, and who still has to declare.
@@ -2853,8 +3039,8 @@ paused committee member doesn't see them.
 
 Physios see the squads and teams they're placed in and the club calendar; guests see the club
 calendar. Either also sees any calendar an admin shares with their role (see
-[Calendars](#calendars)). Neither votes in club awards, so their home screen has no **Awards** card. Guests don't get messages. Physios have a **Messages**
-card and get messages an admin sends to the Physio role, and messages sent to the squads and teams
+[Calendars](#calendars)). Neither votes in club awards, so they have no **Awards** card. Guests don't get messages and have no Messages tab. Physios have the **Messages**
+tab and get messages an admin sends to the Physio role, and messages sent to the squads and teams
 they're in. They also get messages sent to everyone in the club when an admin turns on **Physios get
 club messages** in [Club options](#club-options).
 
@@ -2873,17 +3059,17 @@ as **Head Physio**. Which athletes a physio looks after:
 - **A physio in squads or teams**: the athletes in those squads and teams. Unlike a coach, a physio
   in a squad keeps looking after all its athletes, in its teams or not, after the squad's phase is
   complete; a physio moved into a team looks after that team's athletes.
-- **A physio in no squad or team**: no athletes, and the home screen says "You are not in a
+- **A physio in no squad or team**: no athletes, and the **Team** tab says "You are not in a
   squad yet." A club with one physio should mark them **Head Physio**; otherwise place them in
   the squads and teams they look after.
 
 Physios open the medical and emergency details of the athletes in their squads and teams the same
 way as coaches (see [Medical and emergency details](#medical-and-emergency-details-1)).
 
-While the physio role is paused the header reads "Physio (paused)" and a **Physio paused** card
+While the physio role is paused **Today** reads "Physio (paused)" and a **Physio paused** card
 says what to do. Messages a physio gets are labelled "To Physios", "To" and the squad or team's name (such as "To Mixed Open Squad") or "To
 Everyone in the club". On a roster the Head Physio shows as **Physio**; "Head Physio" appears on
-their own home screen and the Members list.
+their own **Today** and the Members list.
 
 - **Check-ins** shows the same squad, team and club averages the committee sees, for every
   squad and team in the club whatever the physio is placed in (see
@@ -2909,7 +3095,8 @@ their own home screen and the Members list.
   clearances**, every clearance waits for a physio. A physio who is also on the committee
   can accept clearances, but never one they endorsed.
 
-<img src="user-guide/physio-home.png" width="210" alt="Physio home screen">
+<img src="user-guide/today-physio.png" width="210" alt="A physio's Today with a clearance to review">
+<img src="user-guide/team-physio.png" width="210" alt="A physio's Team tab: their squad, Check-ins and Injuries with one waiting">
 <img src="user-guide/team-roster-physio.png" width="210" alt="A squad's roster with its physio">
 
 ### Guests
@@ -2918,7 +3105,7 @@ Guests, such as the club's partners and sponsors, can only look at the club cale
 calendar an admin shares with **Guests**. The Guest
 role is for adults: an admin can't approve a guest under 18, because guests get none of the
 protections the app gives children. They are
-never in a squad or team, so **My squads and teams** on their home screen always says "You are
+never in a squad or team, so **My squads and teams** in their **Me** tab always says "You are
 not in a squad yet." Their to-do list holds only their own tasks, and Your details is a
 preferred name and an optional check. Guests can't be stood down and need no Working With
 Children Check.
@@ -2929,7 +3116,7 @@ an independent person from outside the club. They need a current Working With Ch
 like anyone in the post. Most guests have none and don't need one: **Your details** shows
 **Working With Children Check (optional)**, which says "Guests don't need one", and opens the same
 screen as [Sending in your own check](#sending-in-your-own-check) for a guest who has a card. It
-never shows on their home screen or to-do list, even when a card they sent is sent back or nears
+never shows on **Today** or their to-do list, even when a card they sent is sent back or nears
 its expiry. An admin can also record a guest's card on their member page, under **Working With
 Children Check**, which for a guest reads "Guests don't need a check. Record one only if they'll
 be a Child Safety Officer or Complaints Manager". Once a card is accepted or recorded, the guest is
@@ -2941,11 +3128,11 @@ committee member.
 **A guest as an independent selector.** If the club uses [selection
 assessments](#selection-assessments), an admin can put a guest with a current check on a selection
 round's panel, such as a selector from outside the club. They get **Selection assessments** on
-their home screen for that round, and nothing else changes. A guest with no other role in the club
+**Today** for that round, and nothing else changes. A guest with no other role in the club
 is shown to admins as **Independent** on the round's panel and in its audit report (see [Selection
 assessments for admins](#selection-assessments-for-admins) for the steps).
 
-<img src="user-guide/guest-home.png" width="210" alt="Guest home screen">
+<img src="user-guide/today-guest.png" width="210" alt="A guest's Today, with the Today, Calendar and Me tabs">
 <img src="user-guide/guest-details-check.png" width="210" alt="A guest's Your details with the optional Working With Children Check">
 <img src="user-guide/member-guest-check.png" width="210" alt="An admin recording an optional check on a guest's member page">
 
@@ -2988,7 +3175,7 @@ to record a game in Vantage is in [Game day](#14-game-day-firstpass-vantage-and-
   can exempt you with the reason instead. A new statistician isn't approved without one of these.
   Statisticians approved before checks were needed keep the role until the club's **Statistician
   checks required from** date (90 days after the rule came in, unless an admin brings it forward);
-  until then your home screen says when it will pause. From that day, or the day after a recorded
+  until then **Today** says when it will pause. From that day, or the day after a recorded
   check expires, the statistician role pauses, in HQ and in Vantage, until an admin records a
   check, an application or an exemption.
 - **Awards.** Statisticians don't vote in club awards, unless they also hold a role that votes.
@@ -3000,7 +3187,7 @@ to record a game in Vantage is in [Game day](#14-game-day-firstpass-vantage-and-
   admin can finish it. The same happens if an admin removes the role or a recorded check expires
   during a game.
 
-<img src="user-guide/statistician-check-due.png" width="210" alt="A statistician's home screen saying when their role needs a check">
+<img src="user-guide/statistician-check-due.png" width="210" alt="A statistician's Today saying when their role needs a check">
 
 ### Studio
 
@@ -3032,7 +3219,7 @@ the club, and only as someone the club has given the **Studio** role.
 - **Checks.** No Working With Children Check is needed: a Studio operator isn't with the team, and
   the role never reads sensitive information.
 - **Stand-downs.** An admin can stand a Studio operator down. Studio stops reading the club's stats
-  at once, and the home screen says the role is paused, until the stand-down is lifted. Removing
+  at once, and HQ says the role is paused, until the stand-down is lifted. Removing
   the role cuts Studio off the same way.
 
 ### Temporary helpers
@@ -3058,7 +3245,7 @@ member, and doesn't replace the club's own membership or registration process.
    a WA Working With Children Check** (with the card number), **I'm visiting WA from interstate or
    overseas**, **I'm in WA for a national event or tour**, **I'm a parent of an athlete at the
    club**, **I'm under 18**, or **I don't have a check yet**.
-2. Your home screen then shows **Before you help**, with each step and where it's up to:
+2. The app then shows one screen, **Before you help**, with each step and where it's up to:
    - **Your details**, which you can edit until you're approved.
    - **Who you are**: an admin may ask for the code shown.
    - **Working With Children Check**: an admin checks your card online, or records your exemption,
@@ -3067,16 +3254,16 @@ member, and doesn't replace the club's own membership or registration process.
    - **Club policies**: read the club's code of conduct and child safeguarding policy, and tap
      **I agree**. The club keeps the words you agreed to and the policy version.
    - **Approved by a club admin**.
-3. Once approved, your home screen says what you're helping with and when. After your last day it
+3. Once approved, that screen says what you're helping with and when. After your last day it
    says your time has finished; ask an admin to change your dates if you help again. Your account
    stays until an admin removes it, and you can still be named in a concern.
 
-**Raise a concern** is on your home screen the whole time.
+**Raise a concern** is on that screen the whole time.
 
 <img src="user-guide/join-volunteer.png" width="210" alt="Asking to join as a temporary helper, with the task, dates and how they're screened">
-<img src="user-guide/volunteer-home.png" width="210" alt="A temporary helper's home screen with the steps before they help">
+<img src="user-guide/volunteer-home.png" width="210" alt="A temporary helper's screen with the steps before they help">
 <img src="user-guide/volunteer-policies.png" width="210" alt="Accepting the declaration and the club's policies">
-<img src="user-guide/volunteer-approved.png" width="210" alt="A temporary helper's home screen once approved">
+<img src="user-guide/volunteer-approved.png" width="210" alt="A temporary helper's screen once approved">
 
 <div style="page-break-before: always"></div>
 
@@ -3084,8 +3271,8 @@ member, and doesn't replace the club's own membership or registration process.
 
 Admins can do everything above except endorse injury clearances (they accept them, like the
 committee, and endorse only if they're also a coach or physio), read athletes' check-in answers or
-set their game goals (unless they also coach them), plus run the club's set-up from **Administration** on the home
-screen. Administration lists its items alphabetically, and **Members** shows how many join requests
+set their game goals (unless they also coach them), plus run the club's set-up from **Administration** in the **Club**
+tab. Administration lists its items alphabetically, and **Members** shows how many join requests
 are waiting. Admins' to-do lists include join requests waiting for approval and clearances waiting for
 sign-off, plus child-safety follow-ups: new concerns (marked **Urgent** and always first), athletes with no date of birth, athletes under 18
 locked out because no verified parent or guardian is linked, Working With Children Checks to sort out, volunteer exemptions that end within
@@ -3128,9 +3315,10 @@ Because admins can read every child's records, they need a current Working With 
 or an exemption with a reason that another admin records, like committee members (see
 [Approving members](#approving-members)).
 
-<img src="user-guide/admin-home.png" width="210" alt="Admin home screen">
+<img src="user-guide/today-admin.png" width="210" alt="An admin's Today: the Concerns card, then what needs them">
+<img src="user-guide/club-admin.png" width="210" alt="An admin's Club tab: Concerns, Check-ins, Attendance, Injuries and Administration with a request waiting">
 <img src="user-guide/administration.png" width="210" alt="Administration menu">
-<img src="user-guide/admin-safety-todos.png" width="210" alt="Admin to-dos with one Working With Children Checks to-do in red at the top, then athletes under 18 locked out, athletes turning 18, old records kept forever and a member with no team or role for 2 years">
+<img src="user-guide/admin-safety-todos.png" width="210" alt="An admin's to-do list split into Now and When you can: Working With Children Checks to sort out in red, then a join request, athletes under 18 locked out and an athlete turning 18">
 
 ### Inviting members
 
@@ -3160,8 +3348,8 @@ app never deletes them by itself. Once **Remove old records** is on, join reques
 days after they're turned down or if nobody answers them for 90 days, people who signed in but
 never asked to join after 90 days, and temporary helpers a year after their last day.
 
-**Needs checking**, at the top, lists the members behind the child-safety to-dos on your home
-screen, with the reason under each name: no Working With Children Check recorded, one that has
+**Needs checking**, at the top, lists the members behind the child-safety to-dos on
+**Today**, with the reason under each name: no Working With Children Check recorded, one that has
 expired or expires within 60 days, a volunteer exemption waiting for the declaration, ending within
 60 days or no longer applying, a check application waiting for the declaration, due to be
 confirmed, lapsed or stopped by a notice (a visitor or national event exemption is short by design, so it only
@@ -3296,7 +3484,7 @@ The app won't approve or save:
 
 Approval isn't the only time the check counts. A coach's, manager's or physio's role pauses the day
 after their check expires, and so does a committee member's when a check you recorded for them
-expires. They keep their squad and team places and see a note on their home screen; the role
+expires. They keep their squad and team places and see a note on **Today**; the role
 comes back as soon as you record the renewed check. A volunteer exemption works the same way: the
 role pauses when it ends by itself, and **Needs checking** lists them 60 days before. So does a
 check application: the role pauses if it lapses or a notice stops it. An admin's
@@ -3304,15 +3492,15 @@ role doesn't pause when their check expires, so the club can never be locked out
 they show under **Needs checking** and on every admin's to-do list until the renewed card is
 recorded, and they can still be stood down. But 30 days after their card expired, or 30 days after
 the club's committee checks date if they have none, they stop seeing under 18s' injuries and
-accepting their clearances, and their home screen says so. Everything else an admin does still
+accepting their clearances, and **Today** says so. Everything else an admin does still
 works. A current check, an application in force or a parent volunteer exemption brings it back; an
 exemption with a reason doesn't. A statistician's role pauses the same way as a committee
 member's: the day after a recorded check expires, or from the club's statistician checks date.
 
-<img src="user-guide/admin-children-injuries-closed.png" width="210" alt="An admin's home screen saying they can't see under 18s' injuries until their check is recorded">
+<img src="user-guide/admin-children-injuries-closed.png" width="210" alt="An admin's Today saying they can't see under 18s' injuries until their check is recorded">
 
 **Verifying someone.** Guardians must be verified before they can be approved or linked to a child. Get the
-6-digit code from their home screen yourself (it shows while they wait for approval, and for a
+6-digit code from their app yourself (it shows while they wait for approval, and for a
 guardian until they're verified), in person or over a channel you already trust, enter
 it under **Their code** and tap **Check code**. Or, under **How you checked**, choose **Matched to
 PlayHQ** (their PlayHQ email matches the parent on the registration) or **ID sighted**, write what
@@ -3320,7 +3508,7 @@ you checked under **What you checked**, and tap **Record check**. The member the
 "Verified", with how and, under **What was checked**, your note. You can't verify yourself, change your own date of birth or card details, or exempt yourself; ask another admin. An admin can't approve a member who hasn't given their name.
 
 **Cards members send in.** A coach, manager, physio, committee member, statistician or admin who
-needs a check can send in their own card from their home screen (see [Sending in your own
+needs a check can send in their own card from **Today** (see [Sending in your own
 check](#sending-in-your-own-check)). Your to-do list shows **Check N Working With Children Checks
 members sent in**, which opens just those members, and **Needs checking** marks them "Sent in a
 card to check". On the member's page, **Card they sent in** shows the card number, expiry, name on
@@ -3352,12 +3540,12 @@ and the child shows under **Needs checking** until another verified parent or gu
 records**: everyone other than the athlete and their guardians who opened their injuries, injury
 documents, check-ins, game goals, season KPIs, named survey answers or member record, with their role and when, newest first. Opening
 a child's member page is itself recorded, so your own views are listed too. The child's verified
-parents and guardians see the same list from their home screen.
+parents and guardians see the same list from their **Family** tab.
 
 <img src="user-guide/records-admin.png" width="210" alt="A child's member page with Who has viewed their records">
 
 When an athlete turns 18 their guardians lose access to them that day (injuries, check-ins, goals,
-certificates and the home screen list); the next time you save the athlete the links are removed.
+certificates and the cards in their Family tab); the next time you save the athlete the links are removed.
 
 To turn someone down, choose a reason (**PlayHQ email doesn't match**, **Not registered with the
 club** or **Other**) and tap **Don't approve**. They see the reason and can request again.
@@ -3395,7 +3583,7 @@ Their parent or guardian does everything for them (see
 [A child who won't use the app](#a-child-who-wont-use-the-app)). Only you can add one, and only for
 a parent who is verified.
 
-1. A parent asks, when they join or from their home screen, with the child's name, date of birth and
+1. A parent asks, when they join or from **Add another child** in their **Family** tab, with the child's name, date of birth and
    squad or team. In **Members** they show under **Waiting for approval** or **Parents asking to be
    linked**, with "Asked to add Sam Small, who won't use the app".
 2. Open the parent's page and verify who they are, as for any parent.
@@ -3418,11 +3606,11 @@ own child: another admin does.
 
 Open any member to change their role, squads, teams or titles, then tap **Save changes**. A
 committee member's or admin's page has a **Title** field (President, Secretary and so on), which
-shows on their home screen and in the Members list. Other members don't have this field. A coach's
+shows on their **Today** and in the Members list. Other members don't have this field. A coach's
 or manager's title is set by the app from their teams, or their squad until they're in a team, and
 shows under their squads and teams as "Their title in the app"; choose **Head Coach** or
 **Assistant Coach** for each group under **Head or assistant coach in**. A physio's page has **Physio title**, where
-you can make them the **Head Physio**; it shows as "Head Physio" on their home screen and in the
+you can make them the **Head Physio**; it shows as "Head Physio" on their **Today** and in the
 Members list. The card at the top shows their **Preferred
 name** if they've set one.
 
@@ -3449,7 +3637,7 @@ teams you changed, so their parents' **What's changed** lists only real moves.
   they took, their session plans and the messages they sent, with who read them. Plans they shared
   stay with the squad or team. Messages they got as a coach, manager, physio, committee member or
   admin go from their inbox too. Their athlete and guardian roles carry on, so a parent still sees
-  their own child, whole-club messages and the messages that reached them as a parent or athlete. Their home screen says their role is paused and to talk to a club admin. Only
+  their own child, whole-club messages and the messages that reached them as a parent or athlete. **Today** says their role is paused and to talk to a club admin. Only
   admins see the reason. **Lift stand-down** ends it and puts back their places in this season's
   squads and teams. Every stand-down is kept on their page and in the Working With Children Checks
   report, with who started and lifted it, even if the member is later deleted. You can't stand
@@ -3548,8 +3736,8 @@ With squads on:
   squad or team when the athlete is put in it and leaving when the athlete does (unless another of
   their children is in it), so they see its calendar, matches and people. You don't place parents
   and guardians yourself.
-- **Rename** or **Remove** a squad or team. Removing it takes it off this season's lists, home
-  screens and coaches' to-dos; its attendance and other records are kept and you can **Bring
+- **Rename** or **Remove** a squad or team. Removing it takes it off this season's lists, members'
+  tabs and coaches' to-dos; its attendance and other records are kept and you can **Bring
   back** it later.
 - **Mark squad phase complete** when a squad's teams are named. From then on, coaches only
   look after their own team's athletes. Physios are unchanged: one left in the squad still looks
@@ -3576,8 +3764,8 @@ With squads on:
    squads. They keep their club role, and coaches keep their title. New people still send a join
    request and join the newest season's squads.
 3. **Archive the old season once it has finished.** The app allows this only once the next season
-   has been started. Its squads and teams leave everyone's home
-   screen, calendars, messages and to-dos. Attendance, injuries and check-ins are kept, and you can
+   has been started. Its squads and teams leave everyone's
+   tabs, calendars, messages and to-dos. Attendance, injuries and check-ins are kept, and you can
    bring the season back.
 
 Nothing is deleted when a season is archived.
@@ -3886,7 +4074,7 @@ for everyone, for example one added by mistake. It can't be undone.
 **Reports** in Administration has governance and compliance reports. Committee members with a
 current check, a check application in force or a volunteer exemption read the Working With
 Children Checks, Medical details checks, Integrity training, Attendance and Award results reports
-too, from **Reports** on their home screen, read only (see [Reports for the
+too, from **Reports** in their **Club** tab, read only (see [Reports for the
 committee](#reports-for-the-committee)). Each one shows on screen with its totals, and **Export PDF** saves the same report as a PDF through the share sheet (on a
 computer it downloads), ready for the committee, an audit or OneDrive. The PDF has the club's
 name, the date it was made and page numbers, and anything that needs attention is in red.
@@ -3999,8 +4187,8 @@ so leave them filled in.
 
 - **Club name** is used in the app's wording and read out by screen readers for the logo. The **short name** (for example
   "Thunder") finds the club's teams when importing PlayHQ fixtures and names exported files.
-- **Logo**: **Choose logo** to upload a square PNG or JPEG up to 2 MB. It shows on the home screen
-  and the sign-in screen, and under the FirstPass 1P mark when the app opens. **Use the FirstPass
+- **Logo**: **Choose logo** to upload a square PNG or JPEG up to 2 MB. It shows at the top of Today
+  and on the sign-in screen, and under the FirstPass 1P mark when the app opens. **Use the FirstPass
   mark** goes back to the built-in FirstPass 1P mark. "Powered by" and the FirstPass HQ logo always
   stay at the foot of every screen, and the 1P mark on the opening screen.
 - **Colours**: type a colour code such as `#FFCD00` for the **background** and the **hero
@@ -4026,7 +4214,7 @@ icon (FirstPass HQ) and the splash screen are part of the app build and don't ch
   them off hides Groups and stops new posts, and keeps every post (parents' copies stay in their
   inbox). Switching
   off **Captains' polls** stops captains sending new polls and leaves the rest of Surveys on; polls
-  already sent stay readable. A switched-off feature disappears from every member's home screen, to-do list and menus,
+  already sent stay readable. A switched-off feature disappears from every member's tabs, to-do list and menus,
   and its Administration pages are hidden. Nothing is deleted, so switching it back on brings
   everything back.
 - **Switching off pauses work under way.** Anything part-way through stays exactly where it was
@@ -4052,7 +4240,7 @@ icon (FirstPass HQ) and the splash screen are part of the app build and don't ch
   teams only**. A pilot-only feature shows just for the members of the squads and teams under
   **Pilot squads and teams**, whatever their role there (coaches, managers, physios, athletes), the
   parents and guardians of those athletes, and every admin and committee member, so they can help.
-  For everyone else it's as if it were switched off: it isn't on their home screen, menus or to-do
+  For everyone else it's as if it were switched off: it isn't in their tabs, menus or to-do
   list, and the app refuses it for them. Use it to start small and turn features on one team at a
   time, then switch a feature to **Everyone** when the club is ready. A feature that's switched off
   is off for everyone, pilot or not.
@@ -4062,7 +4250,7 @@ icon (FirstPass HQ) and the splash screen are part of the app build and don't ch
   **Everyone**) changes nothing else: nobody is moved and no records are touched. Something sent
   to the whole club, such as a message or survey, still reaches people outside the pilot, but they
   can't open it while the feature is pilot-only, so keep pilot sends to the pilot teams.
-- **Season KPIs**: off unless you turn it on. It adds **Season KPIs** to the home screen for the
+- **Season KPIs**: off unless you turn it on. It adds **Season KPIs** to the Club, Team, Me and Family tabs of the
   committee, coaches, managers, athletes and parents, **Season KPI reviews** to Administration and
   the **Season KPIs** report (see [Season KPIs](#season-kpis)).
 - **Training load flags**: off unless you turn it on, and only while Daily check-ins is on. It
@@ -4074,12 +4262,12 @@ icon (FirstPass HQ) and the splash screen are part of the app build and don't ch
   "sweet spot") or **Off**, and whether to flag **Hours over age (under 18s)** (on to start,
   Jayanthi et al. 2015). Only values from published studies are offered, and **Sources** links
   them. Tap **Save training load flags**.
-- **Policy and conflict registers**: off unless you turn it on. It adds **Registers** to the home
-  screen for the committee and admins, policy review to-dos for policy owners, and a to-do each
+- **Policy and conflict registers**: off unless you turn it on. It adds **Registers** to the **Club**
+  tab for the committee and admins, policy review to-dos for policy owners, and a to-do each
   season for the committee and coaches to declare conflicts of interest (see [Policy and conflict
   registers](#policy-and-conflict-registers)).
 - **Selection assessments**: off unless you turn it on. It adds **Selection assessments** to
-  Administration, and to the home screen of anyone you put on a selection round's panel (see
+  Administration, and to **Today** for anyone you put on a selection round's panel (see
   [Selection assessments](#selection-assessments-for-admins)). Like other features it can be on
   for pilot squads and teams only.
 
@@ -4119,7 +4307,7 @@ Tap **Save club options**.
 
 ### Policy and conflict registers
 
-Turned on in [Club features](#club-features), **Registers** on the home screen holds two
+Turned on in [Club features](#club-features), **Registers** in the **Club** tab holds two
 governance registers for the committee, the board and an audit. Admins change both; the committee
 reads them.
 
@@ -4165,7 +4353,7 @@ sign their summary of an athlete: the example starts with **Select**, **Select a
 partner**, **Not selected this time** and **More evidence needed**. Keep two to eight, or none if
 you don't want one on a summary. A round keeps the criteria it opened with, so a change reaches only the rounds you open
 afterwards. Athletes in an open round, and the verified parents of those under 18, see that
-round's criteria under **Selection** on their home screen, so check them before you open a round.
+round's criteria under **Selection** on **Today**, so check them before you open a round.
 
 <img src="user-guide/admin-assessments.png" width="210" alt="Administration, Selection assessments: the criteria and the rounds">
 <img src="user-guide/admin-assessments-criteria.png" width="210" alt="The assessment criteria: a group with its scale and items">
@@ -4411,7 +4599,7 @@ until the check is recorded again or the stand-down is lifted. They stay named o
 marked "can't act: no current check", so saving other settings doesn't drop them; take them off
 with ✕ to replace them. Your to-do list asks you to name a Child Safety Officer (or Complaints
 Manager) only when nobody in that post can act.
-Each of the three sees their post as a title under their roles on their home screen, such as
+Each of the three sees their post as a title under their roles on **Today**, such as
 "Statistician" with "Child Safety Officer" beneath it, and loses the title at the same time.
 **Concern times and escalation**, under the two posts, sets how long concerns, requests to read
 messages and clearances can wait, and each post's escalation chain (see [Concern clocks and
@@ -4431,7 +4619,7 @@ acts in it, with the post's full powers, so the club is never without one:
   check records.
 
 Admins see concerns whether or not they act, as always. Acting shows as "(acting)" everywhere:
-the title under your roles on the home screen, the club's contacts members see when they raise a
+the title under your roles on **Today**, the club's contacts members see when they raise a
 concern ("Child Safety Officer: Alex Admin (acting)"), and on any request to read messages you
 make while acting, which is kept that way for good. An admin without a current check doesn't act.
 Acting ends the moment someone named in the post can act again, in that post only. Your to-do
@@ -4439,7 +4627,7 @@ list keeps asking you to name a Child Safety Officer or Complaints Manager while
 acting is a stopgap: the posts exist so concerns don't rest with the admins alone. A concern
 about you is still never shown to you, acting or not.
 
-<img src="user-guide/home-titles-acting.png" width="210" alt="An admin's home screen with Child Safety Officer (acting), Complaints Manager (acting) and WWC Registration Officer (acting) under Admin">
+<img src="user-guide/today-titles-acting.png" width="210" alt="An admin's Today with Child Safety Officer (acting), Complaints Manager (acting) and WWC Registration Officer (acting) under Admin">
 <img src="user-guide/contacts-acting.png" width="210" alt="Raise a concern listing the admin as Child Safety Officer (acting) and Complaints Manager (acting)">
 
 The **WWC Registration Officer** is an admin or committee member with a current check (or an
@@ -4545,12 +4733,12 @@ someone to see every season they've accepted it and the words accepted.
 
 ### The concerns register
 
-The Child Safety Officers, the Complaints Managers and admins open **Concerns** from the home screen.
+The Child Safety Officers, the Complaints Managers and admins open **Concerns** from the top of **Today**, or from the **Club** tab if they have one.
 New concerns also appear in their to-do list as **Look at N new concerns**, marked **Urgent** in
 red at the very top, until someone records something about them. Open concerns are listed first,
 newest at the top. Nobody sees a concern about themselves.
 
-The **Concerns** card on the home screen shows three traffic lights, each a count with a word
+The **Concerns** card shows three traffic lights, each a count with a word
 beside it:
 
 | Light | Word | What it counts |
@@ -4648,7 +4836,7 @@ admins after 7 days.
   Safety Officer in the Complaints Manager's chain, but not both ways: while the Child Safety
   Officer backs up the Complaints Manager, the Child Safety Officer's chain can't name the
   Complaints Manager, and the screen says why.
-- Someone reached by name (not a post holder or admin) sees **Concerns** on their home screen
+- Someone reached by name (not a post holder or admin) sees **Concerns** at the top of **Today**
   with only the concerns escalated to them, while they stay open. They can record steps but can't
   change who a concern is about or ask to read messages. Each time they open one, it's kept with
   the concern as **Looked at by**.
@@ -4875,8 +5063,12 @@ the sport's governing body. The details are in each role's section.
 
 ### Raising a concern
 
-Anyone signed in can raise a concern, from the home screen, the check-in screen, any injury or any
-message, and can hide their name (see [Raising a concern](#raising-a-concern)). It goes to the
+Anyone signed in can raise a concern, and can hide their name (see [Raising a
+concern](#raising-a-concern)). **Raise a concern** is at the top of every tab, so it is one tap
+away wherever a member is, and it is also under **Safety** in the Me tab, on the one screen people
+have before they're approved, on the check-in screen, and on any injury or message. The club's
+safeguarding contacts and the helplines are listed under **Safety** in the Me tab too, without
+opening the form. It goes to the
 club's Child Safety Officers, Complaints Managers and admins, never to anyone it's about when
 they were named from the list (a concern can name up to 10 people). A reported message is copied into the concern by the club's
 database, from the message itself, so it can't be altered on the way and survives the message
@@ -4890,10 +5082,10 @@ as C-0007, so it can be named without its details. A concern about a child shows
 handling it the child's verified parents and guardians, so they reach the right parent. Who looked
 is kept with the concern, not in the child's record views, so a parent the concern may be about
 is never tipped off. The Child Safety Officer, Complaints Manager and WWC Registration Officer
-each see their post as a title on their own home screen, so they always know the post is theirs
+each see their post as a title on their own **Today**, so they always know the post is theirs
 and while they can act in it. A post is never left empty: while nobody named in it can act, each
-admin with a current check acts in it with its full powers, marked "(acting)" on their home
-screen, in the contacts members see and on any request to read messages they make, until the club
+admin with a current check acts in it with its full powers, marked "(acting)" on
+**Today**, in the contacts members see and on any request to read messages they make, until the club
 names someone (see [Acting in an empty post](#acting-in-an-empty-post)).
 
 No concern can sit untouched. Each has a clock: nothing recorded within 24 hours chases the post
@@ -4968,8 +5160,8 @@ for them. Every protection for children still applies, and:
   read once a parent has read their copy. A parent can answer a survey for them, marked as
   answered by that parent; other parents can't.
 - **If their last parent goes,** by being unlinked or deleting their account, the child stays in
-  the club's records and their teams, and every admin is told in Messages and on their home
-  screen's to-do list. Nobody can report their absences or injuries, give consent or answer surveys
+  the club's records and their teams, and every admin is told in Messages and on their
+  to-do list. Nobody can report their absences or injuries, give consent or answer surveys
   for them until an admin links another verified parent from the child's page in Members: there's
   no app to lock and no link code. A parent deleting their account is warned about this first,
   naming the child.
@@ -5281,7 +5473,7 @@ Working With Children Check, and another admin must do it.
   turns 18. A parent's exemption doesn't cover overnight camps or trips, and the app doesn't mark
   events as overnight, so the club makes sure a parent volunteer has a check before a tour.
 - **Your role pauses the day after your check expires**, and comes back when an admin records the
-  renewed check. You add the renewed card yourself from your home screen, and it counts only once
+  renewed check. You add the renewed card yourself from **Today**, and it counts only once
   an admin has checked it with the Screening Unit and accepted it, which records their validation
   at the same time (see [Sending in your own check](#sending-in-your-own-check)). While it's paused the database closes your groups' rosters, calendars, fixtures,
   attendance, plans, team goals and the athletes' comments on them; they aren't only hidden on the
@@ -5451,11 +5643,11 @@ Working With Children Check, and another admin must do it.
   admins open Check-ins, only an athlete's coaches and parents or guardians open their check-ins,
   and only the Child Safety Officer, the Complaints Manager and admins open the concerns register.
   Someone waiting for approval, a guest, a temporary helper, or someone whose role is paused or
-  stood down is taken back to the home screen. What each screen shows is still decided by the
+  stood down is taken back to Today, or to the one screen they have. What each screen shows is still decided by the
   club's database.
 - **Record views are logged.** Every time someone other than a child or their guardians opens an
   under 18's injuries, injury documents, check-ins, game goals, season KPIs, named survey answers or member record, it's recorded.
-  Admins see the list on the child's member page, and parents and guardians on their home screen.
+  Admins see the list on the child's member page, and parents and guardians on their child's page in the Family tab.
 - **Medical details are checked every year.** Each athlete 18 or over, and a verified parent or
   guardian for each under 18, is reminded to check their medical and emergency details once a year.
   The **Medical details checks** report shows admins who is up to date, due, overdue or has nothing
@@ -5606,7 +5798,7 @@ Working With Children Check, and another admin must do it.
   Act's standards either way. Both assessments, with their reasons, are kept with the app's code
   and reviewed each year.
 
-<img src="user-guide/safeguarding-home.png" width="210" alt="Raise a concern on the home screen">
+<img src="user-guide/safeguarding-me.png" width="210" alt="Raise a concern at the top of the Me tab and under Safety, above the club's safeguarding contacts">
 
 <div style="page-break-before: always"></div>
 
@@ -5969,9 +6161,11 @@ update the matching section, the tables in sections 1 and 11, and any screenshot
 matches, in the same pull request. A change that touches children's safety also updates section 12.
 
 Screenshots are taken from the web build with sample data (no real club data), at a 390 × 844
-phone screen at 2× scale. The tooling (`shoot.mjs`, `serve.py` and the fixtures, including
-`user-guide.mjs` for screens only this guide uses) is kept in the project's shared files under
-`thunder/screenshots/`.
+phone screen at 2× scale. The tabs (Today, Calendar, Messages, Team, Family, Club and Me) are
+taken at 390 × 700 or shorter, so the tab bar shows and the image stays within 1400 px. The
+tooling (`shoot.mjs`, `serve.py` and the fixtures, including `user-guide.mjs` for screens only
+this guide uses, and `guide-tabs.py`, which takes every tab screenshot in this guide in one run)
+is kept in the project's shared files under `thunder/screenshots/`.
 
 Section 14's screens come from the web builds of Vantage (a 1180 × 760 tablet in landscape) and
 Vision (a 390 × 844 phone) in the FirstPassVisionVantage repository, with a made-up game, Hawks v
