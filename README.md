@@ -116,8 +116,9 @@ npx eas-cli@latest build --profile preview --platform all
 ```
 
 To start builds from GitHub instead (Android APK or the Google Play closed test, and iOS to
-TestFlight), see [Beta builds from GitHub](docs/beta-builds.md) and
-[Google Play closed testing](docs/play-closed-testing.md).
+TestFlight), see [Beta builds from GitHub](docs/beta-builds.md),
+[Google Play closed testing](docs/play-closed-testing.md) and
+[TestFlight external testing](docs/testflight-external-testing.md).
 
 Builds use the live Supabase project, from the EAS environment named after the profile. Publish
 over-the-air fixes with `scripts/publish-update.sh`, not `eas update` directly, so they can't pick
