@@ -99,11 +99,16 @@ export function Button({
   onPress: () => void;
   busy?: boolean;
   disabled?: boolean;
-  variant?: 'primary' | 'secondary' | 'danger';
+  /**
+   * `dangerOutline` is red text in a red outline: the way into something that
+   * can't be undone, set apart so it isn't tapped for an everyday option.
+   */
+  variant?: 'primary' | 'secondary' | 'danger' | 'dangerOutline';
 }) {
   const theme = useTheme();
   const primary = variant === 'primary';
   const filled = primary || variant === 'danger';
+  const outline = variant === 'dangerOutline';
   return (
     <Pressable
       accessibilityRole="button"
@@ -116,14 +121,19 @@ export function Button({
             ? theme.accent
             : variant === 'danger'
               ? DANGER
-              : theme.backgroundElement,
+              : outline
+                ? 'transparent'
+                : theme.backgroundElement,
+          ...(outline ? { borderWidth: 1.5, borderColor: DANGER } : null),
           opacity: disabled ? 0.5 : pressed ? 0.7 : 1,
         },
       ]}>
       {busy ? (
         <ActivityIndicator color={filled ? theme.onAccent : theme.text} />
       ) : (
-        <ThemedText type="smallBold" style={filled ? { color: theme.onAccent } : undefined}>
+        <ThemedText
+          type="smallBold"
+          style={filled ? { color: theme.onAccent } : outline ? { color: DANGER } : undefined}>
           {title}
         </ThemedText>
       )}

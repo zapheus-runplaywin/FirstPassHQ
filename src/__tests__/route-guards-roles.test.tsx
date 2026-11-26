@@ -317,6 +317,7 @@ const EVERYONE_SIGNED_IN = [
   'tasks/new',
   'tasks/[id]',
   'my-details',
+  'my-account',
   'delete-account',
 ];
 

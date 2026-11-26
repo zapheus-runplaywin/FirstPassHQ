@@ -983,14 +983,29 @@ describe('the to-do list', () => {
 // Me, and the links at the foot of the one screen
 
 describe('Me', () => {
-  it('opens Your details, Your tasks and Delete account', async () => {
+  it('opens Your details, Your tasks and My account', async () => {
     await openMe('athlete');
     await fireEvent.press(screen.getByText('Your details'));
     expect(push).toHaveBeenCalledWith('/my-details');
     await fireEvent.press(screen.getByText('Your tasks'));
     expect(push).toHaveBeenCalledWith('/tasks');
-    await fireEvent.press(screen.getByText('Delete account'));
-    expect(push).toHaveBeenCalledWith('/delete-account');
+    await fireEvent.press(screen.getByText('My account'));
+    expect(push).toHaveBeenCalledWith('/my-account');
+  });
+
+  // Delete account looked like Switch club and Sign out, right below them, so
+  // it was easy to tap by mistake (Matt, 26 November 2026). It lives inside My
+  // account now, and My account comes first.
+  it('keeps Delete account off the Me tab, with My account above Switch club and Sign out', async () => {
+    await openMe('athlete');
+    expect(screen.queryByText('Delete account')).toBeNull();
+    expect(screen.queryByText('Delete my account')).toBeNull();
+    // Found in screen order.
+    const titles = screen
+      .getAllByText(/^(My account|Switch club|Sign out)$/)
+      .map((node) => node.props.children);
+    expect(titles).toEqual(['My account', 'Switch club', 'Sign out']);
+    expect(screen.getByText('How you sign in, and deleting your account')).toBeTruthy();
   });
 
   it('signs out', async () => {

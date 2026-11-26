@@ -673,11 +673,12 @@ Me holds your own things, whatever your role:
 - **Your tasks** (see [Your own tasks](#your-own-tasks)).
 - **Safety**: **Raise a concern**, then the club's safeguarding contacts and the helplines.
 - **Help**: the user guide for each of your roles (see [The user guides](#the-user-guides)).
-- **Account**: **Switch club**, **Sign out** and **Delete account**.
+- **Account**: **My account** (how you sign in, and deleting your account), then **Switch club**
+  and **Sign out**.
 
 Someone with no fourth tab, such as a guest, finds **My squads and teams** here too.
 
-<img src="user-guide/me-safety.png" width="210" alt="The end of the Me tab: helplines under Safety, the guide for the member's role under Help, then Switch club, Sign out and Delete account under Account">
+<img src="user-guide/me-safety.png" width="210" alt="The end of the Me tab: helplines under Safety, the guide for the member's role under Help, then My account, Switch club and Sign out under Account">
 
 ### The user guides
 
@@ -1306,8 +1307,10 @@ looked into or Closed. Quote the reference if you talk to the club about it.
 
 ### Deleting your account
 
-**Delete account**, under **Account** in the **Me** tab, permanently deletes your account at the club
-you're in: your profile, your squad and team places, guardian links, your personal tasks and your
+**My account**, under **Account** in the **Me** tab, shows the Apple or Google account you sign in
+with and your club. **Delete my account** sits on its own at the bottom of it, in red, so it can't
+be tapped by mistake for **Switch club** or **Sign out**. It opens the **Delete account** screen,
+which permanently deletes your account at the club you're in: your profile, your squad and team places, guardian links, your personal tasks and your
 messages inbox. Messages you sent to a group stay with the people who received them. Tap
 **Delete my account**, then **Delete my account permanently** to confirm. If you signed in with
 Apple and you're on an iPhone or iPad, Apple asks you to confirm once more with Face ID, Touch ID or your passcode; that also stops
@@ -1333,7 +1336,7 @@ links another parent or guardian. Deleting your account doesn't
 change your PlayHQ registration or club membership, or your account at any other club in
 FirstPass HQ.
 
-<img src="user-guide/delete-account.png" width="210" alt="Delete account screen">
+<img src="user-guide/my-account.png" width="210" alt="My account: the account you sign in with and your club, then Delete my account in red at the bottom"> <img src="user-guide/delete-account.png" width="210" alt="Delete account screen">
 
 <div style="page-break-before: always"></div>
 

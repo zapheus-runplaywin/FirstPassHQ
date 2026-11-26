@@ -310,6 +310,7 @@ function RootStack() {
             <Stack.Screen name="tasks/new" options={{ title: 'Add a task' }} />
             <Stack.Screen name="tasks/[id]" options={{ title: 'Task' }} />
             <Stack.Screen name="my-details" options={{ title: 'Your details' }} />
+            <Stack.Screen name="my-account" options={{ title: 'My account' }} />
           </Stack.Protected>
           <Stack.Screen name="delete-account" options={{ title: 'Delete account' }} />
           {/* Reports admins share with committee members who have a current check, read only. */}
