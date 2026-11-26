@@ -30,6 +30,20 @@ One guide per role, for members to keep, in each edition. Each has getting start
 | Temporary helpers | [Thunder](thunder/user-guides/West-Coast-Thunder-user-guide-temporary-helpers-build-850.pdf) | [Warriors](warriors/user-guides/West-Coast-Warriors-user-guide-temporary-helpers-build-850.pdf) | [Generic](generic/user-guides/FirstPass-HQ-user-guide-temporary-helpers-build-850.pdf) |
 | Admins | [Thunder](thunder/user-guides/West-Coast-Thunder-user-guide-admins-build-850.pdf) | [Warriors](warriors/user-guides/West-Coast-Warriors-user-guide-admins-build-850.pdf) | [Generic](generic/user-guides/FirstPass-HQ-user-guide-admins-build-850.pdf) |
 
+## Published guides
+
+The user guides by role are also on the web, for the app and the public site to link to. The "Publish guides" workflow (`.github/workflows/publish-guides.yml`) puts them on GitHub Pages whenever new PDFs merge to main, under names that don't change from one build to the next:
+
+- FirstPass HQ (generic): `https://zapheus-runplaywin.github.io/FirstPassHQ/guides/generic/user-guide-<role>.pdf`
+- West Coast Thunder: `https://zapheus-runplaywin.github.io/FirstPassHQ/guides/thunder/user-guide-<role>.pdf`
+
+`<role>` is `athletes`, `guardians`, `coaches`, `managers`, `committee`, `physios`, `guests`, `statisticians`, `temporary-helpers` or `admins`. `guides/index.json` beside them says which build is published.
+
+- The app's **Help** cards in the Me tab open these (`src/lib/guides.ts`): a club with its own edition gets it, every other club gets the FirstPass HQ one. The guides page on the public site, `https://firstpass-hq.expo.app/guides`, links to them too.
+- `scripts/build-guides-site.py` lays them out and refuses a set with a guide missing or from mixed builds (`scripts/test-build-guides-site.py`). The Warriors edition is a pitch and is never published; nor are the manuals and brochures.
+- A club with its own edition: add its folder to `EDITIONS` in the script and its club code to `BRANDED_EDITIONS` in `src/lib/guides.ts`. The test keeps the two in step.
+- Once, in the repository's settings: Settings > Pages > Build and deployment > Source: "GitHub Actions". Until then the workflow publishes nothing and says so.
+
 ## Rebuilding
 
 The builders are in the project's shared files, `thunder/user-guide/manual/`: `make.py` with `build-manual.py` (the manual's content is `manual.yaml`), `build-role-guide.py` (set `ROLE`), `make-problems-brochure.py` (content in `build-problems-brochure.py`) for the brochure, and `print-bleed.py <screen.pdf> <print.pdf>` for its print version. They share one look, `cardstyle.py`. `build-all-850.sh <edition>` builds all thirteen PDFs of one edition. Warriors and generic screenshots are in `screens-850/` (its `REPORT.md` says how they were made). `make.py` prints each PDF until the page numbers on its contents page stop moving, then once more without the hidden page markers it uses to find them. Set `BUILD_REF=origin/main` to number the PDFs by the main commit they describe when building from a branch. The builders embed screenshots as JPEG to keep the files small: the 39 PDFs are about 297 MB together. Replace these files with a new build rather than keeping old builds side by side.

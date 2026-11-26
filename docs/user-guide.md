@@ -253,13 +253,14 @@ Delete account links. Added to another role, it changes nothing in HQ (see [Stud
 
 Temporary helpers see none of these but a preferred name. They aren't necessarily club members,
 and they use the app only to complete onboarding: it is one screen, with no tabs, showing only the steps to be
-cleared to help, **Raise a concern**, and the Your details, Switch club and Delete account links
-(see [Temporary helpers](#temporary-helpers)).
+cleared to help, **Raise a concern**, and the Your details, User guide, Switch club and Delete
+account links (see [Temporary helpers](#temporary-helpers)).
 
 Athletes under 18 waiting for a parent or guardian see none of these either. Until an admin links
 a verified parent or guardian to them, the app is one screen showing only their **link code** to share
 with a parent or guardian, the people who can help, **Raise a concern**, and the Sign out, Switch
-club and Delete account links (see [Ask to join the club](#ask-to-join-the-club)).
+club and Delete account links, with a User guide link once an admin has approved them (see [Ask to
+join the club](#ask-to-join-the-club)).
 
 Admins can turn off Messages, Calendar, Daily check-ins, Injuries, Attendance, Session plans,
 Surveys, Captains' polls, Awards, Live streams, Game goals and Integrity training for the whole club in **Club features**, and turn on Chat groups, which start off. A feature that's off disappears for every role.
@@ -491,7 +492,9 @@ the card says so. Only share it with your parent or guardian.
 Until an admin approves you and links a verified parent or guardian to you, the app is locked: it
 shows only your link code, the people who can help, **Raise a concern**, and **Sign out**, **Switch
 club** and **Delete account**. That stays true after an admin approves you, and again later if your
-last verified parent or guardian leaves the club or is unlinked: you get a new code to share. It
+last verified parent or guardian leaves the club or is unlinked: you get a new code to share. Once
+you're approved, a **User guide** link opens the athletes' guide (see [The user
+guides](#the-user-guides)). The app
 opens as soon as a verified parent or guardian is linked, or on your 18th birthday.
 
 **Parents and guardians: your child's code.** While you wait, the waiting screen has **Enter your
@@ -669,11 +672,35 @@ Me holds your own things, whatever your role:
   squad or team is in a selection round.
 - **Your tasks** (see [Your own tasks](#your-own-tasks)).
 - **Safety**: **Raise a concern**, then the club's safeguarding contacts and the helplines.
+- **Help**: the user guide for each of your roles (see [The user guides](#the-user-guides)).
 - **Account**: **Switch club**, **Sign out** and **Delete account**.
 
 Someone with no fourth tab, such as a guest, finds **My squads and teams** here too.
 
-<img src="user-guide/me-safety.png" width="210" alt="The end of the Me tab: helplines under Safety, then Switch club, Sign out and Delete account under Account">
+<img src="user-guide/me-safety.png" width="210" alt="The end of the Me tab: helplines under Safety, the guide for the member's role under Help, then Switch club, Sign out and Delete account under Account">
+
+### The user guides
+
+There's a user guide for each role, as a PDF: athletes, parents and guardians, coaches, managers,
+physios, statisticians, committee members, admins, temporary helpers and guests. Each has getting
+started, what everyone can do, that role's own part and the child-safety parts written for that
+role.
+
+- **Where**: under **Help** in the **Me** tab there's a card for each role you hold, such as
+  **Guide for coaches**. A coach who is also a parent has two. If your roles are paused, the cards
+  are still for the roles you hold. A guest has the **Guide for guests**.
+- **Opening one**: tap the card. The guide opens in your phone's browser, where you can read it,
+  save it or print it. It needs the internet.
+- **Your club's own guide**: where the club has guides in its own name and colours, those are the
+  ones you get. Otherwise you get the FirstPass HQ ones, which use a made-up club.
+- **Always the latest**: the guides are replaced when new ones are made, so the card always opens
+  the current guide. The cover says which build of the app it describes (see [Which version you
+  have](#which-version-you-have)).
+- **With no tabs**: a temporary helper, and an athlete under 18 who is approved but waiting for a
+  parent or guardian, have a **User guide** link at the foot of their one screen.
+
+Every person in the guides is made up, and opening one tells nobody at the club: the app sends
+nothing about you with it, and records nothing.
 
 ### Using HQ on a tablet
 
@@ -5279,6 +5306,7 @@ once saved, only replaced or removed, and anyone who gets it wrong five times in
 | Searching the club's members by name or email | Admins only: from the search at the top of their Club tab, and in the Members list. Nobody else can search the club's members, and the Club tab's search only looks through what is in the admin's own tab. |
 | To-do notifications     | Only you, on the phones you're signed in on. They name the to-do but never injury details or reviewers' notes. Your on/off choice is yours alone. |
 | Your own personal tasks | Only you. Not your parents or guardians, coaches, the committee or admins. They can't be shared or sent to anyone. |
+| The user guides         | Anyone: they're on the web, and every person in them is made up. Nobody at the club sees which guide you open, or that you opened one. |
 | Captains                | Club captains: every member. A team's captains: the people in it, and admins. Squads have none.                                     |
 | Pilot features and pilot squads and teams | Admins only, in Club features. Members just see whether a feature is in their app. |
 | Date of birth, Working With Children Check and exemption | You and admins. Committee members with a current check also read them, for everyone who needs a check, in the Working With Children Checks report. Awards with an age limit use it to decide who can be voted for, without showing it. |
