@@ -9,10 +9,12 @@
  * database gave this member that athlete's injury.
  */
 import type { HomeCard } from '@/lib/home-layout';
+import { teamPositionLabel } from '@/lib/labels';
 import type {
   AthleteAttendanceSummary,
   Injury,
   RosterEntry,
+  Team,
   TeamMembership,
   TeamRole,
 } from '@/lib/types';
@@ -138,4 +140,30 @@ export function rosterCountLabel(roster: RosterEntry[]) {
 export function injuredCountLabel(roster: RosterEntry[], statuses: Map<string, RosterStatus>) {
   const count = splitRoster(roster).athletes.filter((m) => statuses.has(m.profile_id)).length;
   return count === 0 ? null : `${count} with a current injury`;
+}
+
+/**
+ * What the switch between a member's squads and teams calls each one. A
+ * squad and a team often share a name ("20 & Under"), and a member in both
+ * has two chips, so whenever they are in both kinds each chip says which it
+ * is: "20 & Under · Team" and "20 & Under · Squad". A name that already says
+ * it ("20 & Under Squad") is left alone.
+ */
+export function groupChipLabel(
+  team: Pick<Team, 'name' | 'kind'>,
+  groups: { team: Pick<Team, 'kind'> }[],
+) {
+  const both = groups.some((m) => m.team.kind === 'squad') && groups.some((m) => m.team.kind === 'team');
+  const kind = team.kind === 'squad' ? 'Squad' : 'Team';
+  const says = new RegExp(`\\b${kind}\\b`, 'i').test(team.name);
+  return both && !says ? `${team.name} · ${kind}` : team.name;
+}
+
+/** The member's own place in the chosen squad or team, above its rows: such as "Team · Head Coach". */
+export function myPlaceLabel(membership: Pick<TeamMembership, 'team_role' | 'coach_title' | 'selection'> & { team: Pick<Team, 'kind'> }) {
+  return `${membership.team.kind === 'squad' ? 'Squad' : 'Team'} · ${teamPositionLabel(
+    membership.team_role,
+    membership.coach_title,
+    membership.selection,
+  )}`;
 }

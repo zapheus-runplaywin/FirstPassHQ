@@ -474,3 +474,105 @@ describe('the athlete’s own stats from the recorded game, for their coaches', 
     expect(screen.getByText('Win 3 centre pass receives')).toBeTruthy();
   });
 });
+
+// ---------------------------------------------------------------------------
+// An athlete's games (goals/athlete/[id]): the athlete's own Played games from
+// their Team tab, their coach from the team's people, and a parent.
+
+async function openGames(who: Who, query = `name=Sample%20athlete&team=${TEAM.id}`) {
+  await openScreen(who, { 'goals/athlete/[id]': AthleteGoalsScreen }, `/goals/athlete/athlete?${query}`, {}, {
+    rpcs: {
+      goal_next_game: [game({ goal_count: 0 })],
+      goal_past_games: [game({ fixture_id: 'fx0', opponent: 'Sample Comets', goals_close_at: '2026-10-10T02:00:00Z', played_at: '2026-10-10T03:00:00Z', goal_count: 2, reflected_count: 1 })],
+    },
+  });
+}
+
+describe('an athlete’s games', () => {
+  it('the athlete sees their own: asked to set goals, told who sees them, and no look is logged', async () => {
+    await openGames('athlete', `team=${TEAM.id}`);
+    expect(screen.getByText('Set your goals for this game')).toBeTruthy();
+    expect(screen.getByText(/Your coaches can see your goals\.$/)).toBeTruthy();
+    expect(screen.getByText(/Sample Comets/)).toBeTruthy();
+    expect(rpcNames()).not.toContain('log_record_view');
+    // Only this team's played games are asked for.
+    expect(rpcCalls('goal_past_games')[0]).toMatchObject({ p_athlete_id: 'athlete', p_team_id: TEAM.id });
+  });
+
+  it('an athlete under 18 is told their parents or guardians see them too', async () => {
+    await openScreen('minorAthlete', { 'goals/athlete/[id]': AthleteGoalsScreen }, '/goals/athlete/minor-athlete', {}, {
+      rpcs: { goal_next_game: [], goal_past_games: [] },
+    });
+    expect(screen.getByText(/Your coaches and your parents or guardians can see your goals\.$/)).toBeTruthy();
+  });
+
+  it('their coach is told to add goals and comment, and the look is logged', async () => {
+    await openGames('coach');
+    expect(screen.getByText(/^Add goals for the next game\./)).toBeTruthy();
+    expect(screen.getByText('No goals set yet')).toBeTruthy();
+    expect(rpcCalls('log_record_view')[0]).toMatchObject({ p_subject_id: 'athlete', p_kind: 'goals' });
+  });
+
+  it('a parent only reads, and the look is logged', async () => {
+    await openGames('guardian', 'name=Sample%20athlete&view=guardian');
+    expect(screen.getByText(/^See the goals your athlete and their coaches set/)).toBeTruthy();
+    expect(rpcCalls('log_record_view')[0]).toMatchObject({ p_subject_id: 'athlete', p_kind: 'goals' });
+  });
+});
+
+// ---------------------------------------------------------------------------
+// A team's goals for one game (goals/team). They stay with the team: only its
+// coaches open them, and an admin no longer reads them (Matt, 27 November 2026).
+
+function coachGame(extra: Partial<CoachTeamGame> = {}): CoachTeamGame {
+  return {
+    team_id: TEAM.id,
+    team_name: TEAM.name,
+    team_kind: 'team',
+    fixture_id: 'fx1',
+    is_next: true,
+    round_name: 'Round 3',
+    opponent: 'Sample Storm',
+    starts_at: '2099-10-24T02:00:00Z',
+    time_tbc: false,
+    goals_close_at: '2099-10-24T02:00:00Z',
+    played_at: '2099-10-24T03:00:00Z',
+    goal_count: 1,
+    reviewed_count: 0,
+    ...extra,
+  };
+}
+
+async function openTeamGoals(who: Who, rpcs: Record<string, unknown> = {}) {
+  await openScreen(who, { 'goals/team': TeamGoalsScreen }, '/goals/team?fixture=fx1', {
+    team_game_goals: [teamGoal()],
+    team_game_goal_comments: [teamComment()],
+  }, { rpcs: { coach_team_games: [coachGame()], ...rpcs } });
+}
+
+describe('a team’s goals for one game', () => {
+  it('the team’s coach sets and changes them before the game, and reads the team’s comments', async () => {
+    await openTeamGoals('coach');
+    expect(screen.getByText('Round 3 v Sample Storm')).toBeTruthy();
+    expect(screen.getByText('Win the third quarter')).toBeTruthy();
+    expect(screen.getByText('I’ll push hard in the third')).toBeTruthy();
+    expect(screen.getByText('Add team goal')).toBeTruthy();
+    expect(screen.getByText('Edit')).toBeTruthy();
+  });
+
+  it('a coach of another team is told the game isn’t available', async () => {
+    await openTeamGoals('coach', { coach_team_games: [coachGame({ fixture_id: 'fx9' })] });
+    expect(screen.getByText('This game isn’t available any more.')).toBeTruthy();
+    expect(screen.queryByText('Add team goal')).toBeNull();
+  });
+
+  it('the admin list is never asked for, whoever opens the page', async () => {
+    for (const who of ['coach', morePersonas.assistantCoach] as Who[]) {
+      clearCalls();
+      // Even if an older database still answered the admin list, the app doesn't ask.
+      await openTeamGoals(who, { coach_team_games: [], admin_team_games: [coachGame()] });
+      expect(screen.getByText('This game isn’t available any more.')).toBeTruthy();
+      expect(rpcNames()).not.toContain('admin_team_games');
+    }
+  });
+});

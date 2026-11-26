@@ -1,20 +1,20 @@
 /**
  * The Team tab for the people who look after a squad or team: tiles that lead
- * with the number that matters (check-ins, attendance, injuries), and each
- * squad or team's people with an injury status beside the names of athletes
- * who have one.
+ * with the number that matters (check-ins, attendance, injuries), and the
+ * chosen squad or team itself: what the member can do there and its people.
  *
  * Every tile opens the screen its card always opened, and that screen has its
  * own rule for who may open it. The list of people is names and positions
- * only, as it is on the squad or team's own page: no photos and no profiles.
+ * only: no photos and no profiles.
  */
 import { router } from 'expo-router';
 import { useState } from 'react';
 import { Pressable, StyleSheet, View, useWindowDimensions } from 'react-native';
 
-import { FeatureCard, IconSquare, StatusLine } from '@/components/home/feature-card';
+import { IconSquare, StatusLine } from '@/components/home/feature-card';
 import { SectionTitle } from '@/components/home/tab-header';
 import { Icon, type IconName } from '@/components/icon';
+import { GroupPage } from '@/components/team/group-page';
 import { ThemedText } from '@/components/themed-text';
 import { ChipGroup } from '@/components/ui';
 import { BrandFonts, Spacing } from '@/constants/theme';
@@ -25,19 +25,15 @@ import { useClub } from '@/lib/club';
 import { useHome } from '@/lib/home';
 import { sortMemberships } from '@/lib/home-labels';
 import type { HomeCard } from '@/lib/home-layout';
-import { teamPositionLabel } from '@/lib/labels';
 import {
   absencesLabel,
-  injuredCountLabel,
-  rosterCountLabel,
+  groupChipLabel,
+  myPlaceLabel,
   rosterStatuses,
   seesRosterStatus,
-  splitRoster,
   type RosterStatus,
 } from '@/lib/team-hub';
-import type { RosterEntry } from '@/lib/types';
 import { useAttendanceRate } from '@/lib/use-attendance-rate';
-import { useTeamRoster } from '@/lib/use-team-roster';
 
 /** Above this text size the tiles stack, one a row, so their words have room. */
 const MAX_FONT_SCALE_ACROSS = 1.15;
@@ -232,10 +228,11 @@ function StatTile({
 
 /**
  * The member's squads and teams in the Team tab: a switch when they are in
- * more than one, the chosen one's card (which opens its page, as before), and
- * its people. Its coaches and physios see an injury status beside an athlete
- * who has one, and the row opens that injury; everyone else sees names and
- * positions only.
+ * more than one, then the chosen one on this screen (what they can do there
+ * and its people, src/components/team/group-page.tsx). Nothing opens a second
+ * page that lists the same people again (Matt, 27 November 2026). Its coaches
+ * and physios see an injury status beside an athlete who has one; everyone
+ * else sees names and positions only.
  */
 export function TeamPeople() {
   const { memberships } = useAuth();
@@ -244,7 +241,6 @@ export function TeamPeople() {
   const groups = sortMemberships(memberships);
   const [chosen, setChosen] = useState<string | null>(null);
   const current = groups.find((m) => m.team.id === chosen) ?? groups[0];
-  const { roster, positionLabel } = useTeamRoster(current?.team.id, current?.team);
   const statuses =
     club.features.injuries && seesRosterStatus(current?.team_role)
       ? rosterStatuses(openInjuries)
@@ -252,7 +248,7 @@ export function TeamPeople() {
 
   return (
     <View style={styles.section} testID="team-people">
-      <ThemedText type="smallBold">{club.squads ? 'My squads and teams' : 'My teams'}</ThemedText>
+      <SectionTitle>{club.squads ? 'My squads and teams' : 'My teams'}</SectionTitle>
       {!current ? (
         <ThemedText type="small" themeColor="textSecondary">
           You are not in a {club.squads ? 'squad' : 'team'} yet.
@@ -261,118 +257,28 @@ export function TeamPeople() {
         <>
           {groups.length > 1 ? (
             <ChipGroup
-              options={groups.map((m) => ({ value: m.team.id, label: m.team.name }))}
+              options={groups.map((m) => ({ value: m.team.id, label: groupChipLabel(m.team, groups) }))}
               selected={[current.team.id]}
               onToggle={setChosen}
             />
-          ) : null}
-          <FeatureCard
-            icon="users"
-            title={current.team.name}
-            detail={`${current.team.kind === 'squad' ? 'Squad' : 'Team'} · ${teamPositionLabel(
-              current.team_role,
-              current.coach_title,
-              current.selection,
-            )}`}
-            onPress={() => router.push({ pathname: '/team/[id]', params: { id: current.team.id } })}
+          ) : (
+            // One squad or team: its name, where the switch would be.
+            <ThemedText type="smallBold" testID="group-name">
+              {current.team.name}
+            </ThemedText>
+          )}
+          <ThemedText type="small" themeColor="textSecondary" testID="my-place">
+            {myPlaceLabel(current)}
+          </ThemedText>
+          <GroupPage
+            key={current.team.id}
+            team={current.team}
+            membership={current}
+            statuses={statuses}
           />
-          {roster ? (
-            <People roster={roster} statuses={statuses} positionLabel={positionLabel} />
-          ) : null}
         </>
       )}
     </View>
-  );
-}
-
-/** A squad or team's athletes, then its coaches, managers and physios. */
-function People({
-  roster,
-  statuses,
-  positionLabel,
-}: {
-  roster: RosterEntry[];
-  statuses: Map<string, RosterStatus>;
-  positionLabel: (member: RosterEntry) => string;
-}) {
-  const theme = useTheme();
-  const { athletes, staff } = splitRoster(roster);
-  const injured = injuredCountLabel(roster, statuses);
-  if (roster.length === 0) {
-    return (
-      <ThemedText type="small" themeColor="textSecondary">
-        No one has been added yet.
-      </ThemedText>
-    );
-  }
-  return (
-    <>
-      <View style={styles.peopleHead}>
-        <SectionTitle>People</SectionTitle>
-        <ThemedText type="small" themeColor="textSecondary" testID="people-count">
-          {rosterCountLabel(roster)}
-        </ThemedText>
-      </View>
-      {injured ? <StatusLine text={injured} tone="attention" /> : null}
-      <View
-        testID="people-list"
-        style={[styles.list, { backgroundColor: theme.backgroundElement }]}>
-        {[...athletes, ...staff].map((member, index) => (
-          <PersonRow
-            key={member.profile_id}
-            name={member.full_name ?? 'Unnamed member'}
-            position={positionLabel(member)}
-            status={member.team_role === 'athlete' ? statuses.get(member.profile_id) : undefined}
-            divider={index > 0}
-          />
-        ))}
-      </View>
-    </>
-  );
-}
-
-function PersonRow({
-  name,
-  position,
-  status,
-  divider,
-}: {
-  name: string;
-  position: string;
-  status: RosterStatus | undefined;
-  divider: boolean;
-}) {
-  const theme = useTheme();
-  const line = divider && { borderTopWidth: 1, borderTopColor: theme.backgroundSelected };
-  const words = (
-    <View style={styles.personText}>
-      <ThemedText type="smallBold">{name}</ThemedText>
-      <ThemedText type="small" themeColor="textSecondary">
-        {position}
-      </ThemedText>
-    </View>
-  );
-  if (!status) return <View style={[styles.person, line]}>{words}</View>;
-  return (
-    <Pressable
-      accessibilityRole="button"
-      accessibilityLabel={`${name}, ${position}. ${status.label}`}
-      accessibilityHint="Opens the injury"
-      onPress={() => router.push({ pathname: '/injuries/[id]', params: { id: status.injuryId } })}
-      style={({ pressed }) => [
-        styles.person,
-        line,
-        pressed && { backgroundColor: theme.backgroundSelected },
-      ]}>
-      {words}
-      <View style={styles.personStatus}>
-        <Icon name="alert-circle" size={14} color={theme.attention} />
-        <ThemedText type="small" themeColor="attention" style={styles.personStatusText}>
-          {status.label}
-        </ThemedText>
-      </View>
-      <Icon name="chevron-right" size={18} color={theme.textSecondary} />
-    </Pressable>
   );
 }
 
@@ -423,38 +329,5 @@ const styles = StyleSheet.create({
   },
   section: {
     gap: Spacing.two,
-  },
-  peopleHead: {
-    flexDirection: 'row',
-    alignItems: 'baseline',
-    justifyContent: 'space-between',
-    gap: Spacing.two,
-    paddingTop: Spacing.one,
-  },
-  list: {
-    borderRadius: 12,
-    overflow: 'hidden',
-  },
-  person: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    gap: Spacing.two,
-    paddingHorizontal: Spacing.three,
-    paddingVertical: Spacing.two,
-    minHeight: 52,
-  },
-  personText: {
-    flex: 1,
-    minWidth: 0,
-  },
-  personStatus: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    gap: Spacing.one,
-    flexShrink: 1,
-    maxWidth: '55%',
-  },
-  personStatusText: {
-    flexShrink: 1,
   },
 });

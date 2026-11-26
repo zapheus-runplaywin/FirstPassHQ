@@ -212,22 +212,22 @@ const CASES: [string, Auth, Key[]][] = [
   [
     'an athlete',
     auth(profile('athlete'), { memberships: [member('athlete')] }),
-    ['selectionInfo', 'readMessages', 'answerSurveys', 'injuries', 'reportInjury', 'familyAttendance', 'readSessionPlans', 'checkIn', 'awards', 'gameGoals', 'kpis', 'training', 'medical'],
+    ['selectionInfo', 'readMessages', 'answerSurveys', 'injuries', 'reportInjury', 'familyAttendance', 'readSessionPlans', 'checkIn', 'awards', 'gameGoals', 'athleteGoals', 'kpis', 'training', 'medical'],
   ],
   [
     'a captain',
     auth(profile('athlete'), { memberships: [member('athlete')], captaincies: [captainOf(TEAM)] }),
-    ['selectionInfo', 'readMessages', 'sendMessages', 'answerSurveys', 'sendSurveys', 'surveyResults', 'injuries', 'reportInjury', 'familyAttendance', 'readSessionPlans', 'checkIn', 'awards', 'gameGoals', 'kpis', 'training', 'medical'],
+    ['selectionInfo', 'readMessages', 'sendMessages', 'answerSurveys', 'sendSurveys', 'surveyResults', 'injuries', 'reportInjury', 'familyAttendance', 'readSessionPlans', 'checkIn', 'awards', 'gameGoals', 'athleteGoals', 'kpis', 'training', 'medical'],
   ],
   [
     'still listed as captain of a team they no longer play in',
     auth(profile('athlete'), { memberships: [member('athlete')], captaincies: [captainOf(OTHER_TEAM)] }),
-    ['selectionInfo', 'readMessages', 'answerSurveys', 'injuries', 'reportInjury', 'familyAttendance', 'readSessionPlans', 'checkIn', 'awards', 'gameGoals', 'kpis', 'training', 'medical'],
+    ['selectionInfo', 'readMessages', 'answerSurveys', 'injuries', 'reportInjury', 'familyAttendance', 'readSessionPlans', 'checkIn', 'awards', 'gameGoals', 'athleteGoals', 'kpis', 'training', 'medical'],
   ],
   [
     'a club captain',
     auth(profile('athlete'), { memberships: [member('athlete')], isClubCaptain: true }),
-    ['selectionInfo', 'readMessages', 'sendMessages', 'answerSurveys', 'injuries', 'reportInjury', 'familyAttendance', 'readSessionPlans', 'checkIn', 'awards', 'gameGoals', 'kpis', 'training', 'medical'],
+    ['selectionInfo', 'readMessages', 'sendMessages', 'answerSurveys', 'injuries', 'reportInjury', 'familyAttendance', 'readSessionPlans', 'checkIn', 'awards', 'gameGoals', 'athleteGoals', 'kpis', 'training', 'medical'],
   ],
   [
     'a guardian',
@@ -329,7 +329,7 @@ const CASES: [string, Auth, Key[]][] = [
   [
     'an admin on the committee, left out of the members who see injuries',
     auth(profile('admin', { extra_roles: ['committee'] }), { committeeSeesInjuries: false }),
-    ['readMessages', 'sendMessages', 'answerSurveys', 'sendSurveys', 'surveyResults', 'injuries', 'attendance', 'takeAttendance', 'athleteAttendance', 'readSessionPlans', 'addSessionPlans', 'checkIns', 'awards', 'teamGoals', 'kpis', 'setKpis', 'training', 'checkTraining', 'reports', 'concerns', 'family', 'chooseCaptains', 'registers', 'editRegisters', 'reviewPolicy', 'declareConflicts', 'assessments'],
+    ['readMessages', 'sendMessages', 'answerSurveys', 'sendSurveys', 'surveyResults', 'injuries', 'attendance', 'takeAttendance', 'athleteAttendance', 'readSessionPlans', 'addSessionPlans', 'checkIns', 'awards', 'kpis', 'setKpis', 'training', 'checkTraining', 'reports', 'concerns', 'family', 'chooseCaptains', 'registers', 'editRegisters', 'reviewPolicy', 'declareConflicts', 'assessments'],
   ],
   [
     'a coach with a check who is not on the committee',
@@ -339,7 +339,7 @@ const CASES: [string, Auth, Key[]][] = [
   [
     'an admin',
     auth(profile('admin')),
-    ['readMessages', 'sendMessages', 'answerSurveys', 'sendSurveys', 'surveyResults', 'injuries', 'attendance', 'takeAttendance', 'athleteAttendance', 'readSessionPlans', 'addSessionPlans', 'checkIns', 'awards', 'teamGoals', 'kpis', 'setKpis', 'training', 'checkTraining', 'reports', 'concerns', 'family', 'chooseCaptains', 'registers', 'editRegisters', 'reviewPolicy', 'assessments'],
+    ['readMessages', 'sendMessages', 'answerSurveys', 'sendSurveys', 'surveyResults', 'injuries', 'attendance', 'takeAttendance', 'athleteAttendance', 'readSessionPlans', 'addSessionPlans', 'checkIns', 'awards', 'kpis', 'setKpis', 'training', 'checkTraining', 'reports', 'concerns', 'family', 'chooseCaptains', 'registers', 'editRegisters', 'reviewPolicy', 'assessments'],
   ],
   [
     'an athlete who coaches another team',
@@ -352,7 +352,7 @@ const CASES: [string, Auth, Key[]][] = [
   [
     'an athlete not yet in a team',
     auth(profile('athlete')),
-    ['selectionInfo', 'readMessages', 'answerSurveys', 'injuries', 'reportInjury', 'familyAttendance', 'readSessionPlans', 'checkIn', 'awards', 'gameGoals', 'kpis', 'training', 'medical'],
+    ['selectionInfo', 'readMessages', 'answerSurveys', 'injuries', 'reportInjury', 'familyAttendance', 'readSessionPlans', 'checkIn', 'awards', 'gameGoals', 'athleteGoals', 'kpis', 'training', 'medical'],
   ],
   [
     'a coach not yet in a team',

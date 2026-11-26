@@ -273,7 +273,9 @@ const ROSTER: RosterEntry[] = [
 ];
 
 describe('A team’s people on a tablet', () => {
-  it('puts people two a row on an iPad on its side, in the roster’s order', async () => {
+  // The page is the Team tab's one list now (27 November 2026): athletes,
+  // then staff, at reading width, not cards two a row.
+  it('lists people once on an iPad on its side: athletes, then staff', async () => {
     setWindowWidth(IPAD_SIDEWAYS);
     await openScreen('athlete', { 'team/[id]': TeamScreen }, `/team/${TEAM.id}`, {
       teams: [TEAM, TEAM_B, DONE_SQUAD],
@@ -282,12 +284,9 @@ describe('A team’s people on a tablet', () => {
       tableHandlers: { team_captains: () => [] },
       rpcs: { team_roster: ROSTER, goal_board: [], coach_team_games: [], goal_next_game: [], goal_past_games: [] },
     });
-    // The page itself stays reading width (800) on a tablet: only home goes wider.
-    await layOut(screen.getAllByTestId('card-grid-1').at(-1)!, 800 - 48);
-    const rows = screen.getByTestId('card-grid-2').children as Node[];
-    expect(rows.map((r) => within(r).queryAllByText(/^(Sample coach|\w+ Athlete)$/).map((t) => t.props.children))).toEqual([
-      ['Sample coach', 'Alice Athlete'],
-      ['Bea Athlete', 'Cal Athlete'],
-    ]);
+    const names = within(screen.getByTestId('people-list'))
+      .getAllByText(/^(Sample coach|\w+ Athlete)$/)
+      .map((t) => t.props.children);
+    expect(names).toEqual(['Alice Athlete', 'Bea Athlete', 'Cal Athlete', 'Sample coach']);
   });
 });

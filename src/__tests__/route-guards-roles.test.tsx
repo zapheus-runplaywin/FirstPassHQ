@@ -243,9 +243,10 @@ const WHO_OPENS: Record<string, PersonaName[]> = {
   'awards/vote': AWARD_VOTERS,
 
   'goals/game': union(ATHLETES, GROUP_COACHES, GUARDIANS),
-  'goals/athlete/[id]': union(GROUP_COACHES, GUARDIANS),
-  // Admins read a team's goals (admin guide audit, 20 October).
-  'goals/team': union(GROUP_COACHES, ADMINS),
+  // An athlete opens their own played games from the Team tab.
+  'goals/athlete/[id]': union(ATHLETES, GROUP_COACHES, GUARDIANS),
+  // Team goals stay with the team: admins no longer read them (Matt, 27 November 2026).
+  'goals/team': GROUP_COACHES,
 
   'kpis/index': KPI_READERS,
   'kpis/person': KPI_READERS,

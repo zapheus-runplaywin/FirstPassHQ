@@ -8,7 +8,12 @@
  * people, with an injury status beside an athlete only for the group's
  * coaches and physios. Nobody gains a card, a number or a name they didn't
  * already have: the tiles are the same three cards, and the people are the
- * same roster the group's page shows.
+ * roster the database gives the group's own members.
+ *
+ * The chosen squad or team is on the Team tab itself (Matt, 27 November
+ * 2026): rows for game goals, team goals, medical and emergency details and
+ * choosing captains, each only for the people who could open them before,
+ * and no second page that lists the same people again.
  */
 import { router } from 'expo-router';
 import { fireEvent, screen, within } from 'expo-router/testing-library';
@@ -389,10 +394,13 @@ describe('a squad or team’s people', () => {
     expect(people().queryByText('Injured')).toBeNull();
   });
 
-  it('the squad or team’s card still opens its page', async () => {
+  it('nothing opens a second page of the same people: the team’s name and the member’s place are words', async () => {
     await openTeam('coach');
+    expect(screen.getByTestId('group-name').props.children).toBe(TEAM.name);
     await fireEvent.press(screen.getByText('Team · Head Coach'));
-    expect(push).toHaveBeenLastCalledWith({ pathname: '/team/[id]', params: { id: TEAM.id } });
+    await fireEvent.press(screen.getByTestId('group-name'));
+    expect(push).not.toHaveBeenCalled();
+    expect(JSON.stringify(push.mock.calls)).not.toContain('/team/[id]');
   });
 
   it('with nobody added yet, says so', async () => {
@@ -420,9 +428,10 @@ describe('more than one squad or team', () => {
     { profile_id: 'b1', full_name: 'Priya Shah', team_role: 'athlete', coach_title: null, selection: null },
   ];
 
-  it('one group has no switch', async () => {
+  it('one group has no switch, only its name', async () => {
     await openTeam('coach');
     expect(screen.getAllByText(TEAM.name)).toHaveLength(1);
+    expect(screen.queryByText(`${TEAM.name} · Team`)).toBeNull();
   });
 
   it('starts on the first, and switches to another’s card and people', async () => {
@@ -431,9 +440,10 @@ describe('more than one squad or team', () => {
         team_roster: (args) => ((args as { p_team_id: string }).p_team_id === TEAM_B.id ? OTHER : ROSTER),
       },
     });
-    // The switch, and the chosen group's card.
-    expect(screen.getAllByText(TEAM.name)).toHaveLength(2);
+    // The switch names each; nothing repeats the chosen one's name.
+    expect(screen.getAllByText(TEAM.name)).toHaveLength(1);
     expect(screen.getAllByText(TEAM_B.name)).toHaveLength(1);
+    expect(screen.queryByTestId('group-name')).toBeNull();
     expect(screen.getByText('Team · Head Coach')).toBeTruthy();
     expect(people().getByText('Alex Nguyen')).toBeTruthy();
 
@@ -443,9 +453,32 @@ describe('more than one squad or team', () => {
     expect(people().getByText('Priya Shah')).toBeTruthy();
     expect(people().queryByText('Alex Nguyen')).toBeNull();
     expect(screen.getByTestId('people-count').props.children).toBe('1 athlete');
+    // The rows are the chosen team's.
+    await fireEvent.press(screen.getByText('Choose captains'));
+    expect(push).toHaveBeenLastCalledWith({ pathname: '/team/captains/[id]', params: { id: TEAM_B.id } });
+  });
 
-    await fireEvent.press(screen.getByText('Team · Assistant Coach'));
-    expect(push).toHaveBeenLastCalledWith({ pathname: '/team/[id]', params: { id: TEAM_B.id } });
+  it('a member in a squad and a team has chips that say which is which, the team first', async () => {
+    const SQUAD = { ...TEAM_B, name: TEAM.name, kind: 'squad' as const };
+    await openScreen(
+      {
+        ...personas.athlete,
+        memberships: [
+          { ...personas.athlete.memberships[0], team: SQUAD },
+          personas.athlete.memberships[0],
+        ],
+      },
+      { team: inTabs(TeamHubScreen) },
+      '/team',
+      {},
+      { rpcs: { team_roster: ROSTER } },
+    );
+    expect(screen.getByText(`${TEAM.name} · Team`)).toBeTruthy();
+    expect(screen.getByText(`${TEAM.name} · Squad`)).toBeTruthy();
+    // The team is chosen first.
+    expect(screen.getByTestId('my-place').props.children).toMatch(/^Team · /);
+    await fireEvent.press(screen.getByText(`${TEAM.name} · Squad`));
+    expect(screen.getByTestId('my-place').props.children).toMatch(/^Squad · /);
   });
 
   it('status follows the member’s place in the chosen group: a coach in one, an athlete in the other', async () => {
@@ -463,5 +496,89 @@ describe('more than one squad or team', () => {
     await fireEvent.press(screen.getByText(TEAM_B.name));
     expect(people().getByText('Bo Tran')).toBeTruthy();
     expect(people().queryByText('Injured')).toBeNull();
+  });
+});
+
+// The chosen squad or team's rows: what used to sit behind its card on a
+// second page (Matt, 27 November 2026). Each row shows only for the people
+// who could open its screen before; team-screens.test.tsx goes through the
+// same rows role by role on the page an admin opens.
+describe('the chosen team’s rows', () => {
+  const rows = () => within(screen.getByTestId('team-rows'));
+  const rowTitles = () =>
+    rows()
+      .queryAllByText(/^(My game goals|Played games|Team goals|Medical and emergency details|Choose captains|Change who’s in it)$/)
+      .map((t) => String(t.props.children));
+  const BOARD = [
+    {
+      team_id: TEAM.id,
+      team_name: TEAM.name,
+      team_kind: 'team',
+      athlete_id: 'a2',
+      athlete_name: 'Bo Tran',
+      next_fixture_id: 'fx1',
+      next_label: 'Round 3 v Sample Storm',
+      next_starts_at: '2099-10-24T02:00:00Z',
+      next_goal_count: 2,
+      reflections_to_answer: 1,
+    },
+  ];
+
+  it('a coach: team goals, medical and emergency details, then captains, each one tap from the tab', async () => {
+    await openTeam('coach');
+    expect(rowTitles()).toEqual(['Team goals', 'Medical and emergency details', 'Choose captains']);
+    await fireEvent.press(rows().getByText('Medical and emergency details'));
+    expect(push).toHaveBeenLastCalledWith({ pathname: '/medical/team/[id]', params: { id: TEAM.id, name: TEAM.name } });
+    await fireEvent.press(rows().getByText('Choose captains'));
+    expect(push).toHaveBeenLastCalledWith({ pathname: '/team/captains/[id]', params: { id: TEAM.id } });
+  });
+
+  it.each<[string, PersonaName, string[]]>([
+    ['an athlete', 'athlete', ['My game goals', 'Played games']],
+    ['an athlete under 18', 'minorAthlete', ['My game goals', 'Played games']],
+    ['a captain', 'captain', ['My game goals', 'Played games']],
+    ['a manager', 'manager', ['Medical and emergency details']],
+    ['a physio', 'physio', ['Medical and emergency details']],
+  ])('%s has only their own rows', async (_l, who, expected) => {
+    await openTeam(who, { goal_next_game: [], goal_past_games: [] });
+    expect(rowTitles()).toEqual(expected);
+    // Never the admin's row, and never another role's.
+    expect(screen.queryByText('Change who’s in it')).toBeNull();
+  });
+
+  it('an admin who coaches the team has the coach’s rows, and changes its people from Club', async () => {
+    await openTeam({ ...personas.admin, memberships: personas.coach.memberships });
+    expect(rowTitles()).toEqual(['Team goals', 'Medical and emergency details', 'Choose captains']);
+  });
+
+  it('with game goals off, an athlete has no rows at all', async () => {
+    setClubFeatures({ goals: false });
+    await openTeam('athlete');
+    expect(screen.queryByTestId('team-rows')).toBeNull();
+    expect(names()).toHaveLength(5);
+  });
+
+  it('a coach’s athlete row says how their goals stand and opens them; the injury line opens the injury', async () => {
+    await openTeam('coach', { goal_board: BOARD, visible_injuries: [INJURIES[0]] });
+    expect(people().getByText(/^Round 3 v Sample Storm · .* · 2 goals$/)).toBeTruthy();
+    expect(people().getByText('1 reflection waiting for a comment')).toBeTruthy();
+    await fireEvent.press(people().getByText('Bo Tran'));
+    expect(push).toHaveBeenLastCalledWith({
+      pathname: '/goals/athlete/[id]',
+      params: { id: 'a2', name: 'Bo Tran', team: TEAM.id },
+    });
+    await fireEvent.press(people().getByText('Injured'));
+    expect(push).toHaveBeenLastCalledWith({ pathname: '/injuries/[id]', params: { id: 'inj-1' } });
+    // An athlete the board doesn't cover stays a name and a position.
+    push.mockClear();
+    await fireEvent.press(people().getByText('Alex Nguyen'));
+    expect(push).not.toHaveBeenCalled();
+  });
+
+  it('a physio sees no goals beside a name, whatever the board says', async () => {
+    await openTeam('physio', { goal_board: BOARD, visible_injuries: [INJURIES[0]] });
+    expect(people().queryByText(/Sample Storm/)).toBeNull();
+    await fireEvent.press(people().getByText('Bo Tran'));
+    expect(push).toHaveBeenLastCalledWith({ pathname: '/injuries/[id]', params: { id: 'inj-1' } });
   });
 });
