@@ -305,13 +305,13 @@ tablet](#using-hq-on-a-tablet).
 #### Which version you have
 
 The opening screen shows the app's version and build in small print at the foot, such as
-**Version 1.0.0 (23) · Build 854**, and so do Find your club, the sign-in screen and the foot of
+**Version 1.0.0 (23) · Build 860**, and so do Find your club, the sign-in screen and the foot of
 the **Me** tab (or of your one screen, if you have no tabs yet). When the club has sent a fix over the air since you installed,
 a second line names it, such as **Update 1a2b3c4d · 20 Nov 2026**. If something goes wrong, or the
 club asks which version you're testing, read these lines out or send a screenshot of them.
 
 - **Version 1.0.0 (23)** is the version in the app store and, in brackets, the store build.
-- **Build 854** is the build of the club's app code. It matches the "build 854" on the guides and
+- **Build 860** is the build of the club's app code. It matches the "build 860" on the guides and
   PDFs made from the same code.
 - **Update** appears only while an over-the-air update is running, with when it was made.
 
