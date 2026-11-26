@@ -1,6 +1,6 @@
 /**
- * The member's own screens: Your details (src/app/my-details.tsx), Delete
- * account (delete-account.tsx), the volunteer exemption declaration
+ * The member's own screens: Your details (src/app/my-details.tsx), My account
+ * (my-account.tsx), Delete account (delete-account.tsx), the volunteer exemption declaration
  * (declaration.tsx), the declaration for a lodged Working With Children
  * Check application (wwcc-application.tsx) and their personal tasks (tasks/index.tsx, new.tsx,
  * [id].tsx with components/task-form.tsx). From "Your preferred name", "Your
@@ -18,6 +18,7 @@ import { fireEvent, screen } from 'expo-router/testing-library';
 
 import DeclarationScreen from '@/app/declaration';
 import DeleteAccountScreen from '@/app/delete-account';
+import MyAccountScreen from '@/app/my-account';
 import MyDetailsScreen from '@/app/my-details';
 import EditTaskScreen from '@/app/tasks/[id]';
 import TasksScreen from '@/app/tasks/index';
@@ -202,6 +203,49 @@ describe('your details', () => {
     await settle();
     expect(screen.getByText('Preferred name is too long.')).toBeTruthy();
     expect(back).not.toHaveBeenCalled();
+  });
+});
+
+// ---------------------------------------------------------------------------
+// My account: how the member signs in, and the only way to Delete account from
+// the Me tab, set apart from Switch club and Sign out.
+
+describe('my account', () => {
+  const withSignIn = (who: Persona, app_metadata: Record<string, unknown>): Persona => ({
+    ...who,
+    session: { ...who.session!, user: { ...who.session!.user, app_metadata } },
+  });
+
+  async function open(who: Who) {
+    await openScreen(who, { 'my-account': MyAccountScreen }, '/my-account');
+  }
+
+  it('names the account they sign in with, and the club', async () => {
+    await open(withSignIn(personas.coach, { provider: 'google', providers: ['google'] }));
+    expect(screen.getByText('Signed in with')).toBeTruthy();
+    expect(screen.getByText(`Google · ${personas.coach.session!.user.email}`)).toBeTruthy();
+    expect(screen.getByText('Club')).toBeTruthy();
+    expect(screen.getByText('Sample Club')).toBeTruthy();
+  });
+
+  it('says Apple for an Apple sign-in', async () => {
+    await open(withSignIn(personas.athlete, { provider: 'apple', providers: ['apple'] }));
+    expect(screen.getByText(`Apple · ${personas.athlete.session!.user.email}`)).toBeTruthy();
+  });
+
+  it('shows just the email when Supabase doesn’t say which account', async () => {
+    await open('guardian');
+    expect(screen.getByText(personas.guardian.session!.user.email!)).toBeTruthy();
+  });
+
+  it('opens the delete screen from Delete my account, deleting nothing itself', async () => {
+    await open('athlete');
+    expect(screen.getByText(/^Removes your account for good\. You.ll see what is deleted and confirm/)).toBeTruthy();
+    await fireEvent.press(screen.getByText('Delete my account'));
+    expect(push).toHaveBeenCalledWith('/delete-account');
+    await settle();
+    expect(rpcNames()).not.toContain('delete_my_account');
+    expect(signOut()).not.toHaveBeenCalled();
   });
 });
 

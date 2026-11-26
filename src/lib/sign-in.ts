@@ -134,6 +134,21 @@ export function usesAppleSignIn(
   return meta.provider === 'apple' || (Array.isArray(meta.providers) && meta.providers.includes('apple'));
 }
 
+/**
+ * Which account the member signs in with, for My account: Apple or Google, or
+ * null when Supabase doesn't say (an email sign-in on the test club).
+ */
+export function signInMethod(
+  user: { app_metadata?: { provider?: string; providers?: unknown } } | null | undefined,
+): 'Apple' | 'Google' | null {
+  if (usesAppleSignIn(user)) return 'Apple';
+  const meta = user?.app_metadata;
+  if (meta?.provider === 'google' || (Array.isArray(meta?.providers) && meta.providers.includes('google'))) {
+    return 'Google';
+  }
+  return null;
+}
+
 /** How long the delete screen waits for the revoke before deleting anyway. */
 export const REVOKE_TIMEOUT_MS = 15_000;
 

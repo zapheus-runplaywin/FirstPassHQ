@@ -108,13 +108,16 @@ export default function MeScreen() {
       <View style={styles.section}>
         <SectionTitle>Account</SectionTitle>
         <CardGrid gap={Spacing.two}>
+          {/* Delete account lives inside My account, away from Switch club and
+              Sign out, so it can't be tapped for one of them. */}
+          <FeatureCard
+            icon="settings"
+            title="My account"
+            detail="How you sign in, and deleting your account"
+            onPress={() => router.push('/my-account')}
+          />
           <FeatureCard icon="repeat" title="Switch club" onPress={switchClub} />
           <FeatureCard icon="log-out" title="Sign out" onPress={signOut} />
-          <FeatureCard
-            icon="trash-2"
-            title="Delete account"
-            onPress={() => router.push('/delete-account')}
-          />
         </CardGrid>
       </View>
     </Screen>

@@ -24,6 +24,7 @@ import {
   revokeAppleSignIn,
   signInWithApple,
   signInWithGoogle,
+  signInMethod,
   usesAppleSignIn,
 } from '@/lib/sign-in';
 import { supabase } from '@/lib/supabase';
@@ -382,5 +383,25 @@ describe('who signed in with Apple', () => {
     [undefined, false],
   ])('%j: %p', (user, expected) => {
     expect(usesAppleSignIn(user as never)).toBe(expected);
+  });
+});
+
+describe('which account a member signs in with, for My account', () => {
+  it.each([
+    [{ app_metadata: { provider: 'apple', providers: ['apple'] } }, 'Apple'],
+    // Apple wins when both are linked: it is the one Apple asks about on delete.
+    [{ app_metadata: { provider: 'google', providers: ['google', 'apple'] } }, 'Apple'],
+    [{ app_metadata: { provider: 'google', providers: ['google'] } }, 'Google'],
+    [{ app_metadata: { provider: 'google' } }, 'Google'],
+    [{ app_metadata: { providers: ['google'] } }, 'Google'],
+    [{ app_metadata: { provider: 'email', providers: ['email'] } }, null],
+    [{ app_metadata: { provider: 'google', providers: 'google' } }, 'Google'],
+    [{ app_metadata: { provider: 'email', providers: 'google' } }, null],
+    [{ app_metadata: {} }, null],
+    [{}, null],
+    [null, null],
+    [undefined, null],
+  ])('%j: %p', (user, expected) => {
+    expect(signInMethod(user as never)).toBe(expected);
   });
 });
