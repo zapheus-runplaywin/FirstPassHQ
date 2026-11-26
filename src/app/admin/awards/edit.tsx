@@ -15,6 +15,8 @@ import {
   dayOf,
   endOfDay,
   nomineeOptions,
+  notYetOpen,
+  startOfDay,
   voterRoleOptions,
 } from '@/lib/awards';
 import { formatDateString, toDateString } from '@/lib/injuries';
@@ -39,7 +41,7 @@ type GroupName = { name: string; kind: Team['kind'] };
 
 /**
  * Creates an award, or changes one when opened with an id. Opened with `from`,
- * it starts as a copy of that award with no closing date.
+ * it starts as a copy of that award with no opening or closing date.
  */
 export default function EditAwardScreen() {
   const { id, from } = useLocalSearchParams<{ id?: string; from?: string }>();
@@ -56,6 +58,11 @@ export default function EditAwardScreen() {
   const [name, setName] = useState('');
   const [description, setDescription] = useState('');
   const [seasonChoice, setSeason] = useState<number | null>(null);
+  // Voting opens straight away, or at the start of a chosen day.
+  const [opensOnDay, setOpensOnDay] = useState(false);
+  const [opensOn, setOpensOn] = useState<string | null>(null);
+  // The saved opening time, shown as it is once people have voted.
+  const [savedOpensAt, setSavedOpensAt] = useState<string | null>(null);
   const [closesOn, setClosesOn] = useState<string | null>(() => {
     const date = new Date();
     date.setDate(date.getDate() + 30);
@@ -153,6 +160,9 @@ export default function EditAwardScreen() {
           setAgeOn(award.nominee_age_on);
           setSeason(award.season);
           setClosesOn(dayOf(award.closes_at));
+          setOpensOnDay(award.opens_at !== null);
+          setOpensOn(award.opens_at ? dayOf(award.opens_at) : null);
+          setSavedOpensAt(award.opens_at);
           setGroupIds(award.award_groups.map((g) => g.team_id));
           if (award.preseason_closes_at) setPreseasonOn(dayOf(award.preseason_closes_at));
           setAnnual(award.annual);
@@ -242,6 +252,15 @@ export default function EditAwardScreen() {
       return;
     }
     if (!locked) {
+      const { error: opensError } = await supabase.rpc('admin_set_award_opens', {
+        p_award_id: data as string,
+        p_opens_at: opensOnDay && opensOn ? startOfDay(opensOn) : null,
+      });
+      if (opensError) {
+        setSaving(false);
+        setError(opensError.message);
+        return;
+      }
       const limited = ageLimited && nominees !== 'listed';
       const { error: ageError } = await supabase.rpc('admin_set_award_ages', {
         p_award_id: data as string,
@@ -287,9 +306,21 @@ export default function EditAwardScreen() {
           : ageOnDay && !ageOn
             ? 'choose the day ages are measured on'
             : null;
+  // Dates are "2026-10-07" strings, so they compare as text.
+  const opensProblem =
+    locked || !opensOnDay
+      ? null
+      : !opensOn
+        ? 'the day voting opens'
+        : closesOn && opensOn > closesOn
+          ? 'an opening day on or before the closing day'
+          : matchVoting && weight !== '0' && preseasonOn && opensOn > preseasonOn
+            ? 'an opening day on or before the preseason vote closes'
+            : null;
   const missing = [
     !name.trim() && 'a name',
     !closesOn && 'when voting closes',
+    opensProblem,
     roles.length === 0 && 'roles that vote',
     !clubWide && groupIds.length === 0 && 'squads or teams',
     nominees === 'listed' && !candidates.trim() && 'names to vote for',
@@ -337,9 +368,22 @@ export default function EditAwardScreen() {
       ]
         .filter(Boolean)
         .join(' · ');
-  const datesSummary = `${seasonLabel(season)} · ${
-    closesOn ? `closes ${formatDateString(closesOn)}` : 'closing date not chosen'
-  }`;
+  const opensSummary = locked
+    ? savedOpensAt
+      ? `opened ${formatDateString(dayOf(savedOpensAt))}`
+      : null
+    : opensOnDay
+      ? opensOn
+        ? `${notYetOpen(startOfDay(opensOn)) ? 'opens' : 'opened'} ${formatDateString(opensOn)}`
+        : 'opening day not chosen'
+      : 'opens when saved';
+  const datesSummary = [
+    seasonLabel(season),
+    opensSummary,
+    closesOn ? `closes ${formatDateString(closesOn)}` : 'closing date not chosen',
+  ]
+    .filter(Boolean)
+    .join(' · ');
 
   return (
     <Screen>
@@ -355,7 +399,7 @@ export default function EditAwardScreen() {
       {copiedFrom ? (
         <ThemedText type="small" themeColor="textSecondary">
           Copied from {copiedFrom.name} ({seasonLabel(copiedFrom.season)}). Choose when voting
-          closes, and check the rest before saving.
+          opens and closes, and check the rest before saving.
           {missingGroups > 0
             ? ` ${missingGroups} ${missingGroups === 1 ? 'squad or team has' : 'squads or teams have'} no match by name in ${seasonLabel(season)}.`
             : ''}
@@ -364,7 +408,7 @@ export default function EditAwardScreen() {
       {locked ? (
         <ThemedText type="small" themeColor="textSecondary">
           People have voted, so only the name, description, closing dates, match voting window and
-          listed names can change.
+          listed names can change. The day voting opened stays as it is.
         </ThemedText>
       ) : null}
 
@@ -386,10 +430,10 @@ export default function EditAwardScreen() {
 
       <FormSection
         key={`dates-${copiedFrom?.id ?? ''}`}
-        title="Season and closing date"
+        title="Season and voting dates"
         summary={datesSummary}
-        attention={!closesOn}
-        initiallyOpen={!closesOn}>
+        attention={!closesOn || !!opensProblem}
+        initiallyOpen={!closesOn || !!opensProblem}>
         {!locked && seasons.length > 1 ? (
           <ChipGroup
             label="Season"
@@ -400,6 +444,27 @@ export default function EditAwardScreen() {
               setGroupIds([]);
             }}
           />
+        ) : null}
+        {!locked ? (
+          <>
+            <ChipGroup
+              label="Voting opens"
+              options={[
+                { value: 'now', label: 'When I save' },
+                { value: 'day', label: 'On a day I choose' },
+              ]}
+              selected={[opensOnDay ? 'day' : 'now']}
+              onToggle={(value) => setOpensOnDay(value === 'day')}
+            />
+            {opensOnDay ? (
+              <MonthDateField label="Voting opens on" value={opensOn} onChange={setOpensOn} />
+            ) : null}
+            <ThemedText type="small" themeColor="textSecondary">
+              {opensOnDay
+                ? 'Voting opens at the start of that day. Until then members don’t see the award, and the app refuses any vote.'
+                : 'Members can vote as soon as you save.'}
+            </ThemedText>
+          </>
         ) : null}
         <MonthDateField label="Voting closes" value={closesOn} onChange={setClosesOn} />
       </FormSection>
@@ -585,8 +650,9 @@ export default function EditAwardScreen() {
                   onToggle={setHours}
                 />
                 <ThemedText type="small" themeColor="textSecondary">
-                  Votes open when the match starts. Matches come from the PlayHQ fixtures linked to
-                  each squad or team under Fixtures.
+                  Votes open when the match starts
+                  {opensOnDay ? ', for matches from the day voting opens' : ''}. Matches come from
+                  the PlayHQ fixtures linked to each squad or team under Fixtures.
                 </ThemedText>
                 {chosenGroups.map((t) => (
                   <StatusLine

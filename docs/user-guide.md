@@ -1138,7 +1138,8 @@ In a club without squads the list is called **My teams**.
 ### Club awards
 
 If the club has turned on awards, when it runs an award vote that includes you, it appears in your to-do list and on the
-**Awards** card. Who can vote depends on the award: for example, every member votes for Volunteer
+**Awards** card once voting opens. An admin can set a day for voting to open; until then you don't
+see the award at all, and the app won't take a vote for it. Who can vote depends on the award: for example, every member votes for Volunteer
 of the year, and athletes vote for their own team's Players' player. When an award has a winner for
 each squad or team, you only see and vote for members of your own squad or team, even if it is open to
 every member; committee members and admins vote in every squad's and team's part of such an award when it names them. Club-wide awards are open to everyone, or to the roles the club chose. Parents and
@@ -1157,7 +1158,8 @@ for, and only admins see the results.
 
 Match awards, such as a coach's MVP, open for voting when each match starts and stay open for
 the time the club set for that award (two days unless the club changed it), never past the
-award's closing date. Each vote shows when it closes.
+award's closing date. If the award has a day voting opens, only matches from that day on get a
+vote. Each vote shows when it closes.
 
 <img src="user-guide/awards.png" width="210" alt="Award votes open to you">
 <img src="user-guide/award-vote.png" width="210" alt="A 3-2-1 vote">
@@ -4129,8 +4131,14 @@ it to open it and change the settings. A section opens by itself, with its summa
 **!** in a circle, when something in it needs a look. If **Save award** is greyed out, the line above it says what's
 still needed.
 
-- **Season and closing date**: the season, and when **Voting closes**. Pick the day on the
-  calendar, using the arrows to move to later months.
+- **Season and voting dates**: the season, when **Voting opens** and when **Voting closes**.
+  Voting opens **When I save** unless you choose **On a day I choose** and pick the day under
+  **Voting opens on**: voting then opens at the start of that day. Until it opens, members don't
+  see the award or its to-do, and the app refuses any vote, whichever version of the app sends
+  it. The opening day must be on or before the closing day (and, for a match award with a
+  preseason vote, on or before the day the preseason vote closes). For a match award, only
+  matches from the opening day on get a vote. Pick days on the calendars, using the arrows to
+  move to later months.
 - **Voters**: **The whole club**, or **Chosen squads and teams**. For chosen groups, pick **One
   winner** or **A winner for each** squad or team. With a winner for each, members vote only in
   their own group, and **Any member** nominees mean the members of that squad or team. Then the **Roles that vote**. Athletes, coaches and managers vote in
@@ -4153,10 +4161,13 @@ still needed.
   result**: voters get one preseason ballot, and with 25% the result is 25% each nominee's share
   of the preseason points and 75% their share of the match points.
 
+The awards list and each award's page say when voting opens, for an award that hasn't opened yet,
+as well as when it closes.
+
 Open an award to see its standings for each squad or team, and how many people have voted in each
 match or ballot. Once voting has closed, **Full results report** shows the full voting result as a
 report you can save as a PDF (see [Reports](#reports)). Once anyone has voted, only the name, description, closing dates, match voting
-window and listed names can change, and the award can't be removed.
+window and listed names can change, the day voting opened stays as it is, and the award can't be removed.
 
 **How match awards find their games.** When you import fixtures, each PlayHQ team is linked to
 one squad or team in the app (step 3 under **Fixtures**). A match award only opens votes for the
@@ -4168,12 +4179,13 @@ chosen squad or team has, and warns in bold, with the same mark, when it has non
 match for each squad or team, or says that none are linked.
 
 **Duplicate** on an award opens a new award with the same settings, ready for this season, so
-you can run it again. Pick when voting closes, check the rest and tap **Save award**. It picks the
+you can run it again. It doesn't copy the voting dates: pick when voting opens and closes, check
+the rest and tap **Save award**. It picks the
 squads and teams with the same names in the chosen season. Teams are usually named after the
 season starts, so it says when a team has no match yet: add it once the team is named.
 
 <img src="user-guide/admin-awards.png" width="210" alt="Awards admin">
-<img src="user-guide/award-close-date.png" width="210" alt="Choosing when voting closes">
+<img src="user-guide/award-close-date.png" width="210" alt="Choosing when voting opens and closes">
 <img src="user-guide/new-award.png" width="210" alt="Creating an award">
 <img src="user-guide/award-results.png" width="210" alt="Award standings and who has voted">
 <img src="user-guide/award-duplicate.png" width="210" alt="A new award duplicated from a past one">

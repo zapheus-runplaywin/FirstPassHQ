@@ -7,7 +7,7 @@ import { StatusLine } from '@/components/status-line';
 import { ThemedText } from '@/components/themed-text';
 import { Button, Card } from '@/components/ui';
 import { Spacing } from '@/constants/theme';
-import { AWARD_COLUMNS, awardSummary, closesLabel, isClosed } from '@/lib/awards';
+import { AWARD_COLUMNS, awardSummary, closesLabel, isClosed, votingLabel } from '@/lib/awards';
 import { formatShortDay } from '@/lib/format';
 import { supabase } from '@/lib/supabase';
 import type { Award, AwardResult, AwardTurnout } from '@/lib/types';
@@ -99,7 +99,7 @@ export default function AdminAwardScreen() {
           {awardSummary(award, groupNames)}
         </ThemedText>
         <ThemedText type="small" themeColor="textSecondary">
-          {seasonLabel(award.season)} · {closesLabel(award.closes_at)}
+          {seasonLabel(award.season)} · {votingLabel(award)}
           {weighted && award.preseason_closes_at
             ? ` · Preseason vote ${closesLabel(award.preseason_closes_at).replace(/^C/, 'c')}`
             : ''}

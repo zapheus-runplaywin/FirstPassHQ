@@ -9,6 +9,9 @@
  * minimum below the "must be under" age. Once anyone has voted only some
  * settings change, the ages aren't sent and the award can't be removed. A
  * duplicate gets no dates and picks the squads and teams with the same names.
+ * Voting opens when the award is saved, or at the start of a chosen day on or
+ * before the closing day; that day is sent after the award is saved, and
+ * stays as it is once anyone has voted.
  */
 import { router } from 'expo-router';
 import { act, fireEvent, screen } from 'expo-router/testing-library';
@@ -16,7 +19,7 @@ import { act, fireEvent, screen } from 'expo-router/testing-library';
 import AdminAwardScreen from '@/app/admin/awards/[id]';
 import EditAwardScreen from '@/app/admin/awards/edit';
 import AdminAwardsScreen from '@/app/admin/awards/index';
-import { endOfDay } from '@/lib/awards';
+import { endOfDay, startOfDay } from '@/lib/awards';
 import { formatDateString } from '@/lib/injuries';
 import { supabase } from '@/lib/supabase';
 import type { Award, AwardResult, AwardTurnout, Team } from '@/lib/types';
@@ -65,6 +68,7 @@ function award(extra: Partial<Award> = {}): Award {
     season: 2026,
     name: 'Volunteer of the year',
     description: 'Who helped most',
+    opens_at: null,
     closes_at: '2026-11-30T15:59:00Z',
     club_wide: true,
     per_group: false,
@@ -110,6 +114,15 @@ describe('the awards list', () => {
     expect(screen.getByText('Coaches, Managers in Open A, Archived group vote for athletes · 3-2-1 votes')).toBeTruthy();
     expect(screen.getAllByText(/^Closes /)).toHaveLength(2);
     expect(screen.queryByText('Last year’s award')).toBeNull();
+  });
+
+  it('says when voting opens for an award that hasn’t opened yet', async () => {
+    await openList([
+      award({ opens_at: '2026-11-01T00:00:00Z' }),
+      award({ id: 'aw-2', name: 'Already open', opens_at: '2026-10-01T00:00:00Z' }),
+    ]);
+    expect(screen.getAllByText(/^Opens .* · Closes /)).toHaveLength(1);
+    expect(screen.getAllByText(/^Closes /)).toHaveLength(1);
   });
 
   it('switches to an earlier season', async () => {
@@ -186,6 +199,11 @@ describe('one award', () => {
     expect(screen.queryByText('Full results report')).toBeNull();
     expect(callsTo('award_results')).toEqual([{ p_award_id: 'aw-1' }]);
     expect(callsTo('admin_award_missing_birthdays')).toEqual([]);
+  });
+
+  it('says when voting opens, before it has', async () => {
+    await openAward(award({ opens_at: '2026-11-01T00:00:00Z' }));
+    expect(screen.getByText(/^2026–27 · Opens .* · Closes /)).toBeTruthy();
   });
 
   it('says when nobody has voted', async () => {
@@ -315,7 +333,7 @@ async function openForm({ url = '/admin/awards/edit', awards = [], turnout = [],
         },
         teams: (q) => (q.calls.some((c) => c.method === 'in') ? copyGroups : undefined),
       },
-      rpcs: { award_turnout: turnout, admin_save_award: 'aw-new', admin_set_award_ages: null, admin_delete_award: null },
+      rpcs: { award_turnout: turnout, admin_save_award: 'aw-new', admin_set_award_opens: null, admin_set_award_ages: null, admin_delete_award: null },
       rpcErrors,
     },
   );
@@ -361,10 +379,12 @@ describe('a new award', () => {
 
   it('saves a whole-club award that closes in 30 days, then opens it', async () => {
     await openForm();
-    expect(screen.getByText(`2026–27 · closes ${formatDateString('2026-11-17')}`)).toBeTruthy();
+    expect(screen.getByText(`2026–27 · opens when saved · closes ${formatDateString('2026-11-17')}`)).toBeTruthy();
     await type('Name', 'Volunteer of the year');
     await saveAward();
     expect(callsTo('admin_save_award')).toEqual([DEFAULT_SAVE]);
+    // Open as soon as it's saved: no opening time.
+    expect(callsTo('admin_set_award_opens')).toEqual([{ p_award_id: 'aw-new', p_opens_at: null }]);
     expect(callsTo('admin_set_award_ages')).toEqual([
       { p_award_id: 'aw-new', p_min_age: null, p_max_age: null, p_age_on: null },
     ]);
@@ -375,7 +395,7 @@ describe('a new award', () => {
     await openForm();
     await type('Name', 'Volunteer of the year');
     await type('Description', 'Think about the whole season');
-    await section('Season and closing date');
+    await section('Season and voting dates');
     await fireEvent.press(screen.getByLabelText(new Date(2026, 10, 20).toDateString()));
     await section('Ballot');
     await fireEvent.press(screen.getByText('3-2-1 votes'));
@@ -595,6 +615,80 @@ describe('a new award', () => {
     });
   });
 
+  describe('when voting opens', () => {
+    async function chooseOpeningDay() {
+      await openForm();
+      await type('Name', 'Volunteer of the year');
+      await section('Season and voting dates');
+      expect(isSelected('When I save')).toBe(true);
+      expect(screen.getByText('Members can vote as soon as you save.')).toBeTruthy();
+      await fireEvent.press(screen.getByText('On a day I choose'));
+    }
+
+    it('needs the day when one is to be chosen, then saves the start of that day after the award', async () => {
+      await chooseOpeningDay();
+      expect(screen.getByText('Still needed: the day voting opens.')).toBeTruthy();
+      expect(isDisabled('Save award')).toBe(true);
+      expect(
+        screen.getByText('Voting opens at the start of that day. Until then members don’t see the award, and the app refuses any vote.'),
+      ).toBeTruthy();
+      // The opening calendar comes first, then the closing one.
+      await fireEvent.press(screen.getAllByLabelText(new Date(2026, 9, 25).toDateString())[0]);
+      expect(
+        screen.getByText(`2026–27 · opens ${formatDateString('2026-10-25')} · closes ${formatDateString('2026-11-17')}`),
+      ).toBeTruthy();
+      await saveAward();
+      expect(callsTo('admin_save_award')).toEqual([DEFAULT_SAVE]);
+      expect(callsTo('admin_set_award_opens')).toEqual([{ p_award_id: 'aw-new', p_opens_at: startOfDay('2026-10-25') }]);
+      expect(callsTo('admin_set_award_ages')).toHaveLength(1);
+      expect(screen).toHavePathname('/admin/awards/aw-new');
+    });
+
+    it('lets voting open and close on the same day', async () => {
+      await openForm({ url: '/admin/awards/edit?id=aw-1', awards: [award({ closes_at: '2026-10-25T15:59:00Z' })] });
+      await section('Season and voting dates');
+      await fireEvent.press(screen.getByText('On a day I choose'));
+      await fireEvent.press(screen.getAllByLabelText(new Date(2026, 9, 25).toDateString())[0]);
+      expect(screen.queryByText(/^Still needed/)).toBeNull();
+      await saveAward();
+      expect(callsTo('admin_set_award_opens')[0]).toEqual({ p_award_id: 'aw-new', p_opens_at: startOfDay('2026-10-25') });
+    });
+
+    it('refuses an opening day after the closing day', async () => {
+      await openForm({
+        url: '/admin/awards/edit?id=aw-1',
+        awards: [award({ closes_at: '2026-10-20T15:59:00Z', opens_at: new Date(2026, 9, 25).toISOString() })],
+      });
+      expect(screen.getByText('Still needed: an opening day on or before the closing day.')).toBeTruthy();
+      expect(toneOf(screen.getByText(/^2026–27 · opens /))).toBe('attention');
+      expect(isDisabled('Save award')).toBe(true);
+    });
+
+    it('sends no opening time when switched back to When I save', async () => {
+      await chooseOpeningDay();
+      await fireEvent.press(screen.getAllByLabelText(new Date(2026, 9, 25).toDateString())[0]);
+      await fireEvent.press(screen.getByText('When I save'));
+      await saveAward();
+      expect(callsTo('admin_set_award_opens')).toEqual([{ p_award_id: 'aw-new', p_opens_at: null }]);
+    });
+
+    it('shows a refused opening time and stays on the form, without setting ages', async () => {
+      await openForm({ rpcErrors: { admin_set_award_opens: 'Voting must open before it closes' } });
+      await type('Name', 'Volunteer of the year');
+      await saveAward();
+      expect(screen.getByText('Voting must open before it closes')).toBeTruthy();
+      expect(callsTo('admin_set_award_ages')).toEqual([]);
+      expect(screen).toHavePathname('/admin/awards/edit');
+    });
+
+    it('doesn’t set an opening time when the award itself is refused', async () => {
+      await openForm({ rpcErrors: { admin_save_award: 'Only admins can manage awards' } });
+      await type('Name', 'Volunteer of the year');
+      await saveAward();
+      expect(callsTo('admin_set_award_opens')).toEqual([]);
+    });
+  });
+
   it('shows a refused save and doesn’t set ages or leave the form', async () => {
     await openForm({ rpcErrors: { admin_save_award: 'Only admins can manage awards' } });
     await type('Name', 'Volunteer of the year');
@@ -700,6 +794,30 @@ describe('changing an award', () => {
     expect(screen).toHavePathname('/admin/awards/aw-new');
   });
 
+  it('loads the day voting opens and saves it back', async () => {
+    await openForm({
+      url: '/admin/awards/edit?id=aw-1',
+      awards: [{ ...SAVED, opens_at: new Date(2026, 10, 2).toISOString() }],
+    });
+    expect(screen.getByText(`2026–27 · opens ${formatDateString('2026-11-02')} · closes ${formatDateString('2026-11-30')}`)).toBeTruthy();
+    await saveAward();
+    expect(callsTo('admin_set_award_opens')).toEqual([{ p_award_id: 'aw-new', p_opens_at: startOfDay('2026-11-02') }]);
+  });
+
+  it('once anyone has voted, shows the day voting opened and doesn’t send it', async () => {
+    await openForm({
+      url: '/admin/awards/edit?id=aw-1',
+      awards: [{ ...SAVED, opens_at: new Date(2026, 9, 10).toISOString() }],
+      turnout: [{ team_id: TEAM.id, team_name: 'Open A', fixture_id: null, fixture_label: null, starts_at: null, preseason: false, ballots: 1, voters: 5 }],
+    });
+    expect(screen.getByText(`2026–27 · opened ${formatDateString('2026-10-10')} · closes ${formatDateString('2026-11-30')}`)).toBeTruthy();
+    expect(screen.getByText(/The day voting opened stays as it is\.$/)).toBeTruthy();
+    await section('Season and voting dates');
+    expect(screen.queryByText('On a day I choose')).toBeNull();
+    await saveAward();
+    expect(callsTo('admin_set_award_opens')).toEqual([]);
+  });
+
   it('asks who voted only for its own id', async () => {
     await openForm({ url: '/admin/awards/edit?id=aw-1', awards: [SAVED] });
     expect(callsTo('award_turnout')).toEqual([{ p_award_id: 'aw-1' }]);
@@ -726,10 +844,10 @@ describe('duplicating an award', () => {
       ],
     });
     expect(
-      screen.getByText(/^Copied from Volunteer of the year \(2025–26\)\. Choose when voting closes, and check the rest before saving\. 1 squad or team has no match by name in 2026–27\.$/),
+      screen.getByText(/^Copied from Volunteer of the year \(2025–26\)\. Choose when voting opens and closes, and check the rest before saving\. 1 squad or team has no match by name in 2026–27\.$/),
     ).toBeTruthy();
-    expect(screen.getByText('2026–27 · closing date not chosen')).toBeTruthy();
-    expect(toneOf(screen.getByText('2026–27 · closing date not chosen'))).toBe('attention');
+    expect(screen.getByText('2026–27 · opens when saved · closing date not chosen')).toBeTruthy();
+    expect(toneOf(screen.getByText('2026–27 · opens when saved · closing date not chosen'))).toBe('attention');
     expect(screen.getByText('Still needed: when voting closes.')).toBeTruthy();
     expect(callsTo('award_turnout')).toEqual([]);
     // The closing date section opens by itself.
@@ -743,6 +861,18 @@ describe('duplicating an award', () => {
       p_group_ids: [TEAM.id],
       p_per_group: true,
     });
+  });
+
+  it('doesn’t copy the day voting opened', async () => {
+    await openForm({
+      url: '/admin/awards/edit?from=aw-past',
+      awards: [{ ...PAST, opens_at: '2025-10-01T00:00:00Z' }],
+      copyGroups: [{ name: 'Open A', kind: 'team' }],
+    });
+    expect(screen.getByText('2026–27 · opens when saved · closing date not chosen')).toBeTruthy();
+    await fireEvent.press(screen.getByLabelText(new Date(2026, 9, 31).toDateString()));
+    await saveAward();
+    expect(callsTo('admin_set_award_opens')[0]).toEqual({ p_award_id: 'aw-new', p_opens_at: null });
   });
 
   it('starts a new award from a past one picked on the form', async () => {
