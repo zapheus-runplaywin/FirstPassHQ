@@ -102,4 +102,5 @@ RULE: `docs/user-guide.md` is the club's user guide, organised by role, with scr
 - Child safety is critically important to club admins, boards, committees, parents and the sport's governing body. Any pull request that changes how the app protects children also updates section 12, "Child safety and safeguarding", which summarises every protection for those readers.
 - Make screenshots with the tooling in the project's shared files (`thunder/screenshots/`: `shoot.mjs`, `serve.py`, fixtures; `fixtures/user-guide.mjs` covers screens only the guide uses). Use sample people only, never real club data.
 - Keep images as relative paths and `<img width="210">` tags so the guide prints to PDF cleanly. Crop screenshots to at most 1400 px tall.
+- The role guides in `docs/pdfs/` are published on the web by the "Publish guides" workflow, and the app's Help cards link to them (`src/lib/guides.ts`; `docs/pdfs/README.md`, "Published guides"). A new role or a renamed guide changes both, and `scripts/test-build-guides-site.py` keeps them in step.
 - Describe what is merged, not what is planned.

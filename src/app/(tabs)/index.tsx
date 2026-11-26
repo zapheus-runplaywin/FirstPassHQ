@@ -1,6 +1,6 @@
 import { router, useFocusEffect } from 'expo-router';
 import { useCallback, useEffect, useState } from 'react';
-import { AppState, Pressable, StyleSheet, View } from 'react-native';
+import { AppState, Linking, Pressable, StyleSheet, View } from 'react-native';
 
 import { CheckInSheet } from '@/components/check-in-sheet';
 import { Columns } from '@/components/columns';
@@ -39,6 +39,7 @@ import { isMinor } from '@/lib/age';
 import { useAuth } from '@/lib/auth';
 import { useClub } from '@/lib/club';
 import { useClubChoice } from '@/lib/club-choice';
+import { guideLinks } from '@/lib/guides';
 import { useHome, type SingleScreen } from '@/lib/home';
 import { sessionActions } from '@/lib/session';
 import { useSessionBasics } from '@/lib/use-session-actions';
@@ -240,8 +241,14 @@ function OneScreen({ which }: { which: SingleScreen }) {
   const theme = useTheme();
   const home = useHome();
   const club = useClub();
-  const { paused, waitingForGuardian, signOut } = useAuth();
-  const { switchClub } = useClubChoice();
+  const { profile, paused, waitingForGuardian, signOut } = useAuth();
+  const { switchClub, club: chosenClub } = useClubChoice();
+  // A temporary helper and a child waiting for their parent are members with a
+  // role and a guide for it, and no Me tab to find it in.
+  const guide =
+    profile && (which === 'helper' || which === 'locked')
+      ? guideLinks(chosenClub?.code, [profile.role])[0]
+      : null;
 
   return (
     <Screen withTopInset refreshing={home.refreshing} onRefresh={home.onRefresh} showVersion wide>
@@ -289,6 +296,19 @@ function OneScreen({ which }: { which: SingleScreen }) {
             </ThemedText>
           </Pressable>
         )}
+        {guide ? (
+          <Pressable
+            accessibilityRole="link"
+            accessibilityLabel={`${guide.title}, a PDF that opens in your browser`}
+            onPress={() => {
+              Linking.openURL(guide.url).catch(() => {});
+            }}
+            style={styles.footerLink}>
+            <ThemedText type="small" style={{ color: theme.tint }}>
+              User guide
+            </ThemedText>
+          </Pressable>
+        ) : null}
         <Pressable accessibilityRole="button" onPress={signOut} style={styles.footerLink}>
           <ThemedText type="small" style={{ color: theme.tint }}>
             Sign out

@@ -1,5 +1,5 @@
 import { router } from 'expo-router';
-import { StyleSheet, View } from 'react-native';
+import { Linking, StyleSheet, View } from 'react-native';
 
 import { CardGrid } from '@/components/columns';
 import { HomeCardView, SECTION_CARDS } from '@/components/home/cards';
@@ -11,17 +11,24 @@ import { ThemedText } from '@/components/themed-text';
 import { BrandFonts, Spacing } from '@/constants/theme';
 import { useAuth } from '@/lib/auth';
 import { useClubChoice } from '@/lib/club-choice';
+import { guideLinks } from '@/lib/guides';
 import { useHome } from '@/lib/home';
+import { rolesOf } from '@/lib/roles';
 
 /**
  * Me, the last tab: the member's own records, their tasks, who to talk to
- * about a child's safety, and their account. Anything of theirs that has no
- * hub to live in lands here too, so nothing they could reach before is lost.
+ * about a child's safety, the user guide for each of their roles, and their
+ * account. Anything of theirs that has no hub to live in lands here too, so
+ * nothing they could reach before is lost.
  */
 export default function MeScreen() {
   const home = useHome();
-  const { profile, session, signOut } = useAuth();
-  const { switchClub } = useClubChoice();
+  const { profile, session, signOut, paused } = useAuth();
+  const { switchClub, club } = useClubChoice();
+  // Paused roles count: a coach waiting on a check still reads the coaches' guide.
+  const guides = profile
+    ? guideLinks(club?.code, [...rolesOf(profile), ...(paused?.roles ?? [])])
+    : [];
   const cards = home.cards('me');
   const tiles = cards.filter((card) => !SECTION_CARDS.includes(card));
   const sections = cards.filter((card) => SECTION_CARDS.includes(card));
@@ -78,6 +85,25 @@ export default function MeScreen() {
         />
         <SafeguardingContactsCard />
       </View>
+
+      {guides.length > 0 ? (
+        <View style={styles.section}>
+          <SectionTitle>Help</SectionTitle>
+          <CardGrid gap={Spacing.two}>
+            {guides.map((guide) => (
+              <FeatureCard
+                key={guide.role}
+                icon="book-open"
+                title={guide.title}
+                detail="The user guide, as a PDF. Opens in your browser."
+                onPress={() => {
+                  Linking.openURL(guide.url).catch(() => {});
+                }}
+              />
+            ))}
+          </CardGrid>
+        </View>
+      ) : null}
 
       <View style={styles.section}>
         <SectionTitle>Account</SectionTitle>

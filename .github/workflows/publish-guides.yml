@@ -1,0 +1,99 @@
+name: Publish guides
+
+# Puts the user guides for each role on GitHub Pages, at addresses that stay
+# the same from one build to the next:
+#
+#   https://zapheus-runplaywin.github.io/FirstPassHQ/guides/<edition>/user-guide-<role>.pdf
+#
+# The app's Help links (src/lib/guides.ts) and the guides page on the public
+# site (firstpass-hq.expo.app/guides) point at them. Two editions go out: the
+# FirstPass HQ one and West Coast Thunder's. See docs/pdfs/README.md,
+# "Published guides".
+#
+# Runs when new PDFs merge to main, so the published guides are always the
+# latest build, and by hand from Actions.
+#
+# One setting first, once: Settings > Pages > Build and deployment > Source:
+# "GitHub Actions". Until then a run after a merge says so and publishes
+# nothing; a run by hand fails, so pressing the button never looks like it
+# worked when it didn't.
+on:
+  push:
+    branches: [main]
+    paths:
+      - 'docs/pdfs/**'
+      - 'scripts/build-guides-site.py'
+      - '.github/workflows/publish-guides.yml'
+  workflow_dispatch:
+
+permissions:
+  contents: read
+  pages: write
+  id-token: write
+
+concurrency:
+  group: publish-guides
+  cancel-in-progress: false
+
+jobs:
+  publish:
+    runs-on: ubuntu-latest
+    # GitHub Pages only takes a deployment from its own environment.
+    environment:
+      name: github-pages
+      url: ${{ steps.deploy.outputs.page_url }}
+    steps:
+      - name: Check GitHub Pages is switched on
+        id: pages
+        env:
+          GH_TOKEN: ${{ github.token }}
+          BY_HAND: ${{ github.event_name == 'workflow_dispatch' }}
+        run: |
+          source=$(gh api "repos/$GITHUB_REPOSITORY/pages" --jq .build_type 2>/dev/null || true)
+          if [ "$source" = "workflow" ]; then
+            echo "on=true" >> "$GITHUB_OUTPUT"
+            exit 0
+          fi
+          echo "on=false" >> "$GITHUB_OUTPUT"
+          message='GitHub Pages is not set to publish from GitHub Actions, so the guides were not published. Turn it on once: Settings > Pages > Build and deployment > Source: "GitHub Actions". Then run "Publish guides" again.'
+          echo "### Not published" >> "$GITHUB_STEP_SUMMARY"
+          echo "$message" >> "$GITHUB_STEP_SUMMARY"
+          if [ "$BY_HAND" = "true" ]; then
+            echo "::error::$message"
+            exit 1
+          fi
+          echo "::warning::$message"
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        if: steps.pages.outputs.on == 'true'
+        with:
+          # Only the two editions that are published, and the script.
+          sparse-checkout: |
+            docs/pdfs/generic/user-guides
+            docs/pdfs/thunder/user-guides
+            scripts
+      - name: Lay out the guides under fixed names
+        if: steps.pages.outputs.on == 'true'
+        run: python3 scripts/build-guides-site.py _site
+      - uses: actions/configure-pages@45bfe0192ca1faeb007ade9deae92b16b8254a0d # v6.0.0
+        if: steps.pages.outputs.on == 'true'
+      - uses: actions/upload-pages-artifact@fc324d3547104276b827a68afc52ff2a11cc49c9 # v5.0.0
+        if: steps.pages.outputs.on == 'true'
+        with:
+          path: _site
+      - name: Publish to GitHub Pages
+        id: deploy
+        if: steps.pages.outputs.on == 'true'
+        uses: actions/deploy-pages@368f82528645a54fb793d4d04e342629a3f51346 # v5.0.1
+      - name: Say where they are
+        if: steps.pages.outputs.on == 'true'
+        env:
+          PAGE_URL: ${{ steps.deploy.outputs.page_url }}
+        run: |
+          build=$(python3 -c "import json; print(json.load(open('_site/guides/index.json'))['build'])")
+          {
+            echo "### Published the guides from build $build"
+            echo ""
+            echo "- $PAGE_URL"
+            echo "- ${PAGE_URL}guides/generic/user-guide-athletes.pdf (and the other roles)"
+            echo "- ${PAGE_URL}guides/thunder/user-guide-athletes.pdf (and the other roles)"
+          } >> "$GITHUB_STEP_SUMMARY"

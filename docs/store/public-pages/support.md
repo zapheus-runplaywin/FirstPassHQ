@@ -10,6 +10,10 @@ FirstPass HQ is the app netball clubs use to run the club. Here is how to get he
 
 FirstPass HQ is for people 13 and over. If you are under 18, the app stays locked until the club links your parent or guardian to you. Share the link code the app shows you with them.
 
+## User guides
+
+There is a user guide for each role, as a PDF: see [User guides](/guides). In the app, yours is under Help in the Me tab.
+
 ## Questions about your club
 
 Your role, your squad or team, the club password, approvals, and what the club records about you are all looked after by your club's admins. Ask them first.

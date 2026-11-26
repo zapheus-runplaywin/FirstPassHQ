@@ -51,7 +51,8 @@ const LINKS_AND_BUTTONS: Record<string, number> = {
   'app/conduct/[id].tsx': 1,
   'app/medical/[id].tsx': 1,
   'app/concerns/message-access/[id].tsx': 1,
-  'app/(tabs)/index.tsx': 3,
+  // The links under the one-screen views, with the user guide among them.
+  'app/(tabs)/index.tsx': 4,
   'app/(tabs)/messages.tsx': 2,
   // Start again, on a message kept from earlier.
   'app/messages/new.tsx': 1,
