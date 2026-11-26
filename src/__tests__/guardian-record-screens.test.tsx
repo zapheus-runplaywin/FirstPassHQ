@@ -14,7 +14,7 @@
  * code of conduct accepted only by their verified guardian.
  */
 import { router } from 'expo-router';
-import { fireEvent, screen } from 'expo-router/testing-library';
+import { fireEvent, screen, within } from 'expo-router/testing-library';
 import { Linking } from 'react-native';
 
 import ChildActivityScreen from '@/app/activity/[id]';
@@ -31,6 +31,7 @@ import { localDay } from '@/lib/reports';
 import { argsOf, clearCalls, rpcNames, type } from './helpers/forms';
 import {
   openScreen,
+  refreshControl,
   resetClub,
   settle,
   type BackendOptions,
@@ -515,11 +516,24 @@ describe('who has viewed a child’s records', () => {
 // What's changed for a child
 
 describe('what’s changed for a child', () => {
-  async function openActivity(rows: { kind: string; summary: string; happened_at: string }[]) {
+  let counts: { athlete_id: string; new_count: number }[] = [];
+
+  async function openActivity(
+    rows: { kind: string; summary: string; happened_at: string }[],
+    newCounts: { athlete_id: string; new_count: number }[] = [],
+  ) {
+    counts = newCounts;
     await openScreen('guardian', { 'activity/[id]': ChildActivityScreen }, '/activity/child-1?name=Sample%20Child', {}, {
       rpcs: { child_activity: rows, mark_child_activity_seen: null },
+      rpcHandlers: { child_activity_new: () => counts },
     });
   }
+
+  const THREE = [
+    { kind: 'staff', summary: 'Sample coach is no longer a coach in Open A.', happened_at: '2026-11-20T05:58:00Z' },
+    { kind: 'consent', summary: 'Sample Parent gave consent for daily check-ins.', happened_at: '2026-11-19T09:37:00Z' },
+    { kind: 'guardian', summary: 'Sample Parent was linked as a parent or guardian.', happened_at: '2026-11-18T02:12:00Z' },
+  ];
 
   it('lists the changes, then marks them seen', async () => {
     await openActivity([
@@ -534,6 +548,56 @@ describe('what’s changed for a child', () => {
     expect(argsOf('mark_child_activity_seen')).toEqual([{ p_athlete_id: 'child-1' }]);
     const names = rpcNames();
     expect(names.indexOf('child_activity')).toBeLessThan(names.indexOf('mark_child_activity_seen'));
+  });
+
+  it('reads what is new before marking the list seen', async () => {
+    await openActivity(THREE, [{ athlete_id: 'child-1', new_count: 2 }]);
+    const names = rpcNames();
+    expect(names.indexOf('child_activity_new')).toBeGreaterThanOrEqual(0);
+    expect(names.indexOf('child_activity_new')).toBeLessThan(names.indexOf('mark_child_activity_seen'));
+  });
+
+  it('puts what is new since the parent last looked under its own heading, then Earlier', async () => {
+    await openActivity(THREE, [
+      { athlete_id: 'other-child', new_count: 3 },
+      { athlete_id: 'child-1', new_count: 2 },
+    ]);
+    expect(screen.getByText('2 new since you last looked')).toBeTruthy();
+    expect(screen.getByText('Earlier')).toBeTruthy();
+    const fresh = within(screen.getByTestId('activity-new'));
+    expect(fresh.getByText('Sample coach is no longer a coach in Open A.')).toBeTruthy();
+    expect(fresh.getByText('Sample Parent gave consent for daily check-ins.')).toBeTruthy();
+    expect(fresh.queryByText('Sample Parent was linked as a parent or guardian.')).toBeNull();
+    const earlier = within(screen.getByTestId('activity-earlier'));
+    expect(earlier.getByText('Sample Parent was linked as a parent or guardian.')).toBeTruthy();
+    expect(screen.getByLabelText(/^New\. Sample coach is no longer a coach in Open A\./)).toBeTruthy();
+  });
+
+  it('says how many when one is new, with no Earlier heading when everything is new', async () => {
+    await openActivity(THREE.slice(0, 1), [{ athlete_id: 'child-1', new_count: 1 }]);
+    expect(screen.getByText('1 new since you last looked')).toBeTruthy();
+    expect(screen.queryByText('Earlier')).toBeNull();
+    expect(screen.queryByTestId('activity-earlier')).toBeNull();
+  });
+
+  it('shows one plain list when nothing is new, or the count is for another child', async () => {
+    await openActivity(THREE, [{ athlete_id: 'other-child', new_count: 2 }]);
+    expect(screen.queryByText(/new since you last looked/)).toBeNull();
+    expect(screen.queryByText('Earlier')).toBeNull();
+    expect(screen.queryByTestId('activity-new')).toBeNull();
+    expect(within(screen.getByTestId('activity-earlier')).getAllByText(/Sample/)).toHaveLength(3);
+  });
+
+  it('keeps the new changes marked when the parent pulls to refresh', async () => {
+    await openActivity(THREE, [{ athlete_id: 'child-1', new_count: 2 }]);
+    // After the list is marked seen, the database says nothing is new.
+    counts = [{ athlete_id: 'child-1', new_count: 0 }];
+    clearCalls();
+    refreshControl().props.onRefresh();
+    await settle();
+    expect(rpcNames()).toContain('child_activity_new');
+    expect(screen.getByText('2 new since you last looked')).toBeTruthy();
+    expect(within(screen.getByTestId('activity-new')).getAllByText(/Sample/)).toHaveLength(2);
   });
 
   it('says when nothing has changed', async () => {

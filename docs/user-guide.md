@@ -2089,6 +2089,12 @@ carry the same number. Open it to see, newest first:
 - one of your child's injury documents shared out of the app, and by whom
 - an injury a coach, manager or physio logged for your child, and who logged it
 
+When something has happened since you last looked, it sits at the top under a heading saying how
+many are new (for example **2 new since you last looked**), on a lighter panel with a dot and bold
+words beside each one. Everything before that is under **Earlier**. The new ones stay picked out
+while you're on the screen, even if you pull down to refresh; the next time you open the list they
+move under **Earlier**, and the number on the child's card and the Family tab goes away.
+
 If an adult is stood down, you see only that they're no longer in the group; the reason stays with
 the club's admins. Ordinary views of your child's records are under
 [Who has viewed your child's records](#who-has-viewed-your-childs-records). The list stops on your
@@ -5647,8 +5653,8 @@ Working With Children Check, and another admin must do it.
   goals, their season KPIs and reviews, and their injuries, and whether they were at each session.
 - **You're told when something changes.** A new coach, manager or physio in your child's group,
   your child moving group, a guardian linked or unlinked, a consent changing or an injury document
-  shared out of the app all show under **What's changed** (see
-  [What's changed for your child](#whats-changed-for-your-child)).
+  shared out of the app all show under **What's changed**, with anything new since you last looked
+  picked out at the top (see [What's changed for your child](#whats-changed-for-your-child)).
 - **You see every survey your child is sent.** You get a copy naming your child, and you can read
   your child's answers to a named survey. Nobody, including you, can read anonymous answers (see
   [Your child's surveys](#your-childs-surveys)).
