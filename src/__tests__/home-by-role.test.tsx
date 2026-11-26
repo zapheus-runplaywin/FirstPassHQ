@@ -147,6 +147,7 @@ const ITEMS = {
   signOut: 'Sign out',
   switchClub: 'Switch club',
   deleteAccount: 'Delete account',
+  myAccount: 'My account',
   waiting: 'Waiting for approval',
 } as const;
 
@@ -159,8 +160,12 @@ function expectOnly(sees: Item[]) {
   expect(shown.sort()).toEqual([...sees].sort());
 }
 
-/** Me always has the member's details, tasks, the safety contacts and their account. */
-const ME: Item[] = ['yourDetails', 'yourTasks', 'contacts', 'signOut', 'switchClub', 'deleteAccount'];
+/**
+ * Me always has the member's details, tasks, the safety contacts and their
+ * account. Delete account lives inside My account, not on the tab, so it isn't
+ * tapped by mistake for Switch club or Sign out.
+ */
+const ME: Item[] = ['yourDetails', 'yourTasks', 'contacts', 'myAccount', 'signOut', 'switchClub'];
 /** The one screen keeps its account links at the foot. */
 const ONE_SCREEN_LINKS: Item[] = ['yourDetails', 'signOut', 'switchClub', 'deleteAccount'];
 
@@ -462,9 +467,9 @@ describe('the order of each tab', () => {
       'Your tasks',
       'Safety',
       'Account',
+      'My account',
       'Switch club',
       'Sign out',
-      'Delete account',
     ]);
   });
 
