@@ -180,7 +180,7 @@ const EMPTY_PROFILE: ClubProfileRow = {
 
 let savedProfile: ClubProfileRow = EMPTY_PROFILE;
 let savedValue: unknown = null;
-export const clubReload = jest.fn(async () => {});
+export const clubReload = jest.fn(async (): Promise<boolean> => true);
 
 /** The club's saved settings, as Club settings would load them. */
 export function setSavedClub(profile: Partial<ClubProfileRow> = {}) {

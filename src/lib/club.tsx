@@ -116,7 +116,12 @@ type ClubState = {
   squads: boolean;
   /** The club's time zone, such as "Australia/Perth": the zone "today" is worked out in. */
   timeZone: string;
-  reload: () => Promise<void>;
+  /**
+   * Reads the club's settings again. True when they were read (a club still on
+   * the built-in look reads as no settings); false when the read failed, so
+   * what's on screen may be out of date or the build's defaults.
+   */
+  reload: () => Promise<boolean>;
 };
 
 const ClubContext = createContext<ClubState | null>(null);
@@ -165,10 +170,15 @@ export function resolveClub(profile: ClubProfile | null) {
   };
 }
 
-async function fetchClubProfile() {
-  const { data, error } = await supabase.rpc('club_profile');
-  if (error || !data) return null;
-  return ((data as ClubProfile[])[0] ?? null) as ClubProfile | null;
+/** The club's settings, or `ok: false` when they couldn't be read. */
+async function fetchClubProfile(): Promise<{ ok: boolean; row: ClubProfile | null }> {
+  try {
+    const { data, error } = await supabase.rpc('club_profile');
+    if (error || !Array.isArray(data)) return { ok: false, row: null };
+    return { ok: true, row: ((data as ClubProfile[])[0] ?? null) as ClubProfile | null };
+  } catch {
+    return { ok: false, row: null };
+  }
 }
 
 /**
@@ -212,10 +222,17 @@ export function ClubProvider({ signedIn, children }: { signedIn: boolean; childr
     [cacheKey],
   );
 
-  const reload = useCallback(() => fetchClubProfile().then(save), [save]);
+  const reload = useCallback(
+    () =>
+      fetchClubProfile().then(({ ok, row }) => {
+        save(row);
+        return ok;
+      }),
+    [save],
+  );
 
   useEffect(() => {
-    if (signedIn) fetchClubProfile().then(save);
+    if (signedIn) fetchClubProfile().then(({ row }) => save(row));
   }, [signedIn, save]);
 
   const value = useMemo(

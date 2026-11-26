@@ -22,6 +22,7 @@ import ClubOptionsScreen from '@/app/admin/club/options';
 import RecordKeepingScreen from '@/app/admin/club/records';
 import { RecordRetention } from '@/components/record-retention';
 import { Screen } from '@/components/screen';
+import { NOT_LOADED_ERROR } from '@/lib/club-settings';
 import { supabase } from '@/lib/supabase';
 
 import { openScreen, settle, TODAY } from './helpers/harness';
@@ -191,6 +192,43 @@ describe('each settings page', () => {
     async (page) => {
       await openClub(page);
       expect(clubReload).toHaveBeenCalled();
+    },
+  );
+
+  // Every save sends the name, colours and logo as well, so a page that saved
+  // without the latest of them could wipe the club's logo (the demo club's
+  // pumpkin, 26 November 2026).
+  it.each(['brand', 'features', 'options'] as Page[])(
+    '%s can’t save when the club’s settings didn’t load, and says why',
+    async (page) => {
+      setSavedClub(CUSTOM_CLUB);
+      clubReload.mockResolvedValueOnce(false as never);
+      await openClub(page);
+      expect(screen.getByText(NOT_LOADED_ERROR)).toBeTruthy();
+      expect(isDisabled(SAVE_BUTTON[page as Exclude<Page, 'records'>])).toBe(true);
+      await save();
+      expect(savedProfile()).toEqual([]);
+      expect(screen.queryByText(/^Saved\./)).toBeNull();
+    },
+  );
+
+  it.each(['brand', 'features', 'options'] as Page[])(
+    '%s can’t save while the club’s settings are still loading',
+    async (page) => {
+      setSavedClub(CUSTOM_CLUB);
+      let finish: (ok: boolean) => void = () => {};
+      clubReload.mockImplementationOnce(
+        () => new Promise<boolean>((resolve) => (finish = resolve)) as never,
+      );
+      await openClub(page);
+      expect(isDisabled(SAVE_BUTTON[page as Exclude<Page, 'records'>])).toBe(true);
+      await save();
+      expect(savedProfile()).toEqual([]);
+      finish(true);
+      await settle();
+      expect(isDisabled(SAVE_BUTTON[page as Exclude<Page, 'records'>])).toBe(false);
+      await save();
+      expect(savedProfile()).toEqual([CUSTOM_SAVED]);
     },
   );
 

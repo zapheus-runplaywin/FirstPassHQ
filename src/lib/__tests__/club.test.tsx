@@ -245,6 +245,30 @@ describe('ClubProvider', () => {
     expect(result.current.injuries).toBe(false);
   });
 
+  it('reload says whether the settings were read, keeping the last ones when they weren’t', async () => {
+    rpcReturns([saved({ club_name: 'Before', logo_path: 'logo-1.png' })]);
+    const { result } = await open(true);
+    let ok: boolean | undefined;
+    rpcReturns(null, { message: 'offline' });
+    await act(async () => {
+      ok = await result.current.club.reload();
+    });
+    expect(ok).toBe(false);
+    expect(result.current.club.hasLogo).toBe(true);
+    client.rpc.mockImplementation(async () => {
+      throw new Error('Network request failed');
+    });
+    await act(async () => {
+      ok = await result.current.club.reload();
+    });
+    expect(ok).toBe(false);
+    rpcReturns([]);
+    await act(async () => {
+      ok = await result.current.club.reload();
+    });
+    expect(ok).toBe(true);
+  });
+
   it('the latest settings win over a slower read of the saved ones', async () => {
     await AsyncStorage.setItem('club-profile:THUNDER', JSON.stringify(saved({ club_name: 'Old' })));
     const getItem = AsyncStorage.getItem as jest.Mock;
