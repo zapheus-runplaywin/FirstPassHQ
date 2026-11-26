@@ -385,6 +385,9 @@ function useHomeData() {
     checkInSummary,
     checkInOverview,
     canTakeAttendance,
+    canViewAttendance,
+    /** Absences reported or withdrawn since a coach or manager last looked. */
+    absencesToReview: absencesToReview.length,
     canSeeInjuries,
     openInjuries,
     injuriesWaiting,

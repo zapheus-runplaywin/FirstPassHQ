@@ -147,7 +147,7 @@ test('a coach has Log an injury but no Report an injury, and their athlete’s i
   await expect(page.getByText(`Hi ${coach.full_name}`)).toBeVisible();
   // A coach's athletes' injuries are with their squads, in Team.
   await openTab(page, 'Team');
-  await page.getByRole('button', { name: 'Injuries 1 current injury' }).click();
+  await page.getByRole('button', { name: 'Injuries. 1 current injury' }).click();
   await expect(page.getByText('Injured athletes', { exact: true })).toBeVisible();
   await expect(page.getByRole('button', { name: 'Report an injury' })).toHaveCount(0);
   await expect(page.getByRole('button', { name: 'Log an injury' })).toBeVisible();
@@ -191,7 +191,7 @@ test('a coach logs an injury at training for one of their athletes', async ({ pa
 
   await expect(page.getByText(`Hi ${coach.full_name}`)).toBeVisible();
   await openTab(page, 'Team');
-  await page.getByRole('button', { name: 'Injuries No current injuries' }).click();
+  await page.getByRole('button', { name: 'Injuries. No current injuries' }).click();
   await page.getByRole('button', { name: 'Log an injury' }).click();
   await expect(page).toHaveURL(/\/injuries\/log$/);
 

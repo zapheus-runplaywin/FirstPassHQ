@@ -44,7 +44,7 @@ test('a coach takes attendance for their squad', async ({ page }) => {
 
   await expect(page.getByText(`Hi ${coach.full_name}`)).toBeVisible();
   await openTab(page, 'Team');
-  await page.getByRole('button', { name: /^Attendance Take attendance/ }).click();
+  await page.getByRole('button', { name: /^Attendance\. Take attendance/ }).click();
   await page.getByRole('button', { name: 'Take attendance', exact: true }).click();
 
   // Their one squad is chosen for them, and its athletes are listed unmarked.
@@ -101,7 +101,7 @@ test('an athlete reported away starts as Absent, and the coach marks the rest', 
   });
 
   await openTab(page, 'Team');
-  await page.getByRole('button', { name: /^Attendance Take attendance/ }).click();
+  await page.getByRole('button', { name: /^Attendance\. Take attendance/ }).click();
   await page.getByRole('button', { name: 'Take attendance', exact: true }).click();
 
   // Kai's absence was reported, so the register opens with Kai already Absent.

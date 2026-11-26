@@ -1,5 +1,5 @@
-import { router, Stack, useFocusEffect, useLocalSearchParams } from 'expo-router';
-import { useCallback, useState } from 'react';
+import { router, Stack, useLocalSearchParams } from 'expo-router';
+import { useState } from 'react';
 import { StyleSheet, View } from 'react-native';
 
 import { GoalGames, useGoalGames } from '@/components/goal-games';
@@ -14,15 +14,8 @@ import { useAuth } from '@/lib/auth';
 import { useClub } from '@/lib/club';
 import { formatShortDay } from '@/lib/format';
 import { gamePhase, gameTitle, useAdminTeamGames, useCoachTeamGames, useGoalBoard } from '@/lib/goals';
-import { captainRoleLabels, teamPositionLabel } from '@/lib/labels';
-import { supabase } from '@/lib/supabase';
-import type {
-  CaptainRole,
-  CoachTeamGame,
-  GoalBoardRow,
-  GroupCaptain,
-  RosterEntry,
-} from '@/lib/types';
+import type { CoachTeamGame, GoalBoardRow } from '@/lib/types';
+import { useTeamRoster } from '@/lib/use-team-roster';
 import { useTeams } from '@/lib/use-teams';
 
 export default function TeamScreen() {
@@ -31,11 +24,8 @@ export default function TeamScreen() {
   const { features } = useClub();
   const teams = useTeams();
   const team = teams.find((t) => t.id === id);
-  const [roster, setRoster] = useState<RosterEntry[] | null>(null);
-  const [captains, setCaptains] = useState<Map<string, CaptainRole>>(new Map());
-  const [clubCaptains, setClubCaptains] = useState<Set<string>>(new Set());
+  const { roster, positionLabel, reloadRoster: load } = useTeamRoster(id, team);
   const [refreshing, setRefreshing] = useState(false);
-  const season = team?.season;
 
   // Admins and the team's coaches choose its captains. Squads have none
   // (Matt, 20 November 2026): captains are chosen per team.
@@ -77,53 +67,10 @@ export default function TeamScreen() {
       .map((row) => [row.athlete_id, row]),
   );
 
-  const load = useCallback(async () => {
-    const [rosterResult, captainResult, clubResult] = await Promise.all([
-      supabase.rpc('team_roster', { p_team_id: id }),
-      supabase.from('team_captains').select('team_id, profile_id, captain_role').eq('team_id', id),
-      season === undefined
-        ? Promise.resolve({ data: [] })
-        : supabase.from('club_captains').select('profile_id').eq('season', season),
-    ]);
-    setRoster((rosterResult.data as RosterEntry[] | null) ?? []);
-    // Only a team's captains count; a squad captaincy chosen before
-    // 20 November 2026 isn't shown.
-    const captainRows = team?.kind === 'team' ? (captainResult.data as GroupCaptain[] | null) : [];
-    setCaptains(
-      new Map(
-        (captainRows ?? []).map((c) => [
-          c.profile_id,
-          c.captain_role,
-        ]),
-      ),
-    );
-    setClubCaptains(
-      new Set(
-        ((clubResult.data as { profile_id: string }[] | null) ?? []).map((c) => c.profile_id),
-      ),
-    );
-  }, [id, season, team?.kind]);
-
-  useFocusEffect(
-    useCallback(() => {
-      load();
-    }, [load]),
-  );
-
   async function onRefresh() {
     setRefreshing(true);
     await Promise.all([load(), myGames.reload(), reloadGoalBoard(), reloadTeamGames()]);
     setRefreshing(false);
-  }
-
-  function positionLabel(member: RosterEntry) {
-    const parts = [teamPositionLabel(member.team_role, member.coach_title, member.selection)];
-    if (member.team_role === 'athlete') {
-      const captainRole = captains.get(member.profile_id);
-      if (captainRole) parts.push(captainRoleLabels[captainRole]);
-      if (clubCaptains.has(member.profile_id)) parts.push('Club captain');
-    }
-    return parts.join(' · ');
   }
 
   return (

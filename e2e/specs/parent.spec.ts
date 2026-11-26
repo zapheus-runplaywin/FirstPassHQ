@@ -139,7 +139,7 @@ test('a guardian reads the copy of a message to their child, with no way to repl
   // register on Today or in Family.
   await expect(tab(page, 'Team')).toHaveCount(0);
   await expect(tab(page, 'Club')).toHaveCount(0);
-  const staffCards = [/^People/, /^Club setup/, /^Attendance Take attendance/, /^Concerns/, /^Check-ins/, /^Session plans Add/];
+  const staffCards = [/^People/, /^Club setup/, /^Attendance\.? Take attendance/, /^Concerns/, /^Check-ins/, /^Session plans Add/];
   for (const card of staffCards) {
     await expect(page.getByRole('button', { name: card })).toHaveCount(0);
   }

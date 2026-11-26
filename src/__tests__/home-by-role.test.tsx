@@ -468,7 +468,7 @@ describe('the order of each tab', () => {
     ]);
   });
 
-  it('a coach’s Team: squads, then check-ins, attendance, injuries, session plans, surveys', async () => {
+  it('a coach’s Team: check-ins, attendance, injuries, then session plans, surveys, and their squads last', async () => {
     await openTab(
       {
         ...personas.coach,
@@ -477,12 +477,12 @@ describe('the order of each tab', () => {
       '/team',
     );
     expectInOrder([
-      'My squads and teams',
       'Check-ins',
       'Attendance',
       'Injuries',
       'Session plans',
       'Surveys',
+      'My squads and teams',
     ]);
   });
 
