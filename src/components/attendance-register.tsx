@@ -102,7 +102,7 @@ export function AttendanceRegister({
                     mark.present === null
                       ? theme.textSecondary
                       : mark.present
-                        ? theme.tint
+                        ? theme.positive
                         : ABSENT,
                 }}>
                 {mark.present === null ? 'Not marked' : mark.present ? 'Present' : 'Absent'}

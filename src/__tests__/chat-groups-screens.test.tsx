@@ -41,6 +41,7 @@ import {
   setClubFeatures,
   settle,
   TEAM,
+  toneOf,
   type Persona,
   type PersonaName,
 } from './helpers/harness';
@@ -597,7 +598,7 @@ describe('admins’ chat groups', () => {
       },
     );
     expect(screen.getByText('3 people now. It follows squad, team and post changes.')).toBeTruthy();
-    expect(screen.getByText('⚠ This group includes members under 18')).toBeTruthy();
+    expect(toneOf(screen.getByText('This group includes members under 18'))).toBe('attention');
     expect(screen.getByText(/1 member is under 18/)).toBeTruthy();
     await fireEvent.changeText(screen.getByPlaceholderText('Such as Selectors'), 'Selectors');
     // Club roles and posts sit beside squads and teams (Matt, 24 November 2026).
@@ -677,7 +678,7 @@ describe('admins’ chat groups', () => {
       },
     );
     expect(screen.getByDisplayValue('Selectors')).toBeTruthy();
-    expect(screen.queryByText('⚠ This group includes members under 18')).toBeNull();
+    expect(screen.queryByText('This group includes members under 18')).toBeNull();
     await fireEvent.press(screen.getByText('Close the group'));
     await settle();
     expect(rpcCalls('admin_set_chat_group_closed')).toEqual([

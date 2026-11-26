@@ -11,6 +11,7 @@ import {
   isFollowUpAnswer,
   QUESTION_PRESETS,
   questionTag,
+  questionTagTone,
   type QuestionAnswer,
 } from '@/lib/message-questions';
 
@@ -99,6 +100,21 @@ describe('answerLine', () => {
   });
   it('is nothing before an answer', () => {
     expect(answerLine(['Yes', 'No'], null, null, false)).toBeNull();
+  });
+});
+
+describe('questionTagTone', () => {
+  it('marks the member’s own question while it is still to answer', () => {
+    expect(questionTagTone(null, null)).toBe('attention');
+    expect(questionTagTone([], null)).toBe('attention');
+  });
+  it('is done once they answer, whichever answer they gave', () => {
+    expect(questionTagTone(null, 0)).toBe('done');
+    expect(questionTagTone(null, 2)).toBe('done');
+  });
+  it('stays quiet on a child’s question, answered here or not', () => {
+    expect(questionTagTone(['child-1'], null)).toBe('quiet');
+    expect(questionTagTone(['child-1'], 1)).toBe('quiet');
   });
 });
 

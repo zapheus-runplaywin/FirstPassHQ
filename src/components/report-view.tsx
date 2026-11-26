@@ -1,6 +1,7 @@
 import { useState } from 'react';
 import { StyleSheet, View } from 'react-native';
 
+import { StatusLine } from '@/components/status-line';
 import { ThemedText } from '@/components/themed-text';
 import { Button, Card, ErrorText, PressableCard } from '@/components/ui';
 import { Spacing } from '@/constants/theme';
@@ -120,9 +121,12 @@ export function ReportView({
             ) : (
               section.rows.map((row, r) => (
                 <Card key={r}>
-                  <ThemedText type="smallBold" themeColor={row.flag ? 'tint' : undefined}>
-                    {row.cells[0]}
-                  </ThemedText>
+                  {row.flag ? (
+                    // A row that needs a look, such as a check that has run out.
+                    <StatusLine text={row.cells[0]} tone="attention" />
+                  ) : (
+                    <ThemedText type="smallBold">{row.cells[0]}</ThemedText>
+                  )}
                   {section.columns.slice(1).map((column, c) => {
                     const value = row.cells[c + 1];
                     if (!value) return null;

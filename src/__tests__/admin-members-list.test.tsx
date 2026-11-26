@@ -21,7 +21,7 @@ import type { Profile, VolunteerExemption } from '@/lib/types';
 
 import { typeInto, untilQuiet } from './helpers/admin-screens';
 import { rpcNames } from './helpers/calls';
-import { onATablet, openScreen, personas, resetClub } from './helpers/harness';
+import { onATablet, openScreen, personas, resetClub, toneOf } from './helpers/harness';
 
 jest.mock('@/lib/club', () => jest.requireActual('./helpers/harness').clubModuleMock());
 jest.mock('@/lib/club-choice', () => jest.requireActual('./helpers/harness').clubChoiceModuleMock());
@@ -221,6 +221,10 @@ describe('the Members list', () => {
     ).toBeTruthy();
     expect(screen.getByText('Athlete · No date of birth')).toBeTruthy();
     expect(screen.getByText('Coach · Stood down')).toBeTruthy();
+    // What an admin needs to sort out is marked, never in the club's colour.
+    expect(toneOf(screen.getByText('Coach · Stood down'))).toBe('attention');
+    expect(toneOf(screen.getByText('Athlete · Locked: no verified parent or guardian linked'))).toBe('attention');
+    expect(toneOf(screen.getByText('Athlete · No date of birth'))).toBe('attention');
     expect(
       screen.getByText('Manager · Parent volunteer for Lee Linked: waiting for them to accept the declaration'),
     ).toBeTruthy();

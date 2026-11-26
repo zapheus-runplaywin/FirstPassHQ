@@ -4,6 +4,7 @@ import { Pressable, StyleSheet, View } from 'react-native';
 
 import { AttendanceRegister } from '@/components/attendance-register';
 import { Screen } from '@/components/screen';
+import { StatusLine } from '@/components/status-line';
 import { ThemedText } from '@/components/themed-text';
 import { Button, Card, ChipGroup, ErrorText, TextField } from '@/components/ui';
 import { Spacing } from '@/constants/theme';
@@ -262,10 +263,8 @@ export default function TakeAttendanceScreen() {
 function NearbyWarning({ sessions }: { sessions: NearbySession[] }) {
   const theme = useTheme();
   return (
-    <Card style={[styles.warning, { borderColor: theme.accent }]}>
-      <ThemedText type="smallBold" style={{ color: theme.accent }}>
-        Attendance may already have been taken
-      </ThemedText>
+    <Card style={[styles.warning, { borderColor: theme.attention }]}>
+      <StatusLine text="Attendance may already have been taken" tone="attention" />
       {sessions.map((s) => (
         <View key={s.id} style={styles.nearby}>
           <ThemedText type="small">

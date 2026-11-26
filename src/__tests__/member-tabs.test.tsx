@@ -680,6 +680,8 @@ describe('the tab a to-do opens', () => {
     expect(selectedTab()).toBe(tab);
     // In view on that tab, and only once on the page.
     expect(screen.getByTestId('todo-banner')).toBeTruthy();
+    // What the to-do needs is marked while it is still to do.
+    expect(within(screen.getByTestId('todo-banner')).getByTestId('status-attention')).toBeTruthy();
     expect(screen.getAllByTestId('todo-banner', { includeHiddenElements: true })).toHaveLength(1);
     expect(screen.getAllByTestId('focus-anchor', { includeHiddenElements: true })).toHaveLength(1);
   });

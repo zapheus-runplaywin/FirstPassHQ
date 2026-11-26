@@ -8,6 +8,7 @@ import { DateField } from '@/components/date-field';
 import { StatusPill } from '@/components/injury-card';
 import { RaiseConcernLink } from '@/components/safeguarding';
 import { Screen } from '@/components/screen';
+import { StatusLine } from '@/components/status-line';
 import { ThemedText } from '@/components/themed-text';
 import { Button, Card, ChipGroup, ErrorText, TextField } from '@/components/ui';
 import { Spacing } from '@/constants/theme';
@@ -674,11 +675,13 @@ function UpdateCard({
   return (
     <Card>
       <View style={styles.row}>
-        <ThemedText
-          type="smallBold"
-          style={[styles.grow, update.kind === 'cleared' ? { color: theme.tint } : undefined]}>
-          {injuryUpdateTitle(update)}
-        </ThemedText>
+        {update.kind === 'cleared' ? (
+          <StatusLine text={injuryUpdateTitle(update)} tone="done" bold style={styles.grow} />
+        ) : (
+          <ThemedText type="smallBold" style={styles.grow}>
+            {injuryUpdateTitle(update)}
+          </ThemedText>
+        )}
         <ThemedText type="small" themeColor="textSecondary">
           {injuryAuthor(update)}
         </ThemedText>

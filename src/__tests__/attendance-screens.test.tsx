@@ -17,10 +17,12 @@ import AttendanceSessionScreen from '@/app/attendance/[id]';
 import FamilyAttendanceScreen from '@/app/attendance/family/[id]';
 import AttendanceScreen from '@/app/attendance/index';
 import type { AbsenceToReview, UpcomingAbsence } from '@/lib/absences';
+import { Colors } from '@/constants/theme';
 import { supabase } from '@/lib/supabase';
 import type { AttendanceMark, AttendanceSession } from '@/lib/types';
 
 import {
+  colourOf,
   morePersonas,
   onATablet,
   openScreen,
@@ -239,6 +241,9 @@ describe('one register', () => {
     expect(screen.getByText('Absent')).toBeTruthy();
     expect(screen.getByText('Present')).toBeTruthy();
     expect(screen.getByText('Not marked')).toBeTruthy();
+    // Present is green and absent is red: neither is the club's colour.
+    expect(colourOf(screen.getByText('Present'))).toBe(Colors.positive);
+    expect(colourOf(screen.getByText('Absent'))).not.toBe(Colors.tint);
     expect(screen.getByText('1 of 3 present · 1 not marked')).toBeTruthy();
   });
 

@@ -3,6 +3,7 @@ import { Pressable, StyleSheet, View } from 'react-native';
 
 import { useInCardGrid } from '@/components/columns';
 import { Icon, type IconName } from '@/components/icon';
+import { StatusLine, type StatusTone } from '@/components/status-line';
 import { ThemedText } from '@/components/themed-text';
 import { Spacing } from '@/constants/theme';
 import { useTheme } from '@/hooks/use-theme';
@@ -26,39 +27,6 @@ export function IconSquare({ name }: { name: IconName }) {
   return (
     <View style={[styles.square, { backgroundColor: theme.backgroundSelected }]}>
       <Icon name={name} size={18} color={theme.tint} />
-    </View>
-  );
-}
-
-/**
- * How a line on a card reads: quietly, as something that needs the member, or
- * as done. Never in the club's colour, which is kept for buttons, links and
- * the current tab.
- */
-export type StatusTone = 'quiet' | 'attention' | 'done';
-
-/** One line saying where something is up to, with a mark when it isn't quiet. */
-export function StatusLine({ text, tone = 'quiet' }: { text: string; tone?: StatusTone }) {
-  const theme = useTheme();
-  if (tone === 'quiet') {
-    return (
-      <ThemedText type="small" themeColor="textSecondary">
-        {text}
-      </ThemedText>
-    );
-  }
-  const done = tone === 'done';
-  return (
-    <View style={styles.status}>
-      <Icon
-        name={done ? 'check' : 'alert-circle'}
-        size={14}
-        color={done ? theme.positive : theme.attention}
-        style={styles.statusMark}
-      />
-      <ThemedText type="small" themeColor={done ? 'positive' : 'attention'} style={styles.statusText}>
-        {text}
-      </ThemedText>
     </View>
   );
 }
@@ -132,19 +100,6 @@ const styles = StyleSheet.create({
     gap: Spacing.half,
     minWidth: 0,
   },
-  status: {
-    flexDirection: 'row',
-    alignItems: 'flex-start',
-    gap: Spacing.one,
-  },
-  // Level with the first line of the text beside it.
-  statusMark: {
-    marginTop: 3,
-  },
-  statusText: {
-    flex: 1,
-    minWidth: 0,
-  },
   badge: {
     minWidth: 24,
     height: 24,
@@ -154,3 +109,5 @@ const styles = StyleSheet.create({
     justifyContent: 'center',
   },
 });
+
+export { StatusLine, type StatusTone };

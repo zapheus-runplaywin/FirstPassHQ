@@ -147,7 +147,7 @@ export default function FamilyAttendanceScreen() {
                 <ThemedText type="smallBold" style={styles.grow} numberOfLines={1}>
                   {s.name}
                 </ThemedText>
-                <ThemedText type="small" style={{ color: s.present ? theme.tint : ABSENT }}>
+                <ThemedText type="small" style={{ color: s.present ? theme.positive : ABSENT }}>
                   {s.present ? 'Present' : reported ? 'Absent, reported' : 'Absent'}
                 </ThemedText>
               </View>

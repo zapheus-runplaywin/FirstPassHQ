@@ -9,7 +9,6 @@ import { ThemedText } from '@/components/themed-text';
 import { Button, Card, ConfirmDelete, ErrorText } from '@/components/ui';
 import { MessageQuestionCard } from '@/components/message-question';
 import { Spacing } from '@/constants/theme';
-import { useTheme } from '@/hooks/use-theme';
 import { useAuth } from '@/lib/auth';
 import { blockWarning, canOfferBlock } from '@/lib/chat-blocks';
 import { useClub } from '@/lib/club';
@@ -239,7 +238,6 @@ export default function MessageScreen() {
 }
 
 function Receipts({ receipts }: { receipts: MessageReceipt[] }) {
-  const theme = useTheme();
   const readCount = receipts.filter((r) => r.read_at).length;
   return (
     <View style={styles.receipts}>
@@ -252,7 +250,7 @@ function Receipts({ receipts }: { receipts: MessageReceipt[] }) {
             {receipt.full_name ?? 'Unnamed member'}
           </ThemedText>
           {receipt.read_at ? (
-            <ThemedText type="small" style={{ color: theme.tint }}>
+            <ThemedText type="small" themeColor="positive">
               ✓ Read {formatSentAt(new Date(receipt.read_at))}
             </ThemedText>
           ) : (

@@ -19,6 +19,7 @@ import { StandDownSection } from '@/components/stand-down';
 import { WwccApplicationSection } from '@/components/wwcc-application';
 import { WwccValidation } from '@/components/wwcc-validation';
 import { WwccSubmissionReview } from '@/components/wwcc-submission-review';
+import { StatusLine } from '@/components/status-line';
 import { ThemedText } from '@/components/themed-text';
 import {
   Button,
@@ -863,9 +864,10 @@ export default function MemberScreen() {
   const todoCard = todo ? (
     <Card testID="todo-banner">
       <ThemedText type="smallBold">{todoDone ? 'Done' : 'To do'}</ThemedText>
-      <ThemedText type="small" themeColor={todoDone ? 'textSecondary' : 'tint'}>
-        {todoDone ?? (onSummary ? JOIN_SUMMARY_ACTION : memberTodoCopy[todo].action)}
-      </ThemedText>
+      <StatusLine
+        text={todoDone ?? (onSummary ? JOIN_SUMMARY_ACTION : memberTodoCopy[todo].action)}
+        tone={todoDone ? 'quiet' : 'attention'}
+      />
     </Card>
   ) : null;
   const requestsForChild = requests.filter((r) => r.athlete_id === id);
@@ -1556,15 +1558,16 @@ export default function MemberScreen() {
                 </>
               ) : null}
               {openExemption && volunteerBasis === openExemption.basis ? (
-                <ThemedText
-                  type="small"
-                  themeColor={exemptionStatus(openExemption).problem ? 'tint' : 'textSecondary'}>
-                  {exemptionStatus(openExemption).label}. Recorded by{' '}
-                  {openExemption.set_by_name ?? 'a former admin'} on {localDay(openExemption.set_at)}
-                  {openExemption.declared_at
-                    ? `; declaration accepted ${localDay(openExemption.declared_at)}.`
-                    : '.'}
-                </ThemedText>
+                <StatusLine
+                  tone={exemptionStatus(openExemption).problem ? 'attention' : 'quiet'}
+                  text={
+                    `${exemptionStatus(openExemption).label}. Recorded by ` +
+                    `${openExemption.set_by_name ?? 'a former admin'} on ${localDay(openExemption.set_at)}` +
+                    (openExemption.declared_at
+                      ? `; declaration accepted ${localDay(openExemption.declared_at)}.`
+                      : '.')
+                  }
+                />
               ) : null}
               {volunteerBasis && volunteerBasis !== openExemption?.basis ? (
                 <ThemedText type="small" themeColor="textSecondary">
@@ -1691,10 +1694,10 @@ export default function MemberScreen() {
             <View style={styles.group}>
               <ThemedText type="smallBold">Parents and guardians</ThemedText>
               {locked ? (
-                <ThemedText type="small" themeColor="tint">
-                  Locked: no verified parent or guardian is linked, so their app shows only a link code
-                  to share with one. Approve the parent who enters it, or link one here.
-                </ThemedText>
+                <StatusLine
+                  tone="attention"
+                  text="Locked: no verified parent or guardian is linked, so their app shows only a link code to share with one. Approve the parent who enters it, or link one here."
+                />
               ) : null}
               {requestsForChild.map((r) => (
                 <LinkRequest

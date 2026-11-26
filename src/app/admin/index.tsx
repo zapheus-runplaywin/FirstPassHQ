@@ -5,6 +5,7 @@ import { View, StyleSheet } from 'react-native';
 import MemberScreen from '@/app/admin/[id]';
 import { ListDetail, useListDetail } from '@/components/list-detail';
 import { Screen } from '@/components/screen';
+import { StatusLine } from '@/components/status-line';
 import { ThemedText } from '@/components/themed-text';
 import { Button, Card, PressableCard, TextField } from '@/components/ui';
 import { Spacing } from '@/constants/theme';
@@ -438,9 +439,7 @@ function TodoMembers({
                 <ThemedText type="smallBold">
                   {withNoAppLabel(m.full_name || m.email || 'Unnamed member', m.no_sign_in)}
                 </ThemedText>
-                <ThemedText type="small" themeColor="tint">
-                  {describe(m)}
-                </ThemedText>
+                <StatusLine text={describe(m)} tone="attention" />
               </PressableCard>
             ))}
           </View>
@@ -488,9 +487,7 @@ function Section({
             <ThemedText type="smallBold">
               {withNoAppLabel(m.full_name || m.email || 'Unnamed member', m.no_sign_in)}
             </ThemedText>
-            <ThemedText type="small" themeColor={warn ? 'tint' : 'textSecondary'}>
-              {describe(m)}
-            </ThemedText>
+            <StatusLine text={describe(m)} tone={warn ? 'attention' : 'quiet'} />
           </PressableCard>
         ))
       )}

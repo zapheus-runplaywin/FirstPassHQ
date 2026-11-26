@@ -1,10 +1,10 @@
 import { router } from 'expo-router';
 import { StyleSheet, View } from 'react-native';
 
+import { StatusLine } from '@/components/status-line';
 import { ThemedText } from '@/components/themed-text';
 import { PressableCard } from '@/components/ui';
 import { Spacing } from '@/constants/theme';
-import { useTheme } from '@/hooks/use-theme';
 import { formatDateString, injuryStatusLabels } from '@/lib/injuries';
 import type { Injury, InjuryStatus } from '@/lib/types';
 
@@ -84,12 +84,7 @@ export function StatusPill({ status }: { status: InjuryStatus }) {
 }
 
 function WaitingForYou() {
-  const theme = useTheme();
-  return (
-    <ThemedText type="smallBold" style={{ color: theme.accent }}>
-      Waiting for your sign-off
-    </ThemedText>
-  );
+  return <StatusLine text="Waiting for your sign-off" tone="attention" />;
 }
 
 const styles = StyleSheet.create({

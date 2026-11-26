@@ -8,6 +8,7 @@ import { TabHeader } from '@/components/home/tab-header';
 import { ListDetail, useListDetail } from '@/components/list-detail';
 import { Screen } from '@/components/screen';
 import { SwipeRow } from '@/components/swipe-row';
+import { StatusLine } from '@/components/status-line';
 import { ThemedText } from '@/components/themed-text';
 import { Button, ChipGroup, PressableCard } from '@/components/ui';
 import { Spacing } from '@/constants/theme';
@@ -22,7 +23,7 @@ import {
 } from '@/lib/chat-groups';
 import { formatSentAt } from '@/lib/format';
 import { useReloadUnread } from '@/lib/home';
-import { questionTag } from '@/lib/message-questions';
+import { questionTag, questionTagTone } from '@/lib/message-questions';
 import {
   audienceLabel,
   guardianCopyLabel,
@@ -363,9 +364,10 @@ function MessageCard({
         {message.body}
       </ThemedText>
       {message.answer_options ? (
-        <ThemedText type="smallBold" style={{ color: theme.tint }}>
-          {questionTag(for_children, answer ?? null)}
-        </ThemedText>
+        <StatusLine
+          text={questionTag(for_children, answer ?? null)}
+          tone={questionTagTone(for_children, answer ?? null)}
+        />
       ) : null}
     </PressableCard>
   );

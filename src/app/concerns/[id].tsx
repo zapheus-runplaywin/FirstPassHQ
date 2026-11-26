@@ -6,6 +6,7 @@ import { useListChanged, useScreenParams } from '@/components/list-detail';
 import { PeoplePicker } from '@/components/people-picker';
 import { ReportedMessage } from '@/components/safeguarding';
 import { Screen } from '@/components/screen';
+import { StatusLine } from '@/components/status-line';
 import { ThemedText } from '@/components/themed-text';
 import { Button, Card, ChipGroup, ErrorText, TextField } from '@/components/ui';
 import { Spacing } from '@/constants/theme';
@@ -160,9 +161,7 @@ export default function ConcernScreen() {
     <Screen>
       {concern.involves_child !== 'no' && concern.status !== 'closed' && !referred ? (
         <Card>
-          <ThemedText type="smallBold" themeColor="tint">
-            Child abuse or a serious crime?
-          </ThemedText>
+          <StatusLine text="Child abuse or a serious crime?" tone="attention" />
           <ThemedText type="small">
             Refer it to Police and {body} straight away, and record it below. Don’t try to resolve
             it within the club.

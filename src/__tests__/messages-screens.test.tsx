@@ -17,6 +17,7 @@ import { fireEvent, screen, within } from 'expo-router/testing-library';
 
 import MessageScreen from '@/app/messages/[id]';
 import MessagesScreen from '@/app/(tabs)/messages';
+import { Colors } from '@/constants/theme';
 import { supabase } from '@/lib/supabase';
 import type { MessageQuestion } from '@/lib/message-questions';
 import type { InboxMessage, Message, MessageReceipt, SentMessage } from '@/lib/types';
@@ -30,6 +31,8 @@ import {
   resetClub,
   settle,
   TEAM,
+  colourOf,
+  toneOf,
   type Persona,
   type PersonaName,
 } from './helpers/harness';
@@ -202,6 +205,9 @@ describe('one message', () => {
     expect(screen.getByText('Read by 1 of 2')).toBeTruthy();
     expect(screen.getByText('Sample athlete')).toBeTruthy();
     expect(screen.getByText(/^✓ Read /)).toBeTruthy();
+    // Read is done: green, not the club's colour.
+    expect(colourOf(screen.getByText(/^✓ Read /))).toBe(Colors.positive);
+    expect(Colors.positive).not.toBe(Colors.tint);
     expect(screen.getByText('Not read yet')).toBeTruthy();
     noTextBoxes();
   });
@@ -422,6 +428,7 @@ describe('a message that asks a question', () => {
   it('tags a question in the inbox', async () => {
     await openList('athlete', [inboxRow({ message: QUESTION_MESSAGE, answer: null })]);
     expect(screen.getByText('Question: tap to answer')).toBeTruthy();
+    expect(toneOf(screen.getByText('Question: tap to answer'))).toBe('attention');
   });
 });
 

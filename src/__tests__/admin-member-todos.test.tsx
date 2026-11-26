@@ -19,7 +19,7 @@ import { memberPageHref, memberTodoCopy, type MemberTodoKind } from '@/lib/membe
 import type { Profile, VolunteerExemption, WwccApplication } from '@/lib/types';
 
 import { openFullRecord, untilQuiet } from './helpers/admin-screens';
-import { onATablet, openScreen, personas, resetClub, type QueryInfo } from './helpers/harness';
+import { onATablet, openScreen, personas, resetClub, toneOf, type QueryInfo } from './helpers/harness';
 
 jest.mock('@/lib/club', () => jest.requireActual('./helpers/harness').clubModuleMock());
 jest.mock('@/lib/club-choice', () => jest.requireActual('./helpers/harness').clubChoiceModuleMock());
@@ -242,6 +242,7 @@ describe('a member to-do with several people', () => {
   it('says why each child is listed', async () => {
     await openTodo('locked');
     expect(screen.getByText('Athlete · Locked: no verified parent or guardian linked')).toBeTruthy();
+    expect(toneOf(screen.getByText('Athlete · Locked: no verified parent or guardian linked'))).toBe('attention');
   });
 });
 

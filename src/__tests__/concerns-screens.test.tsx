@@ -31,6 +31,7 @@ import {
   resetClub,
   setClubFeatures,
   settle,
+  toneOf,
   type BackendOptions,
   type Persona,
   type PersonaName,
@@ -359,6 +360,9 @@ describe('the concerns register', () => {
     expect(screen.getByText('Shouted at the under 12s')).toBeTruthy();
     expect(screen.getByText('Received · child’s safety · from Sample Guardian')).toBeTruthy();
     expect(screen.getByText('Closed · from Sample Guardian')).toBeTruthy();
+    // One nobody has picked up yet is marked; a closed one is quiet.
+    expect(toneOf(screen.getByText('Received · child’s safety · from Sample Guardian'))).toBe('attention');
+    expect(toneOf(screen.getByText('Closed · from Sample Guardian'))).toBe('plain');
     expect(screen.getByText('Export the register as a PDF')).toBeTruthy();
   });
 
@@ -483,6 +487,7 @@ describe('one concern', () => {
   it('prompts a referral while a child’s safety may be involved', async () => {
     await openConcern(officer, concern({ involves_child: 'unsure' }));
     expect(screen.getByText(REFERRAL)).toBeTruthy();
+    expect(toneOf(screen.getByText(REFERRAL))).toBe('attention');
     expect(screen.getByText(/Refer it to Police and State Netball straight away/)).toBeTruthy();
   });
 
@@ -773,6 +778,8 @@ describe('wellbeing flags', () => {
     expect(screen.getByText('Flagged on 3 days in the last 7')).toBeTruthy();
     expect(screen.getByText('Sample Senior')).toBeTruthy();
     expect(screen.getByText('Flagged on 1 day in the last 7')).toBeTruthy();
+    expect(toneOf(screen.getByText('Flagged on 3 days in the last 7'))).toBe('attention');
+    expect(toneOf(screen.getByText('Flagged on 1 day in the last 7'))).toBe('plain');
     expect(screen.getByText(`${formatDateString('2026-10-18')} · lowest score 2`)).toBeTruthy();
     expect(screen.getByText(`${formatDateString('2026-10-16')} · lowest score 1`)).toBeTruthy();
     expect(screen.getByText(/never their answers or notes/)).toBeTruthy();

@@ -14,7 +14,7 @@
 import type { Session } from '@supabase/supabase-js';
 import type { ComponentType, ReactNode } from 'react';
 import type { TestInstance } from 'test-renderer';
-import { Dimensions, Text } from 'react-native';
+import { Dimensions, StyleSheet, Text } from 'react-native';
 import { router, Stack } from 'expo-router';
 import { act, renderRouter, screen } from 'expo-router/testing-library';
 
@@ -813,6 +813,21 @@ async function keepingRouterSpies(renderIt: () => Promise<unknown>) {
   const spies = Object.entries(router).filter(([, fn]) => jest.isMockFunction(fn));
   await renderIt();
   Object.assign(router, Object.fromEntries(spies));
+}
+
+/** The colour some words are drawn in. */
+export function colourOf(text: TestInstance): string | undefined {
+  return (StyleSheet.flatten(text.props.style) as { color?: string } | undefined)?.color;
+}
+
+/**
+ * How a line of status reads (src/components/status-line.tsx): 'attention' is
+ * bold with a ! in a circle beside it, 'done' has a green tick, and anything
+ * else, a link or plain words, is 'plain'.
+ */
+export function toneOf(text: TestInstance): 'attention' | 'done' | 'plain' {
+  const row = text.parent?.props.testID;
+  return row === 'status-attention' ? 'attention' : row === 'status-done' ? 'done' : 'plain';
 }
 
 /**

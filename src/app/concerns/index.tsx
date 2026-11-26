@@ -5,6 +5,7 @@ import { StyleSheet, View } from 'react-native';
 import ConcernScreen from '@/app/concerns/[id]';
 import { ListDetail, useListDetail } from '@/components/list-detail';
 import { Screen } from '@/components/screen';
+import { StatusLine } from '@/components/status-line';
 import { ThemedText } from '@/components/themed-text';
 import { Button, PressableCard } from '@/components/ui';
 import { Spacing } from '@/constants/theme';
@@ -182,13 +183,14 @@ function Section({
             <ThemedText type="small" numberOfLines={2}>
               {c.body}
             </ThemedText>
-            <ThemedText
-              type="small"
-              themeColor={c.status === 'received' ? 'tint' : 'textSecondary'}>
-              {concernStatusLabels[c.status]}
-              {c.involves_child === 'yes' ? ' · child’s safety' : ''}
-              {c.anonymous ? ' · name not shown' : ` · from ${c.raised_by_name ?? 'a former member'}`}
-            </ThemedText>
+            <StatusLine
+              tone={c.status === 'received' ? 'attention' : 'quiet'}
+              text={
+                concernStatusLabels[c.status] +
+                (c.involves_child === 'yes' ? ' · child’s safety' : '') +
+                (c.anonymous ? ' · name not shown' : ` · from ${c.raised_by_name ?? 'a former member'}`)
+              }
+            />
           </PressableCard>
         ))
       )}

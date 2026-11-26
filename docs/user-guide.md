@@ -614,6 +614,11 @@ such as "9 of 12 checked in today" or "At 11 of 12 sessions in 4 weeks". A line 
 colour, which is kept for buttons, links and the tab you're on, so what needs you looks the same
 in every club and is never mistaken for a link.
 
+The same goes for the lists and pages a card opens. A line in bold with the **!** in a circle is
+something to sort out or look at, such as "Waiting for your sign-off" on an injury, "Stood down"
+under a member's name, a concern nobody has picked up yet or an athlete flagged at check-in. A
+green tick, or green words such as **Present**, means done or fine. Anything else is plain.
+
 - **Team**, for coaches, managers and physios, starts with up to three tiles that lead with the
   number that matters: **Check-ins** ("10/12 checked in today", and how many are flagged),
   **Attendance** ("88% at sessions in 4 weeks", and any new or changed absences) and **Injuries**
@@ -850,7 +855,8 @@ tap it (see [Using HQ on a tablet](#using-hq-on-a-tablet)). Chat groups open on 
 about it, and the concern keeps a copy of the message (see [Raising a concern](#raising-a-concern)).
 
 Some messages ask a question, such as "Extra session Friday?", with answers to pick from, such as
-**Yes**, **No** and **Not sure**. The inbox says **Question: tap to answer**. Open the message and
+**Yes**, **No** and **Not sure**. The inbox says **Question: tap to answer** in bold with a **!**
+in a circle, and **Question: answered** with a green tick once you have. Open the message and
 tap one answer. You answer once and can't change it, and there's nothing to type. Whoever sent it
 and the squad or team's coaches and managers see what you picked; other members never do.
 If the sender shares the totals, you see how many picked each answer, never who. If you're under 18,
@@ -4052,8 +4058,8 @@ past awards under **Start from a past award** to fill in its settings, then ente
 **Description** (what voters should think about).
 
 The rest of the form is in sections. Each one shows a one-line summary of what it is set to; tap
-it to open it and change the settings. A section opens by itself, with its summary in colour,
-when something in it needs a look. If **Save award** is greyed out, the line above it says what's
+it to open it and change the settings. A section opens by itself, with its summary in bold and a
+**!** in a circle, when something in it needs a look. If **Save award** is greyed out, the line above it says what's
 still needed.
 
 - **Season and closing date**: the season, and when **Voting closes**. Pick the day on the
@@ -4071,7 +4077,7 @@ still needed.
   definition of the award, such as Rising Star. Enter a **Minimum age**, a **Must be under** age,
   or both: minimum 16 and under 21 means nominees aged 16 to 20. Then choose when ages are
   measured: **The day voting closes**, or **A day I choose** such as 1 January. Only people with a
-  date of birth can be voted for, so the award's page says in colour how many possible nominees
+  date of birth can be voted for, so the award's page says in bold, with a **!** in a circle, how many possible nominees
   have none: add it on their page in **Members**. The ages can't change once anyone has voted.
 - **Ballot**: **One vote**, **3-2-1 votes** or **5-4-3-2-1 votes**. For awards with a winner for
   each group, **When people vote**: **Once, before it closes**, or **After every match**, using
@@ -4091,7 +4097,7 @@ games linked to the exact squads and teams it names. For example, if "West Coast
 linked to **Mixed Open A**, an award for **Mixed Open Squad** gets no match votes for those games:
 choose **Mixed Open A** in the award, or change the link under **Fixtures**. A team's games don't
 count for its squad, or the other way round. The award form shows how many PlayHQ games each
-chosen squad or team has, and warns in colour when it has none. Each award's page shows the next
+chosen squad or team has, and warns in bold, with the same mark, when it has none. Each award's page shows the next
 match for each squad or team, or says that none are linked.
 
 **Duplicate** on an award opens a new award with the same settings, ready for this season, so
@@ -4341,7 +4347,8 @@ current check, a check application in force or a volunteer exemption read the Wo
 Children Checks, Medical details checks, Integrity training, Attendance and Award results reports
 too, from **Reports** in their **Club** tab, read only (see [Reports for the
 committee](#reports-for-the-committee)). Each one shows on screen with its totals, and **Export PDF** saves the same report as a PDF through the share sheet (on a
-computer it downloads), ready for the committee, an audit or OneDrive. The PDF has the club's
+computer it downloads), ready for the committee, an audit or OneDrive. On screen, a row that
+needs attention has a **!** in a circle beside its name. The PDF has the club's
 name, the date it was made and page numbers, and anything that needs attention is in red.
 
 - **Working With Children Checks**: printed across the page, with the WWC Registration Officer

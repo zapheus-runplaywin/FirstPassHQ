@@ -32,6 +32,7 @@ import {
   resetClub,
   settle,
   TEAM,
+  toneOf,
   type Persona,
   type PersonaName,
 } from './helpers/harness';
@@ -442,6 +443,7 @@ describe('the yearly check', () => {
       rpcs: { confirm_medical_profile: null },
     });
     expect(screen.getByText(`The yearly check ${words} ${formatDateString('2026-10-30')}.`)).toBeTruthy();
+    expect(toneOf(screen.getByText(`The yearly check ${words} ${formatDateString('2026-10-30')}.`))).toBe('attention');
     await fireEvent.press(screen.getByText('Still correct'));
     await settle();
     expect(callsTo('confirm_medical_profile')).toEqual([{ p_athlete_id: 'athlete' }]);

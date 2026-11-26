@@ -3,6 +3,7 @@ import { router, useFocusEffect } from 'expo-router';
 import { useCallback, useState } from 'react';
 import { Linking, Pressable, StyleSheet, View } from 'react-native';
 
+import { StatusLine } from '@/components/status-line';
 import { ThemedText } from '@/components/themed-text';
 import { Button, Card, ChipGroup, ErrorText, TextField } from '@/components/ui';
 import { Spacing } from '@/constants/theme';
@@ -191,9 +192,7 @@ export function WwccApplicationSection({
             Application {open.application_number}, {applicationKindLabels[open.kind].toLowerCase()},
             lodged {formatDate(open.lodged_on)}
           </ThemedText>
-          <ThemedText type="small" themeColor={status.problem ? 'tint' : 'textSecondary'}>
-            {status.label}
-          </ThemedText>
+          <StatusLine text={status.label} tone={status.problem ? 'attention' : 'quiet'} />
           <ThemedText type="small" themeColor="textSecondary">
             Recorded by {open.recorded_by_name ?? 'a former admin'} on {localDay(open.recorded_at)}
             {open.declared_at ? `; declaration accepted ${localDay(open.declared_at)}` : ''}

@@ -9,7 +9,6 @@ import { Screen } from '@/components/screen';
 import { ThemedText } from '@/components/themed-text';
 import { Button, Card, ChipGroup, ErrorText, PressableCard } from '@/components/ui';
 import { Spacing } from '@/constants/theme';
-import { useTheme } from '@/hooks/use-theme';
 import {
   absenceDays,
   absenceWhy,
@@ -254,7 +253,6 @@ function Athletes({
   athletes: AthleteAttendanceSummary[] | null;
   days: string;
 }) {
-  const theme = useTheme();
   if (athletes === null) return null;
   if (athletes.length === 0) {
     return (
@@ -278,7 +276,7 @@ function Athletes({
             <ThemedText type="smallBold" style={styles.grow} numberOfLines={1}>
               {a.full_name ?? 'Unnamed athlete'}
             </ThemedText>
-            <ThemedText type="smallBold" style={{ color: theme.tint }}>
+            <ThemedText type="smallBold">
               {percent(a.present_count, a.session_count)}
             </ThemedText>
           </View>

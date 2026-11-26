@@ -27,6 +27,7 @@ import {
   personas,
   resetClub,
   settle,
+  toneOf,
   type BackendOptions,
   type Persona,
   type PersonaName,
@@ -174,6 +175,7 @@ describe('the injuries list', () => {
       injury({ status: 'clearance_requested', waiting_for_me: true }),
     ]);
     expect(screen.getAllByText('Waiting for your sign-off')).toHaveLength(2); // section and card
+    expect(screen.getAllByText('Waiting for your sign-off').map(toneOf)).toEqual(['plain', 'attention']);
     expect(screen.getByText('Waiting for a coach or physio')).toBeTruthy();
     expect(screen.getByText('Other Child · Ankle')).toBeTruthy();
   });
@@ -490,6 +492,16 @@ describe('one injury', () => {
     expect(screen.getByText(/^Restrictions: No running · Expected back:/)).toBeTruthy();
     expect(screen.getByText('Reported the injury')).toBeTruthy();
     expect(screen.getByText('Former member')).toBeTruthy();
+  });
+
+  it('marks the entry that cleared them with a green tick, not the club’s colour', async () => {
+    await openInjury('coach', injury({ status: 'cleared', cleared_at: '2026-10-17T00:00:00Z' }), [
+      update({ id: 'u3', kind: 'cleared', author_name: 'Sample Physio', notes: null }),
+      update({ id: 'u1', kind: 'reported', author_name: null, notes: null }),
+    ]);
+    // The status at the top is plain; the entry in the history has the tick.
+    expect(screen.getAllByText('Cleared to play').map(toneOf).sort()).toEqual(['done', 'plain']);
+    expect(toneOf(screen.getByText('Reported the injury'))).toBe('plain');
   });
 
   it('offers everyone a way to raise a concern about it', async () => {

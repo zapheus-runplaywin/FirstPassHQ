@@ -3,6 +3,7 @@ import { useCallback, useState } from 'react';
 import { StyleSheet, View } from 'react-native';
 
 import { Screen } from '@/components/screen';
+import { StatusLine } from '@/components/status-line';
 import { ThemedText } from '@/components/themed-text';
 import { Button, Card, ErrorText, PressableCard, TextField } from '@/components/ui';
 import { Spacing } from '@/constants/theme';
@@ -140,11 +141,10 @@ export default function MessageAccessRequestScreen() {
           value={`${request.requested_by_name} (${requestedPostLabel(request)}), ${localDay(request.created_at)}`}
         />
         <Detail label="Why" value={request.reason} />
-        <ThemedText
-          type="small"
-          themeColor={request.status === 'pending' ? 'tint' : 'textSecondary'}>
-          {requestStatusLine(request)}
-        </ThemedText>
+        <StatusLine
+          text={requestStatusLine(request)}
+          tone={request.status === 'pending' ? 'attention' : 'quiet'}
+        />
         {request.decided_by_name ? (
           <>
             <Detail
@@ -219,7 +219,10 @@ export default function MessageAccessRequestScreen() {
                 {opened[m.message_id] ? (
                   <ThemedText selectable={false}>{opened[m.message_id].body}</ThemedText>
                 ) : (
-                  <ThemedText type="small" themeColor="tint">
+                  // "Tap to read" is a link; text that has gone is only a note.
+                  <ThemedText
+                    type="small"
+                    themeColor={m.text_removed && busy !== m.message_id ? 'textSecondary' : 'tint'}>
                     {busy === m.message_id
                       ? 'Opening…'
                       : m.text_removed

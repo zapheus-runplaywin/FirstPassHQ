@@ -21,7 +21,7 @@ import { formatDateString } from '@/lib/injuries';
 import { supabase } from '@/lib/supabase';
 import type { Award, AwardResult, AwardTurnout, Team } from '@/lib/types';
 
-import { openScreen, resetClub, settle, TEAM, TEAM_B } from './helpers/harness';
+import { openScreen, resetClub, settle, TEAM, TEAM_B, toneOf } from './helpers/harness';
 import { isDisabled, isSelected, type } from './helpers/settings-forms';
 
 jest.mock('@/lib/club', () => jest.requireActual('./helpers/harness').clubModuleMock());
@@ -221,6 +221,7 @@ describe('one award', () => {
     await openAward(award({ nominee_min_age: 16, nominee_max_age: 21 }), { missing: 2 });
     expect(callsTo('admin_award_missing_birthdays')).toEqual([{ p_award_id: 'aw-1' }]);
     expect(screen.getByText(/^2 possible nominees have no date of birth, so they can’t be voted for\./)).toBeTruthy();
+    expect(toneOf(screen.getByText(/^2 possible nominees have no date of birth/))).toBe('attention');
   });
 
   it('says it once for a single nominee', async () => {
@@ -259,6 +260,7 @@ describe('one award', () => {
     expect(screen.getByText(/^Next match: Round 3 v Comets · .*\. Its vote opens when it starts\.$/)).toBeTruthy();
     // The other team has no linked games.
     expect(screen.getByText('No PlayHQ games are linked to 17 & Under A, so no match votes will open. Link it under Fixtures.')).toBeTruthy();
+    expect(toneOf(screen.getByText(/^No PlayHQ games are linked to 17 & Under A/))).toBe('attention');
     expect(screen.getByText(/· Preseason vote closes /)).toBeTruthy();
   });
 
@@ -727,6 +729,7 @@ describe('duplicating an award', () => {
       screen.getByText(/^Copied from Volunteer of the year \(2025–26\)\. Choose when voting closes, and check the rest before saving\. 1 squad or team has no match by name in 2026–27\.$/),
     ).toBeTruthy();
     expect(screen.getByText('2026–27 · closing date not chosen')).toBeTruthy();
+    expect(toneOf(screen.getByText('2026–27 · closing date not chosen'))).toBe('attention');
     expect(screen.getByText('Still needed: when voting closes.')).toBeTruthy();
     expect(callsTo('award_turnout')).toEqual([]);
     // The closing date section opens by itself.

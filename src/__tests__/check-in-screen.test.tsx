@@ -18,6 +18,7 @@ import {
   openScreen,
   resetClub,
   settle,
+  toneOf,
   type BackendOptions,
   type Persona,
   type PersonaName,
@@ -175,6 +176,7 @@ describe('today’s check-in already saved', () => {
     expect(screen.getByText('Today')).toBeTruthy();
     expect(screen.getByText('Low sleep')).toBeTruthy();
     expect(screen.getByText('Low soreness')).toBeTruthy();
+    expect(toneOf(screen.getByText('Low soreness'))).toBe('attention');
     expect(screen.getByText('Sleep 2 · Soreness 4 · Stress 4 · Mood 4')).toBeTruthy();
     expect(screen.getByText('“Fine”')).toBeTruthy();
   });

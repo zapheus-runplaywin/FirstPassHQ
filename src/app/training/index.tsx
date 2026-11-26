@@ -3,6 +3,7 @@ import { useState } from 'react';
 import { Linking, Pressable, StyleSheet, View } from 'react-native';
 
 import { Screen } from '@/components/screen';
+import { StatusLine } from '@/components/status-line';
 import { ThemedText } from '@/components/themed-text';
 import { Button, Card, PressableCard } from '@/components/ui';
 import { Spacing } from '@/constants/theme';
@@ -107,12 +108,11 @@ export default function TrainingScreen() {
 
 function TrainingCard({ row }: { row: MyTraining }) {
   const theme = useTheme();
-  const statusColour =
-    row.status === 'approved'
-      ? theme.text
-      : row.status === 'sent_back'
-        ? theme.accent
-        : theme.textSecondary;
+  const status =
+    trainingStatusLabels[row.status] +
+    (row.completed_on && row.status !== 'sent_back'
+      ? ` · completed ${formatDateString(row.completed_on)}`
+      : '');
 
   return (
     <Card>
@@ -121,12 +121,12 @@ function TrainingCard({ row }: { row: MyTraining }) {
       <ThemedText type="small" themeColor="textSecondary">
         {dueLabel(row.due_on)}
       </ThemedText>
-      <ThemedText type="small" style={{ color: statusColour }}>
-        {trainingStatusLabels[row.status]}
-        {row.completed_on && row.status !== 'sent_back'
-          ? ` · completed ${formatDateString(row.completed_on)}`
-          : ''}
-      </ThemedText>
+      {row.status === 'approved' ? (
+        // Its label carries its own tick.
+        <ThemedText type="small">{status}</ThemedText>
+      ) : (
+        <StatusLine text={status} tone={row.status === 'sent_back' ? 'attention' : 'quiet'} />
+      )}
       {row.status === 'sent_back' && row.review_note ? (
         <ThemedText type="small">
           {row.reviewed_by_name ?? 'The committee'}: “{row.review_note}”

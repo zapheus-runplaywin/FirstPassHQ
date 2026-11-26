@@ -23,6 +23,7 @@ import {
   resetClub,
   settle,
   TEAM,
+  toneOf,
   type Persona,
   type PersonaName,
   type QueryCall,
@@ -103,6 +104,7 @@ describe('the award votes list', () => {
       slot(),
     ]);
     expect(screen.getByText('Waiting for your vote')).toBeTruthy();
+    expect(toneOf(screen.getByText('Waiting for your vote'))).toBe('attention');
     expect(screen.getByText('Voted')).toBeTruthy();
     const order = screen.getAllByText(/^(Players’ player|Coach MVP)$/).map((n) => n.props.children);
     expect(order).toEqual(['Players’ player', 'Coach MVP']);

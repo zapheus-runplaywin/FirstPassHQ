@@ -5,6 +5,7 @@ import { StyleSheet, View } from 'react-native';
 import { FormSection } from '@/components/form-section';
 import { MonthDateField } from '@/components/month-date-field';
 import { Screen } from '@/components/screen';
+import { StatusLine } from '@/components/status-line';
 import { ThemedText } from '@/components/themed-text';
 import { Button, ChipGroup, ConfirmDelete, ErrorText, TextField } from '@/components/ui';
 import { Spacing } from '@/constants/theme';
@@ -588,14 +589,15 @@ export default function EditAwardScreen() {
                   each squad or team under Fixtures.
                 </ThemedText>
                 {chosenGroups.map((t) => (
-                  <ThemedText
+                  <StatusLine
                     key={t.id}
-                    type="small"
-                    themeColor={games[t.id] ? 'textSecondary' : 'accent'}>
-                    {games[t.id]
-                      ? `${teamLabel(t, teams)}: ${games[t.id]} ${games[t.id] === 1 ? 'game' : 'games'} from PlayHQ.`
-                      : `${teamLabel(t, teams)}: no PlayHQ games are linked, so no match votes will open. Link it under Fixtures, or choose the ${t.kind === 'squad' ? 'team' : 'squad'} its games are linked to.`}
-                  </ThemedText>
+                    tone={games[t.id] ? 'quiet' : 'attention'}
+                    text={
+                      games[t.id]
+                        ? `${teamLabel(t, teams)}: ${games[t.id]} ${games[t.id] === 1 ? 'game' : 'games'} from PlayHQ.`
+                        : `${teamLabel(t, teams)}: no PlayHQ games are linked, so no match votes will open. Link it under Fixtures, or choose the ${t.kind === 'squad' ? 'team' : 'squad'} its games are linked to.`
+                    }
+                  />
                 ))}
                 {!locked ? (
                   <ChipGroup

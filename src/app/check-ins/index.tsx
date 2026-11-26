@@ -3,11 +3,11 @@ import { useCallback, useEffect, useState } from 'react';
 import { StyleSheet, View } from 'react-native';
 
 import { Screen } from '@/components/screen';
+import { StatusLine } from '@/components/status-line';
 import { ThemedText } from '@/components/themed-text';
 import { CheckInTrends } from '@/components/trend-chart';
 import { Card, ChipGroup, PressableCard } from '@/components/ui';
 import { Spacing } from '@/constants/theme';
-import { useTheme } from '@/hooks/use-theme';
 import { useFeature, useSquads } from '@/lib/club';
 import {
   checkInQuestions,
@@ -56,7 +56,6 @@ function yesterday() {
 }
 
 export default function CheckInsScreen() {
-  const theme = useTheme();
   const params = useLocalSearchParams<{ team?: string }>();
   const teams = useTeams();
   const usesSquads = useSquads();
@@ -187,9 +186,7 @@ export default function CheckInsScreen() {
 
                     {flagged.length > 0 ? (
                       <View style={styles.section}>
-                        <ThemedText type="smallBold" style={{ color: theme.accent }}>
-                          Check in with
-                        </ThemedText>
+                        <StatusLine text="Check in with" tone="attention" />
                         {flagged.map((r) => (
                           <AthleteRow key={r.athlete_id} row={r} />
                         ))}
@@ -298,16 +295,13 @@ function Trends({ groups }: { groups: { value: string; label: string }[] }) {
 
 /** One squad or team's averages in the committee overview. */
 function OverviewRow({ row, label }: { row: CheckInOverviewRow; label: string }) {
-  const theme = useTheme();
   const hasScores = row.avg_sleep !== null;
   return (
     <Card>
       <View style={styles.rowHeader}>
         <ThemedText type="smallBold">{label}</ThemedText>
         {row.flagged_count ? (
-          <ThemedText type="smallBold" style={{ color: theme.accent }}>
-            {row.flagged_count} flagged
-          </ThemedText>
+          <StatusLine text={`${row.flagged_count} flagged`} tone="attention" inline />
         ) : null}
       </View>
       <ThemedText type="small" themeColor="textSecondary">
@@ -326,7 +320,6 @@ function OverviewRow({ row, label }: { row: CheckInOverviewRow; label: string })
 }
 
 function AthleteRow({ row }: { row: CheckInBoardRow }) {
-  const theme = useTheme();
   const flagged = flaggedAreas(row);
   return (
     <PressableCard
@@ -339,9 +332,7 @@ function AthleteRow({ row }: { row: CheckInBoardRow }) {
       <View style={styles.rowHeader}>
         <ThemedText type="smallBold">{row.full_name ?? 'Unnamed athlete'}</ThemedText>
         {flagged.length > 0 ? (
-          <ThemedText type="smallBold" style={{ color: theme.accent }}>
-            Low {flagged.join(', ').toLowerCase()}
-          </ThemedText>
+          <StatusLine text={`Low ${flagged.join(', ').toLowerCase()}`} tone="attention" inline />
         ) : null}
       </View>
       <ThemedText type="small" themeColor="textSecondary">

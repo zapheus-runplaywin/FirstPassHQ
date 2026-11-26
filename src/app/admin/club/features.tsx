@@ -4,6 +4,7 @@ import { StyleSheet, View } from 'react-native';
 import { LoadMonitoringSettings } from '@/components/load-monitoring-settings';
 import { Screen } from '@/components/screen';
 import { SettingSwitch } from '@/components/setting-switch';
+import { StatusLine } from '@/components/status-line';
 import { ThemedText } from '@/components/themed-text';
 import { Button, Card, ChipGroup, ErrorText } from '@/components/ui';
 import { Spacing } from '@/constants/theme';
@@ -197,9 +198,7 @@ function FeatureOffNote({ feature }: { feature: FeatureKey }) {
           : null;
   if (!text) return null;
   return (
-    <ThemedText type="small" themeColor={feature === 'injuries' ? 'tint' : 'textSecondary'}>
-      {text}
-    </ThemedText>
+    <StatusLine text={text} tone={feature === 'injuries' ? 'attention' : 'quiet'} />
   );
 }
 
