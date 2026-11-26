@@ -4527,7 +4527,10 @@ The club's settings are on four pages in **Club > Club setup**, each with its ow
 - [Record keeping](#record-keeping): how long the club keeps records, and removing old ones.
 
 Saving one page leaves the others exactly as they were. Members see the changes the next time
-they open the app.
+they open the app. **Save** on Club brand, Club features and Club options works once the page has
+read the club's latest settings. If they can't be read (no signal, say), the page says so and won't
+save, so a save can never put the club's name, colours or logo back to the built-in look by
+mistake: check your connection, go back and open the page again.
 
 #### Club brand
 

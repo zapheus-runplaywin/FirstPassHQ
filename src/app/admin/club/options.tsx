@@ -7,7 +7,13 @@ import { ThemedText } from '@/components/themed-text';
 import { Button, Card, ChipGroup, ErrorText } from '@/components/ui';
 import { Spacing } from '@/constants/theme';
 import { useClub } from '@/lib/club';
-import { SAVED_NOTICE, saveClubProfile, savedLook } from '@/lib/club-settings';
+import {
+  NOT_LOADED_ERROR,
+  saveClubProfile,
+  SAVED_NOTICE,
+  savedLook,
+  useLatestClubSettings,
+} from '@/lib/club-settings';
 import { CLUB_TIME_ZONES, clubToday, timeZoneLabel } from '@/lib/club-time';
 import { formatDateString } from '@/lib/injuries';
 import { supabase } from '@/lib/supabase';
@@ -26,18 +32,17 @@ export default function ClubOptionsScreen() {
   const [timeZone, setTimeZone] = useState(club.timeZone);
   /** Whether physios get messages sent to the whole club. Off unless an admin turns it on. */
   const [physioMessages, setPhysioMessages] = useState(false);
-  const [loaded, setLoaded] = useState(false);
+  const settings = useLatestClubSettings(club.reload);
+  const loaded = settings !== 'loading';
   const [saving, setSaving] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [notice, setNotice] = useState<string | null>(null);
 
-  // Fill the form once, from the latest saved settings.
+  // The rest of the form, once; the club's settings load in useLatestClubSettings.
   useEffect(() => {
-    club.reload().finally(() => setLoaded(true));
     supabase
       .rpc('physios_get_club_messages')
       .then(({ data }) => setPhysioMessages(data === true));
-    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
   const [filledFrom, setFilledFrom] = useState<typeof saved | undefined>(undefined);
   if (loaded && filledFrom !== saved) {
@@ -51,6 +56,7 @@ export default function ClubOptionsScreen() {
     : [...CLUB_TIME_ZONES, { value: club.timeZone, label: timeZoneLabel(club.timeZone) }];
 
   async function save() {
+    if (settings !== 'loaded') return;
     setSaving(true);
     setError(null);
     setNotice(null);
@@ -146,13 +152,13 @@ export default function ClubOptionsScreen() {
         </Card>
       </View>
 
-      <ErrorText>{error}</ErrorText>
+      <ErrorText>{settings === 'failed' ? NOT_LOADED_ERROR : error}</ErrorText>
       {notice ? (
         <ThemedText type="small" themeColor="textSecondary">
           {notice}
         </ThemedText>
       ) : null}
-      <Button title="Save club options" onPress={save} busy={saving} />
+      <Button title="Save club options" onPress={save} busy={saving} disabled={settings !== 'loaded'} />
     </Screen>
   );
 }

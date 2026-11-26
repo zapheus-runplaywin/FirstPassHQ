@@ -1,7 +1,7 @@
 import * as DocumentPicker from 'expo-document-picker';
 import { File } from 'expo-file-system';
 import { Image } from 'expo-image';
-import { useEffect, useState } from 'react';
+import { useState } from 'react';
 import { Platform, Pressable, StyleSheet, View } from 'react-native';
 
 import { Screen } from '@/components/screen';
@@ -11,7 +11,12 @@ import { ClubDefaults } from '@/constants/club';
 import { contrastRatio, isHexColour, makeColors, Spacing } from '@/constants/theme';
 import { useTheme } from '@/hooks/use-theme';
 import { defaultLogo, logoUrl, useClub } from '@/lib/club';
-import { SAVED_NOTICE, saveClubProfile } from '@/lib/club-settings';
+import {
+  NOT_LOADED_ERROR,
+  saveClubProfile,
+  SAVED_NOTICE,
+  useLatestClubSettings,
+} from '@/lib/club-settings';
 import { supabase } from '@/lib/supabase';
 
 const LOGO_TYPES = ['image/png', 'image/jpeg'];
@@ -45,17 +50,14 @@ export default function ClubBrandScreen() {
   /** Empty means the build's default. */
   const [textTone, setTextTone] = useState<TextTone | null>(null);
   const [logoPath, setLogoPath] = useState<string | null>(null);
-  const [loaded, setLoaded] = useState(false);
+  const settings = useLatestClubSettings(club.reload);
+  const loaded = settings !== 'loading';
   const [uploading, setUploading] = useState(false);
   const [saving, setSaving] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [notice, setNotice] = useState<string | null>(null);
 
   // Fill the form once, from the latest saved settings.
-  useEffect(() => {
-    club.reload().finally(() => setLoaded(true));
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, []);
   const [filledFrom, setFilledFrom] = useState<typeof saved | undefined>(undefined);
   if (loaded && filledFrom !== saved) {
     setFilledFrom(saved);
@@ -122,6 +124,7 @@ export default function ClubBrandScreen() {
   }
 
   async function save() {
+    if (settings !== 'loaded') return;
     if (badColour) {
       setError(`${badColour.label} must be a colour code like ${ClubDefaults.hero}.`);
       return;
@@ -286,13 +289,13 @@ export default function ClubBrandScreen() {
         </Pressable>
       </View>
 
-      <ErrorText>{error}</ErrorText>
+      <ErrorText>{settings === 'failed' ? NOT_LOADED_ERROR : error}</ErrorText>
       {notice ? (
         <ThemedText type="small" themeColor="textSecondary">
           {notice}
         </ThemedText>
       ) : null}
-      <Button title="Save club brand" onPress={save} busy={saving} disabled={uploading} />
+      <Button title="Save club brand" onPress={save} busy={saving} disabled={uploading || settings !== 'loaded'} />
     </Screen>
   );
 }

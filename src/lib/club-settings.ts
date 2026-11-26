@@ -1,3 +1,5 @@
+import { useEffect, useState } from 'react';
+
 import { FEATURES, offByDefault, type ClubProfile, type Features } from '@/lib/club';
 import { supabase } from '@/lib/supabase';
 
@@ -62,3 +64,34 @@ export async function saveClubProfile(
 }
 
 export const SAVED_NOTICE = 'Saved. Members see the changes next time they open the app.';
+
+/** Shown in place of Save when the club's settings couldn't be read. */
+export const NOT_LOADED_ERROR =
+  'The club’s settings didn’t load, so this page can’t save. Check your connection, then go back and open it again.';
+
+/**
+ * Reads the club's settings again as a settings page opens. Each save sends
+ * the name, colours and logo too, so a page may only save once it has the
+ * latest of them: before then (`loading`), or when the read failed
+ * (`failed`), saving would send whatever the phone last saw, or the build's
+ * defaults, and could wipe the club's logo.
+ */
+export function useLatestClubSettings(reload: () => Promise<boolean>) {
+  const [state, setState] = useState<'loading' | 'loaded' | 'failed'>('loading');
+  useEffect(() => {
+    let live = true;
+    reload()
+      .then(
+        (ok) => ok !== false,
+        () => false,
+      )
+      .then((ok) => {
+        if (live) setState(ok ? 'loaded' : 'failed');
+      });
+    return () => {
+      live = false;
+    };
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
+  return state;
+}

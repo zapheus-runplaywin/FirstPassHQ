@@ -9,7 +9,13 @@ import { ThemedText } from '@/components/themed-text';
 import { Button, Card, ChipGroup, ErrorText } from '@/components/ui';
 import { Spacing } from '@/constants/theme';
 import { FEATURES, useClub, type FeatureKey } from '@/lib/club';
-import { SAVED_NOTICE, saveClubProfile, savedLook } from '@/lib/club-settings';
+import {
+  NOT_LOADED_ERROR,
+  saveClubProfile,
+  SAVED_NOTICE,
+  savedLook,
+  useLatestClubSettings,
+} from '@/lib/club-settings';
 import {
   checkInsOffNote,
   injuriesOffWarning,
@@ -42,19 +48,18 @@ export default function ClubFeaturesScreen() {
   const [pilotOnly, setPilotOnly] = useState<FeatureKey[]>([]);
   const [pilotTeams, setPilotTeams] = useState<string[]>([]);
   const teams = useTeams();
-  const [loaded, setLoaded] = useState(false);
+  const settings = useLatestClubSettings(club.reload);
+  const loaded = settings !== 'loading';
   const [saving, setSaving] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [notice, setNotice] = useState<string | null>(null);
 
-  // Fill the form once, from the latest saved settings.
+  // The rest of the form, once; the club's settings load in useLatestClubSettings.
   useEffect(() => {
-    club.reload().finally(() => setLoaded(true));
     loadPilot().then((pilot) => {
       setPilotOnly(pilot.features);
       setPilotTeams(pilot.teamIds);
     });
-    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
   const [filledFrom, setFilledFrom] = useState<typeof saved | undefined>(undefined);
   if (loaded && filledFrom !== saved) {
@@ -63,6 +68,7 @@ export default function ClubFeaturesScreen() {
   }
 
   async function save() {
+    if (settings !== 'loaded') return;
     setSaving(true);
     setError(null);
     setNotice(null);
@@ -159,13 +165,13 @@ export default function ClubFeaturesScreen() {
         ) : null}
       </View>
 
-      <ErrorText>{error}</ErrorText>
+      <ErrorText>{settings === 'failed' ? NOT_LOADED_ERROR : error}</ErrorText>
       {notice ? (
         <ThemedText type="small" themeColor="textSecondary">
           {notice}
         </ThemedText>
       ) : null}
-      <Button title="Save club features" onPress={save} busy={saving} />
+      <Button title="Save club features" onPress={save} busy={saving} disabled={settings !== 'loaded'} />
 
       {club.features.checkIns && club.features.trainingLoad ? <LoadMonitoringSettings /> : null}
     </Screen>

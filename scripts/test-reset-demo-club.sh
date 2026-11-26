@@ -111,6 +111,7 @@ check 'every other feature is off' "$(q "select count(*) from public.club_settin
 check 'athlete19 in the pilot sees Messages' "$(as "$(id 8)" "select public.member_features() ->> 'messages'")" true
 check 'guardian of a pilot athlete sees Messages' "$(as "$(id 11)" "select public.member_features() ->> 'messages'")" true
 check 'openathlete outside the pilot sees no Messages' "$(as "$(id 12)" "select public.member_features() ->> 'messages'")" false
+check '"Remove old records" is off' "$(q "select retention_enabled from public.club_settings where id")" f
 check 'a game is coming up for each team' "$(q "select count(*) from public.fixtures where playhq_game_id like 'demo-game-%' and starts_at > now()")" 2
 
 # What testers and reviewers do, then a second reset. Each step must work, or
@@ -125,12 +126,14 @@ setup "update public.teams set pilot = true where name = 'Open A'; update public
 setup "insert into auth.users (id, email) values ('11111111-1111-4111-8111-111111111111', 'squatter@demo.firstpass.example')"
 setup "delete from auth.users where id = '$(id 4)'; insert into auth.users (id, email) values ('22222222-2222-4222-8222-222222222222', 'asstcoach@demo.firstpass.example')"
 setup "$real_club"
+setup "update public.club_settings set retention_enabled = true where id"
 
 check 'a demo message was sent before the reset' "$(q "select count(*) from public.messages where sender_id = '$(id 3)'")" 1
 reset "$password" "$logo"
 check 'the second reset runs' "$?" 0
 check "a look changed in Club settings goes back to the Perth Pumpkins'" \
   "$(look)" "Perth Pumpkins|Pumpkins|#0F2A1B|#FFFFFF|#FF7518|$logo"
+check '"Remove old records" switched on goes back off' "$(q "select retention_enabled from public.club_settings where id")" f
 check 'demo messages are gone' "$(q "select count(*) from public.messages where sender_id = '$(id 3)'")" 0
 check 'a changed password is put back' \
   "$(q "select encrypted_password = extensions.crypt('$password', encrypted_password) from auth.users where id = '$(id 1)'")" t
