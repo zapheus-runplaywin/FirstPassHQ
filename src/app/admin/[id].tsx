@@ -5,6 +5,7 @@ import { Linking, Pressable, StyleSheet, View } from 'react-native';
 import { FocusAnchor } from '@/components/focus-anchor';
 import { GuardianHistory } from '@/components/guardian-history';
 import { JoinRequestSummary, type JoinAnswer } from '@/components/join-request';
+import { Fold, MemberHeader, MemberPane, NeedsAttention } from '@/components/member-tabs';
 import { NoAppChildAdmin } from '@/components/no-app-child';
 import { Screen } from '@/components/screen';
 import { ScreeningNotices } from '@/components/screening-notices';
@@ -45,9 +46,17 @@ import {
   rolesLabel,
   selectionLabels,
   staffTitle,
-  statusLabels,
   teamRoleLabels,
 } from '@/lib/labels';
+import {
+  memberAttention,
+  memberLead,
+  pausedNotice,
+  shownTabs,
+  tabForSection,
+  tabToShow,
+  type MemberTab,
+} from '@/lib/member-tabs';
 import {
   isMemberTodoKind,
   memberTodoCopy,
@@ -61,6 +70,8 @@ import {
   exemptionStatus,
   standDownRoles,
   isDatedExemption,
+  pausedRoles,
+  safetyIssues,
   verificationMethodLabels,
   volunteerExemptionLabels,
   volunteerScreeningLabels,
@@ -80,6 +91,7 @@ import type {
   VerificationMethod,
   VolunteerExemption,
   VolunteerExemptionBasis,
+  WwccApplication,
 } from '@/lib/types';
 import { leaveOtherGroups } from '@/lib/team-placements';
 import { teamLabel, topGroups, useTeams } from '@/lib/use-teams';
@@ -130,7 +142,7 @@ export default function MemberScreen() {
   // Opened from a home screen to-do: say what it needs, and show that part first.
   const todo = isMemberTodoKind(params.todo) ? params.todo : null;
   const section = todo ? memberTodoCopy[todo].section : null;
-  const { session, refresh } = useAuth();
+  const { session, refresh, committeeChecksFrom, statisticianChecksFrom } = useAuth();
   const teams = useTeams();
   const usesSquads = useSquads();
   const [member, setMember] = useState<Profile | null>(null);
@@ -190,6 +202,12 @@ export default function MemberScreen() {
   const [declining, setDeclining] = useState(false);
   // They already have places in this season's squads and teams.
   const [hasPlaces, setHasPlaces] = useState(false);
+  // The squads and teams they are in now, as saved.
+  const [savedPlaces, setSavedPlaces] = useState<string[]>([]);
+  // The full record is in tabs. A to-do opens the tab its part is on.
+  const [tab, setTab] = useState<MemberTab>(() => tabForSection(section));
+  // Their open check application: undefined until its section has asked for it.
+  const [application, setApplication] = useState<WwccApplication | null | undefined>(undefined);
 
   useEffect(() => {
     (async () => {
@@ -308,6 +326,7 @@ export default function MemberScreen() {
 
       const existing = teamsResult.data ?? [];
       setHasPlaces(existing.length > 0);
+      setSavedPlaces(existing.map((t) => t.team_id));
       if (profile.status === 'approved' || existing.length > 0) {
         setRole(profile.role);
         setExtraRoles(profile.extra_roles ?? []);
@@ -527,54 +546,65 @@ export default function MemberScreen() {
     );
   }
 
+  /** Refuses a save before anything is sent, and opens the tab holding what to fix. */
+  function refuse(message: string, at: MemberTab) {
+    setError(message);
+    setTab(at);
+  }
+
   async function save(status: MemberStatus) {
     // The member sees why they were turned down or lost access, so it's never left blank.
     if (status === 'rejected' && !reason) {
-      setError(
+      refuse(
         member?.status === 'approved'
           ? 'Choose a reason before removing access.'
           : 'Choose a reason before turning this request down.',
+        'overview',
       );
       return;
     }
     const expires = parseDate(wwccExpires);
     if (dob === undefined) {
-      setError('Enter the date of birth as DD/MM/YYYY.');
+      refuse('Enter the date of birth as DD/MM/YYYY.', 'checks');
       return;
     }
     if (expires === undefined) {
-      setError('Enter the check expiry date as DD/MM/YYYY.');
+      refuse('Enter the check expiry date as DD/MM/YYYY.', 'checks');
       return;
     }
     if (expires && !cardUnchanged && expires > threeYearsFromToday()) {
-      setError('A Working With Children Check lasts three years. Check the expiry date on the card.');
+      refuse(
+        'A Working With Children Check lasts three years. Check the expiry date on the card.',
+        'checks',
+      );
       return;
     }
     if (comboProblem && status === 'approved') {
-      setError(comboProblem);
+      refuse(comboProblem, 'roles');
       return;
     }
     if (isExempt && !exemptReason.trim()) {
-      setError('Write why they don’t need a Working With Children Check.');
+      refuse('Write why they don’t need a Working With Children Check.', 'checks');
       return;
     }
     if (volunteerBasis === 'parent_volunteer' && !exemptChild) {
-      setError('Choose the child they volunteer for.');
+      refuse('Choose the child they volunteer for.', 'checks');
       return;
     }
     const exemptStart = parseDate(exemptFrom);
     if (volunteerBasis && isDatedExemption(volunteerBasis) && !exemptStart) {
-      setError(
+      refuse(
         volunteerBasis === 'short_term_visitor'
           ? 'Enter the day they arrived in WA as DD/MM/YYYY.'
           : 'Enter the first day of the event or tour as DD/MM/YYYY.',
+        'checks',
       );
       return;
     }
     const firstDay = parseDate(volunteerFrom);
     const lastDay = parseDate(volunteerUntil);
     if (isVolunteer && (firstDay === undefined || lastDay === undefined)) {
-      setError('Enter their first and last day as DD/MM/YYYY.');
+      refuse('Enter their first and last day as DD/MM/YYYY.', 'roles');
       return;
     }
     setSaving(status);
@@ -947,8 +977,82 @@ export default function MemberScreen() {
     );
   }
 
+  // What each tab holds for this member. A tab with nothing in it isn't offered.
+  const isApproved = member.status === 'approved';
+  const showVerify = (!isApproved || isGuardian) && !member.verified_at;
+  const showNotices =
+    isApproved && !isSelf && (!!member.stood_down_at || hasRole(member, ...standDownRoles, 'guardian'));
+  const showStandDown =
+    isApproved && !isSelf && (!!member.stood_down_at || hasRole(member, ...standDownRoles));
+  // Someone with no current card who could be working on a lodged application.
+  const showApplication =
+    needsWwcc && !isExempt && !volunteerBasis && !isVolunteer && !minor && !savedCardCurrent;
+  const showNoAppChild = (isGuardian || member.requested_role === 'guardian') && !member.no_sign_in;
+  const showGuardianOf = isGuardian && isApproved;
+  const showChildCodes = isGuardian && requestsByParent.length > 0;
+  const showRecordViews = isApproved && isMinor(member.date_of_birth, member.under_17);
+  const showGuardianHistory = hasGuardians || showGuardianOf;
+  const endedExemptions = exemptions.filter((e) => e.ended_at);
+  const tabs = shownTabs({
+    checks: showVerify || hasDateOfBirth || needsWwcc || showNotices || showStandDown,
+    family: hasGuardians || showNoAppChild || showGuardianOf || showChildCodes,
+    history: showRecordViews || showGuardianHistory || endedExemptions.length > 0,
+  });
+  const current = tabToShow(tab, tabs);
+
+  // Above the tabs, on every one of them: who they are, and whether their roles are paused.
+  const inGroups = teams.filter((t) => savedPlaces.includes(t.id));
+  const inTeamsNow = inGroups.filter((t) => t.kind === 'team');
+  const lead = memberLead({
+    member,
+    places: (inTeamsNow.length > 0 ? inTeamsNow : inGroups).map((t) => teamLabel(t, teams)),
+    asked: askedLine(member, requestedTeam ? teamLabel(requestedTeam, teams) : null),
+    reason: member.rejection_reason ? rejectionReasonLabels[member.rejection_reason] : null,
+  });
+  // Their open application is only known once its section has asked for it.
+  const attentionReady = !showApplication || application !== undefined;
+  const notice = pausedNotice({
+    approved: isApproved,
+    stoodDownOn: member.stood_down_at ? localDay(member.stood_down_at) : null,
+    paused: attentionReady
+      ? pausedRoles(
+          member,
+          !!openExemption?.valid,
+          committeeChecksFrom,
+          application?.status === 'in_force',
+          statisticianChecksFrom,
+        )
+      : [],
+  });
+  // The same lines the member list shows under their name, each with its tab.
+  const attention = memberAttention({
+    member,
+    roles,
+    issues: safetyIssues(
+      member,
+      savedGuardianIds.some((g) => unlocksChild(personOf(g))),
+      openExemption,
+      application,
+    ),
+    comboProblem,
+    hasOpenExemption: !!openExemption,
+    parentCodes: requestsForChild.length,
+    childCodes: requestsByParent.length,
+  });
+
   return (
-    <Screen key="record">
+    <Screen
+      key="record"
+      header={
+        <MemberHeader
+          lead={lead}
+          notice={notice}
+          onNotice={tabs.includes('checks') ? () => setTab('checks') : undefined}
+          tabs={tabs}
+          tab={current}
+          onTab={setTab}
+        />
+      }>
       <Stack.Screen options={{ title: member.full_name || member.email || 'Member' }} />
 
       {canSummarise ? (
@@ -962,806 +1066,810 @@ export default function MemberScreen() {
         />
       ) : null}
 
-      {section === 'approve' ? todoCard : null}
+      <MemberPane tab="overview" current={current}>
+        {section === 'approve' ? todoCard : null}
 
-      <Card>
-        <Detail label="Status" value={statusLabels[member.status]} />
-        <Detail label="Preferred name" value={member.preferred_name} />
-        <Detail
-          label="Sign-in email"
-          value={
-            member.no_sign_in
-              ? 'None. A child who won’t use the app: their parent or guardian does everything for them'
-              : member.email
-          }
-        />
-        <Detail label="PlayHQ email" value={member.playhq_email} />
-        <Detail
-          label="Verified"
-          value={
-            member.verified_at
-              ? `Yes, ${new Date(member.verified_at).toLocaleDateString()}${
-                  member.verification_method
-                    ? `, ${verificationMethodLabels[member.verification_method].toLowerCase()}`
-                    : ''
-                }`
-              : 'Not yet'
-          }
-        />
-        {member.verified_at && member.verification_note ? (
-          <Detail label="What was checked" value={member.verification_note} />
+        {attentionReady ? (
+          <NeedsAttention items={attention} tabs={tabs} onOpen={setTab} />
         ) : null}
-        {member.declared_date_of_birth ? (
+
+        <Card>
+          <Detail label="Preferred name" value={member.preferred_name} />
           <Detail
-            label="Date of birth they gave"
-            value={`${formatDate(member.declared_date_of_birth)} (${ageOn(member.declared_date_of_birth)})`}
+            label="Sign-in email"
+            value={
+              member.no_sign_in
+                ? 'None. A child who won’t use the app: their parent or guardian does everything for them'
+                : member.email
+            }
           />
-        ) : null}
-        <Detail label="Guardian email they gave" value={member.guardian_email} />
-        {member.status !== 'approved' ? (
-          <>
-            <Detail
-              label="Asked to join as"
-              value={member.requested_role ? roleLabels[member.requested_role] : null}
-            />
-            <Detail
-              label={usesSquads ? 'Asked for squad' : 'Asked for team'}
-              value={requestedTeam?.name}
-            />
-          </>
-        ) : null}
-      </Card>
-
-      <ChipGroup
-        label="Role"
-        options={allRoles.map((r) => ({ value: r, label: roleLabels[r] }))}
-        selected={[role]}
-        onToggle={changeRole}
-      />
-
-      {(role !== 'guest' && role !== 'volunteer') || extraRoles.length > 0 ? (
-        <View style={styles.group}>
-          <ChipGroup
-            label="Other roles"
-            options={allRoles
-              .filter((r) => r !== role)
-              .map((r) => ({ value: r, label: roleLabels[r] }))}
-            selected={extraRoles.filter((r) => r !== role)}
-            onToggle={toggleExtraRole}
-          />
-          {comboProblem ? (
-            <ErrorText>{comboProblem}</ErrorText>
-          ) : (
-            <ThemedText type="small" themeColor="textSecondary">
-              For someone with more than one role, such as a coach who is also a parent.
-            </ThemedText>
-          )}
-        </View>
-      ) : null}
-
-      {isVolunteer ? (
-        <View style={styles.group}>
-          <ThemedText type="smallBold">Temporary helper</ThemedText>
-          <ThemedText type="small" themeColor="textSecondary">
-            Someone helping for a day or a short time, paid or unpaid, and not necessarily a club
-            member. The app only onboards them: they get no club features or messages. You can
-            approve them once they’ve accepted the club’s policies and a check, or an exemption
-            they’ve accepted, covers every day they’ll help. Their time ends by itself after their
-            last day.
-          </ThemedText>
-          <TextField
-            label="What they’ll help with"
-            value={task}
-            onChangeText={setTask}
-            maxLength={200}
-            multiline
-          />
-          <TextField
-            label="First day"
-            value={volunteerFrom}
-            onChangeText={setVolunteerFrom}
-            placeholder="DD/MM/YYYY"
-            keyboardType="numbers-and-punctuation"
-            maxLength={10}
-          />
-          <TextField
-            label="Last day"
-            value={volunteerUntil}
-            onChangeText={setVolunteerUntil}
-            placeholder="DD/MM/YYYY"
-            keyboardType="numbers-and-punctuation"
-            maxLength={10}
-          />
-          {member.volunteer_screening ? (
-            <Detail label="They said" value={volunteerScreeningLabels[member.volunteer_screening]} />
-          ) : null}
-          {member.declared_wwcc_number ? (
-            <Detail label="Card number they gave" value={member.declared_wwcc_number} />
-          ) : null}
+          <Detail label="PlayHQ email" value={member.playhq_email} />
           <Detail
-            label="Club policies"
-            value={acknowledgedAt ? `Accepted ${localDay(acknowledgedAt)}` : 'Not accepted yet'}
+            label="Verified"
+            value={
+              member.verified_at
+                ? `Yes, ${new Date(member.verified_at).toLocaleDateString()}${
+                    member.verification_method
+                      ? `, ${verificationMethodLabels[member.verification_method].toLowerCase()}`
+                      : ''
+                  }`
+                : 'Not yet'
+            }
           />
-        </View>
-      ) : null}
-
-      {canHoldTitle(roles) ? (
-        <TextField
-          label="Title"
-          value={title}
-          onChangeText={setTitle}
-          placeholder="President, Secretary, Treasurer…"
-          autoCapitalize="words"
-          maxLength={40}
-        />
-      ) : null}
-
-      <FocusAnchor active={section === 'physio'}>{todoCard}</FocusAnchor>
-
-      {isPhysio ? (
-        <View style={styles.group}>
-          <ChipGroup
-            label="Physio title"
-            options={[
-              { value: 'physio', label: 'Physio' },
-              { value: 'head', label: 'Head Physio' },
-            ]}
-            selected={[headPhysio ? 'head' : 'physio']}
-            onToggle={(choice) => setHeadPhysio(choice === 'head')}
-          />
-          <ThemedText type="small" themeColor="textSecondary">
-            {headPhysio
-              ? 'Looks after every athlete, whether or not they are in a squad or team.'
-              : `Looks after the athletes in the ${usesSquads ? 'squads and teams' : 'teams'} you place them in below. In none, they look after nobody until you place them or make them Head Physio.`}
-          </ThemedText>
-        </View>
-      ) : null}
-
-      {inTeams ? (
-        <ChipGroup
-          label={
-            usesSquads
-              ? groups.some((t) => t.kind === 'team')
-                ? 'Squads and teams'
-                : 'Squads'
-              : groups.some((t) => t.kind === 'squad')
-                ? 'Teams and squads'
-                : 'Teams'
-          }
-          options={groups.map((t) => ({ value: t.id, label: teamLabel(t, teams) }))}
-          selected={selectedIds}
-          onToggle={toggleTeam}
-        />
-      ) : null}
-
-      {inTeams && availableTeams.length > 0 ? (
-        <ChipGroup
-          label="Teams"
-          options={availableTeams.map((t) => ({ value: t.id, label: teamLabel(t, teams) }))}
-          selected={selectedIds}
-          onToggle={toggleTeam}
-        />
-      ) : null}
-
-      {teamRolesHeld.length > 1
-        ? groups
-            .filter((t) => t.id in selection)
-            .map((t) => (
-              <ChipGroup
-                key={t.id}
-                label={`Role in ${teamLabel(t, teams)}`}
-                options={teamRolesHeld.map((r) => ({ value: r, label: teamRoleLabels[r] }))}
-                selected={[selection[t.id].team_role]}
-                onToggle={(teamRole) => setTeamRole(t.id, teamRole)}
-              />
-            ))
-        : null}
-
-      {teamRolesHeld.includes('coach')
-        ? teams
-            .filter((t) => t.id in selection && selection[t.id].team_role === 'coach')
-            .map((t) => (
-              <ChipGroup
-                key={t.id}
-                label={`Head or assistant coach in ${teamLabel(t, teams)}`}
-                options={coachTitles.map((c) => ({ value: c, label: coachTitleLabels[c] }))}
-                selected={selection[t.id].coach_title ? [selection[t.id].coach_title!] : []}
-                onToggle={(title) =>
-                  setSelection((current) => ({
-                    ...current,
-                    [t.id]: { ...current[t.id], coach_title: title },
-                  }))
-                }
-              />
-            ))
-        : null}
-
-      {groupTitle ? (
-        <ThemedText type="small" themeColor="textSecondary">
-          Their title in the app: {groupTitle}. It comes from the teams they coach or manage, or
-          their squad until they’re in a team.
-        </ThemedText>
-      ) : null}
-
-      {isAthlete
-        ? teams
-            .filter(
-              (t) =>
-                t.kind === 'team' && t.id in selection && selection[t.id].team_role === 'athlete',
-            )
-            .map((t) => (
-              <ChipGroup
-                key={t.id}
-                label={`Selected in ${teamLabel(t, teams)} as`}
-                options={selections.map((s) => ({ value: s, label: selectionLabels[s] }))}
-                selected={selection[t.id].selection ? [selection[t.id].selection!] : []}
-                onToggle={(choice) =>
-                  setSelection((current) => ({
-                    ...current,
-                    [t.id]: { ...current[t.id], selection: choice },
-                  }))
-                }
-              />
-            ))
-        : null}
-
-      <FocusAnchor active={section === 'date-of-birth'}>{todoCard}</FocusAnchor>
-
-      {hasDateOfBirth ? (
-        <View style={styles.group}>
-          <TextField
-            label="Date of birth"
-            value={dateOfBirth}
-            onChangeText={setDateOfBirth}
-            placeholder="DD/MM/YYYY"
-            keyboardType="numbers-and-punctuation"
-            maxLength={10}
-          />
-          {dob && declaredDob && dob === declaredDob ? (
-            <ThemedText type="small" themeColor="textSecondary">
-              The date they entered when they asked to join. Check it against PlayHQ or ID before
-              you save.
-            </ThemedText>
+          {member.verified_at && member.verification_note ? (
+            <Detail label="What was checked" value={member.verification_note} />
           ) : null}
-          {dob ? (
-            <ThemedText type="small" themeColor="textSecondary">
-              {!minor
-                ? '18 or over.'
-                : isAthlete
-                  ? 'Under 18, so their app stays locked until a verified parent or guardian is linked.'
-                  : 'Under 18. Guests must be 18 or over: approve them as an athlete with a parent or guardian linked instead.'}
-            </ThemedText>
-          ) : dob === null ? (
-            <ThemedText type="small" themeColor="textSecondary">
-              Check their date of birth against PlayHQ or ID and add it before you approve them.
-            </ThemedText>
-          ) : null}
-          {dob && member.declared_date_of_birth && dob !== member.declared_date_of_birth ? (
-            <ThemedText type="small" themeColor="textSecondary">
-              Not the date they gave ({formatDate(member.declared_date_of_birth)}).
-            </ThemedText>
-          ) : null}
-          {dob === null && member.declared_date_of_birth ? (
-            <Button
-              title={`Use the date they entered: ${formatDate(member.declared_date_of_birth)}`}
-              variant="secondary"
-              onPress={() => setDateOfBirth(formatDate(member.declared_date_of_birth))}
+          {member.declared_date_of_birth ? (
+            <Detail
+              label="Date of birth they gave"
+              value={`${formatDate(member.declared_date_of_birth)} (${ageOn(member.declared_date_of_birth)})`}
             />
           ) : null}
-          {dobRecord?.recorded_at && dob === member.date_of_birth ? (
-            <ThemedText type="small" themeColor="textSecondary">
-              Recorded by {dobRecord.recorded_by_name ?? 'an admin'} on{' '}
-              {new Date(dobRecord.recorded_at).toLocaleDateString()}.
-            </ThemedText>
-          ) : null}
-        </View>
-      ) : null}
-
-      <FocusAnchor active={section === 'wwcc'}>{todoCard}</FocusAnchor>
-
-      {needsWwcc ? (
-        <View style={styles.group}>
-          <ThemedText type="smallBold">Working With Children Check</ThemedText>
-          {isGuest ? (
-            <ThemedText type="small" themeColor="textSecondary">
-              Guests don’t need a check. Record one only if they’ll be a Child Safety Officer or
-              Complaints Manager: nobody can be named to those posts without a current check.
-            </ThemedText>
-          ) : (
-          <ThemedText type="small" themeColor="textSecondary">
-            Coaches, managers, physios, statisticians, temporary helpers, committee members and
-            admins need a current check before you can approve them. In WA, a parent volunteering at their
-            child’s club and a volunteer under 18 are exempt instead. So is someone who doesn’t
-            normally live in WA, for two weeks after they arrive or up to 30 days at a national
-            event or tour, once in any 12 months. Record that here, and they accept a declaration in
-            the app before their role starts. You can exempt a committee member, admin or
-            statistician with a reason, such as a statistician who only records opens games. Someone who has applied for a check can work while it’s assessed once you record
-            the application below. Being supervised by someone with a check doesn’t count.
-          </ThemedText>
-          )}
-          <WwcSources />
-          {canVolunteer && !isSelf ? (
-            <ChipGroup
-              options={[
-                { value: 'check', label: 'Has a check' },
-                ...(
-                  [
-                    'parent_volunteer',
-                    'under_18_volunteer',
-                    'short_term_visitor',
-                    'national_event',
-                  ] as const
-                )
-                  // A parent volunteer needs a child linked; an under-18 volunteer, a date of birth.
-                  .filter(
-                    (basis) =>
-                      basis === screening ||
-                      isDatedExemption(basis) ||
-                      (basis === 'parent_volunteer'
-                        ? guardianOf.length > 0 || childrenInClub.length > 0
-                        : minor),
-                  )
-                  .map((basis) => ({ value: basis, label: volunteerExemptionLabels[basis] })),
-              ]}
-              selected={[screening]}
-              onToggle={(choice) => setScreening(choice as 'check' | VolunteerExemptionBasis)}
-            />
-          ) : null}
-          {volunteerBasis === 'parent_volunteer' && isVolunteer ? (
+          <Detail label="Guardian email they gave" value={member.guardian_email} />
+          {member.status !== 'approved' ? (
             <>
-              <TextField
-                label="Their child at the club"
-                value={childSearch}
-                onChangeText={setChildSearch}
-                placeholder="Search the club's athletes under 18 by name"
-                autoCapitalize="none"
+              <Detail
+                label="Asked to join as"
+                value={member.requested_role ? roleLabels[member.requested_role] : null}
               />
-              <ChipGroup
-                options={childMatches.map((p) => ({ value: p.id, label: nameOf(p.id) }))}
-                selected={exemptChild ? [exemptChild] : []}
-                onToggle={(c) => setExemptChild(c === exemptChild ? null : c)}
+              <Detail
+                label={usesSquads ? 'Asked for squad' : 'Asked for team'}
+                value={requestedTeam?.name}
               />
             </>
-          ) : volunteerBasis === 'parent_volunteer' ? (
-            <ChipGroup
-              label="Their child at the club"
-              options={guardianOf.map((c) => ({ value: c, label: nameOf(c) }))}
-              selected={exemptChild ? [exemptChild] : []}
-              onToggle={(c) => setExemptChild(c === exemptChild ? null : c)}
-            />
           ) : null}
-          {volunteerBasis && isDatedExemption(volunteerBasis) ? (
-            <>
-              <TextField
-                label={
-                  volunteerBasis === 'short_term_visitor'
-                    ? 'Day they arrived in WA'
-                    : 'First day of the event or tour'
-                }
-                value={exemptFrom}
-                onChangeText={setExemptFrom}
-                placeholder="DD/MM/YYYY"
-                keyboardType="numbers-and-punctuation"
-                maxLength={10}
+        </Card>
+      </MemberPane>
+
+      <MemberPane tab="roles" current={current}>
+        <ChipGroup
+          label="Role"
+          options={allRoles.map((r) => ({ value: r, label: roleLabels[r] }))}
+          selected={[role]}
+          onToggle={changeRole}
+        />
+
+        {(role !== 'guest' && role !== 'volunteer') || extraRoles.length > 0 ? (
+          <View style={styles.group}>
+            <ChipGroup
+              label="Other roles"
+              options={allRoles
+                .filter((r) => r !== role)
+                .map((r) => ({ value: r, label: roleLabels[r] }))}
+              selected={extraRoles.filter((r) => r !== role)}
+              onToggle={toggleExtraRole}
+            />
+            {comboProblem ? (
+              <ErrorText>{comboProblem}</ErrorText>
+            ) : (
+              <ThemedText type="small" themeColor="textSecondary">
+                For someone with more than one role, such as a coach who is also a parent.
+              </ThemedText>
+            )}
+          </View>
+        ) : null}
+
+        {isVolunteer ? (
+          <View style={styles.group}>
+            <ThemedText type="smallBold">Temporary helper</ThemedText>
+            <ThemedText type="small" themeColor="textSecondary">
+              Someone helping for a day or a short time, paid or unpaid, and not necessarily a club
+              member. The app only onboards them: they get no club features or messages. You can
+              approve them once they’ve accepted the club’s policies and a check, or an exemption
+              they’ve accepted, covers every day they’ll help. Their time ends by itself after their
+              last day.
+            </ThemedText>
+            <TextField
+              label="What they’ll help with"
+              value={task}
+              onChangeText={setTask}
+              maxLength={200}
+              multiline
+            />
+            <TextField
+              label="First day"
+              value={volunteerFrom}
+              onChangeText={setVolunteerFrom}
+              placeholder="DD/MM/YYYY"
+              keyboardType="numbers-and-punctuation"
+              maxLength={10}
+            />
+            <TextField
+              label="Last day"
+              value={volunteerUntil}
+              onChangeText={setVolunteerUntil}
+              placeholder="DD/MM/YYYY"
+              keyboardType="numbers-and-punctuation"
+              maxLength={10}
+            />
+            {member.volunteer_screening ? (
+              <Detail label="They said" value={volunteerScreeningLabels[member.volunteer_screening]} />
+            ) : null}
+            {member.declared_wwcc_number ? (
+              <Detail label="Card number they gave" value={member.declared_wwcc_number} />
+            ) : null}
+            <Detail
+              label="Club policies"
+              value={acknowledgedAt ? `Accepted ${localDay(acknowledgedAt)}` : 'Not accepted yet'}
+            />
+          </View>
+        ) : null}
+
+        {canHoldTitle(roles) ? (
+          <TextField
+            label="Title"
+            value={title}
+            onChangeText={setTitle}
+            placeholder="President, Secretary, Treasurer…"
+            autoCapitalize="words"
+            maxLength={40}
+          />
+        ) : null}
+
+        <FocusAnchor active={section === 'physio'}>{todoCard}</FocusAnchor>
+
+        {isPhysio ? (
+          <View style={styles.group}>
+            <ChipGroup
+              label="Physio title"
+              options={[
+                { value: 'physio', label: 'Physio' },
+                { value: 'head', label: 'Head Physio' },
+              ]}
+              selected={[headPhysio ? 'head' : 'physio']}
+              onToggle={(choice) => setHeadPhysio(choice === 'head')}
+            />
+            <ThemedText type="small" themeColor="textSecondary">
+              {headPhysio
+                ? 'Looks after every athlete, whether or not they are in a squad or team.'
+                : `Looks after the athletes in the ${usesSquads ? 'squads and teams' : 'teams'} you place them in below. In none, they look after nobody until you place them or make them Head Physio.`}
+            </ThemedText>
+          </View>
+        ) : null}
+
+        {inTeams ? (
+          <ChipGroup
+            label={
+              usesSquads
+                ? groups.some((t) => t.kind === 'team')
+                  ? 'Squads and teams'
+                  : 'Squads'
+                : groups.some((t) => t.kind === 'squad')
+                  ? 'Teams and squads'
+                  : 'Teams'
+            }
+            options={groups.map((t) => ({ value: t.id, label: teamLabel(t, teams) }))}
+            selected={selectedIds}
+            onToggle={toggleTeam}
+          />
+        ) : null}
+
+        {inTeams && availableTeams.length > 0 ? (
+          <ChipGroup
+            label="Teams"
+            options={availableTeams.map((t) => ({ value: t.id, label: teamLabel(t, teams) }))}
+            selected={selectedIds}
+            onToggle={toggleTeam}
+          />
+        ) : null}
+
+        {teamRolesHeld.length > 1
+          ? groups
+              .filter((t) => t.id in selection)
+              .map((t) => (
+                <ChipGroup
+                  key={t.id}
+                  label={`Role in ${teamLabel(t, teams)}`}
+                  options={teamRolesHeld.map((r) => ({ value: r, label: teamRoleLabels[r] }))}
+                  selected={[selection[t.id].team_role]}
+                  onToggle={(teamRole) => setTeamRole(t.id, teamRole)}
+                />
+              ))
+          : null}
+
+        {teamRolesHeld.includes('coach')
+          ? teams
+              .filter((t) => t.id in selection && selection[t.id].team_role === 'coach')
+              .map((t) => (
+                <ChipGroup
+                  key={t.id}
+                  label={`Head or assistant coach in ${teamLabel(t, teams)}`}
+                  options={coachTitles.map((c) => ({ value: c, label: coachTitleLabels[c] }))}
+                  selected={selection[t.id].coach_title ? [selection[t.id].coach_title!] : []}
+                  onToggle={(title) =>
+                    setSelection((current) => ({
+                      ...current,
+                      [t.id]: { ...current[t.id], coach_title: title },
+                    }))
+                  }
+                />
+              ))
+          : null}
+
+        {groupTitle ? (
+          <ThemedText type="small" themeColor="textSecondary">
+            Their title in the app: {groupTitle}. It comes from the teams they coach or manage, or
+            their squad until they’re in a team.
+          </ThemedText>
+        ) : null}
+
+        {isAthlete
+          ? teams
+              .filter(
+                (t) =>
+                  t.kind === 'team' && t.id in selection && selection[t.id].team_role === 'athlete',
+              )
+              .map((t) => (
+                <ChipGroup
+                  key={t.id}
+                  label={`Selected in ${teamLabel(t, teams)} as`}
+                  options={selections.map((s) => ({ value: s, label: selectionLabels[s] }))}
+                  selected={selection[t.id].selection ? [selection[t.id].selection!] : []}
+                  onToggle={(choice) =>
+                    setSelection((current) => ({
+                      ...current,
+                      [t.id]: { ...current[t.id], selection: choice },
+                    }))
+                  }
+                />
+              ))
+          : null}
+      </MemberPane>
+
+      {tabs.includes('checks') ? (
+        <MemberPane tab="checks" current={current}>
+          {showVerify ? (
+            <View style={styles.group}>
+              <ThemedText type="smallBold">Verify who they are</ThemedText>
+              <ThemedText type="small" themeColor="textSecondary">
+                {isGuardian
+                  ? 'Parents and guardians must be verified before you approve them or link them to a child. '
+                  : ''}
+                Ask them to open the app and read you their 6-digit code, in person or over a channel
+                you already trust. Or, if their PlayHQ email matches the parent or member on the PlayHQ
+                registration, or you’ve seen photo ID, record what you checked.
+              </ThemedText>
+              <ChipGroup
+                label="How you checked"
+                options={(['playhq', 'id_sighted'] as const).map((m) => ({
+                  value: m,
+                  label: verificationMethodLabels[m],
+                }))}
+                selected={verifyMethod ? [verifyMethod] : []}
+                onToggle={(m) => setVerifyMethod(m === verifyMethod ? null : m)}
               />
-              {volunteerBasis === 'national_event' ? (
+              {verifyMethod ? (
                 <>
                   <TextField
-                    label="Event or tour"
-                    value={eventName}
-                    onChangeText={setEventName}
-                    placeholder="For example, the national championships"
-                    maxLength={200}
+                    label="What you checked"
+                    value={verifyNote}
+                    onChangeText={setVerifyNote}
+                    placeholder={
+                      verifyMethod === 'playhq'
+                        ? 'For example, listed as Sam’s parent in PlayHQ with this email'
+                        : 'For example, driver’s licence, name and photo match'
+                    }
+                    multiline
+                    maxLength={500}
                   />
-                  <TextField
-                    label="Organised by"
-                    value={organiser}
-                    onChangeText={setOrganiser}
-                    placeholder="The national or state body running it"
-                    maxLength={200}
+                  <Button
+                    title="Record check"
+                    variant="secondary"
+                    onPress={recordVerification}
+                    busy={verifying}
                   />
                 </>
               ) : null}
-              <ThemedText type="small" themeColor="textSecondary">
-                {volunteerBasis === 'short_term_visitor'
-                  ? 'Only for someone who doesn’t normally live in WA. It covers the two weeks from the day they arrived in WA, and ends by itself.'
-                  : 'Only for someone who doesn’t normally live in WA, and only for child-related work at an event or tour run by a recognised body with children from more than one state, territory or country. It covers 30 days in a row from the first day, and ends by itself.'}{' '}
-                A person can use one of these two exemptions once in any 12 months, anywhere in WA,
-                so the app refuses a second one within 12 months and they confirm they haven’t used
-                one elsewhere.
-              </ThemedText>
-            </>
-          ) : null}
-          {openExemption && volunteerBasis === openExemption.basis ? (
-            <ThemedText
-              type="small"
-              themeColor={exemptionStatus(openExemption).problem ? 'tint' : 'textSecondary'}>
-              {exemptionStatus(openExemption).label}. Recorded by{' '}
-              {openExemption.set_by_name ?? 'a former admin'} on {localDay(openExemption.set_at)}
-              {openExemption.declared_at
-                ? `; declaration accepted ${localDay(openExemption.declared_at)}.`
-                : '.'}
-            </ThemedText>
-          ) : null}
-          {volunteerBasis && volunteerBasis !== openExemption?.basis ? (
-            <ThemedText type="small" themeColor="textSecondary">
-              Once you save, they’ll {roles.includes('volunteer') ? 'see Read the declaration in their Before you help steps' : 'get a to-do to accept the exemption declaration'}. Their{' '}
-              {rolesLabel(
-                roles.filter((r) => wwccRoles.includes(r) || r === 'volunteer' || r === 'statistician'),
-              ).toLowerCase()}{' '}
-              role starts when they do. It ends by itself{' '}
-              {volunteerBasis === 'parent_volunteer'
-                ? 'when their child turns 18 or leaves'
-                : volunteerBasis === 'under_18_volunteer'
-                  ? 'when they turn 18'
-                  : 'after its last day'}
-              .
-            </ThemedText>
-          ) : null}
-          {exemptable && !(isSelf && !exempt) ? (
-            <ChipGroup
-              options={[
-                { value: 'check', label: 'Needs a check' },
-                { value: 'exempt', label: 'Exempt' },
-              ]}
-              selected={[exempt ? 'exempt' : 'check']}
-              onToggle={(choice) => setExempt(choice === 'exempt')}
-            />
-          ) : null}
-          {exemptable && isSelf && !exempt ? (
-            <ThemedText type="small" themeColor="textSecondary">
-              Another admin needs to exempt you.
-            </ThemedText>
-          ) : null}
-          {isExempt ? (
-            <>
               <TextField
-                label="Why they don’t need a check"
-                value={exemptReason}
-                onChangeText={setExemptReason}
-                placeholder="For example, treasurer only, never at training or games"
-                multiline
-                maxLength={500}
+                label="Their code"
+                value={code}
+                onChangeText={setCode}
+                placeholder="123 456"
+                keyboardType="number-pad"
+                maxLength={7}
               />
-              {member.wwcc_exempted_at && exemptReason.trim() === member.wwcc_exempt_reason ? (
-                <ThemedText type="small" themeColor="textSecondary">
-                  Exempted by{' '}
-                  {member.wwcc_exempted_by ? nameOf(member.wwcc_exempted_by) : 'a former admin'} on{' '}
-                  {new Date(member.wwcc_exempted_at).toLocaleDateString()}
-                </ThemedText>
-              ) : null}
-            </>
-          ) : volunteerBasis ? null : (
-            <>
-              <WwccSubmissionReview
-                memberId={member.id}
-                isSelf={isSelf}
-                onAccepted={(changes) => {
-                  setMember((current) => current && { ...current, ...changes });
-                  setWwccNumber(changes.wwcc_number ?? '');
-                  setWwccExpires(formatDate(changes.wwcc_expires_on));
-                }}
-              />
+              <ErrorText>{verifyError}</ErrorText>
+              <Button title="Check code" variant="secondary" onPress={verify} busy={verifying} />
+            </View>
+          ) : null}
+
+          <FocusAnchor active={section === 'date-of-birth'}>{todoCard}</FocusAnchor>
+
+          {hasDateOfBirth ? (
+            <View style={styles.group}>
               <TextField
-                label="Card number"
-                value={wwccNumber}
-                onChangeText={setWwccNumber}
-                autoCapitalize="characters"
-                maxLength={30}
-              />
-              <TextField
-                label="Expires"
-                value={wwccExpires}
-                onChangeText={setWwccExpires}
+                label="Date of birth"
+                value={dateOfBirth}
+                onChangeText={setDateOfBirth}
                 placeholder="DD/MM/YYYY"
                 keyboardType="numbers-and-punctuation"
                 maxLength={10}
               />
-              {savedCardCurrent && cardUnchanged ? (
-                <WwccValidation
-                  member={member}
-                  isSelf={isSelf}
-                  validatorName={nameOf}
-                  onSaved={(changes) =>
-                    setMember((current) => current && { ...current, ...changes })
-                  }
-                />
-              ) : wwccNumber.trim() && !cardUnchanged ? (
+              {dob && declaredDob && dob === declaredDob ? (
                 <ThemedText type="small" themeColor="textSecondary">
-                  Save the new card, then open this page again to validate it.
+                  The date they entered when they asked to join. Check it against PlayHQ or ID before
+                  you save.
                 </ThemedText>
               ) : null}
-            </>
-          )}
-          {!isExempt && !volunteerBasis && !isVolunteer && !minor && !savedCardCurrent ? (
-            <WwccApplicationSection memberId={member.id} isSelf={isSelf} />
+              {dob ? (
+                <ThemedText type="small" themeColor="textSecondary">
+                  {!minor
+                    ? '18 or over.'
+                    : isAthlete
+                      ? 'Under 18, so their app stays locked until a verified parent or guardian is linked.'
+                      : 'Under 18. Guests must be 18 or over: approve them as an athlete with a parent or guardian linked instead.'}
+                </ThemedText>
+              ) : dob === null ? (
+                <ThemedText type="small" themeColor="textSecondary">
+                  Check their date of birth against PlayHQ or ID and add it before you approve them.
+                </ThemedText>
+              ) : null}
+              {dob && member.declared_date_of_birth && dob !== member.declared_date_of_birth ? (
+                <ThemedText type="small" themeColor="textSecondary">
+                  Not the date they gave ({formatDate(member.declared_date_of_birth)}).
+                </ThemedText>
+              ) : null}
+              {dob === null && member.declared_date_of_birth ? (
+                <Button
+                  title={`Use the date they entered: ${formatDate(member.declared_date_of_birth)}`}
+                  variant="secondary"
+                  onPress={() => setDateOfBirth(formatDate(member.declared_date_of_birth))}
+                />
+              ) : null}
+              {dobRecord?.recorded_at && dob === member.date_of_birth ? (
+                <ThemedText type="small" themeColor="textSecondary">
+                  Recorded by {dobRecord.recorded_by_name ?? 'an admin'} on{' '}
+                  {new Date(dobRecord.recorded_at).toLocaleDateString()}.
+                </ThemedText>
+              ) : null}
+            </View>
           ) : null}
-          {exemptions
-            .filter((e) => e.ended_at)
-            .map((e) => (
-              <ThemedText key={e.id} type="small" themeColor="textSecondary">
-                Earlier: {volunteerExemptionLabels[e.basis]}
-                {e.child_name ? ` for ${e.child_name}` : ''}
-                {e.event_name ? ` for ${e.event_name}` : ''}
-                {e.starts_on && e.ends_on
-                  ? `, ${formatDate(e.starts_on)} to ${formatDate(e.ends_on)}`
-                  : ''}
-                , recorded {localDay(e.set_at)}
-                {e.declared_at ? `, declared ${localDay(e.declared_at)}` : ''}, ended{' '}
-                {localDay(e.ended_at!)} by {e.ended_by_name ?? 'a former admin'}
-                {e.end_note ? ` (${e.end_note})` : ''}
-              </ThemedText>
-            ))}
-        </View>
-      ) : null}
 
-      <FocusAnchor active={section === 'notices'}>{todoCard}</FocusAnchor>
+          <FocusAnchor active={section === 'wwcc'}>{todoCard}</FocusAnchor>
 
-      {member.status === 'approved' &&
-      !isSelf &&
-      (member.stood_down_at || hasRole(member, ...standDownRoles, 'guardian')) ? (
-        <ScreeningNotices memberId={member.id} onStandDown={() => router.back()} />
-      ) : null}
-
-      {member.status === 'approved' &&
-      !isSelf &&
-      (member.stood_down_at || hasRole(member, ...standDownRoles)) ? (
-        <StandDownSection
-          memberId={member.id}
-          memberName={member.full_name || member.email || 'this member'}
-          onChange={() => router.back()}
-        />
-      ) : null}
-
-      <FocusAnchor active={section === 'guardians'}>{todoCard}</FocusAnchor>
-
-      {hasGuardians ? (
-        <View style={styles.group}>
-          <ThemedText type="smallBold">Parents and guardians</ThemedText>
-          {locked ? (
-            <ThemedText type="small" themeColor="tint">
-              Locked: no verified parent or guardian is linked, so their app shows only a link code
-              to share with one. Approve the parent who enters it, or link one here.
-            </ThemedText>
-          ) : null}
-          {requestsForChild.map((r) => (
-            <LinkRequest
-              key={r.guardian_id}
-              title={`${linkName(r.guardian_id)} entered their code`}
-              parent={personOf(r.guardian_id)}
-              busy={linking}
-              pair={r}
-              onAnswer={answerRequest}
-              mine={!!session && r.guardian_id === session.user.id}
-            />
-          ))}
-          {requestsForChild.length > 0 ? <ErrorText>{linkError}</ErrorText> : null}
-          {myChild ? (
-            <ThemedText type="small" themeColor="textSecondary">
-              {guardianIds.map(nameOf).join(', ')}. You’re one of their guardians, so another admin
-              needs to change who their guardians are.
-            </ThemedText>
-          ) : guardianIds.length > 0 ? (
-            <ChipGroup
-              options={guardianIds.map((g) => ({ value: g, label: `${nameOf(g)}  ✕` }))}
-              selected={guardianIds}
-              onToggle={(g) => setGuardianIds((current) => current.filter((x) => x !== g))}
-            />
-          ) : (
-            <ThemedText type="small" themeColor="textSecondary">
-              No guardians linked yet.
-            </ThemedText>
-          )}
-          {myChild ? null : anyGuardians ? (
-            <>
-              <TextField
-                label="Add a guardian"
-                value={guardianSearch}
-                onChangeText={setGuardianSearch}
-                placeholder="Search by name or email"
-                autoCapitalize="none"
-              />
-              <ChipGroup
-                options={guardianMatches.map((p) => ({
-                  value: p.id,
-                  // The email tells apart two parents with the same name.
-                  label: `${nameOf(p.id)}${p.email && p.full_name ? ` · ${p.email}` : ''}${p.verified_at ? '' : ' (not verified)'}`,
-                }))}
-                selected={[]}
-                onToggle={(g) => {
-                  if (!isVerified(g)) {
-                    setError(
-                      `Verify ${nameOf(g)} first, with their code in person or against PlayHQ, from their own page.`,
-                    );
-                    return;
-                  }
-                  setError(null);
-                  setGuardianIds((current) => [...current, g]);
-                  setGuardianSearch('');
-                }}
-              />
-            </>
-          ) : (
-            <ThemedText type="small" themeColor="textSecondary">
-              No approved guardians yet. Parents and guardians register in the app first, then you
-              approve them with the Guardian role.
-            </ThemedText>
-          )}
-          {guardiansChanged ? (
-            <>
-              <TextField
-                label="Reason for the change (optional)"
-                value={guardianReason}
-                onChangeText={setGuardianReason}
-                placeholder="For example, parenting order seen 12/10/2026"
-                multiline
-                maxLength={500}
-              />
+          {needsWwcc ? (
+            <View style={styles.group}>
+              <ThemedText type="smallBold">Working With Children Check</ThemedText>
+              {isGuest ? (
+                <ThemedText type="small" themeColor="textSecondary">
+                  Guests don’t need a check. Record one only if they’ll be a Child Safety Officer or
+                  Complaints Manager: nobody can be named to those posts without a current check.
+                </ThemedText>
+              ) : null}
+              <Fold title={isGuest ? 'The rules at the source' : 'Who needs a check, and the rules'}>
+              {isGuest ? null : (
               <ThemedText type="small" themeColor="textSecondary">
-                Only admins see the reason. When you save, the child’s guardians, and the child if
-                they’re 13 or over, get a message saying who was linked or unlinked and by whom.
+                Coaches, managers, physios, statisticians, temporary helpers, committee members and
+                admins need a current check before you can approve them. In WA, a parent volunteering at their
+                child’s club and a volunteer under 18 are exempt instead. So is someone who doesn’t
+                normally live in WA, for two weeks after they arrive or up to 30 days at a national
+                event or tour, once in any 12 months. Record that here, and they accept a declaration in
+                the app before their role starts. You can exempt a committee member, admin or
+                statistician with a reason, such as a statistician who only records opens games. Someone who has applied for a check can work while it’s assessed once you record
+                the application below. Being supervised by someone with a check doesn’t count.
               </ThemedText>
-            </>
+              )}
+              <WwcSources />
+              </Fold>
+              {canVolunteer && !isSelf ? (
+                <ChipGroup
+                  options={[
+                    { value: 'check', label: 'Has a check' },
+                    ...(
+                      [
+                        'parent_volunteer',
+                        'under_18_volunteer',
+                        'short_term_visitor',
+                        'national_event',
+                      ] as const
+                    )
+                      // A parent volunteer needs a child linked; an under-18 volunteer, a date of birth.
+                      .filter(
+                        (basis) =>
+                          basis === screening ||
+                          isDatedExemption(basis) ||
+                          (basis === 'parent_volunteer'
+                            ? guardianOf.length > 0 || childrenInClub.length > 0
+                            : minor),
+                      )
+                      .map((basis) => ({ value: basis, label: volunteerExemptionLabels[basis] })),
+                  ]}
+                  selected={[screening]}
+                  onToggle={(choice) => setScreening(choice as 'check' | VolunteerExemptionBasis)}
+                />
+              ) : null}
+              {volunteerBasis === 'parent_volunteer' && isVolunteer ? (
+                <>
+                  <TextField
+                    label="Their child at the club"
+                    value={childSearch}
+                    onChangeText={setChildSearch}
+                    placeholder="Search the club's athletes under 18 by name"
+                    autoCapitalize="none"
+                  />
+                  <ChipGroup
+                    options={childMatches.map((p) => ({ value: p.id, label: nameOf(p.id) }))}
+                    selected={exemptChild ? [exemptChild] : []}
+                    onToggle={(c) => setExemptChild(c === exemptChild ? null : c)}
+                  />
+                </>
+              ) : volunteerBasis === 'parent_volunteer' ? (
+                <ChipGroup
+                  label="Their child at the club"
+                  options={guardianOf.map((c) => ({ value: c, label: nameOf(c) }))}
+                  selected={exemptChild ? [exemptChild] : []}
+                  onToggle={(c) => setExemptChild(c === exemptChild ? null : c)}
+                />
+              ) : null}
+              {volunteerBasis && isDatedExemption(volunteerBasis) ? (
+                <>
+                  <TextField
+                    label={
+                      volunteerBasis === 'short_term_visitor'
+                        ? 'Day they arrived in WA'
+                        : 'First day of the event or tour'
+                    }
+                    value={exemptFrom}
+                    onChangeText={setExemptFrom}
+                    placeholder="DD/MM/YYYY"
+                    keyboardType="numbers-and-punctuation"
+                    maxLength={10}
+                  />
+                  {volunteerBasis === 'national_event' ? (
+                    <>
+                      <TextField
+                        label="Event or tour"
+                        value={eventName}
+                        onChangeText={setEventName}
+                        placeholder="For example, the national championships"
+                        maxLength={200}
+                      />
+                      <TextField
+                        label="Organised by"
+                        value={organiser}
+                        onChangeText={setOrganiser}
+                        placeholder="The national or state body running it"
+                        maxLength={200}
+                      />
+                    </>
+                  ) : null}
+                  <ThemedText type="small" themeColor="textSecondary">
+                    {volunteerBasis === 'short_term_visitor'
+                      ? 'Only for someone who doesn’t normally live in WA. It covers the two weeks from the day they arrived in WA, and ends by itself.'
+                      : 'Only for someone who doesn’t normally live in WA, and only for child-related work at an event or tour run by a recognised body with children from more than one state, territory or country. It covers 30 days in a row from the first day, and ends by itself.'}{' '}
+                    A person can use one of these two exemptions once in any 12 months, anywhere in WA,
+                    so the app refuses a second one within 12 months and they confirm they haven’t used
+                    one elsewhere.
+                  </ThemedText>
+                </>
+              ) : null}
+              {openExemption && volunteerBasis === openExemption.basis ? (
+                <ThemedText
+                  type="small"
+                  themeColor={exemptionStatus(openExemption).problem ? 'tint' : 'textSecondary'}>
+                  {exemptionStatus(openExemption).label}. Recorded by{' '}
+                  {openExemption.set_by_name ?? 'a former admin'} on {localDay(openExemption.set_at)}
+                  {openExemption.declared_at
+                    ? `; declaration accepted ${localDay(openExemption.declared_at)}.`
+                    : '.'}
+                </ThemedText>
+              ) : null}
+              {volunteerBasis && volunteerBasis !== openExemption?.basis ? (
+                <ThemedText type="small" themeColor="textSecondary">
+                  Once you save, they’ll {roles.includes('volunteer') ? 'see Read the declaration in their Before you help steps' : 'get a to-do to accept the exemption declaration'}. Their{' '}
+                  {rolesLabel(
+                    roles.filter((r) => wwccRoles.includes(r) || r === 'volunteer' || r === 'statistician'),
+                  ).toLowerCase()}{' '}
+                  role starts when they do. It ends by itself{' '}
+                  {volunteerBasis === 'parent_volunteer'
+                    ? 'when their child turns 18 or leaves'
+                    : volunteerBasis === 'under_18_volunteer'
+                      ? 'when they turn 18'
+                      : 'after its last day'}
+                  .
+                </ThemedText>
+              ) : null}
+              {exemptable && !(isSelf && !exempt) ? (
+                <ChipGroup
+                  options={[
+                    { value: 'check', label: 'Needs a check' },
+                    { value: 'exempt', label: 'Exempt' },
+                  ]}
+                  selected={[exempt ? 'exempt' : 'check']}
+                  onToggle={(choice) => setExempt(choice === 'exempt')}
+                />
+              ) : null}
+              {exemptable && isSelf && !exempt ? (
+                <ThemedText type="small" themeColor="textSecondary">
+                  Another admin needs to exempt you.
+                </ThemedText>
+              ) : null}
+              {isExempt ? (
+                <>
+                  <TextField
+                    label="Why they don’t need a check"
+                    value={exemptReason}
+                    onChangeText={setExemptReason}
+                    placeholder="For example, treasurer only, never at training or games"
+                    multiline
+                    maxLength={500}
+                  />
+                  {member.wwcc_exempted_at && exemptReason.trim() === member.wwcc_exempt_reason ? (
+                    <ThemedText type="small" themeColor="textSecondary">
+                      Exempted by{' '}
+                      {member.wwcc_exempted_by ? nameOf(member.wwcc_exempted_by) : 'a former admin'} on{' '}
+                      {new Date(member.wwcc_exempted_at).toLocaleDateString()}
+                    </ThemedText>
+                  ) : null}
+                </>
+              ) : volunteerBasis ? null : (
+                <>
+                  <WwccSubmissionReview
+                    memberId={member.id}
+                    isSelf={isSelf}
+                    onAccepted={(changes) => {
+                      setMember((current) => current && { ...current, ...changes });
+                      setWwccNumber(changes.wwcc_number ?? '');
+                      setWwccExpires(formatDate(changes.wwcc_expires_on));
+                    }}
+                  />
+                  <TextField
+                    label="Card number"
+                    value={wwccNumber}
+                    onChangeText={setWwccNumber}
+                    autoCapitalize="characters"
+                    maxLength={30}
+                  />
+                  <TextField
+                    label="Expires"
+                    value={wwccExpires}
+                    onChangeText={setWwccExpires}
+                    placeholder="DD/MM/YYYY"
+                    keyboardType="numbers-and-punctuation"
+                    maxLength={10}
+                  />
+                  {savedCardCurrent && cardUnchanged ? (
+                    <WwccValidation
+                      member={member}
+                      isSelf={isSelf}
+                      validatorName={nameOf}
+                      onSaved={(changes) =>
+                        setMember((current) => current && { ...current, ...changes })
+                      }
+                    />
+                  ) : wwccNumber.trim() && !cardUnchanged ? (
+                    <ThemedText type="small" themeColor="textSecondary">
+                      Save the new card, then open this page again to validate it.
+                    </ThemedText>
+                  ) : null}
+                </>
+              )}
+              {showApplication ? (
+                <WwccApplicationSection
+                  memberId={member.id}
+                  isSelf={isSelf}
+                  onChange={setApplication}
+                />
+              ) : null}
+            </View>
           ) : null}
-          <GuardianHistory memberId={id} />
-        </View>
-      ) : null}
 
-      {member.status === 'approved' && isMinor(member.date_of_birth, member.under_17) ? (
-        <PressableCard
-          onPress={() =>
-            router.push({ pathname: '/records/[id]', params: { id, name: member.full_name ?? '' } })
-          }>
-          <ThemedText type="smallBold">Who has viewed their records</ThemedText>
-          <ThemedText type="small" themeColor="textSecondary">
-            Everyone who opened their injuries, check-ins, game goals, season KPIs or member record, apart from
-            them and their parents and guardians.
-          </ThemedText>
-        </PressableCard>
-      ) : null}
+          <FocusAnchor active={section === 'notices'}>{todoCard}</FocusAnchor>
 
-      {(isGuardian || member.requested_role === 'guardian') && !member.no_sign_in ? (
-        <NoAppChildAdmin
-          guardianId={id}
-          guardianName={member.full_name || 'this parent'}
-          canAdd={
-            !!member.verified_at &&
-            !isSelf &&
-            (member.status === 'approved'
-              ? hasRole(member, 'guardian')
-              : member.status === 'pending' &&
-                !!member.join_requested_at &&
-                member.requested_role === 'guardian')
-          }
-          onAdded={() => {
-            setReloads((n) => n + 1);
-            refresh();
-          }}
-        />
-      ) : null}
+          {showNotices ? (
+            <ScreeningNotices memberId={member.id} onStandDown={() => router.back()} />
+          ) : null}
 
-      {isGuardian && member.status === 'approved' ? (
-        <Card>
-          <ThemedText type="smallBold">Guardian of</ThemedText>
-          {guardianOf.length > 0 ? (
-            guardianOf.map((c) => (
-              <ThemedText key={c} type="small" themeColor="textSecondary">
-                {childLabel(c)}
-              </ThemedText>
-            ))
-          ) : (
-            <ThemedText type="small" themeColor="textSecondary">
-              No children yet. They enter their child’s link code, or you link them from the
-              child’s page, or add a child who won’t use the app above.
-            </ThemedText>
-          )}
-          <GuardianHistory memberId={id} />
-        </Card>
-      ) : null}
-
-      {isGuardian && requestsByParent.length > 0 ? (
-        <View style={styles.group}>
-          <ThemedText type="smallBold">Children whose code they entered</ThemedText>
-          {requestsByParent.map((r) => (
-            <LinkRequest
-              key={r.athlete_id}
-              title={childLabel(r.athlete_id)}
-              parent={member}
-              busy={linking}
-              pair={r}
-              onAnswer={answerRequest}
-              mine={isSelf}
+          {showStandDown ? (
+            <StandDownSection
+              memberId={member.id}
+              memberName={member.full_name || member.email || 'this member'}
+              onChange={() => router.back()}
             />
-          ))}
-          <ErrorText>{linkError}</ErrorText>
-        </View>
-      ) : null}
-
-      {(member.status !== 'approved' || isGuardian) && !member.verified_at ? (
-        <View style={styles.group}>
-          <ThemedText type="smallBold">Verify who they are</ThemedText>
-          <ThemedText type="small" themeColor="textSecondary">
-            {isGuardian
-              ? 'Parents and guardians must be verified before you approve them or link them to a child. '
-              : ''}
-            Ask them to open the app and read you their 6-digit code, in person or over a channel
-            you already trust. Or, if their PlayHQ email matches the parent or member on the PlayHQ
-            registration, or you’ve seen photo ID, record what you checked.
-          </ThemedText>
-          <ChipGroup
-            label="How you checked"
-            options={(['playhq', 'id_sighted'] as const).map((m) => ({
-              value: m,
-              label: verificationMethodLabels[m],
-            }))}
-            selected={verifyMethod ? [verifyMethod] : []}
-            onToggle={(m) => setVerifyMethod(m === verifyMethod ? null : m)}
-          />
-          {verifyMethod ? (
-            <>
-              <TextField
-                label="What you checked"
-                value={verifyNote}
-                onChangeText={setVerifyNote}
-                placeholder={
-                  verifyMethod === 'playhq'
-                    ? 'For example, listed as Sam’s parent in PlayHQ with this email'
-                    : 'For example, driver’s licence, name and photo match'
-                }
-                multiline
-                maxLength={500}
-              />
-              <Button
-                title="Record check"
-                variant="secondary"
-                onPress={recordVerification}
-                busy={verifying}
-              />
-            </>
           ) : null}
-          <TextField
-            label="Their code"
-            value={code}
-            onChangeText={setCode}
-            placeholder="123 456"
-            keyboardType="number-pad"
-            maxLength={7}
-          />
-          <ErrorText>{verifyError}</ErrorText>
-          <Button title="Check code" variant="secondary" onPress={verify} busy={verifying} />
-        </View>
+        </MemberPane>
       ) : null}
 
-      {!isSelf ? (
-        <ChipGroup
-          label={
-            member.status === 'approved' ? 'Reason if removing access' : 'Reason if not approving'
-          }
-          options={rejectionReasons.map((r) => ({ value: r, label: rejectionReasonLabels[r] }))}
-          selected={reason ? [reason] : []}
-          onToggle={(r) => setReason(r === reason ? null : r)}
-        />
+      {tabs.includes('family') ? (
+        <MemberPane tab="family" current={current}>
+          <FocusAnchor active={section === 'guardians'}>{todoCard}</FocusAnchor>
+
+          {hasGuardians ? (
+            <View style={styles.group}>
+              <ThemedText type="smallBold">Parents and guardians</ThemedText>
+              {locked ? (
+                <ThemedText type="small" themeColor="tint">
+                  Locked: no verified parent or guardian is linked, so their app shows only a link code
+                  to share with one. Approve the parent who enters it, or link one here.
+                </ThemedText>
+              ) : null}
+              {requestsForChild.map((r) => (
+                <LinkRequest
+                  key={r.guardian_id}
+                  title={`${linkName(r.guardian_id)} entered their code`}
+                  parent={personOf(r.guardian_id)}
+                  busy={linking}
+                  pair={r}
+                  onAnswer={answerRequest}
+                  mine={!!session && r.guardian_id === session.user.id}
+                />
+              ))}
+              {requestsForChild.length > 0 ? <ErrorText>{linkError}</ErrorText> : null}
+              {myChild ? (
+                <ThemedText type="small" themeColor="textSecondary">
+                  {guardianIds.map(nameOf).join(', ')}. You’re one of their guardians, so another admin
+                  needs to change who their guardians are.
+                </ThemedText>
+              ) : guardianIds.length > 0 ? (
+                <ChipGroup
+                  options={guardianIds.map((g) => ({ value: g, label: `${nameOf(g)}  ✕` }))}
+                  selected={guardianIds}
+                  onToggle={(g) => setGuardianIds((current) => current.filter((x) => x !== g))}
+                />
+              ) : (
+                <ThemedText type="small" themeColor="textSecondary">
+                  No guardians linked yet.
+                </ThemedText>
+              )}
+              {myChild ? null : anyGuardians ? (
+                <>
+                  <TextField
+                    label="Add a guardian"
+                    value={guardianSearch}
+                    onChangeText={setGuardianSearch}
+                    placeholder="Search by name or email"
+                    autoCapitalize="none"
+                  />
+                  <ChipGroup
+                    options={guardianMatches.map((p) => ({
+                      value: p.id,
+                      // The email tells apart two parents with the same name.
+                      label: `${nameOf(p.id)}${p.email && p.full_name ? ` · ${p.email}` : ''}${p.verified_at ? '' : ' (not verified)'}`,
+                    }))}
+                    selected={[]}
+                    onToggle={(g) => {
+                      if (!isVerified(g)) {
+                        setError(
+                          `Verify ${nameOf(g)} first, with their code in person or against PlayHQ, from their own page.`,
+                        );
+                        return;
+                      }
+                      setError(null);
+                      setGuardianIds((current) => [...current, g]);
+                      setGuardianSearch('');
+                    }}
+                  />
+                </>
+              ) : (
+                <ThemedText type="small" themeColor="textSecondary">
+                  No approved guardians yet. Parents and guardians register in the app first, then you
+                  approve them with the Guardian role.
+                </ThemedText>
+              )}
+              {guardiansChanged ? (
+                <>
+                  <TextField
+                    label="Reason for the change (optional)"
+                    value={guardianReason}
+                    onChangeText={setGuardianReason}
+                    placeholder="For example, parenting order seen 12/10/2026"
+                    multiline
+                    maxLength={500}
+                  />
+                  <ThemedText type="small" themeColor="textSecondary">
+                    Only admins see the reason. When you save, the child’s guardians, and the child if
+                    they’re 13 or over, get a message saying who was linked or unlinked and by whom.
+                  </ThemedText>
+                </>
+              ) : null}
+            </View>
+          ) : null}
+
+          {showNoAppChild ? (
+            <NoAppChildAdmin
+              guardianId={id}
+              guardianName={member.full_name || 'this parent'}
+              canAdd={
+                !!member.verified_at &&
+                !isSelf &&
+                (member.status === 'approved'
+                  ? hasRole(member, 'guardian')
+                  : member.status === 'pending' &&
+                    !!member.join_requested_at &&
+                    member.requested_role === 'guardian')
+              }
+              onAdded={() => {
+                setReloads((n) => n + 1);
+                refresh();
+              }}
+            />
+          ) : null}
+
+          {showGuardianOf ? (
+            <Card>
+              <ThemedText type="smallBold">Guardian of</ThemedText>
+              {guardianOf.length > 0 ? (
+                guardianOf.map((c) => (
+                  <ThemedText key={c} type="small" themeColor="textSecondary">
+                    {childLabel(c)}
+                  </ThemedText>
+                ))
+              ) : (
+                <ThemedText type="small" themeColor="textSecondary">
+                  No children yet. They enter their child’s link code, or you link them from the
+                  child’s page, or add a child who won’t use the app above.
+                </ThemedText>
+              )}
+            </Card>
+          ) : null}
+
+          {showChildCodes ? (
+            <View style={styles.group}>
+              <ThemedText type="smallBold">Children whose code they entered</ThemedText>
+              {requestsByParent.map((r) => (
+                <LinkRequest
+                  key={r.athlete_id}
+                  title={childLabel(r.athlete_id)}
+                  parent={member}
+                  busy={linking}
+                  pair={r}
+                  onAnswer={answerRequest}
+                  mine={isSelf}
+                />
+              ))}
+              <ErrorText>{linkError}</ErrorText>
+            </View>
+          ) : null}
+        </MemberPane>
+      ) : null}
+
+      {tabs.includes('history') ? (
+        <MemberPane tab="history" current={current}>
+          {showRecordViews ? (
+            <PressableCard
+              onPress={() =>
+                router.push({ pathname: '/records/[id]', params: { id, name: member.full_name ?? '' } })
+              }>
+              <ThemedText type="smallBold">Who has viewed their records</ThemedText>
+              <ThemedText type="small" themeColor="textSecondary">
+                Everyone who opened their injuries, check-ins, game goals, season KPIs or member record, apart from
+                them and their parents and guardians.
+              </ThemedText>
+            </PressableCard>
+          ) : null}
+
+          {showGuardianHistory ? (
+            <GuardianHistory memberId={id} whenEmpty="No parent or guardian has been linked or unlinked." />
+          ) : null}
+
+          {endedExemptions.length > 0 ? (
+            <View style={styles.group}>
+              <ThemedText type="smallBold">Earlier exemptions</ThemedText>
+              {endedExemptions.map((e) => (
+                <ThemedText key={e.id} type="small" themeColor="textSecondary">
+                  Earlier: {volunteerExemptionLabels[e.basis]}
+                  {e.child_name ? ` for ${e.child_name}` : ''}
+                  {e.event_name ? ` for ${e.event_name}` : ''}
+                  {e.starts_on && e.ends_on
+                    ? `, ${formatDate(e.starts_on)} to ${formatDate(e.ends_on)}`
+                    : ''}
+                  , recorded {localDay(e.set_at)}
+                  {e.declared_at ? `, declared ${localDay(e.declared_at)}` : ''}, ended{' '}
+                  {localDay(e.ended_at!)} by {e.ended_by_name ?? 'a former admin'}
+                  {e.end_note ? ` (${e.end_note})` : ''}
+                </ThemedText>
+              ))}
+            </View>
+          ) : null}
+        </MemberPane>
       ) : null}
 
       <ErrorText>{error}</ErrorText>
 
+      {/* On every tab: Save saves what is on all of them. */}
       <View style={styles.actions}>
         {member.status === 'approved' ? (
-          <>
-            <Button
-              title="Save changes"
-              onPress={() => save('approved')}
-              busy={saving === 'approved'}
-            />
-            {!isSelf ? (
-              <Button
-                title="Remove access"
-                variant="secondary"
-                onPress={() => save('rejected')}
-                busy={saving === 'rejected'}
-              />
-            ) : null}
-          </>
+          <Button title="Save changes" onPress={() => save('approved')} busy={saving === 'approved'} />
         ) : (
           <>
             <Button title="Approve" onPress={() => save('approved')} busy={saving === 'approved'} />
@@ -1774,28 +1882,53 @@ export default function MemberScreen() {
                 busy={saving === 'pending'}
               />
             ) : null}
-            {member.status === 'pending' || member.status === 'rejected' ? (
-              <Button
-                title={member.status === 'pending' ? "Don't approve" : 'Save reason'}
-                variant="secondary"
-                onPress={() => save('rejected')}
-                busy={saving === 'rejected'}
-              />
-            ) : null}
           </>
         )}
       </View>
 
-      <FocusAnchor active={section === 'delete'}>{todoCard}</FocusAnchor>
+      {!isSelf || member.status !== 'approved' ? (
+        <MemberPane tab="overview" part="end" current={current}>
+          {!isSelf ? (
+            <ChipGroup
+              label={
+                member.status === 'approved' ? 'Reason if removing access' : 'Reason if not approving'
+              }
+              options={rejectionReasons.map((r) => ({ value: r, label: rejectionReasonLabels[r] }))}
+              selected={reason ? [reason] : []}
+              onToggle={(r) => setReason(r === reason ? null : r)}
+            />
+          ) : null}
 
-      {!isSelf ? (
-        <ConfirmDelete
-          title="Delete member"
-          warning={`This permanently deletes ${member.full_name || member.email || 'this member'}: their account, squad and team places, guardian links and message receipts. Messages they sent stay, and their injury records are kept for the club’s period for cleared injuries. It can’t be undone.${member.status === 'approved' ? ' To only stop them using the app, use Remove access instead.' : ''}`}
-          confirmTitle="Delete permanently"
-          onConfirm={deleteMember}
-          busy={deleting}
-        />
+          {member.status === 'approved' ? (
+            !isSelf ? (
+              <Button
+                title="Remove access"
+                variant="secondary"
+                onPress={() => save('rejected')}
+                busy={saving === 'rejected'}
+              />
+            ) : null
+          ) : (
+            <Button
+              title={member.status === 'pending' ? "Don't approve" : 'Save reason'}
+              variant="secondary"
+              onPress={() => save('rejected')}
+              busy={saving === 'rejected'}
+            />
+          )}
+
+          <FocusAnchor active={section === 'delete'}>{todoCard}</FocusAnchor>
+
+          {!isSelf ? (
+            <ConfirmDelete
+              title="Delete member"
+              warning={`This permanently deletes ${member.full_name || member.email || 'this member'}: their account, squad and team places, guardian links and message receipts. Messages they sent stay, and their injury records are kept for the club’s period for cleared injuries. It can’t be undone.${member.status === 'approved' ? ' To only stop them using the app, use Remove access instead.' : ''}`}
+              confirmTitle="Delete permanently"
+              onConfirm={deleteMember}
+              busy={deleting}
+            />
+          ) : null}
+        </MemberPane>
       ) : null}
     </Screen>
   );

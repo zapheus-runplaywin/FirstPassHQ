@@ -67,3 +67,11 @@ export function tab(page: Page, name: Tab) {
 export async function openTab(page: Page, name: Tab) {
   await tab(page, name).click();
 }
+
+/** The tabs on a member's page for admins (src/components/member-tabs.tsx). */
+export type MemberTab = 'Overview' | 'Roles' | 'Checks' | 'Family' | 'History';
+
+/** A tab on a member's page: not the bar at the bottom, which has its own Family. */
+export function memberTab(page: Page, name: MemberTab) {
+  return page.getByTestId('member-header').filter({ visible: true }).getByRole('tab', { name, exact: true });
+}

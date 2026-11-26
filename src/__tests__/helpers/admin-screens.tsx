@@ -6,12 +6,24 @@
  * Jest treats every file under __tests__ as a suite, so this file checks its
  * own helpers at the bottom, and only when Jest runs it directly.
  */
-import { act, fireEvent, screen } from 'expo-router/testing-library';
+import { act, configure, fireEvent, screen } from 'expo-router/testing-library';
 import type { TestInstance } from 'test-renderer';
 
 import { supabase } from '@/lib/supabase';
 
 import { type QueryCall, type QueryInfo, type TableHandler } from './harness';
+
+/**
+ * A member's page for admins is in tabs, and every tab's content stays on the
+ * page while another shows. Call this at the top of a suite about what the
+ * page holds and what it sends, so its tests find a control whichever tab it
+ * is on. Which tab holds what, and what shows on each, is checked in
+ * member-tabs.test.tsx, which doesn't use this.
+ */
+export function onEveryTab() {
+  beforeAll(() => configure({ defaultIncludeHiddenElements: true }));
+  afterAll(() => configure({ defaultIncludeHiddenElements: false }));
+}
 
 /** The smallest element holding `from` and something `has` finds in it. */
 function closest(from: TestInstance, has: (node: TestInstance) => boolean) {

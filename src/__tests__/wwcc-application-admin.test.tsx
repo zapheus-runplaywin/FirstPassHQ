@@ -15,7 +15,7 @@
  */
 import * as DocumentPicker from 'expo-document-picker';
 import { router } from 'expo-router';
-import { fireEvent, screen } from 'expo-router/testing-library';
+import { fireEvent, screen, within } from 'expo-router/testing-library';
 import { Linking } from 'react-native';
 
 import MemberScreen from '@/app/admin/[id]';
@@ -27,7 +27,7 @@ import { supabase } from '@/lib/supabase';
 import type { Profile, WwccApplication } from '@/lib/types';
 import { uploadReceipt, viewReceiptUrl } from '@/lib/wwcc-applications';
 
-import { press, rpcsNamed, typeInto } from './helpers/admin-screens';
+import { onEveryTab, press, rpcsNamed, typeInto } from './helpers/admin-screens';
 import {
   morePersonas,
   openScreen,
@@ -60,6 +60,12 @@ jest.mock('@/lib/wwcc-applications', () => ({
 }));
 
 const pickDocument = DocumentPicker.getDocumentAsync as jest.Mock;
+
+/** The Checks tab of the member's page. */
+const onChecks = () => within(screen.getByTestId('member-pane-checks'));
+
+// The full record is in tabs: these tests are about what the page holds and sends, on any tab.
+onEveryTab();
 
 beforeEach(() => {
   resetClub();
@@ -303,10 +309,11 @@ describe('an open application', () => {
 
   it('flags one waiting for the declaration, or lapsed', async () => {
     await openMember(coach(), [application({ declared_at: null, status: 'waiting_for_declaration' })]);
-    expect(screen.getByText('Check applied for 10/10/2026: waiting for them to accept the declaration')).toBeTruthy();
+    // Under Working With Children Check; Overview's Needs attention says it too.
+    expect(onChecks().getByText('Check applied for 10/10/2026: waiting for them to accept the declaration')).toBeTruthy();
     expect(screen.getByText(`Recorded by Sample admin on ${localDay('2026-10-11T02:00:00Z')}.`)).toBeTruthy();
     await openMember(coach(), [application({ status: 'lapsed', recorded_by_name: null })]);
-    expect(screen.getByText('Check applied for 10/10/2026: lapsed, nobody confirmed it’s still being assessed')).toBeTruthy();
+    expect(onChecks().getByText('Check applied for 10/10/2026: lapsed, nobody confirmed it’s still being assessed')).toBeTruthy();
     expect(screen.getByText(/^Recorded by a former admin on /)).toBeTruthy();
   });
 
@@ -328,7 +335,7 @@ describe('an open application', () => {
 
   it('offers no confirmation once a notice has stopped it', async () => {
     await openMember(coach(), [application({ status: 'stopped' })]);
-    expect(screen.getByText('Check applied for 10/10/2026: stopped by a Screening Unit notice')).toBeTruthy();
+    expect(onChecks().getByText('Check applied for 10/10/2026: stopped by a Screening Unit notice')).toBeTruthy();
     expect(screen.queryByText('Still being assessed')).toBeNull();
     expect(screen.getByText('It’s ended')).toBeTruthy();
   });

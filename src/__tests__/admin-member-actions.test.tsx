@@ -31,6 +31,7 @@ import {
   fieldFor,
   inSection,
   isChosen,
+  onEveryTab,
   openFullRecord,
   press,
   pressInSection,
@@ -68,6 +69,9 @@ jest.mock('@/global.css', () => ({}));
 jest.setTimeout(20_000);
 
 let back: jest.SpyInstance;
+
+// The full record is in tabs: these tests are about what the page holds and sends, on any tab.
+onEveryTab();
 
 beforeEach(() => {
   resetClub();
@@ -365,10 +369,11 @@ describe('saving a member', () => {
   it('refuses a role combination the club doesn’t allow before sending anything', async () => {
     await openMember(p('athlete'));
     await pressInSection('Other roles', 'Manager');
-    expect(screen.getAllByText('Athletes can’t also be managers.')).toHaveLength(1);
-    await press('Save changes');
-    // Shown under Other roles and above the buttons.
+    // Shown under Other roles, and in Overview's Needs attention.
     expect(screen.getAllByText('Athletes can’t also be managers.')).toHaveLength(2);
+    await press('Save changes');
+    // And now above the buttons too.
+    expect(screen.getAllByText('Athletes can’t also be managers.')).toHaveLength(3);
     expect(adminWrites()).toEqual([]);
     expect(back).not.toHaveBeenCalled();
   });

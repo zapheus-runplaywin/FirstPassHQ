@@ -1,9 +1,9 @@
-import { openApp, openTab } from '../support/app';
+import { memberTab, openApp, openTab } from '../support/app';
 import { eq } from '../support/fake-supabase';
 import { openSquad, samplePeople, TODAY, uuid } from '../support/people';
 import { expect, test } from '../support/test';
 
-test('an admin stands a coach down with a reason, and the member page then offers Lift stand-down', async ({ page }) => {
+test('an admin stands a coach down on Checks with a reason, and the member page then says so and offers Lift stand-down', async ({ page }) => {
   const { admin, coach } = samplePeople();
   const people = [admin, coach];
   const standDowns: object[] = [];
@@ -52,6 +52,10 @@ test('an admin stands a coach down with a reason, and the member page then offer
   await page.getByRole('button', { name: /^Members/ }).click();
   await page.getByRole('button', { name: new RegExp(`^${coach.full_name}`) }).click();
 
+  // Their page opens on Overview; standing down is on Checks.
+  await expect(memberTab(page, 'Overview')).toHaveAttribute('aria-selected', 'true');
+  await expect(page.getByRole('button', { name: 'Stand down now' })).toBeHidden();
+  await memberTab(page, 'Checks').click();
   await expect(page.getByText('Stand down', { exact: true }).filter({ visible: true })).toBeVisible();
   // The Stand down section: the innermost block holding its button (Screening
   // Unit notices above it have their own reason chips).
@@ -71,8 +75,14 @@ test('an admin stands a coach down with a reason, and the member page then offer
   // The member page closes, and Members lists them as stood down.
   const stoodDown = page.getByRole('button', { name: `${coach.full_name} Coach · Stood down`, exact: true });
   await expect(stoodDown).toBeVisible();
-  // Opened again, their page shows the stand-down and Lift stand-down.
+  // Opened again, their page says so above the tabs, and that line opens
+  // Checks, with the stand-down and Lift stand-down.
   await stoodDown.click();
+  const paused = page.getByTestId('member-paused').filter({ visible: true });
+  await expect(paused).toContainText(/Stood down since .+ 2026\. Paused: Coach\.$/);
+  await expect(page.getByRole('button', { name: 'Lift stand-down' })).toBeHidden();
+  await paused.click();
+  await expect(memberTab(page, 'Checks')).toHaveAttribute('aria-selected', 'true');
   await expect(page.getByRole('button', { name: 'Lift stand-down' })).toBeVisible();
   await expect(
     page.getByText(/Stood down since .*: Interim negative notice \(Screening Unit letter received\)/).filter({ visible: true }),
