@@ -15,6 +15,7 @@ import { router } from 'expo-router';
 import { fireEvent, screen } from 'expo-router/testing-library';
 
 import NewMessageScreen from '@/app/messages/new';
+import { forgetAllDrafts } from '@/lib/message-draft';
 
 import { argsOf, clearCalls, isSelected, rpcNames, type } from './helpers/forms';
 import {
@@ -48,6 +49,8 @@ type Who = PersonaName | Persona;
 let replace: jest.SpyInstance;
 beforeEach(() => {
   resetClub();
+  // Each test starts with nothing half written.
+  forgetAllDrafts();
   clearCalls();
   replace = jest.spyOn(router, 'replace').mockImplementation(() => {});
 });
@@ -342,5 +345,97 @@ describe('asking a question', () => {
     await send();
     expect(screen.getByText('Answers can be up to 30 characters')).toBeTruthy();
     expect(replace).not.toHaveBeenCalled();
+  });
+});
+
+// ---------------------------------------------------------------------------
+// A message half written is kept while the app is open (src/lib/message-draft.ts),
+// so going back to check a time doesn't lose it. It is the writer's only.
+
+describe('a message left half written', () => {
+  const NOTICE = 'Your message from earlier is still here. It hasn’t been sent.';
+  const box = () => screen.getByPlaceholderText('Write your message');
+
+  /** Leaves New message without sending, as the back button does. */
+  async function leave() {
+    await screen.unmount();
+  }
+
+  it('is still there when the member comes back, with who it was going to and its question', async () => {
+    await open('admin');
+    await fireEvent.press(screen.getByText('A role'));
+    await fireEvent.press(screen.getByText('Coaches'));
+    await type('Message', 'Selection meeting is on Mon');
+    await fireEvent.press(screen.getByText('Yes / No'));
+    await leave();
+
+    await open('admin');
+    expect(screen.getByText(NOTICE)).toBeTruthy();
+    expect(box().props.value).toBe('Selection meeting is on Mon');
+    expect(isSelected('A role')).toBe(true);
+    expect(isSelected('Coaches')).toBe(true);
+    expect(isSelected('Yes / No')).toBe(true);
+    // Nothing was sent by keeping it.
+    expect(rpcNames()).not.toContain('send_group_message');
+    expect(rpcNames()).not.toContain('send_group_question');
+  });
+
+  it('says nothing about a draft when there isn’t one', async () => {
+    await open('coach');
+    expect(screen.queryByText(NOTICE)).toBeNull();
+    expect(box().props.value).toBe('');
+  });
+
+  it('keeps nothing when only who it goes to was chosen', async () => {
+    await open('admin');
+    await fireEvent.press(screen.getByText('A role'));
+    await leave();
+    await open('admin');
+    expect(screen.queryByText(NOTICE)).toBeNull();
+    expect(isSelected('Everyone')).toBe(true);
+  });
+
+  it('Start again clears it', async () => {
+    await open('coach');
+    await type('Message', 'Training is off');
+    await leave();
+    await open('coach');
+    await fireEvent.press(screen.getByText('Start again'));
+    expect(box().props.value).toBe('');
+    expect(screen.queryByText(NOTICE)).toBeNull();
+    await leave();
+    await open('coach');
+    expect(screen.queryByText(NOTICE)).toBeNull();
+  });
+
+  it('is forgotten once the message is sent', async () => {
+    await open('coach');
+    await send('Training is on at 5pm');
+    expect(replace).toHaveBeenCalled();
+    await leave();
+    await open('coach');
+    expect(screen.queryByText(NOTICE)).toBeNull();
+    expect(box().props.value).toBe('');
+  });
+
+  it('stays when the database refuses the message, so it can be fixed and sent again', async () => {
+    await open('coach', { rpcErrors: { send_group_message: 'You can’t message that group' } });
+    await send('Training is on at 5pm');
+    await leave();
+    await open('coach');
+    expect(box().props.value).toBe('Training is on at 5pm');
+  });
+
+  it('is never shown to someone else who signs in on the same phone', async () => {
+    await open('coach');
+    await type('Message', 'Private note to my squad');
+    await leave();
+    await open('manager');
+    expect(screen.queryByText(NOTICE)).toBeNull();
+    expect(box().props.value).toBe('');
+    await leave();
+    // And it didn't wait for the coach either: the phone changed hands.
+    await open('coach');
+    expect(box().props.value).toBe('');
   });
 });

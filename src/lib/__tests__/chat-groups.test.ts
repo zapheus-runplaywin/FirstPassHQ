@@ -71,11 +71,10 @@ describe('the Groups tab', () => {
       'Archived',
       'Groups',
     ]);
-    expect(messageBoxes(false, true, 3).map((b) => b.label)).toEqual([
-      'Inbox',
-      'Archived',
-      'Groups (3)',
-    ]);
+    // The count is carried beside the name, to be drawn as a badge.
+    const boxes = messageBoxes(false, true, 3);
+    expect(boxes.map((b) => b.label)).toEqual(['Inbox', 'Archived', 'Groups']);
+    expect(boxes.find((b) => b.value === 'groups')?.count).toBe(3);
     expect(messageBoxes(true, false, 3).map((b) => b.value)).toEqual(['inbox', 'sent', 'archived']);
   });
 

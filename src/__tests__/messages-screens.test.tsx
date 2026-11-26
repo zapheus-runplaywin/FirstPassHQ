@@ -13,11 +13,13 @@
  */
 import { router } from 'expo-router';
 import type { ComponentType } from 'react';
-import { fireEvent, screen, within } from 'expo-router/testing-library';
+import { act, fireEvent, screen, within } from 'expo-router/testing-library';
 
 import MessageScreen from '@/app/messages/[id]';
 import MessagesScreen from '@/app/(tabs)/messages';
-import { Colors } from '@/constants/theme';
+import { Keyboard, StyleSheet } from 'react-native';
+
+import { BrandFonts, Colors } from '@/constants/theme';
 import { supabase } from '@/lib/supabase';
 import type { MessageQuestion } from '@/lib/message-questions';
 import type { InboxMessage, Message, MessageReceipt, SentMessage } from '@/lib/types';
@@ -102,8 +104,14 @@ const NOT_SENDERS: [string, Who][] = [
   ['stood-down admin', 'stoodDownAdmin'],
 ];
 
+/**
+ * Nothing to write a message or a reply in. The search box over a list is the
+ * one box there is: it only sifts the member's own messages and sends nothing.
+ */
 function noTextBoxes() {
-  expect(screen.container.queryAll((n) => n.type === 'TextInput')).toHaveLength(0);
+  const boxes = screen.container.queryAll((n) => n.type === 'TextInput');
+  expect(boxes.filter((n) => n.props.role !== 'searchbox')).toHaveLength(0);
+  for (const box of boxes) expect(box.props.accessibilityLabel).toMatch(/^Search /);
   expect(screen.queryByText(/^Reply/)).toBeNull();
 }
 
@@ -163,7 +171,7 @@ describe('the messages list', () => {
 
   it('tells a guardian which child a copy was for', async () => {
     await openList('guardian', [inboxRow({ for_children: ['child-1'], for_child_names: ['Sample Child'] })]);
-    expect(screen.getByText('Copied to you as Sample Child’s parent or guardian')).toBeTruthy();
+    expect(screen.getByText('Your copy, for Sample Child')).toBeTruthy();
   });
 
   it('tells a guardian when their child sent the message', async () => {
@@ -174,16 +182,28 @@ describe('the messages list', () => {
         message: { ...MESSAGE, sender_id: 'child-1', sender_name: 'Sample Child' },
       }),
     ]);
-    expect(screen.getByText('Copied to you because Sample Child sent it')).toBeTruthy();
+    expect(screen.getByText('Your copy: Sample Child sent it')).toBeTruthy();
   });
 
   it('says what an empty inbox is for', async () => {
     await openList('athlete', []);
+    expect(screen.getByText('Your inbox is empty')).toBeTruthy();
     expect(
       screen.getByText(
-        'No messages in your inbox. Messages from your coaches, managers, captains and the club will show here, and ones you archive are in Archived.',
+        'Messages from your coaches, managers, captains and the club arrive here. Ones you archive are in Archived.',
       ),
     ).toBeTruthy();
+    // Nothing to search, filter or write in.
+    expect(screen.container.queryAll((n) => n.type === 'TextInput')).toHaveLength(0);
+  });
+
+  it('says what Sent is for before anything is sent', async () => {
+    await openScreen('coach', { 'messages/index': MessagesScreen }, '/messages', { message_recipients: [] }, {
+      rpcs: { my_sent_messages: [] },
+    });
+    await fireEvent.press(screen.getByText('Sent'));
+    await settle();
+    expect(screen.getByText('Nothing sent yet')).toBeTruthy();
   });
 });
 
@@ -515,6 +535,345 @@ describe('read controls in the inbox', () => {
 });
 
 // ---------------------------------------------------------------------------
+// Finding a message: the search box, the Unread and To answer filters, the day
+// headings and older messages. All of them sift the member's own messages on
+// their own phone; none of them asks the database for anything new.
+
+describe('finding a message', () => {
+  const NEWS = [
+    inboxRow(),
+    inboxRow({
+      read_at: '2026-10-17T09:00:00Z',
+      unread: false,
+      message: { ...MESSAGE, id: 'msg-3', sender_name: 'Sample manager', body: 'Bus leaves at 7am sharp' },
+    }),
+  ];
+  const search = () => screen.getByLabelText('Search messages');
+
+  it.each<[string, Who]>([
+    ['athlete', 'athlete'],
+    ['under-18 athlete', morePersonas.under18Athlete],
+    ['guardian', 'guardian'],
+    ['coach', 'coach'],
+    ['admin', 'admin'],
+  ])('gives a %s a search box, which is a search box and nothing to write a message in', async (_l, who) => {
+    await openList(who, NEWS);
+    expect(search().props.role).toBe('searchbox');
+    expect(search().props.placeholder).toBe('Search messages');
+  });
+
+  it('finds messages by their words, their sender or who they went to', async () => {
+    await openList('athlete', NEWS);
+    await fireEvent.changeText(search(), 'bus');
+    expect(screen.getByText('Bus leaves at 7am sharp')).toBeTruthy();
+    expect(screen.queryByText('Training moves to 6pm on Thursday')).toBeNull();
+    await fireEvent.changeText(search(), 'sample COACH');
+    expect(screen.getByText('Training moves to 6pm on Thursday')).toBeTruthy();
+    expect(screen.queryByText('Bus leaves at 7am sharp')).toBeNull();
+    await fireEvent.changeText(search(), TEAM.name);
+    expect(screen.getByText('Training moves to 6pm on Thursday')).toBeTruthy();
+    expect(screen.getByText('Bus leaves at 7am sharp')).toBeTruthy();
+  });
+
+  it('says so when nothing matches, and Clear search brings everything back', async () => {
+    await openList('athlete', NEWS);
+    await fireEvent.changeText(search(), 'zebra');
+    expect(screen.getByText('Nothing found')).toBeTruthy();
+    expect(screen.getByText(/^Nothing here matches “zebra”\./)).toBeTruthy();
+    expect(screen.queryByText('Bus leaves at 7am sharp')).toBeNull();
+    await fireEvent.press(screen.getByText('Clear search'));
+    expect(screen.getByText('Bus leaves at 7am sharp')).toBeTruthy();
+    expect(screen.getByText('Training moves to 6pm on Thursday')).toBeTruthy();
+  });
+
+  it('asks the database for nothing while searching', async () => {
+    await openList('athlete', NEWS);
+    const asked = (supabase.from as jest.Mock).mock.calls.length;
+    const rpcs = rpcNames().length;
+    await fireEvent.changeText(search(), 'bus');
+    await settle();
+    expect((supabase.from as jest.Mock).mock.calls).toHaveLength(asked);
+    expect(rpcNames()).toHaveLength(rpcs);
+  });
+
+  it('starts the search again in each box, and searches Sent and Archived too', async () => {
+    await openList('coach', [...NEWS, ARCHIVED_ROW('msg-5', 'Kit order closed')]);
+    await fireEvent.changeText(search(), 'bus');
+    await fireEvent.press(screen.getByText('Sent'));
+    await settle();
+    expect(screen.getByLabelText('Search sent messages').props.value).toBe('');
+    await fireEvent.changeText(screen.getByLabelText('Search sent messages'), 'cones');
+    expect(screen.queryByText('Bring a water bottle')).toBeNull();
+    expect(screen.getByText('Nothing found')).toBeTruthy();
+    await fireEvent.press(screen.getByText('Archived'));
+    await settle();
+    await fireEvent.changeText(screen.getByLabelText('Search archived messages'), 'kit');
+    expect(screen.getByText('Kit order closed')).toBeTruthy();
+  });
+
+  it('shows only unread messages when the unread count is tapped, and everything when tapped again', async () => {
+    await openList('athlete', NEWS);
+    await fireEvent.press(screen.getByText('1 unread'));
+    expect(screen.getByText('Training moves to 6pm on Thursday')).toBeTruthy();
+    expect(screen.queryByText('Bus leaves at 7am sharp')).toBeNull();
+    await fireEvent.press(screen.getByText('1 unread'));
+    expect(screen.getByText('Bus leaves at 7am sharp')).toBeTruthy();
+  });
+
+  it('shows only questions still to answer when that count is tapped', async () => {
+    await openList('athlete', [
+      ...NEWS,
+      inboxRow({ answer: null, message: { ...MESSAGE, id: 'msg-q', body: 'Extra session Friday?', answer_options: ['Yes', 'No'] } }),
+      inboxRow({ answer: 0, message: { ...MESSAGE, id: 'msg-a', body: 'Carnival bus?', answer_options: ['Yes', 'No'] } }),
+    ]);
+    await fireEvent.press(screen.getByText('1 to answer'));
+    expect(screen.getByText('Extra session Friday?')).toBeTruthy();
+    expect(screen.queryByText('Carnival bus?')).toBeNull();
+    expect(screen.queryByText('Bus leaves at 7am sharp')).toBeNull();
+  });
+
+  it('doesn’t count a parent’s copy of their child’s question as theirs to answer', async () => {
+    await openList('guardian', [
+      inboxRow({
+        answer: null,
+        for_children: ['child-1'],
+        for_child_names: ['Sample Child'],
+        message: { ...MESSAGE, answer_options: ['Yes', 'No'] },
+      }),
+    ]);
+    expect(screen.queryByText(/to answer$/)).toBeNull();
+  });
+
+  it('lets go of the unread filter once everything is read', async () => {
+    const inbox = [NEWS[0], NEWS[1]].map((row) => ({ ...row }));
+    await openScreen('athlete', { 'messages/index': MessagesScreen }, '/messages', { message_recipients: inbox }, {
+      rpcHandlers: {
+        mark_all_messages_read: () => {
+          inbox.forEach((row) => (row.unread = false));
+          return 1;
+        },
+      },
+    });
+    await fireEvent.press(screen.getByText('1 unread'));
+    expect(screen.queryByText('Bus leaves at 7am sharp')).toBeNull();
+    await fireEvent.press(screen.getByText('Mark all read'));
+    await settle();
+    // Nothing is unread any more, so the whole inbox shows again.
+    expect(screen.getByText('All read')).toBeTruthy();
+    expect(toneOf(screen.getByText('All read'))).toBe('done');
+    expect(screen.getByText('Bus leaves at 7am sharp')).toBeTruthy();
+    expect(screen.getByText('Training moves to 6pm on Thursday')).toBeTruthy();
+  });
+
+  it('puts the unread count on the Inbox box, and reads it out with it', async () => {
+    await openList('athlete', NEWS);
+    expect(within(screen.getByLabelText('Inbox, 1 unread')).getByText('1')).toBeTruthy();
+    expect(screen.getByLabelText('Archived')).toBeTruthy();
+  });
+
+  it('heads a longer inbox with the days: Today, Yesterday, Earlier', async () => {
+    // Today is Sunday 18 October 2026.
+    await openList('athlete', [
+      inboxRow({ message: { ...MESSAGE, id: 'm-today', body: 'This morning', created_at: '2026-10-18T01:00:00Z' } }),
+      inboxRow({ message: { ...MESSAGE, id: 'm-yesterday', body: 'Last night', created_at: '2026-10-17T07:00:00Z' } }),
+      inboxRow({ message: { ...MESSAGE, id: 'm-old', body: 'Weeks ago', created_at: '2026-10-01T07:00:00Z' } }),
+    ]);
+    const headings = screen.getAllByRole('header').map((h) => h.props.children);
+    expect(headings).toEqual(['Messages', 'Today', 'Yesterday', 'Earlier']);
+  });
+
+  it('gives an inbox from one day no day heading', async () => {
+    await openList('athlete', NEWS);
+    expect(screen.getAllByRole('header').map((h) => h.props.children)).toEqual(['Messages']);
+  });
+
+  it('shows the sender’s initials beside each message: letters, not a picture, and not read out', async () => {
+    await openList('athlete', [NEWS[0], inboxRow({ message: { ...MESSAGE, id: 'msg-club', sender_name: null } })]);
+    const circles = screen.getAllByTestId('monogram', { includeHiddenElements: true });
+    expect(circles).toHaveLength(2);
+    expect(within(circles[0]).getByText('SC', { includeHiddenElements: true })).toBeTruthy();
+    // The club itself has an icon, not initials.
+    expect(within(circles[1]).queryByText('C', { includeHiddenElements: true })).toBeNull();
+    for (const circle of circles) {
+      expect(circle.props.accessible).toBe(false);
+      expect(circle.props['aria-hidden']).toBe(true);
+      expect(circle.props.onPress).toBeUndefined();
+    }
+    expect(screen.container.queryAll((n) => n.type === 'Image')).toHaveLength(0);
+  });
+
+  it('shows an unread sender in bold, and a read one stepped back', async () => {
+    await openList('athlete', NEWS);
+    const family = (text: string) =>
+      (StyleSheet.flatten(screen.getByText(text).props.style) as { fontFamily?: string }).fontFamily;
+    expect(family('Sample coach')).toBe(BrandFonts.bold);
+    expect(family('Sample manager')).toBe(BrandFonts.regular);
+  });
+
+  describe('older messages', () => {
+    const hundred = (from: number) =>
+      Array.from({ length: 100 }, (_x, i) =>
+        READ_ROW(`old-${from + i}`, `Message number ${from + i}`),
+      );
+
+    it('offers older messages when a full page came back, and asks for the next hundred', async () => {
+      const limits: unknown[] = [];
+      await openScreen('athlete', { 'messages/index': MessagesScreen }, '/messages', {}, {
+        tableHandlers: {
+          message_recipients: (q) => {
+            const limit = q.calls.find((c) => c.method === 'limit')?.args[0] as number;
+            // The inbox asks for copies that aren't archived; Archived for the rest.
+            const archived = q.calls.some((c) => c.method === 'not');
+            if (archived) return [];
+            limits.push(limit);
+            return limit > 100 ? [...hundred(0), ...hundred(100).slice(0, 20)] : hundred(0);
+          },
+        },
+      });
+      expect(limits).toEqual([100]);
+      await fireEvent.press(screen.getByText('Show older messages'));
+      await settle();
+      expect(limits).toEqual([100, 200]);
+      expect(screen.getByText('Message number 119')).toBeTruthy();
+      // Fewer than asked for came back: that is all of them.
+      expect(screen.queryByText('Show older messages')).toBeNull();
+    });
+
+    it('doesn’t offer older messages when the whole inbox fits', async () => {
+      await openList('athlete', NEWS);
+      expect(screen.queryByText('Show older messages')).toBeNull();
+    });
+  });
+
+  it('marks a sent message everyone has read as done, and one still being read quietly', async () => {
+    await openScreen('coach', { 'messages/index': MessagesScreen }, '/messages', { message_recipients: [] }, {
+      rpcs: {
+        my_sent_messages: [SENT[0], { ...SENT[0], id: 'msg-all', body: 'All read', read_count: 12 }],
+      },
+    });
+    await fireEvent.press(screen.getByText('Sent'));
+    await settle();
+    expect(toneOf(screen.getByText('Read by 12 of 12'))).toBe('done');
+    expect(toneOf(screen.getByText('Read by 9 of 12'))).toBe('plain');
+  });
+});
+
+// ---------------------------------------------------------------------------
+// New message floats over the foot of the list (Screen's `floating`), for the
+// members who can send.
+
+describe('the New message button', () => {
+  /** The view the button floats in: over the list, letting touches through around it. */
+  function floating() {
+    let node = screen.getByText('New message');
+    while (node.parent && node.props.pointerEvents !== 'box-none') node = node.parent as typeof node;
+    return node;
+  }
+
+  /** Tells the screen the keyboard came up or went away, as the phone does. */
+  async function keyboard(listening: jest.SpyInstance, event: 'Show' | 'Hide') {
+    const calls = listening.mock.calls as unknown as [string, (e: object) => void][];
+    const listeners = calls.filter(([name]) => name.endsWith(event));
+    expect(listeners.length).toBeGreaterThan(0);
+    await act(async () => {
+      for (const [, listener] of listeners) listener({ endCoordinates: { height: 300 } });
+    });
+  }
+
+  it('floats over the list, outside what scrolls, and opens New message', async () => {
+    const push = jest.spyOn(router, 'push').mockImplementation(() => {});
+    try {
+      await openList('coach');
+      expect(floating().props.pointerEvents).toBe('box-none');
+      expect(StyleSheet.flatten(floating().props.style)).toMatchObject({ position: 'absolute' });
+      // Not inside the scrolling list.
+      let node = floating();
+      while (node.parent) {
+        node = node.parent as typeof node;
+        expect(node.type).not.toBe('RCTScrollView');
+      }
+      await fireEvent.press(screen.getByText('New message'));
+      expect(push).toHaveBeenCalledWith('/messages/new');
+    } finally {
+      push.mockRestore();
+    }
+  });
+
+  it('stays on Sent and Archived', async () => {
+    await openList('coach');
+    for (const box of ['Sent', 'Archived', 'Inbox']) {
+      await fireEvent.press(screen.getByText(box));
+      await settle();
+      expect(screen.getByText('New message')).toBeTruthy();
+    }
+  });
+
+  it('steps aside while the keyboard is up, so it never covers what is being searched for', async () => {
+    const listening = jest.spyOn(Keyboard, 'addListener');
+    try {
+      await openList('coach');
+      await keyboard(listening, 'Show');
+      expect(screen.queryByText('New message')).toBeNull();
+      await keyboard(listening, 'Hide');
+      expect(screen.getByText('New message')).toBeTruthy();
+    } finally {
+      listening.mockRestore();
+    }
+  });
+});
+
+// ---------------------------------------------------------------------------
+// Read receipts on an open message: whoever hasn't read it comes first.
+
+describe('read receipts', () => {
+  async function openWithReceipts(receipts: MessageReceipt[]) {
+    await openScreen('coach', { 'messages/[id]': MessageScreen }, '/messages/msg-1', {
+      messages: [MESSAGE],
+      message_recipients: [],
+    }, {
+      rpcs: { message_receipts: receipts },
+    });
+  }
+  const people = (count: number, read: number): MessageReceipt[] =>
+    Array.from({ length: count }, (_x, i) => ({
+      profile_id: `p-${i}`,
+      full_name: `Member ${i + 1}`,
+      read_at: i < read ? '2026-10-17T08:00:00Z' : null,
+    }));
+
+  it('lists who hasn’t read it first, with how many, then who has', async () => {
+    await openWithReceipts(RECEIPTS);
+    const order = screen
+      .getAllByText(/^(Not read yet|Read|Sample Child|Sample athlete|1 person)$/)
+      .map((n) => n.props.children);
+    expect(order).toEqual(['Not read yet', '1 person', 'Sample Child', 'Read', 'Sample athlete']);
+  });
+
+  it('leaves out the Not read yet list once everyone has read it', async () => {
+    await openWithReceipts(people(3, 3));
+    expect(screen.getByText('Read by 3 of 3')).toBeTruthy();
+    expect(screen.queryByText('Not read yet')).toBeNull();
+    expect(screen.getByText('Member 3')).toBeTruthy();
+  });
+
+  it('folds a long list of readers away, and keeps who hasn’t read it in view', async () => {
+    await openWithReceipts(people(20, 15));
+    expect(screen.getByText('Read by 15 of 20')).toBeTruthy();
+    expect(screen.getByText('5 people')).toBeTruthy();
+    expect(screen.getByText('Member 20')).toBeTruthy();
+    expect(screen.queryByText('Member 1')).toBeNull();
+    await fireEvent.press(screen.getByText('15 people'));
+    expect(screen.getByText('Member 1')).toBeTruthy();
+  });
+
+  it('shows the sender no inbox buttons, who has no copy to archive', async () => {
+    await openWithReceipts(RECEIPTS);
+    expect(screen.queryByText('Archive')).toBeNull();
+    expect(screen.queryByText('Mark as unread')).toBeNull();
+  });
+});
+
+// ---------------------------------------------------------------------------
 // Archive. Swiping left (or the card's Archive action, for screen readers)
 // moves the member's own copy to Archived; nothing is deleted and nobody
 // else's copy changes. Sent messages can't be archived.
@@ -585,7 +944,12 @@ describe('archiving messages', () => {
       'move_message_to_inbox',
       { p_message_id: 'msg-5' },
     ]);
-    expect(screen.getByText('Nothing archived. Swipe a message to the left in your inbox to archive it.')).toBeTruthy();
+    expect(screen.getByText('Nothing archived')).toBeTruthy();
+    expect(
+      screen.getByText(
+        'Swipe a message to the left in your inbox to archive it. Archiving tidies it away; nothing is deleted.',
+      ),
+    ).toBeTruthy();
     await fireEvent.press(screen.getByText('Inbox'));
     await settle();
     expect(screen.getByText('Kit order closed')).toBeTruthy();

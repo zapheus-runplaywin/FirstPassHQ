@@ -54,6 +54,7 @@ export function Screen({
   wide = false,
   tab = false,
   header,
+  floating,
 }: {
   children: ReactNode;
   refreshing?: boolean;
@@ -81,6 +82,12 @@ export function Screen({
   tab?: boolean;
   /** Stays at the top while the rest scrolls, such as a tab's title bar. */
   header?: ReactNode;
+  /**
+   * Floats over the foot of the screen, at the right, while the rest scrolls
+   * under it: the New message button in Messages. It steps aside for the
+   * keyboard. Leave room for it at the end of what scrolls.
+   */
+  floating?: ReactNode;
 }) {
   const scrollRef = useRef<ScrollViewInstance>(null);
   // Screens stay mounted underneath the one on top, and keyboard events reach
@@ -205,6 +212,12 @@ export function Screen({
                 <AppVersion />
               </View>
             ) : null}
+            {floating && keyboardHeight === 0 ? (
+              // Only the button takes touches; the list under the rest still scrolls.
+              <View style={styles.floating} pointerEvents="box-none">
+                {floating}
+              </View>
+            ) : null}
           </SafeAreaView>
         </ThemedView>
       </RevealFocusedInput>
@@ -235,5 +248,10 @@ const styles = StyleSheet.create({
   },
   version: {
     paddingVertical: Spacing.two,
+  },
+  floating: {
+    position: 'absolute',
+    right: Spacing.four,
+    bottom: Spacing.three,
   },
 });

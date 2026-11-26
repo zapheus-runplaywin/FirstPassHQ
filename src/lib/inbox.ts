@@ -21,8 +21,9 @@ export function hiddenNote(message: Pick<Message, 'removed_at' | 'removed_by_nam
 }
 
 /**
- * The tabs at the top of Messages. Sent shows only for members who can send,
- * and Groups only while the club has chat groups on.
+ * The boxes across the top of Messages, each with its unread count. Sent
+ * shows only for members who can send, and Groups only while the club has
+ * chat groups on.
  */
 export type MessageBox = 'inbox' | 'sent' | 'archived' | 'groups';
 
@@ -30,19 +31,13 @@ export function messageBoxes(
   canSend: boolean,
   groupsOn = false,
   groupsUnread = 0,
-): { value: MessageBox; label: string }[] {
+  inboxUnread = 0,
+): { value: MessageBox; label: string; count?: number }[] {
   return [
-    { value: 'inbox', label: 'Inbox' },
+    { value: 'inbox', label: 'Inbox', count: inboxUnread },
     ...(canSend ? [{ value: 'sent' as const, label: 'Sent' }] : []),
     { value: 'archived', label: 'Archived' },
-    ...(groupsOn
-      ? [
-          {
-            value: 'groups' as const,
-            label: groupsUnread > 0 ? `Groups (${groupsUnread})` : 'Groups',
-          },
-        ]
-      : []),
+    ...(groupsOn ? [{ value: 'groups' as const, label: 'Groups', count: groupsUnread }] : []),
   ];
 }
 

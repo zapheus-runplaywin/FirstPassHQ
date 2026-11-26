@@ -1,14 +1,18 @@
 import { useFocusEffect } from 'expo-router';
 import { useCallback, useRef, useState } from 'react';
-import { StyleSheet, View } from 'react-native';
+import { ActivityIndicator, Pressable, StyleSheet, View } from 'react-native';
 
+import { FormSection } from '@/components/form-section';
+import { Icon, type IconName } from '@/components/icon';
 import { useLeaveScreen, useListChanged, useScreenParams } from '@/components/list-detail';
+import { ListHeading, Monogram, ReadBar } from '@/components/messages/parts';
 import { RaiseConcernLink } from '@/components/safeguarding';
 import { Screen } from '@/components/screen';
 import { ThemedText } from '@/components/themed-text';
 import { Button, Card, ConfirmDelete, ErrorText } from '@/components/ui';
 import { MessageQuestionCard } from '@/components/message-question';
-import { Spacing } from '@/constants/theme';
+import { BrandFonts, Spacing } from '@/constants/theme';
+import { useTheme } from '@/hooks/use-theme';
 import { useAuth } from '@/lib/auth';
 import { blockWarning, canOfferBlock } from '@/lib/chat-blocks';
 import { useClub } from '@/lib/club';
@@ -20,6 +24,7 @@ import {
   RECIPIENT_COLUMNS,
 } from '@/lib/messages';
 import { hiddenNote } from '@/lib/inbox';
+import { peopleCount } from '@/lib/chat-groups';
 import { supabase } from '@/lib/supabase';
 import type { InboxMessage, Message, MessageReceipt } from '@/lib/types';
 
@@ -155,21 +160,30 @@ export default function MessageScreen() {
   return (
     <Screen refreshing={refreshing} onRefresh={onRefresh}>
       <View style={styles.header}>
-        <ThemedText type="smallBold">{message.sender_name ?? 'Club'}</ThemedText>
-        <ThemedText type="small" themeColor="textSecondary">
-          To {audienceLabel(message.audience, message.audience_role, message.audience_label)}
-        </ThemedText>
-        <ThemedText type="small" themeColor="textSecondary">
-          {formatDateTime(new Date(message.created_at))}
-        </ThemedText>
-        {copyLabel ? (
+        {/* Initials only: members have no pictures, and the circle opens nothing. */}
+        <Monogram
+          name={message.sender_name}
+          icon={message.sender_name ? undefined : 'home'}
+          size={48}
+          onPage
+        />
+        <View style={styles.headerText}>
+          <ThemedText style={styles.sender}>{message.sender_name ?? 'Club'}</ThemedText>
           <ThemedText type="small" themeColor="textSecondary">
-            {copyLabel}
+            To {audienceLabel(message.audience, message.audience_role, message.audience_label)}
           </ThemedText>
-        ) : null}
+          <ThemedText type="small" themeColor="textSecondary">
+            {formatDateTime(new Date(message.created_at))}
+          </ThemedText>
+          {copyLabel ? (
+            <ThemedText type="small" themeColor="textSecondary">
+              {copyLabel}
+            </ThemedText>
+          ) : null}
+        </View>
       </View>
 
-      <Card style={message.removed_at ? styles.hidden : undefined}>
+      <Card style={[styles.body, message.removed_at ? styles.hidden : undefined]}>
         <ThemedText selectable themeColor={message.removed_at ? 'textSecondary' : undefined}>
           {message.body}
         </ThemedText>
@@ -184,19 +198,14 @@ export default function MessageScreen() {
 
       {/* A post in one of the member's chat groups is read in its group. */}
       {copy && !copy.chat_group_id ? (
-        <View style={styles.buttons}>
-          <Button
+        <View style={styles.actions}>
+          <Action
+            icon={copy.archived_at ? 'inbox' : 'archive'}
             title={copy.archived_at ? 'Move to inbox' : 'Archive'}
-            variant="secondary"
             busy={moving}
             onPress={toggleArchived}
           />
-          <Button
-            title="Mark as unread"
-            variant="secondary"
-            busy={markingUnread}
-            onPress={markUnread}
-          />
+          <Action icon="mail" title="Mark as unread" busy={markingUnread} onPress={markUnread} />
         </View>
       ) : null}
 
@@ -237,40 +246,134 @@ export default function MessageScreen() {
   );
 }
 
-function Receipts({ receipts }: { receipts: MessageReceipt[] }) {
-  const readCount = receipts.filter((r) => r.read_at).length;
+/** One of the things a member does with their own copy, side by side under the message. */
+function Action({
+  icon,
+  title,
+  busy,
+  onPress,
+}: {
+  icon: IconName;
+  title: string;
+  busy: boolean;
+  onPress: () => void;
+}) {
+  const theme = useTheme();
   return (
-    <View style={styles.receipts}>
-      <ThemedText type="smallBold">
-        Read by {readCount} of {receipts.length}
-      </ThemedText>
-      {receipts.map((receipt) => (
-        <View key={receipt.profile_id} style={styles.receipt}>
-          <ThemedText type="small" style={styles.grow} numberOfLines={1}>
-            {receipt.full_name ?? 'Unnamed member'}
+    <Pressable
+      accessibilityRole="button"
+      disabled={busy}
+      onPress={onPress}
+      style={({ pressed }) => [
+        styles.action,
+        { backgroundColor: theme.backgroundElement, opacity: pressed ? 0.7 : 1 },
+      ]}>
+      {busy ? (
+        <ActivityIndicator color={theme.text} />
+      ) : (
+        <>
+          <Icon name={icon} size={16} />
+          <ThemedText type="smallBold" numberOfLines={1}>
+            {title}
           </ThemedText>
-          {receipt.read_at ? (
-            <ThemedText type="small" themeColor="positive">
-              ✓ Read {formatSentAt(new Date(receipt.read_at))}
-            </ThemedText>
-          ) : (
-            <ThemedText type="small" themeColor="textSecondary">
-              Not read yet
-            </ThemedText>
-          )}
-        </View>
-      ))}
+        </>
+      )}
+    </Pressable>
+  );
+}
+
+/** A long list of people who have read it is folded away; who hasn't stays open. */
+const FOLD_READ_FROM = 12;
+
+/**
+ * Who has read a message, for its sender only. Whoever hasn't read it comes
+ * first: they are the ones to follow up.
+ */
+function Receipts({ receipts }: { receipts: MessageReceipt[] }) {
+  const read = receipts.filter((r) => r.read_at);
+  const notRead = receipts.filter((r) => !r.read_at);
+  const readRows = read.map((receipt) => (
+    <View key={receipt.profile_id} style={styles.receipt}>
+      <ThemedText type="small" style={styles.grow} numberOfLines={1}>
+        {receipt.full_name ?? 'Unnamed member'}
+      </ThemedText>
+      <ThemedText type="small" themeColor="positive">
+        ✓ Read {formatSentAt(new Date(receipt.read_at as string))}
+      </ThemedText>
     </View>
+  ));
+  return (
+    <Card style={styles.receipts}>
+      <ThemedText type="smallBold">
+        Read by {read.length} of {receipts.length}
+      </ThemedText>
+      <ReadBar read={read.length} of={receipts.length} />
+      {notRead.length > 0 ? (
+        <View style={styles.receiptGroup}>
+          <View style={styles.receipt}>
+            <View style={styles.grow}>
+              <ListHeading>Not read yet</ListHeading>
+            </View>
+            <ThemedText type="small" themeColor="textSecondary">
+              {peopleCount(notRead.length)}
+            </ThemedText>
+          </View>
+          {notRead.map((receipt) => (
+            <ThemedText key={receipt.profile_id} type="small" numberOfLines={1}>
+              {receipt.full_name ?? 'Unnamed member'}
+            </ThemedText>
+          ))}
+        </View>
+      ) : null}
+      {read.length === 0 ? null : receipts.length > FOLD_READ_FROM ? (
+        <FormSection title="Read" summary={peopleCount(read.length)}>
+          {readRows}
+        </FormSection>
+      ) : (
+        <View style={styles.receiptGroup}>
+          <ListHeading>Read</ListHeading>
+          {readRows}
+        </View>
+      )}
+    </Card>
   );
 }
 
 const styles = StyleSheet.create({
   hidden: {
     opacity: 0.6,
-    gap: Spacing.one,
+  },
+  body: {
+    gap: Spacing.two,
   },
   header: {
-    gap: Spacing.one,
+    flexDirection: 'row',
+    alignItems: 'flex-start',
+    gap: 12,
+  },
+  headerText: {
+    flex: 1,
+    minWidth: 0,
+    gap: 2,
+  },
+  sender: {
+    fontFamily: BrandFonts.bold,
+    fontSize: 18,
+    lineHeight: 24,
+  },
+  actions: {
+    flexDirection: 'row',
+    gap: Spacing.two,
+  },
+  action: {
+    flex: 1,
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'center',
+    gap: Spacing.two,
+    height: 44,
+    borderRadius: 12,
+    paddingHorizontal: Spacing.two,
   },
   buttons: {
     gap: Spacing.two,
@@ -278,11 +381,14 @@ const styles = StyleSheet.create({
   receipts: {
     gap: Spacing.two,
   },
+  receiptGroup: {
+    gap: Spacing.one,
+  },
   receipt: {
     flexDirection: 'row',
     alignItems: 'center',
     gap: Spacing.two,
-    paddingVertical: Spacing.one,
+    paddingVertical: 2,
   },
   grow: {
     flex: 1,

@@ -90,6 +90,13 @@ export function formatSentAt(date: Date) {
   return isToday(date) ? timeFormat.format(date) : shortDayFormat.format(date);
 }
 
+/** The day something was sent: "Today", "Yesterday", or a short date such as "Sat 11 Oct". */
+export function formatPastDay(date: Date, now = new Date()) {
+  if (dayKey(date) === dayKey(now)) return 'Today';
+  if (dayKey(date) === dayKey(addDays(now, -1))) return 'Yesterday';
+  return shortDayFormat.format(date);
+}
+
 /** A full date and time, such as "Saturday 11 October, 3:05 pm". */
 export function formatDateTime(date: Date) {
   return `${dayFormat.format(date)}, ${timeFormat.format(date)}`;

@@ -13,6 +13,7 @@ import {
 import { SafeAreaView } from 'react-native-safe-area-context';
 
 import { FormSection } from '@/components/form-section';
+import { EmptyState } from '@/components/messages/parts';
 import { RaiseConcernLink } from '@/components/safeguarding';
 import { Screen } from '@/components/screen';
 import { SwipeAction } from '@/components/swipe-action';
@@ -36,7 +37,8 @@ import {
   readOnlyNote,
   UNDER_18_POSTING_NOTE,
 } from '@/lib/chat-groups';
-import { formatSentAt } from '@/lib/format';
+import { formatPastDay, formatSentAt } from '@/lib/format';
+import { sameDay } from '@/lib/message-list';
 import { supabase } from '@/lib/supabase';
 
 const MAX_LENGTH = 4000;
@@ -48,7 +50,8 @@ const REFRESH_MS = 15000;
  * with the box to write in at the foot, and older posts load as the member
  * scrolls up. Only those who can post get the box (adults in it, and
  * under-18s in their own squad's or team's groups while a coach is in them).
- * Opening it marks its posts read. Tapping a post opens it on its own, with
+ * Posts sit under the day they were sent, and a run of posts from one person
+ * names them once. Opening it marks its posts read. Tapping a post opens it on its own, with
  * its read receipts for its sender and a way to report it. The group's
  * coaches swipe a post to hide it from everyone but its author, the coaches
  * and the author's parents (greyed out for them), or to show it again; its
@@ -196,10 +199,15 @@ export default function ChatGroupScreen() {
   const alone = group.member_count < 2;
   const canPost = group.can_post && !alone;
 
-  function renderPost({ item: p }: { item: ChatPost }) {
+  function renderPost({ item: p, index }: { item: ChatPost; index: number }) {
     // A post a coach hid: only its author, the group's coaches and the
     // author's parents still get it, greyed out.
     const hidden = !!p.removed_by_name;
+    // The list is newest first, so the post before this one in time is the next in it.
+    const before = posts[index + 1];
+    const newDay = !before || !sameDay(before.created_at, p.created_at);
+    // A run of posts from one person on one day names them once.
+    const named = !p.mine && (newDay || before.sender_id !== p.sender_id || !p.sender_id);
     const row = (swiped?: () => boolean) => (
       <View style={[styles.postRow, p.mine ? styles.mineRow : undefined]}>
         <Pressable
@@ -210,6 +218,7 @@ export default function ChatGroupScreen() {
           }}
           style={({ pressed }) => [
             styles.bubble,
+            p.mine ? styles.mineBubble : styles.theirBubble,
             hidden ? styles.hidden : undefined,
             {
               backgroundColor: pressed
@@ -219,7 +228,7 @@ export default function ChatGroupScreen() {
                   : theme.backgroundElement,
             },
           ]}>
-          {p.mine ? null : (
+          {named ? (
             <ThemedText
               type="smallBold"
               style={hidden ? undefined : { color: theme.tint }}
@@ -227,7 +236,7 @@ export default function ChatGroupScreen() {
               numberOfLines={1}>
               {p.sender_name}
             </ThemedText>
-          )}
+          ) : null}
           <ThemedText
             type="small"
             themeColor={hidden || p.body_removed ? 'textSecondary' : undefined}
@@ -253,12 +262,25 @@ export default function ChatGroupScreen() {
       </View>
     );
     // The group's coaches swipe a post to hide it, or a hidden one to show it again.
-    return group?.can_remove ? (
+    const post = group?.can_remove ? (
       <SwipeAction label={hidden ? 'Show' : 'Hide'} onAction={() => setPostHidden(p.id, !hidden)}>
         {(swiped) => row(swiped)}
       </SwipeAction>
     ) : (
       row()
+    );
+    if (!newDay) return post;
+    return (
+      <View style={styles.dayGroup}>
+        <ThemedText
+          type="small"
+          themeColor="textSecondary"
+          accessibilityRole="header"
+          style={styles.day}>
+          {formatPastDay(new Date(p.created_at))}
+        </ThemedText>
+        {post}
+      </View>
     );
   }
 
@@ -349,10 +371,18 @@ export default function ChatGroupScreen() {
             ) : undefined
           }
           ListEmptyComponent={
-            <ThemedText type="small" themeColor="textSecondary" style={styles.empty}>
-              No posts yet.
-              {canPost ? ' Start the conversation below.' : ''}
-            </ThemedText>
+            // The list turns this View the right way up; EmptyState takes no style itself.
+            <View>
+              <EmptyState
+                icon="message-square"
+                title="No posts yet"
+                text={
+                  canPost
+                    ? 'Start the conversation below.'
+                    : 'Posts in this group will show here.'
+                }
+              />
+            </View>
           }
         />
 
@@ -456,9 +486,21 @@ const styles = StyleSheet.create({
     textAlign: 'center',
     paddingVertical: Spacing.two,
   },
-  empty: {
+  dayGroup: {
+    gap: Spacing.two,
+  },
+  day: {
     textAlign: 'center',
-    paddingVertical: Spacing.four,
+    fontSize: 12,
+    lineHeight: 16,
+    paddingTop: Spacing.two,
+  },
+  // The corner nearest the edge is squared off, as a speech bubble's tail.
+  mineBubble: {
+    borderBottomRightRadius: 4,
+  },
+  theirBubble: {
+    borderBottomLeftRadius: 4,
   },
   composer: {
     borderTopWidth: StyleSheet.hairlineWidth,
