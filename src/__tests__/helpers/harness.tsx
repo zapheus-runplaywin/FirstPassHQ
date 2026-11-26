@@ -14,7 +14,7 @@
 import type { Session } from '@supabase/supabase-js';
 import type { ComponentType, ReactNode } from 'react';
 import type { TestInstance } from 'test-renderer';
-import { Text } from 'react-native';
+import { Dimensions, Text } from 'react-native';
 import { router, Stack } from 'expo-router';
 import { act, renderRouter, screen } from 'expo-router/testing-library';
 
@@ -764,6 +764,26 @@ function ScreenTestLayout() {
 function WhenLoaded() {
   const { loading } = auth().useAuth();
   return loading ? null : <Stack />;
+}
+
+/** An iPad on its side, where a list opens its items beside it (src/components/list-detail.tsx). */
+export const TABLET_WIDTH = 1180;
+
+/**
+ * Runs the tests of a describe on a window `width` points wide, an iPad on
+ * its side unless told otherwise, and puts the window back after each.
+ */
+export function onATablet(width = TABLET_WIDTH) {
+  let before: ReturnType<typeof Dimensions.get>;
+  beforeEach(() => {
+    before = Dimensions.get('window');
+    const size = { width, height: width > 1000 ? 820 : 1180, scale: 2, fontScale: 1 };
+    Dimensions.set({ window: size, screen: size });
+  });
+  // The screen is still up, and draws itself again for the new width.
+  afterEach(async () => {
+    await act(async () => Dimensions.set({ window: before, screen: before }));
+  });
 }
 
 /**

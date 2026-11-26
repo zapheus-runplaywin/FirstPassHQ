@@ -1,8 +1,14 @@
-import { router, Stack, useLocalSearchParams } from 'expo-router';
+import { router } from 'expo-router';
 import { useEffect, useState } from 'react';
 import { Linking, Pressable, StyleSheet, View } from 'react-native';
 
 import { FocusAnchor } from '@/components/focus-anchor';
+import {
+  ScreenTitle,
+  useLeaveScreen,
+  useListChanged,
+  useScreenParams,
+} from '@/components/list-detail';
 import { GuardianHistory } from '@/components/guardian-history';
 import { JoinRequestSummary, type JoinAnswer } from '@/components/join-request';
 import { Fold, MemberHeader, MemberPane, NeedsAttention } from '@/components/member-tabs';
@@ -137,8 +143,11 @@ const GUARDIAN_MATCHES = 6;
 const MEMBER_NOT_FOUND = 'Member not found.';
 
 export default function MemberScreen() {
-  const params = useLocalSearchParams<{ id: string; todo?: string }>();
+  const params = useScreenParams<{ id: string; todo?: string }>();
   const { id } = params;
+  // Back to the member list, which then shows what changed.
+  const leave = useLeaveScreen();
+  const listChanged = useListChanged();
   // Opened from a home screen to-do: say what it needs, and show that part first.
   const todo = isMemberTodoKind(params.todo) ? params.todo : null;
   const section = todo ? memberTodoCopy[todo].section : null;
@@ -512,6 +521,7 @@ export default function MemberScreen() {
           verification_note: null,
         },
     );
+    listChanged();
   }
 
   async function recordVerification() {
@@ -544,6 +554,7 @@ export default function MemberScreen() {
           verification_note: verifyNote.trim(),
         },
     );
+    listChanged();
   }
 
   /** Refuses a save before anything is sent, and opens the tab holding what to fix. */
@@ -714,7 +725,7 @@ export default function MemberScreen() {
     }
     setSaving(null);
     if (isSelf) await refresh();
-    router.back();
+    leave();
   }
 
   /** Records, changes or ends their volunteer exemption. Returns an error message. */
@@ -767,6 +778,7 @@ export default function MemberScreen() {
       return;
     }
     setReloads((n) => n + 1);
+    listChanged();
   }
 
   async function deleteMember() {
@@ -778,7 +790,7 @@ export default function MemberScreen() {
       setError(rpcError.message);
       return;
     }
-    router.back();
+    leave();
   }
 
   if (!member) {
@@ -939,7 +951,7 @@ export default function MemberScreen() {
     // Its own key, so the full record opens at its top, not where the summary was scrolled to.
     return (
       <Screen key="summary">
-        <Stack.Screen options={{ title: member.full_name || member.email || 'Member' }} />
+        <ScreenTitle title={member.full_name || member.email || 'Member'} />
         {todoCard}
         <JoinRequestSummary
           asked={askedLine(member, requestedTeam ? teamLabel(requestedTeam, teams) : null)}
@@ -1053,7 +1065,7 @@ export default function MemberScreen() {
           onTab={setTab}
         />
       }>
-      <Stack.Screen options={{ title: member.full_name || member.email || 'Member' }} />
+      <ScreenTitle title={member.full_name || member.email || 'Member'} />
 
       {canSummarise ? (
         <Button
@@ -1633,9 +1645,10 @@ export default function MemberScreen() {
                       member={member}
                       isSelf={isSelf}
                       validatorName={nameOf}
-                      onSaved={(changes) =>
-                        setMember((current) => current && { ...current, ...changes })
-                      }
+                      onSaved={(changes) => {
+                        setMember((current) => current && { ...current, ...changes });
+                        listChanged();
+                      }}
                     />
                   ) : wwccNumber.trim() && !cardUnchanged ? (
                     <ThemedText type="small" themeColor="textSecondary">
@@ -1657,14 +1670,14 @@ export default function MemberScreen() {
           <FocusAnchor active={section === 'notices'}>{todoCard}</FocusAnchor>
 
           {showNotices ? (
-            <ScreeningNotices memberId={member.id} onStandDown={() => router.back()} />
+            <ScreeningNotices memberId={member.id} onStandDown={leave} />
           ) : null}
 
           {showStandDown ? (
             <StandDownSection
               memberId={member.id}
               memberName={member.full_name || member.email || 'this member'}
-              onChange={() => router.back()}
+              onChange={leave}
             />
           ) : null}
         </MemberPane>
@@ -1781,6 +1794,7 @@ export default function MemberScreen() {
               onAdded={() => {
                 setReloads((n) => n + 1);
                 refresh();
+                listChanged();
               }}
             />
           ) : null}

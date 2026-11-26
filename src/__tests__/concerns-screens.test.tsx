@@ -10,6 +10,7 @@
  * would return for each member and check the screens show that, keep an
  * anonymous raiser anonymous, and prompt a referral for a child's safety.
  */
+import { router } from 'expo-router';
 import { fireEvent, screen, within } from 'expo-router/testing-library';
 
 import RaiseConcernScreen from '@/app/concern/new';
@@ -24,11 +25,13 @@ import type { WellbeingFlag } from '@/lib/wellbeing-flags';
 
 import {
   morePersonas,
+  onATablet,
   openScreen,
   personas,
   resetClub,
   setClubFeatures,
   settle,
+  type BackendOptions,
   type Persona,
   type PersonaName,
 } from './helpers/harness';
@@ -903,5 +906,141 @@ describe('escalation', () => {
     expect(screen.getByText('Shouted at the under 12s')).toBeTruthy();
     expect(screen.queryByText('Export the register as a PDF')).toBeNull();
     expect(screen.queryByText('Message access')).toBeNull();
+  });
+});
+
+// ---------------------------------------------------------------------------
+// On a tablet: a concern opens beside the register
+
+describe('the register on a tablet', () => {
+  onATablet();
+
+  let push: jest.SpyInstance;
+  beforeEach(() => {
+    push = jest.spyOn(router, 'push').mockImplementation(() => {});
+  });
+  afterEach(() => push.mockRestore());
+
+  const named: Persona = { ...personas.coach, rpcs: { has_escalated_concerns: true } };
+  const OLD = concern({ id: 'con-2', body: 'Old matter', status: 'closed', involves_child: 'no' });
+
+  async function open(who: Who, tables: BackendOptions = {}) {
+    await openScreen(who, { 'concerns/index': ConcernsScreen }, '/concerns', {}, {
+      ...tables,
+      rpcs: {
+        concern_register: [concern(), OLD],
+        concern_history: [],
+        concern_about_people: [{ id: 'p1', name: 'Sample Parent' }],
+        safeguarding_contacts: [CONTACTS],
+        ...tables.rpcs,
+      },
+    });
+  }
+  const beside = () => within(screen.getByTestId('detail-pane'));
+  const list = () => within(screen.getByTestId('list-pane'));
+  const called = (name: string) => rpcCalls().filter(([n]) => n === name);
+
+  it.each<[string, Who]>([
+    ['Child Safety Officer', officer],
+    ['admin', 'admin'],
+    ['someone a concern reached by name', named],
+  ])('opens nothing for the %s, and records no look, until a concern is tapped', async (_l, who) => {
+    await open(who);
+    expect(beside().getByText('Choose a concern to open it here.')).toBeTruthy();
+    expect(list().getByText('Shouted at the under 12s')).toBeTruthy();
+    expect(called('note_escalated_concern_view')).toHaveLength(0);
+    expect(called('concern_history')).toHaveLength(0);
+  });
+
+  it('opens the tapped concern beside the register, which stays', async () => {
+    await open(officer);
+    await fireEvent.press(list().getByText('Shouted at the under 12s'));
+    await settle();
+    expect(push).not.toHaveBeenCalled();
+    expect(beside().getByText('Raised by: Sample Guardian')).toBeTruthy();
+    expect(beside().getByText('Add note')).toBeTruthy();
+    expect(list().getByText('Old matter')).toBeTruthy();
+    expect(called('concern_history')).toEqual([['concern_history', { p_concern_id: 'con-1' }]]);
+    expect(called('note_escalated_concern_view')).toEqual([
+      ['note_escalated_concern_view', { p_concern_id: 'con-1' }],
+    ]);
+  });
+
+  it('marks which concern is open, and opens another in its place', async () => {
+    await open(officer);
+    await fireEvent.press(list().getByText('Shouted at the under 12s'));
+    await settle();
+    const selected = () =>
+      list()
+        .getAllByRole('button')
+        .filter((b) => b.props.accessibilityState?.selected)
+        .map((b) => within(b).queryByText('Old matter') !== null);
+    expect(selected()).toEqual([false]);
+    await fireEvent.press(list().getByText('Old matter'));
+    await settle();
+    expect(selected()).toEqual([true]);
+    expect(called('concern_history').at(-1)).toEqual(['concern_history', { p_concern_id: 'con-2' }]);
+    expect(beside().queryByText('Add note')).toBeTruthy();
+  });
+
+  it('reloads the register when a step is recorded, and keeps the concern open', async () => {
+    await open(officer);
+    await fireEvent.press(list().getByText('Shouted at the under 12s'));
+    await settle();
+    const before = called('concern_register').length;
+    await fireEvent.press(beside().getByText('Referred to Police'));
+    await settle();
+    expect(called('add_concern_event')).toHaveLength(1);
+    // Once for the concern, once for the register beside it.
+    expect(called('concern_register').length).toBe(before + 2);
+    expect(beside().getByText('Raised by: Sample Guardian')).toBeTruthy();
+  });
+
+  it('closes the concern from the cross, and reloads the register', async () => {
+    await open(officer);
+    await fireEvent.press(list().getByText('Shouted at the under 12s'));
+    await settle();
+    const before = called('concern_register').length;
+    await fireEvent.press(screen.getByLabelText(/^Close /));
+    await settle();
+    expect(beside().getByText('Choose a concern to open it here.')).toBeTruthy();
+    expect(called('concern_register').length).toBe(before + 1);
+  });
+
+  it('shows someone it reached by name the concern without the officers’ tools, as its own screen does', async () => {
+    await open(named);
+    await fireEvent.press(list().getByText('Shouted at the under 12s'));
+    await settle();
+    expect(beside().getByText('Add note')).toBeTruthy();
+    expect(beside().queryByText('Who it’s about')).toBeNull();
+    expect(beside().queryByText('Ask to read messages')).toBeNull();
+    expect(list().queryByText('Export the register as a PDF')).toBeNull();
+  });
+
+  it.each<[string, Who]>([
+    ['athlete', 'athlete'],
+    ['guardian', 'guardian'],
+    ['coach', 'coach'],
+    ['committee member', 'committee'],
+    ['stood-down admin', 'stoodDownAdmin'],
+  ])('gives a %s, who the database returns nothing to, nothing to open', async (_l, who) => {
+    await open(who, { rpcs: { concern_register: [] } });
+    expect(list().getByText('No open concerns.')).toBeTruthy();
+    expect(beside().getByText('Choose a concern to open it here.')).toBeTruthy();
+    expect(called('concern_history')).toHaveLength(0);
+  });
+});
+
+describe('the register on a phone', () => {
+  it('opens a concern on its own screen', async () => {
+    const push = jest.spyOn(router, 'push').mockImplementation(() => {});
+    try {
+      await openRegister(officer, [concern()]);
+      expect(screen.queryByTestId('list-detail')).toBeNull();
+      await fireEvent.press(screen.getByText('Shouted at the under 12s'));
+      expect(push).toHaveBeenCalledWith({ pathname: '/concerns/[id]', params: { id: 'con-1' } });
+    } finally {
+      push.mockRestore();
+    }
   });
 });

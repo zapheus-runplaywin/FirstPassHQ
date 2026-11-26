@@ -1,7 +1,8 @@
-import { router, useFocusEffect, useLocalSearchParams } from 'expo-router';
+import { router, useFocusEffect } from 'expo-router';
 import { useCallback, useState } from 'react';
 import { StyleSheet, View } from 'react-native';
 
+import { useListChanged, useScreenParams } from '@/components/list-detail';
 import { PeoplePicker } from '@/components/people-picker';
 import { ReportedMessage } from '@/components/safeguarding';
 import { Screen } from '@/components/screen';
@@ -35,7 +36,9 @@ import type { Concern, ConcernEvent, ConcernEventKind, ConcernStatus } from '@/l
  * it, and buttons to record a referral, a note or a new status.
  */
 export default function ConcernScreen() {
-  const { id } = useLocalSearchParams<{ id: string }>();
+  const { id } = useScreenParams<{ id: string }>();
+  // Beside the register on a tablet, the register shows what was recorded here.
+  const listChanged = useListChanged();
   const contacts = useSafeguardingContacts();
   const { isAdmin, isSafeguardingOfficer } = useAuth();
   const [concern, setConcern] = useState<Concern | null | undefined>(undefined);
@@ -111,6 +114,7 @@ export default function ConcernScreen() {
     setNote('');
     setStatus(null);
     load();
+    listChanged();
   }
 
   async function changeAbout(memberId: string, add: boolean) {
@@ -126,6 +130,7 @@ export default function ConcernScreen() {
       return;
     }
     load();
+    listChanged();
   }
 
   if (concern === undefined) return <Screen>{null}</Screen>;

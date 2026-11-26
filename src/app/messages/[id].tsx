@@ -1,7 +1,8 @@
-import { router, useFocusEffect, useLocalSearchParams } from 'expo-router';
+import { useFocusEffect } from 'expo-router';
 import { useCallback, useRef, useState } from 'react';
 import { StyleSheet, View } from 'react-native';
 
+import { useLeaveScreen, useListChanged, useScreenParams } from '@/components/list-detail';
 import { RaiseConcernLink } from '@/components/safeguarding';
 import { Screen } from '@/components/screen';
 import { ThemedText } from '@/components/themed-text';
@@ -24,7 +25,10 @@ import { supabase } from '@/lib/supabase';
 import type { InboxMessage, Message, MessageReceipt } from '@/lib/types';
 
 export default function MessageScreen() {
-  const { id } = useLocalSearchParams<{ id: string }>();
+  const { id } = useScreenParams<{ id: string }>();
+  // Back to the list, which then shows the message where it now belongs.
+  const leave = useLeaveScreen('/messages');
+  const listChanged = useListChanged();
   const { session } = useAuth();
   const [message, setMessage] = useState<Message | null | undefined>(undefined);
   const [receipts, setReceipts] = useState<MessageReceipt[] | null>(null);
@@ -72,13 +76,16 @@ export default function MessageScreen() {
       setBlocked(null);
     }
     // Opening a message marks it read. Does nothing for its sender.
-    markedRead.current = supabase.rpc('mark_message_read', { p_message_id: id }).then(() => {});
+    // Beside the list, the list then drops the message's unread dot.
+    markedRead.current = supabase
+      .rpc('mark_message_read', { p_message_id: id })
+      .then(() => listChanged());
     // Read receipts are for the sender only.
     if (loaded.sender_id === session?.user.id) {
       const { data: rows } = await supabase.rpc('message_receipts', { p_message_id: id });
       setReceipts((rows as MessageReceipt[] | null) ?? []);
     }
-  }, [id, session, features.chatGroups]);
+  }, [id, session, features.chatGroups, listChanged]);
 
   useFocusEffect(
     useCallback(() => {
@@ -93,8 +100,7 @@ export default function MessageScreen() {
     await markedRead.current;
     await supabase.rpc('mark_message_unread', { p_message_id: id });
     setMarkingUnread(false);
-    if (router.canGoBack()) router.back();
-    else router.replace('/messages');
+    leave();
   }
 
   // Archives the member's own copy, or moves it back to the inbox. Nothing is
@@ -107,8 +113,7 @@ export default function MessageScreen() {
       p_message_id: id,
     });
     setMoving(false);
-    if (router.canGoBack()) router.back();
-    else router.replace('/messages');
+    leave();
   }
 
   // Blocks or unblocks the post's author in the member's chat groups. Admins

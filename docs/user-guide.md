@@ -681,8 +681,12 @@ just use the extra room so there's less scrolling:
   two a row.
 - **On its side**, Today puts Next up and the rest of the week on the left and Needs you on the
   right, and the cards in Team, Family, Club and Me sit three a row.
-- **Lists of cards** sit two or three a row: injuries, past attendance sessions and athletes'
-  attendance, a squad or team's people and its games.
+- **Lists of cards** sit two or three a row: a squad or team's people and its games, and, on an
+  upright tablet, injuries, past attendance sessions and athletes' attendance.
+- **On its side, a list keeps its place and what you tap opens beside it**: a message beside
+  **Messages**, a member's page beside **Members**, an injury beside **Injuries**, a concern beside
+  the concerns register and a session's register beside **Attendance**. See [A list with what you
+  open beside it](#a-list-with-what-you-open-beside-it), below.
 - **Taking attendance**, the register shows two or three athletes a row, each with Present and
   Absent, so a whole squad fits on the screen.
 - **Forms and messages** stay a comfortable reading width in the middle of the screen.
@@ -693,6 +697,40 @@ upright.
 
 <img src="user-guide/today-tablet-sideways.png" width="420" alt="A manager's Today on an iPad on its side: the tabs down the left, Next up and Later this week in one column and Needs you in the other">
 <img src="user-guide/team-tablet.png" width="320" alt="A coach's Team tab on an upright iPad: the tabs down the left, the three tiles in a row, then their team and its people">
+
+#### A list with what you open beside it
+
+On a tablet on its side (and on the biggest iPad upright), five lists stay on the left while what
+you tap opens on the right, so you can work down a list without going back and forth:
+
+| List | What opens beside it |
+| --- | --- |
+| **Messages** (Inbox, Archived and Sent) | The message |
+| **Members**, and the people a member to-do is about (admins) | The member's page, with its tabs |
+| **Injuries** | The injury, with its history and its buttons |
+| The **concerns register** | The concern |
+| **Attendance**, under **Sessions** | The session's register |
+
+- **Nothing is open until you tap.** The right side says "Choose a message to read it here" (or a
+  member, an injury, a concern or a session). So nothing is marked as read, no record view is
+  noted and nothing shows on a tablet at the court that nobody asked to see.
+- **What opens is the same screen as on a phone**, with the same buttons, shown to the same
+  people. Its name is above it, and the card you tapped is marked in the list with the club's
+  colour down its edge.
+- **The list keeps up.** Open a message and its dot goes; record a step on a concern, save a
+  register or add an injury update and the list shows it straight away, with the item still open.
+- **Finishing closes it.** Saving a member's page, archiving a message or marking it unread closes
+  the right side and leaves you in the list, ready for the next one. The cross at the top right
+  closes it without doing anything else.
+- **Everything else opens on its own screen**, as on a phone: a chat group, an athlete's attendance
+  record, a new message, a new injury, the concerns report.
+
+A member to-do about one person, such as **Add a date of birth for 1 athlete**, opens that person
+beside the list straight away, because that is what you tapped. On an upright tablet or a phone,
+or in a narrow window, the list is the whole screen and each item opens on its own screen.
+
+<img src="user-guide/tablet-messages.png" width="420" alt="Messages on an iPad on its side: the tabs down the left, the inbox in the middle with the open message marked, and the message on the right with Archive, Mark as unread and Report this message">
+<img src="user-guide/tablet-members.png" width="420" alt="Members on an iPad on its side: the list on the left with one member marked, and their page on the right on Overview, with Needs attention and Save changes">
 
 ### Your own tasks
 
@@ -804,6 +842,9 @@ Archiving only moves your own copy: the sender doesn't see it as read, and nobod
 changes, so a parent's copy of a message to their child stays in the parent's inbox. Messages can't
 be deleted, and messages you sent can't be archived. A question in an archived message can still
 be answered. Screen readers offer **Archive** and **Move to inbox** from each message's actions.
+
+On a tablet on its side, a message opens beside the list and nothing is marked as read until you
+tap it (see [Using HQ on a tablet](#using-hq-on-a-tablet)). Chat groups open on their own screen.
 
 **Report this message** on any message raises a concern
 about it, and the concern keeps a copy of the message (see [Raising a concern](#raising-a-concern)).
@@ -2546,7 +2587,11 @@ or send back their clearance.
 
 Open an injury to see its full history, including the physio's updates and documents, and to
 **Raise a concern** about it. Opening an under 18's injury is itself recorded for their parents,
-separately from opening its documents.
+separately from opening its documents. On a tablet on its side the injury opens beside the list;
+none is open, and no view is recorded, until you tap one (see [Using HQ on a
+tablet](#using-hq-on-a-tablet)).
+
+<img src="user-guide/tablet-injuries.png" width="420" alt="Injuries on an iPad on its side: the list on the left with the clearance waiting for the coach marked, and that injury on the right with Endorse clearance, Send back and its history">
 
 When one of your athletes asks for clearance, it appears under **Waiting for your sign-off** and in
 your to-do list. Open it, check the proof in the history (tap **View**), then:
@@ -2648,7 +2693,8 @@ session.
 
 - **Sessions** lists past sessions (managers, who have no **Athletes** tab, find the list under the
   absence cards). Open one to see who was there, and **Change attendance** to
-  correct it; athletes who joined the group since show as **Not marked**.
+  correct it; athletes who joined the group since show as **Not marked**. On a tablet on its side
+  the register opens beside the list, and the list shows the new count as soon as you save.
 - **Athletes** shows each athlete's attendance over 4 weeks, 3 months or 12 months, with the last
   time they were there. Tap an athlete to see every session.
 - **New or changed absences**, under the **Take attendance** button, lists the absences reported
@@ -3451,7 +3497,10 @@ isn't part of the invite, so share it separately.
 ### A member's page
 
 Open anyone from **Members**, from the search on the **Club** tab or from a to-do, and their page
-opens. Only admins can open it. It is in tabs, so each job is a tap away and not a long scroll:
+opens. Only admins can open it. On a tablet on its side, a member opened from **Members** shows
+beside the list: saving closes their page and the list already shows what changed (see [Using HQ
+on a tablet](#using-hq-on-a-tablet)). The page is in tabs, so each job is a tap away and not a
+long scroll:
 
 - **Above the tabs**, one line says who they are: "Approved · Coach, Guardian · Mixed Open Squad",
   "Pending · Asked to join as an athlete · Mixed Open Squad" or "Rejected · Not registered with
@@ -4977,7 +5026,9 @@ handle concerns have neither the panel nor the card.
 <img src="user-guide/concerns-lights.png" width="210" alt="The Concerns card in the Club tab: 1 new in red, 2 in progress in orange, 1 closed in the last 4 weeks in green">
 
 Open a concern to see what was raised, by whom (unless they hid their name), how to contact them,
-and where it was raised from. A concern raised with **Report this message** shows the **Reported
+and where it was raised from. On a tablet on its side the concern opens beside the register; none
+is open until you tap one, and what you record shows in the register straight away (see [Using HQ
+on a tablet](#using-hq-on-a-tablet)). A concern raised with **Report this message** shows the **Reported
 message** in full: who sent it, when, and exactly what it said. This is the concern's own copy, kept
 with the concern for good, so it stays the same if the message is later removed. Hiding the
 reporter's name works the same as for any concern. While a concern that may involve a child's safety is open and hasn't been referred, a red note at the top says to refer child abuse or a serious crime to Police and the

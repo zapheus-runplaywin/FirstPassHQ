@@ -24,13 +24,24 @@ type InjurySummary = Pick<
 export function InjuryCard({
   injury,
   showAthlete,
+  onOpen,
+  selected,
 }: {
   injury: InjurySummary;
   showAthlete: boolean;
+  /** Opens the injury some other way than on its own screen, such as beside its list on a tablet. */
+  onOpen?: (params: { id: string }) => void;
+  /** This injury is the one open beside the list. */
+  selected?: boolean;
 }) {
   return (
     <PressableCard
-      onPress={() => router.push({ pathname: '/injuries/[id]', params: { id: injury.id } })}>
+      selected={selected}
+      onPress={() =>
+        onOpen
+          ? onOpen({ id: injury.id })
+          : router.push({ pathname: '/injuries/[id]', params: { id: injury.id } })
+      }>
       <ThemedText type="smallBold" numberOfLines={2}>
         {showAthlete ? `${injury.athlete_name ?? 'Unnamed athlete'} · ` : ''}
         {injury.body_area}

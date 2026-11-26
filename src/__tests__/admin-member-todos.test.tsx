@@ -9,7 +9,7 @@
  * nearest people it leaves out. A to-do already dealt with says so instead of
  * showing an empty list or a form.
  */
-import { fireEvent, screen } from 'expo-router/testing-library';
+import { fireEvent, screen, within } from 'expo-router/testing-library';
 import { router } from 'expo-router';
 
 import MemberScreen from '@/app/admin/[id]';
@@ -18,8 +18,8 @@ import { JOIN_SUMMARY_ACTION } from '@/lib/join-request';
 import { memberPageHref, memberTodoCopy, type MemberTodoKind } from '@/lib/member-todos';
 import type { Profile, VolunteerExemption, WwccApplication } from '@/lib/types';
 
-import { openFullRecord } from './helpers/admin-screens';
-import { openScreen, personas, resetClub } from './helpers/harness';
+import { openFullRecord, untilQuiet } from './helpers/admin-screens';
+import { onATablet, openScreen, personas, resetClub, type QueryInfo } from './helpers/harness';
 
 jest.mock('@/lib/club', () => jest.requireActual('./helpers/harness').clubModuleMock());
 jest.mock('@/lib/club-choice', () => jest.requireActual('./helpers/harness').clubChoiceModuleMock());
@@ -127,7 +127,15 @@ const APPLICATION: Partial<WwccApplication> = {
   ended_at: null,
 };
 
-async function openTodo(kind: MemberTodoKind | 'nonsense', members: Profile[] = Object.values(M)) {
+/**
+ * `withPages` also answers what a member's own page asks for, for the tablet
+ * tests, where the page opens beside this list.
+ */
+async function openTodo(
+  kind: MemberTodoKind | 'nonsense',
+  members: Profile[] = Object.values(M),
+  withPages = false,
+) {
   await openScreen(
     'admin',
     // The member's page the to-do opens when there is only one person.
@@ -138,13 +146,27 @@ async function openTodo(kind: MemberTodoKind | 'nonsense', members: Profile[] = 
       guardian_link_requests: [],
       // The screen asks only for barring notices not yet reported.
       screening_notices: [{ profile_id: 'm-notice' }],
+      ...(withPages ? { stand_downs: [], guardianship_history: [] } : {}),
     },
     {
       tableHandlers: {
-        profiles: (q) => (q.eq('id') === undefined ? members : undefined),
+        profiles: (q) => {
+          const id = q.eq('id');
+          if (id === undefined) return withPages && q.eq('status') === 'approved' ? [] : members;
+          const member = withPages ? members.find((m) => m.id === id) : undefined;
+          return member ? [member] : undefined;
+        },
         team_members: (q) => (q.eq('profile_id') === undefined ? [] : undefined),
+        // The list asks who has a notice to report; a member's page, for that member's notices.
+        ...(withPages
+          ? {
+              screening_notices: (q: QueryInfo) =>
+                q.eq('profile_id') === undefined ? [{ profile_id: 'm-notice' }] : [],
+            }
+          : {}),
       },
       rpcs: {
+        ...(withPages ? { admin_date_of_birth_record: null } : {}),
         admin_volunteer_exemptions: [EXEMPTION],
         admin_inactive_members: [{ profile_id: 'm-gone', last_active: '2024-06-01T00:00:00Z' }],
         admin_wwcc_applications: [APPLICATION],
@@ -353,5 +375,50 @@ describe('a member’s page opened from a to-do', () => {
     });
     expect(screen.queryByText('To do')).toBeNull();
     expect(screen.queryByTestId('focus-anchor')).toBeNull();
+  });
+});
+
+// ---------------------------------------------------------------------------
+// On a tablet: the person opens beside the list of people the to-do is about
+
+describe('a member to-do on a tablet', () => {
+  onATablet();
+
+  const HINT = 'Choose a member to open their page here.';
+
+  it('opens the person tapped beside the list, and keeps the list', async () => {
+    await openTodo('join', Object.values(M), true);
+    // Several people: nobody is open until one is tapped.
+    expect(listed().length).toBeGreaterThan(1);
+    expect(screen.getByText(HINT)).toBeTruthy();
+    expect(replace).not.toHaveBeenCalled();
+    await fireEvent.press(screen.getByText('Nico New'));
+    await untilQuiet();
+    expect(push).not.toHaveBeenCalled();
+    expect(screen.queryByText(HINT)).toBeNull();
+    // Their page, opened for this to-do as its own screen would be.
+    expect(within(screen.getByTestId('detail-pane')).getByText('To do')).toBeTruthy();
+    expect(within(screen.getByTestId('detail-pane')).getByTestId('join-request')).toBeTruthy();
+    expect(within(screen.getByTestId('list-pane')).getByText('Nico New')).toBeTruthy();
+    expect(within(screen.getByTestId('list-pane')).getByText(/Show all members/)).toBeTruthy();
+    expect(screen).toHavePathname('/admin');
+  });
+
+  it.each<[MemberTodoKind, string]>([
+    ['dob', 'Nadia NoDate'],
+    ['inactive', 'Gina Gone'],
+  ])('opens the only person for the %s to-do beside the list, without leaving it', async (kind, name) => {
+    await openTodo(kind, Object.values(M), true);
+    await untilQuiet();
+    expect(replace).not.toHaveBeenCalled();
+    expect(screen).toHavePathname('/admin');
+    expect(screen.queryByText(HINT)).toBeNull();
+    expect(screen.getByTestId('detail-pane')).toBeTruthy();
+    expect(within(screen.getByTestId('list-pane')).getByText(name)).toBeTruthy();
+    // Closed, the list stays: the person isn't opened a second time.
+    await fireEvent.press(screen.getByLabelText(/^Close /));
+    await untilQuiet();
+    expect(screen.getByText(HINT)).toBeTruthy();
+    expect(within(screen.getByTestId('list-pane')).getByText(name)).toBeTruthy();
   });
 });

@@ -2,7 +2,9 @@ import { router, useFocusEffect } from 'expo-router';
 import { useCallback, useState } from 'react';
 import { StyleSheet, View } from 'react-native';
 
+import AttendanceSessionScreen from '@/app/attendance/[id]';
 import { CardGrid } from '@/components/columns';
+import { ListDetail, useListDetail } from '@/components/list-detail';
 import { Screen } from '@/components/screen';
 import { ThemedText } from '@/components/themed-text';
 import { Button, Card, ChipGroup, ErrorText, PressableCard } from '@/components/ui';
@@ -75,7 +77,12 @@ export default function AttendanceScreen() {
     setRefreshing(false);
   }
 
-  return (
+  // On a tablet a session's register opens beside the list; otherwise on its own screen.
+  const detail = useListDetail<{ id: string }>((params) =>
+    router.push({ pathname: '/attendance/[id]', params }),
+  );
+
+  const list = (
     <Screen refreshing={refreshing} onRefresh={onRefresh}>
       {canTake ? (
         <Button title="Take attendance" onPress={() => router.push('/attendance/new')} />
@@ -99,7 +106,7 @@ export default function AttendanceScreen() {
       ) : null}
 
       {tab === 'sessions' ? (
-        <Sessions sessions={sessions} />
+        <Sessions sessions={sessions} chosenId={detail.chosen?.id ?? null} onOpen={detail.open} />
       ) : (
         <>
           <ChipGroup options={periods} selected={[days]} onToggle={setDays} />
@@ -107,6 +114,20 @@ export default function AttendanceScreen() {
         </>
       )}
     </Screen>
+  );
+  return (
+    <ListDetail
+      chosen={detail.chosen}
+      detail={<AttendanceSessionScreen />}
+      title="Attendance"
+      hint="Choose a session to open its register here."
+      onLeave={() => {
+        detail.close();
+        load();
+      }}
+      onChanged={load}>
+      {list}
+    </ListDetail>
   );
 }
 
@@ -182,7 +203,16 @@ function AwaySoon({ away }: { away: UpcomingAbsence[] }) {
   );
 }
 
-function Sessions({ sessions }: { sessions: AttendanceSession[] | null }) {
+function Sessions({
+  sessions,
+  chosenId,
+  onOpen,
+}: {
+  sessions: AttendanceSession[] | null;
+  /** The session open beside the list, if one is. */
+  chosenId: string | null;
+  onOpen: (params: { id: string }) => void;
+}) {
   if (sessions === null) return null;
   if (sessions.length === 0) {
     return (
@@ -196,7 +226,8 @@ function Sessions({ sessions }: { sessions: AttendanceSession[] | null }) {
       {sessions.map((s) => (
         <PressableCard
           key={s.id}
-          onPress={() => router.push({ pathname: '/attendance/[id]', params: { id: s.id } })}>
+          selected={chosenId === null ? undefined : s.id === chosenId}
+          onPress={() => onOpen({ id: s.id })}>
           <View style={styles.row}>
             <ThemedText type="smallBold" style={styles.grow} numberOfLines={1}>
               {s.name}

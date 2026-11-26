@@ -1,8 +1,9 @@
 import * as DocumentPicker from 'expo-document-picker';
-import { router, useFocusEffect, useLocalSearchParams } from 'expo-router';
+import { router, useFocusEffect } from 'expo-router';
 import { useCallback, useEffect, useState } from 'react';
 import { Platform, Pressable, StyleSheet, Switch, View } from 'react-native';
 
+import { useListChanged, useScreenParams } from '@/components/list-detail';
 import { DateField } from '@/components/date-field';
 import { StatusPill } from '@/components/injury-card';
 import { RaiseConcernLink } from '@/components/safeguarding';
@@ -37,7 +38,9 @@ const UPDATE_COLUMNS =
 type Action = 'update' | 'clearance' | 'endorse' | 'accept' | 'send_back';
 
 export default function InjuryScreen() {
-  const { id } = useLocalSearchParams<{ id: string }>();
+  const { id } = useScreenParams<{ id: string }>();
+  // Beside the list on a tablet, the list shows what changed here.
+  const listChanged = useListChanged();
   const { profile } = useAuth();
   const [injury, setInjury] = useState<Injury | null | undefined>(undefined);
   const [updates, setUpdates] = useState<InjuryUpdate[]>([]);
@@ -85,6 +88,7 @@ export default function InjuryScreen() {
   async function done() {
     setAction(null);
     await load();
+    listChanged();
   }
 
   if (injury === undefined) return null;
