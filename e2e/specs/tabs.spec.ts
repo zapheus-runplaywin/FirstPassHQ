@@ -33,7 +33,7 @@ test('a coach moves between Today, their Team hub and Me from the tab bar', asyn
   await openTab(page, 'Team');
   await expect(page).toHaveURL(/\/team$/);
   await expect(page.getByRole('button', { name: new RegExp(`^${openSquad.name}`) })).toBeVisible();
-  await expect(page.getByRole('button', { name: /^Attendance Take attendance/ })).toBeVisible();
+  await expect(page.getByRole('button', { name: /^Attendance\. Take attendance/ })).toBeVisible();
   // The tab's own heading, with Raise a concern beside it.
   await expect(page.getByRole('heading', { name: 'Team', exact: true })).toBeVisible();
 

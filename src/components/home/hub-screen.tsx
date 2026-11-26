@@ -1,20 +1,25 @@
 import { StyleSheet } from 'react-native';
 
-import { CardGrid } from '@/components/columns';
+import { CardGrid, Columns } from '@/components/columns';
 import { HomeCardView, SECTION_CARDS } from '@/components/home/cards';
 import { ClubHub } from '@/components/home/club-hub';
 import { HubSwitch, TabHeader } from '@/components/home/tab-header';
+import { ReadinessTiles, TeamPeople } from '@/components/home/team-hub';
 import { Screen } from '@/components/screen';
 import { ThemedText } from '@/components/themed-text';
 import { Spacing } from '@/constants/theme';
+import { useAuth } from '@/lib/auth';
 import { useHome } from '@/lib/home';
 import { HUB_TITLES, type HomeCard, type HubName } from '@/lib/home-layout';
+import { rolesOf } from '@/lib/roles';
+import { READINESS_CARDS, readinessTiles, staffKind } from '@/lib/team-hub';
 import { useClubAreas } from '@/lib/use-club-areas';
 
 /** What each hub leads with, before its other cards. */
 const LEADS: Record<HubName, HomeCard[]> = {
-  // Your squads and teams, then the tools for looking after them.
-  team: ['groups'],
+  // How the athletes are going comes first (the readiness tiles), then the
+  // tools for looking after them, then each squad or team and its people.
+  team: [],
   // Your children first, one card each.
   family: ['children'],
   club: [],
@@ -42,11 +47,15 @@ const EMPTY: Record<HubName, string> = {
  * open it (src/lib/route-access.ts).
  *
  * Club groups what it holds into areas (src/components/home/club-hub.tsx).
+ * Team leads with readiness tiles for coaches, managers and physios and ends
+ * with each squad or team's people (src/components/home/team-hub.tsx).
  */
 export function HubScreen({ hub }: { hub: HubName }) {
   const home = useHome();
+  const { profile, memberships } = useAuth();
   const areas = useClubAreas();
   const inAreas = hub === 'club';
+  const isTeam = hub === 'team';
   const cards = inAreas ? [] : home.cards(hub);
   // A parent with no child linked yet starts with adding one.
   const nothingToLead = !LEADS[hub].some((card) => cards.includes(card));
@@ -55,8 +64,30 @@ export function HubScreen({ hub }: { hub: HubName }) {
   );
   const last = LAST[hub].filter((card) => cards.includes(card) && !leads.includes(card));
   const rest = cards.filter((card) => !leads.includes(card) && !last.includes(card));
-  const tiles = rest.filter((card) => !SECTION_CARDS.includes(card));
+  // Team: check-ins, attendance and injuries as tiles that lead with their number.
+  const readiness = isTeam
+    ? readinessTiles(rest, staffKind(profile ? rolesOf(profile) : [], memberships))
+    : [];
+  const tiles = rest.filter(
+    (card) => !SECTION_CARDS.includes(card) && !(isTeam && READINESS_CARDS.includes(card)),
+  );
   const sections = rest.filter((card) => SECTION_CARDS.includes(card));
+  const tools = (
+    <>
+      <ReadinessTiles cards={readiness} />
+      {tiles.length > 0 ? (
+        <CardGrid gap={Spacing.two}>
+          {tiles.map((card) => (
+            <HomeCardView key={card} card={card} />
+          ))}
+        </CardGrid>
+      ) : null}
+    </>
+  );
+  const people = sections.map((card) =>
+    // In Team, a squad or team shows its people too.
+    isTeam && card === 'groups' ? <TeamPeople key={card} /> : <HomeCardView key={card} card={card} />,
+  );
 
   return (
     <Screen
@@ -70,16 +101,15 @@ export function HubScreen({ hub }: { hub: HubName }) {
       {leads.map((card) => (
         <HomeCardView key={card} card={card} />
       ))}
-      {tiles.length > 0 ? (
-        <CardGrid gap={Spacing.two}>
-          {tiles.map((card) => (
-            <HomeCardView key={card} card={card} />
-          ))}
-        </CardGrid>
-      ) : null}
-      {sections.map((card) => (
-        <HomeCardView key={card} card={card} />
-      ))}
+      {isTeam && people.length > 0 && (readiness.length > 0 || tiles.length > 0) ? (
+        // On a wide tablet the tools sit beside the people, so neither is below the fold.
+        <Columns gap={Spacing.three} first={tools} second={people} />
+      ) : (
+        <>
+          {tools}
+          {people}
+        </>
+      )}
       {last.map((card) => (
         <HomeCardView key={card} card={card} />
       ))}

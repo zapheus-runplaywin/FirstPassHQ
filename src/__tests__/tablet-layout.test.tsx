@@ -2,7 +2,8 @@
  * HQ on a tablet ("Using HQ on a tablet" in section 3 of docs/user-guide.md).
  * Today puts what is next beside what needs you on an iPad on its side, a
  * hub's cards, a parent's children and the busiest coach lists (attendance sessions, a team's
- * people) sit two or three a row. A phone sees one column.
+ * people) sit two or three a row, and the Team tab puts its tiles and cards
+ * beside each squad or team's people. A phone sees one column.
  */
 import { router } from 'expo-router';
 import { fireEvent, screen, within } from 'expo-router/testing-library';
@@ -118,44 +119,69 @@ describe('Today on a tablet', () => {
 });
 
 describe('A hub on a tablet', () => {
-  const open = () => openScreen('coach', { team: inTabs(TeamHubScreen) }, '/team');
+  // A coach with session plans too, so there is more than one card beside the readiness tiles.
+  const open = () =>
+    openScreen('coach', { team: inTabs(TeamHubScreen) }, '/team', {}, {
+      rpcs: { session_plan_summary: [{ can_add: true, shared: 0, new_shared: 0 }] },
+    });
 
-  it('upright, puts the cards two a row', async () => {
+  const tileTitles = () =>
+    within(screen.getByTestId('readiness-tiles'))
+      .getAllByText(/^(Check-ins|Attendance|Injuries)$/)
+      .map((t) => t.props.children);
+
+  it('upright, puts the readiness tiles in a row and the cards two a row, with the squads below', async () => {
     setWindowWidth(IPAD_UPRIGHT);
     await open();
+    expect(tileTitles()).toEqual(['Check-ins', 'Attendance', 'Injuries']);
     // Screen width (820) less the screen's padding.
     await layOut(screen.getByTestId('card-grid-1'), IPAD_UPRIGHT - 48);
     const grid = screen.getByTestId('card-grid-2');
-    expect(hasText(grid, 'Take attendance and see past sessions')).toBe(true);
-    // The member's squads lead the hub, above the grid.
+    expect(hasText(grid, 'Session plans')).toBe(true);
+    expect(hasText(grid, 'Surveys')).toBe(true);
+    // The member's squads and their people end the hub, below the grid, in one column.
     expect(hasText(grid, 'My squads and teams')).toBe(false);
-    expect(screen.getByText('My squads and teams')).toBeTruthy();
+    expect(screen.queryByTestId('columns')).toBeNull();
+    const order = screen
+      .getAllByText(/^(Check-ins|Surveys|My squads and teams)$/)
+      .map((t) => t.props.children);
+    expect(order).toEqual(['Check-ins', 'Surveys', 'My squads and teams']);
   });
 
-  it('on its side, three a row', async () => {
+  it('on its side, puts the tiles and cards beside the squads and their people', async () => {
     setWindowWidth(IPAD_SIDEWAYS);
     await open();
-    await layOut(screen.getByTestId('card-grid-1'), IPAD_SIDEWAYS - 48);
-    const [row] = screen.getByTestId('card-grid-3').children as Node[];
-    expect(
-      within(row)
-        .getAllByText(/^(Check-ins|Attendance|Injuries)$/)
-        .map((t) => t.props.children),
-    ).toEqual(['Check-ins', 'Attendance', 'Injuries']);
+    const [left, right] = screen.getByTestId('columns').children as Node[];
+    expect(within(left).getByTestId('readiness-tiles')).toBeTruthy();
+    expect(tileTitles()).toEqual(['Check-ins', 'Attendance', 'Injuries']);
+    expect(hasText(left, 'Session plans')).toBe(true);
+    expect(hasText(left, 'Surveys')).toBe(true);
+    expect(hasText(left, 'My squads and teams')).toBe(false);
+    expect(hasText(right, 'My squads and teams')).toBe(true);
+    expect(within(right).getByTestId('team-people')).toBeTruthy();
+    expect(hasText(right, 'Check-ins')).toBe(false);
   });
 
-  it('on a phone, one a row, in the same order', async () => {
+  it('on a phone, one column: the tiles in a row, the cards, then the squads', async () => {
     setWindowWidth(PHONE);
     await open();
     await layOut(screen.getByTestId('card-grid-1'), PHONE - 48);
     expect(screen.getByTestId('card-grid-1')).toBeTruthy();
+    expect(screen.queryByTestId('columns')).toBeNull();
     const order = screen
-      .getAllByText(/^(My squads and teams|Check-ins|Attendance|Injuries|Surveys)$/)
+      .getAllByText(/^(My squads and teams|Check-ins|Attendance|Injuries|Session plans|Surveys)$/)
       .map((t) => t.props.children);
-    expect(order).toEqual(['My squads and teams', 'Check-ins', 'Attendance', 'Injuries', 'Surveys']);
+    expect(order).toEqual([
+      'Check-ins',
+      'Attendance',
+      'Injuries',
+      'Session plans',
+      'Surveys',
+      'My squads and teams',
+    ]);
   });
 
-  it('opens a card from the grid', async () => {
+  it('opens a tile', async () => {
     setWindowWidth(IPAD_SIDEWAYS);
     await open();
     await fireEvent.press(screen.getByText('Take attendance and see past sessions'));

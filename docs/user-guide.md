@@ -136,6 +136,7 @@ What each role can see and do:
 | Your own personal tasks                |    ✓    |        ✓        |      ✓       |     ✓      |       ✓       |       ✓       |    ✓    |       ✓       |
 | To-do notifications on your phone      |    ✓    |        ✓        |      ✓       |     ✓      |       ✓       |       ✓       |    ✓    |       ✓       |
 | My squads and teams                    |    ✓    |        ✓        |      ✓       |     ✓      |  If in one    |       ✓       | Heading only |   If in one   |
+| Injury status beside an athlete's name in a squad or team |         |                 |  Own groups  |            |               |  Own groups   |         |               |
 | Read and archive messages, mark read or unread |    ✓    |        ✓        |      ✓       |     ✓      |       ✓       |       ✓*      |         |       ✓       |
 | Send messages                          | Captains† |                 |  Own groups  | Own groups |   Whole club  |               |         |     Anyone    |
 | Chat groups (when switched on)         | Captains‖ |                 |      ✓‖      |     ✓‖     |  If added‖    |      ✓‖       |         | ✓, sets up groups‖ |
@@ -544,7 +545,7 @@ coach who is also a parent, the tab opens the one for your main role, and a swit
   links at its foot, with Your details for everyone but the athlete under 18.
 
 <img src="user-guide/today-athlete.png" width="210" alt="An athlete's Today: the next event, one thing that needs them, and later this week, with the tabs along the bottom">
-<img src="user-guide/team-coach.png" width="210" alt="A coach's Team tab: their squad, Check-ins, Attendance, Injuries with one waiting, and Surveys">
+<img src="user-guide/team-coach.png" width="210" alt="A coach's Team tab: Check-ins, Attendance and Injuries as tiles that lead with their number, Surveys, then their team and its people">
 <img src="user-guide/me-athlete.png" width="210" alt="An athlete's Me tab: Your details, Daily check-in, My attendance, Injuries and Your tasks">
 
 #### Today
@@ -613,14 +614,22 @@ such as "9 of 12 checked in today" or "At 11 of 12 sessions in 4 weeks". A line 
 colour, which is kept for buttons, links and the tab you're on, so what needs you looks the same
 in every club and is never mistaken for a link.
 
-- **Team** starts with **My squads and teams** (**My teams** in a club without squads): tap one
-  to see who's in it. A team's page also has its [game goals](#game-goals) for its athletes and
-  coaches. Coaches, managers and physios then have **Check-ins**, **Attendance**, **Injuries**,
-  **Session plans**, **Surveys** (to send one and see results) and **Season KPIs** (for the people
-  they set them for). Athletes have **Session plans** here once a coach has shared one, and
-  captains have **Surveys** to send a poll. Coaches read their athletes' check-ins from
-  **Check-ins**, and physios see the club's averages there. While you're on a selection round's
-  panel, **Selection assessments** is here as well as on Today.
+- **Team**, for coaches, managers and physios, starts with up to three tiles that lead with the
+  number that matters: **Check-ins** ("10/12 checked in today", and how many are flagged),
+  **Attendance** ("88% at sessions in 4 weeks", and any new or changed absences) and **Injuries**
+  ("2 current injuries", and how many are waiting for you). A coach has them in that order, a
+  physio has Injuries first, and a manager has Attendance first. Each tile opens the screen its
+  card always opened, and only shows a number you could already see there: a manager's tiles say
+  what they open, because managers take attendance and log injuries but don't see the records.
+  At large text sizes the tiles stack one under another. Then come **Session plans**, **Surveys**
+  (to send one and see results) and **Season KPIs** (for the people they set them for), and while
+  you're on a selection round's panel, **Selection assessments**, which is on Today as well.
+- **Team** ends with **My squads and teams** (**My teams** in a club without squads). If you're
+  in more than one, tap its name to switch. The card with the squad or team's name opens its
+  page, which has its [game goals](#game-goals) for its athletes and coaches, and under the card
+  is everyone in it: athletes first, then coaches, managers and physios, each with their position
+  (see [Squads and teams](#squads-and-teams)). For athletes this is the whole tab, with **Session
+  plans** above it once a coach has shared one, and **Surveys** for captains to send a poll.
 - **Family** starts with one card for each of your children. The card says where things stand
   for that child (consent, a current injury, medical details to add or check, changes since you
   last looked) and opens the child's own page, which has **Attendance**, **Game goals**,
@@ -683,7 +692,7 @@ iPad sharing the screen with another app, a narrow window gets the phone layout.
 upright.
 
 <img src="user-guide/today-tablet-sideways.png" width="420" alt="A manager's Today on an iPad on its side: the tabs down the left, Next up and Later this week in one column and Needs you in the other">
-<img src="user-guide/team-tablet.png" width="320" alt="A coach's Team tab on an upright iPad: the tabs down the left and the cards two a row">
+<img src="user-guide/team-tablet.png" width="320" alt="A coach's Team tab on an upright iPad: the tabs down the left, the three tiles in a row, then their team and its people">
 
 ### Your own tasks
 
@@ -1007,13 +1016,26 @@ post, such as a committee meeting, isn't a session athletes attend, so it has no
 
 ### Squads and teams
 
-Tap a squad or team under **My squads and teams** to see everyone in it, with their position:
-Head Coach, Assistant Coach, Manager, Physio, Athlete, Final team athlete or Training partner. Captains,
-vice captains and club captains are marked next to their position. When Game goals is switched on,
-a team's page also shows its [game goals](#game-goals) for its athletes and coaches. In a club
-without squads the list is called **My teams**.
+**My squads and teams** in the **Team** tab shows everyone in your squad or team, with their
+position: Head Coach, Assistant Coach, Manager, Physio, Athlete, Final team athlete or Training
+partner. Athletes come first, then the coaches, managers and physios, and a line above the list
+counts them, such as "12 athletes · 3 staff". Captains, vice captains and club captains are
+marked next to their position. If you're in more than one squad or team, tap a name at the top to
+switch. It is names and positions only: there are no photos and no profile pages, and tapping a
+name does nothing.
 
-<img src="user-guide/team-roster.png" width="210" alt="Team roster">
+The squad or team's coaches and physios, who already see its athletes' injuries, also see a
+status beside an athlete with a current injury: **Injured**, **Clearance asked for**, or
+**Clearance to review** when it is waiting for them. Tapping that athlete opens the injury, and a
+line above the list says how many have one. Athletes, parents and managers never see a status
+beside a name, not even their own.
+
+Tap the card with the squad or team's name to open its page, which lists the same people and, when
+Game goals is switched on, shows a team's [game goals](#game-goals) for its athletes and coaches.
+In a club without squads the list is called **My teams**.
+
+<img src="user-guide/team-athlete.png" width="210" alt="An athlete's Team tab: the switch between their team and squad, the team's card, and everyone in it by name and position">
+<img src="user-guide/team-roster.png" width="210" alt="A team's own page, with the same people">
 
 ### Club awards
 
@@ -1994,7 +2016,15 @@ After an admin marks a squad's **squad phase complete**, coaches look after only
 athletes in their named teams. Before that, they look after everyone in the squad.
 
 <img src="user-guide/today-coach.png" width="210" alt="A coach's Today with a clearance to review">
-<img src="user-guide/team-coach.png" width="210" alt="A coach's Team tab: their squad, Check-ins, Attendance, Injuries with one waiting, and Surveys">
+<img src="user-guide/team-coach.png" width="210" alt="A coach's Team tab: Check-ins, Attendance and Injuries as tiles that lead with their number, Surveys, then their team and its people">
+
+Your **Team** tab answers "how are my athletes going?" before anything else. Three tiles lead
+with today's numbers across your squads and teams: how many have checked in (and how many are
+flagged), attendance over the last four weeks (and any new or changed absences), and current
+injuries (and how many clearances wait for you). Each opens its screen. Under them are your other
+tools, then each squad or team with its people: an athlete with a current injury has **Injured**,
+**Clearance asked for** or **Clearance to review** beside their name, and tapping them opens the
+injury (see [Squads and teams](#squads-and-teams)).
 
 Coaches and managers need a current Working With Children Check, recorded by an admin, before
 they're approved (or an exemption or a lodged application recorded for them; the role stays paused
@@ -2311,8 +2341,8 @@ question in a message, with ready-made or their own answers, and see who picked 
 
 ### Athletes' check-ins
 
-The **Check-ins** card shows how many of your athletes have checked in today and how many are
-flagged. If any are flagged, your to-do list says "Check in with N athletes". Athletes under 18
+The **Check-ins** tile in your **Team** tab shows how many of your athletes have checked in today
+and how many are flagged. If any are flagged, your to-do list says "Check in with N athletes". Athletes under 18
 show, and count, only once a parent or guardian has given consent for their check-ins. A child who
 doesn't use the app never checks in, so they're not shown or counted, and they're not on the game
 goals board either. A squad
@@ -2342,7 +2372,7 @@ page](#a-sessions-page)).
 
 ### Training load
 
-When the club turns on **Training load flags**, the **Check-ins** card adds **Training load**, and
+When the club turns on **Training load flags**, **Check-ins** adds **Training load**, and
 your to-do list says **Talk with N athletes about their training load** while any have open flags.
 It lists your athletes under **Worth a chat** and **Talked with this week**, each with their
 sessions and minutes in the last 7 days and their load ratio. Athletes under 18 show once a parent
@@ -2757,7 +2787,7 @@ and title together, like "Manager · Manager, 17 & Under". As a manager you can:
   coaches (see [Watching live game stats](#watching-live-game-stats)).
 - **Vote in club awards** that name managers, or every member, as voters, and be nominated in
   awards open to any member (see [Club awards](#club-awards)).
-- **Log an injury** when one of your athletes is hurt at training or a game: the **Injuries** card
+- **Log an injury** when one of your athletes is hurt at training or a game: the **Injuries** tile
   reads "Log an injury at training or a game". The athlete and their parents or guardians are told
   straight away and keep the record from there (see
   [Logging an injury at training or a game](#logging-an-injury-at-training-or-a-game)). You don't
@@ -2777,8 +2807,13 @@ hidden: you can't read or send messages, take attendance or open your groups unt
 the renewed card you send in, or records it (see [Sending in your own check](#sending-in-your-own-check)), and the database closes those too, not just the screen. A stand-down removes
 your squad and team places for the season; lifting it puts them back.
 
+A manager's **Team** tab starts with **Attendance**, then **Injuries** (to log one) and
+**Surveys**, then their squads and teams with everyone in them by name and position. Managers
+don't see attendance figures or an injury status beside a name there, because they don't see
+those records.
+
 <img src="user-guide/today-manager.png" width="210" alt="A manager's Today">
-<img src="user-guide/team-manager.png" width="210" alt="A manager's Team tab: their squad, Attendance, Injuries and Surveys">
+<img src="user-guide/team-manager.png" width="210" alt="A manager's Team tab: Attendance and Injuries as tiles, Surveys, then their squad and its people by name and position">
 <img src="user-guide/attendance-warning.png" width="210" alt="Warning that attendance may already have been taken">
 
 <div style="page-break-before: always"></div>
@@ -3119,7 +3154,9 @@ their own **Today** and the Members list.
   [Check-in averages](#check-in-averages)). Physios never see an individual athlete's answers.
 - **Injuries** lists, under **Injured athletes**, the injuries, restrictions and proof documents
   of the current athletes they look after (an athlete under 18 only once a parent or guardian has
-  given consent); the card reads "N current injuries · N waiting for you".
+  given consent); the tile in the **Team** tab, which comes first for a physio, reads "N current
+  injuries" and "N waiting for you", and the squad's list of people there marks each athlete who
+  has one (see [Squads and teams](#squads-and-teams)).
 - **Add physio update** on an injury of an athlete you look after records your notes, restrictions,
   expected return date and a report (a PDF or photo for adults; for an under 18, the letter or
   report, never a photo of the injury). It shows in the history as "Your name (physio)". The athlete
@@ -3139,7 +3176,7 @@ their own **Today** and the Members list.
   can accept clearances, but never one they endorsed.
 
 <img src="user-guide/today-physio.png" width="210" alt="A physio's Today with a clearance to review">
-<img src="user-guide/team-physio.png" width="210" alt="A physio's Team tab: their squad, Check-ins and Injuries with one waiting">
+<img src="user-guide/team-physio.png" width="210" alt="A physio's Team tab: Injuries first with one waiting, then Check-ins, then their squad and its people with an injury status beside two names">
 <img src="user-guide/team-roster-physio.png" width="210" alt="A squad's roster with its physio">
 
 ### Guests
@@ -5142,7 +5179,7 @@ once saved, only replaced or removed, and anyone who gets it wrong five times in
 | Daily check-in answers, notes and training sessions | The athlete, their guardians and their coaches. For an athlete under 18, their coaches only once a parent or guardian consents, and until then their check-ins count in no average. The committee, physios and admins see only group averages of check-in answers, hidden below 3 check-ins (over three days, in Trends), and nothing of training sessions; teammates see none. |
 | Training load flags (when turned on) | The athlete (their own flags, gently worded) and their coaches, who also see the numbers and each other's notes. For an athlete under 18, coaches only once a parent or guardian consents to check-ins. Parents and guardians see only that a coach talked with their child, when and what about, never the flags, numbers or note. The Child Safety Officer (or admins acting in the post) sees patterns for under 18s, not numbers or notes. The committee, managers, physios and admins see none. |
 | Wellbeing flags | Only the Child Safety Officer (or, while nobody named can act, admins [acting in the post](#acting-in-an-empty-post)): for every athlete, selected or not, the day and lowest score of each check-in scoring 2 or less in the last 14 days, never the answers or notes. Under 18s only once a parent or guardian consents to check-ins. |
-| Injuries and documents  | For an athlete under 18 whose parents haven't given consent for injuries: only the athlete, their guardians and admins. Otherwise the athlete, their guardians, their coaches, the physios who look after them (the Head Physio and physios in their squad or team), the committee (or only the committee members the club chose under **Injuries are seen by**) and admins. For an athlete under 18, only committee members with a current Working With Children Check or a parent volunteer exemption, and admins unless their own check has been missing or expired for over 30 days. Managers don't see injuries, including ones they log. A coach, manager or physio who logs an injury sees it only as their role already allows. Whoever takes attendance (coaches, managers, the committee and admins) sees only that an athlete is **Injured** and their expected return date, whatever the consent. While a clearance waits for the committee, any committee member or admin who could accept it can share its documents; everyone else views them in the app. |
+| Injuries and documents  | For an athlete under 18 whose parents haven't given consent for injuries: only the athlete, their guardians and admins. Otherwise the athlete, their guardians, their coaches, the physios who look after them (the Head Physio and physios in their squad or team), the committee (or only the committee members the club chose under **Injuries are seen by**) and admins. For an athlete under 18, only committee members with a current Working With Children Check or a parent volunteer exemption, and admins unless their own check has been missing or expired for over 30 days. Managers don't see injuries, including ones they log. A coach, manager or physio who logs an injury sees it only as their role already allows. Whoever takes attendance (coaches, managers, the committee and admins) sees only that an athlete is **Injured** and their expected return date, whatever the consent. In the **Team** tab, a squad or team's coaches and physios see **Injured** or a clearance status beside the names of athletes whose injuries they can already see; nobody else sees a status beside a name. While a clearance waits for the committee, any committee member or admin who could accept it can share its documents; everyone else views them in the app. |
 | Medical and emergency details | The athlete; an under 18's verified parents and guardians, who keep them (an athlete 18 or over keeps their own); and the coaches, managers and physios of the athlete's current squads and teams (the Head Physio for every athlete), for an under 18 only once a parent or guardian has given consent for injuries and health information. Not admins or the committee. Each view by a coach, manager or physio is recorded, and the athlete 18 or over, or an under 18's parents and guardians, see who and when. Checked once a year by whoever keeps them; admins see who has checked and when, but not the details. Removed when nobody has checked them for the club's chosen time (Record keeping), and deleted with the athlete's account. |
 | Who opened injury documents | The athlete, their guardians and admins: every view and share, by whom, their role and when, and each photo consent. |
 | Who has viewed a child's records | For an athlete under 18: their verified parents or guardians (until the athlete turns 18) and admins. Lists every time someone other than the athlete or their guardians opened the athlete's injuries, injury documents, check-ins, game goals, season KPIs, named survey answers, selection assessment (and a selector's summary of them) or member record, and every time an admin built a selection audit report, or opened the list of signed summaries, for a round they are in. Opening a child's records is recorded whoever you are; nobody can switch it off or delete entries by hand, and old entries are removed only under the club's Record keeping settings. |
@@ -5363,6 +5400,13 @@ images to stay inside the club. So for athletes under 18:
 - **Physios see only their own athletes.** A physio sees the injuries of the athletes in their own
   squads and teams. Only the Head Physio sees every athlete; a physio in no squad or team sees none
   until an admin places them.
+- **A squad's list of people gives nothing away.** The people in a squad or team are listed by
+  name and position, with no photos and no profile pages. The squad or team's coaches and physios
+  see **Injured** or a clearance status beside an athlete whose injury they can already open, and
+  nothing about the injury itself; athletes, parents and managers never see a status beside
+  anyone's name. The app works this out from the injuries the database already gives that member,
+  so a child whose parents haven't given consent for injuries has no status shown to coaches or
+  physios either.
 - **A clearance can't wait unseen.** If an athlete asks to be cleared and nobody can endorse it
   (their squad's phase is complete, and the club has no Head Physio and no physio in their squad or
   team), every admin's to-do list says so until an admin names a Head Physio or places a physio.
