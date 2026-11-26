@@ -428,6 +428,7 @@ describe('Award results', () => {
     season: 2026,
     name: 'Best and Fairest',
     description: '',
+    opens_at: null,
     closes_at: noon('2026-10-10'),
     club_wide: false,
     per_group: true,

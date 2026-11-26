@@ -6,7 +6,10 @@ import {
   dayOf,
   endOfDay,
   isClosed,
+  notYetOpen,
   slotTitle,
+  startOfDay,
+  votingLabel,
 } from '@/lib/awards';
 import { formatDateTime } from '@/lib/format';
 import { formatDateString } from '@/lib/injuries';
@@ -29,6 +32,7 @@ function award(overrides: Partial<Award> = {}): Award {
     season: 2026,
     name: 'MVP',
     description: '',
+    opens_at: null,
     closes_at: '2026-12-01T00:00:00Z',
     club_wide: false,
     per_group: false,
@@ -171,5 +175,30 @@ describe('endOfDay and dayOf', () => {
   it('gives the local day of a time', () => {
     expect(dayOf(new Date(2026, 9, 7, 23, 30).toISOString())).toBe('2026-10-07');
     expect(dayOf(endOfDay('2026-10-07'))).toBe('2026-10-07');
+  });
+});
+
+describe('when voting opens', () => {
+  it('knows whether an opening time is still to come', () => {
+    expect(notYetOpen(null)).toBe(false);
+    expect(notYetOpen('2026-10-18T11:59:00Z')).toBe(false);
+    expect(notYetOpen('2026-10-18T12:00:00Z')).toBe(false);
+    expect(notYetOpen('2026-10-18T12:01:00Z')).toBe(true);
+  });
+
+  it('names the opening time before voting opens, then just the closing time', () => {
+    const closes = closesLabel('2026-12-01T00:00:00Z');
+    expect(votingLabel({ opens_at: null, closes_at: '2026-12-01T00:00:00Z' })).toBe(closes);
+    expect(votingLabel({ opens_at: '2026-10-01T00:00:00Z', closes_at: '2026-12-01T00:00:00Z' })).toBe(closes);
+    expect(votingLabel({ opens_at: '2026-11-01T00:00:00Z', closes_at: '2026-12-01T00:00:00Z' })).toBe(
+      `Opens ${formatDateTime(new Date('2026-11-01T00:00:00Z'))} · ${closes}`,
+    );
+  });
+
+  it('opens at the start of the chosen day, local time', () => {
+    const start = new Date(startOfDay('2026-11-01'));
+    expect([start.getFullYear(), start.getMonth(), start.getDate()]).toEqual([2026, 10, 1]);
+    expect([start.getHours(), start.getMinutes(), start.getSeconds()]).toEqual([0, 0, 0]);
+    expect(dayOf(startOfDay('2026-11-01'))).toBe('2026-11-01');
   });
 });

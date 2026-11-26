@@ -9,7 +9,7 @@ import { supabase } from '@/lib/supabase';
 import type { Award, AwardNominees, AwardSlot, AwardVoterRole } from '@/lib/types';
 
 export const AWARD_COLUMNS =
-  'id, season, name, description, closes_at, club_wide, per_group, voter_roles, nominees, points, by_match, match_vote_hours, preseason_weight, preseason_closes_at, annual, copied_from, nominee_min_age, nominee_max_age, nominee_age_on, award_groups (team_id), award_candidates (id, name)';
+  'id, season, name, description, opens_at, closes_at, club_wide, per_group, voter_roles, nominees, points, by_match, match_vote_hours, preseason_weight, preseason_closes_at, annual, copied_from, nominee_min_age, nominee_max_age, nominee_age_on, award_groups (team_id), award_candidates (id, name)';
 
 export const voterRoleOptions: { value: AwardVoterRole; label: string }[] = [
   { value: 'athlete', label: 'Athletes' },
@@ -87,6 +87,21 @@ export function closesLabel(closesAt: string) {
   return `${date.getTime() < Date.now() ? 'Closed' : 'Closes'} ${formatDateTime(date)}`;
 }
 
+/** Whether voting has an opening time still to come. */
+export function notYetOpen(opensAt: string | null) {
+  return opensAt !== null && new Date(opensAt).getTime() > Date.now();
+}
+
+/**
+ * When an award's voting runs, for admins: "Opens Mon, 1 Dec, 12:00 am ·
+ * Closes ..." before it opens, otherwise just when it closes (or closed).
+ */
+export function votingLabel(award: Pick<Award, 'opens_at' | 'closes_at'>) {
+  const closes = closesLabel(award.closes_at);
+  if (!notYetOpen(award.opens_at)) return closes;
+  return `Opens ${formatDateTime(new Date(award.opens_at as string))} · ${closes}`;
+}
+
 /** Whether voting has closed, so full results can be shown. */
 export function isClosed(closesAt: string) {
   return new Date(closesAt).getTime() <= Date.now();
@@ -96,6 +111,13 @@ export function isClosed(closesAt: string) {
 export function endOfDay(day: string) {
   const date = parseDateString(day);
   date.setHours(23, 59, 0, 0);
+  return date.toISOString();
+}
+
+/** The start of a "2026-10-07" day, local time, as an ISO string. */
+export function startOfDay(day: string) {
+  const date = parseDateString(day);
+  date.setHours(0, 0, 0, 0);
   return date.toISOString();
 }
 

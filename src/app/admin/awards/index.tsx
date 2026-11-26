@@ -6,7 +6,7 @@ import { Screen } from '@/components/screen';
 import { ThemedText } from '@/components/themed-text';
 import { Button, ChipGroup, PressableCard } from '@/components/ui';
 import { Spacing } from '@/constants/theme';
-import { AWARD_COLUMNS, awardSummary, closesLabel } from '@/lib/awards';
+import { AWARD_COLUMNS, awardSummary, votingLabel } from '@/lib/awards';
 import { supabase } from '@/lib/supabase';
 import type { Award } from '@/lib/types';
 import { seasonLabel, teamLabel, useTeamList } from '@/lib/use-teams';
@@ -73,7 +73,7 @@ export default function AdminAwardsScreen() {
                 <ThemedText type="smallBold">{award.name}</ThemedText>
                 <ThemedText type="small">{awardSummary(award, groupNames)}</ThemedText>
                 <ThemedText type="small" themeColor="textSecondary">
-                  {closesLabel(award.closes_at)}
+                  {votingLabel(award)}
                 </ThemedText>
               </PressableCard>
             );

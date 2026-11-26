@@ -614,6 +614,8 @@ export type Award = {
   season: number;
   name: string;
   description: string;
+  // When voting opens; null means as soon as the award is saved.
+  opens_at: string | null;
   closes_at: string;
   club_wide: boolean;
   per_group: boolean;
