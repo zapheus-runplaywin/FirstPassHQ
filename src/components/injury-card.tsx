@@ -1,10 +1,10 @@
 import { router } from 'expo-router';
 import { StyleSheet, View } from 'react-native';
 
+import { StatusLine } from '@/components/status-line';
 import { ThemedText } from '@/components/themed-text';
 import { PressableCard } from '@/components/ui';
 import { Spacing } from '@/constants/theme';
-import { useTheme } from '@/hooks/use-theme';
 import { formatDateString, injuryStatusLabels } from '@/lib/injuries';
 import type { Injury, InjuryStatus } from '@/lib/types';
 
@@ -24,13 +24,24 @@ type InjurySummary = Pick<
 export function InjuryCard({
   injury,
   showAthlete,
+  onOpen,
+  selected,
 }: {
   injury: InjurySummary;
   showAthlete: boolean;
+  /** Opens the injury some other way than on its own screen, such as beside its list on a tablet. */
+  onOpen?: (params: { id: string }) => void;
+  /** This injury is the one open beside the list. */
+  selected?: boolean;
 }) {
   return (
     <PressableCard
-      onPress={() => router.push({ pathname: '/injuries/[id]', params: { id: injury.id } })}>
+      selected={selected}
+      onPress={() =>
+        onOpen
+          ? onOpen({ id: injury.id })
+          : router.push({ pathname: '/injuries/[id]', params: { id: injury.id } })
+      }>
       <ThemedText type="smallBold" numberOfLines={2}>
         {showAthlete ? `${injury.athlete_name ?? 'Unnamed athlete'} · ` : ''}
         {injury.body_area}
@@ -73,12 +84,7 @@ export function StatusPill({ status }: { status: InjuryStatus }) {
 }
 
 function WaitingForYou() {
-  const theme = useTheme();
-  return (
-    <ThemedText type="smallBold" style={{ color: theme.accent }}>
-      Waiting for your sign-off
-    </ThemedText>
-  );
+  return <StatusLine text="Waiting for your sign-off" tone="attention" />;
 }
 
 const styles = StyleSheet.create({

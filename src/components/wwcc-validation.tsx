@@ -1,6 +1,7 @@
 import { useState } from 'react';
 import { Platform, StyleSheet, Switch, View } from 'react-native';
 
+import { StatusLine } from '@/components/status-line';
 import { ThemedText } from '@/components/themed-text';
 import { Button, Card, ChipGroup, ErrorText, TextField } from '@/components/ui';
 import { Spacing } from '@/constants/theme';
@@ -86,9 +87,7 @@ export function WwccValidation({
         </ThemedText>
       ) : null}
       {issues.length > 0 ? (
-        <ThemedText type="small" themeColor="tint">
-          {issues.join('. ')}.
-        </ThemedText>
+        <StatusLine text={`${issues.join('. ')}.`} tone="attention" />
       ) : null}
       {isSelf ? (
         <ThemedText type="small" themeColor="textSecondary">

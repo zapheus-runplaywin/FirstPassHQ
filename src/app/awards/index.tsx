@@ -3,17 +3,16 @@ import { useState } from 'react';
 import { StyleSheet, View } from 'react-native';
 
 import { Screen } from '@/components/screen';
+import { StatusLine } from '@/components/status-line';
 import { ThemedText } from '@/components/themed-text';
 import { Button, PressableCard } from '@/components/ui';
 import { Spacing } from '@/constants/theme';
-import { useTheme } from '@/hooks/use-theme';
 import { useAuth } from '@/lib/auth';
 import { ballotLabel, closesLabel, slotTitle, useAwardSlots } from '@/lib/awards';
 import type { AwardSlot } from '@/lib/types';
 
 /** The award votes open to the member, waiting ones first. */
 export default function AwardsScreen() {
-  const theme = useTheme();
   const { isAdmin } = useAuth();
   const { awardSlots, reloadAwardSlots } = useAwardSlots();
   const [refreshing, setRefreshing] = useState(false);
@@ -42,9 +41,7 @@ export default function AwardsScreen() {
 
       {waiting.length > 0 ? (
         <View style={styles.section}>
-          <ThemedText type="smallBold" style={{ color: theme.accent }}>
-            Waiting for your vote
-          </ThemedText>
+          <StatusLine text="Waiting for your vote" tone="attention" />
           {waiting.map((slot) => (
             <SlotRow key={slotKey(slot)} slot={slot} />
           ))}

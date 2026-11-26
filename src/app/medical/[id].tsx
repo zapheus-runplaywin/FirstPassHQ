@@ -3,6 +3,7 @@ import { useCallback, useState } from 'react';
 import { Linking, Pressable, StyleSheet, View } from 'react-native';
 
 import { Screen } from '@/components/screen';
+import { StatusLine } from '@/components/status-line';
 import { ThemedText } from '@/components/themed-text';
 import { Button, Card, ErrorText, TextField } from '@/components/ui';
 import { Spacing } from '@/constants/theme';
@@ -272,11 +273,10 @@ export default function MedicalScreen() {
         </ThemedText>
       ) : null}
       {profile.can_edit ? (
-        <ThemedText
-          type="small"
-          themeColor={profile.check_status === 'current' ? 'textSecondary' : 'tint'}>
-          {checkLine(profile)}
-        </ThemedText>
+        <StatusLine
+          text={checkLine(profile)}
+          tone={profile.check_status === 'current' ? 'quiet' : 'attention'}
+        />
       ) : null}
       {profile.can_edit && profile.saved && profile.check_status !== 'current' ? (
         <>

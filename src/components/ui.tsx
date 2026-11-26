@@ -45,10 +45,13 @@ export function PressableCard({
   onPress,
   children,
   actions,
+  selected,
 }: {
   onPress: () => void;
   children: ReactNode;
   actions?: { label: string; onPress: () => void }[];
+  /** The item this card opens is showing beside the list (src/components/list-detail.tsx). */
+  selected?: boolean;
 }) {
   const theme = useTheme();
   const inGrid = useInCardGrid();
@@ -63,11 +66,23 @@ export function PressableCard({
         actions?.find((a) => a.label === e.nativeEvent.actionName)?.onPress()
       }
       onPress={onPress}
+      // Said only where a card can be the chosen one, so other cards read as plain buttons.
+      {...(selected === undefined
+        ? {}
+        : { accessibilityState: { selected }, 'aria-selected': selected })}
       style={({ pressed }) => [
         styles.card,
         inGrid && styles.fill,
-        { backgroundColor: pressed ? theme.backgroundSelected : theme.backgroundElement },
+        {
+          backgroundColor:
+            pressed || selected ? theme.backgroundSelected : theme.backgroundElement,
+        },
+        selected && styles.chosen,
       ]}>
+      {/* Laid over the card's edge, so the card's contents don't move when it is chosen. */}
+      {selected ? (
+        <View testID="chosen-edge" style={[styles.chosenEdge, { backgroundColor: theme.accent }]} />
+      ) : null}
       {children}
     </Pressable>
   );
@@ -251,6 +266,17 @@ const styles = StyleSheet.create({
   },
   fill: {
     flexGrow: 1,
+  },
+  chosen: {
+    // Keeps the edge inside the card's rounded corners.
+    overflow: 'hidden',
+  },
+  chosenEdge: {
+    position: 'absolute',
+    left: 0,
+    top: 0,
+    bottom: 0,
+    width: 3,
   },
   button: {
     height: 48,

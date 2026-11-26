@@ -11,7 +11,7 @@
  * may have left; and members never asked to join or turned down are listed
  * apart. Only admins reach this screen (the route tests cover that).
  */
-import { fireEvent, screen } from 'expo-router/testing-library';
+import { fireEvent, screen, within } from 'expo-router/testing-library';
 import { router } from 'expo-router';
 
 import MembersScreen from '@/app/admin/index';
@@ -19,9 +19,9 @@ import { formatMonth } from '@/lib/format';
 import { supabase } from '@/lib/supabase';
 import type { Profile, VolunteerExemption } from '@/lib/types';
 
-import { typeInto } from './helpers/admin-screens';
+import { typeInto, untilQuiet } from './helpers/admin-screens';
 import { rpcNames } from './helpers/calls';
-import { openScreen, personas, resetClub } from './helpers/harness';
+import { onATablet, openScreen, personas, resetClub, toneOf } from './helpers/harness';
 
 jest.mock('@/lib/club', () => jest.requireActual('./helpers/harness').clubModuleMock());
 jest.mock('@/lib/club-choice', () => jest.requireActual('./helpers/harness').clubChoiceModuleMock());
@@ -221,6 +221,10 @@ describe('the Members list', () => {
     ).toBeTruthy();
     expect(screen.getByText('Athlete · No date of birth')).toBeTruthy();
     expect(screen.getByText('Coach · Stood down')).toBeTruthy();
+    // What an admin needs to sort out is marked, never in the club's colour.
+    expect(toneOf(screen.getByText('Coach · Stood down'))).toBe('attention');
+    expect(toneOf(screen.getByText('Athlete · Locked: no verified parent or guardian linked'))).toBe('attention');
+    expect(toneOf(screen.getByText('Athlete · No date of birth'))).toBe('attention');
     expect(
       screen.getByText('Manager · Parent volunteer for Lee Linked: waiting for them to accept the declaration'),
     ).toBeTruthy();
@@ -364,5 +368,118 @@ describe('the Members list', () => {
     expect(names).toContain('admin_inactive_members');
     expect(supabase.from).toHaveBeenCalledWith('guardianships');
     expect(supabase.from).toHaveBeenCalledWith('guardian_link_requests');
+  });
+});
+
+// ---------------------------------------------------------------------------
+// On a tablet: a member's page opens beside the list
+
+describe('the Members list on a tablet', () => {
+  onATablet();
+
+  let push: jest.SpyInstance;
+  let back: jest.SpyInstance;
+  beforeEach(() => {
+    push = jest.spyOn(router, 'push').mockImplementation(() => {});
+    back = jest.spyOn(router, 'back').mockImplementation(() => {});
+  });
+  afterEach(() => {
+    push.mockRestore();
+    back.mockRestore();
+  });
+
+  const everyone = Object.values(MEMBERS);
+  /** How many times the list asked for every member. */
+  let listLoads = 0;
+
+  async function open() {
+    listLoads = 0;
+    await openScreen('admin', { 'admin/index': MembersScreen }, '/admin', { guardianships: [], guardian_link_requests: [] }, {
+      tableHandlers: {
+        // Everyone for the list, the member for their page, the admin's own row for sign-in.
+        profiles: (q) => {
+          const id = q.eq('id');
+          if (id === undefined) {
+            listLoads += 1;
+            return everyone;
+          }
+          const member = everyone.find((m) => m.id === id);
+          return member ? [member] : undefined;
+        },
+        team_members: () => [],
+      },
+      rpcs: { admin_volunteer_exemptions: [], admin_inactive_members: [], admin_no_app_child_requests: [] },
+    });
+  }
+  const beside = () => within(screen.getByTestId('detail-pane'));
+  const list = () => within(screen.getByTestId('list-pane'));
+  const tap = async (name: string) => {
+    await fireEvent.press(list().getByText(name));
+    await untilQuiet();
+  };
+
+  it('shows the list with no member open until one is tapped', async () => {
+    await open();
+    expect(beside().getByText('Choose a member to open their page here.')).toBeTruthy();
+    expect(screen.queryByTestId('member-header')).toBeNull();
+    expect(list().getByText('Casey Coach')).toBeTruthy();
+    expect(list().getByText('Search')).toBeTruthy();
+  });
+
+  it('opens the tapped member’s page beside the list, named above it', async () => {
+    await open();
+    await tap('Casey Coach');
+    expect(push).not.toHaveBeenCalled();
+    expect(beside().getByTestId('member-header')).toBeTruthy();
+    expect(beside().getByRole('header', { name: 'Casey Coach' })).toBeTruthy();
+    expect(beside().getByRole('tab', { name: 'Overview' })).toBeTruthy();
+    expect(beside().getByRole('tab', { name: 'Roles' })).toBeTruthy();
+    expect(screen.getByLabelText('Close Casey Coach')).toBeTruthy();
+    // The list is still there to choose the next member from.
+    expect(list().getByText('Terry Treasurer')).toBeTruthy();
+    expect(list().getByText('Search')).toBeTruthy();
+  });
+
+  it('marks who is open, and opens the next member in their place', async () => {
+    await open();
+    await tap('Casey Coach');
+    await tap('Terry Treasurer');
+    expect(beside().getByRole('header', { name: 'Terry Treasurer' })).toBeTruthy();
+    expect(beside().queryByRole('header', { name: 'Casey Coach' })).toBeNull();
+    const selected = list()
+      .getAllByRole('button')
+      .filter((b) => b.props.accessibilityState?.selected);
+    expect(selected).toHaveLength(1);
+    expect(within(selected[0]).getByText('Terry Treasurer')).toBeTruthy();
+  });
+
+  it('opens a join request on its summary, as its own screen does', async () => {
+    await open();
+    await tap('Nico New');
+    expect(beside().getByRole('header', { name: 'Nico New' })).toBeTruthy();
+    expect(beside().getByText('Full record')).toBeTruthy();
+    expect(beside().queryByTestId('member-header')).toBeNull();
+  });
+
+  it('closes the member’s page when it is saved, and reloads the list', async () => {
+    await open();
+    await tap('Casey Coach');
+    const before = listLoads;
+    await fireEvent.press(beside().getByText('Save changes'));
+    await untilQuiet();
+    expect(beside().getByText('Choose a member to open their page here.')).toBeTruthy();
+    expect(listLoads).toBe(before + 1);
+    // The list is still the screen being looked at.
+    expect(back).not.toHaveBeenCalled();
+  });
+
+  it('closes the member’s page from the cross, saving nothing', async () => {
+    await open();
+    await tap('Casey Coach');
+    const writes = (supabase.rpc as jest.Mock).mock.calls.length;
+    await fireEvent.press(screen.getByLabelText('Close Casey Coach'));
+    await untilQuiet();
+    expect(beside().getByText('Choose a member to open their page here.')).toBeTruthy();
+    expect(rpcNames().slice(writes).filter((n) => n.startsWith('admin_set') || n.startsWith('admin_update'))).toEqual([]);
   });
 });

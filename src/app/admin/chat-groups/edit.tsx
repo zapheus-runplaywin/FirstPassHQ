@@ -4,6 +4,7 @@ import { StyleSheet, View } from 'react-native';
 
 import { PeoplePicker } from '@/components/people-picker';
 import { Screen } from '@/components/screen';
+import { StatusLine } from '@/components/status-line';
 import { ThemedText } from '@/components/themed-text';
 import { Button, Card, ChipGroup, ErrorText, TextField } from '@/components/ui';
 import { Spacing } from '@/constants/theme';
@@ -247,10 +248,8 @@ export default function EditChatGroupScreen() {
       </View>
 
       {note ? (
-        <Card style={[styles.warning, { borderColor: theme.accent }]}>
-          <ThemedText type="smallBold" themeColor="accent">
-            ⚠ This group includes members under 18
-          </ThemedText>
+        <Card style={[styles.warning, { borderColor: theme.attention }]}>
+          <StatusLine text="This group includes members under 18" tone="attention" />
           <ThemedText type="small">{note}</ThemedText>
           {under18Confirmed ? (
             <ThemedText type="smallBold">Tap Save again to set it up with them in it.</ThemedText>

@@ -1,3 +1,4 @@
+import { createContext, use } from 'react';
 import { useWindowDimensions } from 'react-native';
 
 /**
@@ -22,11 +23,27 @@ export const CARD_MIN_WIDTH = 300;
 export const MAX_GRID_COLUMNS = 3;
 
 /**
+ * The width a screen has to itself when it shares the window: a list with its
+ * chosen item beside it (src/components/list-detail.tsx). Null everywhere
+ * else, where a screen has the whole window.
+ */
+export const ShareOfWindow = createContext<number | null>(null);
+
+/** The width a screen has to lay itself out in: its share of the window, or all of it. */
+export function useLayoutWidth() {
+  const share = use(ShareOfWindow);
+  const { width } = useWindowDimensions();
+  return share ?? width;
+}
+
+/**
  * True on a tablet-sized window (or at least `minWidth` wide). Follows the window, not the device, so
- * turning an iPad or resizing its window changes the layout straight away.
+ * turning an iPad or resizing its window changes the layout straight away. A
+ * screen sharing the window is as wide as its share, so a list beside its item
+ * lays out as on a phone.
  */
 export function useWideLayout(minWidth = WIDE_MIN_WIDTH) {
-  return useWindowDimensions().width >= minWidth;
+  return useLayoutWidth() >= minWidth;
 }
 
 /**

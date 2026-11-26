@@ -118,3 +118,16 @@ export function questionTag(forChildren: string[] | null, answer: number | null)
   if (forChildren?.length) return 'Question: open to see or give your child’s answer';
   return answer === null ? 'Question: tap to answer' : 'Question: answered';
 }
+
+/**
+ * How that line reads: the member's own question still to answer needs them,
+ * and one they answered is done. A child's question stays quiet, because the
+ * list can't tell whether the child or a parent has answered it.
+ */
+export function questionTagTone(
+  forChildren: string[] | null,
+  answer: number | null,
+): 'quiet' | 'attention' | 'done' {
+  if (forChildren?.length) return 'quiet';
+  return answer === null ? 'attention' : 'done';
+}

@@ -12,7 +12,7 @@
  */
 import { screen } from 'expo-router/testing-library';
 
-import { openFullRecord } from './helpers/admin-screens';
+import { onEveryTab, openFullRecord } from './helpers/admin-screens';
 
 import MemberScreen from '@/app/admin/[id]';
 import { supabase } from '@/lib/supabase';
@@ -40,6 +40,9 @@ jest.mock('@react-native-async-storage/async-storage', () =>
   jest.requireActual('@react-native-async-storage/async-storage/jest/async-storage-mock'),
 );
 jest.mock('@/global.css', () => ({}));
+
+// The full record is in tabs: these tests are about what the page offers, on any tab.
+onEveryTab();
 
 beforeEach(() => {
   resetClub();

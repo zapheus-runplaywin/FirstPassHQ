@@ -4,7 +4,7 @@ import { Pressable, StyleSheet, View } from 'react-native';
 
 import { Screen } from '@/components/screen';
 import { ThemedText } from '@/components/themed-text';
-import { Card, ChipGroup } from '@/components/ui';
+import { Card, ChipGroup, ErrorText } from '@/components/ui';
 import { Spacing } from '@/constants/theme';
 import { useTheme } from '@/hooks/use-theme';
 import { formatDateString, shareCsv, toCsv } from '@/lib/injuries';
@@ -112,11 +112,7 @@ export default function TrainingRequirementScreen() {
             </ThemedText>
           </Pressable>
         </View>
-        {error ? (
-          <ThemedText type="small" themeColor="accent">
-            {error}
-          </ThemedText>
-        ) : null}
+        <ErrorText>{error}</ErrorText>
       </Card>
 
       <ChipGroup options={filterOptions} selected={[filter]} onToggle={setFilter} />

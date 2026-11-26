@@ -11,8 +11,15 @@ import type { GuardianshipChange } from '@/lib/types';
  * Every guardian link and unlink for a member, as an athlete or as a
  * guardian: whose, by whom, when and why. Admins only.
  */
-export function GuardianHistory({ memberId }: { memberId: string }) {
-  const [changes, setChanges] = useState<GuardianshipChange[]>([]);
+export function GuardianHistory({
+  memberId,
+  whenEmpty,
+}: {
+  memberId: string;
+  /** What to say once it has loaded and there is no history. Nothing, if left out. */
+  whenEmpty?: string;
+}) {
+  const [changes, setChanges] = useState<GuardianshipChange[] | null>(null);
 
   useEffect(() => {
     (async () => {
@@ -25,7 +32,14 @@ export function GuardianHistory({ memberId }: { memberId: string }) {
     })();
   }, [memberId]);
 
-  if (changes.length === 0) return null;
+  if (!changes) return null;
+  if (changes.length === 0) {
+    return whenEmpty ? (
+      <ThemedText type="small" themeColor="textSecondary">
+        {whenEmpty}
+      </ThemedText>
+    ) : null;
+  }
   return (
     <View style={styles.group}>
       <ThemedText type="smallBold">Guardian link history</ThemedText>

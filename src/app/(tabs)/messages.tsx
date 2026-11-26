@@ -2,10 +2,13 @@ import { router, useFocusEffect } from 'expo-router';
 import { useCallback, useState } from 'react';
 import { Pressable, StyleSheet, View } from 'react-native';
 
+import MessageScreen from '@/app/messages/[id]';
 import { FormSection } from '@/components/form-section';
 import { TabHeader } from '@/components/home/tab-header';
+import { ListDetail, useListDetail } from '@/components/list-detail';
 import { Screen } from '@/components/screen';
 import { SwipeRow } from '@/components/swipe-row';
+import { StatusLine } from '@/components/status-line';
 import { ThemedText } from '@/components/themed-text';
 import { Button, ChipGroup, PressableCard } from '@/components/ui';
 import { Spacing } from '@/constants/theme';
@@ -19,7 +22,8 @@ import {
   useChatGroupsOn,
 } from '@/lib/chat-groups';
 import { formatSentAt } from '@/lib/format';
-import { questionTag } from '@/lib/message-questions';
+import { useReloadUnread } from '@/lib/home';
+import { questionTag, questionTagTone } from '@/lib/message-questions';
 import {
   audienceLabel,
   guardianCopyLabel,
@@ -57,6 +61,8 @@ export default function MessagesScreen() {
   // The message just archived, so it can be put back straight away.
   const [justArchived, setJustArchived] = useState<string | null>(null);
   const userId = session?.user.id;
+  // The Messages tab's count, which a message read beside the list changes.
+  const reloadUnread = useReloadUnread();
 
   const load = useCallback(async () => {
     if (!userId) return;
@@ -96,6 +102,7 @@ export default function MessagesScreen() {
     setInbox((rows) => (rows ? markedAllRead(rows) : rows));
     await supabase.rpc('mark_all_messages_read');
     await load();
+    reloadUnread();
   }
 
   // Moves the member's own copy to Archived. Nothing is deleted, and nobody
@@ -124,7 +131,15 @@ export default function MessagesScreen() {
     setRefreshing(false);
   }
 
-  return (
+  // On a tablet a message opens beside the list; otherwise on its own screen.
+  // Chat groups always open on their own screen.
+  const detail = useListDetail<{ id: string }>((params) =>
+    router.push({ pathname: '/messages/[id]', params }),
+  );
+  const chosenId = detail.chosen?.id ?? null;
+  const openMessage = (id: string) => detail.open({ id });
+
+  const list = (
     <Screen
       tab
       header={<TabHeader title="Messages" />}
@@ -162,27 +177,62 @@ export default function MessagesScreen() {
       ) : null}
 
       {box === 'inbox' ? (
-        <Inbox messages={inbox} onMarkAllRead={markAllRead} onArchive={archive} />
+        <Inbox
+          messages={inbox}
+          onMarkAllRead={markAllRead}
+          onArchive={archive}
+          chosenId={chosenId}
+          onOpen={openMessage}
+        />
       ) : box === 'archived' ? (
-        <Archived messages={archived} onMoveToInbox={moveToInbox} />
+        <Archived
+          messages={archived}
+          onMoveToInbox={moveToInbox}
+          chosenId={chosenId}
+          onOpen={openMessage}
+        />
       ) : box === 'groups' && groupsOn ? (
         <Groups groups={groups} canSetUp={isAdmin} />
       ) : (
-        <Sent messages={sent} />
+        <Sent messages={sent} chosenId={chosenId} onOpen={openMessage} />
       )}
     </Screen>
   );
+  return (
+    <ListDetail
+      tab
+      chosen={detail.chosen}
+      detail={<MessageScreen />}
+      title="Message"
+      hint="Choose a message to read it here."
+      onLeave={() => {
+        detail.close();
+        load();
+        reloadUnread();
+      }}
+      onChanged={() => {
+        load();
+        reloadUnread();
+      }}>
+      {list}
+    </ListDetail>
+  );
 }
+
+/** How a list of messages opens one: `chosenId` is the message open beside the list, if one is. */
+type Opening = { chosenId: string | null; onOpen: (messageId: string) => void };
 
 function Inbox({
   messages,
   onMarkAllRead,
   onArchive,
+  chosenId,
+  onOpen,
 }: {
   messages: InboxMessage[] | null;
   onMarkAllRead: () => void;
   onArchive: (messageId: string) => void;
-}) {
+} & Opening) {
   const theme = useTheme();
   if (messages === null) return null;
   if (messages.length === 0) {
@@ -219,6 +269,8 @@ function Inbox({
           <MessageCard
             copy={copy}
             actions={[{ label: 'Archive', onPress: () => onArchive(copy.message.id) }]}
+            chosenId={chosenId}
+            onOpen={onOpen}
           />
         </SwipeRow>
       ))}
@@ -229,10 +281,12 @@ function Inbox({
 function Archived({
   messages,
   onMoveToInbox,
+  chosenId,
+  onOpen,
 }: {
   messages: InboxMessage[] | null;
   onMoveToInbox: (messageId: string) => void;
-}) {
+} & Opening) {
   if (messages === null) return null;
   if (messages.length === 0) {
     return (
@@ -259,6 +313,8 @@ function Archived({
                 onPress: () => onMoveToInbox(copy.message.id),
               },
             ]}
+            chosenId={chosenId}
+            onOpen={onOpen}
           />
         </SwipeRow>
       ))}
@@ -269,14 +325,19 @@ function Archived({
 function MessageCard({
   copy,
   actions,
+  chosenId,
+  onOpen,
 }: {
   copy: InboxMessage;
   actions: { label: string; onPress: () => void }[];
-}) {
+} & Opening) {
   const theme = useTheme();
   const { message, read_at, unread, for_children, for_child_names, answer } = copy;
   return (
-    <PressableCard onPress={() => openMessage(message.id)} actions={actions}>
+    <PressableCard
+      onPress={() => onOpen(message.id)}
+      actions={actions}
+      selected={chosenId === null ? undefined : message.id === chosenId}>
       <View style={styles.row}>
         {!isUnread({ read_at, unread }) ? null : (
           <View
@@ -303,9 +364,10 @@ function MessageCard({
         {message.body}
       </ThemedText>
       {message.answer_options ? (
-        <ThemedText type="smallBold" style={{ color: theme.tint }}>
-          {questionTag(for_children, answer ?? null)}
-        </ThemedText>
+        <StatusLine
+          text={questionTag(for_children, answer ?? null)}
+          tone={questionTagTone(for_children, answer ?? null)}
+        />
       ) : null}
     </PressableCard>
   );
@@ -320,7 +382,11 @@ function GuardianCopy({ label }: { label: string | null }) {
   );
 }
 
-function Sent({ messages }: { messages: SentMessage[] | null }) {
+function Sent({
+  messages,
+  chosenId,
+  onOpen,
+}: { messages: SentMessage[] | null } & Opening) {
   if (messages === null) return null;
   if (messages.length === 0) {
     return (
@@ -332,7 +398,10 @@ function Sent({ messages }: { messages: SentMessage[] | null }) {
   return (
     <View style={styles.list}>
       {messages.map((message) => (
-        <PressableCard key={message.id} onPress={() => openMessage(message.id)}>
+        <PressableCard
+          key={message.id}
+          onPress={() => onOpen(message.id)}
+          selected={chosenId === null ? undefined : message.id === chosenId}>
           <View style={styles.row}>
             <ThemedText type="smallBold" style={styles.grow} numberOfLines={1}>
               {audienceLabel(message.audience, message.audience_role, message.audience_label)}
@@ -438,10 +507,6 @@ function GroupCard({ group }: { group: ChatGroup }) {
       ) : null}
     </PressableCard>
   );
-}
-
-function openMessage(id: string) {
-  router.push({ pathname: '/messages/[id]', params: { id } });
 }
 
 const styles = StyleSheet.create({

@@ -2,7 +2,10 @@ import { router, Stack, useFocusEffect, useLocalSearchParams } from 'expo-router
 import { useCallback, useEffect, useRef, useState } from 'react';
 import { View, StyleSheet } from 'react-native';
 
+import MemberScreen from '@/app/admin/[id]';
+import { ListDetail, useListDetail } from '@/components/list-detail';
 import { Screen } from '@/components/screen';
+import { StatusLine } from '@/components/status-line';
 import { ThemedText } from '@/components/themed-text';
 import { Button, Card, PressableCard, TextField } from '@/components/ui';
 import { Spacing } from '@/constants/theme';
@@ -33,6 +36,12 @@ import type {
 } from '@/lib/types';
 import { rolesOf } from '@/lib/roles';
 
+/** What a member's page is opened with: the member, and the to-do it was opened from. */
+type MemberParams = { id: string; todo?: string };
+
+/** How a list of members opens one: `chosenId` is the member open beside the list, if one is. */
+type Opening = { chosenId: string | null; onOpen: (params: MemberParams) => void };
+
 /** One squad or team a coach or manager is in. */
 type StaffRow = {
   profile_id: string;
@@ -45,6 +54,11 @@ export default function MembersScreen() {
   // Opened from a home screen to-do: only the people it is about.
   const params = useLocalSearchParams<{ todo?: string }>();
   const todo = isMemberTodoKind(params.todo) ? params.todo : null;
+  // On a tablet a member's page opens beside the list; otherwise on its own screen.
+  const detail = useListDetail<MemberParams>((chosen) =>
+    router.push({ pathname: '/admin/[id]', params: chosen }),
+  );
+  const chosenId = detail.chosen?.id ?? null;
   const [loaded, setLoaded] = useState(false);
   const [notices, setNotices] = useState<Set<string>>(new Set());
   const [stuckAthletes, setStuckAthletes] = useState<string[]>([]);
@@ -215,9 +229,24 @@ export default function MembersScreen() {
         )
     : [];
 
+  const opening: Opening = { chosenId, onOpen: detail.open };
+  const beside = {
+    chosen: detail.chosen,
+    detail: <MemberScreen />,
+    title: 'Member',
+    hint: 'Choose a member to open their page here.',
+    onLeave: () => {
+      detail.close();
+      load();
+    },
+    onChanged: load,
+  };
+
   if (todo) {
-    return (
+    const list = (
       <TodoMembers
+        {...opening}
+        split={detail.split}
         kind={todo}
         loaded={loaded}
         members={focused}
@@ -244,9 +273,14 @@ export default function MembersScreen() {
         }}
       />
     );
+    return (
+      <ListDetail {...beside}>
+        {list}
+      </ListDetail>
+    );
   }
 
-  return (
+  const list = (
     <Screen refreshing={refreshing} onRefresh={onRefresh}>
       <TextField
         label="Search"
@@ -256,6 +290,7 @@ export default function MembersScreen() {
         autoCapitalize="none"
       />
       <Section
+        {...opening}
         title="Needs checking"
         members={needsChecking}
         describe={(m) =>
@@ -266,6 +301,7 @@ export default function MembersScreen() {
         warn
       />
       <Section
+        {...opening}
         title="Waiting for approval"
         empty="No requests waiting."
         members={waiting}
@@ -274,6 +310,7 @@ export default function MembersScreen() {
         }
       />
       <Section
+        {...opening}
         title="Parents asking to be linked"
         members={askingToLink}
         describe={(m) =>
@@ -290,6 +327,7 @@ export default function MembersScreen() {
         warn
       />
       <Section
+        {...opening}
         title="Members"
         empty="No approved members yet."
         members={approved}
@@ -300,6 +338,7 @@ export default function MembersScreen() {
         }
       />
       <Section
+        {...opening}
         title="No team or role for 2 years"
         members={gone}
         describe={(m) =>
@@ -307,11 +346,13 @@ export default function MembersScreen() {
         }
       />
       <Section
+        {...opening}
         title="Signed in, no request yet"
         members={notRequested}
         describe={(m) => m.email ?? ''}
       />
       <Section
+        {...opening}
         title="Not approved"
         members={rejected}
         describe={(m) =>
@@ -319,6 +360,11 @@ export default function MembersScreen() {
         }
       />
     </Screen>
+  );
+  return (
+    <ListDetail {...beside}>
+      {list}
+    </ListDetail>
   );
 }
 
@@ -334,7 +380,12 @@ function TodoMembers({
   refreshing,
   onRefresh,
   describe,
+  split,
+  chosenId,
+  onOpen,
 }: {
+  /** True on a window where a member's page opens beside this list. */
+  split: boolean;
   kind: MemberTodoKind;
   loaded: boolean;
   members: Profile[];
@@ -342,15 +393,18 @@ function TodoMembers({
   refreshing: boolean;
   onRefresh: () => void;
   describe: (member: Profile) => string;
-}) {
+} & Opening) {
   const copy = memberTodoCopy[kind];
   // Opens the only person once. Coming back here afterwards shows the list.
+  // Beside the list it opens there, and the list stays.
   const checked = useRef(false);
   useEffect(() => {
     if (!loaded || checked.current) return;
     checked.current = true;
-    if (members.length === 1) router.replace(memberPageHref(members[0].id, kind));
-  }, [loaded, members, kind]);
+    if (members.length !== 1) return;
+    if (split) onOpen({ id: members[0].id, todo: kind });
+    else router.replace(memberPageHref(members[0].id, kind));
+  }, [loaded, members, kind, split, onOpen]);
 
   const intro =
     kind === 'unendorsable' && stuckAthletes.length > 0
@@ -378,13 +432,14 @@ function TodoMembers({
           </ThemedText>
           <View style={styles.section}>
             {members.map((m) => (
-              <PressableCard key={m.id} onPress={() => router.push(memberPageHref(m.id, kind))}>
+              <PressableCard
+                key={m.id}
+                selected={chosenId === null ? undefined : m.id === chosenId}
+                onPress={() => onOpen({ id: m.id, todo: kind })}>
                 <ThemedText type="smallBold">
                   {withNoAppLabel(m.full_name || m.email || 'Unnamed member', m.no_sign_in)}
                 </ThemedText>
-                <ThemedText type="small" themeColor="tint">
-                  {describe(m)}
-                </ThemedText>
+                <StatusLine text={describe(m)} tone="attention" />
               </PressableCard>
             ))}
           </View>
@@ -405,7 +460,9 @@ function Section({
   members,
   describe,
   warn,
-}: {
+  chosenId,
+  onOpen,
+}: Opening & {
   title: string;
   empty?: string;
   members: Profile[];
@@ -425,13 +482,12 @@ function Section({
         members.map((m) => (
           <PressableCard
             key={m.id}
-            onPress={() => router.push({ pathname: '/admin/[id]', params: { id: m.id } })}>
+            selected={chosenId === null ? undefined : m.id === chosenId}
+            onPress={() => onOpen({ id: m.id })}>
             <ThemedText type="smallBold">
               {withNoAppLabel(m.full_name || m.email || 'Unnamed member', m.no_sign_in)}
             </ThemedText>
-            <ThemedText type="small" themeColor={warn ? 'tint' : 'textSecondary'}>
-              {describe(m)}
-            </ThemedText>
+            <StatusLine text={describe(m)} tone={warn ? 'attention' : 'quiet'} />
           </PressableCard>
         ))
       )}

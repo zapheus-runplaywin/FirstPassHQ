@@ -56,7 +56,7 @@ export const memberTodoCopy: Record<
   join: {
     heading: 'Waiting for approval',
     action:
-      'Check who they are, choose their role and squad or team, then Approve or Don’t approve at the bottom.',
+      'Check who they are on Checks, choose their role and squad or team on Roles, then Approve. Don’t approve is at the end of Overview.',
     empty: 'Nobody is waiting for approval. Someone may have already dealt with them.',
     section: 'approve',
   },
@@ -119,7 +119,7 @@ export const memberTodoCopy: Record<
   inactive: {
     heading: 'No team or role for 2 years',
     action:
-      'If they’ve left the club, delete them at the bottom. Their safeguarding records stay.',
+      'If they’ve left the club, delete them at the end of Overview. Their safeguarding records stay.',
     empty: 'Every member has had a team or role in the last 2 years.',
     section: 'delete',
   },

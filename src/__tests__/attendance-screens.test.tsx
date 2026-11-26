@@ -10,17 +10,21 @@
  * sessions an athlete's page lists come from the database, so the tests seed
  * what it would return and check the screen shows that and no more.
  */
-import { fireEvent, screen } from 'expo-router/testing-library';
+import { router } from 'expo-router';
+import { fireEvent, screen, within } from 'expo-router/testing-library';
 
 import AttendanceSessionScreen from '@/app/attendance/[id]';
 import FamilyAttendanceScreen from '@/app/attendance/family/[id]';
 import AttendanceScreen from '@/app/attendance/index';
 import type { AbsenceToReview, UpcomingAbsence } from '@/lib/absences';
+import { Colors } from '@/constants/theme';
 import { supabase } from '@/lib/supabase';
 import type { AttendanceMark, AttendanceSession } from '@/lib/types';
 
 import {
+  colourOf,
   morePersonas,
+  onATablet,
   openScreen,
   resetClub,
   setClubFeatures,
@@ -237,6 +241,9 @@ describe('one register', () => {
     expect(screen.getByText('Absent')).toBeTruthy();
     expect(screen.getByText('Present')).toBeTruthy();
     expect(screen.getByText('Not marked')).toBeTruthy();
+    // Present is green and absent is red: neither is the club's colour.
+    expect(colourOf(screen.getByText('Present'))).toBe(Colors.positive);
+    expect(colourOf(screen.getByText('Absent'))).not.toBe(Colors.tint);
     expect(screen.getByText('1 of 3 present · 1 not marked')).toBeTruthy();
   });
 
@@ -392,5 +399,122 @@ describe('an athlete’s attendance for them and their family', () => {
     );
     expect(screen.getByText('None coming up.')).toBeTruthy();
     expect(screen.getByText('No sessions in this period')).toBeTruthy();
+  });
+});
+
+// ---------------------------------------------------------------------------
+// On a tablet: a session's register opens beside the list
+
+describe('the attendance list on a tablet', () => {
+  onATablet();
+
+  let push: jest.SpyInstance;
+  beforeEach(() => {
+    push = jest.spyOn(router, 'push').mockImplementation(() => {});
+  });
+  afterEach(() => push.mockRestore());
+
+  const THURSDAY = session({ id: 'sess-2', name: 'Thursday training', can_edit: true });
+
+  async function open(who: Who, sessions = [session({ can_edit: true }), THURSDAY]) {
+    await openList(who, {
+      attendance_sessions_list: sessions,
+      attendance_register: REGISTER,
+      absences_on: [],
+      injured_on: [],
+    });
+  }
+  const beside = () => within(screen.getByTestId('detail-pane'));
+  const list = () => within(screen.getByTestId('list-pane'));
+  const calls = (name: string) =>
+    ((supabase.rpc as jest.Mock).mock.calls as [string, unknown][]).filter(([n]) => n === name);
+
+  it.each<[string, Who]>([
+    ['coach', 'coach'],
+    ['manager', 'manager'],
+    ['committee member', 'committee'],
+    ['admin', 'admin'],
+  ])('shows a %s the sessions with no register open until one is tapped', async (_l, who) => {
+    await open(who);
+    expect(beside().getByText('Choose a session to open its register here.')).toBeTruthy();
+    expect(list().getByText('Tuesday training')).toBeTruthy();
+    expect(calls('attendance_register')).toHaveLength(0);
+  });
+
+  it('opens the tapped session’s register beside the list', async () => {
+    await open('coach');
+    await fireEvent.press(list().getByText('Thursday training'));
+    await settle();
+    expect(push).not.toHaveBeenCalled();
+    expect(calls('attendance_register')).toEqual([['attendance_register', { p_session_id: 'sess-2' }]]);
+    expect(beside().getByText('Second Athlete')).toBeTruthy();
+    expect(beside().getByText('Change attendance')).toBeTruthy();
+    expect(list().getByText('Tuesday training')).toBeTruthy();
+    expect(list().queryByText('Second Athlete')).toBeNull();
+  });
+
+  it('keeps the sessions in one column beside the register', async () => {
+    await open('coach');
+    expect(list().queryByTestId('columns')).toBeNull();
+    expect(list().queryByTestId('card-grid-2')).toBeNull();
+    expect(list().queryByTestId('card-grid-3')).toBeNull();
+  });
+
+  it('shows the register read-only to someone who can’t correct it, as its own screen does', async () => {
+    await open('committee', [session({ can_edit: false })]);
+    await fireEvent.press(list().getByText('Tuesday training'));
+    await settle();
+    expect(beside().getByText('1 of 3 present · 1 not marked')).toBeTruthy();
+    expect(beside().queryByText('Change attendance')).toBeNull();
+    expect(beside().queryAllByRole('radio')).toHaveLength(0);
+  });
+
+  it('reloads the list when the marks are saved, and keeps the register open', async () => {
+    await open('coach');
+    await fireEvent.press(list().getByText('Tuesday training'));
+    await settle();
+    await fireEvent.press(beside().getByText('Change attendance'));
+    const before = calls('attendance_sessions_list').length;
+    await fireEvent.press(beside().getByText('Save changes'));
+    await settle();
+    expect(calls('save_attendance')).toHaveLength(1);
+    // Once for the register, once for the list beside it.
+    expect(calls('attendance_sessions_list').length).toBe(before + 2);
+    expect(beside().getByText('Second Athlete')).toBeTruthy();
+  });
+
+  it('still opens an athlete’s record on its own screen, which has its own rule on who may open it', async () => {
+    await open('committee');
+    await fireEvent.press(list().getByText('Athletes'));
+    await settle();
+    await fireEvent.press(list().getByText('Sample Child'));
+    expect(push).toHaveBeenCalledWith(
+      expect.objectContaining({ pathname: '/attendance/athlete/[id]' }),
+    );
+    expect(beside().getByText('Choose a session to open its register here.')).toBeTruthy();
+  });
+
+  it.each<Who>(['physio', 'athlete', 'guardian', 'stoodDownCoach'])(
+    'gives %p, who the database returns no sessions to, nothing to open',
+    async (who) => {
+      await open(who, []);
+      expect(list().getByText('No attendance has been taken yet.')).toBeTruthy();
+      expect(beside().getByText('Choose a session to open its register here.')).toBeTruthy();
+      expect(calls('attendance_register')).toHaveLength(0);
+    },
+  );
+});
+
+describe('the attendance list on a phone', () => {
+  it('opens a session’s register on its own screen', async () => {
+    const push = jest.spyOn(router, 'push').mockImplementation(() => {});
+    try {
+      await openList('coach');
+      expect(screen.queryByTestId('list-detail')).toBeNull();
+      await fireEvent.press(screen.getByText('Tuesday training'));
+      expect(push).toHaveBeenCalledWith({ pathname: '/attendance/[id]', params: { id: 'sess-1' } });
+    } finally {
+      push.mockRestore();
+    }
   });
 });

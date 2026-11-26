@@ -1,8 +1,9 @@
-import { useFocusEffect, useLocalSearchParams } from 'expo-router';
+import { useFocusEffect } from 'expo-router';
 import { useCallback, useState } from 'react';
 import { StyleSheet, View } from 'react-native';
 
 import { AttendanceRegister } from '@/components/attendance-register';
+import { useListChanged, useScreenParams } from '@/components/list-detail';
 import { Screen } from '@/components/screen';
 import { ThemedText } from '@/components/themed-text';
 import { Button, ErrorText, TextField } from '@/components/ui';
@@ -14,7 +15,9 @@ import { supabase } from '@/lib/supabase';
 import type { AttendanceMark, AttendanceSession } from '@/lib/types';
 
 export default function AttendanceSessionScreen() {
-  const { id } = useLocalSearchParams<{ id: string }>();
+  const { id } = useScreenParams<{ id: string }>();
+  // Beside the list on a tablet, the list shows the new count.
+  const listChanged = useListChanged();
   const [session, setSession] = useState<AttendanceSession | null | undefined>(undefined);
   const [register, setRegister] = useState<AttendanceMark[]>([]);
   const [editing, setEditing] = useState(false);
@@ -77,6 +80,7 @@ export default function AttendanceSessionScreen() {
     }
     setEditing(false);
     await load();
+    listChanged();
   }
 
   async function cancel() {

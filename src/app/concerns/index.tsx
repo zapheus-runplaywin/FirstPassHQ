@@ -2,7 +2,10 @@ import { router, useFocusEffect } from 'expo-router';
 import { useCallback, useState } from 'react';
 import { StyleSheet, View } from 'react-native';
 
+import ConcernScreen from '@/app/concerns/[id]';
+import { ListDetail, useListDetail } from '@/components/list-detail';
 import { Screen } from '@/components/screen';
+import { StatusLine } from '@/components/status-line';
 import { ThemedText } from '@/components/themed-text';
 import { Button, PressableCard } from '@/components/ui';
 import { Spacing } from '@/constants/theme';
@@ -55,8 +58,13 @@ export default function ConcernsScreen() {
 
   const open = (concerns ?? []).filter((c) => c.status !== 'closed');
   const closed = (concerns ?? []).filter((c) => c.status === 'closed');
+  // On a tablet a concern opens beside the register; otherwise on its own screen.
+  const detail = useListDetail<{ id: string }>((params) =>
+    router.push({ pathname: '/concerns/[id]', params }),
+  );
+  const chosenId = detail.chosen?.id ?? null;
 
-  return (
+  const list = (
     <Screen refreshing={refreshing} onRefresh={onRefresh}>
       {handles ? (
         <>
@@ -120,13 +128,40 @@ export default function ConcernsScreen() {
           the concern.
         </ThemedText>
       ) : null}
-      <Section title="Open" concerns={open} empty="No open concerns." />
-      <Section title="Closed" concerns={closed} empty="None closed yet." />
+      <Section title="Open" concerns={open} empty="No open concerns." chosenId={chosenId} onOpen={detail.open} />
+      <Section title="Closed" concerns={closed} empty="None closed yet." chosenId={chosenId} onOpen={detail.open} />
     </Screen>
+  );
+  return (
+    <ListDetail
+      chosen={detail.chosen}
+      detail={<ConcernScreen />}
+      title="Concern"
+      hint="Choose a concern to open it here."
+      onLeave={() => {
+        detail.close();
+        load();
+      }}
+      onChanged={load}>
+      {list}
+    </ListDetail>
   );
 }
 
-function Section({ title, concerns, empty }: { title: string; concerns: Concern[]; empty: string }) {
+function Section({
+  title,
+  concerns,
+  empty,
+  chosenId,
+  onOpen,
+}: {
+  title: string;
+  concerns: Concern[];
+  empty: string;
+  /** The concern open beside the register, if one is. */
+  chosenId: string | null;
+  onOpen: (params: { id: string }) => void;
+}) {
   return (
     <View style={styles.group}>
       <ThemedText type="smallBold">{title}</ThemedText>
@@ -138,7 +173,8 @@ function Section({ title, concerns, empty }: { title: string; concerns: Concern[
         concerns.map((c) => (
           <PressableCard
             key={c.id}
-            onPress={() => router.push({ pathname: '/concerns/[id]', params: { id: c.id } })}>
+            selected={chosenId === null ? undefined : c.id === chosenId}
+            onPress={() => onOpen({ id: c.id })}>
             <ThemedText type="smallBold">
               {c.reference ? `${c.reference} · ` : ''}
               {localDay(c.created_at)}
@@ -147,13 +183,14 @@ function Section({ title, concerns, empty }: { title: string; concerns: Concern[
             <ThemedText type="small" numberOfLines={2}>
               {c.body}
             </ThemedText>
-            <ThemedText
-              type="small"
-              themeColor={c.status === 'received' ? 'tint' : 'textSecondary'}>
-              {concernStatusLabels[c.status]}
-              {c.involves_child === 'yes' ? ' · child’s safety' : ''}
-              {c.anonymous ? ' · name not shown' : ` · from ${c.raised_by_name ?? 'a former member'}`}
-            </ThemedText>
+            <StatusLine
+              tone={c.status === 'received' ? 'attention' : 'quiet'}
+              text={
+                concernStatusLabels[c.status] +
+                (c.involves_child === 'yes' ? ' · child’s safety' : '') +
+                (c.anonymous ? ' · name not shown' : ` · from ${c.raised_by_name ?? 'a former member'}`)
+              }
+            />
           </PressableCard>
         ))
       )}

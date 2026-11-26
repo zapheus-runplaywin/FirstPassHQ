@@ -420,6 +420,16 @@ export function HomeProvider({ children }: { children: ReactNode }) {
   return <HomeContext value={home}>{children}</HomeContext>;
 }
 
+const nothing = () => {};
+
+/**
+ * Counts the Messages tab's unread messages again, after a message is read or
+ * marked without leaving the tab. Does nothing on a screen outside the tabs.
+ */
+export function useReloadUnread(): () => void {
+  return use(HomeContext)?.reloadUnread ?? nothing;
+}
+
 /** What the member has to do, what's coming up, and what each card says. */
 export function useHome(): Home {
   const home = use(HomeContext);

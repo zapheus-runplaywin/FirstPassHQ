@@ -1,5 +1,6 @@
 import { StyleSheet, View } from 'react-native';
 
+import { StatusLine } from '@/components/status-line';
 import { ThemedText } from '@/components/themed-text';
 import { Card } from '@/components/ui';
 import { Spacing } from '@/constants/theme';
@@ -37,9 +38,7 @@ export function CheckInHistory({ checkIns }: { checkIns: CheckIn[] }) {
                 {c.day === today() ? 'Today' : formatShortDay(parseDateString(c.day))}
               </ThemedText>
               {flagged.length > 0 ? (
-                <ThemedText type="smallBold" style={{ color: theme.accent }}>
-                  Low {flagged.join(', ').toLowerCase()}
-                </ThemedText>
+                <StatusLine text={`Low ${flagged.join(', ').toLowerCase()}`} tone="attention" inline />
               ) : null}
             </View>
             <ThemedText type="small" themeColor="textSecondary">

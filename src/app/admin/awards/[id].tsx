@@ -3,10 +3,10 @@ import { useCallback, useState } from 'react';
 import { StyleSheet, View } from 'react-native';
 
 import { Screen } from '@/components/screen';
+import { StatusLine } from '@/components/status-line';
 import { ThemedText } from '@/components/themed-text';
 import { Button, Card } from '@/components/ui';
 import { Spacing } from '@/constants/theme';
-import { useTheme } from '@/hooks/use-theme';
 import { AWARD_COLUMNS, awardSummary, closesLabel, isClosed } from '@/lib/awards';
 import { formatShortDay } from '@/lib/format';
 import { supabase } from '@/lib/supabase';
@@ -22,7 +22,6 @@ type UpcomingGame = {
 
 /** One award for admins: its settings, standings and who has voted. */
 export default function AdminAwardScreen() {
-  const theme = useTheme();
   const { id } = useLocalSearchParams<{ id: string }>();
   const teams = useTeams();
   const [award, setAward] = useState<Award | null>(null);
@@ -111,10 +110,10 @@ export default function AdminAwardScreen() {
           </ThemedText>
         ) : null}
         {missingBirthdays > 0 ? (
-          <ThemedText type="small" themeColor="accent">
-            {missingBirthdays} possible {missingBirthdays === 1 ? 'nominee has' : 'nominees have'}{' '}
-            no date of birth, so they can’t be voted for. Add it on their page in Members.
-          </ThemedText>
+          <StatusLine
+            tone="attention"
+            text={`${missingBirthdays} possible ${missingBirthdays === 1 ? 'nominee has' : 'nominees have'} no date of birth, so they can’t be voted for. Add it on their page in Members.`}
+          />
         ) : null}
       </Card>
 
@@ -163,9 +162,7 @@ export default function AdminAwardScreen() {
               <Card>
                 {standings.map((r, i) => (
                   <View key={`${r.nominee_name}-${i}`} style={styles.resultRow}>
-                    <ThemedText
-                      type={i === 0 ? 'smallBold' : 'small'}
-                      style={[styles.flex, i === 0 ? { color: theme.accent } : undefined]}>
+                    <ThemedText type={i === 0 ? 'smallBold' : 'small'} style={styles.flex}>
                       {i + 1}. {r.nominee_name}
                     </ThemedText>
                     <ThemedText type={i === 0 ? 'smallBold' : 'small'}>
@@ -223,10 +220,10 @@ export default function AdminAwardScreen() {
                   No more matches from PlayHQ.
                 </ThemedText>
               ) : (
-                <ThemedText type="small" themeColor="accent">
-                  No PlayHQ games are linked to {group.name ?? 'this group'}, so no match votes will
-                  open. Link it under Fixtures.
-                </ThemedText>
+                <StatusLine
+                  tone="attention"
+                  text={`No PlayHQ games are linked to ${group.name ?? 'this group'}, so no match votes will open. Link it under Fixtures.`}
+                />
               )
             ) : null}
           </View>

@@ -23,6 +23,7 @@ import {
   settle,
   TEAM,
   TEAM_B,
+  toneOf,
   type BackendOptions,
   type Persona,
   type PersonaName,
@@ -392,6 +393,7 @@ describe('attendance already taken nearby', () => {
     await open('coach', { rpcs: { nearby_attendance_sessions: NEARBY } });
     expect(argsOf('nearby_attendance_sessions')).toContainEqual({ p_team_id: TEAM.id, p_held_at: '2026-10-18T02:00:00.000Z' });
     expect(screen.getByText('Attendance may already have been taken')).toBeTruthy();
+    expect(toneOf(screen.getByText('Attendance may already have been taken'))).toBe('attention');
     expect(
       screen.getByText(
         `Sample manager took attendance for “Morning session” at ${formatSentAt(new Date('2026-10-18T00:30:00Z'))}. Two sessions within 3 hours of each other is unusual.`,

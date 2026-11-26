@@ -3,6 +3,7 @@ import { useCallback, useState } from 'react';
 import { StyleSheet, View } from 'react-native';
 
 import { Screen } from '@/components/screen';
+import { StatusLine } from '@/components/status-line';
 import { ThemedText } from '@/components/themed-text';
 import { Button, ChipGroup, PressableCard } from '@/components/ui';
 import { Spacing } from '@/constants/theme';
@@ -91,19 +92,20 @@ function MyList({ surveys }: { surveys: MySurvey[] }) {
           <ThemedText type="small" themeColor="textSecondary">
             {identityLabels[s.identity]} · {statusLabel(s.is_open, s.closes_at)}
           </ThemedText>
-          <ThemedText
-            type="small"
-            themeColor={s.responded || !s.is_open ? 'textSecondary' : 'accent'}>
-            {s.from_child
-              ? `Sent by ${s.for_child_names?.join(' and ')}`
-              : s.for_child_names
-                ? `For ${s.for_child_names.join(' and ')} to answer`
-                : s.responded
-                  ? '✓ You’ve answered'
-                  : s.is_open
-                    ? 'Not answered yet'
-                    : 'You didn’t answer'}
-          </ThemedText>
+          <StatusLine
+            tone={s.responded || !s.is_open ? 'quiet' : 'attention'}
+            text={
+              s.from_child
+                ? `Sent by ${s.for_child_names?.join(' and ')}`
+                : s.for_child_names
+                  ? `For ${s.for_child_names.join(' and ')} to answer`
+                  : s.responded
+                    ? '✓ You’ve answered'
+                    : s.is_open
+                      ? 'Not answered yet'
+                      : 'You didn’t answer'
+            }
+          />
         </PressableCard>
       ))}
     </View>

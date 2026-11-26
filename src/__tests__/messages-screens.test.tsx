@@ -12,21 +12,27 @@
  * for children"). Every message offers a way to report it.
  */
 import { router } from 'expo-router';
-import { fireEvent, screen } from 'expo-router/testing-library';
+import type { ComponentType } from 'react';
+import { fireEvent, screen, within } from 'expo-router/testing-library';
 
 import MessageScreen from '@/app/messages/[id]';
 import MessagesScreen from '@/app/(tabs)/messages';
+import { Colors } from '@/constants/theme';
 import { supabase } from '@/lib/supabase';
 import type { MessageQuestion } from '@/lib/message-questions';
 import type { InboxMessage, Message, MessageReceipt, SentMessage } from '@/lib/types';
 
 import {
+  inTabs,
   morePersonas,
+  onATablet,
   openScreen,
   personas,
   resetClub,
   settle,
   TEAM,
+  colourOf,
+  toneOf,
   type Persona,
   type PersonaName,
 } from './helpers/harness';
@@ -199,6 +205,9 @@ describe('one message', () => {
     expect(screen.getByText('Read by 1 of 2')).toBeTruthy();
     expect(screen.getByText('Sample athlete')).toBeTruthy();
     expect(screen.getByText(/^✓ Read /)).toBeTruthy();
+    // Read is done: green, not the club's colour.
+    expect(colourOf(screen.getByText(/^✓ Read /))).toBe(Colors.positive);
+    expect(Colors.positive).not.toBe(Colors.tint);
     expect(screen.getByText('Not read yet')).toBeTruthy();
     noTextBoxes();
   });
@@ -419,6 +428,7 @@ describe('a message that asks a question', () => {
   it('tags a question in the inbox', async () => {
     await openList('athlete', [inboxRow({ message: QUESTION_MESSAGE, answer: null })]);
     expect(screen.getByText('Question: tap to answer')).toBeTruthy();
+    expect(toneOf(screen.getByText('Question: tap to answer'))).toBe('attention');
   });
 });
 
@@ -685,6 +695,189 @@ describe('mark as unread on an open message', () => {
     } finally {
       replace.mockRestore();
       canGoBack.mockRestore();
+    }
+  });
+});
+
+// ---------------------------------------------------------------------------
+// On a tablet: a message opens beside the list
+
+describe('the messages list on a tablet', () => {
+  onATablet();
+
+  let push: jest.SpyInstance;
+  let back: jest.SpyInstance;
+  beforeEach(() => {
+    push = jest.spyOn(router, 'push').mockImplementation(() => {});
+    back = jest.spyOn(router, 'back').mockImplementation(() => {});
+  });
+  afterEach(() => {
+    push.mockRestore();
+    back.mockRestore();
+  });
+
+  const SECOND: Message = { ...MESSAGE, id: 'msg-3', body: 'Bibs are in the blue bag' };
+
+  /** How many times the Messages tab's unread count was asked for. */
+  let counts = 0;
+
+  /** A backend that keeps what the member does to their own copies, as the database does. */
+  async function open(who: Who, Screen: ComponentType = MessagesScreen) {
+    counts = 0;
+    const copies: (InboxMessage & { archived_at?: string | null })[] = [
+      inboxRow(),
+      inboxRow({ message: SECOND }),
+    ];
+    const copyOf = (id: unknown) => copies.find((c) => c.message.id === id);
+    const change = (id: unknown, changes: Partial<InboxMessage> & { archived_at?: string | null }) =>
+      Object.assign(copyOf(id) ?? {}, changes);
+    await openScreen(who, { 'messages/index': Screen }, '/messages', {}, {
+      rpcs: { my_sent_messages: SENT, message_receipts: RECEIPTS },
+      tableHandlers: {
+        // The list asks for the member's copies, a message's screen for one message and its copy.
+        messages: (q) => [MESSAGE, SECOND, { ...MESSAGE, ...SENT[0], sender_id: 'coach' }].filter((m) => m.id === q.eq('id')),
+        message_recipients: (q) => {
+          if (q.eq('unread') === true) {
+            counts += 1;
+            return copies.filter((c) => c.unread ?? !c.read_at);
+          }
+          return q.eq('message_id') ? copies.filter((c) => c.message.id === q.eq('message_id')) : copies;
+        },
+      },
+      rpcHandlers: {
+        mark_message_read: (args) => change(args.p_message_id, { read_at: '2026-10-18T02:00:00Z', unread: false }),
+        mark_message_unread: (args) => change(args.p_message_id, { unread: true }),
+        archive_message: (args) => change(args.p_message_id, { archived_at: '2026-10-18T02:00:00Z' }),
+      },
+    });
+  }
+  const beside = () => within(screen.getByTestId('detail-pane'));
+  const list = () => within(screen.getByTestId('list-pane'));
+  const calls = (name: string) =>
+    ((supabase.rpc as jest.Mock).mock.calls as [string, unknown][]).filter(([n]) => n === name);
+  const tap = async (text: string) => {
+    await fireEvent.press(list().getByText(text));
+    await settle();
+  };
+
+  it.each<[string, Who]>([
+    ['athlete', 'athlete'],
+    ['under-18 athlete', morePersonas.under18Athlete],
+    ['guardian', 'guardian'],
+    ['coach', 'coach'],
+    ['admin', 'admin'],
+  ])('opens nothing for a %s, and marks nothing read, until a message is tapped', async (_l, who) => {
+    await open(who);
+    expect(beside().getByText('Choose a message to read it here.')).toBeTruthy();
+    expect(list().getAllByLabelText('Unread')).toHaveLength(2);
+    expect(calls('mark_message_read')).toHaveLength(0);
+  });
+
+  it('opens the tapped message beside the list, and marks that one read', async () => {
+    await open('athlete');
+    await tap('Bibs are in the blue bag');
+    expect(push).not.toHaveBeenCalled();
+    expect(beside().getByText('Bibs are in the blue bag')).toBeTruthy();
+    expect(beside().getByText('Mark as unread')).toBeTruthy();
+    expect(calls('mark_message_read')).toEqual([['mark_message_read', { p_message_id: 'msg-3' }]]);
+    // The list beside it drops that message's unread dot, and keeps the other's.
+    expect(list().getAllByLabelText('Unread')).toHaveLength(1);
+    expect(list().getByText('1 unread')).toBeTruthy();
+    expect(list().getByText('Training moves to 6pm on Thursday')).toBeTruthy();
+  });
+
+  it.each<[string, string]>([
+    ['read', 'Bibs are in the blue bag'],
+    ['archived', 'Archive'],
+    ['marked unread', 'Mark as unread'],
+  ])('counts the tab’s unread messages again when a message beside the list is %s', async (_l, press) => {
+    // With what the tabs share around the screen, as in the app.
+    await open('athlete', inTabs(MessagesScreen));
+    if (press !== 'Bibs are in the blue bag') await tap('Bibs are in the blue bag');
+    const before = counts;
+    const target = press === 'Bibs are in the blue bag' ? list() : beside();
+    await fireEvent.press(target.getByText(press));
+    await settle();
+    expect(counts).toBeGreaterThan(before);
+  });
+
+  it('loads an open message once, not again each time the list reloads', async () => {
+    await open('athlete');
+    await tap('Bibs are in the blue bag');
+    await settle();
+    expect(calls('mark_message_read')).toHaveLength(1);
+  });
+
+  it.each<[string, Who]>([
+    ['athlete', 'athlete'],
+    ['under-18 athlete', morePersonas.under18Athlete],
+    ['guardian', 'guardian'],
+  ])('gives a %s no way to write back beside the list, and a way to report the message', async (_l, who) => {
+    await open(who);
+    await tap('Training moves to 6pm on Thursday');
+    expect(screen.getByTestId('detail-pane').queryAll((n) => n.type === 'TextInput')).toHaveLength(0);
+    expect(beside().queryByText(/^Reply/)).toBeNull();
+    expect(beside().getByText('Report this message')).toBeTruthy();
+    // Read receipts are the sender's alone.
+    expect(calls('message_receipts')).toHaveLength(0);
+  });
+
+  it('archives the open message: it closes, and leaves the inbox beside it', async () => {
+    await open('athlete');
+    await tap('Bibs are in the blue bag');
+    await fireEvent.press(beside().getByText('Archive'));
+    await settle();
+    expect(calls('archive_message')).toEqual([['archive_message', { p_message_id: 'msg-3' }]]);
+    expect(beside().getByText('Choose a message to read it here.')).toBeTruthy();
+    expect(list().queryByText('Bibs are in the blue bag')).toBeNull();
+    expect(list().getByText('Training moves to 6pm on Thursday')).toBeTruthy();
+    // The list is still the screen being looked at.
+    expect(back).not.toHaveBeenCalled();
+  });
+
+  it('marks the open message unread: it closes, and its dot is back in the list', async () => {
+    await open('athlete');
+    await tap('Bibs are in the blue bag');
+    expect(list().getAllByLabelText('Unread')).toHaveLength(1);
+    await fireEvent.press(beside().getByText('Mark as unread'));
+    await settle();
+    expect(calls('mark_message_unread')).toEqual([['mark_message_unread', { p_message_id: 'msg-3' }]]);
+    expect(beside().getByText('Choose a message to read it here.')).toBeTruthy();
+    expect(list().getAllByLabelText('Unread')).toHaveLength(2);
+    expect(back).not.toHaveBeenCalled();
+  });
+
+  it('opens a message its sender sent beside the list, with who has read it', async () => {
+    await open('coach');
+    await tap('Sent');
+    await tap('Bring a water bottle');
+    expect(push).not.toHaveBeenCalled();
+    expect(beside().getByText('Read by 1 of 2')).toBeTruthy();
+    expect(beside().getByText('Not read yet')).toBeTruthy();
+  });
+
+  it('keeps the open message while another box is looked at, until it is closed', async () => {
+    await open('coach');
+    await tap('Training moves to 6pm on Thursday');
+    await tap('Sent');
+    expect(beside().getByText('Training moves to 6pm on Thursday')).toBeTruthy();
+    await fireEvent.press(screen.getByLabelText(/^Close /));
+    await settle();
+    expect(beside().getByText('Choose a message to read it here.')).toBeTruthy();
+  });
+});
+
+describe('the messages list on a phone', () => {
+  it('opens a message on its own screen', async () => {
+    const push = jest.spyOn(router, 'push').mockImplementation(() => {});
+    try {
+      await openList('athlete');
+      expect(screen.queryByTestId('list-detail')).toBeNull();
+      await fireEvent.press(screen.getByText('Training moves to 6pm on Thursday'));
+      expect(push).toHaveBeenCalledWith({ pathname: '/messages/[id]', params: { id: 'msg-1' } });
+      expect(rpcNames()).not.toContain('mark_message_read');
+    } finally {
+      push.mockRestore();
     }
   });
 });

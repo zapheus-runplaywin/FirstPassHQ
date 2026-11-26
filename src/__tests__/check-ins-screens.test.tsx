@@ -25,6 +25,7 @@ import {
   setClubFeatures,
   settle,
   TEAM,
+  toneOf,
   type Persona,
   type PersonaName,
   type QueryInfo,
@@ -175,6 +176,8 @@ describe('the check-ins screen', () => {
     expect(shownParts()).toEqual(['dayByDay', 'athleteNames', 'notes']);
     expect(screen.getByText(/^2 of 3 checked in · 1 flagged\./)).toBeTruthy();
     expect(screen.getByText('Check in with')).toBeTruthy();
+    expect(toneOf(screen.getByText('Check in with'))).toBe('attention');
+    expect(toneOf(screen.getByText('Low sleep'))).toBe('attention');
     expect(screen.getByText('Low sleep')).toBeTruthy();
     expect(screen.getByText('Feeling good')).toBeTruthy();
     expect(screen.getByText('Fine Athlete')).toBeTruthy();
@@ -195,6 +198,7 @@ describe('the check-ins screen', () => {
     expect(shownParts()).toEqual(['overview', 'averages']);
     expect(screen.getByText('Team · 9 of 12 checked in')).toBeTruthy();
     expect(screen.getByText('2 flagged')).toBeTruthy();
+    expect(toneOf(screen.getByText('2 flagged'))).toBe('attention');
     expect(screen.getByText('Scores show once 3 athletes have checked in')).toBeTruthy();
     expect(screen.queryByText('Fine Athlete')).toBeNull();
     expect(screen.queryByText('Not Yet')).toBeNull();

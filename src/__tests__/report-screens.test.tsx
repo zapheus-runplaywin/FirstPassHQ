@@ -28,7 +28,7 @@ import { supabase } from '@/lib/supabase';
 import type { Award, Team } from '@/lib/types';
 
 import { readPdf } from './helpers/documents';
-import { openScreen, resetClub, setClubFeatures, settle, type BackendOptions, type QueryInfo } from './helpers/harness';
+import { openScreen, resetClub, setClubFeatures, settle, toneOf, type BackendOptions, type QueryInfo } from './helpers/harness';
 import { NO_CHECK, noon, person, team } from './helpers/report-fixtures';
 
 jest.mock('@/lib/club', () => jest.requireActual('./helpers/harness').clubModuleMock());
@@ -249,6 +249,9 @@ describe('Working With Children Checks', () => {
     expect(stat('Current')).toBe('1');
     const all = texts();
     expect(all.indexOf('Casey Coach')).toBeLessThan(all.indexOf('Morgan Manager'));
+    // A check that has run out is marked; a current one is plain.
+    expect(toneOf(screen.getByText('Casey Coach'))).toBe('attention');
+    expect(toneOf(screen.getByText('Morgan Manager'))).toBe('plain');
     expect(all).toContain('Squads and teams: Open A');
     expect(all).toContain('Status: Expired');
     expect(all).not.toContain('Ari Athlete');

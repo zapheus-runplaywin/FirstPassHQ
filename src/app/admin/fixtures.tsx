@@ -6,7 +6,6 @@ import { Screen } from '@/components/screen';
 import { ThemedText } from '@/components/themed-text';
 import { Button, Card, ChipGroup, ErrorText, TextField } from '@/components/ui';
 import { Spacing } from '@/constants/theme';
-import { useTheme } from '@/hooks/use-theme';
 import { formatDateTime, formatShortDay } from '@/lib/format';
 import {
   fetchPlayhqCompetition,
@@ -111,7 +110,6 @@ function PlayhqCheck({
  * club's, and import their games. Refreshing picks up PlayHQ's changes.
  */
 export default function FixturesScreen() {
-  const theme = useTheme();
   // Our teams usually have the club's short name in them.
   const { shortName } = useClub();
   const teams = useTeams();
@@ -434,10 +432,7 @@ export default function FixturesScreen() {
                   accessibilityRole="button"
                   onPress={() => setOpen(open === t.id ? null : t.id)}>
                   <ThemedText type="smallBold">{t.name}</ThemedText>
-                  <ThemedText
-                    type="small"
-                    style={team ? { color: theme.accent } : undefined}
-                    themeColor={team ? undefined : 'textSecondary'}>
+                  <ThemedText type="small" themeColor={team ? undefined : 'textSecondary'}>
                     {t.grade ? `${t.grade} · ` : ''}
                     {team ? teamLabel(team, teams) : 'Not one of ours'}
                   </ThemedText>

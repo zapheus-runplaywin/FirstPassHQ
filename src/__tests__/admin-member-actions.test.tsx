@@ -31,6 +31,7 @@ import {
   fieldFor,
   inSection,
   isChosen,
+  onEveryTab,
   openFullRecord,
   press,
   pressInSection,
@@ -43,6 +44,7 @@ import {
   openScreen,
   personas,
   resetClub,
+  toneOf,
   type BackendOptions,
   type Persona,
   type PersonaName,
@@ -68,6 +70,9 @@ jest.mock('@/global.css', () => ({}));
 jest.setTimeout(20_000);
 
 let back: jest.SpyInstance;
+
+// The full record is in tabs: these tests are about what the page holds and sends, on any tab.
+onEveryTab();
 
 beforeEach(() => {
   resetClub();
@@ -365,10 +370,11 @@ describe('saving a member', () => {
   it('refuses a role combination the club doesn’t allow before sending anything', async () => {
     await openMember(p('athlete'));
     await pressInSection('Other roles', 'Manager');
-    expect(screen.getAllByText('Athletes can’t also be managers.')).toHaveLength(1);
-    await press('Save changes');
-    // Shown under Other roles and above the buttons.
+    // Shown under Other roles, and in Overview's Needs attention.
     expect(screen.getAllByText('Athletes can’t also be managers.')).toHaveLength(2);
+    await press('Save changes');
+    // And now above the buttons too.
+    expect(screen.getAllByText('Athletes can’t also be managers.')).toHaveLength(3);
     expect(adminWrites()).toEqual([]);
     expect(back).not.toHaveBeenCalled();
   });
@@ -1115,6 +1121,7 @@ describe('validating a coach’s card', () => {
   it('needs how it was checked, then records the name, method and registration', async () => {
     await openMember(p('coach'), { people: [p('admin')] });
     expect(screen.getByText('Check not validated. Card not registered with the club.')).toBeTruthy();
+    expect(toneOf(screen.getByText('Check not validated. Card not registered with the club.'))).toBe('attention');
     expect(fieldFor('Name on the card').props.value).toBe('Sample coach');
     await press('Record validation');
     expect(screen.getByText('Choose how you checked the card.')).toBeTruthy();
@@ -1496,6 +1503,8 @@ describe('standing a member down', () => {
         new RegExp(`^Stood down since ${localDay('2026-10-01T00:00:00Z')}: Allegation being looked into \\(Raised by a parent\\)\\.`),
       ),
     ).toBeTruthy();
+    // Above the tabs and on Checks, in bold with the mark, never in the club's colour.
+    expect(screen.getAllByText(/^Stood down since /).map(toneOf)).toEqual(['attention', 'attention']);
     await typeInto('Note (optional)', 'Allegation not substantiated');
     await press('Lift stand-down');
     expect(rpcsNamed('admin_lift_stand_down')).toEqual([
@@ -1604,6 +1613,7 @@ describe('Screening Unit notices', () => {
       screen.getByText(`Recorded ${localDay(NOTICE.recorded_at)} by Sample admin. Governing body not told yet.`),
     ).toBeTruthy();
     expect(screen.getByText('Tell the governing body in writing, then record the date.')).toBeTruthy();
+    expect(toneOf(screen.getByText('Tell the governing body in writing, then record the date.'))).toBe('attention');
 
     await typeInto('Date you told them', '');
     await press('Governing body told: negative notice');
@@ -1667,6 +1677,7 @@ describe('link codes', () => {
       people: [UNVERIFIED_GUARDIAN],
     });
     expect(screen.getByText(/^Locked: no verified parent or guardian is linked/)).toBeTruthy();
+    expect(toneOf(screen.getByText(/^Locked: no verified parent or guardian is linked/))).toBe('attention');
   });
 
   it('doesn’t call a child with a verified parent linked locked', async () => {

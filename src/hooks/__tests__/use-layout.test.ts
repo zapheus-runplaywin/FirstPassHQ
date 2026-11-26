@@ -3,6 +3,7 @@
  * how many cards a row holds, and from what window width screens sit in columns.
  */
 import { renderHook } from '@testing-library/react-native';
+import { createElement, type ReactNode } from 'react';
 import { Dimensions } from 'react-native';
 
 import {
@@ -10,7 +11,9 @@ import {
   COLUMNS_MIN_WIDTH,
   gridColumns,
   MAX_GRID_COLUMNS,
+  ShareOfWindow,
   toRows,
+  useLayoutWidth,
   useWideLayout,
   WIDE_MIN_WIDTH,
 } from '@/hooks/use-layout';
@@ -77,6 +80,33 @@ describe('useWideLayout', () => {
   it('keeps every phone below the tablet width and every iPad at or above it', () => {
     expect(SIZES.bigPhone.width).toBeLessThan(WIDE_MIN_WIDTH);
     expect(SIZES.ipadMini.width).toBeGreaterThanOrEqual(WIDE_MIN_WIDTH);
+  });
+});
+
+describe('a screen sharing the window', () => {
+  /** What a screen works out about its room: its width, tablet-sized, room for two columns. */
+  const useRoom = () => [useLayoutWidth(), useWideLayout(), useWideLayout(COLUMNS_MIN_WIDTH)] as const;
+  const sharing = (share: number | null) => ({
+    wrapper: ({ children }: { children: ReactNode }) =>
+      createElement(ShareOfWindow, { value: share }, children),
+  });
+
+  it.each([
+    ['a list beside its item', 380, false, false],
+    ['an item beside its list on an iPad on its side', 800, true, false],
+    ['an item beside its list on the biggest iPad on its side', 996, true, true],
+  ] as const)('%s lays out for its share, not the window', async (_label, share, wide, columns) => {
+    setWindow(SIZES.ipadAirSideways);
+    const { result } = await renderHook(useRoom, sharing(share));
+    expect(result.current).toEqual([share, wide, columns]);
+  });
+
+  it('has the whole window when it shares it with nothing', async () => {
+    setWindow(SIZES.ipadAirSideways);
+    const { result } = await renderHook(useRoom, sharing(null));
+    expect(result.current).toEqual([SIZES.ipadAirSideways.width, true, true]);
+    const alone = await renderHook(useRoom);
+    expect(alone.result.current).toEqual([SIZES.ipadAirSideways.width, true, true]);
   });
 });
 

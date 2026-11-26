@@ -3,6 +3,7 @@ import { useCallback, useState } from 'react';
 import { StyleSheet, View } from 'react-native';
 
 import { Screen } from '@/components/screen';
+import { StatusLine } from '@/components/status-line';
 import { ThemedText } from '@/components/themed-text';
 import { PressableCard } from '@/components/ui';
 import { Spacing } from '@/constants/theme';
@@ -95,9 +96,10 @@ function Section({
               Asked by {r.requested_by_name} ({requestedPostLabel(r)}){' '}
               {localDay(r.created_at)}
             </ThemedText>
-            <ThemedText type="small" themeColor={r.can_decide ? 'tint' : 'textSecondary'}>
-              {r.can_decide ? 'For you to answer' : requestStatusLine(r)}
-            </ThemedText>
+            <StatusLine
+              text={r.can_decide ? 'For you to answer' : requestStatusLine(r)}
+              tone={r.can_decide ? 'attention' : 'quiet'}
+            />
           </PressableCard>
         ))
       )}

@@ -2,6 +2,7 @@ import { useFocusEffect } from 'expo-router';
 import { useCallback, useState } from 'react';
 import { StyleSheet, View } from 'react-native';
 
+import { StatusLine } from '@/components/status-line';
 import { ThemedText } from '@/components/themed-text';
 import { Button, Card, ChipGroup, ErrorText, TextField } from '@/components/ui';
 import { Spacing } from '@/constants/theme';
@@ -96,12 +97,15 @@ export function StandDownSection({
       <ThemedText type="smallBold">Stand down</ThemedText>
       {open ? (
         <>
-          <ThemedText type="small" themeColor="tint">
-            Stood down since {localDay(open.started_at)}: {standDownReasonLabels[open.reason]}
-            {open.note ? ` (${open.note})` : ''}. Their coach, manager, physio, committee, admin
-            and statistician roles are paused, and they were taken out of the squads and teams
-            they coach, manage or treat.
-          </ThemedText>
+          <StatusLine
+            tone="attention"
+            text={
+              `Stood down since ${localDay(open.started_at)}: ${standDownReasonLabels[open.reason]}` +
+              `${open.note ? ` (${open.note})` : ''}. Their coach, manager, physio, committee, admin ` +
+              'and statistician roles are paused, and they were taken out of the squads and teams ' +
+              'they coach, manage or treat.'
+            }
+          />
           <TextField
             label="Note (optional)"
             value={note}

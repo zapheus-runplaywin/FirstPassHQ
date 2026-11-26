@@ -35,11 +35,13 @@ import { supabase } from '@/lib/supabase';
 
 import {
   morePersonas,
+  onATablet,
   openScreen,
   resetClub,
   setClubFeatures,
   settle,
   TEAM,
+  toneOf,
   type Persona,
   type PersonaName,
 } from './helpers/harness';
@@ -254,6 +256,24 @@ describe('the Groups tab', () => {
       params: { id: 'g-captains' },
     });
     push.mockRestore();
+  });
+
+  describe('on a tablet', () => {
+    onATablet();
+
+    it('still opens a group on its own screen, not beside the list', async () => {
+      const push = jest.spyOn(router, 'push').mockImplementation(() => {});
+      await openList('coach', [group()]);
+      await fireEvent.press(screen.getByText('Groups'));
+      await settle();
+      await fireEvent.press(screen.getByText(`${TEAM.name} coaches and captains`));
+      expect(push).toHaveBeenCalledWith({
+        pathname: '/messages/group/[id]',
+        params: { id: 'g-captains' },
+      });
+      expect(screen.getByText('Choose a message to read it here.')).toBeTruthy();
+      push.mockRestore();
+    });
   });
 });
 
@@ -578,7 +598,7 @@ describe('admins’ chat groups', () => {
       },
     );
     expect(screen.getByText('3 people now. It follows squad, team and post changes.')).toBeTruthy();
-    expect(screen.getByText('⚠ This group includes members under 18')).toBeTruthy();
+    expect(toneOf(screen.getByText('This group includes members under 18'))).toBe('attention');
     expect(screen.getByText(/1 member is under 18/)).toBeTruthy();
     await fireEvent.changeText(screen.getByPlaceholderText('Such as Selectors'), 'Selectors');
     // Club roles and posts sit beside squads and teams (Matt, 24 November 2026).
@@ -658,7 +678,7 @@ describe('admins’ chat groups', () => {
       },
     );
     expect(screen.getByDisplayValue('Selectors')).toBeTruthy();
-    expect(screen.queryByText('⚠ This group includes members under 18')).toBeNull();
+    expect(screen.queryByText('This group includes members under 18')).toBeNull();
     await fireEvent.press(screen.getByText('Close the group'));
     await settle();
     expect(rpcCalls('admin_set_chat_group_closed')).toEqual([

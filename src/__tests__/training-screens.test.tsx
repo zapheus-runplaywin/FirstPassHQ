@@ -38,6 +38,7 @@ import {
   setClubFeatures,
   settle,
   TEAM,
+  toneOf,
   type Persona,
   type PersonaName,
 } from './helpers/harness';
@@ -171,6 +172,8 @@ describe('a member’s integrity training', () => {
     expect(screen.getByText(`Waiting to be checked · completed ${formatDateString('2026-10-15')}`)).toBeTruthy();
     expect(screen.getByText(`✓ Approved · completed ${formatDateString('2026-09-01')}`)).toBeTruthy();
     expect(screen.getByText('Sent back')).toBeTruthy();
+    expect(toneOf(screen.getByText('Sent back'))).toBe('attention');
+    expect(toneOf(screen.getByText(`✓ Approved · completed ${formatDateString('2026-09-01')}`))).toBe('plain');
     expect(screen.getByText('Sample committee: “The name is cut off”')).toBeTruthy();
     // A sent-back certificate isn't offered to view again.
     expect(screen.getAllByText('View certificate')).toHaveLength(1);

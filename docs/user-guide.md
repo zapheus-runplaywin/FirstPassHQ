@@ -614,6 +614,11 @@ such as "9 of 12 checked in today" or "At 11 of 12 sessions in 4 weeks". A line 
 colour, which is kept for buttons, links and the tab you're on, so what needs you looks the same
 in every club and is never mistaken for a link.
 
+The same goes for the lists and pages a card opens. A line in bold with the **!** in a circle is
+something to sort out or look at, such as "Waiting for your sign-off" on an injury, "Stood down"
+under a member's name, a concern nobody has picked up yet or an athlete flagged at check-in. A
+green tick, or green words such as **Present**, means done or fine. Anything else is plain.
+
 - **Team**, for coaches, managers and physios, starts with up to three tiles that lead with the
   number that matters: **Check-ins** ("10/12 checked in today", and how many are flagged),
   **Attendance** ("88% at sessions in 4 weeks", and any new or changed absences) and **Injuries**
@@ -681,8 +686,12 @@ just use the extra room so there's less scrolling:
   two a row.
 - **On its side**, Today puts Next up and the rest of the week on the left and Needs you on the
   right, and the cards in Team, Family, Club and Me sit three a row.
-- **Lists of cards** sit two or three a row: injuries, past attendance sessions and athletes'
-  attendance, a squad or team's people and its games.
+- **Lists of cards** sit two or three a row: a squad or team's people and its games, and, on an
+  upright tablet, injuries, past attendance sessions and athletes' attendance.
+- **On its side, a list keeps its place and what you tap opens beside it**: a message beside
+  **Messages**, a member's page beside **Members**, an injury beside **Injuries**, a concern beside
+  the concerns register and a session's register beside **Attendance**. See [A list with what you
+  open beside it](#a-list-with-what-you-open-beside-it), below.
 - **Taking attendance**, the register shows two or three athletes a row, each with Present and
   Absent, so a whole squad fits on the screen.
 - **Forms and messages** stay a comfortable reading width in the middle of the screen.
@@ -693,6 +702,40 @@ upright.
 
 <img src="user-guide/today-tablet-sideways.png" width="420" alt="A manager's Today on an iPad on its side: the tabs down the left, Next up and Later this week in one column and Needs you in the other">
 <img src="user-guide/team-tablet.png" width="320" alt="A coach's Team tab on an upright iPad: the tabs down the left, the three tiles in a row, then their team and its people">
+
+#### A list with what you open beside it
+
+On a tablet on its side (and on the biggest iPad upright), five lists stay on the left while what
+you tap opens on the right, so you can work down a list without going back and forth:
+
+| List | What opens beside it |
+| --- | --- |
+| **Messages** (Inbox, Archived and Sent) | The message |
+| **Members**, and the people a member to-do is about (admins) | The member's page, with its tabs |
+| **Injuries** | The injury, with its history and its buttons |
+| The **concerns register** | The concern |
+| **Attendance**, under **Sessions** | The session's register |
+
+- **Nothing is open until you tap.** The right side says "Choose a message to read it here" (or a
+  member, an injury, a concern or a session). So nothing is marked as read, no record view is
+  noted and nothing shows on a tablet at the court that nobody asked to see.
+- **What opens is the same screen as on a phone**, with the same buttons, shown to the same
+  people. Its name is above it, and the card you tapped is marked in the list with the club's
+  colour down its edge.
+- **The list keeps up.** Open a message and its dot goes; record a step on a concern, save a
+  register or add an injury update and the list shows it straight away, with the item still open.
+- **Finishing closes it.** Saving a member's page, archiving a message or marking it unread closes
+  the right side and leaves you in the list, ready for the next one. The cross at the top right
+  closes it without doing anything else.
+- **Everything else opens on its own screen**, as on a phone: a chat group, an athlete's attendance
+  record, a new message, a new injury, the concerns report.
+
+A member to-do about one person, such as **Add a date of birth for 1 athlete**, opens that person
+beside the list straight away, because that is what you tapped. On an upright tablet or a phone,
+or in a narrow window, the list is the whole screen and each item opens on its own screen.
+
+<img src="user-guide/tablet-messages.png" width="420" alt="Messages on an iPad on its side: the tabs down the left, the inbox in the middle with the open message marked, and the message on the right with Archive, Mark as unread and Report this message">
+<img src="user-guide/tablet-members.png" width="420" alt="Members on an iPad on its side: the list on the left with one member marked, and their page on the right on Overview, with Needs attention and Save changes">
 
 ### Your own tasks
 
@@ -805,11 +848,15 @@ changes, so a parent's copy of a message to their child stays in the parent's in
 be deleted, and messages you sent can't be archived. A question in an archived message can still
 be answered. Screen readers offer **Archive** and **Move to inbox** from each message's actions.
 
+On a tablet on its side, a message opens beside the list and nothing is marked as read until you
+tap it (see [Using HQ on a tablet](#using-hq-on-a-tablet)). Chat groups open on their own screen.
+
 **Report this message** on any message raises a concern
 about it, and the concern keeps a copy of the message (see [Raising a concern](#raising-a-concern)).
 
 Some messages ask a question, such as "Extra session Friday?", with answers to pick from, such as
-**Yes**, **No** and **Not sure**. The inbox says **Question: tap to answer**. Open the message and
+**Yes**, **No** and **Not sure**. The inbox says **Question: tap to answer** in bold with a **!**
+in a circle, and **Question: answered** with a green tick once you have. Open the message and
 tap one answer. You answer once and can't change it, and there's nothing to type. Whoever sent it
 and the squad or team's coaches and managers see what you picked; other members never do.
 If the sender shares the totals, you see how many picked each answer, never who. If you're under 18,
@@ -2546,7 +2593,11 @@ or send back their clearance.
 
 Open an injury to see its full history, including the physio's updates and documents, and to
 **Raise a concern** about it. Opening an under 18's injury is itself recorded for their parents,
-separately from opening its documents.
+separately from opening its documents. On a tablet on its side the injury opens beside the list;
+none is open, and no view is recorded, until you tap one (see [Using HQ on a
+tablet](#using-hq-on-a-tablet)).
+
+<img src="user-guide/tablet-injuries.png" width="420" alt="Injuries on an iPad on its side: the list on the left with the clearance waiting for the coach marked, and that injury on the right with Endorse clearance, Send back and its history">
 
 When one of your athletes asks for clearance, it appears under **Waiting for your sign-off** and in
 your to-do list. Open it, check the proof in the history (tap **View**), then:
@@ -2648,7 +2699,8 @@ session.
 
 - **Sessions** lists past sessions (managers, who have no **Athletes** tab, find the list under the
   absence cards). Open one to see who was there, and **Change attendance** to
-  correct it; athletes who joined the group since show as **Not marked**.
+  correct it; athletes who joined the group since show as **Not marked**. On a tablet on its side
+  the register opens beside the list, and the list shows the new count as soon as you save.
 - **Athletes** shows each athlete's attendance over 4 weeks, 3 months or 12 months, with the last
   time they were there. Tap an athlete to see every session.
 - **New or changed absences**, under the **Take attendance** button, lists the absences reported
@@ -3214,7 +3266,7 @@ assessments for admins](#selection-assessments-for-admins) for the steps).
 
 <img src="user-guide/today-guest.png" width="210" alt="A guest's Today, with the Today, Calendar and Me tabs">
 <img src="user-guide/guest-details-check.png" width="210" alt="A guest's Your details with the optional Working With Children Check">
-<img src="user-guide/member-guest-check.png" width="210" alt="An admin recording an optional check on a guest's member page">
+<img src="user-guide/member-guest-check.png" width="210" alt="An admin recording an optional check on a guest's Checks tab">
 
 ### Statisticians
 
@@ -3366,9 +3418,9 @@ is missing or expired, otherwise amber (**Expiring**, **Validate** or **Register
 
 Tapping a to-do about members takes you to the job, not the whole member list. When it's about one
 person, such as one join request or one athlete with no date of birth, their page opens straight
-away with a **To do** card at the top saying what to do, scrolled to the part you need: the date of
-birth, the Working With Children Check, Screening Unit notices, parents and guardians, the physio
-title or **Delete member**. A join request opens on its summary: the checks, then **Approve** (see
+away on the tab that holds the job, with a **To do** card saying what to do just above the part you need: the date of
+birth, the Working With Children Check or Screening Unit notices on **Checks**, parents and guardians on **Family**, the physio
+title on **Roles** or **Delete member** on **Overview** (see [A member's page](#a-members-page)). A join request opens on its summary: the checks, then **Approve** (see
 [Approving members](#approving-members)).
 When it's about several people, it opens a list of just them, with why each is there; tap one to
 open their page the same way, and come back for the next. **Show all members** opens the full
@@ -3378,8 +3430,8 @@ member isn't in the club any more.
 
 <img src="user-guide/todo-members-list.png" width="210" alt="Approve 2 join requests opens just the two people waiting, with what to do">
 <img src="user-guide/todo-member-join.png" width="210" alt="One join request opens that request's summary, with a To do card above the checks">
-<img src="user-guide/todo-member-dob.png" width="210" alt="A to-do to add one athlete's date of birth opens their page at Date of birth, with the To do card just above it">
-<img src="user-guide/todo-member-done.png" width="210" alt="An old join request to-do for someone already approved says Done">
+<img src="user-guide/todo-member-dob.png" width="210" alt="A to-do to add one athlete's date of birth opens their page on Checks, at Date of birth, with the To do card just above it">
+<img src="user-guide/todo-member-done.png" width="210" alt="An old join request to-do for someone already approved says Done, above Overview">
 <img src="user-guide/todo-members-all-done.png" width="210" alt="Checks to sort out after someone else sorted them says All done">
 
 **Nobody can endorse Jordan's clearance** (or **Nobody can endorse
@@ -3448,6 +3500,52 @@ isn't part of the invite, so share it separately.
 
 <img src="user-guide/invite.png" width="210" alt="Invite members: QR code, club code and invite link">
 
+### A member's page
+
+Open anyone from **Members**, from the search on the **Club** tab or from a to-do, and their page
+opens. Only admins can open it. On a tablet on its side, a member opened from **Members** shows
+beside the list: saving closes their page and the list already shows what changed (see [Using HQ
+on a tablet](#using-hq-on-a-tablet)). The page is in tabs, so each job is a tap away and not a
+long scroll:
+
+- **Above the tabs**, one line says who they are: "Approved · Coach, Guardian · Mixed Open Squad",
+  "Pending · Asked to join as an athlete · Mixed Open Squad" or "Rejected · Not registered with
+  the club". When their roles are paused, a bold line under it says so on every tab: "Stood down
+  since Mon, 12 Oct 2026. Paused: Coach.", or "Paused: Coach. They can't use this role until their
+  Working With Children Check is sorted out." Tap it to open **Checks**.
+- **Overview** opens first. **Needs attention** lists what there is to sort out for this person,
+  most pressing first: the same reasons **Needs checking** shows under their name in the member
+  list, a link code waiting for your answer, and, for someone not approved yet, what has to be
+  right before you approve them. Each line names the tab it is sorted out on; tap it to go there.
+  With nothing to do it says "Nothing needs attention". Under it are their details: preferred
+  name, sign-in email, PlayHQ email, how they were verified, the date of birth and guardian email
+  they gave and what they asked for. **Remove access** (or **Don't approve**) and **Delete
+  member** are at the end of Overview, under the save button.
+- **Roles** has their **Role**, **Other roles**, a temporary helper's task and dates, their
+  **Title** or **Physio title**, and their **Squads** and **Teams** with their role, head or
+  assistant coach and selection in each.
+- **Checks** has **Verify who they are**, their **Date of birth**, their **Working With Children
+  Check** (the card, its validation, a card they sent in, exemptions and a check applied for),
+  **Screening Unit notices** and **Stand down**. The card and the choices come first: who needs a
+  check, and the links to the rules, are folded under **Who needs a check, and the rules**.
+- **Family** has an athlete under 18's **Parents and guardians** and the parents who entered
+  their link code. For a parent or guardian it has **Children who won't use the app**, **Guardian
+  of** and **Children whose code they entered**.
+- **History** has **Who has viewed their records**, the **Guardian link history** and **Earlier
+  exemptions**.
+
+Everyone has Overview and Roles. Checks, Family and History show only when they hold something
+for this member, so no tab is empty: an adult athlete has no Family tab, and a coach has no
+History until there is some.
+
+**Save changes** (or **Approve**) is under every tab and saves the whole page at once, whichever
+tab you're on. Move between tabs as you like: what you chose or typed on one tab stays while you
+look at another, and nothing is saved until you tap the button. If something can't be saved, the
+page opens the tab that holds it and says why above the button.
+
+<img src="user-guide/member-overview.png" width="210" alt="A stood-down coach's page on Overview: Approved, Coach above the tabs, the stood-down line in bold, then Needs attention with two lines that open Checks, and their details">
+<img src="user-guide/member-overview-child.png" width="210" alt="A locked child's page with all five tabs: Needs attention lists Locked and a parent who entered their link code, both opening Family">
+
 ### Approving members
 
 **Members** lists everyone, grouped into **Waiting for approval**, **Parents asking to be linked**,
@@ -3473,8 +3571,9 @@ confirmed, lapsed or stopped by a notice (a visitor or national event exemption 
 shows once it has ended; a temporary helper shows only between their first and last day), someone who is stood down, an athlete under 18 locked out
 because no verified parent or guardian is linked ("Locked: no verified parent or guardian
 linked"), an athlete with no date of birth, an athlete about to turn 18, a card never validated or
-validated over a year ago, or a card not registered with the club. They also show "Needs checking" in the main list. Open someone to fix it; once saved,
-they drop off the list.
+validated over a year ago, or a card not registered with the club. They also show "Needs checking" in the main list. Open someone to fix it: **Needs
+attention** on their page lists the same reasons, and each opens the tab where it's sorted out.
+Once saved, they drop off the list.
 
 In the waiting list, "Says they're under 18" marks an athlete whose date of birth makes them a
 child, and each request says who entered whose link code: "Sam Lee entered their code" under a
@@ -3514,7 +3613,8 @@ it:
   rules still refuse shows in red and nothing is saved.
 - **Don't approve** shows the reasons. Choose one, which the member sees, and tap **Don't
   approve** again.
-- **Full record** opens the member's whole page, for anything else: another role, a different
+- **Full record** opens the member's whole page, on **Overview** (see [A member's
+  page](#a-members-page)), for anything else: another role, a different
   squad or team, a different date of birth, linking a parent by hand, a Working With Children
   Check or exemption, recording that you sighted ID, or deleting the request. **Back to the
   request's summary**, at the top of the full record, returns with what you changed. When a check
@@ -3535,24 +3635,24 @@ decline their request." Decline it (choose **Other** as the reason)
 and let their family know. Members approved before this rule keep their approval. From their 13th
 birthday they can ask again.
 
-In the full record, which also shows the person's sign-in email, PlayHQ email, the date of birth
+In the full record, where **Overview** also shows the person's sign-in email, PlayHQ email, the date of birth
 they gave, the guardian email an athlete under 18 gave and what they asked for:
 
-1. Choose their **Role**.
-2. Choose their **Squads** and, once teams are named, **Teams**. An athlete is in one squad and
+1. On **Roles**, choose their **Role**.
+2. Still on **Roles**, choose their **Squads** and, once teams are named, **Teams**. An athlete is in one squad and
    one team a season: picking another squad or team for an athlete moves them out of the one they
    were in (and out of the old squad's teams). Coaches, managers and physios can be in several.
    For coaches, choose **Head Coach** or **Assistant Coach** for each group. For athletes in a team, choose **Final team athlete** or
    **Training partner**. For physios, choose **Physio** or **Head Physio** under **Physio title**,
    and place them in the squads or teams they look after. Only the Head Physio looks after every
    athlete; a physio in no squad or team sees no athletes.
-3. For athletes and guests, check their date of birth against PlayHQ or ID. **Date of birth** starts with the
+3. On **Checks**, for athletes and guests, check their date of birth against PlayHQ or ID. **Date of birth** starts with the
    date they entered when they asked to join, marked as theirs and not yet checked; it's saved as
    the checked date, with your name, only when you save their page. If PlayHQ or ID shows a
    different date, type the right one (DD/MM/YYYY) and the page notes the one they gave. If you
    clear the field, **Use the date they entered** puts theirs back. The page shows who recorded the
    date and when. A guest has to be 18 or over, and the page says so under a date that makes them
-   younger. An athlete under 18 gets a **Parents and guardians** section. You can approve a child
+   younger. An athlete under 18 gets a **Family** tab with **Parents and guardians**. You can approve a child
    before a parent or guardian is linked: their app stays locked, showing only their link code,
    until a verified one is, and the section says **Locked** while it is. Each parent or guardian
    who entered the child's code is listed there: tap **Link them** once they're approved and
@@ -3561,7 +3661,7 @@ they gave, the guardian email an athlete under 18 gave and what they asked for:
    search started from the email the child gave: tap a guardian to link them (tap ✕ to unlink).
    Each match shows their email, to tell apart two parents with the same name. Only verified
    guardians can be linked; unverified ones show "(not verified)".
-4. For coaches, managers, physios, temporary helpers, committee members and admins, enter their **Working With Children
+4. On **Checks**, for coaches, managers, physios, temporary helpers, committee members and admins, enter their **Working With Children
    Check** card number and expiry date. Cards last three years, so a later expiry is refused. Once
    the card is saved, **Validation** records checking it: enter the **Name on the card**, choose
    how you checked it (**Checked online** on the Screening Unit's website, **Card sighted** or
@@ -3586,7 +3686,7 @@ they gave, the guardian email an athlete under 18 gave and what they asked for:
    exemption declaration (a temporary helper sees **Read the declaration** in their steps), and
    their role starts when they do. The page shows where it's up to and
    who recorded it. Choosing **Has a check** again ends the exemption; every exemption stays on
-   their page and in the report.
+   their page (ended ones under **Earlier exemptions** on **History**) and in the report.
 
    For someone who doesn't normally live in WA, choose **Short-term visitor** and enter the **Day
    they arrived in WA**, or **National event or tour** and enter its **First day**, the **Event or
@@ -3594,7 +3694,7 @@ they gave, the guardian email an athlete under 18 gave and what they asked for:
    days in a row from the event's first day, and ends by itself. The app refuses a visitor or
    national event exemption for someone who has used either one in the 12 months before or after,
    counting from when they accepted it and it started; one replaced before its first day doesn't
-   count. **Read the rules at the source** links to the Working with Children (Screening) Act, the
+   count. Tap **Who needs a check, and the rules**, above the choices, to read the rule in words; under it, **Read the rules at the source** links to the Working with Children (Screening) Act, the
    Screening Unit's guide to who needs a check, and its fact sheets on national events and tours,
    parent volunteers, who can't use an exemption, and sport and recreation, and to its page on
    applying, and working while an application is assessed.
@@ -3615,11 +3715,11 @@ they gave, the guardian email an athlete under 18 gave and what they asked for:
    record an application lodged before the notice. **Open the receipt** shows it in the app. You
    can't record or confirm your own; ask another admin. Ended applications stay listed under
    **Earlier** and in the report.
-5. For a **Temporary helper**, check **What they'll help with** and their **First day** and
+5. For a **Temporary helper**, on **Roles**, check **What they'll help with** and their **First day** and
    **Last day**. The page shows what they said about their check, the card number they gave and
    when they accepted the club's policies. Tap **Save for now** to record their card or exemption
    while you wait for them to accept it.
-6. Tap **Approve**.
+6. Tap **Approve**, which is under every tab.
 
 The app won't approve or save:
 
@@ -3667,7 +3767,8 @@ member's: the day after a recorded check expires, or from the club's statisticia
 
 <img src="user-guide/admin-children-injuries-closed.png" width="210" alt="An admin's Today saying they can't see under 18s' injuries until their check is recorded">
 
-**Verifying someone.** Guardians must be verified before they can be approved or linked to a child. Get the
+**Verifying someone.** Guardians must be verified before they can be approved or linked to a child. On **Checks**, under
+**Verify who they are**: get the
 6-digit code from their app yourself (it shows while they wait for approval, and for a
 guardian until they're verified), in person or over a channel you already trust, enter
 it under **Their code** and tap **Check code**. Or, under **How you checked**, choose **Matched to
@@ -3679,7 +3780,7 @@ you checked under **What you checked**, and tap **Record check**. The member the
 needs a check can send in their own card from **Today** (see [Sending in your own
 check](#sending-in-your-own-check)). Your to-do list shows **Check N Working With Children Checks
 members sent in**, which opens just those members, and **Needs checking** marks them "Sent in a
-card to check". On the member's page, **Card they sent in** shows the card number, expiry, name on
+card to check". On the member's **Checks** tab, **Card they sent in** shows the card number, expiry, name on
 the card and when they sent it. Check it with the Screening Unit, correct the **Name on the card**
 if needed, choose how you checked it, switch on **Registered card with** your club if you have,
 and tap **Accept and validate**. That records the card and your validation together, so their
@@ -3687,15 +3788,15 @@ paused role comes back only once you've checked it. Or tap **Send it back** with
 what to fix; they see the note and a to-do to send it again. You can't accept or send back your
 own card: another admin does. A card you record by hand closes the one they sent.
 
-**Linking guardians.** Linking or unlinking a guardian takes effect when you save. Add a **Reason for
+**Linking guardians.** On the child's **Family** tab, linking or unlinking a guardian takes effect when you save. Add a **Reason for
 the change** if there is one, such as a parenting order you've seen; only admins see it. When you
 save, the child's guardians, and the child if they're 13 or over, get a message naming the
-guardian and you, without the reason. **Guardian link history** on the child's page, and on the
+guardian and you, without the reason. **Guardian link history**, on the **History** tab of the child's page and of the
 guardian's, lists every link and unlink with who made it, when and why. If you're one of the
 child's guardians, or you entered the child's code yourself, another admin has to change who their
 guardians are or answer your request.
 
-A parent or guardian's page lists their children under **Guardian of**, each with their date of
+A parent or guardian's **Family** tab lists their children under **Guardian of**, each with their date of
 birth and squads and teams, and under **Children whose code they entered** each child waiting to be
 linked, with **Link them** (once the parent is approved and verified) and **Not their parent**.
 
@@ -3705,40 +3806,42 @@ Every admin gets a **Club safeguarding** message naming the child and the parent
 and the child shows under **Needs checking** until another verified parent or guardian is linked.
 
 **Who has viewed their records.** An approved athlete under 18's page has **Who has viewed their
-records**: everyone other than the athlete and their guardians who opened their injuries, injury
+records** on its **History** tab: everyone other than the athlete and their guardians who opened their injuries, injury
 documents, check-ins, game goals, season KPIs, named survey answers or member record, with their role and when, newest first. Opening
 a child's member page is itself recorded, so your own views are listed too. The child's verified
 parents and guardians see the same list from their **Family** tab.
 
-<img src="user-guide/records-admin.png" width="210" alt="A child's member page with Who has viewed their records">
+<img src="user-guide/records-admin.png" width="210" alt="The History tab of a child's member page, with Who has viewed their records">
 
 When an athlete turns 18 their guardians lose access to them that day (injuries, check-ins, goals,
 certificates and the cards in their Family tab); the next time you save the athlete the links are removed.
 
-To turn someone down, choose a reason (**PlayHQ email doesn't match**, **Not registered with the
+To turn someone down from the full record, go to the end of **Overview**, choose a reason (**PlayHQ email doesn't match**, **Not registered with the
 club** or **Other**) and tap **Don't approve**. They see the reason and can request again.
 
 <img src="user-guide/members.png" width="210" alt="Members list with Needs checking at the top">
 <img src="user-guide/members-inactive.png" width="210" alt="Members list with a member under No team or role for 2 years, showing when they were last active">
-<img src="user-guide/member-approve.png" width="210" alt="Approving a guardian's request">
-<img src="user-guide/member-new.png" width="210" alt="The full record of an athlete's request: Back to the request's summary at the top, then their details and Role">
+<img src="user-guide/member-approve.png" width="210" alt="A parent's request on the Checks tab of the full record: Verify who they are, Their code and Check code, with Approve underneath">
+<img src="user-guide/member-new.png" width="210" alt="The full record of an athlete's request, on Overview: Back to the request's summary at the top, what needs attention before approving, then their details and Approve">
 
-<img src="user-guide/member-date-of-birth.png" width="210" alt="A child's request, with the date of birth they gave and the role and squad they asked for">
-<img src="user-guide/member-date-checked.png" width="210" alt="Date of birth started from the date the child gave, marked to check against PlayHQ or ID, with the guardian search started from the email the child gave">
-<img src="user-guide/member-under-18.png" width="210" alt="Athlete under 18 with date of birth and guardians linked">
-<img src="user-guide/member-link-request.png" width="210" alt="A locked child's page, with the parent who entered their code waiting for approval">
-<img src="user-guide/member-link-parent.png" width="210" alt="A parent's page, with the child whose code they entered, their date of birth and squad">
-<img src="user-guide/member-guardian.png" width="210" alt="Guardian showing their athlete, waiting to be verified">
-<img src="user-guide/member-verify-id.png" width="210" alt="Recording that you sighted a guardian's ID, with what you checked">
-<img src="user-guide/member-guardian-history.png" width="210" alt="Unlinking a guardian with a reason, and the guardian link history">
-<img src="user-guide/member-wwcc.png" width="210" alt="Coach with Working With Children Check fields">
+<img src="user-guide/member-date-of-birth.png" width="210" alt="The Roles tab of a child's request, with the role and squad they asked for chosen">
+<img src="user-guide/member-date-checked.png" width="210" alt="The Checks tab of a child's request: Date of birth started from the date the child gave, marked to check against PlayHQ or ID">
+<img src="user-guide/member-guardian-search.png" width="210" alt="The Family tab of a child's request, with the guardian search started from the email the child gave">
+<img src="user-guide/member-under-18.png" width="210" alt="An athlete under 18's Family tab with their guardian linked">
+<img src="user-guide/member-link-request.png" width="210" alt="A locked child's Family tab, with the parent who entered their code waiting for approval">
+<img src="user-guide/member-link-parent.png" width="210" alt="A parent's Family tab, with the child whose code they entered, their date of birth and squad">
+<img src="user-guide/member-guardian.png" width="210" alt="A guardian's Family tab, with the child they are linked to under Guardian of">
+<img src="user-guide/member-verify-id.png" width="210" alt="Recording on Checks that you sighted a guardian's ID, with what you checked">
+<img src="user-guide/member-guardian-history.png" width="210" alt="Unlinking a guardian on the child's Family tab, with a reason">
+<img src="user-guide/member-history.png" width="210" alt="A child's History tab: Who has viewed their records, then the Guardian link history">
+<img src="user-guide/member-wwcc.png" width="210" alt="A coach's Checks tab with the Working With Children Check fields, and the rules folded to one line above them">
 <img src="user-guide/member-wwcc-exempt.png" width="210" alt="Committee member exempted from the Working With Children Check, with the reason">
 <img src="user-guide/member-wwcc-admin.png" width="210" alt="An admin who needs a Working With Children Check, with the Exempt choice">
 <img src="user-guide/member-wwcc-validation.png" width="210" alt="Validating a card: name on the card, how it was checked and whether it is registered with the club">
 <img src="user-guide/member-wwcc-sent.png" width="210" alt="A card a paused coach sent in, with Accept and validate and Send it back">
 <img src="user-guide/member-volunteer-exempt.png" width="210" alt="A manager recorded as a parent volunteer, waiting to accept the declaration">
 <img src="user-guide/member-volunteer.png" width="210" alt="A temporary helper waiting for approval: their task, dates and what they said">
-<img src="user-guide/member-visitor-exempt.png" width="210" alt="Recording a national event exemption, with the links to the rules at the source">
+<img src="user-guide/member-visitor-exempt.png" width="210" alt="Recording a national event exemption on Checks">
 <img src="user-guide/member-wwcc-application.png" width="210" alt="Recording a coach's lodged Working With Children Check application with its receipt">
 <img src="user-guide/member-wwcc-application-open.png" width="210" alt="A coach's application in force, with Still being assessed and It's ended">
 <img src="user-guide/member-physio.png" width="210" alt="A physio placed in two squads">
@@ -3754,17 +3857,17 @@ a parent who is verified.
 1. A parent asks, when they join or from **Add another child** in their **Family** tab, with the child's name, date of birth and
    squad or team. In **Members** they show under **Waiting for approval** or **Parents asking to be
    linked**, with "Asked to add Sam Small, who won't use the app".
-2. Open the parent's page and verify who they are, as for any parent.
-3. Under **Children who won't use the app**, tap **Check and add** beside the child. Check their
+2. Open the parent's page and verify who they are on **Checks**, as for any parent.
+3. On **Family**, under **Children who won't use the app**, tap **Check and add** beside the child. Check their
    name and date of birth against PlayHQ, and that this parent is their parent or guardian. Choose
    their squads and teams (a team's squad is added with it), then tap **Add child**. Or tap **Turn
    down** if PlayHQ doesn't match.
 4. The child is approved as an athlete and linked to the parent, and a parent still waiting is
    approved with them. The parent follows the child into their squads and teams.
 
-You can also tap **Add a child who won't sign in** on any verified parent's page, with no request.
+You can also tap **Add a child who won't sign in** on any verified parent's **Family** tab, with no request.
 A child added this way can be under 13, has no email and can't sign in, and can only ever be an
-athlete. Their page says so under **Sign-in email**, and **Members** and registers show **No app**
+athlete. Their page says so under **Sign-in email** on **Overview**, and **Members** and registers show **No app**
 beside their name. Add a second parent from the child's page, as for any child. You can't add your
 own child: another admin does.
 
@@ -3772,14 +3875,14 @@ own child: another admin does.
 
 ### Changing or removing members
 
-Open any member to change their role, squads, teams or titles, then tap **Save changes**. A
+Open any member and go to **Roles** to change their role, squads, teams or titles, then tap **Save changes**. A
 committee member's or admin's page has a **Title** field (President, Secretary and so on), which
 shows on their **Today** and in the Members list. Other members don't have this field. A coach's
 or manager's title is set by the app from their teams, or their squad until they're in a team, and
 shows under their squads and teams as "Their title in the app"; choose **Head Coach** or
 **Assistant Coach** for each group under **Head or assistant coach in**. A physio's page has **Physio title**, where
 you can make them the **Head Physio**; it shows as "Head Physio" on their **Today** and in the
-Members list. The card at the top shows their **Preferred
+Members list. **Overview** shows their **Preferred
 name** if they've set one.
 
 **Other roles** adds roles on top of their main one, such as Coach for an athlete who also coaches
@@ -3795,8 +3898,8 @@ it goes when their child leaves the team. For a coach whose child plays in a tea
 that team's coach makes them its coach instead. Saving a member's page changes only the squads and
 teams you changed, so their parents' **What's changed** lists only real moves.
 
-- **Remove access** stops someone using the app but keeps their account. Choose a reason first.
-- **Stand down** is for when someone must be kept away from children straight away, for example
+- **Remove access**, at the end of **Overview**, stops someone using the app but keeps their account. Choose a reason first.
+- **Stand down**, on **Checks**, is for when someone must be kept away from children straight away, for example
   when the Working with Children Screening Unit sends an interim negative notice or a negative
   notice, an interstate decision bars them, or an allegation is being looked into. Choose the
   reason (and write it down for **Other**), then tap **Stand down now**. Their coach, manager,
@@ -3806,11 +3909,11 @@ teams you changed, so their parents' **What's changed** lists only real moves.
   stay with the squad or team. Messages they got as a coach, manager, physio, committee member or
   admin go from their inbox too. Their athlete and guardian roles carry on, so a parent still sees
   their own child, whole-club messages and the messages that reached them as a parent or athlete. **Today** says their role is paused and to talk to a club admin. Only
-  admins see the reason. **Lift stand-down** ends it and puts back their places in this season's
+  admins see the reason. While they're stood down their page says so above the tabs, with the roles that are paused; tap that line to open **Checks**. **Lift stand-down** ends it and puts back their places in this season's
   squads and teams. Every stand-down is kept on their page and in the Working With Children Checks
   report, with who started and lifted it, even if the member is later deleted. You can't stand
   yourself down.
-- **Screening Unit notices** records every notice the Working with Children Screening Unit sends
+- **Screening Unit notices**, on **Checks**, records every notice the Working with Children Screening Unit sends
   about a member: choose the kind (**Interim negative notice**, **Negative notice**, **Interstate
   decision**, **Card cancelled or suspended** or **Other notice**), the date it arrived and what
   the club did, then tap **Record notice**. Any kind but **Other notice** stands them down straight
@@ -3818,7 +3921,7 @@ teams you changed, so their parents' **What's changed** lists only real moves.
   writing, then enter the date and tap **Governing body told**; until you do, it stays on your
   to-do list. Notices are kept on their page and in the Working With Children Checks report. You
   can't record a notice about yourself.
-- **Delete member** permanently deletes their account, details, squad and team places and guardian
+- **Delete member**, at the end of **Overview**, permanently deletes their account, details, squad and team places and guardian
   links. The club's safeguarding records about them stay, under the name they had: their
   attendance, training certificates, message receipts, consents, code of conduct acceptances,
   policy acknowledgements, exemptions (ended on the day), stand-downs, Screening Unit notices, and
@@ -3829,14 +3932,14 @@ teams you changed, so their parents' **What's changed** lists only real moves.
   them. The member is only told to contact an admin. In the attendance report and a message's read receipts they show with "(deleted)" after
   their name.
 
-<img src="user-guide/member-title.png" width="210" alt="A committee member’s page with their roles and title">
-<img src="user-guide/member-coach-title.png" width="210" alt="A coach's squads and teams, head or assistant coach in each, and the title the app gives them">
+<img src="user-guide/member-title.png" width="210" alt="A committee member's Roles tab with their other roles and title">
+<img src="user-guide/member-coach-title.png" width="210" alt="A coach's teams on Roles, head or assistant coach in each, and the title the app gives them">
 <img src="user-guide/members-titles.png" width="210" alt="Members list with committee and coach titles">
-<img src="user-guide/member-roles.png" width="210" alt="An athlete who also coaches: other roles and their role in each squad">
-<img src="user-guide/delete-member.png" width="210" alt="Delete member confirmation">
-<img src="user-guide/member-stand-down.png" width="210" alt="Standing a coach down, with the reasons to choose from">
-<img src="user-guide/member-stood-down.png" width="210" alt="A stood-down coach's page with Lift stand-down and an earlier stand-down">
-<img src="user-guide/member-screening-notice.png" width="210" alt="A Screening Unit notice waiting for the governing body to be told">
+<img src="user-guide/member-roles.png" width="210" alt="An athlete who also coaches, on Roles: other roles and their role in each squad">
+<img src="user-guide/delete-member.png" width="210" alt="Delete member confirmation, at the end of Overview">
+<img src="user-guide/member-stand-down.png" width="210" alt="Standing a coach down on Checks, with the reasons to choose from">
+<img src="user-guide/member-stood-down.png" width="210" alt="A stood-down coach's Checks tab, with the line above the tabs, Lift stand-down and an earlier stand-down">
+<img src="user-guide/member-screening-notice.png" width="210" alt="A Screening Unit notice on Checks, waiting for the governing body to be told">
 
 ### Squads, teams and selections
 
@@ -3955,8 +4058,8 @@ past awards under **Start from a past award** to fill in its settings, then ente
 **Description** (what voters should think about).
 
 The rest of the form is in sections. Each one shows a one-line summary of what it is set to; tap
-it to open it and change the settings. A section opens by itself, with its summary in colour,
-when something in it needs a look. If **Save award** is greyed out, the line above it says what's
+it to open it and change the settings. A section opens by itself, with its summary in bold and a
+**!** in a circle, when something in it needs a look. If **Save award** is greyed out, the line above it says what's
 still needed.
 
 - **Season and closing date**: the season, and when **Voting closes**. Pick the day on the
@@ -3974,7 +4077,7 @@ still needed.
   definition of the award, such as Rising Star. Enter a **Minimum age**, a **Must be under** age,
   or both: minimum 16 and under 21 means nominees aged 16 to 20. Then choose when ages are
   measured: **The day voting closes**, or **A day I choose** such as 1 January. Only people with a
-  date of birth can be voted for, so the award's page says in colour how many possible nominees
+  date of birth can be voted for, so the award's page says in bold, with a **!** in a circle, how many possible nominees
   have none: add it on their page in **Members**. The ages can't change once anyone has voted.
 - **Ballot**: **One vote**, **3-2-1 votes** or **5-4-3-2-1 votes**. For awards with a winner for
   each group, **When people vote**: **Once, before it closes**, or **After every match**, using
@@ -3994,7 +4097,7 @@ games linked to the exact squads and teams it names. For example, if "West Coast
 linked to **Mixed Open A**, an award for **Mixed Open Squad** gets no match votes for those games:
 choose **Mixed Open A** in the award, or change the link under **Fixtures**. A team's games don't
 count for its squad, or the other way round. The award form shows how many PlayHQ games each
-chosen squad or team has, and warns in colour when it has none. Each award's page shows the next
+chosen squad or team has, and warns in bold, with the same mark, when it has none. Each award's page shows the next
 match for each squad or team, or says that none are linked.
 
 **Duplicate** on an award opens a new award with the same settings, ready for this season, so
@@ -4244,7 +4347,8 @@ current check, a check application in force or a volunteer exemption read the Wo
 Children Checks, Medical details checks, Integrity training, Attendance and Award results reports
 too, from **Reports** in their **Club** tab, read only (see [Reports for the
 committee](#reports-for-the-committee)). Each one shows on screen with its totals, and **Export PDF** saves the same report as a PDF through the share sheet (on a
-computer it downloads), ready for the committee, an audit or OneDrive. The PDF has the club's
+computer it downloads), ready for the committee, an audit or OneDrive. On screen, a row that
+needs attention has a **!** in a circle beside its name. The PDF has the club's
 name, the date it was made and page numbers, and anything that needs attention is in red.
 
 - **Working With Children Checks**: printed across the page, with the WWC Registration Officer
@@ -4929,7 +5033,9 @@ handle concerns have neither the panel nor the card.
 <img src="user-guide/concerns-lights.png" width="210" alt="The Concerns card in the Club tab: 1 new in red, 2 in progress in orange, 1 closed in the last 4 weeks in green">
 
 Open a concern to see what was raised, by whom (unless they hid their name), how to contact them,
-and where it was raised from. A concern raised with **Report this message** shows the **Reported
+and where it was raised from. On a tablet on its side the concern opens beside the register; none
+is open until you tap one, and what you record shows in the register straight away (see [Using HQ
+on a tablet](#using-hq-on-a-tablet)). A concern raised with **Report this message** shows the **Reported
 message** in full: who sent it, when, and exactly what it said. This is the concern's own copy, kept
 with the concern for good, so it stays the same if the message is later removed. Hiding the
 reporter's name works the same as for any concern. While a concern that may involve a child's safety is open and hasn't been referred, a red note at the top says to refer child abuse or a serious crime to Police and the

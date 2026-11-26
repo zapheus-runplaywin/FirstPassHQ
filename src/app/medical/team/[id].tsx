@@ -2,6 +2,7 @@ import { router, Stack, useFocusEffect, useLocalSearchParams } from 'expo-router
 import { useCallback, useState } from 'react';
 
 import { Screen } from '@/components/screen';
+import { StatusLine } from '@/components/status-line';
 import { ThemedText } from '@/components/themed-text';
 import { Card, ErrorText, PressableCard } from '@/components/ui';
 import { teamMedicalLine, type TeamMedicalRow } from '@/lib/medical';
@@ -56,9 +57,7 @@ export default function TeamMedicalScreen() {
               key={row.athlete_id}
               onPress={() => router.push({ pathname: '/medical/[id]', params: { id: row.athlete_id } })}>
               <ThemedText type="smallBold">{row.athlete_name}</ThemedText>
-              <ThemedText type="small" themeColor={row.has_contacts ? 'textSecondary' : 'tint'}>
-                {teamMedicalLine(row)}
-              </ThemedText>
+              <StatusLine text={teamMedicalLine(row)} tone={row.has_contacts ? 'quiet' : 'attention'} />
             </PressableCard>
           ) : (
             <Card key={row.athlete_id}>

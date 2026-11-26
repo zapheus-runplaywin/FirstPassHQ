@@ -1,4 +1,4 @@
-import { openApp, openTab } from '../support/app';
+import { memberTab, openApp, openTab } from '../support/app';
 import { eq } from '../support/fake-supabase';
 import { openSquad, samplePeople } from '../support/people';
 import { expect, test } from '../support/test';
@@ -151,7 +151,12 @@ test('the full record opens at its top from the foot of a request’s summary, a
   // The full record starts at its top, where the way back is.
   const back = page.getByRole('button', { name: 'Back to the request’s summary', exact: true });
   await expect(back).toBeInViewport();
+  // It opens on Overview; their roles are a tab away.
+  await expect(memberTab(page, 'Overview')).toHaveAttribute('aria-selected', 'true');
+  await expect(page.getByText('Other roles', { exact: true })).toBeHidden();
+  await memberTab(page, 'Roles').click();
   await expect(page.getByText('Other roles', { exact: true })).toBeVisible();
+  await memberTab(page, 'Overview').click();
   await back.click();
   await expect(request.getByText('Asked to join as an athlete · Mixed Open Squad')).toBeInViewport();
   expect(backend.rpcCalls('admin_save_member')).toHaveLength(0);

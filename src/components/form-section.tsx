@@ -1,6 +1,7 @@
 import { useState, type ReactNode } from 'react';
 import { Pressable, StyleSheet, View } from 'react-native';
 
+import { StatusLine } from '@/components/status-line';
 import { ThemedText } from '@/components/themed-text';
 import { Spacing } from '@/constants/theme';
 import { useTheme } from '@/hooks/use-theme';
@@ -18,7 +19,7 @@ export function FormSection({
 }: {
   title: string;
   summary: string;
-  /** Shows the summary in the accent colour, for something that needs a look. */
+  /** Shows the summary in bold with a mark, for something that needs a look. */
   attention?: boolean;
   initiallyOpen?: boolean;
   children?: ReactNode;
@@ -43,9 +44,7 @@ export function FormSection({
         ]}>
         <View style={styles.flex}>
           <ThemedText type="smallBold">{title}</ThemedText>
-          <ThemedText type="small" themeColor={attention ? 'accent' : 'textSecondary'}>
-            {summary}
-          </ThemedText>
+          <StatusLine text={summary} tone={attention ? 'attention' : 'quiet'} />
         </View>
         {canOpen ? (
           <ThemedText style={styles.chevron} themeColor="textSecondary">

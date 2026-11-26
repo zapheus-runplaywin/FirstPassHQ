@@ -37,6 +37,7 @@ import {
   settle,
   TEAM,
   TODAY,
+  toneOf,
   type Persona,
   type PersonaName,
 } from './helpers/harness';
@@ -209,6 +210,9 @@ describe('the survey list', () => {
       mine({ id: 'd', title: 'Named one', identity: 'named', responded: true, is_open: false }),
     ]);
     expect(screen.getByText('Not answered yet')).toBeTruthy();
+    // Only the one still to answer is marked.
+    expect(toneOf(screen.getByText('Not answered yet'))).toBe('attention');
+    expect(screen.getAllByText('✓ You’ve answered').map(toneOf)).toEqual(['plain', 'plain']);
     expect(screen.getAllByText('✓ You’ve answered')).toHaveLength(2);
     expect(screen.getByText('You didn’t answer')).toBeTruthy();
     expect(screen.getAllByText(`Anonymous · Open until ${closesDay}`)).toHaveLength(2);

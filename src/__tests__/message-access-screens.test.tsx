@@ -33,6 +33,7 @@ import {
   personas,
   resetClub,
   settle,
+  toneOf,
   type Persona,
   type PersonaName,
 } from './helpers/harness';
@@ -359,6 +360,7 @@ describe('the requests list', () => {
     );
     expect(screen.getByText('R-0003 · concern C-0007')).toBeTruthy();
     expect(screen.getByText('For you to answer')).toBeTruthy();
+    expect(toneOf(screen.getByText('For you to answer'))).toBe('attention');
     expect(screen.getByText('Refused')).toBeTruthy();
     expect(screen.getByText('Approved · 23 hours left')).toBeTruthy();
     expect(screen.getByText(/Requests and who read what are kept for good\./)).toBeTruthy();
@@ -448,6 +450,7 @@ describe('one request', () => {
     expect(screen.getByText(/^Asked by: Sample Officer \(Child Safety Officer\)/)).toBeTruthy();
     expect(screen.getByText('Why: Check what was sent to the squad at night')).toBeTruthy();
     expect(screen.getByText('Waiting for an answer')).toBeTruthy();
+    expect(toneOf(screen.getByText('Waiting for an answer'))).toBe('attention');
   });
 
   it('gives no answer buttons to someone who can’t answer it, such as the requester', async () => {

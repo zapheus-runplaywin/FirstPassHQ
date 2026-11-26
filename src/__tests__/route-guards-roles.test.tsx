@@ -382,6 +382,21 @@ describe('the route table', () => {
     }
   });
 
+  // On a tablet these lists show the item's own screen beside them, with no
+  // guard between the two (src/components/list-detail.tsx). So nobody who
+  // opens the list may be someone the item's screen turns away. Each side of
+  // the table is checked against the real guards below. Members and a
+  // member's page are both Administration screens (route-guards.test.tsx).
+  it.each([
+    ['(tabs)/messages', 'messages/[id]'],
+    ['injuries/index', 'injuries/[id]'],
+    ['attendance/index', 'attendance/[id]'],
+    ['concerns/index', 'concerns/[id]'],
+  ])('opens %s for nobody its item beside it, %s, turns away', (list, item) => {
+    expect(WHO_OPENS[list].length).toBeGreaterThan(0);
+    for (const p of WHO_OPENS[list]) expect(WHO_OPENS[item]).toContain(p);
+  });
+
   it('considers every kind of member', () => {
     // The kinds in docs/testing-strategy.md, all signed in.
     expect(SIGNED_IN).toEqual(

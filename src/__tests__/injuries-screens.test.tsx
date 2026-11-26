@@ -12,7 +12,8 @@
  * back for the committee and admins, and sharing documents only for whoever
  * is accepting the clearance.
  */
-import { fireEvent, screen } from 'expo-router/testing-library';
+import { router } from 'expo-router';
+import { fireEvent, screen, within } from 'expo-router/testing-library';
 
 import InjuriesScreen from '@/app/injuries/index';
 import InjuryScreen from '@/app/injuries/[id]';
@@ -21,10 +22,12 @@ import type { Injury, InjuryDocumentEvent, InjuryUpdate } from '@/lib/types';
 
 import {
   morePersonas,
+  onATablet,
   openScreen,
   personas,
   resetClub,
   settle,
+  toneOf,
   type BackendOptions,
   type Persona,
   type PersonaName,
@@ -172,6 +175,7 @@ describe('the injuries list', () => {
       injury({ status: 'clearance_requested', waiting_for_me: true }),
     ]);
     expect(screen.getAllByText('Waiting for your sign-off')).toHaveLength(2); // section and card
+    expect(screen.getAllByText('Waiting for your sign-off').map(toneOf)).toEqual(['plain', 'attention']);
     expect(screen.getByText('Waiting for a coach or physio')).toBeTruthy();
     expect(screen.getByText('Other Child · Ankle')).toBeTruthy();
   });
@@ -490,8 +494,145 @@ describe('one injury', () => {
     expect(screen.getByText('Former member')).toBeTruthy();
   });
 
+  it('marks the entry that cleared them with a green tick, not the club’s colour', async () => {
+    await openInjury('coach', injury({ status: 'cleared', cleared_at: '2026-10-17T00:00:00Z' }), [
+      update({ id: 'u3', kind: 'cleared', author_name: 'Sample Physio', notes: null }),
+      update({ id: 'u1', kind: 'reported', author_name: null, notes: null }),
+    ]);
+    // The status at the top is plain; the entry in the history has the tick.
+    expect(screen.getAllByText('Cleared to play').map(toneOf).sort()).toEqual(['done', 'plain']);
+    expect(toneOf(screen.getByText('Reported the injury'))).toBe('plain');
+  });
+
   it('offers everyone a way to raise a concern about it', async () => {
     await openInjury('athlete', injury({ can_report: true }));
     expect(screen.getByText('Worried about something? Raise a concern')).toBeTruthy();
+  });
+});
+
+// ---------------------------------------------------------------------------
+// On a tablet: an injury opens beside the list
+
+describe('the injuries list on a tablet', () => {
+  onATablet();
+
+  let push: jest.SpyInstance;
+  beforeEach(() => {
+    push = jest.spyOn(router, 'push').mockImplementation(() => {});
+  });
+  afterEach(() => push.mockRestore());
+
+  const KNEE = injury({ id: 'inj-2', athlete_id: 'a-2', athlete_name: 'Other Athlete', body_area: 'Knee', restrictions: 'No jumping' });
+
+  async function open(who: Who, injuries: Injury[] = [injury(), KNEE]) {
+    await openScreen(who, { 'injuries/index': InjuriesScreen }, '/injuries', { injury_updates: [] }, {
+      rpcs: { can_share_injury: false },
+      rpcHandlers: {
+        // The list asks for every injury the member may see, an injury's screen for one.
+        visible_injuries: (args) =>
+          args.p_injury_id ? injuries.filter((i) => i.id === args.p_injury_id) : injuries,
+      },
+      rpcErrors: {
+        injury_document_log: 'Only the athlete, their guardians and admins see who opened documents',
+      },
+    });
+  }
+  const beside = () => within(screen.getByTestId('detail-pane'));
+  const list = () => within(screen.getByTestId('list-pane'));
+  const called = (name: string) => rpcCalls().filter(([n]) => n === name);
+
+  it.each<[string, Who]>([
+    ['coach', 'coach'],
+    ['physio', 'physio'],
+    ['committee member', 'committee'],
+    ['admin', 'admin'],
+  ])('opens nothing for a %s, and records no view, until an injury is tapped', async (_l, who) => {
+    await open(who);
+    expect(beside().getByText('Choose an injury to open it here.')).toBeTruthy();
+    expect(list().getByText('Sample Child · Hamstring')).toBeTruthy();
+    expect(called('log_record_view')).toHaveLength(0);
+    expect(called('can_share_injury')).toHaveLength(0);
+  });
+
+  it('opens the tapped injury beside the list, and records that view only', async () => {
+    await open('coach');
+    await fireEvent.press(list().getByText('Other Athlete · Knee'));
+    await settle();
+    expect(push).not.toHaveBeenCalled();
+    expect(beside().getByText('No jumping')).toBeTruthy();
+    expect(beside().queryByText('No sprinting')).toBeNull();
+    expect(list().getByText('Sample Child · Hamstring')).toBeTruthy();
+    expect(called('log_record_view')).toEqual([
+      ['log_record_view', { p_subject_id: 'a-2', p_kind: 'injury', p_record_id: 'inj-2' }],
+    ]);
+  });
+
+  it('marks which injury is open', async () => {
+    await open('coach');
+    await fireEvent.press(list().getByText('Other Athlete · Knee'));
+    await settle();
+    // The cards, leaving out the Current and Cleared chips above them.
+    const cards = list()
+      .getAllByRole('button')
+      .filter((b) => within(b).queryByText(/ · /) !== null);
+    expect(
+      cards.map((card) => [
+        [within(card).getByText(/ · /).props.children].flat().join(''),
+        card.props.accessibilityState?.selected,
+      ]),
+    ).toEqual([
+      ['Sample Child · Hamstring', false],
+      ['Other Athlete · Knee', true],
+    ]);
+  });
+
+  it.each<[string, Who, string[]]>([
+    ['guardian', 'guardian', ['Add physio update', 'Ask for clearance']],
+    ['coach', 'coach', []],
+    ['admin', 'admin', []],
+  ])('offers a %s beside the list what the injury’s own screen offers', async (_l, who, actions) => {
+    await open(who, [injury({ can_report: who === 'guardian' })]);
+    await fireEvent.press(list().getByText('Sample Child · Hamstring'));
+    await settle();
+    expect(ACTIONS.filter((a) => beside().queryAllByText(a).length > 0)).toEqual(actions);
+  });
+
+  it('reloads the list when an update is saved, and keeps the injury open', async () => {
+    await open('guardian', [injury({ can_report: true })]);
+    await fireEvent.press(list().getByText('Sample Child · Hamstring'));
+    await settle();
+    const listLoads = () => called('visible_injuries').filter(([, a]) => !(a as { p_injury_id?: string }).p_injury_id).length;
+    const before = listLoads();
+    await fireEvent.press(beside().getByText('Add physio update'));
+    await fireEvent.changeText(beside().getByPlaceholderText('Progress, treatment and what to do next'), 'Resting it');
+    await fireEvent.press(beside().getByText('Save update'));
+    await settle();
+    expect(called('add_injury_update')).toHaveLength(1);
+    expect(listLoads()).toBe(before + 1);
+    expect(beside().getByText('No sprinting')).toBeTruthy();
+  });
+
+  it('closes the injury from the cross', async () => {
+    await open('coach');
+    await fireEvent.press(list().getByText('Other Athlete · Knee'));
+    await settle();
+    await fireEvent.press(screen.getByLabelText(/^Close /));
+    await settle();
+    expect(beside().getByText('Choose an injury to open it here.')).toBeTruthy();
+    expect(screen.queryByText('No jumping')).toBeNull();
+  });
+});
+
+describe('the injuries list on a phone', () => {
+  it('opens an injury on its own screen', async () => {
+    const push = jest.spyOn(router, 'push').mockImplementation(() => {});
+    try {
+      await openList('coach', [injury()]);
+      expect(screen.queryByTestId('list-detail')).toBeNull();
+      await fireEvent.press(screen.getByText('Sample Child · Hamstring'));
+      expect(push).toHaveBeenCalledWith({ pathname: '/injuries/[id]', params: { id: 'inj-1' } });
+    } finally {
+      push.mockRestore();
+    }
   });
 });

@@ -1,12 +1,14 @@
 import * as DocumentPicker from 'expo-document-picker';
-import { router, useFocusEffect, useLocalSearchParams } from 'expo-router';
+import { router, useFocusEffect } from 'expo-router';
 import { useCallback, useEffect, useState } from 'react';
 import { Platform, Pressable, StyleSheet, Switch, View } from 'react-native';
 
+import { useListChanged, useScreenParams } from '@/components/list-detail';
 import { DateField } from '@/components/date-field';
 import { StatusPill } from '@/components/injury-card';
 import { RaiseConcernLink } from '@/components/safeguarding';
 import { Screen } from '@/components/screen';
+import { StatusLine } from '@/components/status-line';
 import { ThemedText } from '@/components/themed-text';
 import { Button, Card, ChipGroup, ErrorText, TextField } from '@/components/ui';
 import { Spacing } from '@/constants/theme';
@@ -37,7 +39,9 @@ const UPDATE_COLUMNS =
 type Action = 'update' | 'clearance' | 'endorse' | 'accept' | 'send_back';
 
 export default function InjuryScreen() {
-  const { id } = useLocalSearchParams<{ id: string }>();
+  const { id } = useScreenParams<{ id: string }>();
+  // Beside the list on a tablet, the list shows what changed here.
+  const listChanged = useListChanged();
   const { profile } = useAuth();
   const [injury, setInjury] = useState<Injury | null | undefined>(undefined);
   const [updates, setUpdates] = useState<InjuryUpdate[]>([]);
@@ -85,6 +89,7 @@ export default function InjuryScreen() {
   async function done() {
     setAction(null);
     await load();
+    listChanged();
   }
 
   if (injury === undefined) return null;
@@ -670,11 +675,13 @@ function UpdateCard({
   return (
     <Card>
       <View style={styles.row}>
-        <ThemedText
-          type="smallBold"
-          style={[styles.grow, update.kind === 'cleared' ? { color: theme.tint } : undefined]}>
-          {injuryUpdateTitle(update)}
-        </ThemedText>
+        {update.kind === 'cleared' ? (
+          <StatusLine text={injuryUpdateTitle(update)} tone="done" bold style={styles.grow} />
+        ) : (
+          <ThemedText type="smallBold" style={styles.grow}>
+            {injuryUpdateTitle(update)}
+          </ThemedText>
+        )}
         <ThemedText type="small" themeColor="textSecondary">
           {injuryAuthor(update)}
         </ThemedText>

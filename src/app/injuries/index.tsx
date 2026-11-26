@@ -2,8 +2,10 @@ import { router, useFocusEffect } from 'expo-router';
 import { useCallback, useState } from 'react';
 import { StyleSheet, View } from 'react-native';
 
+import InjuryScreen from '@/app/injuries/[id]';
 import { CardGrid } from '@/components/columns';
 import { InjuryCard } from '@/components/injury-card';
+import { ListDetail, useListDetail } from '@/components/list-detail';
 import { Screen } from '@/components/screen';
 import { ThemedText } from '@/components/themed-text';
 import { Button, ChipGroup } from '@/components/ui';
@@ -44,8 +46,13 @@ export default function InjuriesScreen() {
   const mine = injuries?.filter((i) => i.can_report && !i.waiting_for_me) ?? [];
   const others = injuries?.filter((i) => !i.can_report && !i.waiting_for_me) ?? [];
   const isGuardian = hasRole(profile, 'guardian');
+  // On a tablet an injury opens beside the list; otherwise on its own screen.
+  const detail = useListDetail<{ id: string }>((params) =>
+    router.push({ pathname: '/injuries/[id]', params }),
+  );
+  const chosen = { chosenId: detail.chosen?.id ?? null, onOpen: detail.split ? detail.open : undefined };
 
-  return (
+  const list = (
     <Screen refreshing={refreshing} onRefresh={onRefresh}>
       {canReport ? (
         <Button title="Report an injury" onPress={() => router.push('/injuries/new')} />
@@ -79,13 +86,14 @@ export default function InjuriesScreen() {
         </ThemedText>
       ) : null}
 
-      <Section title="Waiting for your sign-off" injuries={waiting} showAthlete />
+      <Section title="Waiting for your sign-off" injuries={waiting} showAthlete {...chosen} />
       <Section
         title={isGuardian ? 'Your athletes' : 'Your injuries'}
         injuries={mine}
         showAthlete={isGuardian}
+        {...chosen}
       />
-      <Section title="Injured athletes" injuries={others} showAthlete />
+      <Section title="Injured athletes" injuries={others} showAthlete {...chosen} />
 
       <ThemedText type="small" themeColor="textSecondary">
         Injury records are private. Only the athlete, their guardians, their coaches, physios, the
@@ -95,16 +103,36 @@ export default function InjuriesScreen() {
       </ThemedText>
     </Screen>
   );
+  return (
+    <ListDetail
+      chosen={detail.chosen}
+      detail={<InjuryScreen />}
+      title="Injury"
+      hint="Choose an injury to open it here."
+      onLeave={() => {
+        detail.close();
+        load();
+      }}
+      onChanged={load}>
+      {list}
+    </ListDetail>
+  );
 }
 
 function Section({
   title,
   injuries,
   showAthlete,
+  chosenId,
+  onOpen,
 }: {
   title: string;
   injuries: Injury[];
   showAthlete: boolean;
+  /** The injury open beside the list, if one is. */
+  chosenId: string | null;
+  /** Opens an injury beside the list. Left out, a card opens the injury's own screen. */
+  onOpen?: (params: { id: string }) => void;
 }) {
   if (injuries.length === 0) return null;
   return (
@@ -112,7 +140,13 @@ function Section({
       <ThemedText type="smallBold">{title}</ThemedText>
       <CardGrid>
         {injuries.map((injury) => (
-          <InjuryCard key={injury.id} injury={injury} showAthlete={showAthlete} />
+          <InjuryCard
+            key={injury.id}
+            injury={injury}
+            showAthlete={showAthlete}
+            onOpen={onOpen}
+            selected={chosenId === null ? undefined : injury.id === chosenId}
+          />
         ))}
       </CardGrid>
     </View>

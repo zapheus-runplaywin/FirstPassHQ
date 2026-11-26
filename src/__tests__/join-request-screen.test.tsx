@@ -23,6 +23,7 @@ import {
   fieldFor,
   inSection,
   isChosen,
+  onEveryTab,
   press,
   pressInSection,
   rpcsNamed,
@@ -54,6 +55,9 @@ jest.mock('@/global.css', () => ({}));
 jest.setTimeout(20_000);
 
 let back: jest.SpyInstance;
+
+// The full record is in tabs: these tests are about what the page holds and sends, on any tab.
+onEveryTab();
 
 beforeEach(() => {
   resetClub();

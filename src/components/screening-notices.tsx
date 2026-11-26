@@ -2,6 +2,7 @@ import { useFocusEffect } from 'expo-router';
 import { useCallback, useState } from 'react';
 import { StyleSheet, View } from 'react-native';
 
+import { StatusLine } from '@/components/status-line';
 import { ThemedText } from '@/components/themed-text';
 import { Button, Card, ChipGroup, ErrorText, TextField } from '@/components/ui';
 import { Spacing } from '@/constants/theme';
@@ -133,9 +134,7 @@ export function ScreeningNotices({
       ))}
       {waiting.length > 0 ? (
         <>
-          <ThemedText type="small" themeColor="tint">
-            Tell the governing body in writing, then record the date.
-          </ThemedText>
+          <StatusLine text="Tell the governing body in writing, then record the date." tone="attention" />
           <TextField
             label="Date you told them"
             value={toldOn}

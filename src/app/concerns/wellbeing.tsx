@@ -3,6 +3,7 @@ import { useCallback, useState } from 'react';
 import { StyleSheet, View } from 'react-native';
 
 import { Screen } from '@/components/screen';
+import { StatusLine } from '@/components/status-line';
 import { ThemedText } from '@/components/themed-text';
 import { Button, Card } from '@/components/ui';
 import { Spacing } from '@/constants/theme';
@@ -83,11 +84,14 @@ export default function WellbeingFlagsScreen() {
         athletes.map((a) => (
           <Card key={a.id} style={styles.card}>
             <ThemedText type="smallBold">{a.name}</ThemedText>
-            <ThemedText type="small" themeColor={a.repeated ? 'tint' : 'textSecondary'}>
-              {a.inLast7Days === 0
-                ? 'Not flagged in the last 7 days'
-                : `Flagged on ${a.inLast7Days} ${a.inLast7Days === 1 ? 'day' : 'days'} in the last 7`}
-            </ThemedText>
+            <StatusLine
+              tone={a.repeated ? 'attention' : 'quiet'}
+              text={
+                a.inLast7Days === 0
+                  ? 'Not flagged in the last 7 days'
+                  : `Flagged on ${a.inLast7Days} ${a.inLast7Days === 1 ? 'day' : 'days'} in the last 7`
+              }
+            />
             <View style={styles.days}>
               {a.days.map((d) => (
                 <ThemedText key={d.day} type="small">
