@@ -124,9 +124,11 @@ export function useRouteAccess() {
 
     // Game goals: the athlete's own, their coaches and their guardians.
     gameGoals: isGoalAthlete || isGoalCoach || isGuardian,
-    athleteGoals: isGoalCoach || isGuardian,
-    // Admins read every team's goals and comments (Matt, 20 October).
-    teamGoals: isGoalCoach || isAdmin,
+    // An athlete opens the list of their own played games from the Team tab.
+    athleteGoals: isGoalAthlete || isGoalCoach || isGuardian,
+    // Team goals stay with the team (Matt, 27 November 2026): its coaches set
+    // them here; admins no longer read them.
+    teamGoals: isGoalCoach,
 
     // Season KPIs: the people they're set for (coaches, managers and
     // athletes), athletes' guardians, the committee and admins; set by

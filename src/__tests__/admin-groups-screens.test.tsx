@@ -123,7 +123,7 @@ describe('Squads and teams, for a club with squads', () => {
     expect(screen.getByText(/^Your club uses squads\./)).toBeTruthy();
     expect(screen.getAllByText('Open Squad')[0]).toBeTruthy();
     expect(screen.getAllByText('2026–27 squad · see everyone in it')).toHaveLength(2);
-    expect(screen.getByText('Team · choose who is selected')).toBeTruthy();
+    expect(screen.getByText('Team · see it, choose who is selected and its captains')).toBeTruthy();
     expect(screen.getByText('Squad phase in progress. Coaches look after everyone in the squad.')).toBeTruthy();
     expect(screen.getByText('Name the teams from this squad to finish the squad phase.')).toBeTruthy();
     // Only the squad with a team can be marked complete.
@@ -131,14 +131,14 @@ describe('Squads and teams, for a club with squads', () => {
     expect(screen.queryByText('Choose a starting setup')).toBeNull();
   });
 
-  it('opens a squad’s members and a team to name', async () => {
+  it('opens a squad’s page and a team’s page, where an admin names the team and chooses captains', async () => {
     const push = jest.spyOn(router, 'push').mockImplementation(() => {});
     await openSquads();
     // The squad's card comes before the Named from squad choice.
     await fireEvent.press(screen.getAllByText('Open Squad')[0]);
     expect(push).toHaveBeenLastCalledWith({ pathname: '/team/[id]', params: { id: SQUAD.id } });
     await fireEvent.press(screen.getByText('Open A'));
-    expect(push).toHaveBeenLastCalledWith({ pathname: '/admin/team/[id]', params: { id: TEAM_A.id } });
+    expect(push).toHaveBeenLastCalledWith({ pathname: '/team/[id]', params: { id: TEAM_A.id } });
     push.mockRestore();
   });
 
@@ -397,7 +397,7 @@ describe('Teams, for a club without squads', () => {
     const log: TableWrite[] = [];
     await openSquads({ current: [OWN], log });
     expect(screen.getByText(/^Your club doesn’t use squads/)).toBeTruthy();
-    expect(screen.getByText('2026–27 team · choose who is in it')).toBeTruthy();
+    expect(screen.getByText('2026–27 team · see it, choose who is in it and its captains')).toBeTruthy();
     expect(screen.queryByText('Squad')).toBeNull();
     expect(screen.queryByText('Put in a squad')).toBeNull();
     expect(screen.queryByText(/squad phase/)).toBeNull();

@@ -7,7 +7,6 @@ import { AddTeamGoalComment, TeamGoalComments } from '@/components/team-goals';
 import { ThemedText } from '@/components/themed-text';
 import { Button, Card, ChipGroup, ConfirmDelete, ErrorText, TextField } from '@/components/ui';
 import { Spacing } from '@/constants/theme';
-import { useAuth } from '@/lib/auth';
 import {
   MAX_GOALS,
   fetchTeamGoalComments,
@@ -25,13 +24,10 @@ import type {
   TeamGameGoalComment,
 } from '@/lib/types';
 
-/** A coach's goals for the whole squad or team in one game. Admins read them. */
+/** A coach's goals for the whole team in one game. They stay with the team: admins don't read them. */
 export default function TeamGoalsScreen() {
   const { fixture } = useLocalSearchParams<{ fixture: string }>();
-  const { isAdmin } = useAuth();
   const [game, setGame] = useState<CoachTeamGame | null>();
-  // True when the game was found through the admin's list rather than the coach's.
-  const [readOnly, setReadOnly] = useState(false);
   const [goals, setGoals] = useState<TeamGameGoal[]>([]);
   const [comments, setComments] = useState<TeamGameGoalComment[]>([]);
   const [refreshing, setRefreshing] = useState(false);
@@ -41,18 +37,11 @@ export default function TeamGoalsScreen() {
       supabase.rpc('coach_team_games'),
       fetchTeamGoals(fixture),
     ]);
-    let found = ((data as CoachTeamGame[] | null) ?? []).find((g) => g.fixture_id === fixture);
-    let reading = false;
-    if (!found && isAdmin) {
-      const { data: adminGames } = await supabase.rpc('admin_team_games');
-      found = ((adminGames as CoachTeamGame[] | null) ?? []).find((g) => g.fixture_id === fixture);
-      reading = !!found;
-    }
+    const found = ((data as CoachTeamGame[] | null) ?? []).find((g) => g.fixture_id === fixture);
     setGame(found ?? null);
-    setReadOnly(reading);
     setGoals(list);
     setComments(await fetchTeamGoalComments(list.map((g) => g.id)));
-  }, [fixture, isAdmin]);
+  }, [fixture]);
 
   useFocusEffect(
     useCallback(() => {
@@ -88,13 +77,11 @@ export default function TeamGoalsScreen() {
           {gameWhen(game)}
         </ThemedText>
         <ThemedText type="small" themeColor="textSecondary">
-          {readOnly
-            ? 'The goals the team’s coaches set for this game, how they said it went, and the team’s comments. Only its coaches change them.'
-            : phase === 'open'
-              ? 'Goals for the whole team. Everyone in it, and their parents or guardians, can see them, and everyone in the team can comment. You can add and change them until the game starts.'
-              : phase === 'playing'
-                ? 'Game on. You can say how each goal went after the game.'
-                : 'How did the team go? Pick how each goal went and add a few words for the team.'}
+          {phase === 'open'
+            ? 'Goals for the whole team. Everyone in it, and their parents or guardians, can see them, and everyone in the team can comment. You can add and change them until the game starts.'
+            : phase === 'playing'
+              ? 'Game on. You can say how each goal went after the game.'
+              : 'How did the team go? Pick how each goal went and add a few words for the team.'}
         </ThemedText>
       </View>
 
@@ -110,14 +97,13 @@ export default function TeamGoalsScreen() {
           number={index + 1}
           goal={goal}
           comments={comments.filter((c) => c.goal_id === goal.id)}
-          editable={!readOnly && phase === 'open'}
-          canReview={!readOnly && phase === 'played'}
-          readOnly={readOnly}
+          editable={phase === 'open'}
+          canReview={phase === 'played'}
           onChanged={load}
         />
       ))}
 
-      {!readOnly && phase === 'open' && goals.length < MAX_GOALS ? (
+      {phase === 'open' && goals.length < MAX_GOALS ? (
         <AddTeamGoal fixtureId={fixture} onAdded={load} />
       ) : null}
     </Screen>
@@ -168,7 +154,6 @@ function TeamGoalCard({
   comments,
   editable,
   canReview,
-  readOnly = false,
   onChanged,
 }: {
   number: number;
@@ -176,8 +161,6 @@ function TeamGoalCard({
   comments: TeamGameGoalComment[];
   editable: boolean;
   canReview: boolean;
-  /** An admin reading the team's goals: no comments added or removed. */
-  readOnly?: boolean;
   onChanged: () => Promise<void>;
 }) {
   const [editing, setEditing] = useState(false);
@@ -248,9 +231,9 @@ function TeamGoalCard({
           </>
         )}
         {/* Coaches can remove any comment on their team's goals. */}
-        <TeamGoalComments comments={comments} canRemove={() => !readOnly} onChanged={onChanged} />
+        <TeamGoalComments comments={comments} canRemove={() => true} onChanged={onChanged} />
       </Card>
-      {readOnly ? null : <AddTeamGoalComment goalId={goal.id} onAdded={onChanged} />}
+      <AddTeamGoalComment goalId={goal.id} onAdded={onChanged} />
       {canReview ? <Review goal={goal} onSaved={onChanged} /> : null}
     </View>
   );

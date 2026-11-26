@@ -3,8 +3,9 @@
 -- per check.
 --
 -- A coach reads a team's goals and comments, and comments on them, only with
--- a current check and while not stood down. Athletes, their guardians and
--- admins are unchanged.
+-- a current check and while not stood down. Athletes and their guardians are
+-- unchanged. Admins read none since 27 November 2026
+-- (team-goals-stay-with-the-team.sql).
 \set ON_ERROR_STOP 0
 \pset tuples_only on
 \pset format unaligned
@@ -71,7 +72,7 @@ select pg_temp.ok('guardian reads both team goals', pg_temp.goals() = 2, true);
 select pg_temp.ok('guardian reads the comments', pg_temp.comments() = 3, true);
 select pg_temp.fails('guardian cannot comment', $s$ select public.add_team_game_goal_comment('00000000-0000-0000-0000-0000000000e1', 'Go team') $s$);
 select pg_temp.as_member('01');
-select pg_temp.ok('admin reads both team goals', pg_temp.goals() = 2, true);
+select pg_temp.ok('admin reads no team goals', pg_temp.goals() = 0, true);
 select pg_temp.as_member('13');
 select pg_temp.ok('manager still reads no team goals', pg_temp.goals() = 0, true);
 select pg_temp.as_member('22');

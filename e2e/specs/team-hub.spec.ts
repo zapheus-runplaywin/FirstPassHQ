@@ -74,8 +74,15 @@ test('a coach’s Team tab leads with the numbers, and an injured athlete’s ro
   await expect(tiles.getByText('2/3', { exact: true })).toBeVisible();
   await expect(tiles.getByText('88%', { exact: true })).toBeVisible();
 
-  // The squad's card, then its people: athletes first, and a status beside the injured one only.
-  await expect(page.getByRole('button', { name: new RegExp(`^${openSquad.name}`) })).toBeVisible();
+  // The squad's name and the coach's place in it, what they can do there (one tap each), then
+  // its people: athletes first, and a status beside the injured one only.
+  await expect(page.getByTestId('group-name')).toHaveText(openSquad.name);
+  await expect(page.getByTestId('my-place')).toHaveText('Squad · Head Coach');
+  const rows = page.getByTestId('team-rows');
+  await expect(rows.getByRole('button')).toHaveCount(1);
+  await expect(rows.getByRole('button')).toHaveAccessibleName('Medical and emergency details. 3 athletes');
+  // Nothing opens a second page that lists the same people.
+  await expect(page.getByRole('button', { name: new RegExp(`^${openSquad.name}`) })).toHaveCount(0);
   const people = page.getByTestId('people-list');
   await expect(page.getByTestId('people-count')).toHaveText('3 athletes · 1 staff');
   await expect(people.getByText(/^(Alex Nguyen|Bo Tran|Kai Thompson|Cam Roberts)$/)).toHaveText([
@@ -123,7 +130,12 @@ test('an athlete’s Team tab is their squad and its people: names and positions
   expect(backend.rpcCalls('athlete_attendance_summary')).toEqual([]);
   expect(backend.rpcCalls('check_in_summary')).toEqual([]);
 
-  // The squad's card still opens its page.
-  await page.getByRole('button', { name: new RegExp(`^${openSquad.name}`) }).click();
-  await expect(page).toHaveURL(new RegExp(`/team/${openSquad.id}$`));
+  // The squad is on the tab itself: its name and the athlete's place in it, with nothing to
+  // open (a squad has no game goals, and medical details and captains aren't an athlete's).
+  await expect(page.getByTestId('group-name')).toHaveText(openSquad.name);
+  await expect(page.getByTestId('my-place')).toHaveText('Squad · Athlete');
+  await expect(page.getByTestId('team-rows')).toHaveCount(0);
+  await expect(page.getByRole('button', { name: new RegExp(`^${openSquad.name}`) })).toHaveCount(0);
+  await page.getByTestId('group-name').click();
+  await expect(page).toHaveURL(/\/team$/);
 });

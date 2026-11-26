@@ -152,7 +152,7 @@ What each role can see and do:
 | Log training sessions (minutes, effort) |    ✓    |                 |              |            |               |               |         |               |
 | Game goals and reflections             |   Own   |  See athlete's  | Own athletes |            |               |               |         |               |
 | An athlete's stats from a recorded game |         |                 | Own athletes, with Net Points |            |               |               |         |               |
-| Team goals for a game                  | See, comment |       See       | Set, review, comment |            |               |               |         |      See      |
+| Team goals for a game                  | See, comment |       See       | Set, review, comment |            |               |               |         |               |
 | Check-ins of others                    |         | Their athlete's | Own athletes |            | Averages only | Averages only |         | Averages only |
 | Training sessions of others            |         | Their athlete's | Own athletes |            |               |               |         |               |
 | Training load flags (when turned on)   | Own, gently | When a coach has talked with their athlete | Own athletes: flags, numbers, mark talked |            |               |               |         | Choose the flags |
@@ -633,10 +633,13 @@ green tick, or green words such as **Present**, means done or fine. Anything els
   (to send one and see results) and **Season KPIs** (for the people they set them for), and while
   you're on a selection round's panel, **Selection assessments**, which is on Today as well.
 - **Team** ends with **My squads and teams** (**My teams** in a club without squads). If you're
-  in more than one, tap its name to switch. The card with the squad or team's name opens its
-  page, which has its [game goals](#game-goals) for its athletes and coaches, and under the card
-  is everyone in it: athletes first, then coaches, managers and physios, each with their position
-  (see [Squads and teams](#squads-and-teams)). For athletes this is the whole tab, with **Session
+  in more than one, tap its name to switch; when you're in a squad and a team the names say which
+  is which, such as "20 & Under · Team" and "20 & Under · Squad". Under the name is a short list of
+  what you can do there, each one tap away: a team's [game goals](#game-goals) for its athletes
+  and coaches, **Medical and emergency details** for its coaches, managers and physios, and
+  **Choose captains** for its coaches. Then comes everyone in it, once: athletes first, then
+  coaches, managers and physios, each with their position
+  (see [Squads and teams](#squads-and-teams)). There is no second page to open. For athletes this is the whole tab, with **Session
   plans** above it once a coach has shared one, and **Surveys** for captains to send a poll.
 - **Family** starts with one card for each of your children. The card says where things stand
   for that child (consent, a current injury, medical details to add or check, changes since you
@@ -1119,8 +1122,12 @@ position: Head Coach, Assistant Coach, Manager, Physio, Athlete, Final team athl
 partner. Athletes come first, then the coaches, managers and physios, and a line above the list
 counts them, such as "12 athletes · 3 staff". Captains, vice captains and club captains are
 marked next to their position. If you're in more than one squad or team, tap a name at the top to
-switch. It is names and positions only: there are no photos and no profile pages, and tapping a
-name does nothing.
+switch. When you're in a squad and a team, each name says which it is ("20 & Under · Team",
+"20 & Under · Squad") unless the name already does ("20 & Under Squad"), and your team comes
+first. A line under the names says your own place in
+the one you've chosen, such as "Team · Final team athlete". It is names and positions only:
+there are no photos and no profile pages, and tapping a name does nothing (a team's coach opens
+an athlete's [game goals](#game-goals-1) that way).
 
 The squad or team's coaches and physios, who already see its athletes' injuries, also see a
 status beside an athlete with a current injury: **Injured**, **Clearance asked for**, or
@@ -1128,12 +1135,14 @@ status beside an athlete with a current injury: **Injured**, **Clearance asked f
 line above the list says how many have one. Athletes, parents and managers never see a status
 beside a name, not even their own.
 
-Tap the card with the squad or team's name to open its page, which lists the same people and, when
-Game goals is switched on, shows a team's [game goals](#game-goals) for its athletes and coaches.
+Above the people is a short list of what you can do in that squad or team, and each row opens
+its screen in one tap: a team's [game goals](#game-goals) for its athletes and coaches when Game
+goals is switched on, **Medical and emergency details** for its coaches, managers and physios,
+and **Choose captains** for a team's coaches. You only see the rows that are yours. Everything is
+on this one screen: there is no separate page for a squad or team to open.
 In a club without squads the list is called **My teams**.
 
-<img src="user-guide/team-athlete.png" width="210" alt="An athlete's Team tab: the switch between their team and squad, the team's card, and everyone in it by name and position">
-<img src="user-guide/team-roster.png" width="210" alt="A team's own page, with the same people">
+<img src="user-guide/team-athlete.png" width="210" alt="An athlete's Team tab: the switch between their team and squad, My game goals and Played games, and everyone in the team by name and position">
 
 ### Club awards
 
@@ -1347,7 +1356,7 @@ FirstPass HQ.
 Athletes have the Today, Calendar, Messages, Team and Me tabs. **Me** has Daily check-in, My
 attendance and Injuries, plus Awards while a vote is open, and Integrity training and Season KPIs
 when the club uses them. **Team** has your squads and teams, and Session plans once a coach has
-shared one. Game goals are on each team's page.
+shared one. Game goals are in the Team tab too, under your team's name.
 
 <img src="user-guide/todo-athlete.png" width="210" alt="An athlete's Today with an overdue injury update and the daily check-in under Needs you">
 
@@ -1433,17 +1442,18 @@ check-ins, after the club's period under Record keeping.
 ### Game goals
 
 **Game goals** uses the club's PlayHQ fixtures, which belong to teams, so they start once you're
-picked for a team. Tap your team under **My squads and teams** in the **Team** tab: its page shows
-the team's games at the top and the people in it underneath.
+picked for a team. Choose your team under **My squads and teams** in the **Team** tab: **My game
+goals** and **Played games** sit under its name, above the people in it.
 
-- **Before a game:** in the 7 days before your next game, open it under **Next game** and add
+- **Before a game:** in the 7 days before your next game, tap **My game goals**, which names the
+  game and opens it, and add
   your goals, up to 5, such as "win 3 centre pass receives each quarter". Only your next game is
   open for goals. You can change or remove your goals until the game starts (until the end of
   that day if PlayHQ had no start time). Your coaches can add
   goals for you too; those show "set by Coach …" and only a coach can change them. Until the game
   has a goal, yours or a coach's, "Set your goals for …" stays in your to-do list.
 - **After the game:** about 90 minutes after the start (the next day if PlayHQ had no start time),
-  the game moves to **Played games**. For each goal, pick **Achieved**, **Partly** or **Not yet**,
+  the game moves to **Played games**: tap it, then the game. For each goal, pick **Achieved**, **Partly** or **Not yet**,
   write a few words about how it went and tap **Save reflection**. You can update it later. For a
   week after the game, "Reflect on …" stays in your to-do list until every goal has a reflection,
   with an item for each game you've played that week. Your coaches' comments show under each goal.
@@ -1458,8 +1468,9 @@ left out.
 above your own goals. After the game you'll see how the coaches think the team went on each one.
 Everyone in the team has a say: tap **Comment** under a team goal, write what you think or what
 you'll do to help, and tap **Add comment**. You can comment before or after the game. Your name
-shows on your comment, and the team's athletes and coaches, the athletes' parents or guardians and
-the club's admins can read it. The team's manager and physio can't. Tap **Remove** on your own comment to
+shows on your comment, and the team's athletes and coaches and the athletes' parents or guardians
+can read it. Team goals stay with the team: its manager and physio can't read them, and neither
+can the club's admins or committee. Tap **Remove** on your own comment to
 take it down; your coaches can remove any comment.
 
 **Game stats.** When a statistician records your game in FirstPass Vantage, your coaches see your
@@ -2438,8 +2449,9 @@ and physios under **Messages › Groups**, and you can hide any post in them by 
 ### Choosing captains
 
 Coaches choose the captains and vice captains of the teams they coach (admins can too). Captains
-are chosen for each team, not for a squad, so a squad's page has no **Choose captains**. Open the
-team from **My squads and teams** and tap **Choose captains** at the bottom. For
+are chosen for each team, not for a squad, so a squad has no **Choose captains**. Choose the
+team under **My squads and teams** in the **Team** tab and tap **Choose captains**, which names
+the captains it has now. For
 each athlete choose **Captain**, **Vice captain** or **Neither**, then tap **Save captains**. A
 team can have any number of captains and any number of vice captains, so it's up to you: co-captains
 and no vice captains, one captain and four vice captains, or anything in between.
@@ -2451,7 +2463,7 @@ Messages from captains under 18 are copied to their parents or guardians. Captai
 question in a message, with ready-made or their own answers, and see who picked what, like a coach
 (see [Asking a question](#asking-a-question)).
 
-<img src="user-guide/captains-team-roster.png" width="210" alt="Team roster with Choose captains">
+<img src="user-guide/captains-team-roster.png" width="210" alt="A coach's Team tab with Choose captains under the team's name">
 <img src="user-guide/captains-choose.png" width="210" alt="Choosing a team's captains and vice captains">
 
 ### Athletes' check-ins
@@ -2534,10 +2546,12 @@ child's training load](#your-childs-training-load)).
 
 ### Game goals
 
-Game goals are on the page of each team you coach: tap it under **My squads and teams**. Squads
-don't have PlayHQ games, so their pages don't show goals.
-**Team goals** sits at the top, and under **People** each athlete shows their next game (within
-7 days) and how many goals they've set.
+Game goals are in the **Team** tab, under each team you coach: choose it under **My squads and
+teams**. Squads don't have PlayHQ games, so they don't show goals.
+**Team goals** is the first row under the team's name, and under **People** each athlete shows
+their next game (within 7 days) and how many goals they've set. An athlete with a current injury
+shows its status on a line of its own: tap that line for the injury, or anywhere else on the row
+for their goals.
 
 - Tap an athlete, then their next game, and type under **Add a goal for the athlete**. Their goals
   and yours show together; you can change or remove goals set by a coach until the game starts,
@@ -2560,21 +2574,22 @@ don't have PlayHQ games, so their pages don't show goals.
 - Opening an athlete under 18's game goals, with their game stats, is recorded for their parents
   (see [Who has viewed your child's records](#who-has-viewed-your-childs-records)).
 
-<img src="user-guide/goals-coach.png" width="210" alt="A team's page for its coach: team goals and athletes with their goals">
+<img src="user-guide/goals-coach.png" width="210" alt="A coach's Team tab: Team goals, Medical and emergency details and Choose captains under the team's name, then athletes with their goals">
 <img src="user-guide/goals-coach-comment.png" width="210" alt="A coach reading reflections and commenting">
 <img src="user-guide/goals-stats-coach.png" width="210" alt="A coach sees the athlete's game stats with Net Points">
 
 #### Team goals
 
-At the top of a team's page, **Team goals** shows its next game (within 7 days) and its
-last played game.
+Under the team's name in the **Team** tab, **Team goals** names its next game (within 7 days),
+and **Team goals, last game** its last played one.
 
 - Open the next game and add goals for the whole team under **Add a team goal**, up to 5, such as
   "win the third quarter". You can change or remove them until the game starts. Any coach of the
   team can. Until a team goal is set, "Set team goals for …" stays in your to-do list.
 - The team's athletes and their parents or guardians see the team goals above each
   athlete's own goals. Team goals are for the team's coaches and athletes: its managers and
-  physios don't see them. Admins can read them and the comments, from the team's page. A coach
+  physios don't see them, and neither do the club's admins or committee: team goals stay with
+  the team. A coach
   sees and comments on team goals only while their check is current and they aren't stood down.
 - The team's athletes and coaches can comment on a team goal, before or after the game, so every
   athlete has a say. Their comments show under each goal, and you can add your own with
@@ -2718,8 +2733,8 @@ recorded and shown to the athlete, their parents or guardians and admins.
 ### Medical and emergency details
 
 Coaches, managers and physios open their athletes' emergency contacts, allergies, conditions,
-medications and action plans from the squad or team's page: tap **Medical and emergency details**
-for its list, then an athlete. Tap a contact's phone number to call them. Each athlete keeps their
+medications and action plans from the **Team** tab: choose the squad or team under **My squads
+and teams** and tap **Medical and emergency details** for its list, then an athlete. Tap a contact's phone number to call them. Each athlete keeps their
 own (a parent or guardian for an under 18); you can't change them.
 
 The list says whether each athlete has added emergency contacts. An under 18 opens only once a
@@ -2898,7 +2913,8 @@ and title together, like "Manager · Manager, 17 & Under". As a manager you can:
   own groups' sessions, every whole-club session and any session you took yourself (see
   [Taking attendance](#taking-attendance)). With a manager role but no squad or team yet, you can
   still take whole-squad and whole-club attendance.
-- **Open your athletes' medical and emergency details** from the squad or team's page, each view
+- **Open your athletes' medical and emergency details** from the squad or team in your **Team**
+  tab, each view
   recorded (see [Medical and emergency details](#medical-and-emergency-details-1)).
 - **Work on your season KPIs**, if the club uses them: the committee and admins set them, and you
   record your progress, add a note on the result and confirm your reviews (see
@@ -4031,11 +4047,19 @@ first squad or team. Clubs that already had squads or teams don't see this choic
 
 **Squads and teams** lists the current season's squads with the teams named from each. The note at
 the top says whether the club uses squads and what that means.
+Tap a squad or a team to open its page: everyone in it by name and position, and for a team
+**Change who's in it** and **Choose captains** (which names the captains it has now). A team's
+goals aren't there: team goals and the team's comments on them stay with the team, so an admin
+doesn't read them unless they also coach it or are the parent of one of its athletes.
+
+<img src="user-guide/team-admin.png" width="210" alt="An admin's page for a team: Change who's in it and Choose captains, then its people">
+
 If the club has switched squads off in [Club options](#club-options), it's called **Teams** and
 works more simply:
 
 - **Add a team**: give it a name. There are no squads to choose from.
-- **Choose who is in a team** (tap it): every approved athlete, coach and manager is listed. Pick
+- **Choose who is in a team**: tap the team to open its page, then **Change who's in it**. Every
+  approved athlete, coach and manager is listed. Pick
   **Final team**, **Training partner** or **Not selected** for athletes, and **In this team** or
   **Not in this team** for coaches and managers. For a coach in the team, choose **Head Coach** or
   **Assistant Coach**. An athlete is in one team at a time: one already in another team shows
@@ -4060,7 +4084,8 @@ With squads on:
 
 - **Add a squad or team**: choose Team or Squad, give it a name, and for a team pick the squad it's
   named from.
-- **Name a team** (tap it): for each person in the squad, choose **Final team**, **Training partner**
+- **Name a team**: tap the team to open its page, then **Change who's in it**. For each person
+  in the squad, choose **Final team**, **Training partner**
   or **Not selected** for athletes, and **In this team** or **Not in this team** for coaches and
   managers and physios. For a coach in the team, choose **Head Coach** or **Assistant Coach**; they
   start with the one they have in the squad. An athlete is in one team at a time: one already in
@@ -5382,7 +5407,7 @@ once saved, only replaced or removed, and anyone who gets it wrong five times in
 | The list of recorded games | Admins only, under **Club > Season > Games**: each game's teams, round, status, who recorded it and how many events it holds. No stats and no athletes. |
 | Season KPIs, progress and reviews | An athlete's: the athlete, their coaches in that squad or team, their parents or guardians (read only, until 18) and admins (read only). Not teammates, the committee or physios. A coach's or manager's: them, the committee and admins, and an assistant coach's head coach. Only those who set KPIs change them, record results and write reviews; the person records progress, confirms reviews and adds their own view. A coach's or manager's KPIs and reviews are kept under their name if they delete their account, and stay on the admin report. |
 | Live game stats         | Admins and statisticians (while their statistician role isn't paused for a check): every game the club records. The coaches and managers of the game's squad or team, and of the squad a team belongs to, see the team's games at every stage and who has opened each, and the stats once they open the game in FirstPass Vision, without a pair code (a shadow statistician still pairs with the code in Vantage). Members with the Studio role (while not stood down), through FirstPass Studio: games with a PlayHQ game that are live or finished, their setup, the recorded stats and the athletes of the game's squad or team, never a shadow statistician's stats, pair codes or who paired. The same people can save a game's report or its video markers file from Vision or Vantage, and coaches and managers see their team's season so far in Vision, with PlayHQ's score and shooting for games nobody recorded. At a venue streaming with FirstPass Studio, a statistician's tablet that someone at the Studio Mac has allowed can also send the game's stats to Studio over the venue link; it shows nobody anything they couldn't already see. Athletes, guardians, physios and the committee don't see any of it; an athlete's own figures after the game show only to their coaches, and to the selectors on the panel of a selection round the game was played in (see the row above and Selection assessments). |
-| Team goals              | The team's athletes, their guardians, its coaches (while their check is current and they aren't stood down) and admins. Only its coaches set and review them. Athletes and coaches in the team can comment; guardians and admins read the comments. Managers and physios placed in the team don't see them. |
+| Team goals              | The team's athletes, their guardians and its coaches (while their check is current and they aren't stood down). Only its coaches set and review them. Athletes and coaches in the team can comment; guardians read the comments. Team goals stay with the team: managers and physios placed in it, the committee and admins don't see them or the comments. An admin who also coaches the team, or is the parent of one of its athletes, sees them as that coach or parent. |
 | Integrity training courses | The committee and admins see every course and who it's set for. Each member sees the courses set for them, and parents and guardians their child's. |
 | Integrity training certificates | The member, their parents or guardians, the committee and admins. Coaches, managers and physios don't see them. Certificates can't be changed or removed once sent. |
 | Attendance records      | The committee and admins see every session. Coaches and managers see their own groups' sessions, whole-club sessions and any they took themselves, while their check is current and they aren't stood down. An athlete sees their own marks, and their parents or guardians see them until the athlete turns 18; neither sees other athletes on the register. |
@@ -5789,7 +5814,8 @@ Working With Children Check, and another admin must do it.
   its panel, who can also see what you did and when in the game. Team mates never see yours, you never see theirs, and nothing ranks
   you against anyone.
 - **You're told who sees what you write**: on the check-in, on injury reports, on game goals and
-  when you join. Your coaches see your check-ins and injuries once a parent or guardian agrees.
+  when you join. Your team's goals and what you say about them stay with your team: your coaches,
+  your team mates and their parents see them, and the club's admins and committee don't. Your coaches see your check-ins and injuries once a parent or guardian agrees.
 - **You're told who your guardians are.** From 13, you get the same message as your parents when a
   parent or guardian is added or removed.
 - **Your parent or guardian joins too.** When you ask to join, you give your date of birth and a
@@ -5884,6 +5910,10 @@ Working With Children Check, and another admin must do it.
 > reasons are in the [privacy and social media
 > assessment](security/privacy-and-social-media-assessment-2026-10-13.md).
 
+- **Team goals stay with the team.** A team's goals for a game, and the comments its athletes
+  (children included) write on them, are read by the team's athletes, its coaches with a current
+  check and the athletes' parents or guardians. Admins and the committee don't read them, in the
+  app or in the database, unless they are also that team's coach or an athlete's parent.
 - **Selection assessments: admins audit, selectors assess.** When the club turns them on, only an
   admin can put someone on a selection round's panel, the person must be an approved adult coach,
   admin or guest with a current check, and every change to a panel is kept with who made it and

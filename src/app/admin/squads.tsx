@@ -154,15 +154,10 @@ export default function SquadsScreen() {
           {teamsIn(teams, squad.id).map((team) => (
             <View key={team.id} style={styles.team}>
               <PressableCard
-                onPress={() =>
-                  router.push({
-                    pathname: '/admin/team/[id]',
-                    params: { id: team.id },
-                  })
-                }>
+                onPress={() => router.push({ pathname: '/team/[id]', params: { id: team.id } })}>
                 <ThemedText type="smallBold">{team.name}</ThemedText>
                 <ThemedText type="small" themeColor="textSecondary">
-                  Team · choose who is selected
+                  Team · see it, choose who is selected and its captains
                 </ThemedText>
               </PressableCard>
               <GroupActions key={team.name} group={team} onChange={changed} />
@@ -181,15 +176,10 @@ export default function SquadsScreen() {
       {ownTeams.map((team) => (
         <View key={team.id} style={styles.squad}>
           <PressableCard
-            onPress={() =>
-              router.push({
-                pathname: '/admin/team/[id]',
-                params: { id: team.id },
-              })
-            }>
+            onPress={() => router.push({ pathname: '/team/[id]', params: { id: team.id } })}>
             <ThemedText type="smallBold">{team.name}</ThemedText>
             <ThemedText type="small" themeColor="textSecondary">
-              {seasonLabel(team.season)} team · choose who is in it
+              {seasonLabel(team.season)} team · see it, choose who is in it and its captains
             </ThemedText>
           </PressableCard>
           <GroupActions key={team.name} group={team} onChange={changed} />

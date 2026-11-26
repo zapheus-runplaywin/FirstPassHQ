@@ -7,6 +7,8 @@
 import {
   absencesLabel,
   attendanceRate,
+  groupChipLabel,
+  myPlaceLabel,
   injuredCountLabel,
   READINESS_CARDS,
   readinessTiles,
@@ -201,5 +203,47 @@ describe('a squad or team’s people', () => {
     ]);
     expect(injuredCountLabel(roster, statuses)).toBe('1 with a current injury');
     expect(injuredCountLabel(roster, new Map())).toBeNull();
+  });
+});
+
+describe('the switch between a member’s squads and teams', () => {
+  const team = (name: string, kind: 'squad' | 'team') => ({ team: { name, kind } });
+
+  it('says which is the squad and which the team when the member is in both', () => {
+    const groups = [team('20 & Under', 'team'), team('20 & Under', 'squad')];
+    expect(groups.map((g) => groupChipLabel(g.team, groups))).toEqual([
+      '20 & Under · Team',
+      '20 & Under · Squad',
+    ]);
+  });
+
+  it('leaves alone a name that already says it', () => {
+    const groups = [team('Mixed Open', 'team'), team('Mixed Open Squad', 'squad'), team('Opens Team', 'team')];
+    expect(groups.map((g) => groupChipLabel(g.team, groups))).toEqual([
+      'Mixed Open · Team',
+      'Mixed Open Squad',
+      'Opens Team',
+    ]);
+    // "Teamwork" doesn't say it is a team.
+    const others = [team('Teamwork', 'team'), team('Open', 'squad')];
+    expect(groupChipLabel(others[0].team, others)).toBe('Teamwork · Team');
+  });
+
+  it('uses plain names when they are all teams, or all squads', () => {
+    const teams = [team('Open A', 'team'), team('Open Mixed', 'team')];
+    expect(teams.map((g) => groupChipLabel(g.team, teams))).toEqual(['Open A', 'Open Mixed']);
+    const squads = [team('Open', 'squad')];
+    expect(groupChipLabel(squads[0].team, squads)).toBe('Open');
+  });
+});
+
+describe('the member’s own place in the chosen squad or team', () => {
+  it.each<[string, Parameters<typeof myPlaceLabel>[0], string]>([
+    ['a head coach of a team', { team: { kind: 'team' }, team_role: 'coach', coach_title: 'head_coach', selection: null }, 'Team · Head Coach'],
+    ['an assistant coach of a squad', { team: { kind: 'squad' }, team_role: 'coach', coach_title: 'assistant_coach', selection: null }, 'Squad · Assistant Coach'],
+    ['a final team athlete', { team: { kind: 'team' }, team_role: 'athlete', coach_title: null, selection: 'touring' }, 'Team · Final team athlete'],
+    ['a manager of a squad', { team: { kind: 'squad' }, team_role: 'manager', coach_title: null, selection: null }, 'Squad · Manager'],
+  ])('%s', (_l, membership, label) => {
+    expect(myPlaceLabel(membership)).toBe(label);
   });
 });

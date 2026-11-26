@@ -55,9 +55,23 @@ export function useTeamRoster(id: string | undefined, team: Pick<Team, 'kind' | 
     return parts.join(' · ');
   }
 
+  const roster = loaded && loaded.id === id ? loaded.roster : null;
+  /** The team's captain, then its vice captain, by name; null when none is chosen. */
+  const captainNames =
+    (roster ?? [])
+      .filter((m) => m.team_role === 'athlete' && captains.has(m.profile_id))
+      .sort(
+        (a, b) =>
+          (captains.get(a.profile_id) === 'captain' ? 0 : 1) -
+          (captains.get(b.profile_id) === 'captain' ? 0 : 1),
+      )
+      .map((m) => m.full_name ?? 'Unnamed member')
+      .join(' · ') || null;
+
   return {
     /** Null until this group's people have loaded, so another group's never show under its name. */
-    roster: loaded && loaded.id === id ? loaded.roster : null,
+    roster,
+    captainNames,
     positionLabel,
     reloadRoster: load,
   };

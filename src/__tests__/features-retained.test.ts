@@ -74,10 +74,11 @@ const edgeFunctions = all(/functions\.invoke\(\s*['"]([a-z0-9_-]+)/g);
 const missing = (wanted: string[], have: Set<string>) => wanted.filter((one) => !have.has(one));
 
 describe('everything the app had before the redesign is still in it', () => {
-  it('the list is the whole app as it was: 138 screens, 139 link targets, 370 database functions', () => {
+  it('the list is the whole app as it was: 138 screens, 139 link targets, 369 database functions', () => {
     expect(before.screens).toHaveLength(138);
     expect(before.links).toHaveLength(139);
-    expect(before.databaseFunctions).toHaveLength(370);
+    // 370 before; admin_team_games left with the admin view of team goals (Matt, 27 November 2026).
+    expect(before.databaseFunctions).toHaveLength(369);
     expect(before.tables).toHaveLength(34);
     expect(before.edgeFunctions).toHaveLength(3);
   });

@@ -3,8 +3,8 @@
 -- managers and physios it is given, leaving the squad alone (guardians are
 -- never picked); guardians of an athlete under 18 follow them into and out
 -- of a team, and come and go with the guardian link, while squads and adult
--- athletes are untouched; admins read every team's games through
--- admin_team_games and still can't set team goals. Prints one line per check.
+-- athletes are untouched; admins read no team's games through
+-- admin_team_games (27 November 2026) and can't set team goals. Prints one line per check.
 \set ON_ERROR_STOP 0
 \pset tuples_only on
 \pset format unaligned
@@ -131,12 +131,14 @@ select pg_temp.ok('the junior, their guardians and the picked physio are in it',
 select pg_temp.works('admin chooses the physio only', $s$ select public.admin_set_team_members('00000000-0000-0000-0000-0000000000b4', '[{"profile_id": "00000000-0000-0000-0000-000000000014"}]') $s$);
 select pg_temp.ok('the guardians left with the junior', pg_temp.members_of('b4') = array[pg_temp.m('14') || ':physio'], true);
 
--- Admins read every team's games; coaches theirs; nobody else.
+-- Coaches read their teams' games; admins and everyone else none.
 insert into public.fixtures (id, team_id, team_name, opponent, round_name, starts_at) values
   (pg_temp.m('f1'), pg_temp.m('a2'), 'Sample Team', 'Rockets', 'Round 1', now() - interval '3 days'),
   (pg_temp.m('f2'), pg_temp.m('a2'), 'Sample Team', 'Comets', 'Round 2', now() + interval '3 days');
 select pg_temp.ok('anon cannot list games for admins', has_function_privilege('anon', 'public.admin_team_games()', 'execute'), false);
-select pg_temp.ok('the admin sees the team''s next and last game', (select array_agg(fixture_id order by is_next desc) = array[pg_temp.m('f2'), pg_temp.m('f1')] from public.admin_team_games() where team_id = pg_temp.m('a2')), true);
+-- Team goals stay with the team (27 November 2026): the list is kept for
+-- older apps and is empty for everyone.
+select pg_temp.ok('the admin sees no team''s games', (select count(*) = 0 from public.admin_team_games()), true);
 select pg_temp.ok('the admin is not a coach of the team', (select count(*) = 0 from public.coach_team_games()), true);
 select pg_temp.fails('the admin cannot set a team goal', format('select public.save_team_game_goal(null, %L, %L)', pg_temp.m('f2'), 'Win'));
 select pg_temp.as_member('22');

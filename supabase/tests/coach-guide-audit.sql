@@ -92,7 +92,8 @@ select pg_temp.ok('athlete reads the team goal', (select count(*) = 1 from publi
 select pg_temp.as_member('41');
 select pg_temp.ok('guardian reads the team goal', (select count(*) = 1 from public.team_game_goals), true);
 select pg_temp.as_member('01');
-select pg_temp.ok('admin reads the team goal', (select count(*) = 1 from public.team_game_goals), true);
+-- Team goals stay with the team (27 November 2026): an admin no longer reads them.
+select pg_temp.ok('admin does not read the team goal', (select count(*) = 0 from public.team_game_goals), true);
 select pg_temp.as_member('13');
 select pg_temp.ok('manager in the team does not read it', (select count(*) = 0 from public.team_game_goals), true);
 select pg_temp.fails('manager cannot comment', $s$ select public.add_team_game_goal_comment('00000000-0000-0000-0000-0000000000e1', 'Go team') $s$);
