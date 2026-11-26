@@ -254,7 +254,11 @@ begin
         "injuries": false, "attendance": false, "sessionPlans": false, "surveys": false,
         "captainPolls": false, "awards": false, "goals": false, "integrity": false, "kpis": false,
         "registers": false}'::jsonb,
-      pilot_features = '{"messages": true, "calendar": true}'::jsonb
+      pilot_features = '{"messages": true, "calendar": true}'::jsonb,
+      -- "Remove old records" off: the nightly removal only runs on the live
+      -- project, so switched on here it only ever shows admins a "hasn't
+      -- finished" to-do (seen on the demo club, 26 November 2026).
+      retention_enabled = false
   where id;
 
   -- The club itself: the Perth Pumpkins, a made-up club, so the demo never
