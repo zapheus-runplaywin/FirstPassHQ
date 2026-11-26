@@ -305,13 +305,13 @@ tablet](#using-hq-on-a-tablet).
 #### Which version you have
 
 The opening screen shows the app's version and build in small print at the foot, such as
-**Version 1.0.0 (23) · Build 850**, and so do Find your club, the sign-in screen and the foot of
+**Version 1.0.0 (23) · Build 854**, and so do Find your club, the sign-in screen and the foot of
 the **Me** tab (or of your one screen, if you have no tabs yet). When the club has sent a fix over the air since you installed,
 a second line names it, such as **Update 1a2b3c4d · 20 Nov 2026**. If something goes wrong, or the
 club asks which version you're testing, read these lines out or send a screenshot of them.
 
 - **Version 1.0.0 (23)** is the version in the app store and, in brackets, the store build.
-- **Build 850** is the build of the club's app code. It matches the "build 850" on the guides and
+- **Build 854** is the build of the club's app code. It matches the "build 854" on the guides and
   PDFs made from the same code.
 - **Update** appears only while an over-the-air update is running, with when it was made.
 
@@ -494,8 +494,8 @@ shows only your link code, the people who can help, **Raise a concern**, and **S
 club** and **Delete account**. That stays true after an admin approves you, and again later if your
 last verified parent or guardian leaves the club or is unlinked: you get a new code to share. Once
 you're approved, a **User guide** link opens the athletes' guide (see [The user
-guides](#the-user-guides)). The app
-opens as soon as a verified parent or guardian is linked, or on your 18th birthday.
+guides](#the-user-guides)). The app opens as soon as a verified parent or guardian is linked, or on
+your 18th birthday.
 
 **Parents and guardians: your child's code.** While you wait, the waiting screen has **Enter your
 child's code**. Type the code from your child's app and tap **Enter code**. The card then lists
@@ -698,9 +698,13 @@ role.
   have](#which-version-you-have)).
 - **With no tabs**: a temporary helper, and an athlete under 18 who is approved but waiting for a
   parent or guardian, have a **User guide** link at the foot of their one screen.
+- **On the web**: every guide is also listed at **firstpass-hq.expo.app/guides**, for anyone, with
+  no sign-in.
 
 Every person in the guides is made up, and opening one tells nobody at the club: the app sends
 nothing about you with it, and records nothing.
+
+<img src="user-guide/me-help.png" width="210" alt="Help in the Me tab for a coach who is also a parent: a guide for each of their roles">
 
 ### Using HQ on a tablet
 
@@ -3449,7 +3453,8 @@ member, and doesn't replace the club's own membership or registration process.
    says your time has finished; ask an admin to change your dates if you help again. Your account
    stays until an admin removes it, and you can still be named in a concern.
 
-**Raise a concern** is on that screen the whole time.
+**Raise a concern** is on that screen the whole time. At its foot, **User guide** opens the guide
+for temporary helpers in your browser.
 
 <img src="user-guide/join-volunteer.png" width="210" alt="Asking to join as a temporary helper, with the task, dates and how they're screened">
 <img src="user-guide/volunteer-home.png" width="210" alt="A temporary helper's screen with the steps before they help">
