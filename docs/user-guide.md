@@ -304,13 +304,13 @@ tablet](#using-hq-on-a-tablet).
 #### Which version you have
 
 The opening screen shows the app's version and build in small print at the foot, such as
-**Version 1.0.0 (23) · Build 755**, and so do Find your club, the sign-in screen and the foot of
+**Version 1.0.0 (23) · Build 850**, and so do Find your club, the sign-in screen and the foot of
 the **Me** tab (or of your one screen, if you have no tabs yet). When the club has sent a fix over the air since you installed,
 a second line names it, such as **Update 1a2b3c4d · 20 Nov 2026**. If something goes wrong, or the
 club asks which version you're testing, read these lines out or send a screenshot of them.
 
 - **Version 1.0.0 (23)** is the version in the app store and, in brackets, the store build.
-- **Build 755** is the build of the club's app code. It matches the "build 755" on the guides and
+- **Build 850** is the build of the club's app code. It matches the "build 850" on the guides and
   PDFs made from the same code.
 - **Update** appears only while an over-the-air update is running, with when it was made.
 
@@ -4452,7 +4452,7 @@ addresses, so keep them somewhere only the committee can reach.
 
 <img src="user-guide/reports.png" width="210" alt="Reports">
 <img src="user-guide/report-wwcc.png" width="210" alt="Working With Children Checks report">
-<img src="user-guide/report-pdf.png" width="210" alt="The Working With Children Checks report saved as a PDF">
+<img src="user-guide/report-pdf.png" width="420" alt="The Working With Children Checks report saved as a PDF">
 <img src="user-guide/report-under-18s.png" width="210" alt="Under 18s and their guardians report">
 <img src="user-guide/report-medical.png" width="210" alt="The Medical details checks report">
 <img src="user-guide/report-medical-squad.png" width="210" alt="The Medical details checks report for the 17 &amp; Under Squad">
@@ -4767,8 +4767,8 @@ teams is still done in [Squads, teams and selections](#squads-teams-and-selectio
 selector's name stays on what they wrote if the selector leaves. Once **Remove old records** is
 on, a round goes with its panel, dates and every observation a year after it ends (or after it
 was closed, if that was later) unless you choose longer under [Record keeping](#record-keeping).
-A signed summary for each athlete, feedback shared with athletes and parents, and the record of
-when athletes were told aren't in the app yet (see [Not in the app yet](#15-not-in-the-app-yet)).
+Appeals, and the selection decision itself (who was selected and why), aren't in the app yet (see
+[Not in the app yet](#15-not-in-the-app-yet)).
 
 ### Record keeping
 
@@ -4875,7 +4875,7 @@ Tap **Save keep periods** to save.
 <img src="user-guide/club-settings-records-injury.png" width="210" alt="Record keeping: keep periods for team polls, record views and injury documents">
 <img src="user-guide/club-settings-records-medical.png" width="210" alt="Record keeping: how long medical and emergency details are kept without their yearly check">
 <img src="user-guide/club-settings-records-more.png" width="210" alt="Record keeping: keep periods for cleared injuries and safeguarding records">
-<img src="user-guide/club-settings-records-awards.png" width="210" alt="Record keeping: keep periods for who voted for whom and for awards and their results, with Keep for good">
+<img src="user-guide/club-settings-records-awards.png" width="210" alt="Record keeping: keep periods for who voted for whom, for awards and their results, with Keep for good, and for selection assessments">
 
 ### Safeguarding contacts
 
@@ -5002,7 +5002,7 @@ Under **Injury clearances**:
   Australia allows 12. Either way, the athlete needs a doctor's clearance and a physio's
   endorsement (see [Concussion](#concussion)).
 
-<img src="user-guide/admin-injury-clearances.png" width="210" alt="Safeguarding settings: injury clearances">
+<img src="user-guide/admin-injury-clearances.png" width="210" alt="Safeguarding settings: injury clearances, and which committee members see injuries">
 
 **Injuries are seen by** is **Whole committee** by default, so every committee member sees
 injuries and accepts clearances as [Accepting clearances](#accepting-clearances) describes. Choose
@@ -5504,7 +5504,7 @@ before.
 dates of birth were needed show under **Needs checking** until an admin adds one.
 
 <img src="user-guide/join-under-18.png" width="210" alt="Asking to join as an athlete under 18, with a date of birth and a parent's email">
-<img src="user-guide/member-date-of-birth.png" width="210" alt="An admin checking the date of birth a child gave">
+<img src="user-guide/member-date-checked.png" width="210" alt="An admin checking the date of birth a child gave, on the Checks tab of the child's request">
 <img src="user-guide/locked-child.png" width="210" alt="An approved athlete under 18 with no verified parent or guardian linked yet: only their link code, who can help and the links to leave">
 
 ### Injury documents and photos
@@ -6109,14 +6109,15 @@ Working With Children Check, and another admin must do it.
   club's database, not just hidden by the app's screens, and both follow
   [Who can see what](#11-who-can-see-what).
 - **Each club's data is kept apart**, in that club's own database.
-- **Not social media, by design.** The app is a club administration tool: no written replies or direct
-  messages, feeds, profile pictures, likes or following, and posts never reach beyond a member's
-  own squads and teams. That keeps it outside the under-16 social media ban, and the rule is
-  written into how the app is built. Whether the Privacy Act binds a club depends on its turnover
-  and whether keeping injury records makes it a health service provider. **Each club should get
-  legal advice on this** and treat injury records as covered until it has; the app is built to the
-  Act's standards either way. Both assessments, with their reasons, are kept with the app's code
-  and reviewed each year.
+- **Not social media, by design.** The app is a club administration tool: no direct messages or
+  replies to messages, feeds, profile pictures, likes or following, and a child's posts never reach
+  beyond their own squads and teams. Where a club turns on chat groups, a child writes only in the
+  group of their own squad or team, as set out above. That keeps it outside the under-16 social
+  media ban, and the rule is written into how the app is built. Whether the Privacy Act binds a club
+  depends on its turnover and whether keeping injury records makes it a health service provider.
+  **Each club should get legal advice on this** and treat injury records as covered until it has;
+  the app is built to the Act's standards either way. Both assessments, with their reasons, are kept
+  with the app's code and reviewed each year.
 
 <img src="user-guide/safeguarding-me.png" width="210" alt="Raise a concern at the top of the Me tab and under Safety, above the club's safeguarding contacts">
 
