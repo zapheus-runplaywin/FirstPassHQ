@@ -1,4 +1,4 @@
-import { memberTab, openApp, openTab } from '../support/app';
+import { expectNowhereToWrite, memberTab, openApp, openTab } from '../support/app';
 import { eq } from '../support/fake-supabase';
 import { openSquad, samplePeople, TODAY, u17Squad, uuid } from '../support/people';
 import { expect, test } from '../support/test';
@@ -132,7 +132,7 @@ test('on a tablet, an athlete under 18 reads a message beside the inbox, with no
 
   // Nothing is open, and nothing is marked read, until they tap a message.
   await expect(beside).toHaveText('Choose a message to read it here.');
-  await expect(list.getByLabel('Unread')).toHaveCount(1);
+  await expect(list.getByLabel('Unread', { exact: true })).toHaveCount(1);
   expect(backend.rpcCalls('mark_message_read')).toEqual([]);
 
   await list.getByRole('button', { name: new RegExp(`^Unread ${message.sender_name}`) }).click();
@@ -142,13 +142,14 @@ test('on a tablet, an athlete under 18 reads a message beside the inbox, with no
   await expect(beside.getByText(message.body, { exact: true })).toBeVisible();
   await expect(beside.getByRole('heading', { name: 'Message' })).toBeVisible();
   await expect.poll(() => backend.rpcCalls('mark_message_read')).toEqual([{ p_message_id: message.id }]);
-  await expect(list.getByLabel('Unread')).toHaveCount(0);
+  await expect(list.getByLabel('Unread', { exact: true })).toHaveCount(0);
   await expect(list.getByText('All read')).toBeVisible();
   expect(backend.called('rpc/message_receipts')).toBe(false);
 
-  // Nowhere to type and nothing that replies, in the list or beside it.
-  await expect(page.locator('textarea, input, [contenteditable="true"]')).toHaveCount(0);
-  await expect(page.getByRole('textbox')).toHaveCount(0);
+  // Nowhere to write and nothing that replies, in the list or beside it: only the search box
+  // over the list takes typing.
+  await expectNowhereToWrite(page);
+  await expect(list.getByRole('searchbox', { name: 'Search messages' })).toBeVisible();
   await expect(page.getByRole('button', { name: /reply|respond|message cam|send/i })).toHaveCount(0);
   await expect(page.getByText(/\breply\b/i)).toHaveCount(0);
   await expect(beside.getByRole('link', { name: 'Report this message' })).toBeVisible();

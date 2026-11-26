@@ -153,13 +153,15 @@ test('a guardian reads the copy of a message to their child, with no way to repl
   await expect(tab(page, 'Messages')).toContainText('1');
   await openTab(page, 'Messages');
   // Guardians can't send messages.
-  await expect(page.getByText(`Copied to you as ${minor.full_name}’s parent or guardian`)).toBeVisible();
+  await expect(page.getByText(`Your copy, for ${minor.full_name}`)).toBeVisible();
   await expect(page.getByRole('button', { name: 'New message', exact: true })).toHaveCount(0);
   expect(backend.called('rpc/my_sent_messages')).toBe(false);
   await page.getByRole('button', { name: new RegExp(`^Unread ${message.sender_name}`) }).click();
 
   await expect(page).toHaveURL(new RegExp(`/messages/${message.id}$`));
   await expect(page.getByText(message.body, { exact: true }).filter({ visible: true })).toBeVisible();
+  // The open message says in full why the parent got it.
+  await expect(page.getByText(`Copied to you as ${minor.full_name}’s parent or guardian`)).toBeVisible();
   await expect.poll(() => backend.rpcCalls('mark_message_read')).toEqual([{ p_message_id: message.id }]);
   expect(backend.called('rpc/message_receipts')).toBe(false);
   // Nowhere to type, and nothing that replies or messages the coach.

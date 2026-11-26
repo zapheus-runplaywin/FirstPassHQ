@@ -17,13 +17,15 @@
  * - admins set up groups by roles, squads and teams, and people.
  */
 import { router } from 'expo-router';
-import { fireEvent, screen } from 'expo-router/testing-library';
+import { StyleSheet } from 'react-native';
+import { fireEvent, screen, within } from 'expo-router/testing-library';
 
 import AdminChatGroupEdit from '@/app/admin/chat-groups/edit';
 import AdminChatGroups from '@/app/admin/chat-groups/index';
 import MessageScreen from '@/app/messages/[id]';
 import ChatGroupScreen from '@/app/messages/group/[id]';
 import MessagesScreen from '@/app/(tabs)/messages';
+import { BrandFonts } from '@/constants/theme';
 import {
   type AdminChatGroup,
   type ChatGroup,
@@ -174,12 +176,15 @@ describe('the Groups tab', () => {
         last_post: null,
       }),
     ]);
-    expect(screen.getByText('Groups (2)')).toBeTruthy();
-    await fireEvent.press(screen.getByText('Groups (2)'));
+    // The count sits in a badge on the Groups box, and is read out with it.
+    expect(screen.getByLabelText('Groups, 2 unread')).toBeTruthy();
+    expect(within(screen.getByLabelText('Groups, 2 unread')).getByText('2')).toBeTruthy();
+    await fireEvent.press(screen.getByText('Groups'));
     await settle();
     expect(screen.getByText(`${TEAM.name} coaches and captains`)).toBeTruthy();
     expect(screen.getByText('Sample coach: Warm-up at 5:30')).toBeTruthy();
-    expect(screen.getByText('2 unread')).toBeTruthy();
+    // And beside the group itself.
+    expect(screen.getByLabelText('2 unread')).toBeTruthy();
     expect(screen.getByText('Hidden groups')).toBeTruthy();
     expect(screen.queryByText('All managers')).toBeNull();
     await fireEvent.press(screen.getByText('Hidden groups'));
@@ -233,9 +238,54 @@ describe('the Groups tab', () => {
       (n) => n.props.horizontal === true && n.props.contentContainerStyle?.flexDirection === 'row',
     );
     expect(line).toHaveLength(1);
-    for (const tab of ['Inbox', 'Sent', 'Archived', 'Groups (12)']) {
+    for (const tab of ['Inbox', 'Sent', 'Archived', 'Groups']) {
       expect(screen.getByText(tab).props.numberOfLines).toBe(1);
     }
+    expect(screen.getByLabelText('Groups, 12 unread')).toBeTruthy();
+  });
+
+  it('keeps New message off the Groups box: a group has its own box to write in', async () => {
+    await openList('coach', [group()]);
+    expect(screen.getByText('New message')).toBeTruthy();
+    await fireEvent.press(screen.getByText('Groups'));
+    await settle();
+    expect(screen.queryByText('New message')).toBeNull();
+    await fireEvent.press(screen.getByText('Inbox'));
+    await settle();
+    expect(screen.getByText('New message')).toBeTruthy();
+  });
+
+  it('finds a group by its name or its latest post', async () => {
+    await openList('coach', [
+      group(),
+      group({ id: 'g-managers', name: 'All managers', last_post: 'Scorer roster is up', last_sender: 'Sample manager' }),
+    ]);
+    await fireEvent.press(screen.getByText('Groups'));
+    await settle();
+    const search = screen.getByLabelText('Search groups');
+    expect(search.props.role).toBe('searchbox');
+    await fireEvent.changeText(search, 'roster');
+    expect(screen.getByText('All managers')).toBeTruthy();
+    expect(screen.queryByText(`${TEAM.name} coaches and captains`)).toBeNull();
+    await fireEvent.changeText(search, 'captains');
+    expect(screen.getByText(`${TEAM.name} coaches and captains`)).toBeTruthy();
+    expect(screen.queryByText('All managers')).toBeNull();
+    await fireEvent.changeText(search, 'zebra');
+    expect(screen.getByText('Nothing found')).toBeTruthy();
+  });
+
+  it('shows a group with unread posts in bold, with its count beside it', async () => {
+    await openList('coach', [
+      group({ unread_count: 3 }),
+      group({ id: 'g-managers', name: 'All managers' }),
+    ]);
+    await fireEvent.press(screen.getByText('Groups'));
+    await settle();
+    const family = (text: string) =>
+      (StyleSheet.flatten(screen.getByText(text).props.style) as { fontFamily?: string }).fontFamily;
+    expect(family(`${TEAM.name} coaches and captains`)).toBe(BrandFonts.bold);
+    expect(family('All managers')).toBe(BrandFonts.regular);
+    expect(within(screen.getByLabelText('3 unread')).getByText('3')).toBeTruthy();
   });
 
   it('says so when the member is in no groups', async () => {
@@ -454,7 +504,8 @@ describe('a chat group', () => {
     });
     expect(screen.container.queryAll((n) => n.type === 'TextInput')).toHaveLength(0);
     expect(screen.getByText(/^Nobody else is in this group yet\./)).toBeTruthy();
-    expect(screen.getByText('No posts yet.')).toBeTruthy();
+    expect(screen.getByText('No posts yet')).toBeTruthy();
+    expect(screen.queryByText('Start the conversation below.')).toBeNull();
   });
 
   it('says so when the group isn’t available', async () => {
@@ -472,7 +523,8 @@ describe('a chat group', () => {
 
   it('invites the first post in an empty group', async () => {
     await openGroup('coach', group(), { posts: [] });
-    expect(screen.getByText(/No posts yet\. Start the conversation below\./)).toBeTruthy();
+    expect(screen.getByText('No posts yet')).toBeTruthy();
+    expect(screen.getByText('Start the conversation below.')).toBeTruthy();
   });
 
   it('shows read counts on the member’s own posts', async () => {
@@ -482,6 +534,54 @@ describe('a chat group', () => {
     // The member's own posts don't carry their name, as in a messaging app.
     expect(screen.queryByText(POSTS[0].sender_name)).toBeNull();
     expect(screen.getByText(/Read by 2 of 3/)).toBeTruthy();
+  });
+
+  describe('laid out like a conversation', () => {
+    // Today is Sunday 18 October 2026. Newest first, as the database returns them.
+    const post = (id: string, senderId: string, name: string, body: string, at: string): ChatPost => ({
+      ...POSTS[0],
+      id,
+      sender_id: senderId,
+      sender_name: name,
+      body,
+      created_at: at,
+    });
+    const TALK = [
+      post('t5', 'someone', 'Sample captain', 'See you at 5', '2026-10-18T01:10:00Z'),
+      post('t4', 'someone', 'Sample captain', 'Got the cones', '2026-10-18T01:05:00Z'),
+      post('t3', 'coach-2', 'Other coach', 'Bibs are packed', '2026-10-18T01:00:00Z'),
+      post('t2', 'someone', 'Sample captain', 'Who has the bibs?', '2026-10-17T07:00:00Z'),
+      post('t1', 'someone', 'Sample captain', 'Good game all', '2026-10-10T07:00:00Z'),
+    ];
+
+    it('heads each day’s posts with the day, oldest at the top', async () => {
+      await openGroup('coach', group(), { posts: TALK });
+      const days = screen.getAllByRole('header').map((h) => h.props.children);
+      // The list is drawn newest first, so the days read Today, Yesterday, then the date.
+      expect(days.slice(0, 2)).toEqual(['Today', 'Yesterday']);
+      expect(days).toHaveLength(3);
+      expect(days[2]).toMatch(/10/);
+    });
+
+    it('names someone once for a run of their posts, and again after someone else or a new day', async () => {
+      await openGroup('coach', group(), { posts: TALK });
+      // t1 (its own day), t2 (a new day), t4 (after Other coach); not t5, which follows t4.
+      expect(screen.getAllByText('Sample captain')).toHaveLength(3);
+      expect(screen.getAllByText('Other coach')).toHaveLength(1);
+      for (const body of ['See you at 5', 'Got the cones', 'Bibs are packed', 'Who has the bibs?', 'Good game all']) {
+        expect(screen.getByText(body)).toBeTruthy();
+      }
+    });
+
+    it('still names every post from a sender the database gives no id for', async () => {
+      await openGroup('coach', group(), {
+        posts: [
+          { ...post('n2', '', 'Former member', 'Second', '2026-10-18T01:05:00Z'), sender_id: null },
+          { ...post('n1', '', 'Former member', 'First', '2026-10-18T01:00:00Z'), sender_id: null },
+        ],
+      });
+      expect(screen.getAllByText('Former member')).toHaveLength(2);
+    });
   });
 
   it('opens at the newest post and loads older ones as the member scrolls up', async () => {

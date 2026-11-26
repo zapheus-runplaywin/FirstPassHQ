@@ -133,6 +133,13 @@ Rules exclude (messaging, education, health), alongside services eSafety
 lists as not currently age-restricted, such as Messenger, WhatsApp and Google
 Classroom. It doesn't belong with social media.
 
+Messages laid out as a mail app (26 November 2026): the circle beside each
+sender holds the initials of their name, worked out by the app. It is not a
+picture, a member can't set or change it, and tapping it opens nothing, so it
+is neither a profile picture nor a profile. The search box over a list sifts
+only the messages already in that member's own inbox; nothing typed in it is
+sent, and it finds no members and no messages they couldn't already open.
+
 ### The design rule that follows
 
 For members under 18, the app must never have:

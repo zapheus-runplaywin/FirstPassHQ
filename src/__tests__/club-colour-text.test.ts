@@ -53,6 +53,8 @@ const LINKS_AND_BUTTONS: Record<string, number> = {
   'app/concerns/message-access/[id].tsx': 1,
   'app/(tabs)/index.tsx': 3,
   'app/(tabs)/messages.tsx': 2,
+  // Start again, on a message kept from earlier.
+  'app/messages/new.tsx': 1,
   // Five links and the "Next up" label on Today's first card.
   'components/home/today.tsx': 6,
   // Arrows that step a date, and the arrow at the end of a to-do.

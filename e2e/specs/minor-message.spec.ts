@@ -1,4 +1,4 @@
-import { openApp, openTab, tab } from '../support/app';
+import { expectNowhereToWrite, openApp, openTab, tab } from '../support/app';
 import { eq } from '../support/fake-supabase';
 import { samplePeople, u17Squad, uuid } from '../support/people';
 import { expect, test } from '../support/test';
@@ -54,9 +54,9 @@ test('an athlete under 18 reads a message, with no way to reply', async ({ page 
   // Only the sender and admins see read receipts.
   expect(backend.called('rpc/message_receipts')).toBe(false);
 
-  // Nowhere to type and nothing that replies or messages the sender, on any screen in the stack.
-  await expect(page.locator('textarea, input, [contenteditable="true"]')).toHaveCount(0);
-  await expect(page.getByRole('textbox')).toHaveCount(0);
+  // Nowhere to write and nothing that replies or messages the sender, on any screen in the
+  // stack. The inbox underneath has a search box, which is the only thing that takes typing.
+  await expectNowhereToWrite(page);
   await expect(page.getByRole('button', { name: /reply|respond|message cam|send/i })).toHaveCount(0);
   await expect(page.getByRole('link', { name: /reply|respond|message cam|send/i })).toHaveCount(0);
   await expect(page.getByText(/\breply\b/i)).toHaveCount(0);
@@ -65,4 +65,24 @@ test('an athlete under 18 reads a message, with no way to reply', async ({ page 
   // And nothing was written back except the read receipt.
   const writes = backend.requests.filter((r) => r.method !== 'GET' && r.method !== 'HEAD' && !r.rpc);
   expect(writes).toEqual([]);
+
+  // Back in the inbox, the search box sifts the messages already there. Typing in it finds the
+  // message, sends nothing anywhere, and still leaves nothing to reply with.
+  await page.goBack();
+  const search = page.getByRole('searchbox', { name: 'Search messages' });
+  await expect(search).toBeVisible();
+  // Coming back reloads the inbox; once that has finished, nothing more is asked for.
+  await expect(page.getByRole('button', { name: new RegExp(`^${message.sender_name}`) })).toBeVisible();
+  await page.waitForLoadState('networkidle');
+  const before = backend.requests.length;
+  await search.fill('lords oval');
+  await expect(page.getByRole('button', { name: new RegExp(`^${message.sender_name}`) })).toBeVisible();
+  await search.fill('nothing like this');
+  await expect(page.getByText('Nothing found')).toBeVisible();
+  await expect(page.getByRole('button', { name: new RegExp(`^${message.sender_name}`) })).toHaveCount(0);
+  await page.getByRole('button', { name: 'Clear search', exact: true }).first().click();
+  await expect(page.getByRole('button', { name: new RegExp(`^${message.sender_name}`) })).toBeVisible();
+  await page.waitForLoadState('networkidle');
+  expect(backend.requests.length).toBe(before);
+  await expectNowhereToWrite(page);
 });

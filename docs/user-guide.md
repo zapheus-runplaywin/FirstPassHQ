@@ -830,16 +830,31 @@ there to allow them.
 ### Messages
 
 Messages from your coaches, managers, captains, the committee and the club arrive in
-**Messages**. Unread messages have a dot in the club's colour, and the **Messages** tab shows how many
-are new. Opening a message marks it as read, and the
+**Messages**. Each message shows who sent it, with their initials in a circle (letters only: nobody
+has a picture, and the circle doesn't open anything), who it went to, when, and its first two
+lines. Unread messages have a dot in the club's colour and their sender in bold, and the
+**Messages** tab shows how many are new. Opening a message marks it as read, and the
 sender can see that you've read it.
 
-- **Mark all read** at the top of your inbox clears every dot at once. The senders still see those
-  messages as not read, because you didn't open them.
-- **Mark as unread** at the bottom of an open message puts it back in your inbox with its dot, to
-  come back to later. The sender still sees that you read it.
+**Inbox**, **Archived** and, if you send messages, **Sent** sit in a bar at the top, with the
+number of unread messages beside **Inbox**. Under the bar:
 
-**Inbox**, **Archived** and, if you send messages, **Sent** sit at the top. To tidy your inbox,
+- **Search messages** finds a message by who sent it, who it went to or any words in it. It looks
+  through the box you're in (Inbox, Sent, Archived or Groups) and only sifts your own messages:
+  nothing you type there is sent anywhere. **Clear search** brings everything back.
+- **The unread count** (such as **2 unread**) is a filter: tap it to see only unread messages, and
+  again to see them all. **1 to answer** does the same for messages with a question you haven't
+  answered. When nothing is waiting it says **All read** with a green tick.
+- **Mark all read** clears every dot at once. The senders still see those
+  messages as not read, because you didn't open them.
+- A longer inbox is headed by day: **Today**, **Yesterday**, **Earlier this week** and
+  **Earlier**.
+- The list shows your latest 100 messages; **Show older messages** at the end brings the next 100.
+
+Under an open message, **Mark as unread** puts it back in your inbox with its dot, to
+come back to later. The sender still sees that you read it.
+
+To tidy your inbox,
 swipe a message to the left to archive it (or open it and tap **Archive**). It moves to
 **Archived**, loses its dot, and **Undo** appears for a moment in case you didn't mean it. In
 **Archived**, swipe a message to the left (or open it and tap **Move to inbox**) to bring it back.
@@ -878,17 +893,21 @@ didn't send or get. If a concern needs it, the Child Safety Officer or Complaint
 admin to let them read one person's messages for 24 hours (see [Reading a member's messages for a
 concern](#reading-a-members-messages-for-a-concern)). Nobody is told when that happens.
 
-<img src="user-guide/inbox.png" width="210" alt="Messages inbox with Inbox, Archived and Mark all read">
-<img src="user-guide/inbox-archived.png" width="210" alt="The Archived tab, with a message swiped back to the inbox">
-<img src="user-guide/message-mark-unread.png" width="210" alt="An open message with Archive and Mark as unread">
+<img src="user-guide/inbox.png" width="210" alt="Messages inbox: Inbox with its unread count and Archived in a bar, Search messages, the unread filter and Mark all read, and messages under Today and Yesterday with each sender's initials">
+<img src="user-guide/inbox-search.png" width="210" alt="The inbox searched for a word, showing the one message that has it">
+<img src="user-guide/inbox-empty.png" width="210" alt="An empty inbox, saying what will arrive there">
+<img src="user-guide/inbox-archived.png" width="210" alt="The Archived box, with a message swiped back to the inbox">
+<img src="user-guide/message-mark-unread.png" width="210" alt="An open message with the sender's initials, and Archive and Mark as unread side by side under it">
 
 ### Chat groups
 
-When an admin switches on **Chat groups**, a **Groups** tab sits beside Inbox, Sent and Archived in
-Messages, with the number of unread posts. Each group lists its latest post. A group works like a
+When an admin switches on **Chat groups**, a **Groups** box sits beside Inbox, Sent and Archived in
+Messages, with the number of unread posts. Each group lists its latest post, with its own unread
+count beside it, and **Search groups** finds one by its name or latest post. A group works like a
 messaging app: it opens at the newest post and marks its posts read, your own posts sit on the
-right and everyone else's on the left with their name, and the box to write in stays at the
-bottom. Scroll up for older posts; they load as you go, back to **Start of the group**. New posts
+right and everyone else's on the left with their name (once for a run of posts from the same
+person), each day's posts sit under the day (**Today**, **Yesterday** or the date), and the box to
+write in stays at the bottom. Scroll up for older posts; they load as you go, back to **Start of the group**. New posts
 show while you have the group open. Type in **Write a message** and tap **Post**: everyone in the
 group sees it. Tap a post to open it on its own, where **Report this message** raises a concern
 about it and, for your own posts, you see who has read it (the count also shows under the post).
@@ -950,7 +969,7 @@ and the Child Safety Officer or Complaints Manager can read them under an approv
 any other message. They don't show in your Inbox or Sent, and **Mark all read** in the Inbox
 leaves them alone.
 
-<img src="user-guide/chat-groups.png" width="210" alt="The Groups tab in Messages, with unread posts and Hidden groups">
+<img src="user-guide/chat-groups.png" width="210" alt="The Groups box in Messages, with unread counts beside the groups and Hidden groups">
 <img src="user-guide/chat-group.png" width="210" alt="A coaches and captains group opened at its newest posts, with a post the coach hid greyed out and the box to write in at the bottom">
 <img src="user-guide/chat-group-swipe.png" width="210" alt="A coach swiping a post left to show Hide">
 <img src="user-guide/chat-block.png" width="210" alt="A group post opened on its own, with Block asking once more and saying who is told">
@@ -1540,7 +1559,7 @@ messages:
 - **Captains and vice captains** can send to their own team, like its coaches. Squads don't have
   captains.
 
-Open **Messages**, tap **New message**, choose who it goes to, write it and tap **Send**. You'll
+Open **Messages**, tap **New message** at the bottom right, choose who it goes to, write it and tap **Send**. You'll
 see who has read it in **Sent**. If you're under 18, your
 parents or guardians get a copy of every message you send.
 
@@ -1731,11 +1750,12 @@ As a guardian you:
 
 - **Receive a copy of every message** sent to your athlete, whether it went to their squad, their
   team, all athletes or the whole club. You get each message once, even if you're also in the
-  squad. Your copy says which of your children it's for, such as "Copied to you as Jordan's and
-  Riley's parent or guardian" when two of your children are in the same team.
+  squad. Your copy says which of your children it's for: "Your copy, for Jordan and Riley" in
+  the inbox when two of your children are in the same team, and "Copied to you as Jordan's and
+  Riley's parent or guardian" on the open message.
 - **Receive a copy of every message your athlete sends** if they're a captain, so you see what
-  they send to their team or the club. These copies say "Copied to you because Jordan sent
-  it".
+  they send to their team or the club. These copies say "Your copy: Jordan sent it" in the inbox
+  and "Copied to you because Jordan sent it" on the open message.
 - **See your athlete's daily check-ins**, including any note they write, and the training
   sessions they log with their weekly load. Open your athlete's card in the **Family** tab and
   tap **Check-ins** to see the last four weeks. Your athlete is told that you can read their notes.
@@ -2328,21 +2348,27 @@ straight away.
 
 ### Sending messages
 
-1. Open **Messages** and tap **New message**.
+1. Open **Messages** and tap **New message**, the button at the bottom right of the screen.
 2. Choose the squad or team (if you coach just one, it's already chosen).
 3. Write the message and tap **Send**.
 
+If you leave **New message** before sending, to check a time on the calendar say, what you wrote is
+still there when you come back, with a line saying it hasn't been sent and **Start again** to clear
+it. It is kept only while the app is open, and only for you.
+
 Everyone else in that squad or team gets it, including the parents and guardians listed in it.
 Parents and guardians of athletes under 18 always get a copy, even if they aren't in the squad. Open
-**Sent** to see how many of them have read each message, and open a message to see exactly who has
-and hasn't read it. Read means they opened it: someone who clears their inbox with **Mark all
+**Sent** to see how many of them have read each message, with a bar that fills as they do and a
+green tick once everyone has. Open a message to see exactly who has and hasn't read it: **Not read
+yet** comes first, as those are the people to follow up, then **Read** with the time each person
+opened it (folded away when the message went to more than 12 people). Read means they opened it: someone who clears their inbox with **Mark all
 read** still shows as not read, and someone who puts a message back with **Mark as unread** still
 shows as read. Nobody else reads your messages, admins included, unless an admin lets the Child
 Safety Officer or Complaints Manager read them for a concern.
 
 <img src="user-guide/new-message-coach.png" width="210" alt="New message">
-<img src="user-guide/messages-sent.png" width="210" alt="Sent messages with read counts">
-<img src="user-guide/read-receipts.png" width="210" alt="Read receipts for one message">
+<img src="user-guide/messages-sent.png" width="210" alt="Sent messages, each with a bar and a count of how many have read it">
+<img src="user-guide/read-receipts.png" width="210" alt="Read receipts for one message: Not read yet first, then Read with times">
 
 #### Asking a question
 

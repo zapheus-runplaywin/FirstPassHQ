@@ -1,5 +1,5 @@
 // Opens the web build as one sample member, with the fake Supabase backend.
-import type { Page } from '@playwright/test';
+import { expect, type Page } from '@playwright/test';
 
 import { eq, FakeSupabase, startDevice, type FakeRequest, type Handler } from './fake-supabase';
 import { TODAY, type SampleProfile } from './people';
@@ -74,4 +74,20 @@ export type MemberTab = 'Overview' | 'Roles' | 'Checks' | 'Family' | 'History';
 /** A tab on a member's page: not the bar at the bottom, which has its own Family. */
 export function memberTab(page: Page, name: MemberTab) {
   return page.getByTestId('member-header').filter({ visible: true }).getByRole('tab', { name, exact: true });
+}
+
+/**
+ * Nowhere to write a message or a reply, on any screen in the stack (AGENTS.md,
+ * "No social media features for children"). The one thing a member can type in
+ * is the search box over a list of their own messages, which sends nothing:
+ * it must say it is a search box, and nothing else may take typing.
+ */
+export async function expectNowhereToWrite(page: Page) {
+  await expect(
+    page.locator('textarea, input:not([role="searchbox"]), [contenteditable="true"]'),
+  ).toHaveCount(0);
+  await expect(page.getByRole('textbox')).toHaveCount(0);
+  for (const box of await page.locator('[role="searchbox"]').all()) {
+    await expect(box).toHaveAttribute('aria-label', /^Search /);
+  }
 }

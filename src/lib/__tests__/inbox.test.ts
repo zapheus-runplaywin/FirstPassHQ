@@ -59,6 +59,22 @@ describe('messageBoxes', () => {
   it('gives everyone else Inbox and Archived, with no Sent', () => {
     expect(messageBoxes(false).map((b) => b.value)).toEqual(['inbox', 'archived']);
   });
+
+  it('adds Groups last while the club has chat groups on', () => {
+    expect(messageBoxes(true, true).map((b) => b.label)).toEqual(['Inbox', 'Sent', 'Archived', 'Groups']);
+    expect(messageBoxes(false, false).map((b) => b.value)).not.toContain('groups');
+  });
+
+  it('carries the unread counts for Inbox and Groups, and none for Sent or Archived', () => {
+    const boxes = messageBoxes(true, true, 3, 5);
+    const count = (value: string) => boxes.find((b) => b.value === value)?.count;
+    expect(count('inbox')).toBe(5);
+    expect(count('groups')).toBe(3);
+    expect(count('sent')).toBeUndefined();
+    expect(count('archived')).toBeUndefined();
+    // The names stay plain: the count is drawn as a badge beside them.
+    expect(boxes.map((b) => b.label)).toEqual(['Inbox', 'Sent', 'Archived', 'Groups']);
+  });
 });
 
 describe('archiving', () => {

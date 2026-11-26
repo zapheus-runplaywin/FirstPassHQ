@@ -74,7 +74,9 @@ test('a coach messages their squad, and sees who has read it', async ({ page }) 
   await expect(page.getByText(body, { exact: true }).filter({ visible: true })).toBeVisible();
   await expect(page.getByText(`To ${openSquad.name}`).filter({ visible: true })).toBeVisible();
   await expect(page.getByText('Read by 0 of 3')).toBeVisible();
-  await expect(page.getByText('Not read yet')).toHaveCount(3);
+  // Whoever hasn't read it is listed first, under one heading with how many they are.
+  await expect(page.getByText('Not read yet', { exact: true })).toHaveCount(1);
+  await expect(page.getByText('3 people', { exact: true })).toBeVisible();
   expect(backend.rpcCalls('message_receipts')).toEqual([{ p_message_id: sentId }]);
 });
 
@@ -116,7 +118,7 @@ test('an athlete has no New message button, and /messages/new sends them Home', 
   const backend = await openApp(page, { me: athlete, teams: [openSquad], memberships });
   await expect(page.getByText(`Hi ${athlete.full_name}`)).toBeVisible();
   await openTab(page, 'Messages');
-  await expect(page.getByText('No messages in your inbox.', { exact: false })).toBeVisible();
+  await expect(page.getByText('Your inbox is empty', { exact: true })).toBeVisible();
   await expect(page.getByText('Archived', { exact: true })).toBeVisible();
   await expect(page.getByRole('button', { name: 'New message', exact: true })).toHaveCount(0);
   await expect(page.getByRole('button', { name: 'Sent', exact: true })).toHaveCount(0);

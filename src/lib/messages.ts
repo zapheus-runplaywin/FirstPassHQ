@@ -2,29 +2,16 @@ import { useFocusEffect } from 'expo-router';
 import { useCallback, useState } from 'react';
 
 import { useAuth } from '@/lib/auth';
-import { pluralRoleLabels } from '@/lib/labels';
 import { supabase } from '@/lib/supabase';
-import type { AppRole, MessageAudience, Team } from '@/lib/types';
+import type { Team } from '@/lib/types';
 import { hasRole } from '@/lib/roles';
 
 export const MESSAGE_COLUMNS =
   'id, sender_id, sender_name, body, audience, audience_role, audience_label, created_at, answer_options, removed_at, removed_by_name';
 
-/** Who a message went to, such as "Everyone in the club" or "Open Squad". */
-export function audienceLabel(
-  audience: MessageAudience,
-  role: AppRole | 'partner' | null,
-  label: string | null,
-) {
-  if (audience === 'club') return 'Everyone in the club';
-  if (audience === 'role') {
-    if (!role) return 'A role';
-    // Sent before the Partner role was removed.
-    if (role === 'partner') return 'All partners';
-    return `All ${pluralRoleLabels[role].toLowerCase()}`;
-  }
-  return label ?? 'A squad or team';
-}
+// Who a message went to, in words. It lives with the list's other wording, which
+// has no need of the signed-in member.
+export { audienceLabel } from '@/lib/message-list';
 
 /** Columns of the member's own copy of a message. */
 export const RECIPIENT_COLUMNS =

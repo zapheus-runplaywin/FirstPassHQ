@@ -1,11 +1,12 @@
 import { router } from 'expo-router';
-import { useState } from 'react';
-import { StyleSheet, View } from 'react-native';
+import { useEffect, useState } from 'react';
+import { Pressable, StyleSheet, View } from 'react-native';
 
 import { Screen } from '@/components/screen';
 import { ThemedText } from '@/components/themed-text';
 import { Button, ChipGroup, ErrorText, TextField } from '@/components/ui';
 import { Spacing } from '@/constants/theme';
+import { useTheme } from '@/hooks/use-theme';
 import { useAuth } from '@/lib/auth';
 import { pluralRoleLabels } from '@/lib/labels';
 import { isMinor } from '@/lib/age';
@@ -17,6 +18,7 @@ import {
   QUESTION_PRESETS,
   type QuestionChoice,
 } from '@/lib/message-questions';
+import { forgetDraft, keepDraft, keptDraft } from '@/lib/message-draft';
 import { useCanMessageClub, useMessageGroups } from '@/lib/messages';
 import { supabase } from '@/lib/supabase';
 import type { AppRole, MessageAudience } from '@/lib/types';
@@ -37,7 +39,9 @@ const messageableRoles: AppRole[] = [
 ];
 
 export default function NewMessageScreen() {
-  const { isAdmin, profile } = useAuth();
+  const { isAdmin, profile, session } = useAuth();
+  const theme = useTheme();
+  const userId = session?.user.id;
   const teams = useTeams();
   const groups = useMessageGroups(teams);
   // The committee and club captains can message the whole club, and any
@@ -47,15 +51,38 @@ export default function NewMessageScreen() {
   // Captains and junior coaches can be under 18; their parents or guardians get a copy.
   const copiesGuardians =
     !!profile && hasRole(profile, 'athlete') && isMinor(profile.date_of_birth, profile.under_17);
-  const [audience, setAudience] = useState<MessageAudience>(canMessageClub ? 'club' : 'group');
-  const [role, setRole] = useState<AppRole | null>(null);
-  const [teamId, setTeamId] = useState<string | null>(null);
-  const [body, setBody] = useState('');
-  const [question, setQuestion] = useState<QuestionChoice>('none');
-  const [ownAnswers, setOwnAnswers] = useState<string[]>(['', '', '', '']);
-  const [shareTotals, setShareTotals] = useState(false);
+  // What the member was writing when they last left this screen, if anything.
+  const [kept] = useState(() => keptDraft(userId));
+  const [restored, setRestored] = useState(!!kept);
+  const [audience, setAudience] = useState<MessageAudience>(
+    kept?.audience ?? (canMessageClub ? 'club' : 'group'),
+  );
+  const [role, setRole] = useState<AppRole | null>(kept?.role ?? null);
+  const [teamId, setTeamId] = useState<string | null>(kept?.teamId ?? null);
+  const [body, setBody] = useState(kept?.body ?? '');
+  const [question, setQuestion] = useState<QuestionChoice>(kept?.question ?? 'none');
+  const [ownAnswers, setOwnAnswers] = useState<string[]>(kept?.ownAnswers ?? ['', '', '', '']);
+  const [shareTotals, setShareTotals] = useState(kept?.shareTotals ?? false);
   const [sending, setSending] = useState(false);
   const [error, setError] = useState<string | null>(null);
+
+  // Kept as it is written, so going back to check something doesn't lose it.
+  useEffect(() => {
+    keepDraft(userId, { audience, role, teamId, body, question, ownAnswers, shareTotals });
+  }, [userId, audience, role, teamId, body, question, ownAnswers, shareTotals]);
+
+  function startAgain() {
+    forgetDraft(userId);
+    setAudience(canMessageClub ? 'club' : 'group');
+    setRole(null);
+    setTeamId(null);
+    setBody('');
+    setQuestion('none');
+    setOwnAnswers(['', '', '', '']);
+    setShareTotals(false);
+    setRestored(false);
+    setError(null);
+  }
 
   // Coaches and managers who lead one group don't need to pick it.
   const selectedTeamId = teamId ?? (groups.length === 1 ? groups[0].id : null);
@@ -95,11 +122,24 @@ export default function NewMessageScreen() {
       setError(sendError.message);
       return;
     }
+    forgetDraft(userId);
     router.replace({ pathname: '/messages/[id]', params: { id: data as string } });
   }
 
   return (
     <Screen>
+      {restored ? (
+        <View style={[styles.draft, { backgroundColor: theme.backgroundElement }]}>
+          <ThemedText type="small" style={styles.grow}>
+            Your message from earlier is still here. It hasn’t been sent.
+          </ThemedText>
+          <Pressable accessibilityRole="button" hitSlop={8} onPress={startAgain}>
+            <ThemedText type="smallBold" style={{ color: theme.tint }}>
+              Start again
+            </ThemedText>
+          </Pressable>
+        </View>
+      ) : null}
       {isAdmin ? (
         <ChipGroup
           label="Send to"
@@ -237,5 +277,15 @@ export default function NewMessageScreen() {
 const styles = StyleSheet.create({
   field: {
     gap: Spacing.one,
+  },
+  draft: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: Spacing.three,
+    padding: Spacing.three,
+    borderRadius: 12,
+  },
+  grow: {
+    flex: 1,
   },
 });
