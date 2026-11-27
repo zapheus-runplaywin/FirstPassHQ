@@ -97,6 +97,10 @@ export default function CalendarsScreen() {
   const styles = useThemedStyles(makeStyles);
   const teams = useTeams();
   const [calendars, setCalendars] = useState<CalendarRow[]>([]);
+  const [loaded, setLoaded] = useState(false);
+  // With calendars already listed, the form to add another stays folded away
+  // until asked for, so the screen is the list.
+  const [adding, setAdding] = useState(false);
   const [name, setName] = useState('');
   const [url, setUrl] = useState('');
   const [home, setHome] = useState<Home>('link');
@@ -114,7 +118,10 @@ export default function CalendarsScreen() {
           'id, name, url, color, in_hq, takes_suggestions, moved_in_at, moved_in_by_name, calendar_audiences (kind, role, post, team_id), hq_calendar_events (count)',
         )
         .order('created_at')
-        .then(({ data }) => setCalendars((data as CalendarRow[] | null) ?? [])),
+        .then(({ data }) => {
+          setCalendars((data as CalendarRow[] | null) ?? []);
+          setLoaded(true);
+        }),
     [],
   );
 
@@ -165,6 +172,7 @@ export default function CalendarsScreen() {
     setUrl('');
     setColor(null);
     setShownTo(nobody);
+    setAdding(false);
     await load();
   }
 
@@ -183,55 +191,70 @@ export default function CalendarsScreen() {
         )}
       </View>
 
-      <View style={styles.section}>
-        <ThemedText type="smallBold">Add a calendar</ThemedText>
-        <ChipGroup
-          label="Where it’s kept"
-          options={[
-            { value: 'link', label: 'An Outlook link' },
-            { value: 'app', label: 'In the app' },
-          ]}
-          selected={[home]}
-          onToggle={(value) => {
-            setHome(value as Home);
-            setError(null);
-          }}
-        />
-        {home === 'link' ? (
-          <>
-            <ThemedText type="small" themeColor="textSecondary">
-              You keep changing it in Outlook, and the app shows what Outlook has. In Outlook,
-              publish the calendar and copy its ICS link.
-            </ThemedText>
-            <TextField
-              label="ICS link"
-              value={url}
-              onChangeText={setUrl}
-              placeholder="https://outlook.office365.com/…/calendar.ics"
-              autoCapitalize="none"
-              autoCorrect={false}
-              keyboardType="url"
+      {!loaded ? null : !adding && calendars.length > 0 ? (
+        <Button title="Add another calendar" variant="secondary" onPress={() => setAdding(true)} />
+      ) : (
+        <View style={styles.section}>
+          <ThemedText type="smallBold">Add a calendar</ThemedText>
+          <ChipGroup
+            label="Where it’s kept"
+            options={[
+              { value: 'link', label: 'An Outlook link' },
+              { value: 'app', label: 'In the app' },
+            ]}
+            selected={[home]}
+            onToggle={(value) => {
+              setHome(value as Home);
+              setError(null);
+            }}
+          />
+          {home === 'link' ? (
+            <>
+              <ThemedText type="small" themeColor="textSecondary">
+                You keep changing it in Outlook, and the app shows what Outlook has. In Outlook,
+                publish the calendar and copy its ICS link.
+              </ThemedText>
+              <TextField
+                label="ICS link"
+                value={url}
+                onChangeText={setUrl}
+                placeholder="https://outlook.office365.com/…/calendar.ics"
+                autoCapitalize="none"
+                autoCorrect={false}
+                keyboardType="url"
+              />
+            </>
+          ) : (
+            <>
+              <ThemedText type="small" themeColor="textSecondary">
+                You add its events here in the app, from Add an event in the Calendar tab. Nothing
+                to set up in Outlook.
+              </ThemedText>
+              <SuggestionsSwitch value={takesSuggestions} onChange={setTakesSuggestions} />
+            </>
+          )}
+          <TextField label="Name (optional)" value={name} onChangeText={setName} />
+          <ThemedText type="small" themeColor="textSecondary">
+            Only the people you choose see the calendar, so keep each calendar to the people who
+            need it, and split the club’s calendars when different people need different events.
+          </ThemedText>
+          <ShownToPicker shownTo={shownTo} teams={teams} onChange={setShownTo} />
+          <ColorPicker selected={calendarColorKey(color, newAudience)} onSelect={setColor} />
+          <ErrorText>{error}</ErrorText>
+          <Button title="Add calendar" onPress={add} busy={saving} />
+          {calendars.length > 0 ? (
+            <Button
+              title="Cancel"
+              variant="secondary"
+              disabled={saving}
+              onPress={() => {
+                setAdding(false);
+                setError(null);
+              }}
             />
-          </>
-        ) : (
-          <>
-            <ThemedText type="small" themeColor="textSecondary">
-              You add its events here in the app, from Add an event in the Calendar tab. Nothing
-              to set up in Outlook.
-            </ThemedText>
-            <SuggestionsSwitch value={takesSuggestions} onChange={setTakesSuggestions} />
-          </>
-        )}
-        <TextField label="Name (optional)" value={name} onChangeText={setName} />
-        <ThemedText type="small" themeColor="textSecondary">
-          Only the people you choose see the calendar, so keep each calendar to the people who
-          need it, and split the club’s calendars when different people need different events.
-        </ThemedText>
-        <ShownToPicker shownTo={shownTo} teams={teams} onChange={setShownTo} />
-        <ColorPicker selected={calendarColorKey(color, newAudience)} onSelect={setColor} />
-        <ErrorText>{error}</ErrorText>
-        <Button title="Add calendar" onPress={add} busy={saving} />
-      </View>
+          ) : null}
+        </View>
+      )}
     </Screen>
   );
 }

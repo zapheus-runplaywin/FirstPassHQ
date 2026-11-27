@@ -400,6 +400,13 @@ describe('a suggestion, as an admin answers it', () => {
     expect(argsOf('decide_event_suggestion')).toEqual([{ p_id: 'h1', p_accept: true, p_reason: null }]);
   });
 
+  it('says how many weeks a weekly one runs, so the admin knows what the answer covers', async () => {
+    const week = (id: string, day: string) =>
+      forAdmin({ id, series_id: 's1', day, end_day: day, starts_at: `${day}T10:00:00Z`, ends_at: `${day}T13:00:00Z` });
+    await openEvent('admin', { rows: [week('h1', '2026-10-23'), week('h2', '2026-10-30'), week('h3', '2026-11-06')] });
+    expect(screen.getByText('Suggested by Casey Coach, every week for 3 weeks. Not on the calendar yet')).toBeTruthy();
+  });
+
   it('opens the form to change it first', async () => {
     await openEvent('admin', { rows: [forAdmin()] });
     await fireEvent.press(screen.getByText('Change it first'));

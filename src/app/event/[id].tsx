@@ -14,7 +14,7 @@ import { Card } from '@/components/ui';
 import { Spacing } from '@/constants/theme';
 import { useTheme } from '@/hooks/use-theme';
 import { formatDay, formatEventTime } from '@/lib/format';
-import { useEvent } from '@/lib/use-events';
+import { useEvent, weeksWaiting } from '@/lib/use-events';
 import { useSessionActions } from '@/lib/use-session-actions';
 
 export default function EventScreen() {
@@ -43,6 +43,10 @@ export default function EventScreen() {
       ? `${formatDay(event.start)} to ${formatDay(lastDay)}`
       : `${formatDay(event.start)}, ${formatEventTime(event)}`;
 
+  // A weekly suggestion says how many weeks the answer covers.
+  const weeks = weeksWaiting(event);
+  const weekly = weeks > 1 ? `, every week for ${weeks} weeks` : '';
+
   return (
     <Screen>
       <View style={styles.header}>
@@ -70,8 +74,8 @@ export default function EventScreen() {
             tone="attention"
             text={
               event.teamEvent?.mine
-                ? 'Suggested by you. Waiting for an admin'
-                : `Suggested by ${event.teamEvent?.createdByName ?? 'a member'}. Not on the calendar yet`
+                ? `Suggested by you${weekly}. Waiting for an admin`
+                : `Suggested by ${event.teamEvent?.createdByName ?? 'a member'}${weekly}. Not on the calendar yet`
             }
           />
         ) : null}

@@ -465,3 +465,17 @@ function startOfToday() {
   const now = new Date();
   return new Date(now.getFullYear(), now.getMonth(), now.getDate());
 }
+
+/**
+ * How many weeks of a weekly suggestion still wait for an admin, from the
+ * events already loaded: 1 for a one-off, or when the others aren't loaded.
+ */
+export function weeksWaiting(event: CalendarEvent) {
+  const series = event.teamEvent?.seriesId;
+  if (!series || event.pending !== 'suggested') return 1;
+  let weeks = 0;
+  for (const other of loadedEvents.values()) {
+    if (other.pending === 'suggested' && other.teamEvent?.seriesId === series) weeks += 1;
+  }
+  return Math.max(weeks, 1);
+}

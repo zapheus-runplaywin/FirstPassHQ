@@ -659,6 +659,37 @@ describe('Calendars kept in the app', () => {
     expect(screen.queryByLabelText(SUGGEST)).toBeNull();
   });
 
+  it('keeps the form to add another folded away once calendars are listed', async () => {
+    await openCalendars([CLUB_CAL]);
+    expect(screen.queryByText('Where it’s kept')).toBeNull();
+    expect(screen.queryByText('Add calendar')).toBeNull();
+    await fireEvent.press(screen.getByText('Add another calendar'));
+    expect(screen.getByText('Where it’s kept')).toBeTruthy();
+    await fireEvent.press(screen.getByText('In the app'));
+    await fireEvent.press(screen.getAllByText('Committee').at(-1)!);
+    await add();
+    expect(appSaves()).toHaveLength(1);
+    // Saved, it folds away again.
+    expect(screen.queryByText('Where it’s kept')).toBeNull();
+    expect(screen.getByText('Add another calendar')).toBeTruthy();
+  });
+
+  it('Cancel folds the form away without saving', async () => {
+    await openCalendars([CLUB_CAL]);
+    await fireEvent.press(screen.getByText('Add another calendar'));
+    await fireEvent.press(screen.getByText('Cancel'));
+    expect(screen.queryByText('Where it’s kept')).toBeNull();
+    expect(appSaves()).toEqual([]);
+    expect(saves()).toEqual([]);
+  });
+
+  it('opens the form straight away when there are no calendars yet', async () => {
+    await openCalendars();
+    expect(screen.getByText('Where it’s kept')).toBeTruthy();
+    expect(screen.queryByText('Add another calendar')).toBeNull();
+    expect(screen.queryByText('Cancel')).toBeNull();
+  });
+
   it('lists it with how many events it holds, not a link, and nothing to move', async () => {
     await openCalendars([APP_CAL, CLUB_CAL]);
     expect(screen.getByText('Kept in the app · 3 events · takes suggestions')).toBeTruthy();
