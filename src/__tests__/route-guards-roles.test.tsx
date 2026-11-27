@@ -61,6 +61,7 @@ beforeEach(() => {
     trainingLoad: true,
     selectionAssessments: true,
     chatGroups: true,
+    teamEvents: true,
   });
 });
 
@@ -172,6 +173,8 @@ const ATTENDANCE_TAKERS = union(COACHES, MANAGERS, COMMITTEE, ADMINS);
 const ATTENDANCE_VIEWERS = union(COACHES, COMMITTEE, ADMINS);
 const PLAN_READERS = union(ADMINS, COACHES, ATHLETES, GUARDIANS);
 const PLAN_AUTHORS = union(ADMINS, COACHES);
+// A squad's or team's coaches and managers add its events, and admins.
+const EVENT_AUTHORS = union(ADMINS, COACHES, MANAGERS);
 const CHECK_IN_VIEWERS = union(GROUP_COACHES, COMMITTEE, PHYSIOS, ADMINS);
 const AWARD_VOTERS = union(ATHLETES, COACHES, MANAGERS, COMMITTEE, ADMINS, STATISTICIANS);
 const KPI_READERS = union(ATHLETES, COACHES, MANAGERS, GUARDIANS, COMMITTEE, ADMINS);
@@ -235,6 +238,8 @@ const WHO_OPENS: Record<string, PersonaName[]> = {
   'session-plans/[id]': PLAN_READERS,
   'session-plans/file': PLAN_READERS,
   'session-plans/edit': PLAN_AUTHORS,
+
+  'event/edit': EVENT_AUTHORS,
 
   'check-in': ATHLETES,
   'check-ins/index': CHECK_IN_VIEWERS,

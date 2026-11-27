@@ -110,6 +110,8 @@ export function useRouteAccess() {
     // shared with (coaches, athletes and parents and guardians).
     readSessionPlans: isAdmin || holds('coach', 'athlete', 'guardian') || inGroupAs('coach', 'athlete'),
     addSessionPlans: isAdmin || inGroupAs('coach'),
+    // Squad and team events: a squad's or team's coaches and managers, and admins.
+    addTeamEvents: isAdmin || inGroupAs('coach', 'manager'),
 
     // Daily check-ins: athletes do their own; coaches see their athletes', the
     // committee, physios and admins the averages, guardians their child's.

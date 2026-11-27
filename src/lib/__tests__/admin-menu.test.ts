@@ -13,6 +13,7 @@ const KEYS = Object.keys({
   messages: true,
   chatGroups: true,
   calendar: true,
+  teamEvents: true,
   checkIns: true,
   trainingLoad: true,
   injuries: true,

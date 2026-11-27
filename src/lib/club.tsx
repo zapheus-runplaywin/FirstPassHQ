@@ -20,6 +20,13 @@ export const FEATURES = [
     offByDefault: true,
   },
   { key: 'calendar', label: 'Calendar', detail: 'Club, squad and team calendars and fixtures' },
+  {
+    key: 'teamEvents',
+    label: 'Squad and team events',
+    detail:
+      'Coaches and managers add events for their own squads and teams in the app, beside the calendars admins add (needs Calendar)',
+    offByDefault: true,
+  },
   { key: 'checkIns', label: 'Daily check-ins', detail: 'Athletes’ wellbeing check-ins and trends' },
   {
     key: 'trainingLoad',

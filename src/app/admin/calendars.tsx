@@ -415,6 +415,12 @@ function ColorPicker({
           </Pressable>
         ))}
       </View>
+      {compact ? null : (
+        <ThemedText type="small" themeColor="textSecondary">
+          The colour you pick is kept for this calendar. Squads and teams take theirs from the
+          colours no calendar uses.
+        </ThemedText>
+      )}
     </View>
   );
 }

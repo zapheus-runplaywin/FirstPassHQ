@@ -43,7 +43,11 @@ type FeatureCase = {
 };
 
 const FEATURE_ROUTES: FeatureCase[] = [
-  { feature: 'calendar', routes: ['(tabs)/calendar', 'event/[id]', 'admin/calendars'] },
+  {
+    feature: 'calendar',
+    routes: ['(tabs)/calendar', 'event/[id]', 'event/edit', 'admin/calendars'],
+  },
+  { feature: 'teamEvents', offByDefault: true, routes: ['event/edit'] },
   { feature: 'messages', routes: ['(tabs)/messages', 'messages/new', 'messages/[id]'] },
   {
     feature: 'surveys',

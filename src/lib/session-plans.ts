@@ -6,6 +6,7 @@ import { useFocusEffect } from 'expo-router';
 import { useCallback, useState } from 'react';
 import { Platform } from 'react-native';
 
+import { formatTime } from '@/lib/clock';
 import { useAuth } from '@/lib/auth';
 import { useFeature } from '@/lib/club';
 import { MAX_DOCUMENT_BYTES } from '@/lib/injuries';
@@ -138,44 +139,12 @@ export function usePlanGroups(teams: Team[]) {
   return teams.filter((t) => coached.has(t.id));
 }
 
-/** "18:00:00" as "6:00 pm". */
-export function formatTime(time: string | null) {
-  if (!time) return '';
-  const [h, m] = time.split(':').map(Number);
-  const hour = h % 12 === 0 ? 12 : h % 12;
-  return `${hour}:${String(m).padStart(2, '0')} ${h < 12 ? 'am' : 'pm'}`;
-}
+export { formatTime, parseTime, timeOf } from '@/lib/clock';
 
 /** Such as "6:00 pm – 7:30 pm", or an empty string with no times. */
 export function formatTimes(start: string | null, end: string | null) {
   if (!start) return '';
   return end ? `${formatTime(start)} – ${formatTime(end)}` : formatTime(start);
-}
-
-/** A typed time such as "6pm", "18:00" or "6.30 pm" as "18:30", or null when it isn't one. */
-export function parseTime(text: string): string | null {
-  const match = text
-    .trim()
-    .toLowerCase()
-    .match(/^(\d{1,2})(?:[:.](\d{2}))?\s*(am|pm)?$/);
-  if (!match) return null;
-  let hour = Number(match[1]);
-  const minute = Number(match[2] ?? 0);
-  const half = match[3];
-  if (minute > 59) return null;
-  if (half) {
-    if (hour < 1 || hour > 12) return null;
-    if (half === 'pm' && hour < 12) hour += 12;
-    if (half === 'am' && hour === 12) hour = 0;
-  } else if (hour > 23) {
-    return null;
-  }
-  return `${String(hour).padStart(2, '0')}:${String(minute).padStart(2, '0')}`;
-}
-
-/** A Date's local time as "18:30". */
-export function timeOf(date: Date) {
-  return `${String(date.getHours()).padStart(2, '0')}:${String(date.getMinutes()).padStart(2, '0')}`;
 }
 
 export function isImageFile(contentType: string) {

@@ -28,6 +28,7 @@ function features(overrides: Partial<Features> = {}): Features {
     messages: true,
     chatGroups: true,
     calendar: true,
+    teamEvents: true,
     checkIns: true,
     trainingLoad: true,
     injuries: true,

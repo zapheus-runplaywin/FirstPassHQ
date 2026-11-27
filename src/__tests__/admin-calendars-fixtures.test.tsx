@@ -337,6 +337,27 @@ describe('Calendars', () => {
     });
   });
 
+  it('offers twelve colours, and says squads and teams take the ones no calendar uses', async () => {
+    await openCalendars();
+    for (const colour of ['Yellow', 'Blue', 'Green', 'Pink', 'Orange', 'Violet', 'Light blue', 'Dark blue', 'Red', 'Lime', 'Teal', 'Magenta']) {
+      expect(screen.getAllByLabelText(colour).length).toBeGreaterThan(0);
+    }
+    expect(
+      screen.getByText(
+        'The colour you pick is kept for this calendar. Squads and teams take theirs from the colours no calendar uses.',
+      ),
+    ).toBeTruthy();
+  });
+
+  it('saves one of the newer colours', async () => {
+    await openCalendars();
+    await type('ICS link', 'https://outlook.example/physio.ics');
+    await fireEvent.press(screen.getByText('Physios'));
+    await fireEvent.press(screen.getAllByLabelText('Teal').at(-1)!);
+    await add();
+    expect(saves()[0]).toMatchObject({ p_color: 'teal', p_roles: ['physio'] });
+  });
+
   it('adds a team calendar with its own name and colour, then clears the form and reloads', async () => {
     await openCalendars();
     const readsBefore = calendarReads();

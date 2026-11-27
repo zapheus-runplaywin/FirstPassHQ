@@ -21,7 +21,7 @@ export const ATTENDANCE_DAYS_AFTER = 7;
 
 export type SessionEvent = Pick<
   CalendarEvent,
-  'id' | 'title' | 'start' | 'end' | 'clubWide' | 'teamIds' | 'forAthletes'
+  'id' | 'title' | 'start' | 'end' | 'clubWide' | 'teamIds' | 'forAthletes' | 'cancelled'
 >;
 
 export type SessionFacts = {
@@ -72,6 +72,8 @@ function addDays(day: string, days: number) {
  * check-ins.
  */
 export function sessionActions(event: SessionEvent, facts: SessionFacts): SessionAction[] {
+  // A cancelled session isn't on: nobody is away from it and no register is taken.
+  if (event.cancelled) return [];
   const teamIds = event.teamIds ?? [];
   const day = clubDay(event.start);
   const today = clubToday(facts.now);

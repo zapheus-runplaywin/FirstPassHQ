@@ -133,7 +133,7 @@ function useHomeData() {
   // The athletes a parent or guardian looks after, and how many changes each
   // has had since their guardian last looked.
   const { children, activityNew, reloadChildren } = useMyChildren(isGuardian);
-  const { events, reload: reloadEvents } = useEvents();
+  const { eventsOn: events, reload: reloadEvents } = useEvents();
   const { unreadCount, reloadUnread } = useUnreadCount();
   const { pendingCount, reloadPending } = usePendingRequests();
   const { safetyTodos, reloadSafetyTodos } = useSafetyTodos();

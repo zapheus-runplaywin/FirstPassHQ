@@ -24,6 +24,31 @@ export type CalendarEvent = {
   teamIds?: string[];
   /** Whether the calendar is shown to every athlete, by their role. Used as `teamIds` is. */
   forAthletes?: boolean;
+  /** Called off: still listed, struck through, so families see it isn't on. */
+  cancelled?: boolean;
+  /** Set on an event a coach or manager added in the app (src/lib/team-events.ts). */
+  teamEvent?: TeamEventDetails;
+};
+
+/** What the app keeps about an event added in it, beyond what every event has. */
+export type TeamEventDetails = {
+  /** The row's id in `calendar_events`. */
+  id: string;
+  teamId: string;
+  kind: string;
+  /** The club's own day and clock times, as the form shows them: "2026-12-01", "18:00". */
+  day: string;
+  endDay: string;
+  startTime: string;
+  endTime: string;
+  /** Seen by the squad's or team's coaches and managers only. */
+  staffOnly: boolean;
+  /** Shared by the events of one weekly repeat. */
+  seriesId: string | null;
+  cancelledByName: string | null;
+  createdByName: string | null;
+  /** Whether the signed-in member may change, cancel or remove it. */
+  canManage: boolean;
 };
 
 /** Stops a runaway rule (e.g. an endless daily event) from freezing the app. */

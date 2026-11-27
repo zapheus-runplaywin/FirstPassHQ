@@ -1,3 +1,4 @@
+import { router } from 'expo-router';
 import { useMemo, useState } from 'react';
 import { Platform, StyleSheet, View } from 'react-native';
 
@@ -19,7 +20,12 @@ import {
   startOfDay,
   startOfWeek,
 } from '@/lib/format';
+import { useAuth } from '@/lib/auth';
+import { useFeature } from '@/lib/club';
+import { toDateString } from '@/lib/injuries';
+import { eventGroups } from '@/lib/team-events';
 import { earliestDay, latestDay, useEvents } from '@/lib/use-events';
+import { useTeams } from '@/lib/use-teams';
 
 type CalendarView = 'list' | 'month';
 
@@ -69,6 +75,27 @@ export default function CalendarScreen() {
     if (months < 0) showPast();
     else showMonthsAhead(months + 1);
   }
+
+  // A squad's or team's coaches and managers, and admins, add its events here.
+  const { memberships, isAdmin, profile } = useAuth();
+  const teams = useTeams();
+  const teamEventsOn = useFeature('teamEvents');
+  const addFor =
+    teamEventsOn && profile?.status === 'approved' ? eventGroups(teams, memberships, isAdmin) : [];
+  /** Starts a new event on the day being looked at, for the squad or team filtered to. */
+  function addEvent() {
+    const picked = view === 'month' ? monthDay : selectedDay;
+    // Day keys are year-month-day with the month counted from 0 (dayKey).
+    const [y, m, d] = (picked ?? '').split('-').map(Number);
+    const day = picked ? toDateString(new Date(y, m, d)) : undefined;
+    const team = filter.startsWith('team:') ? filter.slice('team:'.length) : undefined;
+    router.push({
+      pathname: '/event/edit',
+      params: { ...(day ? { day } : null), ...(team ? { team } : null) },
+    });
+  }
+  const add =
+    addFor.length > 0 ? <Button key="add" title="Add an event" variant="secondary" onPress={addEvent} /> : null;
 
   const loadMore = (
     <LoadMore
@@ -147,6 +174,7 @@ export default function CalendarScreen() {
       selected={[view]}
       onToggle={switchView}
     />,
+    add,
     calendars.length > 0 ? (
       <ChipGroup
         key="filter"

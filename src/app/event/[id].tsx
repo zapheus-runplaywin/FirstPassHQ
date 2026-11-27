@@ -7,6 +7,8 @@ import { Platform, Pressable, StyleSheet, View } from 'react-native';
 import { CardGrid } from '@/components/columns';
 import { FeatureCard } from '@/components/home/feature-card';
 import { Screen } from '@/components/screen';
+import { StatusLine } from '@/components/status-line';
+import { TeamEventManage } from '@/components/team-event-manage';
 import { ThemedText } from '@/components/themed-text';
 import { Card } from '@/components/ui';
 import { Spacing } from '@/constants/theme';
@@ -34,22 +36,41 @@ export default function EventScreen() {
   }
 
   const notes = event.description?.trim();
+  // An event over several days says its last day too.
+  const lastDay = event.allDay ? new Date(event.end.getTime() - 1) : event.start;
+  const when =
+    event.allDay && lastDay.toDateString() !== event.start.toDateString()
+      ? `${formatDay(event.start)} to ${formatDay(lastDay)}`
+      : `${formatDay(event.start)}, ${formatEventTime(event)}`;
 
   return (
     <Screen>
       <View style={styles.header}>
-        <ThemedText type="subtitle" selectable>
+        <ThemedText type="subtitle" selectable style={event.cancelled ? styles.cancelled : undefined}>
           {event.title}
         </ThemedText>
         <ThemedText type="smallBold" style={{ color: event.color }}>
           {event.calendarName}
         </ThemedText>
+        {event.cancelled ? (
+          <StatusLine
+            tone="attention"
+            text={
+              event.teamEvent?.cancelledByName
+                ? `Cancelled by ${event.teamEvent.cancelledByName}`
+                : 'Cancelled'
+            }
+          />
+        ) : null}
+        {event.teamEvent?.staffOnly ? (
+          <ThemedText type="small" themeColor="textSecondary">
+            Coaches and managers only
+          </ThemedText>
+        ) : null}
       </View>
 
       <Card>
-        <Detail label="When">
-          {formatDay(event.start)}, {formatEventTime(event)}
-        </Detail>
+        <Detail label="When">{when}</Detail>
         {event.location ? (
           <View style={styles.whereRow}>
             <View style={styles.whereText}>
@@ -103,6 +124,13 @@ export default function EventScreen() {
             )}
           </ThemedText>
         </Card>
+      ) : null}
+
+      <TeamEventManage event={event} />
+      {event.teamEvent?.createdByName ? (
+        <ThemedText type="small" themeColor="textSecondary">
+          Added by {event.teamEvent.createdByName}
+        </ThemedText>
       ) : null}
     </Screen>
   );
@@ -170,6 +198,9 @@ function linkify(text: string) {
 }
 
 const styles = StyleSheet.create({
+  cancelled: {
+    textDecorationLine: 'line-through',
+  },
   header: {
     gap: Spacing.one,
   },

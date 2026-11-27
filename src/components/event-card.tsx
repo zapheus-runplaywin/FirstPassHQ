@@ -33,9 +33,10 @@ export function EventGrid({
 
 function EventTile({ event, showDay }: { event: CalendarEvent; showDay: boolean }) {
   const theme = useTheme();
-  const when = showDay
+  const time = showDay
     ? `${formatShortDay(event.start)} · ${formatEventTime(event)}`
     : formatEventTime(event);
+  const when = event.cancelled ? `Cancelled · ${time}` : time;
   return (
     <Pressable
       accessibilityRole="button"
@@ -51,7 +52,10 @@ function EventTile({ event, showDay }: { event: CalendarEvent; showDay: boolean 
       <ThemedText type="small" themeColor="textSecondary" numberOfLines={1}>
         {when}
       </ThemedText>
-      <ThemedText type="smallBold" numberOfLines={2}>
+      <ThemedText
+        type="smallBold"
+        numberOfLines={2}
+        style={event.cancelled ? styles.cancelled : undefined}>
         {event.title}
       </ThemedText>
       {event.location ? (
@@ -78,6 +82,9 @@ const styles = StyleSheet.create({
     borderRadius: 12,
     borderLeftWidth: 4,
     gap: Spacing.half,
+  },
+  cancelled: {
+    textDecorationLine: 'line-through',
   },
   tileSpace: {
     flex: 1,

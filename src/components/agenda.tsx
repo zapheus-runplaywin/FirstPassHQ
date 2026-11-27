@@ -74,7 +74,9 @@ export function AgendaRow({
 }) {
   const styles = useThemedStyles(makeStyles);
   const today = isToday(event.start);
-  const details = [formatEventTime(event), event.location].filter(Boolean).join(' · ');
+  const details = [event.cancelled ? 'Cancelled' : null, formatEventTime(event), event.location]
+    .filter(Boolean)
+    .join(' · ');
   return (
     <Pressable
       onLayout={onLayout}
@@ -102,10 +104,15 @@ export function AgendaRow({
           style={[
             styles.stripe,
             { backgroundColor: event.color },
+            event.cancelled && styles.stripeCancelled,
           ]}
         />
         <View style={styles.cardText}>
-          <ThemedText type="smallBold" numberOfLines={2}>
+          <ThemedText
+            type="smallBold"
+            numberOfLines={2}
+            themeColor={event.cancelled ? 'textSecondary' : undefined}
+            style={event.cancelled ? styles.cancelled : undefined}>
             {event.title}
           </ThemedText>
           <ThemedText type="small" themeColor="textSecondary" numberOfLines={1}>
@@ -173,6 +180,12 @@ const makeStyles = (colors: Palette) =>
   },
   stripe: {
     width: 4,
+  },
+  stripeCancelled: {
+    opacity: 0.4,
+  },
+  cancelled: {
+    textDecorationLine: 'line-through',
   },
   cardText: {
     flex: 1,
