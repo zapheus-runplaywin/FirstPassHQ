@@ -103,7 +103,7 @@ $$ select ('{"groups": [{"key": "skills", "name": "Skills", "scale": ["Below", "
 select pg_temp.works('criteria save with no recommendations, as before',
   $$select public.admin_save_assessment_criteria(pg_temp.criteria(null))$$);
 select pg_temp.eq('and are stored with an empty list',
-  (select criteria ->> 'recommendations' from public.assessment_criteria where id), '[]');
+  (select criteria ->> 'recommendations' from public.assessment_criteria_sets where archived_at is null order by created_at limit 1), '[]');
 select pg_temp.works('an empty list is the same', $$select public.admin_save_assessment_criteria(pg_temp.criteria('[]'))$$);
 select pg_temp.works('and so is null', $$select public.admin_save_assessment_criteria(pg_temp.criteria('null'))$$);
 select pg_temp.fails('one recommendation is no choice',
@@ -123,10 +123,10 @@ select pg_temp.fails('anything but a list is refused',
 select pg_temp.works('an admin saves three recommendations, tidied', $$select public.admin_save_assessment_criteria(
   pg_temp.criteria('[" Select ", "Training partner", "Not this time"]'))$$);
 select pg_temp.eq('they are stored trimmed, in order',
-  (select criteria ->> 'recommendations' from public.assessment_criteria where id),
+  (select criteria ->> 'recommendations' from public.assessment_criteria_sets where archived_at is null order by created_at limit 1),
   '["Select", "Training partner", "Not this time"]');
 select pg_temp.eq('and the groups are untouched',
-  (select criteria #>> '{groups,0,items,1,name}' from public.assessment_criteria where id), 'Catching');
+  (select criteria #>> '{groups,0,items,1,name}' from public.assessment_criteria_sets where archived_at is null order by created_at limit 1), 'Catching');
 
 -- ---------------------------------------------------------------------------
 -- Setting up: a round for the Sample Squad that started 20 days ago and ends

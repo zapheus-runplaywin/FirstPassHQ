@@ -186,7 +186,7 @@ What each role can see and do:
 | Manage absence reasons                 |         |                 |              |            |               |               |         |       ✓       |
 | Invite members (QR code and link)      |         |                 |              |            |               |               |         |       ✓       |
 | Policy and conflict registers (when turned on) |  |                 | Declare conflicts; review policies they own | Review policies they own | Read both; declare conflicts; review policies they own | Review policies they own |  | Read and change both; record any review |
-| Selection assessments (when turned on) | In a round: see the criteria, the dates the club shares, and feedback the head coach shares with them (no replies) | See them for their child under 18, with the same feedback | On a round's panel: read the panel's observations and add their own, never about their own child; write and sign their own summary of each athlete, and see the other selectors' signed summaries once theirs is signed; see the round's dates, with to-dos as they come close; see each athlete's own stats from games played in the round. The head coach can reopen a signed summary, and writes and shares feedback for each athlete |  |  |  | On a panel if an admin adds them, with a current check | Set criteria and recommendations, open rounds, choose panels, set the round's dates and mark them done, see who has signed their summaries and reopen one, see who was given feedback and when (never the words), build the audit report; read assessments and summaries only if on the panel |
+| Selection assessments (when turned on) | In a round: see the criteria, the dates the club shares, and feedback the head coach shares with them (no replies) | See them for their child under 18, with the same feedback | On a round's panel: read the panel's observations and add their own, never about their own child; write and sign their own summary of each athlete, and see the other selectors' signed summaries once theirs is signed; see the round's dates, with to-dos as they come close; see each athlete's own stats from games played in the round. The head coach can reopen a signed summary, and writes and shares feedback for each athlete |  |  |  | On a panel if an admin adds them, with a current check | Set criteria sets (with recommendations, who each is for, versions, archive or delete), open rounds, choose each round's set, choose panels, set the round's dates and mark them done, see who has signed their summaries and reopen one, see who was given feedback and when (never the words), build the audit report; read assessments and summaries only if on the panel |
 | The admin's areas of the Club tab (members, safeguarding set-up, seasons, club set-up) and its search |         |                 |              |            |               |               |         |       ✓       |
 
 ‡‡ The Child Safety Officer or the Complaints Manager (or an admin acting in the post while nobody
@@ -4723,23 +4723,56 @@ assessments](#selection-assessments)). **As an admin you don't read assessments*
 and dates, never an observation, a rating or what was written, unless you're also on that round's
 panel.
 
-**Assessment criteria.** Tap **Assessment criteria**. Start from **the netball example** (nine
-groups, from technical ability to team focus) or **Start blank**, then change anything: each
-**group** has a name, three **steps** for its scale (lowest first, such as Below standard, Meets
-standard, Exceeds standard) and up to 12 **items**; a club can have up to 20 groups. Tap **Save
-criteria**. Under the groups, **Recommendations** is the list a selector chooses from when they
-sign their summary of an athlete: the example starts with **Select**, **Select as a training
-partner**, **Not selected this time** and **More evidence needed**. Keep two to eight, or none if
-you don't want one on a summary. A round keeps the criteria it opened with, so a change reaches only the rounds you open
-afterwards. Athletes in an open round, and the verified parents of those under 18, see that
-round's criteria under **Selection** on **Today**, so check them before you open a round.
+The screen has two tabs: **Rounds** (the club's selection rounds, each with the criteria set it
+opened with, such as "Junior criteria, version 3") and **Criteria sets**.
 
-<img src="user-guide/admin-assessments.png" width="210" alt="Selection rounds and criteria: the criteria and the rounds">
-<img src="user-guide/admin-assessments-criteria.png" width="210" alt="The assessment criteria: a group with its scale and items">
+**Criteria sets.** A criteria set is a named set of what athletes are assessed on, such as
+"Junior criteria" or "Senior criteria". Keep as many as you need. Each card shows who the set is
+for, how many groups and items it has with its version, and how many rounds have used it.
 
-**Opening a round.** Tap **Open a selection round**, choose the squad or team, give the round a
-name and its start and end dates (a year at most), and tap **Open round**. A squad or team has one
-open round at a time. The round's athletes are the athletes in that squad or team.
+- **New criteria set** offers **Start blank**, **Start from the netball example** (nine groups, from
+  technical ability to team focus) or **Copy "…"** of a set you already have.
+- On a set's **Criteria** tab, give it a **Name**, then tap a group to open it: each **group** has
+  a name, three **steps** for its scale (lowest first, such as Below standard, Meets standard,
+  Exceeds standard) and up to 12 **items**; a set can have up to 20 groups. Groups stay folded to
+  one line each so the screen stays short. **Recommendations** is the list a selector chooses from
+  when they sign their summary of an athlete: the example starts with **Select**, **Select as a
+  training partner**, **Not selected this time** and **More evidence needed**. Keep two to eight,
+  or none if you don't want one on a summary.
+- **Who it's for** is **Every squad and team** (the default) or **Only the ones I choose**. Ticking
+  a squad covers its teams, including teams named later. A set also fits next season's squad or
+  team of the same name.
+- Saving a change to the criteria makes a new **version** (the button says **Save as version …**).
+  Changing only the name or who it's for keeps the version. A round keeps its own copy of the
+  wording it opened with, so a change reaches only the rounds you open afterwards.
+- **History** lists every change, newest first: each version saved, renames, who it's for,
+  archiving, with who did it and when.
+- A set no round has used can be **deleted** (you're asked first). A set a round has used can only
+  be **archived**: it can't be chosen for a new round, its rounds keep their criteria, and **Bring
+  this set back** returns it. Archived sets fold under **Archived** at the bottom of the tab.
+
+The club's criteria from before criteria sets became a set called **Club criteria**, and rounds
+opened before then count as having used it. Athletes in an open round, and the verified parents of
+those under 18, see that round's criteria under **Selection** on **Today**, so check a set before
+you open a round with it.
+
+<img src="user-guide/admin-assessments.png" width="210" alt="The Criteria sets tab: each set with who it is for, its size and version, and how many rounds used it">
+<img src="user-guide/admin-assessments-criteria.png" width="210" alt="A criteria set's Criteria tab: its name and each group folded to one line">
+<img src="user-guide/admin-assessments-criteria-for.png" width="210" alt="A criteria set's Who it's for tab: a squad ticked covers its teams">
+
+**Opening a round.** On **Rounds**, tap **Open a selection round** and choose the squad or team.
+The **Criteria** card then shows the set for it: when exactly one set is for that squad or team (or
+only one fits at all), HQ chooses it for you and says why; **Choose another** offers the other sets
+that fit. Sets that aren't for that squad or team aren't offered, and if none is, the card says so
+and takes you to **Criteria sets**. Give the round a name and its start and end dates (a year at
+most), and tap **Open round**. A squad or team has one open round at a time. The round's athletes
+are the athletes in that squad or team.
+
+Until the first observation or summary is written, the round's **Details** tab offers **Change the
+criteria**, which swaps it to another set that fits, at once. After that the round keeps its
+criteria.
+
+<img src="user-guide/admin-assessments-open.png" width="210" alt="Opening a selection round: the squad chosen and its criteria set chosen for the admin">
 
 **A round's four tabs.** Open a round and it shows one short tab at a time: **Dates** (where it
 opens), **Panel**, **Reports** (the audit report and Summaries signed) and **Details** (its name,
@@ -5397,7 +5430,7 @@ once saved, only replaced or removed, and anyone who gets it wrong five times in
 | Medical and emergency details | The athlete; an under 18's verified parents and guardians, who keep them (an athlete 18 or over keeps their own); and the coaches, managers and physios of the athlete's current squads and teams (the Head Physio for every athlete), for an under 18 only once a parent or guardian has given consent for injuries and health information. Not admins or the committee. Each view by a coach, manager or physio is recorded, and the athlete 18 or over, or an under 18's parents and guardians, see who and when. Checked once a year by whoever keeps them; admins see who has checked and when, but not the details. Removed when nobody has checked them for the club's chosen time (Record keeping), and deleted with the athlete's account. |
 | Who opened injury documents | The athlete, their guardians and admins: every view and share, by whom, their role and when, and each photo consent. |
 | Who has viewed a child's records | For an athlete under 18: their verified parents or guardians (until the athlete turns 18) and admins. Lists every time someone other than the athlete or their guardians opened the athlete's injuries, injury documents, check-ins, game goals, season KPIs, named survey answers, selection assessment (and a selector's summary of them) or member record, and every time an admin built a selection audit report, or opened the list of signed summaries, for a round they are in. Opening a child's records is recorded whoever you are; nobody can switch it off or delete entries by hand, and old entries are removed only under the club's Record keeping settings. |
-| Selection assessments | Only the panel of the athlete's selection round, while each is approved, not stood down and holds a current check: every observation, its ratings and evidence. Each selector's summary of an athlete is theirs alone until they sign it; a selector sees the other selectors' signed summaries of that athlete only once their own is signed, and can then save the completed sheet as a PDF. The head coach of the squad or team, or an admin, can reopen a signed summary, and every reopening is kept. A panel member never sees or writes the assessment or summary of an athlete they are a parent or guardian of, or their own. Admins see the criteria, the rounds, the panels and counts, and see who has signed which summaries and when, and build the Selection audit report (counts and dates, never a rating, evidence, recommendation or criterion); an admin reads an assessment or a summary only if they're on that panel. The committee, managers, physios and other coaches see nothing of them. An athlete in an open round, and the verified parents of one under 18, see the round's criteria and the dates the club chooses to share, never an observation, a count or who is on the panel. Feedback is written by the head coach of the round's squad or team only (never for their own child) and is theirs alone while a draft; once shared it is read by the athlete, the verified parents and guardians of an athlete under 18, and the round's panel, in open and closed rounds, until the head coach takes it back. Nobody can reply to it. Admins see who was given feedback, when, by whom and whether it was read, never what it says. The panel also sees two attendance counts for each athlete (sessions held in the round and sessions marked at), never an absence or its reason, and each selector who can assess an athlete sees that athlete's own stats from recorded games played between the round's first and last day. |
+| Selection assessments | Only the panel of the athlete's selection round, while each is approved, not stood down and holds a current check: every observation, its ratings and evidence. Each selector's summary of an athlete is theirs alone until they sign it; a selector sees the other selectors' signed summaries of that athlete only once their own is signed, and can then save the completed sheet as a PDF. The head coach of the squad or team, or an admin, can reopen a signed summary, and every reopening is kept. A panel member never sees or writes the assessment or summary of an athlete they are a parent or guardian of, or their own. Admins see the criteria sets and each set's history, the rounds, the panels and counts, and see who has signed which summaries and when, and build the Selection audit report (counts and dates, never a rating, evidence, recommendation or criterion); an admin reads an assessment or a summary only if they're on that panel. The committee, managers, physios and other coaches see nothing of them. An athlete in an open round, and the verified parents of one under 18, see the round's criteria and the dates the club chooses to share, never an observation, a count or who is on the panel. Feedback is written by the head coach of the round's squad or team only (never for their own child) and is theirs alone while a draft; once shared it is read by the athlete, the verified parents and guardians of an athlete under 18, and the round's panel, in open and closed rounds, until the head coach takes it back. Nobody can reply to it. Admins see who was given feedback, when, by whom and whether it was read, never what it says. The panel also sees two attendance counts for each athlete (sessions held in the round and sessions marked at), never an absence or its reason, and each selector who can assess an athlete sees that athlete's own stats from recorded games played between the round's first and last day. |
 | Consents for a child    | The athlete, their parents or guardians and admins, with every consent given and withdrawn. Only a verified parent or guardian can give or withdraw one. FirstPass Studio sees only whether an athlete of a streamed game may be named with their own stats. |
 | Club policies           | Everyone signed in, including people asking to join.                                                                        |
 | App version and build   | Everyone, signed in or not: it's the app's own version, not anything about you or the club. |

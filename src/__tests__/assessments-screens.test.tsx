@@ -17,8 +17,6 @@ import { Text } from 'react-native';
 import * as Sharing from 'expo-sharing';
 
 import AdminAuditScreen from '@/app/admin/assessments/audit';
-import AdminCriteriaScreen from '@/app/admin/assessments/criteria';
-import AdminAssessmentsScreen from '@/app/admin/assessments/index';
 import AdminRoundScreen from '@/app/admin/assessments/round';
 import AthleteAssessmentScreen from '@/app/assessments/athlete';
 import AssessmentsScreen from '@/app/assessments/index';
@@ -30,7 +28,6 @@ import MeScreen from '@/app/(tabs)/me';
 import TeamHubScreen from '@/app/(tabs)/team';
 import {
   makeCriteria,
-  starterCriteria,
   type AdminRound,
   type AthleteAssessment,
   type MyRound,
@@ -765,178 +762,8 @@ function adminRound(extra: Partial<AdminRound> = {}): AdminRound {
   };
 }
 
-describe('Administration > Selection assessments', () => {
-  async function openAdmin(rpcs: BackendOptions['rpcs'] = {}, options: BackendOptions = {}) {
-    await openScreen(
-      'admin',
-      {
-        'admin/assessments/index': AdminAssessmentsScreen,
-        'admin/assessments/criteria': placeholder('admin/assessments/criteria'),
-        'admin/assessments/round': placeholder('admin/assessments/round'),
-      },
-      '/admin/assessments',
-      {},
-      { rpcs: { admin_assessment_criteria: CRITERIA, admin_selection_rounds: [adminRound()], ...rpcs }, ...options },
-    );
-  }
-
-  it('tells the admin they set it up and audit it, and don’t read assessments', async () => {
-    await openAdmin();
-    expect(screen.getByText(/Only a round’s panel reads them/)).toBeTruthy();
-    expect(screen.getByText(/shows how the work was done, not what was said/)).toBeTruthy();
-  });
-
-  it('sums up the criteria and each round as counts', async () => {
-    await openAdmin({
-      admin_selection_rounds: [adminRound(), adminRound({ id: 'r0', name: '2026 selection phase', closed_at: '2026-02-01T00:00:00Z' })],
-    });
-    expect(screen.getByText('3 groups, 4 items')).toBeTruthy();
-    expect(screen.getAllByText('2 selectors on the panel · 14 athletes · 22 observations')).toHaveLength(2);
-    expect(screen.getByText('2026 selection phase (closed)')).toBeTruthy();
-    expect(assessmentRpcs().sort()).toEqual(['admin_assessment_criteria', 'admin_selection_rounds']);
-  });
-
-  it('asks for the criteria first, and offers no round until they exist', async () => {
-    await openAdmin({ admin_assessment_criteria: null, admin_selection_rounds: null });
-    expect(screen.getByText('Not set up yet')).toBeTruthy();
-    expect(screen.getByText(/Set up the assessment criteria first/)).toBeTruthy();
-    expect(screen.queryByText('Open a selection round')).toBeNull();
-  });
-
-  it('says there are no rounds yet once the criteria exist', async () => {
-    await openAdmin({ admin_selection_rounds: [] });
-    expect(screen.getByText(/No rounds yet. Open one for a squad or team/)).toBeTruthy();
-  });
-
-  it('reads both again on pull to refresh', async () => {
-    await openAdmin();
-    await pullToRefresh();
-    expect(assessmentRpcs().sort()).toEqual([
-      'admin_assessment_criteria',
-      'admin_assessment_criteria',
-      'admin_selection_rounds',
-      'admin_selection_rounds',
-    ]);
-  });
-
-  it.each([
-    ['Assessment criteria', 'admin/assessments/criteria'],
-    ['Open a selection round', 'admin/assessments/round'],
-    ['2027 selection phase', 'admin/assessments/round'],
-  ])('%s opens %s', async (title, route) => {
-    await openAdmin();
-    await press(title);
-    expect(screen.getByText(`screen:${route}`)).toBeTruthy();
-  });
-
-  it.each(['admin_assessment_criteria', 'admin_selection_rounds'])('shows the database’s refusal of %s', async (fn) => {
-    await openAdmin({}, { rpcErrors: { [fn]: 'Only admins can set up selection assessments' } });
-    expect(screen.getByText('Only admins can set up selection assessments')).toBeTruthy();
-  });
-});
-
-describe('the assessment criteria', () => {
-  async function openCriteria(saved: unknown = null, options: BackendOptions = {}) {
-    await openScreen('admin', { index: placeholder('index'), 'admin/assessments/criteria': AdminCriteriaScreen }, '/', {}, {
-      rpcs: { admin_assessment_criteria: saved },
-      ...options,
-    });
-    await pushTo('/admin/assessments/criteria');
-    await settle();
-  }
-
-  it('offers a club with none the netball example or a blank start, and no Save yet', async () => {
-    await openCriteria();
-    expect(screen.getByText('Start from the netball example')).toBeTruthy();
-    expect(screen.getByText('Start blank')).toBeTruthy();
-    expect(screen.queryByText('Save criteria')).toBeNull();
-  });
-
-  it('saves the netball example as it stands', async () => {
-    await openCriteria();
-    await press('Start from the netball example');
-    expect(screen.getByDisplayValue('Technical ability')).toBeTruthy();
-    expect(screen.getByDisplayValue('Team-first behaviour')).toBeTruthy();
-    await press('Save criteria');
-    expect(onlyRpcCall('admin_save_assessment_criteria')).toEqual({ p_criteria: starterCriteria() });
-    expect(screen.getByText('screen:index')).toBeTruthy();
-  });
-
-  it('builds criteria from blank: a group, its steps and items', async () => {
-    await openCriteria();
-    await press('Start blank');
-    await press('Save criteria');
-    expect(screen.getByText('Name each group.')).toBeTruthy();
-    expect(rpcCalls('admin_save_assessment_criteria')).toEqual([]);
-
-    await fill('Group 1', 'Attitude');
-    await fill('Lowest step (group 1)', 'Emerging');
-    await fill('Item 1 (group 1)', 'Effort');
-    await press('Add an item to Attitude');
-    await fill('Item 2 (group 1)', 'Respect');
-    await press('Save criteria');
-    expect(onlyRpcCall('admin_save_assessment_criteria')).toEqual({
-      p_criteria: {
-        groups: [
-          {
-            key: 'group',
-            name: 'Attitude',
-            scale: ['Emerging', 'Meets standard', 'Exceeds standard'],
-            items: [
-              { key: 'item', name: 'Effort' },
-              { key: 'item-2', name: 'Respect' },
-            ],
-          },
-        ],
-      },
-    });
-  });
-
-  it('opens the saved criteria, and removes an item and a group', async () => {
-    await openCriteria(CRITERIA);
-    expect(screen.queryByText('Start blank')).toBeNull();
-    expect(screen.getByDisplayValue('Accepts feedback')).toBeTruthy();
-    // Only a group with more than one item can lose one.
-    expect(screen.getAllByText(/^Remove the last item from/)).toHaveLength(1);
-    await press('Remove the last item from Technical ability');
-    expect(screen.queryByDisplayValue('Catching')).toBeNull();
-    await press('Remove Team focus');
-    await press('Add a group');
-    await fill('Group 3', 'Fitness');
-    await fill('Item 1 (group 3)', 'Speed');
-    await press('Save criteria');
-    const saved = onlyRpcCall('admin_save_assessment_criteria').p_criteria as typeof CRITERIA;
-    expect(saved.groups.map((g) => [g.name, g.items.map((i) => i.name)])).toEqual([
-      ['Technical ability', ['Passing']],
-      ['Coachability', ['Accepts feedback']],
-      ['Fitness', ['Speed']],
-    ]);
-    // Keys already used stay as they were, so earlier rounds still read them.
-    expect(saved.groups[0].key).toBe('technical-ability');
-    expect(saved.groups[0].items[0].key).toBe('passing');
-  });
-
-  it('names an unnamed group by its number on its buttons', async () => {
-    await openCriteria();
-    await press('Start blank');
-    expect(screen.getByText('Add an item to group 1')).toBeTruthy();
-    expect(screen.getByText('Remove group 1')).toBeTruthy();
-    await press('Remove group 1');
-    expect(screen.getByText('Start blank')).toBeTruthy();
-  });
-
-  it('shows the database’s refusal and stays on the screen', async () => {
-    await openCriteria(CRITERIA, { rpcErrors: { admin_save_assessment_criteria: 'Only admins can change the criteria' } });
-    await press('Save criteria');
-    expect(screen.getByText('Only admins can change the criteria')).toBeTruthy();
-    expect(screen.queryByText('screen:index')).toBeNull();
-  });
-
-  it('shows why the criteria couldn’t load', async () => {
-    await openCriteria(null, { rpcErrors: { admin_assessment_criteria: 'Selection assessments are off' } });
-    expect(screen.getByText('Selection assessments are off')).toBeTruthy();
-  });
-});
+// The admins' list of rounds and criteria sets, a criteria set and opening a
+// round are tested in criteria-sets-screens.test.tsx (criteria sets, 27 November 2026).
 
 const TEAMS = [
   { id: 't1', name: '17 & Under squad', sort_order: 1, kind: 'squad', season: 2027, squad_id: null, selections_completed_at: null },
@@ -948,67 +775,6 @@ const pickDay = async (calendar: number, year: number, month: number, day: numbe
   await fireEvent.press(screen.getAllByLabelText(new Date(year, month - 1, day).toDateString())[calendar]);
   await settle(2);
 };
-
-describe('opening a selection round', () => {
-  async function openNew(options: BackendOptions = {}) {
-    await openScreen('admin', { index: placeholder('index'), 'admin/assessments/round': AdminRoundScreen }, '/', { teams: TEAMS }, options);
-    await pushTo('/admin/assessments/round');
-    await settle();
-  }
-
-  it('explains what a round copies and who starts on its panel', async () => {
-    await openNew();
-    expect(screen.getByText(/It takes a copy of the criteria as they are now/)).toBeTruthy();
-    expect(screen.getByText(/coaches who hold a current Working With Children Check/)).toBeTruthy();
-    expect(screen.queryByText('Panel')).toBeNull();
-    expect(rpcNames()).not.toContain('admin_selection_rounds');
-  });
-
-  it('names everything still to choose, and sends nothing', async () => {
-    await openNew();
-    await press('Open round');
-    expect(screen.getByText('Choose a squad or team, a name, a start date, an end date.')).toBeTruthy();
-    expect(rpcCalls('admin_open_selection_round')).toEqual([]);
-  });
-
-  it('refuses a round that ends before it starts', async () => {
-    await openNew();
-    await press('17 & Under squad');
-    await fill('Name', '2027 selection phase');
-    await pickDay(0, 2026, 10, 20);
-    await pickDay(1, 2026, 10, 19);
-    await press('Open round');
-    expect(screen.getByText('The round ends before it starts.')).toBeTruthy();
-    expect(rpcCalls('admin_open_selection_round')).toEqual([]);
-  });
-
-  it('opens the round for the group with its name and dates, then goes back', async () => {
-    await openNew();
-    await press('17 & Under squad');
-    await fill('Name', '2027 selection phase');
-    await pickDay(0, 2026, 10, 19);
-    await pickDay(1, 2026, 10, 30);
-    await press('Open round');
-    expect(onlyRpcCall('admin_open_selection_round')).toEqual({
-      p_team_id: 't1',
-      p_name: '2027 selection phase',
-      p_starts_on: '2026-10-19',
-      p_ends_on: '2026-10-30',
-    });
-    expect(screen.getByText('screen:index')).toBeTruthy();
-  });
-
-  it('shows the database’s refusal, such as a group that already has an open round', async () => {
-    await openNew({ rpcErrors: { admin_open_selection_round: 'This squad already has an open round' } });
-    await press('Open A');
-    await fill('Name', 'Trials');
-    await pickDay(0, 2026, 10, 19);
-    await pickDay(1, 2026, 10, 19);
-    await press('Open round');
-    expect(screen.getByText('This squad already has an open round')).toBeTruthy();
-    expect(screen.queryByText('screen:index')).toBeNull();
-  });
-});
 
 describe('a round and its panel, for an admin', () => {
   const CHOICES = [

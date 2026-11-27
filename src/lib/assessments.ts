@@ -176,6 +176,12 @@ export type AdminRound = {
   athletes: number;
   observations: number;
   panel: PanelMember[];
+  /** The criteria set the round opened with (null on a round opened before sets). */
+  criteria_set_id?: string | null;
+  criteria_set_name?: string | null;
+  criteria_set_version?: number | null;
+  /** Open, with no observation or summary yet, so its set can still be swapped. */
+  can_change_criteria?: boolean;
 };
 
 /** Someone an admin could add to a panel. */
@@ -440,6 +446,130 @@ export function criteriaSummary(criteria: Criteria) {
   const items = criteria.groups.reduce((n, g) => n + g.items.length, 0);
   if (groups === 0) return 'Not set up yet';
   return `${groups} ${groups === 1 ? 'group' : 'groups'}, ${items} ${items === 1 ? 'item' : 'items'}`;
+}
+
+// ---------------------------------------------------------------------------
+// Criteria sets
+
+/** One set in the admins' list (`admin_criteria_sets`). */
+export type CriteriaSetSummary = {
+  id: string;
+  name: string;
+  version: number;
+  for_all: boolean;
+  for_label: string;
+  groups: number;
+  items: number;
+  rounds: number;
+  archived_at: string | null;
+  archived_by_name: string | null;
+  updated_at: string;
+  updated_by_name: string | null;
+};
+
+/** A line of a set's history. */
+export type CriteriaSetEvent = {
+  kind: 'created' | 'saved' | 'renamed' | 'for' | 'archived' | 'restored' | 'deleted';
+  version: number | null;
+  detail: string | null;
+  by_name: string | null;
+  at: string;
+};
+
+/** One set in full (`admin_criteria_set`). */
+export type CriteriaSet = {
+  id: string;
+  name: string;
+  version: number;
+  criteria: Criteria;
+  for_all: boolean;
+  for: { team_id: string | null; team_name: string }[];
+  for_label: string;
+  rounds: {
+    id: string;
+    name: string;
+    team_name: string;
+    starts_on: string;
+    ends_on: string;
+    criteria_set_version: number | null;
+  }[];
+  archived_at: string | null;
+  events: CriteriaSetEvent[];
+};
+
+/** A set an admin can choose for a round (`admin_selection_round_set_choices`). */
+export type SetChoice = {
+  set_id: string;
+  name: string;
+  version: number;
+  groups: number;
+  items: number;
+  for_label: string;
+  is_default: boolean;
+};
+
+export const MAX_SET_NAME = 60;
+
+/** "9 groups, 33 items · version 2". */
+export function setLine(set: { groups: number; items: number; version: number }) {
+  return `${plural(set.groups, 'group', 'groups')}, ${plural(set.items, 'item', 'items')} · version ${set.version}`;
+}
+
+/** "Used by 2 rounds", or "Not used yet". */
+export function setUseLine(rounds: number) {
+  return rounds > 0 ? `Used by ${plural(rounds, 'round', 'rounds')}` : 'Not used yet';
+}
+
+/** The set a round opened with: "Junior criteria, version 3", or the name alone on an older round. */
+export function roundCriteriaLine(round: Pick<AdminRound, 'criteria_set_name' | 'criteria_set_version'>) {
+  if (!round.criteria_set_name) return '';
+  return round.criteria_set_version
+    ? `${round.criteria_set_name}, version ${round.criteria_set_version}`
+    : round.criteria_set_name;
+}
+
+/** A line of a set's History tab. */
+export function setEventLine(event: CriteriaSetEvent) {
+  const when = formatDateString(event.at.slice(0, 10));
+  const who = event.by_name ? ` · ${event.by_name}` : '';
+  const what = (() => {
+    switch (event.kind) {
+      case 'created':
+        return 'Created';
+      case 'saved':
+        return `Version ${event.version ?? ''} saved`;
+      case 'renamed':
+        return event.detail ? `Renamed ${event.detail.replace(/^From /, 'from ')}` : 'Renamed';
+      case 'for':
+        return `Now for ${event.detail ?? ''}`;
+      case 'archived':
+        return 'Archived';
+      case 'restored':
+        return 'Brought back';
+      case 'deleted':
+        return 'Deleted';
+    }
+  })();
+  return `${what} · ${when}${who}`;
+}
+
+/** The Save button's title: a new set, a criteria change (a new version), or only the name or who it's for. */
+export function saveSetTitle(saved: boolean, criteriaChanged: boolean, version: number) {
+  if (saved && criteriaChanged) return `Save as version ${version + 1}`;
+  return 'Save';
+}
+
+/** The set to choose for an admin: the default, else the only one, else none. */
+export function pickSet(choices: SetChoice[]): SetChoice | null {
+  return choices.find((c) => c.is_default) ?? (choices.length === 1 ? choices[0] : null);
+}
+
+/** The first thing wrong with a set before it is saved, or null. */
+export function setProblem(name: string, criteria: Criteria, forAll: boolean, teamIds: string[]): string | null {
+  const trimmed = name.trim();
+  if (!trimmed || trimmed.length > MAX_SET_NAME) return `Name the set, in up to ${MAX_SET_NAME} characters.`;
+  if (!forAll && teamIds.length === 0) return 'Choose the squads or teams this set is for.';
+  return criteriaProblem(criteria);
 }
 
 // ---------------------------------------------------------------------------

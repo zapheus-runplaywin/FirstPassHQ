@@ -78,7 +78,10 @@ describe('everything the app had before the redesign is still in it', () => {
     expect(before.screens).toHaveLength(138);
     expect(before.links).toHaveLength(139);
     // 370 before; admin_team_games left with the admin view of team goals (Matt, 27 November 2026).
-    expect(before.databaseFunctions).toHaveLength(369);
+    // admin_assessment_criteria and admin_save_assessment_criteria gave way to criteria sets
+    // (admin_criteria_sets and admin_save_criteria_set, 27 November 2026); the database keeps
+    // them for an app that hasn't updated.
+    expect(before.databaseFunctions).toHaveLength(367);
     expect(before.tables).toHaveLength(34);
     expect(before.edgeFunctions).toHaveLength(3);
   });
