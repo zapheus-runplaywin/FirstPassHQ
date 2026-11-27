@@ -125,6 +125,8 @@ export type SheetAthlete = {
 export type RoundSheet = {
   id: string;
   name: string;
+  /** What the admin wrote about the round. Missing from an older database. */
+  description?: string | null;
   team_name: string;
   starts_on: string;
   ends_on: string;
@@ -195,7 +197,53 @@ export type AdminRound = {
   round_number?: number | null;
   /** Auditors on the round now. */
   auditors?: number;
+  /** What the admin wrote about the round; the panel sees it too. */
+  description?: string | null;
+  /** Not running, and nothing written about an athlete in it. Missing from an older database. */
+  can_delete?: boolean;
+  /** Open, and nothing written about an athlete in it. Missing from an older database. */
+  can_change_team?: boolean;
 };
+
+/** A round deleted this season, as the Selection register lists it. */
+export type DeletedRound = {
+  id: string;
+  team_name: string;
+  name: string;
+  phase: number | null;
+  round_number: number | null;
+  starts_on: string;
+  ends_on: string;
+  opened_by_name: string | null;
+  deleted_by_name: string | null;
+  deleted_at: string;
+};
+
+/**
+ * Whether an admin can delete a round, and if not, why: 'running' (close it
+ * first) or 'assessed' (something was written, so it stays). Null on an older
+ * database that doesn't say.
+ */
+export function roundDeleteState(round: AdminRound): 'can' | 'running' | 'assessed' | null {
+  if (round.can_delete === undefined || round.can_change_team === undefined) return null;
+  if (round.can_delete) return 'can';
+  // An open round that can still change team has nothing written, so it is only running.
+  return !round.closed_at && round.can_change_team ? 'running' : 'assessed';
+}
+
+/** The words beside a round's delete button, or why there is none. */
+export function roundDeleteLine(state: ReturnType<typeof roundDeleteState>) {
+  switch (state) {
+    case 'can':
+      return 'Nothing has been written in this round, so you can delete it. Its panel, auditors and dates go with it. The Selection register keeps a line saying it was deleted, and by whom.';
+    case 'running':
+      return 'This round is running. Close it first if you want to delete it.';
+    case 'assessed':
+      return 'Assessments have been written in this round, so it can’t be deleted. Close it instead: the panel can still read it.';
+    default:
+      return null;
+  }
+}
 
 /** Someone an admin could add to a panel. */
 export type PanelChoice = { profile_id: string; name: string | null; roles: string[]; cleared: boolean };
@@ -274,7 +322,7 @@ export type RoundRecord = {
 };
 
 export type RoundEvent = {
-  kind: 'opened' | 'renamed' | 'dates' | 'phase' | 'criteria' | 'closed' | 'reopened';
+  kind: 'opened' | 'renamed' | 'dates' | 'phase' | 'criteria' | 'closed' | 'reopened' | 'description' | 'team';
   detail: string | null;
   by_name: string | null;
   at: string;
@@ -1034,6 +1082,8 @@ export function roundEventLabel(kind: RoundEvent['kind']) {
     criteria: 'Criteria changed',
     closed: 'Closed',
     reopened: 'Opened again',
+    description: 'Description changed',
+    team: 'Squad or team changed',
   }[kind];
 }
 
@@ -1206,7 +1256,11 @@ export function registerChecks(register: SelectionRegister): string[] {
 }
 
 /** The Selection register for a season: on screen and as a PDF. */
-export function selectionRegisterReport(register: SelectionRegister, seasonName: string): Report {
+export function selectionRegisterReport(
+  register: SelectionRegister,
+  seasonName: string,
+  deleted: DeletedRound[] = [],
+): Report {
   const { rounds, today } = register;
   const titleOf = new Map(rounds.map((r) => [r.id, roundTitle(r)]));
   const checks = registerChecks(register);
@@ -1333,6 +1387,20 @@ export function selectionRegisterReport(register: SelectionRegister, seasonName:
           cells: [day(e.at), titleOf.get(e.round_id) ?? '', roundEventLabel(e.kind), e.detail ?? '', e.by_name ?? ''],
         })),
         empty: 'No changes to rounds this season.',
+      },
+      {
+        title: 'Deleted rounds',
+        columns: [
+          { label: 'Deleted', width: 1.5 },
+          { label: 'Round', width: 2.5 },
+          { label: 'Dates it had', width: 2 },
+          { label: 'Opened by', width: 1.5 },
+          { label: 'Deleted by', width: 1.5 },
+        ],
+        rows: deleted.map((d) => ({
+          cells: [day(d.deleted_at), `${roundTitle(d)} (${d.team_name})`, shortRange(d), d.opened_by_name ?? '', d.deleted_by_name ?? ''],
+        })),
+        empty: 'No rounds deleted this season.',
       },
     ],
     footnote:

@@ -4,7 +4,7 @@ import { useCallback, useState } from 'react';
 import { ReportView } from '@/components/report-view';
 import { Screen } from '@/components/screen';
 import { ChipGroup, ErrorText } from '@/components/ui';
-import { selectionRegisterReport, type SelectionRegister } from '@/lib/assessments';
+import { selectionRegisterReport, type DeletedRound, type SelectionRegister } from '@/lib/assessments';
 import { supabase } from '@/lib/supabase';
 import { seasonLabel } from '@/lib/use-teams';
 
@@ -15,6 +15,7 @@ import { seasonLabel } from '@/lib/use-teams';
  */
 export default function SelectionRegisterScreen() {
   const [register, setRegister] = useState<SelectionRegister | null>(null);
+  const [deleted, setDeleted] = useState<DeletedRound[]>([]);
   const [season, setSeason] = useState<number | null>(null);
   const [error, setError] = useState<string | null>(null);
   const [refreshing, setRefreshing] = useState(false);
@@ -25,7 +26,12 @@ export default function SelectionRegisterScreen() {
       setError(loadError.message);
       return;
     }
+    // Deleted rounds come from their own call; an older database without it lists none.
+    const { data: deletedRows } = await supabase.rpc('admin_selection_round_deletions', {
+      p_season: (data as SelectionRegister).season,
+    });
     setError(null);
+    setDeleted((deletedRows as DeletedRound[] | null) ?? []);
     setRegister(data as SelectionRegister);
   }, [season]);
 
@@ -51,7 +57,7 @@ export default function SelectionRegisterScreen() {
           onToggle={(value) => setSeason(Number(value))}
         />
       ) : null}
-      {register ? <ReportView folded report={selectionRegisterReport(register, seasonLabel(register.season))} /> : null}
+      {register ? <ReportView folded report={selectionRegisterReport(register, seasonLabel(register.season), deleted)} /> : null}
     </Screen>
   );
 }

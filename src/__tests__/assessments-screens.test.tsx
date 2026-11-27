@@ -393,6 +393,13 @@ describe('a round’s athletes', () => {
     );
   }
 
+  it('shows the panel the description an admin wrote, and nothing when there is none', async () => {
+    await openRound(sheet({ description: 'At the state centre. Bring kit.' }));
+    expect(screen.getByText('At the state centre. Bring kit.')).toBeTruthy();
+    await openRound(sheet({ description: null }));
+    expect(screen.queryByText('At the state centre. Bring kit.')).toBeNull();
+  });
+
   it('heads the round with its phase, group, dates and criteria, and hides + until it starts', async () => {
     await openRound(sheet({ phase: 1, round_number: 2, name: 'Trials', criteria_set_name: 'Senior criteria', starts_on: '2026-12-01', ends_on: '2027-01-31' }));
     expect(screen.getByText('Phase 1, Round 2 · Trials')).toBeTruthy();
@@ -820,7 +827,7 @@ describe('a round and its panel, for an admin', () => {
 
   it('shows counts for the round, never an assessment', async () => {
     await openRound();
-    await press('Details');
+    await press('Edit');
     expect(screen.getByText('17 & Under squad · 14 athletes · 22 observations')).toBeTruthy();
     expect(screen.getByDisplayValue('2027 selection phase')).toBeTruthy();
     expect(screen.queryByText('Squad or team')).toBeNull();
@@ -955,7 +962,7 @@ describe('a round and its panel, for an admin', () => {
   it.each([
     ['admin_selection_panel_choices', /^Panel \(/, 'Add a selector'],
     ['admin_remove_selection_panel_member', /^Panel \(/, 'Take Casey Coach off the panel'],
-    ['admin_close_selection_round', 'Details', 'Close the round'],
+    ['admin_close_selection_round', 'Edit', 'Close the round'],
   ])('shows the database’s refusal of %s', async (fn, tab, button) => {
     await openRound(adminRound(), { rpcErrors: { [fn]: 'Only admins can change a selection round' } });
     await press(tab);
@@ -965,7 +972,7 @@ describe('a round and its panel, for an admin', () => {
 
   it('saves a changed name and dates under the round’s id, and says so', async () => {
     await openRound();
-    await press('Details');
+    await press('Edit');
     await fill('Name', '2027 trials');
     await pickDay(0, 2026, 10, 6);
     await press('Save');
@@ -976,6 +983,8 @@ describe('a round and its panel, for an admin', () => {
       p_ends_on: '2026-11-29',
       p_phase: null,
       p_round_number: null,
+      p_description: '',
+      p_team_id: null,
     });
     expect(rpcCalls('admin_open_selection_round')).toEqual([]);
     expect(screen.getByText('Saved.')).toBeTruthy();
@@ -983,7 +992,7 @@ describe('a round and its panel, for an admin', () => {
 
   it('won’t save a round with no name', async () => {
     await openRound();
-    await press('Details');
+    await press('Edit');
     await fill('Name', '  ');
     await press('Save');
     expect(screen.getByText('Choose a name.')).toBeTruthy();
@@ -992,7 +1001,7 @@ describe('a round and its panel, for an admin', () => {
 
   it('shows why a save was refused', async () => {
     await openRound(adminRound(), { rpcErrors: { admin_save_selection_round: 'The round can’t start after its first observation' } });
-    await press('Details');
+    await press('Edit');
     await press('Save');
     expect(screen.getByText('The round can’t start after its first observation')).toBeTruthy();
     expect(screen.queryByText('Saved.')).toBeNull();
@@ -1000,7 +1009,7 @@ describe('a round and its panel, for an admin', () => {
 
   it('closes an open round', async () => {
     await openRound();
-    await press('Details');
+    await press('Edit');
     expect(screen.getByText(/Close the round once the teams are named/)).toBeTruthy();
     await press('Close the round');
     expect(onlyRpcCall('admin_close_selection_round')).toEqual({ p_round_id: 'r1', p_closed: true });
@@ -1008,7 +1017,7 @@ describe('a round and its panel, for an admin', () => {
 
   it('opens a closed round again', async () => {
     await openRound(adminRound({ closed_at: '2026-10-15T03:00:00Z' }));
-    await press('Details');
+    await press('Edit');
     expect(screen.getByText(/This round is closed: the panel can still read it/)).toBeTruthy();
     await press('Open the round again');
     expect(onlyRpcCall('admin_close_selection_round')).toEqual({ p_round_id: 'r1', p_closed: false });
@@ -1037,7 +1046,7 @@ describe('a round and its panel, for an admin', () => {
     await press('Reports');
     expect(screen.getByText('Selection audit report')).toBeTruthy();
     expect(screen.queryByText('Take Casey Coach off the panel')).toBeNull();
-    await press('Details');
+    await press('Edit');
     expect(screen.getByDisplayValue('2027 selection phase')).toBeTruthy();
     expect(screen.getByText('Close the round')).toBeTruthy();
     expect(screen.queryByText('Selection audit report')).toBeNull();
@@ -1048,7 +1057,7 @@ describe('a round and its panel, for an admin', () => {
     await press('Panel (2)');
     await press('Take Casey Coach off the panel');
     expect(screen.getByText('Only admins can change a selection round')).toBeTruthy();
-    await press('Details');
+    await press('Edit');
     expect(screen.queryByText('Only admins can change a selection round')).toBeNull();
     await press('Save');
     expect(screen.getByText('Saved.')).toBeTruthy();
@@ -1056,12 +1065,84 @@ describe('a round and its panel, for an admin', () => {
     expect(screen.queryByText('Saved.')).toBeNull();
   });
 
-  it('keeps what was typed in Details while another tab is looked at', async () => {
+  it('saves a description, and shows the one saved', async () => {
+    await openRound(adminRound({ description: 'At the state centre.' }));
+    await press('Edit');
+    expect(screen.getByDisplayValue('At the state centre.')).toBeTruthy();
+    await fill('Description (optional)', 'Bring kit.');
+    await press('Save');
+    expect(onlyRpcCall('admin_save_selection_round')).toMatchObject({ p_description: 'Bring kit.', p_team_id: null });
+  });
+
+  it('moves a round with nothing written to another squad or team', async () => {
+    await openRound(adminRound({ observations: 0, can_change_team: true, can_delete: true }));
+    await press('Edit');
+    expect(screen.getByText('Squad or team')).toBeTruthy();
+    await press('Open A');
+    expect(screen.getByText(/Saving moves the round to Open A\. Its coaches replace 17 & Under squad’s on the panel/)).toBeTruthy();
+    await press('Save');
+    expect(onlyRpcCall('admin_save_selection_round')).toMatchObject({ p_round_id: 'r1', p_team_id: 't2' });
+  });
+
+  it('checks the new squad or team for overlapping rounds before saving', async () => {
+    await openRound(adminRound({ observations: 0, can_change_team: true, can_delete: true }));
+    await press('Edit');
+    clearCalls();
+    await press('Open A');
+    expect(onlyRpcCall('admin_selection_round_clashes')).toMatchObject({ p_team_id: 't2', p_round_id: 'r1' });
+  });
+
+  it('keeps the squad or team once assessing has started', async () => {
+    await openRound(adminRound({ can_change_team: false, can_delete: false }));
+    await press('Edit');
+    expect(screen.queryByText('Squad or team')).toBeNull();
+    expect(screen.getByText('Assessing has started, so this round stays with 17 & Under squad.')).toBeTruthy();
+    expect(screen.getByText(/Assessments have been written in this round, so it can’t be deleted/)).toBeTruthy();
+    expect(screen.queryByText('Delete this round')).toBeNull();
+  });
+
+  it('asks for a running round to be closed before it can be deleted', async () => {
+    await openRound(adminRound({ observations: 0, can_change_team: true, can_delete: false }));
+    await press('Edit');
+    expect(screen.getByText('This round is running. Close it first if you want to delete it.')).toBeTruthy();
+    expect(screen.queryByText('Delete this round')).toBeNull();
+  });
+
+  it('deletes a round nothing has been written in, after asking, and goes back', async () => {
+    const back = jest.spyOn(router, 'back').mockImplementation(() => {});
+    await openRound(adminRound({ observations: 0, can_change_team: true, can_delete: true }));
+    await press('Edit');
+    await press('Delete this round');
+    expect(screen.getByText('Delete 2027 selection phase?')).toBeTruthy();
+    expect(rpcCalls('admin_delete_selection_round')).toEqual([]);
+    await press('Keep it');
+    expect(screen.queryByText('Delete 2027 selection phase?')).toBeNull();
+    await press('Delete this round');
+    await press('Delete the round');
+    expect(onlyRpcCall('admin_delete_selection_round')).toEqual({ p_round_id: 'r1' });
+    expect(back).toHaveBeenCalled();
+    back.mockRestore();
+  });
+
+  it('shows why a delete was refused and stays', async () => {
+    const back = jest.spyOn(router, 'back').mockImplementation(() => {});
+    await openRound(adminRound({ observations: 0, can_change_team: true, can_delete: true }), {
+      rpcErrors: { admin_delete_selection_round: 'This round is running. Close it first, then delete it.' },
+    });
+    await press('Edit');
+    await press('Delete this round');
+    await press('Delete the round');
+    expect(screen.getByText('This round is running. Close it first, then delete it.')).toBeTruthy();
+    expect(back).not.toHaveBeenCalled();
+    back.mockRestore();
+  });
+
+  it('keeps what was typed in Edit while another tab is looked at', async () => {
     await openRound();
-    await press('Details');
+    await press('Edit');
     await fill('Name', '2027 trials');
     await press('Reports');
-    await press('Details');
+    await press('Edit');
     expect(screen.getByDisplayValue('2027 trials')).toBeTruthy();
   });
 

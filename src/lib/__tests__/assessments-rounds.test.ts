@@ -6,6 +6,8 @@ import {
   nextPhaseRound,
   notClosedLine,
   phaseLabel,
+  roundDeleteLine,
+  roundDeleteState,
   roundsLabel,
   roundTitle,
   roundWhen,
@@ -186,5 +188,47 @@ describe('Today labels', () => {
     expect(selectionInfoLabel([info({ starts_on: '2026-12-22', ends_on: '2027-01-31' })], TODAY)).toBe(
       'Starts 22 Dec: Phase 1, Round 2 · Trials',
     );
+  });
+});
+
+describe('roundDeleteState and roundDeleteLine', () => {
+  const base = {
+    id: 'r1',
+    team_id: 't1',
+    team_name: 'Open A',
+    season: 2026,
+    name: 'Trials',
+    starts_on: '2026-12-01',
+    ends_on: '2026-12-14',
+    closed_at: null,
+    created_at: '2026-11-01T00:00:00Z',
+    athletes: 10,
+    observations: 0,
+    panel: [],
+  };
+
+  it('lets a round with nothing written and not running be deleted', () => {
+    expect(roundDeleteState({ ...base, can_delete: true, can_change_team: true })).toBe('can');
+    expect(roundDeleteState({ ...base, closed_at: '2026-12-02T00:00:00Z', can_delete: true, can_change_team: false })).toBe('can');
+    expect(roundDeleteLine('can')).toMatch(/^Nothing has been written in this round, so you can delete it/);
+  });
+
+  it('asks for a running round to be closed first', () => {
+    expect(roundDeleteState({ ...base, can_delete: false, can_change_team: true })).toBe('running');
+    expect(roundDeleteLine('running')).toBe('This round is running. Close it first if you want to delete it.');
+  });
+
+  it('keeps a round with assessments, open or closed', () => {
+    expect(roundDeleteState({ ...base, can_delete: false, can_change_team: false })).toBe('assessed');
+    expect(roundDeleteState({ ...base, closed_at: '2026-12-02T00:00:00Z', can_delete: false, can_change_team: false })).toBe(
+      'assessed',
+    );
+    expect(roundDeleteLine('assessed')).toMatch(/so it can’t be deleted. Close it instead/);
+  });
+
+  it('says nothing for an older database that doesn’t say', () => {
+    expect(roundDeleteState(base)).toBeNull();
+    expect(roundDeleteState({ ...base, can_delete: true })).toBeNull();
+    expect(roundDeleteLine(null)).toBeNull();
   });
 });
