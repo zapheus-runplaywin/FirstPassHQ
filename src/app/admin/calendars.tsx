@@ -1,6 +1,7 @@
 import { useCallback, useEffect, useState } from 'react';
 import { Pressable, StyleSheet, View } from 'react-native';
 
+import { CalendarPhoneLink } from '@/components/calendar-phone-link';
 import { Screen } from '@/components/screen';
 import { SettingSwitch } from '@/components/setting-switch';
 import { ThemedText } from '@/components/themed-text';
@@ -110,18 +111,28 @@ export default function CalendarsScreen() {
   const [saving, setSaving] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
+  // The phone links that are on, by calendar: the key of each.
+  const [phoneLinks, setPhoneLinks] = useState<Record<string, string>>({});
+
   const load = useCallback(
     () =>
-      supabase
-        .from('calendars')
-        .select(
-          'id, name, url, color, in_hq, takes_suggestions, moved_in_at, moved_in_by_name, calendar_audiences (kind, role, post, team_id), hq_calendar_events (count)',
-        )
-        .order('created_at')
-        .then(({ data }) => {
-          setCalendars((data as CalendarRow[] | null) ?? []);
-          setLoaded(true);
-        }),
+      Promise.all([
+        supabase
+          .from('calendars')
+          .select(
+            'id, name, url, color, in_hq, takes_suggestions, moved_in_at, moved_in_by_name, calendar_audiences (kind, role, post, team_id), hq_calendar_events (count)',
+          )
+          .order('created_at'),
+        supabase.rpc('admin_calendar_phone_links'),
+      ]).then(([{ data }, { data: links }]) => {
+        setCalendars((data as CalendarRow[] | null) ?? []);
+        setPhoneLinks(
+          Object.fromEntries(
+            ((links as { calendar_id: string; token: string }[] | null) ?? []).map((l) => [l.calendar_id, l.token]),
+          ),
+        );
+        setLoaded(true);
+      }),
     [],
   );
 
@@ -186,7 +197,13 @@ export default function CalendarsScreen() {
           </ThemedText>
         ) : (
           calendars.map((calendar) => (
-            <CalendarCard key={calendar.id} calendar={calendar} teams={teams} onChanged={load} />
+            <CalendarCard
+              key={calendar.id}
+              calendar={calendar}
+              teams={teams}
+              phoneLink={phoneLinks[calendar.id] ?? null}
+              onChanged={load}
+            />
           ))
         )}
       </View>
@@ -262,10 +279,13 @@ export default function CalendarsScreen() {
 function CalendarCard({
   calendar,
   teams,
+  phoneLink,
   onChanged,
 }: {
   calendar: CalendarRow;
   teams: Team[];
+  /** The key of its phone link, or null while it has none. */
+  phoneLink: string | null;
   onChanged: () => PromiseLike<unknown>;
 }) {
   const styles = useThemedStyles(makeStyles);
@@ -480,6 +500,10 @@ function CalendarCard({
               {calendar.url}
             </ThemedText>
           )}
+          {/* A phone link is only for a calendar kept in the app and shown to everyone. */}
+          {calendar.in_hq && savedShownTo.everyone ? (
+            <CalendarPhoneLink calendarId={calendar.id} token={phoneLink} onChanged={onChanged} />
+          ) : null}
           <ColorPicker selected={colorKey} onSelect={(key) => update({ color: key })} compact />
           <ErrorText>{error}</ErrorText>
           <View style={styles.cardActions}>

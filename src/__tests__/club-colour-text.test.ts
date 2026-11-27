@@ -30,6 +30,7 @@ const LINKS_AND_BUTTONS: Record<string, number> = {
   'components/policy-links.tsx': 1,
   'components/safeguarding.tsx': 2,
   'components/team-event-manage.tsx': 1,
+  'components/calendar-phone-link.tsx': 3,
   'components/week-date-field.tsx': 1,
   'components/wwcc-application.tsx': 2,
   'components/home/cards.tsx': 1,

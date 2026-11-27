@@ -7,6 +7,8 @@
  */
 import { fireEvent, screen, within } from 'expo-router/testing-library';
 
+import * as Clipboard from 'expo-clipboard';
+
 import CalendarsScreen from '@/app/admin/calendars';
 import FixturesScreen from '@/app/admin/fixtures';
 import type { PlayhqCompetition } from '@/lib/playhq';
@@ -40,6 +42,7 @@ jest.mock('@react-native-async-storage/async-storage', () =>
   jest.requireActual('@react-native-async-storage/async-storage/jest/async-storage-mock'),
 );
 jest.mock('@/global.css', () => ({}));
+jest.mock('expo-clipboard', () => ({ setStringAsync: jest.fn(async () => true) }));
 
 // Each test settles a whole screen several times; leave room on a busy machine.
 jest.setTimeout(30000);
@@ -128,13 +131,17 @@ beforeEach(() => {
   globalThis.fetch = fetchMock as unknown as typeof fetch;
 });
 
-async function openCalendars(calendars: CalendarRow[] = [], rpcErrors: Record<string, string> = {}) {
+async function openCalendars(
+  calendars: CalendarRow[] = [],
+  rpcErrors: Record<string, string> = {},
+  rpcs: Record<string, unknown> = {},
+) {
   const recorder = recordTables(['calendars']);
   log = recorder.log;
   await openScreen('admin', { 'admin/calendars': CalendarsScreen }, '/admin/calendars', {
     calendars,
     teams: TEAMS,
-  }, { tableHandlers: recorder.handlers, rpcErrors });
+  }, { tableHandlers: recorder.handlers, rpcErrors, rpcs });
 }
 
 const calendarReads = () =>
@@ -835,6 +842,102 @@ describe('Moving a linked calendar into the app', () => {
     await settle();
     expect(screen.getByText('Only admins move calendars')).toBeTruthy();
     expect(screen.getByText('Move Club calendar into the app?')).toBeTruthy();
+  });
+});
+
+// ---------------------------------------------------------------------------
+// The phone link of a calendar kept in the app and shown to everyone
+// (user guide section 10, "A phone link"). The database decides who may turn
+// one on and what it gives (supabase/tests/calendar-phone-links.sql).
+
+describe('A calendar’s phone link', () => {
+  const KEY = 'ab12'.repeat(12);
+  const linkOn = { admin_calendar_phone_links: [{ calendar_id: 'cal-app', token: KEY }] };
+  const changes = () => callsTo('admin_set_calendar_phone_link');
+  const copy = Clipboard.setStringAsync as jest.Mock;
+  beforeEach(() => copy.mockClear());
+
+  it('is off to start with, and offered only on a calendar kept in the app and shown to everyone', async () => {
+    await openCalendars([
+      APP_CAL,
+      { ...APP_CAL, id: 'cal-committee-app', name: 'Committee', calendar_audiences: [role('committee')] },
+      CLUB_CAL,
+    ]);
+    expect(screen.getAllByText('Phone link off')).toHaveLength(1);
+    expect(screen.getAllByText('Turn on')).toHaveLength(1);
+    expect(screen.queryByText('Copy the phone link')).toBeNull();
+  });
+
+  it('says what the link shows and to whom before turning it on', async () => {
+    await openCalendars([APP_CAL]);
+    await fireEvent.press(screen.getByText('Turn on'));
+    expect(screen.getByText('Turn on a phone link?')).toBeTruthy();
+    expect(
+      screen.getByText(/Anyone who has the link sees each event’s name, time and place without signing in, so send it only to members\. It never shows notes or suggested events\./),
+    ).toBeTruthy();
+    expect(changes()).toEqual([]);
+    await fireEvent.press(screen.getByText('Not now'));
+    expect(changes()).toEqual([]);
+    expect(screen.getByText('Phone link off')).toBeTruthy();
+  });
+
+  it('turns it on, then loads the calendars again', async () => {
+    await openCalendars([APP_CAL]);
+    const before = calendarReads();
+    await fireEvent.press(screen.getByText('Turn on'));
+    await fireEvent.press(screen.getByText('Turn on the phone link'));
+    await settle();
+    expect(changes()).toEqual([{ p_calendar_id: 'cal-app', p_action: 'on' }]);
+    expect(calendarReads()).toBe(before + 1);
+    expect(screen.queryByTestId('phone-link-confirm')).toBeNull();
+  });
+
+  it('copies the link to the club’s own address, key and all, and says so', async () => {
+    await openCalendars([APP_CAL], {}, linkOn);
+    expect(screen.getByText(/^Phone link on\. Send it to members in a message/)).toBeTruthy();
+    // The key itself is never shown on screen.
+    expect(screen.queryByText(new RegExp(KEY))).toBeNull();
+    await fireEvent.press(screen.getByText('Copy the phone link'));
+    await settle();
+    expect(copy).toHaveBeenCalledWith(`https://example.test/functions/v1/calendar-feed?t=${KEY}`);
+    expect(screen.getByText('Link copied')).toBeTruthy();
+  });
+
+  it('resets it only after saying the old link stops working', async () => {
+    await openCalendars([APP_CAL], {}, linkOn);
+    await fireEvent.press(screen.getByText('Reset link'));
+    expect(screen.getByText(/The link members have now stops working/)).toBeTruthy();
+    expect(changes()).toEqual([]);
+    await fireEvent.press(screen.getByText('Reset the link'));
+    await settle();
+    expect(changes()).toEqual([{ p_calendar_id: 'cal-app', p_action: 'reset' }]);
+  });
+
+  it('turns it off only after asking, and Keep it on changes nothing', async () => {
+    await openCalendars([APP_CAL], {}, linkOn);
+    await fireEvent.press(screen.getByText('Turn off'));
+    expect(screen.getByText(/Phones that have the link stop getting this calendar/)).toBeTruthy();
+    await fireEvent.press(screen.getByText('Keep it on'));
+    expect(changes()).toEqual([]);
+    await fireEvent.press(screen.getByText('Turn off'));
+    await fireEvent.press(screen.getByText('Turn off the phone link'));
+    await settle();
+    expect(changes()).toEqual([{ p_calendar_id: 'cal-app', p_action: 'off' }]);
+  });
+
+  it('shows why the database refused, and keeps asking', async () => {
+    await openCalendars([APP_CAL], { admin_set_calendar_phone_link: 'Only admins can change phone links' });
+    await fireEvent.press(screen.getByText('Turn on'));
+    await fireEvent.press(screen.getByText('Turn on the phone link'));
+    await settle();
+    expect(screen.getByText('Only admins can change phone links')).toBeTruthy();
+    expect(screen.getByText('Turn on a phone link?')).toBeTruthy();
+  });
+
+  it('shows the calendars even when the links can’t be read', async () => {
+    await openCalendars([APP_CAL], { admin_calendar_phone_links: 'function does not exist' });
+    expect(screen.getByText('Club events')).toBeTruthy();
+    expect(screen.getByText('Phone link off')).toBeTruthy();
   });
 });
 

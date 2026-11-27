@@ -56,6 +56,17 @@ npx supabase functions deploy game-stats --project-ref <the club's project id> -
 West Coast Thunder's own projects are deployed by pressing **Actions > Deploy game stats
 function**. Until it is deployed, the goals pages work as before, without the stats card.
 
+A club-wide calendar kept in the app can have a phone link, which members add to their phone's
+calendar. The `calendar-feed` edge function serves it. It needs no secrets, and no sign-in,
+because the link is the key:
+
+```bash
+npx supabase functions deploy calendar-feed --project-ref <the club's project id> --no-verify-jwt --use-api
+```
+
+West Coast Thunder's own projects are deployed by pressing **Actions > Deploy calendar feed
+function**. Until it is deployed, a phone link an admin turns on doesn't open.
+
 The key comes from the Apple Developer site: **Certificates, Identifiers & Profiles > Keys**, a new
 key with **Sign in with Apple** ticked and the app's App ID chosen as its primary App ID. Apple
 lets you download the `.p8` file once, so keep it somewhere safe. Until the secrets are set the

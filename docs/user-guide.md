@@ -138,6 +138,7 @@ What each role can see and do:
 | Add, change and cancel squad and team events (when switched on) |         |                 |  Own groups  | Own groups |               |               |         |  Any group    |
 | Add events to a calendar kept in the app |         |                 |              |            |               |               |         |       ✓       |
 | Suggest an event for a calendar kept in the app (where an admin allows it, for calendars you see) |         |                 |      ✓       |     ✓      |       ✓       |               |         | Answers them  |
+| Turn on, copy, reset or turn off a calendar's phone link |         |                 |              |            |               |               |         |       ✓       |
 | To-do notifications on your phone      |    ✓    |        ✓        |      ✓       |     ✓      |       ✓       |       ✓       |    ✓    |       ✓       |
 | My squads and teams                    |    ✓    |        ✓        |      ✓       |     ✓      |  If in one    |       ✓       | Heading only |   If in one   |
 | Injury status beside an athlete's name in a squad or team |         |                 |  Own groups  |            |               |  Own groups   |         |               |
@@ -1119,6 +1120,15 @@ in the app can be cancelled like a squad's or team's: it stays, crossed out and 
 **Cancelled**. Coaches, managers and committee members can suggest an event for one (see
 [Suggesting an event for a club calendar](#suggesting-an-event-for-a-club-calendar)); a suggestion
 isn't on anyone's calendar until an admin adds it.
+
+**A calendar on your phone.** For a calendar shown to everyone in the club, an admin may send you
+a phone link in a message. Add it to your phone's calendar app as a subscribed calendar (on an
+iPhone, **Settings > Apps > Calendar > Calendar Accounts > Add Account > Other > Add Subscribed
+Calendar**; in Google Calendar on a computer, **Other calendars > + > From URL**) and the club's
+events show beside your own, each with its name, time and place. Your phone only reads them and
+checks for changes on its own timetable, often a few hours and up to a day for Google Calendar, so
+the app is always the most up to date. Keep the link to yourself: anyone who has it sees those
+events without signing in. If it stops working, the admin has reset it or turned it off.
 
 <img src="user-guide/team-events-calendar.png" width="210" alt="A coach's calendar with Add an event, their team's events in the team's colour, a cancelled event crossed out and a club event in the club's colour">
 <img src="user-guide/team-event-athlete.png" width="210" alt="A training session a coach added, as an athlete sees it: when and where, Can't make it, the coach's note and who added it">
@@ -4561,7 +4571,33 @@ Deleting a calendar kept in the app deletes its events too; the card says how ma
 confirm. An app that hasn't been updated can't show a calendar kept in the app (it says "Couldn't
 load" with the calendar's name), so ask members to update.
 
-<img src="user-guide/hq-admin-calendars.png" width="210" alt="Calendars: one kept in the app with its number of events, one still an Outlook link with Move into the app, and Add another calendar">
+**A phone link.** A calendar kept in the app and shown to **Everyone in the club** can have one
+phone link, so members see its events in their own phone's calendar beside everything else. It's
+off until you turn it on, and only admins see it.
+
+- **Turn on** (beside **Phone link off** on the calendar's card) explains what the link gives
+  before you confirm with **Turn on the phone link**.
+- **Copy the phone link**, then paste it into a message to members. They add it to their phone's
+  calendar as a subscribed calendar. Phones only read it; nothing a member does on their phone
+  changes the club's calendar.
+- **What the link gives**: each event's name, time, place and whether it's cancelled, from 3
+  months back to 12 months ahead. Never an event's note, who added it, a suggested event or a
+  declined one. Anyone who has the link sees those without signing in, so send it only to members
+  and keep anything private out of event names and places.
+- **Reset link** makes a new link and the old one stops working, for when it has reached someone
+  it shouldn't. Members need the new one. **Turn off** stops it for every phone; members still see
+  the calendar in the app.
+- The link also stops by itself if the calendar stops being shown to everyone, is deleted, or the
+  club switches **Calendar** off or keeps it to pilot teams. Calendars shown to only some roles,
+  squads or teams, and calendars linked from Outlook, have no phone link.
+
+Phones check the link on their own timetable, so a change can take a few hours to show there (up
+to a day in Google Calendar). The app shows it at once.
+
+<img src="user-guide/hq-admin-phone-link-confirm.png" width="210" alt="Turn on a phone link? What the link gives, Turn on the phone link or Not now">
+<img src="user-guide/hq-admin-phone-link-on.png" width="210" alt="Phone link on: Copy the phone link, Reset link and Turn off">
+
+<img src="user-guide/hq-admin-calendars.png" width="210" alt="Calendars: one kept in the app with its number of events and Phone link off, one still an Outlook link with Move into the app, and Add another calendar">
 <img src="user-guide/hq-admin-move-in.png" width="210" alt="Moving a linked calendar in: how many events come across, what changes, Move 8 events into the app or Keep it in Outlook">
 <img src="user-guide/hq-suggestions.png" width="210" alt="Suggested events: each one waiting, who suggested it and for which calendar">
 <img src="user-guide/hq-suggestion-admin.png" width="210" alt="A suggestion as an admin answers it: Add to the calendar, Change it first or Decline">
@@ -5837,6 +5873,7 @@ once saved, only replaced or removed, and anyone who gets it wrong five times in
 | Committee calendar      | Committee members (and anyone else the admin shared it with) and admins.                                                    |
 | Events on a calendar kept in the app | Whoever the calendar is shown to, and admins. Only admins add, change, cancel or remove them. |
 | Suggested events        | Only the person who suggested it and admins, until an admin adds it to the calendar. A declined suggestion and the admin's reason: only the person who suggested it (and admins, in the database). Coaches, managers and committee members suggest, for a calendar they see that takes suggestions; a role paused for a lapsed check or a stand-down can't. Athletes, parents and guardians, physios, statisticians, guests and temporary helpers can't suggest. |
+| A calendar's phone link | Off unless an admin turns it on, and only for a calendar kept in the app and shown to everyone in the club. Only admins see, copy, reset or turn off the link. Anyone who has the link sees each event's name, time, place and whether it's cancelled, without signing in; never notes, who added an event, or suggestions. |
 | Squad and team events added in the app | The squad's or team's athletes, their parents and guardians, its coaches, managers and physios, and admins. An event kept to coaches and managers: that squad's or team's coaches and managers, and admins. Only its coaches and managers, and admins, add, change, cancel or remove them. A role paused for a lapsed check or a stand-down sees and adds none. Temporary helpers and guests see none. |
 | Award votes             | Only the voter sees their own ballot. Nobody, admins included, can see who someone voted for. Who cast each vote is removed after the club's keep period (1 year recommended). |
 | Awards and their settings | Admins, and committee members who read the Award results report. Voters see only the votes open to them and who they can vote for, while voting is open. |
@@ -6462,6 +6499,12 @@ Working With Children Check, and another admin must do it.
   without an admin's yes. A decline carries one reason from the admin to that adult and can't be
   answered: there are no replies or comments. Every event records who suggested it and who
   answered.
+- **A calendar's phone link is off unless an admin turns it on.** It exists only for a calendar
+  already shown to everyone in the club, never one kept to a squad, a team or a role, so it can't
+  reveal where one group of children trains. Whoever holds the link sees only each event's name,
+  time and place, never a person's name, a note or a suggestion. Only admins can see or copy it,
+  the app tells them to send it only to members, and **Reset link** or **Turn off** stops it at
+  once if it reaches someone it shouldn't (see [Calendars](#calendars)).
 - **Screening Unit notices.** Record every notice on the member's page. An interim negative
   notice, negative notice, interstate decision or cancelled card stands them down at once, and
   stays on your to-do list until you record telling the governing body in writing.
