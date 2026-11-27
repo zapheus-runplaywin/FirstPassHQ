@@ -683,7 +683,7 @@ describe('Selection, for an athlete or a parent', () => {
   async function openFolds() {
     for (const fold of screen.queryAllByRole('button')) {
       await act(async () => {
-        fireEvent.press(fold);
+        await fireEvent.press(fold);
       });
     }
   }
