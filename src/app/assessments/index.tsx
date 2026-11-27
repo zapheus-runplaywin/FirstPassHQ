@@ -4,7 +4,8 @@ import { useCallback, useState } from 'react';
 import { Screen } from '@/components/screen';
 import { ThemedText } from '@/components/themed-text';
 import { PressableCard } from '@/components/ui';
-import { roundDates, type MyRound } from '@/lib/assessments';
+import { groupRounds, roundTitle, shortDate, shortRange, type MyRound } from '@/lib/assessments';
+import { clubToday } from '@/lib/club-time';
 import { supabase } from '@/lib/supabase';
 
 /**
@@ -33,6 +34,10 @@ export default function AssessmentsScreen() {
   }
 
   if (rounds === null) return <Screen>{null}</Screen>;
+  const today = clubToday();
+  const grouped = groupRounds(rounds, today);
+  // Running now, coming up, then finished.
+  const ordered = [...grouped.now, ...grouped.coming, ...grouped.finished];
 
   return (
     <Screen refreshing={refreshing} onRefresh={onRefresh}>
@@ -44,21 +49,30 @@ export default function AssessmentsScreen() {
           You aren’t on a selection panel. An admin opens a round and chooses its panel.
         </ThemedText>
       ) : (
-        rounds.map((round) => (
+        ordered.map((round) => (
           <PressableCard
             key={round.id}
             onPress={() => router.push({ pathname: '/assessments/round', params: { id: round.id } })}>
             <ThemedText type="smallBold">
-              {round.name}
+              {roundTitle(round)}
               {round.closed_at ? ' (closed)' : ''}
             </ThemedText>
             <ThemedText type="small" themeColor="textSecondary">
-              {round.team_name} · {roundDates(round)}
+              {round.team_name} · {shortRange(round)}
             </ThemedText>
-            <ThemedText type="small" themeColor="textSecondary">
-              {round.athletes} {round.athletes === 1 ? 'athlete' : 'athletes'} · you have written{' '}
-              {round.my_observations} {round.my_observations === 1 ? 'observation' : 'observations'}
-            </ThemedText>
+            {round.criteria_set_name ? (
+              <ThemedText type="small" themeColor="textSecondary">
+                {round.criteria_set_name}
+              </ThemedText>
+            ) : null}
+            {!round.closed_at && round.starts_on > today ? (
+              <ThemedText type="smallBold">Starts {shortDate(round.starts_on, true)}</ThemedText>
+            ) : (
+              <ThemedText type="small" themeColor="textSecondary">
+                {round.athletes} {round.athletes === 1 ? 'athlete' : 'athletes'} · you have written{' '}
+                {round.my_observations} {round.my_observations === 1 ? 'observation' : 'observations'}
+              </ThemedText>
+            )}
           </PressableCard>
         ))
       )}

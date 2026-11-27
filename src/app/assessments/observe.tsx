@@ -158,7 +158,7 @@ export default function ObserveScreen() {
           { label: 'Today', days: 0 },
           { label: 'Yesterday', days: -1 },
         ]}
-        max={assessment.today}
+        max={assessment.ends_on && assessment.ends_on < assessment.today ? assessment.ends_on : assessment.today}
       />
 
       <ThemedText type="smallBold">Which criteria it shows</ThemedText>

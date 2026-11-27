@@ -1,6 +1,7 @@
 import { useEffect, useState } from 'react';
 import { StyleSheet, View } from 'react-native';
 
+import { Fold } from '@/components/member-tabs';
 import { Screen } from '@/components/screen';
 import { ThemedText } from '@/components/themed-text';
 import { Card } from '@/components/ui';
@@ -8,7 +9,10 @@ import { Spacing } from '@/constants/theme';
 import {
   dueLabel,
   feedbackHeading,
-  roundDates,
+  groupRounds,
+  roundTitle,
+  shortDate,
+  shortRange,
   selectionInfoOwner,
   useMySelectionFeedback,
   useMySelectionInfo,
@@ -30,6 +34,9 @@ export default function SelectionScreen() {
   const { selectionFeedback, reloadSelectionFeedback } = useMySelectionFeedback();
   const [refreshing, setRefreshing] = useState(false);
   const today = clubToday();
+  // One short block per athlete: the member first, then each child.
+  const athletes = [...new Map(selectionInfo.map((i) => [i.athlete_id, [] as SelectionInfo[]])).entries()];
+  for (const info of selectionInfo) athletes.find(([id]) => id === info.athlete_id)?.[1].push(info);
 
   // The first time the athlete or a parent opens shared feedback is kept, so
   // the head coach can tell it was read.
@@ -59,8 +66,13 @@ export default function SelectionScreen() {
           </ThemedText>
         )
       ) : (
-        selectionInfo.map((info) => (
-          <RoundInfo key={`${info.round_id}-${info.athlete_id}`} info={info} today={today} />
+        athletes.map(([athleteId, rounds]) => (
+          <AthleteRounds
+            key={athleteId}
+            rounds={rounds}
+            today={today}
+            heading={rounds[0].is_me ? null : selectionInfoOwner(rounds[0])}
+          />
         ))
       )}
       {selectionInfo.length > 0 || selectionFeedback.length === 0 ? (
@@ -100,18 +112,49 @@ function FeedbackCard({ feedback }: { feedback: SharedFeedback }) {
   );
 }
 
-function RoundInfo({ info, today }: { info: SelectionInfo; today: string }) {
+/** One athlete's rounds: the one running now, those coming up, and any past its end date. */
+function AthleteRounds({ rounds, today, heading }: { rounds: SelectionInfo[]; today: string; heading: string | null }) {
+  const { now, coming, finished } = groupRounds(rounds, today);
   return (
     <View style={styles.round}>
-      <ThemedText type="subtitle">
-        {info.is_me ? info.round_name : `${selectionInfoOwner(info)}: ${info.round_name}`}
-      </ThemedText>
-      <ThemedText type="small" themeColor="textSecondary">
-        {info.team_name} · {roundDates(info)}
-      </ThemedText>
+      {heading ? <ThemedText type="subtitle">{heading}</ThemedText> : null}
+      {now.length > 0 ? <ThemedText type="smallBold">Now</ThemedText> : null}
+      {now.map((info) => (
+        <Card key={info.round_id} style={styles.card}>
+          <ThemedText type="smallBold">{roundTitle(info)} · Now</ThemedText>
+          <ThemedText type="small" themeColor="textSecondary">
+            {info.team_name} · {shortRange(info)}
+          </ThemedText>
+          {info.criteria_set_name ? (
+            <ThemedText type="small">Assessed against: {info.criteria_set_name}</ThemedText>
+          ) : null}
+          <RoundFolds info={info} today={today} />
+        </Card>
+      ))}
+      {coming.length > 0 ? <ThemedText type="smallBold">Coming up</ThemedText> : null}
+      {coming.map((info) => (
+        <Fold
+          key={info.round_id}
+          title={`${roundTitle(info)} · ${shortRange(info)}${info.criteria_set_name ? ` · ${info.criteria_set_name}` : ''}`}>
+          <RoundFolds info={info} today={today} />
+        </Fold>
+      ))}
+      {finished.length > 0 ? <ThemedText type="smallBold">Finished</ThemedText> : null}
+      {finished.map((info) => (
+        <ThemedText key={info.round_id} type="small" themeColor="textSecondary">
+          {roundTitle(info)} · Ended {shortDate(info.ends_on)}
+        </ThemedText>
+      ))}
+    </View>
+  );
+}
 
-      <Card style={styles.card}>
-        <ThemedText type="smallBold">Dates</ThemedText>
+/** A round's shared dates and its criteria, each folded to one line. */
+function RoundFolds({ info, today }: { info: SelectionInfo; today: string }) {
+  const next = info.dates.filter((d) => !d.done && d.due_on >= today).sort((a, b) => a.due_on.localeCompare(b.due_on))[0];
+  return (
+    <>
+      <Fold title={`Dates (${info.dates.length})${next ? ` · Next: ${next.title}, ${dueLabel(next, today)}` : ''}`}>
         {info.dates.length === 0 ? (
           <ThemedText type="small" themeColor="textSecondary">
             The club hasn’t shared any dates yet.
@@ -124,19 +167,20 @@ function RoundInfo({ info, today }: { info: SelectionInfo; today: string }) {
             </ThemedText>
           ))
         )}
-      </Card>
-
-      <ThemedText type="smallBold">What the selectors look for</ThemedText>
-      {info.criteria.groups.map((group) => (
-        <Card key={group.key} style={styles.card}>
-          <ThemedText type="smallBold">{group.name}</ThemedText>
-          <ThemedText type="small">{group.items.map((item) => item.name).join(', ')}</ThemedText>
-          <ThemedText type="small" themeColor="textSecondary">
-            Seen as: {group.scale.join(', ')}
-          </ThemedText>
-        </Card>
-      ))}
-    </View>
+      </Fold>
+      <Fold
+        title={`What the selectors look for · ${info.criteria.groups.length} ${info.criteria.groups.length === 1 ? 'group' : 'groups'}`}>
+        {info.criteria.groups.map((group) => (
+          <View key={group.key} style={styles.card}>
+            <ThemedText type="smallBold">{group.name}</ThemedText>
+            <ThemedText type="small">{group.items.map((item) => item.name).join(', ')}</ThemedText>
+            <ThemedText type="small" themeColor="textSecondary">
+              Seen as: {group.scale.join(', ')}
+            </ThemedText>
+          </View>
+        ))}
+      </Fold>
+    </>
   );
 }
 

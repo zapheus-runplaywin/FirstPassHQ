@@ -17,7 +17,9 @@ import {
   filterAthletes,
   isOverdue,
   nextRoundDate,
-  roundDates,
+  roundTitle,
+  shortDate,
+  shortRange,
   summariesDue,
   summaryStatusLine,
   type AthleteFilter,
@@ -93,14 +95,17 @@ export default function RoundScreen() {
   const chosen = filters.some((f) => f.value === filter) ? filter : 'all';
   const shown = filterAthletes(sheet.athletes, summaries, chosen, search);
   const params = (athlete: string) => ({ round: sheet.id, athlete });
+  // Observations are dated inside the round, so nothing can be added before it starts.
+  const notStarted = !sheet.closed && sheet.starts_on > sheet.today;
 
   return (
     <Screen refreshing={refreshing} onRefresh={onRefresh}>
-      <ThemedText type="subtitle">{sheet.name}</ThemedText>
+      <ThemedText type="subtitle">{roundTitle(sheet)}</ThemedText>
       <ThemedText type="small" themeColor="textSecondary">
-        {sheet.team_name} · {roundDates(sheet)}
+        {[sheet.team_name, shortRange(sheet), sheet.criteria_set_name].filter(Boolean).join(' · ')}
         {sheet.closed ? ' · closed, so nothing more can be added' : ''}
       </ThemedText>
+      {notStarted ? <ThemedText type="smallBold">Starts {shortDate(sheet.starts_on, true)}</ThemedText> : null}
       <ErrorText>{error}</ErrorText>
       {dates.length > 0 ? (
         <PressableCard onPress={() => setShowDates((on) => !on)}>
@@ -171,7 +176,7 @@ export default function RoundScreen() {
                   ) : null}
                 </PressableCard>
               </View>
-              {sheet.closed ? null : (
+              {sheet.closed || notStarted ? null : (
                 <Pressable
                   accessibilityRole="button"
                   accessibilityLabel={`Add an observation about ${name}`}

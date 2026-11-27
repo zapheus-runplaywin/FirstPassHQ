@@ -111,8 +111,8 @@ select pg_temp.ok('anon cannot call any assessment function',
     'public.selection_assessments_on()', 'public.admin_assessment_criteria()',
     'public.admin_save_assessment_criteria(jsonb)', 'public.on_selection_panel(uuid)',
     'public.can_assess_athlete(uuid, uuid)', 'public.admin_selection_rounds()',
-    'public.admin_open_selection_round(uuid, text, date, date, uuid)',
-    'public.admin_save_selection_round(uuid, text, date, date)',
+    'public.admin_open_selection_round(uuid, text, date, date, uuid, integer, integer)',
+    'public.admin_save_selection_round(uuid, text, date, date, integer, integer)',
     'public.admin_close_selection_round(uuid, boolean)', 'public.admin_selection_panel_choices(uuid)',
     'public.admin_add_selection_panel_member(uuid, uuid)',
     'public.admin_remove_selection_panel_member(uuid, uuid)', 'public.my_selection_rounds()',
@@ -573,10 +573,10 @@ select pg_temp.ok('nothing in it can be changed',
 select pg_temp.fails('or removed', $$select public.delete_assessment_observation(pg_temp.obs('Correction: it was four feeds'))$$);
 select pg_temp.as_member('01');
 select pg_temp.works('a second round can open once the first is closed',
-  $$select public.admin_open_selection_round('00000000-0000-0000-0000-0000000000a1', 'Second selections', public.club_today(), public.club_today() + 30)$$);
+  $$select public.admin_open_selection_round('00000000-0000-0000-0000-0000000000a1', 'Second selections', public.club_today() + 1, public.club_today() + 30)$$);
 select pg_temp.eq('the new round takes the club''s new criteria',
   (select criteria #>> '{groups,0,name}' from public.selection_rounds where id = pg_temp.round('Second selections')), 'Fitness');
-select pg_temp.fails('the first can''t reopen while the second is open', $$select public.admin_close_selection_round(pg_temp.round(), false)$$);
+select pg_temp.fails('the first can''t reopen: its dates overlap the second', $$select public.admin_close_selection_round(pg_temp.round(), false)$$);
 select pg_temp.works('the second closes', $$select public.admin_close_selection_round(pg_temp.round('Second selections'), true)$$);
 select pg_temp.works('and the first reopens', $$select public.admin_close_selection_round(pg_temp.round(), false)$$);
 select pg_temp.as_member('11');

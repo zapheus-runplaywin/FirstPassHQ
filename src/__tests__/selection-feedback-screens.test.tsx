@@ -549,8 +549,8 @@ describe('feedback under Selection, for an athlete or a parent', () => {
 
   it('puts feedback above the round’s dates and criteria', async () => {
     await openSelection('athlete', [shared()], [info()]);
-    const order = screen.getAllByText(/^(Feedback for you|What the selectors look for)$/).map((n) => n.props.children);
-    expect(order).toEqual(['Feedback for you', 'What the selectors look for']);
+    const order = screen.getAllByText(/^(Feedback for you|What the selectors look for · .*)$/).map((n) => n.props.children);
+    expect(order).toEqual(['Feedback for you', 'What the selectors look for · 1 group']);
   });
 
   it('names the child on a parent’s screen', async () => {
@@ -568,7 +568,11 @@ describe('feedback under Selection, for an athlete or a parent', () => {
   it('offers nothing to write, answer or press, and says so', async () => {
     await openSelection('athlete', [shared()], [info()]);
     expect(screen.getAllByText('You can’t reply here. Talk to your coach if you have a question.')).toHaveLength(1);
-    expect(screen.queryAllByRole('button')).toHaveLength(0);
+    // The only buttons open the round's dates and criteria in place.
+    expect(screen.queryAllByRole('button').map((b) => b.props.accessibilityLabel)).toEqual([
+      expect.stringMatching(/^Dates \(1\)/),
+      'What the selectors look for · 1 group',
+    ]);
     expect(screen.queryByText(/Add|Comment|Send/)).toBeNull();
   });
 

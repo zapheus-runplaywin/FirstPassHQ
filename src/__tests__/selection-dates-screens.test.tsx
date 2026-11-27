@@ -680,38 +680,74 @@ describe('Selection, for an athlete or a parent', () => {
     expect(rpcCalls('my_selection_info')).toEqual([{}]);
   });
 
-  it('shows an athlete their round, its dates and what the selectors look for', async () => {
-    await openSelection('athlete', [info()]);
-    expect(screen.getByText('2027 selection phase')).toBeTruthy();
-    expect(screen.getByText(`17 & Under squad · ${d('2026-10-05')} to ${d('2026-11-29')}`)).toBeTruthy();
+  async function openFolds() {
+    for (const fold of screen.queryAllByRole('button')) {
+      await act(async () => {
+        await fireEvent.press(fold);
+      });
+    }
+  }
+
+  it('shows an athlete the round running now, its dates and what the selectors look for', async () => {
+    await openSelection('athlete', [info({ phase: 1, round_number: 2, round_name: 'Trials', criteria_set_name: 'Senior criteria' })]);
+    expect(screen.getByText('Now')).toBeTruthy();
+    expect(screen.getByText('Phase 1, Round 2 · Trials · Now')).toBeTruthy();
+    expect(screen.getByText('17 & Under squad · 5 Oct to 29 Nov')).toBeTruthy();
+    expect(screen.getByText('Assessed against: Senior criteria')).toBeTruthy();
+    expect(screen.getByText('Dates (3) · Next: Teams named, In 10 days')).toBeTruthy();
+    expect(screen.getByText('What the selectors look for · 2 groups')).toBeTruthy();
+    // Folded until opened, then in place.
+    expect(screen.queryByText('Technical ability')).toBeNull();
+    await openFolds();
     expect(screen.getByText(`${d('2026-10-06')} · Criteria shared with athletes · Done`)).toBeTruthy();
     expect(screen.getByText(`${d('2026-10-28')} · Teams named · In 10 days`)).toBeTruthy();
-    expect(screen.getByText('What the selectors look for')).toBeTruthy();
     expect(screen.getByText('Technical ability')).toBeTruthy();
     expect(screen.getByText('Passing, Catching')).toBeTruthy();
     expect(screen.getByText('Seen as: Developing, Meets standard, Exceeds standard')).toBeTruthy();
   });
 
+  it('puts later rounds under Coming up and one past its end under Finished', async () => {
+    await openSelection('athlete', [
+      info(),
+      info({ round_id: 'r2', round_name: 'x', phase: 2, round_number: 1, starts_on: '2026-12-01', ends_on: '2027-01-31', criteria_set_name: 'Junior criteria' }),
+      info({ round_id: 'r0', round_name: 'Earlier', starts_on: '2026-08-01', ends_on: '2026-09-30' }),
+    ]);
+    expect(screen.getByText('2027 selection phase · Now')).toBeTruthy();
+    expect(screen.getByText('Coming up')).toBeTruthy();
+    expect(screen.getByText('Phase 2, Round 1 · x · 1 Dec to 31 Jan · Junior criteria')).toBeTruthy();
+    expect(screen.getByText('Finished')).toBeTruthy();
+    expect(screen.getByText('Earlier · Ended 30 Sep')).toBeTruthy();
+    expect(screen.getAllByText(/· Now$/)).toHaveLength(1);
+  });
+
   it('never calls a past date overdue to an athlete: it isn’t theirs to do', async () => {
     await openSelection('athlete', [info()]);
+    await openFolds();
     expect(screen.getByText(`${d('2026-10-12')} · Trials`)).toBeTruthy();
     expect(screen.queryByText(/overdue/)).toBeNull();
   });
 
-  it('says there is no score, and offers nothing to write, answer or open', async () => {
+  it('says there is no score, and offers nothing to write or answer: only folds that open in place', async () => {
     await openSelection('athlete', [info()]);
     expect(screen.getByText(/There is no score or ranking/)).toBeTruthy();
     expect(screen.queryByText(/observation|Add|Reply|Comment/i)).toBeNull();
-    expect(screen.queryAllByRole('button')).toHaveLength(0);
+    expect(screen.queryAllByRole('button').map((b) => b.props.accessibilityLabel)).toEqual([
+      'Dates (3) · Next: Teams named, In 10 days',
+      'What the selectors look for · 2 groups',
+    ]);
+    expect(screen.queryByRole('textbox')).toBeNull();
   });
 
-  it('names the child on a parent’s screen, one block per child', async () => {
+  it('names each child on a parent’s screen, one block per child, each on their own criteria', async () => {
     await openSelection('guardian', [
-      info({ is_me: false }),
-      info({ is_me: false, athlete_id: 'a2', athlete_name: null, round_id: 'r2', round_name: 'Opens selection', dates: [] }),
+      info({ is_me: false, criteria_set_name: 'Senior criteria' }),
+      info({ is_me: false, athlete_id: 'a2', athlete_name: null, round_id: 'r2', round_name: 'Opens selection', dates: [], criteria_set_name: 'Junior criteria' }),
     ]);
-    expect(screen.getByText('Jordan Junior: 2027 selection phase')).toBeTruthy();
-    expect(screen.getByText('Your child: Opens selection')).toBeTruthy();
+    expect(screen.getByText('Jordan Junior')).toBeTruthy();
+    expect(screen.getByText('Your child')).toBeTruthy();
+    expect(screen.getByText('Assessed against: Senior criteria')).toBeTruthy();
+    expect(screen.getByText('Assessed against: Junior criteria')).toBeTruthy();
+    await openFolds();
     expect(screen.getByText('The club hasn’t shared any dates yet.')).toBeTruthy();
   });
 
