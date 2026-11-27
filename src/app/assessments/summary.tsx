@@ -1,6 +1,6 @@
 import { router, useFocusEffect, useLocalSearchParams } from 'expo-router';
 import { useCallback, useState } from 'react';
-import { StyleSheet, View } from 'react-native';
+import { Pressable, StyleSheet, View } from 'react-native';
 
 import { CardGrid } from '@/components/columns';
 import { ReportView } from '@/components/report-view';
@@ -9,7 +9,11 @@ import { ThemedText } from '@/components/themed-text';
 import { Button, Card, ChipGroup, ConfirmDelete, ErrorText, PressableCard, TextField } from '@/components/ui';
 import { Spacing } from '@/constants/theme';
 import {
+  MAX_INTERNAL_NOTE,
   MAX_SUMMARY_TEXT,
+  groupNotesCount,
+  notesToSave,
+  setSummaryNote,
   myObservationsLine,
   nextToSign,
   setSummaryRating,
@@ -110,6 +114,7 @@ export default function SummaryScreen() {
       p_priorities: draft.priorities.trim(),
       p_comments: draft.comments.trim(),
       p_sign: sign,
+      p_notes: notesToSave(draft.notes),
     });
     if (saveError) {
       setBusy(false);
@@ -184,7 +189,8 @@ export default function SummaryScreen() {
         </CardGrid>
         <ThemedText type="smallBold">Against the criteria</ThemedText>
         <ThemedText type="small" themeColor="textSecondary">
-          Tap a group to see each selector’s step. Only criteria someone gave a step are listed.
+          Tap a group to see each selector’s step. Only criteria someone gave a step or a note are
+          listed. Internal notes are for the panel and this round’s auditors. They are never released.
         </ThemedText>
         {compared.groups.map((group) => {
           const isOpen = open.includes(group.key);
@@ -203,6 +209,11 @@ export default function SummaryScreen() {
                       <ThemedText type="small" themeColor="textSecondary">
                         {item.steps}
                       </ThemedText>
+                      {item.notes.map((line) => (
+                        <ThemedText key={line} type="small" themeColor="textSecondary">
+                          {line}
+                        </ThemedText>
+                      ))}
                     </View>
                   ))}
                   {group.unrated.length > 0 ? (
@@ -297,6 +308,7 @@ export default function SummaryScreen() {
               onPress={() => setOpen((keys) => (isOpen ? keys.filter((k) => k !== group.key) : [...keys, group.key]))}>
               <ThemedText type="smallBold">
                 {group.name} ({chosen} of {group.items.length})
+                {groupNotesCount(group, draft.notes) ? ` · ${groupNotesCount(group, draft.notes)}` : ''}
               </ThemedText>
               <ThemedText type="small" themeColor="textSecondary">
                 {isOpen ? 'Tap to close' : group.items.map((i) => i.name).join(', ')}
@@ -306,19 +318,46 @@ export default function SummaryScreen() {
               ? group.items.map((item) => {
                   const current = draft.ratings.find((r) => r.item_key === item.key);
                   const value = current ? String(current.rating) : null;
+                  const note = draft.notes.find((n) => n.item_key === item.key);
                   return (
-                    <ChipGroup
-                      key={item.key}
-                      label={item.name}
-                      options={group.scale.map((step, index) => ({ value: String(index + 1), label: step }))}
-                      selected={value ? [value] : []}
-                      onToggle={(step) =>
-                        setDraft({
-                          ...draft,
-                          ratings: setSummaryRating(draft.ratings, item.key, step === value ? undefined : Number(step)),
-                        })
-                      }
-                    />
+                    <View key={item.key} style={styles.item}>
+                      <ChipGroup
+                        label={item.name}
+                        options={group.scale.map((step, index) => ({ value: String(index + 1), label: step }))}
+                        selected={value ? [value] : []}
+                        onToggle={(step) =>
+                          setDraft({
+                            ...draft,
+                            ratings: setSummaryRating(draft.ratings, item.key, step === value ? undefined : Number(step)),
+                          })
+                        }
+                      />
+                      {note ? (
+                        <>
+                          <TextField
+                            label="Internal note"
+                            accessibilityLabel={`Internal note: ${item.name}`}
+                            value={note.note}
+                            onChangeText={(text) => setDraft({ ...draft, notes: setSummaryNote(draft.notes, item.key, text) })}
+                            multiline
+                            maxLength={MAX_INTERNAL_NOTE}
+                          />
+                          <ThemedText type="small" themeColor="textSecondary">
+                            Only the panel and this round’s auditors see this. It is never shown to the athlete or
+                            parents.
+                          </ThemedText>
+                        </>
+                      ) : (
+                        <Pressable
+                          accessibilityRole="button"
+                          accessibilityLabel={`Add an internal note: ${item.name}`}
+                          onPress={() => setDraft({ ...draft, notes: setSummaryNote(draft.notes, item.key, '') })}>
+                          <ThemedText type="small" themeColor="textSecondary">
+                            Add an internal note
+                          </ThemedText>
+                        </Pressable>
+                      )}
+                    </View>
                   );
                 })
               : null}
@@ -334,6 +373,10 @@ export default function SummaryScreen() {
           onToggle={(r) => setDraft({ ...draft, recommendation: r === draft.recommendation ? null : r })}
         />
       ) : null}
+      <ThemedText type="small" themeColor="textSecondary">
+        Strengths, development priorities, comments and your recommendation can be released to the
+        athlete by the head coach. Internal notes never are.
+      </ThemedText>
       <TextField
         label="Strengths"
         value={draft.strengths}
@@ -382,4 +425,5 @@ export default function SummaryScreen() {
 const styles = StyleSheet.create({
   group: { gap: Spacing.two },
   card: { gap: Spacing.one },
+  item: { gap: Spacing.one },
 });

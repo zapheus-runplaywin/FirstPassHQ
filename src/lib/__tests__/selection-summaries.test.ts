@@ -175,6 +175,7 @@ describe('starting a summary', () => {
       strengths: '',
       priorities: '',
       comments: '',
+      notes: [],
     });
   });
 
@@ -185,6 +186,7 @@ describe('starting a summary', () => {
       strengths: 'Reads the play early',
       priorities: 'Left-hand pass',
       comments: '',
+      notes: [],
     });
   });
 
@@ -226,6 +228,7 @@ describe('what stops a summary', () => {
     strengths: '',
     priorities: '',
     comments: '',
+    notes: [],
     ...extra,
   });
 
@@ -335,7 +338,7 @@ describe('the completed sheet', () => {
     ]);
     expect(report.sections[report.sections.length - 1].title).toBe('Signed');
     expect(report.footnote).toBe(
-      'Each selector wrote and signed their own summary before seeing anyone else’s. There is no total or score, and nothing here puts athletes in order. Confidential to the selection panel: keep this copy as the club’s privacy policy says.',
+      'Each selector wrote and signed their own summary before seeing anyone else’s. There is no total or score, and nothing here puts athletes in order. Internal notes are not in this copy. Confidential to the selection panel: keep this copy as the club’s privacy policy says.',
     );
   });
 
@@ -409,15 +412,15 @@ describe('the signed summaries on screen', () => {
         key: 'technical-ability',
         name: 'Technical ability',
         rated: [
-          { key: 'passing', name: 'Passing', steps: 'Casey Coach: Exceeds standard · Ola Selector: Meets standard' },
-          { key: 'catching', name: 'Catching', steps: 'Ola Selector: Below standard' },
+          { key: 'passing', name: 'Passing', steps: 'Casey Coach: Exceeds standard · Ola Selector: Meets standard', notes: [] },
+          { key: 'catching', name: 'Catching', steps: 'Ola Selector: Below standard', notes: [] },
         ],
         unrated: [],
       },
       {
         key: 'coachability',
         name: 'Coachability',
-        rated: [{ key: 'accepts-feedback', name: 'Accepts feedback', steps: 'Casey Coach: Meets standard' }],
+        rated: [{ key: 'accepts-feedback', name: 'Accepts feedback', steps: 'Casey Coach: Meets standard', notes: [] }],
         unrated: [],
       },
     ]);

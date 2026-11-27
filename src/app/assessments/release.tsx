@@ -14,6 +14,7 @@ import {
   releasePartsLine,
   releasePartsProblem,
   releasePreview,
+  internalNotesLine,
   releaseReaders,
   roundTitle,
   type AthleteRelease,
@@ -286,6 +287,11 @@ function ReleaseOne({ round, athlete }: { round: string; athlete: string }) {
           />
         );
       })}
+      {internalNotesLine(loaded.notes_count ?? 0) ? (
+        <ThemedText type="small" themeColor="textSecondary">
+          {internalNotesLine(loaded.notes_count ?? 0)}
+        </ThemedText>
+      ) : null}
       <ThemedText type="small" themeColor="textSecondary">
         {releaseReaders(loaded)}
       </ThemedText>

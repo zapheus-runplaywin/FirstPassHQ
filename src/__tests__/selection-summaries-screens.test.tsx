@@ -246,6 +246,7 @@ describe('a selector’s summary of an athlete', () => {
     await press('Save draft');
     expect(onlyRpcCall('save_assessment_summary')).toEqual({
       ...ARGS,
+      p_notes: [],
       p_ratings: [
         { item_key: 'passing', rating: 3 },
         { item_key: 'catching', rating: 1 },
@@ -292,6 +293,7 @@ describe('a selector’s summary of an athlete', () => {
     await press('Sign and lock');
     expect(onlyRpcCall('save_assessment_summary')).toEqual({
       ...ARGS,
+      p_notes: [],
       p_ratings: MINE.ratings,
       p_recommendation: 'Select',
       p_strengths: 'Reads the play early',
@@ -1028,5 +1030,86 @@ describe('the to-do to sign summaries', () => {
     setClubFeatures({});
     await openHome('coach');
     expect(screen.queryByText(/Sign your/)).toBeNull();
+  });
+});
+
+// ---------------------------------------------------------------------------
+// Internal notes (part 6): beside a criterion, for the panel and auditors only
+
+describe('internal notes in a summary', () => {
+  async function openSummary(loaded: AssessmentSummary) {
+    await openScreen('coach', { 'assessments/summary': SummaryScreen }, '/assessments/summary?round=r1&athlete=a1', {}, {
+      rpcs: { my_assessment_summary: loaded },
+    });
+  }
+
+  it('shows no note field until one is asked for, then says who sees it', async () => {
+    await openSummary(summary());
+    await press('Technical ability (1 of 2)');
+    expect(screen.queryByText('Internal note')).toBeNull();
+    expect(screen.getAllByText('Add an internal note')).toHaveLength(2);
+    await fireEvent.press(screen.getByLabelText('Add an internal note: Catching'));
+    await settle(2);
+    expect(screen.getByText('Internal note')).toBeTruthy();
+    expect(
+      screen.getByText('Only the panel and this round’s auditors see this. It is never shown to the athlete or parents.'),
+    ).toBeTruthy();
+    expect(screen.getAllByText('Add an internal note')).toHaveLength(1);
+  });
+
+  it('says what the head coach can release, and that notes never are', async () => {
+    await openSummary(summary());
+    expect(
+      screen.getByText(/Strengths, development priorities, comments and your recommendation can be released to the\s+athlete by the head coach\. Internal notes never are\./),
+    ).toBeTruthy();
+  });
+
+  it('saves a note trimmed, drops an empty one, and counts notes on the folded group', async () => {
+    await openSummary(summary());
+    await press('Technical ability (1 of 2)');
+    await fireEvent.press(screen.getByLabelText('Add an internal note: Catching'));
+    await settle(2);
+    await fireEvent.changeText(screen.getByLabelText('Internal note: Catching'), '  Late to three sessions ');
+    await settle(2);
+    await fireEvent.press(screen.getByLabelText('Add an internal note: Passing'));
+    await settle(2);
+    expect(screen.getByText('Technical ability (1 of 2) · 1 internal note')).toBeTruthy();
+    await press('Save draft');
+    expect(onlyRpcCall('save_assessment_summary')).toMatchObject({
+      p_notes: [{ item_key: 'catching', note: 'Late to three sessions' }],
+    });
+  });
+
+  it('opens a saved note in its field', async () => {
+    await openSummary(summary({ mine: { ...MINE, notes: [{ item_key: 'passing', note: 'Saved note' }] } }));
+    expect(screen.getByText('Technical ability (1 of 2) · 1 internal note')).toBeTruthy();
+    await press('Technical ability (1 of 2) · 1 internal note');
+    expect(screen.getByDisplayValue('Saved note')).toBeTruthy();
+  });
+
+  it('shows each selector’s note under the criterion once signed, including a criterion with only a note', async () => {
+    await openSummary(
+      summary({
+        mine: { ...SIGNED, notes: [{ item_key: 'passing', note: 'Spoke to her on 3 Dec' }] },
+        others: [{ ...OTHER, notes: [{ item_key: 'accepts-feedback', note: 'Only a note here' }], ratings: [] }],
+        others_signed: 1,
+      }),
+    );
+    expect(screen.getByText(/Internal notes are for the panel and this round’s auditors\. They are never released\./)).toBeTruthy();
+    await press('Technical ability (1 of 2)');
+    expect(screen.getByText('Casey Coach, internal note: Spoke to her on 3 Dec')).toBeTruthy();
+    await press('Coachability (1 of 1)');
+    expect(screen.getByText('Ola Selector, internal note: Only a note here')).toBeTruthy();
+  });
+
+  it('leaves notes out of the PDF and says so', async () => {
+    await openSummary(
+      summary({ mine: { ...SIGNED, notes: [{ item_key: 'passing', note: 'NOTE-pdf-never' }] }, others: [OTHER], others_signed: 1 }),
+    );
+    await fireEvent.press(screen.getByText('Export PDF'));
+    await settle();
+    const pdf = readPdf(written[0].bytes);
+    expect(pdf.text).not.toContain('NOTE-pdf-never');
+    expect(pdf.text).toContain('Internal notes are not in this copy');
   });
 });

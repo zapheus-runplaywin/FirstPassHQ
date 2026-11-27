@@ -376,6 +376,15 @@ describe('an athlete’s assessment, for the round’s auditor', () => {
     expect(screen.getByText('Signing history')).toBeTruthy();
   });
 
+  it('shows each selector’s internal notes under the criteria, and says they are never released', async () => {
+    const item = CRITERIA.groups[0].items[0];
+    const base = assessment();
+    await openAthlete({ ...base, summaries: [{ ...base.summaries[0], notes: [{ item_key: item.key, note: 'Spoke to her' }] }] });
+    await press('Summaries (1)');
+    expect(screen.getByText(`${item.name}, internal note: Spoke to her`)).toBeTruthy();
+    expect(screen.getByText('Internal notes are for the panel and this round’s auditors. They are never released.')).toBeTruthy();
+  });
+
   it('says a draft exists without showing its words', async () => {
     await openAthlete();
     await press('Feedback');

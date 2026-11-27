@@ -269,6 +269,8 @@ export type RoundRecord = {
     set_version: number | null;
   };
   events: RoundEvent[];
+  /** Counts over the round's signed summaries only; never the words. Missing from an older database. */
+  internal_notes?: { notes: number; selectors: number; athletes: number };
 };
 
 export type RoundEvent = {
@@ -768,6 +770,18 @@ export function ratingLines(criteria: Criteria, ratings: ObservationRating[]) {
   return lines;
 }
 
+/** A selector's internal notes in the criteria's order, as "Passing, internal note: …". */
+export function noteLines(criteria: Criteria, notes: SummaryNote[] | undefined) {
+  const lines: string[] = [];
+  for (const group of criteria.groups) {
+    for (const item of group.items) {
+      const note = (notes ?? []).find((n) => n.item_key === item.key)?.note;
+      if (note) lines.push(`${item.name}, internal note: ${note}`);
+    }
+  }
+  return lines;
+}
+
 /** Whole days from one "2026-11-23" style date to another. */
 export function daysBetween(from: string, to: string) {
   return Math.round((Date.parse(`${to}T00:00:00Z`) - Date.parse(`${from}T00:00:00Z`)) / 86400000);
@@ -1079,8 +1093,15 @@ export function criteriaRecordSection(record: RoundRecord): ReportSection {
         ],
       },
       ...(c.set_state === 'legacy' ? [] : [{ cells: ['Since the round opened', setStateLine(record)] }]),
+      ...(record.internal_notes ? [{ cells: ['Internal notes', internalNotesRecordLine(record.internal_notes)] }] : []),
     ],
   };
+}
+
+/** The audit report's one line about internal notes: a round total, never per athlete or selector. */
+export function internalNotesRecordLine(counts: { notes: number; selectors: number; athletes: number }) {
+  if (counts.notes === 0) return 'None';
+  return `${plural(counts.notes, 'note', 'notes')} by ${plural(counts.selectors, 'selector', 'selectors')} about ${plural(counts.athletes, 'athlete', 'athletes')}. Only the panel and this round’s auditors read them.`;
 }
 
 /** The audit report's Changes to the round section, oldest first. */
@@ -1589,8 +1610,16 @@ export function selectionInfoLabel(
 export type SummaryRating = { item_key: string; rating: number };
 
 /** What a summary says. */
+/** The longest internal note a selector can keep beside one criterion. */
+export const MAX_INTERNAL_NOTE = 500;
+
+/** A selector's internal note beside one criterion. Read by the panel and auditors only; never released. */
+export type SummaryNote = { item_key: string; note: string };
+
 export type SummaryBody = {
   ratings: SummaryRating[];
+  /** Missing from an older database answer: treat as none. */
+  notes?: SummaryNote[];
   recommendation: string | null;
   strengths: string | null;
   priorities: string | null;
@@ -1654,6 +1683,7 @@ export type SummaryDraft = {
   strengths: string;
   priorities: string;
   comments: string;
+  notes: SummaryNote[];
 };
 
 /**
@@ -1670,7 +1700,35 @@ export function summaryStart(summary: AssessmentSummary): SummaryDraft {
     strengths: mine?.strengths ?? '',
     priorities: mine?.priorities ?? '',
     comments: mine?.comments ?? '',
+    notes: (mine?.notes ?? []).filter((n) => keys.has(n.item_key)),
   };
+}
+
+/**
+ * Sets the internal note beside an item. An empty note is kept while its
+ * field is open; the save drops it (notesToSave).
+ */
+export function setSummaryNote(notes: SummaryNote[], itemKey: string, text: string): SummaryNote[] {
+  return notes.some((n) => n.item_key === itemKey)
+    ? notes.map((n) => (n.item_key === itemKey ? { ...n, note: text } : n))
+    : [...notes, { item_key: itemKey, note: text }];
+}
+
+/** The notes the save sends: trimmed, empty ones left out. */
+export function notesToSave(notes: SummaryNote[]): SummaryNote[] {
+  return notes.map((n) => ({ item_key: n.item_key, note: n.note.trim() })).filter((n) => n.note !== '');
+}
+
+/** The head coach's line on the release screen, or null with no notes. */
+export function internalNotesLine(count: number) {
+  if (count <= 0) return null;
+  return count === 1 ? 'Your internal note is never released.' : `Your ${count} internal notes are never released.`;
+}
+
+/** "2 internal notes" for a folded group, or null. */
+export function groupNotesCount(group: CriteriaGroup, notes: SummaryNote[]) {
+  const n = notes.filter((x) => x.note.trim() && group.items.some((i) => i.key === x.item_key)).length;
+  return n === 0 ? null : plural(n, 'internal note', 'internal notes');
 }
 
 /** Sets an item's step in a summary, or with undefined takes it off. */
@@ -1684,6 +1742,9 @@ export function summaryProblem(draft: SummaryDraft, criteria: Criteria, sign: bo
   const texts = [draft.strengths, draft.priorities, draft.comments];
   if (texts.some((t) => t.trim().length > MAX_SUMMARY_TEXT)) {
     return `Keep each box to ${MAX_SUMMARY_TEXT} characters.`;
+  }
+  if ((draft.notes ?? []).some((n) => n.note.trim().length > MAX_INTERNAL_NOTE)) {
+    return `Keep each internal note to ${MAX_INTERNAL_NOTE} characters.`;
   }
   if (!sign) return null;
   if (draft.ratings.length === 0) return 'Choose a step for at least one of the criteria before you sign.';
@@ -1769,7 +1830,7 @@ export function summarySheetReport(summary: AssessmentSummary): Report {
       },
     ],
     footnote:
-      'Each selector wrote and signed their own summary before seeing anyone else’s. There is no total or score, and nothing here puts athletes in order. Confidential to the selection panel: keep this copy as the club’s privacy policy says.',
+      'Each selector wrote and signed their own summary before seeing anyone else’s. There is no total or score, and nothing here puts athletes in order. Internal notes are not in this copy. Confidential to the selection panel: keep this copy as the club’s privacy policy says.',
   };
 }
 
@@ -1836,7 +1897,7 @@ export type ComparedSelector = {
 export type ComparedGroup = {
   key: string;
   name: string;
-  rated: { key: string; name: string; steps: string }[];
+  rated: { key: string; name: string; steps: string; notes: string[] }[];
   unrated: string[];
 };
 
@@ -1873,12 +1934,18 @@ export function summaryComparison(summary: AssessmentSummary): { selectors: Comp
           })
           .filter((line): line is string => line !== null)
           .join(' · '),
+        notes: signed
+          .map(({ name, body }) => {
+            const note = (body.notes ?? []).find((n) => n.item_key === item.key)?.note;
+            return note ? `${name}, internal note: ${note}` : null;
+          })
+          .filter((line): line is string => line !== null),
       }));
       return {
         key: group.key,
         name: group.name,
-        rated: items.filter((item) => item.steps),
-        unrated: items.filter((item) => !item.steps).map((item) => item.name),
+        rated: items.filter((item) => item.steps || item.notes.length > 0),
+        unrated: items.filter((item) => !item.steps && item.notes.length === 0).map((item) => item.name),
       };
     }),
   };
@@ -2138,6 +2205,8 @@ export type AthleteRelease = {
   my_name: string | null;
   /** Only for the head coach, once their summary is signed. */
   summary: ReleaseSummary | null;
+  /** How many internal notes the caller's own summary has; they are never released. Missing from an older database. */
+  notes_count?: number;
   release: { parts: ReleaseParts; released_at: string | null; released_by_name: string; seen_at: string | null } | null;
 };
 
@@ -2573,6 +2642,8 @@ export type AuditSummary = {
   priorities: string;
   comments: string;
   signed_at: string;
+  /** The selector's internal notes; missing from an older database. */
+  notes?: SummaryNote[];
 };
 
 /** One athlete's whole assessment, for the round's auditor. */
