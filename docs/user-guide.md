@@ -136,6 +136,8 @@ What each role can see and do:
 | Your own personal tasks                |    ✓    |        ✓        |      ✓       |     ✓      |       ✓       |       ✓       |    ✓    |       ✓       |
 | See events added for your squads and teams (when switched on) |    ✓    | Their athlete's |      ✓       |     ✓      |  If in one    |       ✓       |         |      All      |
 | Add, change and cancel squad and team events (when switched on) |         |                 |  Own groups  | Own groups |               |               |         |  Any group    |
+| Add events to a calendar kept in the app |         |                 |              |            |               |               |         |       ✓       |
+| Suggest an event for a calendar kept in the app (where an admin allows it, for calendars you see) |         |                 |      ✓       |     ✓      |       ✓       |               |         | Answers them  |
 | To-do notifications on your phone      |    ✓    |        ✓        |      ✓       |     ✓      |       ✓       |       ✓       |    ✓    |       ✓       |
 | My squads and teams                    |    ✓    |        ✓        |      ✓       |     ✓      |  If in one    |       ✓       | Heading only |   If in one   |
 | Injury status beside an athlete's name in a squad or team |         |                 |  Own groups  |            |               |  Own groups   |         |               |
@@ -1107,6 +1109,16 @@ and session plans (see [A session's page](#a-sessions-page)).
 Each squad and team has its own colour, which the app chooses. Colours an admin picked for the
 club's calendars are kept for those calendars, so a team never looks like the club calendar. A
 squad and a team can share a colour, because a squad's work ends as its teams start.
+
+#### Calendars kept in the app
+
+A club calendar is kept in one place: either in Outlook, where the app shows what Outlook has, or
+in the app, where admins add its events. You don't need to know which: both look the same in your
+calendar, and you see a calendar only if an admin shares it with you. An event on a calendar kept
+in the app can be cancelled like a squad's or team's: it stays, crossed out and marked
+**Cancelled**. Coaches, managers and committee members can suggest an event for one (see
+[Suggesting an event for a club calendar](#suggesting-an-event-for-a-club-calendar)); a suggestion
+isn't on anyone's calendar until an admin adds it.
 
 <img src="user-guide/team-events-calendar.png" width="210" alt="A coach's calendar with Add an event, their team's events in the team's colour, a cancelled event crossed out and a club event in the club's colour">
 <img src="user-guide/team-event-athlete.png" width="210" alt="A training session a coach added, as an athlete sees it: when and where, Can't make it, the coach's note and who added it">
@@ -3046,6 +3058,34 @@ You can't choose the colour: the app gives each squad and team one that no club 
 <img src="user-guide/team-event-coach.png" width="210" alt="An event as its coach sees it: Take attendance, Add a session plan, the note, then Change and Cancel event">
 <img src="user-guide/team-event-cancel.png" width="210" alt="Cancelling a weekly event: Cancel this one or Cancel this and later weeks">
 
+### Suggesting an event for a club calendar
+
+When an admin keeps a club calendar in the app and lets it take suggestions, coaches, managers
+and committee members who see that calendar can suggest an event for it, such as a quiz night or
+a working bee. An admin checks it before it goes on the calendar.
+
+1. In the **Calendar** tab tap **Add an event** (or **Suggest an event**, when suggesting is all
+   you can do). Under **For**, choose the club calendar. The form's heading changes to **Suggest
+   an event** and a line says an admin checks it first.
+2. Fill it in as you would any event: what it is, its name, the day, the times and the place. It
+   can repeat every week.
+3. Tap **Send to an admin**.
+
+Until an admin answers, only you and admins see it. It shows in your own calendar, greyed and
+marked **Suggested**, and its page says **Suggested by you. Waiting for an admin**. While it
+waits you can **Change** it or **Take it back**.
+
+- **If an admin adds it**, it goes on the calendar for everyone who sees that calendar, and its
+  page says you suggested it. The admin may change it first. From then on only admins change or
+  cancel it.
+- **If an admin declines it**, **Today** tells you it wasn't added. Open it to read **Why it
+  wasn't added**, in the admin's words, then **Clear it away**. Nobody else ever saw it. There is
+  nothing to reply to: if the reason suggests another day, send a new suggestion.
+
+<img src="user-guide/hq-suggest.png" width="210" alt="Suggesting an event for the club's calendar: under For, the club calendar is chosen and a line says an admin checks it before it goes on the calendar">
+<img src="user-guide/hq-suggestion-own.png" width="210" alt="Your own suggestion while it waits: Suggested by you, waiting for an admin, with Change and Take it back">
+<img src="user-guide/hq-suggestion-declined.png" width="210" alt="A suggestion that wasn't added: who declined it, why, and Clear it away">
+
 <div style="page-break-before: always"></div>
 
 ## 7. Managers
@@ -3104,7 +3144,9 @@ those records.
 
 When the club switches on **Squad and team events**, you add, change and cancel events for your
 squads and teams just as coaches do (see
-[Adding events for your squad or team](#adding-events-for-your-squad-or-team)).
+[Adding events for your squad or team](#adding-events-for-your-squad-or-team)). You can also
+suggest an event for a club calendar kept in the app, where an admin allows it (see
+[Suggesting an event for a club calendar](#suggesting-an-event-for-a-club-calendar)).
 
 <div style="page-break-before: always"></div>
 
@@ -3400,6 +3442,11 @@ and the to-do goes.
 Calendars an admin shares with the **Committee** appear only for committee members (and anyone
 else the admin shared them with) and admins, with their own colour and filter in the calendar. A
 paused committee member doesn't see them.
+
+Where an admin keeps a calendar in the app and lets it take suggestions, **Suggest an event** in
+the **Calendar** tab sends one to the admins for a calendar you see, such as a committee meeting
+or a fundraiser. Only you and admins see it until an admin adds it (see
+[Suggesting an event for a club calendar](#suggesting-an-event-for-a-club-calendar)).
 
 <div style="page-break-before: always"></div>
 
@@ -4443,9 +4490,16 @@ FirstPass Vision, and each athlete's own figures show to their coaches on their 
 
 ### Calendars
 
-**Calendars** connects the club's Outlook calendars. In Outlook, publish the calendar and copy its
-ICS link, then paste it under **Add a calendar**, give it a name and choose **Who sees it**.
-Calendars are need to know: a new calendar is shown to nobody but admins until you choose, and the
+**Calendars** holds the club's calendars. Each calendar is kept in one place, which you choose
+under **Where it's kept** when you add it:
+
+- **An Outlook link**: you keep changing it in Outlook, and the app shows what Outlook has. In
+  Outlook, publish the calendar and copy its ICS link, then paste it in.
+- **In the app**: you add its events here, from **Add an event** in the **Calendar** tab, with
+  nothing to set up in Outlook.
+
+Give it a name and choose **Who sees it**. With calendars already listed, the screen is the list:
+tap **Add another calendar** to open the form. Calendars are need to know: a new calendar is shown to nobody but admins until you choose, and the
 app won't save one shown to nobody. Choose either:
 
 - **Everyone in the club**: every approved member, guests included, but not temporary helpers.
@@ -4468,6 +4522,51 @@ or remove one. Calendars added before this choice existed keep who they were sho
 the committee, or their squad or team. A calendar shown to a squad or team is also shown to the
 squad or team of the same name when you start the next season.
 
+#### Calendars kept in the app
+
+A calendar kept in the app says so on its card, with how many events it holds. As an admin you
+add its events from **Add an event** in the **Calendar** tab: choose the calendar under **For**,
+then fill it in as for any event (see
+[Adding events for your squad or team](#adding-events-for-your-squad-or-team)). Everyone the
+calendar is shown to sees the event at once. On an event's page, **Change**, **Cancel event**
+(it stays, crossed out, and **Put it back on** undoes it) and **Added by mistake? Remove it** work
+as they do for a squad's or team's event. Only admins do any of this.
+
+**Moving a linked calendar into the app.** On a linked calendar's card, **Move into the app**
+reads the link one last time and tells you how many events it found, and between which dates:
+everything in the two years the calendar shows, a year back and a year ahead. **Move N events
+into the app** copies them in. From then on you change the calendar in the app and the app stops
+reading Outlook, so anything changed in Outlook afterwards won't show. The same people see it, in
+the same colour. This can't be undone, though the old link is kept on record, and the card says
+when it was moved in and by whom. **Keep it in Outlook** changes nothing. Until you tap it,
+nothing has moved. After moving, stop changing the Outlook calendar, or tell whoever keeps it.
+
+**Suggested events.** Each calendar kept in the app has a switch, **Coaches, managers and
+committee can suggest events**, on to start with. While it's on, those members who see the
+calendar can suggest an event for it; switch it off and only admins add to it. A suggestion is
+seen only by admins and the person who made it until you answer.
+
+- **Today** shows **Answer N suggested events**, and the **Calendar** tab shows the same count
+  above your calendar. Either opens **Suggested events**: each one waiting, soonest first, with
+  who suggested it and for which calendar. A weekly suggestion is listed once, with how many weeks.
+- Open one to see it in full. **Add to the calendar** puts it on in one tap (for a weekly one,
+  **Add every week to the calendar**). **Change it first** opens the form; saving adds it as you
+  changed it. For a weekly one that adds this week only, and the other weeks keep waiting.
+- **Decline** asks **Why**, and won't decline without a reason. The person who suggested it sees
+  your reason; nobody else sees the suggestion or the reason. They can't reply.
+- In your own calendar, suggestions show greyed and marked **Suggested**, so you can see what
+  else is on that day before answering.
+
+Deleting a calendar kept in the app deletes its events too; the card says how many before you
+confirm. An app that hasn't been updated can't show a calendar kept in the app (it says "Couldn't
+load" with the calendar's name), so ask members to update.
+
+<img src="user-guide/hq-admin-calendars.png" width="210" alt="Calendars: one kept in the app with its number of events, one still an Outlook link with Move into the app, and Add another calendar">
+<img src="user-guide/hq-admin-move-in.png" width="210" alt="Moving a linked calendar in: how many events come across, what changes, Move 8 events into the app or Keep it in Outlook">
+<img src="user-guide/hq-suggestions.png" width="210" alt="Suggested events: each one waiting, who suggested it and for which calendar">
+<img src="user-guide/hq-suggestion-admin.png" width="210" alt="A suggestion as an admin answers it: Add to the calendar, Change it first or Decline">
+<img src="user-guide/hq-suggestion-decline.png" width="210" alt="Declining a suggestion: the reason is required and only the person who suggested it sees it">
+
 **Squad and team events** (in **Club features**, off to start with) lets coaches and managers add
 their own squads' and teams' events in the app, so you don't keep an Outlook calendar for every
 team. You can add, change and cancel events for any squad or team, from **Add an event** in the
@@ -4483,7 +4582,6 @@ a web page, a link that answers with an error, or one it can't reach. Spaces or 
 slips into the link are taken out. If members' **Calendar** shows "Couldn't load" with a calendar's
 name, copy that calendar's ICS link from Outlook again and save it here.
 
-<img src="user-guide/admin-calendars.png" width="210" alt="Calendars admin: each calendar says who it's shown to">
 <img src="user-guide/admin-calendar-audience.png" width="210" alt="Adding a calendar for physios, statisticians, Child Safety Officers and a squad">
 <img src="user-guide/admin-calendar-edit.png" width="210" alt="Changing who sees a calendar">
 
@@ -5737,6 +5835,8 @@ once saved, only replaced or removed, and anyone who gets it wrong five times in
 | Absence reasons         | Every approved member sees the list. Only admins switch reasons off or add them.                                             |
 | Calendars               | Admins see every calendar and its link. Members see a calendar, and its link, only if an admin shared it with everyone in the club, one of their usable roles, a safeguarding post they can act in, or one of their squads or teams. Temporary helpers see none. |
 | Committee calendar      | Committee members (and anyone else the admin shared it with) and admins.                                                    |
+| Events on a calendar kept in the app | Whoever the calendar is shown to, and admins. Only admins add, change, cancel or remove them. |
+| Suggested events        | Only the person who suggested it and admins, until an admin adds it to the calendar. A declined suggestion and the admin's reason: only the person who suggested it (and admins, in the database). Coaches, managers and committee members suggest, for a calendar they see that takes suggestions; a role paused for a lapsed check or a stand-down can't. Athletes, parents and guardians, physios, statisticians, guests and temporary helpers can't suggest. |
 | Squad and team events added in the app | The squad's or team's athletes, their parents and guardians, its coaches, managers and physios, and admins. An event kept to coaches and managers: that squad's or team's coaches and managers, and admins. Only its coaches and managers, and admins, add, change, cancel or remove them. A role paused for a lapsed check or a stand-down sees and adds none. Temporary helpers and guests see none. |
 | Award votes             | Only the voter sees their own ballot. Nobody, admins included, can see who someone voted for. Who cast each vote is removed after the club's keep period (1 year recommended). |
 | Awards and their settings | Admins, and committee members who read the Award results report. Voters see only the votes open to them and who they can vote for, while voting is open. |
@@ -6355,6 +6455,13 @@ Working With Children Check, and another admin must do it.
   app is seen only by that squad's or team's own members, their parents and guardians, and admins,
   never the whole club, and the database enforces it. Members only read events: there are no
   replies or comments. Every event records who added it, who last changed it and who cancelled it.
+- **Suggested events are checked by an admin first.** Only coaches, managers and committee
+  members can suggest an event for a club calendar, never athletes, parents or guests, and a role
+  paused for a lapsed check or a stand-down can't. Nobody but admins and the person who suggested
+  it sees a suggestion until an admin adds it, so no event reaches children or their families
+  without an admin's yes. A decline carries one reason from the admin to that adult and can't be
+  answered: there are no replies or comments. Every event records who suggested it and who
+  answered.
 - **Screening Unit notices.** Record every notice on the member's page. An interim negative
   notice, negative notice, interstate decision or cancelled card stands them down at once, and
   stays on your to-do list until you record telling the governing body in writing.
