@@ -685,26 +685,30 @@ describe('reaching a summary', () => {
 // The criteria: recommendations
 
 describe('the recommendations in the criteria', () => {
-  async function openCriteria(saved: unknown = null) {
+  /** A saved criteria set, or (with none) a new set from the netball example. */
+  async function openCriteria(saved: Criteria | null = null) {
     await openScreen('admin', { index: placeholder('index'), 'admin/assessments/criteria': AdminCriteriaScreen }, '/', {}, {
-      rpcs: { admin_assessment_criteria: saved },
+      rpcs: {
+        admin_criteria_set: saved && {
+          id: 's1', name: 'Club criteria', version: 1, criteria: saved, for_all: true, for: [],
+          for_label: 'Every squad and team', rounds: [], archived_at: null, events: [],
+        },
+        admin_save_criteria_set: 's1',
+      },
     });
-    await pushTo('/admin/assessments/criteria');
+    await pushTo(saved ? '/admin/assessments/criteria?id=s1' : '/admin/assessments/criteria?start=example');
     await settle();
+    await press(/^Recommendations · \d/);
   }
-  const savedCriteria = () => onlyRpcCall('admin_save_assessment_criteria').p_criteria as Criteria;
-
-  it('offers none until there is a group', async () => {
-    await openCriteria();
-    expect(screen.queryByText('Recommendations')).toBeNull();
-  });
+  const savedCriteria = () => onlyRpcCall('admin_save_criteria_set').p_criteria as Criteria;
+  const save = () => press(/^Save( as version \d+)?$/);
 
   it('starts the netball example with the usual four', async () => {
     await openCriteria();
-    await press('Start from the netball example');
+    await fill('Name', 'Netball');
     expect(screen.getByDisplayValue('Select as a training partner')).toBeTruthy();
     expect(screen.queryByText('Use the usual four')).toBeNull();
-    await press('Save criteria');
+    await save();
     expect(savedCriteria().recommendations).toEqual([
       'Select',
       'Select as a training partner',
@@ -716,14 +720,14 @@ describe('the recommendations in the criteria', () => {
   it('saves criteria from before recommendations as they are, with none', async () => {
     await openCriteria(GROUPS);
     expect(screen.getByText('Use the usual four')).toBeTruthy();
-    await press('Save criteria');
+    await save();
     expect(savedCriteria()).toEqual(GROUPS);
   });
 
   it('adds the usual four to saved criteria in one press', async () => {
     await openCriteria(GROUPS);
     await press('Use the usual four');
-    await press('Save criteria');
+    await save();
     expect(savedCriteria().recommendations).toHaveLength(4);
     expect(savedCriteria().groups).toEqual(GROUPS.groups);
   });
@@ -735,29 +739,30 @@ describe('the recommendations in the criteria', () => {
     await fill('Recommendation 3', 'Train on');
     await press('Add a recommendation');
     await press('Remove the last recommendation');
-    await press('Save criteria');
+    await save();
     expect(savedCriteria().recommendations).toEqual(['Select', 'Not yet', 'Train on']);
   });
 
   it('won’t save one alone or an empty one, and sends nothing', async () => {
     await openCriteria(CRITERIA);
     await press('Remove the last recommendation');
-    await press('Save criteria');
+    await save();
     expect(screen.getByText('Give selectors at least two recommendations to choose from, or none.')).toBeTruthy();
     await press('Add a recommendation');
-    await press('Save criteria');
+    await save();
     expect(screen.getByText('Name each recommendation, or remove the empty one.')).toBeTruthy();
-    expect(rpcCalls('admin_save_assessment_criteria')).toEqual([]);
+    expect(rpcCalls('admin_save_criteria_set')).toEqual([]);
   });
 
   it('stops offering more at eight, and removing the last two leaves none', async () => {
     await openCriteria({ ...GROUPS, recommendations: Array.from({ length: 8 }, (_, i) => `Choice ${i + 1}`) });
     expect(screen.queryByText('Add a recommendation')).toBeNull();
+    clearCalls();
     await openCriteria(CRITERIA);
     await press('Remove the last recommendation');
     await press('Remove the last recommendation');
     expect(screen.queryByText('Remove the last recommendation')).toBeNull();
-    await press('Save criteria');
+    await save();
     expect(savedCriteria().recommendations).toEqual([]);
   });
 });

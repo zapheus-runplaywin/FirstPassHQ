@@ -1,5 +1,5 @@
 import { router, useFocusEffect, useLocalSearchParams } from 'expo-router';
-import { useCallback, useState } from 'react';
+import { useCallback, useEffect, useState } from 'react';
 import { StyleSheet, View } from 'react-native';
 
 import { CardGrid } from '@/components/columns';
@@ -14,9 +14,13 @@ import {
   isOverdue,
   milestoneLine,
   panelNotes,
+  pickSet,
+  roundCriteriaLine,
+  setLine,
   type AdminRound,
   type Milestone,
   type PanelChoice,
+  type SetChoice,
 } from '@/lib/assessments';
 import { clubToday } from '@/lib/club-time';
 import { formatDateString } from '@/lib/injuries';
@@ -47,6 +51,27 @@ export default function AdminRoundScreen() {
   const [error, setError] = useState<string | null>(null);
   const [notice, setNotice] = useState<string | null>(null);
   const [tab, setTab] = useState<'dates' | 'panel' | 'reports' | 'details'>('dates');
+  const [loadedSets, setLoadedSets] = useState<{ group: string; list: SetChoice[] } | null>(null);
+  const [setId, setSetId] = useState<string | null>(null);
+  const [choosingSet, setChoosingSet] = useState(false);
+
+  // The sets that fit the chosen squad or team (opening), or the round's group (changing).
+  const groupId = round?.team_id ?? teamId;
+  useEffect(() => {
+    if (!groupId) return;
+    let live = true;
+    supabase.rpc('admin_selection_round_set_choices', { p_team_id: groupId }).then(({ data, error: setsError }) => {
+      if (!live) return;
+      if (setsError) setError(setsError.message);
+      const list = (data as SetChoice[] | null) ?? [];
+      setLoadedSets({ group: groupId, list });
+      setSetId(pickSet(list)?.set_id ?? null);
+      setChoosingSet(false);
+    });
+    return () => {
+      live = false;
+    };
+  }, [groupId]);
 
   /** Each part of a round is its own tab, so a message about one doesn't follow to the next. */
   function openTab(next: typeof tab) {
@@ -89,6 +114,7 @@ export default function AdminRoundScreen() {
   async function save() {
     const missing = [
       !id && !teamId && 'a squad or team',
+      !id && teamId && !setId && 'the criteria for this round',
       !name.trim() && 'a name',
       !startsOn && 'a start date',
       !endsOn && 'an end date',
@@ -116,6 +142,7 @@ export default function AdminRoundScreen() {
           p_name: name,
           p_starts_on: startsOn,
           p_ends_on: endsOn,
+          p_set_id: setId,
         });
     setSaving(false);
     if (saveError) {
@@ -142,6 +169,7 @@ export default function AdminRoundScreen() {
       return;
     }
     setChoices(null);
+    setChoosingSet(false);
     await load();
   }
 
@@ -186,12 +214,65 @@ export default function AdminRoundScreen() {
     </>
   );
 
+  const sets = groupId && loadedSets?.group === groupId ? loadedSets.list : null;
+  const chosen = sets?.find((c) => c.set_id === setId) ?? null;
+  const groupName = teams.find((t) => t.id === teamId)?.name ?? round?.team_name ?? '';
+  const criteriaCard = !teamId ? null : (
+    <Card style={styles.card}>
+      <ThemedText type="smallBold">Criteria</ThemedText>
+      {sets === null ? null : sets.length === 0 ? (
+        <>
+          <ThemedText type="small">
+            No criteria set is for {groupName}. Change who a set is for, or add one.
+          </ThemedText>
+          <Button
+            title="Criteria sets"
+            variant="secondary"
+            onPress={() => router.push({ pathname: '/admin/assessments', params: { tab: 'sets' } })}
+          />
+        </>
+      ) : chosen && !choosingSet ? (
+        <>
+          <ThemedText type="small">✓ {chosen.name}</ThemedText>
+          {pickSet(sets)?.set_id === chosen.set_id ? (
+            <ThemedText type="small" themeColor="textSecondary">
+              {sets.length === 1
+                ? 'Chosen for you: it is the only set for this group.'
+                : `Chosen for you: it is the set for ${chosen.for_label}.`}
+            </ThemedText>
+          ) : null}
+          <ThemedText type="small" themeColor="textSecondary">
+            {setLine(chosen)}
+          </ThemedText>
+          {sets.length > 1 ? (
+            <Button title="Choose another" variant="secondary" onPress={() => setChoosingSet(true)} />
+          ) : null}
+        </>
+      ) : (
+        <>
+          <ThemedText type="small">Choose the criteria for this round</ThemedText>
+          {sets.map((c) => (
+            <Button
+              key={c.set_id}
+              title={c.name}
+              variant="secondary"
+              onPress={() => {
+                setSetId(c.set_id);
+                setChoosingSet(false);
+              }}
+            />
+          ))}
+        </>
+      )}
+    </Card>
+  );
+
   if (!round) {
     return (
       <Screen>
         <ThemedText type="small" themeColor="textSecondary">
-          A round covers one squad or team’s selection phase. It takes a copy of the criteria
-          as they are now, and its panel starts as the group’s coaches who hold a current
+          A round covers one squad or team’s selection phase. It takes a copy of the criteria set
+          you choose, as it is now, and its panel starts as the group’s coaches who hold a current
           Working With Children Check. You can add other selectors once it is open.
         </ThemedText>
         <ChipGroup
@@ -200,6 +281,7 @@ export default function AdminRoundScreen() {
           selected={teamId ? [teamId] : []}
           onToggle={setTeamId}
         />
+        {criteriaCard}
         {form}
       </Screen>
     );
@@ -375,6 +457,36 @@ export default function AdminRoundScreen() {
       {tab === 'details' ? (
         <>
           {form}
+          <ThemedText type="small">Criteria: {roundCriteriaLine(round) || 'none'}</ThemedText>
+          {round.can_change_criteria ? (
+            choosingSet ? (
+              <View style={styles.card}>
+                {(sets ?? [])
+                  .filter((c) => c.set_id !== round.criteria_set_id)
+                  .map((c) => (
+                    <Button
+                      key={c.set_id}
+                      title={`${c.name}, version ${c.version}`}
+                      variant="secondary"
+                      busy={busy}
+                      onPress={() => change('admin_set_selection_round_criteria', { p_set_id: c.set_id })}
+                    />
+                  ))}
+                <Button title="Cancel" variant="secondary" onPress={() => setChoosingSet(false)} />
+              </View>
+            ) : (
+              <>
+                <Button title="Change the criteria" variant="secondary" onPress={() => setChoosingSet(true)} />
+                <ThemedText type="small" themeColor="textSecondary">
+                  You can change this until the first observation or summary is written.
+                </ThemedText>
+              </>
+            )
+          ) : round.closed_at ? null : (
+            <ThemedText type="small" themeColor="textSecondary">
+              Assessing has started, so this round keeps its criteria.
+            </ThemedText>
+          )}
           <ThemedText type="small" themeColor="textSecondary">
             {round.closed_at
               ? 'This round is closed: the panel can still read it, and nothing can be added.'

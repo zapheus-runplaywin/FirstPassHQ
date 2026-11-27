@@ -388,7 +388,7 @@ function RootStack() {
             </Stack.Protected>
             <Stack.Protected guard={features.selectionAssessments}>
               <Stack.Screen name="admin/assessments/index" options={{ title: 'Selection assessments' }} />
-              <Stack.Screen name="admin/assessments/criteria" options={{ title: 'Assessment criteria' }} />
+              <Stack.Screen name="admin/assessments/criteria" options={{ title: 'Criteria set' }} />
               <Stack.Screen name="admin/assessments/round" options={{ title: 'Selection round' }} />
               <Stack.Screen name="admin/assessments/milestone" options={{ title: 'Selection date' }} />
               <Stack.Screen name="admin/assessments/audit" options={{ title: 'Selection audit report' }} />

@@ -192,7 +192,7 @@ export function adminMenuItems({ features, squads, membersDetail }: MenuOptions)
     },
     features.selectionAssessments && {
       title: 'Selection rounds and criteria',
-      detail: 'Assessment criteria, selection rounds, their panels and the audit report',
+      detail: 'Criteria sets, selection rounds, their panels and the audit report',
       href: '/admin/assessments',
       icon: 'eye',
       short: 'selection rounds',
