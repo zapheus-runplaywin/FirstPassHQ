@@ -83,8 +83,9 @@ select pg_temp.set_feature(true);
 select pg_temp.works('an admin saves criteria', $$select public.admin_save_assessment_criteria(
   '{"groups": [{"key": "skills", "name": "Skills", "scale": ["Below", "Meets", "Exceeds"],
     "items": [{"key": "passing", "name": "Passing"}]}]}')$$);
--- One round at a time is open for a squad, so each is opened, written in and
--- closed before the next: a date, and one observation about Kai (32), or
+-- Each round is opened, written in and closed before the next. They all
+-- share the same days and are moved back in time by hand below, so the
+-- overlap check (selection-round-rules.sql) is switched off for this file: a date, and one observation about Kai (32), or
 -- about Jordan (31) in the round a concern will hold.
 create or replace function pg_temp.make_round(p_name text, p_athlete text, p_close boolean) returns text
 language plpgsql as $$
@@ -103,6 +104,7 @@ begin
   return 'PASS the ' || p_name || ' round is set up';
 exception when others then return 'FAIL the ' || p_name || ' round is set up (' || sqlerrm || ')';
 end $$;
+alter table public.selection_rounds disable trigger selection_rounds_no_overlap;
 select pg_temp.make_round('Old', '32', true);
 select pg_temp.make_round('Old on hold', '31', true);
 select pg_temp.make_round('Recent', '32', true);

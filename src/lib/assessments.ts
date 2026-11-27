@@ -3,6 +3,7 @@ import { useCallback, useState } from 'react';
 
 import { useAuth } from '@/lib/auth';
 import { useFeature } from '@/lib/club';
+import { clubToday } from '@/lib/club-time';
 import { formatDateString } from '@/lib/injuries';
 import type { Report, ReportSection } from '@/lib/pdf';
 import { hasRole } from '@/lib/roles';
@@ -98,6 +99,8 @@ export type AthleteAssessment = {
   round_name: string;
   closed: boolean;
   starts_on: string;
+  /** The round's last day; observations are dated on or before it. */
+  ends_on?: string;
   criteria: Criteria;
   /** The club's day. */
   today: string;
@@ -131,6 +134,9 @@ export type RoundSheet = {
   /** Athletes left off this member's list because they are their own child. */
   hidden: number;
   athletes: SheetAthlete[];
+  phase?: number | null;
+  round_number?: number | null;
+  criteria_set_name?: string | null;
 };
 
 /** A round on a panel member's list. */
@@ -143,6 +149,9 @@ export type MyRound = {
   closed_at: string | null;
   athletes: number;
   my_observations: number;
+  phase?: number | null;
+  round_number?: number | null;
+  criteria_set_name?: string | null;
 };
 
 /** Someone on a round's panel, now or before, as an admin sees them. */
@@ -182,6 +191,8 @@ export type AdminRound = {
   criteria_set_version?: number | null;
   /** Open, with no observation or summary yet, so its set can still be swapped. */
   can_change_criteria?: boolean;
+  phase?: number | null;
+  round_number?: number | null;
 };
 
 /** Someone an admin could add to a panel. */
@@ -289,6 +300,9 @@ export type SelectionInfo = {
   ends_on: string;
   criteria: Criteria;
   dates: SharedDate[];
+  phase?: number | null;
+  round_number?: number | null;
+  criteria_set_name?: string | null;
 };
 
 /** How many of the group's sessions an athlete was marked at during a round. */
@@ -944,12 +958,13 @@ export function useMySelectionRounds() {
   return { selectionRounds: eligible ? rounds : [], reloadSelectionRounds: load };
 }
 
-/** What Home says under Selection assessments. */
-export function roundsLabel(rounds: MyRound[]) {
-  const open = rounds.filter((r) => !r.closed_at);
-  if (open.length === 0) return 'Past selection rounds';
-  if (open.length === 1) return `${open[0].name} · ${plural(open[0].athletes, 'athlete', 'athletes')}`;
-  return `${open.length} selection rounds open`;
+/** What Home says under Selection assessments: only rounds running today count as open. */
+export function roundsLabel(rounds: MyRound[], today: string = clubToday()) {
+  const { now, coming } = groupRounds(rounds, today);
+  if (now.length === 1) return `${roundTitle(now[0])} · ${plural(now[0].athletes, 'athlete', 'athletes')}`;
+  if (now.length > 1) return `${now.length} selection rounds open`;
+  if (coming.length > 0) return `Starts ${shortDate(coming[0].starts_on)}: ${roundTitle(coming[0])}`;
+  return 'Past selection rounds';
 }
 
 // ---------------------------------------------------------------------------
@@ -1145,11 +1160,16 @@ export function selectionInfoLabel(info: SelectionInfo[], today: string, feedbac
     return 'Feedback from the coach';
   }
   if (info.length === 0) return '';
+  const running = info.filter((i) => roundWhen(i, today) === 'now');
+  if (running.length === 0) {
+    const soonest = [...info].sort((a, b) => a.starts_on.localeCompare(b.starts_on))[0];
+    if (soonest.starts_on > today) return `Starts ${shortDate(soonest.starts_on)}: ${roundTitle(soonest)}`;
+  }
   const next = info
     .flatMap((i) => i.dates)
     .filter((d) => !d.done && d.due_on >= today)
     .sort((a, b) => a.due_on.localeCompare(b.due_on))[0];
-  const rounds = [...new Set(info.map((i) => i.round_name))];
+  const rounds = [...new Set((running.length ? running : info).map((i) => roundTitle(i)))];
   const name = rounds.length === 1 ? rounds[0] : `${rounds.length} selection rounds`;
   return next ? `${name} · next: ${next.title}, ${formatDateString(next.due_on)}` : `${name} · criteria and dates`;
 }
@@ -1693,4 +1713,120 @@ export function roundGameTitle(game: RoundGame) {
 export function roundGameLine(game: RoundGame) {
   const what = [game.team_name, game.round_name].filter(Boolean).join(' · ');
   return `${what} · ${game.recorded ? 'tap for the game stats' : 'not recorded'}`;
+}
+
+// ---------------------------------------------------------------------------
+// Phase and round number, rounds ahead of time, no overlapping rounds
+
+const MONTHS = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'];
+const WEEKDAYS = ['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat'];
+
+function utcDate(day: string) {
+  const [y, m, d] = day.split('-').map(Number);
+  return new Date(Date.UTC(y, m - 1, d));
+}
+
+/** "2 Nov", or "Tue 22 Dec" with the weekday. */
+export function shortDate(day: string, weekday = false) {
+  const date = utcDate(day);
+  const text = `${date.getUTCDate()} ${MONTHS[date.getUTCMonth()]}`;
+  return weekday ? `${WEEKDAYS[date.getUTCDay()]} ${text}` : text;
+}
+
+/** "2 Nov to 21 Dec". */
+export function shortRange(round: { starts_on: string; ends_on: string }) {
+  return `${shortDate(round.starts_on)} to ${shortDate(round.ends_on)}`;
+}
+
+/** The day `days` after a club day. */
+export function addDays(day: string, days: number) {
+  const date = utcDate(day);
+  date.setUTCDate(date.getUTCDate() + days);
+  return date.toISOString().slice(0, 10);
+}
+
+/** "Phase 1, Round 2", or null for a round opened before phases. */
+export function phaseLabel(round: { phase?: number | null; round_number?: number | null }) {
+  return round.phase && round.round_number ? `Phase ${round.phase}, Round ${round.round_number}` : null;
+}
+
+type Titled = { name?: string; round_name?: string; phase?: number | null; round_number?: number | null };
+
+/** "Phase 1, Round 2 · Trials"; the label alone when the name is the label or empty; the name alone with no phase. */
+export function roundTitle(round: Titled) {
+  const name = (round.name ?? round.round_name ?? '').trim();
+  const label = phaseLabel(round);
+  if (!label) return name;
+  return !name || name === label ? label : `${label} · ${name}`;
+}
+
+export type RoundWhen = 'now' | 'coming' | 'finished';
+
+type Dated = { starts_on: string; ends_on: string; closed_at?: string | null; closed?: boolean };
+
+/** Running now, coming up, or finished (closed, or past its end date). */
+export function roundWhen(round: Dated, today: string): RoundWhen {
+  if (round.closed_at || round.closed) return 'finished';
+  if (round.ends_on < today) return 'finished';
+  if (round.starts_on > today) return 'coming';
+  return 'now';
+}
+
+/** Rounds under Running now, Coming up (soonest first) and Finished (latest first). */
+export function groupRounds<T extends Dated>(rounds: T[], today: string) {
+  const now = rounds.filter((r) => roundWhen(r, today) === 'now').sort((a, b) => a.starts_on.localeCompare(b.starts_on));
+  const coming = rounds.filter((r) => roundWhen(r, today) === 'coming').sort((a, b) => a.starts_on.localeCompare(b.starts_on));
+  const finished = rounds
+    .filter((r) => roundWhen(r, today) === 'finished')
+    .sort((a, b) => b.ends_on.localeCompare(a.ends_on));
+  return { now, coming, finished };
+}
+
+/** "Ended 21 Dec · not closed yet" for a round past its end and still open, else null. */
+export function notClosedLine(round: Dated, today: string) {
+  return !round.closed_at && !round.closed && round.ends_on < today ? `Ended ${shortDate(round.ends_on)} · not closed yet` : null;
+}
+
+/** The phase and round number to preselect for a squad or team: its highest phase this season (or 1) and the next round in it. */
+export function nextPhaseRound(rounds: Pick<AdminRound, 'team_id' | 'season' | 'phase' | 'round_number'>[], teamId: string, season: number) {
+  const mine = rounds.filter((r) => r.team_id === teamId && r.season === season && r.phase && r.round_number);
+  if (mine.length === 0) return { phase: 1, round: 1 };
+  const phase = Math.max(...mine.map((r) => r.phase as number));
+  const round = Math.max(...mine.filter((r) => r.phase === phase).map((r) => r.round_number as number));
+  return round >= 20 ? { phase: Math.min(phase + 1, 9), round: 1 } : { phase, round: round + 1 };
+}
+
+/** A round the chosen dates would overlap, as admin_selection_round_clashes gives it. */
+export type RoundClash = {
+  round_name: string;
+  team_name: string;
+  starts_on: string;
+  last_day: string;
+  criteria_set_name: string | null;
+  free_from: string;
+};
+
+/** One sentence per clash, for the warning. */
+export function clashLines(clashes: RoundClash[]) {
+  return clashes.map(
+    (c) =>
+      `“${c.round_name}” runs ${shortDate(c.starts_on)} to ${shortDate(c.last_day)} for ${c.team_name}` +
+      (c.criteria_set_name ? `, on ${c.criteria_set_name}.` : '.'),
+  );
+}
+
+/** The new pair for "Start on … instead": the same length, starting on the free day. */
+export function shiftDates(startsOn: string, endsOn: string, freeFrom: string) {
+  const length = Math.max(0, daysBetween(startsOn, endsOn));
+  return { startsOn: freeFrom, endsOn: addDays(freeFrom, length) };
+}
+
+/** Current squads and teams with no round this season. */
+export function groupsWithNoRound(
+  teams: { id: string; name: string; archived?: boolean; season?: number | null }[],
+  rounds: Pick<AdminRound, 'team_id' | 'season'>[],
+  season: number,
+) {
+  const used = new Set(rounds.filter((r) => r.season === season).map((r) => r.team_id));
+  return teams.filter((t) => !t.archived && (t.season == null || t.season === season) && !used.has(t.id));
 }

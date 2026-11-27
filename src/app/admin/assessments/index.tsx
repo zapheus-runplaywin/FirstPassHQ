@@ -10,14 +10,20 @@ import { Button, ChipGroup, ErrorText, PressableCard } from '@/components/ui';
 import { Spacing } from '@/constants/theme';
 import {
   adminRoundLine,
+  groupRounds,
+  groupsWithNoRound,
+  notClosedLine,
   roundCriteriaLine,
-  roundDates,
+  roundTitle,
+  shortRange,
   setLine,
   setUseLine,
   type AdminRound,
   type CriteriaSetSummary,
 } from '@/lib/assessments';
+import { clubToday } from '@/lib/club-time';
 import { supabase } from '@/lib/supabase';
+import { useTeams } from '@/lib/use-teams';
 
 /**
  * Club > Season > Selection rounds and criteria: the club's selection rounds
@@ -32,6 +38,7 @@ export default function AdminAssessmentsScreen() {
   const [refreshing, setRefreshing] = useState(false);
   const [tab, setTab] = useState<'rounds' | 'sets'>(params.tab === 'sets' ? 'sets' : 'rounds');
   const [choosing, setChoosing] = useState(false);
+  const teams = useTeams();
 
   const load = useCallback(async () => {
     const [{ data: list, error: setsError }, { data: roundList, error: roundsError }] = await Promise.all([
@@ -65,6 +72,38 @@ export default function AdminAssessmentsScreen() {
     setChoosing(false);
     router.push({ pathname: '/admin/assessments/criteria', params: { start } });
   }
+
+  const today = clubToday();
+  const grouped = groupRounds(rounds, today);
+  const season = teams.length ? Math.max(...teams.map((t) => t.season)) : null;
+  const noRound = season ? groupsWithNoRound(teams, rounds, season) : [];
+  const roundCard = (round: AdminRound) => {
+    const late = notClosedLine(round, today);
+    return (
+      <PressableCard
+        key={round.id}
+        onPress={() => router.push({ pathname: '/admin/assessments/round', params: { id: round.id } })}>
+        <ThemedText type="smallBold">
+          {roundTitle(round)}
+          {round.closed_at ? ' (closed)' : ''}
+        </ThemedText>
+        <ThemedText type="small" themeColor="textSecondary">
+          {round.team_name} · {shortRange(round)}
+        </ThemedText>
+        {late ? <ThemedText type="smallBold">{late}</ThemedText> : null}
+        {roundCriteriaLine(round) ? (
+          <ThemedText type="small" themeColor="textSecondary">
+            {roundCriteriaLine(round)}
+          </ThemedText>
+        ) : null}
+        {round.starts_on <= today ? (
+          <ThemedText type="small" themeColor="textSecondary">
+            {adminRoundLine(round)}
+          </ThemedText>
+        ) : null}
+      </PressableCard>
+    );
+  };
 
   const setCard = (set: CriteriaSetSummary) => (
     <PressableCard
@@ -109,30 +148,33 @@ export default function AdminAssessmentsScreen() {
                 : 'Add a criteria set first. A round takes its own copy when it opens.'}
             </ThemedText>
           ) : (
-            <CardGrid gap={Spacing.four}>
-              {rounds.map((round) => (
-                <PressableCard
-                  key={round.id}
-                  onPress={() => router.push({ pathname: '/admin/assessments/round', params: { id: round.id } })}>
-                  <ThemedText type="smallBold">
-                    {round.name}
-                    {round.closed_at ? ' (closed)' : ''}
-                  </ThemedText>
-                  <ThemedText type="small" themeColor="textSecondary">
-                    {round.team_name} · {roundDates(round)}
-                  </ThemedText>
-                  {roundCriteriaLine(round) ? (
-                    <ThemedText type="small" themeColor="textSecondary">
-                      {roundCriteriaLine(round)}
-                    </ThemedText>
-                  ) : null}
-                  <ThemedText type="small" themeColor="textSecondary">
-                    {adminRoundLine(round)}
-                  </ThemedText>
-                </PressableCard>
-              ))}
-            </CardGrid>
+            <>
+              {grouped.now.length > 0 ? (
+                <>
+                  <ThemedText type="smallBold">Running now</ThemedText>
+                  <CardGrid gap={Spacing.four}>{grouped.now.map(roundCard)}</CardGrid>
+                </>
+              ) : null}
+              {grouped.coming.length > 0 ? (
+                <>
+                  <ThemedText type="smallBold">Coming up</ThemedText>
+                  <CardGrid gap={Spacing.four}>{grouped.coming.map(roundCard)}</CardGrid>
+                </>
+              ) : null}
+              {grouped.finished.length > 0 ? (
+                <Fold title={`Finished (${grouped.finished.length})`}>
+                  <CardGrid gap={Spacing.four}>{grouped.finished.map(roundCard)}</CardGrid>
+                </Fold>
+              ) : null}
+            </>
           )}
+          {rounds.length > 0 && noRound.length > 0 ? (
+            <Fold title={`No round this season: ${noRound.map((t) => t.name).join(', ')}`}>
+              <ThemedText type="small" themeColor="textSecondary">
+                Open a round for each of these when its selection phase is set.
+              </ThemedText>
+            </Fold>
+          ) : null}
           {ready ? (
             <Button title="Open a selection round" onPress={() => router.push('/admin/assessments/round')} />
           ) : rounds.length > 0 ? (

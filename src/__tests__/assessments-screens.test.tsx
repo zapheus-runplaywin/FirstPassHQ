@@ -337,10 +337,27 @@ describe('my selection rounds', () => {
       myRound({ id: 'r0', name: '2026 selection phase', closed_at: '2026-02-01T00:00:00Z', athletes: 1, my_observations: 1 }),
     ]);
     expect(screen.getByText('2027 selection phase')).toBeTruthy();
-    expect(screen.getAllByText(`17 & Under squad · ${d('2026-10-05')} to ${d('2026-11-29')}`)).toHaveLength(2);
+    expect(screen.getAllByText('17 & Under squad · 5 Oct to 29 Nov')).toHaveLength(2);
     expect(screen.getByText('14 athletes · you have written 3 observations')).toBeTruthy();
     expect(screen.getByText('2026 selection phase (closed)')).toBeTruthy();
     expect(screen.getByText('1 athlete · you have written 1 observation')).toBeTruthy();
+  });
+
+  it('puts running rounds first, then coming up with when it starts and no + yet, then finished', async () => {
+    await openRounds([
+      myRound({ id: 'r0', name: 'Old', closed_at: '2026-02-01T00:00:00Z' }),
+      myRound({ id: 'r2', name: 'Phase 1, Round 3', phase: 1, round_number: 3, starts_on: '2026-12-01', ends_on: '2027-01-31', criteria_set_name: 'Junior criteria' }),
+      myRound({ phase: 1, round_number: 2, name: 'Trials', criteria_set_name: 'Senior criteria' }),
+    ]);
+    const titles = screen.getAllByText(/^(Phase 1, Round \d.*|Old \(closed\))$/).map((n) => n.props.children);
+    expect(titles.map((t: unknown) => (Array.isArray(t) ? t.join('') : t))).toEqual([
+      'Phase 1, Round 2 · Trials',
+      'Phase 1, Round 3',
+      'Old (closed)',
+    ]);
+    expect(screen.getByText('Senior criteria')).toBeTruthy();
+    expect(screen.getByText('Junior criteria')).toBeTruthy();
+    expect(screen.getByText('Starts Tue 1 Dec')).toBeTruthy();
   });
 
   it('tells a member on no panel how panels are chosen', async () => {
@@ -376,9 +393,17 @@ describe('a round’s athletes', () => {
     );
   }
 
+  it('heads the round with its phase, group, dates and criteria, and hides + until it starts', async () => {
+    await openRound(sheet({ phase: 1, round_number: 2, name: 'Trials', criteria_set_name: 'Senior criteria', starts_on: '2026-12-01', ends_on: '2027-01-31' }));
+    expect(screen.getByText('Phase 1, Round 2 · Trials')).toBeTruthy();
+    expect(screen.getByText('17 & Under squad · 1 Dec to 31 Jan · Senior criteria')).toBeTruthy();
+    expect(screen.getByText('Starts Tue 1 Dec')).toBeTruthy();
+    expect(screen.queryByLabelText(/Add an observation about/)).toBeNull();
+  });
+
   it('says how much is written about each athlete, and who has nothing yet or lately', async () => {
     await openRound();
-    expect(screen.getByText(`17 & Under squad · ${d('2026-10-05')} to ${d('2026-11-29')}`)).toBeTruthy();
+    expect(screen.getByText('17 & Under squad · 5 Oct to 29 Nov')).toBeTruthy();
     expect(screen.getByText('3 observations from 2 selectors · 2 of 3 groups')).toBeTruthy();
     expect(screen.getByText('Nothing written yet')).toBeTruthy();
     expect(screen.getByText('Athlete')).toBeTruthy();
@@ -949,6 +974,8 @@ describe('a round and its panel, for an admin', () => {
       p_name: '2027 trials',
       p_starts_on: '2026-10-06',
       p_ends_on: '2026-11-29',
+      p_phase: null,
+      p_round_number: null,
     });
     expect(rpcCalls('admin_open_selection_round')).toEqual([]);
     expect(screen.getByText('Saved.')).toBeTruthy();

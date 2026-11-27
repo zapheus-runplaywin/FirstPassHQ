@@ -188,6 +188,39 @@ describe('Club > Season > Selection rounds and criteria', () => {
     expect(asked.sort()).toEqual(['admin_criteria_sets', 'admin_selection_rounds']);
   });
 
+  it('groups rounds under Running now, Coming up and a folded Finished, and names groups with no round', async () => {
+    await openScreen(
+      'admin',
+      { 'admin/assessments/index': AdminAssessmentsScreen, 'admin/assessments/round': placeholder('admin/assessments/round') },
+      '/admin/assessments',
+      { teams: TEAMS },
+      {
+        rpcs: {
+          admin_criteria_sets: [summary()],
+          admin_selection_rounds: [
+            adminRound({ id: 'now', name: 'Trials', phase: 1, round_number: 2 }),
+            adminRound({ id: 'later', name: 'Phase 2, Round 1', phase: 2, round_number: 1, starts_on: '2026-12-01', ends_on: '2027-01-31', observations: 0 }),
+            adminRound({ id: 'late', name: 'Unclosed', starts_on: '2026-09-01', ends_on: '2026-10-10' }),
+            adminRound({ id: 'done', name: 'Done', starts_on: '2026-08-01', ends_on: '2026-08-30', closed_at: '2026-08-30T00:00:00Z' }),
+          ],
+        },
+      },
+    );
+    expect(screen.getByText('Running now')).toBeTruthy();
+    expect(screen.getByText('Phase 1, Round 2 · Trials')).toBeTruthy();
+    expect(screen.getByText('17 & Under squad · 5 Oct to 29 Nov')).toBeTruthy();
+    expect(screen.getByText('Coming up')).toBeTruthy();
+    expect(screen.getByText('Phase 2, Round 1')).toBeTruthy();
+    // No counts on a round that hasn't started.
+    expect(screen.getAllByText(/selectors? on the panel/)).toHaveLength(1);
+    expect(screen.queryByText('Unclosed')).toBeNull();
+    await press('Finished (2)');
+    expect(screen.getByText('Unclosed')).toBeTruthy();
+    expect(screen.getByText('Ended 10 Oct · not closed yet')).toBeTruthy();
+    expect(screen.getByText('Done (closed)')).toBeTruthy();
+    expect(screen.getByText('No round this season: 17 & Under Blue, Open A')).toBeTruthy();
+  });
+
   it('opens on Rounds, with each round’s set and version', async () => {
     await openList({
       admin_selection_rounds: [
@@ -473,6 +506,8 @@ describe('opening a selection round', () => {
       p_starts_on: '2026-10-19',
       p_ends_on: '2026-10-30',
       p_set_id: 's1',
+      p_phase: 1,
+      p_round_number: 1,
     });
     expect(screen.getByText('screen:index')).toBeTruthy();
   });
@@ -514,15 +549,85 @@ describe('opening a selection round', () => {
     expect(screen.getByText('screen:admin/assessments/index')).toBeTruthy();
   });
 
-  it('shows the database’s refusal, such as a group that already has an open round', async () => {
-    await openNew([choice()], { rpcErrors: { admin_open_selection_round: 'Open A already has an open round. Close it first.' } });
+  it('shows the database’s refusal, such as dates that overlap another round', async () => {
+    await openNew([choice()], {
+      rpcErrors: {
+        admin_open_selection_round:
+          'These dates overlap “Trials” for Open A (2 Nov 2026 to 21 Dec 2026). The same athletes can’t be in two rounds at once.',
+      },
+    });
     await press('Open A');
     await fill('Name', 'Trials');
     await pickDay(0, 2026, 10, 19);
     await pickDay(1, 2026, 10, 19);
     await press('Open round');
-    expect(screen.getByText('Open A already has an open round. Close it first.')).toBeTruthy();
+    expect(screen.getByText(/^These dates overlap “Trials” for Open A/)).toBeTruthy();
     expect(screen.queryByText('screen:index')).toBeNull();
+  });
+
+  it('preselects Phase 1, Round 1 for a group with no round, and sends it with no name needed', async () => {
+    await openNew();
+    await press('17 & Under squad');
+    expect(screen.getByText('Shown as Phase 1, Round 1')).toBeTruthy();
+    await pickDay(0, 2026, 10, 19);
+    await pickDay(1, 2026, 10, 30);
+    await press('Open round');
+    expect(onlyRpcCall('admin_open_selection_round')).toEqual({
+      p_team_id: 't1',
+      p_name: '',
+      p_starts_on: '2026-10-19',
+      p_ends_on: '2026-10-30',
+      p_set_id: 's1',
+      p_phase: 1,
+      p_round_number: 1,
+    });
+  });
+
+  it('preselects the next round number in the group’s highest phase, and More shows the rest', async () => {
+    const earlier = { id: 'x', team_id: 't1', season: 2027, phase: 2, round_number: 6 };
+    await openNew([choice()], { rpcs: { admin_selection_round_set_choices: [choice()], admin_selection_rounds: [earlier] } });
+    await press('17 & Under squad');
+    expect(screen.getByText('Shown as Phase 2, Round 7')).toBeTruthy();
+    await fill('Name', 'Trials');
+    expect(screen.getByText('Shown as Phase 2, Round 7 · Trials')).toBeTruthy();
+    // The second "3" is the round's (the first is the phase's).
+    await fireEvent.press(screen.getAllByText('3')[1]);
+    await settle();
+    expect(screen.getByText('Shown as Phase 2, Round 3 · Trials')).toBeTruthy();
+  });
+
+  it('warns about overlapping dates, holds Open round, and offers the first free day', async () => {
+    const clash = {
+      round_name: '2027 selection phase',
+      team_name: '17 & Under squad',
+      starts_on: '2026-10-01',
+      last_day: '2026-10-21',
+      criteria_set_name: 'Senior criteria',
+      free_from: '2026-10-22',
+    };
+    await openNew([choice()], { rpcs: { admin_selection_round_set_choices: [choice()], admin_selection_round_clashes: [clash] } });
+    await press('17 & Under squad');
+    await pickDay(0, 2026, 10, 19);
+    await pickDay(1, 2026, 10, 30);
+    expect(rpcCalls('admin_selection_round_clashes').at(-1)).toEqual({
+      p_team_id: 't1',
+      p_starts_on: '2026-10-19',
+      p_ends_on: '2026-10-30',
+      p_round_id: null,
+    });
+    expect(screen.getByText('These dates overlap another round')).toBeTruthy();
+    expect(screen.getByText('“2027 selection phase” runs 1 Oct to 21 Oct for 17 & Under squad, on Senior criteria.')).toBeTruthy();
+    expect(screen.getByText('The same athletes can’t be in two rounds at once.')).toBeTruthy();
+    await press('Open round');
+    expect(rpcCalls('admin_open_selection_round')).toEqual([]);
+    await press('Start on Thu 22 Oct instead');
+    // Both dates move, eleven days apart as before, and are checked again.
+    expect(rpcCalls('admin_selection_round_clashes').at(-1)).toEqual({
+      p_team_id: 't1',
+      p_starts_on: '2026-10-22',
+      p_ends_on: '2026-11-02',
+      p_round_id: null,
+    });
   });
 });
 

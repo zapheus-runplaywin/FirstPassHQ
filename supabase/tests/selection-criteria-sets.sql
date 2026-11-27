@@ -65,7 +65,7 @@ select pg_temp.ok('anon can call none of the new functions',
     'public.admin_archive_criteria_set(uuid, boolean)', 'public.admin_delete_criteria_set(uuid)',
     'public.admin_selection_round_set_choices(uuid)',
     'public.admin_set_selection_round_criteria(uuid, uuid)',
-    'public.admin_open_selection_round(uuid, text, date, date, uuid)']) f), false);
+    'public.admin_open_selection_round(uuid, text, date, date, uuid, integer, integer)']) f), false);
 select pg_temp.ok('the four-argument open is gone (one version only)',
   (select count(*) from pg_proc where proname = 'admin_open_selection_round') = 1, true);
 
@@ -240,12 +240,12 @@ select pg_temp.eq('an opened event is written',
   (select e.detail from public.selection_round_events e join public.selection_rounds r on r.id = e.round_id
    where r.name = 'Squad round' and e.kind = 'opened'), 'Junior set, version 2');
 select pg_temp.fails('with two sets named for the team and none chosen, it asks',
-  format($$select public.admin_open_selection_round(%L, 'Team round', public.club_today(), public.club_today() + 20)$$, pg_temp.tm()));
+  format($$select public.admin_open_selection_round(%L, 'Team round', public.club_today() + 21, public.club_today() + 40)$$, pg_temp.tm()));
 select pg_temp.fails('a set that isn''t for the group is refused',
   format($$select public.admin_open_selection_round('00000000-0000-0000-0000-0000000000b2', 'Wrong', public.club_today(), public.club_today() + 20, %L)$$,
     pg_temp.set_id('Junior set')));
 select pg_temp.works('with a set chosen it opens',
-  format($$select public.admin_open_selection_round(%L, 'Team round', public.club_today(), public.club_today() + 20, %L)$$,
+  format($$select public.admin_open_selection_round(%L, 'Team round', public.club_today() + 21, public.club_today() + 40, %L)$$,
     pg_temp.tm(), pg_temp.set_id('Team only')));
 select pg_temp.works('the squad''s set changes to version 3',
   format($$select public.admin_save_criteria_set(%L, 'Junior set', pg_temp.crit('Junior passing 3'), false, array[%L::uuid])$$,

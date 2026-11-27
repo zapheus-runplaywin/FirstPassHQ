@@ -383,7 +383,7 @@ select pg_temp.m_ok('32', 'no rating, evidence or selector name comes with it',
   $$(select to_jsonb(i)::text !~* 'Strong drive|Ola|Casey|rated|evidence' from public.my_selection_info() i)$$, true);
 select pg_temp.m_eq('32', 'and the row holds these columns only',
   $$select string_agg(k, ', ' order by k) from public.my_selection_info() i, jsonb_object_keys(to_jsonb(i)) k$$,
-  'athlete_id, athlete_name, criteria, dates, ends_on, is_me, round_id, round_name, starts_on, team_name');
+  'athlete_id, athlete_name, criteria, criteria_set_name, dates, ends_on, is_me, phase, round_id, round_name, round_number, starts_on, team_name');
 select pg_temp.m_eq('41', 'a parent sees it for their child, by name',
   $$select athlete_name || ' / ' || is_me || ' / ' || round_name from public.my_selection_info()$$,
   'Jordan Junior / false / Sample selections');

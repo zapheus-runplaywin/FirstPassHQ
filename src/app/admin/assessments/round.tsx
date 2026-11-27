@@ -8,9 +8,15 @@ import { Screen } from '@/components/screen';
 import { ThemedText } from '@/components/themed-text';
 import { Button, Card, ChipGroup, ErrorText, PressableCard, TextField } from '@/components/ui';
 import { Spacing } from '@/constants/theme';
+import { useTheme } from '@/hooks/use-theme';
 import {
   MAX_MILESTONES,
+  clashLines,
   isIndependentChoice,
+  nextPhaseRound,
+  phaseLabel,
+  shiftDates,
+  shortDate,
   isOverdue,
   milestoneLine,
   panelNotes,
@@ -20,6 +26,7 @@ import {
   type AdminRound,
   type Milestone,
   type PanelChoice,
+  type RoundClash,
   type SetChoice,
 } from '@/lib/assessments';
 import { clubToday } from '@/lib/club-time';
@@ -37,6 +44,7 @@ import { teamLabel, useTeams } from '@/lib/use-teams';
 export default function AdminRoundScreen() {
   const { id } = useLocalSearchParams<{ id?: string }>();
   const teams = useTeams();
+  const theme = useTheme();
   const [round, setRound] = useState<AdminRound | null>(null);
   const [dates, setDates] = useState<Milestone[]>([]);
   const [choices, setChoices] = useState<PanelChoice[] | null>(null);
@@ -54,6 +62,51 @@ export default function AdminRoundScreen() {
   const [loadedSets, setLoadedSets] = useState<{ group: string; list: SetChoice[] } | null>(null);
   const [setId, setSetId] = useState<string | null>(null);
   const [choosingSet, setChoosingSet] = useState(false);
+  const [allRounds, setAllRounds] = useState<AdminRound[]>([]);
+  const [phase, setPhase] = useState<number | null>(null);
+  const [roundNumber, setRoundNumber] = useState<number | null>(null);
+  const [morePhases, setMorePhases] = useState(false);
+  const [moreRounds, setMoreRounds] = useState(false);
+  const [clashState, setClashState] = useState<{ key: string; list: RoundClash[] } | null>(null);
+
+  // Opening: every round, so the next free phase and round number can be preselected.
+  useEffect(() => {
+    if (id) return;
+    supabase.rpc('admin_selection_rounds').then(({ data }) => setAllRounds((data as AdminRound[] | null) ?? []));
+  }, [id]);
+  /** Choosing a squad or team preselects its next free phase and round number. */
+  function chooseTeam(next: string) {
+    setTeamId(next);
+    const team = teams.find((t) => t.id === next);
+    const free = nextPhaseRound(allRounds, next, team?.season ?? new Date().getFullYear());
+    setPhase(free.phase);
+    setRoundNumber(free.round);
+    setMorePhases(free.phase > 6);
+    setMoreRounds(free.round > 6);
+  }
+
+  // The same athletes can't be in two rounds at once: check as the dates are picked.
+  const clashGroup = round?.team_id ?? teamId;
+  const clashKey =
+    clashGroup && startsOn && endsOn && endsOn >= startsOn ? `${clashGroup}/${startsOn}/${endsOn}` : null;
+  const clashes = clashKey && clashState?.key === clashKey ? clashState.list : [];
+  useEffect(() => {
+    if (!clashKey) return;
+    let live = true;
+    supabase
+      .rpc('admin_selection_round_clashes', {
+        p_team_id: clashGroup,
+        p_starts_on: startsOn,
+        p_ends_on: endsOn,
+        p_round_id: id ?? null,
+      })
+      .then(({ data }) => {
+        if (live) setClashState({ key: clashKey, list: (data as RoundClash[] | null) ?? [] });
+      });
+    return () => {
+      live = false;
+    };
+  }, [clashKey, clashGroup, startsOn, endsOn, id]);
 
   // The sets that fit the chosen squad or team (opening), or the round's group (changing).
   const groupId = round?.team_id ?? teamId;
@@ -106,7 +159,11 @@ export default function AdminRoundScreen() {
   // Fill the form once, from the round as saved.
   if (round && !filled) {
     setFilled(true);
-    setName(round.name);
+    setName(round.name === phaseLabel(round) ? '' : round.name);
+    setPhase(round.phase ?? null);
+    setRoundNumber(round.round_number ?? null);
+    setMorePhases((round.phase ?? 0) > 6);
+    setMoreRounds((round.round_number ?? 0) > 6);
     setStartsOn(round.starts_on);
     setEndsOn(round.ends_on);
   }
@@ -115,7 +172,7 @@ export default function AdminRoundScreen() {
     const missing = [
       !id && !teamId && 'a squad or team',
       !id && teamId && !setId && 'the criteria for this round',
-      !name.trim() && 'a name',
+      !name.trim() && !(phase && roundNumber) && 'a name',
       !startsOn && 'a start date',
       !endsOn && 'an end date',
     ].filter(Boolean);
@@ -136,6 +193,8 @@ export default function AdminRoundScreen() {
           p_name: name,
           p_starts_on: startsOn,
           p_ends_on: endsOn,
+          p_phase: phase,
+          p_round_number: roundNumber,
         })
       : await supabase.rpc('admin_open_selection_round', {
           p_team_id: teamId,
@@ -143,6 +202,8 @@ export default function AdminRoundScreen() {
           p_starts_on: startsOn,
           p_ends_on: endsOn,
           p_set_id: setId,
+          p_phase: phase,
+          p_round_number: roundNumber,
         });
     setSaving(false);
     if (saveError) {
@@ -197,20 +258,71 @@ export default function AdminRoundScreen() {
   const standing = dates.filter((m) => !m.removed_at);
   const takenOff = dates.filter((m) => m.removed_at);
 
+  const numberChips = (count: number, more: boolean, max: number) => [
+    ...Array.from({ length: more ? max : 6 }, (_, i) => ({ value: String(i + 1), label: String(i + 1) })),
+    ...(more ? [] : [{ value: 'more', label: 'More' }]),
+  ];
+  const label = phase && roundNumber ? `Phase ${phase}, Round ${roundNumber}` : null;
+  const free = clashes[0]?.free_from ?? null;
   const form = (
     <>
+      <ChipGroup
+        label="Phase"
+        options={numberChips(9, morePhases, 9)}
+        selected={phase ? [String(phase)] : []}
+        onToggle={(v: string) => (v === 'more' ? setMorePhases(true) : setPhase(Number(v)))}
+      />
+      <ChipGroup
+        label="Round"
+        options={numberChips(20, moreRounds, 20)}
+        selected={roundNumber ? [String(roundNumber)] : []}
+        onToggle={(v: string) => (v === 'more' ? setMoreRounds(true) : setRoundNumber(Number(v)))}
+      />
       <TextField
         label="Name"
         value={name}
         onChangeText={setName}
-        placeholder="Such as 2027 selection phase"
+        placeholder="Such as Trials"
         maxLength={80}
       />
+      {label ? (
+        <ThemedText type="small" themeColor="textSecondary">
+          Shown as {label}
+          {name.trim() ? ` · ${name.trim()}` : ''}
+        </ThemedText>
+      ) : null}
       <MonthDateField label="Starts" value={startsOn} onChange={setStartsOn} />
       <MonthDateField label="Ends" value={endsOn} onChange={setEndsOn} />
+      {clashes.length > 0 ? (
+        <Card style={[styles.clash, { borderColor: theme.attention }]} accessibilityRole="alert">
+          <ThemedText type="smallBold">These dates overlap another round</ThemedText>
+          {clashLines(clashes).map((line) => (
+            <ThemedText key={line} type="small">
+              {line}
+            </ThemedText>
+          ))}
+          <ThemedText type="small">The same athletes can’t be in two rounds at once.</ThemedText>
+          {free && startsOn && endsOn ? (
+            <Button
+              title={`Start on ${shortDate(free, true)} instead`}
+              variant="secondary"
+              onPress={() => {
+                const moved = shiftDates(startsOn, endsOn, free);
+                setStartsOn(moved.startsOn);
+                setEndsOn(moved.endsOn);
+              }}
+            />
+          ) : null}
+        </Card>
+      ) : null}
       <ErrorText>{error}</ErrorText>
       {notice ? <ThemedText type="small">{notice}</ThemedText> : null}
-      <Button title={id ? 'Save' : 'Open round'} onPress={save} busy={saving} />
+      <Button
+        title={id ? 'Save' : 'Open round'}
+        onPress={save}
+        busy={saving}
+        disabled={clashes.length > 0}
+      />
     </>
   );
 
@@ -279,7 +391,7 @@ export default function AdminRoundScreen() {
           label="Squad or team"
           options={teams.map((t) => ({ value: t.id, label: teamLabel(t, teams) }))}
           selected={teamId ? [teamId] : []}
-          onToggle={setTeamId}
+          onToggle={chooseTeam}
         />
         {criteriaCard}
         {form}
@@ -506,4 +618,5 @@ export default function AdminRoundScreen() {
 
 const styles = StyleSheet.create({
   card: { gap: Spacing.one },
+  clash: { gap: Spacing.one, borderWidth: 1 },
 });
