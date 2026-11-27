@@ -134,6 +134,8 @@ What each role can see and do:
 | -------------------------------------- | :-----: | :-------------: | :----------: | :--------: | :-----------: | :-----------: | :-----: | :-----------: |
 | To-do list and calendar                |    ✓    |        ✓        |      ✓       |     ✓      |       ✓       |       ✓       |    ✓    |       ✓       |
 | Your own personal tasks                |    ✓    |        ✓        |      ✓       |     ✓      |       ✓       |       ✓       |    ✓    |       ✓       |
+| See events added for your squads and teams (when switched on) |    ✓    | Their athlete's |      ✓       |     ✓      |  If in one    |       ✓       |         |      All      |
+| Add, change and cancel squad and team events (when switched on) |         |                 |  Own groups  | Own groups |               |               |         |  Any group    |
 | To-do notifications on your phone      |    ✓    |        ✓        |      ✓       |     ✓      |       ✓       |       ✓       |    ✓    |       ✓       |
 | My squads and teams                    |    ✓    |        ✓        |      ✓       |     ✓      |  If in one    |       ✓       | Heading only |   If in one   |
 | Injury status beside an athlete's name in a squad or team |         |                 |  Own groups  |            |               |  Own groups   |         |               |
@@ -263,7 +265,7 @@ club and Delete account links, with a User guide link once an admin has approved
 join the club](#ask-to-join-the-club)).
 
 Admins can turn off Messages, Calendar, Daily check-ins, Injuries, Attendance, Session plans,
-Surveys, Captains' polls, Awards, Live streams, Game goals and Integrity training for the whole club in **Club features**, and turn on Chat groups, which start off. A feature that's off disappears for every role.
+Surveys, Captains' polls, Awards, Live streams, Game goals and Integrity training for the whole club in **Club features**, and turn on Chat groups and Squad and team events, which start off. A feature that's off disappears for every role.
 A feature that's on can also be on for **pilot teams only**, to try it with one squad or team
 first: it then shows for the people in the pilot squads and teams (and the teams of a pilot squad),
 the parents and guardians of their athletes, admins and committee, and for nobody else (see
@@ -1083,6 +1085,32 @@ event. Match times follow PlayHQ, so a changed time shows once an admin refreshe
 
 Tap an event to see when and where it is. Tap the location to open it in maps, or **Copy** to copy
 the address.
+
+#### Events your coaches and managers add
+
+When the club switches on **Squad and team events**, a squad's or team's coaches and managers add
+its events in the app: training, games, meetings, social events and anything else. They sit in the
+calendar beside everything else, in that squad's or team's colour, with its name under the time,
+and they work like any other session: **Next up** on Today, **Can't make it**, **Take attendance**
+and session plans (see [A session's page](#a-sessions-page)).
+
+- **Who sees them**: everyone in that squad or team, which is its athletes, their parents and
+  guardians, its coaches, managers and physios, plus admins. Nobody else in the club does. An event
+  marked for coaches and managers only, such as a selection meeting, is seen by that squad's or
+  team's coaches and managers and admins alone.
+- **A cancelled event stays on the calendar**, crossed out and marked **Cancelled**, so you can
+  see it's off instead of wondering where it went. Its page says who cancelled it. A cancelled
+  event has no **Can't make it** or **Take attendance**, and isn't offered as **Next up**.
+- The event's page shows any note your coach wrote, and who added it.
+- You only read these events: there's nothing to answer or reply to.
+
+Each squad and team has its own colour, which the app chooses. Colours an admin picked for the
+club's calendars are kept for those calendars, so a team never looks like the club calendar. A
+squad and a team can share a colour, because a squad's work ends as its teams start.
+
+<img src="user-guide/team-events-calendar.png" width="210" alt="A coach's calendar with Add an event, their team's events in the team's colour, a cancelled event crossed out and a club event in the club's colour">
+<img src="user-guide/team-event-athlete.png" width="210" alt="A training session a coach added, as an athlete sees it: when and where, Can't make it, the coach's note and who added it">
+<img src="user-guide/team-event-cancelled.png" width="210" alt="A cancelled event: the name crossed out and Cancelled by Cam Roberts">
 
 <img src="user-guide/calendar.png" width="210" alt="Calendar list view">
 <img src="user-guide/calendar-month.png" width="210" alt="Calendar month view">
@@ -2972,6 +3000,52 @@ delete a plan: ask an admin if one was added by mistake.
 <img src="user-guide/session-plan.png" width="210" alt="A session plan">
 <img src="user-guide/session-plan-files.png" width="210" alt="A session plan's files and who it's shared with">
 
+### Adding events for your squad or team
+
+When the club switches on **Squad and team events**, you add your own squads' and teams' events
+to the calendar. Managers do the same, and admins can for any squad or team.
+
+1. In the **Calendar** tab tap **Add an event**. The day you were looking at is already chosen,
+   and so is the squad or team if you were filtering by one. With more than one squad or team,
+   choose which it's **For**.
+2. Choose **What** it is: Training, Game, Meeting, Social or Other. The name starts as that word;
+   change it if you like, for example "Gym session".
+3. The form fills in the time, length and place from that squad's or team's last event of the
+   same kind, and says so. Most weeks you only check it and tap **Add to the calendar**. Change
+   anything that's different.
+4. Pick the **Day** from the week strip, using the arrows for other weeks. A dot under a day means
+   the squad or team already has something on, and **Already on that day** names it, so you don't
+   book two things at once.
+5. Type when it **Starts**, like 6pm or 18:00, then tap **1 hour**, **1½ hours** or **2 hours**,
+   or type when it **Finishes**. For a carnival or a trip switch on **All day** and say how many
+   days (up to 14).
+6. Type **Where**, or tap one of the places your squad or team has used before.
+7. For something that happens every week, choose **Every week** and how many weeks (8 to start
+   with, up to 52). The form says the date of the last one, and the button says how many events it
+   adds.
+8. **Who sees it, and a note** is folded away because most events don't need it. Open it to keep
+   an event to **Coaches and managers only**, or to add a note such as what to bring.
+
+Events can be up to 12 months back or ahead. Members see a new event the next time their calendar
+loads; the app doesn't send a message about it, so for a late change send a message too (see
+[Sending messages](#sending-messages)).
+
+To change or call off an event, open it from the calendar:
+
+- **Change** opens the same form. Changing one week of a weekly event changes that week only.
+- **Cancel event** keeps it on the calendar, crossed out and marked **Cancelled** with your name,
+  so everyone can see it's off. For a weekly event you choose **Cancel this one** or **Cancel this
+  and later weeks**. **Put it back on** undoes it.
+- **Added by mistake? Remove it** takes an event off the calendar altogether. You can only remove
+  an event that hasn't started; one that has started stays, so cancel it instead.
+
+You can't choose the colour: the app gives each squad and team one that no club calendar uses.
+
+<img src="user-guide/team-event-add.png" width="210" alt="Adding an event: what it is, the day on a week strip, the times with length buttons and the place, filled in from the team's last training">
+<img src="user-guide/team-event-weekly.png" width="210" alt="The same form set to every week for 8 weeks, with the date of the last one and an Add 8 events button">
+<img src="user-guide/team-event-coach.png" width="210" alt="An event as its coach sees it: Take attendance, Add a session plan, the note, then Change and Cancel event">
+<img src="user-guide/team-event-cancel.png" width="210" alt="Cancelling a weekly event: Cancel this one or Cancel this and later weeks">
+
 <div style="page-break-before: always"></div>
 
 ## 7. Managers
@@ -3027,6 +3101,10 @@ those records.
 <img src="user-guide/today-manager.png" width="210" alt="A manager's Today">
 <img src="user-guide/team-manager.png" width="210" alt="A manager's Team tab: Attendance and Injuries as tiles, Surveys, then their squad and its people by name and position">
 <img src="user-guide/attendance-warning.png" width="210" alt="Warning that attendance may already have been taken">
+
+When the club switches on **Squad and team events**, you add, change and cancel events for your
+squads and teams just as coaches do (see
+[Adding events for your squad or team](#adding-events-for-your-squad-or-team)).
 
 <div style="page-break-before: always"></div>
 
@@ -4382,11 +4460,21 @@ When different people need different events, split them into separate Outlook ca
 a physio calendar for physios and statisticians, and a safeguarding calendar for the safeguarding
 posts, and add each one here. Admins always see every calendar. Each card says who it's shown to,
 such as "Shown to Physios, Statisticians and Open Squad". Each calendar has a colour, used for its
-events in the app: until you pick one it's yellow for everyone, pink for the committee alone, blue
-for squads only and green for teams only. **Change name, link or who sees it** and **Delete** change
+events in the app. There are 12 to choose from, and the one you pick is kept for that calendar:
+no squad or team is given it. Until you pick one, a calendar for everyone is yellow and one for
+the committee alone is pink (both kept the same way), and one shown only to squads or teams takes
+its squad's or team's colour. **Change name, link or who sees it** and **Delete** change
 or remove one. Calendars added before this choice existed keep who they were shown to: everyone,
 the committee, or their squad or team. A calendar shown to a squad or team is also shown to the
 squad or team of the same name when you start the next season.
+
+**Squad and team events** (in **Club features**, off to start with) lets coaches and managers add
+their own squads' and teams' events in the app, so you don't keep an Outlook calendar for every
+team. You can add, change and cancel events for any squad or team, from **Add an event** in the
+**Calendar** tab, and you see every event, including those kept to coaches and managers (see
+[Adding events for your squad or team](#adding-events-for-your-squad-or-team)). The app gives each
+squad and team a colour from the ones your calendars don't use; with more squads and teams than
+spare colours some share one, which only admins, who see them all, are likely to notice.
 
 Outlook gives two links for a published calendar: an HTML link, for viewing it in a browser, and an
 ICS link, ending in **.ics**, for apps. Use the ICS link. The app downloads a new or changed link
@@ -4693,7 +4781,9 @@ icon (FirstPass HQ) and the splash screen are part of the app build and don't ch
   Session plans, Surveys, Captains' polls, Awards, Live streams, Game goals, Integrity training,
   Season KPIs and the policy and conflict registers (see below). **Chat groups** start off; switching
   them off hides Groups and stops new posts, and keeps every post (parents' copies stay in their
-  inbox). Switching
+  inbox). **Squad and team events** start off too; switching them off hides the events
+  coaches and managers added and the **Add an event** button, and keeps every event. They need
+  **Calendar** on. Switching
   off **Captains' polls** stops captains sending new polls and leaves the rest of Surveys on; polls
   already sent stay readable. A switched-off feature disappears from every member's tabs, to-do list and menus,
   and its pages in the Club tab are hidden. Nothing is deleted, so switching it back on brings
@@ -5647,6 +5737,7 @@ once saved, only replaced or removed, and anyone who gets it wrong five times in
 | Absence reasons         | Every approved member sees the list. Only admins switch reasons off or add them.                                             |
 | Calendars               | Admins see every calendar and its link. Members see a calendar, and its link, only if an admin shared it with everyone in the club, one of their usable roles, a safeguarding post they can act in, or one of their squads or teams. Temporary helpers see none. |
 | Committee calendar      | Committee members (and anyone else the admin shared it with) and admins.                                                    |
+| Squad and team events added in the app | The squad's or team's athletes, their parents and guardians, its coaches, managers and physios, and admins. An event kept to coaches and managers: that squad's or team's coaches and managers, and admins. Only its coaches and managers, and admins, add, change, cancel or remove them. A role paused for a lapsed check or a stand-down sees and adds none. Temporary helpers and guests see none. |
 | Award votes             | Only the voter sees their own ballot. Nobody, admins included, can see who someone voted for. Who cast each vote is removed after the club's keep period (1 year recommended). |
 | Awards and their settings | Admins, and committee members who read the Award results report. Voters see only the votes open to them and who they can vote for, while voting is open. |
 | Award results           | Admins: standings and how many people have voted, and once voting closes, how many votes each nominee got at each place. Committee members with a current check read the same results once voting closes. |
@@ -6260,6 +6351,10 @@ Working With Children Check, and another admin must do it.
   chooses, and a new one to nobody but admins until they choose (see [Calendars](#calendars)).
   Temporary helpers see none, and a role paused for a lapsed check or a stand-down stops showing
   its calendars.
+- **Events coaches add stay inside the squad or team.** An event a coach or manager adds in the
+  app is seen only by that squad's or team's own members, their parents and guardians, and admins,
+  never the whole club, and the database enforces it. Members only read events: there are no
+  replies or comments. Every event records who added it, who last changed it and who cancelled it.
 - **Screening Unit notices.** Record every notice on the member's page. An interim negative
   notice, negative notice, interstate decision or cancelled card stands them down at once, and
   stays on your to-do list until you record telling the governing body in writing.

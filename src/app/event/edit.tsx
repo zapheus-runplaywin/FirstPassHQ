@@ -47,7 +47,6 @@ const LENGTHS = [
 ];
 
 /** How long a weekly event usually runs for, offered as one-tap choices. */
-const REPEAT_CHOICES = [4, 8, 10, 12];
 const DEFAULT_REPEAT_WEEKS = 8;
 
 /**
@@ -182,7 +181,7 @@ function EventFormScreen({
   }
 
   const group = teams.find((t) => t.id === form.teamId) ?? null;
-  const groupWord = group?.kind === 'team' ? 'team' : 'squad';
+  const groupWord = !group ? 'group' : group.kind === 'team' ? 'team' : 'squad';
   const start = form.startText.trim() ? parseTime(form.startText) : null;
   const places = useMemo(
     () => placeSuggestions(events, form.teamId).filter((p) => p !== form.location.trim()),
@@ -381,7 +380,8 @@ function EventFormScreen({
         />
         {places.length > 0 ? (
           <ChipGroup
-            options={places.map((place) => ({ value: place, label: place }))}
+            // The chip shows the name of the place; the whole address goes in the field.
+            options={places.map((place) => ({ value: place, label: place.split(',')[0].trim() || place }))}
             selected={[]}
             onToggle={(location) => {
               setTyped((t) => ({ ...t, place: true }));
@@ -420,7 +420,7 @@ function EventFormScreen({
             <>
               <Stepper
                 label="For"
-                value={`${form.repeatWeeks} weeks, until ${formatDateString(repeatUntil(form.day, form.repeatWeeks))}`}
+                value={`${form.repeatWeeks} weeks`}
                 lessLabel="One week fewer"
                 moreLabel="One week more"
                 canLess={form.repeatWeeks > 2}
@@ -428,11 +428,9 @@ function EventFormScreen({
                 onLess={() => set({ repeatWeeks: form.repeatWeeks - 1 })}
                 onMore={() => set({ repeatWeeks: form.repeatWeeks + 1 })}
               />
-              <ChipGroup
-                options={REPEAT_CHOICES.map((weeks) => ({ value: String(weeks), label: `${weeks} weeks` }))}
-                selected={[String(form.repeatWeeks)]}
-                onToggle={(weeks) => set({ repeatWeeks: Number(weeks) })}
-              />
+              <ThemedText type="small" themeColor="textSecondary">
+                The last one is on {formatDateString(repeatUntil(form.day, form.repeatWeeks))}.
+              </ThemedText>
             </>
           ) : null}
         </View>

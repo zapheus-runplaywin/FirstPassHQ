@@ -526,13 +526,14 @@ describe('adding an event', () => {
     await openForm('coach');
     await type('Starts', '6pm');
     await fireEvent.press(screen.getByText('Every week'));
-    expect(screen.getByText(`8 weeks, until ${formatDateString('2026-12-06')}`)).toBeTruthy();
+    expect(screen.getByText('8 weeks')).toBeTruthy();
+    expect(screen.getByText(`The last one is on ${formatDateString('2026-12-06')}.`)).toBeTruthy();
     expect(screen.getByText('Add 8 events')).toBeTruthy();
     await fireEvent.press(screen.getByLabelText('One week more'));
     expect(screen.getByText('Add 9 events')).toBeTruthy();
     await fireEvent.press(screen.getByLabelText('One week fewer'));
-    await fireEvent.press(screen.getByText('12 weeks'));
-    expect(screen.getByText(`12 weeks, until ${formatDateString('2027-01-03')}`)).toBeTruthy();
+    for (let i = 0; i < 4; i += 1) await fireEvent.press(screen.getByLabelText('One week more'));
+    expect(screen.getByText(`The last one is on ${formatDateString('2027-01-03')}.`)).toBeTruthy();
     await fireEvent.press(screen.getByText('Add 12 events'));
     await settle();
     expect(saved()).toMatchObject({ p_day: '2026-10-18', p_repeat_until: '2027-01-03' });
@@ -601,10 +602,11 @@ describe('adding an event', () => {
   });
 
   it('offers places the team has used, one tap to fill in', async () => {
-    await openForm('coach', { rows: [row({ can_manage: true, kind: 'game', location: 'State Netball Centre' })] });
+    await openForm('coach', { rows: [row({ can_manage: true, kind: 'game', location: 'State Netball Centre, 200 Selby Street' })] });
     expect(field('Where').props.value).toBe('');
+    // The chip is the name of the place; the box gets the whole address.
     await fireEvent.press(screen.getByText('State Netball Centre'));
-    expect(field('Where').props.value).toBe('State Netball Centre');
+    expect(field('Where').props.value).toBe('State Netball Centre, 200 Selby Street');
     // The place now in the box isn't offered again.
     expect(screen.queryAllByText('State Netball Centre')).toHaveLength(0);
   });
