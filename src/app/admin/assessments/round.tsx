@@ -23,6 +23,9 @@ import {
   panelNotes,
   pickSet,
   roundCriteriaLine,
+  roundTitle,
+  roundDeleteLine,
+  roundDeleteState,
   setLine,
   type AdminRound,
   type AuditorChoice,
@@ -39,8 +42,8 @@ import { teamLabel, useTeams } from '@/lib/use-teams';
 
 /**
  * Opens a selection round for a squad or team, or (with an id) shows it in
- * four short tabs: its dates, its panel, its reports, and its details (name,
- * dates, closing).
+ * short tabs: its dates, its panel, its auditors, its reports, and Edit (name,
+ * description, dates, squad or team, criteria, closing and deleting).
  * The panel is the only way to read a round's assessments, so every change
  * to it is kept and shown here.
  */
@@ -54,6 +57,8 @@ export default function AdminRoundScreen() {
   const [loaded, setLoaded] = useState(!id);
   const [teamId, setTeamId] = useState<string | null>(null);
   const [name, setName] = useState('');
+  const [description, setDescription] = useState('');
+  const [confirmDelete, setConfirmDelete] = useState(false);
   const [startsOn, setStartsOn] = useState<string | null>(null);
   const [endsOn, setEndsOn] = useState<string | null>(null);
   const [filled, setFilled] = useState(false);
@@ -61,7 +66,7 @@ export default function AdminRoundScreen() {
   const [busy, setBusy] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [notice, setNotice] = useState<string | null>(null);
-  const [tab, setTab] = useState<'dates' | 'panel' | 'auditors' | 'reports' | 'details'>('dates');
+  const [tab, setTab] = useState<'dates' | 'panel' | 'auditors' | 'reports' | 'edit'>('dates');
   const [auditors, setAuditors] = useState<RoundAuditor[]>([]);
   const [auditorChoices, setAuditorChoices] = useState<AuditorChoice[] | null>(null);
   const [loadedSets, setLoadedSets] = useState<{ group: string; list: SetChoice[] } | null>(null);
@@ -90,8 +95,9 @@ export default function AdminRoundScreen() {
     setMoreRounds(free.round > 6);
   }
 
-  // The same athletes can't be in two rounds at once: check as the dates are picked.
-  const clashGroup = round?.team_id ?? teamId;
+  // The same athletes can't be in two rounds at once: check as the dates (or,
+  // changing a round, its squad or team) are picked.
+  const clashGroup = teamId ?? round?.team_id ?? null;
   const clashKey =
     clashGroup && startsOn && endsOn && endsOn >= startsOn ? `${clashGroup}/${startsOn}/${endsOn}` : null;
   const clashes = clashKey && clashState?.key === clashKey ? clashState.list : [];
@@ -136,6 +142,7 @@ export default function AdminRoundScreen() {
     setTab(next);
     setError(null);
     setNotice(null);
+    setConfirmDelete(false);
   }
 
   const load = useCallback(async () => {
@@ -169,6 +176,7 @@ export default function AdminRoundScreen() {
   if (round && !filled) {
     setFilled(true);
     setName(round.name === phaseLabel(round) ? '' : round.name);
+    setDescription(round.description ?? '');
     setPhase(round.phase ?? null);
     setRoundNumber(round.round_number ?? null);
     setMorePhases((round.phase ?? 0) > 6);
@@ -204,6 +212,9 @@ export default function AdminRoundScreen() {
           p_ends_on: endsOn,
           p_phase: phase,
           p_round_number: roundNumber,
+          p_description: description,
+          // Null keeps the squad or team.
+          p_team_id: teamId && teamId !== round?.team_id ? teamId : null,
         })
       : await supabase.rpc('admin_open_selection_round', {
           p_team_id: teamId,
@@ -221,10 +232,25 @@ export default function AdminRoundScreen() {
     }
     if (id) {
       setNotice('Saved.');
+      setTeamId(null);
       await load();
     } else {
       router.back();
     }
+  }
+
+  /** Deletes a round nothing has been written in, then goes back to the list. */
+  async function deleteRound() {
+    setBusy(true);
+    setError(null);
+    const { error: deleteError } = await supabase.rpc('admin_delete_selection_round', { p_round_id: id });
+    setBusy(false);
+    if (deleteError) {
+      setConfirmDelete(false);
+      setError(deleteError.message);
+      return;
+    }
+    router.back();
   }
 
   /** Runs one change to the round or its panel, then shows it as saved. */
@@ -294,6 +320,7 @@ export default function AdminRoundScreen() {
       />
     );
   const today = clubToday();
+  const deleteState = round ? roundDeleteState(round) : null;
   const standing = dates.filter((m) => !m.removed_at);
   const takenOff = dates.filter((m) => m.removed_at);
 
@@ -329,6 +356,16 @@ export default function AdminRoundScreen() {
           Shown as {label}
           {name.trim() ? ` · ${name.trim()}` : ''}
         </ThemedText>
+      ) : null}
+      {id ? (
+        <TextField
+          label="Description (optional)"
+          value={description}
+          onChangeText={setDescription}
+          placeholder="Such as where and what to bring"
+          maxLength={500}
+          multiline
+        />
       ) : null}
       <MonthDateField label="Starts" value={startsOn} onChange={setStartsOn} />
       <MonthDateField label="Ends" value={endsOn} onChange={setEndsOn} />
@@ -451,12 +488,12 @@ export default function AdminRoundScreen() {
           { value: 'panel' as const, label: `Panel (${onPanel.length})` },
           { value: 'auditors' as const, label: `Auditors (${auditing.length})` },
           { value: 'reports' as const, label: 'Reports' },
-          { value: 'details' as const, label: 'Details' },
+          { value: 'edit' as const, label: 'Edit' },
         ]}
         selected={[tab]}
         onToggle={openTab}
       />
-      {tab === 'details' ? null : <ErrorText>{error}</ErrorText>}
+      {tab === 'edit' ? null : <ErrorText>{error}</ErrorText>}
 
       {tab === 'dates' ? (
         <>
@@ -681,8 +718,30 @@ export default function AdminRoundScreen() {
         </>
       ) : null}
 
-      {tab === 'details' ? (
+      {tab === 'edit' ? (
         <>
+          {round.can_change_team ? (
+            <>
+              <ChipGroup
+                label="Squad or team"
+                options={teams
+                  .filter((t) => t.season === round.season)
+                  .map((t) => ({ value: t.id, label: teamLabel(t, teams) }))}
+                selected={[teamId ?? round.team_id ?? '']}
+                onToggle={setTeamId}
+              />
+              {teamId && teamId !== round.team_id ? (
+                <ThemedText type="small" themeColor="textSecondary">
+                  Saving moves the round to {teams.find((t) => t.id === teamId)?.name}. Its coaches
+                  replace {round.team_name}’s on the panel, and other selectors stay.
+                </ThemedText>
+              ) : null}
+            </>
+          ) : round.can_change_team === false && !round.closed_at ? (
+            <ThemedText type="small" themeColor="textSecondary">
+              Assessing has started, so this round stays with {round.team_name}.
+            </ThemedText>
+          ) : null}
           {form}
           <ThemedText type="small">Criteria: {roundCriteriaLine(round) || 'none'}</ThemedText>
           {round.can_change_criteria ? (
@@ -725,6 +784,21 @@ export default function AdminRoundScreen() {
             busy={busy}
             onPress={() => change('admin_close_selection_round', { p_closed: !round.closed_at })}
           />
+          {deleteState ? (
+            <ThemedText type="small" themeColor="textSecondary">
+              {roundDeleteLine(deleteState)}
+            </ThemedText>
+          ) : null}
+          {deleteState !== 'can' ? null : confirmDelete ? (
+            <Card style={[styles.clash, { borderColor: theme.attention }]} accessibilityRole="alert">
+              <ThemedText type="smallBold">Delete {roundTitle(round)}?</ThemedText>
+              <ThemedText type="small">This can’t be undone.</ThemedText>
+              <Button title="Delete the round" variant="danger" busy={busy} onPress={deleteRound} />
+              <Button title="Keep it" variant="secondary" onPress={() => setConfirmDelete(false)} />
+            </Card>
+          ) : (
+            <Button title="Delete this round" variant="dangerOutline" onPress={() => setConfirmDelete(true)} />
+          )}
         </>
       ) : null}
     </Screen>

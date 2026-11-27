@@ -86,7 +86,7 @@ select pg_temp.ok('anon can call none of the changed functions',
   (select bool_or(has_function_privilege('anon', f, 'execute')) from unnest(array[
     'public.admin_selection_round_clashes(uuid, date, date, uuid)',
     'public.admin_open_selection_round(uuid, text, date, date, uuid, integer, integer)',
-    'public.admin_save_selection_round(uuid, text, date, date, integer, integer)',
+    'public.admin_save_selection_round(uuid, text, date, date, integer, integer, text, uuid)',
     'public.my_selection_rounds()', 'public.my_selection_info()']) f), false);
 select pg_temp.ok('one version of each changed function',
   (select bool_and(c = 1) from (select count(*) c from pg_proc where proname in

@@ -120,6 +120,7 @@ export default function RoundScreen() {
         {[sheet.team_name, shortRange(sheet), sheet.criteria_set_name].filter(Boolean).join(' · ')}
         {sheet.closed ? ' · closed, so nothing more can be added' : ''}
       </ThemedText>
+      {sheet.description ? <ThemedText type="small">{sheet.description}</ThemedText> : null}
       {notStarted ? <ThemedText type="smallBold">Starts {shortDate(sheet.starts_on, true)}</ThemedText> : null}
       <ErrorText>{error}</ErrorText>
       {dates.length > 0 ? (

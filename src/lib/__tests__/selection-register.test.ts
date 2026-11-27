@@ -168,6 +168,7 @@ describe('selectionRegisterReport', () => {
       'Criteria sets',
       'Changes to criteria sets',
       'Changes to rounds',
+      'Deleted rounds',
     ]);
     expect(report.title).toBe('Selection register');
     expect(report.subtitle).toMatch(/^Season 2026–27 · as at /);
@@ -215,7 +216,37 @@ describe('selectionRegisterReport', () => {
     expect(registerStatus(round({ closed_at: '2026-12-22T00:00:00Z' }), TODAY)).toMatch(/^Closed /);
   });
 
+  it('lists a deleted round with its dates and who deleted it, or says none were', () => {
+    expect(report.sections[7].rows).toEqual([]);
+    expect(report.sections[7].empty).toBe('No rounds deleted this season.');
+    const withDeleted = selectionRegisterReport(register([round()]), '2026–27', [
+      {
+        id: 'd1',
+        team_name: 'Open A',
+        name: 'Trials',
+        phase: 1,
+        round_number: 1,
+        starts_on: '2026-12-01',
+        ends_on: '2026-12-14',
+        opened_by_name: 'Sam Admin',
+        deleted_by_name: 'Pat Admin',
+        deleted_at: '2026-11-20T02:00:00Z',
+      },
+    ]);
+    expect(withDeleted.sections[7].rows[0].cells).toEqual([
+      expect.stringMatching(/Nov/),
+      'Phase 1, Round 1 · Trials (Open A)',
+      '1 Dec to 14 Dec',
+      'Sam Admin',
+      'Pat Admin',
+    ]);
+  });
+
   it('puts words to every change', () => {
+    expect(['description', 'team'].map((k) => roundEventLabel(k as never))).toEqual([
+      'Description changed',
+      'Squad or team changed',
+    ]);
     expect(['opened', 'renamed', 'dates', 'phase', 'criteria', 'closed', 'reopened'].map((k) => roundEventLabel(k as never))).toEqual([
       'Opened',
       'Renamed',

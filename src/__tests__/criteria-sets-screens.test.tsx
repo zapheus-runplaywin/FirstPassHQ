@@ -631,7 +631,7 @@ describe('opening a selection round', () => {
   });
 });
 
-describe('a round’s criteria, on its Details tab', () => {
+describe('a round’s criteria, on its Edit tab', () => {
   async function openRound(round: AdminRound, options: BackendOptions = {}) {
     await openScreen(
       'admin',
@@ -646,7 +646,7 @@ describe('a round’s criteria, on its Details tab', () => {
         ...options,
       },
     );
-    await press('Details');
+    await press('Edit');
   }
 
   it('names the set and changes it at once before assessing starts', async () => {
