@@ -16,7 +16,7 @@ import { FeatureCard } from '@/components/home/feature-card';
 import { ThemedText } from '@/components/themed-text';
 import { Card } from '@/components/ui';
 import { Spacing } from '@/constants/theme';
-import { roundsLabel, selectionHomeHref, selectionInfoLabel } from '@/lib/assessments';
+import { auditsHomeHref, auditsLabel, roundsLabel, selectionHomeHref, selectionInfoLabel } from '@/lib/assessments';
 import { attendanceCountLabel } from '@/lib/attendance';
 import { useAuth } from '@/lib/auth';
 import { checkInOverviewLabel, checkInSummaryLabel } from '@/lib/check-ins';
@@ -248,6 +248,18 @@ function SelectionAssessments() {
   );
 }
 
+function SelectionAudits() {
+  const { selectionAudits } = useHome();
+  return (
+    <FeatureCard
+      icon="eye"
+      title="Selection audits"
+      detail={auditsLabel(selectionAudits)}
+      onPress={() => router.push(auditsHomeHref(selectionAudits))}
+    />
+  );
+}
+
 function Selection() {
   const { selectionInfo, selectionFeedback } = useHome();
   return (
@@ -386,6 +398,7 @@ const CARDS: Record<HomeCard, () => ReactNode> = {
   integrity: IntegrityTraining,
   kpis: SeasonKpis,
   selectionAssessments: SelectionAssessments,
+  selectionAudits: SelectionAudits,
   selection: Selection,
   registers: Registers,
   guardianOf: GuardianOf,

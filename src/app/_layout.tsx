@@ -252,6 +252,11 @@ function RootStack() {
           <Stack.Protected guard={can.declareConflicts}>
             <Stack.Screen name="declare-conflicts" options={{ title: 'Conflicts of interest' }} />
           </Stack.Protected>
+          <Stack.Protected guard={can.selectionAudits}>
+            <Stack.Screen name="audits/index" options={{ title: 'Selection audits' }} />
+            <Stack.Screen name="audits/round" options={{ title: 'Selection audit' }} />
+            <Stack.Screen name="audits/athlete" options={{ title: 'Assessment' }} />
+          </Stack.Protected>
           <Stack.Protected guard={can.assessments}>
             <Stack.Screen name="assessments/index" options={{ title: 'Selection assessments' }} />
             <Stack.Screen name="assessments/round" options={{ title: 'Selection round' }} />

@@ -187,6 +187,9 @@ export function useRouteAccess() {
     // The database decides who is on which panel; admins set rounds up and
     // read an audit report, never an assessment.
     assessments: assessmentsOn && canBeSelector,
+    // A committee member an admin makes auditor of a round reads everything
+    // in it and changes nothing. The database decides which rounds.
+    selectionAudits: assessmentsOn && holds('committee'),
     // Athletes, and parents and guardians, read a round's criteria and the
     // dates the club shares; the database shows a parent only their own
     // verified children's rounds, and never an assessment.

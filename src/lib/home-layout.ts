@@ -110,6 +110,7 @@ export const HOME_CARDS = [
   'integrity',
   'kpis',
   'selectionAssessments',
+  'selectionAudits',
   'selection',
   'registers',
   'guardianOf',
@@ -183,6 +184,8 @@ const WANTED: Record<HomeCard, (f: PlacementFacts) => Wanted> = {
   // weeks: one tap from Today for the panel (a guest selector has no hub), and
   // with the coach's squads or the club's work too.
   selectionAssessments: (f) => ['today', ...first(f.staff && 'team', f.clubOfficer && 'club')],
+  // A committee member's rounds to audit: on Today and with the club's work.
+  selectionAudits: () => ['today', 'club'],
   // Selection dates and the coach's feedback, while there are any: on Today,
   // and with your own things or your child's.
   selection: (f) => ['today', (f.athlete || !f.guardian) && 'me', f.guardian && 'family'],

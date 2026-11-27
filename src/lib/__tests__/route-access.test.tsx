@@ -147,6 +147,7 @@ const captainOf = (team: Team): GroupCaptain => ({
 type Key = keyof RouteAccess;
 const KEYS: Key[] = [
   'assessments',
+  'selectionAudits',
   'selectionInfo',
   'readMessages',
   'sendMessages',
@@ -273,63 +274,63 @@ const CASES: [string, Auth, Key[]][] = [
   [
     'the committee',
     auth(profile('committee')),
-    ['readMessages', 'sendMessages', 'answerSurveys', 'sendSurveys', 'surveyResults', 'injuries', 'attendance', 'takeAttendance', 'athleteAttendance', 'checkIns', 'awards', 'kpis', 'setKpis', 'training', 'checkTraining', 'reports', 'registers', 'reviewPolicy', 'declareConflicts'],
+    ['readMessages', 'sendMessages', 'answerSurveys', 'sendSurveys', 'surveyResults', 'injuries', 'attendance', 'takeAttendance', 'athleteAttendance', 'checkIns', 'awards', 'kpis', 'setKpis', 'training', 'checkTraining', 'reports', 'registers', 'reviewPolicy', 'declareConflicts', 'selectionAudits'],
   ],
   // The reports name children: a committee member reads them only when
   // screened to work with children (customer review C14).
   [
     'the committee, exempted with a reason',
     auth(profile('committee', { wwcc_number: null, wwcc_expires_on: null, wwcc_exempt_reason: 'Treasurer' })),
-    ['readMessages', 'sendMessages', 'answerSurveys', 'sendSurveys', 'surveyResults', 'injuries', 'attendance', 'takeAttendance', 'athleteAttendance', 'checkIns', 'awards', 'kpis', 'setKpis', 'training', 'checkTraining', 'registers', 'reviewPolicy', 'declareConflicts'],
+    ['readMessages', 'sendMessages', 'answerSurveys', 'sendSurveys', 'surveyResults', 'injuries', 'attendance', 'takeAttendance', 'athleteAttendance', 'checkIns', 'awards', 'kpis', 'setKpis', 'training', 'checkTraining', 'registers', 'reviewPolicy', 'declareConflicts', 'selectionAudits'],
   ],
   [
     'the committee, before the committee checks date without a check',
     auth(profile('committee', { wwcc_number: null, wwcc_expires_on: null })),
-    ['readMessages', 'sendMessages', 'answerSurveys', 'sendSurveys', 'surveyResults', 'injuries', 'attendance', 'takeAttendance', 'athleteAttendance', 'checkIns', 'awards', 'kpis', 'setKpis', 'training', 'checkTraining', 'registers', 'reviewPolicy', 'declareConflicts'],
+    ['readMessages', 'sendMessages', 'answerSurveys', 'sendSurveys', 'surveyResults', 'injuries', 'attendance', 'takeAttendance', 'athleteAttendance', 'checkIns', 'awards', 'kpis', 'setKpis', 'training', 'checkTraining', 'registers', 'reviewPolicy', 'declareConflicts', 'selectionAudits'],
   ],
   [
     'the committee, with a volunteer exemption',
     auth(profile('committee', { wwcc_number: null, wwcc_expires_on: null }), {
       exemption: { valid: true } as Auth['exemption'],
     }),
-    ['readMessages', 'sendMessages', 'answerSurveys', 'sendSurveys', 'surveyResults', 'injuries', 'attendance', 'takeAttendance', 'athleteAttendance', 'checkIns', 'awards', 'kpis', 'setKpis', 'training', 'checkTraining', 'reports', 'registers', 'reviewPolicy', 'declareConflicts'],
+    ['readMessages', 'sendMessages', 'answerSurveys', 'sendSurveys', 'surveyResults', 'injuries', 'attendance', 'takeAttendance', 'athleteAttendance', 'checkIns', 'awards', 'kpis', 'setKpis', 'training', 'checkTraining', 'reports', 'registers', 'reviewPolicy', 'declareConflicts', 'selectionAudits'],
   ],
   [
     'the committee, with an ended volunteer exemption',
     auth(profile('committee', { wwcc_number: null, wwcc_expires_on: null }), {
       exemption: { valid: false } as Auth['exemption'],
     }),
-    ['readMessages', 'sendMessages', 'answerSurveys', 'sendSurveys', 'surveyResults', 'injuries', 'attendance', 'takeAttendance', 'athleteAttendance', 'checkIns', 'awards', 'kpis', 'setKpis', 'training', 'checkTraining', 'registers', 'reviewPolicy', 'declareConflicts'],
+    ['readMessages', 'sendMessages', 'answerSurveys', 'sendSurveys', 'surveyResults', 'injuries', 'attendance', 'takeAttendance', 'athleteAttendance', 'checkIns', 'awards', 'kpis', 'setKpis', 'training', 'checkTraining', 'registers', 'reviewPolicy', 'declareConflicts', 'selectionAudits'],
   ],
   [
     'the committee, with an application in force',
     auth(profile('committee', { wwcc_number: null, wwcc_expires_on: null }), {
       wwccApplication: { valid: true } as Auth['wwccApplication'],
     }),
-    ['readMessages', 'sendMessages', 'answerSurveys', 'sendSurveys', 'surveyResults', 'injuries', 'attendance', 'takeAttendance', 'athleteAttendance', 'checkIns', 'awards', 'kpis', 'setKpis', 'training', 'checkTraining', 'reports', 'registers', 'reviewPolicy', 'declareConflicts'],
+    ['readMessages', 'sendMessages', 'answerSurveys', 'sendSurveys', 'surveyResults', 'injuries', 'attendance', 'takeAttendance', 'athleteAttendance', 'checkIns', 'awards', 'kpis', 'setKpis', 'training', 'checkTraining', 'reports', 'registers', 'reviewPolicy', 'declareConflicts', 'selectionAudits'],
   ],
   [
     'the committee, with a lapsed application',
     auth(profile('committee', { wwcc_number: null, wwcc_expires_on: null }), {
       wwccApplication: { valid: false } as Auth['wwccApplication'],
     }),
-    ['readMessages', 'sendMessages', 'answerSurveys', 'sendSurveys', 'surveyResults', 'injuries', 'attendance', 'takeAttendance', 'athleteAttendance', 'checkIns', 'awards', 'kpis', 'setKpis', 'training', 'checkTraining', 'registers', 'reviewPolicy', 'declareConflicts'],
+    ['readMessages', 'sendMessages', 'answerSurveys', 'sendSurveys', 'surveyResults', 'injuries', 'attendance', 'takeAttendance', 'athleteAttendance', 'checkIns', 'awards', 'kpis', 'setKpis', 'training', 'checkTraining', 'registers', 'reviewPolicy', 'declareConflicts', 'selectionAudits'],
   ],
   // A club can choose which committee members see injuries (customer review R7).
   [
     'the committee, left out of the members who see injuries',
     auth(profile('committee'), { committeeSeesInjuries: false }),
-    ['readMessages', 'sendMessages', 'answerSurveys', 'sendSurveys', 'surveyResults', 'attendance', 'takeAttendance', 'athleteAttendance', 'checkIns', 'awards', 'kpis', 'setKpis', 'training', 'checkTraining', 'reports', 'registers', 'reviewPolicy', 'declareConflicts'],
+    ['readMessages', 'sendMessages', 'answerSurveys', 'sendSurveys', 'surveyResults', 'attendance', 'takeAttendance', 'athleteAttendance', 'checkIns', 'awards', 'kpis', 'setKpis', 'training', 'checkTraining', 'reports', 'registers', 'reviewPolicy', 'declareConflicts', 'selectionAudits'],
   ],
   [
     'the committee, left out of the members who see injuries, who is also a guardian',
     auth(profile('committee', { extra_roles: ['guardian'] }), { committeeSeesInjuries: false }),
-    ['selectionInfo', 'readMessages', 'sendMessages', 'answerSurveys', 'sendSurveys', 'surveyResults', 'injuries', 'reportInjury', 'attendance', 'takeAttendance', 'athleteAttendance', 'familyAttendance', 'readSessionPlans', 'checkIns', 'athleteCheckIns', 'awards', 'gameGoals', 'athleteGoals', 'kpis', 'setKpis', 'training', 'checkTraining', 'family', 'medical', 'reports', 'registers', 'reviewPolicy', 'declareConflicts'],
+    ['selectionInfo', 'readMessages', 'sendMessages', 'answerSurveys', 'sendSurveys', 'surveyResults', 'injuries', 'reportInjury', 'attendance', 'takeAttendance', 'athleteAttendance', 'familyAttendance', 'readSessionPlans', 'checkIns', 'athleteCheckIns', 'awards', 'gameGoals', 'athleteGoals', 'kpis', 'setKpis', 'training', 'checkTraining', 'family', 'medical', 'reports', 'registers', 'reviewPolicy', 'declareConflicts', 'selectionAudits'],
   ],
   [
     'an admin on the committee, left out of the members who see injuries',
     auth(profile('admin', { extra_roles: ['committee'] }), { committeeSeesInjuries: false }),
-    ['readMessages', 'sendMessages', 'answerSurveys', 'sendSurveys', 'surveyResults', 'injuries', 'attendance', 'takeAttendance', 'athleteAttendance', 'readSessionPlans', 'addSessionPlans', 'checkIns', 'awards', 'kpis', 'setKpis', 'training', 'checkTraining', 'reports', 'concerns', 'family', 'chooseCaptains', 'registers', 'editRegisters', 'reviewPolicy', 'declareConflicts', 'assessments'],
+    ['readMessages', 'sendMessages', 'answerSurveys', 'sendSurveys', 'surveyResults', 'injuries', 'attendance', 'takeAttendance', 'athleteAttendance', 'readSessionPlans', 'addSessionPlans', 'checkIns', 'awards', 'kpis', 'setKpis', 'training', 'checkTraining', 'reports', 'concerns', 'family', 'chooseCaptains', 'registers', 'editRegisters', 'reviewPolicy', 'declareConflicts', 'assessments', 'selectionAudits'],
   ],
   [
     'a coach with a check who is not on the committee',
@@ -467,6 +468,26 @@ describe('feature switches', () => {
     mockClub.features = features({ selectionAssessments: false });
     const { result } = await renderHook(() => useRouteAccess());
     expect(result.current.assessments).toBe(false);
+  });
+
+  it.each<[string, Auth]>([
+    ['the committee', auth(profile('committee'))],
+    ['an admin on the committee', auth(profile('admin', { extra_roles: ['committee'] }))],
+  ])('Selection assessments off closes the audits for %s', async (_name, who) => {
+    mockAuth = who;
+    mockClub.features = features();
+    const on = await renderHook(() => useRouteAccess());
+    expect(on.result.current.selectionAudits).toBe(true);
+    mockClub.features = features({ selectionAssessments: false });
+    const { result } = await renderHook(() => useRouteAccess());
+    expect(result.current.selectionAudits).toBe(false);
+  });
+
+  it('a committee member waiting for approval can’t open the audits', async () => {
+    mockAuth = auth(profile('committee', { status: 'pending' }));
+    mockClub.features = features();
+    const { result } = await renderHook(() => useRouteAccess());
+    expect(result.current.selectionAudits).toBe(false);
   });
 
   it.each<[string, Auth]>([
