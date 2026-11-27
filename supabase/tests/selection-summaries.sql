@@ -83,7 +83,7 @@ from unnest(array['assessment_summaries', 'assessment_summary_events']) t;
 select pg_temp.ok('anon cannot call ' || f, has_function_privilege('anon', f, 'execute'), false)
 from unnest(array[
   'public.my_assessment_summary(uuid, uuid)',
-  'public.save_assessment_summary(uuid, uuid, jsonb, text, text, text, text, boolean)',
+  'public.save_assessment_summary(uuid, uuid, jsonb, text, text, text, text, boolean, jsonb)',
   'public.reopen_assessment_summary(uuid)', 'public.selection_round_summaries(uuid)',
   'public.admin_selection_summaries(uuid)', 'public.leads_selection_round(uuid)',
   'public.check_assessment_criteria(jsonb)']) f;

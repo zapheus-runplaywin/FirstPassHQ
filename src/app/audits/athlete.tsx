@@ -10,6 +10,7 @@ import { Spacing } from '@/constants/theme';
 import {
   buildPicture,
   contextLabels,
+  noteLines,
   ratingLines,
   releasePartsLine,
   tallyLabel,
@@ -142,7 +143,11 @@ export default function AuditAthleteScreen() {
               No selector has signed a summary yet.
             </ThemedText>
           ) : (
-            <CardGrid gap={Spacing.four}>
+            <>
+              <ThemedText type="small" themeColor="textSecondary">
+                Internal notes are for the panel and this round’s auditors. They are never released.
+              </ThemedText>
+              <CardGrid gap={Spacing.four}>
               {assessment.summaries.map((s) => (
                 <Card key={s.id} style={styles.card}>
                   <ThemedText type="smallBold">{s.author_name}</ThemedText>
@@ -155,12 +160,18 @@ export default function AuditAthleteScreen() {
                       {line}
                     </ThemedText>
                   ))}
+                  {noteLines(assessment.criteria, s.notes).map((line) => (
+                    <ThemedText key={line} type="small" themeColor="textSecondary">
+                      {line}
+                    </ThemedText>
+                  ))}
                   {s.strengths ? <ThemedText type="small">Strengths: {s.strengths}</ThemedText> : null}
                   {s.priorities ? <ThemedText type="small">Priorities: {s.priorities}</ThemedText> : null}
                   {s.comments ? <ThemedText type="small">Comments: {s.comments}</ThemedText> : null}
                 </Card>
               ))}
-            </CardGrid>
+              </CardGrid>
+            </>
           )}
           {assessment.unsigned > 0 ? (
             <ThemedText type="small" themeColor="textSecondary">

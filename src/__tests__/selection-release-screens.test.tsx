@@ -134,6 +134,14 @@ describe('releasing one athlete’s assessment, for the head coach', () => {
     expect(screen.getByText(/Mia Chen is under 18\. Their verified parents and guardians read this assessment/)).toBeTruthy();
   });
 
+  it('says the head coach’s internal notes are never released, with no tick for them', async () => {
+    await openRelease(release({ notes_count: 2 }));
+    expect(screen.getByText('Your 2 internal notes are never released.')).toBeTruthy();
+    expect(screen.queryByLabelText(/internal note/i)).toBeNull();
+    await openRelease(release());
+    expect(screen.queryByText(/internal notes? (is|are) never released/)).toBeNull();
+  });
+
   it('says how many groups have no step when choosing groups', async () => {
     await openRelease();
     await press('Choose groups');
@@ -314,6 +322,13 @@ describe('a released assessment, for the athlete and their parents', () => {
     expect(buttons.map((b) => b.props.accessibilityState?.expanded !== undefined)).toEqual(buttons.map(() => true));
     await press('Mental · 1');
     expect(screen.getByText('Focus: Exceeds standard')).toBeTruthy();
+  });
+
+  it('shows no note even if one were wrongly sent with it', async () => {
+    const wrong = { ...released(), notes: [{ item_key: 'passing', note: 'NOTE-7f3a-never-released' }] } as ReleasedAssessment;
+    await openAssessment([wrong]);
+    expect(screen.queryByText(/NOTE-7f3a/)).toBeNull();
+    expect(screen.queryByText(/internal note/i)).toBeNull();
   });
 
   it('shows a parent their child’s', async () => {
