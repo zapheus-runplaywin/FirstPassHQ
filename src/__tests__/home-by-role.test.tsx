@@ -46,6 +46,10 @@ jest.mock('@react-native-async-storage/async-storage', () =>
 jest.mock('@/global.css', () => ({}));
 jest.mock('expo-font', () => ({ ...jest.requireActual('expo-font'), useFonts: () => [true, null] }));
 
+// The first test of the file renders the whole app cold; on a busy CI runner that
+// passed 5 seconds (PR #320). The other screen test files allow 20.
+jest.setTimeout(20000);
+
 const overrides = placeholderScreens(
   '(tabs)/index',
   '(tabs)/team',
