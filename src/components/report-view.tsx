@@ -132,7 +132,8 @@ export function ReportView({
                     if (!value) return null;
                     return (
                       <ThemedText key={column.label} type="small" themeColor="textSecondary">
-                        {column.label}: {value.replace(/\n/g, ', ')}
+                        {column.label ? `${column.label}: ` : ''}
+                        {value.replace(/\n/g, ', ')}
                       </ThemedText>
                     );
                   })}

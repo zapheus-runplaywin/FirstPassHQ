@@ -151,6 +151,7 @@ const FEATURE_ROUTES: FeatureCase[] = [
       'admin/assessments/criteria',
       'admin/assessments/round',
       'admin/assessments/audit',
+      'admin/assessments/register',
       'admin/assessments/milestone',
       'admin/assessments/summaries',
       'selection',

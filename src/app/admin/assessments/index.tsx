@@ -179,6 +179,13 @@ export default function AdminAssessmentsScreen() {
               </ThemedText>
             </Fold>
           ) : null}
+          {rounds.length > 0 ? (
+            <Button
+              title="Season register"
+              variant="secondary"
+              onPress={() => router.push('/admin/assessments/register')}
+            />
+          ) : null}
           {ready ? (
             <Button title="Open a selection round" onPress={() => router.push('/admin/assessments/round')} />
           ) : rounds.length > 0 ? (

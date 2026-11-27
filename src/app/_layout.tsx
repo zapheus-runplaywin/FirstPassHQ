@@ -397,6 +397,7 @@ function RootStack() {
               <Stack.Screen name="admin/assessments/round" options={{ title: 'Selection round' }} />
               <Stack.Screen name="admin/assessments/milestone" options={{ title: 'Selection date' }} />
               <Stack.Screen name="admin/assessments/audit" options={{ title: 'Selection audit report' }} />
+              <Stack.Screen name="admin/assessments/register" options={{ title: 'Selection register' }} />
               <Stack.Screen name="admin/assessments/summaries" options={{ title: 'Summaries signed' }} />
             </Stack.Protected>
             <Stack.Protected guard={features.kpis}>

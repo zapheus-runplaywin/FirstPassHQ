@@ -250,6 +250,89 @@ export type SelectionAudit = {
   panel: PanelMember[];
   selectors: AuditSelector[];
   athletes: AuditAthlete[];
+  /** The round's auditors, now and before (part 3). */
+  auditors?: RoundAuditor[];
+};
+
+/** Which criteria a round used and what changed about it (admin_selection_round_record). */
+export type RoundRecord = {
+  criteria: {
+    set_name: string | null;
+    version: number | null;
+    saved_at: string | null;
+    saved_by_name: string | null;
+    for_label: string | null;
+    groups: number;
+    items: number;
+    recommendations: number;
+    set_state: 'same' | 'changed' | 'archived' | 'deleted' | 'legacy';
+    set_version: number | null;
+  };
+  events: RoundEvent[];
+};
+
+export type RoundEvent = {
+  kind: 'opened' | 'renamed' | 'dates' | 'phase' | 'criteria' | 'closed' | 'reopened';
+  detail: string | null;
+  by_name: string | null;
+  at: string;
+};
+
+export type RegisterRound = {
+  id: string;
+  team_id: string | null;
+  team_name: string;
+  name: string;
+  phase: number | null;
+  round_number: number | null;
+  starts_on: string;
+  ends_on: string;
+  last_day: string;
+  closed_at: string | null;
+  opened_at: string;
+  opened_by_name: string | null;
+  criteria_set_id: string | null;
+  criteria_set_name: string | null;
+  criteria_set_version: number | null;
+  set_fits: boolean | null;
+  panel: { name: string; independent: boolean }[];
+  declared_conflicts: number;
+  auditors: string[];
+  athletes: number;
+  observations: number;
+  athletes_observed: number;
+  summaries_signed: number;
+  summaries_expected: number;
+  feedback_shared: number;
+  released: number | null;
+  clashes: { round_name: string; starts_on: string; last_day: string }[];
+};
+
+/** A season's selection rounds and criteria sets, staff names, counts and dates only. */
+export type SelectionRegister = {
+  season: number;
+  today: string;
+  seasons: number[];
+  groups: { id: string; name: string; kind: 'squad' | 'team'; squad_id: string | null; athletes: number }[];
+  rounds: RegisterRound[];
+  sets: {
+    id: string;
+    name: string;
+    for_label: string;
+    version: number;
+    archived_at: string | null;
+    rounds_season: number;
+    rounds_ever: number;
+  }[];
+  set_events: {
+    set_name: string;
+    kind: 'created' | 'saved' | 'renamed' | 'for' | 'archived' | 'restored' | 'deleted';
+    version: number | null;
+    detail: string | null;
+    by_name: string | null;
+    at: string;
+  }[];
+  round_events: (RoundEvent & { round_id: string })[];
 };
 
 /** A date in a round's process, as an admin sees it, standing or taken off. */
@@ -766,6 +849,7 @@ export function selectionAuditReport(
   dates: Milestone[] = [],
   summaries: AdminSummaries | null = null,
   feedback: AdminFeedback | null = null,
+  record: RoundRecord | null = null,
 ): Report {
   const { round } = audit;
   const groups = round.criteria_groups;
@@ -782,6 +866,7 @@ export function selectionAuditReport(
       { label: 'On the panel', value: onPanel.length },
       { label: 'Observations', value: round.observations },
       { label: 'Athletes with nothing written', value: thin.length },
+      ...(record ? [{ label: 'Auditors', value: (audit.auditors ?? []).filter((a) => !a.removed_at).length }] : []),
     ],
     sections: [
       {
@@ -803,6 +888,7 @@ export function selectionAuditReport(
             : { cells: ['Round closed', 'Still open', ''], flag: round.ends_on < round.today },
         ],
       },
+      ...(record ? [criteriaRecordSection(record), roundChangesSection(record)] : []),
       {
         title: 'Dates',
         note: 'The dates set for this round, with when each was marked done and by whom. “Late” is days past the date: when it was marked done, or so far.',
@@ -850,6 +936,7 @@ export function selectionAuditReport(
         }),
         empty: 'Nobody is on the panel.',
       },
+      ...(record ? [auditorsSection(audit)] : []),
       {
         title: 'What each selector wrote',
         note: `Athletes are out of the ${round.athletes} in the round; groups are out of the ${groups} groups of criteria. “Late” is written more than 7 days after it was seen.`,
@@ -918,6 +1005,315 @@ export function selectionAuditReport(
     ]
       .filter((n): n is string => n !== null)
       .join(' '),
+  };
+}
+
+/** A round's change, in words. */
+export function roundEventLabel(kind: RoundEvent['kind']) {
+  return {
+    opened: 'Opened',
+    renamed: 'Renamed',
+    dates: 'Dates changed',
+    phase: 'Phase or round changed',
+    criteria: 'Criteria changed',
+    closed: 'Closed',
+    reopened: 'Opened again',
+  }[kind];
+}
+
+/** A criteria set's change, in words. */
+export function setEventLabel(event: SelectionRegister['set_events'][number]) {
+  switch (event.kind) {
+    case 'created':
+      return 'Created';
+    case 'saved':
+      return `Version ${event.version ?? ''} saved`.replace('  ', ' ');
+    case 'renamed':
+    case 'for':
+      return event.detail ?? (event.kind === 'renamed' ? 'Renamed' : 'Who it’s for changed');
+    case 'archived':
+      return 'Archived';
+    case 'restored':
+      return 'Brought back';
+    case 'deleted':
+      return 'Deleted';
+  }
+}
+
+/** Where a round's criteria set stands now, in a sentence. */
+export function setStateLine(record: RoundRecord) {
+  const c = record.criteria;
+  switch (c.set_state) {
+    case 'changed':
+      return `The set is now at version ${c.set_version}. This round keeps version ${c.version}.`;
+    case 'archived':
+      return 'The set has been archived. This round keeps its copy.';
+    case 'deleted':
+      return 'The set has been deleted. This round keeps its copy.';
+    default:
+      return 'The set hasn’t changed.';
+  }
+}
+
+/** The audit report's Criteria section: which set and version the round used. */
+export function criteriaRecordSection(record: RoundRecord): ReportSection {
+  const c = record.criteria;
+  const name =
+    c.set_state === 'legacy' || c.version === null
+      ? `${c.set_name ?? 'Club criteria'} (opened before criteria sets were added)`
+      : `${c.set_name}, version ${c.version}`;
+  return {
+    title: 'Criteria',
+    note: 'A round takes its own copy of the criteria when it opens, so a later change to the set never changes what these athletes were assessed against.',
+    columns: [{ label: 'About', width: 2 }, { label: '', width: 4 }],
+    rows: [
+      { cells: ['Criteria set', name] },
+      ...(c.saved_at ? [{ cells: ['That version was saved', `${day(c.saved_at)}${c.saved_by_name ? ` by ${c.saved_by_name}` : ''}`] }] : []),
+      ...(c.for_label ? [{ cells: ['The set is for', c.for_label] }] : []),
+      {
+        cells: [
+          'In this round',
+          `${plural(c.groups, 'group', 'groups')}, ${plural(c.items, 'item', 'items')}, ${plural(c.recommendations, 'recommendation', 'recommendations')}`,
+        ],
+      },
+      ...(c.set_state === 'legacy' ? [] : [{ cells: ['Since the round opened', setStateLine(record)] }]),
+    ],
+  };
+}
+
+/** The audit report's Changes to the round section, oldest first. */
+export function roundChangesSection(record: RoundRecord): ReportSection {
+  return {
+    title: 'Changes to the round',
+    columns: [{ label: 'When', width: 1.5 }, { label: 'What', width: 2 }, { label: 'Detail', width: 4 }, { label: 'By', width: 2 }],
+    rows: record.events.map((e) => ({ cells: [day(e.at), roundEventLabel(e.kind), e.detail ?? '', e.by_name ?? ''] })),
+    empty: 'This round was opened before changes were kept.',
+  };
+}
+
+/** The audit report's Auditors section. */
+export function auditorsSection(audit: SelectionAudit): ReportSection {
+  const auditors = audit.auditors ?? [];
+  return {
+    title: 'Auditors',
+    note: auditors.length === 0 ? 'No committee member was assigned to audit this round.' : undefined,
+    columns: [
+      { label: 'Auditor', width: 2 },
+      { label: 'Added', width: 1.5 },
+      { label: 'By', width: 1.5 },
+      { label: 'Taken off', width: 1.5 },
+      { label: 'By', width: 1.5 },
+      { label: 'Note', width: 3 },
+    ],
+    rows: auditors.map((a) => ({
+      cells: [
+        a.name,
+        day(a.added_at),
+        a.added_by_name ?? '',
+        day(a.removed_at),
+        a.removed_by_name ?? '',
+        [
+          a.own_children > 0 ? `Can’t check ${plural(a.own_children, 'athlete', 'athletes')}: their own child` : null,
+          a.is_admin ? 'Also an admin' : null,
+          !a.removed_at && !a.can_audit ? 'No current check' : null,
+        ]
+          .filter((n): n is string => n !== null)
+          .join('; '),
+      ],
+      flag: !a.removed_at && !a.can_audit,
+    })),
+    empty: 'Nobody audited this round.',
+  };
+}
+
+const registerTitle = (r: RegisterRound) => `${roundTitle(r)} (${r.team_name})`;
+
+/** Where a round stands in the register. */
+export function registerStatus(r: RegisterRound, today: string) {
+  if (r.closed_at) return `Closed ${day(r.closed_at)}`;
+  if (r.starts_on > today) return 'Coming up';
+  if (r.ends_on < today) return 'Ended, not closed';
+  return 'Running';
+}
+
+/** The register's Things to check: one sentence each, in a set order. */
+export function registerChecks(register: SelectionRegister): string[] {
+  const { rounds, groups, today } = register;
+  const withRound = new Set(rounds.map((r) => r.team_id).filter(Boolean));
+  const running = rounds.filter((r) => !r.closed_at && r.starts_on <= today && r.ends_on >= today);
+  const finished = rounds.filter((r) => r.closed_at || r.ends_on < today);
+  const checks: string[] = [];
+  for (const g of groups) {
+    if (withRound.has(g.id) || (g.squad_id && withRound.has(g.squad_id))) continue;
+    checks.push(`${g.name} has no round this season.`);
+  }
+  for (const r of running) if (r.auditors.length === 0) checks.push(`${registerTitle(r)} is running with no auditor.`);
+  for (const r of running) if (r.panel.length === 1) checks.push(`${registerTitle(r)} is running with one selector on its panel.`);
+  for (const r of rounds) {
+    if (!r.closed_at && r.ends_on < today) checks.push(`${registerTitle(r)} ended on ${shortDate(r.ends_on)} and isn’t closed.`);
+  }
+  for (const r of finished) {
+    const none = r.athletes - r.athletes_observed;
+    if (none > 0) checks.push(`${registerTitle(r)} finished with ${none} of ${r.athletes} athletes with nothing written.`);
+  }
+  for (const r of finished) {
+    const unsigned = r.summaries_expected - r.summaries_signed;
+    if (unsigned > 0) checks.push(`${registerTitle(r)} finished with ${unsigned} of ${r.summaries_expected} summaries not signed.`);
+  }
+  const seen = new Set<string>();
+  for (const r of rounds) {
+    for (const c of r.clashes) {
+      const other = rounds.find((x) => x.team_id === r.team_id && x.id !== r.id && x.starts_on === c.starts_on) ?? null;
+      const key = [r.id, other?.id ?? c.round_name].sort().join('|');
+      if (seen.has(key)) continue;
+      seen.add(key);
+      const from = r.starts_on > c.starts_on ? r.starts_on : c.starts_on;
+      const to = r.last_day < c.last_day ? r.last_day : c.last_day;
+      checks.push(
+        `${roundTitle(r)} and ${other ? roundTitle(other) : c.round_name} overlap for ${r.team_name} from ${shortDate(from)} to ${shortDate(to)}.`,
+      );
+    }
+  }
+  for (const r of rounds) {
+    if (r.set_fits === false) {
+      checks.push(`${registerTitle(r)} was assessed against ${r.criteria_set_name}, which is not for ${r.team_name} now.`);
+    }
+  }
+  return checks;
+}
+
+/** The Selection register for a season: on screen and as a PDF. */
+export function selectionRegisterReport(register: SelectionRegister, seasonName: string): Report {
+  const { rounds, today } = register;
+  const titleOf = new Map(rounds.map((r) => [r.id, roundTitle(r)]));
+  const checks = registerChecks(register);
+  const withRound = new Set(rounds.map((r) => r.team_id).filter(Boolean));
+  const noRound = register.groups.filter((g) => !withRound.has(g.id) && !(g.squad_id && withRound.has(g.squad_id)));
+  const setsUsed = new Set(rounds.map((r) => r.criteria_set_id ?? r.criteria_set_name));
+  const criteria = (r: RegisterRound) =>
+    r.criteria_set_version === null ? (r.criteria_set_name ?? '') : `${r.criteria_set_name}, version ${r.criteria_set_version}`;
+  return {
+    title: 'Selection register',
+    subtitle: `Season ${seasonName} · as at ${day(today)}`,
+    landscape: true,
+    stats: [
+      { label: 'Rounds', value: rounds.length },
+      { label: 'Running now', value: rounds.filter((r) => registerStatus(r, today) === 'Running').length },
+      { label: 'Squads and teams with no round', value: noRound.length },
+      { label: 'Criteria sets used', value: setsUsed.size },
+    ],
+    sections: [
+      {
+        title: 'Things to check',
+        columns: [{ label: 'Check' }],
+        rows: checks.map((c) => ({ cells: [c], flag: true })),
+        empty: 'Nothing needs checking.',
+      },
+      {
+        title: 'Rounds',
+        columns: [
+          { label: 'Squad or team', width: 2 },
+          { label: 'Round', width: 2.5 },
+          { label: 'Dates', width: 2 },
+          { label: 'Status', width: 1.5 },
+          { label: 'Criteria', width: 2 },
+          { label: 'Opened by', width: 1.5 },
+        ],
+        rows: rounds.map((r) => ({
+          cells: [r.team_name, roundTitle(r), shortRange(r), registerStatus(r, today), criteria(r), r.opened_by_name ?? ''],
+          flag: registerStatus(r, today) === 'Ended, not closed',
+        })),
+        empty: 'No rounds this season.',
+      },
+      {
+        title: 'The work in each round',
+        columns: [
+          { label: 'Round', width: 2.5 },
+          { label: 'Panel' },
+          { label: 'Independent' },
+          { label: 'Conflicts declared' },
+          { label: 'Auditors' },
+          { label: 'Athletes' },
+          { label: 'Observations' },
+          { label: 'Athletes with nothing written' },
+          { label: 'Summaries signed' },
+          { label: 'Feedback shared' },
+          { label: 'Released' },
+        ],
+        rows: rounds.map((r) => ({
+          cells: [
+            registerTitle(r),
+            String(r.panel.length),
+            String(r.panel.filter((p) => p.independent).length),
+            String(r.declared_conflicts),
+            String(r.auditors.length),
+            String(r.athletes),
+            String(r.observations),
+            String(r.athletes - r.athletes_observed),
+            `${r.summaries_signed} of ${r.summaries_expected}`,
+            String(r.feedback_shared),
+            r.released === null ? '–' : String(r.released),
+          ],
+        })),
+        empty: 'No rounds this season.',
+      },
+      {
+        title: 'Panels and auditors',
+        columns: [{ label: 'Round', width: 2.5 }, { label: 'Selectors', width: 4 }, { label: 'Auditors', width: 2.5 }],
+        rows: rounds.map((r) => ({
+          cells: [
+            registerTitle(r),
+            r.panel.map((p) => `${p.name}${p.independent ? ' (independent)' : ''}`).join(', '),
+            r.auditors.join(', '),
+          ],
+        })),
+        empty: 'No rounds this season.',
+      },
+      {
+        title: 'Criteria sets',
+        columns: [
+          { label: 'Set', width: 2 },
+          { label: 'For', width: 3 },
+          { label: 'Version' },
+          { label: 'Rounds this season' },
+          { label: 'Rounds ever' },
+          { label: 'State', width: 1.5 },
+        ],
+        rows: register.sets.map((s) => ({
+          cells: [
+            s.name,
+            s.for_label,
+            String(s.version),
+            String(s.rounds_season),
+            String(s.rounds_ever),
+            s.archived_at ? `Archived ${day(s.archived_at)}` : 'In use',
+          ],
+        })),
+        empty: 'No criteria sets.',
+      },
+      {
+        title: 'Changes to criteria sets',
+        columns: [{ label: 'When', width: 1.5 }, { label: 'Set', width: 2 }, { label: 'What', width: 3 }, { label: 'By', width: 1.5 }],
+        rows: register.set_events.map((e) => ({ cells: [day(e.at), e.set_name, setEventLabel(e), e.by_name ?? ''] })),
+        empty: 'No changes.',
+      },
+      {
+        title: 'Changes to rounds',
+        columns: [
+          { label: 'When', width: 1.5 },
+          { label: 'Round', width: 2.5 },
+          { label: 'What', width: 2 },
+          { label: 'Detail', width: 3 },
+          { label: 'By', width: 1.5 },
+        ],
+        rows: register.round_events.map((e) => ({
+          cells: [day(e.at), titleOf.get(e.round_id) ?? '', roundEventLabel(e.kind), e.detail ?? '', e.by_name ?? ''],
+        })),
+        empty: 'No changes to rounds this season.',
+      },
+    ],
+    footnote:
+      'Counts, dates and the names of selectors and auditors only. No athlete is named and nothing a selector wrote is shown. Rounds older than the club keeps assessments are removed with their records, so save this register at the end of each season.',
   };
 }
 
