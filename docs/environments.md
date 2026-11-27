@@ -177,11 +177,43 @@ clubs are easy to tell apart. Do the same for `FALCONS`.
 - **Trying a change:** `npx expo start`. You're on test data, so nothing you do reaches members.
 - **A build for testers:** `npx eas-cli@latest build --profile preview --platform android`. It uses
   the live project.
-- **A fix without a new build:** `scripts/publish-update.sh preview "What changed"` (or `production`
-  for store builds). It builds the update with that channel's live settings, checks the update
-  doesn't use your `.env` address, and only then publishes it. A change that adds a native library
-  needs a new build instead.
+- **A fix without a new build:** in GitHub, **Actions > OTA update > Run workflow** (see
+  [Publishing an update from GitHub](#publishing-an-update-from-github)), or from your Mac
+  `scripts/publish-update.sh preview "What changed"` (or `production` for store builds). Both build
+  the update with that channel's live settings, check the update doesn't use your `.env` address,
+  check the channel has a build the update can run on, and only then publish it. A change that adds
+  a native library needs a new build instead.
 - **A database change:** merge the pull request. Test gets it first, then live.
+
+### Publishing an update from GitHub
+
+The **OTA update** workflow publishes an over-the-air update from the code on main. It only runs
+when you press **Run workflow**; nothing goes out on its own after a merge. It uses the
+`EXPO_TOKEN` repository secret that Beta builds already use, so there's nothing new to set up.
+
+1. Merge the pull request, and wait for **Tests** on main to go green.
+2. In GitHub, open **Actions > OTA update > Run workflow**.
+3. Leave **Use workflow from** on `main`. Production updates only go out from main; a preview
+   update can come from any branch.
+4. Pick the channel: **production** for the TestFlight and Google Play builds, **preview** for the
+   install-link builds.
+5. Type what changed (testers don't see it; it's shown on expo.dev).
+6. Leave **Which apps get it** on `all`, unless one platform's build is newer than the other's
+   (see below).
+7. Tick **Only run the checks** to try it without publishing anything.
+8. Press **Run workflow**. The run's summary says what was checked and links to the update on
+   expo.dev. Installed apps pick it up the next time they're opened, then use it from the time after.
+
+**Will installed apps run it?** An update only reaches an app built from the same native code (the
+`fingerprint` runtime version in `app.json`, which changes with a native library, an Expo or
+package upgrade, or most `app.json` changes). Before publishing, the workflow works out this code's
+runtime version for Android and iOS and looks on expo.dev for a finished build on that channel
+with the same one. If either platform has none, it stops with "No finished ios build on the
+production channel has runtime version ..." and publishes nothing: that change needs a new build
+(**Actions > Beta build**), not an update. If only one platform has been rebuilt since the change,
+pick that platform under **Which apps get it**.
+
+`scripts/test-publish-update.sh` and `scripts/test-ota-update-workflow.py` test these checks.
 
 Free projects pause after a week with nobody using them. If the test project is paused, the
 migration deploy stops before the live project and says so: restore the test project in the Supabase
