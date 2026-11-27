@@ -13,6 +13,7 @@ import { useAbsencesToReview, useLeadsAGroup } from '@/lib/absences';
 import {
   useMySelectionFeedback,
   useMySelectionInfo,
+  useMySelectionAudits,
   useMySelectionRounds,
   useMySelectionTodos,
 } from '@/lib/assessments';
@@ -149,6 +150,7 @@ function useHomeData() {
   const { policyReviews, reloadPolicyReviews } = useMyPolicyReviews();
   const { conflictDeclaration, reloadConflictDeclaration } = useMyConflictDeclaration();
   const { selectionRounds, reloadSelectionRounds } = useMySelectionRounds();
+  const { selectionAudits, reloadSelectionAudits } = useMySelectionAudits();
   const { selectionTodos, reloadSelectionTodos } = useMySelectionTodos();
   const { selectionInfo, reloadSelectionInfo } = useMySelectionInfo();
   const { selectionFeedback, reloadSelectionFeedback } = useMySelectionFeedback();
@@ -246,6 +248,7 @@ function useHomeData() {
       reloadPolicyReviews(),
       reloadConflictDeclaration(),
       reloadSelectionRounds(),
+      reloadSelectionAudits(),
       reloadSelectionTodos(),
       reloadSelectionInfo(),
       reloadSelectionFeedback(),
@@ -325,6 +328,7 @@ function useHomeData() {
     integrity: features.integrity && ((myTraining ?? []).length > 0 || clubHasTraining),
     kpis: features.kpis && (kpiPeople ?? []).some((p) => !p.archived),
     selectionAssessments: selectionRounds.length > 0,
+    selectionAudits: selectionAudits.length > 0,
     selection: selectionInfo.length > 0 || selectionFeedback.length > 0,
     registers: canReadRegisters,
     guardianOf: isGuardian,
@@ -402,6 +406,7 @@ function useHomeData() {
     certificatesToCheck,
     kpiPeople: kpiPeople ?? [],
     selectionRounds,
+    selectionAudits,
     selectionInfo,
     selectionFeedback,
     children,

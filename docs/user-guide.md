@@ -186,7 +186,7 @@ What each role can see and do:
 | Manage absence reasons                 |         |                 |              |            |               |               |         |       ✓       |
 | Invite members (QR code and link)      |         |                 |              |            |               |               |         |       ✓       |
 | Policy and conflict registers (when turned on) |  |                 | Declare conflicts; review policies they own | Review policies they own | Read both; declare conflicts; review policies they own | Review policies they own |  | Read and change both; record any review |
-| Selection assessments (when turned on) | In a round: see the criteria, the dates the club shares, and feedback the head coach shares with them (no replies) | See them for their child under 18, with the same feedback | On a round's panel: read the panel's observations and add their own, never about their own child; write and sign their own summary of each athlete, and see the other selectors' signed summaries once theirs is signed; see the round's dates, with to-dos as they come close; see each athlete's own stats from games played in the round. The head coach can reopen a signed summary, and writes and shares feedback for each athlete |  |  |  | On a panel if an admin adds them, with a current check | Set criteria sets (with recommendations, who each is for, versions, archive or delete), open rounds (by phase and round, ahead of time, never two at once for the same athletes), choose each round's set, choose panels, set the round's dates and mark them done, see who has signed their summaries and reopen one, see who was given feedback and when (never the words), build the audit report; read assessments and summaries only if on the panel |
+| Selection assessments (when turned on) | In a round: see the criteria, the dates the club shares, and feedback the head coach shares with them (no replies) | See them for their child under 18, with the same feedback | On a round's panel: read the panel's observations and add their own, never about their own child; write and sign their own summary of each athlete, and see the other selectors' signed summaries once theirs is signed; see the round's dates, with to-dos as they come close; see each athlete's own stats from games played in the round. The head coach can reopen a signed summary, and writes and shares feedback for each athlete |  | Audit a round when an admin makes them its auditor: read every assessment in it, never their own child's, and change nothing |  | On a panel if an admin adds them, with a current check | Set criteria sets (with recommendations, who each is for, versions, archive or delete), open rounds (by phase and round, ahead of time, never two at once for the same athletes), choose each round's set, choose panels, choose each round's auditors, set the round's dates and mark them done, see who has signed their summaries and reopen one, see who was given feedback and when (never the words), build the audit report; read assessments and summaries only if on the panel |
 | The admin's areas of the Club tab (members, safeguarding set-up, seasons, club set-up) and its search |         |                 |              |            |               |               |         |       ✓       |
 
 ‡‡ The Child Safety Officer or the Complaints Manager (or an admin acting in the post while nobody
@@ -3265,6 +3265,28 @@ paused committee member doesn't see them.
 
 <div style="page-break-before: always"></div>
 
+### Auditing a selection round
+
+If the club uses selection assessments, an admin can make you the auditor of a selection round.
+**Selection audits** then shows on **Today** (and in **Club**, under Season): it names the round
+if you audit one, or counts them and opens the list. You can read everything in the rounds you
+audit and change nothing.
+
+1. Tap **Selection audits**, then the round.
+2. **Athletes** lists each athlete with how many observations and selectors they have, how many
+   summaries are signed, and whether feedback was shared. Tap an athlete to read their
+   **Picture**, every **Observation**, the signed **Summaries** with their signing history, and
+   **Feedback** once the head coach has shared it (a draft only shows that one exists).
+3. **Report** builds the round's Selection audit report, and **Panel** shows who has been on the
+   panel and auditing, with who added or removed each and when.
+
+You never see your own child's assessment: they aren't listed, and the round says how many are
+left out. Opening an under 18's assessment is recorded in their record views. You lose access as
+soon as an admin takes you off, or if your check lapses.
+
+<img src="user-guide/audits-round.png" width="210" alt="An auditor's round: athletes with their counts, and the read-only line">
+<img src="user-guide/audits-summaries.png" width="210" alt="An athlete's signed summaries, as the round's auditor reads them">
+
 ## 9. Physios, statisticians, guests and temporary helpers
 
 Physios see the squads and teams they're placed in and the club calendar; guests see the club
@@ -4811,9 +4833,21 @@ criteria.
 <img src="user-guide/admin-assessments-clash.png" width="210" alt="Dates that overlap another round: the warning names it and offers the first free day">
 <img src="user-guide/admin-assessments-rounds.png" width="210" alt="The Rounds tab: Running now, Coming up and Finished">
 
-**A round's four tabs.** Open a round and it shows one short tab at a time: **Dates** (where it
-opens), **Panel**, **Reports** (the audit report and Summaries signed) and **Details** (its name,
-its phase and round, its start and end, and closing it; the same overlap check applies). The number beside Dates and Panel is how many it has.
+**A round's five tabs.** Open a round and it shows one short tab at a time: **Dates** (where it
+opens), **Panel**, **Auditors**, **Reports** (the audit report and Summaries signed) and **Details** (its name,
+its phase and round, its start and end, and closing it; the same overlap check applies). The number beside Dates, Panel and Auditors is how many it has.
+
+**Auditors.** Each round can have one or more auditors: committee members with a current Working
+With Children Check who read everything in that round (every observation, signed summary,
+signing history, the audit report and shared feedback) and change nothing. Open the round and tap
+**Auditors**, then **Add an auditor**. Whoever audited the same squad's or team's last round is
+listed first. Someone on the round's panel can't also audit it, and someone without a current
+check is shown but can't be added. Beside each auditor the app notes how many athletes they can't
+check because they are their own child, whether they are also an admin, and any other rounds they
+audit. **Take … off as auditor** ends their access at once; it stays in the round's history and
+the audit report. A running round with no auditor shows **No auditor yet** on the Rounds tab.
+
+<img src="user-guide/admin-assessments-auditors.png" width="210" alt="A round's Auditors tab: one auditor with their notes, and Add an auditor">
 
 **The panel.** The panel starts as the group's coaches who hold a current Working With Children
 Check. Open the round and tap **Panel** to change it: **Add a selector** offers the club's other coaches, admins and
@@ -5467,7 +5501,7 @@ once saved, only replaced or removed, and anyone who gets it wrong five times in
 | Medical and emergency details | The athlete; an under 18's verified parents and guardians, who keep them (an athlete 18 or over keeps their own); and the coaches, managers and physios of the athlete's current squads and teams (the Head Physio for every athlete), for an under 18 only once a parent or guardian has given consent for injuries and health information. Not admins or the committee. Each view by a coach, manager or physio is recorded, and the athlete 18 or over, or an under 18's parents and guardians, see who and when. Checked once a year by whoever keeps them; admins see who has checked and when, but not the details. Removed when nobody has checked them for the club's chosen time (Record keeping), and deleted with the athlete's account. |
 | Who opened injury documents | The athlete, their guardians and admins: every view and share, by whom, their role and when, and each photo consent. |
 | Who has viewed a child's records | For an athlete under 18: their verified parents or guardians (until the athlete turns 18) and admins. Lists every time someone other than the athlete or their guardians opened the athlete's injuries, injury documents, check-ins, game goals, season KPIs, named survey answers, selection assessment (and a selector's summary of them) or member record, and every time an admin built a selection audit report, or opened the list of signed summaries, for a round they are in. Opening a child's records is recorded whoever you are; nobody can switch it off or delete entries by hand, and old entries are removed only under the club's Record keeping settings. |
-| Selection assessments | Only the panel of the athlete's selection round, while each is approved, not stood down and holds a current check: every observation, its ratings and evidence. Each selector's summary of an athlete is theirs alone until they sign it; a selector sees the other selectors' signed summaries of that athlete only once their own is signed, and can then save the completed sheet as a PDF. The head coach of the squad or team, or an admin, can reopen a signed summary, and every reopening is kept. A panel member never sees or writes the assessment or summary of an athlete they are a parent or guardian of, or their own. Admins see the criteria sets and each set's history, the rounds, the panels and counts, and see who has signed which summaries and when, and build the Selection audit report (counts and dates, never a rating, evidence, recommendation or criterion); an admin reads an assessment or a summary only if they're on that panel. The committee, managers, physios and other coaches see nothing of them. An athlete in an open round, and the verified parents of one under 18, see the round's phase and round number, its criteria, the name of the criteria set it uses and the dates the club chooses to share, never an observation, a count or who is on the panel. Feedback is written by the head coach of the round's squad or team only (never for their own child) and is theirs alone while a draft; once shared it is read by the athlete, the verified parents and guardians of an athlete under 18, and the round's panel, in open and closed rounds, until the head coach takes it back. Nobody can reply to it. Admins see who was given feedback, when, by whom and whether it was read, never what it says. The panel also sees two attendance counts for each athlete (sessions held in the round and sessions marked at), never an absence or its reason, and each selector who can assess an athlete sees that athlete's own stats from recorded games played between the round's first and last day. |
+| Selection assessments | Only the panel of the athlete's selection round, while each is approved, not stood down and holds a current check: every observation, its ratings and evidence. Each selector's summary of an athlete is theirs alone until they sign it; a selector sees the other selectors' signed summaries of that athlete only once their own is signed, and can then save the completed sheet as a PDF. The head coach of the squad or team, or an admin, can reopen a signed summary, and every reopening is kept. A panel member never sees or writes the assessment or summary of an athlete they are a parent or guardian of, or their own. Admins see the criteria sets and each set's history, the rounds, the panels and counts, and see who has signed which summaries and when, and build the Selection audit report (counts and dates, never a rating, evidence, recommendation or criterion); an admin reads an assessment or a summary only if they're on that panel. A round's auditors (committee members with a current check, chosen for that round by an admin and never on its panel) read everything in it, read only, never their own child's, and each opening of an under 18's is in their record views; admins still read no assessment unless they are on the panel. Other committee members, managers, physios and other coaches see nothing of them. An athlete in an open round, and the verified parents of one under 18, see the round's phase and round number, its criteria, the name of the criteria set it uses and the dates the club chooses to share, never an observation, a count or who is on the panel. Feedback is written by the head coach of the round's squad or team only (never for their own child) and is theirs alone while a draft; once shared it is read by the athlete, the verified parents and guardians of an athlete under 18, and the round's panel, in open and closed rounds, until the head coach takes it back. Nobody can reply to it. Admins see who was given feedback, when, by whom and whether it was read, never what it says. The panel also sees two attendance counts for each athlete (sessions held in the round and sessions marked at), never an absence or its reason, and each selector who can assess an athlete sees that athlete's own stats from recorded games played between the round's first and last day. |
 | Consents for a child    | The athlete, their parents or guardians and admins, with every consent given and withdrawn. Only a verified parent or guardian can give or withdraw one. FirstPass Studio sees only whether an athlete of a streamed game may be named with their own stats. |
 | Club policies           | Everyone signed in, including people asking to join.                                                                        |
 | App version and build   | Everyone, signed in or not: it's the app's own version, not anything about you or the club. |
@@ -5834,8 +5868,10 @@ Working With Children Check, and another admin must do it.
   season KPIs, selection assessment or member record, the app records who, their role, what and when, and you can read the list (see
   [Who has viewed your child's records](#who-has-viewed-your-childs-records)).
 - **Selection assessments stay with the selection panel.** If the club uses them, what selectors
-  write about your child during a selection phase is read only by that round's panel, each of whom
-  holds a current check. A selector who is your child's parent or guardian can't read or add to
+  write about your child during a selection phase is read only by that round's panel and its
+  auditors, each of whom holds a current check. Auditors are committee members an admin chooses
+  for the round; they read and change nothing, never see their own child's, and each time one
+  opens your child's assessment it shows in your child's record views. A selector who is your child's parent or guardian can't read or add to
   your child's assessment. There are no scores or rankings, and your child's check-ins, training
   load and injuries never show there; selectors see only how many of the round's sessions your
   child was marked at, never why one was missed, and your child's own stats from games played
@@ -5987,8 +6023,9 @@ Working With Children Check, and another admin must do it.
 - **Selection assessments: admins audit, selectors assess.** When the club turns them on, only an
   admin can put someone on a selection round's panel, the person must be an approved adult coach,
   admin or guest with a current check, and every change to a panel is kept with who made it and
-  when. Only the panel reads what is written about an athlete; a panel member can't open their own
-  child's assessment; and a stood-down member or one whose check lapses loses access at once.
+  when. Only the panel, and the round's auditors (committee members with a current check an admin
+  chooses, read only, never on the panel), read what is written about an athlete; neither can open
+  their own child's assessment, and every auditor opening of an under 18's is in their record views; and a stood-down member or one whose check lapses loses access at once.
   Admins who aren't on the panel see counts only, and the **Selection audit report** shows how the
   work was done (who wrote how much, about whom, when, and with or without evidence) without a
   rating, a line of evidence, a recommendation or a criterion's name. At the end of a round each
@@ -6195,7 +6232,9 @@ Working With Children Check, and another admin must do it.
 ### For the governing body and auditors
 
 - **Selection assessments can be audited without being read.** The database, not just the app,
-  limits a round's assessments to its panel and refuses a parent or guardian their own child's.
+  limits a round's assessments to its panel and its auditors (committee members with a current
+  check, who change nothing) and refuses a parent or guardian their own child's. Every change to a
+  round's auditors is kept and shows in the audit report.
   Each round keeps its own copy of the criteria it opened with, an observation locks at the end of
   the day after it was written (a correction is added beside it, never over it), and panel changes
   are never erased. The round's dates are kept with when each was due, when it was marked done and

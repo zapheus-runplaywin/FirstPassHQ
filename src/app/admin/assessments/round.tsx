@@ -11,6 +11,7 @@ import { Spacing } from '@/constants/theme';
 import { useTheme } from '@/hooks/use-theme';
 import {
   MAX_MILESTONES,
+  auditorNotes,
   clashLines,
   isIndependentChoice,
   nextPhaseRound,
@@ -24,6 +25,8 @@ import {
   roundCriteriaLine,
   setLine,
   type AdminRound,
+  type AuditorChoice,
+  type RoundAuditor,
   type Milestone,
   type PanelChoice,
   type RoundClash,
@@ -58,7 +61,9 @@ export default function AdminRoundScreen() {
   const [busy, setBusy] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [notice, setNotice] = useState<string | null>(null);
-  const [tab, setTab] = useState<'dates' | 'panel' | 'reports' | 'details'>('dates');
+  const [tab, setTab] = useState<'dates' | 'panel' | 'auditors' | 'reports' | 'details'>('dates');
+  const [auditors, setAuditors] = useState<RoundAuditor[]>([]);
+  const [auditorChoices, setAuditorChoices] = useState<AuditorChoice[] | null>(null);
   const [loadedSets, setLoadedSets] = useState<{ group: string; list: SetChoice[] } | null>(null);
   const [setId, setSetId] = useState<string | null>(null);
   const [choosingSet, setChoosingSet] = useState(false);
@@ -145,6 +150,10 @@ export default function AdminRoundScreen() {
     const { data: dateRows } = found
       ? await supabase.rpc('admin_selection_milestones', { p_round_id: id })
       : { data: null };
+    const { data: auditorRows } = found
+      ? await supabase.rpc('admin_selection_auditors', { p_round_id: id })
+      : { data: null };
+    setAuditors((auditorRows as RoundAuditor[] | null) ?? []);
     setDates((dateRows as Milestone[] | null) ?? []);
     setRound(found);
     setLoaded(true);
@@ -230,8 +239,18 @@ export default function AdminRoundScreen() {
       return;
     }
     setChoices(null);
+    setAuditorChoices(null);
     setChoosingSet(false);
     await load();
+  }
+
+  async function showAuditorChoices() {
+    const { data, error: loadError } = await supabase.rpc('admin_selection_auditor_choices', { p_round_id: id });
+    if (loadError) {
+      setError(loadError.message);
+      return;
+    }
+    setAuditorChoices((data as AuditorChoice[] | null) ?? []);
   }
 
   async function showChoices() {
@@ -254,6 +273,26 @@ export default function AdminRoundScreen() {
 
   const onPanel = round?.panel.filter((m) => !m.removed_at) ?? [];
   const left = round?.panel.filter((m) => m.removed_at) ?? [];
+  const auditing = auditors.filter((a) => !a.removed_at);
+  const pastAuditors = auditors.filter((a) => a.removed_at);
+  const auditorChoice = (person: AuditorChoice) =>
+    person.on_panel ? (
+      <ThemedText key={person.profile_id} type="small" themeColor="textSecondary">
+        {person.name ?? 'Member'}: on this round’s panel
+      </ThemedText>
+    ) : !person.cleared ? (
+      <ThemedText key={person.profile_id} type="small" themeColor="textSecondary">
+        {person.name ?? 'Member'}: needs a current Working With Children Check first
+      </ThemedText>
+    ) : (
+      <Button
+        key={person.profile_id}
+        title={`Add ${person.name ?? 'Member'}`}
+        variant="secondary"
+        busy={busy}
+        onPress={() => change('admin_add_selection_auditor', { p_profile_id: person.profile_id })}
+      />
+    );
   const today = clubToday();
   const standing = dates.filter((m) => !m.removed_at);
   const takenOff = dates.filter((m) => m.removed_at);
@@ -410,6 +449,7 @@ export default function AdminRoundScreen() {
         options={[
           { value: 'dates' as const, label: `Dates (${standing.length})` },
           { value: 'panel' as const, label: `Panel (${onPanel.length})` },
+          { value: 'auditors' as const, label: `Auditors (${auditing.length})` },
           { value: 'reports' as const, label: 'Reports' },
           { value: 'details' as const, label: 'Details' },
         ]}
@@ -544,6 +584,81 @@ export default function AdminRoundScreen() {
           <ThemedText type="small" themeColor="textSecondary">
             Only the panel reads and writes this round’s assessments. Nobody on it can assess
             their own child. Every change here is kept and shows in the audit report.
+          </ThemedText>
+        </>
+      ) : null}
+
+      {tab === 'auditors' ? (
+        <>
+          {auditing.length === 0 ? (
+            <ThemedText type="smallBold">Nobody audits this round yet.</ThemedText>
+          ) : (
+            <CardGrid gap={Spacing.four}>
+              {auditing.map((auditor) => (
+                <Card key={`${auditor.profile_id}-${auditor.added_at}`} style={styles.card}>
+                  <ThemedText type="smallBold">{auditor.name}</ThemedText>
+                  <ThemedText type="small" themeColor="textSecondary">
+                    Added {formatDateString(auditor.added_at.slice(0, 10))}
+                    {auditor.added_by_name ? ` by ${auditor.added_by_name}` : ''}
+                  </ThemedText>
+                  {auditorNotes(auditor).map((note) => (
+                    <ThemedText key={note} type="small">
+                      {note}
+                    </ThemedText>
+                  ))}
+                  {auditor.profile_id ? (
+                    <Button
+                      title={`Take ${auditor.name} off as auditor`}
+                      variant="secondary"
+                      busy={busy}
+                      onPress={() => change('admin_remove_selection_auditor', { p_profile_id: auditor.profile_id })}
+                    />
+                  ) : null}
+                </Card>
+              ))}
+            </CardGrid>
+          )}
+          {auditorChoices === null ? (
+            <Button title="Add an auditor" variant="secondary" onPress={showAuditorChoices} />
+          ) : (
+            <View style={styles.card}>
+              <ThemedText type="smallBold">Add an auditor</ThemedText>
+              {auditorChoices.length === 0 ? (
+                <ThemedText type="small">There is nobody else on the committee to add.</ThemedText>
+              ) : (
+                <>
+                  {auditorChoices.some((c) => c.audited_last) ? (
+                    <>
+                      <ThemedText type="small" themeColor="textSecondary">
+                        Audited this squad’s last round
+                      </ThemedText>
+                      {auditorChoices.filter((c) => c.audited_last).map(auditorChoice)}
+                      <ThemedText type="small" themeColor="textSecondary">
+                        Everyone else on the committee
+                      </ThemedText>
+                    </>
+                  ) : null}
+                  {auditorChoices.filter((c) => !c.audited_last).map(auditorChoice)}
+                </>
+              )}
+            </View>
+          )}
+          {pastAuditors.length > 0 ? (
+            <>
+              <ThemedText type="smallBold">No longer an auditor</ThemedText>
+              {pastAuditors.map((auditor) => (
+                <ThemedText key={`${auditor.profile_id}-${auditor.added_at}`} type="small" themeColor="textSecondary">
+                  {auditor.name}: added {formatDateString(auditor.added_at.slice(0, 10))}, removed{' '}
+                  {formatDateString((auditor.removed_at ?? '').slice(0, 10))}
+                  {auditor.removed_by_name ? ` by ${auditor.removed_by_name}` : ''}
+                </ThemedText>
+              ))}
+            </>
+          ) : null}
+          <ThemedText type="small" themeColor="textSecondary">
+            Auditors are committee members who can read everything in this round and change
+            nothing. An auditor never sees their own child’s assessment. Every change here is kept
+            and shows in the audit report.
           </ThemedText>
         </>
       ) : null}

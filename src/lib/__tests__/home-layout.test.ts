@@ -231,7 +231,8 @@ describe('placesFor', () => {
 
   it('nothing is only ever on Today unless it is a job for today', () => {
     // Today's cards come and go with the work; everything lasting has a home in a hub or Me.
-    const TODAY_ONLY: HomeCard[] = ['verification', 'concerns', 'selectionAssessments'];
+    // Selection audits, like selection assessments, comes and goes with a round (part 3).
+    const TODAY_ONLY: HomeCard[] = ['verification', 'concerns', 'selectionAssessments', 'selectionAudits'];
     fc.assert(
       fc.property(anyFacts, fc.constantFrom(...HOME_CARDS), (who, card) => {
         const places = placesFor(card, who);

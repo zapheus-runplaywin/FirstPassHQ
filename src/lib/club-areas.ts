@@ -43,6 +43,7 @@ export const AREA_ENTRIES: Record<ClubAreaName, string[]> = {
   safety: ['concerns', '/admin/safeguarding', '/admin/conduct', 'integrity', '/admin/training'],
   season: [
     'selectionAssessments',
+    'selectionAudits',
     'sessionPlans',
     'kpis',
     '/admin/seasons',
@@ -103,6 +104,11 @@ export const CLUB_CARDS: Partial<
     title: 'Selection assessments',
     short: 'selection assessments',
     keywords: ['rounds', 'panel'],
+  },
+  selectionAudits: {
+    title: 'Selection audits',
+    short: 'selection audits',
+    keywords: ['rounds', 'auditor'],
   },
 };
 

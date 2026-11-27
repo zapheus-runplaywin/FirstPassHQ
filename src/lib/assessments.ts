@@ -193,6 +193,8 @@ export type AdminRound = {
   can_change_criteria?: boolean;
   phase?: number | null;
   round_number?: number | null;
+  /** Auditors on the round now. */
+  auditors?: number;
 };
 
 /** Someone an admin could add to a panel. */
@@ -1829,4 +1831,189 @@ export function groupsWithNoRound(
 ) {
   const used = new Set(rounds.filter((r) => r.season === season).map((r) => r.team_id));
   return teams.filter((t) => !t.archived && (t.season == null || t.season === season) && !used.has(t.id));
+}
+
+// ---------------------------------------------------------------------------
+// Auditors: committee members an admin makes auditors of a round. They read
+// everything in it (never their own child's assessment) and change nothing.
+
+/** A round's auditor, now or before, as an admin sees them. */
+export type RoundAuditor = {
+  profile_id?: string | null;
+  name: string;
+  added_at: string;
+  added_by_name: string | null;
+  removed_at: string | null;
+  removed_by_name: string | null;
+  /** Still an approved committee member with a current check. */
+  can_audit: boolean;
+  own_children: number;
+  is_admin: boolean;
+  /** Other rounds not closed that they audit now. */
+  other_rounds: number;
+};
+
+/** Someone an admin could make an auditor. */
+export type AuditorChoice = {
+  profile_id: string;
+  name: string | null;
+  cleared: boolean;
+  on_panel: boolean;
+  audited_last: boolean;
+};
+
+/** A round on an auditor's list. */
+export type MyAudit = {
+  id: string;
+  name: string;
+  phase: number | null;
+  round_number: number | null;
+  team_name: string;
+  starts_on: string;
+  ends_on: string;
+  closed_at: string | null;
+  criteria_set_name: string | null;
+  athletes: number;
+  observations: number;
+};
+
+/** History of someone on a round, as an auditor reads it. */
+export type RoundPerson = {
+  name: string;
+  added_at: string;
+  added_by_name: string | null;
+  removed_at: string | null;
+  removed_by_name: string | null;
+  independent?: boolean;
+};
+
+/** An athlete on an auditor's round. */
+export type AuditorAthlete = {
+  id: string;
+  name: string | null;
+  is_minor: boolean;
+  observations: number;
+  selectors: number;
+  summaries_signed: number;
+  selectors_on_panel: number;
+  feedback: 'shared' | 'draft' | 'none';
+};
+
+/** A round as its auditor reads it. */
+export type AuditRound = {
+  id: string;
+  name: string;
+  phase: number | null;
+  round_number: number | null;
+  team_name: string;
+  starts_on: string;
+  ends_on: string;
+  closed: boolean;
+  criteria: Criteria;
+  criteria_set_name: string | null;
+  criteria_set_version: number | null;
+  today: string;
+  hidden: number;
+  panel: RoundPerson[];
+  auditors: RoundPerson[];
+  athletes: AuditorAthlete[];
+};
+
+/** A signed summary, as an auditor reads it. */
+export type AuditSummary = {
+  id: string;
+  author_name: string;
+  ratings: SummaryRating[];
+  recommendation: string | null;
+  strengths: string;
+  priorities: string;
+  comments: string;
+  signed_at: string;
+};
+
+/** One athlete's whole assessment, for the round's auditor. */
+export type AuditorAssessment = {
+  round_id: string;
+  round_name: string;
+  phase: number | null;
+  round_number: number | null;
+  team_name: string;
+  starts_on: string;
+  ends_on: string;
+  closed: boolean;
+  criteria: Criteria;
+  today: string;
+  athlete_id: string;
+  athlete_name: string | null;
+  is_minor: boolean;
+  observations: Observation[];
+  summaries: AuditSummary[];
+  unsigned: number;
+  summary_events: { author_name: string; kind: 'signed' | 'reopened'; late: boolean; by_name: string; at: string }[];
+  feedback:
+    | null
+    | { draft: true }
+    | { went_well: string; work_on: string; author_name: string; shared_at: string; seen_at: string | null };
+  feedback_events: { kind: 'shared' | 'withdrawn'; by_name: string; at: string }[];
+};
+
+/** Whether the member could audit: an approved committee member. The database decides which rounds. */
+export function useCanAudit() {
+  const { profile } = useAuth();
+  return profile?.status === 'approved' && hasRole(profile, 'committee');
+}
+
+/** The rounds the member audits, for Today and Club. */
+export function useMySelectionAudits() {
+  const on = useAssessmentsOn();
+  const eligible = useCanAudit() && on;
+  const [audits, setAudits] = useState<MyAudit[]>([]);
+  const load = useCallback(async () => {
+    if (!eligible) return;
+    const { data } = await supabase.rpc('my_selection_audits');
+    setAudits((data as MyAudit[] | null) ?? []);
+  }, [eligible]);
+  useFocusEffect(
+    useCallback(() => {
+      load();
+    }, [load]),
+  );
+  return { selectionAudits: eligible ? audits : [], reloadSelectionAudits: load };
+}
+
+/** The lines beside an auditor on the admin's Auditors tab. */
+export function auditorNotes(auditor: RoundAuditor) {
+  return [
+    auditor.own_children > 0
+      ? `Can’t check ${plural(auditor.own_children, 'athlete', 'athletes')} in this round: their own child`
+      : null,
+    auditor.is_admin ? 'Also an admin' : null,
+    !auditor.removed_at && !auditor.can_audit ? 'Can’t audit now: needs a current Working With Children Check' : null,
+    auditor.other_rounds > 0 ? `Audits ${plural(auditor.other_rounds, 'other round', 'other rounds')}` : null,
+  ].filter((n): n is string => n !== null);
+}
+
+/** What the Selection audits card says. */
+export function auditsLabel(audits: MyAudit[]) {
+  if (audits.length === 1) return roundTitle(audits[0]);
+  return `${audits.length} rounds to audit`;
+}
+
+/** Where the Selection audits card goes: the one round, or the list. */
+export function auditsHomeHref(audits: MyAudit[]) {
+  return audits.length === 1
+    ? ({ pathname: '/audits/round', params: { id: audits[0].id } } as const)
+    : ('/audits' as const);
+}
+
+/** An athlete's line on the auditor's round. */
+export function auditAthleteLine(athlete: AuditorAthlete) {
+  return `${plural(athlete.observations, 'observation', 'observations')} by ${plural(athlete.selectors, 'selector', 'selectors')} · ${athlete.summaries_signed} of ${athlete.selectors_on_panel} summaries signed`;
+}
+
+/** One line of a round's panel or auditors history. */
+export function personHistoryLine(person: RoundPerson) {
+  const added = `added ${formatDateString(person.added_at.slice(0, 10))}${person.added_by_name ? ` by ${person.added_by_name}` : ''}`;
+  if (!person.removed_at) return `${person.name}${person.independent ? ' (independent)' : ''}: ${added}`;
+  return `${person.name}${person.independent ? ' (independent)' : ''}: ${added}, removed ${formatDateString(person.removed_at.slice(0, 10))}${person.removed_by_name ? ` by ${person.removed_by_name}` : ''}`;
 }

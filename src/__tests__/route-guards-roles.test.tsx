@@ -195,6 +195,8 @@ const CONFLICT_DECLARERS = union(COMMITTEE, COACHES);
  * doesn't hold; the database decides who is on which panel.
  */
 const SELECTORS = union(COACHES, ADMINS);
+/** Who could audit a selection round: committee members (an admin on the committee too). */
+const AUDITORS = COMMITTEE;
 
 const WHO_OPENS: Record<string, PersonaName[]> = {
   // The hubs in the tab bar (src/lib/home-layout.ts): Team for people who
@@ -296,6 +298,10 @@ const WHO_OPENS: Record<string, PersonaName[]> = {
   'assessments/observe': SELECTORS,
   'assessments/summary': SELECTORS,
   'assessments/feedback': SELECTORS,
+  // Rounds to audit: committee members; the database decides which rounds.
+  'audits/index': AUDITORS,
+  'audits/round': AUDITORS,
+  'audits/athlete': AUDITORS,
   // The criteria and shared dates of a round: athletes, and parents and guardians.
   selection: union(ATHLETES, GUARDIANS),
 };

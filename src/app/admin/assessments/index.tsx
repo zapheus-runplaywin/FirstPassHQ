@@ -15,6 +15,7 @@ import {
   notClosedLine,
   roundCriteriaLine,
   roundTitle,
+  roundWhen,
   shortRange,
   setLine,
   setUseLine,
@@ -91,6 +92,9 @@ export default function AdminAssessmentsScreen() {
           {round.team_name} · {shortRange(round)}
         </ThemedText>
         {late ? <ThemedText type="smallBold">{late}</ThemedText> : null}
+        {roundWhen(round, today) === 'now' && round.auditors === 0 ? (
+          <ThemedText type="smallBold">No auditor yet</ThemedText>
+        ) : null}
         {roundCriteriaLine(round) ? (
           <ThemedText type="small" themeColor="textSecondary">
             {roundCriteriaLine(round)}
