@@ -1,11 +1,12 @@
 import { router } from 'expo-router';
 import { useMemo, useState } from 'react';
-import { Platform, StyleSheet, View } from 'react-native';
+import { Platform, Pressable, StyleSheet, View } from 'react-native';
 
 import { AgendaRow, agendaRows } from '@/components/agenda';
 import { TabHeader } from '@/components/home/tab-header';
 import { MonthGrid } from '@/components/month-grid';
 import { Screen, useScrollToY } from '@/components/screen';
+import { StatusLine } from '@/components/status-line';
 import { ThemedText } from '@/components/themed-text';
 import { Button, ChipGroup, ErrorText } from '@/components/ui';
 import { WeekStrip } from '@/components/week-strip';
@@ -23,8 +24,8 @@ import {
 import { useAuth } from '@/lib/auth';
 import { useFeature } from '@/lib/club';
 import { toDateString } from '@/lib/injuries';
-import { eventGroups } from '@/lib/team-events';
-import { earliestDay, latestDay, useEvents } from '@/lib/use-events';
+import { eventGroups, waitingSuggestions } from '@/lib/team-events';
+import { earliestDay, latestDay, useEvents, useHqCalendarChoices } from '@/lib/use-events';
 import { useTeams } from '@/lib/use-teams';
 
 type CalendarView = 'list' | 'month';
@@ -89,13 +90,44 @@ export default function CalendarScreen() {
     const [y, m, d] = (picked ?? '').split('-').map(Number);
     const day = picked ? toDateString(new Date(y, m, d)) : undefined;
     const team = filter.startsWith('team:') ? filter.slice('team:'.length) : undefined;
+    const calendar = addTo.find((c) => c.id === filter)?.id;
     router.push({
       pathname: '/event/edit',
-      params: { ...(day ? { day } : null), ...(team ? { team } : null) },
+      params: {
+        ...(day ? { day } : null),
+        ...(team ? { team } : null),
+        ...(calendar ? { calendar } : null),
+      },
     });
   }
+  // The calendars kept in the app: admins add to them, and coaches, managers
+  // and committee members suggest events for an admin to accept.
+  const { choices: addTo } = useHqCalendarChoices();
+  // With nothing to add to but suggestions, the button says so.
+  const onlySuggests = addFor.length === 0 && addTo.length > 0 && addTo.every((c) => c.suggest);
   const add =
-    addFor.length > 0 ? <Button key="add" title="Add an event" variant="secondary" onPress={addEvent} /> : null;
+    addFor.length > 0 || addTo.length > 0 ? (
+      <Button
+        key="add"
+        title={onlySuggests ? 'Suggest an event' : 'Add an event'}
+        variant="secondary"
+        onPress={addEvent}
+      />
+    ) : null;
+  // Suggestions waiting for an admin's answer, above everything else on their calendar.
+  const waiting = useMemo(() => (isAdmin ? waitingSuggestions(events ?? []).length : 0), [events, isAdmin]);
+  const toAnswer =
+    waiting > 0 ? (
+      <Pressable
+        key="suggestions"
+        accessibilityRole="button"
+        onPress={() => router.push('/admin/event-suggestions')}>
+        <StatusLine
+          tone="attention"
+          text={`${waiting} suggested ${waiting === 1 ? 'event' : 'events'} to answer`}
+        />
+      </Pressable>
+    ) : null;
 
   const loadMore = (
     <LoadMore
@@ -174,6 +206,7 @@ export default function CalendarScreen() {
       selected={[view]}
       onToggle={switchView}
     />,
+    toAnswer,
     add,
     calendars.length > 0 ? (
       <ChipGroup

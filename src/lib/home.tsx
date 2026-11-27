@@ -70,6 +70,7 @@ import { hasRole, rolesOf } from '@/lib/roles';
 import { safeguardingPostsLabel } from '@/lib/safeguarding-posts';
 import { useSessionPlanSummary } from '@/lib/session-plans';
 import { surveysToAnswer, useCanSendSurveys, useMySurveys } from '@/lib/surveys';
+import { declinedSuggestions, waitingSuggestions } from '@/lib/team-events';
 import { buildTodos } from '@/lib/todos';
 import { useClubHasTraining, useMyTraining, useTrainingToReview } from '@/lib/training';
 import { useEvents } from '@/lib/use-events';
@@ -133,7 +134,7 @@ function useHomeData() {
   // The athletes a parent or guardian looks after, and how many changes each
   // has had since their guardian last looked.
   const { children, activityNew, reloadChildren } = useMyChildren(isGuardian);
-  const { eventsOn: events, reload: reloadEvents } = useEvents();
+  const { events: everyEvent, eventsOn: events, reload: reloadEvents } = useEvents();
   const { unreadCount, reloadUnread } = useUnreadCount();
   const { pendingCount, reloadPending } = usePendingRequests();
   const { safetyTodos, reloadSafetyTodos } = useSafetyTodos();
@@ -215,6 +216,11 @@ function useHomeData() {
     concernTimes,
     messageAccess,
     chatBlocksWaiting,
+    // Suggested events: an admin answers them; the person who suggested one reads why it was declined.
+    eventSuggestions: features.calendar && isAdmin ? waitingSuggestions(everyEvent ?? []).length : 0,
+    declinedEvents: features.calendar
+      ? declinedSuggestions(everyEvent ?? []).map((e) => ({ id: e.id, title: e.title }))
+      : [],
     wellbeingFlagAlerts: wellbeingFlags.repeated,
     loadPatternAlerts: loadPatterns,
     loadFlags,

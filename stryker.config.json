@@ -29,6 +29,7 @@
     "/e2e",
     "/docs",
     "/supabase",
+    "!/supabase/demo-club.sql",
     "/coverage",
     "/reports",
     "/dist",

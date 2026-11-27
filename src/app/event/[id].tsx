@@ -14,7 +14,7 @@ import { Card } from '@/components/ui';
 import { Spacing } from '@/constants/theme';
 import { useTheme } from '@/hooks/use-theme';
 import { formatDay, formatEventTime } from '@/lib/format';
-import { useEvent } from '@/lib/use-events';
+import { useEvent, weeksWaiting } from '@/lib/use-events';
 import { useSessionActions } from '@/lib/use-session-actions';
 
 export default function EventScreen() {
@@ -43,10 +43,17 @@ export default function EventScreen() {
       ? `${formatDay(event.start)} to ${formatDay(lastDay)}`
       : `${formatDay(event.start)}, ${formatEventTime(event)}`;
 
+  // A weekly suggestion says how many weeks the answer covers.
+  const weeks = weeksWaiting(event);
+  const weekly = weeks > 1 ? `, every week for ${weeks} weeks` : '';
+
   return (
     <Screen>
       <View style={styles.header}>
-        <ThemedText type="subtitle" selectable style={event.cancelled ? styles.cancelled : undefined}>
+        <ThemedText
+          type="subtitle"
+          selectable
+          style={event.cancelled || event.pending === 'declined' ? styles.cancelled : undefined}>
           {event.title}
         </ThemedText>
         <ThemedText type="smallBold" style={{ color: event.color }}>
@@ -62,12 +69,41 @@ export default function EventScreen() {
             }
           />
         ) : null}
+        {event.pending === 'suggested' ? (
+          <StatusLine
+            tone="attention"
+            text={
+              event.teamEvent?.mine
+                ? `Suggested by you${weekly}. Waiting for an admin`
+                : `Suggested by ${event.teamEvent?.createdByName ?? 'a member'}${weekly}. Not on the calendar yet`
+            }
+          />
+        ) : null}
+        {event.pending === 'declined' ? (
+          <StatusLine
+            tone="attention"
+            text={
+              event.teamEvent?.decidedByName
+                ? `Not added to the calendar by ${event.teamEvent.decidedByName}`
+                : 'Not added to the calendar'
+            }
+          />
+        ) : null}
         {event.teamEvent?.staffOnly ? (
           <ThemedText type="small" themeColor="textSecondary">
             Coaches and managers only
           </ThemedText>
         ) : null}
       </View>
+
+      {event.pending === 'declined' && event.teamEvent?.declineReason ? (
+        <Card>
+          <ThemedText type="smallBold">Why it wasn’t added</ThemedText>
+          <ThemedText type="small" selectable>
+            {event.teamEvent.declineReason}
+          </ThemedText>
+        </Card>
+      ) : null}
 
       <Card>
         <Detail label="When">{when}</Detail>
@@ -129,7 +165,8 @@ export default function EventScreen() {
       <TeamEventManage event={event} />
       {event.teamEvent?.createdByName ? (
         <ThemedText type="small" themeColor="textSecondary">
-          Added by {event.teamEvent.createdByName}
+          {event.pending || event.teamEvent.decidedByName ? 'Suggested by' : 'Added by'}{' '}
+          {event.teamEvent.createdByName}
         </ThemedText>
       ) : null}
     </Screen>

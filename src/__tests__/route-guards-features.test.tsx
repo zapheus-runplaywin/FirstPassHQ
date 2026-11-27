@@ -46,9 +46,8 @@ const FEATURE_ROUTES: FeatureCase[] = [
   {
     feature: 'calendar',
     // event/edit also needs Squad and team events, which starts off: its own row, and the test below.
-    routes: ['(tabs)/calendar', 'event/[id]', 'admin/calendars'],
+    routes: ['(tabs)/calendar', 'event/[id]', 'event/edit', 'admin/calendars', 'admin/event-suggestions'],
   },
-  { feature: 'teamEvents', offByDefault: true, routes: ['event/edit'] },
   { feature: 'messages', routes: ['(tabs)/messages', 'messages/new', 'messages/[id]'] },
   {
     feature: 'surveys',
@@ -233,11 +232,23 @@ describe.each(FEATURE_ROUTES)('the $feature switch', ({ feature, routes, offByDe
   });
 });
 
-describe('adding a squad or team event', () => {
+describe('adding an event', () => {
   it('needs the calendar on as well as Squad and team events', async () => {
     setClubFeatures({ calendar: false, teamEvents: true });
     await expectTurnedAway('admin', 'event/edit', '(tabs)/index');
     await expectTurnedAway('coach', 'event/edit', '(tabs)/index');
+  });
+
+  // The form also adds to, or suggests for, a calendar kept in the app, so
+  // it no longer closes with Squad and team events. The form itself offers
+  // only what the member may add to (team-events-screens, hq-calendar-screens).
+  it('still opens with Squad and team events off, for a calendar kept in the app', async () => {
+    setClubFeatures({ teamEvents: false });
+    await expectReaches('admin', 'event/edit');
+    await expectReaches('coach', 'event/edit');
+    await expectReaches('committee', 'event/edit');
+    await expectTurnedAway('athlete', 'event/edit', '(tabs)/index');
+    await expectTurnedAway('guardian', 'event/edit', '(tabs)/index');
   });
 });
 

@@ -616,7 +616,7 @@ describe('adding an event', () => {
     expect(screen.queryByText(/^For Open A$/)).toBeNull();
     await type('Starts', '6pm');
     await fireEvent.press(screen.getByText('Add to the calendar'));
-    expect(screen.getByText('Choose the squad or team it’s for.')).toBeTruthy();
+    expect(screen.getByText('Choose what it’s for.')).toBeTruthy();
     await fireEvent.press(screen.getByText('17 & Under A'));
     await fireEvent.press(screen.getByText('Add to the calendar'));
     await settle();
@@ -632,7 +632,7 @@ describe('adding an event', () => {
     'tells a %s who adds events instead of showing the form',
     async (who) => {
       await openForm(who);
-      expect(screen.getByText(/Events are added by the coaches and managers of a squad or team/)).toBeTruthy();
+      expect(screen.getByText(/A squad’s or team’s coaches and managers add its events, and admins add the club’s/)).toBeTruthy();
       expect(screen.queryByText('Add to the calendar')).toBeNull();
     },
   );

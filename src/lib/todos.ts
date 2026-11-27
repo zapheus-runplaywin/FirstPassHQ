@@ -132,6 +132,8 @@ export function buildTodos({
   concernClocks = [],
   messageAccess = null,
   chatBlocksWaiting = 0,
+  eventSuggestions = 0,
+  declinedEvents = [],
   wellbeingFlagAlerts = 0,
   loadPatternAlerts = 0,
   loadFlags = 0,
@@ -204,6 +206,10 @@ export function buildTodos({
    * has followed up yet, leaving out any the member is part of.
    */
   chatBlocksWaiting?: number;
+  /** Events suggested for a calendar kept in the app, waiting for an admin's answer. */
+  eventSuggestions?: number;
+  /** The member's own suggested events an admin declined, until they clear them away. */
+  declinedEvents?: { id: string; title: string }[];
   /** Athletes flagged on 3 or more days in the last 7, for the Child Safety Officer. */
   wellbeingFlagAlerts?: number;
   /** Children whose training load shows a pattern, for the Child Safety Officer. */
@@ -604,6 +610,25 @@ export function buildTodos({
       title: `Check ${certificatesToCheck} training ${certificatesToCheck === 1 ? 'certificate' : 'certificates'}`,
       detail: 'Approve them, or send them back with a note',
       href: '/training/review',
+    });
+  }
+
+  // Events coaches, managers and committee members suggested for the club's calendar.
+  if (eventSuggestions > 0) {
+    todos.push({
+      key: 'event-suggestions',
+      title: `Answer ${eventSuggestions} suggested ${eventSuggestions === 1 ? 'event' : 'events'}`,
+      detail: 'Add them to the calendar, or decline with a reason',
+      href: '/admin/event-suggestions',
+    });
+  }
+  // A suggestion of the member's own that an admin declined: read why.
+  for (const declined of declinedEvents) {
+    todos.push({
+      key: `event-declined-${declined.id}`,
+      title: `“${declined.title}” wasn’t added to the calendar`,
+      detail: 'See why, then clear it away',
+      href: { pathname: '/event/[id]', params: { id: declined.id } },
     });
   }
 

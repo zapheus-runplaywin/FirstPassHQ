@@ -258,7 +258,7 @@ describe('saveEventArgs', () => {
   });
 
   it('asks for a squad or team on a new event, but not on one being changed', () => {
-    expect(error(form({ teamId: null }))).toBe('Choose the squad or team it’s for.');
+    expect(error(form({ teamId: null }))).toBe('Choose what it’s for.');
     expect(error(form({ teamId: null }), 'e1')).toBeNull();
   });
 

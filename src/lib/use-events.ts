@@ -13,7 +13,13 @@ import {
 import { useFeature } from '@/lib/club';
 import { groupColourHex, groupColours, reservedColours } from '@/lib/group-colours';
 import { supabase } from '@/lib/supabase';
-import { toCalendarEvent, type TeamEventRow } from '@/lib/team-events';
+import {
+  hqToCalendarEvent,
+  toCalendarEvent,
+  type HqCalendarChoice,
+  type HqEventRow,
+  type TeamEventRow,
+} from '@/lib/team-events';
 import type { GroupKind } from '@/lib/types';
 
 /** How many months ahead the app shows events at first. */
@@ -59,7 +65,8 @@ const recentIcs = new Map<string, { at: number; text: string }>();
 type CalendarRow = {
   id: string;
   name: string;
-  url: string;
+  /** The Microsoft 365 link, or null for a calendar kept in the app. */
+  url: string | null;
   clubWide: boolean;
   color: string;
   /** The squads and teams the calendar is for. */
@@ -122,8 +129,11 @@ export function useEvents() {
 
   return {
     events,
-    /** The same without cancelled events, for Today and for picking a session. */
-    eventsOn: useMemo(() => events?.filter((e) => !e.cancelled) ?? null, [events]),
+    /**
+     * The same without cancelled events and without suggestions an admin
+     * hasn't accepted, for Today and for picking a session.
+     */
+    eventsOn: useMemo(() => events?.filter((e) => !e.cancelled && !e.pending) ?? null, [events]),
     failed,
     reload: () => load(),
     /** The last day events are loaded for. */
@@ -134,6 +144,35 @@ export function useEvents() {
     showMonthsAhead,
     showPast,
   };
+}
+
+/**
+ * The calendars kept in the app that this member may add to (admins) or
+ * suggest an event for (coaches, managers and committee members, where the
+ * admin lets them). The database decides. Empty until loaded.
+ */
+export function useHqCalendarChoices() {
+  const { profile } = useAuth();
+  const calendarOn = useFeature('calendar');
+  const [choices, setChoices] = useState<HqCalendarChoice[] | null>(null);
+  const approved = profile?.status === 'approved';
+
+  const allowed = approved && calendarOn;
+
+  const load = useCallback(() => {
+    if (!allowed) return;
+    supabase
+      .rpc('hq_calendars_to_add_to')
+      .then(({ data }) => setChoices((data as HqCalendarChoice[] | null) ?? []));
+  }, [allowed]);
+
+  useEffect(() => {
+    load();
+  }, [load]);
+  useRefresh(load);
+
+  if (!allowed) return { choices: [] as HqCalendarChoice[], loaded: true };
+  return { choices: choices ?? [], loaded: choices !== null };
 }
 
 /**
@@ -180,7 +219,7 @@ async function fetchEvents(
     supabase
       .from('calendars')
       .select(
-        'id, name, url, color, team:teams (id, name, kind), calendar_audiences (kind, role, post, team_id, team:teams (kind))',
+        'id, name, url, in_hq, color, team:teams (id, name, kind), calendar_audiences (kind, role, post, team_id, team:teams (kind))',
       )
       .order('created_at'),
     fetchGroupColours(),
@@ -198,7 +237,8 @@ async function fetchEvents(
       .map((r) => ({ id: r.team_id as string, kind: r.team!.kind }));
     return {
       id: row.id,
-      url: row.url,
+      // A calendar kept in the app has no link: its events come from the database.
+      url: row.in_hq ? null : row.url,
       name: team?.name ?? row.name,
       // Calendars not shown to everyone get their own colour and filter, like a squad's.
       clubWide: shownTo.everyone,
@@ -220,6 +260,7 @@ async function fetchEvents(
 
   const perCalendar = await Promise.all(
     calendars.map(async (calendar) => {
+      if (!calendar.url) return [];
       const text = await fetchIcs(calendar.url, fresh);
       if (text) {
         try {
@@ -233,12 +274,14 @@ async function fetchEvents(
     }),
   );
 
-  const [fixtures, added] = await Promise.all([
+  const inApp = calendars.filter((calendar) => !calendar.url);
+  const [fixtures, added, kept] = await Promise.all([
     fetchFixtures(rangeStart, rangeEnd, groupColour),
     teamEvents ? fetchTeamEvents(rangeStart, rangeEnd, groupColour) : [],
+    inApp.length > 0 ? fetchHqEvents(rangeStart, rangeEnd, inApp) : [],
   ]);
 
-  const events = dedupe([...perCalendar.flat(), ...fixtures, ...added]).sort(
+  const events = dedupe([...perCalendar.flat(), ...fixtures, ...added, ...kept]).sort(
     (a, b) => a.start.getTime() - b.start.getTime(),
   );
   for (const event of events) loadedEvents.set(event.id, event);
@@ -294,6 +337,39 @@ async function fetchTeamEvents(
   return rows.map((row) =>
     toCalendarEvent(row, groupColour(row.team_id) ?? calendarColorHex(null, row.team_kind)),
   );
+}
+
+/**
+ * Events on the calendars kept in the app, as far as this member may see
+ * them: the ones on the calendar, their own suggestions, and for admins every
+ * suggestion. The database decides which rows come back.
+ */
+async function fetchHqEvents(
+  rangeStart: Date,
+  rangeEnd: Date,
+  calendars: CalendarRow[],
+): Promise<CalendarEvent[]> {
+  const rows: HqEventRow[] = [];
+  for (let from = 0; ; from += PAGE) {
+    const { data } = await supabase
+      .rpc('hq_events_between', { p_from: rangeStart.toISOString(), p_to: rangeEnd.toISOString() })
+      .range(from, from + PAGE - 1);
+    const page = (data as HqEventRow[] | null) ?? [];
+    rows.push(...page);
+    if (page.length < PAGE) break;
+  }
+  const looks = new Map(calendars.map((c) => [c.id, c]));
+  // A declined suggestion is shown to the person who made it, to read why. An
+  // admin has answered it, so it leaves their calendar.
+  return rows.filter((row) => row.status !== 'declined' || row.mine).map((row) => {
+    const calendar = looks.get(row.calendar_id);
+    return hqToCalendarEvent(row, {
+      color: calendar?.color ?? calendarColorHex(null, 'club'),
+      clubWide: calendar?.clubWide ?? false,
+      teamIds: calendar?.teamIds ?? [],
+      forAthletes: calendar?.forAthletes ?? false,
+    });
+  });
 }
 
 /** How long a match is shown for in the calendar. */
@@ -388,4 +464,18 @@ function monthsFromToday(months: number) {
 function startOfToday() {
   const now = new Date();
   return new Date(now.getFullYear(), now.getMonth(), now.getDate());
+}
+
+/**
+ * How many weeks of a weekly suggestion still wait for an admin, from the
+ * events already loaded: 1 for a one-off, or when the others aren't loaded.
+ */
+export function weeksWaiting(event: CalendarEvent) {
+  const series = event.teamEvent?.seriesId;
+  if (!series || event.pending !== 'suggested') return 1;
+  let weeks = 0;
+  for (const other of loadedEvents.values()) {
+    if (other.pending === 'suggested' && other.teamEvent?.seriesId === series) weeks += 1;
+  }
+  return Math.max(weeks, 1);
 }

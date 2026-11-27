@@ -33,6 +33,8 @@ const BY_SCREEN: [prefix: string, icon: IconName][] = [
   ['/wwcc-application', 'credit-card'],
   ['/wwcc', 'credit-card'],
   ['/messages', 'message-square'],
+  ['/admin/event-suggestions', 'calendar'],
+  ['/event', 'calendar'],
   ['/admin/reports', 'bar-chart-2'],
   ['/admin/kpi-reviews', 'trending-up'],
   ['/admin/training', 'book-open'],

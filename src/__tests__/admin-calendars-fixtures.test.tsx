@@ -16,7 +16,9 @@ import type { Fixture, PlayhqSeason, Team } from '@/lib/types';
 import { openScreen, resetClub, settle, TEAM, TEAM_B } from './helpers/harness';
 import {
   failTableWrite,
+  flip,
   input,
+  isOn,
   isDisabled,
   isSelected,
   recordTables,
@@ -70,9 +72,14 @@ type AudienceRow = { kind: string; role: string | null; post: string | null; tea
 type CalendarRow = {
   id: string;
   name: string;
-  url: string;
+  url: string | null;
   color: string | null;
   calendar_audiences: AudienceRow[];
+  in_hq?: boolean;
+  takes_suggestions?: boolean;
+  moved_in_at?: string | null;
+  moved_in_by_name?: string | null;
+  hq_calendar_events?: { count: number }[];
 };
 
 const everyone: AudienceRow = { kind: 'everyone', role: null, post: null, team_id: null };
@@ -570,6 +577,264 @@ describe('Calendars', () => {
     await fireEvent.press(screen.getByText('Tap again to delete'));
     await settle();
     expect(screen.getByText('Not allowed')).toBeTruthy();
+  });
+});
+
+// ---------------------------------------------------------------------------
+// Calendars kept in the app (user guide section 10, "Calendars")
+
+const SUGGEST = 'Coaches, managers and committee can suggest events';
+const APP_CAL: CalendarRow = {
+  id: 'cal-app',
+  name: 'Club events',
+  url: null,
+  color: 'green',
+  calendar_audiences: [everyone],
+  in_hq: true,
+  takes_suggestions: true,
+  moved_in_at: null,
+  moved_in_by_name: null,
+  hq_calendar_events: [{ count: 3 }],
+};
+const appSaves = () => callsTo('admin_save_hq_calendar');
+const moves = () => callsTo('admin_move_calendar_into_hq');
+const vevent = (uid: string, start: string, end: string, summary: string) =>
+  ['BEGIN:VEVENT', `UID:${uid}`, `DTSTART:${start}`, `DTEND:${end}`, `SUMMARY:${summary}`, 'END:VEVENT'].join('\r\n');
+const feed = (...events: string[]) => ['BEGIN:VCALENDAR', 'VERSION:2.0', ...events, 'END:VCALENDAR'].join('\r\n');
+
+describe('Calendars kept in the app', () => {
+  it('adds one with no link, taking suggestions unless switched off', async () => {
+    await openCalendars();
+    expect(screen.getByText('ICS link')).toBeTruthy();
+    await fireEvent.press(screen.getByText('In the app'));
+    expect(screen.queryByText('ICS link')).toBeNull();
+    expect(screen.getByText(/You add its events here in the app/)).toBeTruthy();
+    expect(isOn(SUGGEST)).toBe(true);
+    expect(screen.getByText(/nobody else sees it until an admin adds it/)).toBeTruthy();
+    await fireEvent.press(screen.getByText('Everyone in the club'));
+    await add();
+    expect(appSaves()).toEqual([
+      {
+        p_id: null,
+        p_name: 'Club calendar',
+        p_color: null,
+        p_everyone: true,
+        p_roles: [],
+        p_team_ids: [],
+        p_posts: [],
+        p_takes_suggestions: true,
+      },
+    ]);
+    // No link, so nothing is downloaded and the link's save isn't used.
+    expect(fetchMock).not.toHaveBeenCalled();
+    expect(saves()).toEqual([]);
+  });
+
+  it('adds one only admins add to', async () => {
+    await openCalendars();
+    await fireEvent.press(screen.getByText('In the app'));
+    await flip(SUGGEST, false);
+    expect(screen.getByText('Only admins add events to it.')).toBeTruthy();
+    await type('Name (optional)', 'Committee dates');
+    await fireEvent.press(screen.getAllByText('Committee').at(-1)!);
+    await add();
+    expect(appSaves()).toEqual([
+      expect.objectContaining({ p_name: 'Committee dates', p_roles: ['committee'], p_takes_suggestions: false }),
+    ]);
+  });
+
+  it('still won’t add one shown to nobody', async () => {
+    await openCalendars();
+    await fireEvent.press(screen.getByText('In the app'));
+    await add();
+    expect(screen.getByText('Choose who sees this calendar.')).toBeTruthy();
+    expect(appSaves()).toEqual([]);
+  });
+
+  it('goes back to a link when An Outlook link is picked again', async () => {
+    await openCalendars();
+    await fireEvent.press(screen.getByText('In the app'));
+    await fireEvent.press(screen.getByText('An Outlook link'));
+    expect(screen.getByText('ICS link')).toBeTruthy();
+    expect(screen.queryByLabelText(SUGGEST)).toBeNull();
+  });
+
+  it('keeps the form to add another folded away once calendars are listed', async () => {
+    await openCalendars([CLUB_CAL]);
+    expect(screen.queryByText('Where it’s kept')).toBeNull();
+    expect(screen.queryByText('Add calendar')).toBeNull();
+    await fireEvent.press(screen.getByText('Add another calendar'));
+    expect(screen.getByText('Where it’s kept')).toBeTruthy();
+    await fireEvent.press(screen.getByText('In the app'));
+    await fireEvent.press(screen.getAllByText('Committee').at(-1)!);
+    await add();
+    expect(appSaves()).toHaveLength(1);
+    // Saved, it folds away again.
+    expect(screen.queryByText('Where it’s kept')).toBeNull();
+    expect(screen.getByText('Add another calendar')).toBeTruthy();
+  });
+
+  it('Cancel folds the form away without saving', async () => {
+    await openCalendars([CLUB_CAL]);
+    await fireEvent.press(screen.getByText('Add another calendar'));
+    await fireEvent.press(screen.getByText('Cancel'));
+    expect(screen.queryByText('Where it’s kept')).toBeNull();
+    expect(appSaves()).toEqual([]);
+    expect(saves()).toEqual([]);
+  });
+
+  it('opens the form straight away when there are no calendars yet', async () => {
+    await openCalendars();
+    expect(screen.getByText('Where it’s kept')).toBeTruthy();
+    expect(screen.queryByText('Add another calendar')).toBeNull();
+    expect(screen.queryByText('Cancel')).toBeNull();
+  });
+
+  it('lists it with how many events it holds, not a link, and nothing to move', async () => {
+    await openCalendars([APP_CAL, CLUB_CAL]);
+    expect(screen.getByText('Kept in the app · 3 events · takes suggestions')).toBeTruthy();
+    expect(screen.getByText('Change name or who sees it')).toBeTruthy();
+    // Only the linked calendar offers to move in.
+    expect(screen.getAllByText('Move into the app')).toHaveLength(1);
+  });
+
+  it('says when it was moved in from Outlook, and by whom', async () => {
+    await openCalendars([
+      {
+        ...APP_CAL,
+        takes_suggestions: false,
+        hq_calendar_events: [{ count: 1 }],
+        moved_in_at: '2026-10-12T04:00:00Z',
+        moved_in_by_name: 'Alex Admin',
+      },
+    ]);
+    expect(screen.getByText(/^Kept in the app · 1 event\. Moved in from Outlook on .*Oct.* by Alex Admin$/)).toBeTruthy();
+  });
+
+  it('changes its name, who sees it and whether it takes suggestions, with no link to check', async () => {
+    await openCalendars([APP_CAL]);
+    await fireEvent.press(screen.getByText('Change name or who sees it'));
+    await type('Name', 'Club social');
+    await flip(SUGGEST, false);
+    await fireEvent.press(screen.getByText('Save'));
+    await settle();
+    expect(appSaves()).toEqual([
+      {
+        p_id: 'cal-app',
+        p_name: 'Club social',
+        p_color: 'green',
+        p_everyone: true,
+        p_roles: [],
+        p_team_ids: [],
+        p_posts: [],
+        p_takes_suggestions: false,
+      },
+    ]);
+    expect(fetchMock).not.toHaveBeenCalled();
+  });
+
+  it('warns how many events go with it before deleting', async () => {
+    await openCalendars([APP_CAL]);
+    await fireEvent.press(screen.getByText('Delete'));
+    expect(writes(log, 'calendars')).toEqual([]);
+    await fireEvent.press(screen.getByText('Tap again to delete it and its 3 events'));
+    await settle();
+    expect(writes(log, 'calendars')).toEqual([{ method: 'delete', values: undefined, filters: [['id', 'cal-app']] }]);
+  });
+});
+
+describe('Moving a linked calendar into the app', () => {
+  const TWO = feed(
+    vevent('a', '20261020T100000Z', '20261020T113000Z', 'Committee meeting'),
+    vevent('b', '20261205T020000Z', '20261205T040000Z', 'Working bee'),
+  );
+
+  it('reads the link first and says what comes across, changing nothing yet', async () => {
+    feeds[CLUB_CAL.url!] = TWO;
+    await openCalendars([CLUB_CAL]);
+    await fireEvent.press(screen.getByText('Move into the app'));
+    await settle();
+    expect(fetchMock).toHaveBeenCalledWith(CLUB_CAL.url);
+    expect(screen.getByText('Move Club calendar into the app?')).toBeTruthy();
+    expect(screen.getByText(/^The link has 2 events, from .* to .*\. They are copied into the app\.$/)).toBeTruthy();
+    expect(screen.getByText(/the app stops reading Outlook/)).toBeTruthy();
+    expect(screen.getByText(/This can’t be undone/)).toBeTruthy();
+    expect(moves()).toEqual([]);
+  });
+
+  it('moves the events in on the second tap', async () => {
+    feeds[CLUB_CAL.url!] = TWO;
+    await openCalendars([CLUB_CAL]);
+    await fireEvent.press(screen.getByText('Move into the app'));
+    await settle();
+    await fireEvent.press(screen.getByText('Move 2 events into the app'));
+    await settle();
+    expect(moves()).toEqual([
+      {
+        p_id: 'cal-club',
+        p_events: [
+          {
+            title: 'Committee meeting',
+            all_day: false,
+            starts_at: '2026-10-20T10:00:00.000Z',
+            ends_at: '2026-10-20T11:30:00.000Z',
+            location: null,
+            note: null,
+          },
+          {
+            title: 'Working bee',
+            all_day: false,
+            starts_at: '2026-12-05T02:00:00.000Z',
+            ends_at: '2026-12-05T04:00:00.000Z',
+            location: null,
+            note: null,
+          },
+        ],
+      },
+    ]);
+    expect(screen.queryByText('Move Club calendar into the app?')).toBeNull();
+  });
+
+  it('Keep it in Outlook changes nothing', async () => {
+    feeds[CLUB_CAL.url!] = TWO;
+    await openCalendars([CLUB_CAL]);
+    await fireEvent.press(screen.getByText('Move into the app'));
+    await settle();
+    await fireEvent.press(screen.getByText('Keep it in Outlook'));
+    expect(moves()).toEqual([]);
+    expect(screen.getByText('Move into the app')).toBeTruthy();
+    expect(screen.getByText(CLUB_CAL.url!)).toBeTruthy();
+  });
+
+  it('a link with nothing on it starts the calendar empty', async () => {
+    await openCalendars([CLUB_CAL]);
+    await fireEvent.press(screen.getByText('Move into the app'));
+    await settle();
+    expect(screen.getByText(/so the calendar starts empty/)).toBeTruthy();
+    await fireEvent.press(screen.getByText('Move it into the app'));
+    await settle();
+    expect(moves()).toEqual([{ p_id: 'cal-club', p_events: [] }]);
+  });
+
+  it('won’t offer to move a link it can’t read', async () => {
+    feeds[CLUB_CAL.url!] = 500;
+    await openCalendars([CLUB_CAL]);
+    await fireEvent.press(screen.getByText('Move into the app'));
+    await settle();
+    expect(screen.getByText('The link couldn’t be read just now. Check your connection and try again.')).toBeTruthy();
+    expect(screen.queryByText('Move Club calendar into the app?')).toBeNull();
+    expect(moves()).toEqual([]);
+  });
+
+  it('shows why the database refused, and keeps asking', async () => {
+    feeds[CLUB_CAL.url!] = TWO;
+    await openCalendars([CLUB_CAL], { admin_move_calendar_into_hq: 'Only admins move calendars' });
+    await fireEvent.press(screen.getByText('Move into the app'));
+    await settle();
+    await fireEvent.press(screen.getByText('Move 2 events into the app'));
+    await settle();
+    expect(screen.getByText('Only admins move calendars')).toBeTruthy();
+    expect(screen.getByText('Move Club calendar into the app?')).toBeTruthy();
   });
 });
 

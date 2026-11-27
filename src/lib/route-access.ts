@@ -112,6 +112,10 @@ export function useRouteAccess() {
     addSessionPlans: isAdmin || inGroupAs('coach'),
     // Squad and team events: a squad's or team's coaches and managers, and admins.
     addTeamEvents: isAdmin || inGroupAs('coach', 'manager'),
+    // Events on a calendar kept in the app: admins add them; coaches, managers
+    // and committee members suggest one where an admin lets them (the
+    // database decides which calendars, if any).
+    addCalendarEvents: isAdmin || holds('coach', 'manager', 'committee'),
 
     // Daily check-ins: athletes do their own; coaches see their athletes', the
     // committee, physios and admins the averages, guardians their child's.

@@ -174,7 +174,9 @@ const ATTENDANCE_VIEWERS = union(COACHES, COMMITTEE, ADMINS);
 const PLAN_READERS = union(ADMINS, COACHES, ATHLETES, GUARDIANS);
 const PLAN_AUTHORS = union(ADMINS, COACHES);
 // A squad's or team's coaches and managers add its events, and admins.
-const EVENT_AUTHORS = union(ADMINS, COACHES, MANAGERS);
+// Coaches and managers for their squads and teams; with the committee, they
+// suggest events for a calendar kept in the app; admins add to either.
+const EVENT_AUTHORS = union(ADMINS, COACHES, MANAGERS, COMMITTEE);
 const CHECK_IN_VIEWERS = union(GROUP_COACHES, COMMITTEE, PHYSIOS, ADMINS);
 const AWARD_VOTERS = union(ATHLETES, COACHES, MANAGERS, COMMITTEE, ADMINS, STATISTICIANS);
 const KPI_READERS = union(ATHLETES, COACHES, MANAGERS, GUARDIANS, COMMITTEE, ADMINS);
