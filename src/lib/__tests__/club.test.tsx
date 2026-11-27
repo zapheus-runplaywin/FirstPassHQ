@@ -86,8 +86,8 @@ describe('resolveClub', () => {
     expect(club.squads).toBe(true);
   });
 
-  it('starts every feature on except chat groups, training load flags, Season KPIs, the registers and selection assessments', () => {
-    const offs = ['chatGroups', 'trainingLoad', 'kpis', 'registers', 'selectionAssessments'];
+  it('starts every feature on except chat groups, squad and team events, training load flags, Season KPIs, the registers and selection assessments', () => {
+    const offs = ['chatGroups', 'teamEvents', 'trainingLoad', 'kpis', 'registers', 'selectionAssessments'];
     const { features } = resolveClub(null);
     for (const f of FEATURES) {
       expect([f.key, features[f.key]]).toEqual([f.key, !offs.includes(f.key)]);

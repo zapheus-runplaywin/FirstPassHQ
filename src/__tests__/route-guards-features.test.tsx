@@ -43,7 +43,12 @@ type FeatureCase = {
 };
 
 const FEATURE_ROUTES: FeatureCase[] = [
-  { feature: 'calendar', routes: ['(tabs)/calendar', 'event/[id]', 'admin/calendars'] },
+  {
+    feature: 'calendar',
+    // event/edit also needs Squad and team events, which starts off: its own row, and the test below.
+    routes: ['(tabs)/calendar', 'event/[id]', 'admin/calendars'],
+  },
+  { feature: 'teamEvents', offByDefault: true, routes: ['event/edit'] },
   { feature: 'messages', routes: ['(tabs)/messages', 'messages/new', 'messages/[id]'] },
   {
     feature: 'surveys',
@@ -225,6 +230,14 @@ describe.each(FEATURE_ROUTES)('the $feature switch', ({ feature, routes, offByDe
     setClubFeatures({});
     if (offByDefault) await expectTurnedAway(openerOf(routes[0]), routes[0], '(tabs)/index');
     else await expectReaches(openerOf(routes[0]), routes[0]);
+  });
+});
+
+describe('adding a squad or team event', () => {
+  it('needs the calendar on as well as Squad and team events', async () => {
+    setClubFeatures({ calendar: false, teamEvents: true });
+    await expectTurnedAway('admin', 'event/edit', '(tabs)/index');
+    await expectTurnedAway('coach', 'event/edit', '(tabs)/index');
   });
 });
 

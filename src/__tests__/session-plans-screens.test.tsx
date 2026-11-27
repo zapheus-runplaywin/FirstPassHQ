@@ -67,7 +67,8 @@ jest.mock('expo-crypto', () => ({ randomUUID: () => 'uuid-1' }));
 const mockCalendar: { events: CalendarEvent[] } = { events: [] };
 const mockShowPast = jest.fn();
 jest.mock('@/lib/use-events', () => ({
-  useEvents: () => ({ events: mockCalendar.events, showPast: mockShowPast }),
+  // eventsOn is the events that are still on (none here is cancelled), as the real hook answers.
+  useEvents: () => ({ events: mockCalendar.events, eventsOn: mockCalendar.events, showPast: mockShowPast }),
   // One event by id: null when it isn't on the calendar, as the real hook answers.
   useEvent: (id: string | undefined) =>
     id ? (mockCalendar.events.find((e) => e.id === id) ?? null) : undefined,

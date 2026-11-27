@@ -294,7 +294,7 @@ function NearbyWarning({ sessions }: { sessions: NearbySession[] }) {
  * squad or team's own calendar. `now` is the one happening at the moment.
  */
 function useCalendarEvents(group: { club: boolean; team: Team | null } | null) {
-  const { events } = useEvents();
+  const { eventsOn: events } = useEvents();
   if (!group || !events) return { today: [], now: null };
   const now = new Date();
   const endOfToday = new Date(now.getFullYear(), now.getMonth(), now.getDate() + 1);

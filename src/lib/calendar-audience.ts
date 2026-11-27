@@ -136,6 +136,21 @@ export function colourAudience(
   return 'club';
 }
 
+/**
+ * Whether a calendar is for squads and teams alone, with no roles or posts:
+ * a squad's or team's own calendar. With no colour picked it shows in that
+ * squad's or team's colour and keeps no colour of its own, the same rule as
+ * `public.reserved_calendar_colours`.
+ */
+export function isForGroupsOnly(shownTo: CalendarShownTo) {
+  return (
+    !shownTo.everyone &&
+    shownTo.roles.length === 0 &&
+    shownTo.posts.length === 0 &&
+    shownTo.teamIds.length > 0
+  );
+}
+
 /** The arguments `public.admin_save_calendar` takes for who sees it. */
 export function saveArgs(shownTo: CalendarShownTo) {
   return {

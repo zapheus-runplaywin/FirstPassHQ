@@ -130,6 +130,9 @@ function RootStack() {
           </Stack.Protected>
           <Stack.Protected guard={features.calendar && can.open}>
             <Stack.Screen name="event/[id]" options={{ title: 'Event' }} />
+            <Stack.Protected guard={features.teamEvents && can.addTeamEvents}>
+              <Stack.Screen name="event/edit" options={{ title: 'Event' }} />
+            </Stack.Protected>
           </Stack.Protected>
           <Stack.Protected guard={features.messages && can.readMessages}>
             <Stack.Screen name="messages/[id]" options={{ title: 'Message' }} />

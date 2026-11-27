@@ -76,7 +76,7 @@ function PlanForm({
   const theme = useTheme();
   const teams = useTeams();
   const groups = usePlanGroups(teams);
-  const { events, showPast } = useEvents();
+  const { eventsOn: events, showPast } = useEvents();
 
   // Set once the plan has been saved, so a retry after a failed upload
   // changes the same plan rather than adding another.

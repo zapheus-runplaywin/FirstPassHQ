@@ -329,3 +329,16 @@ describe('Check-ins', () => {
     }
   });
 });
+
+describe('a cancelled session', () => {
+  it('offers nobody anything: it isn’t on, so nobody is away from it and no register is taken', () => {
+    for (const who of Object.keys(MEMBERS)) {
+      expect(kinds({ ...TRAINING, cancelled: true }, MEMBERS[who])).toEqual([]);
+    }
+  });
+
+  it('offers the usual shortcuts again once it’s back on', () => {
+    expect(kinds({ ...TRAINING, cancelled: false }, MEMBERS.athlete)).toEqual(kinds(TRAINING, MEMBERS.athlete));
+    expect(kinds(TRAINING, MEMBERS.athlete).length).toBeGreaterThan(0);
+  });
+});
