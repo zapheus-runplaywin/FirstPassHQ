@@ -17,6 +17,9 @@ import {
   type SelectionInfo,
 } from '@/lib/assessments';
 
+jest.mock('@/lib/auth', () => ({ useAuth: jest.fn() }));
+jest.mock('@/lib/club', () => ({ useFeature: jest.fn() }));
+
 // Today is pinned: every helper here takes the club's day as an argument.
 const TODAY = '2026-11-27';
 
