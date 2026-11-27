@@ -1166,6 +1166,7 @@ describe('the Selection audit report', () => {
       'admin_selection_summaries',
       'admin_selection_feedback',
       'admin_selection_round_record',
+      'admin_selection_releases',
     ]);
     expect(onlyRpcCall('admin_selection_audit')).toEqual({ p_round_id: 'r1' });
     expect(onlyRpcCall('admin_selection_milestones')).toEqual({ p_round_id: 'r1' });

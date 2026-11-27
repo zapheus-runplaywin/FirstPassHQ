@@ -1,21 +1,25 @@
+import { router } from 'expo-router';
 import { useEffect, useState } from 'react';
 import { StyleSheet, View } from 'react-native';
 
 import { Fold } from '@/components/member-tabs';
 import { Screen } from '@/components/screen';
 import { ThemedText } from '@/components/themed-text';
-import { Card } from '@/components/ui';
+import { Card, PressableCard } from '@/components/ui';
 import { Spacing } from '@/constants/theme';
 import {
   dueLabel,
   feedbackHeading,
+  releasedHeading,
   groupRounds,
   roundTitle,
   shortDate,
   shortRange,
   selectionInfoOwner,
   useMySelectionFeedback,
+  useMyReleasedAssessments,
   useMySelectionInfo,
+  type ReleasedAssessment,
   type SelectionInfo,
   type SharedFeedback,
 } from '@/lib/assessments';
@@ -32,6 +36,7 @@ import { supabase } from '@/lib/supabase';
 export default function SelectionScreen() {
   const { selectionInfo, reloadSelectionInfo } = useMySelectionInfo();
   const { selectionFeedback, reloadSelectionFeedback } = useMySelectionFeedback();
+  const { selectionReleases, reloadSelectionReleases } = useMyReleasedAssessments();
   const [refreshing, setRefreshing] = useState(false);
   const today = clubToday();
   // One short block per athlete: the member first, then each child.
@@ -50,17 +55,20 @@ export default function SelectionScreen() {
 
   async function onRefresh() {
     setRefreshing(true);
-    await Promise.all([reloadSelectionInfo(), reloadSelectionFeedback()]);
+    await Promise.all([reloadSelectionInfo(), reloadSelectionFeedback(), reloadSelectionReleases()]);
     setRefreshing(false);
   }
 
   return (
     <Screen refreshing={refreshing} onRefresh={onRefresh}>
+      {selectionReleases.map((release) => (
+        <ReleaseRow key={`release-${release.round_id}-${release.athlete_id}`} release={release} />
+      ))}
       {selectionFeedback.map((feedback) => (
         <FeedbackCard key={`${feedback.round_id}-${feedback.athlete_id}`} feedback={feedback} />
       ))}
       {selectionInfo.length === 0 ? (
-        selectionFeedback.length > 0 ? null : (
+        selectionFeedback.length > 0 || selectionReleases.length > 0 ? null : (
           <ThemedText type="small" themeColor="textSecondary">
             There is no selection round open for you now.
           </ThemedText>
@@ -83,6 +91,24 @@ export default function SelectionScreen() {
         </ThemedText>
       ) : null}
     </Screen>
+  );
+}
+
+/** A released assessment: New in bold until first opened. Opens it to read. */
+function ReleaseRow({ release }: { release: ReleasedAssessment }) {
+  return (
+    <PressableCard
+      onPress={() =>
+        router.push({ pathname: '/selection-assessment', params: { round: release.round_id, athlete: release.athlete_id } })
+      }>
+      <ThemedText type="smallBold">
+        {releasedHeading(release)}
+        {release.is_new ? ' · New' : ''}
+      </ThemedText>
+      <ThemedText type="small" themeColor="textSecondary">
+        From {release.from_name}, {shortDate(release.released_on)}
+      </ThemedText>
+    </PressableCard>
   );
 }
 

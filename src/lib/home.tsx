@@ -12,6 +12,7 @@ import { createContext, use, useState, type ReactNode } from 'react';
 import { useAbsencesToReview, useLeadsAGroup } from '@/lib/absences';
 import {
   useMySelectionFeedback,
+  useMyReleasedAssessments,
   useMySelectionInfo,
   useMySelectionAudits,
   useMySelectionRounds,
@@ -154,6 +155,7 @@ function useHomeData() {
   const { selectionTodos, reloadSelectionTodos } = useMySelectionTodos();
   const { selectionInfo, reloadSelectionInfo } = useMySelectionInfo();
   const { selectionFeedback, reloadSelectionFeedback } = useMySelectionFeedback();
+  const { selectionReleases, reloadSelectionReleases } = useMyReleasedAssessments();
   const canReadRegisters = useCanReadRegisters() && features.registers;
   const canSendSurveys = useCanSendSurveys();
   const surveysWaiting = surveysToAnswer(mySurveys).length;
@@ -252,6 +254,7 @@ function useHomeData() {
       reloadSelectionTodos(),
       reloadSelectionInfo(),
       reloadSelectionFeedback(),
+      reloadSelectionReleases(),
       reloadMySurveys(),
       reloadAbsencesToReview(),
       reloadChildren(),
@@ -329,7 +332,7 @@ function useHomeData() {
     kpis: features.kpis && (kpiPeople ?? []).some((p) => !p.archived),
     selectionAssessments: selectionRounds.length > 0,
     selectionAudits: selectionAudits.length > 0,
-    selection: selectionInfo.length > 0 || selectionFeedback.length > 0,
+    selection: selectionInfo.length > 0 || selectionFeedback.length > 0 || selectionReleases.length > 0,
     registers: canReadRegisters,
     guardianOf: isGuardian,
     children: isGuardian && children.length > 0,
@@ -409,6 +412,7 @@ function useHomeData() {
     selectionAudits,
     selectionInfo,
     selectionFeedback,
+    selectionReleases,
     children,
     activityNew,
     medicalReviews,

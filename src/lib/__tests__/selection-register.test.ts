@@ -180,6 +180,11 @@ describe('selectionRegisterReport', () => {
     expect(work[work.length - 1]).toBe('–');
   });
 
+  it('counts releases as “5 of 14” once part 5 fills them', () => {
+    const work = selectionRegisterReport(register([round({ released: 5 })]), '2026–27').sections[2].rows[0].cells;
+    expect(work[work.length - 1]).toBe('5 of 14');
+  });
+
   it('marks independent selectors and lists auditors', () => {
     expect(report.sections[3].rows[0].cells).toEqual([
       'Phase 1, Round 2 · Trials (17 & Under Squad)',

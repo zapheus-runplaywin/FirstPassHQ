@@ -188,7 +188,7 @@ select pg_temp.eq('summaries expected: each selector''s athletes, less themselve
      and not exists (select 1 from public.guardianships g where g.guardian_id = m.profile_id and g.athlete_id = a.profile_id)))::text
    from public.selection_round_panel m where m.round_id = pg_temp.round('Squad trials') and m.removed_at is null));
 select pg_temp.eq('feedback shared', pg_temp.r('Squad trials') ->> 'feedback_shared', '1');
-select pg_temp.ok('released is empty until part 5', pg_temp.r('Squad trials') -> 'released' = 'null'::jsonb, true);
+select pg_temp.eq('released counts current releases: none yet', pg_temp.r('Squad trials') ->> 'released', '0');
 select pg_temp.ok('the set fits the squad', (pg_temp.r('Squad trials') ->> 'set_fits')::boolean, true);
 select pg_temp.eq('no clashes', pg_temp.r('Squad trials') ->> 'clashes', '[]');
 select pg_temp.eq('the other round''s auditor', pg_temp.r('Other trials') ->> 'auditors', '["Oz Auditor"]');

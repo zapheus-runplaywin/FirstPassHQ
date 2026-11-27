@@ -144,6 +144,7 @@ const FEATURE_ROUTES: FeatureCase[] = [
       'assessments/observe',
       'assessments/summary',
       'assessments/feedback',
+      'assessments/release',
       'audits/index',
       'audits/round',
       'audits/athlete',
@@ -155,6 +156,7 @@ const FEATURE_ROUTES: FeatureCase[] = [
       'admin/assessments/milestone',
       'admin/assessments/summaries',
       'selection',
+      'selection-assessment',
     ],
   },
 ];
@@ -176,6 +178,7 @@ const OPENED_BY: Record<string, PersonaName> = {
   'goals/team': 'coach',
   'declare-conflicts': 'committee',
   selection: 'athlete',
+  'selection-assessment': 'athlete',
   'audits/index': 'committee',
   'audits/round': 'committee',
   'audits/athlete': 'committee',
