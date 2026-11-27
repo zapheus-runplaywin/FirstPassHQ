@@ -1,0 +1,96 @@
+name: OTA update
+
+# Publishes an over-the-air update (EAS Update) to the installed apps on one
+# channel, from the code on the branch you run it on. Run it by hand from
+# Actions after a merge; it never runs on its own. See docs/environments.md,
+# "Publishing an update from GitHub".
+#
+# It runs scripts/publish-update.sh, the same script you can run on your Mac,
+# so both make the same checks before anything is published:
+# - the update reaches an installed app only when the app's native code matches
+#   (the fingerprint runtime version in app.json), so it stops unless the
+#   channel has a finished build with this code's runtime version on each
+#   platform. A change to the native side needs a new build (Beta build).
+# - it is built with the channel's own Supabase settings from EAS, never the
+#   test clubs, and the demo club never points at the live project.
+#
+# Production updates only go out from main.
+on:
+  workflow_dispatch:
+    inputs:
+      channel:
+        description: 'Which installed apps get it: production (TestFlight and Google Play builds) or preview (install-link builds)'
+        type: choice
+        options: [production, preview]
+        default: production
+      message:
+        description: 'What changed (shown on expo.dev)'
+        type: string
+        required: true
+      platform:
+        description: 'Which apps get it'
+        type: choice
+        options: [all, android, ios]
+        default: all
+      check_only:
+        description: 'Only run the checks and build the update, without publishing it'
+        type: boolean
+        default: false
+
+concurrency:
+  group: ota-update
+  cancel-in-progress: false
+
+permissions:
+  contents: read
+
+jobs:
+  publish:
+    runs-on: ubuntu-24.04
+    defaults:
+      run:
+        # Explicit, so a failed publish fails the step even when piped to tee.
+        shell: bash
+    steps:
+      - name: Check the run can publish
+        env:
+          EXPO_TOKEN: ${{ secrets.EXPO_TOKEN }}
+          CHANNEL: ${{ inputs.channel }}
+        run: |
+          if [ -z "$EXPO_TOKEN" ]; then
+            echo "::error::Add an EXPO_TOKEN repository secret first. See docs/beta-builds.md."
+            exit 1
+          fi
+          if [ "$CHANNEL" = production ] && [ "$GITHUB_REF" != refs/heads/main ]; then
+            echo "::error::Production updates only go out from main. Pick main under 'Use workflow from', or pick the preview channel."
+            exit 1
+          fi
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          # The whole history, so the update's build number matches the build-N tag.
+          fetch-depth: 0
+      # The runtime version and the update are worked out from the installed packages.
+      - run: npm ci --no-audit --no-fund
+      - name: Check and publish the update
+        env:
+          EXPO_TOKEN: ${{ secrets.EXPO_TOKEN }}
+          EAS_CLI: eas-cli@24.12.0
+          # npx installs that EAS CLI release without asking.
+          npm_config_yes: 'true'
+          CHANNEL: ${{ inputs.channel }}
+          MESSAGE: ${{ inputs.message }}
+          PLATFORM: ${{ inputs.platform }}
+          CHECK_ONLY: ${{ inputs.check_only && '1' || '' }}
+        run: scripts/publish-update.sh "$CHANNEL" "$MESSAGE" "$PLATFORM" 2>&1 | tee publish.log
+      - name: Summary
+        if: always()
+        env:
+          CHANNEL: ${{ inputs.channel }}
+          PLATFORM: ${{ inputs.platform }}
+        run: |
+          {
+            echo "### OTA update: $CHANNEL ($PLATFORM)"
+            echo
+            { grep -E 'runtime version|nothing was published|Publishing to|Every check passed|new build' publish.log 2>/dev/null || true; } | sed 's/^/- /'
+            { grep -oE 'https://expo\.dev/[^ ]+' publish.log 2>/dev/null || true; } | sort -u | sed 's/^/- /'
+          } >> "$GITHUB_STEP_SUMMARY"

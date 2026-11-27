@@ -119,9 +119,12 @@ jobs:
       - name: Reset demo club gives the club its logo
         if: ${{ !cancelled() }}
         run: scripts/test-demo-club-logo.sh
-      - name: Updates keep the demo club off the live project
+      - name: Updates keep the demo club off the live project and need a matching build
         if: ${{ !cancelled() }}
         run: scripts/test-publish-update.sh
+      - name: The OTA update workflow runs by hand, from main for production
+        if: ${{ !cancelled() }}
+        run: python3 scripts/test-ota-update-workflow.py
       - name: Builds and updates carry the build number
         if: ${{ !cancelled() }}
         run: scripts/test-write-build-info.sh

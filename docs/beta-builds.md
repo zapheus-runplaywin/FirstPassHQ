@@ -68,7 +68,10 @@ the Expo plan's monthly builds, so the workflow only runs when you start it.
   Apple's beta review the first time.
 
 Small fixes that don't add a native library don't need a new build: publish them over the air with
-`scripts/publish-update.sh` (see [Test and live](environments.md#day-to-day)).
+**Actions > OTA update** (see
+[Publishing an update from GitHub](environments.md#publishing-an-update-from-github)), or
+`scripts/publish-update.sh` from your Mac. Both stop if the channel has no build the update can run
+on.
 
 ## Which build is this?
 

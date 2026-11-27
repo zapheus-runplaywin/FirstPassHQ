@@ -13,30 +13,55 @@ failed=0
 
 # npx stand-in. "eas env:pull" writes $work/eas-env; "expo export" writes the
 # EXPO_PUBLIC values it was given into the bundle; "eas update" records it.
+# The runtime version of each platform is "rv-<platform>"; "eas build:list"
+# finds a build when "<platform> <channel> <runtime> finished" is a line of
+# $work/builds.
 mkdir -p "$work/bin" "$work/app"
 cat >"$work/bin/npx" <<'STUB'
 #!/usr/bin/env bash
 case "$*" in
   *"env:pull"*)
     while [ $# -gt 0 ]; do [ "$1" = --path ] && cp "$STUB_DIR/eas-env" "$2"; shift; done ;;
+  *"runtimeversion:resolve"*)
+    all="$*"; p=${all##*--platform }; p=${p%% *}
+    printf '{"runtimeVersion":"%s","fingerprintSources":[]}\n' "${STUB_RUNTIME:-rv}-$p" ;;
+  *"build:list"*)
+    echo "$*" >>"$STUB_DIR/build-list-calls"
+    while [ $# -gt 0 ]; do
+      case "$1" in --platform) p=$2 ;; --channel) c=$2 ;; --runtime-version) r=$2 ;; --status) st=$2 ;; esac
+      shift
+    done
+    if grep -qxF "$p $c $r $st" "$STUB_DIR/builds" 2>/dev/null; then echo '[{"id":"b1"}]'; else echo '[]'; fi ;;
   *"expo export"*)
+    echo "$*" >>"$STUB_DIR/export-calls"
     mkdir -p dist/_expo/static/js
     env | grep '^EXPO_PUBLIC_' | grep -v '=$' >dist/_expo/static/js/bundle.js
     if [ -f src/constants/build-info.json ]; then
       { tr -d ' \n' <src/constants/build-info.json; echo; } >>dist/_expo/static/js/bundle.js
     fi ;;
-  *" update "*) echo published >>"$STUB_DIR/published" ;;
+  *" update "*) echo published >>"$STUB_DIR/published"; echo "$*" >>"$STUB_DIR/update-calls" ;;
 esac
 STUB
 chmod +x "$work/bin/npx"
 
-# run <name> <eas env> <.env>: publishes from a folder with that .env.
+# Both platforms have a production build with this code's runtime version,
+# unless a test says otherwise.
+BOTH_BUILDS='android production rv-android finished
+ios production rv-ios finished'
+reset() {
+  rm -rf "$work/app" "$work/published" "$work"/*-calls; mkdir -p "$work/app"
+  printf '%s\n' "${BUILDS-$BOTH_BUILDS}" >"$work/builds"
+}
+
+# run <name> <eas env> <.env> [args...]: publishes from a folder with that .env.
 run() {
-  rm -rf "$work/app" "$work/published"; mkdir -p "$work/app"
+  reset
   printf '%s\n' "$2" >"$work/eas-env"
   printf '%s\n' "$3" >"$work/app/.env"
+  shift 3
+  [ $# -gt 0 ] || set -- production "Test update"
   (cd "$work/app" && STUB_DIR=$work PATH="$work/bin:$PATH" \
-    "$root/scripts/publish-update.sh" production "Test update" >"$work/out" 2>&1)
+    "$root/scripts/publish-update.sh" "$@" >"$work/out" 2>&1)
   status=$?
 }
 check() {
@@ -88,7 +113,7 @@ git_app() {
     && for i in 1 2 3; do git -c user.name=t -c user.email=t@example.test commit -q --allow-empty -m "c$i" || exit 1; done)
 }
 run_git() {
-  rm -rf "$work/app" "$work/published"; mkdir -p "$work/app"
+  reset
   printf '%s\n' "$LIVE" >"$work/eas-env"
   printf '%s\n' "$DOTENV" >"$work/app/.env"
   git_app
@@ -115,5 +140,64 @@ check 'but has the commit' "$(bundle "\"commit\":\"$(cd "$work/app" && git rev-p
 run 'without git history' "$LIVE" "$DOTENV"
 check 'an update without git history is still published' "$status:$(published)" '0:yes'
 check 'and says it has no build number' "$(grep -c 'shows no build number' "$work/out")" 1
+
+# The runtime check: an update only goes out when the channel has a finished
+# build of the same native code (fingerprint runtime version) on each platform.
+calls() { cat "$work/$1-calls" 2>/dev/null; }
+
+run 'both platforms have a matching build' "$LIVE" "$DOTENV"
+check 'it looks for finished production builds of this runtime on Android' \
+  "$(calls build-list | grep -c -- '--platform android --channel production --runtime-version rv-android --status finished')" 1
+check 'and on iOS' \
+  "$(calls build-list | grep -c -- '--platform ios --channel production --runtime-version rv-ios --status finished')" 1
+check 'it builds the update for both platforms' "$(calls export | grep -c -- '--platform all')" 1
+check 'it publishes for both platforms, without questions' \
+  "$(calls update | grep -c -- '--channel production --environment production --platform all --message Test update --non-interactive')" 1
+
+BUILDS='android production rv-android finished' run 'no matching iOS build' "$LIVE" "$DOTENV"
+check 'an update with no matching iOS build is refused' "$status:$(published)" '1:no'
+check 'and says a new build is needed' "$(grep -c 'No finished ios build on the production channel has runtime version rv-ios' "$work/out")" 1
+check 'it stops before building the update' "$(calls export | wc -l | tr -d ' ')" 0
+
+BUILDS='android production rv-android finished' run 'Android only' "$LIVE" "$DOTENV" production 'Test update' android
+check 'an Android-only update needs only the Android build' "$status:$(published)" '0:yes'
+check 'it never looks for an iOS build' "$(calls build-list | grep -c -- '--platform ios')" 0
+check 'it builds the update for Android only' "$(calls export | grep -c -- '--platform android')" 1
+check 'it publishes for Android only' "$(calls update | grep -c -- '--platform android')" 1
+
+BUILDS='android preview rv-android finished
+ios preview rv-ios finished' run 'builds only on the other channel' "$LIVE" "$DOTENV"
+check 'a build on the preview channel does not count for production' "$status:$(published)" '1:no'
+
+BUILDS='android production rv-android in-progress
+ios production rv-ios finished' run 'Android build still running' "$LIVE" "$DOTENV"
+check 'a build that has not finished does not count' "$status:$(published)" '1:no'
+
+BUILDS='' run 'no builds at all' "$LIVE" "$DOTENV" preview 'Test update'
+check 'a channel with no builds is refused' "$status:$(published)" '1:no'
+
+BUILDS='android preview rv-android finished
+ios preview rv-ios finished' run 'preview channel' "$LIVE" "$DOTENV" preview 'Test update'
+check 'a preview update finds the preview builds' "$status:$(published)" '0:yes'
+
+STUB_RUNTIME=new run 'native code changed' "$LIVE" "$DOTENV"
+check 'code with a new runtime version is refused' "$status:$(published)" '1:no'
+
+# CHECK_ONLY: every check, nothing published.
+reset; printf '%s\n' "$LIVE" >"$work/eas-env"; printf '%s\n' "$DOTENV" >"$work/app/.env"
+(cd "$work/app" && STUB_DIR=$work PATH="$work/bin:$PATH" CHECK_ONLY=1 \
+  "$root/scripts/publish-update.sh" production "Test update" >"$work/out" 2>&1)
+check 'CHECK_ONLY runs every check and publishes nothing' "$?:$(published)" '0:no'
+check 'it still builds and checks the update' "$(bundle 'SUPABASE_URL=https://live.example.test')" 1
+check 'and says nothing was published' "$(grep -c 'nothing was published' "$work/out")" 1
+
+# EAS_CLI picks the EAS CLI release.
+reset; printf '%s\n' "$LIVE" >"$work/eas-env"; printf '%s\n' "$DOTENV" >"$work/app/.env"
+(cd "$work/app" && STUB_DIR=$work PATH="$work/bin:$PATH" EAS_CLI=eas-cli@1.2.3 \
+  bash -x "$root/scripts/publish-update.sh" production "Test update" >"$work/out" 2>&1)
+check 'EAS_CLI picks the EAS CLI release' "$(grep -c 'npx eas-cli@1.2.3 update' "$work/out")" 1
+
+run 'unknown platform' "$LIVE" "$DOTENV" production 'Test update' windows
+check 'an unknown platform is refused' "$status:$(published)" '1:no'
 
 [ $failed -eq 0 ]
