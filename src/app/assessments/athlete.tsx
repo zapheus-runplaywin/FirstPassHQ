@@ -12,12 +12,14 @@ import {
   buildPicture,
   contextLabels,
   feedbackStatusLine,
+  releaseStatusLine,
   ratingLines,
   roundGameLine,
   roundGameTitle,
   tallyLabel,
   type AthleteAssessment,
   type AthleteFeedback,
+  type AthleteRelease,
   type Observation,
   type RoundAttendance,
   type RoundGame,
@@ -47,6 +49,7 @@ export default function AthleteAssessmentScreen() {
   const [assessment, setAssessment] = useState<AthleteAssessment | null>(null);
   const [attendance, setAttendance] = useState<RoundAttendance | null>(null);
   const [feedback, setFeedback] = useState<AthleteFeedback | null>(null);
+  const [release, setRelease] = useState<AthleteRelease | null>(null);
   const [error, setError] = useState<string | null>(null);
   const [refreshing, setRefreshing] = useState(false);
   const [games, setGames] = useState<RoundGame[]>([]);
@@ -75,7 +78,10 @@ export default function AthleteAssessmentScreen() {
     const { data: shared } = await supabase.rpc('athlete_feedback', { p_round_id: round, p_athlete_id: athlete });
     // The games the athlete played during the round: which and when. Figures are fetched for one game when it is opened.
     const { data: played } = await supabase.rpc('selection_round_games', { p_round_id: round, p_athlete_id: athlete });
+    // What the head coach released to the athlete (part 5): status only here.
+    const { data: released } = await supabase.rpc('athlete_release', { p_round_id: round, p_athlete_id: athlete });
     setError(null);
+    setRelease((released as AthleteRelease | null) ?? null);
     setGames((played as RoundGame[] | null) ?? []);
     setFeedback((shared as AthleteFeedback | null) ?? null);
     setAttendance((counts as RoundAttendance | null) ?? null);
@@ -157,6 +163,17 @@ export default function AthleteAssessmentScreen() {
           }
           variant="secondary"
           onPress={() => router.push({ pathname: '/assessments/feedback', params: { round, athlete } })}
+        />
+      ) : null}
+      {release && (release.can_release || release.release?.released_at) ? (
+        <Button
+          title={
+            release.release?.released_at
+              ? (releaseStatusLine({ seen: release.release.seen_at !== null }) ?? 'Assessment released')
+              : 'Release assessment'
+          }
+          variant="secondary"
+          onPress={() => router.push({ pathname: '/assessments/release', params: { round, athlete } })}
         />
       ) : null}
 

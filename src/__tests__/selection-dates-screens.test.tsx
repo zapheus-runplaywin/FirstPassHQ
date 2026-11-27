@@ -472,6 +472,8 @@ describe('a round’s dates, for the panel', () => {
       'selection_round_dates',
       'selection_round_summaries',
       'selection_round_feedback',
+      'selection_round_releases',
+      'i_lead_selection_round',
     ]);
   });
 
@@ -676,7 +678,7 @@ describe('Selection, for an athlete or a parent', () => {
   it('asks only for the member’s own selection information', async () => {
     await openSelection('athlete', [info()]);
     // And feedback the head coach shared with them, if any.
-    expect(assessmentRpcs().sort()).toEqual(['my_selection_feedback', 'my_selection_info']);
+    expect(assessmentRpcs().sort()).toEqual(['my_released_assessments', 'my_selection_feedback', 'my_selection_info']);
     expect(rpcCalls('my_selection_info')).toEqual([{}]);
   });
 

@@ -11,6 +11,7 @@ import {
   buildPicture,
   contextLabels,
   ratingLines,
+  releasePartsLine,
   tallyLabel,
   type AuditorAssessment,
 } from '@/lib/assessments';
@@ -29,7 +30,7 @@ export default function AuditAthleteScreen() {
   const { round, athlete } = useLocalSearchParams<{ round: string; athlete: string }>();
   const [assessment, setAssessment] = useState<AuditorAssessment | null>(null);
   const [error, setError] = useState<string | null>(null);
-  const [tab, setTab] = useState<'picture' | 'observations' | 'summaries' | 'feedback'>('picture');
+  const [tab, setTab] = useState<'picture' | 'observations' | 'summaries' | 'feedback' | 'released'>('picture');
 
   const load = useCallback(async () => {
     const { data, error: loadError } = await supabase.rpc('auditor_athlete_assessment', {
@@ -70,6 +71,7 @@ export default function AuditAthleteScreen() {
           { value: 'observations' as const, label: `Observations (${assessment.observations.length})` },
           { value: 'summaries' as const, label: `Summaries (${assessment.summaries.length})` },
           { value: 'feedback' as const, label: 'Feedback' },
+          { value: 'released' as const, label: 'Released' },
         ]}
         selected={[tab]}
         onToggle={setTab}
@@ -215,6 +217,42 @@ export default function AuditAthleteScreen() {
               {day(e.at)} · {e.kind === 'shared' ? 'Shared' : 'Taken back'} by {e.by_name}
             </ThemedText>
           ))}
+        </>
+      ) : null}
+      {tab === 'released' ? (
+        <>
+          {!assessment.release ? (
+            <ThemedText type="small" themeColor="textSecondary">
+              The head coach hasn’t released this athlete’s assessment.
+            </ThemedText>
+          ) : (
+            <Card style={styles.card}>
+              <ThemedText type="smallBold">
+                {assessment.release.released_at ? `Released ${day(assessment.release.released_at)}` : 'Taken back'} by{' '}
+                {assessment.release.released_by_name}
+              </ThemedText>
+              <ThemedText type="small">{releasePartsLine(assessment.release.parts, assessment.criteria.groups.length)}</ThemedText>
+              {assessment.release.released_at ? (
+                <ThemedText type="small" themeColor="textSecondary">
+                  {assessment.release.seen_at ? `First read ${day(assessment.release.seen_at)}` : 'Not read yet'}
+                </ThemedText>
+              ) : null}
+              <ThemedText type="small" themeColor="textSecondary">
+                The words are on the Summaries tab, in the head coach’s signed summary.
+              </ThemedText>
+            </Card>
+          )}
+          {(assessment.release_events ?? []).length > 0 ? (
+            <>
+              <ThemedText type="smallBold">Release history</ThemedText>
+              {(assessment.release_events ?? []).map((e, n) => (
+                <ThemedText key={n} type="small" themeColor="textSecondary">
+                  {day(e.at)} · {e.kind === 'released' ? 'Released' : 'Taken back'} by {e.by_name}
+                  {e.detail ? ` (${e.detail})` : ''}
+                </ThemedText>
+              ))}
+            </>
+          ) : null}
         </>
       ) : null}
     </Screen>

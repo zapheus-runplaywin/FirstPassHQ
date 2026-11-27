@@ -261,12 +261,12 @@ function SelectionAudits() {
 }
 
 function Selection() {
-  const { selectionInfo, selectionFeedback } = useHome();
+  const { selectionInfo, selectionFeedback, selectionReleases } = useHome();
   return (
     <FeatureCard
       icon="flag"
       title="Selection"
-      detail={selectionInfoLabel(selectionInfo, clubToday(), selectionFeedback)}
+      detail={selectionInfoLabel(selectionInfo, clubToday(), selectionFeedback, selectionReleases)}
       onPress={() => router.push('/selection')}
     />
   );

@@ -533,7 +533,7 @@ describe('feedback under Selection, for an athlete or a parent', () => {
 
   it('asks only for the member’s own feedback and rounds', async () => {
     await openSelection('athlete', []);
-    expect(assessmentRpcs().sort()).toEqual(['my_selection_feedback', 'my_selection_info']);
+    expect(assessmentRpcs().sort()).toEqual(['my_released_assessments', 'my_selection_feedback', 'my_selection_info']);
     expect(rpcCalls('my_selection_feedback')).toEqual([{}]);
   });
 

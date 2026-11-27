@@ -850,6 +850,7 @@ export function selectionAuditReport(
   summaries: AdminSummaries | null = null,
   feedback: AdminFeedback | null = null,
   record: RoundRecord | null = null,
+  releases: AdminReleases | null = null,
 ): Report {
   const { round } = audit;
   const groups = round.criteria_groups;
@@ -995,6 +996,7 @@ export function selectionAuditReport(
       },
       ...(summaries ? summariesAuditSections(summaries) : []),
       ...(feedback ? [feedbackAuditSection(feedback)] : []),
+      ...(releases ? [releasesAuditSection(releases)] : []),
     ],
     footnote: [
       'This report shows how the selection work was done, not what was said: it holds no ratings, evidence, recommendations or names of criteria, and nothing in it ranks athletes.',
@@ -1252,7 +1254,7 @@ export function selectionRegisterReport(register: SelectionRegister, seasonName:
             String(r.athletes - r.athletes_observed),
             `${r.summaries_signed} of ${r.summaries_expected}`,
             String(r.feedback_shared),
-            r.released === null ? '–' : String(r.released),
+            r.released === null ? '–' : `${r.released} of ${r.athletes}`,
           ],
         })),
         empty: 'No rounds this season.',
@@ -1552,7 +1554,15 @@ export function selectionInfoOwner(info: SelectionInfo) {
 }
 
 /** What Home says under Selections for an athlete or parent. */
-export function selectionInfoLabel(info: SelectionInfo[], today: string, feedback: { round_id: string }[] = []) {
+export function selectionInfoLabel(
+  info: SelectionInfo[],
+  today: string,
+  feedback: { round_id: string }[] = [],
+  releases: Pick<ReleasedAssessment, 'is_new' | 'is_me' | 'athlete_name'>[] = [],
+) {
+  // A release not read yet leads (part 5).
+  const fresh = releases.find((r) => r.is_new);
+  if (fresh) return `${releasedHeading(fresh)} from the coach`;
   // Feedback leads, unless it is from an earlier round and a new one is open.
   if (feedback.some((f) => info.length === 0 || info.some((i) => i.round_id === f.round_id))) {
     return 'Feedback from the coach';
@@ -2088,6 +2098,244 @@ export function feedbackHeading(feedback: SharedFeedback) {
 }
 
 // ---------------------------------------------------------------------------
+// Releasing an assessment (part 5): the head coach shows an athlete chosen
+// parts of their own signed summary. What the athlete reads is filtered in the
+// database (my_released_assessments); releasePreview follows the same rules.
+
+/** The parts of a signed summary the head coach shows. */
+export type ReleaseParts = {
+  groups: string[];
+  strengths: boolean;
+  priorities: boolean;
+  comments: boolean;
+  recommendation: boolean;
+};
+
+/** The head coach's own signed summary, for the ticks and the preview. */
+export type ReleaseSummary = {
+  ratings: SummaryRating[];
+  recommendation: string | null;
+  strengths: string;
+  priorities: string;
+  comments: string;
+};
+
+/** An athlete's release, for a panel member who can assess them (athlete_release). */
+export type AthleteRelease = {
+  round_id: string;
+  round_name: string;
+  phase: number | null;
+  round_number: number | null;
+  team_name: string;
+  criteria_set_name: string | null;
+  closed: boolean;
+  criteria: Criteria;
+  athlete_id: string;
+  athlete_name: string | null;
+  is_minor: boolean;
+  can_release: boolean;
+  my_summary_signed: boolean;
+  my_name: string | null;
+  /** Only for the head coach, once their summary is signed. */
+  summary: ReleaseSummary | null;
+  release: { parts: ReleaseParts; released_at: string | null; released_by_name: string; seen_at: string | null } | null;
+};
+
+/** One assessment released to the member or their child (my_released_assessments). */
+export type ReleasedAssessment = {
+  round_id: string;
+  round_name: string;
+  phase: number | null;
+  round_number: number | null;
+  team_name: string;
+  criteria_set_name: string | null;
+  athlete_id: string;
+  athlete_name: string | null;
+  is_me: boolean;
+  from_name: string;
+  released_on: string;
+  is_new: boolean;
+  strengths: string | null;
+  priorities: string | null;
+  comments: string | null;
+  recommendation: string | null;
+  groups: { name: string; scale: string[]; items: { name: string; step: string }[] }[];
+};
+
+/** What admins and auditors are shown about releases: who, when and which parts, never the words. */
+export type AdminReleases = {
+  athletes: number;
+  released: {
+    athlete_name: string | null;
+    released_at: string | null;
+    released_by_name: string | null;
+    seen_at: string | null;
+    withdrawn: number;
+    groups: number;
+    groups_total: number;
+    strengths: boolean;
+    priorities: boolean;
+    comments: boolean;
+    recommendation: boolean;
+  }[];
+};
+
+/** For a round's list: whose assessment is released. */
+export type ReleaseStatus = { athlete_id: string; seen: boolean };
+
+const filled = (text: string | null | undefined) => !!text && text.trim() !== '';
+
+/** The criteria groups the summary gave at least one step in. */
+export function groupsWithSteps(criteria: Criteria, summary: Pick<ReleaseSummary, 'ratings'>) {
+  const rated = new Set(summary.ratings.filter((r) => r.rating !== null && r.rating !== undefined).map((r) => r.item_key));
+  return criteria.groups.filter((g) => g.items.some((i) => rated.has(i.key))).map((g) => g.key);
+}
+
+/** The ticks a head coach starts with. */
+export function defaultReleaseParts(criteria: Criteria, summary: ReleaseSummary): ReleaseParts {
+  return {
+    groups: groupsWithSteps(criteria, summary),
+    strengths: filled(summary.strengths),
+    priorities: filled(summary.priorities),
+    comments: false,
+    recommendation: false,
+  };
+}
+
+/** Why the ticks can't be released, or null. */
+export function releasePartsProblem(parts: ReleaseParts) {
+  const any = parts.groups.length > 0 || parts.strengths || parts.priorities || parts.comments || parts.recommendation;
+  return any ? null : 'Tick at least one part to release';
+}
+
+/** The parts in a line: "Ratings for 6 of 9 groups, strengths, development priorities". */
+export function releasePartsLine(parts: ReleaseParts, groupsTotal: number) {
+  const bits = [
+    parts.groups.length === 0
+      ? null
+      : parts.groups.length === groupsTotal
+        ? `Ratings for all ${plural(groupsTotal, 'group', 'groups')}`
+        : `Ratings for ${parts.groups.length} of ${groupsTotal} groups`,
+    parts.strengths ? 'strengths' : null,
+    parts.priorities ? 'development priorities' : null,
+    parts.comments ? 'comments' : null,
+    parts.recommendation ? 'recommendation' : null,
+  ].filter((b): b is string => b !== null);
+  const line = bits.join(', ');
+  return line.charAt(0).toUpperCase() + line.slice(1);
+}
+
+/** Who reads a released assessment, for the head coach before they release. */
+export function releaseReaders(release: Pick<AthleteRelease, 'athlete_name' | 'is_minor'>) {
+  const name = release.athlete_name ?? 'The athlete';
+  return release.is_minor
+    ? `${name} is under 18. Their verified parents and guardians read this assessment at the same time, under Selection. Nobody can reply in the app.`
+    : `${name} reads this assessment under Selection. Nobody can reply in the app.`;
+}
+
+/** What a round's list, and the athlete's screen, say about a release; null when none. */
+export function releaseStatusLine(status: Pick<ReleaseStatus, 'seen'> | undefined) {
+  if (!status) return null;
+  return status.seen ? 'Assessment released and read' : 'Assessment released, not read yet';
+}
+
+/**
+ * What the athlete will read, built from the head coach's own summary and the
+ * ticks with the same rules as my_released_assessments: only ticked parts
+ * that aren't empty, only ticked groups, only criteria with a step, steps in
+ * the scale's words.
+ */
+export function releasePreview(release: AthleteRelease, summary: ReleaseSummary, parts: ReleaseParts): ReleasedAssessment {
+  const text = (on: boolean, value: string | null) => (on && filled(value) ? (value as string).trim() : null);
+  const steps = new Map(summary.ratings.map((r) => [r.item_key, r.rating]));
+  return {
+    round_id: release.round_id,
+    round_name: release.round_name,
+    phase: release.phase,
+    round_number: release.round_number,
+    team_name: release.team_name,
+    criteria_set_name: release.criteria_set_name,
+    athlete_id: release.athlete_id,
+    athlete_name: release.athlete_name,
+    is_me: false,
+    from_name: release.my_name ?? '',
+    released_on: clubToday(),
+    is_new: true,
+    strengths: text(parts.strengths, summary.strengths),
+    priorities: text(parts.priorities, summary.priorities),
+    comments: text(parts.comments, summary.comments),
+    recommendation: text(parts.recommendation, summary.recommendation),
+    groups: release.criteria.groups
+      .filter((g) => parts.groups.includes(g.key))
+      .map((g) => ({
+        name: g.name,
+        scale: g.scale,
+        items: g.items
+          .filter((i) => steps.get(i.key) != null)
+          .map((i) => ({ name: i.name, step: g.scale[(steps.get(i.key) as number) - 1] })),
+      }))
+      .filter((g) => g.items.length > 0),
+  };
+}
+
+/** "Your assessment" or "Jordan’s assessment". */
+export function releasedHeading(r: Pick<ReleasedAssessment, 'is_me' | 'athlete_name'>) {
+  return r.is_me ? 'Your assessment' : `${r.athlete_name ?? 'Your child'}’s assessment`;
+}
+
+/** Assessments released to the member or their children, in open and closed rounds. */
+export function useMyReleasedAssessments() {
+  const eligible = useCanSeeSelectionInfo();
+  const [releases, setReleases] = useState<ReleasedAssessment[]>([]);
+  const load = useCallback(async () => {
+    if (!eligible) return;
+    const { data } = await supabase.rpc('my_released_assessments');
+    setReleases((data as ReleasedAssessment[] | null) ?? []);
+  }, [eligible]);
+  useFocusEffect(
+    useCallback(() => {
+      load();
+    }, [load]),
+  );
+  return { selectionReleases: eligible ? releases : [], reloadSelectionReleases: load };
+}
+
+/** The Assessments released part of the Selection audit report. */
+export function releasesAuditSection(releases: AdminReleases): ReportSection {
+  const now = releases.released.filter((r) => r.released_at).length;
+  return {
+    title: 'Assessments released',
+    note: `What the head coach chose to show an athlete from their signed summary, and under 18, their verified parents. ${now} of ${plural(
+      releases.athletes,
+      'athlete has',
+      'athletes have',
+    )} one released now. What it says is not shown.`,
+    columns: [
+      { label: 'Athlete', width: 2.4 },
+      { label: 'Released', width: 1.5 },
+      { label: 'By', width: 2 },
+      { label: 'Parts', width: 3 },
+      { label: 'First read', width: 1.5 },
+      { label: 'Taken back' },
+    ],
+    rows: releases.released.map((r) => ({
+      cells: [
+        r.athlete_name ?? 'Athlete',
+        r.released_at ? day(r.released_at) : 'Taken back',
+        r.released_by_name ?? '',
+        releasePartsLine(
+          { groups: Array.from({ length: r.groups }, (_, n) => String(n)), strengths: r.strengths, priorities: r.priorities, comments: r.comments, recommendation: r.recommendation },
+          r.groups_total,
+        ),
+        r.released_at ? (r.seen_at ? day(r.seen_at) : 'Not yet') : '',
+        r.withdrawn === 0 ? '' : plural(r.withdrawn, 'time', 'times'),
+      ],
+    })),
+    empty: 'No assessment has been released.',
+  };
+}
+
+// ---------------------------------------------------------------------------
 // Evidence from games
 
 /** A game the athlete played during the round, for the panel: which and when, never a figure. */
@@ -2351,6 +2599,9 @@ export type AuditorAssessment = {
     | { draft: true }
     | { went_well: string; work_on: string; author_name: string; shared_at: string; seen_at: string | null };
   feedback_events: { kind: 'shared' | 'withdrawn'; by_name: string; at: string }[];
+  /** What the head coach released, also when taken back (part 5). */
+  release?: { parts: ReleaseParts; released_at: string | null; released_by_name: string; seen_at: string | null } | null;
+  release_events?: { kind: 'released' | 'withdrawn'; parts: ReleaseParts | null; detail: string | null; by_name: string; at: string }[];
 };
 
 /** Whether the member could audit: an approved committee member. The database decides which rounds. */

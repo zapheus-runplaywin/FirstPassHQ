@@ -6,6 +6,7 @@ import { ErrorText } from '@/components/ui';
 import {
   selectionAuditReport,
   type AdminFeedback,
+  type AdminReleases,
   type AdminSummaries,
   type Milestone,
   type RoundRecord,
@@ -29,6 +30,7 @@ export function SelectionAuditReport({ roundId, ref }: { roundId: string; ref?: 
   const [summaries, setSummaries] = useState<AdminSummaries | null>(null);
   const [feedback, setFeedback] = useState<AdminFeedback | null>(null);
   const [record, setRecord] = useState<RoundRecord | null>(null);
+  const [releases, setReleases] = useState<AdminReleases | null>(null);
   const [error, setError] = useState<string | null>(null);
 
   const load = useCallback(async () => {
@@ -45,7 +47,10 @@ export function SelectionAuditReport({ roundId, ref }: { roundId: string; ref?: 
     const { data: shared } = await supabase.rpc('admin_selection_feedback', { p_round_id: roundId });
     // Which criteria the round used, every change to it: no athlete data.
     const { data: recordRow } = await supabase.rpc('admin_selection_round_record', { p_round_id: roundId });
+    // Whose assessment was released, which parts and when: never the words (part 5).
+    const { data: releaseRows } = await supabase.rpc('admin_selection_releases', { p_round_id: roundId });
     setError(null);
+    setReleases((releaseRows as AdminReleases | null) ?? null);
     setRecord((recordRow as RoundRecord | null) ?? null);
     setFeedback((shared as AdminFeedback | null) ?? null);
     setDates((dateRows as Milestone[] | null) ?? []);
@@ -64,7 +69,7 @@ export function SelectionAuditReport({ roundId, ref }: { roundId: string; ref?: 
   return (
     <>
       <ErrorText>{error}</ErrorText>
-      {audit ? <ReportView folded report={selectionAuditReport(audit, dates, summaries, feedback, record)} /> : null}
+      {audit ? <ReportView folded report={selectionAuditReport(audit, dates, summaries, feedback, record, releases)} /> : null}
     </>
   );
 }

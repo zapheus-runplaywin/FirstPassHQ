@@ -5,7 +5,7 @@ import { Pressable, StyleSheet, View } from 'react-native';
 import { CardGrid } from '@/components/columns';
 import { Screen } from '@/components/screen';
 import { ThemedText } from '@/components/themed-text';
-import { ChipGroup, ErrorText, PressableCard, TextField } from '@/components/ui';
+import { Button, ChipGroup, ErrorText, PressableCard, TextField } from '@/components/ui';
 import { Spacing } from '@/constants/theme';
 import { useTheme } from '@/hooks/use-theme';
 import {
@@ -14,6 +14,7 @@ import {
   athleteLine,
   dueLabel,
   feedbackStatusLine,
+  releaseStatusLine,
   filterAthletes,
   isOverdue,
   nextRoundDate,
@@ -24,6 +25,7 @@ import {
   summaryStatusLine,
   type AthleteFilter,
   type FeedbackStatus,
+  type ReleaseStatus,
   type RoundDate,
   type RoundSheet,
   type SummaryStatus,
@@ -44,6 +46,8 @@ export default function RoundScreen() {
   const [dates, setDates] = useState<RoundDate[]>([]);
   const [summaries, setSummaries] = useState<SummaryStatus[]>([]);
   const [feedback, setFeedback] = useState<FeedbackStatus[]>([]);
+  const [releases, setReleases] = useState<ReleaseStatus[]>([]);
+  const [leads, setLeads] = useState(false);
   const [showDates, setShowDates] = useState(false);
   const [filter, setFilter] = useState<AthleteFilter>('all');
   const [search, setSearch] = useState('');
@@ -61,7 +65,12 @@ export default function RoundScreen() {
     const { data: summaryRows } = await supabase.rpc('selection_round_summaries', { p_round_id: id });
     // Where each athlete's feedback stands; a draft shows to the head coach only.
     const { data: feedbackRows } = await supabase.rpc('selection_round_feedback', { p_round_id: id });
+    // Whose assessment the head coach released (part 5), and whether the member leads the round.
+    const { data: releaseRows } = await supabase.rpc('selection_round_releases', { p_round_id: id });
+    const { data: leading } = await supabase.rpc('i_lead_selection_round', { p_round_id: id });
     setError(null);
+    setReleases((releaseRows as ReleaseStatus[] | null) ?? []);
+    setLeads(leading === true);
     setFeedback((feedbackRows as FeedbackStatus[] | null) ?? []);
     setDates((dateRows as RoundDate[] | null) ?? []);
     setSummaries((summaryRows as SummaryStatus[] | null) ?? []);
@@ -97,6 +106,12 @@ export default function RoundScreen() {
   const params = (athlete: string) => ({ round: sheet.id, athlete });
   // Observations are dated inside the round, so nothing can be added before it starts.
   const notStarted = !sheet.closed && sheet.starts_on > sheet.today;
+
+  // The head coach's athletes with a signed summary and nothing released yet.
+  const toRelease =
+    leads && !sheet.closed
+      ? summaries.filter((s) => s.mine === 'signed' && !releases.some((r) => r.athlete_id === s.athlete_id)).length
+      : 0;
 
   return (
     <Screen refreshing={refreshing} onRefresh={onRefresh}>
@@ -134,6 +149,13 @@ export default function RoundScreen() {
         </PressableCard>
       ) : null}
 
+      {toRelease > 0 ? (
+        <Button
+          title={`Release to everyone signed (${toRelease})`}
+          variant="secondary"
+          onPress={() => router.push({ pathname: '/assessments/release', params: { round: id } })}
+        />
+      ) : null}
       {filters.length > 0 ? <ChipGroup options={filters} selected={[chosen]} onToggle={setFilter} /> : null}
       {sheet.athletes.length > SEARCH_FROM ? (
         <TextField label="Find an athlete" value={search} onChangeText={setSearch} placeholder="Type part of a name" />
@@ -157,6 +179,7 @@ export default function RoundScreen() {
             [
               summaryStatusLine(summaries.find((s) => s.athlete_id === athlete.id)),
               feedbackStatusLine(feedback.find((f) => f.athlete_id === athlete.id)),
+              releaseStatusLine(releases.find((r) => r.athlete_id === athlete.id)),
             ]
               .filter(Boolean)
               .join(' · ') || null;
