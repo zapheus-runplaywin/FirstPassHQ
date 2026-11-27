@@ -46,7 +46,10 @@ export default function EventScreen() {
   return (
     <Screen>
       <View style={styles.header}>
-        <ThemedText type="subtitle" selectable style={event.cancelled ? styles.cancelled : undefined}>
+        <ThemedText
+          type="subtitle"
+          selectable
+          style={event.cancelled || event.pending === 'declined' ? styles.cancelled : undefined}>
           {event.title}
         </ThemedText>
         <ThemedText type="smallBold" style={{ color: event.color }}>
@@ -62,12 +65,41 @@ export default function EventScreen() {
             }
           />
         ) : null}
+        {event.pending === 'suggested' ? (
+          <StatusLine
+            tone="attention"
+            text={
+              event.teamEvent?.mine
+                ? 'Suggested by you. Waiting for an admin'
+                : `Suggested by ${event.teamEvent?.createdByName ?? 'a member'}. Not on the calendar yet`
+            }
+          />
+        ) : null}
+        {event.pending === 'declined' ? (
+          <StatusLine
+            tone="attention"
+            text={
+              event.teamEvent?.decidedByName
+                ? `Not added to the calendar by ${event.teamEvent.decidedByName}`
+                : 'Not added to the calendar'
+            }
+          />
+        ) : null}
         {event.teamEvent?.staffOnly ? (
           <ThemedText type="small" themeColor="textSecondary">
             Coaches and managers only
           </ThemedText>
         ) : null}
       </View>
+
+      {event.pending === 'declined' && event.teamEvent?.declineReason ? (
+        <Card>
+          <ThemedText type="smallBold">Why it wasn’t added</ThemedText>
+          <ThemedText type="small" selectable>
+            {event.teamEvent.declineReason}
+          </ThemedText>
+        </Card>
+      ) : null}
 
       <Card>
         <Detail label="When">{when}</Detail>
@@ -129,7 +161,8 @@ export default function EventScreen() {
       <TeamEventManage event={event} />
       {event.teamEvent?.createdByName ? (
         <ThemedText type="small" themeColor="textSecondary">
-          Added by {event.teamEvent.createdByName}
+          {event.pending || event.teamEvent.decidedByName ? 'Suggested by' : 'Added by'}{' '}
+          {event.teamEvent.createdByName}
         </ThemedText>
       ) : null}
     </Screen>

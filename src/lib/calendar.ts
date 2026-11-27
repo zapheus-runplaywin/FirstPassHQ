@@ -26,15 +26,27 @@ export type CalendarEvent = {
   forAthletes?: boolean;
   /** Called off: still listed, struck through, so families see it isn't on. */
   cancelled?: boolean;
-  /** Set on an event a coach or manager added in the app (src/lib/team-events.ts). */
+  /**
+   * Not on the calendar: suggested and waiting for an admin, or declined. Only
+   * the person who suggested it and admins are ever given one.
+   */
+  pending?: 'suggested' | 'declined';
+  /** Set on an event added in the app, for a squad or team or on a calendar kept in the app (src/lib/team-events.ts). */
   teamEvent?: TeamEventDetails;
 };
 
 /** What the app keeps about an event added in it, beyond what every event has. */
 export type TeamEventDetails = {
-  /** The row's id in `calendar_events`. */
+  /** The row's id in `calendar_events`, or in `hq_calendar_events` for a calendar kept in the app. */
   id: string;
-  teamId: string;
+  /** The squad or team it's for, or null on a calendar kept in the app. */
+  teamId: string | null;
+  /** The calendar kept in the app that it's on, when it isn't a squad's or team's. */
+  hqCalendarId?: string;
+  /** A suggestion: whether the signed-in member made it, and the admin's answer. */
+  mine?: boolean;
+  decidedByName?: string | null;
+  declineReason?: string | null;
   kind: string;
   /** The club's own day and clock times, as the form shows them: "2026-12-01", "18:00". */
   day: string;

@@ -74,7 +74,14 @@ export function AgendaRow({
 }) {
   const styles = useThemedStyles(makeStyles);
   const today = isToday(event.start);
-  const details = [event.cancelled ? 'Cancelled' : null, formatEventTime(event), event.location]
+  const status = event.cancelled
+    ? 'Cancelled'
+    : event.pending === 'suggested'
+      ? 'Suggested'
+      : event.pending === 'declined'
+        ? 'Not added'
+        : null;
+  const details = [status, formatEventTime(event), event.location]
     .filter(Boolean)
     .join(' · ');
   return (
@@ -104,15 +111,15 @@ export function AgendaRow({
           style={[
             styles.stripe,
             { backgroundColor: event.color },
-            event.cancelled && styles.stripeCancelled,
+            (event.cancelled || event.pending) && styles.stripeCancelled,
           ]}
         />
         <View style={styles.cardText}>
           <ThemedText
             type="smallBold"
             numberOfLines={2}
-            themeColor={event.cancelled ? 'textSecondary' : undefined}
-            style={event.cancelled ? styles.cancelled : undefined}>
+            themeColor={event.cancelled || event.pending ? 'textSecondary' : undefined}
+            style={event.cancelled || event.pending === 'declined' ? styles.cancelled : undefined}>
             {event.title}
           </ThemedText>
           <ThemedText type="small" themeColor="textSecondary" numberOfLines={1}>

@@ -36,7 +36,13 @@ function EventTile({ event, showDay }: { event: CalendarEvent; showDay: boolean 
   const time = showDay
     ? `${formatShortDay(event.start)} · ${formatEventTime(event)}`
     : formatEventTime(event);
-  const when = event.cancelled ? `Cancelled · ${time}` : time;
+  const when = event.cancelled
+    ? `Cancelled · ${time}`
+    : event.pending === 'suggested'
+      ? `Suggested · ${time}`
+      : event.pending === 'declined'
+        ? `Not added · ${time}`
+        : time;
   return (
     <Pressable
       accessibilityRole="button"
@@ -55,7 +61,7 @@ function EventTile({ event, showDay }: { event: CalendarEvent; showDay: boolean 
       <ThemedText
         type="smallBold"
         numberOfLines={2}
-        style={event.cancelled ? styles.cancelled : undefined}>
+        style={event.cancelled || event.pending === 'declined' ? styles.cancelled : undefined}>
         {event.title}
       </ThemedText>
       {event.location ? (

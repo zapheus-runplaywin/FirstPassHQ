@@ -11,6 +11,7 @@ import { WeekStrip } from '@/components/week-strip';
 import { Spacing } from '@/constants/theme';
 import { useTheme } from '@/hooks/use-theme';
 import { useAuth } from '@/lib/auth';
+import { useFeature } from '@/lib/club';
 import type { CalendarEvent } from '@/lib/calendar';
 import { clubToday } from '@/lib/club-time';
 import { addDays, dayKey, formatMonth, startOfWeek } from '@/lib/format';
@@ -34,8 +35,16 @@ import {
   timeAfter,
   type EventForm,
   type EventKind,
+  type HqCalendarChoice,
 } from '@/lib/team-events';
-import { earliestDay, latestDay, refreshEvents, useEvent, useEvents } from '@/lib/use-events';
+import {
+  earliestDay,
+  latestDay,
+  refreshEvents,
+  useEvent,
+  useEvents,
+  useHqCalendarChoices,
+} from '@/lib/use-events';
 import { teamLabel, useTeamList } from '@/lib/use-teams';
 import type { Team } from '@/lib/types';
 
@@ -49,38 +58,72 @@ const LENGTHS = [
 /** How long a weekly event usually runs for, offered as one-tap choices. */
 const DEFAULT_REPEAT_WEEKS = 8;
 
+/** What an event is for: a squad or team, or a calendar kept in the app. */
+type Target = {
+  key: string;
+  teamId: string | null;
+  calendarId: string | null;
+  label: string;
+  /** True when it is sent to an admin as a suggestion. */
+  suggest: boolean;
+};
+
+const teamKey = (id: string) => `team:${id}`;
+const calendarKey = (id: string) => `calendar:${id}`;
+
 /**
- * Adds a squad's or team's event, or changes one (`id`). `team` and `day`
- * start a new one on the squad or team and day the member was looking at.
+ * Adds an event, or changes one (`id`): for a squad or team (its coaches and
+ * managers, and admins), or on a calendar kept in the app (admins; coaches,
+ * managers and committee members suggest one for an admin to accept). `team`,
+ * `calendar` and `day` start a new one where the member was looking.
  */
 export default function EditEventScreen() {
-  const params = useLocalSearchParams<{ id?: string; team?: string; day?: string }>();
+  const params = useLocalSearchParams<{ id?: string; team?: string; calendar?: string; day?: string }>();
   const existing = useEvent(params.id);
   const { teams, loaded } = useTeamList();
   const { memberships, isAdmin } = useAuth();
+  const teamEventsOn = useFeature('teamEvents');
+  const { choices, loaded: choicesLoaded } = useHqCalendarChoices();
   const { events } = useEvents();
 
-  if (!loaded || (params.id && existing === undefined)) return <Screen>{null}</Screen>;
+  if (!loaded || !choicesLoaded || (params.id && existing === undefined)) return <Screen>{null}</Screen>;
 
   if (params.id && (!existing || !existing.teamEvent?.canManage)) {
     return (
       <Screen>
         <ThemedText type="small" themeColor="textSecondary">
-          {existing
-            ? 'Only this squad’s or team’s coaches and managers can change its events.'
-            : 'This event is no longer on the calendar.'}
+          {!existing
+            ? 'This event is no longer on the calendar.'
+            : existing.teamEvent?.hqCalendarId
+              ? 'Only admins can change this calendar’s events.'
+              : 'Only this squad’s or team’s coaches and managers can change its events.'}
         </ThemedText>
       </Screen>
     );
   }
 
-  const groups = eventGroups(teams, memberships, isAdmin);
-  if (!params.id && groups.length === 0) {
+  const targets: Target[] = [
+    ...(teamEventsOn ? eventGroups(teams, memberships, isAdmin) : []).map((g) => ({
+      key: teamKey(g.id),
+      teamId: g.id,
+      calendarId: null,
+      label: teamLabel(g, teams),
+      suggest: false,
+    })),
+    ...choices.map((c: HqCalendarChoice) => ({
+      key: calendarKey(c.id),
+      teamId: null,
+      calendarId: c.id,
+      label: c.name,
+      suggest: c.suggest,
+    })),
+  ];
+  if (!params.id && targets.length === 0) {
     return (
       <Screen>
         <ThemedText type="small" themeColor="textSecondary">
-          Events are added by the coaches and managers of a squad or team, and by admins. You
-          aren’t a coach or manager of a current squad or team.
+          There’s nothing you can add an event to. A squad’s or team’s coaches and managers add
+          its events, and admins add the club’s.
         </ThemedText>
       </Screen>
     );
@@ -89,10 +132,11 @@ export default function EditEventScreen() {
   return (
     <EventFormScreen
       existing={existing ?? null}
-      groups={groups}
+      targets={targets}
       teams={teams}
       events={events ?? []}
-      startTeam={params.team}
+      isAdmin={isAdmin}
+      startKey={params.calendar ? calendarKey(params.calendar) : params.team ? teamKey(params.team) : undefined}
       startDay={params.day}
     />
   );
@@ -102,6 +146,7 @@ function formFrom(existing: CalendarEvent): EventForm {
   const details = existing.teamEvent!;
   return {
     teamId: details.teamId,
+    calendarId: details.hqCalendarId ?? null,
     kind: isEventKind(details.kind) ? details.kind : 'other',
     title: existing.title,
     day: details.day,
@@ -118,29 +163,33 @@ function formFrom(existing: CalendarEvent): EventForm {
 
 function EventFormScreen({
   existing,
-  groups,
+  targets,
   teams,
   events,
-  startTeam,
+  isAdmin,
+  startKey,
   startDay,
 }: {
   existing: CalendarEvent | null;
-  groups: Team[];
+  targets: Target[];
   teams: Team[];
   events: CalendarEvent[];
-  startTeam: string | undefined;
+  isAdmin: boolean;
+  startKey: string | undefined;
   startDay: string | undefined;
 }) {
   const editing = existing !== null;
   const [form, setForm] = useState<EventForm>(() => {
     if (existing) return formFrom(existing);
-    const teamId =
-      groups.find((g) => g.id === startTeam)?.id ?? (groups.length === 1 ? groups[0].id : null);
+    const first = targets.find((t) => t.key === startKey) ?? (targets.length === 1 ? targets[0] : null);
     const day = startDay && /^\d{4}-\d{2}-\d{2}$/.test(startDay) ? startDay : clubToday();
+    // A club calendar's events are rarely training, so it starts on Other.
+    const kind: EventKind = first?.calendarId ? 'other' : 'training';
     return {
-      teamId,
-      kind: 'training',
-      title: eventKindTitles.training,
+      teamId: first?.teamId ?? null,
+      calendarId: first?.calendarId ?? null,
+      kind,
+      title: eventKindTitles[kind],
       day,
       allDay: false,
       endDay: null,
@@ -161,13 +210,22 @@ function EventFormScreen({
 
   const set = (changes: Partial<EventForm>) => setForm((current) => ({ ...current, ...changes }));
 
-  /** Picks the squad or team and kind, filling in from the last event like it. */
-  function choose(teamId: string | null, kind: EventKind) {
+  const target =
+    targets.find((t) => (form.calendarId ? t.calendarId === form.calendarId : !!form.teamId && t.teamId === form.teamId)) ??
+    null;
+  const onCalendar = !!form.calendarId;
+  // A coach's, manager's or committee member's event on a club calendar waits for an admin.
+  const suggesting = onCalendar && !isAdmin;
+  // An admin changing a suggestion accepts it as changed.
+  const accepting = isAdmin && existing?.pending === 'suggested';
+
+  /** Picks what it's for and its kind, filling in from the last event like it. */
+  function choose(next: Target | null, kind: EventKind) {
     if (editing) {
       set({ kind });
       return;
     }
-    const result = startedFrom(form, events, teamId, kind, typed);
+    const result = startedFrom(form, events, next?.teamId ?? null, kind, typed, next?.calendarId ?? null);
     setForm(result.form);
     setFilledFrom(result.filledFrom);
   }
@@ -177,21 +235,27 @@ function EventFormScreen({
   const [started, setStarted] = useState(false);
   if (!started && !editing && events.length > 0) {
     setStarted(true);
-    if (form.teamId) choose(form.teamId, form.kind);
+    if (target) choose(target, form.kind);
   }
 
   const group = teams.find((t) => t.id === form.teamId) ?? null;
-  const groupWord = !group ? 'group' : group.kind === 'team' ? 'team' : 'squad';
+  const groupWord = onCalendar ? 'calendar' : !group ? 'group' : group.kind === 'team' ? 'team' : 'squad';
+  /** Whether an event is one of the squad's, team's or calendar's this form is for. */
+  const sameHome = (e: CalendarEvent) =>
+    form.calendarId ? e.calendarId === form.calendarId : !!form.teamId && !!e.teamIds?.includes(form.teamId);
   const start = form.startText.trim() ? parseTime(form.startText) : null;
   const places = useMemo(
-    () => placeSuggestions(events, form.teamId).filter((p) => p !== form.location.trim()),
-    [events, form.teamId, form.location],
+    () =>
+      placeSuggestions(events, form.teamId, 3, form.calendarId ?? null).filter(
+        (p) => p !== form.location.trim(),
+      ),
+    [events, form.teamId, form.calendarId, form.location],
   );
   // Dots under the days this squad or team already has something on.
   const busyDays = useMemo(() => {
     const days = new Map<string, string[]>();
     for (const event of events) {
-      if (event.cancelled || !form.teamId || !event.teamIds?.includes(form.teamId)) continue;
+      if (event.cancelled || event.pending || !sameHome(event)) continue;
       if (existing && event.id === existing.id) continue;
       const key = dayKey(event.start);
       const colors = days.get(key) ?? [];
@@ -199,18 +263,22 @@ function EventFormScreen({
       days.set(key, colors);
     }
     return days;
-  }, [events, form.teamId, existing]);
+    // sameHome reads only the two ids below.
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [events, form.teamId, form.calendarId, existing]);
   const sameDay = useMemo(
     () =>
       events.filter(
         (e) =>
           !e.cancelled &&
-          !!form.teamId &&
-          e.teamIds?.includes(form.teamId) &&
+          !e.pending &&
+          sameHome(e) &&
           e.id !== existing?.id &&
           toDateString(e.start) === form.day,
       ),
-    [events, form.teamId, form.day, existing],
+    // sameHome reads only the two ids below.
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+    [events, form.teamId, form.calendarId, form.day, existing],
   );
 
   const days = form.allDay && form.endDay ? daysBetween(form.day, form.endDay) + 1 : 1;
@@ -224,7 +292,7 @@ function EventFormScreen({
     }
     setSaving(true);
     setError(null);
-    const { error: saveError } = await supabase.rpc('save_team_event', result.args);
+    const { error: saveError } = await supabase.rpc(result.rpc, result.args);
     setSaving(false);
     if (saveError) {
       setError(manageErrorMessage(saveError.message));
@@ -234,33 +302,41 @@ function EventFormScreen({
     router.back();
   }
 
-  const more = [
-    form.staffOnly ? 'Coaches and managers only' : `Whole ${groupWord}`,
-    form.note.trim() ? 'with a note' : 'no note',
-  ].join(' · ');
+  const more = onCalendar
+    ? form.note.trim()
+      ? 'With a note'
+      : 'No note'
+    : [
+        form.staffOnly ? 'Coaches and managers only' : `Whole ${groupWord}`,
+        form.note.trim() ? 'with a note' : 'no note',
+      ].join(' · ');
+  const heading = editing ? 'Change event' : suggesting ? 'Suggest an event' : 'Add an event';
 
   return (
     <Screen gap={Spacing.three}>
-      <Stack.Screen options={{ title: editing ? 'Change event' : 'Add an event' }} />
+      <Stack.Screen options={{ title: heading }} />
 
-      {editing || groups.length === 1 ? (
-        <ThemedText type="smallBold">
-          For {group ? teamLabel(group, teams) : (existing?.calendarName ?? '')}
-        </ThemedText>
+      {editing || targets.length === 1 ? (
+        <ThemedText type="smallBold">For {target?.label ?? existing?.calendarName ?? ''}</ThemedText>
       ) : (
         <ChipGroup
           label="For"
-          options={groups.map((g) => ({ value: g.id, label: teamLabel(g, teams) }))}
-          selected={form.teamId ? [form.teamId] : []}
-          onToggle={(teamId) => choose(teamId, form.kind)}
+          options={targets.map((t) => ({ value: t.key, label: t.label }))}
+          selected={target ? [target.key] : []}
+          onToggle={(key) => choose(targets.find((t) => t.key === key) ?? null, form.kind)}
         />
       )}
+      {suggesting ? (
+        <ThemedText type="small" themeColor="textSecondary" testID="suggest-note">
+          An admin checks it before it goes on the calendar. Until then only you and admins see it.
+        </ThemedText>
+      ) : null}
 
       <ChipGroup
         label="What"
         options={eventKinds.map((kind) => ({ value: kind, label: eventKindLabels[kind] }))}
         selected={[form.kind]}
-        onToggle={(kind) => choose(form.teamId, kind)}
+        onToggle={(kind) => choose(target, kind)}
       />
 
       <TextField
@@ -393,7 +469,8 @@ function EventFormScreen({
 
       {filledFrom ? (
         <ThemedText type="small" themeColor="textSecondary">
-          Filled in from this {groupWord}’s last {eventKindLabels[filledFrom].toLowerCase()}. Change anything that’s different.
+          Filled in from this {groupWord}’s last{' '}
+          {filledFrom === 'other' ? 'event' : eventKindLabels[filledFrom].toLowerCase()}. Change anything that’s different.
         </ThemedText>
       ) : null}
 
@@ -436,21 +513,29 @@ function EventFormScreen({
         </View>
       )}
 
-      <FormSection title="Who sees it, and a note" summary={more}>
-        <ChipGroup
-          label="Who sees it"
-          options={[
-            { value: 'all', label: `Whole ${groupWord}` },
-            { value: 'staff', label: 'Coaches and managers only' },
-          ]}
-          selected={[form.staffOnly ? 'staff' : 'all']}
-          onToggle={(choice) => set({ staffOnly: choice === 'staff' })}
-        />
-        <ThemedText type="small" themeColor="textSecondary">
-          {form.staffOnly
-            ? `Only this ${groupWord}’s coaches and managers, and admins, see it.`
-            : `Everyone in the ${groupWord} sees it: athletes, their parents and guardians, coaches, managers and physios.`}
-        </ThemedText>
+      <FormSection title={onCalendar ? 'A note' : 'Who sees it, and a note'} summary={more}>
+        {onCalendar ? (
+          <ThemedText type="small" themeColor="textSecondary">
+            Everyone this calendar is shown to sees the event and its note.
+          </ThemedText>
+        ) : (
+          <>
+            <ChipGroup
+              label="Who sees it"
+              options={[
+                { value: 'all', label: `Whole ${groupWord}` },
+                { value: 'staff', label: 'Coaches and managers only' },
+              ]}
+              selected={[form.staffOnly ? 'staff' : 'all']}
+              onToggle={(choice) => set({ staffOnly: choice === 'staff' })}
+            />
+            <ThemedText type="small" themeColor="textSecondary">
+              {form.staffOnly
+                ? `Only this ${groupWord}’s coaches and managers, and admins, see it.`
+                : `Everyone in the ${groupWord} sees it: athletes, their parents and guardians, coaches, managers and physios.`}
+            </ThemedText>
+          </>
+        )}
         <TextField
           label="Note (optional)"
           value={form.note}
@@ -464,11 +549,17 @@ function EventFormScreen({
       {error ? <ErrorText>{error}</ErrorText> : null}
       <Button
         title={
-          editing
-            ? 'Save changes'
-            : repeats
-              ? `Add ${form.repeatWeeks} events`
-              : 'Add to the calendar'
+          accepting
+            ? 'Save and add to the calendar'
+            : editing
+              ? 'Save changes'
+              : suggesting
+                ? repeats
+                  ? `Send ${form.repeatWeeks} events to an admin`
+                  : 'Send to an admin'
+                : repeats
+                  ? `Add ${form.repeatWeeks} events`
+                  : 'Add to the calendar'
         }
         onPress={save}
         busy={saving}

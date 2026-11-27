@@ -1406,3 +1406,36 @@ describe('selection rounds', () => {
     expect(todos()).toEqual([]);
   });
 });
+
+describe('suggested events', () => {
+  it('asks an admin to answer the ones waiting, by how many', () => {
+    const todo = only(todos({ eventSuggestions: 1 }));
+    expect(todo).toMatchObject({
+      key: 'event-suggestions',
+      title: 'Answer 1 suggested event',
+      detail: 'Add them to the calendar, or decline with a reason',
+      href: '/admin/event-suggestions',
+    });
+    expect(only(todos({ eventSuggestions: 3 })).title).toBe('Answer 3 suggested events');
+  });
+
+  it('asks nothing when none wait', () => {
+    expect(todos({ eventSuggestions: 0 })).toEqual([]);
+    expect(todos()).toEqual([]);
+  });
+
+  it('tells the member each suggestion of theirs that wasn’t added, and opens it', () => {
+    const list = todos({
+      declinedEvents: [
+        { id: 'hq-event:a', title: 'Trivia night' },
+        { id: 'hq-event:b', title: 'Working bee' },
+      ],
+    });
+    expect(keys(list)).toEqual(['event-declined-hq-event:a', 'event-declined-hq-event:b']);
+    expect(list[0]).toMatchObject({
+      title: '“Trivia night” wasn’t added to the calendar',
+      detail: 'See why, then clear it away',
+      href: { pathname: '/event/[id]', params: { id: 'hq-event:a' } },
+    });
+  });
+});

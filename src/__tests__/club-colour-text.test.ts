@@ -39,7 +39,7 @@ const LINKS_AND_BUTTONS: Record<string, number> = {
   'app/attendance/new.tsx': 1,
   'app/attendance/family/[id].tsx': 1,
   'app/admin/[id].tsx': 1,
-  'app/admin/calendars.tsx': 2,
+  'app/admin/calendars.tsx': 3,
   'app/admin/seasons.tsx': 1,
   'app/admin/squads.tsx': 9,
   'app/admin/place/[id].tsx': 1,
