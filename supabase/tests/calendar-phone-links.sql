@@ -209,3 +209,10 @@ select pg_temp.ok('deleting the calendar ends its link',
   pg_temp.feed((select token from keys where name = 'third')) is null, true);
 reset role;
 select pg_temp.eq('and leaves no row behind', (select count(*)::text from public.calendar_phone_links), '0');
+
+-- The helper and the feed are for the service role: no member or signed-out
+-- visitor can run either directly.
+select pg_temp.ok(f || ': ' || r || ' cannot run it', has_function_privilege(r, f, 'execute'), false)
+from (values ('public.calendar_can_have_phone_link(uuid)'), ('public.calendar_phone_feed(text)')) as v(f),
+     (values ('authenticated'), ('anon')) as w(r)
+order by f, r;

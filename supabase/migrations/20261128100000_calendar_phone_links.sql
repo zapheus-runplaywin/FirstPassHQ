@@ -55,8 +55,9 @@ as $$
       )
   );
 $$;
-revoke execute on function public.calendar_can_have_phone_link(uuid) from public, anon;
-grant execute on function public.calendar_can_have_phone_link(uuid) to authenticated, service_role;
+-- Used only inside the functions below, which run as their owner.
+revoke execute on function public.calendar_can_have_phone_link(uuid) from public, anon, authenticated;
+grant execute on function public.calendar_can_have_phone_link(uuid) to service_role;
 
 -- The phone links that are on, for the admin's Calendars screen. A link whose
 -- calendar is no longer shown to everyone isn't listed: it doesn't work.
