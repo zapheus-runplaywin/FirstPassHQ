@@ -7,7 +7,10 @@ this one. If they disagree, this file wins, and this file must match the code.
 
 Checked against `main` at commit `7ceb1aa` (17 Nov 2026, after #217), and row 1 again at
 `ba4c638` (18 Nov, after Sign in with Apple #219 and its revoke on delete #221), and row 12
-again at `6473cca` (25 Nov, after questions on messages #258 and chat groups #294 to #299). A row for crash
+again at `6473cca` (25 Nov, after questions on messages #258 and chat groups #294 to #299), and rows
+24 and 25, the calendar notes and "Deleting an account" at `1e218e8` (28 Nov, build 910, after
+selection assessments #281 to #327, squad and team events #328, calendars kept in the app #329,
+the phone link #331 and My account #315). A row for crash
 reports (W2) is added only after it merges, because the pack describes what is merged.
 
 ## Where the data is
@@ -63,12 +66,15 @@ about a member named in a concern is removed while it names them (legal hold,
 | 21 | Game stats recorded in FirstPass Vantage (not this app) | `games`, `game_events` (`20261015000100_game_stats.sql`) | Coaching; live stream graphics | Coaches and statisticians; Studio operators for live or final games | Not in the keep periods today | **Yes, if the club streams games:** FirstPass Studio shows an athlete by name with their stats only with a publish consent, given by a verified parent for an under 18 (`20261113010100_studio_access.sql`, `20261115000600_publish_consent_needs_guardian.sql`) |
 | 22 | On the phone only: the sign-in session, the club codes used, the cached club look, and the app's own log | `src/lib/secure-session-store.ts` (encrypted), AsyncStorage, `src/lib/log.ts` (at most 200 MB, names, emails, health and tokens redacted) | Stay signed in; switch clubs; find faults | Nobody else. The log never leaves the phone | Until the app is removed. `android.allowBackup` is `false` in `app.json`, so none of it goes into Android backups | No |
 | 23 | Blocks in chat groups: who blocked whom, their names and whether each was under 18 then, the group, when, any unblocking, and the follow-up (who, when, an optional note) | `chat_blocks` (`20261125400000_chat_blocks.sql`) | Let a member stop seeing someone's posts, and let the club check in with them | The member who blocked (their own, in Blocked people). Admins, the Child Safety Officer and the Complaints Manager, never a block they're part of. The member blocked isn't told. Never the posts | Until either member's account is deleted | The to-do push says only that a block needs following up, naming nobody (row 19) |
+| 24 | Selection assessments, only when an admin turns them on (off by default): what a round's selectors write about each athlete (observations with where, when, the evidence and a step against each of the criteria), each selector's signed summary (steps, a recommendation, strengths, development priorities, comments and internal notes), the feedback and the parts of their own summary the head coach shares with the athlete and when each was first read, and each round's panel, auditors, dates and history of changes | `selection_rounds`, `selection_round_panel`, `assessment_observations`, `assessment_observation_ratings` (`20261123100000_selection_assessments.sql`), `selection_round_milestones` (`20261123200000_selection_dates.sql`), `assessment_summaries`, `assessment_summary_events` (`20261123300000_selection_summaries.sql`), `assessment_feedback`, `assessment_feedback_events` (`20261123400000_selection_feedback.sql`), `assessment_criteria_sets`, `selection_round_events` (`20261127100000_criteria_sets.sql`), `selection_round_auditors` (`20261127300000_selection_auditors.sql`), `assessment_releases`, `assessment_release_events` (`20261127500000_assessment_release.sql`), internal notes (`20261127600000_assessment_internal_notes.sql`) | Choose squads and teams fairly, with a record of how the work was done | The round's panel and its auditors (committee members with a current check an admin chooses, who change nothing), never an athlete's own parent or guardian. The athlete, and the verified guardians of one under 18, see the criteria, the dates the club shares, shared feedback and the parts of the head coach's signed summary they release, never an observation or internal note. Admins see counts and dates. Each opening of an under 18's assessment is in row 18 | 1 year after the round ends, with the round (`20261123210000_assessment_retention.sql`). An athlete's assessments are deleted with their account | No |
+| 25 | Events added in the app: events a squad's or team's coaches and managers add (off by default), events admins add to a club calendar kept in the app, and events coaches, managers and committee members suggest for one. Each holds its name, time, place, an optional note, and the names of who added, changed, cancelled, suggested or answered it, with an admin's reason for declining a suggestion | `calendar_events` (`20261127800000_team_events.sql`), `hq_calendar_events` (`20261128000000_hq_calendars.sql`), `calendar_phone_links` (`20261128100000_calendar_phone_links.sql`) | The club's calendar | Squad and team events: that squad's or team's members, their guardians and admins. A calendar kept in the app: whoever the calendar is shown to. A suggestion and a decline reason: the person who suggested it and admins | Not in the keep periods today: until removed, or until their squad, team or calendar is deleted | **Only through a phone link an admin turns on** for a calendar kept in the app and shown to everyone in the club: whoever holds the link reads each event's name, time, place and whether it's cancelled, without signing in (`supabase/functions/calendar-feed/`). Never a note, a person's name or a suggestion. Off by default; an admin can reset it or turn it off |
 
 ## What the app reads from elsewhere, sending no member data
 
-- **The club calendar:** the phone downloads the club's published calendar files (ICS, usually
-  from Microsoft 365) straight from their address (`src/lib/use-events.ts`). No member data goes
-  with the request.
+- **The club calendar:** for a calendar the club keeps in Outlook, the phone downloads the
+  club's published calendar file (ICS, usually from Microsoft 365) straight from its address
+  (`src/lib/use-events.ts`). No member data goes with the request. A calendar kept in the app is
+  read from the club's own database (row 25).
 - **PlayHQ fixtures:** an admin's request goes through the `playhq` edge function to PlayHQ's
   public API (`supabase/functions/playhq/`). It sends competition and season ids only.
 - **App updates:** `expo-updates` downloads new versions of the app from Expo
@@ -88,12 +94,14 @@ contacts, the calendar on the phone, health platforms (Apple Health, Health Conn
 
 ## Deleting an account
 
-**Delete account** in the Me tab (`src/app/(tabs)/me.tsx`; at the foot of the one screen people waiting for approval see, `src/app/(tabs)/index.tsx`) opens
-`src/app/delete-account.tsx`, which calls `delete_my_account`
+**My account** in the Me tab (`src/app/(tabs)/me.tsx`) opens `src/app/my-account.tsx`, where
+**Delete my account** (also at the foot of the one screen people waiting for approval see,
+`src/app/(tabs)/index.tsx`) opens `src/app/delete-account.tsx`, which calls `delete_my_account`
 (`20261007110000_delete_members.sql`) and so `delete_member_now`
-(`20261023130000_legal_hold.sql`). It deletes the sign-in account and the profile. 46 tables
-delete the member's rows with it (`on delete cascade`) and 73 keep the row with the member's
-name in place of the link (`on delete set null`). What stays is what the delete screen says:
+(`20261023130000_legal_hold.sql`). It deletes the sign-in account and the profile. Tables
+that hold the member's own records delete their rows with it (`on delete cascade`), and tables
+that record what the member did for the club keep the row with the member's name in place of
+the link (`on delete set null`). What stays is what the delete screen says:
 
 - injury records, seen only by the committee and admins, for the injury keep period (7 years by
   default) from when the member leaves, with documents possibly going sooner;

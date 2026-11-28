@@ -79,9 +79,17 @@ CLUB_DB_URL='postgresql://...' scripts/first-admin-code.sh
 
 ### 5. Add the club calendar
 
-In Outlook, publish the club calendar (Settings > Calendar > Shared calendars > Publish a
-calendar) and copy the ICS link. In the app, open **Administration** in the Club tab, then **Calendars**, paste it
-in and choose **Everyone**. Team calendars work the same way: pick the team instead.
+In the app, open the **Club** tab, then **Club setup > Calendars**. A calendar is kept in one
+of two places:
+
+- **In the app:** choose **In the app**, then add its events from **Add an event** in the
+  Calendar tab. Nothing to set up in Outlook.
+- **An Outlook link:** in Outlook, publish the club calendar (Settings > Calendar > Shared
+  calendars > Publish a calendar), copy the ICS link and paste it in.
+
+Under **Who sees it** choose **Everyone in the club**. Team calendars work the same way: pick the
+team instead. Or switch on **Squad and team events** in **Club features**, and each squad's and
+team's coaches and managers add their own events in the app.
 
 ## Run it
 
@@ -120,5 +128,6 @@ TestFlight), see [Beta builds from GitHub](docs/beta-builds.md) and
 [Google Play closed testing](docs/play-closed-testing.md).
 
 Builds use the live Supabase project, from the EAS environment named after the profile. Publish
-over-the-air fixes with `scripts/publish-update.sh`, not `eas update` directly, so they can't pick
-up your `.env` test settings.
+over-the-air fixes with the **OTA update** workflow (Actions > OTA update, see
+[Test and live](docs/environments.md)) or `scripts/publish-update.sh`, not `eas update` directly,
+so they can't pick up your `.env` test settings.

@@ -21,6 +21,7 @@ about this policy, or requests to see or correct your information, go to them.
 | Daily check-ins (sleep, soreness, stress, mood, notes) | Athletes | To look after athletes' wellbeing |
 | Injuries, physio updates and medical letters or reports | Athletes | To keep injured athletes safe and clear them to play |
 | Game goals and reflections | Athletes | Coaching |
+| Selection assessments, if the club uses them in the app: what selectors write about an athlete during a selection round, their signed summaries, and feedback shared with the athlete | Athletes in a selection round | To choose squads and teams fairly, with a record of how |
 | Attendance, and absences reported by athletes or their parents | Athletes | To run training and selections, and so an unexplained absence stands out |
 | Messages | Everyone who sends or receives them | Club communication |
 | Integrity training certificates | Members | The sport requires the training |
@@ -72,6 +73,7 @@ These are the app's standard periods; the club can set longer ones in the app
   viewed it stays with the injury.
 - Daily check-ins: [24 months] from the day of the check-in.
 - Game goals, reflections and coaches' comments: [24 months] after the game.
+- Selection assessments: [1 year] after the selection round ends.
 - Message text: [24 months] after it was sent. A record that the message was
   sent, who it went to and who read it is kept, so a complaint can still be
   looked into.

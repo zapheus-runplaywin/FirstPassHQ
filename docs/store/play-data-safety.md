@@ -45,10 +45,10 @@ personalisation or fraud prevention. "Required" means a member can't use the app
 | Photos and videos | Videos | No | | | |
 | Audio files | All types | No | | | |
 | Files and docs | Files and docs | Yes | Optional | App functionality | 6, 7, 15, 16 |
-| Calendar | Calendar events | No | The app reads the club's calendar, not the phone's | | |
+| Calendar | Calendar events | No | The app reads the club's calendar, not the phone's. Events added in the app are the club's own (row 25) | | |
 | Contacts | Contacts | No | | | |
 | App activity | App interactions | Yes | Required (attendance, read receipts, who opened a child's records) | App functionality, Fraud prevention, security and compliance | 11, 12, 18 |
-| App activity | Other user-generated content | Yes | Optional (game goals, surveys, session plans, concerns, award votes, blocks in chat groups) | App functionality, Fraud prevention, security and compliance (blocks are followed up for safeguarding) | 13, 14, 15, 17, 20, 23 |
+| App activity | Other user-generated content | Yes | Optional (game goals, surveys, session plans, concerns, award votes, blocks in chat groups, selection assessments, events added to the calendar) | App functionality, Fraud prevention, security and compliance (blocks are followed up for safeguarding) | 13, 14, 15, 17, 20, 23, 24, 25 |
 | App activity | In-app search history, Installed apps, Other actions | No | | | |
 | Web browsing | Web browsing history | No | | | |
 | Location | Approximate, Precise | No | | | |
@@ -68,6 +68,6 @@ personalisation or fraud prevention. "Required" means a member can't use the app
   soreness, stress and mood. The app is a club administration tool, not a medical service.
 - **Game stats** (row 21) are recorded in FirstPass Vantage, not this app, and are declared on
   Vantage's form.
-- **Data deletion.** Members delete their account in the app (Delete account, in the
-  Me tab) or through the public delete page. Some records are kept by the club for set
+- **Data deletion.** Members delete their account in the app (My account in the
+  Me tab, then Delete my account) or through the public delete page. Some records are kept by the club for set
   periods; the delete page lists them.
