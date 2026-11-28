@@ -7,8 +7,9 @@ name: Mutation tests
 # below the floor in stryker.config.json (thresholds.break).
 #
 # Run by hand only, to save Actions minutes. Runs are incremental: Stryker's
-# results are kept in the Actions cache, so only the first run takes about an
-# hour, and later runs only test again what changed since.
+# results are kept in the Actions cache, so only the first run is long (about two
+# hours for 1,168 changes, 28 November 2026), and later runs only test again
+# what changed since.
 on:
   workflow_dispatch:
 
@@ -22,7 +23,8 @@ concurrency:
 jobs:
   mutation:
     runs-on: ubuntu-24.04
-    timeout-minutes: 90
+    # A full first run was stopped at 90 minutes with 72% done (28 November 2026).
+    timeout-minutes: 180
     steps:
       - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
       - run: npm ci --no-audit --no-fund
