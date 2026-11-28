@@ -1,6 +1,6 @@
 {
   "imports": {
-    "@firstpass/engine": "npm:@firstpass/engine@0.2.0",
+    "@firstpass/engine": "npm:@firstpass/engine@0.2.1",
     "@firstpass/schema": "npm:@firstpass/schema@0.2.0"
   }
 }
