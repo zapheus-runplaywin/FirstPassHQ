@@ -13,7 +13,7 @@ import { act, render, renderHook } from '@testing-library/react-native';
 import type { ReactNode } from 'react';
 
 import { ClubChoiceProvider, useClubChoice } from '@/lib/club-choice';
-import { connectToClub } from '@/lib/supabase';
+import { connectToClub, signOutOfClub } from '@/lib/supabase';
 
 jest.mock('@react-native-async-storage/async-storage', () =>
   jest.requireActual('@react-native-async-storage/async-storage/jest/async-storage-mock'),
@@ -176,6 +176,90 @@ describe('switching club', () => {
     expect(result.current.recent).toEqual([THUNDER]);
     expect(await stored('club-code')).toBeNull();
     expect(await stored('club-codes-used')).toBe(JSON.stringify(['THUNDER']));
+  });
+});
+
+describe('removing a club from this device', () => {
+  const saved = {
+    'club-codes-used': JSON.stringify(['STORM', 'THUNDER']),
+    'club-profile:STORM': JSON.stringify({ club_name: 'Sample Storm' }),
+    'club-profile:THUNDER': JSON.stringify({ club_name: 'West Coast Thunder' }),
+  };
+
+  beforeEach(() => (signOutOfClub as jest.Mock).mockClear());
+
+  it('takes it off the list, signs out of it here and forgets its saved look', async () => {
+    const { result } = await openWith(saved);
+    await act(async () => {
+      result.current.remove('STORM');
+    });
+    expect(result.current.recent).toEqual([THUNDER]);
+    expect(JSON.parse((await stored('club-codes-used'))!)).toEqual(['THUNDER']);
+    expect(await stored('club-profile:STORM')).toBeNull();
+    expect(signOutOfClub).toHaveBeenCalledTimes(1);
+    expect(signOutOfClub).toHaveBeenCalledWith(STORM);
+  });
+
+  it('leaves the other clubs, their sign-ins and their looks alone', async () => {
+    const { result } = await openWith(saved);
+    await act(async () => {
+      result.current.remove('storm');
+    });
+    expect(await stored('club-profile:THUNDER')).not.toBeNull();
+    expect(signOutOfClub).not.toHaveBeenCalledWith(THUNDER);
+    expect(connectToClub).not.toHaveBeenCalled();
+  });
+
+  it('the code adds it back, first in the list', async () => {
+    const { result } = await openWith(saved);
+    await act(async () => {
+      result.current.remove('STORM');
+    });
+    await act(async () => {
+      result.current.choose('STORM');
+    });
+    expect(result.current.recent).toEqual([STORM, THUNDER]);
+    expect(JSON.parse((await stored('club-codes-used'))!)).toEqual(['STORM', 'THUNDER']);
+  });
+
+  it('removing the club the app is using goes back to no club', async () => {
+    const { result } = await openWith({ ...saved, 'club-code': 'STORM' });
+    expect(result.current.club).toEqual(STORM);
+    await act(async () => {
+      result.current.remove('STORM');
+    });
+    expect(result.current.club).toBeNull();
+    expect(await stored('club-code')).toBeNull();
+  });
+
+  it('removing another club keeps the one in use', async () => {
+    const { result } = await openWith({ ...saved, 'club-code': 'THUNDER' });
+    await act(async () => {
+      result.current.remove('STORM');
+    });
+    expect(result.current.club).toEqual(THUNDER);
+    expect(await stored('club-code')).toBe('THUNDER');
+  });
+
+  it('a code no club has changes nothing', async () => {
+    const { result } = await openWith(saved);
+    await act(async () => {
+      result.current.remove('NOPE');
+    });
+    expect(result.current.recent).toEqual([STORM, THUNDER]);
+    expect(await stored('club-codes-used')).toBe(saved['club-codes-used']);
+    expect(signOutOfClub).not.toHaveBeenCalled();
+  });
+
+  it('removing the last club leaves an empty list', async () => {
+    const { result } = await openWith({
+      'club-codes-used': JSON.stringify(['THUNDER']),
+    });
+    await act(async () => {
+      result.current.remove('THUNDER');
+    });
+    expect(result.current.recent).toEqual([]);
+    expect(await stored('club-codes-used')).toBe('[]');
   });
 });
 

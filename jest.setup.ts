@@ -3,4 +3,5 @@
 jest.mock('@/lib/supabase', () => ({
   supabase: { rpc: jest.fn(), from: jest.fn(), auth: {}, storage: { from: jest.fn() } },
   connectToClub: jest.fn(),
+  signOutOfClub: jest.fn(async () => {}),
 }));

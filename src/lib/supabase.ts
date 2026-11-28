@@ -49,6 +49,25 @@ export function connectToClub(club: ClubEntry) {
   if (Platform.OS !== 'web' && AppState.currentState === 'active') current.auth.startAutoRefresh();
 }
 
+/**
+ * Forgets this device's sign-in to a club, as when the club is removed from
+ * Find your club. Each club keeps its own session, so this signs out of that
+ * club only ("local" scope: other phones stay signed in). A failure, such as
+ * no signal, still clears the saved session on this device.
+ */
+export async function signOutOfClub(club: ClubEntry) {
+  const client = clients.get(club.code) ?? makeClient(club);
+  try {
+    await client.auth.signOut({ scope: 'local' });
+  } catch {
+    // supabase-js clears the saved session even when the server can't be told.
+  }
+  if (client !== current) {
+    client.auth.stopAutoRefresh();
+    clients.delete(club.code);
+  }
+}
+
 /** The chosen club's database. Using it before a club is chosen is a bug, so it throws. */
 export const supabase = new Proxy({} as Client, {
   get(_target, property) {
