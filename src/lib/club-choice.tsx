@@ -3,7 +3,8 @@ import { createContext, use, useCallback, useEffect, useState, type ReactNode } 
 import { Platform } from 'react-native';
 
 import { findClub, type ClubEntry } from '@/constants/clubs';
-import { connectToClub } from '@/lib/supabase';
+import { clubProfileCacheKey } from '@/lib/club-logos';
+import { connectToClub, signOutOfClub } from '@/lib/supabase';
 
 type ClubChoice = {
   /** False while the saved choice loads. */
@@ -16,6 +17,12 @@ type ClubChoice = {
   choose: (code: string) => boolean;
   /** Goes back to the club code screen. Every club's sign-in stays saved. */
   switchClub: () => void;
+  /**
+   * Takes a club off this device's list, signs out of it here and forgets the
+   * look saved for it. Nothing changes at the club: entering its code adds it
+   * back.
+   */
+  remove: (code: string) => void;
 };
 
 const CHOICE_KEY = 'club-code';
@@ -82,8 +89,29 @@ export function ClubChoiceProvider({ children }: { children: ReactNode }) {
     if (canStore) AsyncStorage.removeItem(CHOICE_KEY).catch(() => {});
   }, []);
 
+  const remove = useCallback((code: string) => {
+    const found = findClub(code);
+    if (!found) return;
+    setClub((current) => {
+      if (current?.code !== found.code) return current;
+      if (canStore) AsyncStorage.removeItem(CHOICE_KEY).catch(() => {});
+      return null;
+    });
+    setRecent((current) => {
+      const next = current.filter((c) => c.code !== found.code);
+      if (canStore) {
+        AsyncStorage.setItem(RECENT_KEY, JSON.stringify(next.map((c) => c.code))).catch(() => {});
+      }
+      return next;
+    });
+    if (canStore) {
+      AsyncStorage.removeItem(clubProfileCacheKey(found.code)).catch(() => {});
+      signOutOfClub(found).catch(() => {});
+    }
+  }, []);
+
   return (
-    <ClubChoiceContext value={{ ready, club, recent, choose, switchClub }}>
+    <ClubChoiceContext value={{ ready, club, recent, choose, switchClub, remove }}>
       {children}
     </ClubChoiceContext>
   );

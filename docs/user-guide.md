@@ -384,6 +384,14 @@ Perth Pumpkins).
 
 <img src="user-guide/your-clubs.png" width="210" alt="Switch club: your clubs, each with its logo, and another club's code">
 
+To take a club off the list, swipe it to the left and tap **Remove**. (With VoiceOver or
+TalkBack, **Remove** is in the club's actions.) It only changes this phone: the app signs out of
+that club here and forgets the logo it saved, and a note says so. Your membership and everything
+at the club stay as they were. To add it back, enter its code under **Another club** and sign in
+again.
+
+<img src="user-guide/your-clubs-remove.png" width="210" alt="Your clubs with one club swiped left to show Remove">
+
 ### Ask to join the club
 
 The first time you sign in, the app opens on one screen that asks you to request to join. Until

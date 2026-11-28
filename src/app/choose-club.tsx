@@ -4,9 +4,10 @@ import { StyleSheet, View } from 'react-native';
 
 import { ClubBadge } from '@/components/club-badge';
 import { Screen } from '@/components/screen';
+import { SwipeAction } from '@/components/swipe-action';
 import { ThemedText } from '@/components/themed-text';
 import { Button, Card, ErrorText, PressableCard, TextField } from '@/components/ui';
-import { findClub } from '@/constants/clubs';
+import { findClub, type ClubEntry } from '@/constants/clubs';
 import { Spacing } from '@/constants/theme';
 import { useTheme } from '@/hooks/use-theme';
 import { defaultLogo } from '@/lib/club';
@@ -20,11 +21,23 @@ import { useSavedClubLogos } from '@/lib/club-logos';
  */
 export default function ChooseClubScreen() {
   const theme = useTheme();
-  const { choose, recent } = useClubChoice();
+  const { choose, recent, remove } = useClubChoice();
   const logos = useSavedClubLogos(recent);
   const [code, setCode] = useState('');
   const [error, setError] = useState<string | null>(null);
+  // The club just taken off the list, named so the member knows it worked.
+  const [removed, setRemoved] = useState<string | null>(null);
   const club = findClub(code);
+  const removedNote = removed ? (
+    <ThemedText type="small" themeColor="textSecondary" accessibilityLiveRegion="polite">
+      {`Removed ${removed} and signed out of it on this device. Enter its code to add it again.`}
+    </ThemedText>
+  ) : null;
+
+  function handleRemove(c: ClubEntry) {
+    remove(c.code);
+    setRemoved(c.name);
+  }
 
   function handleContinue() {
     if (!club || !choose(club.code)) {
@@ -53,23 +66,39 @@ export default function ChooseClubScreen() {
         <View style={styles.recent}>
           <ThemedText type="smallBold">Your clubs</ThemedText>
           {recent.map((c) => (
-            <PressableCard key={c.code} onPress={() => choose(c.code)}>
-              <View style={styles.clubRow}>
-                <ClubBadge name={c.name} logo={logos[c.code]} />
-                <View style={styles.clubText}>
-                  <ThemedText type="smallBold">{c.name}</ThemedText>
-                  <ThemedText type="small" themeColor="textSecondary">
-                    {c.code}
-                  </ThemedText>
-                </View>
-              </View>
-            </PressableCard>
+            <SwipeAction key={c.code} label="Remove" onAction={() => handleRemove(c)}>
+              {(swiped) => (
+                <PressableCard
+                  onPress={() => {
+                    // The web reports letting go of a swipe as a tap.
+                    if (!swiped()) choose(c.code);
+                  }}
+                  actions={[{ label: 'Remove', onPress: () => handleRemove(c) }]}>
+                  <View style={styles.clubRow}>
+                    <ClubBadge name={c.name} logo={logos[c.code]} />
+                    <View style={styles.clubText}>
+                      <ThemedText type="smallBold">{c.name}</ThemedText>
+                      <ThemedText type="small" themeColor="textSecondary">
+                        {c.code}
+                      </ThemedText>
+                    </View>
+                  </View>
+                </PressableCard>
+              )}
+            </SwipeAction>
           ))}
+          {removedNote ?? (
+            <ThemedText type="small" themeColor="textSecondary">
+              Swipe left on a club to remove it.
+            </ThemedText>
+          )}
           <ThemedText type="smallBold" style={styles.another}>
             Another club
           </ThemedText>
         </View>
-      ) : null}
+      ) : (
+        removedNote
+      )}
 
       <TextField
         label="Club code"

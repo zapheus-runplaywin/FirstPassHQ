@@ -184,6 +184,7 @@ beforeEach(() => {
     recent: [],
     choose: jest.fn(),
     switchClub: jest.fn(),
+    remove: jest.fn(),
   });
   jest.mocked(unregisterForPush).mockReset().mockResolvedValue(undefined);
 
@@ -263,6 +264,7 @@ describe('loading the member', () => {
       recent: [],
       choose: jest.fn(),
       switchClub: jest.fn(),
+      remove: jest.fn(),
     });
     const { result } = await renderHook(() => useAuth(), { wrapper });
     await act(async () => {});
@@ -281,6 +283,7 @@ describe('loading the member', () => {
       recent: [],
       choose: jest.fn(),
       switchClub: jest.fn(),
+      remove: jest.fn(),
     });
     rows = { profile: profile('athlete') };
     jest.mocked(useClubChoice).mockReturnValue(choice(null));

@@ -18,7 +18,7 @@ import SignInScreen from '@/app/sign-in';
 import { ClubChoiceProvider, useClubChoice } from '@/lib/club-choice';
 import { signInToDemoClub } from '@/lib/demo-sign-in';
 import { appleSignInAvailable, signInWithApple, signInWithGoogle } from '@/lib/sign-in';
-import { connectToClub } from '@/lib/supabase';
+import { connectToClub, signOutOfClub } from '@/lib/supabase';
 
 import { isDisabled, type } from './helpers/forms';
 import { pressWithoutWaiting, settle } from './helpers/harness';
@@ -107,6 +107,10 @@ async function open(url: string, saved: Record<string, string> = {}) {
   await settle();
 }
 
+/** The rows under Your clubs that can be swiped to show Remove. */
+const clubSwipeRows = () =>
+  screen.container.queryAll((n) => n.props.accessibilityActions?.[0]?.name === 'swipeAction');
+
 const connected = () => screen.getByText(/^connected:/).props.children as string;
 
 describe('finding the club', () => {
@@ -177,6 +181,71 @@ describe('finding the club', () => {
     await settle();
     expect(connected()).toBe('connected:STORM');
     expect(connectToClub).toHaveBeenCalledWith(expect.objectContaining({ code: 'STORM' }));
+  });
+
+  it('tells the member a club can be swiped off the list', async () => {
+    await open('/choose-club', {
+      'club-codes-used': JSON.stringify(['STORM', 'THUNDER']),
+    });
+    expect(screen.getByText('Swipe left on a club to remove it.')).toBeTruthy();
+    // Each club offers Remove behind it, and to screen readers on the card itself.
+    expect(clubSwipeRows().map((r) => r.props.accessibilityActions[0].label)).toEqual([
+      'Remove',
+      'Remove',
+    ]);
+    expect(screen.getByRole('button', { name: /Sample Storm/ }).props.accessibilityActions).toEqual(
+      [{ name: 'Remove', label: 'Remove' }],
+    );
+  });
+
+  it('a swiped club is removed from this device, signed out, and can be added back by its code', async () => {
+    (signOutOfClub as jest.Mock).mockClear();
+    await open('/choose-club', {
+      'club-codes-used': JSON.stringify(['STORM', 'THUNDER']),
+    });
+    await fireEvent(clubSwipeRows()[0], 'accessibilityAction', {
+      nativeEvent: { actionName: 'swipeAction' },
+    });
+    await settle();
+    expect(screen.queryByText('Sample Storm')).toBeNull();
+    expect(screen.getByText('West Coast Thunder')).toBeTruthy();
+    expect(
+      screen.getByText(
+        'Removed Sample Storm and signed out of it on this device. Enter its code to add it again.',
+      ),
+    ).toBeTruthy();
+    expect(signOutOfClub).toHaveBeenCalledWith(expect.objectContaining({ code: 'STORM' }));
+    // Removing doesn't open or connect to any club.
+    expect(connected()).toBe('connected:none');
+    expect(connectToClub).not.toHaveBeenCalled();
+    expect(JSON.parse((await AsyncStorage.getItem('club-codes-used'))!)).toEqual(['THUNDER']);
+
+    await type('Club code', 'storm');
+    await fireEvent.press(screen.getByText('Continue to Sample Storm'));
+    await settle();
+    expect(connected()).toBe('connected:STORM');
+    expect(JSON.parse((await AsyncStorage.getItem('club-codes-used'))!)).toEqual([
+      'STORM',
+      'THUNDER',
+    ]);
+  });
+
+  it('a screen reader removes a club from the card’s actions, and the list goes once it’s empty', async () => {
+    await open('/choose-club', {
+      'club-codes-used': JSON.stringify(['THUNDER']),
+    });
+    await fireEvent(
+      screen.getByRole('button', { name: /West Coast Thunder/ }),
+      'accessibilityAction',
+      {
+        nativeEvent: { actionName: 'Remove' },
+      },
+    );
+    await settle();
+    expect(screen.queryByText('Your clubs')).toBeNull();
+    expect(screen.queryByText('Swipe left on a club to remove it.')).toBeNull();
+    expect(screen.getByText(/^Removed West Coast Thunder/)).toBeTruthy();
+    expect(connected()).toBe('connected:none');
   });
 
   it('shows each club’s saved logo, and initials for a club with none saved here', async () => {
