@@ -310,13 +310,13 @@ tablet](#using-hq-on-a-tablet).
 #### Which version you have
 
 The opening screen shows the app's version and build in small print at the foot, such as
-**Version 1.0.0 (23) · Build 860**, and so do Find your club, the sign-in screen and the foot of
+**Version 1.0.0 (23) · Build 910**, and so do Find your club, the sign-in screen and the foot of
 the **Me** tab (or of your one screen, if you have no tabs yet). When the club has sent a fix over the air since you installed,
 a second line names it, such as **Update 1a2b3c4d · 20 Nov 2026**. If something goes wrong, or the
 club asks which version you're testing, read these lines out or send a screenshot of them.
 
 - **Version 1.0.0 (23)** is the version in the app store and, in brackets, the store build.
-- **Build 860** is the build of the club's app code. It matches the "build 860" on the guides and
+- **Build 910** is the build of the club's app code. It matches the "build 910" on the guides and
   PDFs made from the same code.
 - **Update** appears only while an over-the-air update is running, with when it was made.
 
@@ -609,9 +609,9 @@ the top:
 <img src="user-guide/today-next-up-coach.png" width="210" alt="A coach's Today on the day of training, with Take attendance under Next up">
 <img src="user-guide/today-next-up-parent.png" width="210" alt="A parent's Today with a Can't make it shortcut for each child under Next up">
 
-While a selection round is running, **Selection assessments** (for the round's panel) or
-**Selection** (for an athlete in the round and their parents) also sits on Today, just above
-Needs you.
+While a selection round is running, **Selection assessments** (for the round's panel),
+**Selection audits** (for a committee member an admin has made its auditor) or **Selection** (for
+an athlete in the round and their parents) also sits on Today, just above Needs you.
 
 #### Team, Family and Club
 
@@ -658,8 +658,9 @@ green tick, or green words such as **Present**, means done or fine. Anything els
   and opens where it is when you tap it (tap again to close it):
   **People** (**Check-ins** (the club's averages), **Attendance**, **Injuries** and **Surveys**),
   **Safety and conduct** (**Concerns**, for the people who handle them, and **Integrity
-  training**), **Season** (**Session plans** once one is shared with you, **Season KPIs**, and
-  **Selection assessments** while you're on a round's panel) and **Reports and registers**
+  training**), **Season** (**Session plans** once one is shared with you, **Season KPIs**,
+  **Selection assessments** while you're on a round's panel and **Selection audits** while you
+  audit one) and **Reports and registers**
   (**Reports**, for committee members with a current check, and **Registers**). Admins have more
   in each area, and a fifth, **Club setup** (see [The Club tab for admins](#the-club-tab-for-admins)).
   An area shows only what you have: one with a single thing in it shows that thing in its place,
@@ -1062,7 +1063,9 @@ is on.
 
 ### Calendar
 
-The calendar shows events from the club's Outlook calendars. Each calendar is shared on a need to
+The calendar shows the club's calendars, which an admin keeps in Outlook or in the app, and, when
+the club switches them on, the events your coaches and managers add for your squads and teams (see
+[Events your coaches and managers add](#events-your-coaches-and-managers-add)). Each calendar is shared on a need to
 know basis: you see the ones an admin has shared with everyone in the club, with one of your roles
 (such as **Physios** or **Guests**), with a safeguarding post you hold (such as **Child Safety
 Officers**), or with one of your squads or teams. Admins see every calendar. A role whose check
@@ -4520,7 +4523,7 @@ app won't save one shown to nobody. Choose either:
   choice, while that role or post is usable: a coach whose check lapsed, or a Child Safety Officer
   who can't act, doesn't see it.
 
-When different people need different events, split them into separate Outlook calendars, such as
+When different people need different events, split them into separate calendars, such as
 a physio calendar for physios and statisticians, and a safeguarding calendar for the safeguarding
 posts, and add each one here. Admins always see every calendar. Each card says who it's shown to,
 such as "Shown to Physios, Statisticians and Open Squad". Each calendar has a colour, used for its
@@ -5377,11 +5380,13 @@ its periods starts on those.
   who cast each vote goes; the points and results stay.
 - **Awards and their results**: the award with all its votes goes 3, 5, 10 (recommended) or 20
   years after it closes, or choose **Keep for good**. Never shorter than who voted for whom.
-- **Selection assessments**: a selection round, with its panel, its dates, every observation,
-  every summary and any feedback shared with athletes,
+- **Selection assessments**: a selection round, with its panel, its auditors, its dates, every
+  observation, every summary with its internal notes, and any feedback shared with or assessment
+  released to athletes,
   goes 1 (recommended), 2, 3, 5 or 7 years after the round ends, or after it was closed if that
   was later. A year is long enough to answer a question or appeal about a selection; export the
-  Selection audit report first if the club wants to keep the record of the process.
+  Selection audit report and the season's Selection register first if the club wants to keep
+  the record of the process.
 
 A period the club saved before these choices changed (such as 7 years for attendance) stays as it
 is, shown as its own choice, until an admin picks another.
@@ -6306,7 +6311,7 @@ Working With Children Check, and another admin must do it.
   right: it goes from everyone but its author, the coaches and the author's parents, and the club
   keeps the text. Raise anything worrying as a concern
   (see [Chat groups](#chat-groups)).
-- **Selection assessments are for the panel only.** If the club uses them, you read and write an
+- **Selection assessments are for the panel and the round's auditors.** If the club uses them, you read and write an
   athlete's assessment only while you're on that selection round's panel, approved, not stood down
   and holding a current check, and never for an athlete you're a parent or guardian of. Opening an
   under 18's assessment or your summary of them is recorded in their record views. Your summary
@@ -7011,10 +7016,10 @@ Things clubs have asked for that FirstPass HQ doesn't do today, so nobody expect
 decided on its own; until then the club keeps doing it the way it does now.
 
 - **Selection records**: appeals, and the selection decision itself (who was selected and why).
-  The criteria, the panel,
+  The criteria sets, the panel and auditors,
   selectors' observations, each selector's signed summary of each athlete, the round's dates with reminders, what athletes and parents see of the
   criteria and dates, feedback and released assessments the head coach shares with athletes and parents with when each was
-  shared and read, and an audit report are in the app when the club turns on [selection
+  shared and read, an audit report and a season register are in the app when the club turns on [selection
   assessments](#selection-assessments-for-admins); admins name teams in the app (see [Squads, teams
   and selections](#squads-teams-and-selections)), and coaches and the committee declare conflicts of
   interest each season when the club uses the registers (see [Policy and conflict

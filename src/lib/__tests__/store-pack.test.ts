@@ -89,6 +89,52 @@ describe('the store pack', () => {
     expect(row12).toMatch(/chat group posts/i);
   });
 
+  it('lists selection assessments and their tables in the data inventory and the privacy page', () => {
+    expect(existsSync('supabase/migrations/20261123100000_selection_assessments.sql')).toBe(true);
+    const row24 = read('data-inventory.md')
+      .split('\n')
+      .find((line) => line.startsWith('| 24 |'));
+    expect(row24).toBeDefined();
+    for (const table of [
+      '`assessment_observations`',
+      '`assessment_summaries`',
+      '`assessment_feedback`',
+      '`assessment_releases`',
+      '`selection_round_panel`',
+      '`selection_round_auditors`',
+    ]) {
+      expect(row24).toContain(table);
+    }
+    const privacy = read('public-pages/privacy.md').replace(/\s+/g, ' ');
+    expect(privacy).toMatch(/Selection assessments/);
+    expect(privacy).toMatch(/auditors/);
+    expect(privacy).toMatch(/selection assessments: 1 year after the selection round ends/);
+  });
+
+  it('lists events added in the app and says what a phone link gives', () => {
+    expect(existsSync('supabase/migrations/20261128100000_calendar_phone_links.sql')).toBe(true);
+    const row25 = read('data-inventory.md')
+      .split('\n')
+      .find((line) => line.startsWith('| 25 |'));
+    expect(row25).toBeDefined();
+    for (const table of ['`calendar_events`', '`hq_calendar_events`', '`calendar_phone_links`']) {
+      expect(row25).toContain(table);
+    }
+    expect(row25).toMatch(/phone link/);
+    const privacy = read('public-pages/privacy.md').replace(/\s+/g, ' ');
+    expect(privacy).toMatch(/phone link/);
+    expect(privacy).toMatch(/without signing in/);
+  });
+
+  it('sends people to My account to delete their account', () => {
+    expect(existsSync('src/app/my-account.tsx')).toBe(true);
+    for (const file of ['public-pages/delete-account.md', 'public-pages/support.md', 'review-notes.md', 'play-data-safety.md']) {
+      const text = read(file).replace(/\s+/g, ' ');
+      expect({ file, myAccount: /My account/.test(text) }).toEqual({ file, myAccount: true });
+      expect({ file, old: /Delete account,? (is )?in the Me tab/.exec(text)?.[0] ?? null }).toEqual({ file, old: null });
+    }
+  });
+
   it('names only migrations that exist', () => {
     for (const file of quoted.concat('README.md')) {
       for (const [, name] of read(file).matchAll(/`(\d{14}_[a-z0-9_]+\.sql)`/g)) {
